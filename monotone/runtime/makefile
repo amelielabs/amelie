@@ -10,7 +10,8 @@ CFLAGS_INCLUDE = -I. \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-runtime.a
 OBJECTS        = \
-                 runtime/timer_mgr.o
+                 runtime/timer_mgr.o \
+                 runtime/poller.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
