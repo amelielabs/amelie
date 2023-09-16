@@ -9,7 +9,8 @@ CFLAGS_INCLUDE = -I. \
                  -Iruntime \
                  -Iio \
                  -Idata \
-                 -Ilib
+                 -Ilib \
+                 -Iconfig
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-runtime.a
 OBJECTS        = \
@@ -38,7 +39,10 @@ OBJECTS        = \
                  lib/compression.o \
                  lib/uri.o \
                  lib/lex.o \
-                 lib/portal.o
+                 lib/portal.o \
+                 config/config.o \
+                 config/config_state.o \
+                 config/catalog_mgr.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
