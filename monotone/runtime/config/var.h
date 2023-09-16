@@ -45,7 +45,7 @@ struct Var
 };
 
 static inline void
-var_init(Var* self, char* name, VarType type, int flags)
+var_init(Var* self, const char* name, VarType type, int flags)
 {
 	memset(self, 0, sizeof(Var));
 	self->type  = type;
