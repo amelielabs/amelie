@@ -17,7 +17,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iserver
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libindigo-server.a
-OBJECTS        =
+OBJECTS        = \
+                 auth/auth.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
