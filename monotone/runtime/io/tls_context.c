@@ -8,6 +8,14 @@
 #include <monotone_runtime.h>
 #include <monotone_io.h>
 
+#include <openssl/opensslv.h>
+#include <openssl/ssl.h>
+#include <openssl/crypto.h>
+#include <openssl/engine.h>
+#include <openssl/conf.h>
+#include <openssl/bio.h>
+#include <openssl/err.h>
+
 void
 tls_context_init(TlsContext* self, bool client)
 {
