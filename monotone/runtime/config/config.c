@@ -13,12 +13,12 @@
 
 typedef struct
 {
-	char     *name;
-	VarType   type;
-	int       flags;
-	Var      *var;
-	char     *default_string;
-	uint64_t  default_int;
+	const char* name;
+	VarType     type;
+	int         flags;
+	Var*        var;
+	char*       default_string;
+	uint64_t    default_int;
 } ConfigDef;
 
 static inline void
