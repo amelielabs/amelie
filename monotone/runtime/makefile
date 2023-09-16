@@ -8,7 +8,8 @@ CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I. \
                  -Iruntime \
                  -Iio \
-                 -Idata
+                 -Idata \
+                 -Ilib
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-runtime.a
 OBJECTS        = \
@@ -29,7 +30,15 @@ OBJECTS        = \
                  io/listen.o \
                  io/resolver.o \
                  data/json.o \
-                 data/to_string.o
+                 data/to_string.o \
+                 lib/rbtree.o \
+                 lib/sha1.o \
+                 lib/crc.o \
+                 lib/uuid_mgr.o \
+                 lib/compression.o \
+                 lib/uri.o \
+                 lib/lex.o \
+                 lib/portal.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
