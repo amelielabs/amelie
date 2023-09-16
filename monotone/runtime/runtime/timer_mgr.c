@@ -99,7 +99,7 @@ timer_mgr_add(TimerMgr* self, Timer* timer)
 	if (self->timers == NULL || count >= self->timers_max)
 	{
 		int   timers_max = self->timers_max*  2;
-		void* timers = mn_realloc_nothrow(self->timers, timers_max*  sizeof(Timer*));
+		void* timers = mn_realloc_nothrow(self->timers, timers_max * sizeof(Timer*));
 		if (unlikely(timers == NULL))
 			return -1;
 		self->timers = timers;
