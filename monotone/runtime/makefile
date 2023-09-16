@@ -6,7 +6,8 @@ AR             = ar
 RM             = rm
 CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I. \
-                 -Iruntime
+                 -Iruntime \
+                 -Iio
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-runtime.a
 OBJECTS        = \
@@ -16,7 +17,16 @@ OBJECTS        = \
                  runtime/context_stack.o \
                  runtime/context.o \
                  runtime/channel.o \
-                 runtime/task.o
+                 runtime/task.o \
+                 io/vfs.o \
+                 io/logger.o \
+                 io/tls_lib.o \
+                 io/tls_context.o \
+                 io/tls.o \
+                 io/socket.o \
+                 io/tcp.o \
+                 io/listen.o \
+                 io/resolver.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
