@@ -27,7 +27,7 @@ static inline void
 str_free(Str* self)
 {
 	if (self->allocated)
-		in_free(self->pos);
+		mn_free(self->pos);
 	str_init(self);
 }
 
