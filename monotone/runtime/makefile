@@ -12,7 +12,8 @@ LIB            = libmonotone-runtime.a
 OBJECTS        = \
                  runtime/timer_mgr.o \
                  runtime/poller.o \
-                 runtime/notify.o
+                 runtime/notify.o \
+                 runtime/context_stack.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
