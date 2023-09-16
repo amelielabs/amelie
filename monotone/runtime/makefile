@@ -14,7 +14,9 @@ OBJECTS        = \
                  runtime/poller.o \
                  runtime/notify.o \
                  runtime/context_stack.o \
-                 runtime/context.o
+                 runtime/context.o \
+                 runtime/channel.o \
+                 runtime/task.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
