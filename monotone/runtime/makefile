@@ -13,7 +13,8 @@ OBJECTS        = \
                  runtime/timer_mgr.o \
                  runtime/poller.o \
                  runtime/notify.o \
-                 runtime/context_stack.o
+                 runtime/context_stack.o \
+                 runtime/context.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
