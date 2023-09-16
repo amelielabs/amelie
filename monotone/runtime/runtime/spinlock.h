@@ -78,3 +78,4 @@ spinlock_unlock(spinlock* self)
 {
 	__sync_lock_release(lock);
 }
+#endif
