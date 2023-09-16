@@ -61,7 +61,7 @@ coroutine_free(Coroutine* self, BufCache* cache)
 }
 
 static inline void
-coroutine_set_name(Coroutine* self, char* fmt, ...)
+coroutine_set_name(Coroutine* self, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
