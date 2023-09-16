@@ -32,7 +32,7 @@ extern __thread Task* mn_task;
 static inline Coroutine*
 mn_self(void)
 {
-	return in_task->coroutine_mgr.current;
+	return mn_task->coroutine_mgr.current;
 }
 
 void task_init(Task*, BufCache*);
