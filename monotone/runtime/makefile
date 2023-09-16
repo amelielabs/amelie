@@ -7,7 +7,8 @@ RM             = rm
 CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I. \
                  -Iruntime \
-                 -Iio
+                 -Iio \
+                 -Idata
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-runtime.a
 OBJECTS        = \
@@ -26,7 +27,9 @@ OBJECTS        = \
                  io/socket.o \
                  io/tcp.o \
                  io/listen.o \
-                 io/resolver.o
+                 io/resolver.o \
+                 data/json.o \
+                 data/to_string.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
