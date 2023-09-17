@@ -12,8 +12,8 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../monotone/db/libmonotone-db.a \
 				  ../monotone/main/libmonotone-main.a \
                   -Wl,-no-whole-archive -lm -lreadline -lzstd -lssl -lcrypto
-SRC            = monotone.c
-TARGET         = monotone
+SRC            = mono.c
+TARGET         = mono
 $(TARGET): clean $(OBJECTS)
 	@$(CC) $(SRC) $(CFLAGS_INCLUDE) $(CFLAGS) $(LFLAGS) -o $(TARGET)
 	@echo $(CC) $(SRC) $(CFLAGS) -o $(TARGET)
