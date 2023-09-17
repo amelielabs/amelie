@@ -74,7 +74,7 @@ connection_set_coroutine_name(Connection* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(in_self(), "connection %s", addr);
+	coroutine_set_name(mn_self(), "connection %s", addr);
 }
 
 void
@@ -82,7 +82,7 @@ connection_attach(Connection* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
-	self->coroutine_id = in_self()->id;
+	self->coroutine_id = mn_self()->id;
 }
 
 void
