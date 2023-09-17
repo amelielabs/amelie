@@ -62,7 +62,7 @@ main_prepare(Main* self, MainArgs* args)
 		} else
 		{
 			// read config file
-			snprintf(path, sizeof(path), "%s/indigo.conf",
+			snprintf(path, sizeof(path), "%s/monotone.conf",
 			         str_of(args->directory));
 			config_open(config, path);
 		}
@@ -82,7 +82,7 @@ main_prepare(Main* self, MainArgs* args)
 	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
 	if (var_int_of(&config->log_to_file))
 	{
-		snprintf(path, sizeof(path), "%s/indigo.log", str_of(args->directory));
+		snprintf(path, sizeof(path), "%s/monotone.log", str_of(args->directory));
 		logger_open(logger, path);
 	}
 	return bootstrap;
