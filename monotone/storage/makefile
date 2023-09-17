@@ -28,7 +28,9 @@ OBJECTS        = \
                  engine/engine.o \
                  engine/engine_recover.o \
                  engine/engine_stats.o \
-                 engine/compaction.o
+                 engine/compaction.o \
+                 storage/storage.o \
+                 storage/storage_iterator.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
