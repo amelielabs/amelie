@@ -30,7 +30,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iapi
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-main.a
-OBJECTS        =
+OBJECTS        = \
+                 session/session.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
