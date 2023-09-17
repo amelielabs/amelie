@@ -19,6 +19,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_session.h>
 
 #if 0
 hot static inline void
