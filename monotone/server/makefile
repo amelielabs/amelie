@@ -20,7 +20,8 @@ LIB            = libindigo-server.a
 OBJECTS        = \
                  auth/auth.o \
                  client/connection.o \
-                 client/relay.o
+                 client/relay.o \
+                 server/server.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
