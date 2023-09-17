@@ -129,7 +129,7 @@ test_tcp_client(void *arg)
 
 	test(total_send == total_recv);
 
-	/* disconnect */
+	// disconnect
 	tcp_send(&client, msg_create(STOP));
 
 	tcp_close(&client);
