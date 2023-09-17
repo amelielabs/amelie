@@ -82,7 +82,7 @@ client_set_connected(Client* self, bool value)
 static inline void
 client_set_coroutine(Client* self)
 {
-	self->coroutine_id = in_self()->id;
+	self->coroutine_id = mn_self()->id;
 }
 
 static inline void
@@ -90,12 +90,12 @@ client_set_coroutine_name(Client* self)
 {
 	if (self->access == ACCESS_CLIENT)
 	{
-		coroutine_set_name(in_self(), "client %" PRIu64, self->id);
+		coroutine_set_name(mn_self(), "client %" PRIu64, self->id);
 	} else
 	{
 		Str access;
 		access_str(self->access, &access);
-		coroutine_set_name(in_self(), "client %" PRIu64 " (%.*s)",
+		coroutine_set_name(mn_self(), "client %" PRIu64 " (%.*s)",
 		                   self->id,
 		                   str_size(&access),
 		                   str_of(&access));
