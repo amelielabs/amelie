@@ -26,7 +26,12 @@ OBJECTS        = \
                  wal/wal_store_open.o \
                  wal/wal.o \
                  wal/wal_cursor.o \
-                 wal/debug.o
+                 wal/debug.o \
+                 db/table_mgr.o \
+                 db/meta_mgr.o \
+                 db/db.o \
+                 db/db_catalog.o \
+                 db/recover.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
