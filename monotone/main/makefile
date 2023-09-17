@@ -34,7 +34,8 @@ OBJECTS        = \
                  session/session.o \
                  core/core.o \
                  core/client.o \
-                 main/main.o
+                 main/main.o \
+                 api/monotone.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
