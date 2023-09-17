@@ -22,7 +22,13 @@ OBJECTS        = \
                  schema/row.o \
                  mvcc/handle_mgr.o \
                  mvcc/heap.o \
-                 mvcc/mvcc.o
+                 mvcc/mvcc.o \
+                 engine/compact.o \
+                 engine/service.o \
+                 engine/engine.o \
+                 engine/engine_recover.o \
+                 engine/engine_stats.o \
+                 engine/compaction.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
