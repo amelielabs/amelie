@@ -18,7 +18,9 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libindigo-server.a
 OBJECTS        = \
-                 auth/auth.o
+                 auth/auth.o \
+                 client/connection.o \
+                 client/relay.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
