@@ -21,7 +21,12 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-db.a
-OBJECTS        =
+OBJECTS        = \
+                 wal/wal_store.o \
+                 wal/wal_store_open.o \
+                 wal/wal.o \
+                 wal/wal_cursor.o \
+                 wal/debug.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
