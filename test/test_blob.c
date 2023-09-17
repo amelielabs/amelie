@@ -6,6 +6,7 @@
 //
 
 #include <monotone_runtime.h>
+#include <monotone_io.h>
 #include "test.h"
 
 void
