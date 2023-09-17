@@ -18,7 +18,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Istorage
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-storage.a
-OBJECTS        =
+OBJECTS        = \
+                 schema/row.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
