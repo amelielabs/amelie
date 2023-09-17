@@ -58,12 +58,12 @@ uri_error(void)
 static inline void
 uri_parse_protocol(Uri* self)
 {
-	if (! strncmp(self->pos, "indigo://", 9))
+	if (! strncmp(self->pos, "monotone://", 11))
 	{
 		self->proto = URI_PROTO_DEFAULT;
 		self->pos += 9;
 	} else
-	if (! strncmp(self->pos, "indigo+mock://", 14))
+	if (! strncmp(self->pos, "monotone+mock://", 16))
 	{
 		self->proto = URI_PROTO_MOCK;
 		self->pos += 14;
@@ -324,7 +324,7 @@ uri_parse(Uri* self, bool safe, Str* spec)
 	str_copy(&self->uri, spec);
 	self->pos = self->uri.pos;
 
-	// [indigo://]
+	// [monotone://]
 	uri_parse_protocol(self);
 
 	// [user[:password]@]
