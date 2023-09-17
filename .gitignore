@@ -2,3 +2,4 @@
 *.a
 *.so
 test/test
+cli/monotone
