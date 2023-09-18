@@ -64,11 +64,11 @@ heap_commit_add(HeapCommit* self, Row* row, uint64_t lsn)
 static inline void
 heap_commit_remove(HeapCommit* self, Row* row)
 {
-	// remove from commit list and free if the row was commited
-	// in the first stage
 	if (self->commit == &self->commit_2)
 		return;
 
+	// remove from commit list and free if the row was commited
+	// in the first stage
 	commit_remove(self->commit, row);
 	row_free(row);
 }

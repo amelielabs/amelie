@@ -76,7 +76,6 @@ heap_set(Heap* self, Row* row)
 	row->prev = self->table[pos];
 	self->table[pos] = row;
 	self->count++;
-
 	return prev;
 }
 
