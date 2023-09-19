@@ -3,3 +3,4 @@
 *.so
 test/test
 cli/monotone
+cli/t
