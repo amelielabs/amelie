@@ -13,11 +13,11 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 
-Connection*
-connection_create(Access access)
+Client*
+client_create(Access access)
 {
-	Connection* self;
-	self = mn_malloc(sizeof(Connection));
+	Client* self;
+	self = mn_malloc(sizeof(Client));
 	self->access       = access;
 	self->mode         = ACCESS_MODE_ANY;
 	self->host         = NULL;
@@ -32,9 +32,9 @@ connection_create(Access access)
 }
 
 void
-connection_free(Connection* self)
+client_free(Client* self)
 {
-	connection_close(self);
+	client_close(self);
 	if (self->tls_context)
 		tls_context_free(self->tls_context);
 	auth_free(&self->auth);
@@ -44,41 +44,41 @@ connection_free(Connection* self)
 }
 
 void
-connection_set_access(Connection* self, Access access)
+client_set_access(Client* self, Access access)
 {
 	self->access = access;
 }
 
 void
-connection_set_mode(Connection* self, AccessMode mode)
+client_set_mode(Client* self, AccessMode mode)
 {
 	self->mode = mode;
 }
 
 void
-connection_set_uri(Connection* self, bool safe, Str* spec)
+client_set_uri(Client* self, bool safe, Str* spec)
 {
 	uri_set(&self->uri, safe, spec); 
 	auto access = uri_find(&self->uri, "mode", 4);
 	if (access)
 	{
 		auto mode = access_mode_of(&access->value);
-		connection_set_mode(self, mode);
+		client_set_mode(self, mode);
 	} else {
-		connection_set_mode(self, ACCESS_MODE_ANY);
+		client_set_mode(self, ACCESS_MODE_ANY);
 	}
 }
 
 void
-connection_set_coroutine_name(Connection* self)
+client_set_coroutine_name(Client* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(mn_self(), "connection %s", addr);
+	coroutine_set_name(mn_self(), "client %s", addr);
 }
 
 void
-connection_attach(Connection* self)
+client_attach(Client* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
@@ -86,7 +86,7 @@ connection_attach(Connection* self)
 }
 
 void
-connection_detach(Connection* self)
+client_detach(Client* self)
 {
 	if (tcp_connected(&self->tcp))
 		tcp_detach(&self->tcp);
@@ -94,10 +94,10 @@ connection_detach(Connection* self)
 }
 
 void
-connection_accept(Connection* self, UserMgr* user_mgr)
+client_accept(Client* self, UserMgr* user_mgr)
 {
-	// new connection
-	connection_set_coroutine_name(self);
+	// new client
+	client_set_coroutine_name(self);
 
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
@@ -111,14 +111,14 @@ connection_accept(Connection* self, UserMgr* user_mgr)
 	if (unlikely(! self->auth.complete))
 		error("authentication failed");
 
-	// update connection type and access mode
+	// update client type and access mode
 	auto access = auth_get(&self->auth, AUTH_ACCESS);
 	auto mode   = auth_get(&self->auth, AUTH_MODE);
 	auto user   = auth_get(&self->auth, AUTH_USER);
 	auto uuid   = auth_get(&self->auth, AUTH_UUID);
 
-	connection_set_access(self, access_of(access));
-	connection_set_mode(self, access_mode_of(mode));
+	client_set_access(self, access_of(access));
+	client_set_mode(self, access_mode_of(mode));
 
 	// hello
 	if (log_connections)
@@ -129,11 +129,11 @@ connection_accept(Connection* self, UserMgr* user_mgr)
 }
 
 static void
-connection_connect_to(Connection* self, UriHost* host)
+client_connect_to(Client* self, UriHost* host)
 {
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
-		log("connecting to %s:%d", str_of(&host->host), host->port);
+		log("connected");
 
 	// resolve host address
 	struct addrinfo* addr = NULL;
@@ -161,7 +161,7 @@ connection_connect_to(Connection* self, UriHost* host)
 	if (unlikely(! self->auth.complete))
 		error("authentication failed");
 
-	// check connection access
+	// check client access
 	if (self->auth.ro)
 	{
 		if (self->mode == ACCESS_MODE_RW)
@@ -176,7 +176,7 @@ connection_connect_to(Connection* self, UriHost* host)
 }
 
 void
-connection_connect(Connection* self)
+client_connect(Client* self)
 {
 	list_foreach(&self->uri.hosts)
 	{
@@ -184,12 +184,12 @@ connection_connect(Connection* self)
 
 		Exception e;
 		if (try(&e))
-			connection_connect_to(self, host);
+			client_connect_to(self, host);
 
 		if (catch(&e))
 		{
 			// reset and try next host
-			connection_close(self);
+			client_close(self);
 
 			// generate only one error for a single host
 			if (self->uri.hosts_count == 1)
@@ -204,7 +204,7 @@ connection_connect(Connection* self)
 }
 
 void
-connection_close(Connection* self)
+client_close(Client* self)
 {
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections && tcp_connected(&self->tcp))
