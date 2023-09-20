@@ -33,5 +33,5 @@ void auth_free(Auth*);
 void auth_reset(Auth*);
 void auth_set(Auth*, int, Str*);
 Str* auth_get(Auth*, int);
-void auth_server(Auth*, Tcp*, UserMgr*);
+void auth_server(Auth*, Tcp*, UserCache*);
 void auth_client(Auth*, Tcp*);

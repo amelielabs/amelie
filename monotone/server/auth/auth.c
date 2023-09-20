@@ -107,14 +107,14 @@ auth_sign(char* sign, int sign_size, Str* secret, Str* salt)
 }
 
 static inline bool
-auth(Auth* self, UserMgr* user_mgr)
+auth(Auth* self, UserCache* user_cache)
 {
 	// find user
 	auto user_var = &self->vars[AUTH_USER];
 	if (unlikely(str_empty(user_var)))
 		return false;
 
-	auto user = user_mgr_find(user_mgr, user_var);
+	auto user = user_cache_find(user_cache, user_var);
 	if (user == NULL)
 		return false;
 
@@ -136,12 +136,12 @@ auth(Auth* self, UserMgr* user_mgr)
 }
 
 static inline void
-auth_server_3(Auth* self, Tcp* tcp, UserMgr* user_mgr)
+auth_server_3(Auth* self, Tcp* tcp, UserCache* user_cache)
 {
 	// STEP 3 (completion)
 
 	// authenticate user
-	self->complete = auth(self, user_mgr);
+	self->complete = auth(self, user_cache);
 
 	// AUTH_COMPLETE [status]
 	auto buf = msg_create(MSG_AUTH_COMPLETE);
@@ -153,7 +153,7 @@ auth_server_3(Auth* self, Tcp* tcp, UserMgr* user_mgr)
 }
 
 void
-auth_server(Auth* self, Tcp* tcp, UserMgr* user_mgr)
+auth_server(Auth* self, Tcp* tcp, UserCache* user_cache)
 {
 	// authenticate incoming remote connection
 
@@ -164,7 +164,7 @@ auth_server(Auth* self, Tcp* tcp, UserMgr* user_mgr)
 	auth_server_2(self, tcp);
 
 	// STEP 3 (authenticate and send completion status)
-	auth_server_3(self, tcp, user_mgr);
+	auth_server_3(self, tcp, user_cache);
 }
 
 static inline void
