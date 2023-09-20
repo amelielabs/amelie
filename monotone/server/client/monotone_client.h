@@ -13,5 +13,5 @@
 #include "client/connection_pool.h"
 #include "client/relay.h"
 
-// client
-#include "client/client.h"
+// native
+#include "client/native.h"

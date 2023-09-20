@@ -6,31 +6,23 @@
 // SQL OLTP database
 //
 
-typedef struct Client Client;
+typedef struct Native Native;
 
-struct Client
+struct Native
 {
-	uint64_t   id;
-	Access     access;
-	AccessMode mode;
-	Auth*      auth;
-	Channel    src;
-	Channel    core;
-	bool       connected;
-	uint64_t   coroutine_id;
-	bool       relay;
-	Str        uri;
-	void*      arg;
-	List       link;
+	Channel  src;
+	Channel  core;
+	bool     connected;
+	uint64_t coroutine_id;
+	bool     relay;
+	Str      uri;
+	void*    arg;
+	List     link;
 };
 
 static inline void
-client_init(Client* self)
+native_init(Native* self)
 {
-	self->id           = 0;
-	self->access       = ACCESS_UNDEF;
-	self->mode         = ACCESS_MODE_ANY;
-	self->auth         = NULL;
 	self->connected    = false;
 	self->coroutine_id = UINT64_MAX;
 	self->relay        = false;
@@ -42,84 +34,58 @@ client_init(Client* self)
 }
 
 static inline void
-client_free(Client* self, BufCache* buf_cache)
+native_free(Native* self, BufCache* buf_cache)
 {
 	channel_free(&self->src, buf_cache);
 	channel_free(&self->core, buf_cache);
 	str_free(&self->uri);
 }
 
-static inline void
-client_set_access(Client* self, Access access)
-{
-	self->access = access;
-}
-
-static inline void
-client_set_mode(Client* self, AccessMode mode)
-{
-	self->mode = mode;
-}
-
-static inline void
-client_set_auth(Client* self, Auth* auth)
-{
-	self->auth = auth;
-}
-
 static inline int
-client_set_uri(Client* self, const char* spec)
+native_set_uri(Native* self, const char* spec)
 {
 	return str_strndup_nothrow(&self->uri, spec, strlen(spec));
 }
 
 static inline void
-client_set_connected(Client* self, bool value)
+native_set_connected(Native* self, bool value)
 {
 	self->connected = value;
 }
 
 static inline void
-client_set_coroutine(Client* self)
+native_set_coroutine(Native* self)
 {
 	self->coroutine_id = mn_self()->id;
 }
 
 static inline void
-client_set_coroutine_name(Client* self)
+native_set_coroutine_name(Native* self)
 {
-	if (self->access == ACCESS_CLIENT)
-	{
-		coroutine_set_name(mn_self(), "client %" PRIu64, self->id);
-	} else
-	{
-		Str access;
-		access_str(self->access, &access);
-		coroutine_set_name(mn_self(), "client %" PRIu64 " (%.*s)",
-		                   self->id,
-		                   str_size(&access),
-		                   str_of(&access));
-	}
+	if (self->relay)
+		coroutine_set_name(mn_self(), "native (relay)");
+	else
+		coroutine_set_name(mn_self(), "native");
 }
 
 static inline void
-client_on_connect(Client* self)
+native_on_connect(Native* self)
 {
 	auto buf = msg_create(MSG_CONNECT);
 	channel_write(&self->src, buf);
 }
 
 static inline void
-client_on_disconnect(Client* self)
+native_on_disconnect(Native* self)
 {
 	auto buf = msg_create(MSG_DISCONNECT);
 	channel_write(&self->src, buf);
 }
 
 static inline Buf*
-client_connect(Client* self, BufCache* buf_cache)
+native_connect(Native* self, BufCache* buf_cache)
 {
-	auto buf = msg_create_nothrow(buf_cache, MSG_CLIENT, sizeof(void**));
+	auto buf = msg_create_nothrow(buf_cache, MSG_NATIVE, sizeof(void**));
 	if (unlikely(buf == NULL))
 		return NULL;
 	buf_append(buf, &self, sizeof(void**));
@@ -128,7 +94,7 @@ client_connect(Client* self, BufCache* buf_cache)
 }
 
 static inline int
-client_close(Client* self, BufCache* buf_cache)
+native_close(Native* self, BufCache* buf_cache)
 {
 	if (! self->connected)
 		return 0;
@@ -151,12 +117,12 @@ client_close(Client* self, BufCache* buf_cache)
 			break;
 	}
 
-	client_set_connected(self, false);
+	native_set_connected(self, false);
 	return 0;
 }
 
 static inline int
-client_request(Client*        self,
+native_request(Native*        self,
                BufCache*      buf_cache,
                Str*           text,
                int            argc,
