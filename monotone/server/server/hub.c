@@ -152,7 +152,7 @@ hub_main(void* arg)
 }
 
 void
-hub_create(Hub* self, HubIf* iface, void* iface_arg)
+hub_init(Hub* self, HubIf* iface, void* iface_arg)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
