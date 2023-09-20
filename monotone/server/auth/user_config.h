@@ -72,6 +72,16 @@ user_config_copy(UserConfig* self)
 	return unguard(&copy_guard);
 }
 
+static inline void
+user_config_sync(UserConfig* self, UserConfig* with)
+{
+	if (! str_compare(&self->secret, &with->secret))
+	{
+		str_free(&self->secret);
+		user_config_set_secret(self, &with->secret);
+	}
+}
+
 static inline UserConfig*
 user_config_read(uint8_t** pos)
 {
