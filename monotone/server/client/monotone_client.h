@@ -13,3 +13,4 @@
 
 // native
 #include "client/native.h"
+#include "client/relay.h"
