@@ -213,7 +213,7 @@ core_rpc(Rpc* rpc, void* arg)
         *buf = user_mgr_list(&self->user_mgr);
 		break;
 	}
-	case RPC_STOP:
+	default:
 		break;
 	}
 }
@@ -236,8 +236,10 @@ core_main(Core* self)
 			continue;
 		}
 
+		if (msg->id == RPC_STOP)
+			break;
+
 		// core command
-		stop = msg->id == RPC_STOP;
 		rpc_execute(buf, core_rpc, self);
 	}
 }
