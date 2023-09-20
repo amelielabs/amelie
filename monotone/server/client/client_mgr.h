@@ -6,57 +6,57 @@
 // SQL OLTP database
 //
 
-typedef struct ConnectionMgr ConnectionMgr;
+typedef struct ClientMgr ClientMgr;
 
-struct ConnectionMgr
+struct ClientMgr
 {
 	List list;
 	int  list_count;
 };
 
 static inline void
-connection_mgr_init(ConnectionMgr* self)
+client_mgr_init(ClientMgr* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
 }
 
 static inline void
-connection_mgr_free(ConnectionMgr* self)
+client_mgr_free(ClientMgr* self)
 {
 	assert(self->list_count == 0);
 }
 
 static inline void
-connection_mgr_add(ConnectionMgr* self, Connection* conn)
+client_mgr_add(ClientMgr* self, Client* conn)
 {
 	list_append(&self->list, &conn->link);
 	self->list_count++;
 }
 
 static inline void
-connection_mgr_del(ConnectionMgr* self, Connection* conn)
+client_mgr_del(ClientMgr* self, Client* conn)
 {
 	list_unlink(&conn->link);
 	self->list_count--;
 }
 
 static inline void
-connection_mgr_shutdown(ConnectionMgr* self)
+client_mgr_shutdown(ClientMgr* self)
 {
 	while (self->list_count > 0)
 	{
-		auto conn = container_of(self->list.next, Connection, link);
+		auto conn = container_of(self->list.next, Client, link);
 		coroutine_kill(conn->coroutine_id);
 	}
 }
 
-static inline Connection*
-connection_mgr_find_by_uuid(ConnectionMgr* self, Uuid* uuid)
+static inline Client*
+client_mgr_find_by_uuid(ClientMgr* self, Uuid* uuid)
 {
 	list_foreach(&self->list)
 	{
-		auto conn = list_at(Connection, link);
+		auto conn = list_at(Client, link);
 		auto client_uuid = auth_get(&conn->auth, AUTH_UUID);
 		Uuid id;
 		uuid_from_string(&id, client_uuid);
@@ -67,11 +67,11 @@ connection_mgr_find_by_uuid(ConnectionMgr* self, Uuid* uuid)
 }
 
 static inline void
-connection_mgr_shutdown_by_uuid(ConnectionMgr* self, Uuid* uuid)
+client_mgr_shutdown_by_uuid(ClientMgr* self, Uuid* uuid)
 {
 	for (;;)
 	{
-		auto conn = connection_mgr_find_by_uuid(self, uuid);
+		auto conn = client_mgr_find_by_uuid(self, uuid);
 		if (conn == NULL)
 			break;
 		coroutine_kill(conn->coroutine_id);
