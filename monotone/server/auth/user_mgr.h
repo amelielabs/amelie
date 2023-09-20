@@ -10,55 +10,32 @@ typedef struct UserMgr UserMgr;
 
 struct UserMgr
 {
-	int  list_count;
-	List list;
+	UserCache cache;
 };
 
 static inline void
 user_mgr_init(UserMgr* self)
 {
-	self->list_count = 0;
-	list_init(&self->list);
+	user_cache_init(&self->cache);
 }
 
 static inline void
 user_mgr_free(UserMgr* self)
 {
-	list_foreach_safe(&self->list) {
-		auto user = list_at(User, link);
-		user_free(user);
-	}
+	user_cache_free(&self->cache);
 }
 
 static inline Buf*
 user_mgr_list(UserMgr* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// map
-	encode_map(buf, self->list_count);
-	list_foreach(&self->list)
-	{
-		// name: {}
-		auto user = list_at(User, link);
-		encode_string(buf, &user->config->name);
-		user_config_write_safe(user->config, buf);
-	}
-	msg_end(buf);
-	return buf;
+	return user_cache_list(&self->cache);
 }
 
 static inline void
 user_mgr_save(UserMgr* self)
 {
 	// create dump
-	auto dump = buf_create(0);
-	encode_map(dump, self->list_count);
-	list_foreach(&self->list)
-	{
-		auto user = list_at(User, link);
-		encode_string(dump, &user->config->name);
-		user_config_write(user->config, dump);
-	}
+	auto dump = user_cache_dump(&self->cache);
 
 	// update and save state
 	var_data_set_buf(&config()->users, dump);
@@ -88,26 +65,14 @@ user_mgr_open(UserMgr* self)
 		guard(config_guard, user_config_free, config);
 
 		auto user = user_allocate(config);
-		list_append(&self->list, &user->link);
-		self->list_count++;
+		user_cache_add(&self->cache, user);
 	}
-}
-
-static inline User*
-user_mgr_find(UserMgr* self, Str* name)
-{
-	list_foreach(&self->list) {
-		auto user = list_at(User, link);
-		if (str_compare(&user->config->name, name))
-			return user;
-	}
-	return NULL;
 }
 
 static inline void
 user_mgr_create(UserMgr* self, UserConfig* config, bool if_not_exists)
 {
-	auto user = user_mgr_find(self, &config->name);
+	auto user = user_cache_find(&self->cache, &config->name);
 	if (user)
 	{
 		if (! if_not_exists)
@@ -116,38 +81,35 @@ user_mgr_create(UserMgr* self, UserConfig* config, bool if_not_exists)
 		return;
 	}
 	user = user_allocate(config);
-	list_append(&self->list, &user->link);
-	self->list_count++;
-
+	user_cache_add(&self->cache, user);
 	user_mgr_save(self);
 }
 
 static inline void
 user_mgr_drop(UserMgr* self, Str* name, bool if_exists)
 {
-	auto user = user_mgr_find(self, name);
+	auto user = user_cache_find(&self->cache, name);
 	if (! user)
 	{
 		if (! if_exists)
 			error("user '%.*s': not exists", str_size(name), str_of(name));
 		return;
 	}
-	list_unlink(&user->link);
-	self->list_count--;
-	user_free(user);
+	user_cache_delete(&self->cache, user);
 	user_mgr_save(self);
 }
 
 static inline void
 user_mgr_alter(UserMgr* self, UserConfig* config)
 {
-	auto user = user_mgr_find(self, &config->name);
+	auto user = user_cache_find(&self->cache, &config->name);
 	if (! user)
 	{
 		error("user '%.*s': not exists", str_size(&config->name),
 		      str_of(&config->name));
 		return;
 	}
+	str_free(&user->config->secret);
 	user_config_set_secret(user->config, &config->secret);
 	user_mgr_save(self);
 }
