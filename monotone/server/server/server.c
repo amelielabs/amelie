@@ -231,3 +231,9 @@ server_sync(Server* self, UserMgr* user_mgr)
 {
 	hub_mgr_user_cache_sync(&self->hub_mgr, &user_mgr->cache);
 }
+
+void
+server_forward(Server* self, Buf* buf)
+{
+	hub_mgr_forward(&self->hub_mgr, buf);
+}

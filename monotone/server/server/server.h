@@ -22,3 +22,4 @@ void server_free(Server*);
 void server_start(Server*, HubIf*, void*, bool);
 void server_stop(Server*);
 void server_sync(Server*, UserMgr*);
+void server_forward(Server*, Buf*);
