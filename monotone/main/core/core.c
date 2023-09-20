@@ -209,8 +209,8 @@ core_rpc(Rpc* rpc, void* arg)
 	}
 	case RPC_USER_SHOW:
 	{
-        Buf** buf = rpc_arg_ptr(rpc, 0);
-        *buf = user_mgr_list(&self->user_mgr);
+		Buf** buf = rpc_arg_ptr(rpc, 0);
+		*buf = user_mgr_list(&self->user_mgr);
 		break;
 	}
 	default:
