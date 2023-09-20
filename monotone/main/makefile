@@ -31,8 +31,7 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-main.a
 OBJECTS        = \
-                 core/core.o
-#                session/session.o \
+                 session/session.o \
                  core/core.o \
                  core/client.o \
                  main/main.o \
