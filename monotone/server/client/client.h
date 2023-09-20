@@ -31,6 +31,6 @@ void client_set_uri(Client*, bool, Str*);
 void client_set_coroutine_name(Client*);
 void client_attach(Client*);
 void client_detach(Client*);
-void client_accept(Client*, UserMgr*);
+void client_accept(Client*, UserCache*);
 void client_connect(Client*);
 void client_close(Client*);

@@ -94,7 +94,7 @@ client_detach(Client* self)
 }
 
 void
-client_accept(Client* self, UserMgr* user_mgr)
+client_accept(Client* self, UserCache* user_cache)
 {
 	// new client
 	client_set_coroutine_name(self);
@@ -107,7 +107,7 @@ client_accept(Client* self, UserMgr* user_mgr)
 	tcp_connect_fd(&self->tcp);
 
 	// authenticate
-	auth_server(&self->auth, &self->tcp, user_mgr);
+	auth_server(&self->auth, &self->tcp, user_cache);
 	if (unlikely(! self->auth.complete))
 		error("authentication failed");
 
