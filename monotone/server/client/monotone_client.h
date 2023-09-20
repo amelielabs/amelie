@@ -8,10 +8,8 @@
 
 // connection
 #include "client/access.h"
-#include "client/connection.h"
-#include "client/connection_mgr.h"
-#include "client/connection_pool.h"
-#include "client/relay.h"
+#include "client/client.h"
+#include "client/client_mgr.h"
 
 // native
 #include "client/native.h"
