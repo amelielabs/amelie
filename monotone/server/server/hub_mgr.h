@@ -67,3 +67,13 @@ hub_mgr_forward(HubMgr* self, Buf* buf)
 	int pos = hub_mgr_next(self);
 	hub_add(&self->workers[pos], buf);
 }
+
+static inline void
+hub_mgr_user_cache_sync(HubMgr* self, UserCache* user_cache)
+{
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto hub = &self->workers[i];
+		rpc(&hub->task.channel, RPC_USER_CACHE_SYNC, 1, user_cache);
+	}
+}

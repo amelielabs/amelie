@@ -225,3 +225,9 @@ server_stop(Server* self)
 
 	hub_mgr_stop(&self->hub_mgr);
 }
+
+void
+server_sync(Server* self, UserMgr* user_mgr)
+{
+	hub_mgr_user_cache_sync(&self->hub_mgr, &user_mgr->cache);
+}
