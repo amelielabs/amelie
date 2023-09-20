@@ -26,6 +26,7 @@ struct Config
 	Var  tls_cert;
 	Var  tls_key;
 	// server
+	Var  server_workers;
 	Var  listen;
 	// engine
 	Var  engine_workers;
