@@ -99,13 +99,10 @@ user_cache_sync(UserCache* self, UserCache* with)
 		auto user_with = user_cache_find(with, &user->config->name);
 
 		// delete user or sync config
-		if (! user_with) {
+		if (! user_with)
 			user_cache_delete(self, user);
-		} else
-		{
-			if (! str_compare(&user->config->secret, &user_with->config->secret))
-				user_config_sync(user->config, user_with->config);
-		}
+		else
+			user_config_sync(user->config, user_with->config);
 	}
 
 	// add new users
