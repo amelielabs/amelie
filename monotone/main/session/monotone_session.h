@@ -6,3 +6,4 @@
 // SQL OLTP database
 //
 
+#include "session/session.h"
