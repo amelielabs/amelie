@@ -9,10 +9,13 @@
 typedef struct HubIf HubIf;
 typedef struct Hub   Hub;
 
+typedef void (*HubMain)(void*, Client*);
+typedef void (*HubMainNative)(void*, Native*);
+
 struct HubIf
 {
-	void (*on_client)(Client*, void*);
-	void (*on_native)(Native*, void*);
+	HubMain       main[ACCESS_MAX];
+	HubMainNative main_native;
 };
 
 struct Hub

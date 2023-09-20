@@ -31,7 +31,7 @@ client_main(void* arg)
 		client_accept(client, &self->user_cache);
 
 		// main
-		self->iface->on_client(client, self->iface_arg);
+		self->iface->main[client->access](self->iface_arg, client);
 	}
 
 	if (catch(&e))
@@ -78,7 +78,7 @@ native_main(void* arg)
 			native_on_connect(native);
 
 			// main
-			self->iface->on_native(native, self->iface_arg);
+			self->iface->main_native(self->iface_arg, native);
 		}
 	}
 
