@@ -19,8 +19,9 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-server.a
 OBJECTS        = \
                  auth/auth.o \
-                 client/connection.o \
+                 client/client.o \
                  client/relay.o \
+                 server/hub.o \
                  server/server.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
