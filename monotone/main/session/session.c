@@ -38,7 +38,7 @@ session_execute(Session* self, Buf* buf)
 	if (try(&e))
 	{
 		auto msg = msg_of(buf);
-		if (unlikely(msg->id != MSG_QUERY))
+		if (unlikely(msg->id != MSG_COMMAND))
 			error("unrecognized request: %d", msg->id);
 
 		// todo
