@@ -152,11 +152,11 @@ mono_execute(mono_session_t* session, const char* command,
 {
 	Str text;
 	str_set_cstr(&text, command);
-	return native_request(&session->native,
+	return native_command(&session->native,
 	                      &session->mono->main.buf_cache,
 	                      &text,
 	                      argc,
-	                      (RequestArgPtr*)argv);
+	                      (CommandArgPtr*)argv);
 }
 
 static inline mono_object_t*
