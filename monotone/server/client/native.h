@@ -122,13 +122,13 @@ native_close(Native* self, BufCache* buf_cache)
 }
 
 static inline int
-native_request(Native*        self,
+native_command(Native*        self,
                BufCache*      buf_cache,
                Str*           text,
                int            argc,
-               RequestArgPtr* argv)
+               CommandArgPtr* argv)
 {
-	auto buf = request_create(buf_cache, text, argc, argv);
+	auto buf = command_create(buf_cache, text, argc, argv);
 	if (unlikely(buf == NULL))
 		return -1;
 	channel_write(&self->core, buf);
