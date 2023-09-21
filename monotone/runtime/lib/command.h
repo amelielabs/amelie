@@ -6,16 +6,16 @@
 // SQL OLTP database
 //
 
-typedef struct RequestArgPtr RequestArgPtr;
-typedef struct Request       Request;
+typedef struct CommandArgPtr CommandArgPtr;
+typedef struct Command       Command;
 
-struct RequestArgPtr
+struct CommandArgPtr
 {
 	void* data;
 	int   data_size;
 };
 
-struct Request
+struct Command
 {
 	Str  text;
 	int  argc;
@@ -24,7 +24,7 @@ struct Request
 };
 
 static inline void
-request_init(Request* self)
+command_init(Command* self)
 {
 	self->argc    = 0;
 	self->request = NULL;
@@ -33,20 +33,20 @@ request_init(Request* self)
 }
 
 static inline void
-request_free(Request* self)
+command_free(Command* self)
 {
 	buf_free(&self->argv);
 }
 
 static inline uint8_t*
-request_arg(Request* self, int n)
+command_arg(Command* self, int n)
 {
 	assert(n < self->argc);
 	return msg_of(self->request)->data + buf_u32(&self->argv)[n];
 }
 
 static inline void
-request_set(Request* self, Buf* buf)
+command_set(Command* self, Buf* buf)
 {
 	buf_reset(&self->argv);
 
@@ -69,13 +69,13 @@ request_set(Request* self, Buf* buf)
 }
 
 static inline Buf*
-request_create(BufCache*      buf_cache,
+command_create(BufCache*      buf_cache,
                Str*           text,
                int            argc,
-               RequestArgPtr* argv)
+               CommandArgPtr* argv)
 {
 	// create message
-	auto buf = msg_create_nothrow(buf_cache, MSG_QUERY, 0);
+	auto buf = msg_create_nothrow(buf_cache, MSG_COMMAND, 0);
 	if (unlikely(buf == NULL))
 		return NULL;
 
