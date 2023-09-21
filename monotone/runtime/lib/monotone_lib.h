@@ -27,5 +27,5 @@
 #include "lib/lex.h"
 
 // messaging
-#include "lib/request.h"
+#include "lib/command.h"
 #include "lib/portal.h"
