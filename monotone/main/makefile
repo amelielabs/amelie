@@ -23,17 +23,18 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db \
                  -I../db/wal \
                  -I../db/db \
+                 -I../cluster \
+                 -I../cluster/shard \
+                 -I../cluster/session \
+                 -I../cluster/hub \
                  -I. \
-                 -Isession \
                  -Icore \
                  -Imain \
                  -Iapi
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-main.a
 OBJECTS        = \
-                 session/session.o \
                  core/core.o \
-                 core/client.o \
                  main/main.o \
                  api/monotone.o
 $(LIB): clean $(OBJECTS)
