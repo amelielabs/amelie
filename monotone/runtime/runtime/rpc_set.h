@@ -11,8 +11,9 @@ typedef struct RpcSet RpcSet;
 struct RpcSet
 {
 	List  set;
-	int   set_count;
-	int   set_complete;
+	int   set_sent;
+	int   set_recv;
+	int   set_size;
 	Rpc*  reserve;
 	int   reserve_count;
 	int   reserve_used;
@@ -25,7 +26,9 @@ rpc_set_init(RpcSet* self)
 	self->reserve       = NULL;
 	self->reserve_count = 0;
 	self->reserve_used  = 0;
-	self->set_count     = 0;
+	self->set_sent      = 0;
+	self->set_recv      = 0;
+	self->set_size      = 0;
 	event_init(&self->parent);
 	list_init(&self->set);
 }
@@ -47,8 +50,9 @@ rpc_set_free(RpcSet* self)
 static inline void
 rpc_set_reset(RpcSet* self)
 {
-	self->set_count    = 0;
-	self->set_complete = 0;
+	self->set_size     = 0;
+	self->set_sent     = 0;
+	self->set_recv     = 0;
 	self->reserve_used = 0;
 	list_init(&self->set);
 }
@@ -85,7 +89,7 @@ rpc_set_add(RpcSet*   self, int id, Channel* channel,
 	list_init(&rpc->link);
 
 	list_append(&self->set, &rpc->link);
-	self->set_count++;
+	self->set_size++;
 }
 
 static inline void
@@ -98,6 +102,7 @@ rpc_set_execute(RpcSet* self)
 		buf_write(buf, &rpc, sizeof(void**));
 		msg_end(buf);
 		channel_write(rpc->channel, buf);
+		self->set_sent++;
 	}
 }
 
@@ -106,12 +111,12 @@ rpc_set_wait(RpcSet* self)
 {
 	coroutine_cancel_pause(mn_self());
 
-	while (self->set_complete < self->set_count)
+	while (self->set_recv < self->set_sent)
 	{
 		event_wait(&self->parent, -1);
-		self->set_complete++;
+		self->set_recv++;
 	}
 
 	coroutine_cancel_resume(mn_self());
-	assert(self->set_complete == self->set_count);
+	assert(self->set_sent == self->set_recv);
 }
