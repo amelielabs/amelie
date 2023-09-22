@@ -86,6 +86,7 @@ config_prepare(Config* self)
 		{ "psn",                     VAR_INT,    0,                    &self->psn,                     NULL,        0                },
 		{ "read_only",               VAR_BOOL,   0,                    &self->read_only,               NULL,        false            },
 		{ "users",                   VAR_DATA,   VAR_H|VAR_P,          &self->users,                   NULL,        0                },
+		{ "shards",                  VAR_DATA,   VAR_H|VAR_P,          &self->shards,                  NULL,        0                },
 		{ "nodes",                   VAR_DATA,   VAR_H|VAR_P,          &self->nodes,                   NULL,        0                },
 		{ "catalog",                 VAR_DATA,   VAR_H|VAR_P,          &self->catalog,                 NULL,        0                },
 		{ "catalog_snapshot",        VAR_INT,    VAR_H|VAR_P,          &self->catalog_snapshot,        NULL,        0                },

@@ -47,6 +47,7 @@ struct Config
 	Var  read_only;
 	// state
 	Var  users;
+	Var  shards;
 	Var  nodes;
 	Var  catalog;
 	Var  catalog_snapshot;
