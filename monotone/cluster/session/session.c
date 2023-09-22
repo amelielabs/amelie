@@ -13,12 +13,14 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
+#include <monotone_shard.h>
 #include <monotone_session.h>
 
 void
-session_init(Session* self, Portal* portal)
+session_init(Session* self, ShardMgr* shard_mgr, Portal* portal)
 {
-	self->portal = portal;
+	self->shard_mgr = shard_mgr;
+	self->portal    = portal;
 }
 
 void

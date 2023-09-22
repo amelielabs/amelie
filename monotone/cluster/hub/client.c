@@ -13,8 +13,8 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_session.h>
 #include <monotone_shard.h>
+#include <monotone_session.h>
 #include <monotone_hub.h>
 
 hot void
@@ -27,14 +27,12 @@ hub_client(Hub* self, Client* client)
 hot void
 hub_native(Hub* self, Native* client)
 {
-	unused(self);
-
 	Portal portal;
 	portal_init(&portal, portal_to_channel, &client->src);
 
 	// prepare new session
 	Session session;
-	session_init(&session, &portal);
+	session_init(&session, self->shard_mgr, &portal);
 	guard(on_close, session_free, &session);
 
 	for (;;)
