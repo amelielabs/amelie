@@ -120,5 +120,5 @@ time_start(uint64_t* time_us)
 static inline void
 time_end(uint64_t* time_us)
 {
-	*time_us = (timer_mgr_gettime() -* time_us) / 1000;
+	*time_us = (timer_mgr_gettime() - *time_us) / 1000;
 }
