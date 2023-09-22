@@ -50,11 +50,8 @@ server_listen_main(void* arg)
 				tcp_set_fd(&client->tcp, fd);
 				fd = -1;
 
-				// process client in a next hub
-				auto buf = msg_create(MSG_CLIENT);
-				buf_write(buf, &client, sizeof(void**));
-				msg_end(buf);
-				hub_mgr_forward(&self->hub_mgr, buf);
+				// process client
+				self->on_connect(client, self->on_connect_arg);
 			}
 
 			if (catch(&e))
@@ -178,11 +175,12 @@ server_listen_configure(Server* self)
 void
 server_init(Server* self)
 {
-	self->listen_count = 0;
-	self->config_count = 0;
+	self->on_connect     = NULL;
+	self->on_connect_arg = NULL;
+	self->listen_count   = 0;
+	self->config_count   = 0;
 	list_init(&self->listen);
 	list_init(&self->config);
-	hub_mgr_init(&self->hub_mgr);
 }
 
 void
@@ -199,18 +197,14 @@ server_free(Server* self)
 }
 
 void
-server_start(Server* self, HubIf* iface, void* iface_arg, bool listen)
+server_start(Server* self, ServerEvent on_connect, void* arg)
 {
-	// start workers
-	auto workers = var_int_of(&config()->server_workers);
-	hub_mgr_start(&self->hub_mgr, iface, iface_arg, workers);
+	self->on_connect     = on_connect;
+	self->on_connect_arg = arg;
 
 	// listen for incoming clients
-	if (listen)
-	{
-		server_listen_configure(self);
-		server_listen(self);
-	}
+	server_listen_configure(self);
+	server_listen(self);
 }
 
 void
@@ -222,18 +216,4 @@ server_stop(Server* self)
 		auto listen = list_at(ServerListen, link);
 		coroutine_kill(listen->worker);
 	}
-
-	hub_mgr_stop(&self->hub_mgr);
-}
-
-void
-server_sync(Server* self, UserMgr* user_mgr)
-{
-	hub_mgr_user_cache_sync(&self->hub_mgr, &user_mgr->cache);
-}
-
-void
-server_forward(Server* self, Buf* buf)
-{
-	hub_mgr_forward(&self->hub_mgr, buf);
 }
