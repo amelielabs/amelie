@@ -10,6 +10,9 @@ typedef struct Core Core;
 
 struct Core
 {
+	// cluster
+	HubMgr      hub_mgr;
+	ShardMgr    shard_mgr;
 	// server
 	Server      server;
 	UserMgr     user_mgr;
