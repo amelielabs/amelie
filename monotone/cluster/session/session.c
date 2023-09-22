@@ -16,7 +16,7 @@
 #include <monotone_session.h>
 
 void
-session_create(Session* self, Portal* portal)
+session_init(Session* self, Portal* portal)
 {
 	self->portal = portal;
 }
