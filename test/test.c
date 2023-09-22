@@ -41,6 +41,8 @@ extern void test_channel_producer_consumer(void*);
 extern void test_rpc(void*);
 extern void test_rpc_execute(void*);
 extern void test_rpc_execute_error(void*);
+extern void test_rpc_benchmark(void*);
+extern void test_rpc_mutex_benchmark(void*);
 extern void test_cancel_create(void*);
 extern void test_cancel(void*);
 extern void test_cancel_pause(void*);
@@ -114,6 +116,8 @@ main(int argc, char* argv[])
 	test_run(test_rpc);
 	test_run(test_rpc_execute);
 	test_run(test_rpc_execute_error);
+	test_run(test_rpc_benchmark);
+	test_run(test_rpc_mutex_benchmark);
 	test_run(test_cancel_create);
 	test_run(test_cancel);
 	test_run(test_cancel_pause);
