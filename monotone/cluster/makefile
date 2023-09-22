@@ -24,11 +24,13 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/wal \
                  -I../db/db \
                  -I. \
+                 -Isession \
                  -Ishard \
                  -Ihub
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-cluster.a
 OBJECTS        = \
+                 session/session.o \
                  shard/shard.o \
                  hub/hub.o \
                  hub/client.o
