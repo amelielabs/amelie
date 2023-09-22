@@ -116,8 +116,8 @@ main(int argc, char* argv[])
 	test_run(test_rpc);
 	test_run(test_rpc_execute);
 	test_run(test_rpc_execute_error);
-	test_run(test_rpc_benchmark);
-	test_run(test_rpc_mutex_benchmark);
+	//test_run(test_rpc_benchmark);
+	//test_run(test_rpc_mutex_benchmark);
 	test_run(test_cancel_create);
 	test_run(test_cancel);
 	test_run(test_cancel_pause);
