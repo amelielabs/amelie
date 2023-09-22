@@ -11,8 +11,7 @@ typedef enum
 	ACCESS_UNDEF,
 	ACCESS_CLIENT,
 	ACCESS_BACKUP,
-	ACCESS_REPLICA,
-	ACCESS_MAX
+	ACCESS_REPLICA
 } Access;
 
 typedef enum
