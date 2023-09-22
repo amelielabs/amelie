@@ -14,8 +14,10 @@ struct Rpc
 	int        argc;
 	intptr_t*  argv;
 	int        rc;
-	Error*     error;
+	Error      error;
+	Channel*   channel;
 	Condition* cond;
+	List       link;
 };
 
 always_inline hot static inline Rpc*
@@ -52,7 +54,7 @@ rpc_execute(Buf* buf,
 	if (try(&e))
 		callback(rpc, callback_arg);
 	if (unlikely(catch(&e)))
-		*rpc->error = mn_self()->error;
+		rpc->error = mn_self()->error;
 	rpc_done(rpc);
 }
 
@@ -69,17 +71,18 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
-	mn_self()->error.code = ERROR_NONE;
 	Rpc rpc =
 	{
-		.id    = id,
-		.argc  = argc,
-		.argv  = argv,
-		.rc    = 0,
-		.error = &mn_self()->error,
-		.cond  = condition_create()
+		.id      = id,
+		.argc    = argc,
+		.argv    = argv,
+		.rc      = 0,
+		.channel = channel,
+		.cond    = condition_create()
 	};
-	Rpc *rpc_ptr = &rpc;
+	rpc.error.code = ERROR_NONE;
+	list_init(&rpc.link);
+	auto rpc_ptr = &rpc;
 
 	// do rpc call and wait for completion
 	auto buf = msg_create(id);
@@ -90,8 +93,11 @@ rpc(Channel* channel, int id, int argc, ...)
 	condition_wait(rpc.cond, -1);
 	condition_free(rpc.cond);
 
-	if (mn_self()->error.code != ERROR_NONE)
+	if (rpc.error.code != ERROR_NONE)
+	{
+		mn_self()->error = rpc.error;
 		rethrow();
+	}
 
 	return rpc.rc;
 }
