@@ -21,7 +21,6 @@ OBJECTS        = \
                  auth/auth.o \
                  client/client.o \
                  client/relay.o \
-                 server/hub.o \
                  server/server.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
