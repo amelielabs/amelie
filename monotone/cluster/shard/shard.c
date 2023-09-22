@@ -74,6 +74,7 @@ shard_free(Shard* self)
 {
 	if (self->config)
 		shard_config_free(self->config);
+	mn_free(self);
 }
 
 void

@@ -29,6 +29,7 @@ shard_config_allocate(void)
 static inline void
 shard_config_free(ShardConfig* self)
 {
+	str_free(&self->name);
 	mn_free(self);
 }
 
