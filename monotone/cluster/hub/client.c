@@ -28,17 +28,14 @@ hot void
 hub_native(Hub* self, Native* client)
 {
 	unused(self);
-	unused(client);
-
-	/*
-	unused(self);
 
 	Portal portal;
 	portal_init(&portal, portal_to_channel, &client->src);
 
-	// create new session
-	auto session = session_create(&portal);
-	guard(on_close, session_free, session);
+	// prepare new session
+	Session session;
+	session_init(&session, &portal);
+	guard(on_close, session_free, &session);
 
 	for (;;)
 	{
@@ -51,7 +48,6 @@ hub_native(Hub* self, Native* client)
 			break;
 
 		// execute command
-		session_execute(session, buf);
+		session_execute(&session, buf);
 	}
-	*/
 }

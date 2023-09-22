@@ -13,7 +13,6 @@ struct Session
 	Portal* portal;
 };
 
-Session*
-session_create(Portal*);
+void session_init(Session*, Portal*);
 void session_free(Session*);
 bool session_execute(Session*, Buf*);

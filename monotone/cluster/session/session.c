@@ -15,18 +15,16 @@
 #include <monotone_server.h>
 #include <monotone_session.h>
 
-Session*
-session_create(Portal* portal)
+void
+session_create(Session* self, Portal* portal)
 {
-	auto self = (Session*)mn_malloc(sizeof(Session));
 	self->portal = portal;
-	return self;
 }
 
 void
 session_free(Session *self)
 {
-	mn_free(self);
+	unused(self);
 }
 
 hot bool
