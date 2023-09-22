@@ -14,3 +14,83 @@
 #include <monotone_client.h>
 #include <monotone_server.h>
 #include <monotone_shard.h>
+
+static void
+shard_rpc(Rpc* rpc, void* arg)
+{
+	Shard* self = arg;
+	unused(self);
+	switch (rpc->id) {
+	case RPC_REQUEST:
+	{
+		auto req = (Request*)rpc_arg_ptr(rpc, 0);
+		(void)req;
+
+		/*
+		auto on_commit = condition_create();
+		req->on_commit = on_commit;
+		condition_wait(on_commit, -1);
+		condition_free(on_commit);
+		*/
+		break;
+	}
+	case RPC_STOP:
+		break;
+	default:
+		break;
+	}
+}
+
+static void
+shard_main(void* arg)
+{
+	Shard* self = arg;
+	bool stop = false;
+	while (! stop)
+	{
+		auto buf = channel_read(&mn_task->channel, -1);
+		auto msg = msg_of(buf);
+		guard(buf_guard, buf_free, buf);
+
+		// command
+		stop = msg->id == RPC_STOP;
+		rpc_execute(buf, shard_rpc, self);
+	}
+}
+
+Shard*
+shard_allocate(ShardConfig* config)
+{
+	Shard* self;
+	self = mn_malloc(sizeof(*self));
+	self->config = shard_config_copy(config);
+	guard(self_guard, shard_free, self);
+	task_init(&self->task, mn_task->buf_cache);
+	return unguard(&self_guard);
+}
+
+void
+shard_free(Shard* self)
+{
+	if (self->config)
+		shard_config_free(self->config);
+}
+
+void
+shard_start(Shard* self)
+{
+	task_create(&self->task, "shard", shard_main, self);
+}
+
+void
+shard_stop(Shard* self)
+{
+	// send stop request
+	if (task_active(&self->task))
+	{
+		rpc(&self->task.channel, RPC_STOP, 0);
+		task_wait(&self->task);
+		task_free(&self->task);
+		task_init(&self->task, mn_task->buf_cache);
+	}
+}
