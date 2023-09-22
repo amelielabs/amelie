@@ -93,7 +93,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	condition_wait(rpc.cond, -1);
 	condition_free(rpc.cond);
 
-	if (rpc.error.code != ERROR_NONE)
+	if (unlikely(rpc.error.code != ERROR_NONE))
 	{
 		mn_self()->error = rpc.error;
 		rethrow();
