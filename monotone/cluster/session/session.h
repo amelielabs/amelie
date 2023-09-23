@@ -10,8 +10,10 @@ typedef struct Session Session;
 
 struct Session
 {
-	ShardMgr* shard_mgr;
-	Portal*   portal;
+	RequestSet   req_set;
+	RequestCache req_cache;
+	ShardMgr*    shard_mgr;
+	Portal*      portal;
 };
 
 void session_init(Session*, ShardMgr*, Portal*);
