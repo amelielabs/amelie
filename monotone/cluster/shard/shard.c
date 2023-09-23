@@ -16,24 +16,23 @@
 #include <monotone_shard.h>
 
 static void
+shard_request(Shard* self, Request* req)
+{
+	unused(self);
+
+	// OK
+	auto reply = msg_create(MSG_OK);
+	encode_integer(reply, false);
+	msg_end(reply);
+	channel_write(&req->src, reply);
+}
+
+static void
 shard_rpc(Rpc* rpc, void* arg)
 {
 	Shard* self = arg;
 	unused(self);
 	switch (rpc->id) {
-	case RPC_REQUEST:
-	{
-		auto req = (Request*)rpc_arg_ptr(rpc, 0);
-		(void)req;
-
-		/*
-		auto on_commit = condition_create();
-		req->on_commit = on_commit;
-		condition_wait(on_commit, -1);
-		condition_free(on_commit);
-		*/
-		break;
-	}
 	case RPC_STOP:
 		break;
 	default:
@@ -52,9 +51,17 @@ shard_main(void* arg)
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 
-		// command
-		stop = msg->id == RPC_STOP;
-		rpc_execute(buf, shard_rpc, self);
+		if (msg->id == RPC_REQUEST)
+		{
+			// request
+			auto req = request_of(buf);
+			shard_request(self, req);
+		} else
+		{
+			// rpc
+			stop = msg->id == RPC_STOP;
+			rpc_execute(buf, shard_rpc, self);
+		}
 	}
 }
 
