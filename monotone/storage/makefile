@@ -19,7 +19,7 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-storage.a
 OBJECTS        = \
-#                schema/row.o \
+                 schema/row.o \
                  mvcc/handle_mgr.o \
                  mvcc/heap.o \
                  mvcc/mvcc.o \
