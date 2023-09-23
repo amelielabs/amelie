@@ -44,6 +44,7 @@ execute(Session* self, Buf* buf)
 	{
 		auto shard = self->shard_mgr->shards[i];
 		auto req = request_create(&self->req_cache, &shard->task.channel);
+		req->ro = false;
 		request_set_add(&self->req_set, req);
 	}
 
@@ -58,6 +59,17 @@ execute(Session* self, Buf* buf)
 	// commit
 
 	// todo: signal for completion
+
+	// rw
+
+	{
+		list_foreach(&self->req_set.list)
+		{
+			auto req = list_at(Request, link);
+			assert(req->on_commit);
+			condition_signal(req->on_commit);
+		}
+	}
 }
 
 hot bool

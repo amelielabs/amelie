@@ -20,11 +20,20 @@ shard_request(Shard* self, Request* req)
 {
 	unused(self);
 
+	auto ro = req->ro;
+	auto on_commit = condition_create();
+	req->on_commit = on_commit;
+
 	// OK
 	auto reply = msg_create(MSG_OK);
 	encode_integer(reply, false);
 	msg_end(reply);
 	channel_write(&req->src, reply);
+
+	// wait for commit
+	if (! ro)
+		condition_wait(on_commit, -1);
+	condition_free(on_commit);
 }
 
 static void
