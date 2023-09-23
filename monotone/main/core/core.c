@@ -172,7 +172,10 @@ core_start(Core* self, bool bootstrap)
 	// prepare shards
 	shard_mgr_open(&self->shard_mgr);
 	if (! self->shard_mgr.shards_count)
-		shard_mgr_create(&self->shard_mgr, 1);
+	{
+		auto shards = var_int_of(&config()->cluster_shards);
+		shard_mgr_create(&self->shard_mgr, shards);
+	}
 
 	// start shards and recover partitions
 	shard_mgr_start(&self->shard_mgr);
@@ -183,7 +186,8 @@ core_start(Core* self, bool bootstrap)
 	// todo: start checkpoint worker
 
 	// start hubs
-	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, 1);
+	auto hubs = var_int_of(&config()->cluster_hubs);
+	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, hubs);
 
 	log("");
 	config_print(config());
