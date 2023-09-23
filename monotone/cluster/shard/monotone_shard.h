@@ -10,6 +10,7 @@
 #include "shard/request.h"
 #include "shard/request_cache.h"
 #include "shard/request_set.h"
+#include "shard/request_sched.h"
 
 // shard
 #include "shard/shard_config.h"
