@@ -164,8 +164,9 @@ hub_main(void* arg)
 }
 
 void
-hub_init(Hub* self, ShardMgr* shard_mgr)
+hub_init(Hub* self, ShardMgr* shard_mgr, RequestSched* req_sched)
 {
+	self->req_sched = req_sched;
 	self->shard_mgr = shard_mgr;
 	client_mgr_init(&self->client_mgr);
 	user_cache_init(&self->user_cache);

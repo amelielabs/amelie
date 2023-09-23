@@ -17,9 +17,11 @@
 #include <monotone_session.h>
 
 void
-session_init(Session* self, ShardMgr* shard_mgr, Portal* portal)
+session_init(Session* self, ShardMgr* shard_mgr, RequestSched* req_sched,
+             Portal* portal)
 {
 	self->shard_mgr = shard_mgr;
+	self->req_sched = req_sched;
 	self->portal    = portal;
 	request_set_init(&self->req_set);
 	request_cache_init(&self->req_cache);
@@ -51,7 +53,10 @@ execute(Session* self, Buf* buf)
 	// execute
 
 	// todo: lock
+
+	request_sched_lock(self->req_sched);
 	request_set_execute(&self->req_set);
+	request_sched_unlock(self->req_sched);
 
 	// wait for completion
 	request_set_wait(&self->req_set);

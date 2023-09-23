@@ -24,7 +24,7 @@ hub_mgr_init(HubMgr* self)
 }
 
 static inline void
-hub_mgr_start(HubMgr* self, ShardMgr* shard_mgr, int count)
+hub_mgr_start(HubMgr* self, ShardMgr* shard_mgr, RequestSched* req_sched, int count)
 {
 	if (count == 0)
 		return;
@@ -32,7 +32,7 @@ hub_mgr_start(HubMgr* self, ShardMgr* shard_mgr, int count)
 	self->workers = mn_malloc(sizeof(Hub) * count);
 	int i = 0;
 	for (; i < count; i++)
-		hub_init(&self->workers[i], shard_mgr);
+		hub_init(&self->workers[i], shard_mgr, req_sched);
 	for (i = 0; i < count; i++)
 		hub_start(&self->workers[i]);
 }
