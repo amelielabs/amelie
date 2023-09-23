@@ -8,6 +8,8 @@
 
 // request
 #include "shard/request.h"
+#include "shard/request_cache.h"
+#include "shard/request_set.h"
 
 // shard
 #include "shard/shard_config.h"
