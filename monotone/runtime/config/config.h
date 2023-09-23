@@ -26,7 +26,6 @@ struct Config
 	Var  tls_cert;
 	Var  tls_key;
 	// server
-	Var  server_workers;
 	Var  listen;
 	// engine
 	Var  engine_workers;
@@ -41,6 +40,9 @@ struct Config
 	Var  repl_reconnect_ms;
 	Var  repl_primary;
 	Var  repl_role;
+	// cluster
+	Var  cluster_hubs;
+	Var  cluster_shards;
 	// system
 	Var  lsn;
 	Var  psn;
