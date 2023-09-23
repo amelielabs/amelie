@@ -14,7 +14,7 @@ struct Rpc
 	int        argc;
 	intptr_t*  argv;
 	int        rc;
-	Error      error;
+	Error*     error;
 	Channel*   channel;
 	Condition* cond;
 	List       link;
@@ -54,7 +54,7 @@ rpc_execute(Buf* buf,
 	if (try(&e))
 		callback(rpc, callback_arg);
 	if (unlikely(catch(&e)))
-		rpc->error = mn_self()->error;
+		*rpc->error = mn_self()->error;
 	rpc_done(rpc);
 }
 
@@ -71,16 +71,18 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
+	auto error = &mn_self()->error;
+	error->code = ERROR_NONE;
 	Rpc rpc =
 	{
 		.id      = id,
 		.argc    = argc,
 		.argv    = argv,
 		.rc      = 0,
+		.error   = error,
 		.channel = channel,
 		.cond    = condition_create()
 	};
-	rpc.error.code = ERROR_NONE;
 	list_init(&rpc.link);
 	auto rpc_ptr = &rpc;
 
@@ -93,11 +95,8 @@ rpc(Channel* channel, int id, int argc, ...)
 	condition_wait(rpc.cond, -1);
 	condition_free(rpc.cond);
 
-	if (unlikely(rpc.error.code != ERROR_NONE))
-	{
-		mn_self()->error = rpc.error;
+	if (unlikely(error->code != ERROR_NONE))
 		rethrow();
-	}
 
 	return rpc.rc;
 }
