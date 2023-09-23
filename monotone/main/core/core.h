@@ -11,15 +11,16 @@ typedef struct Core Core;
 struct Core
 {
 	// cluster
-	HubMgr      hub_mgr;
-	ShardMgr    shard_mgr;
+	HubMgr       hub_mgr;
+	ShardMgr     shard_mgr;
+	RequestSched req_sched;
 	// server
-	Server      server;
-	UserMgr     user_mgr;
+	Server       server;
+	UserMgr      user_mgr;
 	// config state
-	CatalogMgr  catalog_mgr;
-	ConfigState config_state;
-	Control     control;
+	CatalogMgr   catalog_mgr;
+	ConfigState  config_state;
+	Control      control;
 };
 
 Core*

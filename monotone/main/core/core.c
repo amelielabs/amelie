@@ -69,6 +69,7 @@ core_create(void)
 	// cluster
 	shard_mgr_init(&self->shard_mgr);
 	hub_mgr_init(&self->hub_mgr);
+	request_sched_init(&self->req_sched);
 
 	return self;
 }
@@ -78,6 +79,7 @@ core_free(Core* self)
 {
 	shard_mgr_free(&self->shard_mgr);
 	server_free(&self->server);
+	request_sched_free(&self->req_sched);
 	user_mgr_free(&self->user_mgr);
 	config_state_free(&self->config_state);
 	catalog_mgr_free(&self->catalog_mgr);
@@ -130,7 +132,7 @@ core_start(Core* self, bool bootstrap)
 	if (core_is_client_only())
 	{
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, NULL, 1);
+		hub_mgr_start(&self->hub_mgr, NULL, &self->req_sched, 1);
 		return;
 	}
 
@@ -148,7 +150,7 @@ core_start(Core* self, bool bootstrap)
 		// todo: restore
 
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, NULL, 1);
+		hub_mgr_start(&self->hub_mgr, NULL, &self->req_sched, 1);
 		return;
 	}
 
@@ -187,7 +189,7 @@ core_start(Core* self, bool bootstrap)
 
 	// start hubs
 	auto hubs = var_int_of(&config()->cluster_hubs);
-	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, hubs);
+	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, &self->req_sched, hubs);
 
 	log("");
 	config_print(config());
