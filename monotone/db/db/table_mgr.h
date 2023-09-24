@@ -1,0 +1,20 @@
+#pragma once
+
+//
+// monotone
+//
+// SQL OLTP database
+//
+
+typedef struct TableMgr TableMgr;
+
+struct TableMgr
+{
+	TableCache cache;
+};
+
+void table_mgr_init(TableMgr*);
+void table_mgr_free(TableMgr*);
+void table_mgr_create(TableMgr*, Transaction*, TableConfig*, bool);
+void table_mgr_drop(TableMgr*, Transaction*, Str*, bool);
+void table_mgr_alter(TableMgr*, Transaction*, Str*, TableConfig*, bool);
