@@ -57,8 +57,11 @@ mvcc_commit(Transaction* self)
 		}
 		case LOG_WRITE_HANDLE:
 		{
-			Handle* handle = op->write_handle.handle;
-			handle_commit(handle, self->lsn);
+			// set lsn and free previous handle
+			handle_cache_commit(op->write_handle.handle_cache,
+			                    op->write_handle.handle,
+			                    op->write_handle.handle_prev,
+			                    self->lsn);
 			if (op->write_handle.data)
 				buf_free(op->write_handle.data);
 			break;
@@ -91,9 +94,10 @@ mvcc_abort(Transaction* self)
 		}
 		case LOG_WRITE_HANDLE:
 		{
-			// remove handle from the cache
-			Handle* handle = op->write_handle.handle;
-			handle_mgr_unset(op->write_handle.handle_mgr, handle);
+			// remove handle from the cache and bring previous one
+			handle_cache_abort(op->write_handle.handle_cache,
+			                   op->write_handle.handle,
+			                   op->write_handle.handle_prev);
 			if (op->write_handle.data)
 				buf_free(op->write_handle.data);
 			break;
@@ -135,18 +139,24 @@ mvcc_write(Transaction* self,
 void
 mvcc_write_handle(Transaction* self,
                   LogCmd       cmd,
-                  HandleMgr*   handle_mgr,
+                  HandleCache* handle_cache,
                   Handle*      handle,
                   Buf*         data)
 {
 	log_reserve(&self->log);
 
-	// assign transaction
-	handle_set_transaction(handle, self);
-
-	// update
-	handle_mgr_set(handle_mgr, handle);
+	// update handle cache
+	Handle* prev = NULL;
+	if (cmd == LOG_CREATE_TABLE ||
+	    cmd == LOG_ALTER_TABLE  ||
+	    cmd == LOG_CREATE_META)
+	{
+		prev = handle_cache_set(handle_cache, handle);
+	} else
+	{
+		prev = handle_cache_delete(handle_cache, handle->name);
+	}
 
 	// update transaction log
-	log_add_write_handle(&self->log, cmd, handle_mgr, handle, data);
+	log_add_write_handle(&self->log, cmd, handle_cache, handle, prev, data);
 }

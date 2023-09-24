@@ -43,8 +43,9 @@ struct LogOp
 		} write;
 		struct
 		{
-			void* handle_mgr;
+			void* handle_cache;
 			void* handle;
+			void* handle_prev;
 			Buf*  data;
 		} write_handle;
 	};
@@ -115,17 +116,19 @@ log_add_write(Log*    self,
 static inline void
 log_add_write_handle(Log*   self,
                      LogCmd cmd,
-                     void*  handle_mgr,
+                     void*  handle_cache,
                      void*  handle,
+                     void*  handle_prev,
                      Buf*   data)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->type                    = LOG_WRITE_HANDLE;
-	op->cmd                     = cmd;
-	op->write_handle.handle_mgr = handle_mgr;
-	op->write_handle.handle     = handle;
-	op->write_handle.data       = data;
+	op->type                      = LOG_WRITE_HANDLE;
+	op->cmd                       = cmd;
+	op->write_handle.handle_cache = handle_cache;
+	op->write_handle.handle       = handle;
+	op->write_handle.handle_prev  = handle_prev;
+	op->write_handle.data         = data;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 }
