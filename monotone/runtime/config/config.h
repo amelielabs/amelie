@@ -48,9 +48,10 @@ struct Config
 	Var  psn;
 	Var  read_only;
 	// state
-	Var  users;
+	Var  storages;
 	Var  shards;
 	Var  nodes;
+	Var  users;
 	Var  catalog;
 	Var  catalog_snapshot;
 	// testing
