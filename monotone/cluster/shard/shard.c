@@ -13,6 +13,11 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
+#include <monotone_schema.h>
+#include <monotone_mvcc.h>
+#include <monotone_engine.h>
+#include <monotone_storage.h>
+#include <monotone_db.h>
 #include <monotone_shard.h>
 
 static void
@@ -79,9 +84,10 @@ shard_allocate(ShardConfig* config)
 {
 	Shard* self;
 	self = mn_malloc(sizeof(*self));
-	self->config = shard_config_copy(config);
-	guard(self_guard, shard_free, self);
 	task_init(&self->task, mn_task->buf_cache);
+	storage_list_init(&self->storages);
+	guard(self_guard, shard_free, self);
+	self->config = shard_config_copy(config);
 	return unguard(&self_guard);
 }
 
