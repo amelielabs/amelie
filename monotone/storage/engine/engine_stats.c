@@ -29,3 +29,26 @@ engine_stats_get(Engine* self, EngineStats* stats)
 		stats->count_part_pending += heap_is_full(&part->heap);
 	}
 }
+
+void
+engine_stats_write(EngineStats* self, Buf* buf)
+{
+	// map
+	encode_map(buf, 4);
+
+	// count
+	encode_raw(buf, "count", 5);
+	encode_integer(buf, self->count);
+
+	// count_part
+	encode_raw(buf, "count_part", 10);
+	encode_integer(buf, self->count_part);
+
+	// count_part_pending
+	encode_raw(buf, "count_part", 18);
+	encode_integer(buf, self->count_part_pending);
+
+	// size
+	encode_raw(buf, "count", 4);
+	encode_integer(buf, self->size);
+}

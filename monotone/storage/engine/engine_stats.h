@@ -17,3 +17,4 @@ struct EngineStats
 };
 
 void engine_stats_get(Engine*, EngineStats*);
+void engine_stats_write(EngineStats*, Buf*);
