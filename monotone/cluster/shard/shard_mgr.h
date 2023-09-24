@@ -39,15 +39,14 @@ shard_mgr_free(ShardMgr* self)
 }
 
 static inline Buf*
-shard_cache_dump(ShardMgr* self)
+shard_mgr_dump(ShardMgr* self)
 {
-	// create dump
 	auto dump = buf_create(0);
-	encode_map(dump, self->shards_count);
+	// array
+	encode_array(dump, self->shards_count);
 	for (int i = 0; i < self->shards_count; i++)
 	{
 		auto shard = self->shards[i];
-		encode_string(dump, &shard->config->name);
 		shard_config_write(shard->config, dump);
 	}
 	return dump;
@@ -57,7 +56,7 @@ static inline void
 shard_mgr_save(ShardMgr* self)
 {
 	// create dump
-	auto dump = shard_cache_dump(self);
+	auto dump = shard_mgr_dump(self);
 
 	// update and save state
 	var_data_set_buf(&config()->shards, dump);
@@ -76,7 +75,7 @@ shard_mgr_open(ShardMgr* self)
 		return;
 
 	int count;
-	data_read_map(&pos, &count);
+	data_read_array(&pos, &count);
 
 	int allocated = count * sizeof(Shard*);
 	self->shards_count = count;
@@ -84,9 +83,6 @@ shard_mgr_open(ShardMgr* self)
 	memset(self->shards, 0, allocated);
 	for (int i = 0; i < count; i++)
 	{
-		// name
-		data_skip(&pos);
-
 		// value
 		auto config = shard_config_read(&pos);
 		guard(config_guard, shard_config_free, config);
@@ -159,5 +155,16 @@ shard_mgr_stop(ShardMgr* self)
 	{
 		auto shard = self->shards[i];
 		shard_stop(shard);
+	}
+}
+
+static inline void
+shard_mgr_assign(ShardMgr* self, StorageMgr* storage_mgr)
+{
+	// add associated storages per shard
+	for (int i = 0; i < self->shards_count; i++)
+	{
+		auto shard = self->shards[i];
+		storage_mgr_assign(storage_mgr, &shard->storages, &shard->config->id);
 	}
 }
