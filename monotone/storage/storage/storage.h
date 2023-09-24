@@ -12,11 +12,15 @@ struct Storage
 {
 	int            refs;
 	Engine         engine;
+	EngineConfig   engine_config;
 	StorageConfig* config;
+	List           link_list;
+	List           link;
 };
 
 Storage*
 storage_create(StorageConfig*, CompactMgr*);
+void storage_free(Storage*);
 void storage_ref(Storage*);
 void storage_unref(Storage*);
 void storage_open(Storage*, bool);

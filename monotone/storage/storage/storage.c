@@ -21,12 +21,25 @@ storage_create(StorageConfig* config, CompactMgr* compact_mgr)
 	Storage* self = mn_malloc(sizeof(Storage));
 	self->refs   = 0;
 	self->config = config;
-	engine_init(&self->engine, compact_mgr,
-	            &config->id,
-	            &config->schema,
-	             config->compression,
-	             config->crc);
+
+	auto engine_config = &self->engine_config;
+	engine_config->id          = &config->id;
+	engine_config->range_start = config->range_start;
+	engine_config->range_end   = config->range_start;
+	engine_config->compression = config->compression;
+	engine_config->crc         = config->crc;
+	engine_config->schema      = &config->schema;
+
+	engine_init(&self->engine, engine_config, compact_mgr);
 	return self;
+}
+
+void
+storage_free(Storage* self)
+{
+	engine_stop(&self->engine);
+	engine_free(&self->engine);
+	mn_free(self);
 }
 
 void
@@ -39,11 +52,6 @@ void
 storage_unref(Storage* self)
 {
 	self->refs--;
-	if (self->refs >= 0)
-		return;
-	engine_stop(&self->engine);
-	engine_free(&self->engine);
-	mn_free(self);
 }
 
 void
