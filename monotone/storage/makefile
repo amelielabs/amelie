@@ -20,8 +20,8 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-storage.a
 OBJECTS        = \
                  schema/row.o \
-                 mvcc/handle_mgr.o \
                  mvcc/heap.o \
+                 mvcc/handle_cache.o \
                  mvcc/mvcc.o \
                  engine/compact.o \
                  engine/service.o \
