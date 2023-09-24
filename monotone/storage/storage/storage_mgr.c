@@ -31,12 +31,60 @@ storage_mgr_free(StorageMgr* self)
 		auto storage = list_at(Storage, link);
 		storage_free(storage);
 	}
+	self->list_count = 0;
+	list_init(&self->list);
+
 	compact_mgr_stop(&self->compact_mgr);
+}
+
+static void
+storage_mgr_save(StorageMgr* self)
+{
+	// dump a list of storages
+	auto dump = buf_create(0);
+	encode_array(dump, self->list_count);
+	list_foreach(&self->list)
+	{
+		auto storage = list_at(Storage, link);
+		storage_config_write(storage->config, dump);
+	}
+
+	// update and save state
+	var_data_set_buf(&config()->storages, dump);
+	control_save_config();
+	buf_free(dump);
+}
+
+static void
+storage_mgr_recover(StorageMgr* self)
+{
+	auto storages = &config()->storages;
+	if (! var_data_is_set(storages))
+		return;
+	auto pos = var_data_of(storages);
+	if (data_is_null(pos))
+		return;
+
+	int count;
+	data_read_array(&pos, &count);
+	for (int i = 0; i < count; i++)
+	{
+		// value
+		auto config = storage_config_read(&pos);
+		guard(config_guard, storage_config_free, config);
+
+		auto storage = storage_allocate(config, &self->compact_mgr);
+		list_append(&self->list, &storage->link);
+		self->list_count++;
+	}
 }
 
 void
 storage_mgr_open(StorageMgr* self)
 {
+	// recover storages objects
+	storage_mgr_recover(self);
+
 	// start workers
 	compact_mgr_start(&self->compact_mgr, var_int_of(&config()->engine_workers));
 }
@@ -44,6 +92,7 @@ storage_mgr_open(StorageMgr* self)
 void
 storage_mgr_gc(StorageMgr* self)
 {
+	bool updated = false;
 	list_foreach_safe(&self->list)
 	{
 		auto storage = list_at(Storage, link);
@@ -52,13 +101,34 @@ storage_mgr_gc(StorageMgr* self)
 		list_unlink(&storage->link);
 		self->list_count--;
 		storage_free(storage);
+		updated = true;
+	}
+
+	if (updated)
+		storage_mgr_save(self);
+}
+
+void
+storage_mgr_assign(StorageMgr* self, StorageList* list, Uuid* id_shard)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto storage = list_at(Storage, link);
+		if (! uuid_compare(&storage->config->id_shard, id_shard))
+			continue;
+		storage_list_add(list, storage);
 	}
 }
 
 Storage*
 storage_mgr_create(StorageMgr* self, StorageConfig* config)
 {
-	return storage_create(config, &self->compact_mgr);
+	auto storage = storage_allocate(config, &self->compact_mgr);
+	list_append(&self->list, &storage->link);
+	self->list_count++;
+
+	storage_mgr_save(self);
+	return storage;
 }
 
 Storage*

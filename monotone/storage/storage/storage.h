@@ -19,7 +19,7 @@ struct Storage
 };
 
 Storage*
-storage_create(StorageConfig*, CompactMgr*);
+storage_allocate(StorageConfig*, CompactMgr*);
 void storage_free(Storage*);
 void storage_ref(Storage*);
 void storage_unref(Storage*);

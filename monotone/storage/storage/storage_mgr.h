@@ -19,6 +19,7 @@ void storage_mgr_init(StorageMgr*);
 void storage_mgr_free(StorageMgr*);
 void storage_mgr_open(StorageMgr*);
 void storage_mgr_gc(StorageMgr*);
+void storage_mgr_assign(StorageMgr*, StorageList*, Uuid*);
 
 Storage*
 storage_mgr_create(StorageMgr*, StorageConfig*);

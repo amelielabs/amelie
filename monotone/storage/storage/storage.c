@@ -16,7 +16,7 @@
 #include <monotone_storage.h>
 
 Storage*
-storage_create(StorageConfig* config, CompactMgr* compact_mgr)
+storage_allocate(StorageConfig* config, CompactMgr* compact_mgr)
 {
 	Storage* self = mn_malloc(sizeof(Storage));
 	self->refs   = 0;
