@@ -13,6 +13,11 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
+#include <monotone_schema.h>
+#include <monotone_mvcc.h>
+#include <monotone_engine.h>
+#include <monotone_storage.h>
+#include <monotone_db.h>
 #include <monotone_shard.h>
 #include <monotone_session.h>
 #include <monotone_hub.h>
@@ -71,6 +76,9 @@ core_create(void)
 	hub_mgr_init(&self->hub_mgr);
 	request_sched_init(&self->req_sched);
 
+	// db
+	db_init(&self->db, NULL, NULL);
+
 	return self;
 }
 
@@ -80,6 +88,7 @@ core_free(Core* self)
 	shard_mgr_free(&self->shard_mgr);
 	server_free(&self->server);
 	request_sched_free(&self->req_sched);
+	db_free(&self->db);
 	user_mgr_free(&self->user_mgr);
 	config_state_free(&self->config_state);
 	catalog_mgr_free(&self->catalog_mgr);
@@ -106,8 +115,8 @@ core_recover(Core* self)
 	catalog_mgr_restore(&self->catalog_mgr);
 	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
 
-	// replay wal
-		// todo
+	// replay logs
+	recover(&self->db);
 
 	log("recover: complete");
 }
@@ -169,7 +178,8 @@ core_start(Core* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// todo: open db
+	// open db
+	db_open(&self->db, &self->catalog_mgr);
 
 	// prepare shards
 	shard_mgr_open(&self->shard_mgr);
@@ -179,7 +189,10 @@ core_start(Core* self, bool bootstrap)
 		shard_mgr_create(&self->shard_mgr, shards);
 	}
 
-	// start shards and recover partitions
+	// set storages per shard
+	shard_mgr_assign(&self->shard_mgr, &self->db.storage_mgr);
+
+	// start shards and recover storages
 	shard_mgr_start(&self->shard_mgr);
 
 	// recover system to the previous state
@@ -187,9 +200,14 @@ core_start(Core* self, bool bootstrap)
 
 	// todo: start checkpoint worker
 
+
 	// start hubs
 	auto hubs = var_int_of(&config()->cluster_hubs);
 	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, &self->req_sched, hubs);
+
+	// synchronize caches
+	hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
+	hub_mgr_sync_table_cache(&self->hub_mgr, &self->db.table_mgr.cache);
 
 	log("");
 	config_print(config());
@@ -211,7 +229,8 @@ core_stop(Core* self)
 	// stop shards
 	shard_mgr_stop(&self->shard_mgr);
 
-	// todo: stop db
+	// stop db
+	db_close(&self->db);
 
 	// close config state file
 	config_state_close(&self->config_state);
@@ -227,7 +246,7 @@ core_rpc(Rpc* rpc, void* arg)
 		UserConfig* config = rpc_arg_ptr(rpc, 0);
 		bool if_not_exists = rpc_arg(rpc, 1);
 		user_mgr_create(&self->user_mgr, config, if_not_exists);
-		hub_mgr_user_cache_sync(&self->hub_mgr, &self->user_mgr.cache);
+		hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
 		break;
 	}
 	case RPC_USER_DROP:
@@ -235,14 +254,14 @@ core_rpc(Rpc* rpc, void* arg)
 		Str* name = rpc_arg_ptr(rpc, 0);
 		bool if_exists = rpc_arg(rpc, 2);
 		user_mgr_drop(&self->user_mgr, name, if_exists);
-		hub_mgr_user_cache_sync(&self->hub_mgr, &self->user_mgr.cache);
+		hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
 		break;
 	}
 	case RPC_USER_ALTER:
 	{
 		UserConfig* config = rpc_arg_ptr(rpc, 0);
 		user_mgr_alter(&self->user_mgr, config);
-		hub_mgr_user_cache_sync(&self->hub_mgr, &self->user_mgr.cache);
+		hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
 		break;
 	}
 	case RPC_USER_SHOW:

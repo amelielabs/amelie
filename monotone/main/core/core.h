@@ -10,6 +10,8 @@ typedef struct Core Core;
 
 struct Core
 {
+	// db
+	Db           db;
 	// cluster
 	HubMgr       hub_mgr;
 	ShardMgr     shard_mgr;
