@@ -6,67 +6,72 @@
 // SQL OLTP database
 //
 
-typedef struct Handle Handle;
+typedef struct HandleIf HandleIf;
+typedef struct Handle   Handle;
 
-typedef void (*HandleDestructor)(Handle*, void*);
+struct HandleIf
+{
+	void    (*free)(Handle*, void*);
+	Handle* (*copy)(Handle*, void*);
+};
 
 struct Handle
 {
-	Str*         name;
-	uint64_t     lsn;
-	bool         drop;
-	Transaction* trx;
-	Handle*      next;
-	Handle*      prev;
-	List         link;
+	Str*      name;
+	uint64_t  lsn;
+	int       refs;
+	HandleIf* iface;
+	void*     iface_arg;
+	List      link;
 };
 
 static inline void
 handle_init(Handle* self)
 {
-	self->name = NULL;
-	self->lsn  = 0;
-	self->drop = false;
-	self->trx  = NULL;
-	self->next = NULL;
-	self->prev = NULL;
+	self->name      = NULL;
+	self->refs      = 0;
+	self->lsn       = 0;
+	self->iface     = NULL;
+	self->iface_arg = NULL;
 	list_init(&self->link);
 }
 
 static inline void
-handle_link(Handle* prev, Handle* handle)
+handle_set_name(Handle* self, Str* name)
 {
-	prev->next   = handle;
-	handle->prev = prev;
-	handle->next = NULL;
+	self->name = name;
 }
 
 static inline void
-handle_unlink(Handle* self)
+handle_set_iface(Handle* self, HandleIf* iface, void* arg)
 {
-	if (self->prev)
-		self->prev->next = self->next;
-	if (self->next)
-		self->next->prev = self->prev;
-	self->prev = NULL;
-	self->next = NULL;
+	self->iface = iface;
+	self->iface_arg = arg;
 }
 
 static inline void
-handle_set_transaction(Handle* self, Transaction* trx)
+handle_free(Handle* self)
 {
-	self->trx = trx;
+	self->iface->free(self, self->iface_arg);
+}
+
+static inline Handle*
+handle_copy(Handle* self)
+{
+	return self->iface->copy(self, self->iface_arg);
 }
 
 static inline void
-handle_commit(Handle* self, uint64_t lsn)
+handle_ref(Handle* self)
 {
-	self->lsn = lsn;
-	self->trx = NULL;
+	self->refs++;
 }
 
-static inline bool
-handle_is_commited(Handle* self)
+static inline void
+handle_unref(Handle* self)
 {
-	return self->trx == NULL;
+	self->refs--;
+	if (self->refs >= 0)
+		return;
+	handle_free(self);
 }
