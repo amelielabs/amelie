@@ -10,9 +10,9 @@ typedef struct CompactMgr CompactMgr;
 
 struct CompactMgr
 {
-	int      rr;
-	int      workers_count;
-	Compact* workers;
+	atomic_u64 rr;
+	int        workers_count;
+	Compact*   workers;
 };
 
 static inline void
@@ -51,19 +51,11 @@ compact_mgr_stop(CompactMgr* self)
 	self->workers = NULL;
 }
 
-static inline int
-compact_mgr_next(CompactMgr* self)
-{
-	assert(self->workers_count > 0);
-	if (self->rr == self->workers_count)
-		self->rr = 0;
-	return self->rr++;
-}
-
 static inline void
 compact_mgr_run(CompactMgr* self, CompactReq* req)
 {
+	// intended to be shared among threads
 	assert(self->workers_count > 0);
-	int pos = compact_mgr_next(self);
+	int pos = atomic_u64_inc(&self->rr) % self->workers_count;
 	compact_run(&self->workers[pos], req);
 }
