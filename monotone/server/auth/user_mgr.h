@@ -54,12 +54,9 @@ user_mgr_open(UserMgr* self)
 		return;
 
 	int count;
-	data_read_map(&pos, &count);
+	data_read_array(&pos, &count);
 	for (int i = 0; i < count; i++)
 	{
-		// name
-		data_skip(&pos);
-
 		// value
 		auto config = user_config_read(&pos);
 		guard(config_guard, user_config_free, config);

@@ -30,38 +30,6 @@ user_cache_free(UserCache* self)
 	}
 }
 
-static inline Buf*
-user_cache_list(UserCache* self)
-{
-	auto buf = msg_create(MSG_OBJECT);
-	// map
-	encode_map(buf, self->list_count);
-	list_foreach(&self->list)
-	{
-		// name: {}
-		auto user = list_at(User, link);
-		encode_string(buf, &user->config->name);
-		user_config_write_safe(user->config, buf);
-	}
-	msg_end(buf);
-	return buf;
-}
-
-static inline Buf*
-user_cache_dump(UserCache* self)
-{
-	// create dump
-	auto dump = buf_create(0);
-	encode_map(dump, self->list_count);
-	list_foreach(&self->list)
-	{
-		auto user = list_at(User, link);
-		encode_string(dump, &user->config->name);
-		user_config_write(user->config, dump);
-	}
-	return dump;
-}
-
 static inline User*
 user_cache_find(UserCache* self, Str* name)
 {
@@ -117,4 +85,35 @@ user_cache_sync(UserCache* self, UserCache* with)
 	}
 
 	assert(self->list_count == with->list_count);
+}
+
+static inline Buf*
+user_cache_dump(UserCache* self)
+{
+	auto dump = buf_create(0);
+	// array
+	encode_array(dump, self->list_count);
+	list_foreach(&self->list)
+	{
+		auto user = list_at(User, link);
+		user_config_write(user->config, dump);
+	}
+	return dump;
+}
+
+static inline Buf*
+user_cache_list(UserCache* self)
+{
+	auto buf = msg_create(MSG_OBJECT);
+	// map
+	encode_map(buf, self->list_count);
+	list_foreach(&self->list)
+	{
+		// name: {}
+		auto user = list_at(User, link);
+		encode_string(buf, &user->config->name);
+		user_config_write_safe(user->config, buf);
+	}
+	msg_end(buf);
+	return buf;
 }
