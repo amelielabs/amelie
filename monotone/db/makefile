@@ -22,6 +22,13 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-db.a
 OBJECTS        = \
+                 db/table_cache.o \
+                 db/table_mgr.o \
+                 db/meta_cache.o \
+                 db/meta_mgr.o \
+                 db/db.o \
+                 db/db_catalog.o \
+                 db/recover.o
 #                wal/wal_store.o \
                  wal/wal_store_open.o \
                  wal/wal.o \
