@@ -13,6 +13,11 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
+#include <monotone_schema.h>
+#include <monotone_mvcc.h>
+#include <monotone_engine.h>
+#include <monotone_storage.h>
+#include <monotone_db.h>
 #include <monotone_shard.h>
 #include <monotone_hub.h>
 
@@ -113,6 +118,12 @@ hub_rpc(Rpc* rpc, void* arg)
 		user_cache_sync(&self->user_cache, with);
 		break;
 	}
+	case RPC_TABLE_CACHE_SYNC:
+	{
+		TableCache* with = rpc_arg_ptr(rpc, 0);
+		table_cache_sync(&self->table_cache, with);
+		break;
+	}
 	case RPC_STOP:
 	{
 		// disconnect clients
@@ -170,6 +181,7 @@ hub_init(Hub* self, ShardMgr* shard_mgr, RequestSched* req_sched)
 	self->shard_mgr = shard_mgr;
 	client_mgr_init(&self->client_mgr);
 	user_cache_init(&self->user_cache);
+	table_cache_init(&self->table_cache);
 	task_init(&self->task, mn_task->buf_cache);
 }
 
@@ -177,6 +189,7 @@ void
 hub_free(Hub* self)
 {
 	client_mgr_free(&self->client_mgr);
+	table_cache_free(&self->table_cache);
 	user_cache_free(&self->user_cache);
 }
 

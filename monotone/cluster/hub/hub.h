@@ -13,6 +13,7 @@ struct Hub
 	ShardMgr*     shard_mgr;
 	RequestSched* req_sched;
 	ClientMgr     client_mgr;
+	TableCache    table_cache;
 	UserCache     user_cache;
 	Task          task;
 };
