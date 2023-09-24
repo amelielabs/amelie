@@ -19,7 +19,7 @@ engine_create_directory(Engine* self)
 {
 	// <base>/<id>
 	char uuid[UUID_SZ];
-	uuid_to_string(self->id, uuid, sizeof(uuid));
+	uuid_to_string(self->config->id, uuid, sizeof(uuid));
 
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", config_directory(), uuid);
@@ -43,7 +43,11 @@ engine_recover(Engine* self)
 	if (list_empty(&self->list))
 	{
 		uint64_t id = config_psn_next();
-		auto part = part_allocate(self->schema, self->id, id, id, 0, ROW_PARTITION_MAX);
+
+		auto config = self->config;
+		auto part = part_allocate(config->schema, config->id, id, id,
+		                          config->range_start,
+		                          config->range_end);
 		list_append(&self->list, &part->link);
 		self->list_count++;
 	} else

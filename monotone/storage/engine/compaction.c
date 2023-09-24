@@ -64,8 +64,8 @@ compaction(Engine*     self,
 	{
 		// prepare compact request
 		req->op          = COMPACT_SPLIT_1;
-		req->compression = self->compression;
-		req->crc         = self->crc;
+		req->compression = self->config->compression;
+		req->crc         = self->config->crc;
 		req->part        = part;
 		req->l           = NULL;
 		req->r           = NULL;

@@ -6,21 +6,29 @@
 // SQL OLTP database
 //
 
-typedef struct Engine Engine;
+typedef struct Engine       Engine;
+typedef struct EngineConfig EngineConfig;
 
-struct Engine
+struct EngineConfig
 {
-	PartMap map;
-	List    list;
-	int     list_count;
-	Service service;
+	Uuid*   id;
+	int     range_start;
+	int     range_end;
 	int     compression;
 	bool    crc;
-	Uuid*   id;
 	Schema* schema;
 };
 
-void engine_init(Engine*, CompactMgr*, Uuid*, Schema*, int, bool);
+struct Engine
+{
+	PartMap       map;
+	List          list;
+	int           list_count;
+	Service       service;
+	EngineConfig* config;
+};
+
+void engine_init(Engine*, EngineConfig*, CompactMgr*);
 void engine_free(Engine*);
 void engine_start(Engine*, bool);
 void engine_stop(Engine*);

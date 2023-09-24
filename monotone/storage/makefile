@@ -30,7 +30,8 @@ OBJECTS        = \
                  engine/engine_stats.o \
                  engine/compaction.o \
                  storage/storage.o \
-                 storage/storage_iterator.o
+                 storage/storage_iterator.o \
+                 storage/storage_mgr.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

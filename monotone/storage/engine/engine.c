@@ -15,18 +15,12 @@
 #include <monotone_engine.h>
 
 void
-engine_init(Engine*     self,
-            CompactMgr* compact_mgr,
-            Uuid*       id,
-            Schema*     schema,
-            int         compression,
-            bool        crc)
+engine_init(Engine*       self,
+            EngineConfig* config,
+            CompactMgr*   compact_mgr)
 {
-	self->id          = id;
-	self->compression = compression;
-	self->crc         = crc;
-	self->schema      = schema;
-	self->list_count  = 0;
+	self->list_count = 0;
+	self->config     = config;
 
 	part_map_init(&self->map);
 	list_init(&self->list);
