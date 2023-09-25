@@ -24,7 +24,7 @@ hub_mgr_init(HubMgr* self)
 }
 
 static inline void
-hub_mgr_start(HubMgr* self, ShardMgr* shard_mgr, RequestSched* req_sched, int count)
+hub_mgr_start(HubMgr* self, Share* share, int count)
 {
 	if (count == 0)
 		return;
@@ -32,7 +32,7 @@ hub_mgr_start(HubMgr* self, ShardMgr* shard_mgr, RequestSched* req_sched, int co
 	self->workers = mn_malloc(sizeof(Hub) * count);
 	int i = 0;
 	for (; i < count; i++)
-		hub_init(&self->workers[i], shard_mgr, req_sched);
+		hub_init(&self->workers[i], share);
 	for (i = 0; i < count; i++)
 		hub_start(&self->workers[i]);
 }
@@ -75,15 +75,5 @@ hub_mgr_sync_user_cache(HubMgr* self, UserCache* user_cache)
 	{
 		auto hub = &self->workers[i];
 		rpc(&hub->task.channel, RPC_USER_CACHE_SYNC, 1, user_cache);
-	}
-}
-
-static inline void
-hub_mgr_sync_table_cache(HubMgr* self, TableCache* table_cache)
-{
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto hub = &self->workers[i];
-		rpc(&hub->task.channel, RPC_TABLE_CACHE_SYNC, 1, table_cache);
 	}
 }

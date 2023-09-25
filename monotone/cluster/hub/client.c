@@ -37,7 +37,7 @@ hub_native(Hub* self, Native* client)
 
 	// prepare new session
 	Session session;
-	session_init(&session, self->shard_mgr, self->req_sched, &portal);
+	session_init(&session, &self->share, &portal);
 	guard(on_close, session_free, &session);
 
 	for (;;)
