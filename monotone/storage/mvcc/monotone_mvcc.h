@@ -18,7 +18,7 @@
 
 // handle
 #include "mvcc/handle.h"
-#include "mvcc/handle_cache.h"
+#include "mvcc/handle_mgr.h"
 
 // mvcc
 #include "mvcc/mvcc.h"

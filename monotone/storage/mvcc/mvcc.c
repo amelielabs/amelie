@@ -58,10 +58,10 @@ mvcc_commit(Transaction* self)
 		case LOG_WRITE_HANDLE:
 		{
 			// set lsn and free previous handle
-			handle_cache_commit(op->write_handle.handle_cache,
-			                    op->write_handle.handle,
-			                    op->write_handle.handle_prev,
-			                    self->lsn);
+			handle_mgr_commit(op->write_handle.handle_mgr,
+			                  op->write_handle.handle,
+			                  op->write_handle.handle_prev,
+			                  self->lsn);
 			if (op->write_handle.data)
 				buf_free(op->write_handle.data);
 			break;
@@ -94,10 +94,10 @@ mvcc_abort(Transaction* self)
 		}
 		case LOG_WRITE_HANDLE:
 		{
-			// remove handle from the cache and bring previous one
-			handle_cache_abort(op->write_handle.handle_cache,
-			                   op->write_handle.handle,
-			                   op->write_handle.handle_prev);
+			// remove handle from the mgr and bring previous one
+			handle_mgr_abort(op->write_handle.handle_mgr,
+			                 op->write_handle.handle,
+			                 op->write_handle.handle_prev);
 			if (op->write_handle.data)
 				buf_free(op->write_handle.data);
 			break;
@@ -139,24 +139,21 @@ mvcc_write(Transaction* self,
 void
 mvcc_write_handle(Transaction* self,
                   LogCmd       cmd,
-                  HandleCache* handle_cache,
+                  HandleMgr*   handle_mgr,
                   Handle*      handle,
                   Buf*         data)
 {
 	log_reserve(&self->log);
 
-	// update handle cache
+	// update handle mgr
 	Handle* prev = NULL;
 	if (cmd == LOG_CREATE_TABLE ||
 	    cmd == LOG_ALTER_TABLE  ||
 	    cmd == LOG_CREATE_META)
-	{
-		prev = handle_cache_set(handle_cache, handle);
-	} else
-	{
-		prev = handle_cache_delete(handle_cache, handle->name);
-	}
+		prev = handle_mgr_set(handle_mgr, handle);
+	else
+		prev = handle_mgr_delete(handle_mgr, handle->name);
 
 	// update transaction log
-	log_add_write_handle(&self->log, cmd, handle_cache, handle, prev, data);
+	log_add_write_handle(&self->log, cmd, handle_mgr, handle, prev, data);
 }

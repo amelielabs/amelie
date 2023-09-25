@@ -21,7 +21,7 @@ LIB            = libmonotone-storage.a
 OBJECTS        = \
                  schema/row.o \
                  mvcc/heap.o \
-                 mvcc/handle_cache.o \
+                 mvcc/handle_mgr.o \
                  mvcc/mvcc.o \
                  engine/compact.o \
                  engine/service.o \
