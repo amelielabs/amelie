@@ -40,11 +40,12 @@ meta_allocate(MetaConfig* config, MetaIf* iface)
 	self->config     = NULL;
 	self->iface      = iface;
 	self->iface_data = NULL;
+	guard(self_guard, meta_free, self);
+	self->config = meta_config_copy(config);
+
 	handle_init(&self->handle);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)meta_free);
-	guard(self_guard, meta_free, self);
-	self->config = meta_config_copy(config);
 	return unguard(&self_guard);
 }
 

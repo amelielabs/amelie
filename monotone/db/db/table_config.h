@@ -10,9 +10,9 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Uuid           id;
-	Str            name;
-	StorageConfig* config;
+	Uuid   id;
+	Str    name;
+	Schema schema;
 };
 
 static inline TableConfig*
@@ -20,18 +20,17 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = mn_malloc(sizeof(TableConfig));
-	self->config = NULL;
 	uuid_init(&self->id);
 	str_init(&self->name);
+	schema_init(&self->schema);
 	return self;
 }
 
 static inline void
 table_config_free(TableConfig* self)
 {
-	if (self->config)
-		storage_config_free(self->config);
 	str_free(&self->name);
+	schema_free(&self->schema);
 	mn_free(self);
 }
 
@@ -54,7 +53,7 @@ table_config_copy(TableConfig* self)
 	guard(copy_guard, table_config_free, copy);
 	table_config_set_id(copy, &self->id);
 	table_config_set_name(copy, &self->name);
-	copy->config = storage_config_copy(self->config);
+	schema_copy(&copy->schema, &self->schema);
 	return unguard(&copy_guard);
 }
 
@@ -78,9 +77,10 @@ table_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_string_copy(pos, &self->name);
 
-	// storage
+	// schema
 	data_skip(pos);
-	self->config = storage_config_read(pos);
+	schema_read(&self->schema, pos);
+
 	return unguard(&self_guard);
 }
 
@@ -100,7 +100,7 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// storage
-	encode_raw(buf, "storage", 7);
-	storage_config_write(self->config, buf);
+	// schema
+	encode_raw(buf, "schema", 6);
+	schema_write(&self->schema, buf);
 }

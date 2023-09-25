@@ -27,11 +27,12 @@ table_allocate(TableConfig* config)
 {
 	Table* self = mn_malloc(sizeof(Table));
 	self->config = NULL;
+	guard(self_guard, table_free, self);
+	self->config = table_config_copy(config);
+
 	handle_init(&self->handle);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)table_free);
-	guard(self_guard, table_free, self);
-	self->config = table_config_copy(config);
 	return unguard(&self_guard);
 }
 
@@ -44,5 +45,5 @@ table_of(Handle* handle)
 static inline Schema*
 table_schema(Table* self)
 {
-	return &self->config->config->schema;
+	return &self->config->schema;
 }
