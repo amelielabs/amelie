@@ -79,6 +79,13 @@ core_create(void)
 	// db
 	db_init(&self->db, NULL, NULL);
 
+	// shared between hubs
+	auto share = &self->share;
+	share->table_mgr = &self->db.table_mgr;
+	share->meta_mgr  = &self->db.meta_mgr;
+	share->shard_mgr = &self->shard_mgr;
+	share->req_sched = &self->req_sched;
+
 	return self;
 }
 
@@ -141,7 +148,7 @@ core_start(Core* self, bool bootstrap)
 	if (core_is_client_only())
 	{
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, NULL, &self->req_sched, 1);
+		hub_mgr_start(&self->hub_mgr, &self->share, 1);
 		return;
 	}
 
@@ -159,7 +166,7 @@ core_start(Core* self, bool bootstrap)
 		// todo: restore
 
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, NULL, &self->req_sched, 1);
+		hub_mgr_start(&self->hub_mgr, &self->share, 1);
 		return;
 	}
 
@@ -200,14 +207,12 @@ core_start(Core* self, bool bootstrap)
 
 	// todo: start checkpoint worker
 
-
 	// start hubs
 	auto hubs = var_int_of(&config()->cluster_hubs);
-	hub_mgr_start(&self->hub_mgr, &self->shard_mgr, &self->req_sched, hubs);
+	hub_mgr_start(&self->hub_mgr, &self->share, hubs);
 
 	// synchronize caches
 	hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
-	hub_mgr_sync_table_cache(&self->hub_mgr, &self->db.table_mgr.cache);
 
 	log("");
 	config_print(config());

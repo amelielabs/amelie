@@ -10,6 +10,7 @@ typedef struct Core Core;
 
 struct Core
 {
+	Share        share;
 	// db
 	Db           db;
 	// cluster
