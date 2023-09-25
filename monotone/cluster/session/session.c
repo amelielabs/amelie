@@ -22,12 +22,11 @@
 #include <monotone_session.h>
 
 void
-session_init(Session* self, ShardMgr* shard_mgr, RequestSched* req_sched,
-             Portal* portal)
+session_init(Session* self, Share* share, Portal* portal)
 {
-	self->shard_mgr = shard_mgr;
-	self->req_sched = req_sched;
-	self->portal    = portal;
+	self->share  = share;
+	self->portal = portal;
+	transaction_init(&self->trx);
 	request_set_init(&self->req_set);
 	request_cache_init(&self->req_cache);
 }
@@ -38,18 +37,18 @@ session_free(Session *self)
 	request_set_reset(&self->req_set, &self->req_cache);
 	request_set_free(&self->req_set);
 	request_cache_free(&self->req_cache);
+	transaction_free(&self->trx);
 }
 
 hot static inline void
 execute(Session* self, Buf* buf)
 {
+	auto share = self->share;
 	unused(buf);
 
-	request_set_reset(&self->req_set, &self->req_cache);
-
-	for (int i = 0; i < self->shard_mgr->shards_count; i++)
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
 	{
-		auto shard = self->shard_mgr->shards[i];
+		auto shard = share->shard_mgr->shards[i];
 		auto req = request_create(&self->req_cache, &shard->task.channel);
 		req->ro = false;
 		request_set_add(&self->req_set, req);
@@ -59,9 +58,9 @@ execute(Session* self, Buf* buf)
 
 	// todo: lock
 
-	request_sched_lock(self->req_sched);
+	request_sched_lock(share->req_sched);
 	request_set_execute(&self->req_set);
-	request_sched_unlock(self->req_sched);
+	request_sched_unlock(share->req_sched);
 
 	// wait for completion
 	request_set_wait(&self->req_set);
@@ -82,6 +81,12 @@ execute(Session* self, Buf* buf)
 	}
 }
 
+static inline void
+session_prepare(Session* self)
+{
+	request_set_reset(&self->req_set, &self->req_cache);
+}
+
 hot bool
 session_execute(Session* self, Buf* buf)
 {
@@ -93,6 +98,8 @@ session_execute(Session* self, Buf* buf)
 		auto msg = msg_of(buf);
 		if (unlikely(msg->id != MSG_COMMAND))
 			error("unrecognized request: %d", msg->id);
+
+		session_prepare(self);
 
 		execute(self, buf);
 	}
