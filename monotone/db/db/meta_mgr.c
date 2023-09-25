@@ -21,13 +21,13 @@ meta_mgr_init(MetaMgr* self, MetaIf* iface, void* iface_arg)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
-	meta_cache_init(&self->cache);
+	handle_mgr_init(&self->mgr);
 }
 
 void
 meta_mgr_free(MetaMgr* self)
 {
-	meta_cache_free(&self->cache);
+	handle_mgr_free(&self->mgr);
 }
 
 void
@@ -37,7 +37,7 @@ meta_mgr_create(MetaMgr*     self,
                 bool         if_not_exists)
 {
 	// make sure meta does not exists
-	auto current = meta_cache_find(&self->cache, &config->name, false);
+	auto current = meta_mgr_find(self, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -57,7 +57,7 @@ meta_mgr_create(MetaMgr*     self,
 	auto op = meta_op_create(config);
 
 	// update metas
-	mvcc_write_handle(trx, LOG_CREATE_META, &self->cache.cache, &meta->handle, op);
+	mvcc_write_handle(trx, LOG_CREATE_META, &self->mgr, &meta->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -69,7 +69,7 @@ meta_mgr_drop(MetaMgr*     self,
               Str*         name,
               bool         if_exists)
 {
-	auto meta = meta_cache_find(&self->cache, name, false);
+	auto meta = meta_mgr_find(self, name, false);
 	if (! meta)
 	{
 		if (! if_exists)
@@ -86,8 +86,51 @@ meta_mgr_drop(MetaMgr*     self,
 	handle_init(&drop);
 	drop.name = name;
 
-	// update cache
-	mvcc_write_handle(trx, LOG_DROP_META, &self->cache.cache, &drop, op);
+	// update mgr
+	mvcc_write_handle(trx, LOG_DROP_META, &self->mgr, &drop, op);
 
 	buf_unpin(op);
+}
+
+void
+meta_mgr_dump(MetaMgr* self, Buf* buf)
+{
+	// array
+	encode_array(buf, self->mgr.list_count);
+	list_foreach(&self->mgr.list)
+	{
+		auto meta = meta_of(list_at(Handle, link));
+		meta_config_write(meta->config, buf);
+	}
+}
+
+Meta*
+meta_mgr_find(MetaMgr* self, Str* name, bool error_if_not_exists)
+{
+	auto handle = handle_mgr_get(&self->mgr, name);
+	if (! handle)
+	{
+		if (error_if_not_exists)
+			error("object '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return NULL;
+	}
+	return meta_of(handle);
+}
+
+Buf*
+meta_mgr_list(MetaMgr* self)
+{
+	auto buf = msg_create(MSG_OBJECT);
+	// map
+	encode_map(buf, self->mgr.list_count);
+	list_foreach(&self->mgr.list)
+	{
+		// name: {}
+		auto meta = meta_of(list_at(Handle, link));
+		encode_string(buf, &meta->config->name);
+		meta_config_write(meta->config, buf);
+	}
+	msg_end(buf);
+	return buf;
 }
