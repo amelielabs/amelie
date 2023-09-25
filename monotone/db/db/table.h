@@ -14,8 +14,6 @@ struct Table
 	TableConfig* config;
 };
 
-extern HandleIf table_if;
-
 static inline void
 table_free(Table* self)
 {
@@ -31,7 +29,7 @@ table_allocate(TableConfig* config)
 	self->config = NULL;
 	handle_init(&self->handle);
 	handle_set_name(&self->handle, &self->config->name);
-	handle_set_iface(&self->handle, &table_if, self);
+	handle_set_free_function(&self->handle, (HandleFree)table_free);
 	guard(self_guard, table_free, self);
 	self->config = table_config_copy(config);
 	return unguard(&self_guard);
@@ -47,17 +45,4 @@ static inline Schema*
 table_schema(Table* self)
 {
 	return &self->config->config->schema;
-}
-
-static inline void
-table_ref(Table* self)
-{
-	handle_ref(&self->handle);
-}
-
-static inline void
-table_unref(Table* self)
-{
-	// free
-	handle_unref(&self->handle);
 }

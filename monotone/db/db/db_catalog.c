@@ -23,9 +23,9 @@ db_catalog_dump(Catalog* cat, Buf* buf)
 	Db* self = cat->iface_arg;
 	encode_map(buf, 2);
 	encode_raw(buf, "tables", 6);
-	table_cache_dump(&self->table_mgr.cache, buf);
+	table_mgr_dump(&self->table_mgr, buf);
 	encode_raw(buf, "metas", 5);
-	meta_cache_dump(&self->meta_mgr.cache, buf);
+	meta_mgr_dump(&self->meta_mgr, buf);
 }
 
 static void
