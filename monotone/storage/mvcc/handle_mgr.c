@@ -88,3 +88,25 @@ handle_mgr_commit(HandleMgr* self, Handle* handle, Handle* prev, uint64_t lsn)
 	if (prev)
 		handle_free(prev);
 }
+
+void
+handle_mgr_write(HandleMgr*   self,
+                 Transaction* trx,
+                 LogCmd       cmd,
+                 Handle*      handle,
+                 Buf*         data)
+{
+	log_reserve(&trx->log);
+
+	// update handle mgr
+	Handle* prev = NULL;
+	if (cmd == LOG_CREATE_TABLE ||
+	    cmd == LOG_ALTER_TABLE  ||
+	    cmd == LOG_CREATE_META)
+		prev = handle_mgr_set(self, handle);
+	else
+		prev = handle_mgr_delete(self, handle->name);
+
+	// update transaction log
+	log_add_write_handle(&trx->log, cmd, self, handle, prev, data);
+}

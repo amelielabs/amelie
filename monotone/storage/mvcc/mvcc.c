@@ -49,10 +49,11 @@ mvcc_commit(Transaction* self)
 		switch (op->type) {
 		case LOG_WRITE:
 		{	
-			// add row to the commit list and update commit lsn
-			// free previous row
-			heap_commit(op->write.heap, op->write.row, op->write.prev, self->lsn);
-			lock_unlock(op->write.locker);
+			// free previous version and set lsn
+			op->write.iface->commit(op->write.iface_arg,
+			                        op->write.row,
+			                        op->write.prev,
+			                        self->lsn);
 			break;
 		}
 		case LOG_WRITE_HANDLE:
@@ -88,8 +89,9 @@ mvcc_abort(Transaction* self)
 		case LOG_WRITE:
 		{	
 			// remove operation from the heap
-			heap_abort(op->write.heap, op->write.row, op->write.prev);
-			lock_unlock(op->write.locker);
+			op->write.iface->abort(op->write.iface_arg,
+			                       op->write.row,
+			                       op->write.prev);
 			break;
 		}
 		case LOG_WRITE_HANDLE:
@@ -108,52 +110,4 @@ mvcc_abort(Transaction* self)
 	}
 
 	mvcc_end(self, true);
-}
-
-hot bool
-mvcc_write(Transaction* self,
-           LogCmd       cmd,
-           Heap*        heap,
-           Locker*      locker,
-           Row*         row)
-{
-	log_reserve(&self->log);
-
-	// update heap
-	Row* prev = NULL;
-	if (cmd == LOG_WRITE)
-		prev = heap_set(heap, row);
-	else
-	if (cmd == LOG_DELETE)
-		prev = heap_delete(heap, row);
-
-	// update transaction log
-	log_add_write(&self->log, cmd, heap, locker, row, prev);
-
-	// is update unique key
-	bool update;
-	update = cmd == LOG_WRITE && prev;
-	return update;
-}
-
-void
-mvcc_write_handle(Transaction* self,
-                  LogCmd       cmd,
-                  HandleMgr*   handle_mgr,
-                  Handle*      handle,
-                  Buf*         data)
-{
-	log_reserve(&self->log);
-
-	// update handle mgr
-	Handle* prev = NULL;
-	if (cmd == LOG_CREATE_TABLE ||
-	    cmd == LOG_ALTER_TABLE  ||
-	    cmd == LOG_CREATE_META)
-		prev = handle_mgr_set(handle_mgr, handle);
-	else
-		prev = handle_mgr_delete(handle_mgr, handle->name);
-
-	// update transaction log
-	log_add_write_handle(&self->log, cmd, handle_mgr, handle, prev, data);
 }

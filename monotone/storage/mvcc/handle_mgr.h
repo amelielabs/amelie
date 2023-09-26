@@ -21,3 +21,4 @@ Handle* handle_mgr_delete(HandleMgr*, Str*);
 Handle* handle_mgr_get(HandleMgr*, Str*);
 void    handle_mgr_abort(HandleMgr*, Handle*, Handle*);
 void    handle_mgr_commit(HandleMgr*, Handle*, Handle*, uint64_t);
+void    handle_mgr_write(HandleMgr*, Transaction*, LogCmd, Handle*, Buf*);
