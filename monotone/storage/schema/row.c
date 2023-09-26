@@ -61,22 +61,7 @@ row_create(Schema* schema, uint8_t* data, int data_size)
 	auto self = row_allocate(schema, data_size);
 	self->is_partial = is_partial;
 	for (int i = 0; i < schema->key_count; i++)
-		row_key_set_index(self, i, index[i]);
-	memcpy(row_of(self, schema), data, data_size);
-
-	// calculate hash
-
-	/*
-	column = schema->key;
-	for (; column; column = column->next_key)
-		self->hash ^= hash_fnv((char*)data + index[column->order_key],
-		                       index_size[column->order_key]);
-   */
-
-	column = schema->key;
-	for (; column; column = column->next_key)
-		self->hash ^= hash_murmur3_32(data + index[column->order_key],
-		                              index_size[column->order_key], 0);
-
+		row_key_set_index(self, schema, i, index[i]);
+	memcpy(row_data(self, schema), data, data_size);
 	return self;
 }
