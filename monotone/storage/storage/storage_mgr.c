@@ -12,7 +12,6 @@
 #include <monotone_config.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 
 void
@@ -20,7 +19,6 @@ storage_mgr_init(StorageMgr* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
-	compact_mgr_init(&self->compact_mgr);
 }
 
 void
@@ -33,8 +31,6 @@ storage_mgr_free(StorageMgr* self)
 	}
 	self->list_count = 0;
 	list_init(&self->list);
-
-	compact_mgr_stop(&self->compact_mgr);
 }
 
 static void
@@ -46,7 +42,20 @@ storage_mgr_save(StorageMgr* self)
 	list_foreach(&self->list)
 	{
 		auto storage = list_at(Storage, link);
+
+		// array
+		encode_array(dump, 2);
+
+		// storage config
 		storage_config_write(storage->config, dump);
+
+		// indexes
+		encode_array(dump, storage->indexes_count);
+		list_foreach(&storage->indexes)
+		{
+			auto index = list_at(Index, link);
+			index_config_write(index->config, dump);
+		}
 	}
 
 	// update and save state
@@ -65,17 +74,35 @@ storage_mgr_recover(StorageMgr* self)
 	if (data_is_null(pos))
 		return;
 
+	// array
 	int count;
 	data_read_array(&pos, &count);
 	for (int i = 0; i < count; i++)
 	{
-		// value
+		// array
+		int count;
+		data_read_array(&pos, &count);
+
+		// storage config
 		auto config = storage_config_read(&pos);
 		guard(config_guard, storage_config_free, config);
 
-		auto storage = storage_allocate(config, &self->compact_mgr);
+		// prepare storage
+		auto storage = storage_allocate(config);
 		list_append(&self->list, &storage->link);
 		self->list_count++;
+
+		// indexes
+		data_read_array(&pos, &count);
+		for (int i = 0; i < count; i++)
+		{
+			auto index_config = index_config_read(&pos);
+			guard(config_index_guard, index_config_free, index_config);
+
+			// todo: chose by type
+			auto index = index_tree_allocate(index_config);
+			storage_attach(storage, index);
+		}
 	}
 }
 
@@ -84,9 +111,6 @@ storage_mgr_open(StorageMgr* self)
 {
 	// recover storages objects
 	storage_mgr_recover(self);
-
-	// start workers
-	compact_mgr_start(&self->compact_mgr, var_int_of(&config()->engine_workers));
 }
 
 void
@@ -120,29 +144,6 @@ storage_mgr_assign(StorageMgr* self, StorageList* list, Uuid* id_shard)
 	}
 }
 
-Storage*
-storage_mgr_create(StorageMgr* self, StorageConfig* config)
-{
-	auto storage = storage_allocate(config, &self->compact_mgr);
-	list_append(&self->list, &storage->link);
-	self->list_count++;
-
-	storage_mgr_save(self);
-	return storage;
-}
-
-Storage*
-storage_mgr_find(StorageMgr* self, Uuid* id)
-{
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		if (uuid_compare(&storage->config->id, id))
-			return storage;
-	}
-	return NULL;
-}
-
 Buf*
 storage_mgr_show(StorageMgr* self)
 {
@@ -171,12 +172,52 @@ storage_mgr_show(StorageMgr* self)
 		storage_config_write(storage->config, buf);
 
 		// engine
-		encode_raw(buf, "engine", 6);
-		EngineStats stats;
-		engine_stats_get(&storage->engine, &stats);
-		engine_stats_write(&stats, buf);
+		encode_raw(buf, "index", 5);
+		encode_array(buf, storage->indexes_count);
+		list_foreach(&storage->indexes)
+		{
+			auto index = list_at(Index, link);
+			index_config_write(index->config, buf);
+		}
 	}
 
 	msg_end(buf);
 	return buf;
+}
+
+Storage*
+storage_mgr_find(StorageMgr* self, Uuid* id)
+{
+	list_foreach(&self->list)
+	{
+		auto storage = list_at(Storage, link);
+		if (uuid_compare(&storage->config->id, id))
+			return storage;
+	}
+	return NULL;
+}
+
+Storage*
+storage_mgr_create(StorageMgr* self, StorageConfig* config)
+{
+	auto storage = storage_allocate(config);
+	list_append(&self->list, &storage->link);
+	self->list_count++;
+
+	storage_mgr_save(self);
+	return storage;
+}
+
+void
+storage_mgr_attach(StorageMgr* self, Storage* storage, Index* index)
+{
+	storage_attach(storage, index);
+	storage_mgr_save(self);
+}
+
+void
+storage_mgr_detach(StorageMgr* self, Storage* storage, Index* index)
+{
+	storage_detach(storage, index);
+	storage_mgr_save(self);
 }
