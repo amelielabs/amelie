@@ -12,7 +12,6 @@
 #include <monotone_config.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 
@@ -52,7 +51,7 @@ table_mgr_create(TableMgr*    self,
 	auto op = table_op_create_table(config);
 
 	// update tables
-	mvcc_write_handle(trx, LOG_CREATE_TABLE, &self->mgr, &table->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_CREATE_TABLE, &table->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -68,7 +67,7 @@ table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
 	Handle drop;
 	handle_init(&drop);
 	drop.name = &table->config->name;
-	mvcc_write_handle(trx, LOG_DROP_TABLE, &self->mgr, &drop, op);
+	handle_mgr_write(&self->mgr, trx, LOG_DROP_TABLE, &drop, op);
 
 	buf_unpin(op);
 }
@@ -122,7 +121,7 @@ table_mgr_alter(TableMgr*    self,
 	auto op = table_op_alter_table(name, config);
 
 	// update tables
-	mvcc_write_handle(trx, LOG_ALTER_TABLE, &self->mgr, &update->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_ALTER_TABLE, &update->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);

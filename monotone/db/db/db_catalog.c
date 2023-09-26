@@ -12,7 +12,6 @@
 #include <monotone_config.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 

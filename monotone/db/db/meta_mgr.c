@@ -12,7 +12,6 @@
 #include <monotone_config.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 
@@ -57,7 +56,7 @@ meta_mgr_create(MetaMgr*     self,
 	auto op = meta_op_create(config);
 
 	// update metas
-	mvcc_write_handle(trx, LOG_CREATE_META, &self->mgr, &meta->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_CREATE_META, &meta->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -87,7 +86,7 @@ meta_mgr_drop(MetaMgr*     self,
 	drop.name = name;
 
 	// update mgr
-	mvcc_write_handle(trx, LOG_DROP_META, &self->mgr, &drop, op);
+	handle_mgr_write(&self->mgr, trx, LOG_DROP_META, &drop, op);
 
 	buf_unpin(op);
 }
