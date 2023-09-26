@@ -15,7 +15,6 @@
 #include <monotone_server.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
@@ -98,12 +97,24 @@ create_table(Session* self)
 		storage_config_set_id_shard(storage_config, &shard->config->id);
 		storage_config_set_range(storage_config, shard->config->range_start,
 		                         shard->config->range_end);
-		schema_copy(&storage_config->schema, &table->config->schema);
 
 		// create storage
 		auto storage = storage_mgr_create(share->storage_mgr, storage_config);
 
-		//storage_config_free(storage_config); # TODO: config not freed
+		// index config
+		auto index_config = index_config_allocate();
+		str_set_cstr(&name, "primary");
+		index_config_set_name(index_config, &name);
+		index_config_set_type(index_config, INDEX_TREE);
+		index_config_set_primary(index_config, true);
+		schema_copy(&index_config->schema, &table->config->schema);
+
+		// create tree index
+		auto index = index_tree_allocate(index_config);
+		index_config_free(index_config);
+
+		// attach index to the storage
+		storage_mgr_attach(share->storage_mgr, storage, index);
 
 		// attach and start storage on shard
 		rpc(&shard->task.channel, RPC_STORAGE_ATTACH, 1, storage);
@@ -131,6 +142,7 @@ create_table_main(Session* self)
 	condition_free(req_lock.on_lock);
 }
 
+#if 0
 static void
 bench(Session* self)
 {
@@ -195,7 +207,7 @@ bench(Session* self)
 			uint8_t* key_data_pos = key_data;
 			data_write_integer(&key_data_pos, key);
 			uint32_t key_hash = hash_murmur3_32(key_data, key_data_pos - key_data, 0);
-			int part_id = key_hash % ROW_PARTITION_MAX;
+			int part_id = key_hash % PARTITION_MAX;
 
 			for (k = 0; k < share->shard_mgr->shards_count; k++)
 			{
@@ -247,6 +259,9 @@ bench(Session* self)
 	portal_write(self->portal, make_float(rps));
 
 }
+#endif
+
+int seq = 0;
 
 static void
 bench_client(void* arg)
@@ -306,13 +321,14 @@ bench_client(void* arg)
 
 		for (int j = 0; j < batch; j++)
 		{
-			int key = rand();
+			//int key = rand();
+			int key = seq++;
 
 			uint8_t  key_data[16];
 			uint8_t* key_data_pos = key_data;
 			data_write_integer(&key_data_pos, key);
 			uint32_t key_hash = hash_murmur3_32(key_data, key_data_pos - key_data, 0);
-			int part_id = key_hash % ROW_PARTITION_MAX;
+			int part_id = key_hash % PARTITION_MAX;
 
 			for (k = 0; k < share->shard_mgr->shards_count; k++)
 			{

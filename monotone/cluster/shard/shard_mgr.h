@@ -102,7 +102,7 @@ shard_mgr_create(ShardMgr* self, int count)
 	memset(self->shards, 0, allocated);
 
 	// partition_max / shards_count
-	int range_max      = 8096;
+	int range_max      = PARTITION_MAX;
 	int range_interval = range_max / count;
 	int range_start    = 0;
 

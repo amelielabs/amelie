@@ -15,7 +15,6 @@
 #include <monotone_server.h>
 #include <monotone_schema.h>
 #include <monotone_mvcc.h>
-#include <monotone_engine.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
@@ -81,7 +80,6 @@ shard_rpc(Rpc* rpc, void* arg)
 	{
 		Storage* storage = rpc_arg_ptr(rpc, 0);
 		storage_list_add(&self->storage_list, storage);
-		storage_open(storage, true);
 		break;
 	}
 	case RPC_STORAGE_DETACH:
