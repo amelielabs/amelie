@@ -21,6 +21,8 @@ struct Schema
 	int      key_count;
 	int      key_exclude;
 	bool     key_unique;
+	// row
+	int      reserved;
 };
 
 static inline Column*
@@ -42,6 +44,7 @@ schema_init(Schema* self)
 	self->key_count    = 0;
 	self->key_exclude  = 0;
 	self->key_unique   = false;
+	self->reserved     = 0;
 }
 
 static inline void
@@ -56,6 +59,12 @@ schema_free(Schema* self)
 	}
 	if (self->column_index)
 		mn_free(self->column_index);
+}
+
+static inline void
+schema_set_reserved(Schema* self, int size)
+{
+	self->reserved = size;
 }
 
 static inline void
@@ -139,12 +148,13 @@ schema_copy(Schema* self, Schema* src)
 	}
 	self->key_exclude = src->key_exclude;
 	self->key_unique  = src->key_unique;
+	self->reserved    = src->reserved;
 }
 
 static inline void
 schema_read(Schema* self, uint8_t** pos)
 {
-	// { column:[], key_unique, key_exclude, key:[] }
+	// { column:[], key_unique, key_exclude, key:[], reserved }
 	int count;
 	data_read_map(pos, &count);
 
@@ -181,13 +191,19 @@ schema_read(Schema* self, uint8_t** pos)
 			error("schema column is not found");
 		schema_add_key(self, key);
 	}
+
+	// reserved
+	data_skip(pos);
+	int64_t reserved;
+	data_read_integer(pos, &reserved);
+	self->reserved = reserved;
 }
 
 static inline void
 schema_write(Schema* self, Buf* buf)
 {
-	// { column:[], key_unique, key_exclude, key:[] }
-	encode_map(buf, 4);
+	// { column:[], key_unique, key_exclude, key:[], reserved }
+	encode_map(buf, 5);
 
 	// column
 	encode_raw(buf, "column", 6);
@@ -210,4 +226,8 @@ schema_write(Schema* self, Buf* buf)
 	column = self->key;
 	for (; column; column = column->next_key)
 		encode_string(buf, &column->name);
+
+	// reserved
+	encode_raw(buf, "reserved", 8);
+	encode_integer(buf, self->reserved);
 }
