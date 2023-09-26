@@ -11,13 +11,13 @@
 #include <monotone_lib.h>
 
 void
-rbtree_init(Rbtree *self)
+rbtree_init(Rbtree* self)
 {
 	self->root = NULL;
 }
 
 void
-rbtree_init_node(RbtreeNode *self)
+rbtree_init_node(RbtreeNode* self)
 {
 	self->color = 2;
 	self->p = NULL;

@@ -11,31 +11,31 @@ typedef struct Rbtree     Rbtree;
 
 struct RbtreeNode
 {
-	RbtreeNode *p;
-	RbtreeNode *l, *r;
+	RbtreeNode* p;
+	RbtreeNode* l, *r;
 	char        color;
 };
 
 struct Rbtree
 {
-	RbtreeNode *root;
+	RbtreeNode* root;
 };
 
 #define rbtree_get_def(name) \
 \
 int \
-name(Rbtree       *self, \
-     void         *arg, \
-     void         *key, \
-     rbtree_node **match);\
+name(Rbtree*      self, \
+     void*        arg, \
+     void*        key, \
+     RbtreeNode** match);\
 
 #define rbtree_get(name, compare) \
 \
 int \
-name(Rbtree       *self, \
-     void         *arg, \
-     void         *key, \
-     rbtree_node **match) \
+name(Rbtree*      self, \
+     void*        arg, \
+     void*        key, \
+     RbtreeNode** match) \
 { \
 	unused(arg); \
 	unused(key); \
@@ -58,7 +58,7 @@ name(Rbtree       *self, \
 #define rbtree_free(name, executable) \
 \
 static inline void \
-name(RbtreeNode *n, void *arg) \
+name(RbtreeNode* n, void* arg) \
 { \
 	if (n->l) \
 		name(n->l, arg); \
