@@ -10,15 +10,18 @@ typedef struct Request Request;
 
 struct Request
 {
-	bool       complete;
-	bool       ro;
-	Condition* on_commit;
+	bool         complete;
+	bool         ro;
+	Transaction* trx;
 	// code
-	// transaction
-	Channel*   dst;
-	Channel    src;
-	Buf*       error;
-	List       link;
+	Condition*   on_commit;
+	Channel*     dst;
+	Channel      src;
+	Buf*         error;
+	List         link;
+
+	Buf*         buf;
+	int*         buf_count;
 };
 
 always_inline hot static inline Request*
@@ -33,6 +36,7 @@ request_allocate(void)
 	Request* self = mn_malloc(sizeof(*self));
 	self->complete  = false;
 	self->ro        = false;
+	self->trx       = NULL;
 	self->on_commit = NULL;
 	self->dst       = NULL;
 	self->error     = NULL;
