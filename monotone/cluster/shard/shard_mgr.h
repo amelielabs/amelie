@@ -121,7 +121,7 @@ shard_mgr_create(ShardMgr* self, int count)
 
 		// set shard range
 		int range_step;
-		if (! ((i + 1) < count))
+		if ((i + 1) < count)
 			range_step = range_interval;
 		else
 			range_step = range_max - range_start;
@@ -129,6 +129,8 @@ shard_mgr_create(ShardMgr* self, int count)
 			range_step = range_max - range_start;
 
 		shard_config_set_range(config, range_start, range_start + range_step);
+
+		range_start += range_step;
 
 		// register
 		auto shard = shard_allocate(config);
@@ -165,6 +167,6 @@ shard_mgr_assign(ShardMgr* self, StorageMgr* storage_mgr)
 	for (int i = 0; i < self->shards_count; i++)
 	{
 		auto shard = self->shards[i];
-		storage_mgr_assign(storage_mgr, &shard->storages, &shard->config->id);
+		storage_mgr_assign(storage_mgr, &shard->storage_list, &shard->config->id);
 	}
 }
