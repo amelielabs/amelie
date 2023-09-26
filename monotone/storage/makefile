@@ -20,17 +20,10 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-storage.a
 OBJECTS        = \
                  schema/row.o \
-                 mvcc/heap.o \
                  mvcc/handle_mgr.o \
                  mvcc/mvcc.o \
-                 engine/compact.o \
-                 engine/service.o \
-                 engine/engine.o \
-                 engine/engine_recover.o \
-                 engine/engine_stats.o \
-                 engine/compaction.o \
+                 storage/index_tree.o \
                  storage/storage.o \
-                 storage/storage_iterator.o \
                  storage/storage_mgr.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
