@@ -12,6 +12,7 @@ typedef struct Session Session;
 struct Session
 {
 	Transaction  trx;
+	Locker*      cat_locker;
 	RequestSet   req_set;
 	RequestCache req_cache;
 	Portal*      portal;

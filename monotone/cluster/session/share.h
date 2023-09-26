@@ -10,8 +10,10 @@ typedef struct Share Share;
 
 struct Share
 {
-	TableMgr*     table_mgr;
 	MetaMgr*      meta_mgr;
+	TableMgr*     table_mgr;
+	StorageMgr*   storage_mgr;
 	ShardMgr*     shard_mgr;
 	RequestSched* req_sched;
+	Lock*         cat_lock;
 };
