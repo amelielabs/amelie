@@ -77,3 +77,23 @@ hub_mgr_sync_user_cache(HubMgr* self, UserCache* user_cache)
 		rpc(&hub->task.channel, RPC_USER_CACHE_SYNC, 1, user_cache);
 	}
 }
+
+static inline void
+hub_mgr_cat_lock(HubMgr* self)
+{
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto hub = &self->workers[i];
+		rpc(&hub->task.channel, RPC_CAT_LOCK, 0);
+	}
+}
+
+static inline void
+hub_mgr_cat_unlock(HubMgr* self)
+{
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto hub = &self->workers[i];
+		rpc(&hub->task.channel, RPC_CAT_UNLOCK, 0);
+	}
+}

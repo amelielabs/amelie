@@ -119,7 +119,20 @@ hub_rpc(Rpc* rpc, void* arg)
 		user_cache_sync(&self->user_cache, with);
 		break;
 	}
-	// lock/unlock
+	case RPC_CAT_LOCK:
+	{
+		// take exclusive catalog lock
+		assert(! self->cat_locker);
+		self->cat_locker = lock_lock(&self->cat_lock, false);
+		break;
+	}
+	case RPC_CAT_UNLOCK:
+	{
+		assert(self->cat_locker);
+		lock_unlock(self->cat_locker);
+		self->cat_locker = NULL;
+		break;
+	}
 	case RPC_STOP:
 	{
 		// disconnect clients
@@ -174,8 +187,10 @@ void
 hub_init(Hub* self, Share* share)
 {
 	self->share = *share;
-	// set lock
-
+	self->share.cat_lock = &self->cat_lock;
+	self->cat_locker = NULL;
+	locker_cache_init(&self->cat_lock_cache);
+	lock_init(&self->cat_lock, &self->cat_lock_cache);
 	client_mgr_init(&self->client_mgr);
 	user_cache_init(&self->user_cache);
 	task_init(&self->task, mn_task->buf_cache);
@@ -184,6 +199,7 @@ hub_init(Hub* self, Share* share)
 void
 hub_free(Hub* self)
 {
+	locker_cache_free(&self->cat_lock_cache);
 	client_mgr_free(&self->client_mgr);
 	user_cache_free(&self->user_cache);
 }
