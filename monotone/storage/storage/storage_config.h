@@ -15,9 +15,6 @@ struct StorageConfig
 	Uuid    id_shard;
 	int64_t range_start;
 	int64_t range_end;
-	int64_t compression;
-	bool    crc;
-	Schema  schema;
 };
 
 static inline StorageConfig*
@@ -27,19 +24,15 @@ storage_config_allocate(void)
 	self = mn_malloc(sizeof(StorageConfig));
 	self->range_start = 0;
 	self->range_end   = 0;
-	self->compression = COMPRESSION_OFF;
-	self->crc         = false;
 	uuid_init(&self->id);
 	uuid_init(&self->id_table);
 	uuid_init(&self->id_shard);
-	schema_init(&self->schema);
 	return self;
 }
 
 static inline void
 storage_config_free(StorageConfig* self)
 {
-	schema_free(&self->schema);
 	mn_free(self);
 }
 
@@ -68,18 +61,6 @@ storage_config_set_range(StorageConfig* self, int start, int end)
 	self->range_end   = end;
 }
 
-static inline void
-storage_config_set_compression(StorageConfig* self, int id)
-{
-	self->compression = id;
-}
-
-static inline void
-storage_config_set_crc(StorageConfig* self, bool crc)
-{
-	self->crc = crc;
-}
-
 static inline StorageConfig*
 storage_config_copy(StorageConfig* self)
 {
@@ -89,9 +70,6 @@ storage_config_copy(StorageConfig* self)
 	storage_config_set_id_table(copy, &self->id_table);
 	storage_config_set_id_shard(copy, &self->id_shard);
 	storage_config_set_range(copy, self->range_start, self->range_end);
-	storage_config_set_compression(copy, self->compression);
-	storage_config_set_crc(copy, self->crc);
-	schema_copy(&copy->schema, &self->schema);
 	return unguard(&copy_guard);
 }
 
@@ -128,18 +106,6 @@ storage_config_read(uint8_t** pos)
 	// range_end
 	data_skip(pos);
 	data_read_integer(pos, &self->range_end);
-
-	// compression
-	data_skip(pos);
-	data_read_integer(pos, &self->compression);
-
-	// crc
-	data_skip(pos);
-	data_read_bool(pos, &self->crc);
-
-	// schema
-	data_skip(pos);
-	schema_read(&self->schema, pos);
 	return unguard(&self_guard);
 }
 
@@ -147,7 +113,7 @@ static inline void
 storage_config_write(StorageConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 8);
+	encode_map(buf, 5);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -172,16 +138,4 @@ storage_config_write(StorageConfig* self, Buf* buf)
 	// range_end
 	encode_raw(buf, "range_end", 9);
 	encode_integer(buf, self->range_end);
-
-	// compression
-	encode_raw(buf, "compression", 11);
-	encode_integer(buf, self->compression);
-
-	// crc
-	encode_raw(buf, "crc", 3);
-	encode_bool(buf, self->crc);
-
-	// schema
-	encode_raw(buf, "schema", 6);
-	schema_write(&self->schema, buf);
 }
