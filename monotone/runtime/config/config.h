@@ -27,10 +27,6 @@ struct Config
 	Var  tls_key;
 	// server
 	Var  listen;
-	// engine
-	Var  engine_workers;
-	Var  engine_partition;
-	Var  engine_split;
 	// wal
 	Var  wal_rotate_wm;
 	Var  wal_sync_on_rotate;
@@ -45,7 +41,6 @@ struct Config
 	Var  cluster_shards;
 	// system
 	Var  lsn;
-	Var  psn;
 	Var  read_only;
 	// state
 	Var  storages;
@@ -59,10 +54,6 @@ struct Config
 	Var  test_int;
 	Var  test_string;
 	Var  test_data;
-	Var  error_engine_merger_1;
-	Var  error_engine_merger_2;
-	Var  error_engine_merger_3;
-	Var  error_engine_merger_4;
 	List list;
 	List list_persistent;
 	int  count;

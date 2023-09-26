@@ -71,9 +71,6 @@ config_prepare(Config* self)
 		{ "tls_key",                 VAR_STRING, VAR_C,                &self->tls_key,                 NULL,        0                },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                &self->tls_ca,                  NULL,        0                },
 		{ "listen",                  VAR_DATA,   VAR_C,                &self->listen,                  NULL,        0                },
-		{ "engine_workers",          VAR_INT,    VAR_C,                &self->engine_workers,          NULL,        1                },
-		{ "engine_partition",        VAR_INT,    VAR_C,                &self->engine_partition,        NULL,        1061008          },
-		{ "engine_split",            VAR_INT,    VAR_C,                &self->engine_split,            NULL,        50               },
 		{ "wal_rotate_wm",           VAR_INT,    VAR_C|VAR_R,          &self->wal_rotate_wm,           NULL,        10485760         },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                &self->wal_sync_on_rotate,      NULL,        false            },
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                &self->wal_sync_on_write,       NULL,        false            },
@@ -84,7 +81,6 @@ config_prepare(Config* self)
 		{ "cluster_hubs",            VAR_INT,    VAR_C,                &self->cluster_hubs,            NULL,        1                },
 		{ "cluster_shards",          VAR_INT,    VAR_C,                &self->cluster_shards,          NULL,        1                },
 		{ "lsn",                     VAR_INT,    0,                    &self->lsn,                     NULL,        0                },
-		{ "psn",                     VAR_INT,    0,                    &self->psn,                     NULL,        0                },
 		{ "read_only",               VAR_BOOL,   0,                    &self->read_only,               NULL,        false            },
 		{ "storages",                VAR_DATA,   VAR_H|VAR_P,          &self->storages,                NULL,        0                },
 		{ "shards",                  VAR_DATA,   VAR_H|VAR_P,          &self->shards,                  NULL,        0                },
@@ -97,10 +93,6 @@ config_prepare(Config* self)
 		{ "test_int",                VAR_INT,    VAR_H|VAR_R,          &self->test_int,                NULL,        0                },
 		{ "test_string",             VAR_STRING, VAR_H|VAR_R,          &self->test_string,             NULL,        0                },
 		{ "test_data",               VAR_DATA,   VAR_H|VAR_R,          &self->test_data,               NULL,        0                },
-		{ "error_engine_merger_1",   VAR_BOOL,   VAR_H|VAR_R,          &self->error_engine_merger_1,   NULL,        false            },
-		{ "error_engine_merger_2",   VAR_BOOL,   VAR_H|VAR_R,          &self->error_engine_merger_2,   NULL,        false            },
-		{ "error_engine_merger_3",   VAR_BOOL,   VAR_H|VAR_R,          &self->error_engine_merger_3,   NULL,        false            },
-		{ "error_engine_merger_4",   VAR_BOOL,   VAR_H|VAR_R,          &self->error_engine_merger_4,   NULL,        false            },
 		{  NULL,                     0,             0,                 NULL,                           NULL,        0                },
 	};
 	for (int i = 0; defaults[i].name != NULL; i++)
