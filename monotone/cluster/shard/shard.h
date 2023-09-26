@@ -10,7 +10,7 @@ typedef struct Shard Shard;
 
 struct Shard
 {
-	StorageList  storages;
+	StorageList  storage_list;
 	ShardConfig* config;
 	Task         task;
 };

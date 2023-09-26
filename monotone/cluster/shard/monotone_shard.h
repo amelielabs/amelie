@@ -12,6 +12,9 @@
 #include "shard/request_set.h"
 #include "shard/request_sched.h"
 
+// lock
+#include "shard/request_lock.h"
+
 // shard
 #include "shard/shard_config.h"
 #include "shard/shard.h"

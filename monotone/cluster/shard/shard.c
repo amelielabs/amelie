@@ -20,6 +20,17 @@
 #include <monotone_db.h>
 #include <monotone_shard.h>
 
+static inline Storage*
+storage_list_first(StorageList* self)
+{
+	list_foreach(&self->list)
+	{
+		auto storage = list_at(Storage, link_list);
+		return storage;
+	}
+	return NULL;
+}
+
 static void
 shard_request(Shard* self, Request* req)
 {
@@ -28,6 +39,26 @@ shard_request(Shard* self, Request* req)
 	auto ro = req->ro;
 	auto on_commit = condition_create();
 	req->on_commit = on_commit;
+
+	// execute
+
+	Transaction trx;
+	transaction_init(&trx);
+	mvcc_begin(&trx);
+
+	auto storage = storage_list_first(&self->storage_list);
+	uint8_t* pos = req->buf->start;
+	int i = 0;
+	for (; i < *req->buf_count; i++)
+	{
+		uint8_t* start = pos;
+		data_skip(&pos);
+
+		storage_write(storage, &trx, LOG_REPLACE, false, start, pos - start);
+	}
+
+	mvcc_commit(&trx);
+	transaction_free(&trx);
 
 	// OK
 	auto reply = msg_create(MSG_OK);
@@ -45,8 +76,16 @@ static void
 shard_rpc(Rpc* rpc, void* arg)
 {
 	Shard* self = arg;
-	unused(self);
 	switch (rpc->id) {
+	case RPC_STORAGE_ATTACH:
+	{
+		Storage* storage = rpc_arg_ptr(rpc, 0);
+		storage_list_add(&self->storage_list, storage);
+		storage_open(storage, true);
+		break;
+	}
+	case RPC_STORAGE_DETACH:
+		break;
 	case RPC_STOP:
 		break;
 	default:
@@ -85,7 +124,7 @@ shard_allocate(ShardConfig* config)
 	Shard* self;
 	self = mn_malloc(sizeof(*self));
 	task_init(&self->task, mn_task->buf_cache);
-	storage_list_init(&self->storages);
+	storage_list_init(&self->storage_list);
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
 	return unguard(&self_guard);
