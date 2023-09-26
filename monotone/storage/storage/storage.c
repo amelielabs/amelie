@@ -25,12 +25,14 @@ storage_allocate(StorageConfig* config, CompactMgr* compact_mgr)
 	auto engine_config = &self->engine_config;
 	engine_config->id          = &config->id;
 	engine_config->range_start = config->range_start;
-	engine_config->range_end   = config->range_start;
+	engine_config->range_end   = config->range_end;
 	engine_config->compression = config->compression;
 	engine_config->crc         = config->crc;
 	engine_config->schema      = &config->schema;
-
 	engine_init(&self->engine, engine_config, compact_mgr);
+
+	list_init(&self->link_list);
+	list_init(&self->link);
 	return self;
 }
 

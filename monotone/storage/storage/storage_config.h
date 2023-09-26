@@ -25,9 +25,13 @@ storage_config_allocate(void)
 {
 	StorageConfig *self;
 	self = mn_malloc(sizeof(StorageConfig));
+	self->range_start = 0;
+	self->range_end   = 0;
 	self->compression = COMPRESSION_OFF;
 	self->crc         = false;
 	uuid_init(&self->id);
+	uuid_init(&self->id_table);
+	uuid_init(&self->id_shard);
 	schema_init(&self->schema);
 	return self;
 }
