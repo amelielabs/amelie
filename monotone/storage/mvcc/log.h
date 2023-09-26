@@ -6,8 +6,9 @@
 // SQL OLTP database
 //
 
-typedef struct LogOp LogOp;
-typedef struct Log   Log;
+typedef struct LogOpIf LogOpIf;
+typedef struct LogOp   LogOp;
+typedef struct Log     Log;
 
 typedef enum
 {
@@ -28,6 +29,12 @@ typedef enum
 	LOG_DROP_META
 } LogCmd;
 
+struct LogOpIf
+{
+	void (*commit)(void*, Row*, Row*, uint64_t);
+	void (*abort)(void*, Row*, Row*);
+};
+
 struct LogOp
 {
 	LogType type;
@@ -36,10 +43,10 @@ struct LogOp
 	{
 		struct
 		{
-			void*   heap;
-			Locker* locker;
-			Row*    row;
-			Row*    prev;
+			Row*     row;
+			Row*     prev;
+			LogOpIf* iface;
+			void*    iface_arg;
 		} write;
 		struct
 		{
@@ -94,21 +101,21 @@ log_reserve(Log* self)
 }
 
 static inline void
-log_add_write(Log*    self,
-              LogCmd  cmd,
-              void*   heap,
-              Locker* locker,
-              Row*    row,
-              Row*    prev)
+log_add_write(Log*     self,
+              LogCmd   cmd,
+              LogOpIf* iface,
+              void*    iface_arg,
+              Row*     row,
+              Row*     prev)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->type         = LOG_WRITE;
-	op->cmd          = cmd;
-	op->write.heap   = heap;
-	op->write.locker = locker;
-	op->write.row    = row;
-	op->write.prev   = prev;
+	op->type            = LOG_WRITE;
+	op->cmd             = cmd;
+	op->write.iface     = iface;
+	op->write.iface_arg = iface_arg;
+	op->write.row       = row;
+	op->write.prev      = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 }
