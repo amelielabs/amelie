@@ -81,10 +81,12 @@ core_create(void)
 
 	// shared between hubs
 	auto share = &self->share;
-	share->table_mgr = &self->db.table_mgr;
-	share->meta_mgr  = &self->db.meta_mgr;
-	share->shard_mgr = &self->shard_mgr;
-	share->req_sched = &self->req_sched;
+	share->meta_mgr    = &self->db.meta_mgr;
+	share->table_mgr   = &self->db.table_mgr;
+	share->storage_mgr = &self->db.storage_mgr;
+	share->shard_mgr   = &self->shard_mgr;
+	share->req_sched   = &self->req_sched;
+	share->cat_lock    = NULL;
 
 	return self;
 }
@@ -280,6 +282,27 @@ core_rpc(Rpc* rpc, void* arg)
 	}
 }
 
+static void
+core_catalog_lock(Core* self, RequestLock* req_lock)
+{
+	// get exlusive catalog lock on each hub
+	hub_mgr_cat_lock(&self->hub_mgr);
+
+	// notify on completion
+	auto on_unlock = condition_create();
+	req_lock->on_unlock = on_unlock;
+	condition_signal(req_lock->on_lock);
+
+	// wait for unlock
+	condition_wait(on_unlock, -1);
+
+	// release exclusive lock from hubs
+	hub_mgr_cat_unlock(&self->hub_mgr);
+
+	// done
+	condition_free(on_unlock);
+}
+
 void
 core_main(Core* self)
 {
@@ -300,6 +323,12 @@ core_main(Core* self)
 
 		if (msg->id == RPC_STOP)
 			break;
+
+		if (msg->id == RPC_CAT_LOCK_REQ)
+		{
+			core_catalog_lock(self, request_lock_of(buf));
+			continue;
+		}
 
 		// core command
 		rpc_execute(buf, core_rpc, self);
