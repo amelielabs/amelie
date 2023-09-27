@@ -14,7 +14,7 @@
 #include <monotone_client.h>
 #include <monotone_server.h>
 #include <monotone_schema.h>
-#include <monotone_mvcc.h>
+#include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
@@ -43,7 +43,7 @@ shard_request(Shard* self, Request* req)
 
 	Transaction trx;
 	transaction_init(&trx);
-	mvcc_begin(&trx);
+	transaction_begin(&trx);
 
 	auto storage = storage_list_first(&self->storage_list);
 	uint8_t* pos = req->buf->start;
@@ -56,7 +56,7 @@ shard_request(Shard* self, Request* req)
 		storage_write(storage, &trx, LOG_REPLACE, false, start, pos - start);
 	}
 
-	mvcc_commit(&trx);
+	transaction_commit(&trx);
 	transaction_free(&trx);
 
 	// OK

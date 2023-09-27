@@ -14,7 +14,7 @@
 #include <monotone_client.h>
 #include <monotone_server.h>
 #include <monotone_schema.h>
-#include <monotone_mvcc.h>
+#include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
@@ -54,7 +54,7 @@ create_table(Session* self)
 		return;
 
 	// create table
-	mvcc_begin(trx);
+	transaction_begin(trx);
 
 	// table config
 	auto config = table_config_allocate();
@@ -78,7 +78,7 @@ create_table(Session* self)
 	//wal_write(&self->db->wal, &trx->log);
 
 	transaction_set_lsn(trx, trx->log.lsn);
-	mvcc_commit(trx);
+	transaction_commit(trx);
 
 	// find table
 	str_set_cstr(&name, "test");
@@ -179,7 +179,7 @@ bench(Session* self)
 	int batch = 1000;
 	for (i = 0; i < count / batch; i++)
 	{
-//		mvcc_begin(trx);
+//		transaction_begin(trx);
 
 		// prepare
 		int k = 0;
@@ -233,7 +233,7 @@ bench(Session* self)
 		// todo: wal write
 //		transaction_set_lsn(trx, trx->log.lsn);
 
-//		mvcc_commit(trx);
+//		transaction_commit(trx);
 
 		// signal shard on commit
 		list_foreach(&self->req_set.list)
@@ -299,7 +299,7 @@ bench_client(void* arg)
 	int batch = 1000;
 	for (i = 0; i < count / batch; i++)
 	{
-//		mvcc_begin(trx);
+//		transaction_begin(trx);
 
 		// prepare
 		int k = 0;
@@ -353,7 +353,7 @@ bench_client(void* arg)
 
 		// todo: wal write
 //		transaction_set_lsn(trx, trx->log.lsn);
-//		mvcc_commit(trx);
+//		transaction_commit(trx);
 
 		// signal shard on commit
 		list_foreach(&req_set.list)

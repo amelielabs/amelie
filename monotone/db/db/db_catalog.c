@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_schema.h>
-#include <monotone_mvcc.h>
+#include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_db.h>
 
@@ -42,7 +42,7 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 	if (try(&e))
 	{
 		// start transaction
-		mvcc_begin(&trx);
+		transaction_begin(&trx);
 		transaction_set_auto_commit(&trx);
 
 		// read table config
@@ -55,13 +55,13 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 
 	if (catch(&e))
 	{
-		mvcc_abort(&trx);
+		transaction_abort(&trx);
 		rethrow();
 	}
 
 	// set lsn and commit
 	transaction_set_lsn(&trx, lsn);
-	mvcc_commit(&trx);
+	transaction_commit(&trx);
 }
 
 static void
@@ -79,7 +79,7 @@ db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
 	if (try(&e))
 	{
 		// start transaction
-		mvcc_begin(&trx);
+		transaction_begin(&trx);
 		transaction_set_auto_commit(&trx);
 
 		// read table config
@@ -92,13 +92,13 @@ db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
 
 	if (catch(&e))
 	{
-		mvcc_abort(&trx);
+		transaction_abort(&trx);
 		rethrow();
 	}
 
 	// set lsn and commit
 	transaction_set_lsn(&trx, lsn);
-	mvcc_commit(&trx);
+	transaction_commit(&trx);
 }
 
 static void

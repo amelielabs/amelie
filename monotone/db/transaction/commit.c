@@ -11,10 +11,10 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_schema.h>
-#include <monotone_mvcc.h>
+#include <monotone_transaction.h>
 
 void
-mvcc_begin(Transaction* self)
+transaction_begin(Transaction* self)
 {
 	if (unlikely(transaction_active(self)))
 		error("transaction is active");
@@ -26,7 +26,7 @@ mvcc_begin(Transaction* self)
 }
 
 static inline void
-mvcc_end(Transaction* self, bool aborted)
+transaction_end(Transaction* self, bool aborted)
 {
 	// reset log
 	log_reset(&self->log);
@@ -38,7 +38,7 @@ mvcc_end(Transaction* self, bool aborted)
 }
 
 hot void
-mvcc_commit(Transaction* self)
+transaction_commit(Transaction* self)
 {
 	if (unlikely(! transaction_active(self)))
 		error("transaction is not active");
@@ -70,11 +70,11 @@ mvcc_commit(Transaction* self)
 		}
 	}
 
-	mvcc_end(self, false);
+	transaction_end(self, false);
 }
 
 void
-mvcc_abort(Transaction* self)
+transaction_abort(Transaction* self)
 {
 	if (unlikely(! transaction_active(self)))
 		error("transaction is not active");
@@ -109,5 +109,5 @@ mvcc_abort(Transaction* self)
 		log_delete_last(&self->log);
 	}
 
-	mvcc_end(self, true);
+	transaction_end(self, true);
 }

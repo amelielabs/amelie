@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_schema.h>
-#include <monotone_mvcc.h>
+#include <monotone_transaction.h>
 #include <monotone_storage.h>
 
 Storage*
