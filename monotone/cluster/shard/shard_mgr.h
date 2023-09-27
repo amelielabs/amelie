@@ -89,6 +89,9 @@ shard_mgr_open(ShardMgr* self)
 
 		auto shard = shard_allocate(config);
 		self->shards[i] = shard;
+
+		// set shard order
+		shard->order = i;
 	}
 }
 
@@ -132,9 +135,12 @@ shard_mgr_create(ShardMgr* self, int count)
 
 		range_start += range_step;
 
-		// register
+		// create shard
 		auto shard = shard_allocate(config);
 		self->shards[i] = shard;
+
+		// set shard order
+		shard->order = i;
 	}
 
 	shard_mgr_save(self);

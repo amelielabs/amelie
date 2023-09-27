@@ -40,24 +40,18 @@ shard_request(Shard* self, Request* req)
 	req->on_commit = on_commit;
 
 	// execute
-
-	Transaction trx;
-	transaction_init(&trx);
-	transaction_begin(&trx);
+	transaction_begin(&req->trx);
 
 	auto storage = storage_list_first(&self->storage_list);
 	uint8_t* pos = req->buf->start;
 	int i = 0;
-	for (; i < *req->buf_count; i++)
+	for (; i < req->buf_count; i++)
 	{
 		uint8_t* start = pos;
 		data_skip(&pos);
 
-		storage_write(storage, &trx, LOG_REPLACE, false, start, pos - start);
+		storage_write(storage, &req->trx, LOG_REPLACE, false, start, pos - start);
 	}
-
-	transaction_commit(&trx);
-	transaction_free(&trx);
 
 	// OK
 	auto reply = msg_create(MSG_OK);
@@ -68,6 +62,8 @@ shard_request(Shard* self, Request* req)
 	// wait for commit
 	if (! ro)
 		condition_wait(on_commit, -1);
+
+	transaction_commit(&req->trx);
 	condition_free(on_commit);
 }
 
@@ -119,8 +115,8 @@ shard_main(void* arg)
 Shard*
 shard_allocate(ShardConfig* config)
 {
-	Shard* self;
-	self = mn_malloc(sizeof(*self));
+	Shard* self = mn_malloc(sizeof(*self));
+	self->order = 0;
 	task_init(&self->task, mn_task->buf_cache);
 	storage_list_init(&self->storage_list);
 	guard(self_guard, shard_free, self);
