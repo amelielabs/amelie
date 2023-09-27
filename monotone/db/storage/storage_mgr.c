@@ -100,7 +100,7 @@ storage_mgr_recover(StorageMgr* self)
 			guard(config_index_guard, index_config_free, index_config);
 
 			// todo: chose by type
-			auto index = index_tree_allocate(index_config);
+			auto index = index_tree_allocate(index_config, &storage->config->id);
 			storage_attach(storage, index);
 		}
 	}

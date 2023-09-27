@@ -31,8 +31,11 @@ typedef enum
 
 struct LogOpIf
 {
-	void (*commit)(void*, Row*, Row*, uint64_t);
-	void (*abort)(void*, Row*, Row*);
+	bool    (*is_primary)(void*);
+	Uuid*   (*uuid)(void*);
+	Schema* (*schema)(void*);
+	void    (*commit)(void*, Row*, Row*, uint64_t);
+	void    (*abort)(void*, Row*, Row*);
 };
 
 struct LogOp

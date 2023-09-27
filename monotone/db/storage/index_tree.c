@@ -27,6 +27,7 @@ struct IndexTree
 	Index    index;
 	Rbtree   tree;
 	int      tree_count;
+	Uuid*    storage;
 	uint64_t lsn;
 };
 
@@ -145,11 +146,12 @@ index_tree_read(Index* arg)
 }
 
 Index*
-index_tree_allocate(IndexConfig* config)
+index_tree_allocate(IndexConfig* config, Uuid* storage)
 {
 	IndexTree* self = mn_malloc(sizeof(*self));
 	self->tree_count = 0;
 	self->lsn        = 0;
+	self->storage    = storage;
 	rbtree_init(&self->tree);
 
 	index_init(&self->index);
@@ -164,6 +166,27 @@ index_tree_allocate(IndexConfig* config)
 	schema_set_reserved(&self->index.config->schema, sizeof(IndexTreeRow));
 	unguard(&guard);
 	return &self->index;
+}
+
+static bool
+index_tree_is_primary(void* arg)
+{
+	IndexTree* self = arg;
+	return self->index.config->primary;
+}
+
+static Uuid*
+index_tree_uuid(void* arg)
+{
+	IndexTree* self = arg;
+	return self->storage;
+}
+
+static Schema*
+index_tree_schema(void* arg)
+{
+	IndexTree* self = arg;
+	return &self->index.config->schema;
 }
 
 static void
@@ -222,6 +245,9 @@ index_tree_abort(void* arg, Row* row, Row* prev)
 
 LogOpIf index_tree_iface =
 {
-	.commit = index_tree_commit,
-	.abort  = index_tree_abort
+	.is_primary = index_tree_is_primary,
+	.uuid       = index_tree_uuid,
+	.schema     = index_tree_schema,
+	.commit     = index_tree_commit,
+	.abort      = index_tree_abort
 };

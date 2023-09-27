@@ -7,4 +7,4 @@
 //
 
 Index*
-index_tree_allocate(IndexConfig*);
+index_tree_allocate(IndexConfig*, Uuid*);
