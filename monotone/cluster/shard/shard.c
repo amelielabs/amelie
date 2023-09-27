@@ -16,6 +16,7 @@
 #include <monotone_schema.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
+#include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
 
@@ -52,6 +53,10 @@ shard_request(Shard* self, Request* req)
 
 		storage_write(storage, &req->trx, LOG_REPLACE, false, start, pos - start);
 	}
+
+	// prepare wal write
+	if (! ro)
+		wal_record_create(&req->wal_record, &req->trx.log);
 
 	// OK
 	auto reply = msg_create(MSG_OK);

@@ -16,6 +16,7 @@
 #include <monotone_schema.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
+#include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_shard.h>
 #include <monotone_session.h>
@@ -28,6 +29,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->cat_locker = NULL;
 	transaction_init(&self->trx);
 	request_set_init(&self->req_set);
+	wal_record_set_init(&self->wal_record_set);
 }
 
 void
@@ -35,6 +37,7 @@ session_free(Session *self)
 {
 	request_set_reset(&self->req_set);
 	request_set_free(&self->req_set);
+	wal_record_set_free(&self->wal_record_set);
 	transaction_free(&self->trx);
 }
 
@@ -108,7 +111,7 @@ create_table(Session* self)
 		schema_copy(&index_config->schema, &table->config->schema);
 
 		// create tree index
-		auto index = index_tree_allocate(index_config);
+		auto index = index_tree_allocate(index_config, &storage->config->id);
 		index_config_free(index_config);
 
 		// attach index to the storage
@@ -150,6 +153,10 @@ bench_client(void* arg)
 
 	RequestSet req_set;
 	request_set_init(&req_set);
+
+	WalRecordSet wal_record_set;
+	wal_record_set_init(&wal_record_set);
+
 	request_set_create(&req_set, share->shard_mgr->shards_count);
 
 	int count = 10000000 / 10;
@@ -185,8 +192,12 @@ bench_client(void* arg)
 		// wait for completion
 		request_set_wait(&req_set);
 
-		// todo: wal write
-		uint64_t lsn = 0;
+		// add wal records to the wal record set
+		request_set_commit_prepare(&req_set, &wal_record_set);
+
+		// wal write
+		wal_write(share->wal, &wal_record_set);
+		uint64_t lsn = wal_record_set.lsn;
 
 //		transaction_set_lsn(trx, lsn);
 //		transaction_commit(trx);
@@ -194,9 +205,12 @@ bench_client(void* arg)
 		// signal shard on commit
 		request_set_commit(&req_set, lsn);
 		request_set_reset(&req_set);
+
+		wal_record_set_reset(&wal_record_set);
 	}
 
 	request_set_free(&req_set);
+	wal_record_set_free(&wal_record_set);
 }
 
 hot static inline void
@@ -226,6 +240,7 @@ static inline void
 session_prepare(Session* self)
 {
 	request_set_reset(&self->req_set);
+	wal_record_set_reset(&self->wal_record_set);
 }
 
 hot bool

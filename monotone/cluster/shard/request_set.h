@@ -35,7 +35,7 @@ request_set_free(RequestSet* self)
 		for (int i = 0; i < self->set_size; i++)
 		{
 			auto req = &self->set[i];
-			channel_attach(&req->src);
+			channel_detach(&req->src);
 			request_free(req);
 		}
 		mn_free(self->set);
@@ -147,6 +147,20 @@ request_set_wait(RequestSet* self)
 	}
 
 	coroutine_cancel_resume(mn_self());
+}
+
+hot static inline void
+request_set_commit_prepare(RequestSet* self, WalRecordSet* set)
+{
+	for (int i = 0; i < self->set_size; i++)
+	{
+		auto req = &self->set[i];
+		if (! req->active)
+			continue;
+		if (req->wal_record.count == 0)
+			continue;
+		wal_record_set_add(set, &req->wal_record);
+	}
 }
 
 hot static inline void
