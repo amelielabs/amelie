@@ -113,6 +113,32 @@ iov_prepare(Iov* self)
 }
 
 hot static inline void
+iov_import(Iov* self, Iov* from)
+{
+	int size_iov = sizeof(struct iovec) * from->count;
+	buf_reserve(&self->iov, size_iov);
+	buf_advance(&self->iov, size_iov);
+
+	auto iovec = (struct iovec*)self->iov.start;
+	auto chunk = (IovChunk*)from->chunks.start;
+	auto end   = (IovChunk*)from->chunks.position;
+	while (chunk < end)
+	{
+		if (chunk->is_pointer)
+		{
+			iovec->iov_base = chunk->pointer.pointer;
+			iovec->iov_len  = chunk->pointer.size;
+		} else
+		{
+			iovec->iov_base = chunk->buf.buf->start + chunk->buf.offset;
+			iovec->iov_len  = chunk->buf.size;
+		}
+		chunk++;
+		iovec++;
+	}
+}
+
+hot static inline void
 iov_copy(Buf* buf, struct iovec* iov, int count)
 {
 	buf_reset(buf);
