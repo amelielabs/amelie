@@ -8,7 +8,6 @@ CFLAGS_INCLUDE = -I. -I../monotone/main/api
 LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../monotone/runtime/libmonotone-runtime.a \
                   ../monotone/server/libmonotone-server.a \
-                  ../monotone/storage/libmonotone-storage.a \
                   ../monotone/db/libmonotone-db.a \
                   ../monotone/cluster/libmonotone-cluster.a \
 				  ../monotone/main/libmonotone-main.a \

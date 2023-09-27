@@ -11,17 +11,21 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/lib \
                  -I../runtime/config \
-                 -I../storage \
-                 -I../storage/schema \
-                 -I../storage/mvcc \
-                 -I../storage/engine \
-                 -I../storage/storage \
                  -I. \
+                 -Ischema \
+                 -Imvcc \
+                 -Istorage \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-db.a
 OBJECTS        = \
+                 schema/row.o \
+                 mvcc/handle_mgr.o \
+                 mvcc/mvcc.o \
+                 storage/index_tree.o \
+                 storage/storage.o \
+                 storage/storage_mgr.o \
                  db/table_mgr.o \
                  db/meta_mgr.o \
                  db/db.o \

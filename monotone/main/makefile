@@ -15,12 +15,10 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../server/auth \
                  -I../server/client \
                  -I../server/server \
-                 -I../storage \
-                 -I../storage/schema \
-                 -I../storage/mvcc \
-                 -I../storage/engine \
-                 -I../storage/storage \
                  -I../db \
+                 -I../db/schema \
+                 -I../db/mvcc \
+                 -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
                  -I../cluster \
