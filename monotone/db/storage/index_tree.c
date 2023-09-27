@@ -66,8 +66,8 @@ index_tree_set(Index* arg, Transaction* trx, Row* row)
 	auto self = index_tree_of(arg);
 	log_reserve(&trx->log);
 
-	IndexTreeRow* row_tree = row_reserved(row);
-	rbtree_init_node(&row_tree->node);
+	IndexTreeRow* ref = row_reserved(row);
+	rbtree_init_node(&ref->node);
 
 	// replace
 	Row* prev = NULL;
@@ -78,12 +78,13 @@ index_tree_set(Index* arg, Transaction* trx, Row* row)
 	{
 		// replace
 		prev = index_tree_row_of(node);
-		IndexTreeRow* prev_row_tree = row_reserved(prev);
-		rbtree_replace(&self->tree, &prev_row_tree->node, &row_tree->node);
+		IndexTreeRow* ref_prev = row_reserved(prev);
+
+		rbtree_replace(&self->tree, &ref_prev->node, &ref->node);
 	} else
 	{
 		// insert
-		rbtree_set(&self->tree, node, rc, &row_tree->node);
+		rbtree_set(&self->tree, node, rc, &ref->node);
 		self->tree_count++;
 	}
 
@@ -98,8 +99,8 @@ index_tree_delete(Index* arg, Transaction* trx, Row* key)
 	auto self = index_tree_of(arg);
 	log_reserve(&trx->log);
 
-	IndexTreeRow* key_tree = row_reserved(key);
-	rbtree_init_node(&key_tree->node);
+	IndexTreeRow* ref = row_reserved(key);
+	rbtree_init_node(&ref->node);
 
 	// delete by key
 	Row* prev = NULL;
@@ -110,8 +111,8 @@ index_tree_delete(Index* arg, Transaction* trx, Row* key)
 	{
 		// replace
 		prev = index_tree_row_of(node);
-		IndexTreeRow* prev_row_tree = row_reserved(prev);
-		rbtree_remove(&self->tree, &prev_row_tree->node);
+		IndexTreeRow* ref_prev = row_reserved(prev);
+		rbtree_remove(&self->tree, &ref_prev->node);
 	} else
 	{
 		// not exists
@@ -192,10 +193,10 @@ index_tree_abort(void* arg, Row* row, Row* prev)
 		// abort replace
 		rc = index_tree_find(&self->tree, &self->index.config->schema, row, &node);
 		assert(rc == 0 && node);
-		IndexTreeRow* row_tree = row_reserved(row);
-		IndexTreeRow* prev_row_tree = row_reserved(prev);
-		rbtree_init_node(&prev_row_tree->node);
-		rbtree_replace(&self->tree, &row_tree->node, &prev_row_tree->node);
+		IndexTreeRow* ref = row_reserved(row);
+		IndexTreeRow* ref_prev = row_reserved(prev);
+		rbtree_init_node(&ref_prev->node);
+		rbtree_replace(&self->tree, &ref->node, &ref_prev->node);
 		row_free(row);
 	} else
 	if (row)
@@ -203,8 +204,8 @@ index_tree_abort(void* arg, Row* row, Row* prev)
 		// abort insert
 		rc = index_tree_find(&self->tree, &self->index.config->schema, row, &node);
 		assert(rc == 0 && node);
-		IndexTreeRow* row_tree = row_reserved(row);
-		rbtree_remove(&self->tree, &row_tree->node);
+		IndexTreeRow* ref = row_reserved(row);
+		rbtree_remove(&self->tree, &ref->node);
 		self->tree_count--;
 		row_free(row);
 	} else
@@ -212,9 +213,9 @@ index_tree_abort(void* arg, Row* row, Row* prev)
 	{
 		// abort delete
 		rc = index_tree_find(&self->tree, &self->index.config->schema, prev, &node);
-		IndexTreeRow* prev_row_tree = row_reserved(prev);
-		rbtree_init_node(&prev_row_tree->node);
-		rbtree_set(&self->tree, node, rc, &prev_row_tree->node);
+		IndexTreeRow* ref_prev = row_reserved(prev);
+		rbtree_init_node(&ref_prev->node);
+		rbtree_set(&self->tree, node, rc, &ref_prev->node);
 		self->tree_count++;
 	}
 }
