@@ -72,6 +72,7 @@ core_create(void)
 
 	// cluster
 	shard_mgr_init(&self->shard_mgr);
+	shard_map_init(&self->shard_map);
 	hub_mgr_init(&self->hub_mgr);
 	request_sched_init(&self->req_sched);
 
@@ -83,6 +84,7 @@ core_create(void)
 	share->meta_mgr    = &self->db.meta_mgr;
 	share->table_mgr   = &self->db.table_mgr;
 	share->storage_mgr = &self->db.storage_mgr;
+	share->shard_map   = &self->shard_map;
 	share->shard_mgr   = &self->shard_mgr;
 	share->req_sched   = &self->req_sched;
 	share->cat_lock    = NULL;
@@ -94,6 +96,7 @@ void
 core_free(Core* self)
 {
 	shard_mgr_free(&self->shard_mgr);
+	shard_map_free(&self->shard_map);
 	server_free(&self->server);
 	request_sched_free(&self->req_sched);
 	db_free(&self->db);
@@ -196,6 +199,7 @@ core_start(Core* self, bool bootstrap)
 		auto shards = var_int_of(&config()->cluster_shards);
 		shard_mgr_create(&self->shard_mgr, shards);
 	}
+	shard_map_create(&self->shard_map, &self->shard_mgr);
 
 	// set storages per shard
 	shard_mgr_assign(&self->shard_mgr, &self->db.storage_mgr);

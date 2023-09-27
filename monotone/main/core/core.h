@@ -15,6 +15,7 @@ struct Core
 	Db           db;
 	// cluster
 	HubMgr       hub_mgr;
+	ShardMap     shard_map;
 	ShardMgr     shard_mgr;
 	RequestSched req_sched;
 	// server
