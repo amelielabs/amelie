@@ -13,11 +13,17 @@
 #include <monotone_schema.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
+#include <monotone_wal.h>
 #include <monotone_db.h>
 
 void
 recover(Db* self)
 {
-	// todo
-	unused(self);
+	// prepare wal mgr
+	wal_open(&self->wal);
+
+	// todo: replay logs
+
+	// start wal mgr
+	wal_start(&self->wal);
 }

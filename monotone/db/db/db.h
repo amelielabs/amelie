@@ -13,6 +13,7 @@ struct Db
 	MetaMgr    meta_mgr;
 	TableMgr   table_mgr;
 	StorageMgr storage_mgr;
+	Wal        wal;
 };
 
 void db_init(Db*, MetaIf*, void*);

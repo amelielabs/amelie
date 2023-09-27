@@ -13,6 +13,7 @@
 #include <monotone_schema.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
+#include <monotone_wal.h>
 #include <monotone_db.h>
 
 void
@@ -21,6 +22,7 @@ db_init(Db* self, MetaIf* iface, void* arg)
 	storage_mgr_init(&self->storage_mgr);
 	table_mgr_init(&self->table_mgr);
 	meta_mgr_init(&self->meta_mgr, iface, arg);
+	wal_init(&self->wal);
 }
 
 void
@@ -29,6 +31,7 @@ db_free(Db* self)
 	storage_mgr_free(&self->storage_mgr);
 	table_mgr_free(&self->table_mgr);
 	meta_mgr_free(&self->meta_mgr);
+	wal_free(&self->wal);
 }
 
 void
@@ -46,6 +49,7 @@ void
 db_close(Db* self)
 {
 	// stop wal
+	wal_stop(&self->wal);
 
 	// free meta
 	meta_mgr_free(&self->meta_mgr);

@@ -13,6 +13,7 @@
 #include <monotone_schema.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
+#include <monotone_wal.h>
 #include <monotone_db.h>
 
 static void
