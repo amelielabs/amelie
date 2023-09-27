@@ -28,15 +28,13 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->cat_locker = NULL;
 	transaction_init(&self->trx);
 	request_set_init(&self->req_set);
-	request_cache_init(&self->req_cache);
 }
 
 void
 session_free(Session *self)
 {
-	request_set_reset(&self->req_set, &self->req_cache);
+	request_set_reset(&self->req_set);
 	request_set_free(&self->req_set);
-	request_cache_free(&self->req_cache);
 	transaction_free(&self->trx);
 }
 
@@ -142,205 +140,41 @@ create_table_main(Session* self)
 	condition_free(req_lock.on_lock);
 }
 
-#if 0
-static void
-bench(Session* self)
-{
-	auto trx = &self->trx;
-	auto share = self->share;
-
-	// insert
-	Str name;
-	str_set_cstr(&name, "test");
-	auto table = table_mgr_find(share->table_mgr, &name, true);
-	unused(table);
-
-	struct
-	{
-		Request* req;
-		Shard*   shard;
-		Buf*     buf;
-		int      count;
-	} q[share->shard_mgr->shards_count];
-
-	int i = 0;
-	for (; i < share->shard_mgr->shards_count; i++)
-	{
-		auto shard = share->shard_mgr->shards[i];
-		q[i].req   = NULL;
-		q[i].shard = shard;
-		q[i].buf   = buf_create(0);
-		q[i].count = 0;
-	}
-
-	uint64_t time = timer_mgr_gettime();
-
-	int count = 10000000;
-	int batch = 1000;
-	for (i = 0; i < count / batch; i++)
-	{
-//		transaction_begin(trx);
-
-		// prepare
-		int k = 0;
-		for (k = 0; k < share->shard_mgr->shards_count; k++)
-		{
-			auto shard = share->shard_mgr->shards[k];
-
-			buf_reset(q[k].buf);
-			q[k].count = 0;
-
-			auto req = request_create(&self->req_cache, &shard->task.channel);
-			req->ro = false;
-			req->trx = trx;
-			req->buf = q[k].buf;
-			req->buf_count = &q[k].count;
-
-			request_set_add(&self->req_set, req);
-		}
-
-		for (int j = 0; j < batch; j++)
-		{
-			int key = rand();
-
-			uint8_t  key_data[16];
-			uint8_t* key_data_pos = key_data;
-			data_write_integer(&key_data_pos, key);
-			uint32_t key_hash = hash_murmur3_32(key_data, key_data_pos - key_data, 0);
-			int part_id = key_hash % PARTITION_MAX;
-
-			for (k = 0; k < share->shard_mgr->shards_count; k++)
-			{
-				if (part_id >= q[k].shard->config->range_start &&
-				    part_id  < q[k].shard->config->range_end)
-				{
-					encode_array(q[k].buf, 1);
-					encode_integer(q[k].buf, key);
-					q[k].count++;
-					break;
-				}
-			}
-		}
-
-		// execute
-		request_sched_lock(share->req_sched);
-		request_set_execute(&self->req_set);
-		request_sched_unlock(share->req_sched);
-
-		// wait for completion
-		request_set_wait(&self->req_set);
-
-		// todo: wal write
-//		transaction_set_lsn(trx, trx->log.lsn);
-
-//		transaction_commit(trx);
-
-		// signal shard on commit
-		list_foreach(&self->req_set.list)
-		{
-			auto req = list_at(Request, link);
-			assert(req->on_commit);
-			condition_signal(req->on_commit);
-		}
-
-		request_set_reset(&self->req_set, &self->req_cache);
-	}
-
-	for (i = 0; i < share->shard_mgr->shards_count; i++)
-		buf_free(q[i].buf);
-
-	time = (timer_mgr_gettime() - time) / 1000;
-
-	// time ms
-	//portal_write(self->portal, make_float((float)time / 1000.0));
-
-	// rps
-	double rps = count / (float)(time / 1000.0 / 1000.0);
-	portal_write(self->portal, make_float(rps));
-
-}
-#endif
-
 int seq = 0;
 
 static void
 bench_client(void* arg)
 {
 	Session* self = arg;
-	auto trx = &self->trx;
 	auto share = self->share;
 
 	RequestSet req_set;
-	RequestCache req_cache;
-
 	request_set_init(&req_set);
-	request_cache_init(&req_cache);
-
-	// insert
-	struct
-	{
-		Request* req;
-		Shard*   shard;
-		Buf*     buf;
-		int      count;
-	} q[share->shard_mgr->shards_count];
-
-	int i = 0;
-	for (; i < share->shard_mgr->shards_count; i++)
-	{
-		auto shard = share->shard_mgr->shards[i];
-		q[i].req   = NULL;
-		q[i].shard = shard;
-		q[i].buf   = buf_create(0);
-		q[i].count = 0;
-	}
+	request_set_create(&req_set, share->shard_mgr->shards_count);
 
 	int count = 10000000 / 10;
 	int batch = 1000;
-	for (i = 0; i < count / batch; i++)
+	for (int i = 0; i < count / batch; i++)
 	{
 //		transaction_begin(trx);
 
-		// prepare
-		int k = 0;
-		for (k = 0; k < share->shard_mgr->shards_count; k++)
-		{
-			auto shard = share->shard_mgr->shards[k];
-
-			buf_reset(q[k].buf);
-			q[k].count = 0;
-
-			auto req = request_create(&req_cache, &shard->task.channel);
-			req->ro = false;
-			req->trx = trx;
-			req->buf = q[k].buf;
-			req->buf_count = &q[k].count;
-
-			request_set_add(&req_set, req);
-		}
-
 		for (int j = 0; j < batch; j++)
 		{
-			//int key = rand();
-			int key = seq++;
-
+			//int    key = rand();
+			int      key = seq++;
 			uint8_t  key_data[16];
 			uint8_t* key_data_pos = key_data;
 			data_write_integer(&key_data_pos, key);
-			uint32_t key_hash = hash_murmur3_32(key_data, key_data_pos - key_data, 0);
-			int part_id = key_hash % PARTITION_MAX;
 
-			for (k = 0; k < share->shard_mgr->shards_count; k++)
-			{
-				if (part_id >= q[k].shard->config->range_start &&
-				    part_id  < q[k].shard->config->range_end)
-				{
-					encode_array(q[k].buf, 1);
-					encode_integer(q[k].buf, key);
-					q[k].count++;
-					break;
-				}
-			}
+			// get shard
+			auto shard = shard_map_get(share->shard_map, key_data, key_data_pos - key_data);
+
+			// map request to the shard
+			auto req = request_set_add(&req_set, shard->order, &shard->task.channel);
+
+			encode_array(req->buf, 1);
+			encode_integer(req->buf, key);
+			req->buf_count++;
 		}
 
 		// execute
@@ -352,37 +186,25 @@ bench_client(void* arg)
 		request_set_wait(&req_set);
 
 		// todo: wal write
-//		transaction_set_lsn(trx, trx->log.lsn);
+		uint64_t lsn = 0;
+
+//		transaction_set_lsn(trx, lsn);
 //		transaction_commit(trx);
 
 		// signal shard on commit
-		list_foreach(&req_set.list)
-		{
-			auto req = list_at(Request, link);
-			assert(req->on_commit);
-			condition_signal(req->on_commit);
-		}
-
-		request_set_reset(&req_set, &req_cache);
+		request_set_commit(&req_set, lsn);
+		request_set_reset(&req_set);
 	}
 
-	for (i = 0; i < share->shard_mgr->shards_count; i++)
-		buf_free(q[i].buf);
-
 	request_set_free(&req_set);
-	request_cache_free(&req_cache);
 }
 
 hot static inline void
 execute(Session* self, Buf* buf)
 {
-	//auto share = self->share;
 	unused(buf);
-
 	create_table_main(self);
 
-	//bench(self);
-	
 	int count = 10000000;
 	uint64_t time = timer_mgr_gettime();
 
@@ -398,50 +220,12 @@ execute(Session* self, Buf* buf)
 	// rps
 	double rps = count / (float)(time / 1000.0 / 1000.0);
 	portal_write(self->portal, make_float(rps));
-
-#if 0
-	// take shared catalog lock
-
-	for (int i = 0; i < share->shard_mgr->shards_count; i++)
-	{
-		auto shard = share->shard_mgr->shards[i];
-		auto req = request_create(&self->req_cache, &shard->task.channel);
-		req->ro = false;
-		request_set_add(&self->req_set, req);
-	}
-
-	// execute
-
-	// todo: lock
-
-	request_sched_lock(share->req_sched);
-	request_set_execute(&self->req_set);
-	request_sched_unlock(share->req_sched);
-
-	// wait for completion
-	request_set_wait(&self->req_set);
-
-	// commit
-
-	// todo: signal for completion
-
-	// rw
-
-	{
-		list_foreach(&self->req_set.list)
-		{
-			auto req = list_at(Request, link);
-			assert(req->on_commit);
-			condition_signal(req->on_commit);
-		}
-	}
-#endif
 }
 
 static inline void
 session_prepare(Session* self)
 {
-	request_set_reset(&self->req_set, &self->req_cache);
+	request_set_reset(&self->req_set);
 }
 
 hot bool

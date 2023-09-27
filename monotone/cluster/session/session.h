@@ -11,12 +11,11 @@ typedef struct Session Session;
 
 struct Session
 {
-	Transaction  trx;
-	Locker*      cat_locker;
-	RequestSet   req_set;
-	RequestCache req_cache;
-	Portal*      portal;
-	Share*       share;
+	Transaction trx;
+	Locker*     cat_locker;
+	RequestSet  req_set;
+	Portal*     portal;
+	Share*      share;
 };
 
 void session_init(Session*, Share*, Portal*);
