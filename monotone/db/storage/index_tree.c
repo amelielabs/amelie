@@ -193,9 +193,7 @@ static void
 index_tree_commit(void* arg, Row* row, Row* prev, uint64_t lsn)
 {
 	IndexTree* self = arg;
-
-	// set row as commited
-	row->is_commit = true;
+	unused(row);
 
 	// free previous row
 	if (prev)

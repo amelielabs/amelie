@@ -11,7 +11,6 @@ typedef struct Row Row;
 struct Row
 {
 	uint8_t size_factor: 2;
-	uint8_t is_commit: 1;
 	uint8_t is_secondary: 1;
 	uint8_t is_partial: 1;
 	uint8_t flags: 3;
@@ -148,7 +147,6 @@ row_allocate(Schema* schema, int data_size)
 	int size = row_size_meta(schema, size_factor) + data_size;
 	Row* self = mn_malloc(size);
 	self->size_factor = size_factor;
-	self->is_commit    = false;
 	self->is_secondary = false;
 	self->is_partial   = false;
 	self->flags        = 0;
