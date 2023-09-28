@@ -65,7 +65,9 @@ hot static Row*
 index_tree_set(Index* arg, Transaction* trx, Row* row)
 {
 	auto self = index_tree_of(arg);
-	log_reserve(&trx->log);
+
+	// reserve log
+	log_reserve(&trx->log, LOG_REPLACE, self->storage);
 
 	IndexTreeRow* ref = row_reserved(row);
 	rbtree_init_node(&ref->node);
@@ -90,7 +92,11 @@ index_tree_set(Index* arg, Transaction* trx, Row* row)
 	}
 
 	// update transaction log
-	log_add_write(&trx->log, LOG_REPLACE, &index_tree_iface, self, row, prev);
+	log_add(&trx->log, LOG_REPLACE, &index_tree_iface, self,
+	        self->index.config->primary,
+	        self->storage,
+	        &self->index.config->schema,
+	        row, prev);
 	return prev;
 }
 
@@ -98,7 +104,9 @@ hot static Row*
 index_tree_delete(Index* arg, Transaction* trx, Row* key)
 {
 	auto self = index_tree_of(arg);
-	log_reserve(&trx->log);
+
+	// reserve log
+	log_reserve(&trx->log, LOG_DELETE, self->storage);
 
 	IndexTreeRow* ref = row_reserved(key);
 	rbtree_init_node(&ref->node);
@@ -121,7 +129,11 @@ index_tree_delete(Index* arg, Transaction* trx, Row* key)
 	}
 
 	// update transaction log
-	log_add_write(&trx->log, LOG_DELETE, &index_tree_iface, self, NULL, prev);
+	log_add(&trx->log, LOG_DELETE, &index_tree_iface, self,
+	        self->index.config->primary,
+	        self->storage,
+	        &self->index.config->schema,
+	        key, prev);
 	return prev;
 }
 
@@ -168,69 +180,27 @@ index_tree_allocate(IndexConfig* config, Uuid* storage)
 	return &self->index;
 }
 
-static bool
-index_tree_is_primary(void* arg)
-{
-	IndexTree* self = arg;
-	return self->index.config->primary;
-}
-
-static Uuid*
-index_tree_uuid(void* arg)
-{
-	IndexTree* self = arg;
-	return self->storage;
-}
-
-static Schema*
-index_tree_schema(void* arg)
-{
-	IndexTree* self = arg;
-	return &self->index.config->schema;
-}
-
 static void
-index_tree_commit(void* arg, Row* row, Row* prev, uint64_t lsn)
-{
-	IndexTree* self = arg;
-	unused(row);
-
-	// free previous row
-	if (prev)
-		row_free(prev);
-
-	// update lsn
-	self->lsn = lsn;
-}
-
-static void
-index_tree_abort(void* arg, Row* row, Row* prev)
+index_tree_abort(void* arg, LogCmd cmd, Row* row, Row* prev)
 {
 	IndexTree* self = arg;
 	RbtreeNode* node;
 	int rc;
-	if (prev && row)
+	if (cmd == LOG_REPLACE)
 	{
-		// abort replace
-		rc = index_tree_find(&self->tree, &self->index.config->schema, row, &node);
-		assert(rc == 0 && node);
 		IndexTreeRow* ref = row_reserved(row);
-		IndexTreeRow* ref_prev = row_reserved(prev);
-		rbtree_init_node(&ref_prev->node);
-		rbtree_replace(&self->tree, &ref->node, &ref_prev->node);
-		row_free(row);
+		if (prev)
+		{
+			// abort replace
+			IndexTreeRow* ref_prev = row_reserved(prev);
+			rbtree_replace(&self->tree, &ref->node, &ref_prev->node);
+		} else
+		{
+			// abort insert
+			rbtree_remove(&self->tree, &ref->node);
+			self->tree_count--;
+		}
 	} else
-	if (row)
-	{
-		// abort insert
-		rc = index_tree_find(&self->tree, &self->index.config->schema, row, &node);
-		assert(rc == 0 && node);
-		IndexTreeRow* ref = row_reserved(row);
-		rbtree_remove(&self->tree, &ref->node);
-		self->tree_count--;
-		row_free(row);
-	} else
-	if (prev)
 	{
 		// abort delete
 		rc = index_tree_find(&self->tree, &self->index.config->schema, prev, &node);
@@ -239,13 +209,10 @@ index_tree_abort(void* arg, Row* row, Row* prev)
 		rbtree_set(&self->tree, node, rc, &ref_prev->node);
 		self->tree_count++;
 	}
+	row_free(row);
 }
 
 LogOpIf index_tree_iface =
 {
-	.is_primary = index_tree_is_primary,
-	.uuid       = index_tree_uuid,
-	.schema     = index_tree_schema,
-	.commit     = index_tree_commit,
-	.abort      = index_tree_abort
+	.abort = index_tree_abort
 };
