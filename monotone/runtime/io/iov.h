@@ -102,9 +102,8 @@ iov_prepare(Iov* self)
 {
 	int size_iov = sizeof(struct iovec) * self->count;
 	buf_reserve(&self->iov, size_iov);
-	buf_advance(&self->iov, size_iov);
 
-	auto iovec = (struct iovec*)self->iov.start;
+	auto iovec = (struct iovec*)self->iov.position;
 	auto chunk = (IovChunk*)self->chunks.start;
 	auto end   = (IovChunk*)self->chunks.position;
 	while (chunk < end)
@@ -121,6 +120,8 @@ iov_prepare(Iov* self)
 		chunk++;
 		iovec++;
 	}
+
+	buf_advance(&self->iov, size_iov);
 }
 
 hot static inline void
@@ -128,9 +129,8 @@ iov_import(Iov* self, Iov* from)
 {
 	int size_iov = sizeof(struct iovec) * from->count;
 	buf_reserve(&self->iov, size_iov);
-	buf_advance(&self->iov, size_iov);
 
-	auto iovec = (struct iovec*)self->iov.start;
+	auto iovec = (struct iovec*)self->iov.position;
 	auto chunk = (IovChunk*)from->chunks.start;
 	auto end   = (IovChunk*)from->chunks.position;
 	while (chunk < end)
@@ -147,7 +147,10 @@ iov_import(Iov* self, Iov* from)
 		chunk++;
 		iovec++;
 	}
-	self->size += from->size;
+	self->count += from->count;
+	self->size  += from->size;
+
+	buf_advance(&self->iov, size_iov);
 }
 
 hot static inline void
