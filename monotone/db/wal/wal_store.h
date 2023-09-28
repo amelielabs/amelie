@@ -21,5 +21,5 @@ void wal_store_free(WalStore*);
 void wal_store_rotate(WalStore*, uint64_t);
 void wal_store_gc(WalStore*, uint64_t);
 void wal_store_snapshot(WalStore*, WalSnapshot*);
-void wal_store_write(WalStore*, WalRecordSet*);
+void wal_store_write(WalStore*, LogSet*);
 Buf* wal_store_status(WalStore*);

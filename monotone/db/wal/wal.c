@@ -34,7 +34,7 @@ wal_rpc(Rpc* rpc, void* arg)
 	}
 	case RPC_WAL_WRITE:
 	{
-		WalRecordSet* set = rpc_arg_ptr(rpc, 0);
+		LogSet* set = rpc_arg_ptr(rpc, 0);
 		wal_store_write(&self->wal_store, set);
 		break;
 	}
@@ -116,7 +116,7 @@ wal_snapshot(Wal* self, WalSnapshot* snapshot)
 }
 
 void
-wal_write(Wal* self, WalRecordSet* set)
+wal_write(Wal* self, LogSet* set)
 {
 	rpc(&self->task.channel, RPC_WAL_WRITE, 1, set);
 }

@@ -129,7 +129,7 @@ wal_store_snapshot(WalStore* self, WalSnapshot* snapshot)
 }
 
 hot void
-wal_store_write(WalStore* self, WalRecordSet* set)
+wal_store_write(WalStore* self, LogSet* set)
 {
 	// maybe create a new wal file
 	uint64_t lsn = config_lsn() + 1;
@@ -138,7 +138,7 @@ wal_store_write(WalStore* self, WalRecordSet* set)
 		wal_store_rotate(self, lsn);
 
 	// create message
-	wal_record_set_create(set, lsn);
+	log_set_create(set, lsn);
 
 	// write file and in-memory index
 	wal_file_write(self->current, iov_pointer(&set->iov), set->iov.count);

@@ -21,5 +21,5 @@ void wal_start(Wal*);
 void wal_stop(Wal*); 
 void wal_gc(Wal*, uint64_t);
 void wal_snapshot(Wal*, WalSnapshot*);
-void wal_write(Wal*, WalRecordSet*);
+void wal_write(Wal*, LogSet*);
 Buf* wal_status(Wal*);
