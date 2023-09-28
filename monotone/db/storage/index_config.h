@@ -117,7 +117,7 @@ index_config_write(IndexConfig* self, Buf* buf)
 
 	// primary
 	encode_raw(buf, "primary", 7);
-	encode_integer(buf, self->primary);
+	encode_bool(buf, self->primary);
 
 	// schema
 	encode_raw(buf, "schema", 6);
