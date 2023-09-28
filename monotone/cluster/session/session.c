@@ -76,7 +76,8 @@ create_table(Session* self)
 	table_mgr_create(self->share->table_mgr, trx, config, true);
 	table_config_free(config);
 
-	//wal_write(&self->db->wal, &trx->log);
+	log_set_add(&self->log_set, &trx->log);
+	wal_write(share->wal, &self->log_set);
 
 	transaction_set_lsn(trx, trx->log.lsn);
 	transaction_commit(trx);
@@ -150,6 +151,8 @@ bench_client(void* arg)
 {
 	Session* self = arg;
 	auto share = self->share;
+
+	// must take catalog lock
 
 	RequestSet req_set;
 	request_set_init(&req_set);
