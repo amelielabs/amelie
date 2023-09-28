@@ -27,6 +27,7 @@ struct IovChunk
 
 struct Iov
 {
+	int size;
 	int count;
 	Buf chunks;
 	Buf iov;
@@ -35,6 +36,7 @@ struct Iov
 static inline void
 iov_init(Iov* self)
 {
+	self->size  = 0;
 	self->count = 0;
 	buf_init(&self->chunks);
 	buf_init(&self->iov);
@@ -50,6 +52,7 @@ iov_free(Iov* self)
 static inline void
 iov_reset(Iov* self)
 {
+	self->size  = 0;
 	self->count = 0;
 	buf_reset(&self->chunks);
 	buf_reset(&self->iov);
@@ -77,6 +80,7 @@ iov_add_buf(Iov* self, Buf* buf, int offset, int size)
 	chunk->buf.offset = offset;
 	chunk->buf.size   = size;
 	buf_advance(&self->chunks, sizeof(IovChunk));
+	self->size += size;
 	self->count++;
 }
 
@@ -89,6 +93,7 @@ iov_add(Iov* self, void* pointer, int size)
 	chunk->pointer.pointer = pointer;
 	chunk->pointer.size    = size;
 	buf_advance(&self->chunks, sizeof(IovChunk));
+	self->size += size;
 	self->count++;
 }
 
@@ -142,6 +147,7 @@ iov_import(Iov* self, Iov* from)
 		chunk++;
 		iovec++;
 	}
+	self->size += from->size;
 }
 
 hot static inline void
