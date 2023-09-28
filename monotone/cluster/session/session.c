@@ -29,7 +29,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->cat_locker = NULL;
 	transaction_init(&self->trx);
 	request_set_init(&self->req_set);
-	wal_record_set_init(&self->wal_record_set);
+	log_set_init(&self->log_set);
 }
 
 void
@@ -37,7 +37,7 @@ session_free(Session *self)
 {
 	request_set_reset(&self->req_set);
 	request_set_free(&self->req_set);
-	wal_record_set_free(&self->wal_record_set);
+	log_set_free(&self->log_set);
 	transaction_free(&self->trx);
 }
 
@@ -154,8 +154,8 @@ bench_client(void* arg)
 	RequestSet req_set;
 	request_set_init(&req_set);
 
-	WalRecordSet wal_record_set;
-	wal_record_set_init(&wal_record_set);
+	LogSet log_set;
+	log_set_init(&log_set);
 
 	request_set_create(&req_set, share->shard_mgr->shards_count);
 
@@ -192,12 +192,12 @@ bench_client(void* arg)
 		// wait for completion
 		request_set_wait(&req_set);
 
-		// add wal records to the wal record set
-		request_set_commit_prepare(&req_set, &wal_record_set);
+		// add logs to the log set
+		request_set_commit_prepare(&req_set, &log_set);
 
 		// wal write
-		wal_write(share->wal, &wal_record_set);
-		uint64_t lsn = wal_record_set.lsn;
+		wal_write(share->wal, &log_set);
+		uint64_t lsn = log_set.lsn;
 
 //		transaction_set_lsn(trx, lsn);
 //		transaction_commit(trx);
@@ -206,11 +206,11 @@ bench_client(void* arg)
 		request_set_commit(&req_set, lsn);
 		request_set_reset(&req_set);
 
-		wal_record_set_reset(&wal_record_set);
+		log_set_reset(&log_set);
 	}
 
 	request_set_free(&req_set);
-	wal_record_set_free(&wal_record_set);
+	log_set_free(&log_set);
 }
 
 hot static inline void
@@ -240,7 +240,7 @@ static inline void
 session_prepare(Session* self)
 {
 	request_set_reset(&self->req_set);
-	wal_record_set_reset(&self->wal_record_set);
+	log_set_reset(&self->log_set);
 }
 
 hot bool

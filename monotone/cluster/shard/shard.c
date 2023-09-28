@@ -54,10 +54,6 @@ shard_request(Shard* self, Request* req)
 		storage_write(storage, &req->trx, LOG_REPLACE, false, start, pos - start);
 	}
 
-	// prepare wal write
-	if (! ro)
-		wal_record_create(&req->wal_record, &req->trx.log);
-
 	// OK
 	auto reply = msg_create(MSG_OK);
 	encode_integer(reply, false);

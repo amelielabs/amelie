@@ -14,7 +14,6 @@ struct Request
 	bool        complete;
 	bool        ro;
 	Transaction trx;
-	WalRecord   wal_record;
 	Buf*        buf;
 	int         buf_count;
 	// code
@@ -42,7 +41,6 @@ request_init(Request* self)
 	self->buf       = NULL;
 	self->buf_count = 0;
 	transaction_init(&self->trx);
-	wal_record_init(&self->wal_record);
 	channel_init(&self->src);
 }
 
@@ -54,7 +52,6 @@ request_free(Request* self)
 		buf_free(self->buf);
 	if (self->error)
 		buf_free(self->error);
-	wal_record_free(&self->wal_record);
 	channel_detach(&self->src);
 	channel_free(&self->src, mn_task->buf_cache);
 }
@@ -75,5 +72,4 @@ request_reset(Request* self)
 	self->on_commit  = NULL;
 	self->dst        = NULL;
 	self->buf_count  = 0;
-	wal_record_reset(&self->wal_record);
 }

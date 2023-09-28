@@ -150,16 +150,16 @@ request_set_wait(RequestSet* self)
 }
 
 hot static inline void
-request_set_commit_prepare(RequestSet* self, WalRecordSet* set)
+request_set_commit_prepare(RequestSet* self, LogSet* set)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
 		auto req = &self->set[i];
 		if (! req->active)
 			continue;
-		if (req->wal_record.count == 0)
+		if (req->trx.log.count_persistent == 0)
 			continue;
-		wal_record_set_add(set, &req->wal_record);
+		log_set_add(set, &req->trx.log);
 	}
 }
 
