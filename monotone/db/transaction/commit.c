@@ -49,11 +49,9 @@ transaction_commit(Transaction* self)
 		switch (op->type) {
 		case LOG_WRITE:
 		{	
-			// free previous version and set lsn
-			op->write.iface->commit(op->write.iface_arg,
-			                        op->write.row,
-			                        op->write.prev,
-			                        self->lsn);
+			// free previous version
+			if (op->write.prev)
+				row_free(op->write.prev);
 			break;
 		}
 		case LOG_WRITE_HANDLE:
@@ -88,8 +86,9 @@ transaction_abort(Transaction* self)
 		switch (op->type) {
 		case LOG_WRITE:
 		{	
-			// remove operation from the heap
+			// reverse operation
 			op->write.iface->abort(op->write.iface_arg,
+			                       op->cmd,
 			                       op->write.row,
 			                       op->write.prev);
 			break;
@@ -105,8 +104,6 @@ transaction_abort(Transaction* self)
 			break;
 		}
 		}
-
-		log_delete_last(&self->log);
 	}
 
 	transaction_end(self, true);

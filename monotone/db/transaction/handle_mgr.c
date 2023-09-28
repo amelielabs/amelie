@@ -96,7 +96,7 @@ handle_mgr_write(HandleMgr*   self,
                  Handle*      handle,
                  Buf*         data)
 {
-	log_reserve(&trx->log);
+	log_reserve(&trx->log, cmd, NULL);
 
 	// update handle mgr
 	Handle* prev = NULL;
@@ -108,5 +108,5 @@ handle_mgr_write(HandleMgr*   self,
 		prev = handle_mgr_delete(self, handle->name);
 
 	// update transaction log
-	log_add_write_handle(&trx->log, cmd, self, handle, prev, data);
+	log_add_handle(&trx->log, cmd, self, handle, prev, data);
 }

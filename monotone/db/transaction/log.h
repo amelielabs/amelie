@@ -31,11 +31,7 @@ typedef enum
 
 struct LogOpIf
 {
-	bool    (*is_primary)(void*);
-	Uuid*   (*uuid)(void*);
-	Schema* (*schema)(void*);
-	void    (*commit)(void*, Row*, Row*, uint64_t);
-	void    (*abort)(void*, Row*, Row*);
+	void (*abort)(void*, LogCmd, Row*, Row*);
 };
 
 struct LogOp
@@ -64,8 +60,12 @@ struct LogOp
 struct Log
 {
 	Buf      op; 
+	Buf      data;
+	Iov      data_iov;
 	int      count;
+	int      count_persistent;
 	uint64_t lsn;
+	List     link;
 };
 
 static inline LogOp*
@@ -78,9 +78,13 @@ log_of(Log* self, int pos)
 static inline void
 log_init(Log* self)
 {
-	self->count = 0;
-	self->lsn   = 0;
+	self->count            = 0;
+	self->count_persistent = 0;
+	self->lsn              = 0;
 	buf_init(&self->op);
+	buf_init(&self->data);
+	iov_init(&self->data_iov);
+	list_init(&self->link);
 }
 
 static inline void
@@ -92,24 +96,45 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	self->count = 0;
-	self->lsn   = 0;
+	self->count            = 0;
+	self->count_persistent = 0;
+	self->lsn              = 0;
 	buf_reset(&self->op);
+	buf_reset(&self->data);
+	iov_reset(&self->data_iov);
+	list_init(&self->link);
 }
 
 static inline void
-log_reserve(Log* self)
+log_reserve(Log* self, LogCmd cmd, Uuid* uuid)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
+	if (uuid)
+	{
+		buf_reserve(&self->data,
+		            data_size_array(4) +
+		            data_size_integer(cmd) +
+		            data_size_integer(uuid->a) +
+		            data_size_integer(uuid->b));
+	} else
+	{
+		buf_reserve(&self->data,
+		            data_size_array(2) +
+		            data_size_integer(cmd));
+	}
+	iov_reserve(&self->data_iov, 2);
 }
 
-static inline void
-log_add_write(Log*     self,
-              LogCmd   cmd,
-              LogOpIf* iface,
-              void*    iface_arg,
-              Row*     row,
-              Row*     prev)
+hot static inline void
+log_add(Log*     self,
+        LogCmd   cmd,
+        LogOpIf* iface,
+        void*    iface_arg,
+        bool     persistent,
+        Uuid*    uuid,
+        Schema*  schema,
+        Row*     row,
+        Row*     prev)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
@@ -121,15 +146,29 @@ log_add_write(Log*     self,
 	op->write.prev      = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
+	if (! persistent)
+		return;
+
+	// [cmd, uuid a/b, row]
+	int data_offset = buf_size(&self->data);
+	int data_size;
+	encode_array(&self->data, 4);
+	encode_integer(&self->data, cmd);
+	encode_integer(&self->data, uuid->a);
+	encode_integer(&self->data, uuid->b);
+	data_size = buf_size(&self->data) - data_offset;
+	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
+	iov_add(&self->data_iov, row_data(row, schema), row_data_size(row, schema));
+	self->count_persistent++;
 }
 
 static inline void
-log_add_write_handle(Log*   self,
-                     LogCmd cmd,
-                     void*  handle_mgr,
-                     void*  handle,
-                     void*  handle_prev,
-                     Buf*   data)
+log_add_handle(Log*   self,
+               LogCmd cmd,
+               void*  handle_mgr,
+               void*  handle,
+               void*  handle_prev,
+               Buf*   data)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
@@ -141,12 +180,14 @@ log_add_write_handle(Log*   self,
 	op->write_handle.data        = data;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
-}
 
-static inline void
-log_delete_last(Log* self)
-{
-	assert(self->count > 0);
-	self->count--;
-	buf_truncate(&self->op, sizeof(LogOp));
+	// [cmd, data]
+	int data_offset = buf_size(&self->data);
+	int data_size;
+	encode_array(&self->data, 2);
+	encode_integer(&self->data, op->cmd);
+	data_size = buf_size(&self->data) - data_offset;
+	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
+	iov_add(&self->data_iov, data->start, buf_size(data));
+	self->count_persistent++;
 }
