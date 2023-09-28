@@ -6,8 +6,6 @@
 // SQL OLTP database
 //
 
-#include "wal/wal_record.h"
-#include "wal/wal_record_set.h"
 #include "wal/wal_file.h"
 #include "wal/wal_snapshot.h"
 #include "wal/wal_event.h"
