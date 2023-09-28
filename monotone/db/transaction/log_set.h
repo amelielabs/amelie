@@ -58,8 +58,14 @@ log_set_add(LogSet* self, Log* log)
 static inline void
 log_set_create(LogSet* self, uint64_t lsn)
 {
-	// [lsn, [combined_log]]
 	self->lsn = lsn;
+
+	// WAL_WRITE
+	buf_reserve(&self->data, sizeof(Msg));
+	auto msg = (Msg*)(self->data.start);
+	msg->id   = MSG_WAL_WRITE;
+	msg->size = 0;
+	buf_advance(&self->data, sizeof(Msg));
 
 	// [lsn, [log]]
 	encode_array(&self->data, 2);
@@ -74,4 +80,8 @@ log_set_create(LogSet* self, uint64_t lsn)
 		auto log = list_at(Log, link);
 		iov_import(&self->iov, &log->data_iov);
 	}
+
+	// set message size
+	msg = (Msg*)(self->data.start);
+	msg->size = self->iov.size;
 }
