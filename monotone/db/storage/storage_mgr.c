@@ -103,6 +103,9 @@ storage_mgr_recover(StorageMgr* self)
 			auto index = index_tree_allocate(index_config, &storage->config->id);
 			storage_attach(storage, index);
 		}
+
+		// reusing config
+		unguard(&config_guard);
 	}
 }
 
