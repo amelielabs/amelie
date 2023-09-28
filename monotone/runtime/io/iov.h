@@ -62,6 +62,12 @@ iov_pointer(Iov* self)
 }
 
 static inline void
+iov_reserve(Iov* self, int size)
+{
+	buf_reserve(&self->chunks, sizeof(IovChunk) * size);
+}
+
+static inline void
 iov_add_buf(Iov* self, Buf* buf, int offset, int size)
 {
 	buf_reserve(&self->chunks, sizeof(IovChunk));
