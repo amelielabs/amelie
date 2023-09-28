@@ -91,6 +91,8 @@ static inline void
 log_free(Log* self)
 {
 	buf_free(&self->op);
+	buf_free(&self->data);
+	iov_free(&self->data_iov);
 }
 
 static inline void
