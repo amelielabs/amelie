@@ -54,7 +54,10 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 			return;
 
 		// replay write
-		storage_write(storage, trx, type, false, data, data_size);
+		if (type == LOG_REPLACE)
+			storage_set(storage, trx, false, data, data_size);
+		else
+			storage_delete_by(storage, trx, data, data_size);
 		return;
 	}
 

@@ -23,7 +23,7 @@ OBJECTS        = \
                  schema/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
-                 storage/index_tree.o \
+                 storage/tree.o \
                  storage/storage.o \
                  storage/storage_mgr.o \
                  wal/wal_store.o \
