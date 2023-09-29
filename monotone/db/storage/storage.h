@@ -27,7 +27,7 @@ void storage_attach(Storage*, Index*);
 void storage_detach(Storage*, Index*);
 void storage_write(Storage*, Transaction*, LogCmd, bool, uint8_t*, int);
 Index*
-storage_find(Storage*, Str*);
+storage_find(Storage*, Str*, bool);
 
 static inline Index*
 storage_primary(Storage* self)

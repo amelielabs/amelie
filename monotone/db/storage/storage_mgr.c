@@ -201,6 +201,20 @@ storage_mgr_find(StorageMgr* self, Uuid* id)
 }
 
 Storage*
+storage_mgr_find_for(StorageMgr* self, Uuid* shard, Uuid* table)
+{
+	list_foreach(&self->list)
+	{
+		auto storage = list_at(Storage, link);
+		if (uuid_compare(&storage->config->id_shard, shard) &&
+		    uuid_compare(&storage->config->id_table, table))
+			return storage;
+	}
+	return NULL;
+}
+
+
+Storage*
 storage_mgr_create(StorageMgr* self, StorageConfig* config)
 {
 	auto storage = storage_allocate(config);

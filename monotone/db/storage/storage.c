@@ -93,13 +93,16 @@ storage_write(Storage*     self,
 }
 
 Index*
-storage_find(Storage* self, Str* index_name)
+storage_find(Storage* self, Str* name, bool error_if_not_exists)
 {
 	list_foreach(&self->indexes)
 	{
 		auto index = list_at(Index, link);
-		if (str_compare(&index->config->name, index_name))
+		if (str_compare(&index->config->name, name))
 			return index;
 	}
+	if (error_if_not_exists)
+		error("index '%.*s': not exists", str_size(name),
+		       str_of(name));
 	return NULL;
 }

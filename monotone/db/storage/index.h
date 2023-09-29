@@ -57,3 +57,9 @@ index_read(Index* self)
 {
 	return self->read(self);
 }
+
+static inline Schema*
+index_schema(Index* self)
+{
+	return &self->config->schema;
+}
