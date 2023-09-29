@@ -12,9 +12,10 @@ struct Index
 {
 	IndexConfig*  config;
 	void        (*free)(Index*);
-	Row*        (*set)(Index*, Transaction*, Row*);
-	Row*        (*delete)(Index*, Transaction*, Row*);
-	Row*        (*get)(Index*, Row*);
+	bool        (*set)(Index*, Transaction*, Row*);
+	void        (*update)(Index*, Transaction*, Iterator*, Row*);
+	void        (*delete)(Index*, Transaction*, Iterator*);
+	void        (*delete_by)(Index*, Transaction*, Row*);
 	Iterator*   (*read)(Index*);
 	List          link;
 };
@@ -34,22 +35,28 @@ index_free(Index* self)
 	self->free(self);
 }
 
-static inline Row*
+static inline bool
 index_set(Index* self, Transaction* trx, Row* row)
 {
 	return self->set(self, trx, row);
 }
 
-static inline Row*
-index_delete(Index* self, Transaction* trx, Row* row)
+static inline void
+index_update(Index* self, Transaction* trx, Iterator* it, Row* row)
 {
-	return self->delete(self, trx, row);
+	self->update(self, trx, it, row);
 }
 
-static inline Row*
-index_get(Index* self, Row* row)
+static inline void
+index_delete(Index* self, Transaction* trx, Iterator* it)
 {
-	return self->get(self, row);
+	self->delete(self, trx, it);
+}
+
+static inline void
+index_delete_by(Index* self, Transaction* trx, Row* key)
+{
+	self->delete_by(self, trx, key);
 }
 
 static inline Iterator*
