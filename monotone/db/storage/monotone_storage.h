@@ -12,7 +12,8 @@
 #include "storage/index.h"
 
 // tree
-#include "storage/index_tree.h"
+#include "storage/tree.h"
+#include "storage/tree_iterator.h"
 
 // storage
 #include "storage/storage_config.h"
