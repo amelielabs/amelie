@@ -11,6 +11,12 @@
 #include <monotone_lib.h>
 
 void
+lex_init_token(Token* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+void
 lex_init(Lex* self, Keyword** keywords, Str* text)
 {
 	self->pos              = str_of(text);

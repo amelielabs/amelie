@@ -23,7 +23,7 @@ struct Rbtree
 
 #define rbtree_get_def(name) \
 \
-int \
+extern int \
 name(Rbtree*      self, \
      void*        arg, \
      void*        key, \

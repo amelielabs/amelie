@@ -63,6 +63,7 @@ struct Lex
 	const char* prefix;
 };
 
+void lex_init_token(Token*);
 void lex_init(Lex*, Keyword**, Str*);
 void lex_enable_keywords(Lex*, bool);
 void lex_enable_prefix(Lex*, const char*);
