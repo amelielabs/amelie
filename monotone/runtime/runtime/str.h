@@ -53,6 +53,14 @@ str_set_cstr(Str* self, const char* cstr)
 	str_set(self, (char*)cstr, strlen(cstr));
 }
 
+static inline void
+str_set_str(Str* self, Str* str)
+{
+	self->pos = str->pos;
+	self->end = str->end;
+	self->allocated = false;
+}
+
 static inline int
 str_size(Str* self)
 {
