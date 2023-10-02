@@ -22,9 +22,8 @@
 // compression
 #include "lib/compression.h"
 
-// parsers
+// uri
 #include "lib/uri.h"
-#include "lib/lex.h"
 
 // messaging
 #include "lib/command.h"
