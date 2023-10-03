@@ -8,7 +8,7 @@
 
 // memory
 static inline void*
-mn_malloc(int size)
+mn_malloc(size_t size)
 {
 	auto ptr = mn_malloc_nothrow(size);
 	if (unlikely(ptr == NULL))
@@ -17,7 +17,7 @@ mn_malloc(int size)
 }
 
 static inline void*
-mn_realloc(void* pointer, int size)
+mn_realloc(void* pointer, size_t size)
 {
 	auto ptr = mn_realloc_nothrow(pointer, size);
 	if (unlikely(ptr == NULL))
@@ -26,7 +26,7 @@ mn_realloc(void* pointer, int size)
 }
 
 static inline void*
-palloc(int size)
+palloc(size_t size)
 {
 	auto ptr = arena_allocate_nothrow(&mn_self()->arena, size);
 	if (unlikely(ptr == NULL))

@@ -7,13 +7,13 @@
 //
 
 static inline void*
-mn_malloc_nothrow(int size)
+mn_malloc_nothrow(size_t size)
 {
 	return malloc(size);
 }
 
 static inline void*
-mn_realloc_nothrow(void* pointer, int size)
+mn_realloc_nothrow(void* pointer, size_t size)
 {
 	return realloc(pointer, size);
 }
