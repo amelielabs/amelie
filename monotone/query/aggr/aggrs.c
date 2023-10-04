@@ -20,3 +20,10 @@
 #include <monotone_db.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
+
+AggrIf* aggrs[] =
+{
+	[AGGR_COUNT] = &aggr_count,
+	[AGGR_SUM]   = &aggr_sum,
+	[AGGR_AVG]   = &aggr_avg
+};
