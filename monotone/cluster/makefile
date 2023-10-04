@@ -21,6 +21,12 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
+                 -I../query \
+                 -I../query/value \
+                 -I../query/aggr \
+                 -I../query/vm \
+                 -I../query/parser \
+                 -I../query/compiler \
                  -I. \
                  -Ishard \
                  -Isession \
