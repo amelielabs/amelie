@@ -38,7 +38,6 @@ OBJECTS        = \
                  lib/uuid_mgr.o \
                  lib/compression.o \
                  lib/uri.o \
-                 lib/lex.o \
                  lib/portal.o \
                  config/config.o \
                  config/config_state.o \
