@@ -17,7 +17,7 @@
 // vm
 #include "vm/cursor.h"
 #include "vm/vm.h"
-#include "vm/cmd.h"
+#include "vm/command.h"
 #include "vm/func.h"
 #include "vm/func_debug.h"
 
