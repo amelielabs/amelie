@@ -25,6 +25,12 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../cluster/shard \
                  -I../cluster/session \
                  -I../cluster/hub \
+                 -I../query \
+                 -I../query/value \
+                 -I../query/aggr \
+                 -I../query/vm \
+                 -I../query/parser \
+                 -I../query/compiler \
                  -I. \
                  -Icore \
                  -Imain \

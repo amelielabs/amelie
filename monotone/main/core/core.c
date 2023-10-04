@@ -18,6 +18,11 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_value.h>
+#include <monotone_aggr.h>
+#include <monotone_vm.h>
+#include <monotone_parser.h>
+#include <monotone_compiler.h>
 #include <monotone_shard.h>
 #include <monotone_session.h>
 #include <monotone_hub.h>
@@ -86,6 +91,7 @@ core_create(void)
 	share->table_mgr   = &self->db.table_mgr;
 	share->storage_mgr = &self->db.storage_mgr;
 	share->wal         = &self->db.wal;
+	share->db          = &self->db;
 	share->shard_map   = &self->shard_map;
 	share->shard_mgr   = &self->shard_mgr;
 	share->req_sched   = &self->req_sched;
