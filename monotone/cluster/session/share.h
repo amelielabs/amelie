@@ -14,6 +14,7 @@ struct Share
 	TableMgr*     table_mgr;
 	StorageMgr*   storage_mgr;
 	Wal*          wal;
+	Db*           db;
 	ShardMap*     shard_map;
 	ShardMgr*     shard_mgr;
 	RequestSched* req_sched;

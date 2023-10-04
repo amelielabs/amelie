@@ -18,6 +18,11 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_value.h>
+#include <monotone_aggr.h>
+#include <monotone_vm.h>
+#include <monotone_parser.h>
+#include <monotone_compiler.h>
 #include <monotone_shard.h>
 
 static inline Storage*
@@ -51,7 +56,7 @@ shard_request(Shard* self, Request* req)
 		uint8_t* start = pos;
 		data_skip(&pos);
 
-		storage_write(storage, &req->trx, LOG_REPLACE, false, start, pos - start);
+		storage_set(storage, &req->trx, false, start, pos - start);
 	}
 
 	// OK

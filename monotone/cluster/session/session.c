@@ -18,6 +18,11 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_value.h>
+#include <monotone_aggr.h>
+#include <monotone_vm.h>
+#include <monotone_parser.h>
+#include <monotone_compiler.h>
 #include <monotone_shard.h>
 #include <monotone_session.h>
 
@@ -112,7 +117,7 @@ create_table(Session* self)
 		schema_copy(&index_config->schema, &table->config->schema);
 
 		// create tree index
-		auto index = index_tree_allocate(index_config, &storage->config->id);
+		auto index = tree_allocate(index_config, &storage->config->id);
 		index_config_free(index_config);
 
 		// attach index to the storage
@@ -239,6 +244,39 @@ execute(Session* self, Buf* buf)
 	portal_write(self->portal, make_float(rps));
 }
 
+hot static inline void
+test(Session* self, Buf* buf)
+{
+	Parser parser;
+	parser_init(&parser);
+
+	Command cmd;
+	command_init(&cmd);
+	command_set(&cmd, buf);
+
+	parser_run(&parser, &cmd.text);
+
+	parser_free(&parser);
+
+#if 0
+	Compiler compiler;
+	compiler_init(&compiler, self->share->db);
+
+	Command cmd;
+	command_init(&cmd);
+	command_set(&cmd, buf);
+
+	compiler_start(&compiler, &cmd.text, NULL);
+
+	expr(&compiler, NULL);
+
+	command_free(&cmd);
+	compiler_free(&compiler);
+#endif
+	(void)self;
+	(void)buf;
+}
+
 static inline void
 session_prepare(Session* self)
 {
@@ -260,7 +298,10 @@ session_execute(Session* self, Buf* buf)
 
 		session_prepare(self);
 
-		execute(self, buf);
+		(void)execute;
+		//execute(self, buf);
+
+		test(self, buf);
 	}
 
 	bool ro = false;
