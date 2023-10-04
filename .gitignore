@@ -4,3 +4,5 @@
 test/test
 cli/monotone
 cli/t
+monotone/query/parser/grammar.c
+monotone/query/parser/grammar.h
