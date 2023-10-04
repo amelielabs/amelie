@@ -1,0 +1,338 @@
+
+//
+// monotone
+//	
+// SQL OLTP database
+//
+
+#include <monotone_runtime.h>
+#include <monotone_io.h>
+#include <monotone_data.h>
+#include <monotone_lib.h>
+#include <monotone_config.h>
+#include <monotone_auth.h>
+#include <monotone_schema.h>
+#include <monotone_transaction.h>
+#include <monotone_storage.h>
+#include <monotone_wal.h>
+#include <monotone_db.h>
+#include <monotone_value.h>
+#include <monotone_aggr.h>
+#include <monotone_vm.h>
+#include <monotone_parser.h>
+
+static int
+token_map[CHAR_MAX] =
+{
+	['='] = KEQ,
+	['>'] = KGT,
+	['<'] = KLT,
+
+	['|'] = KBOR,
+	['^'] = KXOR,
+	['&'] = KBAND,
+
+	['+'] = KADD,
+	['-'] = KSUB,
+
+	['*'] = KMUL,
+	['/'] = KDIV,
+	['%'] = KMOD,
+
+	[','] = KCOMMA,
+	['.'] = KDOT,
+	[':'] = KCOLON,
+	[';'] = KSEMICOLON,
+
+	['('] = KRBL,
+	[')'] = KRBR,
+	['{'] = KCBL,
+	['}'] = KCBR,
+	['['] = KSBL,
+	[']'] = KSBR,
+};
+
+void
+lex_init(Lex* self, Keyword** keywords)
+{
+	self->pos      = NULL;
+	self->end      = NULL;
+	self->keywords = keywords;
+	self->prefix   = NULL;
+}
+
+void
+lex_reset(Lex* self)
+{
+	self->pos    = NULL;
+	self->end    = NULL;
+	self->prefix = NULL;
+}
+
+void
+lex_set_prefix(Lex* self, const char* prefix)
+{
+	self->prefix = prefix;
+}
+
+static inline void
+lex_error(Lex* self, const char* error)
+{
+	if (self->prefix)
+		error("%s: %s", self->prefix, error);
+	else
+		error("%s", error);
+}
+
+static inline Keyword*
+lex_keyword_match(Lex* self, Str* name)
+{
+	if (self->keywords == NULL)
+		return NULL;
+	auto current = self->keywords[tolower(name->pos[0]) - 'a'];
+	for (; current->name; current++)
+		if (str_strncasecmp(name, current->name, current->name_size))
+			return current;
+	return NULL;
+}
+
+void
+lex_start(Lex* self, Str* text)
+{
+	self->pos    = str_of(text);
+	self->end    = str_of(text) + str_size(text);
+	self->prefix = NULL;
+}
+
+hot Ast*
+lex_next(Lex* self)
+{
+	Ast* ast = ast_allocate(0, sizeof(Ast));
+
+	// skip white spaces and comments
+	for (;;)
+	{
+		while (self->pos < self->end && isspace(*self->pos))
+			self->pos++;
+		// eof
+		if (unlikely(self->pos == self->end))
+			return ast;
+		if (*self->pos != '#')
+			break;
+		while (self->pos < self->end && *self->pos != '\n')
+			self->pos++;
+		// eof
+		if (self->pos == self->end)
+			return ast;
+	}
+
+	// argument
+	if (*self->pos == '$')
+	{
+		self->pos++;
+		if (unlikely(self->pos == self->end))
+			lex_error(self, "bad argument definition");
+		if (isdigit(*self->pos))
+		{
+			// $<int>
+			ast->id = KARGUMENT;
+			while (self->pos < self->end && isdigit(*self->pos)) {
+				ast->integer = (ast->integer * 10) + *self->pos - '0';
+				self->pos++;
+			}
+		} else
+		if (isalpha(*self->pos) || *self->pos == '_')
+		{
+			// $<name>
+			ast->id = KARGUMENT_NAME;
+			auto start = self->pos;
+			while (self->pos < self->end && (isalpha(*self->pos) || *self->pos == '_'))
+				self->pos++;
+			str_set(&ast->string, start, self->pos - start);
+		} else
+		{
+			lex_error(self, "bad argument definition");
+		}
+		return ast;
+	}
+
+	// symbols
+	if (*self->pos != '\"' &&
+	    *self->pos != '\'' && *self->pos != '_' && ispunct(*self->pos))
+	{
+		char symbol = *self->pos;
+		self->pos++;
+		if (unlikely(self->pos == self->end))
+			goto symbol;
+		char symbol_next = *self->pos;
+		// <>
+		if (symbol == '<' && symbol_next == '>') {
+			self->pos++;
+			ast->id = KNEQ;
+			return ast;
+		}
+		// >>
+		if (symbol == '>' && symbol_next == '>') {
+			self->pos++;
+			ast->id = KSHR;
+			return ast;
+		}
+		// >=
+		if (symbol == '>' && symbol_next == '=') {
+			self->pos++;
+			ast->id = KGTE;
+			return ast;
+		}
+		// <=
+		if (symbol == '<' && symbol_next == '=') {
+			self->pos++;
+			ast->id = KLTE;
+			return ast;
+		}
+		// <<
+		if (symbol == '<' && symbol_next == '<') {
+			self->pos++;
+			ast->id = KSHL;
+			return ast;
+		}
+		// ||
+		if (symbol == '|' && symbol_next == '|') {
+			self->pos++;
+			ast->id = KCAT;
+			return ast;
+		}
+symbol:;
+		ast->id = token_map[(int)symbol];
+		if (unlikely(ast->id == 0))
+			lex_error(self, "unexpected token");
+		ast->integer = symbol;
+		return ast;
+	}
+
+	// integer or float
+	if (isdigit(*self->pos))
+	{
+		ast->id = KINT;
+		auto start = self->pos;
+		while (self->pos < self->end)
+		{
+			// float
+			if (*self->pos == '.' || 
+			    *self->pos == 'e' || 
+			    *self->pos == 'E')
+		   	{
+				self->pos = start;
+				goto reread_as_float;
+			}
+			if (! isdigit(*self->pos))
+				break;
+			ast->integer = (ast->integer * 10) + *self->pos - '0';
+			self->pos++;
+		}
+		return ast;
+
+reread_as_float:
+		errno = 0;
+		ast->id = KFLOAT;
+		char* end = NULL;
+		ast->fp = strtof(start, &end);
+		if (errno == ERANGE)
+			lex_error(self, "bad float number token");
+		self->pos = end;
+		return ast;
+	}
+
+	// keyword or name
+	if (isalpha(*self->pos) || *self->pos == '_')
+	{
+		auto start = self->pos;
+		char* compound_prev = NULL;
+		while (self->pos < self->end &&
+		       (*self->pos == '_' ||
+	 	        *self->pos == '.' ||
+	 	        *self->pos == '$' ||
+	 	         isalpha(*self->pos) ||
+		         isdigit(*self->pos)))
+		{
+			if (*self->pos == '.') {
+				if (compound_prev == (self->pos - 1))
+					lex_error(self, "bad compound name token");
+				compound_prev = self->pos;
+			}
+			self->pos++;
+		}
+		str_set(&ast->string, start, self->pos - start);
+
+		if (compound_prev)
+	   	{
+			if (unlikely(*(self->pos - 1) == '.'))
+			{
+				// path.*
+				if (self->pos != self->end && *self->pos == '*')
+				{
+					self->pos++;
+					ast->string.end++;
+					ast->id = KNAME_COMPOUND_STAR;
+					return ast;
+				}
+				lex_error(self, "bad compound name token");
+			}
+			ast->id = KNAME_COMPOUND;
+			return ast;
+		}
+
+		ast->id = KNAME;
+		if (*ast->string.pos != '_')
+		{
+			auto keyword = lex_keyword_match(self, &ast->string);
+			if (keyword) 
+				ast->id = keyword->id;
+		}
+		return ast;
+	}
+
+	// string
+	if (*self->pos == '\"' || *self->pos == '\'')
+	{
+		char end_char = '"';
+		if (*self->pos == '\'')
+			end_char = '\'';
+		self->pos++;
+
+		auto start  = self->pos;
+		bool slash  = false;
+		bool escape = false;
+		while (self->pos < self->end)
+		{
+			if (*self->pos == end_char) {
+				if (slash) {
+					slash = false;
+					self->pos++;
+					continue;
+				}
+				break;
+			}
+			if (*self->pos == '\n')
+				lex_error(self, "unterminated string");
+			if (*self->pos == '\\') {
+				slash = !slash;
+				escape = true;
+			} else {
+				slash = false;
+			}
+			self->pos++;
+		}
+		if (unlikely(self->pos == self->end))
+			lex_error(self, "unterminated string");
+
+		ast->id = KSTRING;
+		ast->string_escape = escape;
+		str_set(&ast->string, start, self->pos - start);
+		self->pos++;
+		return ast;
+	}
+
+	// error
+	lex_error(self, "bad token");
+	return NULL;
+}
