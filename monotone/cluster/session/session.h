@@ -9,12 +9,25 @@
 typedef struct Ctx Ctx;
 typedef struct Session Session;
 
+typedef enum
+{
+	LOCK_NONE,
+	LOCK_SHARED,
+	LOCK_EXCLUSIVE
+} SessionLock;
+
 struct Session
 {
+	Compiler    compiler;
+	Command     cmd;
 	Transaction trx;
+	// catalog lock
+	SessionLock lock;
+	RequestLock lock_req;
+	Locker*     lock_shared;
+	// request
 	RequestSet  req_set;
 	LogSet      log_set;
-	Locker*     cat_locker;
 	Portal*     portal;
 	Share*      share;
 };

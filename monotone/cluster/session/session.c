@@ -29,9 +29,13 @@
 void
 session_init(Session* self, Share* share, Portal* portal)
 {
-	self->share      = share;
-	self->portal     = portal;
-	self->cat_locker = NULL;
+	self->lock        = LOCK_NONE;
+	self->lock_shared = NULL;
+	self->share       = share;
+	self->portal      = portal;
+	request_lock_init(&self->lock_req);
+	compiler_init(&self->compiler, share->db);
+	command_init(&self->cmd);
 	transaction_init(&self->trx);
 	request_set_init(&self->req_set);
 	log_set_init(&self->log_set);
@@ -40,6 +44,9 @@ session_init(Session* self, Share* share, Portal* portal)
 void
 session_free(Session *self)
 {
+	assert(self->lock == LOCK_NONE);
+	compiler_free(&self->compiler);
+	command_free(&self->cmd);
 	request_set_reset(&self->req_set);
 	request_set_free(&self->req_set);
 	log_set_free(&self->log_set);
@@ -47,108 +54,62 @@ session_free(Session *self)
 }
 
 static void
-create_table(Session* self)
+session_lock(Session* self, SessionLock lock)
 {
-	auto trx = &self->trx;
-	auto share = self->share;
+	assert(self->lock == LOCK_NONE);
 
-	// find table
-	Str name;
-	str_set_cstr(&name, "test");
-	auto table = table_mgr_find(self->share->table_mgr, &name, false);
-	if (table)
-		return;
-
-	// create table
-	transaction_begin(trx);
-
-	// table config
-	auto config = table_config_allocate();
-	Uuid id;
-	uuid_mgr_generate(global()->uuid_mgr, &id);
-	table_config_set_id(config, &id);
-	str_set_cstr(&name, "test");
-	table_config_set_name(config, &name);
-
-	// schema
-	auto pk = column_allocate();
-	str_set_cstr(&name, "id");
-	column_set_name(pk, &name);
-	column_set_type(pk, TYPE_INT);
-	schema_add_column(&config->schema, pk);
-	schema_add_key(&config->schema, pk);
-
-	table_mgr_create(self->share->table_mgr, trx, config, true);
-	table_config_free(config);
-
-	log_set_add(&self->log_set, &trx->log);
-	wal_write(share->wal, &self->log_set);
-
-	transaction_set_lsn(trx, trx->log.lsn);
-	transaction_commit(trx);
-
-	// find table
-	str_set_cstr(&name, "test");
-	table = table_mgr_find(self->share->table_mgr, &name, true);
-
-	// create storage for each shard
-	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	switch (lock) {
+	case LOCK_SHARED:
+		self->lock_shared = lock_lock(self->share->cat_lock, true);
+		self->lock        = lock;
+		break;
+	case LOCK_EXCLUSIVE:
 	{
-		auto shard = share->shard_mgr->shards[i];
+		self->lock = lock;
 
-		// storage config
-		auto storage_config = storage_config_allocate();
-		uuid_mgr_generate(global()->uuid_mgr, &id);
-		storage_config_set_id(storage_config, &id);
-		storage_config_set_id_table(storage_config, &table->config->id);
-		storage_config_set_id_shard(storage_config, &shard->config->id);
-		storage_config_set_range(storage_config, shard->config->range_start,
-		                         shard->config->range_end);
+		auto req = &self->lock_req;
+		req->on_lock = condition_create();
 
-		// create storage
-		auto storage = storage_mgr_create(share->storage_mgr, storage_config);
+		// RPC_CAT_LOCK_REQ
+		channel_write(global()->control->core, request_lock_msg(req));
 
-		// index config
-		auto index_config = index_config_allocate();
-		str_set_cstr(&name, "primary");
-		index_config_set_name(index_config, &name);
-		index_config_set_type(index_config, INDEX_TREE);
-		index_config_set_primary(index_config, true);
-		schema_copy(&index_config->schema, &table->config->schema);
-
-		// create tree index
-		auto index = tree_allocate(index_config, &storage->config->id);
-		index_config_free(index_config);
-
-		// attach index to the storage
-		storage_mgr_attach(share->storage_mgr, storage, index);
-
-		// attach and start storage on shard
-		rpc(&shard->task.channel, RPC_STORAGE_ATTACH, 1, storage);
+		// wait for exclusive lock to be taken on all hubs (including this one)
+		condition_wait(req->on_lock, -1);
+		break;
+	}
+	case LOCK_NONE:
+		break;
 	}
 }
 
 static void
-create_table_main(Session* self)
+session_unlock(Session* self)
 {
-	RequestLock req_lock;
-	request_lock_init(&req_lock);
-	req_lock.on_lock = condition_create();
-
-	// RPC_CAT_LOCK_REQ
-	channel_write(global()->control->core, request_lock_msg(&req_lock));
-
-	// wait for exclusive lock to be taken on all hubs (including this one)
-	condition_wait(req_lock.on_lock, -1);
-
-	// do ddl
-	create_table(self);
-
-	// ask core to unlock hubs
-	condition_signal(req_lock.on_unlock);
-	condition_free(req_lock.on_lock);
+	switch (self->lock) {
+	case LOCK_SHARED:
+	{
+		lock_unlock(self->lock_shared);
+		self->lock_shared = NULL;
+		break;
+	}
+	case LOCK_EXCLUSIVE:
+	{
+		// ask core to unlock hubs
+		auto req = &self->lock_req;
+		if (req->on_lock)
+		{
+			condition_signal(req->on_unlock);
+			condition_free(req->on_lock);
+		}
+		break;
+	}
+	case LOCK_NONE:
+		break;
+	}
+	self->lock = LOCK_NONE;
 }
 
+#if 0
 int seq = 0;
 
 static void
@@ -243,43 +204,283 @@ execute(Session* self, Buf* buf)
 	double rps = count / (float)(time / 1000.0 / 1000.0);
 	portal_write(self->portal, make_float(rps));
 }
+#endif
+
+static inline void
+execute_create_storages(Session* self, Table* table)
+{
+	auto share = self->share;
+
+	// create storage for each shard
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	{
+		auto shard = share->shard_mgr->shards[i];
+
+		// create storage config
+		auto config = storage_config_allocate();
+		guard(config_guard, storage_config_free, config);
+
+		Uuid id;
+		uuid_mgr_generate(global()->uuid_mgr, &id);
+		storage_config_set_id(config, &id);
+		storage_config_set_id_table(config, &table->config->id);
+		storage_config_set_id_shard(config, &shard->config->id);
+		storage_config_set_range(config, shard->config->range_start,
+		                         shard->config->range_end);
+
+		// create storage
+		auto storage = storage_mgr_create(share->storage_mgr, config);
+		unguard(&config_guard);
+
+		// create primary index per storage
+
+		// create index config
+		auto index_config = index_config_allocate();
+		guard(index_config_guard, index_config_free, index_config);
+		Str name;
+		str_set_cstr(&name, "primary");
+		index_config_set_name(index_config, &name);
+		index_config_set_type(index_config, INDEX_TREE);
+		index_config_set_primary(index_config, true);
+		schema_copy(&index_config->schema, &table->config->schema);
+
+		// create tree index
+		auto index = tree_allocate(index_config, &storage->config->id);
+		unguard(&index_config_guard);
+		index_config_free(index_config);
+
+		// attach index to the storage
+		storage_mgr_attach(share->storage_mgr, storage, index);
+
+		// attach and start storage on shard
+		rpc(&shard->task.channel, RPC_STORAGE_ATTACH, 1, storage);
+	}
+}
+
+static inline void
+execute_create_table(Session* self, Ast* ast)
+{
+	auto trx = &self->trx;
+	auto arg = ast_create_table_of(ast);
+	auto share = self->share;
+
+	// get exclusive catalog lock
+	session_lock(self, LOCK_EXCLUSIVE);
+
+	transaction_begin(trx);
+
+	// create table
+	table_mgr_create(share->table_mgr, trx, arg->config, arg->if_not_exists);
+	if (transaction_read_only(trx))
+	{
+		// table exists
+		transaction_commit(trx);
+		return;
+	}
+
+	// wal write
+	log_set_add(&self->log_set, &trx->log);
+	wal_write(share->wal, &self->log_set);
+
+	transaction_set_lsn(trx, trx->log.lsn);
+	transaction_commit(trx);
+
+	// create storage for each shard
+	auto table = table_mgr_find(share->table_mgr, &arg->config->name, true);
+	execute_create_storages(self, table);
+}
+
+static inline void
+execute_drop_table(Session* self, Ast* ast)
+{
+	auto trx = &self->trx;
+	auto arg = ast_drop_table_of(ast);
+	auto share = self->share;
+
+	// get exclusive catalog lock
+	session_lock(self, LOCK_EXCLUSIVE);
+
+	transaction_begin(trx);
+
+	// drop table
+	table_mgr_drop(share->table_mgr, trx, &arg->name->string, arg->if_exists);
+	if (transaction_read_only(trx))
+	{
+		// table does not exists
+		transaction_commit(trx);
+		return;
+	}
+
+	// wal write
+	log_set_add(&self->log_set, &trx->log);
+	wal_write(share->wal, &self->log_set);
+
+	transaction_set_lsn(trx, trx->log.lsn);
+	transaction_commit(trx);
+}
+
+static inline void
+execute_utility(Session* self)
+{
+	auto ast = compiler_first(&self->compiler);
+	switch (ast->id) {
+	case KSHOW:
+	{
+		// catalog lock
+		session_lock(self, LOCK_SHARED);
+
+		auto arg = ast_show_of(ast);
+		Buf* buf = NULL;
+		if (str_compare_raw(&arg->expr->string, "users", 5))
+			rpc(global()->control->core, RPC_USER_SHOW, 1, &buf);
+		else
+		if (str_compare_raw(&arg->expr->string, "wal", 3))
+			buf = wal_status(self->share->wal);
+		else
+		if (str_compare_raw(&arg->expr->string, "tables", 6))
+			buf = table_mgr_list(&self->share->db->table_mgr);
+		else
+		if (str_compare_raw(&arg->expr->string, "views", 5))
+			buf = meta_mgr_list(&self->share->db->meta_mgr);
+		else
+		if (str_compare_raw(&arg->expr->string, "all", 3))
+			buf = config_list(global()->config);
+		else
+		{
+			auto name = &arg->expr->string;
+			auto var = config_find(global()->config, name);
+			if (var && var_is(var, VAR_S))
+				var = NULL;
+			if (unlikely(var == NULL))
+				error("SHOW name: '%.*s' not found", str_size(name),
+				      str_of(name));
+			buf = var_msg_create(var);
+		}
+		if (buf)
+			portal_write(self->portal, buf);
+		break;
+	}
+	case KSET:
+	{
+		auto arg = ast_set_of(ast);
+		auto name = &arg->name->string;
+
+		// find variable
+		auto var = config_find(global()->config, name);
+		if (var && var_is(var, VAR_S))
+			var = NULL;
+		if (unlikely(var == NULL))
+			error("SET '%.*s': variable not found", str_size(name),
+			      str_of(name));
+		if (unlikely(! var_is(var, VAR_R)))
+			error("SET '%.*s': variable is read-only", str_size(name),
+			      str_of(name));
+
+		// set value
+		auto value = arg->value;
+		switch (var->type) {
+		case VAR_BOOL:
+		{
+			if (value->id != KTRUE && value->id != KFALSE)
+				error("SET '%.*s': bool value expected", str_size(name),
+				      str_of(name));
+			bool is_true = value->id == KTRUE;
+			var_int_set(var, is_true);
+			break;
+		}
+		case VAR_INT:
+		{
+			if (value->id != KINT)
+				error("SET '%.*s': integer value expected", str_size(name),
+				      str_of(name));
+			var_int_set(var, value->integer);
+			break;
+		}
+		case VAR_STRING:
+		{
+			if (value->id != KSTRING)
+				error("SET '%.*s': string value expected", str_size(name),
+				      str_of(name));
+			var_string_set(var, &value->string);
+			break;
+		}
+		case VAR_DATA:
+		{
+			error("SET '%.*s': variable cannot be changed", str_size(name),
+				  str_of(name));
+			break;
+		}
+		}
+
+		// save state for persistent vars
+		if (var_is(var, VAR_P))
+			control_save_config();
+		break;
+	}
+
+	case KCREATE_USER:
+	{
+		auto arg = ast_create_user_of(ast);
+		rpc(global()->control->core, RPC_USER_CREATE, 2,
+		    arg->config, arg->if_not_exists);
+		break;
+	}
+
+	case KDROP_USER:
+	{
+		auto arg = ast_drop_user_of(ast);
+		rpc(global()->control->core, RPC_USER_DROP, 2,
+		    &arg->name->string, arg->if_exists);
+		break;
+	}
+	// todo: alter_user
+
+	case KCREATE_TABLE:
+		execute_create_table(self, ast);
+		break;
+
+	case KDROP_TABLE:
+		execute_drop_table(self, ast);
+		break;
+
+	default:
+		assert(0);
+		break;
+	}
+}
 
 hot static inline void
-test(Session* self, Buf* buf)
+execute(Session* self, Buf* buf)
 {
-	Parser parser;
-	parser_init(&parser);
+	// read command
+	command_set(&self->cmd, buf);
 
-	Command cmd;
-	command_init(&cmd);
-	command_set(&cmd, buf);
+	// parse query
+	compiler_parse(&self->compiler, &self->cmd.text);
 
-	parser_run(&parser, &cmd.text);
+	if (compiler_is_utility(&self->compiler))
+	{
+		// DDL or system command
+		execute_utility(self);
+	} else
+	{
+		// lock catalog
+		session_lock(self, LOCK_SHARED);
 
-	parser_free(&parser);
+		// prepare req set
+		compiler_generate(&self->compiler);
 
-#if 0
-	Compiler compiler;
-	compiler_init(&compiler, self->share->db);
+		// execute
+		// commit
+	}
 
-	Command cmd;
-	command_init(&cmd);
-	command_set(&cmd, buf);
-
-	compiler_start(&compiler, &cmd.text, NULL);
-
-	expr(&compiler, NULL);
-
-	command_free(&cmd);
-	compiler_free(&compiler);
-#endif
-	(void)self;
-	(void)buf;
+	session_unlock(self);
 }
 
 static inline void
 session_prepare(Session* self)
 {
+	compiler_reset(&self->compiler);
 	request_set_reset(&self->req_set);
 	log_set_reset(&self->log_set);
 }
@@ -297,16 +498,14 @@ session_execute(Session* self, Buf* buf)
 			error("unrecognized request: %d", msg->id);
 
 		session_prepare(self);
-
-		(void)execute;
-		//execute(self, buf);
-
-		test(self, buf);
+		execute(self, buf);
 	}
 
 	bool ro = false;
 	if (catch(&e))
 	{
+		session_unlock(self);
+
 		auto error = &mn_self()->error;
 		reply = make_error(error);
 		portal_write(self->portal, reply);
