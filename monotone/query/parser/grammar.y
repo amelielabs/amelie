@@ -55,7 +55,8 @@
 %token NAME_COMPOUND.
 %token NAME_COMPOUND_STAR.
 %token STAR.
-%token CALL.
+%token IDX.
+%token NEG.
 
 %token EXPR.
 
@@ -85,7 +86,7 @@
 %left  ADD SUB CAT.
 %left  MUL DIV MOD.
 // exponentation
-%right MINUS NOT.
+%right NOT.
 %left  RBL RBR CBL CBR SBL SBR DOT.
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,6 +107,7 @@ stmt      ::= create_table.
 stmt      ::= drop_user.
 stmt      ::= drop_table.
 stmt      ::= insert.
+stmt      ::= select.
 
 // BEGIN, COMMIT, ROLLBACK
 begin     ::= BEGIN.
@@ -133,14 +135,14 @@ rollback  ::= ROLLBACK.
 }
 
 // SHOW
-show      ::= SHOW expr_arg(A).
+show      ::= SHOW NAME|STRING(A).
 {
 	query_validate(arg, false);
 	ast_list_add(&arg->stmts, ast_show_allocate(A));
 }
 
 // SET
-set       ::= SET NAME(A) TO INT|STRING(B).
+set       ::= SET STRING|NAME(A) TO INT|STRING|TRUE|FALSE(B).
 {
 	query_validate(arg, false);
 	ast_list_add(&arg->stmts, ast_set_allocate(A, B));
@@ -196,10 +198,12 @@ drop_user ::= DROP USER if_exists(A) NAME(B).
 // CREATE TABLE
 create_table ::= CREATE TABLE if_not_exists(A) NAME(B) RBL schema_start schema RBR.
 {
-	query_validate(arg, false);
-
 	auto ast  = ast_list_last(&arg->stmts);
 	auto self = ast_create_table_of(ast);
+
+	if (self->config->schema.key_count == 0)
+		error("primary key is not defined");
+
 	// if not exists
 	if (A)
 		self->if_not_exists = true;
@@ -209,6 +213,8 @@ create_table ::= CREATE TABLE if_not_exists(A) NAME(B) RBL schema_start schema R
 
 schema_start ::= .
 {
+	query_validate(arg, true);
+
 	// create table config
 	auto ast  = ast_create_table_allocate();
 	auto self = ast_create_table_of(ast);
@@ -319,7 +325,7 @@ drop_table ::= DROP TABLE if_exists(A) NAME(B).
 ///////////////////////////////////////////////////////////////////////////////
 
 // INSERT/REPLACE
-insert ::= INSERT|REPLACE INTO NAME(A) VALUES RBL insert_start insert_arg RBR.
+insert ::= INSERT|REPLACE INTO NAME(A) VALUES insert_start row_list.
 {
 	query_validate(arg, true);
 
@@ -330,9 +336,10 @@ insert ::= INSERT|REPLACE INTO NAME(A) VALUES RBL insert_start insert_arg RBR.
 	// name
 	self->table = A;
 
-	// values
-	self->values_count = cardinality_pop(&arg->cardinality);
-	self->values = NULL; // todo: stack first
+	// values/rows (list of expr_list's)
+	self->rows_count = cardinality_pop(&arg->cardinality);
+	self->rows = arg->stack.list;
+	ast_stack_init(&arg->stack);
 }
 
 insert_start ::= .
@@ -340,25 +347,62 @@ insert_start ::= .
 	cardinality_push(&arg->cardinality);
 }
 
-insert_arg   ::= insert_arg COMMA insert_value.
-insert_arg   ::= insert_value.
-insert_value ::= expr.
+// (expr, expr), ()
+row_list   ::= row_list COMMA row.
+row_list   ::= row.
+row        ::= RBL row_start(A) row_arg RBR.
 {
+	// list of exprs
+	int count = cardinality_pop(&arg->cardinality);
+	auto list = ast_slice(&arg->stack, A);
+
+	// row(expr, expr, expr)
+	auto self = ast_row_allocate(KRBL, list, count);
+	ast_push(&arg->stack, self);
+
+	// rows++
 	cardinality_inc(&arg->cardinality);
+}
+
+row_start(A) ::= .
+{
+	cardinality_push(&arg->cardinality);
+	A = ast_tail(&arg->stack);
+}
+
+row_arg    ::= row_arg COMMA row_value.
+row_arg    ::= row_value.
+row_value  ::= expr_arg(A).
+{
+	// fold expression
+	cardinality_inc(&arg->cardinality);
+	ast_push(&arg->stack, A);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// SELECT
+select ::= SELECT expr.
+{
+	query_validate(arg, true);
+
+	auto ast  = ast_select_allocate();
+	auto self = ast_select_of(ast);
+	ast_list_add(&arg->stmts, ast);
+
+	// expr
+	self->expr = arg->stack.list;
+	ast_stack_init(&arg->stack);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // EXPRESSION ARGUMENT
+
 expr_arg(A) ::= expr_start(B) expr.
 {
-	if (B == NULL) {
-		B = ast_tail(&arg->stack);
-		ast_stack_init(&arg->stack);
-	} else {
-		B->prev->next = NULL;
-	}
-	A = B;
+	auto list = ast_slice(&arg->stack, B);
+	A = ast_expr_allocate(KEXPR, list);
 }
 
 expr_start(A) ::= .                             { A = ast_tail(&arg->stack); }
@@ -374,9 +418,10 @@ expr        ::= expr BAND(o) expr.              { ast_push(&arg->stack, o); }
 expr        ::= expr SHL|SHR(o) expr.           { ast_push(&arg->stack, o); }
 expr        ::= expr ADD|SUB|CAT(o) expr.       { ast_push(&arg->stack, o); }
 expr        ::= expr MUL|DIV|MOD(o) expr.       { ast_push(&arg->stack, o); }
-expr        ::= expr SBL(o) expr SBR.           { ast_push(&arg->stack, o); }
+expr        ::= expr SBL(o) expr SBR.           { ast_push(&arg->stack, o); o->id = KIDX; }
 expr        ::= expr DOT(o) expr.               { ast_push(&arg->stack, o); }
-expr        ::= SUB|NOT(o) expr.                { ast_push(&arg->stack, o); }
+expr        ::= SUB(o) expr.                    { ast_push(&arg->stack, o); o->id = KNEG; }
+expr        ::= NOT(o) expr.                    { ast_push(&arg->stack, o); }
 expr        ::= value.
 
 // VALUE
@@ -393,7 +438,8 @@ value       ::= array.
 //value      ::= SELECT.
 
 // consts
-value       ::= TRUE|FALSE(A).                 { ast_push(&arg->stack, A); }
+value       ::= TRUE(A).                       { ast_push(&arg->stack, A); }
+value       ::= FALSE(A).                      { ast_push(&arg->stack, A); }
 value       ::= NULL(A).                       { ast_push(&arg->stack, A); }
 value       ::= INT|STRING|FLOAT(A).           { ast_push(&arg->stack, A); }
 value       ::= ARGUMENT|ARGUMENT_NAME(A).     { ast_push(&arg->stack, A); }
@@ -410,13 +456,11 @@ value       ::= MUL(A).                        { ast_push(&arg->stack, A); A->id
 //
 // function_name([expr, ...])
 //
-call        ::= NAME(B) RBL(o) call_start call_arg RBR.
+call        ::= NAME(B) RBL call_start call_arg RBR.
 {
-	auto count = ast(KINT);
-	count->integer = cardinality_pop(&arg->cardinality);
-	ast_push(&arg->stack, count);
-	ast_push(&arg->stack, B);
-	ast_push(&arg->stack, o);
+	int count = cardinality_pop(&arg->cardinality);
+	auto self = ast_call_allocate(KRBL, B, count);
+	ast_push(&arg->stack, self);
 }
 
 call_start  ::= .
@@ -436,12 +480,11 @@ call_value  ::= expr.
 //
 // [expr, expr, ...]
 //
-array       ::= SBL(o) array_start array_arg SBR.
+array       ::= SBL array_start array_arg SBR.
 {
-	auto count = ast(KINT);
-	count->integer = cardinality_pop(&arg->cardinality);
-	ast_push(&arg->stack, count);
-	ast_push(&arg->stack, o);
+	int count = cardinality_pop(&arg->cardinality);
+	auto self = ast_call_allocate(KSBL, NULL, count);
+	ast_push(&arg->stack, self);
 }
 
 array_start ::= .
@@ -461,12 +504,11 @@ array_value ::= expr.
 //
 // {"string": expr, ...}
 //
-map         ::= CBL(o) map_start map_arg CBR.
+map         ::= CBL map_start map_arg CBR.
 {
-	auto count = ast(KINT);
-	count->integer = cardinality_pop(&arg->cardinality);
-	ast_push(&arg->stack, count);
-	ast_push(&arg->stack, o);
+	int count = cardinality_pop(&arg->cardinality);
+	auto self = ast_call_allocate(KCBL, NULL, count);
+	ast_push(&arg->stack, self);
 }
 
 map_start   ::= .
