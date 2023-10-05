@@ -26,11 +26,19 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Ivalue \
                  -Iaggr \
                  -Ivm \
-                 -Iparser
+                 -Iparser \
+                 -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-query.a
 OBJECTS        = \
-                 value/update.o \
+                 parser/grammar.o \
+                 parser/keywords.o \
+                 parser/lex.o \
+                 parser/parser.o \
+                 compiler/compiler.o \
+                 compiler/emit.o
+
+#                value/update.o \
                  aggr/set.o \
                  aggr/aggrs.o \
                  aggr/count.o \
@@ -48,6 +56,8 @@ OBJECTS        = \
                  parser/keywords.o \
                  parser/lex.o \
                  parser/parser.o \
+                 compiler/emit.o
+
 #                compiler/keyword.o \
                  compiler/expr.o \
 #                compiler/expr_parse.o \
