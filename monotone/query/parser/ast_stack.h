@@ -51,3 +51,22 @@ ast_pop(AstStack* self)
 		self->list_tail->next = NULL;
 	return head;
 }
+
+static inline Ast*
+ast_slice(AstStack* self, Ast* after)
+{
+	// not including after
+	Ast* start = NULL;
+	if (after == NULL)
+	{
+		start = self->list;
+		ast_stack_init(self);
+	} else
+	{
+		start = after->next;
+		start->prev = NULL;
+		after->next = NULL;
+		self->list_tail = after;
+	}
+	return start;
+}
