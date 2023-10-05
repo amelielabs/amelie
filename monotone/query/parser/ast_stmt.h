@@ -13,6 +13,7 @@ typedef struct AstCreateTable AstCreateTable;
 typedef struct AstDropUser    AstDropUser;
 typedef struct AstDropTable   AstDropTable;
 typedef struct AstInsert      AstInsert;
+typedef struct AstSelect      AstSelect;
 
 struct AstShow
 {
@@ -59,8 +60,14 @@ struct AstInsert
 {
 	Ast  ast;
 	Ast* table;
-	Ast* values;
-	int  values_count;
+	Ast* rows;
+	int  rows_count;
+};
+
+struct AstSelect
+{
+	Ast  ast;
+	Ast* expr;
 };
 
 // show
@@ -174,8 +181,24 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(KINSERT, sizeof(AstInsert));
-	self->table        = NULL;
-	self->values       = NULL;
-	self->values_count = 0;
+	self->table      = NULL;
+	self->rows       = NULL;
+	self->rows_count = 0;
+	return &self->ast;
+}
+
+// select
+static inline AstSelect*
+ast_select_of(Ast* ast)
+{
+	return (AstSelect*)ast;
+}
+
+static inline Ast*
+ast_select_allocate(void)
+{
+	AstSelect* self;
+	self = ast_allocate(KSELECT, sizeof(AstSelect));
+	self->expr = NULL;
 	return &self->ast;
 }
