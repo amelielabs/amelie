@@ -60,9 +60,9 @@ static Keyword keywords_c[] =
 
 static Keyword keywords_d[] =
 {
+	{ KDROP,                  "drop",                  4  },
 	/*
 	{ KDELETE,                "delete",                6  },
-	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
 	{ KDEBUG,                 "debug",                 5  },
 	*/
@@ -109,9 +109,9 @@ static Keyword keywords_i[] =
 {
 	{ KIF,                    "if",                    2  },
 	{ KTINT,                  "int",                   3  },
-	/*
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
+	/*
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
 	*/
@@ -130,8 +130,6 @@ static Keyword keywords_j[] =
 static Keyword keywords_k[] =
 {
 	{ KKEY,                   "key",                   3  },
-	/*
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
@@ -204,10 +202,10 @@ static Keyword keywords_r[] =
 static Keyword keywords_s[] =
 {
 	{ KSHOW,                  "show",                  4  },
-	{ KTSTRING,               "string",                6  },
-	/*
 	{ KSET,                   "set",                   3  },
+	{ KTSTRING,               "string",                6  },
 	{ KSELECT,                "select",                6  },
+	/*
 	{ KSUM,                   "sum",                   3  },
 	{ KSIZEOF,                "sizeof",                6  },
 	{ KSTORAGES,              "storages",              8  },
@@ -222,8 +220,8 @@ static Keyword keywords_t[] =
 {
 	{ KTRUE,                  "true",                  4  },
 	{ KTABLE,                 "table",                 5  },
-	/*
 	{ KTO,                    "to",                    2  },
+	/*
 	{ KTABLES,                "tables",                6  },
 	*/
 	{ 0,                       NULL,                   0  }
@@ -231,11 +229,10 @@ static Keyword keywords_t[] =
 
 static Keyword keywords_u[] =
 {
+	{ KUSER,                  "user",                  4  },
 	/*
 	{ KUPDATE,                "update",                6  },
 	{ KUNSET,                 "unset",                 5  },
-	{ KUSERS,                 "users",                 5  },
-	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
 	*/
@@ -244,8 +241,8 @@ static Keyword keywords_u[] =
 
 static Keyword keywords_v[] =
 {
-	/*
 	{ KVALUES,                "values",                6  },
+	/*
 	{ KVIEW,                  "view",                  4  },
 	{ KVIEWS,                 "views",                 5  },
 	*/

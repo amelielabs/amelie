@@ -40,6 +40,9 @@ query_reset(Query* self)
 	self->in_transaction = false;
 	self->complete = false;
 	cardinality_reset(&self->cardinality);
+
+	// todo: free
+	ast_list_init(&self->stmts);
 }
 
 static inline void
