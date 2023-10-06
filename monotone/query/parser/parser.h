@@ -12,7 +12,6 @@ struct Parser
 {
 	Query query;
 	Lex   lex;
-	void* parser;
 };
 
 void parser_init(Parser*);

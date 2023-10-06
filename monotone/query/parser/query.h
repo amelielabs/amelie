@@ -10,11 +10,9 @@ typedef struct Query Query;
 
 struct Query
 {
-	bool        in_transaction;
-	bool        complete;
-	AstStack    stack;
-	Cardinality cardinality;
-	AstList     stmts;
+	bool    in_transaction;
+	bool    complete;
+	AstList stmts;
 };
 
 static inline void
@@ -22,16 +20,13 @@ query_init(Query* self)
 {
 	self->in_transaction = false;
 	self->complete = false;
-	ast_stack_init(&self->stack);
-	cardinality_init(&self->cardinality);
 	ast_list_init(&self->stmts);
 }
-
 
 static inline void
 query_free(Query* self)
 {
-	cardinality_free(&self->cardinality);
+	(void)self;
 }
 
 static inline void
@@ -39,9 +34,8 @@ query_reset(Query* self)
 {
 	self->in_transaction = false;
 	self->complete = false;
-	cardinality_reset(&self->cardinality);
 
-	// todo: free
+	// todo: free stmts
 	ast_list_init(&self->stmts);
 }
 
