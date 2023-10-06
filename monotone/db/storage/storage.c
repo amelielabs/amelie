@@ -22,7 +22,6 @@ storage_allocate(StorageConfig* config)
 	self->config        = config;
 	self->indexes_count = 0;
 	list_init(&self->indexes);
-	list_init(&self->link_list);
 	list_init(&self->link);
 	return self;
 }

@@ -14,7 +14,6 @@ struct Storage
 	List           indexes;
 	int            indexes_count;
 	StorageConfig* config;
-	List           link_list;
 	List           link;
 };
 

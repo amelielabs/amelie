@@ -135,18 +135,6 @@ storage_mgr_gc(StorageMgr* self)
 		storage_mgr_save(self);
 }
 
-void
-storage_mgr_assign(StorageMgr* self, StorageList* list, Uuid* id_shard)
-{
-	list_foreach_safe(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		if (! uuid_compare(&storage->config->id_shard, id_shard))
-			continue;
-		storage_list_add(list, storage);
-	}
-}
-
 Buf*
 storage_mgr_show(StorageMgr* self)
 {

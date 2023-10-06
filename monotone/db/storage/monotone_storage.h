@@ -18,5 +18,4 @@
 // storage
 #include "storage/storage_config.h"
 #include "storage/storage.h"
-#include "storage/storage_list.h"
 #include "storage/storage_mgr.h"
