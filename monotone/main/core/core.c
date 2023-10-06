@@ -77,7 +77,7 @@ core_create(void)
 	server_init(&self->server);
 
 	// cluster
-	shard_mgr_init(&self->shard_mgr);
+	shard_mgr_init(&self->shard_mgr, &self->db, &self->function_mgr);
 	shard_map_init(&self->shard_map);
 	hub_mgr_init(&self->hub_mgr);
 	request_sched_init(&self->req_sched);
@@ -85,17 +85,20 @@ core_create(void)
 	// db
 	db_init(&self->db, NULL, NULL);
 
-	// shared between hubs
+	// vm
+	function_mgr_init(&self->function_mgr);
+
+	// prepare shared context (shared between hubs)
 	auto share = &self->share;
-	share->meta_mgr    = &self->db.meta_mgr;
-	share->table_mgr   = &self->db.table_mgr;
-	share->storage_mgr = &self->db.storage_mgr;
-	share->wal         = &self->db.wal;
-	share->db          = &self->db;
-	share->shard_map   = &self->shard_map;
-	share->shard_mgr   = &self->shard_mgr;
-	share->req_sched   = &self->req_sched;
-	share->cat_lock    = NULL;
+	share->meta_mgr     = &self->db.meta_mgr;
+	share->table_mgr    = &self->db.table_mgr;
+	share->storage_mgr  = &self->db.storage_mgr;
+	share->wal          = &self->db.wal;
+	share->db           = &self->db;
+	share->shard_map    = &self->shard_map;
+	share->shard_mgr    = &self->shard_mgr;
+	share->req_sched    = &self->req_sched;
+	share->cat_lock     = NULL;
 
 	return self;
 }
@@ -108,6 +111,7 @@ core_free(Core* self)
 	server_free(&self->server);
 	request_sched_free(&self->req_sched);
 	db_free(&self->db);
+	function_mgr_free(&self->function_mgr);
 	user_mgr_free(&self->user_mgr);
 	config_state_free(&self->config_state);
 	catalog_mgr_free(&self->catalog_mgr);
@@ -197,6 +201,9 @@ core_start(Core* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
+	// prepare builtin functions
+	func_setup(&self->function_mgr);
+
 	// open db
 	db_open(&self->db, &self->catalog_mgr);
 
@@ -208,9 +215,6 @@ core_start(Core* self, bool bootstrap)
 		shard_mgr_create(&self->shard_mgr, shards);
 	}
 	shard_map_create(&self->shard_map, &self->shard_mgr);
-
-	// set storages per shard
-	shard_mgr_assign(&self->shard_mgr, &self->db.storage_mgr);
 
 	// start shards and recover storages
 	shard_mgr_start(&self->shard_mgr);

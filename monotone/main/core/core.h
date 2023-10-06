@@ -11,6 +11,8 @@ typedef struct Core Core;
 struct Core
 {
 	Share        share;
+	// vm
+	FunctionMgr  function_mgr;
 	// db
 	Db           db;
 	// cluster
