@@ -8,20 +8,26 @@
 
 typedef struct Compiler Compiler;
 
+typedef Code* (*CompilerCode)(uint32_t, void*);
+
 struct Compiler
 {
-	Parser parser;
-	Rmap   map;
-	Code*  code;
-	Buf    data;
-	Db*    db;
+	Parser       parser;
+	Rmap         map;
+	Buf          data;
+	Code*        code;
+	CompilerCode code_get;
+	void*        code_get_arg;
+	Db*          db;
 };
 
 static inline void
 compiler_init(Compiler *self, Db* db)
 {
-	self->code = NULL;
-	self->db   = db;
+	self->code         = NULL;
+	self->code_get     = NULL;
+	self->code_get_arg = NULL;
+	self->db           = db;
 	parser_init(&self->parser);
 	rmap_init(&self->map);
 	buf_init(&self->data);
@@ -38,10 +44,18 @@ compiler_free(Compiler* self)
 static inline void
 compiler_reset(Compiler* self)
 {
-	self->code = NULL;
+	self->code         = NULL;
+	self->code_get     = NULL;
+	self->code_get_arg = NULL;
 	buf_reset(&self->data);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
+}
+
+static inline void
+compiler_set_code(Compiler* self, Code* code)
+{
+	self->code = code;
 }
 
 static inline Ast*
@@ -51,5 +65,5 @@ compiler_first(Compiler* self)
 }
 
 void compiler_parse(Compiler*, Str*);
-void compiler_generate(Compiler*);
+void compiler_generate(Compiler*, CompilerCode, void*);
 bool compiler_is_utility(Compiler*);

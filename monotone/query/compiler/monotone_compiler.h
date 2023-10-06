@@ -11,7 +11,6 @@
 // compiler
 #include "compiler/compiler.h"
 #include "compiler/compiler_op.h"
-#include "compiler/emit.h"
 
 #if 0
 #include "compiler/scan.h"
