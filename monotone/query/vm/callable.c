@@ -94,14 +94,13 @@ call(Vm*       vm,
 
 	// prepare vm and execute callable
 	Vm call_vm;
-	vm_init(&call_vm, vm->db, vm->function_mgr, vm->trx);
+	vm_init(&call_vm, vm->db, vm->function_mgr, vm->shard);
 	guard(vm_guard, vm_free, &call_vm);
 
 	Exception e;
 	if (try(&e))
 	{
-		vm_run(&call_vm, &callable->code, argc, argv,
-		       vm->shard,
+		vm_run(&call_vm, vm->trx, &callable->code, argc, argv,
 		       vm->command, &call_portal);
 	}
 

@@ -26,15 +26,15 @@ void
 vm_init(Vm*          self,
         Db*          db,
         FunctionMgr* function_mgr,
-        Transaction* trx)
+        Uuid*        shard)
 {
 	self->db           = db;
 	self->function_mgr = function_mgr;
-	self->trx          = trx;
+	self->trx          = NULL;
 	self->code         = NULL;
 	self->argc         = 0;
 	self->argv         = NULL;
-	self->shard        = NULL;
+	self->shard        = shard;
 	self->command      = NULL;
 	self->portal       = NULL;
 	reg_init(&self->r);
@@ -63,19 +63,19 @@ vm_reset(Vm* self)
 #define op_jmp   goto *ops[(op)->op]
 
 hot void
-vm_run(Vm*      self,
-       Code*    code,
-       int      argc,
-       Value**  argv,
-       Uuid*    shard,
-       Command* command,
-       Portal*  portal)
+vm_run(Vm*          self,
+       Transaction* trx,
+       Code*        code,
+       int          argc,
+       Value**      argv,
+       Command*     command,
+       Portal*      portal)
 {
 	assert(code_count(code) > 0);
+	self->trx     = trx;
 	self->code    = code;
 	self->argc    = argc;
 	self->argv    = argv;
-	self->shard   = shard;
 	self->command = command;
 	self->portal  = portal;
 

@@ -80,7 +80,7 @@ func_mn_wal(Vm*       vm,
 }
 
 void
-func_mn_setup(FunctionMgr* mgr)
+func_setup(FunctionMgr* mgr)
 {
 	// config
 	auto func = function_allocate("mn_config", 0, (FunctionMain)func_mn_config);

@@ -24,7 +24,7 @@ struct Vm
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, FunctionMgr*, Transaction*);
+void vm_init(Vm*, Db*, FunctionMgr*, Uuid*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Code*, int, Value**, Uuid*, Command*, Portal*);
+void vm_run(Vm*, Transaction*, Code*, int, Value**, Command*, Portal*);

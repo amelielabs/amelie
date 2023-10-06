@@ -35,7 +35,8 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table/index by name
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_table, true);
-	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
+	auto storage = storage_mgr_find_for(&self->db->storage_mgr,
+	                                     self->shard,
 	                                    &table->config->id);
 	auto index   = storage_find(storage, &name_index, true);
 
