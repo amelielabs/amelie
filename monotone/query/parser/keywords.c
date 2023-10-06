@@ -25,105 +25,84 @@ static Keyword keywords_a[] =
 {
 	{ KAND,                   "and",                   3  },
 	{ KADD,                   "add",                   3  },
-	{ KTARRAY,                "array",                 5  },
-	/*
-	{ KALL,                   "all",                   3  },
 	{ KALTER,                 "alter",                 5  },
 	{ KASC,                   "asc",                   3  },
 	{ KAVG,                   "avg",                   3  },
 	{ KAS,                    "as",                    2  },
-	*/
+	{ KTARRAY,                "array",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_b[] =
 {
 	{ KBEGIN,                 "begin",                 5  },
-	{ KTBOOL,                 "bool",                  4  },
-	/*
 	{ KBY,                    "by",                    2  },
-	*/
+	{ KTBOOL,                 "bool",                  4  },
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_c[] =
 {
 	{ KCOMMIT,                "commit",                6  },
-	{ KCREATE,                "create",                6  },
-	/*
 	{ KCOUNT,                 "count",                 5  },
+	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
-	{ KCLIENTS,               "clients",               7  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_d[] =
 {
-	{ KDROP,                  "drop",                  4  },
-	/*
 	{ KDELETE,                "delete",                6  },
+	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
 	{ KDEBUG,                 "debug",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_e[] =
 {
-	{ KEXISTS,                "exists",                6  },
-	/*
 	{ KEXPLAIN,               "explain",               7  },
+	{ KEXISTS,                "exists",                6  },
 	{ KEXEC,                  "exec",                  4  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
-	{ KTFLOAT,                "float",                 5  },
-	/*
 	{ KFROM,                  "from",                  4  },
-	*/
+	{ KTFLOAT,                "float",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_g[] =
 {
-	/*
 	{ KGROUP,                 "group",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_h[] =
 {
-	/*
+	{ KHAS,                   "has",                   3  },
 	{ KHAVING,                "having",                6  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_i[] =
 {
-	{ KIF,                    "if",                    2  },
-	{ KTINT,                  "int",                   3  },
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
-	/*
+	{ KTINT,                  "int",                   3  },
+	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_j[] =
 {
-	/*
 	{ KJSON,                  "json",                  4  },
 	{ KJOIN,                  "join",                  4  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
@@ -135,10 +114,8 @@ static Keyword keywords_k[] =
 
 static Keyword keywords_l[] =
 {
-	/*
 	{ KLIMIT,                 "limit",                 5  },
 	{ KLOCAL,                 "local",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
@@ -152,32 +129,25 @@ static Keyword keywords_n[] =
 {
 	{ KNULL,                  "null",                  4  },
 	{ KNOT,                   "not",                   3  },
-	/*
 	{ KNODE,                  "node",                  4  },
-	{ KNODES,                 "nodes",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_o[] =
 {
 	{ KOR,                    "or",                    2  },
-	/*
 	{ KON,                    "on",                    2  },
 	{ KOFFSET,                "offset",                6  },
 	{ KORDER,                 "order",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_p[] =
 {
-	{ KPRIMARY,               "primary",               7  },
-	/*
 	{ KPROFILE,               "profile",               7  },
 	{ KPASSWORD,              "password",              8  },
+	{ KPRIMARY,               "primary",               7  },
 	{ KPROMOTE,               "promote",               7  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
@@ -188,75 +158,59 @@ static Keyword keywords_q[] =
 
 static Keyword keywords_r[] =
 {
-	{ KROLLBACK,              "rollback",              8  },
-	/*
 	{ KREPLACE,               "replace",               7  },
+	{ KROLLBACK,              "rollback",              8  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
 	{ KREFERENCE,             "reference",             9  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_s[] =
 {
-	{ KSHOW,                  "show",                  4  },
-	{ KSET,                   "set",                   3  },
-	{ KTSTRING,               "string",                6  },
 	{ KSELECT,                "select",                6  },
-	/*
+	{ KSET,                   "set",                   3  },
+	{ KSHOW,                  "show",                  4  },
+	{ KTSTRING,               "string",                6  },
 	{ KSUM,                   "sum",                   3  },
 	{ KSIZEOF,                "sizeof",                6  },
-	{ KSTORAGES,              "storages",              8  },
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
 	{ KSWITCH,                "switch",                6  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_t[] =
 {
 	{ KTRUE,                  "true",                  4  },
-	{ KTABLE,                 "table",                 5  },
 	{ KTO,                    "to",                    2  },
-	/*
-	{ KTABLES,                "tables",                6  },
-	*/
+	{ KTABLE,                 "table",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_u[] =
 {
-	{ KUSER,                  "user",                  4  },
-	/*
 	{ KUPDATE,                "update",                6  },
 	{ KUNSET,                 "unset",                 5  },
+	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_v[] =
 {
 	{ KVALUES,                "values",                6  },
-	/*
 	{ KVIEW,                  "view",                  4  },
-	{ KVIEWS,                 "views",                 5  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_w[] =
 {
-	/*
 	{ KWHERE,                 "where",                 5  },
 	{ KWITH,                  "with",                  4  },
-	{ KWAL,                   "wal",                   3  },
 	{ KWAIT,                  "wait",                  4  },
-	*/
 	{ 0,                       NULL,                   0  }
 };
 
