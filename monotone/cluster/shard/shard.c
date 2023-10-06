@@ -25,18 +25,7 @@
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
 
-static inline Storage*
-storage_list_first(StorageList* self)
-{
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link_list);
-		return storage;
-	}
-	return NULL;
-}
-
-static void
+hot static void
 shard_request(Shard* self, Request* req)
 {
 	unused(self);
@@ -45,31 +34,45 @@ shard_request(Shard* self, Request* req)
 	auto on_commit = condition_create();
 	req->on_commit = on_commit;
 
-	// execute
 	transaction_begin(&req->trx);
 
-	auto storage = storage_list_first(&self->storage_list);
-	uint8_t* pos = req->buf->start;
-	int i = 0;
-	for (; i < req->buf_count; i++)
-	{
-		uint8_t* start = pos;
-		data_skip(&pos);
+	Portal portal;
+	portal_init(&portal, portal_to_channel, &req->src);
 
-		storage_set(storage, &req->trx, false, start, pos - start);
+	// execute
+	Exception e;
+	if (try(&e))
+	{
+		//vm_reset(&self->vm);
+		vm_run(&self->vm, &req->trx, &req->code, 0, NULL, req->cmd, &portal);
+	}
+
+	Buf* reply;
+	if (catch(&e))
+	{
+		// error
+		reply = make_error(&mn_self()->error);
+		portal_write(&portal, reply);
 	}
 
 	// OK
-	auto reply = msg_create(MSG_OK);
+	reply = msg_create(MSG_OK);
 	encode_integer(reply, false);
 	msg_end(reply);
-	channel_write(&req->src, reply);
+	portal_write(&portal, reply);
 
 	// wait for commit
+	bool abort = false;
 	if (! ro)
+	{
 		condition_wait(on_commit, -1);
+		abort = req->abort;
+	}
 
-	transaction_commit(&req->trx);
+	if (unlikely(abort))
+		transaction_abort(&req->trx);
+	else
+		transaction_commit(&req->trx);
 	condition_free(on_commit);
 }
 
@@ -78,15 +81,8 @@ shard_rpc(Rpc* rpc, void* arg)
 {
 	Shard* self = arg;
 	switch (rpc->id) {
-	case RPC_STORAGE_ATTACH:
-	{
-		Storage* storage = rpc_arg_ptr(rpc, 0);
-		storage_list_add(&self->storage_list, storage);
-		break;
-	}
-	case RPC_STORAGE_DETACH:
-		break;
 	case RPC_STOP:
+		unused(self);
 		break;
 	default:
 		break;
@@ -119,20 +115,21 @@ shard_main(void* arg)
 }
 
 Shard*
-shard_allocate(ShardConfig* config)
+shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 {
 	Shard* self = mn_malloc(sizeof(*self));
 	self->order = 0;
 	task_init(&self->task, mn_task->buf_cache);
-	storage_list_init(&self->storage_list);
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
+	vm_init(&self->vm, db, function_mgr, &self->config->id);
 	return unguard(&self_guard);
 }
 
 void
 shard_free(Shard* self)
 {
+	vm_free(&self->vm);
 	if (self->config)
 		shard_config_free(self->config);
 	mn_free(self);

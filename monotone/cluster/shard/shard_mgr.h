@@ -10,15 +10,19 @@ typedef struct ShardMgr ShardMgr;
 
 struct ShardMgr
 {
-	Shard** shards;
-	int     shards_count;
+	Shard**      shards;
+	int          shards_count;
+	FunctionMgr* function_mgr;
+	Db*          db;
 };
 
 static inline void
-shard_mgr_init(ShardMgr* self)
+shard_mgr_init(ShardMgr* self, Db* db, FunctionMgr* function_mgr)
 {
 	self->shards       = NULL;
 	self->shards_count = 0;
+	self->function_mgr = function_mgr;
+	self->db           = db;
 }
 
 static inline void
@@ -87,7 +91,7 @@ shard_mgr_open(ShardMgr* self)
 		auto config = shard_config_read(&pos);
 		guard(config_guard, shard_config_free, config);
 
-		auto shard = shard_allocate(config);
+		auto shard = shard_allocate(config, self->db, self->function_mgr);
 		self->shards[i] = shard;
 
 		// set shard order
@@ -115,6 +119,11 @@ shard_mgr_create(ShardMgr* self, int count)
 		auto config = shard_config_allocate();
 		guard(config_guard, shard_config_free, config);
 
+		// set shard id
+		Uuid id;
+		uuid_mgr_generate(global()->uuid_mgr, &id);
+		shard_config_set_id(config, &id);
+
 		// set shard name
 		char name_sz[32];
 		snprintf(name_sz, sizeof(name_sz), "shard%d", i);
@@ -136,7 +145,7 @@ shard_mgr_create(ShardMgr* self, int count)
 		range_start += range_step;
 
 		// create shard
-		auto shard = shard_allocate(config);
+		auto shard = shard_allocate(config, self->db, self->function_mgr);
 		self->shards[i] = shard;
 
 		// set shard order
@@ -163,16 +172,5 @@ shard_mgr_stop(ShardMgr* self)
 	{
 		auto shard = self->shards[i];
 		shard_stop(shard);
-	}
-}
-
-static inline void
-shard_mgr_assign(ShardMgr* self, StorageMgr* storage_mgr)
-{
-	// add associated storages per shard
-	for (int i = 0; i < self->shards_count; i++)
-	{
-		auto shard = self->shards[i];
-		storage_mgr_assign(storage_mgr, &shard->storage_list, &shard->config->id);
 	}
 }

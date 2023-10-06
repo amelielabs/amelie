@@ -11,13 +11,13 @@ typedef struct Shard Shard;
 struct Shard
 {
 	int          order;
-	StorageList  storage_list;
 	ShardConfig* config;
+	Vm           vm;
 	Task         task;
 };
 
 Shard*
-shard_allocate(ShardConfig*);
+shard_allocate(ShardConfig*, Db*, FunctionMgr*);
 void shard_free(Shard*);
 void shard_start(Shard*);
 void shard_stop(Shard*);

@@ -44,9 +44,8 @@ shard_map_create(ShardMap* self, ShardMgr* mgr)
 }
 
 hot static inline Shard*
-shard_map_get(ShardMap* self, uint8_t* key, int key_size)
+shard_map_get(ShardMap* self, uint32_t hash)
 {
-	uint32_t hash = hash_murmur3_32(key, key_size, 0);
 	int partition = hash % PARTITION_MAX;
 	return self->map[partition];
 }
