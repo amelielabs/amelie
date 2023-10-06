@@ -51,11 +51,3 @@ ast_list_add(AstList* self, Ast* ast)
 	self->list_tail = node;
 	self->count++;
 }
-
-static inline void
-ast_list_restore(AstList* self, AstList* pos)
-{
-	*self = *pos;
-	if (self->list_tail)
-		self->list_tail->next = NULL;
-}
