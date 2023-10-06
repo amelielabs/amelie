@@ -21,52 +21,23 @@
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 
-static int
-token_map[CHAR_MAX] =
-{
-	['='] = KEQ,
-	['>'] = KGT,
-	['<'] = KLT,
-
-	['|'] = KBOR,
-	['^'] = KXOR,
-	['&'] = KBAND,
-
-	['+'] = KADD,
-	['-'] = KSUB,
-
-	['*'] = KMUL,
-	['/'] = KDIV,
-	['%'] = KMOD,
-
-	[','] = KCOMMA,
-	['.'] = KDOT,
-	[':'] = KCOLON,
-	[';'] = KSEMICOLON,
-
-	['('] = KRBL,
-	[')'] = KRBR,
-	['{'] = KCBL,
-	['}'] = KCBR,
-	['['] = KSBL,
-	[']'] = KSBR,
-};
-
 void
 lex_init(Lex* self, Keyword** keywords)
 {
 	self->pos      = NULL;
 	self->end      = NULL;
 	self->keywords = keywords;
+	self->backlog  = NULL;
 	self->prefix   = NULL;
 }
 
 void
 lex_reset(Lex* self)
 {
-	self->pos    = NULL;
-	self->end    = NULL;
-	self->prefix = NULL;
+	self->pos     = NULL;
+	self->end     = NULL;
+	self->backlog = NULL;
+	self->prefix  = NULL;
 }
 
 void
@@ -99,15 +70,32 @@ lex_keyword_match(Lex* self, Str* name)
 void
 lex_start(Lex* self, Str* text)
 {
-	self->pos    = str_of(text);
-	self->end    = str_of(text) + str_size(text);
-	self->prefix = NULL;
+	self->pos     = str_of(text);
+	self->end     = str_of(text) + str_size(text);
+	self->backlog = NULL;
+	self->prefix  = NULL;
+}
+
+void
+lex_push(Lex* self, Ast* ast)
+{
+	ast->next = NULL;
+	ast->prev = self->backlog;
+	self->backlog = ast;
 }
 
 hot Ast*
 lex_next(Lex* self)
 {
-	Ast* ast = ast_allocate(0, sizeof(Ast));
+	if (self->backlog)
+	{
+		auto last = self->backlog;
+		self->backlog = last->prev;
+		last->prev = NULL;
+		return last;
+	}
+
+	Ast* ast = ast_allocate(KEOF, sizeof(Ast));
 
 	// skip white spaces and comments
 	for (;;)
@@ -168,7 +156,7 @@ lex_next(Lex* self)
 		// <>
 		if (symbol == '<' && symbol_next == '>') {
 			self->pos++;
-			ast->id = KNEQ;
+			ast->id = KNEQU;
 			return ast;
 		}
 		// >>
@@ -202,9 +190,7 @@ lex_next(Lex* self)
 			return ast;
 		}
 symbol:;
-		ast->id = token_map[(int)symbol];
-		if (unlikely(ast->id == 0))
-			lex_error(self, "unexpected token");
+		ast->id = symbol;
 		ast->integer = symbol;
 		return ast;
 	}
@@ -334,5 +320,15 @@ reread_as_float:
 
 	// error
 	lex_error(self, "bad token");
+	return NULL;
+}
+
+hot Ast*
+lex_if(Lex* self, int id)
+{
+	auto ast = lex_next(self);
+	if (ast->id == id)
+		return ast;
+	lex_push(self, ast);
 	return NULL;
 }
