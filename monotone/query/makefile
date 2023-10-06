@@ -3,7 +3,6 @@
 #
 CC             = clang
 AR             = ar
-LEMON          = lemon
 RM             = rm
 CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I../runtime \
@@ -31,14 +30,7 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-query.a
 OBJECTS        = \
-                 parser/grammar.o \
-                 parser/keywords.o \
-                 parser/lex.o \
-                 parser/parser.o \
-                 compiler/compiler.o \
-                 compiler/emit.o
-
-#                value/update.o \
+                 value/update.o \
                  aggr/set.o \
                  aggr/aggrs.o \
                  aggr/count.o \
@@ -52,11 +44,10 @@ OBJECTS        = \
                  vm/func.o \
                  vm/func_debug.o \
                  vm/callable.o \
-                 parser/grammar.o \
                  parser/keywords.o \
                  parser/lex.o \
                  parser/parser.o \
-                 compiler/emit.o
+                 compiler/compiler.o
 
 #                compiler/keyword.o \
                  compiler/expr.o \
@@ -67,11 +58,9 @@ OBJECTS        = \
                  compiler/select.o \
                  compiler/stmt_from.o \
                  compiler/stmt.o
-$(LIB): clean parser/grammar.c $(OBJECTS)
+$(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
-parser/grammar.c:
-	$(LEMON) -q parser/grammar.y
 .c.o:
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo $(CC) -c $<
