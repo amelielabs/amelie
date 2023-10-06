@@ -68,7 +68,7 @@ arena_allocate_nothrow(Arena* self, int size)
 	if (unlikely(size > self->page_size))
 		return NULL;
 	ArenaPage* page;
-	if (unlikely(self->list == NULL || (self->page_size - self->list->used) < size))
+	if (unlikely(self->list == NULL || (self->page_size - self->list_tail->used) < size))
 	{
 		page = arena_add_page(self);
 		if (unlikely(page == NULL))
@@ -80,7 +80,7 @@ arena_allocate_nothrow(Arena* self, int size)
 		self->list_tail = page;
 		self->list_count++;
 	} else {
-		page = self->list;
+		page = self->list_tail;
 	}
 	void* ptr = page->data + page->used;
 	page->used += size;
