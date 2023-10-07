@@ -31,3 +31,4 @@ portal_write(Portal* self, Buf* msg)
 
 void portal_to_channel(Portal*, Buf*);
 void portal_to_tcp(Portal*, Buf*);
+void portal_to_free(Portal*, Buf*);
