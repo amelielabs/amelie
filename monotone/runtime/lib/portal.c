@@ -27,5 +27,6 @@ portal_to_tcp(Portal* self, Buf* buf)
 void
 portal_to_free(Portal* self, Buf* buf)
 {
+	unused(self);
 	buf_free(buf);
 }
