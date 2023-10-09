@@ -28,7 +28,7 @@ compiler_init(Compiler *self, Db* db)
 	self->code_get     = NULL;
 	self->code_get_arg = NULL;
 	self->db           = db;
-	parser_init(&self->parser);
+	parser_init(&self->parser, db);
 	rmap_init(&self->map);
 	buf_init(&self->data);
 }

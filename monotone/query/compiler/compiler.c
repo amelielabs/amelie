@@ -22,70 +22,95 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
-#if 0
-hot static inline uint32_t
-compiler_hash_key(Table* table, AstRow* row)
+static inline int
+emit_row(Code* code, AstRow* row, int* data_size)
 {
-	auto schema = &table->config->schema;
+	int start = code_data_prepare(code);
 
-	// validate column count
-	if (row->list_count < schema->column_count)
-		error("table <%.*s>: number of columns does not mismatch",
-			  str_size(&table->config->name),
-			  str_of(&table->config->name));
+	// []
+	encode_array(&code->data, row->list_count);
 
-	// calculate key hash
-	uint32_t hash = 0;
-
-	auto arg    = row->list;
-	auto column = schema->column;
-	int  count  = 0;
-	while (column)
+	auto value = row->list;
+	while (value)
 	{
-		if (column_is_key(column))
+		auto expr = ast_value_of(value)->expr;
+		while (expr)
 		{
-			uint8_t* key;
-			int      key_size;
-
-			auto     expr = ast_expr_of(arg);
-			if (column->type == TYPE_STRING)
-			{
-				if (expr->expr->id != KSTRING)
-					error("key column <%.*s>: expected string type", str_size(&column->name),
-					      str_of(&column->name));
-
-				key = str_u8(&expr->expr->string);
-				key_size = str_size(&expr->expr->string);
-			} else
-			{
-				if (expr->expr->id != KINT)
-					error("key column <%.*s>: expected int type", str_size(&column->name),
-					      str_of(&column->name));
-
-				key = (uint8_t*)&expr->expr->integer;
-				key_size = sizeof(expr->expr->integer);
+			switch (expr->id) {
+			case '[':
+				encode_array(&code->data, expr->integer);
+				break;
+			case '{':
+				encode_map(&code->data, expr->integer);
+				break;
+			case KSTRING:
+				encode_string(&code->data, &expr->string);
+				break;
+			case KNULL:
+				encode_null(&code->data);
+				break;
+			case KTRUE:
+			case KFALSE:
+				encode_bool(&code->data, expr->id == KTRUE);
+				break;
+			case KINT:
+				encode_integer(&code->data, expr->integer);
+				break;
+			case KFLOAT:
+				encode_float(&code->data, expr->fp);
+				break;
+			default:
+				abort();
+				break;
 			}
 
-			hash = hash_murmur3_32(key, key_size, hash);
-			count++;
-			if (count == schema->key_count)
-				break;
+			expr = expr->next;
 		}
 
-		column = column->next;
-		arg    = arg->next;
+		value = value->next;
 	}
 
-	return hash;
+	code_data_update(code);
+	*data_size = buf_size(&code->data) - start;
+	return start;
 }
 
-static void
+static atomic_u32 seq = 0;
+
+hot static void
 compiler_insert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
 
-	// find table, get schema
-	auto table = table_mgr_find(&self->db->table_mgr, &insert->table->string, true);
+	if (insert->generate)
+	{
+		int count = insert->generate_count->integer;
+		for (int i = 0; i < count; i++)
+		{
+			int key = atomic_u32_inc(&seq);
+			uint32_t hash;
+			hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
+
+			// (batch)
+			int count_batch = insert->generate_batch->integer;
+
+			auto code = self->code_get(hash, self->code_get_arg);
+			int data = code_data_prepare(code);
+
+			encode_array(&code->data, count_batch);
+			for (int j = 0; j < count_batch; j++)
+				encode_integer(&code->data, key);
+
+			code_data_update(code);
+			int data_size = buf_size(&code->data) - data;
+
+			// CINSERT
+			code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
+			         insert->unique);
+		}
+
+		return;
+	}
 
 	// foreach row
 	auto i = insert->rows;
@@ -93,37 +118,16 @@ compiler_insert(Compiler* self, Ast* ast)
 	{
 		auto row = ast_row_of(i);
 
-		// get hash of the primary key
-		uint32_t hash = compiler_hash_key(table, row);
-
 		// get code based on the hash
-		auto code = self->code_get(hash, self->code_get_arg);
-		compiler_set_code(self, code);
+		auto code = self->code_get(row->hash, self->code_get_arg);
+		int data_size;
+		int data = emit_row(code, row, &data_size);
 
-		for (auto j = row->list; j; j = j->next)
-		{
-			// expr
-			auto expr = ast_expr_of(j);
-			emit_expr(self, NULL, expr->expr);
-
-			// PUSH
-			int r = rmap_pop(&self->map);
-			op1(self, CPUSH, r);
-			runpin(self, r);
-		}
-
-		// array
-		int r = op2(self, CARRAY, rpin(self), row->list_count);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-	
 		// CINSERT
-		int name_offset;
-		name_offset = code_add_string(code, &table->config->name);
-		op3(self, CINSERT, name_offset, 1, insert->unique);
+		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
+		         insert->unique);
 	}
 }
-#endif
 
 bool
 compiler_is_utility(Compiler* self)
@@ -160,21 +164,15 @@ compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
 	auto node = self->parser.query.stmts.list;
 	for (; node; node = node->next)
 	{
-#if 0
 		switch (node->ast->id) {
 		case KINSERT:
 			compiler_insert(self, node->ast);
 			break;
 		case KSELECT:
-		{
-			auto select = ast_select_of(node->ast);
-			emit_expr(self, NULL, select->expr);
 			break;
-		}
 		default:
 			assert(0);
 			break;
 		}
-#endif
 	}
 }
