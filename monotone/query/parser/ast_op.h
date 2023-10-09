@@ -6,18 +6,10 @@
 // SQL OLTP database
 //
 
-typedef struct AstCall AstCall;
-typedef struct AstExpr AstExpr;
-typedef struct AstRow  AstRow;
+typedef struct AstValue AstValue;
+typedef struct AstRow   AstRow;
 
-struct AstCall
-{
-	Ast  ast;
-	Ast* name;
-	int  count;
-};
-
-struct AstExpr
+struct AstValue
 {
 	Ast  ast;
 	Ast* expr;
@@ -25,40 +17,26 @@ struct AstExpr
 
 struct AstRow
 {
-	Ast  ast;
-	Ast* list;
-	int  list_count;
+	Ast      ast;
+	Ast*     list;
+	int      list_count;
+	int      data_size;
+	uint32_t hash;
 };
 
-// call
-static inline AstCall*
-ast_call_of(Ast* ast)
+// value
+static inline AstValue*
+ast_value_of(Ast* ast)
 {
-	return (AstCall*)ast;
+	return (AstValue*)ast;
 }
 
-static inline Ast*
-ast_call_allocate(int id, Ast* name, int count)
+static inline AstValue*
+ast_value_allocate(int id)
 {
-	AstCall* self = ast_allocate(id, sizeof(AstCall));
-	self->name  = name;
-	self->count = count;
-	return &self->ast;
-}
-
-// expr
-static inline AstExpr*
-ast_expr_of(Ast* ast)
-{
-	return (AstExpr*)ast;
-}
-
-static inline Ast*
-ast_expr_allocate(int id, Ast* expr)
-{
-	AstExpr* self = ast_allocate(id, sizeof(AstExpr));
-	self->expr = expr;
-	return &self->ast;
+	AstValue* self = ast_allocate(id, sizeof(AstValue));
+	self->expr = NULL;
+	return self;
 }
 
 // row
@@ -68,11 +46,13 @@ ast_row_of(Ast* ast)
 	return (AstRow*)ast;
 }
 
-static inline Ast*
-ast_row_allocate(int id, Ast* list, int list_count)
+static inline AstRow*
+ast_row_allocate(int id)
 {
 	AstRow* self = ast_allocate(id, sizeof(AstRow));
-	self->list = list;
-	self->list_count = list_count;
-	return &self->ast;
+	self->list       = NULL;
+	self->list_count = 0;
+	self->data_size  = 0;
+	self->hash       = 0;
+	return self;
 }
