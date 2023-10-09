@@ -58,11 +58,14 @@ struct AstDropTable
 
 struct AstInsert
 {
-	Ast  ast;
-	bool unique;
-	Ast* table;
-	Ast* rows;
-	int  rows_count;
+	Ast    ast;
+	bool   unique;
+	Table* table;
+	Ast*   rows;
+	int    rows_count;
+	bool   generate;
+	Ast*   generate_count;
+	Ast*   generate_batch;
 };
 
 struct AstSelect
@@ -170,7 +173,6 @@ ast_drop_table_allocate(void)
 	return self;
 }
 
-#if 0
 // insert
 static inline AstInsert*
 ast_insert_of(Ast* ast)
@@ -178,18 +180,22 @@ ast_insert_of(Ast* ast)
 	return (AstInsert*)ast;
 }
 
-static inline Ast*
+static inline AstInsert*
 ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(KINSERT, sizeof(AstInsert));
-	self->unique     = false;
-	self->table      = NULL;
-	self->rows       = NULL;
-	self->rows_count = 0;
-	return &self->ast;
+	self->unique         = false;
+	self->table          = NULL;
+	self->rows           = NULL;
+	self->rows_count     = 0;
+	self->generate       = false;
+	self->generate_count = NULL;
+	self->generate_batch = NULL;
+	return self;
 }
 
+#if 0
 // select
 static inline AstSelect*
 ast_select_of(Ast* ast)
