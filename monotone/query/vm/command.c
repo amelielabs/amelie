@@ -322,54 +322,21 @@ ccall(Vm* self, Op* op)
 hot void
 cinsert(Vm* self, Op* op)
 {
-	// [table_offset, count]
+	// [table_ptr, data_offset, data_size, unique]
 	auto trx    = self->trx;
-	bool unique = op->c;
+	bool unique = op->d;
 
-	// find table/storage by name
-	Str name_table;
-	code_read_string(self->code, op->a, &name_table);
-	auto table   = table_mgr_find(&self->db->table_mgr, &name_table, true);
+	// find storage by id
+	Table* table = (Table*)op->a;
 	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
 	                                    &table->config->id);
 
-	// write to the storage
-	int count = op->b;
-	for (int i = 0; i < count; i++)
-	{
-		auto value = stack_at(&self->stack, count - i);
+	uint8_t* data = code_at_data(self->code, op->b);
+	uint32_t data_size = op->c;
+	if (unlikely(!data_is_array(data) && !data_is_map(data)))
+		error("INSERT/REPLACE: array, map or data set expected");
 
-		if (likely(value->type == VALUE_DATA))
-		{
-			if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
-				error("INSERT/REPLACE: array, map or data set expected");
-
-			storage_set(storage, trx, unique, value->data, value->data_size);
-		} else
-		if (value->type == VALUE_SET)
-		{
-			auto set = (Set*)value->obj;
-			for (int j = 0; j < set->list_count; j++)
-			{
-				auto ref = &set_at(set, j)->value;
-				if (likely(ref->type == VALUE_DATA))
-				{
-					storage_set(storage, trx, unique, ref->data, ref->data_size);
-				} else
-				{
-					auto buf = buf_create(0);
-					value_write(ref, buf);
-					storage_set(storage, trx, unique, buf->start, buf_size(buf));
-					buf_free(buf);
-				}
-			}
-		} else
-		{
-			error("INSERT/REPLACE: array, map or data set expected");
-		}
-	}
-
-	stack_popn(&self->stack, count);
+	storage_set(storage, trx, unique, data, data_size);
 }
 
 hot void

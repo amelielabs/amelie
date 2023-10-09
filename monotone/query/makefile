@@ -46,12 +46,13 @@ OBJECTS        = \
                  vm/callable.o \
                  parser/keywords.o \
                  parser/lex.o \
+                 parser/parser_row.o \
                  parser/parser.o \
                  compiler/compiler.o
 
 #                compiler/keyword.o \
                  compiler/expr.o \
-#                compiler/expr_parse.o \
+                 compiler/expr_parse.o \
                  compiler/expr_generate.o \
                  compiler/expr_type.o \
                  compiler/scan.o \

@@ -10,7 +10,7 @@ typedef struct Stack Stack;
 
 struct Stack
 {
-	Value lifo[300];
+	Value lifo[1100];
 	int   size;
 	int   size_max;
 };
@@ -19,7 +19,7 @@ static inline void
 stack_init(Stack* self)
 {
 	self->size     = 0;
-	self->size_max = 300;
+	self->size_max = 1100;
 	memset(self->lifo, 0, sizeof(self->lifo));
 }
 
