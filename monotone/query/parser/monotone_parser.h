@@ -24,4 +24,5 @@
 
 // parser
 #include "parser/parser.h"
+#include "parser/parser_row.h"
 #include "parser/parser_op.h"

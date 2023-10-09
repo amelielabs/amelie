@@ -22,8 +22,9 @@
 #include <monotone_parser.h>
 
 void
-parser_init(Parser* self)
+parser_init(Parser* self, Db* db)
 {
+	self->db = db;
 	query_init(&self->query);
 	lex_init(&self->lex, keywords);
 }
@@ -315,6 +316,74 @@ parser_drop_table(Parser* self)
 		error("DROP TABLE <name> expected");
 }
 
+hot static void
+parser_insert(Parser* self, bool unique)
+{
+	// [INSERT|REPLACE] INTO name VALUES (value, ..), ...
+	auto query = &self->query;
+	query_validate(query, false);
+	auto stmt = ast_insert_allocate();
+	ast_list_add(&query->stmts, &stmt->ast);
+
+	// insert
+	stmt->unique = unique;
+
+	// INTO
+	if (! parser_if(self, KINTO))
+		error("INSERT <INTO> expected");
+
+	// name
+	auto name = parser_if(self, KNAME);
+	if (! name)
+		error("INSERT INTO <name> expected");
+
+	stmt->table = table_mgr_find(&self->db->table_mgr, &name->string, true);
+
+	// GENERATE
+	if (parser_if(self, KGENERATE))
+	{
+		stmt->generate = true;
+
+		// count
+		stmt->generate_count = parser_if(self, KINT);
+		if (! stmt->generate_count)
+			error("GENERATE <count> expected");
+
+		assert(stmt->generate_count->integer == 500);
+
+		// batch
+		stmt->generate_batch = parser_if(self, KINT);
+		if (! stmt->generate_batch)
+			error("GENERATE count <batch count> expected");
+
+		return;
+	}
+
+	// VALUES
+	if (! parser_if(self, KVALUES))
+		error("INSERT INTO name <VALUES> expected");
+
+	// row, ...
+	Ast* last = NULL;
+	for (;;)
+	{
+		auto row = parser_row(self, stmt->table);
+		if (row == NULL)
+			break;
+
+		if (stmt->rows == NULL)
+			stmt->rows = &row->ast;
+		else
+			last->next = &row->ast;
+		last = &row->ast;
+		stmt->rows_count++;
+
+		if (parser_if(self, ','))
+			continue;
+		break;
+	}
+}
+
 hot void
 parser_run(Parser* self, Str* str)
 {
@@ -390,6 +459,8 @@ parser_run(Parser* self, Str* str)
 			break;
 		}
 		case KINSERT:
+		case KREPLACE:
+			parser_insert(self, ast->id == KINSERT);
 			break;
 		case KEOF:
 			eof = true;
