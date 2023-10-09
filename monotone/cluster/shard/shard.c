@@ -43,7 +43,7 @@ shard_request(Shard* self, Request* req)
 	Exception e;
 	if (try(&e))
 	{
-		//vm_reset(&self->vm);
+		vm_reset(&self->vm);
 		vm_run(&self->vm, &req->trx, &req->code, 0, NULL, req->cmd, &portal);
 	}
 

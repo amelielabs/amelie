@@ -53,6 +53,20 @@ session_free(Session *self)
 	transaction_free(&self->trx);
 }
 
+static inline void
+session_reset(Session* self)
+{
+	auto share = self->share;
+	palloc_truncate(0);
+	if (likely(request_set_created(&self->req_set)))
+		request_set_reset(&self->req_set);
+	else
+		request_set_create(&self->req_set,
+		                   share->shard_mgr->shards_count);
+	log_set_reset(&self->log_set);
+	compiler_reset(&self->compiler);
+}
+
 static void
 session_lock(Session* self, SessionLock lock)
 {
@@ -108,103 +122,6 @@ session_unlock(Session* self)
 	}
 	self->lock = LOCK_NONE;
 }
-
-#if 0
-int seq = 0;
-
-static void
-bench_client(void* arg)
-{
-	Session* self = arg;
-	auto share = self->share;
-
-	// must take catalog lock
-
-	RequestSet req_set;
-	request_set_init(&req_set);
-
-	LogSet log_set;
-	log_set_init(&log_set);
-
-	request_set_create(&req_set, share->shard_mgr->shards_count);
-
-	int count = 10000000 / 10;
-	int batch = 1000;
-	for (int i = 0; i < count / batch; i++)
-	{
-//		transaction_begin(trx);
-
-		for (int j = 0; j < batch; j++)
-		{
-			//int    key = rand();
-			int      key = seq++;
-			uint8_t  key_data[16];
-			uint8_t* key_data_pos = key_data;
-			data_write_integer(&key_data_pos, key);
-
-			// get shard
-			auto shard = shard_map_get(share->shard_map, key_data, key_data_pos - key_data);
-
-			// map request to the shard
-			auto req = request_set_add(&req_set, shard->order, &shard->task.channel);
-
-			encode_array(req->buf, 1);
-			encode_integer(req->buf, key);
-			req->buf_count++;
-		}
-
-		// execute
-		request_sched_lock(share->req_sched);
-		request_set_execute(&req_set);
-		request_sched_unlock(share->req_sched);
-
-		// wait for completion
-		request_set_wait(&req_set);
-
-		// add logs to the log set
-		request_set_commit_prepare(&req_set, &log_set);
-
-		// wal write
-		wal_write(share->wal, &log_set);
-		uint64_t lsn = log_set.lsn;
-
-//		transaction_set_lsn(trx, lsn);
-//		transaction_commit(trx);
-
-		// signal shard on commit
-		request_set_commit(&req_set, lsn);
-		request_set_reset(&req_set);
-
-		log_set_reset(&log_set);
-	}
-
-	request_set_free(&req_set);
-	log_set_free(&log_set);
-}
-
-hot static inline void
-execute(Session* self, Buf* buf)
-{
-	unused(buf);
-	create_table_main(self);
-
-	int count = 10000000;
-	uint64_t time = timer_mgr_gettime();
-
-	uint64_t clients[10];
-	for (int i = 0; i < 10; i++)
-		clients[i] = coroutine_create(bench_client, self);
-
-	for (int i = 0; i < 10; i++)
-		coroutine_wait(clients[i]);
-
-	time = (timer_mgr_gettime() - time) / 1000;
-
-	// rps
-	double rps = count / (float)(time / 1000.0 / 1000.0);
-	portal_write(self->portal, make_float(rps));
-}
-#endif
 
 static inline void
 execute_create_storages(Session* self, Table* table)
@@ -319,61 +236,6 @@ execute_drop_table(Session* self, Ast* ast)
 	transaction_commit(trx);
 }
 
-static inline Buf*
-bench(Session* self)
-{
-	Compiler comp;
-	compiler_init(&comp, self->share->db);
-
-	int count = 10000000;
-	uint64_t time = timer_mgr_gettime();
-
-	int total = 0;
-
-	Str query;
-	str_set_cstr(&query,
-	"REPLACE INTO test VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),(26),(27),(28),(29),(30),(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),(51),(52),(53),(54),(55),(56)");
-
-	//lex_start(&comp.parser.lex, &query);
-
-	for (int i = 0; i < count; i++)
-	{
-		palloc_truncate(0);
-
-		/*
-		int j = 0;
-		while (j < 200)
-		{
-			ast(0);
-			j++;
-			total++;
-		}
-		*/
-
-		/*
-		bool eof = false;
-		while (! eof)
-		{
-			auto ast = lex_next(&comp.parser.lex);
-			eof = ast->id == 0;
-			//parse(self->parser, ast->id, ast, &self->query);
-		}
-		*/
-
-		compiler_reset(&comp);
-		compiler_parse(&comp, &query);
-		/*
-		*/
-	}
-
-	time = (timer_mgr_gettime() - time) / 1000;
-
-	// rps
-	double rps = count / (float)(time / 1000.0 / 1000.0);
-	//double rps = total / (float)(time / 1000.0 / 1000.0);
-	return make_float(rps);
-}
-
 static inline void
 execute_utility(Session* self)
 {
@@ -400,11 +262,6 @@ execute_utility(Session* self)
 		else
 		if (str_compare_raw(&arg->expr->string, "all", 3))
 			buf = config_list(global()->config);
-		else
-		if (str_compare_raw(&arg->expr->string, "be", 2))
-		{
-			buf = bench(self);
-		}
 		else
 		{
 			auto name = &arg->expr->string;
@@ -519,6 +376,10 @@ execute_add(uint32_t hash, void* arg)
 
 	// map request to the shard
 	auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+
+	// todo:
+	req->ro = true;
+
 	return &req->code;
 }
 
@@ -547,8 +408,8 @@ execute_distributed(Session* self)
 	// commit (no errors)
 	if (likely(! req_set->error))
 	{
-		// todo: ro support
-			// do nothing
+		// todo: ro
+		return;
 
 		// add logs to the log set
 		request_set_commit_prepare(req_set, log_set);
@@ -589,20 +450,6 @@ execute(Session* self, Buf* buf)
 	session_unlock(self);
 
 	palloc_truncate(0);
-}
-
-static inline void
-session_reset(Session* self)
-{
-	auto share = self->share;
-	palloc_truncate(0);
-	if (likely(request_set_created(&self->req_set)))
-		request_set_reset(&self->req_set);
-	else
-		request_set_create(&self->req_set,
-		                   share->shard_mgr->shards_count);
-	log_set_reset(&self->log_set);
-	compiler_reset(&self->compiler);
 }
 
 hot bool
