@@ -39,6 +39,7 @@ ast_allocate(int id, int size)
 {
 	assert(size >= (int)sizeof(Ast));
 	Ast* self = palloc(size);
+	memset(self, 0, size);
 	self->id   = id;
 	self->next = NULL;
 	self->prev = NULL;
