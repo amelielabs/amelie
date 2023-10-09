@@ -21,8 +21,15 @@ ast_stack_init(AstStack* self)
 	self->list_tail = NULL;
 }
 
+static inline void
+ast_stack_reset(AstStack* self)
+{
+	self->list = NULL;
+	self->list_tail = NULL;
+}
+
 static inline Ast*
-ast_tail(AstStack* self)
+ast_head(AstStack* self)
 {
 	return self->list_tail;
 }
