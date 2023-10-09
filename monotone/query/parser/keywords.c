@@ -78,6 +78,7 @@ static Keyword keywords_f[] =
 static Keyword keywords_g[] =
 {
 	{ KGROUP,                 "group",                 5  },
+	{ KGENERATE,              "generate",              8  },
 	{ 0,                       NULL,                   0  }
 };
 
