@@ -65,6 +65,19 @@ make_error(Error* e)
 }
 
 static inline Buf*
+make_error_as(int code, Str* msg)
+{
+	auto buf = msg_create(MSG_ERROR);
+	encode_map(buf, 2);
+	encode_raw(buf, "code", 4);
+	encode_integer(buf, code);
+	encode_raw(buf, "msg", 3);
+	encode_string(buf, msg);
+	msg_end(buf);
+	return buf;
+}
+
+static inline Buf*
 make_copy(uint8_t* data)
 {
 	uint8_t* start = data;
