@@ -74,4 +74,15 @@ list_pop(List* self)
 	     _i != list && (_i_copy = _i->next); \
 	     _i = _i_copy)
 
+#define list_foreach_after(list, link) \
+	for (typeof(list) _i = (link)->next; _i != list; _i = _i->next)
+
+#define list_foreach_reverse(list) \
+	for (typeof(list) _i = (list)->prev; _i != list; _i = _i->prev)
+
+#define list_foreach_reverse_safe(list) \
+	for (typeof(list) _i_copy, _i = (list)->prev; \
+	     _i != list && (_i_copy = _i->prev); \
+	     _i = _i_copy)
+
 #define list_at(type, link) container_of(_i, type, link)
