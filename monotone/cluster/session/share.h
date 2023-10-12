@@ -18,5 +18,6 @@ struct Share
 	ShardMap*     shard_map;
 	ShardMgr*     shard_mgr;
 	RequestSched* req_sched;
+	RequestCache* req_cache;
 	Lock*         cat_lock;
 };

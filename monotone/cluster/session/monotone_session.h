@@ -8,3 +8,5 @@
 
 #include "session/share.h"
 #include "session/session.h"
+#include "session/lock.h"
+#include "session/utility.h"
