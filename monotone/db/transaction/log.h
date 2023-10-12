@@ -64,6 +64,8 @@ struct Log
 	Iov      data_iov;
 	int      count;
 	int      count_persistent;
+	int      count_prev;
+	int      count_handle;
 	uint64_t lsn;
 	List     link;
 };
@@ -80,6 +82,8 @@ log_init(Log* self)
 {
 	self->count            = 0;
 	self->count_persistent = 0;
+	self->count_prev       = 0;
+	self->count_handle     = 0;
 	self->lsn              = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
@@ -100,6 +104,8 @@ log_reset(Log* self)
 {
 	self->count            = 0;
 	self->count_persistent = 0;
+	self->count_prev       = 0;
+	self->count_handle     = 0;
 	self->lsn              = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
@@ -148,6 +154,8 @@ log_add(Log*     self,
 	op->write.prev      = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
+	if (prev)
+		self->count_prev++;
 	if (! persistent)
 		return;
 
@@ -182,6 +190,7 @@ log_add_handle(Log*   self,
 	op->write_handle.data        = data;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
+	self->count_handle++;
 
 	// [cmd, data]
 	int data_offset = buf_size(&self->data);

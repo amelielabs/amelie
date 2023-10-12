@@ -43,9 +43,16 @@ transaction_commit(Transaction* self)
 	if (unlikely(! transaction_active(self)))
 		error("transaction is not active");
 
-	for (int pos = 0; pos < self->log.count; pos++)
+	auto log = &self->log;
+	if (!log->count_prev && !log->count_handle)
 	{
-		auto op = log_of(&self->log, pos);
+		transaction_end(self, false);
+		return;
+	}
+
+	for (int pos = 0; pos < log->count; pos++)
+	{
+		auto op = log_of(log, pos);
 		switch (op->type) {
 		case LOG_WRITE:
 		{	
