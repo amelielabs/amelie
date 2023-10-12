@@ -305,6 +305,12 @@ tls_write(Tls* self, void* buf, int size)
 hot int
 tls_writev(Tls* self, struct iovec* iov, int count)
 {
-	iov_copy(&self->write_buf, iov, count);
+	buf_reset(&self->write_buf);
+	while (count > 0)
+	{
+		buf_write(&self->write_buf, iov->iov_base, iov->iov_len);
+		iov++;
+		count--;
+	}
 	return tls_write(self, self->write_buf.start, buf_size(&self->write_buf));
 }
