@@ -10,22 +10,24 @@ typedef struct RequestSet RequestSet;
 
 struct RequestSet
 {
-	Request* set;
-	int      set_size;
-	int      sent;
-	int      complete;
-	int      error;
-	Event    parent;
+	Request**     set;
+	int           set_size;
+	int           sent;
+	int           complete;
+	int           error;
+	Event         parent;
+	RequestCache* cache;
 };
 
 static inline void
-request_set_init(RequestSet* self)
+request_set_init(RequestSet* self, RequestCache* cache)
 {
 	self->set      = NULL;
 	self->set_size = 0;
 	self->sent     = 0;
 	self->complete = 0;
 	self->error    = 0;
+	self->cache    = cache;
 	event_init(&self->parent);
 }
 
@@ -36,9 +38,9 @@ request_set_free(RequestSet* self)
 	{
 		for (int i = 0; i < self->set_size; i++)
 		{
-			auto req = &self->set[i];
-			channel_detach(&req->src);
-			request_free(req);
+			auto req = self->set[i];
+			if (req)
+				request_cache_push(self->cache, req);
 		}
 		mn_free(self->set);
 	}
@@ -55,14 +57,7 @@ request_set_create(RequestSet* self, int size)
 {
 	self->set = mn_malloc(sizeof(Request) * size);
 	self->set_size = size;
-	for (int i = 0; i < self->set_size; i++)
-		request_init(&self->set[i]);
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = &self->set[i];
-		channel_attach(&req->src);
-		event_set_parent(&req->src.on_write.event, &self->parent);
-	}
+	memset(self->set, 0, sizeof(Request) * size);
 }
 
 static inline void
@@ -70,8 +65,9 @@ request_set_reset(RequestSet* self)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		request_reset(req);
+		auto req = self->set[i];
+		if (req)
+			request_cache_push(self->cache, req);
 	}
 	self->sent     = 0;
 	self->complete = 0;
@@ -81,11 +77,13 @@ request_set_reset(RequestSet* self)
 static inline Request*
 request_set_add(RequestSet* self, int order, Channel* dest)
 {
-	auto req = &self->set[order];
-	if (! req->active)
+	auto req = self->set[order];
+	if (! req)
 	{
-		req->active = true;
-		req->dst    = dest;
+		req = request_create(self->cache);
+		req->dst = dest;
+		event_set_parent(&req->src.on_write.event, &self->parent);
+		self->set[order] = req;
 	}
 	return req;
 }
@@ -95,8 +93,8 @@ request_set_finilize(RequestSet* self)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		if (! req->active)
+		auto req = self->set[i];
+		if (! req)
 			continue;
 		code_add(&req->code, CRET, 0, 0, 0, 0);
 	}
@@ -107,8 +105,8 @@ request_set_execute(RequestSet* self)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		if (! req->active)
+		auto req = self->set[i];
+		if (! req)
 			continue;
 
 		auto buf = msg_create(RPC_REQUEST);
@@ -158,12 +156,15 @@ request_set_wait(RequestSet* self)
 
 		for (int i = 0; i < self->set_size; i++)
 		{
-			auto req = &self->set[i];
-			if (!req->active || req->complete)
+			auto req = self->set[i];
+			if (!req || req->complete)
 				continue;
 			request_drain(req);
 			if (req->complete)
+			{
+				event_set_parent(&req->src.on_write.event, NULL);
 				self->complete++;
+			}
 			if (req->error)
 				self->error++;
 		}
@@ -177,8 +178,8 @@ request_set_commit_prepare(RequestSet* self, LogSet* set)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		if (! req->active)
+		auto req = self->set[i];
+		if (! req)
 			continue;
 		if (req->trx.log.count_persistent == 0)
 			continue;
@@ -191,12 +192,17 @@ request_set_commit(RequestSet* self, uint64_t lsn)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		if (! req->active)
+		auto req = self->set[i];
+		if (! req)
 			continue;
+
 		transaction_set_lsn(&req->trx, lsn);
-		assert(req->on_commit);
-		condition_signal(req->on_commit);
+
+		auto buf = msg_create(RPC_REQUEST_COMMIT);
+		buf_write(buf, &req, sizeof(void**));
+		msg_end(buf);
+		channel_write(req->dst, buf);
+		self->set[i] = NULL;
 	}
 }
 
@@ -206,20 +212,41 @@ request_set_abort(RequestSet* self)
 	Buf* error_msg = NULL;
 	for (int i = 0; i < self->set_size; i++)
 	{
-		auto req = &self->set[i];
-		if (! req->active)
+		auto req = self->set[i];
+		if (!req)
 			continue;
-		if (req->error && !error_msg)
-			error_msg = req->error;
-		req->abort = true;
-		if (req->ro)
+
+		// reuse error message
+		bool error_has = false;
+		if (req->error)
+		{
+			error_has = true;
+			if (! error_msg)
+				error_msg = req->error;
+			else
+				buf_free(req->error);
+			req->error = NULL;
+		}
+
+		self->set[i] = NULL;
+		if (error_has)
+		{
+			// put request back to the cache
+			request_cache_push(req->cache, req);
 			continue;
-		assert(req->on_commit);
-		condition_signal(req->on_commit);
+		}
+
+		auto buf = msg_create(RPC_REQUEST_ABORT);
+		buf_write(buf, &req, sizeof(void**));
+		msg_end(buf);
+		channel_write(req->dst, buf);
 	}
 
 	if (! error_msg)
 		error("transaction aborted");
+
+	buf_pin(error_msg);
+	guard(guard, buf_free, error_msg);
 
 	// rethrow error message
 	uint8_t* pos = msg_of(error_msg)->data;

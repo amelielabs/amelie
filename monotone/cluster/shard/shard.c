@@ -26,14 +26,8 @@
 #include <monotone_shard.h>
 
 hot static void
-shard_request(Shard* self, Request* req)
+shard_execute(Shard* self, Request* req)
 {
-	unused(self);
-
-	auto ro = req->ro;
-	auto on_commit = condition_create();
-	req->on_commit = on_commit;
-
 	transaction_begin(&req->trx);
 
 	Portal portal;
@@ -47,33 +41,96 @@ shard_request(Shard* self, Request* req)
 		vm_run(&self->vm, &req->trx, &req->code, 0, NULL, req->cmd, &portal);
 	}
 
+	bool abort = false;
 	Buf* reply;
 	if (catch(&e))
 	{
 		// error
 		reply = make_error(&mn_self()->error);
 		portal_write(&portal, reply);
+		abort = true;
+	}
+
+	if (likely(! abort))
+	{
+		// add transaction to the prepared list
+		request_list_add(&self->prepared, req);
+
+		// wait for previous transaction to be commited before
+		// acknowledge
+		if (self->prepared.list_count > 1)
+			return;
+	} else
+	{
+		transaction_abort(&req->trx);
 	}
 
 	// OK
+	req->ok = true;
 	reply = msg_create(MSG_OK);
-	encode_integer(reply, false);
 	msg_end(reply);
 	portal_write(&portal, reply);
+}
 
-	// wait for commit
-	bool abort = false;
-	if (! ro)
+hot static void
+shard_commit(Shard* self, Request* req)
+{
+	// commit transaction
+	transaction_commit(&req->trx);
+
+	// acknowledge all pending prepared transaction
+	list_foreach_after(&self->prepared.list, &req->link)
 	{
-		condition_wait(on_commit, -1);
-		abort = req->abort;
+		auto ref = list_at(Request, link);
+		if (ref->ok)
+			continue;
+
+		// OK
+		auto reply = msg_create(MSG_OK);
+		msg_end(reply);
+		channel_write(&ref->src, reply);
+		ref->ok = true;
 	}
 
-	if (unlikely(abort))
-		transaction_abort(&req->trx);
-	else
-		transaction_commit(&req->trx);
-	condition_free(on_commit);
+	// done
+	request_list_remove(&self->prepared, req);
+
+	// put request back to the cache
+	request_cache_push(req->cache, req);
+}
+
+hot static void
+shard_abort(Shard* self, Request* req)
+{
+	// abort all prepared transactions up to current one
+	// in reverse order
+	list_foreach_reverse_safe(&self->prepared.list)
+	{
+		auto ref = list_at(Request, link);
+
+		// abort
+		transaction_abort(&ref->trx);
+
+		request_list_remove(&self->prepared, ref);
+		if (ref == req)
+			break;
+
+		// send error to the pending transaction
+		Str msg;
+		str_init(&msg);
+		str_set_cstr(&msg, "transaction conflict, abort");
+		auto reply = make_error_as(ERROR_CONFLICT, &msg);
+		channel_write(&ref->src, reply);
+
+		// OK
+		reply = msg_create(MSG_OK);
+		msg_end(reply);
+		channel_write(&ref->src, reply);
+		ref->ok = true;
+	}
+
+	// put request back to the cache
+	request_cache_push(req->cache, req);
 }
 
 static void
@@ -100,16 +157,22 @@ shard_main(void* arg)
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 
-		if (msg->id == RPC_REQUEST)
+		switch (msg->id) {
+		case RPC_REQUEST:
+			shard_execute(self, request_of(buf));
+			break;
+		case RPC_REQUEST_COMMIT:
+			shard_commit(self, request_of(buf));
+			break;
+		case RPC_REQUEST_ABORT:
+			shard_abort(self, request_of(buf));
+			break;
+		default:
 		{
-			// request
-			auto req = request_of(buf);
-			shard_request(self, req);
-		} else
-		{
-			// rpc
 			stop = msg->id == RPC_STOP;
 			rpc_execute(buf, shard_rpc, self);
+			break;
+		}
 		}
 	}
 }
@@ -119,6 +182,7 @@ shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 {
 	Shard* self = mn_malloc(sizeof(*self));
 	self->order = 0;
+	request_list_init(&self->prepared);
 	task_init(&self->task, mn_task->buf_cache);
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
