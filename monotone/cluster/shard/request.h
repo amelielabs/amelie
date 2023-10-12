@@ -6,21 +6,22 @@
 // SQL OLTP database
 //
 
-typedef struct Request Request;
+typedef struct RequestCache RequestCache;
+typedef struct Request      Request;
 
 struct Request
 {
-	bool        active;
-	bool        abort;
-	bool        complete;
-	bool        ro;
-	Transaction trx;
-	Code        code;
-	Command*    cmd;
-	Condition*  on_commit;
-	Channel*    dst;
-	Channel     src;
-	Buf*        error;
+	bool          complete;
+	bool          ro;
+	bool          ok;
+	Transaction   trx;
+	Code          code;
+	Command*      cmd;
+	Channel*      dst;
+	Channel       src;
+	Buf*          error;
+	RequestCache* cache;
+	List          link;
 };
 
 always_inline hot static inline Request*
@@ -30,19 +31,19 @@ request_of(Buf* buf)
 }
 
 static inline void
-request_init(Request* self)
+request_init(Request* self, RequestCache* cache)
 {
-	self->active    = false;
-	self->abort     = false;
-	self->complete  = false;
-	self->ro        = false;
-	self->cmd       = NULL;
-	self->on_commit = NULL;
-	self->dst       = NULL;
-	self->error     = NULL;
+	self->complete = false;
+	self->ro       = false;
+	self->ok       = false;
+	self->cmd      = NULL;
+	self->dst      = NULL;
+	self->error    = NULL;
+	self->cache    = cache;
 	code_init(&self->code);
 	transaction_init(&self->trx);
 	channel_init(&self->src);
+	list_init(&self->link);
 }
 
 static inline void
@@ -64,12 +65,12 @@ request_reset(Request* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
+	self->complete = false;
+	self->ro       = false;
+	self->ok       = false;
+	self->cmd      = NULL;
+	self->dst      = NULL;
+	event_set_parent(&self->src.on_write.event, NULL);
 	code_reset(&self->code);
-	self->active    = false;
-	self->abort     = false;
-	self->complete  = false;
-	self->ro        = false;
-	self->cmd       = NULL;
-	self->on_commit = NULL;
-	self->dst       = NULL;
+	list_init(&self->link);
 }
