@@ -1,0 +1,23 @@
+#pragma once
+
+//
+// monotone
+//
+// SQL OLTP database
+//
+
+typedef struct Expr Expr;
+
+struct Expr
+{
+	AstList* aggs;
+	AstList* aggs_global;
+};
+
+static inline void
+expr_init(Expr* self)
+{
+	self->aggs = NULL;
+}
+
+Ast* parse_expr(Stmt*, Expr*);
