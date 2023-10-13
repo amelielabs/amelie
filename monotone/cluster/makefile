@@ -36,6 +36,8 @@ LIB            = libmonotone-cluster.a
 OBJECTS        = \
                  shard/shard.o \
                  session/session.o \
+                 session/lock.o \
+                 session/utility.o \
                  hub/hub.o \
                  hub/client.o
 $(LIB): clean $(OBJECTS)

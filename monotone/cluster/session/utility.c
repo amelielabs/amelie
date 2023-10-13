@@ -81,7 +81,7 @@ static inline void
 execute_create_table(Session* self, Ast* ast)
 {
 	auto trx = &self->trx;
-	auto arg = ast_create_table_of(ast);
+	auto arg = ast_table_create_of(ast);
 	auto share = self->share;
 
 	// get exclusive catalog lock
@@ -114,7 +114,7 @@ static inline void
 execute_drop_table(Session* self, Ast* ast)
 {
 	auto trx = &self->trx;
-	auto arg = ast_drop_table_of(ast);
+	auto arg = ast_table_drop_of(ast);
 	auto share = self->share;
 
 	// get exclusive catalog lock
@@ -179,6 +179,8 @@ execute_show(Session* self, Ast* ast)
 static inline void
 execute_set(Session* self, Ast* ast)
 {
+	unused(self);
+
 	auto arg = ast_set_of(ast);
 	auto name = &arg->name->string;
 
@@ -237,39 +239,44 @@ execute_set(Session* self, Ast* ast)
 void
 session_execute_utility(Session* self)
 {
-	auto ast = compiler_first(&self->compiler);
-	switch (ast->id) {
-	case KSHOW:
-		execute_show(self, ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_SHOW:
+		execute_show(self, stmt->ast);
 		break;
 
-	case KSET:
-		execute_set(self, ast);
+	case STMT_SET:
+		execute_set(self, stmt->ast);
 		break;
 
-	case KCREATE_USER:
+	case STMT_CREATE_USER:
 	{
-		auto arg = ast_create_user_of(ast);
+		auto arg = ast_user_create_of(stmt->ast);
 		rpc(global()->control->core, RPC_USER_CREATE, 2,
 		    arg->config, arg->if_not_exists);
 		break;
 	}
 
-	case KDROP_USER:
+	case STMT_DROP_USER:
 	{
-		auto arg = ast_drop_user_of(ast);
+		auto arg = ast_user_drop_of(stmt->ast);
 		rpc(global()->control->core, RPC_USER_DROP, 2,
 		    &arg->name->string, arg->if_exists);
 		break;
 	}
-	// todo: alter_user
 
-	case KCREATE_TABLE:
-		execute_create_table(self, ast);
+	case STMT_CREATE_TABLE:
+		execute_create_table(self, stmt->ast);
 		break;
 
-	case KDROP_TABLE:
-		execute_drop_table(self, ast);
+	case STMT_DROP_TABLE:
+		execute_drop_table(self, stmt->ast);
+		break;
+
+	case STMT_ALTER_USER:
+		break;
+
+	case STMT_ALTER_TABLE:
 		break;
 
 	default:

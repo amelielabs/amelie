@@ -112,7 +112,7 @@ session_execute_distributed(Session* self)
 		if (log_set->count > 0)
 		{
 			//wal_write(share->wal, log_set);
-			//uint64_t lsn = log_set->lsn;
+			//lsn = log_set->lsn;
 		}
 
 		// send COMMIT
