@@ -8,13 +8,6 @@
 
 typedef struct Keyword Keyword;
 
-struct Keyword
-{
-	int         id;
-	const char* name;
-	int         name_size;
-};
-
 enum
 {
 	// lexer
@@ -45,7 +38,7 @@ enum
 
 	KCALL,
 	KNEG,
-	KIDX,
+	KARRAY,
 	KSTAR,
 
 	KTMAP,
@@ -78,11 +71,6 @@ enum
 	KBEGIN,
 	KCOMMIT,
 	KROLLBACK,
-
-	KCREATE_USER,
-	KCREATE_TABLE,
-	KDROP_USER,
-	KDROP_TABLE,
 
 	KCREATE,
 	KUSER,
@@ -138,6 +126,13 @@ enum
 	KSWITCH,
 	KUSING,
 	KDEBUG
+};
+
+struct Keyword
+{
+	int         id;
+	const char* name;
+	int         name_size;
 };
 
 extern Keyword* keywords[26];
