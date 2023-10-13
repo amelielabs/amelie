@@ -129,21 +129,34 @@ compiler_insert(Compiler* self, Ast* ast)
 	}
 }
 
+hot static void
+compiler_select(Compiler* self, Ast* ast)
+{
+	auto select = ast_insert_of(ast);
+
+	(void)select;
+	(void)self;
+}
+
 bool
 compiler_is_utility(Compiler* self)
 {
-	auto query = &self->parser.query;
-	if (query->stmts.count != 1)
+	if (self->parser.stmts_count != 1)
 		return false;
-	auto node = query->stmts.list;
-	switch (node->ast->id) {
-	case KSHOW:
-	case KSET:
-	case KCREATE_USER:
-	case KCREATE_TABLE:
-	case KDROP_USER:
-	case KDROP_TABLE:
+
+	auto stmt = container_of(self->parser.stmts.next, Stmt, link);
+	switch (stmt->id) {
+	case STMT_SHOW:
+	case STMT_SET:
+	case STMT_CREATE_USER:
+	case STMT_CREATE_TABLE:
+	case STMT_DROP_USER:
+	case STMT_DROP_TABLE:
+	case STMT_ALTER_USER:
+	case STMT_ALTER_TABLE:
 		return true;
+	default:
+		break;
 	}
 	return false;
 }
@@ -151,7 +164,7 @@ compiler_is_utility(Compiler* self)
 void
 compiler_parse(Compiler* self, Str* text)
 {
-	parser_run(&self->parser, text);
+	parse(&self->parser, text);
 }
 
 void
@@ -161,18 +174,20 @@ compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
 	self->code_get_arg = code_get_arg;
 
 	// process statements
-	auto node = self->parser.query.stmts.list;
-	for (; node; node = node->next)
+	list_foreach(&self->parser.stmts)
 	{
-		switch (node->ast->id) {
-		case KINSERT:
-			compiler_insert(self, node->ast);
+		auto stmt = list_at(Stmt, link);
+		switch (stmt->id) {
+		case STMT_INSERT:
+			compiler_insert(self, stmt->ast);
 			break;
-		case KSELECT:
+		case STMT_SELECT:
+			compiler_select(self, stmt->ast);
 			break;
 		default:
 			assert(0);
 			break;
 		}
+
 	}
 }

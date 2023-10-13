@@ -38,7 +38,6 @@ compiler_free(Compiler* self)
 {
 	buf_free(&self->data);
 	rmap_free(&self->map);
-	parser_free(&self->parser);
 }
 
 static inline void
@@ -58,10 +57,10 @@ compiler_set_code(Compiler* self, Code* code)
 	self->code = code;
 }
 
-static inline Ast*
-compiler_first(Compiler* self)
+static inline Stmt*
+compiler_stmt(Compiler* self)
 {
-	return self->parser.query.stmts.list->ast;
+	return container_of(self->parser.stmts.next, Stmt, link);
 }
 
 void compiler_parse(Compiler*, Str*);
