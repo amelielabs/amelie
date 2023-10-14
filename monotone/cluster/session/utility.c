@@ -239,7 +239,7 @@ execute_set(Session* self, Ast* ast)
 void
 session_execute_utility(Session* self)
 {
-	auto stmt = compiler_stmt(&self->compiler);
+	auto stmt = compiler_first(&self->compiler);
 	switch (stmt->id) {
 	case STMT_SHOW:
 		execute_show(self, stmt->ast);
@@ -274,9 +274,11 @@ session_execute_utility(Session* self)
 		break;
 
 	case STMT_ALTER_USER:
+		// todo
 		break;
 
 	case STMT_ALTER_TABLE:
+		// todo
 		break;
 
 	default:
