@@ -25,12 +25,12 @@ ast_aggr_of(Ast* ast)
 }
 
 static inline AstAggr*
-ast_aggr_allocate(int id, int order, Ast* expr, Ast* label)
+ast_aggr_allocate(int id, int id_aggr, int order, Ast* expr, Ast* label)
 {
 	AstAggr* self;
 	self = ast_allocate(id, sizeof(AstAggr));
 	self->order        = order;
-	self->aggregate_id = 0;
+	self->aggregate_id = id_aggr;
 	self->expr         = expr;
 	self->label        = label;
 	self->target       = NULL;
