@@ -8,16 +8,6 @@
 
 typedef struct Ast Ast;
 
-typedef enum
-{
-	AST_UNDEF,
-	AST_SIMPLE,    // pre-computable or const
-	AST_COMPLEX,   // name + simple_expr
-	AST_NAME,      // name
-	AST_OP,        // name > simple_expr
-	AST_CONDITION  // AND, OR, NOT (1 and 1 == simple)
-} AstType;
-
 struct Ast
 {
 	int id;
@@ -29,12 +19,11 @@ struct Ast
 			bool string_escape;
 		};
 	};
-	AstType type;
-	int     priority;
-	Ast*    l;
-	Ast*    r;
-	Ast*    next;
-	Ast*    prev;
+	int  priority;
+	Ast* l;
+	Ast* r;
+	Ast* next;
+	Ast* prev;
 };
 
 static inline void*
