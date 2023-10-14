@@ -6,15 +6,17 @@
 // SQL OLTP database
 //
 
+// register mapping
 #include "compiler/rmap.h"
 
 // compiler
 #include "compiler/compiler.h"
 #include "compiler/compiler_op.h"
 
-#if 0
+// scan
 #include "compiler/scan.h"
-#include "compiler/select.h"
-#include "compiler/stmt_from.h"
-#include "compiler/stmt.h"
-#endif
+
+// emit
+#include "compiler/emit_expr.h"
+#include "compiler/emit_insert.h"
+#include "compiler/emit_select.h"

@@ -15,6 +15,8 @@ struct Compiler
 	Parser       parser;
 	Rmap         map;
 	Buf          data;
+	Stmt*        current;
+	Code         code_shared;
 	Code*        code;
 	CompilerCode code_get;
 	void*        code_get_arg;
@@ -24,6 +26,7 @@ struct Compiler
 static inline void
 compiler_init(Compiler *self, Db* db)
 {
+	self->current      = NULL;
 	self->code         = NULL;
 	self->code_get     = NULL;
 	self->code_get_arg = NULL;
@@ -43,6 +46,7 @@ compiler_free(Compiler* self)
 static inline void
 compiler_reset(Compiler* self)
 {
+	self->current      = NULL;
 	self->code         = NULL;
 	self->code_get     = NULL;
 	self->code_get_arg = NULL;
@@ -58,9 +62,15 @@ compiler_set_code(Compiler* self, Code* code)
 }
 
 static inline Stmt*
-compiler_stmt(Compiler* self)
+compiler_first(Compiler* self)
 {
 	return container_of(self->parser.stmts.next, Stmt, link);
+}
+
+static inline TargetList*
+compiler_target_list(Compiler* self)
+{
+	return &self->current->target_list;
 }
 
 void compiler_parse(Compiler*, Str*);
