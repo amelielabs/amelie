@@ -188,9 +188,26 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 			      str_of(&label->string));
 	}
 
+	// get aggregate type
+	int id;
+	switch (function->id) {
+	case KCOUNT:
+		id = AGGR_COUNT;
+		break;
+	case KSUM:
+		id = AGGR_SUM;
+		break;
+	case KAVG:
+		id = AGGR_AVG;
+		break;
+	default:
+		abort();
+		break;
+	}
+
 	// create aggregate ast node
 	int order = expr->aggs_global->count;
-	auto aggr = ast_aggr_allocate(function->id, order, arg, label);
+	auto aggr = ast_aggr_allocate(function->id, id, order, arg, label);
 	if (expr)
 	{
 		ast_list_add(expr->aggs, &aggr->ast);
@@ -222,12 +239,17 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KTSTRING:
 	case KJSON:
 	case KSIZEOF:
+	{
 		// function(call, NULL)
 		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),
 			      str_of(&value->string));
-		value->l = expr_call(self, expr, ')', false);
+		auto name = value;
+		value    = ast('(');
+		value->l = name;
+		value->r = expr_call(self, expr, ')', false);
 		break;
+	}
 
 	// sub-query
 	case KSELECT:

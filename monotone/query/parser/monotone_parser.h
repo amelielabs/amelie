@@ -30,10 +30,13 @@
 #include "parser/parse_table.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
-
+#include "parser/parse_delete.h"
 #include "parser/parse_from.h"
 #include "parser/parse_aggr.h"
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
 #include "parser/parse.h"
+
+// semantic
+#include "parser/semantic.h"
