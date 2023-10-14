@@ -46,6 +46,12 @@ compiler_is_utility(Compiler* self)
 }
 
 void
+compiler_parse(Compiler* self, Str* text)
+{
+	parse(&self->parser, text);
+}
+
+void
 compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
 {
 	self->code_get     = code_get;
