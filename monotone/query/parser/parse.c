@@ -182,7 +182,11 @@ parse(Parser* self, Str* str)
 			break;
 		}
 		case KDELETE:
+		{
+			auto stmt = parser_add(self, STMT_DELETE);
+			parse_delete(stmt);
 			break;
+		}
 		case KSELECT:
 		{
 			auto stmt   = parser_add(self, STMT_SELECT);
