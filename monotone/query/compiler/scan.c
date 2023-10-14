@@ -32,9 +32,9 @@ typedef struct
 	int          coffset;
 	int          climit;
 	int          climit_eof;
-    ScanFunction on_match_point;
-    ScanFunction on_match;
-    void*        on_match_arg;
+	ScanFunction on_match_point;
+	ScanFunction on_match;
+	void*        on_match_arg;
 	Compiler*    compiler;
 } Scan;
 
