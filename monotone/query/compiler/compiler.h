@@ -6,31 +6,37 @@
 // SQL OLTP database
 //
 
-typedef struct Compiler Compiler;
+typedef struct CompilerIf CompilerIf;
+typedef struct Compiler   Compiler;
 
-typedef Code* (*CompilerCode)(uint32_t, void*);
+struct CompilerIf
+{
+	Code* (*match)(uint32_t, void*);
+	void  (*apply)(uint32_t, Code*, void*);
+	void  (*end)(void*);
+};
 
 struct Compiler
 {
-	Parser       parser;
-	Rmap         map;
-	Stmt*        current;
-	Code*        code;
-	CompilerCode code_get;
-	void*        code_get_arg;
-	Code         code_stmt;
-	CodeData     code_data;
-	Db*          db;
+	Parser      parser;
+	Rmap        map;
+	Stmt*       current;
+	Code*       code;
+	Code        code_stmt;
+	CodeData    code_data;
+	CompilerIf* iface;
+	void*       iface_arg;
+	Db*         db;
 };
 
 static inline void
-compiler_init(Compiler *self, Db* db)
+compiler_init(Compiler *self, Db* db, CompilerIf* iface, void* iface_arg)
 {
-	self->current      = NULL;
-	self->code         = NULL;
-	self->code_get     = NULL;
-	self->code_get_arg = NULL;
-	self->db           = db;
+	self->current   = NULL;
+	self->code      = NULL;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
+	self->db        = db;
 	code_init(&self->code_stmt);
 	code_data_init(&self->code_data);
 	parser_init(&self->parser, db);
@@ -48,10 +54,8 @@ compiler_free(Compiler* self)
 static inline void
 compiler_reset(Compiler* self)
 {
-	self->current      = NULL;
-	self->code         = NULL;
-	self->code_get     = NULL;
-	self->code_get_arg = NULL;
+	self->current = NULL;
+	self->code    = NULL;
 	code_reset(&self->code_stmt);
 	code_data_reset(&self->code_data);
 	parser_reset(&self->parser);
@@ -77,5 +81,5 @@ compiler_target_list(Compiler* self)
 }
 
 void compiler_parse(Compiler*, Str*);
-void compiler_generate(Compiler*, CompilerCode, void*);
+void compiler_emit(Compiler*);
 bool compiler_is_utility(Compiler*);

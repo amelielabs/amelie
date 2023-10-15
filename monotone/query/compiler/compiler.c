@@ -52,26 +52,27 @@ compiler_parse(Compiler* self, Str* text)
 }
 
 void
-compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
+compiler_emit(Compiler* self)
 {
-	self->code_get     = code_get;
-	self->code_get_arg = code_get_arg;
-
 	// process statements
 	list_foreach(&self->parser.stmts)
 	{
 		auto stmt = list_at(Stmt, link);
 		self->current = stmt;
-		switch (stmt->id) {
-		case STMT_INSERT:
+
+		if (stmt->id == STMT_INSERT)
+		{
 			emit_insert(self, stmt->ast);
-			break;
+			continue;
+		}
+
+		compiler_set_code(self, &self->code_stmt);
+		switch (stmt->id) {
 		case STMT_UPDATE:
 			break;
 		case STMT_DELETE:
 			break;
 		case STMT_SELECT:
-			compiler_set_code(self, &self->code_stmt);
 			emit_select(self, stmt->ast, false);
 			break;
 		default:
@@ -79,8 +80,13 @@ compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
 			break;
 		}
 
+		// copy last generated statement
+		self->iface->apply(0, &self->code_stmt, self->iface_arg);
+
 		code_reset(&self->code_stmt);
 	}
 
+	// CRET
+	self->iface->end(self->iface_arg);
 	self->current = NULL;
 }

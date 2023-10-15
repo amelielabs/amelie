@@ -102,7 +102,7 @@ emit_insert(Compiler* self, Ast* ast)
 			uint32_t hash;
 			hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
 
-			auto code = self->code_get(hash, self->code_get_arg);
+			auto code = self->iface->match(hash, self->iface_arg);
 
 			// CINSERT
 			code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
@@ -123,7 +123,7 @@ emit_insert(Compiler* self, Ast* ast)
 		int data = emit_row(&self->code_data, row, &data_size);
 
 		// get the destination code
-		auto code = self->code_get(row->hash, self->code_get_arg);
+		auto code = self->iface->match(row->hash, self->iface_arg);
 
 		// CINSERT
 		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,

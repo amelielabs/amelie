@@ -39,10 +39,10 @@ OBJECTS        = \
                  aggr/group.o \
                  vm/op.o \
                  vm/code.o \
-                 vm/vm.o \
-                 vm/command.o \
                  vm/func.o \
                  vm/func_debug.o \
+                 vm/vm.o \
+                 vm/command.o \
                  vm/callable.o \
                  parser/keyword.o \
                  parser/lex.o \
@@ -51,17 +51,17 @@ OBJECTS        = \
                  parser/parse_table.o \
                  parser/parse_insert.o \
                  parser/parse_update.o \
+                 parser/parse_delete.o \
                  parser/parse_from.o \
                  parser/parse_select.o \
                  parser/parse.o \
-                 compiler/compiler.o
-
-#                compiler/expr_generate.o \
-                 compiler/expr_type.o \
+                 compiler/compiler.o \
                  compiler/scan.o \
-                 compiler/select.o \
-                 compiler/stmt_from.o \
-                 compiler/stmt.o
+                 compiler/emit_expr.o \
+                 compiler/emit_insert.o \
+                 compiler/emit_update.o \
+                 compiler/emit_delete.o \
+                 compiler/emit_select.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
