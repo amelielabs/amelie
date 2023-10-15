@@ -23,7 +23,7 @@
 #include <monotone_vm.h>
 
 void
-code_save(Code* self, Buf* buf)
+code_save(Code* self, CodeData* data, Buf* buf)
 {
 	// map
 	encode_map(buf, 2);
@@ -46,14 +46,11 @@ code_save(Code* self, Buf* buf)
 
 	// data
 	encode_raw(buf, "data", 4);
-	if (buf_size(&self->data) > 0)
-		buf_write(buf, self->data.start, buf_size(&self->data));
-	else
-		encode_null(buf);
+	encode_buf(buf, &data->data);
 }
 
 void
-code_load(Code* self, uint8_t** pos)
+code_load(Code* self, CodeData* data, uint8_t** pos)
 {
 	// map
 	int count;
@@ -80,14 +77,13 @@ code_load(Code* self, uint8_t** pos)
 
 	// data
 	data_skip(pos);
-	uint8_t* data = *pos;
+	uint8_t* ptr = *pos;
 	data_skip(pos);
-	if (! data_is_null(data))
-		buf_write(&self->data, data, *pos - data);
+	buf_write(&data->data, ptr, *pos - ptr);
 }
 
 void
-code_dump(Code* self, Buf* output)
+code_dump(Code* self, CodeData* data, Buf* output)
 {
 	buf_printf(output, "%s", "\n");
 	buf_printf(output, "%s", "bytecode\n");
@@ -109,21 +105,21 @@ code_dump(Code* self, Buf* output)
 		case CSTRING:
 		{
 			Str str;
-			code_read_string(self, op->b, &str);
+			code_data_at_string(data, op->b, &str);
 			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
 			break;
 		}
 		case CFLOAT:
 		{
 			float value;
-			value = code_read_fp(self, op->b);
+			value = code_data_at_fp(data, op->b);
 			buf_printf(output, "# %f", value);
 			break;
 		}
 		case CINSERT:
 		{
 			Str str;
-			code_read_string(self, op->b, &str);
+			code_data_at_string(data, op->b, &str);
 			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
 			break;
 		}
@@ -132,14 +128,14 @@ code_dump(Code* self, Buf* output)
 		case CCURSOR_OPEN:
 		{
 			Str str;
-			code_read_string(self, op->b, &str);
+			code_data_at_string(data, op->b, &str);
 			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
 			break;
 		}
 		case CCALL:
 		{
 			Str str;
-			code_read_string(self, op->b, &str);
+			code_data_at_string(data, op->b, &str);
 			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
 			break;
 		}
