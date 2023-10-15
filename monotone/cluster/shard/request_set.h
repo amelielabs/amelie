@@ -89,18 +89,6 @@ request_set_add(RequestSet* self, int order, Channel* dest)
 }
 
 hot static inline void
-request_set_finilize(RequestSet* self)
-{
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = self->set[i];
-		if (! req)
-			continue;
-		code_add(&req->code, CRET, 0, 0, 0, 0);
-	}
-}
-
-hot static inline void
 request_set_execute(RequestSet* self)
 {
 	for (int i = 0; i < self->set_size; i++)
@@ -119,7 +107,7 @@ request_set_execute(RequestSet* self)
 }
 
 hot static inline void
-request_drain(Request* self)
+request_drain(Request* self, Portal* portal)
 {
 	while (! self->complete)
 	{
@@ -129,7 +117,8 @@ request_drain(Request* self)
 		auto msg = msg_of(buf);
 		switch (msg->id) {
 		case MSG_OBJECT:
-			break;
+			portal_write(portal, buf);
+			continue;
 		case MSG_OK:
 			self->complete = true;
 			break;
@@ -146,7 +135,7 @@ request_drain(Request* self)
 }
 
 hot static inline void
-request_set_wait(RequestSet* self)
+request_set_wait(RequestSet* self, Portal* portal)
 {
 	coroutine_cancel_pause(mn_self());
 
@@ -159,7 +148,7 @@ request_set_wait(RequestSet* self)
 			auto req = self->set[i];
 			if (!req || req->complete)
 				continue;
-			request_drain(req);
+			request_drain(req, portal);
 			if (req->complete)
 			{
 				event_set_parent(&req->src.on_write.event, NULL);

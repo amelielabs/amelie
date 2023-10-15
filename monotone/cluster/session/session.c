@@ -26,6 +26,67 @@
 #include <monotone_shard.h>
 #include <monotone_session.h>
 
+static Code*
+plan_match(uint32_t hash, void* arg)
+{
+	Session* self = arg;
+
+	// get shard by hash
+	auto shard = shard_map_get(self->share->shard_map, hash);
+
+	// map request to the shard
+	auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+
+	// share the same code data for all requests
+	if (req->code_data == NULL)
+		req->code_data = &self->compiler.code_data;
+	return &req->code;
+}
+
+static void
+plan_apply(uint32_t hash, Code* code, void* arg)
+{
+	Session* self = arg;
+	// todo: filter by hash
+	unused(hash);
+
+	auto shard_mgr = self->share->shard_mgr;
+	for (int i = 0; i < shard_mgr->shards_count; i++)
+	{
+		auto shard = shard_mgr->shards[i];
+
+		// map request to the shard
+		auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+
+		// share the same code data for all requests
+		if (req->code_data == NULL)
+			req->code_data = &self->compiler.code_data;
+
+		// append code
+		code_copy(&req->code, code);
+	}
+}
+
+static void
+plan_end(void* arg)
+{
+	Session* self = arg;
+	for (int i = 0; i < self->req_set.set_size; i++)
+	{
+		auto req = self->req_set.set[i];
+		if (! req)
+			continue;
+		code_add(&req->code, CRET, 0, 0, 0, 0);
+	}
+}
+
+static CompilerIf compiler_if =
+{
+	.match = plan_match,
+	.apply = plan_apply,
+	.end   = plan_end
+};
+
 void
 session_init(Session* self, Share* share, Portal* portal)
 {
@@ -34,7 +95,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->share       = share;
 	self->portal      = portal;
 	request_lock_init(&self->lock_req);
-	compiler_init(&self->compiler, share->db);
+	compiler_init(&self->compiler, share->db, &compiler_if, self);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
 	request_set_init(&self->req_set, share->req_cache);
@@ -66,23 +127,6 @@ session_reset(Session* self)
 	compiler_reset(&self->compiler);
 }
 
-static Code*
-execute_add(uint32_t hash, void* arg)
-{
-	Session* self = arg;
-
-	// get shard by hash
-	auto shard = shard_map_get(self->share->shard_map, hash);
-
-	// map request to the shard
-	auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
-
-	// share the same code data for all requests
-	if (req->code_data == NULL)
-		req->code_data = &self->compiler.code_data;
-	return &req->code;
-}
-
 hot static inline void
 session_execute_distributed(Session* self)
 {
@@ -94,8 +138,7 @@ session_execute_distributed(Session* self)
 	session_lock(self, LOCK_SHARED);
 
 	// generate request
-	compiler_generate(&self->compiler, execute_add, self);
-	request_set_finilize(req_set);
+	compiler_emit(&self->compiler);
 
 	// execute
 	request_sched_lock(share->req_sched);
@@ -103,7 +146,8 @@ session_execute_distributed(Session* self)
 	request_sched_unlock(share->req_sched);
 
 	// wait for completion
-	request_set_wait(req_set);
+	request_set_wait(req_set, self->portal);
+		// todo: iterate and return
 
 	// commit (no errors)
 	if (likely(! req_set->error))
