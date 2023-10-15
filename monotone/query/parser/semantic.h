@@ -9,6 +9,8 @@
 static inline void
 semantic_get_op(Ast* expr, AstList* ops)
 {
+	if (expr == NULL)
+		return;
 	switch (expr->id) {
 	case KAND:
 		semantic_get_op(expr->l, ops);
