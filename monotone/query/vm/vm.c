@@ -263,11 +263,11 @@ cpartial:
 	op_next;
 
 carg:
-	/* todo */
+	// todo
 	op_next;
 
 carg_name:
-	/* todo */
+	// todo
 	op_next;
 
 cbor:
