@@ -29,17 +29,19 @@ callable_init(Meta* self, void* arg)
 	auto callable = (Callable*)mn_malloc(sizeof(Callable));
 	callable->meta = self;
 	code_init(&callable->code);
+	code_data_init(&callable->code_data);
 	
 	Exception e;
 	if (try(&e))
 	{
 		uint8_t* pos = str_u8(&self->config->data);
-		code_load(&callable->code, &pos);
+		code_load(&callable->code, &callable->code_data, &pos);
 	}
 
 	if (catch(&e))
 	{
 		code_free(&callable->code);
+		code_data_free(&callable->code_data);
 		mn_free(callable);
 		rethrow();
 	}
@@ -53,6 +55,7 @@ callable_free(Meta* self)
 	if (callable == NULL)
 		return;
 	code_free(&callable->code);
+	code_data_free(&callable->code_data);
 	mn_free(callable);
 	self->iface_data = NULL;
 }
@@ -100,8 +103,9 @@ call(Vm*       vm,
 	Exception e;
 	if (try(&e))
 	{
-		vm_run(&call_vm, vm->trx, &callable->code, argc, argv,
-		       vm->command, &call_portal);
+		vm_run(&call_vm, vm->trx, vm->command,
+		       &callable->code,
+		       &callable->code_data, argc, argv, &call_portal);
 	}
 
 	if (catch(&e))

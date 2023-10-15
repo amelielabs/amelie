@@ -65,19 +65,21 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*          self,
        Transaction* trx,
+       Command*     command,
        Code*        code,
+       CodeData*    code_data,
        int          argc,
        Value**      argv,
-       Command*     command,
        Portal*      portal)
 {
 	assert(code_count(code) > 0);
-	self->trx     = trx;
-	self->code    = code;
-	self->argc    = argc;
-	self->argv    = argv;
-	self->command = command;
-	self->portal  = portal;
+	self->trx       = trx;
+	self->command   = command;
+	self->code      = code;
+	self->code_data = code_data;
+	self->argc      = argc;
+	self->argv      = argv;
+	self->portal    = portal;
 
 	const void* ops[] =
 	{
@@ -242,11 +244,11 @@ cint_min:
 	op_next;
 
 cfloat:
-	value_set_float(&r[op->a], data_read_float_at(code_at_data(code, op->b)));
+	value_set_float(&r[op->a], code_data_at_fp(code_data, op->b));
 	op_next;
 
 cstring:
-	code_read_string(code, op->b, &string);
+	code_data_at_string(code_data, op->b, &string);
 	value_set_string(&r[op->a], &string, NULL);
 	op_next;
 
@@ -449,7 +451,7 @@ cset:
 	op_next;
 
 cset_ordered:
-	value_set_set(&r[op->a], &set_create(code->data.start + op->b)->obj);
+	value_set_set(&r[op->a], &set_create(code_data_at(code_data, op->b))->obj);
 	op_next;
 
 cset_sort:

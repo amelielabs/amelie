@@ -30,8 +30,8 @@ ccursor_open(Vm* self, Op* op)
 
 	Str name_table;
 	Str name_index;
-	code_read_string(self->code, op->b, &name_table);
-	code_read_string(self->code, op->c, &name_index);
+	code_data_at_string(self->code_data, op->b, &name_table);
+	code_data_at_string(self->code_data, op->c, &name_index);
 
 	// find table/index by name
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_table, true);
@@ -281,7 +281,7 @@ ccursor_idx(Vm* self, Op* op)
 			error("current cursor object type is not a map");
 
 		Str name;
-		code_read_string(self->code, op->d, &name);
+		code_data_at_string(self->code_data, op->d, &name);
 		if (! map_find_path(&data, &name))
 			error("object path '%.*s' not found", str_size(&name),
 			      str_of(&name));
@@ -294,7 +294,7 @@ hot void
 ccall(Vm* self, Op* op)
 {
 	Str name;
-	code_read_string(self->code, op->b, &name);
+	code_data_at_string(self->code_data, op->b, &name);
 
 	// prepare arguments
 	int    argc = op->c;
@@ -331,7 +331,7 @@ cinsert(Vm* self, Op* op)
 	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
 	                                    &table->config->id);
 
-	uint8_t* data = code_at_data(self->code, op->b);
+	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;
 	if (unlikely(!data_is_array(data) && !data_is_map(data)))
 		error("INSERT/REPLACE: array, map or data set expected");

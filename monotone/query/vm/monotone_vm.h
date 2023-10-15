@@ -8,6 +8,7 @@
 
 // bytecode
 #include "vm/op.h"
+#include "vm/code_data.h"
 #include "vm/code.h"
 
 // functions
