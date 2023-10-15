@@ -23,12 +23,11 @@
 
 typedef struct
 {
-	int         level;
-	int         level_seq;
-	Target*     head;
-	Target*     tail;
-	TargetList* list;
-	Stmt*       stmt;
+	int     level;
+	int     level_seq;
+	Target* head;
+	Target* tail;
+	Stmt*   stmt;
 } From;
 
 static inline Ast*
@@ -64,8 +63,8 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 
 		} else
 			error("<%.*s> table or view does not exists",
-			      str_of(&expr->string),
-			      str_size(&expr->string));
+			      str_size(&expr->string),
+			      str_of(&expr->string));
 		break;
 	}
 
@@ -105,6 +104,7 @@ parse_from_add(From* self)
 
 	// FROM <expr> [alias]
 	auto expr = parse_from_analyze(self, &table, &view);
+	auto target_list = &self->stmt->target_list;
 
 	// [alias]
 	Str  name;
@@ -121,18 +121,18 @@ parse_from_add(From* self)
 		if (view) {
 			str_set_str(&name, &view->config->name);
 		} else {
-			snprintf(name_gen, sizeof(name_gen), "t%d", self->list->count);
+			snprintf(name_gen, sizeof(name_gen), "t%d", target_list->count);
 			str_set_cstr(&name, name_gen);
 		}
 	}
 
 	// ensure target is not exists
-	auto target = target_list_match(self->list, &name);
+	auto target = target_list_match(target_list, &name);
 	if (target)
 		error("<%.*s> target is redefined, please use different alias for the target",
 		      str_of(&name), str_size(&name));
 
-	target = target_list_add(self->list, self->level, self->level_seq++,
+	target = target_list_add(target_list, self->level, self->level_seq++,
 	                         &name, expr, table);
 	if (self->head == NULL)
 		self->head = target;
