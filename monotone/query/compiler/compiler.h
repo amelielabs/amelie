@@ -14,12 +14,12 @@ struct Compiler
 {
 	Parser       parser;
 	Rmap         map;
-	Buf          data;
 	Stmt*        current;
-	Code         code_shared;
 	Code*        code;
 	CompilerCode code_get;
 	void*        code_get_arg;
+	Code         code_stmt;
+	CodeData     code_data;
 	Db*          db;
 };
 
@@ -31,15 +31,17 @@ compiler_init(Compiler *self, Db* db)
 	self->code_get     = NULL;
 	self->code_get_arg = NULL;
 	self->db           = db;
+	code_init(&self->code_stmt);
+	code_data_init(&self->code_data);
 	parser_init(&self->parser, db);
 	rmap_init(&self->map);
-	buf_init(&self->data);
 }
 
 static inline void
 compiler_free(Compiler* self)
 {
-	buf_free(&self->data);
+	code_free(&self->code_stmt);
+	code_data_free(&self->code_data);
 	rmap_free(&self->map);
 }
 
@@ -50,7 +52,8 @@ compiler_reset(Compiler* self)
 	self->code         = NULL;
 	self->code_get     = NULL;
 	self->code_get_arg = NULL;
-	buf_reset(&self->data);
+	code_reset(&self->code_stmt);
+	code_data_reset(&self->code_data);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }

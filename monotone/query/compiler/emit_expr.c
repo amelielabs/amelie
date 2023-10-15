@@ -27,9 +27,9 @@ emit_string_as(Compiler* self, bool escape, Str* string)
 {
 	int offset;
 	if (escape)
-		offset = code_add_string(self->code, string);
+		offset = code_data_add_string(&self->code_data, string);
 	else
-		offset = code_add_string_unescape(self->code, string);
+		offset = code_data_add_string_unescape(&self->code_data, string);
 	return op2(self, CSTRING, rpin(self), offset);
 }
 
@@ -106,7 +106,7 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 
 	// call
 	int name_offset;
-	name_offset = code_add_string(self->code, &name->string);
+	name_offset = code_data_add_string(&self->code_data, &name->string);
 	return op3(self, CCALL, rpin(self), name_offset, call->integer);
 }
 
@@ -305,7 +305,7 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	// *.name
 	int offset;
 	if (! str_empty(&ref))
-		offset = code_add_string(self->code, &ref);
+		offset = code_data_add_string(&self->code_data, &ref);
 	else
 		offset = -1;
 	return op4(self, CCURSOR_IDX, rpin(self), target_id, column_order, offset);
@@ -536,7 +536,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KINT:
 		return op2(self, CINT, rpin(self), ast->integer);
 	case KFLOAT:
-		return op2(self, CFLOAT, rpin(self), code_add_fp(self->code, ast->fp));
+		return op2(self, CFLOAT, rpin(self), code_data_add_fp(&self->code_data, ast->fp));
 	case KTRUE:
 		return op2(self, CBOOL, rpin(self), 1);
 	case KFALSE:

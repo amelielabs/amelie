@@ -23,12 +23,13 @@
 #include <monotone_compiler.h>
 
 static inline int
-emit_row(Code* code, AstRow* row, int* data_size)
+emit_row(CodeData* data, AstRow* row, int* data_size)
 {
-	int start = code_data_prepare(code);
+	int start = code_data_pos(data);
+	auto buf = &data->data;
 
 	// []
-	encode_array(&code->data, row->list_count);
+	encode_array(buf, row->list_count);
 
 	auto value = row->list;
 	while (value)
@@ -38,26 +39,26 @@ emit_row(Code* code, AstRow* row, int* data_size)
 		{
 			switch (expr->id) {
 			case '[':
-				encode_array(&code->data, expr->integer);
+				encode_array(buf, expr->integer);
 				break;
 			case '{':
-				encode_map(&code->data, expr->integer);
+				encode_map(buf, expr->integer);
 				break;
 			case KSTRING:
-				encode_string(&code->data, &expr->string);
+				encode_string(buf, &expr->string);
 				break;
 			case KNULL:
-				encode_null(&code->data);
+				encode_null(buf);
 				break;
 			case KTRUE:
 			case KFALSE:
-				encode_bool(&code->data, expr->id == KTRUE);
+				encode_bool(buf, expr->id == KTRUE);
 				break;
 			case KINT:
-				encode_integer(&code->data, expr->integer);
+				encode_integer(buf, expr->integer);
 				break;
 			case KFLOAT:
-				encode_float(&code->data, expr->fp);
+				encode_float(buf, expr->fp);
 				break;
 			default:
 				abort();
@@ -70,8 +71,7 @@ emit_row(Code* code, AstRow* row, int* data_size)
 		value = value->next;
 	}
 
-	code_data_update(code);
-	*data_size = buf_size(&code->data) - start;
+	*data_size = buf_size(buf) - start;
 	return start;
 }
 
@@ -88,21 +88,21 @@ emit_insert(Compiler* self, Ast* ast)
 		for (int i = 0; i < count; i++)
 		{
 			int key = atomic_u32_inc(&seq);
+
+			// (batch)
+			int  data = code_data_pos(&self->code_data);
+			auto buf = &self->code_data.data;
+			int  count_batch = insert->generate_batch->integer;
+			encode_array(buf, count_batch);
+			for (int j = 0; j < count_batch; j++)
+				encode_integer(buf, key);
+			int data_size = buf_size(buf) - data;
+
+			// get the destination code
 			uint32_t hash;
 			hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
 
-			// (batch)
-			int count_batch = insert->generate_batch->integer;
-
 			auto code = self->code_get(hash, self->code_get_arg);
-			int data = code_data_prepare(code);
-
-			encode_array(&code->data, count_batch);
-			for (int j = 0; j < count_batch; j++)
-				encode_integer(&code->data, key);
-
-			code_data_update(code);
-			int data_size = buf_size(&code->data) - data;
 
 			// CINSERT
 			code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
@@ -118,10 +118,12 @@ emit_insert(Compiler* self, Ast* ast)
 	{
 		auto row = ast_row_of(i);
 
-		// get code based on the hash
-		auto code = self->code_get(row->hash, self->code_get_arg);
+		// write row to the code data
 		int data_size;
-		int data = emit_row(code, row, &data_size);
+		int data = emit_row(&self->code_data, row, &data_size);
+
+		// get the destination code
+		auto code = self->code_get(row->hash, self->code_get_arg);
 
 		// CINSERT
 		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,

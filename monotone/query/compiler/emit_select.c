@@ -163,9 +163,9 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 	} else
 	{
 		// write order by key types
-		int  offset = code_data_prepare(self->code);
-		auto data = &self->code->data;
-		// array
+		int  offset = code_data_pos(&self->code_data);
+		auto data = &self->code_data.data;
+		// [[], ..]
 		encode_array(data, select->expr_order_by.count);
 		auto node = select->expr_order_by.list;
 		while (node)
@@ -177,7 +177,7 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 			encode_bool(data, order->asc);
 			node = node->next;
 		}
-		code_data_update(self->code);
+
 		rresult = op2(self, CSET_ORDERED, rpin(self), offset);
 		select->rset = rresult;
 		select->on_match = emit_select_on_match_nested;

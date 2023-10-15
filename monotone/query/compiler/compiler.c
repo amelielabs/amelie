@@ -71,12 +71,15 @@ compiler_generate(Compiler* self, CompilerCode code_get, void* code_get_arg)
 		case STMT_DELETE:
 			break;
 		case STMT_SELECT:
+			compiler_set_code(self, &self->code_stmt);
 			emit_select(self, stmt->ast, false);
 			break;
 		default:
 			assert(0);
 			break;
 		}
+
+		code_reset(&self->code_stmt);
 	}
 
 	self->current = NULL;

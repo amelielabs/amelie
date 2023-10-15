@@ -277,7 +277,7 @@ scan_generate_target_table(Scan* self, Target* target)
 
 	// save table name
 	int table_name_offset;
-	table_name_offset = code_add_string(cp->code, &target->table->config->name);
+	table_name_offset = code_data_add_string(&cp->code_data, &target->table->config->name);
 
 	// todo: index name
 	int index_name_offset;
