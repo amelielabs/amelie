@@ -160,7 +160,7 @@ done:;
 	return call;
 }
 
-static inline void
+static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
 	// function (expr)
@@ -213,6 +213,8 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		ast_list_add(expr->aggs, &aggr->ast);
 		ast_list_add(expr->aggs_global, &aggr->ast);
 	}
+
+	return &aggr->ast;
 }
 
 hot static inline Ast*
@@ -263,7 +265,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KCOUNT:
 	case KSUM:
 	case KAVG:
-		expr_aggregate(self, expr, value);
+		value = expr_aggregate(self, expr, value);
 		break;
 
 	// const
