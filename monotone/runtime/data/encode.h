@@ -42,6 +42,13 @@ encode_raw(Buf* self, const char* pointer, int size)
 }
 
 always_inline hot static inline void
+encode_buf(Buf* self, Buf* buf)
+{
+	auto pos = buf_reserve(self, data_size_string(buf_size(buf)));
+	data_write_raw(pos, (char*)buf->start, buf_size(buf));
+}
+
+always_inline hot static inline void
 encode_cstr(Buf* self, const char* pointer)
 {
 	encode_raw(self, pointer, strlen(pointer));
