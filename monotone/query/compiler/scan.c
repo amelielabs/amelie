@@ -281,7 +281,10 @@ scan_generate_target_table(Scan* self, Target* target)
 
 	// todo: index name
 	int index_name_offset;
-	index_name_offset = 0;
+	Str index_name;
+	str_init(&index_name);
+	str_set_cstr(&index_name, "primary");
+	index_name_offset = code_data_add_string(&cp->code_data, &index_name);
 
 	// cursor_open
 	int _open = op_pos(cp);
