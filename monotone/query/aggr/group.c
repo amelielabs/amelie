@@ -264,7 +264,7 @@ group_get_aggr(Group* self, GroupNode* node, int pos, Value* value)
 	int i = 0;
 	list_foreach(&self->aggrs)
 	{
-		auto aggr = list_at(Aggr, link);
+		aggr = list_at(Aggr, link);
 		if (i != pos)
 		{
 			state += aggr_state_size(aggr);
