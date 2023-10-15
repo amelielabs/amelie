@@ -16,6 +16,7 @@ struct Request
 	bool          ok;
 	Transaction   trx;
 	Code          code;
+	CodeData*     code_data;
 	Command*      cmd;
 	Channel*      dst;
 	Channel       src;
@@ -33,13 +34,14 @@ request_of(Buf* buf)
 static inline void
 request_init(Request* self, RequestCache* cache)
 {
-	self->complete = false;
-	self->ro       = false;
-	self->ok       = false;
-	self->cmd      = NULL;
-	self->dst      = NULL;
-	self->error    = NULL;
-	self->cache    = cache;
+	self->complete  = false;
+	self->ro        = false;
+	self->ok        = false;
+	self->code_data = NULL;
+	self->cmd       = NULL;
+	self->dst       = NULL;
+	self->error     = NULL;
+	self->cache     = cache;
 	code_init(&self->code);
 	transaction_init(&self->trx);
 	channel_init(&self->src);
@@ -65,11 +67,12 @@ request_reset(Request* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->complete = false;
-	self->ro       = false;
-	self->ok       = false;
-	self->cmd      = NULL;
-	self->dst      = NULL;
+	self->complete  = false;
+	self->ro        = false;
+	self->ok        = false;
+	self->code_data = NULL;
+	self->cmd       = NULL;
+	self->dst       = NULL;
 	event_set_parent(&self->src.on_write.event, NULL);
 	code_reset(&self->code);
 	list_init(&self->link);

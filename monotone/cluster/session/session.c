@@ -76,6 +76,10 @@ execute_add(uint32_t hash, void* arg)
 
 	// map request to the shard
 	auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+
+	// share the same code data for all requests
+	if (req->code_data == NULL)
+		req->code_data = &self->compiler.code_data;
 	return &req->code;
 }
 
