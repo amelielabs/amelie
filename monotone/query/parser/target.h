@@ -158,7 +158,7 @@ target_list_add(TargetList* self,
 	target->level     = level;
 	target->level_seq = level_seq;
 	target->expr      = expr;
-	if (str_empty(name))
+	if (! name)
 	{
 		str_init(&target->name);
 	} else
