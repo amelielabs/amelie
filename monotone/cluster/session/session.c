@@ -27,68 +27,6 @@
 #include <monotone_shard.h>
 #include <monotone_session.h>
 
-static Code*
-plan_match(uint32_t hash, void* arg)
-{
-	Session* self = arg;
-
-	// get shard by hash
-	auto part = req_map_get(self->share->req_map, hash);
-
-	// map request to the shard
-	auto req = req_set_add(&self->req_set, part->order, part->channel);
-
-	// share the same code data for all requests
-	if (req->code_data == NULL)
-		req->code_data = &self->compiler.code_data;
-
-	return &req->code;
-}
-
-static void
-plan_apply(uint32_t hash, Code* code, void* arg)
-{
-	Session* self = arg;
-	// todo: filter by hash
-	unused(hash);
-
-	auto req_map = self->share->req_map;
-	for (int i = 0; i < req_map->map_order_size; i++)
-	{
-		auto part = req_map_at(req_map, i);
-
-		// map request to the shard
-		auto req = req_set_add(&self->req_set, part->order, part->channel);
-
-		// share the same code data for all requests
-		if (req->code_data == NULL)
-			req->code_data = &self->compiler.code_data;
-
-		// append code
-		code_copy(&req->code, code);
-	}
-}
-
-static void
-plan_end(void* arg)
-{
-	Session* self = arg;
-	for (int i = 0; i < self->req_set.set_size; i++)
-	{
-		auto req = self->req_set.set[i];
-		if (! req)
-			continue;
-		code_add(&req->code, CRET, 0, 0, 0, 0);
-	}
-}
-
-static CompilerIf compiler_if =
-{
-	.match = plan_match,
-	.apply = plan_apply,
-	.end   = plan_end
-};
-
 void
 session_init(Session* self, Share* share, Portal* portal)
 {
@@ -97,10 +35,12 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->share       = share;
 	self->portal      = portal;
 	cat_lock_init(&self->lock_req);
-	compiler_init(&self->compiler, share->db, &compiler_if, self);
+	compiler_init(&self->compiler, share->db, share->req_map,
+	              &self->req_set);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
-	req_set_init(&self->req_set, share->req_cache);
+	req_set_init(&self->req_set, share->req_cache, share->req_map,
+	             &self->compiler.code_data);
 	log_set_init(&self->log_set);
 }
 
