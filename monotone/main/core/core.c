@@ -18,6 +18,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
 #include <monotone_vm.h>
@@ -80,7 +81,7 @@ core_create(void)
 	shard_mgr_init(&self->shard_mgr, &self->db, &self->function_mgr);
 	shard_map_init(&self->shard_map);
 	hub_mgr_init(&self->hub_mgr);
-	request_sched_init(&self->req_sched);
+	req_lock_init(&self->req_lock);
 
 	// db
 	db_init(&self->db, NULL, NULL);
@@ -97,7 +98,7 @@ core_create(void)
 	share->db           = &self->db;
 	share->shard_map    = &self->shard_map;
 	share->shard_mgr    = &self->shard_mgr;
-	share->req_sched    = &self->req_sched;
+	share->req_lock     = &self->req_lock;
 	share->cat_lock     = NULL;
 
 	return self;
@@ -109,7 +110,7 @@ core_free(Core* self)
 	shard_mgr_free(&self->shard_mgr);
 	shard_map_free(&self->shard_map);
 	server_free(&self->server);
-	request_sched_free(&self->req_sched);
+	req_lock_free(&self->req_lock);
 	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
 	user_mgr_free(&self->user_mgr);
@@ -298,15 +299,15 @@ core_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-core_catalog_lock(Core* self, RequestLock* req_lock)
+core_catalog_lock(Core* self, CatLock* cat_lock)
 {
 	// get exlusive catalog lock on each hub
 	hub_mgr_cat_lock(&self->hub_mgr);
 
 	// notify on completion
 	auto on_unlock = condition_create();
-	req_lock->on_unlock = on_unlock;
-	condition_signal(req_lock->on_lock);
+	cat_lock->on_unlock = on_unlock;
+	condition_signal(cat_lock->on_lock);
 
 	// wait for unlock
 	condition_wait(on_unlock, -1);
@@ -341,7 +342,7 @@ core_main(Core* self)
 
 		if (msg->id == RPC_CAT_LOCK_REQ)
 		{
-			core_catalog_lock(self, request_lock_of(buf));
+			core_catalog_lock(self, cat_lock_of(buf));
 			continue;
 		}
 

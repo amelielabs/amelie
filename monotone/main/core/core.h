@@ -19,7 +19,7 @@ struct Core
 	HubMgr       hub_mgr;
 	ShardMap     shard_map;
 	ShardMgr     shard_mgr;
-	RequestSched req_sched;
+	ReqLock      req_lock;
 	// server
 	Server       server;
 	UserMgr      user_mgr;
