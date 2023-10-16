@@ -6,37 +6,29 @@
 // SQL OLTP database
 //
 
-typedef struct CompilerIf CompilerIf;
-typedef struct Compiler   Compiler;
-
-struct CompilerIf
-{
-	Code* (*match)(uint32_t, void*);
-	void  (*apply)(uint32_t, Code*, void*);
-	void  (*end)(void*);
-};
+typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Parser      parser;
-	Rmap        map;
-	Stmt*       current;
-	Code*       code;
-	Code        code_stmt;
-	CodeData    code_data;
-	CompilerIf* iface;
-	void*       iface_arg;
-	Db*         db;
+	Parser   parser;
+	Rmap     map;
+	Stmt*    current;
+	Code*    code;
+	Code     code_stmt;
+	CodeData code_data;
+	ReqSet*  req_set;
+	ReqMap*  req_map;
+	Db*      db;
 };
 
 static inline void
-compiler_init(Compiler *self, Db* db, CompilerIf* iface, void* iface_arg)
+compiler_init(Compiler *self, Db* db, ReqMap* req_map, ReqSet* req_set)
 {
-	self->current   = NULL;
-	self->code      = NULL;
-	self->iface     = iface;
-	self->iface_arg = iface_arg;
-	self->db        = db;
+	self->current = NULL;
+	self->code    = NULL;
+	self->req_set = req_set;
+	self->req_map = req_map;
+	self->db      = db;
 	code_init(&self->code_stmt);
 	code_data_init(&self->code_data);
 	parser_init(&self->parser, db);

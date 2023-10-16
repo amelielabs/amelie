@@ -82,12 +82,19 @@ compiler_emit(Compiler* self)
 		}
 
 		// copy last generated statement
-		self->iface->apply(0, &self->code_stmt, self->iface_arg);
+		req_set_copy(self->req_set, &self->code_stmt);
 
 		code_reset(&self->code_stmt);
 	}
 
 	// CRET
-	self->iface->end(self->iface_arg);
+	auto req_set = self->req_set;
+	for (int i = 0; i < req_set->set_size; i++)
+	{
+		auto req = req_set_at(req_set, i);
+		if (! req)
+			continue;
+		code_add(&req->code, CRET, 0, 0, 0, 0);
+	}
 	self->current = NULL;
 }
