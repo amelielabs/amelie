@@ -33,14 +33,15 @@ plan_match(uint32_t hash, void* arg)
 	Session* self = arg;
 
 	// get shard by hash
-	auto shard = shard_map_get(self->share->shard_map, hash);
+	auto part = req_map_get(self->share->req_map, hash);
 
 	// map request to the shard
-	auto req = req_set_add(&self->req_set, shard->order, &shard->task.channel);
+	auto req = req_set_add(&self->req_set, part->order, part->channel);
 
 	// share the same code data for all requests
 	if (req->code_data == NULL)
 		req->code_data = &self->compiler.code_data;
+
 	return &req->code;
 }
 
@@ -51,13 +52,13 @@ plan_apply(uint32_t hash, Code* code, void* arg)
 	// todo: filter by hash
 	unused(hash);
 
-	auto shard_mgr = self->share->shard_mgr;
-	for (int i = 0; i < shard_mgr->shards_count; i++)
+	auto req_map = self->share->req_map;
+	for (int i = 0; i < req_map->map_order_size; i++)
 	{
-		auto shard = shard_mgr->shards[i];
+		auto part = req_map_at(req_map, i);
 
 		// map request to the shard
-		auto req = req_set_add(&self->req_set, shard->order, &shard->task.channel);
+		auto req = req_set_add(&self->req_set, part->order, part->channel);
 
 		// share the same code data for all requests
 		if (req->code_data == NULL)
