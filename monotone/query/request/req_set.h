@@ -16,18 +16,23 @@ struct ReqSet
 	int       complete;
 	int       error;
 	Event     parent;
+	ReqMap*   map;
 	ReqCache* cache;
+	CodeData* code_data;
 };
 
 static inline void
-req_set_init(ReqSet* self, ReqCache* cache)
+req_set_init(ReqSet* self, ReqCache* cache, ReqMap* map,
+             CodeData* code_data)
 {
-	self->set      = NULL;
-	self->set_size = 0;
-	self->sent     = 0;
-	self->complete = 0;
-	self->error    = 0;
-	self->cache    = cache;
+	self->set       = NULL;
+	self->set_size  = 0;
+	self->sent      = 0;
+	self->complete  = 0;
+	self->error     = 0;
+	self->map       = map;
+	self->cache     = cache;
+	self->code_data = code_data;
 	event_init(&self->parent);
 }
 
@@ -44,6 +49,12 @@ req_set_free(ReqSet* self)
 		}
 		mn_free(self->set);
 	}
+}
+
+static inline Req*
+req_set_at(ReqSet* self, int order)
+{
+	return self->set[order];
 }
 
 static inline bool
@@ -74,179 +85,43 @@ req_set_reset(ReqSet* self)
 	self->error    = 0;
 }
 
-static inline Req*
-req_set_add(ReqSet* self, int order, Channel* dest)
+hot static inline Req*
+req_set_add(ReqSet* self, ReqPartition* part)
 {
-	auto req = self->set[order];
+	auto req = self->set[part->order];
 	if (! req)
 	{
 		req = req_create(self->cache);
-		req->dst = dest;
+		req->dst = part->channel;
+		req->code_data = self->code_data;
 		event_set_parent(&req->src.on_write.event, &self->parent);
-		self->set[order] = req;
+		self->set[part->order] = req;
 	}
 	return req;
 }
 
-hot static inline void
-req_set_execute(ReqSet* self)
+hot static inline Req*
+req_set_map(ReqSet* self, uint32_t hash)
 {
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = self->set[i];
-		if (! req)
-			continue;
+	// get shard by hash
+	auto part = req_map_get(self->map, hash);
 
-		auto buf = msg_create(RPC_REQUEST);
-		buf_write(buf, &req, sizeof(void**));
-		msg_end(buf);
-
-		channel_write(req->dst, buf);
-		self->sent++;
-	}
+	// add request to the shard
+	return req_set_add(self, part);
 }
 
 hot static inline void
-req_drain(Req* self, Portal* portal)
+req_set_copy(ReqSet* self, Code* code)
 {
-	while (! self->complete)
+	auto map = self->map;
+	for (int i = 0; i < map->map_order_size; i++)
 	{
-		auto buf = channel_read(&self->src, 0);
-		if (buf == NULL)
-			break;
-		auto msg = msg_of(buf);
-		switch (msg->id) {
-		case MSG_OBJECT:
-			portal_write(portal, buf);
-			continue;
-		case MSG_OK:
-			self->complete = true;
-			break;
-		case MSG_ERROR:
-			if (self->error)
-				break;
-			self->error = buf;
-			continue;
-		default:
-			break;
-		}
-		buf_free(buf);
+		auto part = req_map_at(map, i);
+
+		// map request to the shard
+		auto req = req_set_add(self, part);
+
+		// append code
+		code_copy(&req->code, code);
 	}
-}
-
-hot static inline void
-req_set_wait(ReqSet* self, Portal* portal)
-{
-	coroutine_cancel_pause(mn_self());
-
-	while (self->complete != self->sent)
-	{
-		event_wait(&self->parent, -1);
-
-		for (int i = 0; i < self->set_size; i++)
-		{
-			auto req = self->set[i];
-			if (!req || req->complete)
-				continue;
-			req_drain(req, portal);
-			if (req->complete)
-			{
-				event_set_parent(&req->src.on_write.event, NULL);
-				self->complete++;
-			}
-			if (req->error)
-				self->error++;
-		}
-	}
-
-	coroutine_cancel_resume(mn_self());
-}
-
-hot static inline void
-req_set_commit_prepare(ReqSet* self, LogSet* set)
-{
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = self->set[i];
-		if (! req)
-			continue;
-		if (req->trx.log.count_persistent == 0)
-			continue;
-		log_set_add(set, &req->trx.log);
-	}
-}
-
-hot static inline void
-req_set_commit(ReqSet* self, uint64_t lsn)
-{
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = self->set[i];
-		if (! req)
-			continue;
-
-		transaction_set_lsn(&req->trx, lsn);
-
-		auto buf = msg_create(RPC_REQUEST_COMMIT);
-		buf_write(buf, &req, sizeof(void**));
-		msg_end(buf);
-		channel_write(req->dst, buf);
-		self->set[i] = NULL;
-	}
-}
-
-hot static inline void
-req_set_abort(ReqSet* self)
-{
-	Buf* error_msg = NULL;
-	for (int i = 0; i < self->set_size; i++)
-	{
-		auto req = self->set[i];
-		if (!req)
-			continue;
-
-		// reuse error message
-		bool error_has = false;
-		if (req->error)
-		{
-			error_has = true;
-			if (! error_msg)
-				error_msg = req->error;
-			else
-				buf_free(req->error);
-			req->error = NULL;
-		}
-
-		self->set[i] = NULL;
-		if (error_has)
-		{
-			// put req back to the cache
-			req_cache_push(req->cache, req);
-			continue;
-		}
-
-		auto buf = msg_create(RPC_REQUEST_ABORT);
-		buf_write(buf, &req, sizeof(void**));
-		msg_end(buf);
-		channel_write(req->dst, buf);
-	}
-
-	if (! error_msg)
-		error("transaction aborted");
-
-	buf_pin(error_msg);
-	guard(guard, buf_free, error_msg);
-
-	// rethrow error message
-	uint8_t* pos = msg_of(error_msg)->data;
-	int count;
-	data_read_map(&pos, &count);
-	// code
-	data_skip(&pos);
-	data_skip(&pos);
-	// msg
-	data_skip(&pos);
-	Str text;
-	data_read_string(&pos, &text);
-	error("%.*s", str_size(&text), str_of(&text));
 }
