@@ -16,10 +16,10 @@ struct Core
 	// db
 	Db           db;
 	// cluster
-	HubMgr       hub_mgr;
-	ShardMap     shard_map;
-	ShardMgr     shard_mgr;
+	ReqMap       req_map;
 	ReqLock      req_lock;
+	HubMgr       hub_mgr;
+	ShardMgr     shard_mgr;
 	// server
 	Server       server;
 	UserMgr      user_mgr;
