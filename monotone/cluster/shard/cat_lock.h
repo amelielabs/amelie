@@ -6,29 +6,29 @@
 // SQL OLTP database
 //
 
-typedef struct RequestLock RequestLock;
+typedef struct CatLock CatLock;
 
-struct RequestLock
+struct CatLock
 {
 	Condition* on_lock;
 	Condition* on_unlock;
 };
 
-always_inline hot static inline RequestLock*
-request_lock_of(Buf* buf)
+always_inline hot static inline CatLock*
+cat_lock_of(Buf* buf)
 {
-	return *(RequestLock**)msg_of(buf)->data;
+	return *(CatLock**)msg_of(buf)->data;
 }
 
 static inline void
-request_lock_init(RequestLock* self)
+cat_lock_init(CatLock* self)
 {
 	self->on_lock   = NULL;
 	self->on_unlock = NULL;
 }
 
 static inline Buf*
-request_lock_msg(RequestLock* self)
+cat_lock_msg(CatLock* self)
 {
 	auto buf = msg_create(RPC_CAT_LOCK_REQ);
 	buf_write(buf, &self, sizeof(void**));
