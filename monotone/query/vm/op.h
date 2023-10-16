@@ -7,7 +7,6 @@
 //
 
 typedef struct OpDesc OpDesc;
-typedef struct Op     Op;
 
 enum
 {
@@ -114,13 +113,6 @@ enum
 	CINSERT,
 	CUPDATE,
 	CDELETE
-};
-
-struct Op
-{
-	uint8_t op;
-	int64_t a, b, c, d;
-	int     count;
 };
 
 struct OpDesc
