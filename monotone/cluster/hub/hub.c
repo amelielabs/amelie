@@ -18,6 +18,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
 #include <monotone_vm.h>
@@ -195,7 +196,7 @@ hub_init(Hub* self, Share* share)
 	self->share.cat_lock  = &self->cat_lock;
 	self->share.req_cache = &self->req_cache;
 	self->cat_locker = NULL;
-	request_cache_init(&self->req_cache);
+	req_cache_init(&self->req_cache);
 	locker_cache_init(&self->cat_lock_cache);
 	lock_init(&self->cat_lock, &self->cat_lock_cache);
 	client_mgr_init(&self->client_mgr);
@@ -207,7 +208,7 @@ void
 hub_free(Hub* self)
 {
 	locker_cache_free(&self->cat_lock_cache);
-	request_cache_free(&self->req_cache);
+	req_cache_free(&self->req_cache);
 	client_mgr_free(&self->client_mgr);
 	user_cache_free(&self->user_cache);
 }

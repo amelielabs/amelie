@@ -10,14 +10,14 @@ typedef struct Hub Hub;
 
 struct Hub
 {
-	Lock         cat_lock;
-	Locker*      cat_locker;
-	LockerCache  cat_lock_cache;
-	RequestCache req_cache;
-	ClientMgr    client_mgr;
-	UserCache    user_cache;
-	Share        share;
-	Task         task;
+	Lock        cat_lock;
+	Locker*     cat_locker;
+	LockerCache cat_lock_cache;
+	ReqCache    req_cache;
+	ClientMgr   client_mgr;
+	UserCache   user_cache;
+	Share       share;
+	Task        task;
 };
 
 void hub_init(Hub*, Share*);
