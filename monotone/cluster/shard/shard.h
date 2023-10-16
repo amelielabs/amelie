@@ -11,7 +11,7 @@ typedef struct Shard Shard;
 struct Shard
 {
 	int          order;
-	RequestList  prepared;
+	ReqList      prepared;
 	ShardConfig* config;
 	Vm           vm;
 	Task         task;

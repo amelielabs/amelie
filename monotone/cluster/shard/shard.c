@@ -18,6 +18,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
 #include <monotone_vm.h>
@@ -26,7 +27,7 @@
 #include <monotone_shard.h>
 
 hot static void
-shard_execute(Shard* self, Request* req)
+shard_execute(Shard* self, Req* req)
 {
 	transaction_begin(&req->trx);
 
@@ -55,7 +56,7 @@ shard_execute(Shard* self, Request* req)
 	if (likely(! abort))
 	{
 		// add transaction to the prepared list
-		request_list_add(&self->prepared, req);
+		req_list_add(&self->prepared, req);
 
 		// wait for previous transaction to be commited before
 		// acknowledge
@@ -74,7 +75,7 @@ shard_execute(Shard* self, Request* req)
 }
 
 hot static void
-shard_commit(Shard* self, Request* req)
+shard_commit(Shard* self, Req* req)
 {
 	// commit transaction
 	transaction_commit(&req->trx);
@@ -82,7 +83,7 @@ shard_commit(Shard* self, Request* req)
 	// acknowledge all pending prepared transaction
 	list_foreach_after(&self->prepared.list, &req->link)
 	{
-		auto ref = list_at(Request, link);
+		auto ref = list_at(Req, link);
 		if (ref->ok)
 			continue;
 
@@ -94,25 +95,25 @@ shard_commit(Shard* self, Request* req)
 	}
 
 	// done
-	request_list_remove(&self->prepared, req);
+	req_list_remove(&self->prepared, req);
 
 	// put request back to the cache
-	request_cache_push(req->cache, req);
+	req_cache_push(req->cache, req);
 }
 
 hot static void
-shard_abort(Shard* self, Request* req)
+shard_abort(Shard* self, Req* req)
 {
 	// abort all prepared transactions up to current one
 	// in reverse order
 	list_foreach_reverse_safe(&self->prepared.list)
 	{
-		auto ref = list_at(Request, link);
+		auto ref = list_at(Req, link);
 
 		// abort
 		transaction_abort(&ref->trx);
 
-		request_list_remove(&self->prepared, ref);
+		req_list_remove(&self->prepared, ref);
 		if (ref == req)
 			break;
 
@@ -131,7 +132,7 @@ shard_abort(Shard* self, Request* req)
 	}
 
 	// put request back to the cache
-	request_cache_push(req->cache, req);
+	req_cache_push(req->cache, req);
 }
 
 static void
@@ -160,13 +161,13 @@ shard_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_REQUEST:
-			shard_execute(self, request_of(buf));
+			shard_execute(self, req_of(buf));
 			break;
 		case RPC_REQUEST_COMMIT:
-			shard_commit(self, request_of(buf));
+			shard_commit(self, req_of(buf));
 			break;
 		case RPC_REQUEST_ABORT:
-			shard_abort(self, request_of(buf));
+			shard_abort(self, req_of(buf));
 			break;
 		default:
 		{
@@ -183,7 +184,7 @@ shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 {
 	Shard* self = mn_malloc(sizeof(*self));
 	self->order = 0;
-	request_list_init(&self->prepared);
+	req_list_init(&self->prepared);
 	task_init(&self->task, mn_task->buf_cache);
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
