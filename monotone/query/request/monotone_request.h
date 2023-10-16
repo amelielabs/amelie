@@ -16,3 +16,4 @@
 #include "request/req_cache.h"
 #include "request/req_list.h"
 #include "request/req_set.h"
+#include "request/req_map.h"
