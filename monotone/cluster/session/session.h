@@ -23,10 +23,10 @@ struct Session
 	Transaction trx;
 	// catalog lock
 	SessionLock lock;
-	RequestLock lock_req;
+	CatLock     lock_req;
 	Locker*     lock_shared;
 	// request
-	RequestSet  req_set;
+	ReqSet      req_set;
 	LogSet      log_set;
 	Portal*     portal;
 	Share*      share;

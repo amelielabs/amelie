@@ -18,6 +18,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
 #include <monotone_vm.h>
@@ -35,7 +36,7 @@ plan_match(uint32_t hash, void* arg)
 	auto shard = shard_map_get(self->share->shard_map, hash);
 
 	// map request to the shard
-	auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+	auto req = req_set_add(&self->req_set, shard->order, &shard->task.channel);
 
 	// share the same code data for all requests
 	if (req->code_data == NULL)
@@ -56,7 +57,7 @@ plan_apply(uint32_t hash, Code* code, void* arg)
 		auto shard = shard_mgr->shards[i];
 
 		// map request to the shard
-		auto req = request_set_add(&self->req_set, shard->order, &shard->task.channel);
+		auto req = req_set_add(&self->req_set, shard->order, &shard->task.channel);
 
 		// share the same code data for all requests
 		if (req->code_data == NULL)
@@ -94,11 +95,11 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->lock_shared = NULL;
 	self->share       = share;
 	self->portal      = portal;
-	request_lock_init(&self->lock_req);
+	cat_lock_init(&self->lock_req);
 	compiler_init(&self->compiler, share->db, &compiler_if, self);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
-	request_set_init(&self->req_set, share->req_cache);
+	req_set_init(&self->req_set, share->req_cache);
 	log_set_init(&self->log_set);
 }
 
@@ -108,8 +109,8 @@ session_free(Session *self)
 	assert(self->lock == LOCK_NONE);
 	compiler_free(&self->compiler);
 	command_free(&self->cmd);
-	request_set_reset(&self->req_set);
-	request_set_free(&self->req_set);
+	req_set_reset(&self->req_set);
+	req_set_free(&self->req_set);
 	log_set_free(&self->log_set);
 	transaction_free(&self->trx);
 }
@@ -119,10 +120,10 @@ session_reset(Session* self)
 {
 	auto share = self->share;
 	palloc_truncate(0);
-	if (likely(request_set_created(&self->req_set)))
-		request_set_reset(&self->req_set);
+	if (likely(req_set_created(&self->req_set)))
+		req_set_reset(&self->req_set);
 	else
-		request_set_create(&self->req_set, share->shard_mgr->shards_count);
+		req_set_create(&self->req_set, share->shard_mgr->shards_count);
 	log_set_reset(&self->log_set);
 	compiler_reset(&self->compiler);
 }
@@ -141,19 +142,19 @@ session_execute_distributed(Session* self)
 	compiler_emit(&self->compiler);
 
 	// execute
-	request_sched_lock(share->req_sched);
-	request_set_execute(req_set);
-	request_sched_unlock(share->req_sched);
+	req_lock(share->req_lock);
+	req_set_execute(req_set);
+	req_unlock(share->req_lock);
 
 	// wait for completion
-	request_set_wait(req_set, self->portal);
+	req_set_wait(req_set, self->portal);
 		// todo: iterate and return
 
 	// commit (no errors)
 	if (likely(! req_set->error))
 	{
 		// add logs to the log set
-		request_set_commit_prepare(req_set, log_set);
+		req_set_commit_prepare(req_set, log_set);
 
 		// wal write
 		uint64_t lsn = 0;
@@ -164,12 +165,12 @@ session_execute_distributed(Session* self)
 		}
 
 		// send COMMIT
-		request_set_commit(req_set, lsn);
+		req_set_commit(req_set, lsn);
 		return;
 	}
 
 	// send ABORT and throw error
-	request_set_abort(req_set);
+	req_set_abort(req_set);
 }
 
 hot static inline void

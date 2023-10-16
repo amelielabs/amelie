@@ -18,6 +18,7 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
+#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
 #include <monotone_vm.h>
@@ -44,7 +45,7 @@ session_lock(Session* self, SessionLock lock)
 		req->on_lock = condition_create();
 
 		// RPC_CAT_LOCK_REQ
-		channel_write(global()->control->core, request_lock_msg(req));
+		channel_write(global()->control->core, cat_lock_msg(req));
 
 		// wait for exclusive lock to be taken on all hubs (including this one)
 		condition_wait(req->on_lock, -1);
