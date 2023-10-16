@@ -8,8 +8,6 @@
 
 typedef struct ShardConfig ShardConfig;
 
-#define PARTITION_MAX 8096
-
 struct ShardConfig
 {
 	Uuid    id;

@@ -156,6 +156,29 @@ shard_mgr_create(ShardMgr* self, int count)
 }
 
 static inline void
+shard_mgr_set_partition_map(ShardMgr* mgr, ReqMap* map)
+{
+	// create partition map to shard
+	req_map_create(map, mgr->shards_count);
+
+	for (int i = 0; i < mgr->shards_count; i++)
+	{
+		auto shard = mgr->shards[i];
+		auto partition = &map->map_order[i];
+		partition->order   =  shard->order;
+		partition->channel = &shard->task.channel;
+
+		int j = shard->config->range_start;
+		for (; j < shard->config->range_end; j++)
+		{
+			partition = &map->map[j];
+			partition->order   =  shard->order;
+			partition->channel = &shard->task.channel;
+		}
+	}
+}
+
+static inline void
 shard_mgr_start(ShardMgr* self)
 {
 	for (int i = 0; i < self->shards_count; i++)
