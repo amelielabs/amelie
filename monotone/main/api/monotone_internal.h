@@ -19,9 +19,9 @@
 #include <monotone_storage.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
-#include <monotone_request.h>
 #include <monotone_value.h>
 #include <monotone_aggr.h>
+#include <monotone_request.h>
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
