@@ -22,16 +22,15 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/wal \
                  -I../db/db \
                  -I. \
-                 -Irequest \
                  -Ivalue \
                  -Iaggr \
+                 -Irequest \
                  -Ivm \
                  -Iparser \
                  -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-query.a
 OBJECTS        = \
-                 request/code.o \
                  value/update.o \
                  aggr/set.o \
                  aggr/aggrs.o \
@@ -39,6 +38,7 @@ OBJECTS        = \
                  aggr/sum.o \
                  aggr/avg.o \
                  aggr/group.o \
+                 request/code.o \
                  vm/op.o \
                  vm/func.o \
                  vm/func_debug.o \
