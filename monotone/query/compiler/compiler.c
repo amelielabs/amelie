@@ -67,14 +67,19 @@ compiler_emit(Compiler* self)
 			continue;
 		}
 
-		compiler_set_code(self, &self->code_stmt);
 		switch (stmt->id) {
 		case STMT_UPDATE:
+			emit_update(self, stmt->ast);
+			req_set_copy(self->req_set, &self->code);
 			break;
 		case STMT_DELETE:
+			emit_delete(self, stmt->ast);
+			req_set_copy(self->req_set, &self->code);
 			break;
 		case STMT_SELECT:
 			emit_select(self, stmt->ast, false);
+
+			req_set_copy(self->req_set, &self->code);
 			break;
 		default:
 			assert(0);
@@ -82,9 +87,7 @@ compiler_emit(Compiler* self)
 		}
 
 		// copy last generated statement
-		req_set_copy(self->req_set, &self->code_stmt);
-
-		code_reset(&self->code_stmt);
+		code_reset(&self->code);
 	}
 
 	// CRET
