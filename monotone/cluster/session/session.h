@@ -26,7 +26,7 @@ struct Session
 	CatLock     lock_req;
 	Locker*     lock_shared;
 	// request
-	ReqSet      req_set;
+	Dispatch    dispatch;
 	LogSet      log_set;
 	Portal*     portal;
 	Share*      share;

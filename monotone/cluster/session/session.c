@@ -35,12 +35,13 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->share       = share;
 	self->portal      = portal;
 	cat_lock_init(&self->lock_req);
-	compiler_init(&self->compiler, share->db, share->req_map,
-	              &self->req_set);
+	compiler_init(&self->compiler, share->db, share->router, &self->dispatch);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
-	req_set_init(&self->req_set, share->req_cache, share->req_map,
-	             &self->compiler.code_data);
+	dispatch_init(&self->dispatch, share->dispatch_lock,
+	               share->req_cache,
+	               share->router,
+	               &self->compiler.code_data);
 	log_set_init(&self->log_set);
 }
 
@@ -50,8 +51,8 @@ session_free(Session *self)
 	assert(self->lock == LOCK_NONE);
 	compiler_free(&self->compiler);
 	command_free(&self->cmd);
-	req_set_reset(&self->req_set);
-	req_set_free(&self->req_set);
+	dispatch_reset(&self->dispatch);
+	dispatch_free(&self->dispatch);
 	log_set_free(&self->log_set);
 	transaction_free(&self->trx);
 }
@@ -59,12 +60,8 @@ session_free(Session *self)
 static inline void
 session_reset(Session* self)
 {
-	auto share = self->share;
 	palloc_truncate(0);
-	if (likely(req_set_created(&self->req_set)))
-		req_set_reset(&self->req_set);
-	else
-		req_set_create(&self->req_set, share->shard_mgr->shards_count);
+	dispatch_reset(&self->dispatch);
 	log_set_reset(&self->log_set);
 	compiler_reset(&self->compiler);
 }
@@ -72,8 +69,7 @@ session_reset(Session* self)
 hot static inline void
 session_execute_distributed(Session* self)
 {
-	auto share = self->share;
-	auto req_set = &self->req_set;
+	auto dispatch = &self->dispatch;
 	auto log_set = &self->log_set;
 
 	// lock catalog
@@ -82,20 +78,19 @@ session_execute_distributed(Session* self)
 	// generate request
 	compiler_emit(&self->compiler);
 
-	// execute
-	req_lock(share->req_lock);
-	req_set_execute(req_set);
-	req_unlock(share->req_lock);
+	// send for shard execution
+	dispatch_send(dispatch);
 
-	// wait for completion
-	req_set_wait(req_set, self->portal);
-		// todo: iterate and return
-
-	// commit (no errors)
-	if (likely(! req_set->error))
+	Exception e;
+	if (try(&e))
 	{
+		// execute coordinator
+
+		// wait for completion
+		dispatch_recv(dispatch, self->portal);
+
 		// add logs to the log set
-		req_set_commit_prepare(req_set, log_set);
+		dispatch_export(dispatch, log_set);
 
 		// wal write
 		uint64_t lsn = 0;
@@ -106,12 +101,15 @@ session_execute_distributed(Session* self)
 		}
 
 		// send COMMIT
-		req_set_commit(req_set, lsn);
-		return;
+		dispatch_commit(dispatch, lsn);
 	}
 
-	// send ABORT and throw error
-	req_set_abort(req_set);
+	if (catch(&e))
+	{
+		// send ABORT and rethrow
+		dispatch_abort(dispatch);
+		rethrow();
+	}
 }
 
 hot static inline void
@@ -129,7 +127,7 @@ session_main(Session* self, Buf* buf)
 		session_execute_utility(self);
 	} else
 	{
-		// DML and Select
+		// DML or Select
 		session_execute_distributed(self);
 	}
 
