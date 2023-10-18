@@ -301,7 +301,7 @@ scan_generate_target_table(Scan* self, Target* target)
 
 	// _where:
 	int _where = op_pos(cp);
-	code_at(&cp->code, _open)->d = _where;
+	code_at(cp->code, _open)->d = _where;
 
 	// generate scan stop conditions for <, <=
 	if (target->stop_ops)
@@ -344,12 +344,12 @@ scan_generate_target_table(Scan* self, Target* target)
 		{
 			// point lookup
 			if (target->is_point_lookup)
-				code_at(&cp->code, _where_jntr)->a = _where_eof;
+				code_at(cp->code, _where_jntr)->a = _where_eof;
 			else
-				code_at(&cp->code, _where_jntr)->a = _next;
+				code_at(cp->code, _where_jntr)->a = _next;
 		}
 		if (self->expr_offset)
-			code_at(&cp->code, _coffset_jmp)->c = _next;
+			code_at(cp->code, _coffset_jmp)->c = _next;
 	}
 
 	// cursor_next
@@ -362,7 +362,7 @@ scan_generate_target_table(Scan* self, Target* target)
 
 	// _eof:
 	int _eof = op_pos(cp);
-	code_at(&cp->code, _where_eof)->a = _eof;
+	code_at(cp->code, _where_eof)->a = _eof;
 	op1(cp, CCURSOR_CLOSE, target->id);
 }
 
@@ -392,7 +392,7 @@ scan_generate_target_expr(Scan* self, Target* target)
 
 	// _where:
 	int _where = op_pos(cp);
-	code_at(&cp->code, _open)->c = _where;
+	code_at(cp->code, _open)->c = _where;
 
 	if (target->next_join)
 	{
@@ -425,10 +425,10 @@ scan_generate_target_expr(Scan* self, Target* target)
 		// _next:
 		int _next = op_pos(cp);
 		if (self->expr_where)
-			code_at(&cp->code, _where_jntr)->a = _next;
+			code_at(cp->code, _where_jntr)->a = _next;
 
 		if (self->expr_offset)
-			code_at(&cp->code, _coffset_jmp)->c = _next;
+			code_at(cp->code, _coffset_jmp)->c = _next;
 	}
 
 	// cursor_next
@@ -436,7 +436,7 @@ scan_generate_target_expr(Scan* self, Target* target)
 
 	// _eof:
 	int _eof = op_pos(cp);
-	code_at(&cp->code, _where_eof)->a = _eof;
+	code_at(cp->code, _where_eof)->a = _eof;
 	op1(cp, CCURSOR_CLOSE, target->id);
 	runpin(cp, rexpr);
 }

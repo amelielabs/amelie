@@ -13,8 +13,9 @@ struct Compiler
 	Parser    parser;
 	Rmap      map;
 	Stmt*     current;
+	Code*     code;
 	Code      code_coordinator;
-	Code      code;
+	Code      code_stmt;
 	CodeData  code_data;
 	Dispatch* dispatch;
 	Router*   router;
@@ -24,6 +25,7 @@ struct Compiler
 void compiler_init(Compiler*, Db*, Router*, Dispatch*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
+void compiler_switch(Compiler*, bool);
 void compiler_parse(Compiler*, Str*);
 void compiler_emit(Compiler*);
 bool compiler_is_utility(Compiler*);

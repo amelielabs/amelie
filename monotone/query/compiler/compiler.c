@@ -30,8 +30,9 @@ compiler_init(Compiler *self, Db* db, Router* router, Dispatch* dispatch)
 	self->dispatch = dispatch;
 	self->router   = router;
 	self->db       = db;
+	self->code     = &self->code_stmt;
+	code_init(&self->code_stmt);
 	code_init(&self->code_coordinator);
-	code_init(&self->code);
 	code_data_init(&self->code_data);
 	parser_init(&self->parser, db);
 	rmap_init(&self->map);
@@ -40,8 +41,8 @@ compiler_init(Compiler *self, Db* db, Router* router, Dispatch* dispatch)
 void
 compiler_free(Compiler* self)
 {
+	code_free(&self->code_stmt);
 	code_free(&self->code_coordinator);
-	code_free(&self->code);
 	code_data_free(&self->code_data);
 	rmap_free(&self->map);
 }
@@ -49,12 +50,22 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
+	self->code    = &self->code_stmt;
 	self->current = NULL;
+	code_reset(&self->code_stmt);
 	code_reset(&self->code_coordinator);
-	code_reset(&self->code);
 	code_data_reset(&self->code_data);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
+}
+
+void
+compiler_switch(Compiler* self, bool coordinator)
+{
+	if (coordinator)
+		self->code = &self->code_coordinator;
+	else
+		self->code = &self->code_stmt;
 }
 
 bool
@@ -95,31 +106,52 @@ compiler_emit(Compiler* self)
 		auto stmt = list_at(Stmt, link);
 		self->current = stmt;
 
+		compiler_switch(self, false);
 		if (stmt->id == STMT_INSERT)
 		{
 			emit_insert(self, stmt->ast);
 
-			// dispatch read
+			compiler_switch(self, true);
+			op0(self, CRECV);
 			continue;
 		}
 
 		switch (stmt->id) {
 		case STMT_UPDATE:
 			emit_update(self, stmt->ast);
-			dispatch_copy(self->dispatch, &self->code, stmt->order);
+			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
-			// dispatch read
+			compiler_switch(self, true);
+			op0(self, CRECV);
 			break;
 		case STMT_DELETE:
 			emit_delete(self, stmt->ast);
-			dispatch_copy(self->dispatch, &self->code, stmt->order);
+			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
-			// dispatch read
+			compiler_switch(self, true);
+			op0(self, CRECV);
 			break;
 		case STMT_SELECT:
-			emit_select(self, stmt->ast, false);
 
-			dispatch_copy(self->dispatch, &self->code, stmt->order);
+			// if all targets are expressions execute locally
+			if (stmt->target_list.count == 0)
+			{
+				compiler_switch(self, true);
+				emit_select(self, stmt->ast, false);
+
+			} else
+			{
+				emit_select(self, stmt->ast, false);
+				dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+				compiler_switch(self, true);
+				op0(self, CRECV);
+			}
+
+			/*
+			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+			compiler_switch(self, true);
+			op0(self, CRECV);
+			*/
 			break;
 		default:
 			assert(0);
@@ -127,7 +159,7 @@ compiler_emit(Compiler* self)
 		}
 
 		// copy last generated statement
-		code_reset(&self->code);
+		code_reset(&self->code_stmt);
 	}
 
 	// CRET
@@ -139,5 +171,6 @@ compiler_emit(Compiler* self)
 			continue;
 		code_add(&req->code, CRET, 0, 0, 0, 0);
 	}
+	code_add(&self->code_coordinator, CRET, 0, 0, 0, 0);
 	self->current = NULL;
 }
