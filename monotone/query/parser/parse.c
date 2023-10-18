@@ -29,14 +29,14 @@ parser_validate(Parser* self, bool transactional)
 		error("transaction is complete");
 
 	if (! transactional)
-		if (unlikely(self->in_transaction || self->stmts_count > 0))
+		if (unlikely(self->in_transaction || self->stmts_count > 1))
 			error("operation is not transactional");
 }
 
 static inline Stmt*
-parser_add(Parser* self, StmtId id)
+parser_add(Parser* self)
 {
-	auto stmt = stmt_allocate(id, self->stmts_count, self->db, &self->lex);
+	auto stmt = stmt_allocate(self->stmts_count, self->db, &self->lex);
 	list_append(&self->stmts, &stmt->link);
 	self->stmts_count++;
 	return stmt;
@@ -73,15 +73,40 @@ parse(Parser* self, Str* str)
 	auto lex = &self->lex;
 	lex_start(lex, str);
 
+	// [EXPLAIN]
+	if (lex_if(lex, KEXPLAIN))
+	{
+		// EXPLAIN(PROFILE)
+		self->explain = EXPLAIN;
+		if (lex_if(lex, '('))
+		{
+			if (! lex_if(lex, KPROFILE))
+				error("EXPLAIN (<PROFILE>) expected");
+			if (! lex_if(lex, ')'))
+				error("EXPLAIN (<)> expected");
+			self->explain |= EXPLAIN_PROFILE;
+		}
+
+	} else
+	if (lex_if(lex, KPROFILE))
+		self->explain = EXPLAIN|EXPLAIN_PROFILE;
+
+	// statements
 	bool eof = false;
 	while (! eof)
 	{
-		// todo: explain
-
 		auto ast = lex_next(lex);
+		if (ast->id == KEOF)
+		{
+			eof = true;
+			break;
+		}
+
+		auto stmt = parser_add(self);
 		switch (ast->id) {
 		case KBEGIN:
 			// BEGIN
+			stmt->id = STMT_BEGIN;
 			parser_validate(self, true);
 			if (self->in_transaction)
 				error("already in transaction");
@@ -90,6 +115,7 @@ parse(Parser* self, Str* str)
 
 		case KCOMMIT:
 			// COMMIT
+			stmt->id = STMT_COMMIT;
 			parser_validate(self, true);
 			if (! self->in_transaction)
 				error("not in transaction");
@@ -97,22 +123,18 @@ parse(Parser* self, Str* str)
 			break;
 
 		case KSHOW:
-		{
 			// SHOW name
+			stmt->id = STMT_SHOW;
 			parser_validate(self, false);
-			auto stmt = parser_add(self, STMT_SHOW);
 			parse_show(stmt);
 			break;
-		}
 
 		case KSET:
-		{
 			// SET name TO INT|STRING
+			stmt->id = STMT_SET;
 			parser_validate(self, false);
-			auto stmt = parser_add(self, STMT_SET);
 			parse_set(stmt);
 			break;
-		}
 
 		case KCREATE:
 		{
@@ -120,12 +142,12 @@ parse(Parser* self, Str* str)
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
-				auto stmt = parser_add(self, STMT_CREATE_USER);
+				stmt->id = STMT_CREATE_USER;
 				parse_user_create(stmt);
 			} else
 			if (lex_if(lex, KTABLE))
 			{
-				auto stmt = parser_add(self, STMT_CREATE_TABLE);
+				stmt->id = STMT_CREATE_TABLE;
 				parse_table_create(stmt);
 			} else
 				error("CREATE <USER|TABLE> expected");
@@ -138,12 +160,12 @@ parse(Parser* self, Str* str)
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
-				auto stmt = parser_add(self, STMT_DROP_USER);
+				stmt->id = STMT_DROP_USER;
 				parse_user_drop(stmt);
 			} else
 			if (lex_if(lex, KTABLE))
 			{
-				auto stmt = parser_add(self, STMT_DROP_TABLE);
+				stmt->id = STMT_DROP_TABLE;
 				parse_table_drop(stmt);
 			}
 			else
@@ -157,12 +179,12 @@ parse(Parser* self, Str* str)
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
-				auto stmt = parser_add(self, STMT_ALTER_USER);
+				stmt->id = STMT_ALTER_USER;
 				parse_user_alter(stmt);
 			} else
 			if (lex_if(lex, KTABLE))
 			{
-				auto stmt = parser_add(self, STMT_ALTER_TABLE);
+				stmt->id = STMT_ALTER_TABLE;
 				parse_table_alter(stmt);
 			} else
 				error("ALTER <USER|TABLE> expected");
@@ -171,34 +193,34 @@ parse(Parser* self, Str* str)
 
 		case KINSERT:
 		case KREPLACE:
-		{
-			auto stmt = parser_add(self, STMT_INSERT);
+			stmt->id = STMT_INSERT;
+			parser_validate(self, true);
 			parse_insert(stmt, ast->id == KINSERT);
 			break;
-		}
+
 		case KUPDATE:
-		{
-			auto stmt = parser_add(self, STMT_UPDATE);
+			stmt->id = STMT_UPDATE;
+			parser_validate(self, true);
 			parse_update(stmt);
 			break;
-		}
+
 		case KDELETE:
-		{
-			auto stmt = parser_add(self, STMT_DELETE);
+			stmt->id = STMT_DELETE;
+			parser_validate(self, true);
 			parse_delete(stmt);
 			break;
-		}
+
 		case KSELECT:
 		{
-			auto stmt   = parser_add(self, STMT_SELECT);
+			stmt->id = STMT_SELECT;
+			parser_validate(self, true);
 			auto select = parse_select(stmt);
 			stmt->ast = &select->ast;
 			break;
 		}
-		case KEOF:
-			eof = true;
-			break;
+
 		default:
+			error("unknown command");
 			break;
 		}
 

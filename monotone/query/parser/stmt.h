@@ -10,6 +10,9 @@ typedef struct Stmt Stmt;
 
 typedef enum
 {
+	STMT_UNDEF,
+	STMT_BEGIN,
+	STMT_COMMIT,
 	STMT_SHOW,
 	STMT_SET,
 	STMT_CREATE_USER,
@@ -37,10 +40,10 @@ struct Stmt
 };
 
 static inline Stmt*
-stmt_allocate(StmtId id, int order, Db* db, Lex* lex)
+stmt_allocate(int order, Db* db, Lex* lex)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->id    = id;
+	self->id    = STMT_UNDEF;
 	self->order = order;
 	self->ast   = NULL;
 	self->lex   = lex;
