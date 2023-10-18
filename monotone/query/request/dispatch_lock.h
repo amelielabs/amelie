@@ -6,33 +6,33 @@
 // SQL OLTP database
 //
 
-typedef struct ReqLock ReqLock;
+typedef struct DispatchLock DispatchLock;
 
-struct ReqLock
+struct DispatchLock
 {
 	Spinlock lock;
 };
 
 static inline void
-req_lock_init(ReqLock* self)
+dispatch_lock_init(DispatchLock* self)
 {
 	spinlock_init(&self->lock);
 }
 
 static inline void
-req_lock_free(ReqLock* self)
+dispatch_lock_free(DispatchLock* self)
 {
 	spinlock_free(&self->lock);
 }
 
 static inline void
-req_lock(ReqLock* self)
+dispatch_lock(DispatchLock* self)
 {
 	spinlock_lock(&self->lock);
 }
 
 static inline void
-req_unlock(ReqLock* self)
+dispatch_unlock(DispatchLock* self)
 {
 	spinlock_unlock(&self->lock);
 }
