@@ -35,6 +35,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->share       = share;
 	self->portal      = portal;
 	cat_lock_init(&self->lock_req);
+	vm_init(&self->coordinator, share->db, share->function_mgr, NULL);
 	compiler_init(&self->compiler, share->db, share->router, &self->dispatch);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
@@ -49,6 +50,7 @@ void
 session_free(Session *self)
 {
 	assert(self->lock == LOCK_NONE);
+	vm_free(&self->coordinator);
 	compiler_free(&self->compiler);
 	command_free(&self->cmd);
 	dispatch_reset(&self->dispatch);
@@ -61,9 +63,10 @@ static inline void
 session_reset(Session* self)
 {
 	palloc_truncate(0);
+	vm_reset(&self->coordinator);
+	compiler_reset(&self->compiler);
 	dispatch_reset(&self->dispatch);
 	log_set_reset(&self->log_set);
-	compiler_reset(&self->compiler);
 }
 
 hot static inline void
@@ -85,9 +88,11 @@ session_execute_distributed(Session* self)
 	if (try(&e))
 	{
 		// execute coordinator
-
-		// wait for completion
-		dispatch_recv(dispatch, self->portal);
+		vm_run(&self->coordinator, &self->trx, &self->dispatch,
+		       &self->cmd,
+		       &self->compiler.code_coordinator,
+		       &self->compiler.code_data,
+		        0, NULL, self->portal);
 
 		// add logs to the log set
 		dispatch_export(dispatch, log_set);

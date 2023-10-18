@@ -18,6 +18,7 @@ typedef enum
 
 struct Session
 {
+	Vm          coordinator;
 	Compiler    compiler;
 	Command     cmd;
 	Transaction trx;
