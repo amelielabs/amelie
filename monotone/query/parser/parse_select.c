@@ -136,7 +136,7 @@ parse_select(Stmt* self)
 	if (stmt_if(self, KFROM))
 		select->target = parse_from(self, level);
 
-	/* [WHERE] */
+	// [WHERE]
 	if (stmt_if(self, KWHERE))
 		select->expr_where = parse_expr(self, NULL);
 
