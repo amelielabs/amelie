@@ -12,14 +12,9 @@ struct Dispatch
 {
 	Req**         set;
 	int           set_size;
-
 	Buf           stmt;
 	int           stmt_count;
 	int           stmt_current;
-
-	int           complete;
-	int           sent;
-
 	Buf*          error;
 	CodeData*     code_data;
 	Router*       router;

@@ -32,8 +32,6 @@ dispatch_init(Dispatch* self, DispatchLock* lock,
 	self->set_size     = 0;
 	self->stmt_count   = 0;
 	self->stmt_current = 0;
-	self->complete     = 0;
-	self->sent         = 0;
 	self->error        = NULL;
 	self->code_data    = code_data;
 	self->router       = router;
@@ -77,8 +75,6 @@ dispatch_reset(Dispatch* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->complete     = 0;
-	self->sent         = 0;
 	self->stmt_count   = 0;
 	self->stmt_current = 0;
 	buf_reset(&self->stmt);

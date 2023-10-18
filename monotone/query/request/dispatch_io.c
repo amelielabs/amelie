@@ -88,9 +88,7 @@ dispatch_send(Dispatch* self)
 		auto buf = msg_create(RPC_REQUEST);
 		buf_write(buf, &req, sizeof(void**));
 		msg_end(buf);
-
 		channel_write(req->dst, buf);
-		self->sent++;
 	}
 }
 
@@ -116,7 +114,6 @@ dispatch_read(Dispatch* self, Req* req, Portal* portal)
 	case MSG_OK:
 		req->stmt     = INT_MAX;
 		req->complete = true;
-		self->complete++;
 		break;
 	case MSG_ERROR:
 		if (! self->error)
