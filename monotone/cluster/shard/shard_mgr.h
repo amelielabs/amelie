@@ -156,24 +156,24 @@ shard_mgr_create(ShardMgr* self, int count)
 }
 
 static inline void
-shard_mgr_set_partition_map(ShardMgr* mgr, ReqMap* map)
+shard_mgr_set_partition_map(ShardMgr* mgr, Router* router)
 {
-	// create partition map to shard
-	req_map_create(map, mgr->shards_count);
+	// create routes to each shard based on partition mapping
+	router_create(router, mgr->shards_count);
 
-	for (int i = 0; i < mgr->shards_count; i++)
+	for (int order = 0; order < mgr->shards_count; order++)
 	{
-		auto shard = mgr->shards[i];
-		auto partition = &map->map_order[i];
-		partition->order   =  shard->order;
-		partition->channel = &shard->task.channel;
+		auto shard = mgr->shards[order];
+		auto route = router_at(router, order);
+		route->order   =  shard->order;
+		route->channel = &shard->task.channel;
 
 		int j = shard->config->range_start;
 		for (; j < shard->config->range_end; j++)
 		{
-			partition = &map->map[j];
-			partition->order   =  shard->order;
-			partition->channel = &shard->task.channel;
+			route = &router->map[j];
+			route->order   =  shard->order;
+			route->channel = &shard->task.channel;
 		}
 	}
 }
