@@ -27,6 +27,7 @@ typedef enum
 struct Stmt
 {
 	StmtId     id;
+	int        order;
 	Ast*       ast;
 	AstList    aggr_list;
 	TargetList target_list;
@@ -36,13 +37,14 @@ struct Stmt
 };
 
 static inline Stmt*
-stmt_allocate(StmtId id, Db* db, Lex* lex)
+stmt_allocate(StmtId id, int order, Db* db, Lex* lex)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->id  = id;
-	self->ast = NULL;
-	self->lex = lex;
-	self->db  = db;
+	self->id    = id;
+	self->order = order;
+	self->ast   = NULL;
+	self->lex   = lex;
+	self->db    = db;
 	ast_list_init(&self->aggr_list);
 	target_list_init(&self->target_list);
 	list_init(&self->link);

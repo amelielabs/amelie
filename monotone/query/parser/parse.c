@@ -36,7 +36,7 @@ parser_validate(Parser* self, bool transactional)
 static inline Stmt*
 parser_add(Parser* self, StmtId id)
 {
-	auto stmt = stmt_allocate(id, self->db, &self->lex);
+	auto stmt = stmt_allocate(id, self->stmts_count, self->db, &self->lex);
 	list_append(&self->stmts, &stmt->link);
 	self->stmts_count++;
 	return stmt;
