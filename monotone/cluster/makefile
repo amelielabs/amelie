@@ -36,6 +36,7 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-cluster.a
 OBJECTS        = \
                  shard/shard.o \
+                 session/explain.o \
                  session/session.o \
                  session/lock.o \
                  session/utility.o \

@@ -39,6 +39,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	compiler_init(&self->compiler, share->db, share->router, &self->dispatch);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
+	explain_init(&self->explain);
 	dispatch_init(&self->dispatch, share->dispatch_lock,
 	               share->req_cache,
 	               share->router,
@@ -65,8 +66,23 @@ session_reset(Session* self)
 	palloc_truncate(0);
 	vm_reset(&self->coordinator);
 	compiler_reset(&self->compiler);
+	explain_reset(&self->explain);
 	dispatch_reset(&self->dispatch);
 	log_set_reset(&self->log_set);
+}
+
+hot static inline void
+session_execute_explain(Session* self)
+{
+	// todo: profile
+
+	auto buf = explain(&self->explain,
+	                   &self->compiler.code_coordinator,
+	                   &self->compiler.code_data,
+	                   &self->dispatch,
+	                   false);
+
+	portal_write(self->portal, buf);
 }
 
 hot static inline void
@@ -81,6 +97,13 @@ session_execute_distributed(Session* self)
 	// generate request
 	compiler_emit(&self->compiler);
 
+	// explain
+	if (self->compiler.parser.explain != EXPLAIN_NONE)
+	{
+		session_execute_explain(self);
+		return;
+	}
+
 	// send for shard execution
 	dispatch_send(dispatch);
 
@@ -92,7 +115,8 @@ session_execute_distributed(Session* self)
 		       &self->cmd,
 		       &self->compiler.code_coordinator,
 		       &self->compiler.code_data,
-		        0, NULL, self->portal);
+		       0, NULL,
+		       self->portal);
 
 		// add logs to the log set
 		dispatch_export(dispatch, log_set);
