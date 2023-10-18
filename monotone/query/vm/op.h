@@ -123,3 +123,5 @@ struct OpDesc
 };
 
 extern OpDesc ops[];
+
+void op_dump(Code*, CodeData*, Buf*, Str*);

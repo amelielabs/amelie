@@ -130,3 +130,68 @@ OpDesc ops[] =
 	{ CUPDATE,            "update"            },
 	{ CDELETE,            "delete"            }
 };
+
+void
+op_dump(Code* self, CodeData* data, Buf* output, Str* section)
+{
+	buf_printf(output, "\n");
+	buf_printf(output, "bytecode [%.*s]\n", str_size(section), str_of(section));
+	buf_printf(output, "--------\n");
+
+	auto op  = (Op*)self->code.start;
+	auto end = (Op*)self->code.position;
+
+	int i = 0;
+	while (op < end)
+	{
+		buf_printf(output,
+		           "%2d  %18s   %6" PRIi64 " %4" PRIi64 " %4" PRIi64 "   ",
+		           i,
+		           ops[op->op].name, op->a, op->b, op->c);
+
+		switch (op->op) {
+		case CSTRING:
+		{
+			Str str;
+			code_data_at_string(data, op->b, &str);
+			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
+			break;
+		}
+		case CFLOAT:
+		{
+			float value = code_data_at_fp(data, op->b);
+			buf_printf(output, "# %f", value);
+			break;
+		}
+		case CINSERT:
+		{
+			Table* table = (Table*)op->a;
+			buf_printf(output, "# %.*s", str_size(&table->config->name),
+			           str_of(&table->config->name));
+			break;
+		}
+		case CDELETE:
+			break;
+		case CCURSOR_OPEN:
+		{
+			Str str;
+			code_data_at_string(data, op->b, &str);
+			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
+			break;
+		}
+		case CCALL:
+		{
+			Str str;
+			code_data_at_string(data, op->b, &str);
+			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
+			break;
+		}
+		}
+		buf_printf(output, "\n");
+
+		op++;
+		i++;
+	}
+
+	buf_printf(output, "\n");
+}

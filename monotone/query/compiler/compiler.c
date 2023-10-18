@@ -124,6 +124,7 @@ compiler_emit(Compiler* self)
 			compiler_switch(self, true);
 			op0(self, CRECV);
 			break;
+
 		case STMT_DELETE:
 			emit_delete(self, stmt->ast);
 			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
@@ -131,6 +132,7 @@ compiler_emit(Compiler* self)
 			compiler_switch(self, true);
 			op0(self, CRECV);
 			break;
+
 		case STMT_SELECT:
 
 			// if all targets are expressions execute locally
@@ -153,8 +155,8 @@ compiler_emit(Compiler* self)
 			op0(self, CRECV);
 			*/
 			break;
+
 		default:
-			assert(0);
 			break;
 		}
 
