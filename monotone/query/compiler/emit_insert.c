@@ -99,10 +99,10 @@ emit_insert(Compiler* self, Ast* ast)
 				encode_integer(buf, key);
 			int data_size = buf_size(buf) - data;
 
-			// get the destination request code
+			// get the request code
 			uint32_t hash;
 			hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
-			auto code = &req_set_map(self->req_set, hash)->code;
+			auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
 
 			// CINSERT
 			code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
@@ -122,8 +122,8 @@ emit_insert(Compiler* self, Ast* ast)
 		int data_size;
 		int data = emit_row(&self->code_data, row, &data_size);
 
-		// get the destination code
-		auto code = &req_set_map(self->req_set, row->hash)->code;
+		// get the request code
+		auto code = &dispatch_map(self->dispatch, row->hash, self->current->order)->code;
 
 		// CINSERT
 		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,

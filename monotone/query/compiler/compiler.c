@@ -23,6 +23,40 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
+void
+compiler_init(Compiler *self, Db* db, Router* router, Dispatch* dispatch)
+{
+	self->current  = NULL;
+	self->dispatch = dispatch;
+	self->router   = router;
+	self->db       = db;
+	code_init(&self->code_coordinator);
+	code_init(&self->code);
+	code_data_init(&self->code_data);
+	parser_init(&self->parser, db);
+	rmap_init(&self->map);
+}
+
+void
+compiler_free(Compiler* self)
+{
+	code_free(&self->code_coordinator);
+	code_free(&self->code);
+	code_data_free(&self->code_data);
+	rmap_free(&self->map);
+}
+
+void
+compiler_reset(Compiler* self)
+{
+	self->current = NULL;
+	code_reset(&self->code_coordinator);
+	code_reset(&self->code);
+	code_data_reset(&self->code_data);
+	parser_reset(&self->parser);
+	rmap_reset(&self->map);
+}
+
 bool
 compiler_is_utility(Compiler* self)
 {
@@ -64,22 +98,28 @@ compiler_emit(Compiler* self)
 		if (stmt->id == STMT_INSERT)
 		{
 			emit_insert(self, stmt->ast);
+
+			// dispatch read
 			continue;
 		}
 
 		switch (stmt->id) {
 		case STMT_UPDATE:
 			emit_update(self, stmt->ast);
-			req_set_copy(self->req_set, &self->code);
+			dispatch_copy(self->dispatch, &self->code, stmt->order);
+
+			// dispatch read
 			break;
 		case STMT_DELETE:
 			emit_delete(self, stmt->ast);
-			req_set_copy(self->req_set, &self->code);
+			dispatch_copy(self->dispatch, &self->code, stmt->order);
+
+			// dispatch read
 			break;
 		case STMT_SELECT:
 			emit_select(self, stmt->ast, false);
 
-			req_set_copy(self->req_set, &self->code);
+			dispatch_copy(self->dispatch, &self->code, stmt->order);
 			break;
 		default:
 			assert(0);
@@ -91,10 +131,10 @@ compiler_emit(Compiler* self)
 	}
 
 	// CRET
-	auto req_set = self->req_set;
-	for (int i = 0; i < req_set->set_size; i++)
+	auto dispatch = self->dispatch;
+	for (int order = 0; order < dispatch->set_size; order++)
 	{
-		auto req = req_set_at(req_set, i);
+		auto req = dispatch_at(dispatch, order);
 		if (! req)
 			continue;
 		code_add(&req->code, CRET, 0, 0, 0, 0);
