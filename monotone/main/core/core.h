@@ -16,8 +16,8 @@ struct Core
 	// db
 	Db           db;
 	// cluster
-	ReqMap       req_map;
-	ReqLock      req_lock;
+	Router       router;
+	DispatchLock dispatch_lock;
 	HubMgr       hub_mgr;
 	ShardMgr     shard_mgr;
 	// server

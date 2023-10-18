@@ -80,8 +80,8 @@ core_create(void)
 	// cluster
 	shard_mgr_init(&self->shard_mgr, &self->db, &self->function_mgr);
 	hub_mgr_init(&self->hub_mgr);
-	req_lock_init(&self->req_lock);
-	req_map_init(&self->req_map);
+	dispatch_lock_init(&self->dispatch_lock);
+	router_init(&self->router);
 
 	// db
 	db_init(&self->db, NULL, NULL);
@@ -91,15 +91,15 @@ core_create(void)
 
 	// prepare shared context (shared between hubs)
 	auto share = &self->share;
-	share->meta_mgr     = &self->db.meta_mgr;
-	share->table_mgr    = &self->db.table_mgr;
-	share->storage_mgr  = &self->db.storage_mgr;
-	share->wal          = &self->db.wal;
-	share->db           = &self->db;
-	share->shard_mgr    = &self->shard_mgr;
-	share->req_lock     = &self->req_lock;
-	share->req_map      = &self->req_map;
-	share->cat_lock     = NULL;
+	share->meta_mgr      = &self->db.meta_mgr;
+	share->table_mgr     = &self->db.table_mgr;
+	share->storage_mgr   = &self->db.storage_mgr;
+	share->wal           = &self->db.wal;
+	share->db            = &self->db;
+	share->shard_mgr     = &self->shard_mgr;
+	share->dispatch_lock = &self->dispatch_lock;
+	share->router        = &self->router;
+	share->cat_lock      = NULL;
 
 	return self;
 }
@@ -108,8 +108,8 @@ void
 core_free(Core* self)
 {
 	shard_mgr_free(&self->shard_mgr);
-	req_map_free(&self->req_map);
-	req_lock_free(&self->req_lock);
+	router_free(&self->router);
+	dispatch_lock_free(&self->dispatch_lock);
 	server_free(&self->server);
 	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
@@ -215,7 +215,7 @@ core_start(Core* self, bool bootstrap)
 		auto shards = var_int_of(&config()->cluster_shards);
 		shard_mgr_create(&self->shard_mgr, shards);
 	}
-	shard_mgr_set_partition_map(&self->shard_mgr, &self->req_map);
+	shard_mgr_set_partition_map(&self->shard_mgr, &self->router);
 
 	// start shards and recover storages
 	shard_mgr_start(&self->shard_mgr);
