@@ -9,6 +9,7 @@
 enum
 {
 	MSG_OK,
+	MSG_READY,
 	MSG_ERROR,
 	MSG_OBJECT,
 
