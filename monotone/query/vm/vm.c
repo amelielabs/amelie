@@ -36,6 +36,7 @@ vm_init(Vm*          self,
 	self->argc         = 0;
 	self->argv         = NULL;
 	self->shard        = shard;
+	self->dispatch     = NULL;
 	self->command      = NULL;
 	self->portal       = NULL;
 	reg_init(&self->r);
@@ -66,6 +67,7 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*          self,
        Transaction* trx,
+       Dispatch*    dispatch,
        Command*     command,
        Code*        code,
        CodeData*    code_data,
@@ -75,6 +77,7 @@ vm_run(Vm*          self,
 {
 	assert(code_count(code) > 0);
 	self->trx       = trx;
+	self->dispatch  = dispatch;
 	self->command   = command;
 	self->code      = code;
 	self->code_data = code_data;
@@ -90,6 +93,7 @@ vm_run(Vm*          self,
 		&&cjtr,
 		&&cjntr,
 		&&csend,
+		&&crecv,
 		&&csleep,
 		&&cpush,
 		&&cpop,
@@ -213,6 +217,10 @@ csend:
 	msg_end(buf);
 	portal_write(portal, buf);
 	value_free(&r[op->a]);
+	op_next;
+
+crecv:
+	dispatch_recv(self->dispatch, self->portal);
 	op_next;
 
 csleep:

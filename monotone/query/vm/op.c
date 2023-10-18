@@ -33,6 +33,7 @@ OpDesc ops[] =
 	{ CJNTR,              "jntr"              },
 
 	{ CSEND,              "send"              },
+	{ CRECV,              "recv"              },
 	{ CSLEEP,             "sleep"             },
 
 	// stack

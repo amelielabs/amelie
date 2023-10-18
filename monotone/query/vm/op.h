@@ -18,6 +18,7 @@ enum
 	CJNTR,
 
 	CSEND,
+	CRECV,
 	CSLEEP,
 
 	// stack

@@ -39,6 +39,8 @@ OBJECTS        = \
                  aggr/avg.o \
                  aggr/group.o \
                  request/code.o \
+                 request/dispatch.o \
+                 request/dispatch_io.o \
                  vm/op.o \
                  vm/func.o \
                  vm/func_debug.o \

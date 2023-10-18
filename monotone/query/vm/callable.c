@@ -104,7 +104,7 @@ call(Vm*       vm,
 	Exception e;
 	if (try(&e))
 	{
-		vm_run(&call_vm, vm->trx, vm->command,
+		vm_run(&call_vm, vm->trx, vm->dispatch, vm->command,
 		       &callable->code,
 		       &callable->code_data, argc, argv, &call_portal);
 	}
