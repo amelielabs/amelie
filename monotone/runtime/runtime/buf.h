@@ -13,6 +13,7 @@ struct Buf
 	uint8_t* start;
 	uint8_t* position;
 	uint8_t* end;
+	int      refs;
 	bool     allocated;
 	void*    pool;
 	List     link;
@@ -24,6 +25,7 @@ buf_init(Buf* self)
 	self->start     = NULL;
 	self->position  = NULL;
 	self->end       = NULL;
+	self->refs      = 0;
 	self->allocated = false;
 	self->pool      = NULL;
 	list_init(&self->link);

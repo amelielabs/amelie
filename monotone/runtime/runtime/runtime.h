@@ -48,34 +48,34 @@ palloc_truncate(int snapshot)
 
 // string
 static inline int
-str_strndup_nothrow(Str* self, const void* string, int size)
+str_strndup_nothrow(Str* str, const void* string, int size)
 {
 	char* pos = mn_malloc_nothrow(size + 1);
 	if (unlikely(pos == NULL))
 		return -1;
 	memcpy(pos, string, size);
 	pos[size] = 0;
-	str_set_allocated(self, pos, size);
+	str_set_allocated(str, pos, size);
 	return 0;
 }
 
 static inline void
-str_strndup(Str* self, const void* string, int size)
+str_strndup(Str* str, const void* string, int size)
 {
-	if (str_strndup_nothrow(self, string, size) == -1)
+	if (str_strndup_nothrow(str, string, size) == -1)
 		error_system();
 }
 
 static inline void
-str_strdup(Str* self, const char* string)
+str_strdup(Str* str, const char* string)
 {
-	str_strndup(self, string, strlen(string));
+	str_strndup(str, string, strlen(string));
 }
 
 static inline void
-str_copy(Str* self, Str* src)
+str_copy(Str* str, Str* src)
 {
-	str_strndup(self, str_of(src), str_size(src));
+	str_strndup(str, str_of(src), str_size(src));
 }
 
 // buf
@@ -106,10 +106,19 @@ buf_create(int size)
 }
 
 static inline void
+buf_ref(Buf* buf)
+{
+	buf->refs++;
+}
+
+static inline void
 buf_free(Buf* buf)
 {
 	if (buf->allocated)
 	{
+		buf->refs--;
+		if (buf->refs >= 0)
+			return;
 		buf_unpin(buf);
 		buf_cache_push(mn_task->buf_cache, buf);
 		return;
@@ -133,13 +142,13 @@ buf_write(Buf* buf, void* data, int size)
 }
 
 always_inline hot static inline void
-buf_write_str(Buf* self, Str* str)
+buf_write_str(Buf* buf, Str* str)
 {
-	buf_write(self, str_of(str), str_size(str));
+	buf_write(buf, str_of(str), str_size(str));
 }
 
 static inline void
-buf_printf(Buf* self, const char* fmt, ...)
+buf_printf(Buf* buf, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -147,7 +156,7 @@ buf_printf(Buf* self, const char* fmt, ...)
 	int  tmp_len;
 	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
 	va_end(args);
-	buf_write(self, tmp, tmp_len);
+	buf_write(buf, tmp, tmp_len);
 }
 
 // msg
