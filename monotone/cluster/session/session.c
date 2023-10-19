@@ -36,7 +36,8 @@ session_init(Session* self, Share* share, Portal* portal)
 	self->portal      = portal;
 	cat_lock_init(&self->lock_req);
 	vm_init(&self->coordinator, share->db, share->function_mgr, NULL);
-	compiler_init(&self->compiler, share->db, share->router, &self->dispatch);
+	compiler_init(&self->compiler, share->db, share->function_mgr,
+	              share->router, &self->dispatch);
 	command_init(&self->cmd);
 	transaction_init(&self->trx);
 	explain_init(&self->explain);
