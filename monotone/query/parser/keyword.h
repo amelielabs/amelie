@@ -51,10 +51,7 @@ enum
 
 	KSET,
 	KUNSET,
-	KHAS,
 	KADD,
-
-	KSIZEOF,
 
 	KEXPLAIN,
 	KPROFILE,

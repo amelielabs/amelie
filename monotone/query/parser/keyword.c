@@ -85,7 +85,6 @@ static Keyword keywords_g[] =
 
 static Keyword keywords_h[] =
 {
-	{ KHAS,                   "has",                   3  },
 	{ KHAVING,                "having",                6  },
 	{ 0,                       NULL,                   0  }
 };
@@ -176,7 +175,6 @@ static Keyword keywords_s[] =
 	{ KSHOW,                  "show",                  4  },
 	{ KTSTRING,               "string",                6  },
 	{ KSUM,                   "sum",                   3  },
-	{ KSIZEOF,                "sizeof",                6  },
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
 	{ KSWITCH,                "switch",                6  },

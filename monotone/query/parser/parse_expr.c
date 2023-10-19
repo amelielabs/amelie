@@ -59,19 +59,18 @@ priority_map[UINT8_MAX] =
 	['*']                 = 10,
 	['/']                 = 10,
 	['%']                 = 10,
-	// 11
-	['[']                 = 11,
-	['.']                 = 11,
+	// 11 (reserved for unary)
+	// 12
+	['[']                 = 12,
+	['.']                 = 12,
 	// values (priority is not used)
 	//
 	['(']                 = priority_value,
 	['{']                 = priority_value,
 	[KSET]                = priority_value,
 	[KUNSET]              = priority_value,
-	[KHAS]                = priority_value,
 	[KTSTRING]            = priority_value,
 	[KJSON]               = priority_value,
-	[KSIZEOF]             = priority_value,
 	[KSELECT]             = priority_value,
 	[KCOUNT]              = priority_value,
 	[KSUM]                = priority_value,
@@ -81,6 +80,7 @@ priority_map[UINT8_MAX] =
 	[KSTRING]             = priority_value,
 	[KTRUE]               = priority_value,
 	[KFALSE]              = priority_value,
+	[KNULL]               = priority_value,
 	[KARGUMENT]           = priority_value,
 	[KARGUMENT_NAME]      = priority_value,
 	[KNAME]               = priority_value,
@@ -93,10 +93,19 @@ expr_pop(AstStack* ops, AstStack* result)
 {
 	// move operation to result as op(l, r)
 	auto head = ast_pop(ops);
-	head->r = ast_pop(result);
-	head->l = ast_pop(result);
-	if (unlikely(head->r == NULL || head->l == NULL))
-		error("bad expression");
+	if (head->id == KNEG || head->id == KNOT)
+	{
+		// unary
+		head->l = ast_pop(result);
+		if (unlikely(head->l == NULL))
+			error("bad expression");
+	} else
+	{
+		head->r = ast_pop(result);
+		head->l = ast_pop(result);
+		if (unlikely(head->r == NULL || head->l == NULL))
+			error("bad expression");
+	}
 	ast_push(result, head);
 }
 
@@ -229,6 +238,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (! stmt_if(self,')'))
 			error("(): ')' expected");
 		break;
+
 	// map
 	case '{':
 		// { [expr: expr, ... ] }
@@ -238,10 +248,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// builtin functions
 	case KSET:
 	case KUNSET:
-	case KHAS:
 	case KTSTRING:
 	case KJSON:
-	case KSIZEOF:
 	{
 		// function(call, NULL)
 		if (! stmt_if(self, '('))
@@ -306,37 +314,42 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
-hot static inline void
-parse_unary(Stmt* self, Expr* expr, AstStack* result, Ast* ast)
+hot static inline int
+parse_unary(Stmt*     self, Expr* expr,
+            AstStack* ops,
+            AstStack* result, Ast* ast,
+            int       priority)
 {
 	if (ast->id == '[') 
 	{
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
 		ast->l  = expr_call(self, expr, ']', false);
-	} else
-	if (ast->id == KNOT)
-	{
-		ast->l = ast_pop(result);
-		if (ast->l == NULL)
-			error("bad expression");
-	} else
-	if (ast->id == '-')
-	{
-		ast->id = KNEG;
-		ast->l = ast_pop(result);
-		if (ast->l == NULL)
-			error("bad expression");
+		ast_push(result, ast);
+		priority = priority_value;
 	} else
 	if (ast->id == '*')
 	{
+		// *
 		ast->id = KSTAR;
+		ast_push(result, ast);
+		priority = priority_value;
+	} else
+	if (ast->id == KNOT)
+	{
+		// not expr
+		expr_operator(ops, result, ast, 11);
+	} else
+	if (ast->id == '-')
+	{
+		// - expr
+		ast->id = KNEG;
+		expr_operator(ops, result, ast, 11);
 	} else
 	{
 		error("bad expression");
 	}
-
-	ast_push(result, ast);
+	return priority;
 }
 
 hot Ast*
@@ -348,14 +361,13 @@ parse_expr(Stmt* self, Expr* expr)
 	AstStack result;
 	ast_stack_init(&result);
 
-	int  priority_prev = 0;
-	int  priority = 0;
-	bool done = false;
+	bool unary = true;
+	bool done  = false;
 	while (! done)
 	{
 		auto ast = stmt_next(self);
-		priority = priority_map[ast->id];
 
+		int priority = priority_map[ast->id];
 		if (priority == 0)
 		{
 			// unknown token or eof
@@ -367,31 +379,48 @@ parse_expr(Stmt* self, Expr* expr)
 			// value
 			auto value = expr_value(self, expr, ast);
 			ast_push(&result, value);
+			unary = false;
 		} else
 		{
-			// unary/object (handle as value) or operator
-			if (!priority_prev || priority_prev != priority_value)
+			if (unary)
 			{
-				parse_unary(self, expr, &result, ast);
+				// unary/object (handle as value) or operator
+				priority = parse_unary(self, expr, &ops, &result, ast, priority);
+				unary = false;
 			} else
 			{
 				if (unlikely(ast->id == KNOT))
 					error("bad expression");
 
-				// path[idx]
+				// operator
+				expr_operator(&ops, &result, ast, priority);
+
 				if (ast->id == '[') 
 				{
+					// expr[idx]
 					auto r = parse_expr(self, expr);
 					ast_push(&result, r);
 					if (! stmt_if(self,']'))
 						error("[]: ']' expected");
+					unary = false;
+				} else
+				if (ast->id == '.')
+				{
+					// expr.name
+					// expr.path.to
+					auto r = stmt_next(self);
+					if (r->id == KNAME ||
+					    r->id == KNAME_COMPOUND)
+						r->id = KSTRING;
+					else
+						error("bad '.' expression");
+					ast_push(&result, r);
+					unary = false;
+				} else {
+					unary = true;
 				}
-
-				expr_operator(&ops, &result, ast, priority);
 			}
 		}
-
-		priority_prev = priority;
 	}
 
 	while (ast_head(&ops))
