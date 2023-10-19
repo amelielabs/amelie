@@ -76,9 +76,7 @@ OpDesc ops[] =
 	{ CMOD,               "mod"               },
 	{ CNEG,               "neg"               },
 	{ CCAT,               "cat"               },
-
 	{ CIDX,               "idx"               },
-	{ CSIZEOF,            "sizeof"            },
 
 	{ CTO_STRING,         "to_string"         },
 	{ CTO_JSON,           "to_json"           },
@@ -90,10 +88,6 @@ OpDesc ops[] =
 	// object ops
 	{ CCOL_SET,           "col_set"           },
 	{ CCOL_UNSET,         "col_unset"         },
-
-	{ COBJ_SET,           "obj_set"           },
-	{ COBJ_UNSET,         "obj_unset"         },
-	{ COBJ_HAS,           "obj_has"           },
 
 	// set
 	{ CSET,               "set"               },
@@ -165,7 +159,7 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		}
 		case CINSERT:
 		{
-			Table* table = (Table*)op->a;
+			auto table = (Table*)op->a;
 			buf_printf(output, "# %.*s", str_size(&table->config->name),
 			           str_of(&table->config->name));
 			break;
@@ -181,9 +175,9 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		}
 		case CCALL:
 		{
-			Str str;
-			code_data_at_string(data, op->b, &str);
-			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
+			auto function = (Function*)op->b;
+			buf_printf(output, "# %.*s", str_size(&function->name),
+			           str_of(&function->name));
 			break;
 		}
 		}

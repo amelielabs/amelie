@@ -63,8 +63,6 @@ enum
 	CCAT,
 	CIDX,
 
-	CSIZEOF,
-
 	// cast
 	CTO_STRING,
 	CTO_JSON,
@@ -76,9 +74,6 @@ enum
 	// object ops
 	CCOL_SET,
 	CCOL_UNSET,
-	COBJ_SET,
-	COBJ_UNSET,
-	COBJ_HAS,
 
 	// set
 	CSET,
