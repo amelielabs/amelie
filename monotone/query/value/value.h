@@ -103,6 +103,8 @@ value_set_string(Value* self, Str* str, Buf* buf)
 	self->type   = VALUE_STRING;
 	self->string = *str;
 	self->buf    = buf;
+	if (buf)
+		buf_ref(buf);
 }
 
 always_inline hot static inline void
@@ -112,6 +114,8 @@ value_set_data(Value* self, uint8_t* data, int data_size, Buf* buf)
 	self->data      = data;
 	self->data_size = data_size;
 	self->buf       = buf;
+	if (buf)
+		buf_ref(buf);
 }
 
 always_inline hot static inline void

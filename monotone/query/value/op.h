@@ -524,7 +524,7 @@ always_inline hot static inline void
 value_idx(Value* result, Value* a, Value* b)
 {
 	if (unlikely(a->type != VALUE_DATA))
-		error("has(): map or array type expected");
+		error("[]: map or array type expected");
 
 	if (data_is_map(a->data))
 	{
