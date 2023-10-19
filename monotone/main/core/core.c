@@ -91,6 +91,7 @@ core_create(void)
 
 	// prepare shared context (shared between hubs)
 	auto share = &self->share;
+	share->function_mgr  = &self->function_mgr;
 	share->meta_mgr      = &self->db.meta_mgr;
 	share->table_mgr     = &self->db.table_mgr;
 	share->storage_mgr   = &self->db.storage_mgr;
@@ -100,7 +101,6 @@ core_create(void)
 	share->dispatch_lock = &self->dispatch_lock;
 	share->router        = &self->router;
 	share->cat_lock      = NULL;
-
 	return self;
 }
 
