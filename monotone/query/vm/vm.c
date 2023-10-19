@@ -127,16 +127,12 @@ vm_run(Vm*          self,
 		&&cneg,
 		&&ccat,
 		&&cidx,
-		&&csizeof,
 		&&cto_string,
 		&&cto_json,
 		&&cmap,
 		&&carray,
 		&&ccol_set,
 		&&ccol_unset,
-		&&cobj_set,
-		&&cobj_unset,
-		&&cobj_has,
 		&&cset,
 		&&cset_ordered,
 		&&cset_sort,
@@ -371,17 +367,6 @@ cidx:
 	value_free(&r[op->c]);
 	op_next;
 
-csizeof:
-	if (unlikely(op->b != 1))
-		error("sizeof(): incorrect call");
-	a = stack_at(stack, 1);
-	if (a->type == VALUE_SET)
-		value_set_int(&r[op->a], ((Set*)a->obj)->list_count);
-	else
-		value_sizeof(&r[op->a], a);
-	stack_popn(stack, 1);
-	op_next;
-
 cto_string:
 	if (unlikely(op->b != 1))
 		error("string(): incorrect call");
@@ -424,34 +409,6 @@ ccol_unset:
 	a = stack_at(stack, 2);
 	b = stack_at(stack, 1);
 	value_idx_unset_column(&r[op->a], op->c, a, b);
-	stack_popn(stack, 2);
-	op_next;
-
-cobj_set:
-	if (unlikely(op->b != 3))
-		error("set(): incorrect call");
-	a = stack_at(stack, 3);
-	b = stack_at(stack, 2);
-	c = stack_at(stack, 1);
-	value_idx_set(&r[op->a], a, b, c);
-	stack_popn(stack, 3);
-	op_next;
-
-cobj_unset:
-	if (unlikely(op->b != 2))
-		error("unset(): incorrect call");
-	a = stack_at(stack, 2);
-	b = stack_at(stack, 1);
-	value_idx_unset(&r[op->a], a, b);
-	stack_popn(stack, 2);
-	op_next;
-
-cobj_has:
-	if (unlikely(op->b != 2))
-		error("has(): incorrect call");
-	a = stack_at(stack, 2);
-	b = stack_at(stack, 1);
-	value_idx_has(&r[op->a], a, b);
 	stack_popn(stack, 2);
 	op_next;
 
