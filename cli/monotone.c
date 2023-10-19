@@ -172,7 +172,7 @@ init(void)
 		return;
 	}
 
-	char options[] = "{ \"listen\": [{ \"host\": \"*\", \"port\": 3485 }] }";
+	char options[] = "{  \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"cluster_shards\": 1 }";
 	int rc;
 	rc = mono_open(env, "./t", options);
 	if (rc == -1) {
