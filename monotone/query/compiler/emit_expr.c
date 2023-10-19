@@ -89,8 +89,6 @@ hot static inline int
 emit_call_function(Compiler* self, Target* target, Ast* ast)
 {
 	// (function_name, call)
-
-	// call function by name
 	auto name = ast->l;
 	auto call = ast->r;
 	assert(call->id == KCALL);
@@ -105,10 +103,19 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 		current = current->next;
 	}
 
-	// call
-	int name_offset;
-	name_offset = code_data_add_string(&self->code_data, &name->string);
-	return op3(self, CCALL, rpin(self), name_offset, call->integer);
+	// find and call function
+	auto func = function_mgr_find(self->function_mgr, &name->string);
+	if (func)
+	{
+		// CALL
+		return op3(self, CCALL, rpin(self), (intptr_t)func, call->integer);
+	}
+
+	error("function <%.*s> not found", str_size(&name->string),
+	      str_of(&name->string));
+
+	// todo: find view by name
+	return -1;
 }
 
 hot static inline int
@@ -374,7 +381,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 {
 	// check if first path is a table name
 	Str name;
-	str_split_or_set(&name, &ast->string, '.');
+	str_split_or_set(&ast->string, &name, '.');
 
 	Str path;
 	str_init(&path);
@@ -496,6 +503,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_operator(self, target, ast, CDIV);
 	case '%':
 		return emit_operator(self, target, ast, CMOD);
+
+	// at
+	case '.':
 	case '[':
 		return emit_operator(self, target, ast, CIDX);
 
@@ -514,22 +524,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// function call
 	case '(':
 		return emit_call_function(self, target, ast);
-
-#if 0
-	// object ops
-	case KSET:
-		return emit_call(self, target, ast, COBJ_SET);
-	case KUNSET:
-		return emit_call(self, target, ast, COBJ_UNSET);
-	case KHAS:
-		return emit_call(self, target, ast, COBJ_HAS);
-	case KTSTRING:
-		return emit_call(self, target, ast, CTO_STRING);
-	case KJSON:
-		return emit_call(self, target, ast, CTO_JSON);
-	case KSIZEOF:
-		return emit_call(self, target, ast, CSIZEOF);
-#endif
 
 	// consts
 	case KNULL:
@@ -550,7 +544,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	{
 #if 0
 		if (unlikely(self->args == NULL))
-			cmd_error(self, "no arguments defined");
+			error("no arguments defined");
 
 		// find argument by name
 		auto column = schema_find_column(self->args, &ast->string);
@@ -589,7 +583,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	{
 		// path.*
 		Str name;
-		str_split_or_set(&name, &ast->string, '.');
+		str_split_or_set(&ast->string, &name, '.');
 
 		auto target_list = compiler_target_list(self);
 		auto match = target_list_match(target_list, &name);

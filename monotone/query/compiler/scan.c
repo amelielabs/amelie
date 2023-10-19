@@ -51,7 +51,7 @@ scan_key_is_match(Target* target, Ast* ast, Column* key)
 	if (ast->id == KNAME_COMPOUND)
 	{
 		Str name;
-		str_split_or_set(&name, &ast->string, '.');
+		str_split_or_set(&ast->string, &name, '.');
 		if (target_compare(target, &name))
 		{
 			// match key path
@@ -96,7 +96,7 @@ scan_key_match(Scan* self, Target* target, Ast* op, Column* key)
 		if (expr->id == KNAME_COMPOUND)
 		{
 			Str name;
-			str_split_or_set(&name, &expr->string, '.');
+			str_split_or_set(&expr->string, &name, '.');
 
 			auto target_list = compiler_target_list(self->compiler);
 			auto join = target_list_match(target_list, &name);
