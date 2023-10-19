@@ -10,19 +10,20 @@ typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Parser    parser;
-	Rmap      map;
-	Stmt*     current;
-	Code*     code;
-	Code      code_coordinator;
-	Code      code_stmt;
-	CodeData  code_data;
-	Dispatch* dispatch;
-	Router*   router;
-	Db*       db;
+	Parser       parser;
+	Rmap         map;
+	Stmt*        current;
+	Code*        code;
+	Code         code_coordinator;
+	Code         code_stmt;
+	CodeData     code_data;
+	Dispatch*    dispatch;
+	Router*      router;
+	FunctionMgr* function_mgr;
+	Db*          db;
 };
 
-void compiler_init(Compiler*, Db*, Router*, Dispatch*);
+void compiler_init(Compiler*, Db*, FunctionMgr*, Router*, Dispatch*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_switch(Compiler*, bool);

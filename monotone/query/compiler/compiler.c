@@ -24,13 +24,18 @@
 #include <monotone_compiler.h>
 
 void
-compiler_init(Compiler *self, Db* db, Router* router, Dispatch* dispatch)
+compiler_init(Compiler*    self,
+              Db*          db,
+              FunctionMgr* function_mgr,
+              Router*      router,
+              Dispatch*    dispatch)
 {
-	self->current  = NULL;
-	self->dispatch = dispatch;
-	self->router   = router;
-	self->db       = db;
-	self->code     = &self->code_stmt;
+	self->current      = NULL;
+	self->dispatch     = dispatch;
+	self->router       = router;
+	self->function_mgr = function_mgr;
+	self->db           = db;
+	self->code         = &self->code_stmt;
 	code_init(&self->code_stmt);
 	code_init(&self->code_coordinator);
 	code_data_init(&self->code_data);
