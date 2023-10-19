@@ -1,0 +1,235 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: consts
+
+# int
+select 0
+select 1234
+select 123456789
+select 123456789012345
+
+select -20
+select 1e1
+select 1e2
+select 1e4
+select 1e8
+select 1e40
+
+select sizeof(0)
+select sizeof(1234)
+select sizeof(123456789)
+select sizeof(123456789012345)
+
+# float
+select 1.0
+select 1.1234
+
+# string
+select "hello world"
+select ""
+select sizeof("hello world")
+select sizeof("")
+
+# bool
+select true
+select false
+
+# null
+select null
+
+# misc
+select name
+select path.to.name
+select *
+
+# arguments
+#select $0
+#select $9999
+#select $name
+
+# test: basic operations
+
+# +, -, ||
+select 0 + 0
+select 2 + 2
+select 32 - 2
+select "a" + 0
+select 0 + "a"
+select 0 || 0
+
+# *, /, %
+select 2 * 2
+select 8 * 8
+select 64 / ( 4 + 4 )
+select 64 / 0
+select 64 % 0
+
+# |, #, &, <<, >>
+select 60 & 13
+select 60 | 13
+select 60 ^ 13
+select 60 << 2
+select 60 >> 2
+
+# gt, gte, lt, lte
+select 0 > 0
+select 0 >= 0
+select 0 < 0
+select 0 <= 0
+select "a" < 0
+select "a" < "b"
+
+# - expr
+select -20
+select - "test"
+
+# not expr
+select not 20
+select not "test"
+
+# eq, neq
+select 1 = 1
+select 1 <> 1
+select "a" = "a"
+select "a" <> "a"
+select "a" = "b"
+select "a" <> "b"
+select [] = []
+select {} = {}
+select null = null
+select null <> null
+
+# or, and
+select 0 and 0
+select 0 and 1
+select 1 and 0
+select 1 and 1
+select "a" and "b"
+select "a" and not "b"
+select not 0 and not 0
+
+select 0 or 0
+select 0 or 1
+select 1 or 0
+select 1 or 1
+select "a" or "b"
+select "a" or not "b"
+select not 0 or not 0
+
+# string
+select "a" + "b"
+select "a" || "b"
+select "a"[0]
+select "\"Hello World\""
+
+# float operations
+select 1.1 + 1.1
+select 1.2 - 1.1
+select 1.1234 - 1.12
+select 1 + 1.1
+select 1.1 + 1
+select 1 - 1.1
+select 1.1 - 1
+select 12 * 1.4
+select 1.4 * 12
+select 12 / 1.4
+select 1.4 / 12.0
+select 12.2 * 1.4
+select 12.4 / 1.4
+select 1.0 >= 1.0
+select 1.0 >= 1.1
+select 1 >= 1.1
+select 1.0 > 1.0
+select 1.1 > 1.0
+select 2.8 < 3.4
+select -7.6
+select -7.6 + 1
+select 1.1 and 0.0
+select 1.1 or 0.0
+select not 2.8
+
+select 2.8 & 3.4
+
+# objects
+
+# expr[expr]
+select 0[0]
+select name[0]
+
+# test: array
+select []
+select [0, 1, 2]
+select [0, [1, 2], 3]
+
+select [][0]
+select [0, 1, 2][0]
+select [0, 1, 2][1]
+select [0, 1, 2][2]
+select [0, 1, 2][3]
+
+select [0, [1, 2], 3][1]
+
+select sizeof([])
+select sizeof([0, [1, 2], 3])
+
+# todo
+# append
+# put
+# remove
+
+# test: map
+select {}
+select {"a"}
+select {"a": 0}
+select {"a": 0, "b"}
+select {"a": 0, "b": 1}
+
+select {"a": 123}.a
+select {"a": 123}["a"]
+select {"a": {"b": 777}}.a.b
+select {"a": {"b": 777}}["a.b"]
+select {"a": {"b": 777}}["a" || "." || "b"]
+
+# has
+select has({"a": 0}, "a")
+select has({"a": 0}, "b")
+select has({"a": {"b": 777}}, "a.b")
+select has({"a": {"b": 777}}, "a.c")
+
+# set
+select set({"a": 0}, "a", 1)
+select set({"a": 0}, "a", {"b": 2})
+select set({"a": 0}, "a", {"b": 2}).a.b
+select set({"a": 0}, "a", {"b": 2})["a.b"]
+select set({"a": 0}, "b", {"c": 3})
+select set({"a": 0}, "b", [1, 2]).b
+select set({"a": 0}, "b", [1, 2]).b[1]
+select set({"a": 88}, "a", 34)
+select set({"a": 88}, "", 34)
+select set({"a": 88}, " ", 34)
+select set({"a": 88}, ".", 34)
+select set({"a": {"b": 22}}, "a.b", 34)
+select set({"a": {"b": {"c": 55}}}, "a.b", 34)
+select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
+select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+
+# unset
+select unset({}, "a")
+select unset({}, "")
+select unset({"a": 0}, "a")
+select unset({"a": 0}, "b")
+select unset({"a": {"b": 2}}, "a")
+select unset({"a": {"b": 2}}, "a.b")
+select unset({"a": {"b": 2}, "g": 3}, "a")
+select unset({"a": {"b": 22}}, "a.b")
+select unset({"a": {"b": {"c": 55}}}, "a.b")
+select unset({"a": {"b": {"c": 55}}}, "a.b.c")
+select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
+select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
+
+disconnect S0
+env_close E0

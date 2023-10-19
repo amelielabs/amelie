@@ -1,0 +1,40 @@
+#
+
+directory query
+group query
+test expr
+
+
+#directory ddl
+#group ddl
+#test show
+#test set
+#test wait
+#test create_table
+#test drop_table
+#test create_index
+#test drop_index
+#test indexate
+
+#directory dml
+#group dml
+#test insert
+#test delete
+#test update
+
+#directory query
+#group query
+#test select
+#test expression
+#test json
+#test point_lookup
+#test range_scan
+#test limit_offset
+#test order_by
+#test group_by
+#test aggregate
+#test join
+#test nested_query
+
+#group networking
+#test ping

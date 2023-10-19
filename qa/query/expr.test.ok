@@ -1,0 +1,354 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: consts
+select 0
+0
+select 1234
+1234
+select 123456789
+123456789
+select 123456789012345
+123456789012345
+select -20
+-20
+select 1e1
+10.000000
+select 1e2
+100.000000
+select 1e4
+10000.000000
+select 1e8
+100000000.000000
+select 1e40
+query: on_error
+{"code": 1, "msg": "bad float number token"}
+select sizeof(0)
+1
+select sizeof(1234)
+1
+select sizeof(123456789)
+1
+select sizeof(123456789012345)
+1
+select 1.0
+1.000000
+select 1.1234
+1.123400
+select "hello world"
+"hello world"
+select ""
+""
+select sizeof("hello world")
+11
+select sizeof("")
+0
+select true
+true
+select false
+false
+select null
+null
+select name
+query: on_error
+{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+select path.to.name
+query: on_error
+{"code": 1, "msg": "<path> name cannot be resolved without FROM clause"}
+select *
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+# test: basic operations
+select 0 + 0
+0
+select 2 + 2
+4
+select 32 - 2
+30
+select "a" + 0
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+select 0 + "a"
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+select 0 || 0
+query: on_error
+{"code": 1, "msg": "bad || expression types"}
+select 2 * 2
+4
+select 8 * 8
+64
+select 64 / ( 4 + 4 )
+8
+select 64 / 0
+query: on_error
+{"code": 1, "msg": "zero division"}
+select 64 % 0
+query: on_error
+{"code": 1, "msg": "zero division"}
+select 60 & 13
+12
+select 60 | 13
+61
+select 60 ^ 13
+49
+select 60 << 2
+240
+select 60 >> 2
+15
+select 0 > 0
+false
+select 0 >= 0
+true
+select 0 < 0
+false
+select 0 <= 0
+true
+select "a" < 0
+query: on_error
+{"code": 1, "msg": "bad < expression type"}
+select "a" < "b"
+query: on_error
+{"code": 1, "msg": "bad < expression type"}
+select -20
+-20
+select - "test"
+query: on_error
+{"code": 1, "msg": "bad - expression type"}
+select not 20
+false
+select not "test"
+false
+select 1 = 1
+true
+select 1 <> 1
+false
+select "a" = "a"
+true
+select "a" <> "a"
+false
+select "a" = "b"
+false
+select "a" <> "b"
+true
+select [] = []
+true
+select {} = {}
+true
+select null = null
+true
+select null <> null
+false
+select 0 and 0
+false
+select 0 and 1
+false
+select 1 and 0
+false
+select 1 and 1
+true
+select "a" and "b"
+true
+select "a" and not "b"
+false
+select not 0 and not 0
+true
+select 0 or 0
+false
+select 0 or 1
+true
+select 1 or 0
+true
+select 1 or 1
+true
+select "a" or "b"
+true
+select "a" or not "b"
+true
+select not 0 or not 0
+true
+select "a" + "b"
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+select "a" || "b"
+"ab"
+select "a"[0]
+query: on_error
+{"code": 1, "msg": "[]: map or array type expected"}
+select "\"Hello World\""
+"\"Hello World\""
+select 1.1 + 1.1
+2.200000
+select 1.2 - 1.1
+0.100000
+select 1.1234 - 1.12
+0.003400
+select 1 + 1.1
+2.100000
+select 1.1 + 1
+2.100000
+select 1 - 1.1
+-0.100000
+select 1.1 - 1
+0.100000
+select 12 * 1.4
+16.799999
+select 1.4 * 12
+16.799999
+select 12 / 1.4
+8.571428
+select 1.4 / 12.0
+0.116667
+select 12.2 * 1.4
+17.080000
+select 12.4 / 1.4
+8.857142
+select 1.0 >= 1.0
+true
+select 1.0 >= 1.1
+false
+select 1 >= 1.1
+false
+select 1.0 > 1.0
+false
+select 1.1 > 1.0
+true
+select 2.8 < 3.4
+true
+select -7.6
+-7.600000
+select -7.6 + 1
+-6.600000
+select 1.1 and 0.0
+false
+select 1.1 or 0.0
+true
+select not 2.8
+false
+select 2.8 & 3.4
+query: on_error
+{"code": 1, "msg": "bad & expression type"}
+select 0[0]
+query: on_error
+{"code": 1, "msg": "[]: map or array type expected"}
+select name[0]
+query: on_error
+{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+# test: array
+select []
+[]
+select [0, 1, 2]
+[0, 1, 2]
+select [0, [1, 2], 3]
+[0, [1, 2], 3]
+select [][0]
+query: on_error
+{"code": 1, "msg": "<0>: array index not found"}
+select [0, 1, 2][0]
+0
+select [0, 1, 2][1]
+1
+select [0, 1, 2][2]
+2
+select [0, 1, 2][3]
+query: on_error
+{"code": 1, "msg": "<3>: array index not found"}
+select [0, [1, 2], 3][1]
+[1, 2]
+select sizeof([])
+0
+select sizeof([0, [1, 2], 3])
+3
+# test: map
+select {}
+{}
+select {"a"}
+query: on_error
+{"code": 1, "msg": "{}: {name <:>} expected"}
+select {"a": 0}
+{"a": 0}
+select {"a": 0, "b"}
+query: on_error
+{"code": 1, "msg": "{}: {name <:>} expected"}
+select {"a": 0, "b": 1}
+{"a": 0, "b": 1}
+select {"a": 123}.a
+123
+select {"a": 123}["a"]
+123
+select {"a": {"b": 777}}.a.b
+777
+select {"a": {"b": 777}}["a.b"]
+777
+select {"a": {"b": 777}}["a" || "." || "b"]
+777
+select has({"a": 0}, "a")
+true
+select has({"a": 0}, "b")
+false
+select has({"a": {"b": 777}}, "a.b")
+true
+select has({"a": {"b": 777}}, "a.c")
+false
+select set({"a": 0}, "a", 1)
+{"a": 1}
+select set({"a": 0}, "a", {"b": 2})
+{"a": {"b": 2}}
+select set({"a": 0}, "a", {"b": 2}).a.b
+2
+select set({"a": 0}, "a", {"b": 2})["a.b"]
+2
+select set({"a": 0}, "b", {"c": 3})
+{"a": 0, "b": {"c": 3}}
+select set({"a": 0}, "b", [1, 2]).b
+[1, 2]
+select set({"a": 0}, "b", [1, 2]).b[1]
+2
+select set({"a": 88}, "a", 34)
+{"a": 34}
+select set({"a": 88}, "", 34)
+query: on_error
+{"code": 1, "msg": "update: incorrect path"}
+select set({"a": 88}, " ", 34)
+query: on_error
+{"code": 1, "msg": "update: incorrect path"}
+select set({"a": 88}, ".", 34)
+query: on_error
+{"code": 1, "msg": "set: incorrect path"}
+select set({"a": {"b": 22}}, "a.b", 34)
+{"a": {"b": 34}}
+select set({"a": {"b": {"c": 55}}}, "a.b", 34)
+{"a": {"b": 34}}
+select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
+{"a": {"b": {"c": 34}}}
+select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
+{"a": {"b": {"c": {"d": 0}}}}
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+{"a": {"b": 34}, "c": 88}
+select unset({}, "a")
+{}
+select unset({}, "")
+query: on_error
+{"code": 1, "msg": "update: incorrect path"}
+select unset({"a": 0}, "a")
+{}
+select unset({"a": 0}, "b")
+{"a": 0}
+select unset({"a": {"b": 2}}, "a")
+{}
+select unset({"a": {"b": 2}}, "a.b")
+{"a": {}}
+select unset({"a": {"b": 2}, "g": 3}, "a")
+{"g": 3}
+select unset({"a": {"b": 22}}, "a.b")
+{"a": {}}
+select unset({"a": {"b": {"c": 55}}}, "a.b")
+{"a": {}}
+select unset({"a": {"b": {"c": 55}}}, "a.b.c")
+{"a": {"b": {}}}
+select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
+{"a": {"b": {"c": {}}}}
+select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
+{"a": {"b": {"c": {"v": 77}}}}
+disconnect S0
+env_close E0
