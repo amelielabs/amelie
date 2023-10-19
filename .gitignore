@@ -4,3 +4,5 @@
 test/test
 cli/monotone
 cli/t
+qa/test
+qa/_output
