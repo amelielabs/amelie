@@ -127,8 +127,6 @@ vm_run(Vm*          self,
 		&&cneg,
 		&&ccat,
 		&&cidx,
-		&&cto_string,
-		&&cto_json,
 		&&cmap,
 		&&carray,
 		&&ccol_set,
@@ -365,22 +363,6 @@ cidx:
 	value_idx(a, b, c);
 	value_free(&r[op->b]);
 	value_free(&r[op->c]);
-	op_next;
-
-cto_string:
-	if (unlikely(op->b != 1))
-		error("string(): incorrect call");
-	a = stack_at(stack, 1);
-	value_to_string(&r[op->a], a);
-	stack_popn(stack, 1);
-	op_next;
-
-cto_json:
-	if (unlikely(op->b != 1))
-		error("json(): incorrect call");
-	a = stack_at(stack, 1);
-	value_to_json(&r[op->a], a);
-	stack_popn(stack, 1);
 	op_next;
 
 cmap:

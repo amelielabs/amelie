@@ -75,6 +75,30 @@ func_sizeof(Vm*       vm,
 		value_sizeof(result, arg);
 }
 
+hot static void
+func_string(Vm*       vm,
+            Function* func,
+            Value*    result,
+            int       argc,
+            Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	value_to_string(result, argv[0]);
+}
+
+hot static void
+func_json(Vm*       vm,
+            Function* func,
+            Value*    result,
+            int       argc,
+            Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	value_to_json(result, argv[0]);
+}
+
 static void
 func_mn_config(Vm*       vm,
                Function* func,
@@ -145,7 +169,9 @@ func_setup(FunctionMgr* mgr)
 		{ "has",       (FunctionMain)func_has,       2 },
 		{ "set",       (FunctionMain)func_set,       3 },
 		{ "unset",     (FunctionMain)func_unset,     2 },
-		{ "sizeof"   , (FunctionMain)func_sizeof,    1 },
+		{ "sizeof",    (FunctionMain)func_sizeof,    1 },
+		{ "string",    (FunctionMain)func_string,    1 },
+		{ "json",      (FunctionMain)func_json,      1 },
 		{ "mn_config", (FunctionMain)func_mn_config, 0 },
 		{ "mn_tables", (FunctionMain)func_mn_tables, 0 },
 		{ "mn_views",  (FunctionMain)func_mn_views,  0 },

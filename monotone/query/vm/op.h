@@ -63,10 +63,6 @@ enum
 	CCAT,
 	CIDX,
 
-	// cast
-	CTO_STRING,
-	CTO_JSON,
-
 	// object
 	CMAP,
 	CARRAY,

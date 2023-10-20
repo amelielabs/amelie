@@ -78,9 +78,6 @@ OpDesc ops[] =
 	{ CCAT,               "cat"               },
 	{ CIDX,               "idx"               },
 
-	{ CTO_STRING,         "to_string"         },
-	{ CTO_JSON,           "to_json"           },
-
 	// object
 	{ CMAP,               "map"               },
 	{ CARRAY,             "array"             },
