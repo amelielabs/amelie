@@ -119,6 +119,9 @@ buf_free(Buf* buf)
 		buf->refs--;
 		if (buf->refs >= 0)
 			return;
+		// track double free
+		assert(buf->refs == -1);
+		buf->refs = 0;
 		buf_unpin(buf);
 		buf_cache_push(mn_task->buf_cache, buf);
 		return;
