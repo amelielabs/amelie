@@ -103,8 +103,6 @@ value_set_string(Value* self, Str* str, Buf* buf)
 	self->type   = VALUE_STRING;
 	self->string = *str;
 	self->buf    = buf;
-	if (buf)
-		buf_ref(buf);
 }
 
 always_inline hot static inline void
@@ -114,8 +112,6 @@ value_set_data(Value* self, uint8_t* data, int data_size, Buf* buf)
 	self->data      = data;
 	self->data_size = data_size;
 	self->buf       = buf;
-	if (buf)
-		buf_ref(buf);
 }
 
 always_inline hot static inline void
@@ -178,6 +174,8 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		uint8_t* end = data;
 		data_skip(&end);
 		value_set_data(self, data, end - data, buf);
+		if (buf)
+			buf_ref(buf);
 		break;
 	}
 	case MN_STRINGV0 ... MN_STRING32:
@@ -185,6 +183,8 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		Str string;
 		data_read_string(&data, &string);
 		value_set_string(self, &string, buf);
+		if (buf)
+			buf_ref(buf);
 		break;
 	}
 	default:
@@ -296,6 +296,7 @@ value_copy(Value* self, Value* src)
 		if (src->buf)
 		{
 			value_set_string(self, &src->string, src->buf);
+			buf_ref(src->buf);
 		} else
 		{
 			auto buf = msg_create(MSG_OBJECT);
@@ -312,6 +313,7 @@ value_copy(Value* self, Value* src)
 		if (src->buf)
 		{
 			value_set_data(self, src->data, src->data_size, src->buf);
+			buf_ref(src->buf);
 		} else
 		{
 			auto buf = msg_create(MSG_OBJECT);
