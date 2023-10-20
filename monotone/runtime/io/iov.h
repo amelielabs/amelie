@@ -6,55 +6,34 @@
 // SQL OLTP database
 //
 
-typedef struct IovChunk IovChunk;
-typedef struct Iov      Iov;
-
-struct IovChunk
-{
-	bool is_pointer;
-	union {
-		struct {
-			Buf* buf;
-			int  offset;
-			int  size;
-		} buf;
-		struct {
-			void* pointer;
-			int   size;
-		} pointer;
-	};
-};
+typedef struct Iov Iov;
 
 struct Iov
 {
-	int size;
-	int count;
-	Buf chunks;
 	Buf iov;
+	int iov_count;
+	int size;
 };
 
 static inline void
 iov_init(Iov* self)
 {
 	self->size  = 0;
-	self->count = 0;
-	buf_init(&self->chunks);
+	self->iov_count = 0;
 	buf_init(&self->iov);
 }
 
 static inline void
 iov_free(Iov* self)
 {
-	buf_free_memory(&self->chunks);
-	buf_free_memory(&self->iov);
+	buf_free(&self->iov);
 }
 
 static inline void
 iov_reset(Iov* self)
 {
-	self->size  = 0;
-	self->count = 0;
-	buf_reset(&self->chunks);
+	self->size = 0;
+	self->iov_count = 0;
 	buf_reset(&self->iov);
 }
 
@@ -65,102 +44,19 @@ iov_pointer(Iov* self)
 }
 
 static inline void
-iov_reserve(Iov* self, int size)
+iov_reserve(Iov* self, int count)
 {
-	buf_reserve(&self->chunks, sizeof(IovChunk) * size);
-}
-
-static inline void
-iov_add_buf(Iov* self, Buf* buf, int offset, int size)
-{
-	buf_reserve(&self->chunks, sizeof(IovChunk));
-	auto chunk = (IovChunk*)self->chunks.position;
-	chunk->is_pointer = false;
-	chunk->buf.buf    = buf;
-	chunk->buf.offset = offset;
-	chunk->buf.size   = size;
-	buf_advance(&self->chunks, sizeof(IovChunk));
-	self->size += size;
-	self->count++;
+	buf_reserve(&self->iov, sizeof(struct iovec) * count);
 }
 
 static inline void
 iov_add(Iov* self, void* pointer, int size)
 {
-	buf_reserve(&self->chunks, sizeof(IovChunk));
-	auto chunk = (IovChunk*)self->chunks.position;
-	chunk->is_pointer = true;
-	chunk->pointer.pointer = pointer;
-	chunk->pointer.size    = size;
-	buf_advance(&self->chunks, sizeof(IovChunk));
+	buf_reserve(&self->iov, sizeof(struct iovec));
+	auto iov = (struct iovec*)self->iov.position;
+	iov->iov_base = pointer;
+	iov->iov_len  = size;
+	buf_advance(&self->iov, sizeof(struct iovec));
+	self->iov_count++;
 	self->size += size;
-	self->count++;
-}
-
-hot static inline void
-iov_prepare(Iov* self)
-{
-	int size_iov = sizeof(struct iovec) * self->count;
-	buf_reserve(&self->iov, size_iov);
-
-	auto iovec = (struct iovec*)self->iov.position;
-	auto chunk = (IovChunk*)self->chunks.start;
-	auto end   = (IovChunk*)self->chunks.position;
-	while (chunk < end)
-	{
-		if (chunk->is_pointer)
-		{
-			iovec->iov_base = chunk->pointer.pointer;
-			iovec->iov_len  = chunk->pointer.size;
-		} else
-		{
-			iovec->iov_base = chunk->buf.buf->start + chunk->buf.offset;
-			iovec->iov_len  = chunk->buf.size;
-		}
-		chunk++;
-		iovec++;
-	}
-
-	buf_advance(&self->iov, size_iov);
-}
-
-hot static inline void
-iov_import(Iov* self, Iov* from)
-{
-	int size_iov = sizeof(struct iovec) * from->count;
-	buf_reserve(&self->iov, size_iov);
-
-	auto iovec = (struct iovec*)self->iov.position;
-	auto chunk = (IovChunk*)from->chunks.start;
-	auto end   = (IovChunk*)from->chunks.position;
-	while (chunk < end)
-	{
-		if (chunk->is_pointer)
-		{
-			iovec->iov_base = chunk->pointer.pointer;
-			iovec->iov_len  = chunk->pointer.size;
-		} else
-		{
-			iovec->iov_base = chunk->buf.buf->start + chunk->buf.offset;
-			iovec->iov_len  = chunk->buf.size;
-		}
-		chunk++;
-		iovec++;
-	}
-	self->count += from->count;
-	self->size  += from->size;
-
-	buf_advance(&self->iov, size_iov);
-}
-
-hot static inline void
-iov_copy(Buf* buf, struct iovec* iov, int count)
-{
-	buf_reset(buf);
-	while (count > 0)
-	{
-		buf_write(buf, iov->iov_base, iov->iov_len);
-		iov++;
-		count--;
-	}
 }
