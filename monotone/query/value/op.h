@@ -385,6 +385,10 @@ value_sizeof(Value* result, Value* a)
 always_inline hot static inline void
 value_to_string(Value* result, Value* a)
 {
+	// todo: check type
+	if (unlikely(a->type != VALUE_DATA))
+		error("to_string(): array/map type expected");
+
 	auto data = buf_create(0);
 	value_write(a, data);
 	auto data_pos = data->start;
