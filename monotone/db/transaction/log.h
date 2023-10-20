@@ -160,6 +160,12 @@ log_add(Log*     self,
 		return;
 
 	// [cmd, uuid a/b, row]
+
+	(void)uuid;
+	iov_add(&self->data_iov, row_data(row, schema), row_data_size(row, schema));
+
+	// TODO
+	/*
 	int data_offset = buf_size(&self->data);
 	int data_size;
 	encode_array(&self->data, 4);
@@ -169,6 +175,7 @@ log_add(Log*     self,
 	data_size = buf_size(&self->data) - data_offset;
 	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
 	iov_add(&self->data_iov, row_data(row, schema), row_data_size(row, schema));
+	*/
 	self->count_persistent++;
 }
 
@@ -193,6 +200,9 @@ log_add_handle(Log*   self,
 	self->count_handle++;
 
 	// [cmd, data]
+
+	// TODO
+	/*
 	int data_offset = buf_size(&self->data);
 	int data_size;
 	encode_array(&self->data, 2);
@@ -200,5 +210,6 @@ log_add_handle(Log*   self,
 	data_size = buf_size(&self->data) - data_offset;
 	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
 	iov_add(&self->data_iov, data->start, buf_size(data));
+	*/
 	self->count_persistent++;
 }

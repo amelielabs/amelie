@@ -141,7 +141,15 @@ wal_store_write(WalStore* self, LogSet* set)
 	log_set_create(set, lsn);
 
 	// write file and in-memory index
-	wal_file_write(self->current, iov_pointer(&set->iov), set->iov.count);
+//	wal_file_write(self->current, iov_pointer(&set->iov), set->iov.iov_count);
+
+	// copy prepared iovec
+	list_foreach(&set->list)
+	{
+		auto log = list_at(Log, link);
+
+		wal_file_write(self->current, iov_pointer(&log->data_iov), log->data_iov.iov_count);
+	}
 
 	// update wal lsn
 	config_lsn_set(lsn);

@@ -60,6 +60,7 @@ log_set_create(LogSet* self, uint64_t lsn)
 {
 	self->lsn = lsn;
 
+#if 0
 	// WAL_WRITE
 	buf_reserve(&self->data, sizeof(Msg));
 	auto msg = (Msg*)(self->data.start);
@@ -84,4 +85,5 @@ log_set_create(LogSet* self, uint64_t lsn)
 	// set message size
 	msg = (Msg*)(self->data.start);
 	msg->size = self->iov.size;
+#endif
 }
