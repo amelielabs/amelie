@@ -3,6 +3,7 @@
 directory query
 group query
 test expr
+test json
 
 
 #directory ddl
