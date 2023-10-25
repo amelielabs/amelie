@@ -6,7 +6,7 @@
 // SQL OLTP database
 //
 
-typedef struct Dispatch  Dispatch;
+typedef struct Dispatch Dispatch;
 
 struct Dispatch
 {
