@@ -89,7 +89,7 @@ test_sh(TestSuite* self, const char* fmt, ...)
 	return rc;
 }
 
-#define test(expr) ({\
+#define test(expr) ({ \
 	if (! (expr)) { \
 		fprintf(stdout, "fail (%s:%d) %s\n", __FILE__, __LINE__, #expr); \
 		fflush(stdout); \

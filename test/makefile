@@ -17,7 +17,7 @@ LFLAGS          = -rdynamic -pthread -Wl,-whole-archive \
                    ../monotone/db/libmonotone-db.a \
                    ../monotone/query/libmonotone-query.a \
                    ../monotone/cluster/libmonotone-cluster.a \
-				   ../monotone/main/libmonotone-main.a \
+                   ../monotone/main/libmonotone-main.a \
                    -Wl,-no-whole-archive -lm -lzstd -lssl -lcrypto
 TARGET          = test
 OBJECTS_RUNTIME = runtime/test_task.o \
