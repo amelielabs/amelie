@@ -628,6 +628,21 @@ test_suite_query(TestSuite* self, const char* query)
 }
 
 static int
+test_suite_unit_function(TestSuite* self, char* arg)
+{
+	char* name = test_suite_arg(&arg);
+	void* ptr = dlsym(self->dlhandle, name);
+	if (ptr == NULL)
+	{
+		test_error(self, "unit: test '%s' function not found\n", name);
+		return -1;
+	}
+	void (*test_function)(void) = ptr;
+	test_function();
+	return 0;
+}
+
+static int
 test_suite_unit(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
@@ -637,8 +652,27 @@ test_suite_unit(TestSuite* self, char* arg)
 		test_error(self, "unit: test '%s' function not found\n", name);
 		return -1;
 	}
-	int (*unit_test)(TestSuite*) = ptr;
-	return unit_test(self);
+	void (*test_function)(void*) = ptr;
+
+	BufCache buf_cache;
+	buf_cache_init(&buf_cache);
+
+	Task task;
+	task_init(&task, &buf_cache);
+
+	int rc;
+	rc = task_create_nothrow(&task, name, test_function, NULL, NULL, NULL, NULL);
+	if (rc == -1)
+	{
+		test_error(self, "unit: test '%s' task create error\n", name);
+		return -1;
+	}
+
+	task_wait(&task);
+	task_free(&task);
+
+	buf_cache_free(&buf_cache);
+	return 0;
 }
 
 static int
@@ -766,6 +800,14 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 		}
 
 		test_log(self, "%s", query);
+
+		// unit_function
+		if (strncmp(query, "unit_function", 13) == 0) {
+			rc = test_suite_unit_function(self, query + 13);
+			if (rc == -1)
+				return -1;
+			continue;
+		}
 
 		// unit
 		if (strncmp(query, "unit", 4) == 0) {
