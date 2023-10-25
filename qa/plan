@@ -1,9 +1,13 @@
 #
 
-directory query
-group query
-test expr
-test json
+directory runtime
+group runtime
+test runtime
+
+#directory query
+#group query
+#test expr
+#test json
 
 
 #directory ddl

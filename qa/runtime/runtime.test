@@ -1,0 +1,132 @@
+
+# test: test task
+unit_function test_task_create
+
+# test: test task args
+unit_function test_task_args
+
+# test: test task status
+unit_function test_task_status
+
+# test: test exception0
+unit test_exception0
+
+# test: test exception1
+unit test_exception1
+
+# test: test exception2
+unit test_exception2
+
+# test: test guard0
+unit test_guard0
+
+# test: test guard1
+unit test_guard1
+
+# test: test guard2
+unit test_guard2
+
+# test: test palloc
+unit test_palloc
+
+# test: test buf
+unit test_buf
+
+# test: test buf reserve
+unit test_buf_reserve
+
+# test: test buf write
+unit test_buf_write
+
+# test: test buf overwrite
+unit test_buf_overwrite
+
+# test: test msg
+unit test_msg
+
+# test: test coroutine create
+unit test_coroutine_create
+
+# test: test coroutine context switch
+unit test_coroutine_context_switch
+
+# test: test event
+unit test_event
+
+# test: test event timeout
+unit test_event_timeout
+
+# test: test event parent
+unit test_event_parent
+
+# test: test condition
+unit test_condition
+
+# test: test condition task
+unit test_condition_task
+
+# test: test condition task timeout
+unit test_condition_task_timeout
+
+# test: test channel
+unit test_channel
+
+# test: test channel task
+unit test_channel_task
+
+# test: test channel task detached
+unit test_channel_task_detached
+
+# test: test channel task timeout
+unit test_channel_task_timeout
+
+# test: test channel producer consumer
+unit test_channel_producer_consumer
+
+# test: test rpc
+unit test_rpc
+
+# test: test rpc execute
+unit test_rpc_execute
+
+# test: test rpc execute error
+unit test_rpc_execute_error
+
+# test: test cancel create
+unit test_cancel_create
+
+# test: test cancel
+unit test_cancel
+
+# test: test cancel pause
+unit test_cancel_pause
+
+# test: test cancel condition
+unit test_cancel_condition
+
+# test: test cancel channel pause
+unit test_cancel_channel_pause
+
+# test: test lock write
+unit test_lock_write
+
+# test: test lock write readers
+unit test_lock_write_readers
+
+# test: test lock read0
+unit test_lock_read0
+
+# test: test lock read1
+unit test_lock_read1
+
+# test: test sleep
+unit test_sleep
+
+# test: test blob
+unit test_blob
+
+# test: test tcp (10 clients)
+unit test_tcp_10
+
+# test: test tcp (100 clients)
+unit test_tcp_100
