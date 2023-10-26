@@ -1,14 +1,24 @@
 #
 
-directory runtime
-group runtime
-test runtime
+#directory runtime
+#group runtime
+#test runtime
 
-#directory query
-#group query
-#test expr
-#test json
+directory system
+group system
+test bootstrap
+test set
+test show
+test user
 
+# show
+# set
+
+
+directory query
+group query
+test expr
+test json
 
 #directory ddl
 #group ddl

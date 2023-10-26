@@ -1,0 +1,45 @@
+#
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+# test: show statement parsing
+show
+show;
+show all junk
+show 1234
+
+# test: show users
+show users
+select mn_users()
+
+# test: show wal
+show wal
+select mn_wal()
+
+# test: show tables
+show tables
+select mn_tables()
+
+# test: show views
+show views
+select mn_views()
+
+# test: show storages
+show storages
+select mn_storages()
+
+# test: show all
+show all
+
+select mn_config()
+select mn_config().directory
+select mn_config()["directory"]
+select mn_config(123)
+
+# test: show name
+show log_enable
+show "log_enable"
+
+disconnect S0
+env_close E0
