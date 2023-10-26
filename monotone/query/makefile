@@ -58,6 +58,7 @@ OBJECTS        = \
                  parser/parse_from.o \
                  parser/parse_select.o \
                  parser/parse.o \
+                 parser/parser.o \
                  compiler/compiler.o \
                  compiler/scan.o \
                  compiler/emit_expr.o \

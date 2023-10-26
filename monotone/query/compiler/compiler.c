@@ -46,6 +46,7 @@ compiler_init(Compiler*    self,
 void
 compiler_free(Compiler* self)
 {
+	parser_reset(&self->parser);
 	code_free(&self->code_stmt);
 	code_free(&self->code_coordinator);
 	code_data_free(&self->code_data);
