@@ -12,20 +12,33 @@ select 123456789
 select 123456789012345
 
 select -20
-select 1e1
-select 1e2
-select 1e4
-select 1e8
-select 1e40
 
 select sizeof(0)
 select sizeof(1234)
 select sizeof(123456789)
 select sizeof(123456789012345)
 
-# float
+# real
 select 1.0
 select 1.1234
+
+# flt_min
+select 1.17549e-38
+
+# flt_max
+select 3.40282e+38
+
+# dbl_min
+select 2.2250738585072014e-308
+
+# dbl_max
+select 1.79769e+308
+
+select 1e1
+select 1e2
+select 1e4
+select 1e8
+select 1e40
 
 # string
 select "hello world"
@@ -125,7 +138,7 @@ select "a" || "b"
 select "a"[0]
 select "\"Hello World\""
 
-# float operations
+# real operations
 select 1.1 + 1.1
 select 1.2 - 1.1
 select 1.1234 - 1.12

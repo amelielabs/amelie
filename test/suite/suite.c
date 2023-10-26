@@ -546,8 +546,8 @@ test_log_object(TestSuite* self, mono_object_t* object,
 				test_log(self, ", ");
 		}
 		switch (type) {
-		case MONO_FLOAT:
-			test_log(self, "%f", *(float*)data.data);
+		case MONO_REAL:
+			test_log(self, "%f", *(double*)data.data);
 			break;
 		case MONO_BOOL:
 			if (*(int8_t*)data.data > 0)
