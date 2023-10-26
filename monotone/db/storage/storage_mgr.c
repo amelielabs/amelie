@@ -136,7 +136,7 @@ storage_mgr_gc(StorageMgr* self)
 }
 
 Buf*
-storage_mgr_show(StorageMgr* self)
+storage_mgr_list(StorageMgr* self)
 {
 	auto buf = msg_create(MSG_OBJECT);
 

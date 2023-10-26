@@ -18,7 +18,7 @@ void storage_mgr_init(StorageMgr*);
 void storage_mgr_free(StorageMgr*);
 void storage_mgr_open(StorageMgr*);
 void storage_mgr_gc(StorageMgr*);
-Buf* storage_mgr_show(StorageMgr*);
+Buf* storage_mgr_list(StorageMgr*);
 
 Storage*
 storage_mgr_find(StorageMgr*, Uuid*);
