@@ -60,6 +60,10 @@ parse_set(Stmt* self)
 	auto name = stmt_if(self, KNAME);
 	if (! name)
 		error("SET <name> expected");
+	// TO
+	if (! stmt_if(self, KTO))
+		error("SET name <TO> expected");
+	// value
 	auto value = stmt_next(self);
 	if (value->id != KINT && value->id != KSTRING)
 		error("SET name TO <value> expected string or int");
@@ -92,15 +96,11 @@ parse(Parser* self, Str* str)
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
 	// statements
-	bool eof = false;
-	while (! eof)
+	for (;;)
 	{
 		auto ast = lex_next(lex);
 		if (ast->id == KEOF)
-		{
-			eof = true;
 			break;
-		}
 
 		auto stmt = parser_add(self);
 		switch (ast->id) {
@@ -224,7 +224,14 @@ parse(Parser* self, Str* str)
 			break;
 		}
 
+		// EOF
+		if (lex_if(&self->lex, KEOF))
+			break;
+
 		// ;
-		lex_if(&self->lex, ';');
+		if (lex_if(&self->lex, ';'))
+			continue;
+
+		error("unexpected clause at the end of command");
 	}
 }
