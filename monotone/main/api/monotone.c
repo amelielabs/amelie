@@ -35,6 +35,7 @@ struct mono_object
 	uint8_t*        end;
 	Buf*            buf;
 	int64_t         int_value;
+	double          real_value;
 	mono_session_t* session;
 };
 
@@ -255,13 +256,23 @@ mono_next(mono_object_t* object, mono_arg_t* arg, mono_type_t* data_type)
 		arg->data_size = sizeof(uint64_t);
 		break;
 
-	// float
-	case MN_FLOAT:
-		type = MONO_FLOAT;
+	// real
+	case MN_REAL32:
+		type = MONO_REAL;
 		object->position += data_size_type();
-		arg->data = object->position;
-		arg->data_size = sizeof(float);
-		object->position += arg->data_size;
+		object->real_value = *(float*)object->position;
+		object->position += sizeof(float);
+		arg->data = &object->real_value;
+		arg->data_size = sizeof(double);
+		break;
+
+	case MN_REAL64:
+		type = MONO_REAL;
+		object->position += data_size_type();
+		object->real_value = *(double*)object->position;
+		object->position += sizeof(double);
+		arg->data = &object->real_value;
+		arg->data_size = sizeof(double);
 		break;
 
 	// int

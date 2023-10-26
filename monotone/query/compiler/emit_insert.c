@@ -58,8 +58,8 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 			case KINT:
 				encode_integer(buf, expr->integer);
 				break;
-			case KFLOAT:
-				encode_float(buf, expr->fp);
+			case KREAL:
+				encode_real(buf, expr->real);
 				break;
 			default:
 				abort();

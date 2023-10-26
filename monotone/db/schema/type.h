@@ -12,7 +12,7 @@ enum
 	TYPE_ARRAY,
 	TYPE_INT,
 	TYPE_BOOL,
-	TYPE_FLOAT,
+	TYPE_REAL,
 	TYPE_STRING
 };
 
@@ -28,8 +28,8 @@ schema_type_validate(int type, uint8_t* data)
 		return data_is_integer(data);
 	case TYPE_BOOL:
 		return data_is_bool(data);
-	case TYPE_FLOAT:
-		return data_is_float(data);
+	case TYPE_REAL:
+		return data_is_real(data);
 	case TYPE_STRING:
 		return data_is_string(data);
 	}
@@ -44,7 +44,7 @@ schema_type_of(int type)
 	case TYPE_ARRAY:  return "array";
 	case TYPE_INT:    return "int";
 	case TYPE_BOOL:   return "bool";
-	case TYPE_FLOAT:  return "float";
+	case TYPE_REAL:   return "real";
 	case TYPE_STRING: return "string";
 	}
 	return NULL;

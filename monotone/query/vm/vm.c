@@ -101,7 +101,7 @@ vm_run(Vm*          self,
 		&&cbool,
 		&&cint,
 		&&cint_min,
-		&&cfloat,
+		&&creal,
 		&&cstring,
 		&&cstring_min,
 		&&cpartial,
@@ -246,8 +246,8 @@ cint_min:
 	value_set_int(&r[op->a], INT64_MIN);
 	op_next;
 
-cfloat:
-	value_set_float(&r[op->a], code_data_at_fp(code_data, op->b));
+creal:
+	value_set_real(&r[op->a], code_data_at_real(code_data, op->b));
 	op_next;
 
 cstring:

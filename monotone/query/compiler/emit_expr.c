@@ -530,8 +530,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return op1(self, CNULL, rpin(self));
 	case KINT:
 		return op2(self, CINT, rpin(self), ast->integer);
-	case KFLOAT:
-		return op2(self, CFLOAT, rpin(self), code_data_add_fp(&self->code_data, ast->fp));
+	case KREAL:
+		return op2(self, CREAL, rpin(self), code_data_add_real(&self->code_data, ast->real));
 	case KTRUE:
 		return op2(self, CBOOL, rpin(self), 1);
 	case KFALSE:

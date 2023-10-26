@@ -72,7 +72,6 @@ static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
-	{ KTFLOAT,                "float",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -159,6 +158,7 @@ static Keyword keywords_q[] =
 
 static Keyword keywords_r[] =
 {
+	{ KTREAL,                 "real",                  4  },
 	{ KREPLACE,               "replace",               7  },
 	{ KROLLBACK,              "rollback",              8  },
 	{ KRENAME,                "rename",                6  },

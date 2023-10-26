@@ -13,8 +13,8 @@ value_is_true(Value* a)
 	case VALUE_INT:
 	case VALUE_BOOL:
 		return a->integer > 0;
-	case VALUE_FLOAT:
-		return a->fp > 0.0;
+	case VALUE_REAL:
+		return a->real > 0.0;
 	case VALUE_NULL:
 		return false;
 	case VALUE_DATA:
@@ -35,14 +35,14 @@ value_is_equal(Value* a, Value* b)
 	case VALUE_BOOL:
 		if (b->type == VALUE_INT || b->type == VALUE_BOOL)
 			return a->integer == b->integer;
-		if (b->type == VALUE_FLOAT)
-			return a->integer == b->fp;
+		if (b->type == VALUE_REAL)
+			return a->integer == b->real;
 		break;
-	case VALUE_FLOAT:
+	case VALUE_REAL:
 		if (b->type == VALUE_INT || b->type == VALUE_BOOL)
-			return a->fp == b->integer;
-		if (b->type == VALUE_FLOAT)
-			return a->fp == b->fp;
+			return a->real == b->integer;
+		if (b->type == VALUE_REAL)
+			return a->real == b->real;
 		break;
 	case VALUE_NULL:
 		return b->type == VALUE_NULL;
@@ -124,15 +124,15 @@ value_gte(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->integer >= b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->integer >= b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->integer >= b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_bool(result, a->fp >= b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->fp >= b->fp);
+			return value_set_bool(result, a->real >= b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->real >= b->real);
 	}
 	error("bad >= expression type");
 }
@@ -144,15 +144,15 @@ value_gt(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->integer > b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->integer > b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->integer > b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_bool(result, a->fp > b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->fp > b->fp);
+			return value_set_bool(result, a->real > b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->real > b->real);
 	}
 	error("bad > expression type");
 }
@@ -164,15 +164,15 @@ value_lte(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->integer <= b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->integer <= b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->integer <= b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_bool(result, a->fp <= b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->fp <= b->fp);
+			return value_set_bool(result, a->real <= b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->real <= b->real);
 	}
 	error("bad <= expression type");
 }
@@ -184,15 +184,15 @@ value_lt(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->integer < b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->integer < b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->integer < b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_bool(result, a->fp < b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_bool(result, a->fp < b->fp);
+			return value_set_bool(result, a->real < b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_bool(result, a->real < b->real);
 	}
 	error("bad < expression type");
 }
@@ -204,15 +204,15 @@ value_add(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_int(result, a->integer + b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->integer + b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->integer + b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_float(result, a->fp + b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->fp + b->fp);
+			return value_set_real(result, a->real + b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->real + b->real);
 	}
 	error("bad + expression types");
 }
@@ -224,15 +224,15 @@ value_sub(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_int(result, a->integer - b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->integer - b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->integer - b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_float(result, a->fp - b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->fp - b->fp);
+			return value_set_real(result, a->real - b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->real - b->real);
 	}
 	error("bad - expression types");
 }
@@ -244,15 +244,15 @@ value_mul(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_INT)
 			return value_set_int(result, a->integer * b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->integer * b->fp);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->integer * b->real);
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
-			return value_set_float(result, a->fp * b->integer);
-		if (b->type == VALUE_FLOAT)
-			return value_set_float(result, a->fp * b->fp);
+			return value_set_real(result, a->real * b->integer);
+		if (b->type == VALUE_REAL)
+			return value_set_real(result, a->real * b->real);
 	}
 	error("bad * expression types");
 }
@@ -268,26 +268,26 @@ value_div(Value* result, Value* a, Value* b)
 				goto div_error;
 			return value_set_int(result, a->integer / b->integer);
 		}
-		if (b->type == VALUE_FLOAT)
+		if (b->type == VALUE_REAL)
 		{
-			if (unlikely(b->fp == 0.0))
+			if (unlikely(b->real == 0.0))
 				goto div_error;
-			return value_set_float(result, a->integer / b->fp);
+			return value_set_real(result, a->integer / b->real);
 		}
 	} else
-	if (a->type == VALUE_FLOAT)
+	if (a->type == VALUE_REAL)
 	{
 		if (b->type == VALUE_INT)
 		{
 			if (unlikely(b->integer == 0))
 				goto div_error;
-			return value_set_float(result, a->fp / b->integer);
+			return value_set_real(result, a->real / b->integer);
 		}
-		if (b->type == VALUE_FLOAT)
+		if (b->type == VALUE_REAL)
 		{
-			if (unlikely(b->fp == 0.0))
+			if (unlikely(b->real == 0.0))
 				goto div_error;
-			return value_set_float(result, a->fp / b->fp);
+			return value_set_real(result, a->real / b->real);
 		}
 	}
 	error("bad / expression types");
@@ -311,8 +311,8 @@ value_neg(Value* result, Value* a)
 {
 	if (a->type == VALUE_INT)
 		return value_set_int(result, -a->integer);
-	if (a->type == VALUE_FLOAT)
-		return value_set_float(result, -a->fp);
+	if (a->type == VALUE_REAL)
+		return value_set_real(result, -a->real);
 	error("bad - expression type");
 }
 

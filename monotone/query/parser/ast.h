@@ -13,7 +13,7 @@ struct Ast
 	int id;
 	union {
 		uint64_t integer;
-		float    fp;
+		double   real;
 		struct {
 			Str  string;
 			bool string_escape;

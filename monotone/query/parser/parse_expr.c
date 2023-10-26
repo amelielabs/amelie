@@ -75,7 +75,7 @@ priority_map[UINT8_MAX] =
 	[KCOUNT]              = priority_value,
 	[KSUM]                = priority_value,
 	[KAVG]                = priority_value,
-	[KFLOAT]              = priority_value,
+	[KREAL]               = priority_value,
 	[KINT]                = priority_value,
 	[KSTRING]             = priority_value,
 	[KTRUE]               = priority_value,
@@ -279,7 +279,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	// const
 	case KNULL:
-	case KFLOAT:
+	case KREAL:
 	case KINT:
 	case KSTRING:
 	case KTRUE:

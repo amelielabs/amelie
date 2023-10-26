@@ -129,8 +129,8 @@ group_create_node(GroupKey* key)
 		case VALUE_BOOL:
 			value_set_bool(&node->keys[i], value->integer);
 			break;
-		case VALUE_FLOAT:
-			value_set_float(&node->keys[i], value->fp);
+		case VALUE_REAL:
+			value_set_real(&node->keys[i], value->real);
 			break;
 		case VALUE_STRING:
 			memcpy(pos, str_of(&value->string), str_size(&value->string));
@@ -198,9 +198,9 @@ group_find_or_create(Group* self, Value** target_data)
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;
-		case VALUE_FLOAT:
-			data = &value->fp;
-			data_size = sizeof(value->fp);
+		case VALUE_REAL:
+			data = &value->real;
+			data_size = sizeof(value->real);
 			break;
 		case VALUE_STRING:
 		case VALUE_DATA:

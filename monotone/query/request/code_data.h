@@ -38,13 +38,13 @@ code_data_at(CodeData* self, int offset)
 	return self->data.start + offset;
 }
 
-static inline float
-code_data_at_fp(CodeData* self, int offset)
+static inline double
+code_data_at_real(CodeData* self, int offset)
 {
 	assert(self->data.start != NULL);
 	uint8_t* pos = self->data.start + offset;
-	float value;
-	data_read_float(&pos, &value);
+	double value;
+	data_read_real(&pos, &value);
 	return value;
 }
 
@@ -71,10 +71,10 @@ code_data_add(CodeData* self, uint8_t* data, int size)
 }
 
 static inline int
-code_data_add_fp(CodeData* self, float fp)
+code_data_add_real(CodeData* self, double real)
 {
 	int offset = code_data_pos(self);
-	encode_float(&self->data, fp);
+	encode_real(&self->data, real);
 	return offset;
 }
 

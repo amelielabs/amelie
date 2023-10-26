@@ -102,8 +102,8 @@ parse_type(Stmt* self, Ast* name)
 	case KTBOOL:
 		type = TYPE_BOOL;
 		break;
-	case KTFLOAT:
-		type = TYPE_FLOAT;
+	case KTREAL:
+		type = TYPE_REAL;
 		break;
 	case KTSTRING:
 		type = TYPE_STRING;

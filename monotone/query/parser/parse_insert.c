@@ -89,9 +89,9 @@ parse_value(Stmt* self, AstRow* row)
 			parse_value_add(&stack);
 			row->data_size += data_size_integer(ast->integer);
 			break;
-		case KFLOAT:
+		case KREAL:
 			parse_value_add(&stack);
-			row->data_size += data_size_float();
+			row->data_size += data_size_real(ast->real);
 			break;
 		default:
 			done = true;

@@ -14,7 +14,7 @@ enum
 	VALUE_NONE,
 	VALUE_INT,
 	VALUE_BOOL,
-	VALUE_FLOAT,
+	VALUE_REAL,
 	VALUE_NULL,
 	VALUE_STRING,
 	VALUE_DATA,
@@ -34,7 +34,7 @@ struct Value
 	union
 	{
 		int64_t integer;
-		float   fp;
+		double  real;
 		Str     string;
 		struct {
 			uint8_t* data;
@@ -83,10 +83,10 @@ value_set_bool(Value* self, bool data)
 }
 
 always_inline hot static inline void
-value_set_float(Value* self, float data)
+value_set_real(Value* self, double data)
 {
-	self->type = VALUE_FLOAT;
-	self->fp   = data;
+	self->type = VALUE_REAL;
+	self->real = data;
 	self->buf  = NULL;
 }
 
@@ -154,11 +154,12 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_null(self);
 		break;
 	}
-	case MN_FLOAT:
+	case MN_REAL32:
+	case MN_REAL64:
 	{
-		float fp;
-		data_read_float(&data, &fp);
-		value_set_float(self, fp);
+		double real;
+		data_read_real(&data, &real);
+		value_set_real(self, real);
 		break;
 	}
 	case MN_INTV0 ... MN_INT64:
@@ -203,8 +204,8 @@ value_write(Value* self, Buf* buf)
 	case VALUE_BOOL:
 		encode_bool(buf, self->integer);
 		break;
-	case VALUE_FLOAT:
-		encode_float(buf, self->fp);
+	case VALUE_REAL:
+		encode_real(buf, self->real);
 		break;
 	case VALUE_STRING:
 		encode_string(buf, &self->string);
@@ -234,8 +235,8 @@ value_write_data(Value* self, uint8_t** pos)
 	case VALUE_BOOL:
 		data_write_bool(pos, self->integer);
 		break;
-	case VALUE_FLOAT:
-		data_write_float(pos, self->fp);
+	case VALUE_REAL:
+		data_write_real(pos, self->real);
 		break;
 	case VALUE_STRING:
 		data_write_string(pos, &self->string);
@@ -261,8 +262,8 @@ value_size(Value* self)
 		return data_size_integer(self->integer);
 	case VALUE_BOOL:
 		return data_size_bool();
-	case VALUE_FLOAT:
-		return data_size_float();
+	case VALUE_REAL:
+		return data_size_real(self->real);
 	case VALUE_STRING:
 		return data_size_string(str_size(&self->string));
 	case VALUE_NULL:
@@ -286,8 +287,8 @@ value_copy(Value* self, Value* src)
 	case VALUE_BOOL:
 		value_set_bool(self, src->integer);
 		break;
-	case VALUE_FLOAT:
-		value_set_float(self, src->fp);
+	case VALUE_REAL:
+		value_set_real(self, src->real);
 		break;
 	case VALUE_NULL:
 		value_set_null(self);

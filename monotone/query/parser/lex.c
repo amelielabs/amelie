@@ -220,9 +220,10 @@ symbol:;
 
 reread_as_float:
 		errno = 0;
-		ast->id = KFLOAT;
+		ast->id = KREAL;
 		char* end = NULL;
-		ast->fp = strtof(start, &end);
+		errno = 0;
+		ast->real = strtod(start, &end);
 		if (errno == ERANGE)
 			lex_error(self, "bad float number token");
 		self->pos = end;

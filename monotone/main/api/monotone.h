@@ -45,7 +45,7 @@ typedef enum
 	MONO_STRING,
 	MONO_INT,
 	MONO_BOOL,
-	MONO_FLOAT,
+	MONO_REAL,
 	MONO_NULL
 } mono_type_t;
 

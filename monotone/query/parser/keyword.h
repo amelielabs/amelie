@@ -12,7 +12,7 @@ enum
 {
 	// lexer
 	KEOF = 128,
-	KFLOAT,
+	KREAL,
 	KINT,
 	KARGUMENT,
 	KARGUMENT_NAME,
@@ -45,7 +45,7 @@ enum
 	KTARRAY,
 	KTINT,
 	KTBOOL,
-	KTFLOAT,
+	KTREAL,
 	KTSTRING,
 	KJSON,
 

@@ -45,7 +45,7 @@ OpDesc ops[] =
 	{ CBOOL,              "bool"              },
 	{ CINT,               "int"               },
 	{ CINT_MIN,           "int_min"           },
-	{ CFLOAT,             "float"             },
+	{ CREAL,              "real"              },
 	{ CSTRING,            "string"            },
 	{ CSTRING_MIN,        "string_min"        },
 	{ CPARTIAL,           "partial"           },
@@ -148,10 +148,10 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
 			break;
 		}
-		case CFLOAT:
+		case CREAL:
 		{
-			float value = code_data_at_fp(data, op->b);
-			buf_printf(output, "# %f", value);
+			double real = code_data_at_real(data, op->b);
+			buf_printf(output, "# %f", real);
 			break;
 		}
 		case CINSERT:
