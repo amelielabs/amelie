@@ -114,6 +114,21 @@ func_mn_config(Vm*       vm,
 }
 
 static void
+func_mn_users(Vm*       vm,
+              Function* func,
+              Value*    result,
+              int       argc,
+              Value**   argv)
+{
+	unused(vm);
+	unused(argv);
+	function_validate_argc(func, argc);
+	Buf* buf;
+	rpc(global()->control->core, RPC_USER_SHOW, 1, &buf);
+	value_set_data_from(result, buf);
+}
+
+static void
 func_mn_tables(Vm*       vm,
                Function* func,
                Value*    result,
@@ -122,9 +137,20 @@ func_mn_tables(Vm*       vm,
 {
 	unused(argv);
 	function_validate_argc(func, argc);
-	if (unlikely(! transaction_active(vm->trx)))
-		error("tables(): not in transaction");
 	auto buf = table_mgr_list(&vm->db->table_mgr);
+	value_set_data_from(result, buf);
+}
+
+static void
+func_mn_storages(Vm*       vm,
+                 Function* func,
+                 Value*    result,
+                 int       argc,
+                 Value**   argv)
+{
+	unused(argv);
+	function_validate_argc(func, argc);
+	auto buf = storage_mgr_list(&vm->db->storage_mgr);
 	value_set_data_from(result, buf);
 }
 
@@ -137,8 +163,6 @@ func_mn_views(Vm*       vm,
 {
 	unused(argv);
 	function_validate_argc(func, argc);
-	if (unlikely(! transaction_active(vm->trx)))
-		error("views(): not in transaction");
 	auto buf = meta_mgr_list(&vm->db->meta_mgr);
 	value_set_data_from(result, buf);
 }
@@ -166,18 +190,20 @@ func_setup(FunctionMgr* mgr)
 		int          argc;
 	} def[] =
 	{
-		{ "has",       (FunctionMain)func_has,       2 },
-		{ "set",       (FunctionMain)func_set,       3 },
-		{ "unset",     (FunctionMain)func_unset,     2 },
-		{ "sizeof",    (FunctionMain)func_sizeof,    1 },
-		{ "string",    (FunctionMain)func_string,    1 },
-		{ "json",      (FunctionMain)func_json,      1 },
-		{ "mn_config", (FunctionMain)func_mn_config, 0 },
-		{ "mn_tables", (FunctionMain)func_mn_tables, 0 },
-		{ "mn_views",  (FunctionMain)func_mn_views,  0 },
-		{ "mn_wal",    (FunctionMain)func_mn_wal,    0 },
-		{ "mn_debug",  (FunctionMain)func_mn_debug,  0 },
-		{  NULL,       NULL,                         0 }
+		{ "has",         (FunctionMain)func_has,         2 },
+		{ "set",         (FunctionMain)func_set,         3 },
+		{ "unset",       (FunctionMain)func_unset,       2 },
+		{ "sizeof",      (FunctionMain)func_sizeof,      1 },
+		{ "string",      (FunctionMain)func_string,      1 },
+		{ "json",        (FunctionMain)func_json,        1 },
+		{ "mn_config",   (FunctionMain)func_mn_config,   0 },
+		{ "mn_users",    (FunctionMain)func_mn_users,    0 },
+		{ "mn_storages", (FunctionMain)func_mn_storages, 0 },
+		{ "mn_tables",   (FunctionMain)func_mn_tables,   0 },
+		{ "mn_views",    (FunctionMain)func_mn_views,    0 },
+		{ "mn_wal",      (FunctionMain)func_mn_wal,      0 },
+		{ "mn_debug",    (FunctionMain)func_mn_debug,    0 },
+		{  NULL,         NULL,                           0 }
 	};
 	for (int i = 0; def[i].name; i++)
 	{
