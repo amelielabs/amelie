@@ -129,7 +129,7 @@ column_find(Column* self, uint8_t** pos)
 		      str_of(&self->name));
 
 	// validate data type
-	if (! schema_type_validate(self->type, *pos))
+	if (! type_validate(self->type, *pos))
 	{
 		if (data_is_partial(*pos))
 			return;

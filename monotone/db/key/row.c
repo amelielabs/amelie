@@ -10,14 +10,14 @@
 #include <monotone_data.h>
 #include <monotone_lib.h>
 #include <monotone_config.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 
 hot Row*
-row_create(Schema* schema, uint8_t* data, int data_size)
+row_create(Key* key, uint8_t* data, int data_size)
 {
 	// validate columns and indexate key
-	uint32_t index[schema->key_count];
-	uint32_t index_size[schema->key_count];
+	uint32_t index[key->key_count];
+	uint32_t index_size[key->key_count];
 
 	uint8_t* pos = data;
 	if (unlikely(! data_is_array(pos)))
@@ -26,7 +26,7 @@ row_create(Schema* schema, uint8_t* data, int data_size)
 	data_read_array(&pos, &count);
 
 	bool is_partial = false;
-	auto column = schema->column;
+	auto column = key->column;
 	for (; column; column = column->next)
 	{
 		// validate data type
@@ -39,7 +39,7 @@ row_create(Schema* schema, uint8_t* data, int data_size)
 				      str_of(&column->name));
 		} else
 		{
-			if (unlikely(! schema_type_validate(column->type, pos)))
+			if (unlikely(! type_validate(column->type, pos)))
 				error("column <%.*s>: does not match data type",
 				      str_size(&column->name),
 				      str_of(&column->name));
@@ -58,10 +58,10 @@ row_create(Schema* schema, uint8_t* data, int data_size)
 	}
 
 	// create row
-	auto self = row_allocate(schema, data_size);
+	auto self = row_allocate(key, data_size);
 	self->is_partial = is_partial;
-	for (int i = 0; i < schema->key_count; i++)
-		row_key_set_index(self, schema, i, index[i]);
-	memcpy(row_data(self, schema), data, data_size);
+	for (int i = 0; i < key->key_count; i++)
+		row_key_set_index(self, key, i, index[i]);
+	memcpy(row_data(self, key), data, data_size);
 	return self;
 }

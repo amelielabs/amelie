@@ -7,15 +7,15 @@
 //
 
 hot static inline int
-compare_n(Schema* schema, int count, Row* a, Row* b)
+compare_n(Key* self, int count, Row* a, Row* b)
 {
-	assert(count <= schema->key_count);
+	assert(count <= self->key_count);
 
-	auto key = schema->key;
+	auto key = self->key;
 	for (; key && count > 0; key = key->next_key)
 	{
-		uint8_t* a_data = row_key(a, schema, key->order_key);
-		uint8_t* b_data = row_key(b, schema, key->order_key);
+		uint8_t* a_data = row_key(a, self, key->order_key);
+		uint8_t* b_data = row_key(b, self, key->order_key);
 		int rc;
 		if (key->type == TYPE_STRING)
 			rc = data_compare_string(a_data, b_data);
@@ -29,7 +29,7 @@ compare_n(Schema* schema, int count, Row* a, Row* b)
 }
 
 hot static inline int
-compare(Schema* schema, Row* a, Row* b)
+compare(Key* self, Row* a, Row* b)
 {
-	return compare_n(schema, schema->key_count, a, b);
+	return compare_n(self, self->key_count, a, b);
 }

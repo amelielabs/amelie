@@ -17,7 +17,7 @@ enum
 };
 
 hot static inline bool
-schema_type_validate(int type, uint8_t* data)
+type_validate(int type, uint8_t* data)
 {
 	switch (type) {
 	case TYPE_MAP:
@@ -37,7 +37,7 @@ schema_type_validate(int type, uint8_t* data)
 }
 
 hot static inline const char*
-schema_type_of(int type)
+type_of(int type)
 {
 	switch (type) {
 	case TYPE_MAP:    return "map";

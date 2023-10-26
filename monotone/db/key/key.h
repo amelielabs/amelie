@@ -6,9 +6,9 @@
 // SQL OLTP database
 //
 
-typedef struct Schema Schema;
+typedef struct Key Key;
 
-struct Schema
+struct Key
 {
 	// columns
 	Column*  column;
@@ -26,14 +26,14 @@ struct Schema
 };
 
 static inline Column*
-schema_column_of(Schema* self, int pos)
+key_column_of(Key* self, int pos)
 {
 	assert(pos < self->column_count);
 	return self->column_index[pos];
 }
 
 static inline void
-schema_init(Schema* self)
+key_init(Key* self)
 {
 	self->column       = NULL;
 	self->column_tail  = NULL;
@@ -48,7 +48,7 @@ schema_init(Schema* self)
 }
 
 static inline void
-schema_free(Schema* self)
+key_free(Key* self)
 {
 	auto column = self->column;
 	while (column)
@@ -62,17 +62,17 @@ schema_free(Schema* self)
 }
 
 static inline void
-schema_set_reserved(Schema* self, int size)
+key_set_reserved(Key* self, int size)
 {
 	self->reserved = size;
 }
 
 static inline void
-schema_add_column(Schema* self, Column* column)
+key_add_column(Key* self, Column* column)
 {
 	Column** column_index;
-	column_index = mn_realloc(self->column_index, sizeof(Column*) * (self->column_count + 1));
-
+	column_index = mn_realloc(self->column_index,
+	                          sizeof(Column*) * (self->column_count + 1));
 	column->order = self->column_count;
 	if (self->column == NULL)
 		self->column = column;
@@ -85,7 +85,7 @@ schema_add_column(Schema* self, Column* column)
 }
 
 static inline void
-schema_add_key(Schema* self, Column* column)
+key_add_key(Key* self, Column* column)
 {
 	assert(column->order_key == -1);
 	column->order_key = self->key_count;
@@ -98,7 +98,7 @@ schema_add_key(Schema* self, Column* column)
 }
 
 hot static inline Column*
-schema_find_column(Schema* self, Str* name)
+key_find_column(Key* self, Str* name)
 {
 	auto column = self->column;
 	for (; column; column = column->next)
@@ -108,7 +108,7 @@ schema_find_column(Schema* self, Str* name)
 }
 
 hot static inline Column*
-schema_find_key(Schema* self, Str* name)
+key_find_key(Key* self, Str* name)
 {
 	auto column = self->key;
 	for (; column; column = column->next_key)
@@ -118,7 +118,7 @@ schema_find_key(Schema* self, Str* name)
 }
 
 hot static inline Column*
-schema_find_key_by_order(Schema* self, int order)
+key_find_key_by_order(Key* self, int order)
 {
 	auto column = self->key;
 	for (; column; column = column->next_key)
@@ -128,23 +128,23 @@ schema_find_key_by_order(Schema* self, int order)
 }
 
 static inline void
-schema_copy(Schema* self, Schema* src)
+key_copy(Key* self, Key* src)
 {
 	// add columns
 	auto column = src->column;
 	for (; column; column = column->next)
 	{
 		auto copy = column_copy(column);
-		schema_add_column(self, copy);
+		key_add_column(self, copy);
 	}
 
 	// add keys
 	column = src->key;
 	for (; column; column = column->next_key)
 	{
-		auto key = schema_find_column(self, &column->name);
+		auto key = key_find_column(self, &column->name);
 		assert(key);
-		schema_add_key(self, key);
+		key_add_key(self, key);
 	}
 	self->key_exclude = src->key_exclude;
 	self->key_unique  = src->key_unique;
@@ -152,7 +152,7 @@ schema_copy(Schema* self, Schema* src)
 }
 
 static inline void
-schema_read(Schema* self, uint8_t** pos)
+key_read(Key* self, uint8_t** pos)
 {
 	// { column:[], key_unique, key_exclude, key:[], reserved }
 	int count;
@@ -165,7 +165,7 @@ schema_read(Schema* self, uint8_t** pos)
 	for (; i < count; i++)
 	{
 		auto column = column_read(pos);
-		schema_add_column(self, column);
+		key_add_column(self, column);
 	}
 
 	// key_unique
@@ -186,10 +186,10 @@ schema_read(Schema* self, uint8_t** pos)
 	{
 		Str name;
 		data_read_string(pos, &name);
-		auto key = schema_find_column(self, &name);
+		auto key = key_find_column(self, &name);
 		if (unlikely(key == NULL))
-			error("schema column is not found");
-		schema_add_key(self, key);
+			error("key column is not found");
+		key_add_key(self, key);
 	}
 
 	// reserved
@@ -200,7 +200,7 @@ schema_read(Schema* self, uint8_t** pos)
 }
 
 static inline void
-schema_write(Schema* self, Buf* buf)
+key_write(Key* self, Buf* buf)
 {
 	// { column:[], key_unique, key_exclude, key:[], reserved }
 	encode_map(buf, 5);
