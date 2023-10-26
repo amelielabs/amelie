@@ -71,7 +71,24 @@ void
 parse_user_alter(Stmt* self)
 {
 	// ALTER USER name PASSWORD expr
-	unused(self);
+	auto stmt = ast_user_alter_allocate();
+	self->ast = &stmt->ast;
 
-	// todo
+	stmt->config = user_config_allocate();
+
+	// name
+	auto name = stmt_if(self, KNAME);
+	if (! name)
+		error("ALTER USER <name> expected");
+	user_config_set_name(stmt->config, &name->string);
+
+	// PASSWORD
+	if (! stmt_if(self, KPASSWORD))
+		error("ALTER USER <PASSWORD> expected");
+
+	// value
+	auto value = stmt_if(self, KSTRING);
+	if (! value)
+		error("ALTER USER PASSWORD <value> string expected");
+	user_config_set_secret(stmt->config, &value->string);
 }

@@ -8,6 +8,7 @@
 
 typedef struct AstUserCreate AstUserCreate;
 typedef struct AstUserDrop   AstUserDrop;
+typedef struct AstUserAlter  AstUserAlter;
 
 struct AstUserCreate
 {
@@ -21,6 +22,12 @@ struct AstUserDrop
 	Ast  ast;
 	bool if_exists;
 	Ast* name;
+};
+
+struct AstUserAlter
+{
+	Ast         ast;
+	UserConfig* config;
 };
 
 static inline AstUserCreate*
@@ -52,6 +59,21 @@ ast_user_drop_allocate(void)
 	self = ast_allocate(STMT_DROP_USER, sizeof(AstUserDrop));
 	self->if_exists = false;
 	self->name      = NULL;
+	return self;
+}
+
+static inline AstUserAlter*
+ast_user_alter_of(Ast* ast)
+{
+	return (AstUserAlter*)ast;
+}
+
+static inline AstUserAlter*
+ast_user_alter_allocate(void)
+{
+	AstUserAlter* self;
+	self = ast_allocate(STMT_ALTER_USER, sizeof(AstUserAlter));
+	self->config = NULL;
 	return self;
 }
 

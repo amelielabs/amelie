@@ -275,8 +275,11 @@ session_execute_utility(Session* self)
 		break;
 
 	case STMT_ALTER_USER:
-		// todo
+	{
+		auto arg = ast_user_alter_of(stmt->ast);
+		rpc(global()->control->core, RPC_USER_ALTER, 1, arg->config);
 		break;
+	}
 
 	case STMT_ALTER_TABLE:
 		// todo
