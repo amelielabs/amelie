@@ -1,0 +1,88 @@
+#
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+# test: create user statement parsing
+create user
+create user 123
+create user if
+create user if not
+create user if not 123
+create user if not exists
+create user test abc
+
+# test: create user
+create user test
+show users
+
+# test: create user if not exists
+create user test
+create user if not exists test
+
+# test: create user password
+create user test2 password
+create user test2 password 123
+create user test2 password password
+create user test2 password "test" abc
+create user test2 password "test"
+show users
+
+# test: drop user statment parsing
+drop user
+drop user 123
+drop user if
+drop user if exists
+drop user if exists 123
+
+# test: drop user
+drop user test
+show users
+
+# test: drop user if exists
+drop user test
+drop user if exists test
+
+# test: alter user statment parsing
+alter user
+alter user 123
+alter user test
+alter user test2
+alter user test2 passw
+alter user test2 password
+alter user test2 password 123
+alter user test2 password name
+
+# test: alter user
+alter user test2 password "abc"
+show users
+
+# test: alter user unset password
+alter user test2 password ""
+show users
+
+# test: alter user set password
+alter user test2 password "abc"
+show users
+
+# test: recover
+disconnect S0
+env_close E0
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+show users
+drop user test2
+show users
+
+disconnect S0
+env_close E0
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+show users
+
+disconnect S0
+env_close E0
