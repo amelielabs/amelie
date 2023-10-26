@@ -236,15 +236,15 @@ json_read(Json* self, int skip)
 		return token;
 fp:;
 		char* end;
-		float value_fp = strtof(self->json + self->pos, &end);
+		double real = strtod(self->json + self->pos, &end);
 		if (errno == ERANGE)
 			return -1;
 		self->pos += (end - (self->json + self->pos));
 		if (unlikely(self->pos > self->json_size))
 			return -1;
 		if (negative)
-			value_fp = -value_fp;
-		encode_float(data, value_fp);
+			real = -real;
+		encode_real(data, real);
 		return token;
 	}
 	default:

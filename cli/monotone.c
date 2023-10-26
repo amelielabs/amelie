@@ -63,8 +63,8 @@ print_object(mono_object_t* object, int deep)
 		return;
 
 	switch (type) {
-	case MONO_FLOAT:
-		printf("%f", *(float*)data.data);
+	case MONO_REAL:
+		printf("%f", *(double*)data.data);
 		break;
 	case MONO_BOOL:
 		if (*(int8_t*)data.data > 0)

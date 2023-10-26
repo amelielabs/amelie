@@ -574,53 +574,70 @@ data_compare_bool(uint8_t* a, uint8_t* b)
 	return (a_value > b_value) ? 1 : -1;
 }
 
-// float
+// real
 always_inline hot static inline int
-data_size_float(void)
+data_size_real(double value)
 {
-	return data_size_type() + sizeof(float);
+	if (value >= FLT_MIN && value <= FLT_MAX)
+		return data_size_type() + sizeof(float);
+	return data_size_type() + sizeof(double);
 }
-
 always_inline hot static inline void
-data_read_float(uint8_t** pos, float* value)
+data_read_real(uint8_t** pos, double* value)
 {
 	uint8_t* data = *pos;
-	if (unlikely(*data != MN_FLOAT))
-		data_error(*pos, MN_FLOAT);
-	*value = *(float*)(data + data_size_type());
-	*pos += data_size_float();
+	if (*data == MN_REAL32)
+	{
+		*value = *(float*)(data + data_size_type());
+		*pos += data_size_type() + sizeof(float);
+	} else
+	if (*data == MN_REAL64)
+	{
+		*value = *(double*)(data + data_size_type());
+		*pos += data_size_type() + sizeof(double);
+	} else {
+		data_error(*pos, MN_REAL32);
+	}
 }
 
-always_inline hot static inline float
-data_read_float_at(uint8_t* pos)
+always_inline hot static inline double
+data_read_real_at(uint8_t* pos)
 {
-	float value;
-	data_read_float(&pos, &value);
+	double value;
+	data_read_real(&pos, &value);
 	return value;
 }
 
 always_inline hot static inline void
-data_write_float(uint8_t** pos, float value)
+data_write_real(uint8_t** pos, double value)
 {
 	uint8_t* data = *pos;
-	*data = MN_FLOAT;
-	*(float*)(data + data_size_type()) = value;
-	*pos += data_size_float();
+	if (value >= FLT_MIN && value <= FLT_MAX)
+	{
+		*data = MN_REAL32;
+		*(float*)(data + data_size_type()) = value;
+		*pos += data_size_type() + sizeof(float);
+	} else
+	{
+		*data = MN_REAL64;
+		*(double*)(data + data_size_type()) = value;
+		*pos += data_size_type() + sizeof(double);
+	}
 }
 
 always_inline hot static inline bool
-data_is_float(uint8_t* data)
+data_is_real(uint8_t* data)
 {
-	return *data == MN_FLOAT;
+	return *data == MN_REAL32 || *data == MN_REAL64;
 }
 
 always_inline hot static inline int
-data_compare_float(uint8_t* a, uint8_t* b)
+data_compare_real(uint8_t* a, uint8_t* b)
 {
-	float a_value;
-	float b_value;
-	a_value = data_read_float_at(a);
-	b_value = data_read_float_at(b);
+	double a_value;
+	double b_value;
+	a_value = data_read_real_at(a);
+	b_value = data_read_real_at(b);
 	if (a_value == b_value)
 		return 0;
 	return (a_value > b_value) ? 1 : -1;
@@ -710,10 +727,11 @@ data_skip(uint8_t** pos)
 		data_read_null(pos);
 		break;
 	}
-	case MN_FLOAT:
+	case MN_REAL32:
+	case MN_REAL64:
 	{
-		float value;
-		data_read_float(pos, &value);
+		double value;
+		data_read_real(pos, &value);
 		break;
 	}
 	case MN_INTV0 ... MN_INT64:
@@ -755,6 +773,7 @@ data_skip(uint8_t** pos)
 		data_skip(pos);
 		break;
 	}
+
 	default:
 		error_data();
 		break;

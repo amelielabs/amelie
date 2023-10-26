@@ -16,10 +16,10 @@ make_bool(bool value)
 }
 
 static inline Buf*
-make_float(float value)
+make_real(double value)
 {
 	auto buf = msg_create(MSG_OBJECT);
-	encode_float(buf, value);
+	encode_real(buf, value);
 	msg_end(buf);
 	return buf;
 }

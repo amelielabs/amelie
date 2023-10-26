@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <float.h>
 #include <math.h>
 #include <setjmp.h>
 #include <assert.h>

@@ -31,10 +31,11 @@ json_to_string(Buf *data, uint8_t** pos)
 			buf_write(data, "false", 5);
 		break;
 	}
-	case MN_FLOAT:
+	case MN_REAL32:
+	case MN_REAL64:
 	{
-		float value;
-		data_read_float(pos, &value);
+		double value;
+		data_read_real(pos, &value);
 		buf_len = snprintf(buf, sizeof(buf), "%f", value);
 		buf_write(data, buf, buf_len);
 		break;
@@ -120,10 +121,11 @@ json_to_string_pretty(Buf* data, int deep, uint8_t** pos)
 			buf_write(data, "false", 5);
 		break;
 	}
-	case MN_FLOAT:
+	case MN_REAL32:
+	case MN_REAL64:
 	{
-		float value;
-		data_read_float(pos, &value);
+		double value;
+		data_read_real(pos, &value);
 		buf_len = snprintf(buf, sizeof(buf), "%f", value);
 		buf_write(data, buf, buf_len);
 		break;

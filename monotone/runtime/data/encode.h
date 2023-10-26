@@ -83,10 +83,10 @@ encode_bool(Buf* self, bool value)
 }
 
 always_inline hot static inline void
-encode_float(Buf* self, float value)
+encode_real(Buf* self, double value)
 {
-	auto pos = buf_reserve(self, data_size_float());
-	data_write_float(pos, value);
+	auto pos = buf_reserve(self, data_size_real(value));
+	data_write_real(pos, value);
 }
 
 always_inline hot static inline void
