@@ -1,0 +1,19 @@
+#
+
+env_open E0 "uuid": "abc00000-0000-0000-0000-000000000000"
+connect E0 S0
+
+# test: ensure custom instance uuid
+show all
+
+# test: ensure uuid recover
+disconnect S0
+env_close E0
+
+env_open E0
+connect E0 S0
+
+show all
+
+disconnect S0
+env_close E0
