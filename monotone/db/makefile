@@ -12,7 +12,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/lib \
                  -I../runtime/config \
                  -I. \
-                 -Ischema \
+                 -Ikey \
                  -Itransaction \
                  -Istorage \
                  -Iwal \
@@ -20,7 +20,7 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-db.a
 OBJECTS        = \
-                 schema/row.o \
+                 key/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
                  storage/tree.o \

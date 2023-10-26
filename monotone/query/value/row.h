@@ -7,15 +7,15 @@
 //
 
 hot static inline Row*
-value_row_key(Schema* schema, Stack* stack)
+value_row_key(Key* self, Stack* stack)
 {
 	// calculate row size and validate columns
-	int size = data_size_array(schema->key_count);
+	int size = data_size_array(self->key_count);
 
-	auto key = schema->key;
+	auto key = self->key;
 	for (; key; key = key->next_key)
 	{
-		auto ref = stack_at(stack, schema->key_count - key->order_key);
+		auto ref = stack_at(stack, self->key_count - key->order_key);
 		if (key->type == TYPE_STRING)
 		{
 			if (unlikely(ref->type != VALUE_STRING))
@@ -33,18 +33,18 @@ value_row_key(Schema* schema, Stack* stack)
 		}
 	}
 
-	auto row = row_allocate(schema, size);
+	auto row = row_allocate(self, size);
 
 	// copy keys and indexate
-	uint8_t* start = row_data(row, schema);
+	uint8_t* start = row_data(row, self);
 	uint8_t* pos = start;
-	data_write_array(&pos, schema->key_count);
+	data_write_array(&pos, self->key_count);
 
-	key = schema->key;
+	key = self->key;
 	for (; key; key = key->next_key)
 	{
-		auto ref = stack_at(stack, schema->key_count - key->order_key);
-		row_key_set_index(row, schema, key->order_key, pos - start);
+		auto ref = stack_at(stack, self->key_count - key->order_key);
+		row_key_set_index(row, self, key->order_key, pos - start);
 		if (key->type == TYPE_STRING)
 			data_write_string(&pos, &ref->string);
 		else

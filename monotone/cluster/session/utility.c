@@ -13,7 +13,7 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -63,7 +63,7 @@ execute_create_storages(Session* self, Table* table)
 		index_config_set_name(index_config, &name);
 		index_config_set_type(index_config, INDEX_TREE);
 		index_config_set_primary(index_config, true);
-		schema_copy(&index_config->schema, &table->config->schema);
+		key_copy(&index_config->key, &table->config->key);
 
 		// create tree index
 		auto index = tree_allocate(index_config, &storage->config->id);

@@ -42,8 +42,8 @@ table_of(Handle* handle)
 	return (Table*)handle;
 }
 
-static inline Schema*
-table_schema(Table* self)
+static inline Key*
+table_key(Table* self)
 {
-	return &self->config->schema;
+	return &self->config->key;
 }

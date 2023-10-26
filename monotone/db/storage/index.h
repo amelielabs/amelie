@@ -65,8 +65,8 @@ index_read(Index* self)
 	return self->read(self);
 }
 
-static inline Schema*
-index_schema(Index* self)
+static inline Key*
+index_key(Index* self)
 {
-	return &self->config->schema;
+	return &self->config->key;
 }

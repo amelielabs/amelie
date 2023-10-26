@@ -10,7 +10,7 @@
 #include <monotone_data.h>
 #include <monotone_lib.h>
 #include <monotone_config.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 
@@ -46,7 +46,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	Row* prev = NULL;
 	RbtreeNode* node;
 	int rc;
-	rc = tree_find(&self->tree, &self->index.config->schema, row, &node);
+	rc = tree_find(&self->tree, &self->index.config->key, row, &node);
 	if (rc == 0 && node)
 	{
 		// replace
@@ -64,7 +64,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
 	        self->index.config->primary,
 	        self->storage,
-	        &self->index.config->schema,
+	        &self->index.config->key,
 	        row, prev);
 
 	// is replace
@@ -95,7 +95,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
 	        self->index.config->primary,
 	        self->storage,
-	        &self->index.config->schema,
+	        &self->index.config->key,
 	        row, prev);
 }
 
@@ -122,7 +122,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	log_add(&trx->log, LOG_DELETE, &tree_iface, self,
 	        self->index.config->primary,
 	        self->storage,
-	        &self->index.config->schema,
+	        &self->index.config->key,
 	        prev, prev);
 }
 
@@ -141,7 +141,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	Row* prev = NULL;
 	RbtreeNode* node;
 	int rc;
-	rc = tree_find(&self->tree, &self->index.config->schema, key, &node);
+	rc = tree_find(&self->tree, &self->index.config->key, key, &node);
 	if (rc == 0 && node)
 	{
 		// replace
@@ -158,7 +158,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	log_add(&trx->log, LOG_DELETE, &tree_iface, self,
 	        self->index.config->primary,
 	        self->storage,
-	        &self->index.config->schema,
+	        &self->index.config->key,
 	        key, prev);
 }
 
@@ -188,7 +188,7 @@ tree_allocate(IndexConfig* config, Uuid* storage)
 
 	guard(guard, tree_free, self);
 	self->index.config = index_config_copy(config);
-	schema_set_reserved(&self->index.config->schema, sizeof(TreeRow));
+	key_set_reserved(&self->index.config->key, sizeof(TreeRow));
 	unguard(&guard);
 	return &self->index;
 }
@@ -217,7 +217,7 @@ tree_abort(void* arg, LogCmd cmd, Row* row, Row* prev)
 	} else
 	{
 		// abort delete
-		rc = tree_find(&self->tree, &self->index.config->schema, prev, &node);
+		rc = tree_find(&self->tree, &self->index.config->key, prev, &node);
 		TreeRow* ref_prev = row_reserved(prev);
 		rbtree_init_node(&ref_prev->node);
 		rbtree_set(&self->tree, node, rc, &ref_prev->node);

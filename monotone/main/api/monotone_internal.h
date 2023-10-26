@@ -14,7 +14,7 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>

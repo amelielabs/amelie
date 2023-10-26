@@ -13,7 +13,7 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -42,10 +42,10 @@ ccursor_open(Vm* self, Op* op)
 	auto index   = storage_find(storage, &name_index, true);
 
 	// create cursor key
-	auto schema = index_schema(index);
-	auto key = value_row_key(schema, &self->stack);
+	auto def = index_key(index);
+	auto key = value_row_key(def, &self->stack);
 	guard(row_guard, row_free, key);
-	stack_popn(&self->stack, schema->key_count);
+	stack_popn(&self->stack, def->key_count);
 
 	// open cursor
 	cursor->type    = CURSOR_TABLE;
@@ -184,10 +184,10 @@ ccursor_read(Vm* self, Op* op)
 	{
 		if (unlikely(! iterator_has(cursor->it)))
 			error("*: not in active aggregation");
-		auto schema  = index_schema(cursor->index);
+		auto key = index_key(cursor->index);
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		value_set_data(a, row_data(current, schema), row_data_size(current, schema), NULL);
+		value_set_data(a, row_data(current, key), row_data_size(current, key), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
@@ -230,7 +230,7 @@ ccursor_idx(Vm* self, Op* op)
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		data     = row_data(current, index_schema(cursor->index));
+		data     = row_data(current, index_key(cursor->index));
 		data_buf = NULL;
 		break;
 	}
@@ -259,11 +259,11 @@ ccursor_idx(Vm* self, Op* op)
 		if (cursor->type != CURSOR_TABLE)
 			error("cursor: unsupported operation");
 
-		auto schema = index_schema(cursor->index);
+		auto key = index_key(cursor->index);
 		int  column_order = op->c;
-		if (column_order < schema->column_count)
+		if (column_order < key->column_count)
 		{
-			auto column = schema_column_of(schema, column_order);
+			auto column = key_column_of(key, column_order);
 			column_find(column, &data);
 		} else
 		{

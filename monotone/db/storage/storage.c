@@ -10,7 +10,7 @@
 #include <monotone_data.h>
 #include <monotone_lib.h>
 #include <monotone_config.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 
@@ -88,7 +88,7 @@ storage_set(Storage*     self,
 	auto primary = storage_primary(self);
 
 	// allocate row
-	auto row = row_create(&primary->config->schema, data, data_size);
+	auto row = row_create(&primary->config->key, data, data_size);
 	guard(row_guard, row_free, row);
 
 	// update primary index
@@ -110,7 +110,7 @@ storage_update(Storage*     self,
 	// todo: primary iterator only
 
 	// allocate row
-	auto row = row_create(&primary->config->schema, data, data_size);
+	auto row = row_create(&primary->config->key, data, data_size);
 	guard(row_guard, row_free, row);
 
 	// update primary index
@@ -139,7 +139,7 @@ storage_delete_by(Storage*     self,
 	auto primary = storage_primary(self);
 
 	// allocate row
-	auto key = row_create(&primary->config->schema, data, data_size);
+	auto key = row_create(&primary->config->key, data, data_size);
 	guard(row_guard, row_free, key);
 
 	// delete from primary index by key

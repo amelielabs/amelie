@@ -10,7 +10,7 @@
 #include <monotone_data.h>
 #include <monotone_lib.h>
 #include <monotone_config.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 
 void

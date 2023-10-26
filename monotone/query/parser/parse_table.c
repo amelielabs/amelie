@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_auth.h>
-#include <monotone_schema.h>
+#include <monotone_key.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -36,7 +36,7 @@ parse_primary_key(Stmt* self)
 static void
 parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 {
-	auto schema = &stmt->config->schema;
+	auto key = &stmt->config->key;
 
 	// (
 	if (! stmt_if(self, '('))
@@ -50,7 +50,7 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			error("PRIMARY KEY (<name> expected");
 
 		// ensure column exists
-		auto column = schema_find_column(schema, &name->string);
+		auto column = key_find_column(key, &name->string);
 		if (! column)
 			error("<%.*s> column does not exists", str_size(&name->string),
 			      str_of(&name->string));
@@ -61,8 +61,7 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			      str_of(&name->string));
 
 		// ensure key is not redefined
-		auto key = schema_find_key(schema, &name->string);
-		if (key)
+		if (key_find_key(key, &name->string))
 			error("<%.*s> column redefined as a key", str_size(&name->string),
 			      str_of(&name->string));
 
@@ -76,7 +75,7 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 		column_set_asc(column, asc);
 
 		// add column as a key
-		schema_add_key(schema, column);
+		key_add_key(key, column);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -117,10 +116,10 @@ parse_type(Stmt* self, Ast* name)
 }
 
 static void
-parser_schema(Stmt* self, AstTableCreate* stmt)
+parser_key(Stmt* self, AstTableCreate* stmt)
 {
 	// (name type [primary key], ..., primary key())
-	auto schema = &stmt->config->schema;
+	auto key = &stmt->config->key;
 
 	// (
 	if (! stmt_if(self, '('))
@@ -144,14 +143,14 @@ parser_schema(Stmt* self, AstTableCreate* stmt)
 		int type = parse_type(self, name);
 
 		// ensure column does not exists
-		auto column = schema_find_column(schema, &name->string);
+		auto column = key_find_column(key, &name->string);
 		if (column)
 			error("<%.*s> column redefined", str_size(&name->string),
 			      str_of(&name->string));
 
 		// create new column
 		column = column_allocate();
-		schema_add_column(schema, column);
+		key_add_column(key, column);
 		column_set_name(column, &name->string);
 		column_set_type(column, type);
 
@@ -161,7 +160,7 @@ parser_schema(Stmt* self, AstTableCreate* stmt)
 			if (type != TYPE_INT && type != TYPE_STRING)
 				error("<%.*s> column key can be string or int",
 				      str_size(&name->string), str_of(&name->string));
-			schema_add_key(schema, column);
+			key_add_key(key, column);
 		}
 
 		// ,
@@ -175,14 +174,14 @@ last:
 		error("CREATE TABLE name (name TYPE <,)> expected");
 	}
 
-	if (schema->key_count == 0)
+	if (key->key_count == 0)
 		error("primary key is not defined");
 }
 
 void
 parse_table_create(Stmt* self)
 {
-	// CREATE TABLE [IF NOT EXISTS] name (schema)
+	// CREATE TABLE [IF NOT EXISTS] name (key)
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -201,8 +200,8 @@ parse_table_create(Stmt* self)
 		error("CREATE TABLE <name> expected");
 	table_config_set_name(stmt->config, &name->string);
 
-	// (schema)
-	parser_schema(self, stmt);
+	// (key)
+	parser_key(self, stmt);
 }
 
 void
