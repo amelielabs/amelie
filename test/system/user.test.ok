@@ -22,7 +22,7 @@ query: on_error
 {"code": 1, "msg": "CREATE USER <name> expected"}
 create user test abc
 query: on_error
-{"code": 1, "msg": "unknown command"}
+{"code": 1, "msg": "unexpected clause at the end of command"}
 # test: create user
 create user test
 show users
@@ -44,7 +44,7 @@ query: on_error
 {"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
 create user test2 password "test" abc
 query: on_error
-{"code": 1, "msg": "unknown command"}
+{"code": 1, "msg": "unexpected clause at the end of command"}
 create user test2 password "test"
 show users
 {"test": {"name": "test", "password": false}, "test2": {"name": "test2", "password": true}}

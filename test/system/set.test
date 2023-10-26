@@ -1,0 +1,64 @@
+#
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+# test: set statement parsing
+set
+set name
+set "log_enable"
+set log_enable
+set log_enable to
+set log_enable to 0
+set query_dump to 0 junk
+
+# test: set read-only
+set log_enable to 0 # ro
+
+# test: set int
+show test_int
+set test_int to "test"
+show test_int
+
+set test_int to 1234
+show test_int
+
+set test_int to -1
+show test_int
+
+set test_int to 2147483647
+show test_int
+
+set test_int to 4294967295
+show test_int
+
+set test_int to 9223372036854775807
+show test_int
+
+set test_int to 18446744073709551615
+show test_int
+
+set test_int to 18446744073709551616
+show test_int
+
+# test: set string
+show test_string
+set test_string to 1234
+show test_string
+
+set test_string to "hello"
+show test_string
+
+set test_string to ""
+show test_string
+
+set test_string to "world"
+show test_string
+
+# test: set data
+show test_data
+set test_data to 1234
+show test_data
+
+disconnect S0
+env_close E0
