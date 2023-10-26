@@ -154,6 +154,9 @@ execute_show(Session* self, Ast* ast)
 	if (str_compare_raw(&arg->expr->string, "wal", 3))
 		buf = wal_status(self->share->wal);
 	else
+	if (str_compare_raw(&arg->expr->string, "storages", 8))
+		buf = storage_mgr_list(&self->share->db->storage_mgr);
+	else
 	if (str_compare_raw(&arg->expr->string, "tables", 6))
 		buf = table_mgr_list(&self->share->db->table_mgr);
 	else
