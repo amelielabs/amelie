@@ -92,6 +92,7 @@ core_create(void)
 	// prepare shared context (shared between hubs)
 	auto share = &self->share;
 	share->function_mgr  = &self->function_mgr;
+	share->schema_mgr    = &self->db.schema_mgr;
 	share->meta_mgr      = &self->db.meta_mgr;
 	share->table_mgr     = &self->db.table_mgr;
 	share->storage_mgr   = &self->db.storage_mgr;
