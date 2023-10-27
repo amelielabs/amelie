@@ -178,6 +178,7 @@ static Keyword keywords_s[] =
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
 	{ KSWITCH,                "switch",                6  },
+	{ KSCHEMA,                "schema",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

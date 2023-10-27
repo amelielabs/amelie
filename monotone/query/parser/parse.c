@@ -145,12 +145,17 @@ parse(Parser* self, Str* str)
 				stmt->id = STMT_CREATE_USER;
 				parse_user_create(stmt);
 			} else
+			if (lex_if(lex, KSCHEMA))
+			{
+				stmt->id = STMT_CREATE_SCHEMA;
+				parse_schema_create(stmt);
+			} else
 			if (lex_if(lex, KTABLE))
 			{
 				stmt->id = STMT_CREATE_TABLE;
 				parse_table_create(stmt);
 			} else
-				error("CREATE <USER|TABLE> expected");
+				error("CREATE <USER|SCHEMA|TABLE> expected");
 			break;
 		}
 
@@ -163,13 +168,18 @@ parse(Parser* self, Str* str)
 				stmt->id = STMT_DROP_USER;
 				parse_user_drop(stmt);
 			} else
+			if (lex_if(lex, KSCHEMA))
+			{
+				stmt->id = STMT_DROP_SCHEMA;
+				parse_schema_drop(stmt);
+			} else
 			if (lex_if(lex, KTABLE))
 			{
 				stmt->id = STMT_DROP_TABLE;
 				parse_table_drop(stmt);
 			}
 			else
-				error("DROP <USER|TABLE> expected");
+				error("DROP <USER|SCHEMA|TABLE> expected");
 			break;
 		}
 

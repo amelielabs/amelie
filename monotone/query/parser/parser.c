@@ -59,6 +59,18 @@ parser_reset(Parser* self)
 				user_config_free(ast->config);
 			break;
 		}
+		case STMT_CREATE_SCHEMA:
+		{
+			auto ast = ast_schema_create_of(stmt->ast);
+			if (ast->config)
+				schema_config_free(ast->config);
+			break;
+		}
+		case STMT_ALTER_SCHEMA:
+		{
+			// tood:
+			break;
+		}
 		case STMT_CREATE_TABLE:
 		{
 			auto ast = ast_table_create_of(stmt->ast);
