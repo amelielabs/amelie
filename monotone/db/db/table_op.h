@@ -7,7 +7,7 @@
 //
 
 static inline Buf*
-table_op_create_table(TableConfig* config)
+table_op_create(TableConfig* config)
 {
 	// [config]
 	auto buf = buf_create(0);
@@ -17,7 +17,7 @@ table_op_create_table(TableConfig* config)
 }
 
 static inline Buf*
-table_op_drop_table(Str* name)
+table_op_drop(Str* name)
 {
 	// [name]
 	auto buf = buf_create(0);
@@ -27,7 +27,7 @@ table_op_drop_table(Str* name)
 }
 
 static inline Buf*
-table_op_alter_table(Str* name, TableConfig* config)
+table_op_alter(Str* name, TableConfig* config)
 {
 	// [name, config]
 	auto buf = buf_create(0);
@@ -38,7 +38,7 @@ table_op_alter_table(Str* name, TableConfig* config)
 }
 
 static inline TableConfig*
-table_op_create_table_read(uint8_t** pos)
+table_op_create_read(uint8_t** pos)
 {
 	int count;
 	data_read_array(pos, &count);
@@ -46,7 +46,7 @@ table_op_create_table_read(uint8_t** pos)
 }
 
 static inline void
-table_op_drop_table_read(uint8_t **pos, Str* name)
+table_op_drop_read(uint8_t **pos, Str* name)
 {
 	int count;
 	data_read_array(pos, &count);
@@ -54,7 +54,7 @@ table_op_drop_table_read(uint8_t **pos, Str* name)
 }
 
 static inline TableConfig*
-table_op_alter_table_read(uint8_t** pos, Str* name)
+table_op_alter_read(uint8_t** pos, Str* name)
 {
 	int count;
 	data_read_array(pos, &count);

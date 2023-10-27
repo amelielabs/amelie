@@ -49,7 +49,7 @@ table_mgr_create(TableMgr*    self,
 	guard(guard, table_free, table);
 
 	// save create table operation
-	auto op = table_op_create_table(config);
+	auto op = table_op_create(config);
 
 	// update tables
 	handle_mgr_write(&self->mgr, trx, LOG_CREATE_TABLE, &table->handle, op);
@@ -62,7 +62,7 @@ static void
 table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
 {
 	// save drop table operation
-	auto op = table_op_drop_table(&table->config->name);
+	auto op = table_op_drop(&table->config->name);
 
 	// drop table by name
 	Handle drop;
@@ -119,7 +119,7 @@ table_mgr_alter(TableMgr*    self,
 	}
 
 	// save alter table operation
-	auto op = table_op_alter_table(name, config);
+	auto op = table_op_alter(name, config);
 
 	// update tables
 	handle_mgr_write(&self->mgr, trx, LOG_ALTER_TABLE, &update->handle, op);
