@@ -71,8 +71,7 @@ static inline void
 str_advance(Str *self, int size)
 {
 	self->pos += size;
-	self->end -= size;
-	assert(self->end <= self->pos);
+	assert(self->pos <= self->end);
 }
 
 static inline bool
