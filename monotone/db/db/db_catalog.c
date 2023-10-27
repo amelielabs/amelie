@@ -19,13 +19,52 @@
 static void
 db_catalog_dump(Catalog* cat, Buf* buf)
 {
-	// { tables, metas }
+	// { schemas, tables, metas }
 	Db* self = cat->iface_arg;
-	encode_map(buf, 2);
+	encode_map(buf, 3);
+	encode_raw(buf, "schemas", 7);
+	schema_mgr_dump(&self->schema_mgr, buf);
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
 	encode_raw(buf, "metas", 5);
 	meta_mgr_dump(&self->meta_mgr, buf);
+}
+
+static void
+db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
+{
+	// [table_config]
+	int count;
+	data_read_array(pos, &count);
+
+	Transaction trx;
+	transaction_init(&trx);
+	guard(trx_guard, transaction_free, &trx);
+
+	Exception e;
+	if (try(&e))
+	{
+		// start transaction
+		transaction_begin(&trx);
+		transaction_set_auto_commit(&trx);
+
+		// read schema config
+		auto config = schema_config_read(pos);
+		guard(config_guard, schema_config_free, config);
+
+		// create schema
+		schema_mgr_create(&self->schema_mgr, &trx, config, false);
+	}
+
+	if (catch(&e))
+	{
+		transaction_abort(&trx);
+		rethrow();
+	}
+
+	// set lsn and commit
+	transaction_set_lsn(&trx, lsn);
+	transaction_commit(&trx);
 }
 
 static void
@@ -83,7 +122,7 @@ db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
 		transaction_begin(&trx);
 		transaction_set_auto_commit(&trx);
 
-		// read table config
+		// read meta config
 		auto config = meta_config_read(pos);
 		guard(config_guard, meta_config_free, config);
 
@@ -111,11 +150,17 @@ db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
 	int count;
 	data_read_map(pos, &count);
 
-	// tables
+	// schemas
 	data_skip(pos);
 	data_read_array(pos, &count);
 	int i = 0;
 	for (; i < count; i++)
+		db_catalog_restore_schema(self, lsn, pos);
+
+	// tables
+	data_skip(pos);
+	data_read_array(pos, &count);
+	for (i = 0; i < count; i++)
 		db_catalog_restore_table(self, lsn, pos);
 
 	// metas
