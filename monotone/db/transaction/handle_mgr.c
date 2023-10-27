@@ -35,16 +35,16 @@ handle_mgr_free(HandleMgr* self)
 Handle*
 handle_mgr_set(HandleMgr* self, Handle* handle)
 {
-	auto prev = handle_mgr_delete(self, handle->name);
+	auto prev = handle_mgr_delete(self, handle->schema, handle->name);
 	list_append(&self->list, &handle->link);
 	self->list_count++;
 	return prev;
 }
 
 Handle*
-handle_mgr_delete(HandleMgr* self, Str* name)
+handle_mgr_delete(HandleMgr* self, Str* schema, Str* name)
 {
-	auto prev = handle_mgr_get(self, name);
+	auto prev = handle_mgr_get(self, schema, name);
 	if (prev)
 	{
 		list_unlink(&prev->link);
@@ -55,11 +55,13 @@ handle_mgr_delete(HandleMgr* self, Str* name)
 }
 
 Handle*
-handle_mgr_get(HandleMgr* self, Str* name)
+handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 {
 	list_foreach(&self->list)
 	{
 		auto handle = list_at(Handle, link);
+		if (schema && !str_compare(handle->schema, schema))
+			continue;
 		if (str_compare(handle->name, name))
 			return handle;
 	}
@@ -71,7 +73,7 @@ handle_mgr_abort(HandleMgr* self, Handle* handle, Handle* prev)
 {
 	if (handle)
 	{
-		handle_mgr_delete(self, handle->name);
+		handle_mgr_delete(self, handle->schema, handle->name);
 		handle_free(handle);
 	}
 
@@ -110,7 +112,7 @@ handle_mgr_write(HandleMgr*   self,
 		prev = handle_mgr_set(self, handle);
 	} else
 	{
-		prev = handle_mgr_delete(self, handle->name);
+		prev = handle_mgr_delete(self, handle->schema, handle->name);
 		handle = NULL;
 	}
 

@@ -12,6 +12,7 @@ typedef void (*HandleFree)(Handle*);
 
 struct Handle
 {
+	Str*       schema;
 	Str*       name;
 	uint64_t   lsn;
 	HandleFree free_function;
@@ -21,10 +22,17 @@ struct Handle
 static inline void
 handle_init(Handle* self)
 {
+	self->schema        = NULL;
 	self->name          = NULL;
 	self->lsn           = 0;
 	self->free_function = NULL;
 	list_init(&self->link);
+}
+
+static inline void
+handle_set_schema(Handle* self, Str* schema)
+{
+	self->schema = schema;
 }
 
 static inline void
