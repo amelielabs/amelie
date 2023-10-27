@@ -97,17 +97,19 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	}
 	case LOG_DROP_TABLE:
 	{
+		Str schema;
 		Str name;
-		table_op_drop_read(&data, &name);
-		table_mgr_drop(&self->table_mgr, trx, &name, true);
+		table_op_drop_read(&data, &schema, &name);
+		table_mgr_drop(&self->table_mgr, trx, &schema, &name, true);
 		break;
 	}
 	case LOG_ALTER_TABLE:
 	{
+		Str schema;
 		Str name;
-		auto config = table_op_alter_read(&data, &name);
+		auto config = table_op_alter_read(&data, &schema, &name);
 		guard(config_guard, table_config_free, config);
-		table_mgr_alter(&self->table_mgr, trx, &name, config, true);
+		table_mgr_alter(&self->table_mgr, trx, &schema, &name, config, true);
 		break;
 	}
 	case LOG_CREATE_META:
@@ -119,9 +121,10 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	}
 	case LOG_DROP_META:
 	{
+		Str schema;
 		Str name;
-		meta_op_drop_read(&data, &name);
-		meta_mgr_drop(&self->meta_mgr, trx, &name, true);
+		meta_op_drop_read(&data, &schema, &name);
+		meta_mgr_drop(&self->meta_mgr, trx, &schema, &name, true);
 		break;
 	}
 	default:

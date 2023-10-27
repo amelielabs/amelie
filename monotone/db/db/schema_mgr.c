@@ -83,7 +83,7 @@ schema_mgr_drop(SchemaMgr*   self,
 	// drop by name
 	Handle drop;
 	handle_init(&drop);
-	drop.name = name;
+	handle_set_name(&drop, name);
 
 	// update mgr
 	handle_mgr_write(&self->mgr, trx, LOG_DROP_SCHEMA, &drop, op);
@@ -108,7 +108,7 @@ schema_mgr_dump(SchemaMgr* self, Buf* buf)
 Schema*
 schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, name);
+	auto handle = handle_mgr_get(&self->mgr, NULL, name);
 	if (! handle)
 	{
 		if (error_if_not_exists)

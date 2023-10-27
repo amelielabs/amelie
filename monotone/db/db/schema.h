@@ -31,6 +31,7 @@ schema_allocate(SchemaConfig* config)
 	self->config = schema_config_copy(config);
 
 	handle_init(&self->handle);
+	handle_set_schema(&self->handle, NULL);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)schema_free);
 	return unguard(&self_guard);
