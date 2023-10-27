@@ -6,6 +6,12 @@
 // SQL OLTP database
 //
 
+// schema
+#include "db/schema_config.h"
+#include "db/schema.h"
+#include "db/schema_op.h"
+#include "db/schema_mgr.h"
+
 // table
 #include "db/table_config.h"
 #include "db/table.h"

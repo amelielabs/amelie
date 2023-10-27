@@ -69,9 +69,28 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 
 	// DDL operations
 	switch (type) {
+	case LOG_CREATE_SCHEMA:
+	{
+		auto config = schema_op_create_read(&data);
+		guard(config_guard, schema_config_free, config);
+		schema_mgr_create(&self->schema_mgr, trx, config, false);
+		break;
+	}
+	case LOG_DROP_SCHEMA:
+	{
+		Str name;
+		schema_op_drop_read(&data, &name);
+		schema_mgr_drop(&self->schema_mgr, trx, &name, true);
+		break;
+	}
+	case LOG_ALTER_SCHEMA:
+	{
+		// todo:
+		break;
+	}
 	case LOG_CREATE_TABLE:
 	{
-		auto config = table_op_create_table_read(&data);
+		auto config = table_op_create_read(&data);
 		guard(config_guard, table_config_free, config);
 		table_mgr_create(&self->table_mgr, trx, config, false);
 		break;
@@ -79,14 +98,14 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	case LOG_DROP_TABLE:
 	{
 		Str name;
-		table_op_drop_table_read(&data, &name);
+		table_op_drop_read(&data, &name);
 		table_mgr_drop(&self->table_mgr, trx, &name, true);
 		break;
 	}
 	case LOG_ALTER_TABLE:
 	{
 		Str name;
-		auto config = table_op_alter_table_read(&data, &name);
+		auto config = table_op_alter_read(&data, &name);
 		guard(config_guard, table_config_free, config);
 		table_mgr_alter(&self->table_mgr, trx, &name, config, true);
 		break;
