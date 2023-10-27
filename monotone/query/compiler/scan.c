@@ -273,20 +273,18 @@ scan_generate_target_table(Scan* self, Target* target)
 		return;
 	}
 
-	// save table name
-	int table_name_offset;
-	table_name_offset = code_data_add_string(&cp->code_data, &target->table->config->name);
-
-	// todo: index name
-	int index_name_offset;
+	// save schema, table and index name
+	int name_offset = code_data_offset(&cp->code_data);
 	Str index_name;
 	str_init(&index_name);
 	str_set_cstr(&index_name, "primary");
-	index_name_offset = code_data_add_string(&cp->code_data, &index_name);
+	encode_string(&cp->code_data.data, &target->table->config->schema);
+	encode_string(&cp->code_data.data, &target->table->config->name);
+	encode_string(&cp->code_data.data, &index_name);
 
 	// cursor_open
 	int _open = op_pos(cp);
-	op4(cp, CCURSOR_OPEN, target->id, table_name_offset, index_name_offset, 0 /* _where */);
+	op3(cp, CCURSOR_OPEN, target->id, name_offset, 0 /* _where */);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -298,7 +296,7 @@ scan_generate_target_table(Scan* self, Target* target)
 
 	// _where:
 	int _where = op_pos(cp);
-	code_at(cp->code, _open)->d = _where;
+	code_at(cp->code, _open)->c = _where;
 
 	// generate scan stop conditions for <, <=
 	if (target->stop_ops)
