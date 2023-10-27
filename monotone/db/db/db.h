@@ -10,6 +10,7 @@ typedef struct Db Db;
 
 struct Db
 {
+	SchemaMgr  schema_mgr;
 	MetaMgr    meta_mgr;
 	TableMgr   table_mgr;
 	StorageMgr storage_mgr;
