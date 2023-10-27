@@ -35,7 +35,7 @@ table_mgr_create(TableMgr*    self,
                  bool         if_not_exists)
 {
 	// make sure table does not exists
-	auto current = table_mgr_find(self, &config->name, false);
+	auto current = table_mgr_find(self, &config->schema, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -62,21 +62,24 @@ static void
 table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
 {
 	// save drop table operation
-	auto op = table_op_drop(&table->config->name);
+	auto op = table_op_drop(&table->config->schema, &table->config->name);
 
 	// drop table by name
 	Handle drop;
 	handle_init(&drop);
-	drop.name = &table->config->name;
+	handle_set_schema(&drop, &table->config->schema);
+	handle_set_name(&drop, &table->config->name);
+
 	handle_mgr_write(&self->mgr, trx, LOG_DROP_TABLE, &drop, op);
 
 	buf_unpin(op);
 }
 
 void
-table_mgr_drop(TableMgr* self, Transaction* trx, Str* name, bool if_exists)
+table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
+               bool if_exists)
 {
-	auto table = table_mgr_find(self, name, false);
+	auto table = table_mgr_find(self, schema, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -90,11 +93,12 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* name, bool if_exists)
 void
 table_mgr_alter(TableMgr*    self,
                 Transaction* trx,
+                Str*         schema,
                 Str*         name,
                 TableConfig* config,
                 bool         if_exists)
 {
-	auto table = table_mgr_find(self, name, false);
+	auto table = table_mgr_find(self, schema, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -111,7 +115,7 @@ table_mgr_alter(TableMgr*    self,
 	if (! str_compare(&config->name, name))
 	{
 		// ensure new table does not exists
-		if (table_mgr_find(self, &config->name, false))
+		if (table_mgr_find(self, &config->schema, &config->name, false))
 			error("table '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 
@@ -119,7 +123,7 @@ table_mgr_alter(TableMgr*    self,
 	}
 
 	// save alter table operation
-	auto op = table_op_alter(name, config);
+	auto op = table_op_alter(schema, name, config);
 
 	// update tables
 	handle_mgr_write(&self->mgr, trx, LOG_ALTER_TABLE, &update->handle, op);
@@ -141,9 +145,10 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 }
 
 Table*
-table_mgr_find(TableMgr* self, Str* name, bool error_if_not_exists)
+table_mgr_find(TableMgr* self, Str* schema, Str* name,
+               bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, name);
+	auto handle = handle_mgr_get(&self->mgr, schema, name);
 	if (! handle)
 	{
 		if (error_if_not_exists)
