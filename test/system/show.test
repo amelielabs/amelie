@@ -17,6 +17,10 @@ select mn_users()
 show wal
 select mn_wal()
 
+# test: show schemas
+show schemas
+select mn_schemas()
+
 # test: show tables
 show tables
 select mn_tables()

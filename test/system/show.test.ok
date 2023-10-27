@@ -24,6 +24,11 @@ show wal
 {"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
 select mn_wal()
 {"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
+# test: show schemas
+show schemas
+{"public": {"name": "public", "system": true}}
+select mn_schemas()
+{"public": {"name": "public", "system": true}}
 # test: show tables
 show tables
 {}
