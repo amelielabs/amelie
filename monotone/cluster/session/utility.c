@@ -84,10 +84,10 @@ execute_set(Session* self, Ast* ast)
 		var = NULL;
 	if (unlikely(var == NULL))
 		error("SET '%.*s': variable not found", str_size(name),
-			  str_of(name));
+		      str_of(name));
 	if (unlikely(! var_is(var, VAR_R)))
 		error("SET '%.*s': variable is read-only", str_size(name),
-			  str_of(name));
+		      str_of(name));
 
 	// set value
 	auto value = arg->value;
@@ -96,7 +96,7 @@ execute_set(Session* self, Ast* ast)
 	{
 		if (value->id != KTRUE && value->id != KFALSE)
 			error("SET '%.*s': bool value expected", str_size(name),
-				  str_of(name));
+			      str_of(name));
 		bool is_true = value->id == KTRUE;
 		var_int_set(var, is_true);
 		break;
@@ -105,7 +105,7 @@ execute_set(Session* self, Ast* ast)
 	{
 		if (value->id != KINT)
 			error("SET '%.*s': integer value expected", str_size(name),
-				  str_of(name));
+			      str_of(name));
 		var_int_set(var, value->integer);
 		break;
 	}
@@ -113,14 +113,14 @@ execute_set(Session* self, Ast* ast)
 	{
 		if (value->id != KSTRING)
 			error("SET '%.*s': string value expected", str_size(name),
-				  str_of(name));
+			      str_of(name));
 		var_string_set(var, &value->string);
 		break;
 	}
 	case VAR_DATA:
 	{
 		error("SET '%.*s': variable cannot be changed", str_size(name),
-			  str_of(name));
+		      str_of(name));
 		break;
 	}
 	}
