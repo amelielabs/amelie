@@ -11,6 +11,7 @@ typedef struct Share Share;
 struct Share
 {
 	FunctionMgr*  function_mgr;
+	SchemaMgr*    schema_mgr;
 	MetaMgr*      meta_mgr;
 	TableMgr*     table_mgr;
 	StorageMgr*   storage_mgr;
