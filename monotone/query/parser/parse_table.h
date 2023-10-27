@@ -20,7 +20,8 @@ struct AstTableDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Ast* name;
+	Str  schema;
+	Str  name;
 };
 
 static inline AstTableCreate*
@@ -51,7 +52,8 @@ ast_table_drop_allocate(void)
 	AstTableDrop* self;
 	self = ast_allocate(STMT_DROP_TABLE, sizeof(AstTableDrop));
 	self->if_exists = false;
-	self->name      = NULL;
+	str_init(&self->schema);
+	str_init(&self->name);
 	return self;
 }
 

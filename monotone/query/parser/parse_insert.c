@@ -192,11 +192,12 @@ parse_insert(Stmt* self, bool unique)
 		error("INSERT <INTO> expected");
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
+	// schema.name
+	Str schema;
+	Str name;
+	if (! parse_target(self, &schema, &name))
 		error("INSERT INTO <name> expected");
-
-	stmt->table = table_mgr_find(&self->db->table_mgr, &name->string, true);
+	stmt->table = table_mgr_find(&self->db->table_mgr, &schema, &name, true);
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))

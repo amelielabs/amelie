@@ -195,10 +195,12 @@ parse_table_create(Stmt* self)
 	table_config_set_id(stmt->config, &id);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
+	Str schema;
+	Str name;
+	if (! parse_target(self, &schema, &name))
 		error("CREATE TABLE <name> expected");
-	table_config_set_name(stmt->config, &name->string);
+	table_config_set_schema(stmt->config, &schema);
+	table_config_set_name(stmt->config, &name);
 
 	// (key)
 	parser_key(self, stmt);
@@ -215,8 +217,7 @@ parse_table_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_if(self, KNAME);
-	if (! stmt->name)
+	if (! parse_target(self, &stmt->schema, &stmt->name))
 		error("DROP TABLE <name> expected");
 }
 
