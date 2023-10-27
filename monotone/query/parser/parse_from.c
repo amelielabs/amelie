@@ -35,62 +35,49 @@ static inline Ast*
 parse_from_analyze(From* self, Table** table, Meta** view)
 {
 	auto stmt = self->stmt;
-	auto expr = stmt_next(stmt);
-	switch (expr->id) {
-	case KNAME:
+
+	// FROM name
+	// FROM schema.name
+	Str  schema;
+	Str  name;
+	auto expr = parse_target(stmt, &schema, &name);
+	if (! expr)
 	{
-		// FROM table or view
-		
-		// find table first
-		*table = table_mgr_find(&stmt->db->table_mgr, &expr->string, false);
-		if (*table)
-			break;
-
-		// find view
-		*view = meta_mgr_find(&stmt->db->meta_mgr, &expr->string, false);
-		if (*view)
-		{
-			auto bracket = stmt_if(stmt, '(');
-			if (bracket)
-			{
-				// handle as expression if view has a call ()
-				*view = NULL;
-				stmt_push(stmt, bracket);
-				stmt_push(stmt, expr);
-
-				expr = parse_expr(stmt, NULL);
-				break;
-			}
-
-		} else
-			error("<%.*s> table or view does not exists",
-			      str_size(&expr->string),
-			      str_of(&expr->string));
-		break;
-	}
-
-	default:
 		// FROM expr
 
 		// (, [, or any function
-		stmt_push(stmt, expr);
-		expr = parse_expr(stmt, NULL);
-		break;
+		return parse_expr(stmt, NULL);
 	}
 
-	// execute view as a function
-	if (*view)
-	{
-		// view()
+	// find table first
+	*table = table_mgr_find(&stmt->db->table_mgr, &schema, &name, false);
+	if (*table)
+		return NULL;
 
+	// find view
+	*view = meta_mgr_find(&stmt->db->meta_mgr, &schema, &name, false);
+	if (! *view)
+		error("<%.*s> table or view does not exists",
+		      str_size(&name), str_of(&name));
+
+	// execute view as a function
+
+	// view()
+	auto bracket = stmt_if(stmt, '(');
+	if (bracket)
+	{
+		// handle as expression if view has a call ()
+		*view = NULL;
+		stmt_push(stmt, bracket);
+		stmt_push(stmt, expr);
+		expr = parse_expr(stmt, NULL);
+	} else
+	{
 		// '(' (name, call)
 		auto call = ast('(');
 		call->l = expr;
 		call->r = ast(KCALL);
 		expr = call;
-	} else
-	if (*table) {
-		expr = NULL;
 	}
 
 	return expr;
