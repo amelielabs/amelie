@@ -165,9 +165,17 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			break;
 		case CCURSOR_OPEN:
 		{
-			Str str;
-			code_data_at_string(data, op->b, &str);
-			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
+			Str schema;
+			Str table;
+			Str index;
+			uint8_t* pos = code_data_at(data, op->b);
+			data_read_string(&pos, &schema);
+			data_read_string(&pos, &table);
+			data_read_string(&pos, &index);
+			buf_printf(output, "# %.*s.%.*s (%.*s)",
+			           str_size(&schema), str_of(&schema),
+			           str_size(&table), str_of(&table),
+			           str_size(&index), str_of(&index));
 			break;
 		}
 		case CCALL:

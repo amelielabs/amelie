@@ -26,16 +26,20 @@
 hot Op*
 ccursor_open(Vm* self, Op* op)
 {
-	// [target_id, table_offset, index_offset, _where]
+	// [target_id, name_offset, _where]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
+	// read names
+	uint8_t* pos = code_data_at(self->code_data, op->b);
+	Str name_schema;
 	Str name_table;
 	Str name_index;
-	code_data_at_string(self->code_data, op->b, &name_table);
-	code_data_at_string(self->code_data, op->c, &name_index);
+	data_read_string(&pos, &name_schema);
+	data_read_string(&pos, &name_table);
+	data_read_string(&pos, &name_index);
 
 	// find table/index by name
-	auto table   = table_mgr_find(&self->db->table_mgr, &name_table, true);
+	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
 	auto storage = storage_mgr_find_for(&self->db->storage_mgr,
 	                                     self->shard,
 	                                    &table->config->id);
@@ -57,7 +61,7 @@ ccursor_open(Vm* self, Op* op)
 
 	// jmp if has data
 	if (iterator_has(cursor->it))
-		return code_at(self->code, op->d);
+		return code_at(self->code, op->c);
 	return ++op;
 }
 

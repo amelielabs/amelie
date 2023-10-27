@@ -31,6 +31,12 @@ code_data_reset(CodeData* self)
 	buf_reset(&self->data);
 }
 
+static inline int
+code_data_offset(CodeData* self)
+{
+	return buf_size(&self->data);
+}
+
 static inline uint8_t*
 code_data_at(CodeData* self, int offset)
 {

@@ -222,17 +222,23 @@ execute_ddl(Session* self, Stmt* stmt)
 		{
 			// create table
 			auto arg = ast_table_create_of(stmt->ast);
+
+			// ensure schema exists
+			schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+
 			table_mgr_create(share->table_mgr, trx, arg->config, arg->if_not_exists);
 
 			// create storage for each shard
-			auto table = table_mgr_find(share->table_mgr, &arg->config->name, true);
+			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
+			                            &arg->config->name, true);
 			execute_create_storages(self, table);
 			break;
 		}
 		case STMT_DROP_TABLE:
 		{
 			auto arg = ast_table_drop_of(stmt->ast);
-			table_mgr_drop(share->table_mgr, trx, &arg->name->string, arg->if_exists);
+			table_mgr_drop(share->table_mgr, trx, &arg->schema, &arg->name,
+			               arg->if_exists);
 			break;
 		}
 
