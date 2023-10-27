@@ -100,12 +100,19 @@ handle_mgr_write(HandleMgr*   self,
 
 	// update handle mgr
 	Handle* prev = NULL;
-	if (cmd == LOG_CREATE_TABLE ||
-	    cmd == LOG_ALTER_TABLE  ||
-	    cmd == LOG_CREATE_META)
+	if (cmd == LOG_CREATE_SCHEMA ||
+	    cmd == LOG_ALTER_SCHEMA  ||
+	    cmd == LOG_CREATE_TABLE  ||
+	    cmd == LOG_ALTER_TABLE   ||
+	    cmd == LOG_CREATE_META   ||
+	    cmd == LOG_ALTER_META)
+	{
 		prev = handle_mgr_set(self, handle);
-	else
+	} else
+	{
 		prev = handle_mgr_delete(self, handle->name);
+		handle = NULL;
+	}
 
 	// update transaction log
 	log_add_handle(&trx->log, cmd, self, handle, prev, data);
