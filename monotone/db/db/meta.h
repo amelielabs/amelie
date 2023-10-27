@@ -44,6 +44,7 @@ meta_allocate(MetaConfig* config, MetaIf* iface)
 	self->config = meta_config_copy(config);
 
 	handle_init(&self->handle);
+	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)meta_free);
 	return unguard(&self_guard);

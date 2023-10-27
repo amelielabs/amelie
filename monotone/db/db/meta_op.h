@@ -17,11 +17,12 @@ meta_op_create(MetaConfig* config)
 }
 
 static inline Buf*
-meta_op_drop(Str* name)
+meta_op_drop(Str* schema, Str* name)
 {
-	// [name]
+	// [schema, name]
 	auto buf = buf_create(0);
-	encode_array(buf, 1);
+	encode_array(buf, 2);
+	encode_string(buf, schema);
 	encode_string(buf, name);
 	return buf;
 }
@@ -35,9 +36,10 @@ meta_op_create_read(uint8_t** pos)
 }
 
 static inline void
-meta_op_drop_read(uint8_t** pos, Str* name)
+meta_op_drop_read(uint8_t** pos, Str* schema, Str* name)
 {
 	int count;
 	data_read_array(pos, &count);
+	data_read_string(pos, schema);
 	data_read_string(pos, name);
 }

@@ -37,7 +37,7 @@ meta_mgr_create(MetaMgr*     self,
                 bool         if_not_exists)
 {
 	// make sure meta does not exists
-	auto current = meta_mgr_find(self, &config->name, false);
+	auto current = meta_mgr_find(self, &config->schema, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -66,10 +66,11 @@ meta_mgr_create(MetaMgr*     self,
 void
 meta_mgr_drop(MetaMgr*     self,
               Transaction* trx,
+              Str*         schema,
               Str*         name,
               bool         if_exists)
 {
-	auto meta = meta_mgr_find(self, name, false);
+	auto meta = meta_mgr_find(self, schema, name, false);
 	if (! meta)
 	{
 		if (! if_exists)
@@ -79,12 +80,13 @@ meta_mgr_drop(MetaMgr*     self,
 	}
 
 	// save drop table operation
-	auto op = meta_op_drop(name);
+	auto op = meta_op_drop(schema, name);
 
 	// drop by name
 	Handle drop;
 	handle_init(&drop);
-	drop.name = name;
+	handle_set_schema(&drop, schema);
+	handle_set_name(&drop, name);
 
 	// update mgr
 	handle_mgr_write(&self->mgr, trx, LOG_DROP_META, &drop, op);
@@ -105,9 +107,10 @@ meta_mgr_dump(MetaMgr* self, Buf* buf)
 }
 
 Meta*
-meta_mgr_find(MetaMgr* self, Str* name, bool error_if_not_exists)
+meta_mgr_find(MetaMgr* self, Str* schema, Str* name,
+              bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, name);
+	auto handle = handle_mgr_get(&self->mgr, schema, name);
 	if (! handle)
 	{
 		if (error_if_not_exists)
