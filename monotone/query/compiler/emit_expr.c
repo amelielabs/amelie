@@ -385,6 +385,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 
 	Str path;
 	str_init(&path);
+	str_set_str(&path, &ast->string);
 
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
@@ -402,7 +403,6 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 		match = target;
 
 		// use full path
-		str_set_str(&path, &ast->string);
 	} else
 	{
 		// exclude table name from the path
