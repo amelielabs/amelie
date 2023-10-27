@@ -31,6 +31,7 @@ OBJECTS        = \
                  wal/wal.o \
                  wal/wal_cursor.o \
                  wal/debug.o \
+                 db/schema_mgr.o \
                  db/table_mgr.o \
                  db/meta_mgr.o \
                  db/db.o \
