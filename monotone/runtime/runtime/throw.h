@@ -17,10 +17,6 @@
 #define rethrow() \
 	exception_mgr_throw(&mn_self()->exception_mgr)
 
-#define rethrow_if_error(exception) \
-	if (catch(exception)) \
-		rethrow()
-
 #define throw(code, fmt, ...) \
 	error_throw(&mn_self()->error, \
 	            &mn_self()->exception_mgr, \
@@ -41,6 +37,7 @@
 	throw(ERROR, "data read error")
 
 // cancel
-#define cancellation_point() \
+#define cancellation_point() ({ \
 	if (unlikely(mn_self()->cancel)) \
-		throw(CANCEL, "cancelled")
+		throw(CANCEL, "cancelled"); \
+})
