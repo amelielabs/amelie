@@ -129,6 +129,19 @@ func_mn_users(Vm*       vm,
 }
 
 static void
+func_mn_schemas(Vm*       vm,
+                Function* func,
+                Value*    result,
+                int       argc,
+                Value**   argv)
+{
+	unused(argv);
+	function_validate_argc(func, argc);
+	auto buf = schema_mgr_list(&vm->db->schema_mgr);
+	value_set_data_from(result, buf);
+}
+
+static void
 func_mn_tables(Vm*       vm,
                Function* func,
                Value*    result,
@@ -199,6 +212,7 @@ func_setup(FunctionMgr* mgr)
 		{ "mn_config",   (FunctionMain)func_mn_config,   0 },
 		{ "mn_users",    (FunctionMain)func_mn_users,    0 },
 		{ "mn_storages", (FunctionMain)func_mn_storages, 0 },
+		{ "mn_schemas",  (FunctionMain)func_mn_schemas,  0 },
 		{ "mn_tables",   (FunctionMain)func_mn_tables,   0 },
 		{ "mn_views",    (FunctionMain)func_mn_views,    0 },
 		{ "mn_wal",      (FunctionMain)func_mn_wal,      0 },
