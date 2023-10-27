@@ -51,6 +51,7 @@ OBJECTS        = \
                  parser/lex.o \
                  parser/parse_expr.o \
                  parser/parse_user.o \
+                 parser/parse_schema.o \
                  parser/parse_table.o \
                  parser/parse_insert.o \
                  parser/parse_update.o \
