@@ -28,3 +28,6 @@
 #include "db/db.h"
 #include "db/db_catalog.h"
 #include "db/recover.h"
+
+// cascade
+#include "db/cascade.h"

@@ -113,6 +113,10 @@ schema_mgr_alter(SchemaMgr*    self,
 		return;
 	}
 
+	if (schema->config->system)
+		error("schema '%.*s': system schema cannot be altered", str_size(name),
+		       str_of(name));
+
 	// allocate new schema object
 	auto update = schema_allocate(config);
 	guard(guard, schema_free, update);

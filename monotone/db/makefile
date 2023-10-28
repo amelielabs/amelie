@@ -36,7 +36,8 @@ OBJECTS        = \
                  db/meta_mgr.o \
                  db/db.o \
                  db/db_catalog.o \
-                 db/recover.o
+                 db/recover.o \
+                 db/cascade.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
