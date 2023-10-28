@@ -1,9 +1,11 @@
 #
 
+# runtime unit tests
 #directory runtime
 #group runtime
 #test runtime
 
+# system
 directory system
 group system
 test bootstrap
@@ -11,10 +13,12 @@ test set
 test show
 test user
 
-# show
-# set
+# ddl
+directory ddl
+group ddl
+test schema
 
-
+# query
 directory query
 group query
 test expr

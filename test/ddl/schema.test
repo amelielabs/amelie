@@ -1,0 +1,79 @@
+#
+
+env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
+connect E0 S0
+
+# test: ensure public schema exists
+show schemas
+select mn_schemas().public
+select mn_schemas().public.system = true
+
+# test: create schema statement parsing
+create
+create schema
+create schema 123
+create schema if
+create schema if not
+create schema if not 123
+create schema if not exists
+create schema test abc
+
+# test: create schema
+create schema test
+
+show schemas
+select mn_schemas().test.system = false
+
+# test: create schema if not exists
+create schema test
+create schema if not exists test
+show schemas
+
+# test: drop schema statement parsing
+drop schema
+drop schema 123
+drop schema if
+drop schema if exists
+drop schema test abc
+
+# test: drop schema
+drop schema test
+show schemas
+
+# test: drop schema if exists
+drop schema test
+drop schema if exists test
+show schemas
+
+# test: drop system schema
+drop schema public
+show schemas
+
+# test: drop schema with dependency
+create schema test
+create table test.test(id int primary key)
+drop schema test
+drop table test.test
+drop schema test
+
+# test: alter schema statment parsing
+alter schema
+alter schema 123
+alter schema test
+alter schema test rename
+alter schema test rename to
+alter schema test rename to "hello"
+
+# test: alter schema rename
+create schema test
+select mn_schemas().test
+
+alter schema test rename to test2
+select mn_schemas().test
+select mn_schemas().test2
+
+# test: alter schema system
+alter schema public rename to _public
+
+disconnect S0
+env_close E0
