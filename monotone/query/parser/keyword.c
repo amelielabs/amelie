@@ -39,6 +39,7 @@ static Keyword keywords_b[] =
 	{ KBEGIN,                 "begin",                 5  },
 	{ KBY,                    "by",                    2  },
 	{ KTBOOL,                 "bool",                  4  },
+	{ KTBOOLEAN,              "boolean",               7  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -94,6 +95,7 @@ static Keyword keywords_i[] =
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
 	{ KTINT,                  "int",                   3  },
+	{ KTINTEGER,              "integer",               7  },
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
@@ -140,6 +142,7 @@ static Keyword keywords_o[] =
 	{ KON,                    "on",                    2  },
 	{ KOFFSET,                "offset",                6  },
 	{ KORDER,                 "order",                 5  },
+	{ KTOBJECT,               "object",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -188,6 +191,7 @@ static Keyword keywords_t[] =
 	{ KTRUE,                  "true",                  4  },
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },
+	{ KTEXT,                  "text",                  4  },
 	{ 0,                       NULL,                   0  }
 };
 

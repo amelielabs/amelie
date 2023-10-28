@@ -90,21 +90,25 @@ parse_type(Stmt* self, Ast* name)
 	int  type = 0;
 	switch (ast->id) {
 	case KTMAP:
+	case KTOBJECT:
 		type = TYPE_MAP;
 		break;
 	case KTARRAY:
 		type = TYPE_ARRAY;
 		break;
 	case KTINT:
+	case KTINTEGER:
 		type = TYPE_INT;
 		break;
 	case KTBOOL:
+	case KTBOOLEAN:
 		type = TYPE_BOOL;
 		break;
 	case KTREAL:
 		type = TYPE_REAL;
 		break;
 	case KTSTRING:
+	case KTEXT:
 		type = TYPE_STRING;
 		break;
 	default:
