@@ -80,7 +80,9 @@ parser_reset(Parser* self)
 		}
 		case STMT_ALTER_TABLE:
 		{
-			// todo:
+			auto ast = ast_table_alter_of(stmt->ast);
+			if (ast->config)
+				table_config_free(ast->config);
 			break;
 		}
 		default:

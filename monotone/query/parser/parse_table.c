@@ -224,8 +224,34 @@ parse_table_drop(Stmt* self)
 void
 parse_table_alter(Stmt* self)
 {
-	// ALTER TABLE [IF EXISTS] name [RENAME TO]
-	unused(self);
+	// ALTER TABLE [IF EXISTS] name [RENAME TO name]
+	// ALTER TABLE [IF EXISTS] name [SET SCHEMA name]
+	auto stmt = ast_table_alter_allocate();
+	self->ast = &stmt->ast;
 
-	// todo
+	// TODO: copy config
+
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
+
+	// name
+	if (! parse_target(self, &stmt->schema, &stmt->name))
+		error("ALTER TABLE <name> expected");
+
+
+	// RENAME TO
+	if (stmt_if(self, KRENAME))
+	{
+		if (! stmt_if(self, KTO))
+			error("ALTER TABLE RENAME <TO> expected");
+
+		// todo
+	} else
+	if (stmt_if(self, KSET))
+	{
+		if (! stmt_if(self, KSCHEMA))
+			error("ALTER TABLE SET <SCHEMA> expected");
+
+		// todo
+	}
 }

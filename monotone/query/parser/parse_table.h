@@ -8,6 +8,7 @@
 
 typedef struct AstTableCreate AstTableCreate;
 typedef struct AstTableDrop   AstTableDrop;
+typedef struct AstTableAlter  AstTableAlter;
 
 struct AstTableCreate
 {
@@ -22,6 +23,15 @@ struct AstTableDrop
 	bool if_exists;
 	Str  schema;
 	Str  name;
+};
+
+struct AstTableAlter
+{
+	Ast          ast;
+	bool         if_exists;
+	Str          schema;
+	Str          name;
+	TableConfig* config;
 };
 
 static inline AstTableCreate*
@@ -52,6 +62,24 @@ ast_table_drop_allocate(void)
 	AstTableDrop* self;
 	self = ast_allocate(STMT_DROP_TABLE, sizeof(AstTableDrop));
 	self->if_exists = false;
+	str_init(&self->schema);
+	str_init(&self->name);
+	return self;
+}
+
+static inline AstTableAlter*
+ast_table_alter_of(Ast* ast)
+{
+	return (AstTableAlter*)ast;
+}
+
+static inline AstTableAlter*
+ast_table_alter_allocate(void)
+{
+	AstTableAlter* self;
+	self = ast_allocate(STMT_ALTER_TABLE, sizeof(AstTableAlter));
+	self->if_exists = false;
+	self->config    = NULL;
 	str_init(&self->schema);
 	str_init(&self->name);
 	return self;
