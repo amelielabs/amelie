@@ -34,6 +34,8 @@ storage_free(Storage* self)
 		auto index = list_at(Index, link);
 		index_free(index);
 	}
+	if (self->config)
+		storage_config_free(self->config);
 	mn_free(self);
 }
 
