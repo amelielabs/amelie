@@ -206,17 +206,20 @@ execute_ddl(Session* self, Stmt* stmt)
 			schema_mgr_create(share->schema_mgr, trx, arg->config, arg->if_not_exists);
 			break;
 		}
-
 		case STMT_DROP_SCHEMA:
 		{
 			// drop schema
 			auto arg = ast_schema_drop_of(stmt->ast);
-			schema_mgr_drop(share->schema_mgr, trx, &arg->name->string, arg->if_exists);
+			cascade_schema_drop(share->db, trx, &arg->name->string, arg->cascade,
+			                    arg->if_exists);
 			break;
 		}
 		case STMT_ALTER_SCHEMA:
 		{
-			// todo
+			// alter schema
+			auto arg = ast_schema_alter_of(stmt->ast);
+			cascade_schema_alter(share->db, trx, &arg->name->string, arg->config,
+			                     arg->if_exists);
 			break;
 		}
 		case STMT_CREATE_TABLE:
@@ -242,7 +245,6 @@ execute_ddl(Session* self, Stmt* stmt)
 			               arg->if_exists);
 			break;
 		}
-
 		case STMT_ALTER_TABLE:
 		{
 			// todo
