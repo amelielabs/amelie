@@ -111,8 +111,9 @@ table_mgr_alter(TableMgr*    self,
 	auto update = table_allocate(config);
 	guard(guard, table_free, update);
 
-	// if name changed, drop previous table
-	if (! str_compare(&config->name, name))
+	// if schema or name changed, drop previous table
+	if (!str_compare(&config->schema, schema) ||
+	    !str_compare(&config->name, name))
 	{
 		// ensure new table does not exists
 		if (table_mgr_find(self, &config->schema, &config->name, false))
