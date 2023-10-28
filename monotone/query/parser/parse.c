@@ -130,7 +130,7 @@ parse(Parser* self, Str* str)
 			break;
 
 		case KSET:
-			// SET name TO INT|STRING
+			// SET name TO INT | STRING
 			stmt->id = STMT_SET;
 			parser_validate(self, false);
 			parse_set(stmt);
@@ -138,7 +138,7 @@ parse(Parser* self, Str* str)
 
 		case KCREATE:
 		{
-			// CREATE TABLE | USER
+			// CREATE TABLE | SCHEMA | USER
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
@@ -161,7 +161,7 @@ parse(Parser* self, Str* str)
 
 		case KDROP:
 		{
-			// DROP TABLE | USER
+			// DROP TABLE | SCHEMA | USER
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
@@ -185,19 +185,24 @@ parse(Parser* self, Str* str)
 
 		case KALTER:
 		{
-			// ALTER TABLE | USER
+			// ALTER TABLE | SCHEMA | USER
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
 				stmt->id = STMT_ALTER_USER;
 				parse_user_alter(stmt);
 			} else
+			if (lex_if(lex, KSCHEMA))
+			{
+				stmt->id = STMT_ALTER_SCHEMA;
+				parse_schema_alter(stmt);
+			} else
 			if (lex_if(lex, KTABLE))
 			{
 				stmt->id = STMT_ALTER_TABLE;
 				parse_table_alter(stmt);
 			} else
-				error("ALTER <USER|TABLE> expected");
+				error("ALTER <USER|SCHEMA|TABLE> expected");
 			break;
 		}
 

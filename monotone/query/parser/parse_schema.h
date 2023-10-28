@@ -8,6 +8,7 @@
 
 typedef struct AstSchemaCreate AstSchemaCreate;
 typedef struct AstSchemaDrop   AstSchemaDrop;
+typedef struct AstSchemaAlter  AstSchemaAlter;
 
 struct AstSchemaCreate
 {
@@ -20,7 +21,16 @@ struct AstSchemaDrop
 {
 	Ast  ast;
 	bool if_exists;
+	bool cascade;
 	Ast* name;
+};
+
+struct AstSchemaAlter
+{
+	Ast           ast;
+	bool          if_exists;
+	Ast*          name;
+	SchemaConfig* config;
 };
 
 static inline AstSchemaCreate*
@@ -51,7 +61,25 @@ ast_schema_drop_allocate(void)
 	AstSchemaDrop* self;
 	self = ast_allocate(STMT_DROP_SCHEMA, sizeof(AstSchemaDrop));
 	self->if_exists = false;
+	self->cascade   = false;
 	self->name      = NULL;
+	return self;
+}
+
+static inline AstSchemaAlter*
+ast_schema_alter_of(Ast* ast)
+{
+	return (AstSchemaAlter*)ast;
+}
+
+static inline AstSchemaAlter*
+ast_schema_alter_allocate(void)
+{
+	AstSchemaAlter* self;
+	self = ast_allocate(STMT_ALTER_SCHEMA, sizeof(AstSchemaAlter));
+	self->if_exists = false;
+	self->name      = NULL;
+	self->config    = NULL;
 	return self;
 }
 

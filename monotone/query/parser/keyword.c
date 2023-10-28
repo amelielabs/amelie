@@ -48,6 +48,7 @@ static Keyword keywords_c[] =
 	{ KCOUNT,                 "count",                 5  },
 	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
+	{ KCASCADE,               "cascade",               7  },
 	{ 0,                       NULL,                   0  }
 };
 
