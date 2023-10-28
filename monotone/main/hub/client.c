@@ -41,7 +41,8 @@ hub_native(Hub* self, Native* client)
 	portal_init(&portal, portal_to_channel, &client->src);
 
 	// create new session
-	auto session = hub_session_create(self, &portal);
+	auto iface = self->iface;
+	auto session = iface->session_create(&self->share, &portal);
 	guard(on_close, self->iface->session_free, session);
 
 	for (;;)
@@ -55,6 +56,6 @@ hub_native(Hub* self, Native* client)
 			break;
 
 		// execute command
-		hub_execute(self, session, buf);
+		iface->session_execute(session, buf);
 	}
 }
