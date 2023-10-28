@@ -58,6 +58,22 @@ schema_mgr_create(SchemaMgr*    self,
 	unguard(&guard);
 }
 
+static void
+schema_mgr_drop_schema(SchemaMgr* self, Transaction* trx, Schema* schema)
+{
+	// save drop schema operation
+	auto op = schema_op_drop(&schema->config->name);
+
+	// drop schema by name
+	Handle drop;
+	handle_init(&drop);
+	handle_set_schema(&drop, NULL);
+	handle_set_name(&drop, &schema->config->name);
+
+	handle_mgr_write(&self->mgr, trx, LOG_DROP_SCHEMA, &drop, op);
+	buf_unpin(op);
+}
+
 void
 schema_mgr_drop(SchemaMgr*   self,
                 Transaction* trx,
@@ -77,18 +93,49 @@ schema_mgr_drop(SchemaMgr*   self,
 		error("schema '%.*s': system schema cannot be dropped", str_size(name),
 		       str_of(name));
 
-	// save drop table operation
-	auto op = schema_op_drop(name);
+	// drop schema object
+	schema_mgr_drop_schema(self, trx, schema);
+}
 
-	// drop by name
-	Handle drop;
-	handle_init(&drop);
-	handle_set_name(&drop, name);
+void
+schema_mgr_alter(SchemaMgr*    self,
+                 Transaction*  trx,
+                 Str*          name,
+                 SchemaConfig* config,
+                 bool          if_exists)
+{
+	auto schema = schema_mgr_find(self, name, false);
+	if (! schema)
+	{
+		if (! if_exists)
+			error("schema '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
 
-	// update mgr
-	handle_mgr_write(&self->mgr, trx, LOG_DROP_SCHEMA, &drop, op);
+	// allocate new schema object
+	auto update = schema_allocate(config);
+	guard(guard, schema_free, update);
+
+	// if schema name changed, drop previous schema
+	if (! str_compare(&config->name, name))
+	{
+		// ensure new schema does not exists
+		if (schema_mgr_find(self, &config->name, false))
+			error("schema '%.*s': already exists", str_size(&config->name),
+			      str_of(&config->name));
+
+		schema_mgr_drop_schema(self, trx, schema);
+	}
+
+	// save alter schema operation
+	auto op = schema_op_alter(name, config);
+
+	// update schemas
+	handle_mgr_write(&self->mgr, trx, LOG_ALTER_SCHEMA, &update->handle, op);
 
 	buf_unpin(op);
+	unguard(&guard);
 }
 
 void
