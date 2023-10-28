@@ -40,7 +40,7 @@ tree_iterator_open(Iterator* arg, Row* key)
 	}
 
 	int rc;
-	rc = tree_find(&tree->tree, index_key(&tree->index), key, &self->pos);
+	rc = tree_find(&tree->tree, index_def(&tree->index), key, &self->pos);
 	if (self->pos == NULL)
 		return false;
 	if (rc == -1)

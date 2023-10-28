@@ -20,7 +20,7 @@ struct IndexConfig
 	Str     name;
 	int64_t type;
 	bool    primary;
-	Key     key;
+	Def     def;
 };
 
 static inline IndexConfig*
@@ -31,7 +31,7 @@ index_config_allocate(void)
 	self->type    = INDEX_UNDEF;
 	self->primary = false;
 	str_init(&self->name);
-	key_init(&self->key);
+	def_init(&self->def);
 	return self;
 }
 
@@ -39,7 +39,7 @@ static inline void
 index_config_free(IndexConfig* self)
 {
 	str_free(&self->name);
-	key_free(&self->key);
+	def_free(&self->def);
 	mn_free(self);
 }
 
@@ -69,7 +69,7 @@ index_config_copy(IndexConfig* self)
 	index_config_set_name(copy, &self->name);
 	index_config_set_type(copy, self->type);
 	index_config_set_primary(copy, self->primary);
-	key_copy(&copy->key, &self->key);
+	def_copy(&copy->def, &self->def);
 	return unguard(&copy_guard);
 }
 
@@ -95,9 +95,9 @@ index_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_bool(pos, &self->primary);
 
-	// key
+	// def
 	data_skip(pos);
-	key_read(&self->key, pos);
+	def_read(&self->def, pos);
 	return unguard(&self_guard);
 }
 
@@ -119,7 +119,7 @@ index_config_write(IndexConfig* self, Buf* buf)
 	encode_raw(buf, "primary", 7);
 	encode_bool(buf, self->primary);
 
-	// key
-	encode_raw(buf, "key", 3);
-	key_write(&self->key, buf);
+	// def
+	encode_raw(buf, "def", 3);
+	def_write(&self->def, buf);
 }

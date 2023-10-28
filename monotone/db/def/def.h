@@ -6,9 +6,9 @@
 // SQL OLTP database
 //
 
-typedef struct Key Key;
+typedef struct Def Def;
 
-struct Key
+struct Def
 {
 	// columns
 	Column*  column;
@@ -17,7 +17,7 @@ struct Key
 	int      column_count;
 	// keys
 	Column*  key;
-	Column*  key_tail;
+	Column*  def_tail;
 	int      key_count;
 	int      key_exclude;
 	bool     key_unique;
@@ -26,21 +26,21 @@ struct Key
 };
 
 static inline Column*
-key_column_of(Key* self, int pos)
+def_column_of(Def* self, int pos)
 {
 	assert(pos < self->column_count);
 	return self->column_index[pos];
 }
 
 static inline void
-key_init(Key* self)
+def_init(Def* self)
 {
 	self->column       = NULL;
 	self->column_tail  = NULL;
 	self->column_index = NULL;
 	self->column_count = 0;
 	self->key          = NULL;
-	self->key_tail     = NULL;
+	self->def_tail     = NULL;
 	self->key_count    = 0;
 	self->key_exclude  = 0;
 	self->key_unique   = false;
@@ -48,7 +48,7 @@ key_init(Key* self)
 }
 
 static inline void
-key_free(Key* self)
+def_free(Def* self)
 {
 	auto column = self->column;
 	while (column)
@@ -62,13 +62,13 @@ key_free(Key* self)
 }
 
 static inline void
-key_set_reserved(Key* self, int size)
+def_set_reserved(Def* self, int size)
 {
 	self->reserved = size;
 }
 
 static inline void
-key_add_column(Key* self, Column* column)
+def_add_column(Def* self, Column* column)
 {
 	Column** column_index;
 	column_index = mn_realloc(self->column_index,
@@ -85,20 +85,20 @@ key_add_column(Key* self, Column* column)
 }
 
 static inline void
-key_add_key(Key* self, Column* column)
+def_add_key(Def* self, Column* column)
 {
 	assert(column->order_key == -1);
 	column->order_key = self->key_count;
 	if (self->key == NULL)
 		self->key = column;
 	else
-		self->key_tail->next_key = column;
-	self->key_tail = column;
+		self->def_tail->next_key = column;
+	self->def_tail = column;
 	self->key_count++;
 }
 
 hot static inline Column*
-key_find_column(Key* self, Str* name)
+def_find_column(Def* self, Str* name)
 {
 	auto column = self->column;
 	for (; column; column = column->next)
@@ -108,7 +108,7 @@ key_find_column(Key* self, Str* name)
 }
 
 hot static inline Column*
-key_find_key(Key* self, Str* name)
+def_find_key(Def* self, Str* name)
 {
 	auto column = self->key;
 	for (; column; column = column->next_key)
@@ -118,7 +118,7 @@ key_find_key(Key* self, Str* name)
 }
 
 hot static inline Column*
-key_find_key_by_order(Key* self, int order)
+def_find_key_by_order(Def* self, int order)
 {
 	auto column = self->key;
 	for (; column; column = column->next_key)
@@ -128,23 +128,23 @@ key_find_key_by_order(Key* self, int order)
 }
 
 static inline void
-key_copy(Key* self, Key* src)
+def_copy(Def* self, Def* src)
 {
 	// add columns
 	auto column = src->column;
 	for (; column; column = column->next)
 	{
 		auto copy = column_copy(column);
-		key_add_column(self, copy);
+		def_add_column(self, copy);
 	}
 
 	// add keys
 	column = src->key;
 	for (; column; column = column->next_key)
 	{
-		auto key = key_find_column(self, &column->name);
+		auto key = def_find_column(self, &column->name);
 		assert(key);
-		key_add_key(self, key);
+		def_add_key(self, key);
 	}
 	self->key_exclude = src->key_exclude;
 	self->key_unique  = src->key_unique;
@@ -152,7 +152,7 @@ key_copy(Key* self, Key* src)
 }
 
 static inline void
-key_read(Key* self, uint8_t** pos)
+def_read(Def* self, uint8_t** pos)
 {
 	// { column:[], key_unique, key_exclude, key:[], reserved }
 	int count;
@@ -165,7 +165,7 @@ key_read(Key* self, uint8_t** pos)
 	for (; i < count; i++)
 	{
 		auto column = column_read(pos);
-		key_add_column(self, column);
+		def_add_column(self, column);
 	}
 
 	// key_unique
@@ -186,10 +186,10 @@ key_read(Key* self, uint8_t** pos)
 	{
 		Str name;
 		data_read_string(pos, &name);
-		auto key = key_find_column(self, &name);
+		auto key = def_find_column(self, &name);
 		if (unlikely(key == NULL))
 			error("key column is not found");
-		key_add_key(self, key);
+		def_add_key(self, key);
 	}
 
 	// reserved
@@ -200,7 +200,7 @@ key_read(Key* self, uint8_t** pos)
 }
 
 static inline void
-key_write(Key* self, Buf* buf)
+def_write(Def* self, Buf* buf)
 {
 	// { column:[], key_unique, key_exclude, key:[], reserved }
 	encode_map(buf, 5);

@@ -7,7 +7,7 @@
 //
 
 hot static inline Row*
-value_row_key(Key* self, Stack* stack)
+value_row_key(Def* self, Stack* stack)
 {
 	// calculate row size and validate columns
 	int size = data_size_array(self->key_count);

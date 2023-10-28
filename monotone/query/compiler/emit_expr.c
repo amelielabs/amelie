@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_auth.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -282,8 +282,8 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 		bool compound = str_split_or_set(&ref, &name, '.');
 
 		// find column or column reference
-		auto key = table_key(target->table);
-		auto column = key_find_column(key, &name);
+		auto def = table_def(target->table);
+		auto column = def_find_column(def, &name);
 		if (column)
 		{
 			column_order = column->order;
@@ -547,7 +547,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 			error("no arguments defined");
 
 		// find argument by name
-		auto column = key_find_column(self->args, &ast->string);
+		auto column = def_find_column(self->args, &ast->string);
 		if (column)
 			return op2(self, CARG_NAME, rpin(self), column->order);
 

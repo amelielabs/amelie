@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_auth.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -129,7 +129,7 @@ scan_analyze(Scan* self, Target* target)
 	int key_matched_equ  = 0;
 	int key_matched      = 0;
 
-	auto key = table_key(target->table)->key;
+	auto key = table_def(target->table)->key;
 	for (; key; key = key->next_key)
 	{
 		auto node = self->ops.list;
@@ -158,7 +158,7 @@ scan_analyze(Scan* self, Target* target)
 	}
 
 	// point lookup
-	if (key_matched_equ == table_key(target->table)->key_count)
+	if (key_matched_equ == table_def(target->table)->key_count)
 		target->is_point_lookup = true;
 
 	// has scan stop expressions <, <=
@@ -170,7 +170,7 @@ static inline void
 scan_generate_key(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
-	auto key = table_key(target->table)->key;
+	auto key = table_def(target->table)->key;
 
 	for (; key; key = key->next_key)
 	{
@@ -219,7 +219,7 @@ static inline void
 scan_generate_stop(Scan* self, Target* target, int _eof)
 {
 	auto cp = self->compiler;
-	auto key = table_key(target->table)->key;
+	auto key = table_def(target->table)->key;
 
 	for (; key; key = key->next_key)
 	{
@@ -350,7 +350,7 @@ scan_generate_target_table(Scan* self, Target* target)
 	// cursor_next
 
 	// do not iterate further for point-lookups on unique index
-	if (target->is_point_lookup && table_key(target->table)->key_unique)
+	if (target->is_point_lookup && table_def(target->table)->key_unique)
 		op1(cp, CJMP, _where_eof);
 	else
 		op2(cp, CCURSOR_NEXT, target->id, _where);

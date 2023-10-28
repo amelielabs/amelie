@@ -20,7 +20,7 @@ struct MetaConfig
 	Str     schema;
 	Str     name;
 	Str     data;
-	Key     key;
+	Def     def;
 };
 
 static inline MetaConfig*
@@ -32,7 +32,7 @@ meta_config_allocate(void)
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_init(&self->data);
-	key_init(&self->key);
+	def_init(&self->def);
 	return self;
 }
 
@@ -42,7 +42,7 @@ meta_config_free(MetaConfig* self)
 	str_free(&self->schema);
 	str_free(&self->name);
 	str_free(&self->data);
-	key_free(&self->key);
+	def_free(&self->def);
 	mn_free(self);
 }
 
@@ -79,7 +79,7 @@ meta_config_copy(MetaConfig* self)
 	meta_config_set_schema(copy, &self->schema);
 	meta_config_set_name(copy, &self->name);
 	meta_config_set_data(copy, &self->data);
-	key_copy(&copy->key, &self->key);
+	def_copy(&copy->def, &self->def);
 	return unguard(&copy_guard);
 }
 
@@ -105,9 +105,9 @@ meta_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_string_copy(pos, &self->name);
 
-	// key
+	// def
 	data_skip(pos);
-	key_read(&self->key, pos);
+	def_read(&self->def, pos);
 
 	// data
 	data_skip(pos);
@@ -136,9 +136,9 @@ meta_config_write(MetaConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// key
-	encode_raw(buf, "key", 3);
-	key_write(&self->key, buf);
+	// def
+	encode_raw(buf, "def", 3);
+	def_write(&self->def, buf);
 
 	// data
 	encode_raw(buf, "data", 4);

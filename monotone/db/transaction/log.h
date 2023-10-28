@@ -144,7 +144,7 @@ log_add(Log*     self,
         void*    iface_arg,
         bool     persistent,
         Uuid*    uuid,
-        Key*     key,
+        Def*     def,
         Row*     row,
         Row*     prev)
 {
@@ -166,7 +166,7 @@ log_add(Log*     self,
 	// [cmd, uuid a/b, row]
 
 	(void)uuid;
-	iov_add(&self->data_iov, row_data(row, key), row_data_size(row, key));
+	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
 
 	// TODO
 	/*
@@ -178,7 +178,7 @@ log_add(Log*     self,
 	encode_integer(&self->data, uuid->b);
 	data_size = buf_size(&self->data) - data_offset;
 	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
-	iov_add(&self->data_iov, row_data(row, key), row_data_size(row, key));
+	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
 	*/
 	self->count_persistent++;
 }

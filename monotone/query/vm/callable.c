@@ -13,7 +13,7 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -84,11 +84,11 @@ call(Vm*       vm,
      Value**   argv)
 {
 	auto meta = callable->meta;
-	auto key  = &meta->config->key;
-	if (argc != key->column_count)
+	auto def  = &meta->config->def;
+	if (argc != def->column_count)
 		error("%.*s: expects %d arguments", str_size(&meta->config->name),
 		      str_of(&meta->config->name),
-		      key->column_count);
+		      def->column_count);
 
 	// prepare result set and portal
 	auto set = set_create(NULL);

@@ -43,8 +43,8 @@ table_of(Handle* handle)
 	return (Table*)handle;
 }
 
-static inline Key*
-table_key(Table* self)
+static inline Def*
+table_def(Table* self)
 {
-	return &self->config->key;
+	return &self->config->def;
 }

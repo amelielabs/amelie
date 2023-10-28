@@ -13,7 +13,7 @@
 #include <monotone_auth.h>
 #include <monotone_client.h>
 #include <monotone_server.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -46,7 +46,7 @@ ccursor_open(Vm* self, Op* op)
 	auto index   = storage_find(storage, &name_index, true);
 
 	// create cursor key
-	auto def = index_key(index);
+	auto def = index_def(index);
 	auto key = value_row_key(def, &self->stack);
 	guard(row_guard, row_free, key);
 	stack_popn(&self->stack, def->key_count);
@@ -188,10 +188,10 @@ ccursor_read(Vm* self, Op* op)
 	{
 		if (unlikely(! iterator_has(cursor->it)))
 			error("*: not in active aggregation");
-		auto key = index_key(cursor->index);
+		auto def = index_def(cursor->index);
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		value_set_data(a, row_data(current, key), row_data_size(current, key), NULL);
+		value_set_data(a, row_data(current, def), row_data_size(current, def), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
@@ -234,7 +234,7 @@ ccursor_idx(Vm* self, Op* op)
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		data     = row_data(current, index_key(cursor->index));
+		data     = row_data(current, index_def(cursor->index));
 		data_buf = NULL;
 		break;
 	}
@@ -263,11 +263,11 @@ ccursor_idx(Vm* self, Op* op)
 		if (cursor->type != CURSOR_TABLE)
 			error("cursor: unsupported operation");
 
-		auto key = index_key(cursor->index);
+		auto def = index_def(cursor->index);
 		int  column_order = op->c;
-		if (column_order < key->column_count)
+		if (column_order < def->column_count)
 		{
-			auto column = key_column_of(key, column_order);
+			auto column = def_column_of(def, column_order);
 			column_find(column, &data);
 		} else
 		{

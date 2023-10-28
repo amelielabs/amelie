@@ -7,7 +7,7 @@
 //
 
 hot static inline int
-compare_n(Key* self, int count, Row* a, Row* b)
+compare_n(Def* self, int count, Row* a, Row* b)
 {
 	assert(count <= self->key_count);
 
@@ -29,7 +29,7 @@ compare_n(Key* self, int count, Row* a, Row* b)
 }
 
 hot static inline int
-compare(Key* self, Row* a, Row* b)
+compare(Def* self, Row* a, Row* b)
 {
 	return compare_n(self, self->key_count, a, b);
 }

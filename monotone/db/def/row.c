@@ -10,14 +10,14 @@
 #include <monotone_data.h>
 #include <monotone_lib.h>
 #include <monotone_config.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 
 hot Row*
-row_create(Key* key, uint8_t* data, int data_size)
+row_create(Def* def, uint8_t* data, int data_size)
 {
 	// validate columns and indexate key
-	uint32_t index[key->key_count];
-	uint32_t index_size[key->key_count];
+	uint32_t index[def->key_count];
+	uint32_t index_size[def->key_count];
 
 	uint8_t* pos = data;
 	if (unlikely(! data_is_array(pos)))
@@ -26,7 +26,7 @@ row_create(Key* key, uint8_t* data, int data_size)
 	data_read_array(&pos, &count);
 
 	bool is_partial = false;
-	auto column = key->column;
+	auto column = def->column;
 	for (; column; column = column->next)
 	{
 		// validate data type
@@ -58,10 +58,10 @@ row_create(Key* key, uint8_t* data, int data_size)
 	}
 
 	// create row
-	auto self = row_allocate(key, data_size);
+	auto self = row_allocate(def, data_size);
 	self->is_partial = is_partial;
-	for (int i = 0; i < key->key_count; i++)
-		row_key_set_index(self, key, i, index[i]);
-	memcpy(row_data(self, key), data, data_size);
+	for (int i = 0; i < def->key_count; i++)
+		row_key_set_index(self, def, i, index[i]);
+	memcpy(row_data(self, def), data, data_size);
 	return self;
 }

@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_auth.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -123,7 +123,7 @@ parse_row(Stmt* self, Table* table)
 
 	auto row = ast_row_allocate(0);
 
-	auto column = table->config->key.column;
+	auto column = table->config->def.column;
 	Ast* last   = NULL;
 	for (; column; column = column->next)
 	{
@@ -136,7 +136,6 @@ parse_row(Stmt* self, Table* table)
 		{
 			uint8_t* key;
 			int      key_size;
-
 			if (column->type == TYPE_STRING)
 			{
 				if (value->expr->id != KSTRING)

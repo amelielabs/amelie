@@ -11,7 +11,7 @@
 #include <monotone_lib.h>
 #include <monotone_config.h>
 #include <monotone_auth.h>
-#include <monotone_key.h>
+#include <monotone_def.h>
 #include <monotone_transaction.h>
 #include <monotone_storage.h>
 #include <monotone_wal.h>
@@ -39,13 +39,13 @@ emit_update_on_match(Compiler* self, void *arg)
 		auto path = op->l;
 
 		// update column in a row
-		auto key = table_key(update->target->table);
+		auto def = table_def(update->target->table);
 
 		int column_order = -1;
 		switch (path->id) {
 		case KNAME:
 		{
-			auto column = key_find_column(key, &path->string);
+			auto column = def_find_column(def, &path->string);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&path->string),
 				      str_of(&path->string));
@@ -58,7 +58,7 @@ emit_update_on_match(Compiler* self, void *arg)
 			Str name;
 			str_split_or_set(&path->string, &name, '.');
 
-			auto column = key_find_column(key, &name);
+			auto column = def_find_column(def, &name);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&name),
 				      str_of(&name));
@@ -78,7 +78,7 @@ emit_update_on_match(Compiler* self, void *arg)
 		}
 
 		// ensure we are not updating a key with the same path
-		auto key_column = key_find_key_by_order(key, column_order);
+		auto key_column = def_find_key_by_order(def, column_order);
 		if (key_column)
 			error("<%.*s> key columns cannot be updated",
 			      str_size(&key_column->name),
@@ -89,7 +89,7 @@ emit_update_on_match(Compiler* self, void *arg)
 		// ensure it is safe to remove a column
 		if (op->id == KUNSET)
 		{
-			if (column_order < key->column_count)
+			if (column_order < def->column_count)
 				error("%s", "fixed columns cannot be removed");
 		}
 
