@@ -68,7 +68,9 @@ parser_reset(Parser* self)
 		}
 		case STMT_ALTER_SCHEMA:
 		{
-			// tood:
+			auto ast = ast_schema_alter_of(stmt->ast);
+			if (ast->config)
+				schema_config_free(ast->config);
 			break;
 		}
 		case STMT_CREATE_TABLE:
