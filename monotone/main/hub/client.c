@@ -25,7 +25,6 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
-#include <monotone_session.h>
 #include <monotone_hub.h>
 
 hot void
@@ -41,10 +40,9 @@ hub_native(Hub* self, Native* client)
 	Portal portal;
 	portal_init(&portal, portal_to_channel, &client->src);
 
-	// prepare new session
-	Session session;
-	session_init(&session, &self->share, &portal);
-	guard(on_close, session_free, &session);
+	// create new session
+	auto session = hub_session_create(self, &portal);
+	guard(on_close, self->iface->session_free, session);
 
 	for (;;)
 	{
@@ -57,6 +55,6 @@ hub_native(Hub* self, Native* client)
 			break;
 
 		// execute command
-		session_execute(&session, buf);
+		hub_execute(self, session, buf);
 	}
 }

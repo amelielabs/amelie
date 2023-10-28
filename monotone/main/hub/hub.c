@@ -25,7 +25,6 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
-#include <monotone_session.h>
 #include <monotone_hub.h>
 
 hot static void
@@ -190,12 +189,13 @@ hub_main(void* arg)
 }
 
 void
-hub_init(Hub* self, Share* share)
+hub_init(Hub* self, Share* share, HubIf* iface)
 {
+	self->iface           = iface;
 	self->share           = *share;
 	self->share.cat_lock  = &self->cat_lock;
 	self->share.req_cache = &self->req_cache;
-	self->cat_locker = NULL;
+	self->cat_locker      = NULL;
 	req_cache_init(&self->req_cache);
 	locker_cache_init(&self->cat_lock_cache);
 	lock_init(&self->cat_lock, &self->cat_lock_cache);

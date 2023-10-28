@@ -25,11 +25,13 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
+#include <monotone_hub.h>
 #include <monotone_session.h>
 
-void
-session_init(Session* self, Share* share, Portal* portal)
+Session*
+session_create(Share* share, Portal* portal)
 {
+	auto self = (Session*)mn_malloc(sizeof(Session));
 	self->lock        = LOCK_NONE;
 	self->lock_shared = NULL;
 	self->share       = share;
@@ -46,6 +48,7 @@ session_init(Session* self, Share* share, Portal* portal)
 	               share->router,
 	               &self->compiler.code_data);
 	log_set_init(&self->log_set);
+	return self;
 }
 
 void
@@ -59,6 +62,7 @@ session_free(Session *self)
 	dispatch_free(&self->dispatch);
 	log_set_free(&self->log_set);
 	transaction_free(&self->trx);
+	mn_free(self);
 }
 
 static inline void

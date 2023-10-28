@@ -34,6 +34,7 @@ struct Session
 	Share*      share;
 };
 
-void session_init(Session*, Share*, Portal*);
+Session*
+session_create(Share*, Portal*);
 void session_free(Session*);
 bool session_execute(Session*, Buf*);

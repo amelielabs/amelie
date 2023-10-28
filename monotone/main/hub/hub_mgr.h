@@ -24,7 +24,9 @@ hub_mgr_init(HubMgr* self)
 }
 
 static inline void
-hub_mgr_start(HubMgr* self, Share* share, int count)
+hub_mgr_start(HubMgr* self, Share* share,
+              HubIf*  iface,
+              int     count)
 {
 	if (count == 0)
 		return;
@@ -32,7 +34,7 @@ hub_mgr_start(HubMgr* self, Share* share, int count)
 	self->workers = mn_malloc(sizeof(Hub) * count);
 	int i = 0;
 	for (; i < count; i++)
-		hub_init(&self->workers[i], share);
+		hub_init(&self->workers[i], share, iface);
 	for (i = 0; i < count; i++)
 		hub_start(&self->workers[i]);
 }
