@@ -25,8 +25,8 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
-#include <monotone_session.h>
 #include <monotone_hub.h>
+#include <monotone_session.h>
 #include <monotone_core.h>
 #include <monotone_main.h>
 

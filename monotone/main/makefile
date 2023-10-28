@@ -21,10 +21,6 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
-                 -I../cluster \
-                 -I../cluster/shard \
-                 -I../cluster/session \
-                 -I../cluster/hub \
                  -I../query \
                  -I../query/value \
                  -I../query/aggr \
@@ -33,12 +29,22 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../query/parser \
                  -I../query/compiler \
                  -I. \
+                 -Ishard \
+                 -Ihub \
+                 -Isession \
                  -Icore \
                  -Imain \
                  -Iapi
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-main.a
 OBJECTS        = \
+                 shard/shard.o \
+                 hub/hub.o \
+                 hub/client.o \
+                 session/explain.o \
+                 session/session.o \
+                 session/lock.o \
+                 session/utility.o \
                  core/core.o \
                  main/main.o \
                  api/monotone.o

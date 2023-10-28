@@ -10,7 +10,6 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../monotone/server/libmonotone-server.a \
                   ../monotone/db/libmonotone-db.a \
                   ../monotone/query/libmonotone-query.a \
-                  ../monotone/cluster/libmonotone-cluster.a \
 				  ../monotone/main/libmonotone-main.a \
                   -Wl,-no-whole-archive -lm -lreadline -lzstd -lssl -lcrypto
 SRC            = monotone.c

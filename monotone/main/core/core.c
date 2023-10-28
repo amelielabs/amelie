@@ -25,8 +25,8 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 #include <monotone_shard.h>
-#include <monotone_session.h>
 #include <monotone_hub.h>
+#include <monotone_session.h>
 #include <monotone_core.h>
 
 static inline bool
@@ -157,6 +157,31 @@ core_on_connect(Client* client, void* arg)
 	hub_mgr_forward(&self->hub_mgr, buf);
 }
 
+static void*
+core_session_create(Share* share, Portal* portal)
+{
+	return session_create(share, portal);
+}
+
+static void
+core_session_free(void* session)
+{
+	session_free(session);
+}
+
+static void
+core_session_execute(void* session, Buf* buf)
+{
+	session_execute(session, buf);
+}
+
+static HubIf hub_if =
+{
+	.session_create  = core_session_create,
+	.session_free    = core_session_free,
+	.session_execute = core_session_execute
+};
+
 void
 core_start(Core* self, bool bootstrap)
 {
@@ -166,7 +191,7 @@ core_start(Core* self, bool bootstrap)
 	if (core_is_client_only())
 	{
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, &self->share, 1);
+		hub_mgr_start(&self->hub_mgr, &self->share, &hub_if, 1);
 		return;
 	}
 
@@ -184,7 +209,7 @@ core_start(Core* self, bool bootstrap)
 		// todo: restore
 
 		// listen for relay connections only
-		hub_mgr_start(&self->hub_mgr, &self->share, 1);
+		hub_mgr_start(&self->hub_mgr, &self->share, &hub_if, 1);
 		return;
 	}
 
@@ -228,7 +253,7 @@ core_start(Core* self, bool bootstrap)
 
 	// start hubs
 	auto hubs = var_int_of(&config()->cluster_hubs);
-	hub_mgr_start(&self->hub_mgr, &self->share, hubs);
+	hub_mgr_start(&self->hub_mgr, &self->share, &hub_if, hubs);
 
 	// synchronize caches
 	hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
