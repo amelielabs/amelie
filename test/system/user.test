@@ -34,6 +34,7 @@ drop user 123
 drop user if
 drop user if exists
 drop user if exists 123
+drop user test abc
 
 # test: drop user
 drop user test
@@ -52,6 +53,7 @@ alter user test2 passw
 alter user test2 password
 alter user test2 password 123
 alter user test2 password name
+alter user test2 password "abc" abc
 
 # test: alter user
 alter user test2 password "abc"

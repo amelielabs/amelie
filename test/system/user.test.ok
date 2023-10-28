@@ -64,6 +64,9 @@ query: on_error
 drop user if exists 123
 query: on_error
 {"code": 1, "msg": "DROP USER <name> expected"}
+drop user test abc
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
 # test: drop user
 drop user test
 show users
@@ -96,6 +99,9 @@ query: on_error
 alter user test2 password name
 query: on_error
 {"code": 1, "msg": "ALTER USER PASSWORD <value> string expected"}
+alter user test2 password "abc" abc
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
 # test: alter user
 alter user test2 password "abc"
 show users
