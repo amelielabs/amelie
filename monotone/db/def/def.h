@@ -17,7 +17,7 @@ struct Def
 	int      column_count;
 	// keys
 	Column*  key;
-	Column*  def_tail;
+	Column*  key_tail;
 	int      key_count;
 	int      key_exclude;
 	bool     key_unique;
@@ -40,7 +40,7 @@ def_init(Def* self)
 	self->column_index = NULL;
 	self->column_count = 0;
 	self->key          = NULL;
-	self->def_tail     = NULL;
+	self->key_tail     = NULL;
 	self->key_count    = 0;
 	self->key_exclude  = 0;
 	self->key_unique   = false;
@@ -92,8 +92,8 @@ def_add_key(Def* self, Column* column)
 	if (self->key == NULL)
 		self->key = column;
 	else
-		self->def_tail->next_key = column;
-	self->def_tail = column;
+		self->key_tail->next_key = column;
+	self->key_tail = column;
 	self->key_count++;
 }
 
