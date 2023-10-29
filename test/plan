@@ -17,6 +17,7 @@ test user
 directory ddl
 group ddl
 test schema
+test table_create
 
 # query
 directory query
