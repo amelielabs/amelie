@@ -58,6 +58,15 @@ stmt_allocate(int order, Db* db, Lex* lex)
 }
 
 always_inline static inline Ast*
+stmt_next_shadow(Stmt* self)
+{
+	lex_set_keywords(self->lex, false);
+	auto ast = lex_next(self->lex);
+	lex_set_keywords(self->lex, true);
+	return ast;
+}
+
+always_inline static inline Ast*
 stmt_next(Stmt* self)
 {
 	return lex_next(self->lex);

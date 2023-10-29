@@ -45,7 +45,7 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 	{
 		// FROM expr
 
-		// (, [, or any function
+		// (, [, ...
 		return parse_expr(stmt, NULL);
 	}
 
@@ -54,25 +54,21 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 	if (*table)
 		return NULL;
 
-	// find view
+	// find view (only for aliasing)
 	*view = meta_mgr_find(&stmt->db->meta_mgr, &schema, &name, false);
-	if (! *view)
-		error("<%.*s> table or view does not exists",
-		      str_size(&name), str_of(&name));
 
-	// execute view as a function
-
-	// view()
+	// view() or function()
 	auto bracket = stmt_if(stmt, '(');
 	if (bracket)
 	{
-		// handle as expression if view has a call ()
-		*view = NULL;
+		// handle as expression
 		stmt_push(stmt, bracket);
 		stmt_push(stmt, expr);
 		expr = parse_expr(stmt, NULL);
 	} else
 	{
+		// construct call
+		//
 		// '(' (name, call)
 		auto call = ast('(');
 		call->l = expr;
