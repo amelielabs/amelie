@@ -22,69 +22,8 @@
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 
-static bool
-parse_primary_key(Stmt* self)
-{
-	// PRIMARY KEY
-	if (! stmt_if(self, KPRIMARY))
-		return false;
-	if (! stmt_if(self, KKEY))
-		error("PRIMARY <KEY> expected");
-	return true;
-}
-
-static void
-parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
-{
-	auto def = &stmt->config->def;
-
-	// (
-	if (! stmt_if(self, '('))
-		error("KEY <(> expected");
-
-	for (;;)
-	{
-		// name
-		auto name = stmt_if(self, KNAME);
-		if (! name)
-			error("PRIMARY KEY (<name> expected");
-
-		// ensure column exists
-		auto column = def_find_column(def, &name->string);
-		if (! column)
-			error("<%.*s> column does not exists", str_size(&name->string),
-			      str_of(&name->string));
-
-		// validate column type
-		if (column->type != TYPE_INT && column->type != TYPE_STRING)
-			error("<%.*s> column key can be string or int", str_size(&name->string),
-			      str_of(&name->string));
-
-		// ensure key is not redefined
-		if (def_find_key(def, &name->string))
-			error("<%.*s> column redefined as a key", str_size(&name->string),
-			      str_of(&name->string));
-
-		// ASC | DESC
-		bool asc = true;
-		if (stmt_if(self, KASC))
-			asc = true;
-		else
-		if (stmt_if(self, KDESC))
-			asc = false;
-		column_set_asc(column, asc);
-
-		// add column as a key
-		def_add_key(def, column);
-
-		// ,
-		if (! stmt_if(self, ','))
-			break;
-	}
-}
-
 static int
-parse_type(Stmt* self, Ast* name)
+parse_type(Stmt* self, Ast* path)
 {
 	auto ast = stmt_next(self);
 	int  type = 0;
@@ -112,11 +51,111 @@ parse_type(Stmt* self, Ast* name)
 		type = TYPE_STRING;
 		break;
 	default:
-		error("(%.*s <TYPE>) expected", str_size(&name->string),
-		      str_of(&name->string));
+		error("%.*s <TYPE> expected", str_size(&path->string),
+		      str_of(&path->string));
 		break;
 	}
 	return type;
+}
+
+static bool
+parse_primary_key(Stmt* self)
+{
+	// PRIMARY KEY
+	if (! stmt_if(self, KPRIMARY))
+		return false;
+	if (! stmt_if(self, KKEY))
+		error("PRIMARY <KEY> expected");
+	return true;
+}
+
+static void
+parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
+{
+	auto def = &stmt->config->def;
+
+	// (
+	if (! stmt_if(self, '('))
+		error("PRIMARY KEY <(> expected");
+
+	for (;;)
+	{
+		Str     name;
+		Str     path;
+		Column* column;
+		int     type;
+		str_init(&name);
+		str_init(&path);
+
+		auto tk = stmt_next(self);
+		if (tk->id == KNAME)
+		{
+			// (column, ...)
+			str_set_str(&name, &tk->string);
+
+			// find column and validate type
+			column = def_find_column(def, &name);
+			if (! column)
+				error("<%.*s> column does not exists", str_size(&name),
+				      str_of(&name));
+
+			// validate column type
+			if (column->type != TYPE_INT && column->type != TYPE_STRING)
+				error("<%.*s> column key can be string or int", str_size(&name),
+				      str_of(&name));
+
+			type = column->type;
+		} else
+		if (tk->id == KNAME_COMPOUND)
+		{
+			// (column.path type, ...)
+			str_split_or_set(&tk->string, &name, '.');
+
+			// exclude column name from the path
+			str_set_str(&path, &tk->string);
+			str_advance(&path, str_size(&name) + 1);
+
+			// find column and validate type
+			column = def_find_column(def, &name);
+			if (! column)
+				error("<%.*s> column does not exists", str_size(&name),
+				      str_of(&name));
+
+			// validate column type
+			if (column->type != TYPE_MAP)
+				error("<%.*s> column nested key type must be map", str_size(&name),
+				      str_of(&name));
+
+			// type
+			type = parse_type(self, tk);
+		} else {
+			error("PRIMARY KEY (<name> expected");
+		}
+
+		// ASC | DESC
+		bool asc = true;
+		if (stmt_if(self, KASC))
+			asc = true;
+		else
+		if (stmt_if(self, KDESC))
+			asc = false;
+
+		// create key
+		auto key = key_allocate();
+		key_set_column(key, column->order);
+		key_set_type(key, type);
+		key_set_path(key, &path);
+		key_set_asc(key, asc);
+		def_add_key(def, key);
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("PRIMARY KEY (<)> expected");
 }
 
 static void
@@ -152,7 +191,7 @@ parser_key(Stmt* self, AstTableCreate* stmt)
 			error("<%.*s> column redefined", str_size(&name->string),
 			      str_of(&name->string));
 
-		// create new column
+		// create column
 		column = column_allocate();
 		def_add_column(def, column);
 		column_set_name(column, &name->string);
@@ -160,11 +199,16 @@ parser_key(Stmt* self, AstTableCreate* stmt)
 
 		if (parse_primary_key(self))
 		{
-			// validate column type
+			// validate key type
 			if (type != TYPE_INT && type != TYPE_STRING)
 				error("<%.*s> column key can be string or int",
 				      str_size(&name->string), str_of(&name->string));
-			def_add_key(def, column);
+
+			// create key
+			auto key = key_allocate();
+			key_set_column(key, column->order);
+			key_set_type(key, type);
+			def_add_key(def, key);
 		}
 
 		// ,
@@ -241,7 +285,6 @@ parse_table_alter(Stmt* self)
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
 		error("ALTER TABLE <name> expected");
-
 
 	// RENAME TO
 	if (stmt_if(self, KRENAME))
