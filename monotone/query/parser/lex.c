@@ -25,20 +25,28 @@
 void
 lex_init(Lex* self, Keyword** keywords)
 {
-	self->pos      = NULL;
-	self->end      = NULL;
-	self->keywords = keywords;
-	self->backlog  = NULL;
-	self->prefix   = NULL;
+	self->pos             = NULL;
+	self->end             = NULL;
+	self->keywords        = keywords;
+	self->keywords_enable = true;
+	self->backlog         = NULL;
+	self->prefix          = NULL;
 }
 
 void
 lex_reset(Lex* self)
 {
-	self->pos     = NULL;
-	self->end     = NULL;
-	self->backlog = NULL;
-	self->prefix  = NULL;
+	self->pos             = NULL;
+	self->end             = NULL;
+	self->keywords_enable = true;
+	self->backlog         = NULL;
+	self->prefix          = NULL;
+}
+
+void
+lex_set_keywords(Lex* self, bool keywords)
+{
+	self->keywords_enable = keywords;
 }
 
 void
@@ -270,7 +278,7 @@ reread_as_float:
 		}
 
 		ast->id = KNAME;
-		if (*ast->string.pos != '_')
+		if (*ast->string.pos != '_' && self->keywords_enable)
 		{
 			auto keyword = lex_keyword_match(self, &ast->string);
 			if (keyword) 
