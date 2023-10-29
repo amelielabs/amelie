@@ -16,8 +16,8 @@ struct Def
 	Column** column_index;
 	int      column_count;
 	// keys
-	Column*  key;
-	Column*  key_tail;
+	Key*     key;
+	Key*     key_tail;
 	int      key_count;
 	int      key_exclude;
 	bool     key_unique;
@@ -59,6 +59,14 @@ def_free(Def* self)
 	}
 	if (self->column_index)
 		mn_free(self->column_index);
+
+	auto key = self->key;
+	while (key)
+	{
+		auto next = key->next;
+		key_free(key);
+		key = next;
+	}
 }
 
 static inline void
@@ -85,16 +93,26 @@ def_add_column(Def* self, Column* column)
 }
 
 static inline void
-def_add_key(Def* self, Column* column)
+def_add_key(Def* self, Key* key)
 {
-	assert(column->order_key == -1);
-	column->order_key = self->key_count;
+	assert(key->order == -1);
+
+	// add key
+	key->order = self->key_count;
 	if (self->key == NULL)
-		self->key = column;
+		self->key = key;
 	else
-		self->key_tail->next_key = column;
-	self->key_tail = column;
+		self->key_tail->next = key;
+	self->key_tail = key;
 	self->key_count++;
+
+	// add key to the column
+	auto column = def_column_of(self, key->column);
+	if (column->key == NULL)
+		column->key = key;
+	else
+		column->key_tail->next_column = key;
+	column->key_tail = key;
 }
 
 hot static inline Column*
@@ -107,23 +125,16 @@ def_find_column(Def* self, Str* name)
 	return NULL;
 }
 
-hot static inline Column*
+hot static inline Key*
 def_find_key(Def* self, Str* name)
 {
-	auto column = self->key;
-	for (; column; column = column->next_key)
+	auto key = self->key;
+	for (; key; key = key->next)
+	{
+		auto column = def_column_of(self, key->column);
 		if (str_compare(&column->name, name))
-			return column;
-	return NULL;
-}
-
-hot static inline Column*
-def_find_key_by_order(Def* self, int order)
-{
-	auto column = self->key;
-	for (; column; column = column->next_key)
-		if (column->order == order)
-			return column;
+			return key;
+	}
 	return NULL;
 }
 
@@ -139,12 +150,11 @@ def_copy(Def* self, Def* src)
 	}
 
 	// add keys
-	column = src->key;
-	for (; column; column = column->next_key)
+	auto key = src->key;
+	for (; key; key = key->next)
 	{
-		auto key = def_find_column(self, &column->name);
-		assert(key);
-		def_add_key(self, key);
+		auto copy = key_copy(key);
+		def_add_key(self, copy);
 	}
 	self->key_exclude = src->key_exclude;
 	self->key_unique  = src->key_unique;
@@ -154,7 +164,7 @@ def_copy(Def* self, Def* src)
 static inline void
 def_read(Def* self, uint8_t** pos)
 {
-	// { column:[], key_unique, key_exclude, key:[], reserved }
+	// { column:[], key[], key_unique, key_exclude, reserved }
 	int count;
 	data_read_map(pos, &count);
 
@@ -168,6 +178,16 @@ def_read(Def* self, uint8_t** pos)
 		def_add_column(self, column);
 	}
 
+	// key
+	data_skip(pos);
+	data_read_array(pos, &count);
+	i = 0;
+	for (; i < count; i++)
+	{
+		auto key = key_read(pos);
+		def_add_key(self, key);
+	}
+
 	// key_unique
 	data_skip(pos);
 	data_read_bool(pos, &self->key_unique);
@@ -177,20 +197,6 @@ def_read(Def* self, uint8_t** pos)
 	int64_t key_exclude;
 	data_read_integer(pos, &key_exclude);
 	self->key_exclude = key_exclude;
-
-	// key
-	data_skip(pos);
-	data_read_array(pos, &count);
-	i = 0;
-	for (; i < count; i++)
-	{
-		Str name;
-		data_read_string(pos, &name);
-		auto key = def_find_column(self, &name);
-		if (unlikely(key == NULL))
-			error("key column is not found");
-		def_add_key(self, key);
-	}
 
 	// reserved
 	data_skip(pos);
@@ -202,7 +208,7 @@ def_read(Def* self, uint8_t** pos)
 static inline void
 def_write(Def* self, Buf* buf)
 {
-	// { column:[], key_unique, key_exclude, key:[], reserved }
+	// { column:[], key:[], key_unique, key_exclude, reserved }
 	encode_map(buf, 5);
 
 	// column
@@ -212,6 +218,13 @@ def_write(Def* self, Buf* buf)
 	for (; column; column = column->next)
 		column_write(column, buf);
 
+	// key
+	encode_raw(buf, "key", 3);
+	encode_array(buf, self->key_count);
+	auto key = self->key;
+	for (; key; key = key->next)
+		key_write(key, buf);
+
 	// key_unique
 	encode_raw(buf, "key_unique", 10);
 	encode_bool(buf, self->key_unique);
@@ -219,13 +232,6 @@ def_write(Def* self, Buf* buf)
 	// key_exclude
 	encode_raw(buf, "key_exclude", 11);
 	encode_integer(buf, self->key_exclude);
-
-	// key
-	encode_raw(buf, "key", 3);
-	encode_array(buf, self->key_count);
-	column = self->key;
-	for (; column; column = column->next_key)
-		encode_string(buf, &column->name);
 
 	// reserved
 	encode_raw(buf, "reserved", 8);
