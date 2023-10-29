@@ -137,6 +137,19 @@ target_list_match(TargetList* self, Str* name)
 	return NULL;
 }
 
+static inline bool
+target_list_is_expr(TargetList* self)
+{
+	auto target = self->list;
+	while (target)
+	{
+		if (target->table)
+			return false;
+		target = target->next;
+	}
+	return true;
+}
+
 static inline Target*
 target_list_first(TargetList* self)
 {

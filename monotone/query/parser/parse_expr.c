@@ -408,7 +408,7 @@ parse_expr(Stmt* self, Expr* expr)
 				{
 					// expr.name
 					// expr.path.to
-					auto r = stmt_next(self);
+					auto r = stmt_next_shadow(self);
 					if (r->id == KNAME ||
 					    r->id == KNAME_COMPOUND)
 						r->id = KSTRING;
