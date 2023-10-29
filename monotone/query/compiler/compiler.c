@@ -145,7 +145,7 @@ compiler_emit(Compiler* self)
 		case STMT_SELECT:
 
 			// if all targets are expressions execute locally
-			if (stmt->target_list.count == 0)
+			if (target_list_is_expr(&stmt->target_list))
 			{
 				compiler_switch(self, true);
 				emit_select(self, stmt->ast, false);
