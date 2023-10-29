@@ -18,6 +18,7 @@ directory ddl
 group ddl
 test schema
 test table_create
+test table_drop
 
 # query
 directory query

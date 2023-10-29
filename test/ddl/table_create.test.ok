@@ -206,6 +206,11 @@ create table public.test (id int primary key)
 select *.schema from mn_tables() where name = "test"
 "public"
 drop table public.test
+# test: schema non-exists
+create table test.test (id int primary key)
+query: on_error
+{"code": 1, "msg": "schema 'test': not exists"}
+select *.schema from mn_tables() where name = "test"
 # test: schema set
 create table test (id int primary key)
 create schema test
