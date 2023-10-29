@@ -13,22 +13,23 @@ value_row_key(Def* self, Stack* stack)
 	int size = data_size_array(self->key_count);
 
 	auto key = self->key;
-	for (; key; key = key->next_key)
+	for (; key; key = key->next)
 	{
-		auto ref = stack_at(stack, self->key_count - key->order_key);
+		auto ref = stack_at(stack, self->key_count - key->order);
+		auto column = def_column_of(self, key->column);
 		if (key->type == TYPE_STRING)
 		{
 			if (unlikely(ref->type != VALUE_STRING))
-				error("column <%.*s>: does not match data type", 
-				      str_size(&key->name),
-				      str_of(&key->name));
+				error("column <%.*s>: does not match key data type",
+				      str_size(&column->name),
+				      str_of(&column->name));
 			size += data_size_string(ref->data_size);
 		} else
 		{
 			if (unlikely(ref->type != VALUE_INT))
-				error("column <%.*s>: does not match data type", 
-				      str_size(&key->name),
-				      str_of(&key->name));
+				error("column <%.*s>: does not match key data type",
+				      str_size(&column->name),
+				      str_of(&column->name));
 			size += data_size_integer(ref->integer);
 		}
 	}
@@ -41,10 +42,10 @@ value_row_key(Def* self, Stack* stack)
 	data_write_array(&pos, self->key_count);
 
 	key = self->key;
-	for (; key; key = key->next_key)
+	for (; key; key = key->next)
 	{
-		auto ref = stack_at(stack, self->key_count - key->order_key);
-		row_key_set_index(row, self, key->order_key, pos - start);
+		auto ref = stack_at(stack, self->key_count - key->order);
+		row_key_set_index(row, self, key->order, pos - start);
 		if (key->type == TYPE_STRING)
 			data_write_string(&pos, &ref->string);
 		else
