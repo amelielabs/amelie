@@ -6,29 +6,28 @@
 // SQL OLTP database
 //
 
+typedef struct Key    Key;
 typedef struct Column Column;
 
 struct Column
 {
 	Str     name;
 	int     order;
-	int     order_key;
 	int64_t type;
-	bool    asc;
+	Key*    key;
+	Key*    key_tail;
 	Column* next;
-	Column* next_key;
 };
 
 static inline Column*
 column_allocate(void)
 {
 	Column* self = mn_malloc(sizeof(Column));
-	self->order     = 0;
-	self->order_key = -1;
-	self->type      = -1;
-	self->asc       = false;
-	self->next      = NULL;
-	self->next_key  = NULL;
+	self->order    = 0;
+	self->type     = -1;
+	self->key      = NULL;
+	self->key_tail = NULL;
+	self->next     = NULL;
 	str_init(&self->name);
 	return self;
 }
@@ -38,12 +37,6 @@ column_free(Column* self)
 {
 	str_free(&self->name);
 	mn_free(self);
-}
-
-static inline bool
-column_is_key(Column* self)
-{
-	return self->order_key != -1;
 }
 
 static inline void
@@ -58,12 +51,6 @@ column_set_type(Column* self, int value)
 	self->type = value;
 }
 
-static inline void
-column_set_asc(Column* self, bool value)
-{
-	self->asc = value;
-}
-
 static inline Column*
 column_copy(Column* self)
 {
@@ -71,7 +58,6 @@ column_copy(Column* self)
 	guard(copy_guard, column_free, copy);
 	column_set_name(copy, &self->name);
 	column_set_type(copy, self->type);
-	column_set_asc(copy, self->asc);
 	return unguard(&copy_guard);
 }
 
@@ -92,17 +78,13 @@ column_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_integer(pos, &self->type);
 
-	// asc
-	data_skip(pos);
-	data_read_bool(pos, &self->asc);
-
 	return unguard(&self_guard);
 }
 
 static inline void
 column_write(Column* self, Buf* buf)
 {
-	encode_map(buf, 3);
+	encode_map(buf, 2);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -111,10 +93,6 @@ column_write(Column* self, Buf* buf)
 	// type
 	encode_raw(buf, "type", 4);
 	encode_integer(buf, self->type);
-
-	// asc
-	encode_raw(buf, "asc", 3);
-	encode_bool(buf, self->asc);
 }
 
 hot static inline void
