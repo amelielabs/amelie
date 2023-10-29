@@ -33,7 +33,7 @@ error_init(Error* self)
 	memset(self, 0, sizeof(*self));
 }
 
-static inline void
+static inline void no_return
 error_throw(Error*        self,
             ExceptionMgr* mgr,
             const char*   file,
