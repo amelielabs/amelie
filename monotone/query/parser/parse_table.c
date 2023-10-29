@@ -99,11 +99,6 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 				error("<%.*s> column does not exists", str_size(&name),
 				      str_of(&name));
 
-			// validate column type
-			if (column->type != TYPE_INT && column->type != TYPE_STRING)
-				error("<%.*s> column key can be string or int", str_size(&name),
-				      str_of(&name));
-
 			type = column->type;
 		} else
 		if (tk->id == KNAME_COMPOUND)
@@ -121,16 +116,16 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 				error("<%.*s> column does not exists", str_size(&name),
 				      str_of(&name));
 
-			// validate column type
-			if (column->type != TYPE_MAP)
-				error("<%.*s> column nested key type must be map", str_size(&name),
-				      str_of(&name));
-
 			// type
 			type = parse_type(self, tk);
 		} else {
 			error("PRIMARY KEY (<name> expected");
 		}
+
+		// validate key type
+		if (type != TYPE_INT && type != TYPE_STRING)
+			error("<%.*s> column key can be string or int", str_size(&name),
+			      str_of(&name));
 
 		// ASC | DESC
 		bool asc = true;
@@ -252,6 +247,8 @@ parse_table_create(Stmt* self)
 
 	// (key)
 	parser_key(self, stmt);
+
+	// todo: WITH
 }
 
 void
