@@ -3,10 +3,10 @@ connect E0 S0
 connect: on_connect
 # test: ensure public schema exists
 show schemas
-{"public": {"name": "public", "system": true}}
-select mn_schemas().public
+[{"name": "public", "system": true}]
+select * from mn_schemas() where name = "public"
 {"name": "public", "system": true}
-select mn_schemas().public.system = true
+select system from mn_schemas() where name = "public"
 true
 # test: create schema statement parsing
 create
@@ -36,16 +36,16 @@ query: on_error
 # test: create schema
 create schema test
 show schemas
-{"public": {"name": "public", "system": true}, "test": {"name": "test", "system": false}}
-select mn_schemas().test.system = false
-true
+[{"name": "public", "system": true}, {"name": "test", "system": false}]
+select mn_schemas()
+[{"name": "public", "system": true}, {"name": "test", "system": false}]
 # test: create schema if not exists
 create schema test
 query: on_error
 {"code": 1, "msg": "schema 'test': already exists"}
 create schema if not exists test
 show schemas
-{"public": {"name": "public", "system": true}, "test": {"name": "test", "system": false}}
+[{"name": "public", "system": true}, {"name": "test", "system": false}]
 # test: drop schema statement parsing
 drop schema
 query: on_error
@@ -65,20 +65,20 @@ query: on_error
 # test: drop schema
 drop schema test
 show schemas
-{"public": {"name": "public", "system": true}}
+[{"name": "public", "system": true}]
 # test: drop schema if exists
 drop schema test
 query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
 drop schema if exists test
 show schemas
-{"public": {"name": "public", "system": true}}
+[{"name": "public", "system": true}]
 # test: drop system schema
 drop schema public
 query: on_error
 {"code": 1, "msg": "schema 'public': system schema cannot be dropped"}
 show schemas
-{"public": {"name": "public", "system": true}}
+[{"name": "public", "system": true}]
 # test: drop schema with dependency
 create schema test
 create table test.test(id int primary key)
@@ -108,14 +108,13 @@ query: on_error
 {"code": 1, "msg": "ALTER SCHEMA RENAME TO <name> expected"}
 # test: alter schema rename
 create schema test
-select mn_schemas().test
-{"name": "test", "system": false}
+select mn_schemas()
+[{"name": "public", "system": true}, {"name": "test", "system": false}]
 alter schema test rename to test2
-select mn_schemas().test
-query: on_error
-{"code": 1, "msg": "<test>: map path not found"}
-select mn_schemas().test2
-{"name": "test2", "system": false}
+select mn_schemas()
+[{"name": "public", "system": true}, {"name": "test2", "system": false}]
+select mn_schemas()
+[{"name": "public", "system": true}, {"name": "test2", "system": false}]
 # test: alter schema system
 alter schema public rename to _public
 query: on_error

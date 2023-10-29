@@ -26,7 +26,7 @@ query: on_error
 # test: create user
 create user test
 show users
-{"test": {"name": "test", "password": false}}
+[{"name": "test", "password": false}]
 # test: create user if not exists
 create user test
 query: on_error
@@ -47,7 +47,9 @@ query: on_error
 {"code": 1, "msg": "unexpected clause at the end of command"}
 create user test2 password "test"
 show users
-{"test": {"name": "test", "password": false}, "test2": {"name": "test2", "password": true}}
+[{"name": "test", "password": false}, {"name": "test2", "password": true}]
+select name from mn_users() where name = "test2"
+"test2"
 # test: drop user statment parsing
 drop user
 query: on_error
@@ -70,7 +72,7 @@ query: on_error
 # test: drop user
 drop user test
 show users
-{"test2": {"name": "test2", "password": true}}
+[{"name": "test2", "password": true}]
 # test: drop user if exists
 drop user test
 query: on_error
@@ -107,15 +109,15 @@ query: on_error
 # test: alter user
 alter user test2 password "abc"
 show users
-{"test2": {"name": "test2", "password": true}}
+[{"name": "test2", "password": true}]
 # test: alter user unset password
 alter user test2 password ""
 show users
-{"test2": {"name": "test2", "password": false}}
+[{"name": "test2", "password": false}]
 # test: alter user set password
 alter user test2 password "abc"
 show users
-{"test2": {"name": "test2", "password": true}}
+[{"name": "test2", "password": true}]
 # test: recover
 disconnect S0
 env_close E0
@@ -123,16 +125,16 @@ env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
 connect E0 S0
 connect: on_connect
 show users
-{"test2": {"name": "test2", "password": true}}
+[{"name": "test2", "password": true}]
 drop user test2
 show users
-{}
+[]
 disconnect S0
 env_close E0
 env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
 connect E0 S0
 connect: on_connect
 show users
-{}
+[]
 disconnect S0
 env_close E0
