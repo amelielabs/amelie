@@ -30,7 +30,7 @@ parse_value_add(AstStack* stack)
 }
 
 hot static inline AstValue*
-parse_value(Stmt* self, AstRow* row)
+parse_value(Stmt* self)
 {
 	AstStack stack;
 	ast_stack_init(&stack);
@@ -51,7 +51,6 @@ parse_value(Stmt* self, AstRow* row)
 			auto head = ast_head(&stack);
 			if (!head || head->id != '[')
 				error("expected ']'");
-			row->data_size += data_size_array(head->integer);
 			ast_pop(&stack);
 			continue;
 		}
@@ -64,7 +63,6 @@ parse_value(Stmt* self, AstRow* row)
 			auto head = ast_head(&stack);
 			if (!head || head->id != '{')
 				error("expected '}'");
-			row->data_size += data_size_map(head->integer);
 			ast_pop(&stack);
 			continue;
 		}
@@ -74,24 +72,19 @@ parse_value(Stmt* self, AstRow* row)
 			continue;
 		case KSTRING:
 			parse_value_add(&stack);
-			row->data_size += data_size_string(str_size(&ast->string));
 			break;
 		case KNULL:
 			parse_value_add(&stack);
-			row->data_size += data_size_null();
 			break;
 		case KTRUE:
 		case KFALSE:
 			parse_value_add(&stack);
-			row->data_size += data_size_bool();
 			break;
 		case KINT:
 			parse_value_add(&stack);
-			row->data_size += data_size_integer(ast->integer);
 			break;
 		case KREAL:
 			parse_value_add(&stack);
-			row->data_size += data_size_real(ast->real);
 			break;
 		default:
 			done = true;
@@ -113,7 +106,7 @@ parse_value(Stmt* self, AstRow* row)
 }
 
 hot static inline AstRow*
-parse_row(Stmt* self, Table* table) 
+parse_row(Stmt* self)
 {
 	// (value, ...)
 
@@ -121,41 +114,14 @@ parse_row(Stmt* self, Table* table)
 	if (! stmt_if(self, '('))
 		error("<(> expected");
 
-	auto row = ast_row_allocate(0);
-
-	auto column = table->config->def.column;
-	Ast* last   = NULL;
-	for (; column; column = column->next)
+	auto row  = ast_row_allocate(0);
+	Ast* last = NULL;
+	for (;;)
 	{
-		auto value = parse_value(self, row);
+		// value
+		auto value = parse_value(self);
 		if (unlikely(value->expr == NULL))
 			error("bad row value");
-
-		// validate key and hash
-		if (column_is_key(column))
-		{
-			uint8_t* key;
-			int      key_size;
-			if (column->type == TYPE_STRING)
-			{
-				if (value->expr->id != KSTRING)
-					error("key column <%.*s>: expected string type", str_size(&column->name),
-					      str_of(&column->name));
-
-				key = str_u8(&value->expr->string);
-				key_size = str_size(&value->expr->string);
-			} else
-			{
-				if (value->expr->id != KINT)
-					error("key column <%.*s>: expected int type", str_size(&column->name),
-					      str_of(&column->name));
-
-				key = (uint8_t*)&value->expr->integer;
-				key_size = sizeof(value->expr->integer);
-			}
-
-			row->hash = hash_murmur3_32(key, key_size, row->hash);
-		}
 
 		if (row->list == NULL)
 			row->list = &value->ast;
@@ -171,6 +137,7 @@ parse_row(Stmt* self, Table* table)
 		// )
 		if (! stmt_if(self, ')'))
 			error("expected ')'");
+		break;
 	}
 
 	return row;
@@ -224,7 +191,7 @@ parse_insert(Stmt* self, bool unique)
 	Ast* last = NULL;
 	for (;;)
 	{
-		auto row = parse_row(self, stmt->table);
+		auto row = parse_row(self);
 		if (row == NULL)
 			break;
 

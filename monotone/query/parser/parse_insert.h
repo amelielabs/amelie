@@ -18,11 +18,9 @@ struct AstValue
 
 struct AstRow
 {
-	Ast      ast;
-	Ast*     list;
-	int      list_count;
-	int      data_size;
-	uint32_t hash;
+	Ast  ast;
+	Ast* list;
+	int  list_count;
 };
 
 struct AstInsert
@@ -63,8 +61,6 @@ ast_row_allocate(int id)
 	AstRow* self = ast_allocate(id, sizeof(AstRow));
 	self->list       = NULL;
 	self->list_count = 0;
-	self->data_size  = 0;
-	self->hash       = 0;
 	return self;
 }
 

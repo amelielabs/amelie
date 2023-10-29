@@ -55,22 +55,21 @@ parse_update(Stmt* self)
 			break;
 		}
 
-		// name, path or column id
+		// name or path
 		op->l = stmt_next(self);
 		switch (op->l->id) {
 		case KNAME:
 		case KNAME_COMPOUND:
-		case KINT:
 			break;
 		default:
-			error("UPDATE name <name or pos> expected");
+			error("UPDATE name SET <path> expected");
 			break;
 		}
 
 		// expr
 		if (op->id == KSET)
 		{
-			// [SET] <path> [=] <expr>
+			// SET path = expr
 
 			// =
 			stmt_if(self, '=');
