@@ -67,9 +67,8 @@ enum
 	CMAP,
 	CARRAY,
 
-	// object ops
-	CCOL_SET,
-	CCOL_UNSET,
+	// column
+	CASSIGN,
 
 	// set
 	CSET,

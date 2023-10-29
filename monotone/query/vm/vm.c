@@ -129,8 +129,7 @@ vm_run(Vm*          self,
 		&&cidx,
 		&&cmap,
 		&&carray,
-		&&ccol_set,
-		&&ccol_unset,
+		&&cassign,
 		&&cset,
 		&&cset_ordered,
 		&&cset_sort,
@@ -375,23 +374,14 @@ carray:
 	stack_popn(stack, op->b);
 	op_next;
 
-ccol_set:
+cassign:
 	if (unlikely(op->b != 3))
 		error("set(): incorrect call");
 	a = stack_at(stack, 3);
 	b = stack_at(stack, 2);
 	c = stack_at(stack, 1);
-	value_idx_set_column(&r[op->a], op->c, a, b, c);
+	value_assign(&r[op->a], op->c, a, b, c);
 	stack_popn(stack, 3);
-	op_next;
-
-ccol_unset:
-	if (unlikely(op->b != 2))
-		error("unset(): incorrect call");
-	a = stack_at(stack, 2);
-	b = stack_at(stack, 1);
-	value_idx_unset_column(&r[op->a], op->c, a, b);
-	stack_popn(stack, 2);
 	op_next;
 
 cset:

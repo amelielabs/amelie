@@ -82,9 +82,8 @@ OpDesc ops[] =
 	{ CMAP,               "map"               },
 	{ CARRAY,             "array"             },
 
-	// object ops
-	{ CCOL_SET,           "col_set"           },
-	{ CCOL_UNSET,         "col_unset"         },
+	// column
+	{ CASSIGN,            "assign"            },
 
 	// set
 	{ CSET,               "set"               },
