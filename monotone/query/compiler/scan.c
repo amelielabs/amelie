@@ -40,11 +40,13 @@ typedef struct
 } Scan;
 
 static inline bool
-scan_key_is_match(Target* target, Ast* ast, Column* key)
+scan_key_is_match(Target* target, Ast* ast, Key* key)
 {
+	auto column = def_column_of(table_def(target->table), key->column);
+
 	// column
 	if (ast->id == KNAME)
-		if (str_compare(&ast->string, &key->name))
+		if (str_compare(&ast->string, &column->name))
 			return true;
 
 	// target.column
@@ -58,7 +60,7 @@ scan_key_is_match(Target* target, Ast* ast, Column* key)
 			Str path;
 			str_set_str(&path, &ast->string);
 			str_advance(&path, str_size(&name) + 1);
-			if (str_compare(&path, &key->name))
+			if (str_compare(&path, &column->name))
 				return true;
 		}
 	}
@@ -67,7 +69,7 @@ scan_key_is_match(Target* target, Ast* ast, Column* key)
 }
 
 static inline Ast*
-scan_key_match(Scan* self, Target* target, Ast* op, Column* key)
+scan_key_match(Scan* self, Target* target, Ast* op, Key* key)
 {
 	auto l = op->l;
 	auto r = op->r;
@@ -130,7 +132,7 @@ scan_analyze(Scan* self, Target* target)
 	int key_matched      = 0;
 
 	auto key = table_def(target->table)->key;
-	for (; key; key = key->next_key)
+	for (; key; key = key->next)
 	{
 		auto node = self->ops.list;
 		for (; node; node = node->next)
@@ -169,10 +171,10 @@ scan_analyze(Scan* self, Target* target)
 static inline void
 scan_generate_key(Scan* self, Target* target)
 {
-	auto cp = self->compiler;
+	auto cp  = self->compiler;
 	auto key = table_def(target->table)->key;
 
-	for (; key; key = key->next_key)
+	for (; key; key = key->next)
 	{
 		bool match = false;
 		auto node = self->ops.list;
@@ -218,10 +220,10 @@ scan_generate_key(Scan* self, Target* target)
 static inline void
 scan_generate_stop(Scan* self, Target* target, int _eof)
 {
-	auto cp = self->compiler;
+	auto cp  = self->compiler;
 	auto key = table_def(target->table)->key;
 
-	for (; key; key = key->next_key)
+	for (; key; key = key->next)
 	{
 		auto node = self->ops.list;
 		for (; node; node = node->next)

@@ -41,15 +41,14 @@ emit_update_on_match(Compiler* self, void *arg)
 		// update column in a row
 		auto def = table_def(update->target->table);
 
-		int column_order = -1;
+		Column* column = NULL;
 		switch (path->id) {
 		case KNAME:
 		{
-			auto column = def_find_column(def, &path->string);
+			column = def_find_column(def, &path->string);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&path->string),
 				      str_of(&path->string));
-			column_order = column->order;
 			path->id = KNULL;
 			break;
 		}
@@ -58,40 +57,28 @@ emit_update_on_match(Compiler* self, void *arg)
 			Str name;
 			str_split_or_set(&path->string, &name, '.');
 
-			auto column = def_find_column(def, &name);
+			column = def_find_column(def, &name);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&name),
 				      str_of(&name));
-			column_order = column->order;
 
 			// exclude name from the path
 			str_advance(&path->string, str_size(&name) + 1);
 			path->id = KSTRING;
 			break;
 		}
-		case KINT:
-		{
-			column_order = path->integer;
-			path->id = KNULL;
-			break;
-		}
 		}
 
-		// ensure we are not updating a key with the same path
-		auto key_column = def_find_key_by_order(def, column_order);
-		if (key_column)
+		// ensure we are not updating a key
+		if (column->key)
+		{
+			// todo: check path
+
 			error("<%.*s> key columns cannot be updated",
-			      str_size(&key_column->name),
-			      str_of(&key_column->name));
+			      str_size(&column->name), str_of(&column->name));
+		}
 
 		// todo: check secondary keys
-
-		// ensure it is safe to remove a column
-		if (op->id == KUNSET)
-		{
-			if (column_order < def->column_count)
-				error("%s", "fixed columns cannot be removed");
-		}
 
 		// path
 		int rexpr = emit_expr(self, update->target, op->l);
@@ -99,24 +86,12 @@ emit_update_on_match(Compiler* self, void *arg)
 		runpin(self, rexpr);
 
 		// expr
-		if (op->r)
-		{
-			rexpr = emit_expr(self, update->target, op->r);
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
-		}
+		rexpr = emit_expr(self, update->target, op->r);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
 
-		// op
-		switch (op->id) {
-		case KSET:
-			// col_set(obj, idx, expr, column)
-			rexpr = op3(self, CCOL_SET, rpin(self), 3, column_order);
-			break;
-		case KUNSET:
-			// col_unset(obj, idx, column)
-			rexpr = op3(self, CCOL_UNSET, rpin(self), 2, column_order);
-			break;
-		}
+		// assign(obj, idx, expr, column)
+		rexpr = op3(self, CASSIGN, rpin(self), 3, column->order);
 
 		// push
 		op1(self, CPUSH, rexpr);
