@@ -163,3 +163,6 @@ row_free(Row* self)
 }
 
 Row* row_create(Def*, uint8_t*, int);
+
+uint32_t
+row_hash(Def*, uint8_t*, int);
