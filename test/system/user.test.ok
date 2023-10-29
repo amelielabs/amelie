@@ -73,6 +73,8 @@ show users
 {"test2": {"name": "test2", "password": true}}
 # test: drop user if exists
 drop user test
+query: on_error
+{"code": 1, "msg": "user 'test': not exists"}
 drop user if exists test
 # test: alter user statment parsing
 alter user

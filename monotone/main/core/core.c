@@ -301,7 +301,7 @@ core_rpc(Rpc* rpc, void* arg)
 	case RPC_USER_DROP:
 	{
 		Str* name = rpc_arg_ptr(rpc, 0);
-		bool if_exists = rpc_arg(rpc, 2);
+		bool if_exists = rpc_arg(rpc, 1);
 		user_mgr_drop(&self->user_mgr, name, if_exists);
 		hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
 		break;
