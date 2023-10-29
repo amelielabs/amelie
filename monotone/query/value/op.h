@@ -416,7 +416,7 @@ value_to_json(Value* result, Value* a)
 }
 
 always_inline hot static inline void
-value_idx_set_column(Value* result, int column, Value* a, Value* b, Value* c)
+value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 {
 	if (unlikely(a->type != VALUE_DATA))
 		error("set(): map or array type expected");
@@ -436,26 +436,6 @@ value_idx_set_column(Value* result, int column, Value* a, Value* b, Value* c)
 	} else
 	{
 		error("set(): path type must be string");
-	}
-}
-
-always_inline hot static inline void
-value_idx_unset_column(Value* result, int column, Value* a, Value* b)
-{
-	if (unlikely(a->type != VALUE_DATA))
-		error("unset(): map or array type expected");
-	if (b->type == VALUE_NULL)
-	{
-		// row[column]
-		value_array_remove(result, a->data, column);
-	} else
-	if (b->type == VALUE_STRING)
-	{
-		// row[column].path
-		update_unset_array(result, a->data, column, &b->string);
-	} else
-	{
-		error("unset(): path type must be string");
 	}
 }
 
