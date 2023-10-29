@@ -113,6 +113,7 @@ emit_insert(Compiler* self, Ast* ast)
 	}
 
 	// foreach row
+	auto def = table_def(insert->table);
 	auto i = insert->rows;
 	for (; i; i = i->next)
 	{
@@ -122,8 +123,11 @@ emit_insert(Compiler* self, Ast* ast)
 		int data_size;
 		int data = emit_row(&self->code_data, row, &data_size);
 
+		// validate row and hash keys
+		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+
 		// get the request code
-		auto code = &dispatch_map(self->dispatch, row->hash, self->current->order)->code;
+		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
 
 		// CINSERT
 		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
