@@ -176,13 +176,12 @@ Buf*
 table_mgr_list(TableMgr* self)
 {
 	auto buf = msg_create(MSG_OBJECT);
-	// map
-	encode_map(buf, self->mgr.list_count);
+	// array
+	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// name: {}
+		// {}
 		auto table = table_of(list_at(Handle, link));
-		encode_string(buf, &table->config->name);
 		table_config_write(table->config, buf);
 	}
 	msg_end(buf);

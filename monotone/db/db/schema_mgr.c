@@ -174,13 +174,12 @@ Buf*
 schema_mgr_list(SchemaMgr* self)
 {
 	auto buf = msg_create(MSG_OBJECT);
-	// map
-	encode_map(buf, self->mgr.list_count);
+	// array
+	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// name: {}
+		// {}
 		auto schema = schema_of(list_at(Handle, link));
-		encode_string(buf, &schema->config->name);
 		schema_config_write(schema->config, buf);
 	}
 	msg_end(buf);

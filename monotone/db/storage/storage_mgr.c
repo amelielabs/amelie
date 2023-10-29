@@ -140,16 +140,12 @@ storage_mgr_list(StorageMgr* self)
 {
 	auto buf = msg_create(MSG_OBJECT);
 
-	// map
-	encode_map(buf, self->list_count);
+	// array
+	encode_array(buf, self->list_count);
 	list_foreach(&self->list)
 	{
-		// id: {}
+		// {}
 		auto storage = list_at(Storage, link);
-
-		char uuid[UUID_SZ];
-		uuid_to_string(&storage->config->id, uuid, sizeof(uuid));
-		encode_raw(buf, uuid, sizeof(uuid) - 1);
 
 		// map
 		encode_map(buf, 3);

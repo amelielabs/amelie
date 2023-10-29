@@ -125,13 +125,12 @@ Buf*
 meta_mgr_list(MetaMgr* self)
 {
 	auto buf = msg_create(MSG_OBJECT);
-	// map
-	encode_map(buf, self->mgr.list_count);
+	// array
+	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// name: {}
+		// {}
 		auto meta = meta_of(list_at(Handle, link));
-		encode_string(buf, &meta->config->name);
 		meta_config_write(meta->config, buf);
 	}
 	msg_end(buf);
