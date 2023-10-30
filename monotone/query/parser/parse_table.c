@@ -221,6 +221,55 @@ last:
 		error("primary key is not defined");
 }
 
+static void
+parser_with(Stmt* self, AstTableCreate* stmt)
+{
+	// [WITH]
+	if (! stmt_if(self, KWITH))
+		return;
+
+	// (
+	if (! stmt_if(self, '('))
+		error("WITH <(> expected");
+
+	for (;;)
+	{
+		// key
+		auto key = stmt_if(self, KNAME);
+		if (! key)
+			error("WITH (<name> expected");
+
+		// uuid
+		if (str_compare_raw(&key->string, "uuid", 4))
+		{
+			// =
+			if (! stmt_if(self, '='))
+				error("WITH (uuid <=> expected");
+
+			// string
+			auto value = stmt_if(self, KSTRING);
+			if (! value)
+				error("WITH (uuid = <string>) expected");
+
+			Uuid uuid;
+			uuid_from_string(&uuid, &value->string);
+			table_config_set_id(stmt->config, &uuid);
+
+		} else {
+			error("<%.*s> unrecognized parameter",
+			      str_size(&key->string), str_of(&key->string));
+		}
+
+		// ,
+		if (stmt_if(self, ','))
+			continue;
+
+		// )
+		if (stmt_if(self, ')'))
+			break;
+	}
+}
+
 void
 parse_table_create(Stmt* self)
 {
@@ -248,7 +297,8 @@ parse_table_create(Stmt* self)
 	// (key)
 	parser_key(self, stmt);
 
-	// todo: WITH
+	// [WITH]
+	parser_with(self, stmt);
 }
 
 void
