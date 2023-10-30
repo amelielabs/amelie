@@ -87,12 +87,15 @@ compiler_is_utility(Compiler* self)
 	case STMT_CREATE_USER:
 	case STMT_CREATE_SCHEMA:
 	case STMT_CREATE_TABLE:
+	case STMT_CREATE_VIEW:
 	case STMT_DROP_USER:
 	case STMT_DROP_SCHEMA:
 	case STMT_DROP_TABLE:
+	case STMT_DROP_VIEW:
 	case STMT_ALTER_USER:
 	case STMT_ALTER_SCHEMA:
 	case STMT_ALTER_TABLE:
+	case STMT_ALTER_VIEW:
 		return true;
 	default:
 		break;

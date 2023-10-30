@@ -52,6 +52,7 @@ OBJECTS        = \
                  parser/parse_user.o \
                  parser/parse_schema.o \
                  parser/parse_table.o \
+                 parser/parse_view.o \
                  parser/parse_insert.o \
                  parser/parse_update.o \
                  parser/parse_delete.o \

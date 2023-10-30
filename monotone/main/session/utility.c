@@ -250,6 +250,30 @@ execute_ddl(Session* self, Stmt* stmt)
 			// todo
 			break;
 		}
+
+		case STMT_CREATE_VIEW:
+		{
+			// create view
+			auto arg = ast_view_create_of(stmt->ast);
+			view_mgr_create(share->view_mgr, trx, arg->config, arg->if_not_exists);
+			break;
+		}
+		case STMT_DROP_VIEW:
+		{
+			// drop view
+			auto arg = ast_view_drop_of(stmt->ast);
+			view_mgr_drop(share->view_mgr, trx, &arg->schema, &arg->name,
+			              arg->if_exists);
+			break;
+		}
+		case STMT_ALTER_VIEW:
+		{
+			// alter view
+			auto arg = ast_view_alter_of(stmt->ast);
+			// todo
+			(void)arg;
+			break;
+		}
 		default:
 			assert(0);
 			break;
@@ -316,6 +340,9 @@ session_execute_utility(Session* self)
 	case STMT_CREATE_TABLE:
 	case STMT_DROP_TABLE:
 	case STMT_ALTER_TABLE:
+	case STMT_CREATE_VIEW:
+	case STMT_DROP_VIEW:
+	case STMT_ALTER_VIEW:
 		execute_ddl(self, stmt);
 		break;
 
