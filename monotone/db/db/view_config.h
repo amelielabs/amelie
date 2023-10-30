@@ -12,7 +12,7 @@ struct ViewConfig
 {
 	Str schema;
 	Str name;
-	Str select;
+	Str query;
 	Def def;
 };
 
@@ -23,7 +23,7 @@ view_config_allocate(void)
 	self = mn_malloc(sizeof(ViewConfig));
 	str_init(&self->schema);
 	str_init(&self->name);
-	str_init(&self->select);
+	str_init(&self->query);
 	def_init(&self->def);
 	return self;
 }
@@ -33,7 +33,7 @@ view_config_free(ViewConfig* self)
 {
 	str_free(&self->schema);
 	str_free(&self->name);
-	str_free(&self->select);
+	str_free(&self->query);
 	def_free(&self->def);
 	mn_free(self);
 }
@@ -51,9 +51,9 @@ view_config_set_name(ViewConfig* self, Str* name)
 }
 
 static inline void
-view_config_set_select(ViewConfig* self, Str* select)
+view_config_set_query(ViewConfig* self, Str* query)
 {
-	str_copy(&self->select, select);
+	str_copy(&self->query, query);
 }
 
 static inline ViewConfig*
@@ -63,7 +63,7 @@ view_config_copy(ViewConfig* self)
 	guard(copy_guard, view_config_free, copy);
 	view_config_set_schema(copy, &self->schema);
 	view_config_set_name(copy, &self->name);
-	view_config_set_select(copy, &self->select);
+	view_config_set_query(copy, &self->query);
 	def_copy(&copy->def, &self->def);
 	return unguard(&copy_guard);
 }
@@ -86,9 +86,9 @@ view_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_string_copy(pos, &self->name);
 
-	// select
+	// query
 	data_skip(pos);
-	data_read_string_copy(pos, &self->select);
+	data_read_string_copy(pos, &self->query);
 
 	// def
 	data_skip(pos);
@@ -111,9 +111,9 @@ view_config_write(ViewConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// select
-	encode_raw(buf, "select", 6);
-	buf_write_str(buf, &self->select);
+	// query
+	encode_raw(buf, "query", 5);
+	encode_string(buf, &self->query);
 
 	// def
 	encode_raw(buf, "def", 3);
