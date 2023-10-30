@@ -87,6 +87,20 @@ parser_reset(Parser* self)
 				table_config_free(ast->config);
 			break;
 		}
+		case STMT_CREATE_VIEW:
+		{
+			auto ast = ast_view_create_of(stmt->ast);
+			if (ast->config)
+				view_config_free(ast->config);
+			break;
+		}
+		case STMT_ALTER_VIEW:
+		{
+			auto ast = ast_view_alter_of(stmt->ast);
+			if (ast->config)
+				view_config_free(ast->config);
+			break;
+		}
 		default:
 			break;
 		}

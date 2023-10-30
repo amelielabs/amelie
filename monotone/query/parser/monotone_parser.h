@@ -29,6 +29,7 @@
 #include "parser/parse_user.h"
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"
+#include "parser/parse_view.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"

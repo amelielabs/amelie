@@ -138,7 +138,7 @@ parse(Parser* self, Str* str)
 
 		case KCREATE:
 		{
-			// CREATE TABLE | SCHEMA | USER
+			// CREATE USER | SCHEMA | TABLE | VIEW
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
@@ -155,13 +155,19 @@ parse(Parser* self, Str* str)
 				stmt->id = STMT_CREATE_TABLE;
 				parse_table_create(stmt);
 			} else
-				error("CREATE <USER|SCHEMA|TABLE> expected");
+			if (lex_if(lex, KVIEW))
+			{
+				stmt->id = STMT_CREATE_VIEW;
+				parse_view_create(stmt);
+			} else {
+				error("CREATE <USER|SCHEMA|TABLE|VIEW> expected");
+			}
 			break;
 		}
 
 		case KDROP:
 		{
-			// DROP TABLE | SCHEMA | USER
+			// DROP USER | SCHEMA | TABLE | VIEW
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
@@ -177,15 +183,20 @@ parse(Parser* self, Str* str)
 			{
 				stmt->id = STMT_DROP_TABLE;
 				parse_table_drop(stmt);
+			} else
+			if (lex_if(lex, KVIEW))
+			{
+				stmt->id = STMT_DROP_VIEW;
+				parse_view_drop(stmt);
+			} else {
+				error("DROP <USER|SCHEMA|TABLE|VIEW> expected");
 			}
-			else
-				error("DROP <USER|SCHEMA|TABLE> expected");
 			break;
 		}
 
 		case KALTER:
 		{
-			// ALTER TABLE | SCHEMA | USER
+			// ALTER USER | SCHEMA | TABLE | VIEW
 			parser_validate(self, false);
 			if (lex_if(lex, KUSER))
 			{
@@ -202,7 +213,13 @@ parse(Parser* self, Str* str)
 				stmt->id = STMT_ALTER_TABLE;
 				parse_table_alter(stmt);
 			} else
-				error("ALTER <USER|SCHEMA|TABLE> expected");
+			if (lex_if(lex, KVIEW))
+			{
+				stmt->id = STMT_ALTER_VIEW;
+				parse_view_alter(stmt);
+			} else {
+				error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
+			}
 			break;
 		}
 
