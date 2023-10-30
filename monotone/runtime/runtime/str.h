@@ -145,3 +145,14 @@ str_split_or_set(Str* self, Str* chunk, char token)
 	str_set(chunk, str_of(self), pos - str_of(self));
 	return true;
 }
+
+static inline void
+str_shrink(Str* self)
+{
+	// remove whitespaces from start and end
+	// of the string
+	while (self->pos < self->end && isspace(*self->pos))
+		self->pos++;
+	while ((self->end - 1) > self->pos && isspace(*(self->end - 1)))
+		self->end--;
+}
