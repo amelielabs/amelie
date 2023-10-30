@@ -106,8 +106,8 @@ handle_mgr_write(HandleMgr*   self,
 	    cmd == LOG_ALTER_SCHEMA  ||
 	    cmd == LOG_CREATE_TABLE  ||
 	    cmd == LOG_ALTER_TABLE   ||
-	    cmd == LOG_CREATE_META   ||
-	    cmd == LOG_ALTER_META)
+	    cmd == LOG_CREATE_VIEW   ||
+	    cmd == LOG_ALTER_VIEW)
 	{
 		prev = handle_mgr_set(self, handle);
 	} else

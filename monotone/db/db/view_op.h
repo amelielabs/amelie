@@ -7,17 +7,17 @@
 //
 
 static inline Buf*
-meta_op_create(MetaConfig* config)
+view_op_create(ViewConfig* config)
 {
 	// [config]
 	auto buf = buf_create(0);
 	encode_array(buf, 1);
-	meta_config_write(config, buf);
+	view_config_write(config, buf);
 	return buf;
 }
 
 static inline Buf*
-meta_op_drop(Str* schema, Str* name)
+view_op_drop(Str* schema, Str* name)
 {
 	// [schema, name]
 	auto buf = buf_create(0);
@@ -27,16 +27,16 @@ meta_op_drop(Str* schema, Str* name)
 	return buf;
 }
 
-static inline MetaConfig*
-meta_op_create_read(uint8_t** pos)
+static inline ViewConfig*
+view_op_create_read(uint8_t** pos)
 {
 	int count;
 	data_read_array(pos, &count);
-	return meta_config_read(pos);
+	return view_config_read(pos);
 }
 
 static inline void
-meta_op_drop_read(uint8_t** pos, Str* schema, Str* name)
+view_op_drop_read(uint8_t** pos, Str* schema, Str* name)
 {
 	int count;
 	data_read_array(pos, &count);
