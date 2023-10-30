@@ -33,7 +33,7 @@ OBJECTS        = \
                  wal/debug.o \
                  db/schema_mgr.o \
                  db/table_mgr.o \
-                 db/meta_mgr.o \
+                 db/view_mgr.o \
                  db/db.o \
                  db/db_catalog.o \
                  db/recover.o \

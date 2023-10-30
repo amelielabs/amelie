@@ -19,15 +19,15 @@
 static void
 db_catalog_dump(Catalog* cat, Buf* buf)
 {
-	// { schemas, tables, metas }
+	// { schemas, tables, views }
 	Db* self = cat->iface_arg;
 	encode_map(buf, 3);
 	encode_raw(buf, "schemas", 7);
 	schema_mgr_dump(&self->schema_mgr, buf);
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
-	encode_raw(buf, "metas", 5);
-	meta_mgr_dump(&self->meta_mgr, buf);
+	encode_raw(buf, "views", 5);
+	view_mgr_dump(&self->view_mgr, buf);
 }
 
 static void
@@ -105,9 +105,9 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 }
 
 static void
-db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
+db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 {
-	// [meta_config]
+	// [view_config]
 	int count;
 	data_read_array(pos, &count);
 
@@ -122,12 +122,12 @@ db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
 		transaction_begin(&trx);
 		transaction_set_auto_commit(&trx);
 
-		// read meta config
-		auto config = meta_config_read(pos);
-		guard(config_guard, meta_config_free, config);
+		// read view config
+		auto config = view_config_read(pos);
+		guard(config_guard, view_config_free, config);
 
-		// create meta
-		meta_mgr_create(&self->meta_mgr, &trx, config, false);
+		// create view
+		view_mgr_create(&self->view_mgr, &trx, config, false);
 	}
 
 	if (catch(&e))
@@ -144,7 +144,7 @@ db_catalog_restore_meta(Db* self, uint64_t lsn, uint8_t** pos)
 static void
 db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
 {
-	// { tables, metas }
+	// { schemas, tables, views }
 	Db* self = cat->iface_arg;
 
 	int count;
@@ -163,11 +163,11 @@ db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
 	for (i = 0; i < count; i++)
 		db_catalog_restore_table(self, lsn, pos);
 
-	// metas
+	// views
 	data_skip(pos);
 	data_read_array(pos, &count);
 	for (i = 0; i < count; i++)
-		db_catalog_restore_meta(self, lsn, pos);
+		db_catalog_restore_view(self, lsn, pos);
 }
 
 CatalogIf db_catalog_if =

@@ -11,13 +11,13 @@ typedef struct Db Db;
 struct Db
 {
 	SchemaMgr  schema_mgr;
-	MetaMgr    meta_mgr;
+	ViewMgr    view_mgr;
 	TableMgr   table_mgr;
 	StorageMgr storage_mgr;
 	Wal        wal;
 };
 
-void db_init(Db*, MetaIf*, void*);
+void db_init(Db*);
 void db_free(Db*);
 void db_open(Db*, CatalogMgr*);
 void db_close(Db*);

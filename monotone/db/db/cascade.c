@@ -46,12 +46,12 @@ cascade_schema_validate(Db* self, Str* schema)
 			      str_of(&table->config->name),
 			      str_size(schema), str_of(schema));
 	}
-	list_foreach(&self->meta_mgr.mgr.list)
+	list_foreach(&self->view_mgr.mgr.list)
 	{
-		auto meta = meta_of(list_at(Handle, link));
-		if (str_compare(&meta->config->schema, schema))
-			error("view '%.*s': has schema '%.*s", str_size(&meta->config->name),
-			      str_of(&meta->config->name),
+		auto view = view_of(list_at(Handle, link));
+		if (str_compare(&view->config->schema, schema))
+			error("view '%.*s': has schema '%.*s", str_size(&view->config->name),
+			      str_of(&view->config->name),
 			      str_size(schema), str_of(schema));
 	}
 }

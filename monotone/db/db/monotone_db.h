@@ -18,11 +18,11 @@
 #include "db/table_op.h"
 #include "db/table_mgr.h"
 
-// meta
-#include "db/meta_config.h"
-#include "db/meta.h"
-#include "db/meta_op.h"
-#include "db/meta_mgr.h"
+// view
+#include "db/view_config.h"
+#include "db/view.h"
+#include "db/view_op.h"
+#include "db/view_mgr.h"
 
 // db
 #include "db/db.h"

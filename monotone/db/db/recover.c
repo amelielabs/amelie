@@ -112,19 +112,19 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		table_mgr_alter(&self->table_mgr, trx, &schema, &name, config, true);
 		break;
 	}
-	case LOG_CREATE_META:
+	case LOG_CREATE_VIEW:
 	{
-		auto config = meta_op_create_read(&data);
-		guard(config_guard, meta_config_free, config);
-		meta_mgr_create(&self->meta_mgr, trx, config, false);
+		auto config = view_op_create_read(&data);
+		guard(config_guard, view_config_free, config);
+		view_mgr_create(&self->view_mgr, trx, config, false);
 		break;
 	}
-	case LOG_DROP_META:
+	case LOG_DROP_VIEW:
 	{
 		Str schema;
 		Str name;
-		meta_op_drop_read(&data, &schema, &name);
-		meta_mgr_drop(&self->meta_mgr, trx, &schema, &name, true);
+		view_op_drop_read(&data, &schema, &name);
+		view_mgr_drop(&self->view_mgr, trx, &schema, &name, true);
 		break;
 	}
 	default:
