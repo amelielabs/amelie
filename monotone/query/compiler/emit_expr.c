@@ -113,8 +113,6 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 
 	error("function <%.*s> not found", str_size(&name->string),
 	      str_of(&name->string));
-
-	// todo: find view by name
 	return -1;
 }
 

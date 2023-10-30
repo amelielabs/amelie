@@ -46,7 +46,6 @@ OBJECTS        = \
                  vm/func_debug.o \
                  vm/vm.o \
                  vm/command.o \
-                 vm/callable.o \
                  parser/keyword.o \
                  parser/lex.o \
                  parser/parse_expr.o \

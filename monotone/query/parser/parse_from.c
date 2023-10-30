@@ -32,7 +32,7 @@ typedef struct
 } From;
 
 static inline Ast*
-parse_from_analyze(From* self, Table** table, Meta** view)
+parse_from_analyze(From* self, Table** table, View** view)
 {
 	auto stmt = self->stmt;
 
@@ -55,7 +55,7 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 		return NULL;
 
 	// find view (only for aliasing)
-	*view = meta_mgr_find(&stmt->db->meta_mgr, &schema, &name, false);
+	*view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
 
 	// view() or function()
 	auto bracket = stmt_if(stmt, '(');
@@ -67,6 +67,8 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 		expr = parse_expr(stmt, NULL);
 	} else
 	{
+		// todo: find view by name, resolve as FROM SELECT
+#if 0
 		// construct call
 		//
 		// '(' (name, call)
@@ -74,6 +76,7 @@ parse_from_analyze(From* self, Table** table, Meta** view)
 		call->l = expr;
 		call->r = ast(KCALL);
 		expr = call;
+#endif
 	}
 
 	return expr;
@@ -84,7 +87,7 @@ parse_from_add(From* self)
 {
 	auto   stmt  = self->stmt;
 	Table* table = NULL;
-	Meta*  view  = NULL;
+	View*  view  = NULL;
 
 	// FROM <expr> [alias]
 	auto expr = parse_from_analyze(self, &table, &view);
