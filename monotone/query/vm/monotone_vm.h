@@ -19,6 +19,3 @@
 #include "vm/command.h"
 #include "vm/func.h"
 #include "vm/func_debug.h"
-
-// callable
-#include "vm/callable.h"

@@ -176,7 +176,7 @@ func_mn_views(Vm*       vm,
 {
 	unused(argv);
 	function_validate_argc(func, argc);
-	auto buf = meta_mgr_list(&vm->db->meta_mgr);
+	auto buf = view_mgr_list(&vm->db->view_mgr);
 	value_set_data_from(result, buf);
 }
 

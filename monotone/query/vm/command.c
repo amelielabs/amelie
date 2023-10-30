@@ -298,7 +298,7 @@ ccursor_idx(Vm* self, Op* op)
 hot void
 ccall(Vm* self, Op* op)
 {
-	// [function_mgr, argc]
+	// [function, argc]
 
 	// prepare call arguments
 	int    argc = op->c;
@@ -306,38 +306,11 @@ ccall(Vm* self, Op* op)
 	for (int i = 0; i < argc; i++)
 		argv[i] = stack_at(&self->stack, argc - i);
 
-	// find and call an internal function
+	// call an internal function
 	Function* func = (Function*)op->b;
 	func->main(self, func, reg_at(&self->r, op->a), argc, argv);
 
 	stack_popn(&self->stack, op->c);
-
-#if 0
-	Str name;
-	code_data_at_string(self->code_data, op->b, &name);
-
-	// prepare arguments
-	int    argc = op->c;
-	Value* argv[argc];
-	for (int i = 0; i < argc; i++)
-		argv[i] = stack_at(&self->stack, argc - i);
-
-	// find and call an internal function
-	auto func = function_mgr_find(self->function_mgr, &name);
-	if (func)
-	{
-		func->main(self, func, reg_at(&self->r, op->a), argc, argv);
-		stack_popn(&self->stack, op->c);
-		return;
-	}
-
-	// find and call a view
-	auto meta = meta_mgr_find(&self->db->meta_mgr, &name, true);
-	Callable* callable = meta->iface_data;
-	assert(callable != NULL);
-	call(self, reg_at(&self->r, op->a), callable, argc, argv);
-	stack_popn(&self->stack, op->c);
-#endif
 }
 
 hot void
