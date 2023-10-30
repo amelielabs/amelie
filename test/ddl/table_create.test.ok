@@ -223,5 +223,35 @@ select name from mn_tables() where *.schema = "test" and name = "test"
 drop table test
 drop table test.test
 drop schema test
+# test: with parsing
+create table test (id int primary key) with
+query: on_error
+{"code": 1, "msg": "WITH <(> expected"}
+create table test (id int primary key) with (
+query: on_error
+{"code": 1, "msg": "WITH (<name> expected"}
+create table test (id int primary key) with (,
+query: on_error
+{"code": 1, "msg": "WITH (<name> expected"}
+create table test (id int primary key) with (abc
+query: on_error
+{"code": 1, "msg": "<abc> unrecognized parameter"}
+create table test (id int primary key) with (abc = 10)
+query: on_error
+{"code": 1, "msg": "<abc> unrecognized parameter"}
+create table test (id int primary key) with (abc = "")
+query: on_error
+{"code": 1, "msg": "<abc> unrecognized parameter"}
+create table test (id int primary key) with (uuid = 10)
+query: on_error
+{"code": 1, "msg": "WITH (uuid = <string>) expected"}
+create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000") junk
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
+# test: with
+create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
+select * from mn_tables()
+{"id": "00000000-0000-0000-0000-000000000000", "schema": "public", "name": "test", "def": {"column": [{"name": "id", "type": 2}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+drop table test
 disconnect S0
 env_close E0
