@@ -274,6 +274,7 @@ void
 parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name (key)
+	// [REFERENCE] [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -296,6 +297,10 @@ parse_table_create(Stmt* self)
 
 	// (key)
 	parser_key(self, stmt);
+
+	// [REFERENCE]
+	if (stmt_if(self, KREFERENCE))
+		table_config_set_reference(stmt->config, true);
 
 	// [WITH]
 	parser_with(self, stmt);

@@ -142,6 +142,11 @@ drop table test
 drop table test.test
 drop schema test
 
+# test: reference
+create table test (id int primary key) reference
+select *.name, *.reference from mn_tables()
+drop table test
+
 # test: with parsing
 create table test (id int primary key) with
 create table test (id int primary key) with (

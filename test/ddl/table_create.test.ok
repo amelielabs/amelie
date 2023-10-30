@@ -223,6 +223,11 @@ select name from mn_tables() where *.schema = "test" and name = "test"
 drop table test
 drop table test.test
 drop schema test
+# test: reference
+create table test (id int primary key) reference
+select *.name, *.reference from mn_tables()
+["test", true]
+drop table test
 # test: with parsing
 create table test (id int primary key) with
 query: on_error
@@ -251,7 +256,7 @@ query: on_error
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
 select * from mn_tables()
-{"id": "00000000-0000-0000-0000-000000000000", "schema": "public", "name": "test", "def": {"column": [{"name": "id", "type": 2}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+{"id": "00000000-0000-0000-0000-000000000000", "schema": "public", "name": "test", "reference": false, "def": {"column": [{"name": "id", "type": 2}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 drop table test
 disconnect S0
 env_close E0

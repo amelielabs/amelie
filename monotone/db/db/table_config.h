@@ -13,6 +13,7 @@ struct TableConfig
 	Uuid id;
 	Str  schema;
 	Str  name;
+	bool reference;
 	Def  def;
 };
 
@@ -21,6 +22,7 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = mn_malloc(sizeof(TableConfig));
+	self->reference = false;
 	uuid_init(&self->id);
 	str_init(&self->schema);
 	str_init(&self->name);
@@ -55,6 +57,12 @@ table_config_set_name(TableConfig* self, Str* name)
 	str_copy(&self->name, name);
 }
 
+static inline void
+table_config_set_reference(TableConfig* self, bool reference)
+{
+	self->reference = reference;
+}
+
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
@@ -63,6 +71,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_id(copy, &self->id);
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
+	table_config_set_reference(copy, self->reference);
 	def_copy(&copy->def, &self->def);
 	return unguard(&copy_guard);
 }
@@ -91,6 +100,10 @@ table_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_string_copy(pos, &self->name);
 
+	// reference
+	data_skip(pos);
+	data_read_bool(pos, &self->reference);
+
 	// def
 	data_skip(pos);
 	def_read(&self->def, pos);
@@ -102,7 +115,7 @@ static inline void
 table_config_write(TableConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 4);
+	encode_map(buf, 5);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -117,6 +130,10 @@ table_config_write(TableConfig* self, Buf* buf)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+
+	// reference
+	encode_raw(buf, "reference", 9);
+	encode_bool(buf, self->reference);
 
 	// def
 	encode_raw(buf, "def", 3);
