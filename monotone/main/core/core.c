@@ -84,7 +84,7 @@ core_create(void)
 	router_init(&self->router);
 
 	// db
-	db_init(&self->db, NULL, NULL);
+	db_init(&self->db);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -93,7 +93,7 @@ core_create(void)
 	auto share = &self->share;
 	share->function_mgr  = &self->function_mgr;
 	share->schema_mgr    = &self->db.schema_mgr;
-	share->meta_mgr      = &self->db.meta_mgr;
+	share->view_mgr      = &self->db.view_mgr;
 	share->table_mgr     = &self->db.table_mgr;
 	share->storage_mgr   = &self->db.storage_mgr;
 	share->wal           = &self->db.wal;

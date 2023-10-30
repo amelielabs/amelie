@@ -52,7 +52,7 @@ execute_show(Session* self, Ast* ast)
 		buf = table_mgr_list(&self->share->db->table_mgr);
 	else
 	if (str_compare_raw(&arg->expr->string, "views", 5))
-		buf = meta_mgr_list(&self->share->db->meta_mgr);
+		buf = view_mgr_list(&self->share->db->view_mgr);
 	else
 	if (str_compare_raw(&arg->expr->string, "all", 3))
 		buf = config_list(global()->config);

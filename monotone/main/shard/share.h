@@ -12,7 +12,7 @@ struct Share
 {
 	FunctionMgr*  function_mgr;
 	SchemaMgr*    schema_mgr;
-	MetaMgr*      meta_mgr;
+	ViewMgr*      view_mgr;
 	TableMgr*     table_mgr;
 	StorageMgr*   storage_mgr;
 	Wal*          wal;
