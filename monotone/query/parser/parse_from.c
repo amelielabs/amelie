@@ -54,32 +54,28 @@ parse_from_analyze(From* self, Table** table, View** view)
 	if (*table)
 		return NULL;
 
-	// find view (only for aliasing)
+	// find view
 	*view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
+	if (*view)
+	{
+		// FROM (SELECT)
+		auto lex_prev = stmt->lex;
 
-	// view() or function()
-	auto bracket = stmt_if(stmt, '(');
-	if (bracket)
-	{
-		// handle as expression
-		stmt_push(stmt, bracket);
-		stmt_push(stmt, expr);
-		expr = parse_expr(stmt, NULL);
-	} else
-	{
-		// todo: find view by name, resolve as FROM SELECT
-#if 0
-		// construct call
-		//
-		// '(' (name, call)
-		auto call = ast('(');
-		call->l = expr;
-		call->r = ast(KCALL);
-		expr = call;
-#endif
+		// parse view SELECT and return as expression
+		Lex lex;
+		lex_init(&lex, lex_prev->keywords);
+		lex_start(&lex, &(*view)->config->query);
+		stmt->lex = &lex;
+		stmt_if(stmt, KSELECT);
+		auto select = parse_select(stmt);
+		stmt->lex = lex_prev;
+		return &select->ast;
 	}
 
-	return expr;
+	// FROM name()
+	// FROM schema.name()
+	stmt_push(stmt, expr);
+	return parse_expr(stmt, NULL);
 }
 
 static inline Target*
@@ -129,6 +125,9 @@ parse_from_add(From* self)
 
 	// set outer target
 	target->outer = self->head;
+
+	// set view
+	target->view  = view;
 	return target;
 }
 

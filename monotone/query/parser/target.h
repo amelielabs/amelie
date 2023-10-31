@@ -23,6 +23,7 @@ struct Target
 	Target* group_main;
 	Target* group_redirect;
 	// expression target
+	View*   view;
 	Ast*    expr;
 	Ast*    expr_on;
 	int     rexpr;
@@ -53,6 +54,7 @@ target_init(Target* self, Table* table)
 	self->group_by_target = NULL;
 	self->group_main      = NULL;
 	self->group_redirect  = NULL;
+	self->view            = NULL;
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
