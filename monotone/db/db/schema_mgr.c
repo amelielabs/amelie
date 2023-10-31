@@ -98,11 +98,11 @@ schema_mgr_drop(SchemaMgr*   self,
 }
 
 void
-schema_mgr_alter(SchemaMgr*    self,
-                 Transaction*  trx,
-                 Str*          name,
-                 SchemaConfig* config,
-                 bool          if_exists)
+schema_mgr_rename(SchemaMgr*   self,
+                  Transaction* trx,
+                  Str*         name,
+                  Str*         name_new,
+                  bool         if_exists)
 {
 	auto schema = schema_mgr_find(self, name, false);
 	if (! schema)
@@ -117,26 +117,26 @@ schema_mgr_alter(SchemaMgr*    self,
 		error("schema '%.*s': system schema cannot be altered", str_size(name),
 		       str_of(name));
 
+	// ensure new schema does not exists
+	if (schema_mgr_find(self, name_new, false))
+		error("schema '%.*s': already exists", str_size(name_new),
+		      str_of(name_new));
+
 	// allocate new schema object
-	auto update = schema_allocate(config);
+	auto update = schema_allocate(schema->config);
 	guard(guard, schema_free, update);
 
-	// if schema name changed, drop previous schema
-	if (! str_compare(&config->name, name))
-	{
-		// ensure new schema does not exists
-		if (schema_mgr_find(self, &config->name, false))
-			error("schema '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+	// set new name
+	schema_config_set_name(update->config, name_new);
 
-		schema_mgr_drop_schema(self, trx, schema);
-	}
+	// drop previus schema object
+	schema_mgr_drop_schema(self, trx, schema);
 
-	// save alter schema operation
-	auto op = schema_op_alter(name, config);
+	// save  schema operation
+	auto op = schema_op_rename(name, name_new);
 
 	// update schemas
-	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_ALTER, &update->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_RENAME, &update->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);

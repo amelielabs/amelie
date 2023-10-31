@@ -40,6 +40,7 @@ schema_config_set_system(SchemaConfig* self, bool system)
 static inline void
 schema_config_set_name(SchemaConfig* self, Str* name)
 {
+	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 

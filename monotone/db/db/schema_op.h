@@ -27,13 +27,13 @@ schema_op_drop(Str* name)
 }
 
 static inline Buf*
-schema_op_alter(Str* name, SchemaConfig* config)
+schema_op_rename(Str* name, Str* name_new)
 {
-	// [name, config]
+	// [name, name_new]
 	auto buf = buf_create(0);
 	encode_array(buf, 2);
 	encode_string(buf, name);
-	schema_config_write(config, buf);
+	encode_string(buf, name_new);
 	return buf;
 }
 
@@ -53,11 +53,11 @@ schema_op_drop_read(uint8_t **pos, Str* name)
 	data_read_string(pos, name);
 }
 
-static inline SchemaConfig*
-schema_op_alter_read(uint8_t** pos, Str* name)
+static inline void
+schema_op_rename_read(uint8_t** pos, Str* name, Str* name_new)
 {
 	int count;
 	data_read_array(pos, &count);
 	data_read_string(pos, name);
-	return schema_config_read(pos);
+	data_read_string(pos, name_new);
 }
