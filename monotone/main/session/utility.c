@@ -230,6 +230,13 @@ execute_ddl(Session* self, Stmt* stmt)
 			// ensure schema exists
 			schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
 
+			// ensure view with the same name does not exists
+			auto view = view_mgr_find(share->view_mgr, &arg->config->schema,
+			                          &arg->config->name, false);
+			if (unlikely(view))
+				error("view <%.*s> with the same name exists",
+				      str_size(&arg->config->name), str_of(&arg->config->name));
+
 			table_mgr_create(share->table_mgr, trx, arg->config, arg->if_not_exists);
 
 			// create storage for each shard
@@ -248,6 +255,8 @@ execute_ddl(Session* self, Stmt* stmt)
 		case STMT_ALTER_TABLE:
 		{
 			// todo
+			//
+			// check existing view
 			break;
 		}
 
@@ -255,6 +264,17 @@ execute_ddl(Session* self, Stmt* stmt)
 		{
 			// create view
 			auto arg = ast_view_create_of(stmt->ast);
+
+			// ensure schema exists
+			schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+
+			// ensure table with the same name does not exists
+			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
+			                            &arg->config->name, false);
+			if (unlikely(table))
+				error("table <%.*s> with the same name exists",
+				      str_size(&arg->config->name), str_of(&arg->config->name));
+
 			view_mgr_create(share->view_mgr, trx, arg->config, arg->if_not_exists);
 			break;
 		}
@@ -271,6 +291,8 @@ execute_ddl(Session* self, Stmt* stmt)
 			// alter view
 			auto arg = ast_view_alter_of(stmt->ast);
 			// todo
+			//
+			// check existing table
 			(void)arg;
 			break;
 		}
