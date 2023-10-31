@@ -19,38 +19,70 @@
 static void
 cascade_drop(Db* self, Transaction* trx, Str* schema)
 {
-	(void)self;
-	(void)trx;
-	(void)schema;
-	// todo:
+	// tables
+	list_foreach_safe(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		if (str_compare(&table->config->schema, schema))
+			table_mgr_drop(&self->table_mgr, trx, &table->config->schema,
+			               &table->config->name, false);
+	}
+
+	// views
+	list_foreach_safe(&self->view_mgr.mgr.list)
+	{
+		auto view = view_of(list_at(Handle, link));
+		if (str_compare(&view->config->schema, schema))
+			view_mgr_drop(&self->view_mgr, trx, &view->config->schema,
+			              &view->config->name, false);
+	}
 }
 
 static void
-cascade_alter(Db* self, Transaction* trx, Str* schema, Str* schema_new)
+cascade_rename(Db* self, Transaction* trx, Str* schema, Str* schema_new)
 {
-	(void)self;
-	(void)trx;
-	(void)schema;
-	(void)schema_new;
-	// todo:
+	// tables
+	list_foreach_safe(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		if (str_compare(&table->config->schema, schema))
+			table_mgr_rename(&self->table_mgr, trx, &table->config->schema,
+			                 &table->config->name,
+			                 schema_new,
+			                 &table->config->name, false);
+	}
+
+	// views
+	list_foreach_safe(&self->view_mgr.mgr.list)
+	{
+		auto view = view_of(list_at(Handle, link));
+		if (str_compare(&view->config->schema, schema))
+			view_mgr_rename(&self->view_mgr, trx, &view->config->schema,
+			                &view->config->name,
+			                schema_new,
+			                &view->config->name, false);
+	}
 }
 
 static void
 cascade_schema_validate(Db* self, Str* schema)
 {
+	// tables
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
 		if (str_compare(&table->config->schema, schema))
-			error("table '%.*s': has schema '%.*s", str_size(&table->config->name),
+			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
 			      str_of(&table->config->name),
 			      str_size(schema), str_of(schema));
 	}
+
+	// views
 	list_foreach(&self->view_mgr.mgr.list)
 	{
 		auto view = view_of(list_at(Handle, link));
 		if (str_compare(&view->config->schema, schema))
-			error("view '%.*s': has schema '%.*s", str_size(&view->config->name),
+			error("view '%.*s' depends on schema '%.*s", str_size(&view->config->name),
 			      str_of(&view->config->name),
 			      str_size(schema), str_of(schema));
 	}
@@ -90,11 +122,11 @@ cascade_schema_drop(Db*          self,
 }
 
 void
-cascade_schema_alter(Db*           self,
-                     Transaction*  trx,
-                     Str*          name,
-                     SchemaConfig* config,
-                     bool          if_exists)
+cascade_schema_rename(Db*           self,
+                      Transaction*  trx,
+                      Str*          name,
+                      Str*          name_new,
+                      bool          if_exists)
 {
 	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
 	if (! schema)
@@ -110,7 +142,8 @@ cascade_schema_alter(Db*           self,
 		      str_of(name));
 
 	// rename schema on all dependable objects
-	cascade_alter(self, trx, name, &config->name);
+	cascade_rename(self, trx, name, name_new);
 
-	schema_mgr_alter(&self->schema_mgr, trx, name, config, false);
+	// rename schema last
+	schema_mgr_rename(&self->schema_mgr, trx, name, name_new, false);
 }
