@@ -260,23 +260,12 @@ ccursor_idx(Vm* self, Op* op)
 	// access by column path
 	if (op->c != -1)
 	{
-		if (cursor->type != CURSOR_TABLE)
-			error("cursor: unsupported operation");
+		int column_order = op->c;
+		if (unlikely(! data_is_array(data)))
+			error("current cursor object is not an array");
 
-		auto def = index_def(cursor->index);
-		int  column_order = op->c;
-		if (column_order < def->column_count)
-		{
-			auto column = def_column_of(def, column_order);
-			column_find(column, &data);
-		} else
-		{
-			if (unlikely(! data_is_array(data)))
-				error("current cursor object is not an array");
-
-			if (! array_find(&data, column_order))
-				error("column <%d> does not exists", column_order);
-		}
+		if (! array_find(&data, column_order))
+			error("column <%d> does not exists", column_order);
 	}
 
 	// match name in the object
