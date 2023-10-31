@@ -66,13 +66,6 @@ parser_reset(Parser* self)
 				schema_config_free(ast->config);
 			break;
 		}
-		case STMT_ALTER_SCHEMA:
-		{
-			auto ast = ast_schema_alter_of(stmt->ast);
-			if (ast->config)
-				schema_config_free(ast->config);
-			break;
-		}
 		case STMT_CREATE_TABLE:
 		{
 			auto ast = ast_table_create_of(stmt->ast);
@@ -80,23 +73,9 @@ parser_reset(Parser* self)
 				table_config_free(ast->config);
 			break;
 		}
-		case STMT_ALTER_TABLE:
-		{
-			auto ast = ast_table_alter_of(stmt->ast);
-			if (ast->config)
-				table_config_free(ast->config);
-			break;
-		}
 		case STMT_CREATE_VIEW:
 		{
 			auto ast = ast_view_create_of(stmt->ast);
-			if (ast->config)
-				view_config_free(ast->config);
-			break;
-		}
-		case STMT_ALTER_VIEW:
-		{
-			auto ast = ast_view_alter_of(stmt->ast);
 			if (ast->config)
 				view_config_free(ast->config);
 			break;

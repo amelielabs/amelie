@@ -96,7 +96,7 @@ parse_view_create(Stmt* self)
 	auto select = parse_select(self);
 	if (stmt->config->def.column_count > 0)
 		if (select->expr_count != stmt->config->def.column_count)
-			error("view columns count does not match select");
+			error("number of view columns does not match select");
 
 	Str query;
 	str_init(&query);
@@ -123,36 +123,25 @@ parse_view_drop(Stmt* self)
 void
 parse_view_alter(Stmt* self)
 {
-	// ALTER VIEW [IF EXISTS] name [RENAME TO name]
-	// ALTER VIEW [IF EXISTS] name [SET SCHEMA name]
-	(void)self;
-#if 0
-	auto stmt = ast_table_alter_allocate();
+	// ALTER VIEW [IF EXISTS] [schema.]name RENAME [schema.]name
+	auto stmt = ast_view_alter_allocate();
 	self->ast = &stmt->ast;
-
-	// TODO: copy config
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
-		error("ALTER TABLE <name> expected");
+		error("ALTER VIEW <name> expected");
 
-	// RENAME TO
-	if (stmt_if(self, KRENAME))
-	{
-		if (! stmt_if(self, KTO))
-			error("ALTER TABLE RENAME <TO> expected");
+	// RENAME
+	if (! stmt_if(self, KRENAME))
+		error("ALTER VIEW <RENAME> expected");
 
-		// todo
-	} else
-	if (stmt_if(self, KSET))
-	{
-		if (! stmt_if(self, KSCHEMA))
-			error("ALTER TABLE SET <SCHEMA> expected");
+	// [TO]
+	stmt_if(self, KTO);
 
-		// todo
-	}
-#endif
+	// name
+	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
+		error("ALTER VIEW RENAME <name> expected");
 }

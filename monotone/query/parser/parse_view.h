@@ -27,11 +27,12 @@ struct AstViewDrop
 
 struct AstViewAlter
 {
-	Ast         ast;
-	bool        if_exists;
-	Str         schema;
-	Str         name;
-	ViewConfig* config;
+	Ast  ast;
+	bool if_exists;
+	Str  schema;
+	Str  name;
+	Str  schema_new;
+	Str  name_new;
 };
 
 static inline AstViewCreate*
@@ -79,9 +80,10 @@ ast_view_alter_allocate(void)
 	AstViewAlter* self;
 	self = ast_allocate(0, sizeof(AstViewAlter));
 	self->if_exists = false;
-	self->config    = NULL;
 	str_init(&self->schema);
 	str_init(&self->name);
+	str_init(&self->schema_new);
+	str_init(&self->name_new);
 	return self;
 }
 
