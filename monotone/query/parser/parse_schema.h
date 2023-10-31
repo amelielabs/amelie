@@ -27,10 +27,10 @@ struct AstSchemaDrop
 
 struct AstSchemaAlter
 {
-	Ast           ast;
-	bool          if_exists;
-	Ast*          name;
-	SchemaConfig* config;
+	Ast  ast;
+	bool if_exists;
+	Ast* name;
+	Ast* name_new;
 };
 
 static inline AstSchemaCreate*
@@ -79,7 +79,7 @@ ast_schema_alter_allocate(void)
 	self = ast_allocate(0, sizeof(AstSchemaAlter));
 	self->if_exists = false;
 	self->name      = NULL;
-	self->config    = NULL;
+	self->name_new  = NULL;
 	return self;
 }
 
