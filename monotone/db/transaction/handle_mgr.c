@@ -103,11 +103,11 @@ handle_mgr_write(HandleMgr*   self,
 	// update handle mgr
 	Handle* prev = NULL;
 	if (cmd == LOG_SCHEMA_CREATE ||
-	    cmd == LOG_SCHEMA_ALTER  ||
+	    cmd == LOG_SCHEMA_RENAME ||
 	    cmd == LOG_TABLE_CREATE  ||
-	    cmd == LOG_TABLE_ALTER   ||
+	    cmd == LOG_TABLE_RENAME  ||
 	    cmd == LOG_VIEW_CREATE   ||
-	    cmd == LOG_VIEW_ALTER)
+	    cmd == LOG_VIEW_RENAME)
 	{
 		prev = handle_mgr_set(self, handle);
 	} else
