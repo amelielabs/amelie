@@ -58,6 +58,7 @@ req_free(Req* self)
 	transaction_free(&self->trx);
 	channel_detach(&self->src);
 	channel_free(&self->src, mn_task->buf_cache);
+	mn_free(self);
 }
 
 static inline void
