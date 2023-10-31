@@ -62,18 +62,18 @@ alter schema 123
 alter schema test
 alter schema test rename
 alter schema test rename to
-alter schema test rename to "hello"
+alter schema test rename "hello"
 
 # test: alter schema rename
 create schema test
 select mn_schemas()
 
-alter schema test rename to test2
+alter schema test rename test2
 select mn_schemas()
 select mn_schemas()
 
 # test: alter schema system
-alter schema public rename to _public
+alter schema public rename _public
 
 disconnect S0
 env_close E0

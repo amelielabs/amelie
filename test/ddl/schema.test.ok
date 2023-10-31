@@ -11,7 +11,7 @@ true
 # test: create schema statement parsing
 create
 query: on_error
-{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create schema
 query: on_error
 {"code": 1, "msg": "CREATE SCHEMA <name> expected"}
@@ -84,7 +84,7 @@ create schema test
 create table test.test(id int primary key)
 drop schema test
 query: on_error
-{"code": 1, "msg": "table 'test': has schema 'test"}
+{"code": 1, "msg": "table 'test' depends on schema 'test"}
 drop table test.test
 drop schema test
 # test: alter schema statment parsing
@@ -99,24 +99,24 @@ query: on_error
 {"code": 1, "msg": "ALTER SCHEMA <RENAME> expected"}
 alter schema test rename
 query: on_error
-{"code": 1, "msg": "ALTER SCHEMA RENAME <TO> expected"}
+{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
 alter schema test rename to
 query: on_error
-{"code": 1, "msg": "ALTER SCHEMA RENAME TO <name> expected"}
-alter schema test rename to "hello"
+{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
+alter schema test rename "hello"
 query: on_error
-{"code": 1, "msg": "ALTER SCHEMA RENAME TO <name> expected"}
+{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
 # test: alter schema rename
 create schema test
 select mn_schemas()
 [{"name": "public", "system": true}, {"name": "test", "system": false}]
-alter schema test rename to test2
+alter schema test rename test2
 select mn_schemas()
 [{"name": "public", "system": true}, {"name": "test2", "system": false}]
 select mn_schemas()
 [{"name": "public", "system": true}, {"name": "test2", "system": false}]
 # test: alter schema system
-alter schema public rename to _public
+alter schema public rename _public
 query: on_error
 {"code": 1, "msg": "schema 'public': system schema cannot be altered"}
 disconnect S0
