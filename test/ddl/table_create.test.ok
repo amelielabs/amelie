@@ -4,16 +4,16 @@ connect: on_connect
 # test: create table statement parsing
 create
 query: on_error
-{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create junk
 query: on_error
-{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create unique
 query: on_error
-{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create unique table
 query: on_error
-{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create table
 query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
@@ -175,6 +175,10 @@ query: on_error
 create table test(id map, primary key(id))
 query: on_error
 {"code": 1, "msg": "<id> column key can be string or int"}
+# test: primary key ensure nested key required
+create table test(data map, primary key(data.id))
+query: on_error
+{"code": 1, "msg": "data.id <TYPE> expected"}
 # test: primary key ensure valid nested key type
 create table test(data map, primary key(data.id map))
 query: on_error
@@ -223,6 +227,12 @@ select name from mn_tables() where *.schema = "test" and name = "test"
 drop table test
 drop table test.test
 drop schema test
+# test: table create with conflicting view
+create view test as select 1
+create table test (id int primary key)
+query: on_error
+{"code": 1, "msg": "view <test> with the same name exists"}
+drop view test
 # test: reference
 create table test (id int primary key) reference
 select *.name, *.reference from mn_tables()

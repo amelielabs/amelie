@@ -4,10 +4,10 @@ connect: on_connect
 # test: drop table statement parsing
 drop
 query: on_error
-{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
 drop 1
 query: on_error
-{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE> expected"}
+{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
 drop table "name"
 query: on_error
 {"code": 1, "msg": "DROP TABLE <name> expected"}

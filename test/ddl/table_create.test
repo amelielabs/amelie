@@ -101,6 +101,9 @@ drop table test
 create table test(id map primary key)
 create table test(id map, primary key(id))
 
+# test: primary key ensure nested key required
+create table test(data map, primary key(data.id))
+
 # test: primary key ensure valid nested key type
 create table test(data map, primary key(data.id map))
 create table test(data map, primary key(data.id integer))
@@ -141,6 +144,11 @@ select name from mn_tables() where *.schema = "test" and name = "test"
 drop table test
 drop table test.test
 drop schema test
+
+# test: table create with conflicting view
+create view test as select 1
+create table test (id int primary key)
+drop view test
 
 # test: reference
 create table test (id int primary key) reference
