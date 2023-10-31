@@ -91,12 +91,13 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 }
 
 void
-table_mgr_alter(TableMgr*    self,
-                Transaction* trx,
-                Str*         schema,
-                Str*         name,
-                TableConfig* config,
-                bool         if_exists)
+table_mgr_rename(TableMgr*    self,
+                 Transaction* trx,
+                 Str*         schema,
+                 Str*         name,
+                 Str*         schema_new,
+                 Str*         name_new,
+                 bool         if_exists)
 {
 	auto table = table_mgr_find(self, schema, name, false);
 	if (! table)
@@ -107,27 +108,27 @@ table_mgr_alter(TableMgr*    self,
 		return;
 	}
 
+	// ensure new table does not exists
+	if (table_mgr_find(self, schema_new, name_new, false))
+		error("table '%.*s': already exists", str_size(name_new),
+		      str_of(name_new));
+
 	// allocate new table
-	auto update = table_allocate(config);
+	auto update = table_allocate(table->config);
 	guard(guard, table_free, update);
 
-	// if schema or name changed, drop previous table
-	if (!str_compare(&config->schema, schema) ||
-	    !str_compare(&config->name, name))
-	{
-		// ensure new table does not exists
-		if (table_mgr_find(self, &config->schema, &config->name, false))
-			error("table '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+	// set new table name
+	table_config_set_schema(update->config, schema_new);
+	table_config_set_name(update->config, name_new);
 
-		table_mgr_drop_table(self, trx, table);
-	}
+	// drop previous table object
+	table_mgr_drop_table(self, trx, table);
 
-	// save alter table operation
-	auto op = table_op_alter(schema, name, config);
+	// save rename table operation
+	auto op = table_op_rename(schema, name, schema_new, name_new);
 
 	// update tables
-	handle_mgr_write(&self->mgr, trx, LOG_TABLE_ALTER, &update->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_TABLE_RENAME, &update->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);

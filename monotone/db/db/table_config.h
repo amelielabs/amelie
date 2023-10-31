@@ -48,12 +48,14 @@ table_config_set_id(TableConfig* self, Uuid* id)
 static inline void
 table_config_set_schema(TableConfig* self, Str* schema)
 {
+	str_free(&self->schema);
 	str_copy(&self->schema, schema);
 }
 
 static inline void
 table_config_set_name(TableConfig* self, Str* name)
 {
+	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 

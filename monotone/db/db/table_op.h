@@ -28,14 +28,15 @@ table_op_drop(Str* schema, Str* name)
 }
 
 static inline Buf*
-table_op_alter(Str* schema, Str* name, TableConfig* config)
+table_op_rename(Str* schema, Str* name, Str* schema_new, Str* name_new)
 {
-	// [schema, name, config]
+	// [schema, name, schema_new, name_new]
 	auto buf = buf_create(0);
-	encode_array(buf, 3);
+	encode_array(buf, 4);
 	encode_string(buf, schema);
 	encode_string(buf, name);
-	table_config_write(config, buf);
+	encode_string(buf, schema_new);
+	encode_string(buf, name_new);
 	return buf;
 }
 
@@ -56,12 +57,14 @@ table_op_drop_read(uint8_t **pos, Str* schema, Str* name)
 	data_read_string(pos, name);
 }
 
-static inline TableConfig*
-table_op_alter_read(uint8_t** pos, Str* schema, Str* name)
+static inline void
+table_op_rename_read(uint8_t** pos, Str* schema, Str* name,
+                     Str* schema_new, Str* name_new)
 {
 	int count;
 	data_read_array(pos, &count);
 	data_read_string(pos, schema);
 	data_read_string(pos, name);
-	return table_config_read(pos);
+	data_read_string(pos, schema_new);
+	data_read_string(pos, name_new);
 }
