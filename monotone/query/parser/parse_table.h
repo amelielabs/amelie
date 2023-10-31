@@ -27,11 +27,12 @@ struct AstTableDrop
 
 struct AstTableAlter
 {
-	Ast          ast;
-	bool         if_exists;
-	Str          schema;
-	Str          name;
-	TableConfig* config;
+	Ast  ast;
+	bool if_exists;
+	Str  schema;
+	Str  schema_new;
+	Str  name;
+	Str  name_new;
 };
 
 static inline AstTableCreate*
@@ -79,9 +80,10 @@ ast_table_alter_allocate(void)
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
 	self->if_exists = false;
-	self->config    = NULL;
 	str_init(&self->schema);
+	str_init(&self->schema_new);
 	str_init(&self->name);
+	str_init(&self->name_new);
 	return self;
 }
 
