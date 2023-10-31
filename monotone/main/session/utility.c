@@ -216,10 +216,11 @@ execute_ddl(Session* self, Stmt* stmt)
 		}
 		case STMT_ALTER_SCHEMA:
 		{
-			// alter schema
+			// rename schema
 			auto arg = ast_schema_alter_of(stmt->ast);
-			cascade_schema_alter(share->db, trx, &arg->name->string, arg->config,
-			                     arg->if_exists);
+			cascade_schema_rename(share->db, trx, &arg->name->string,
+			                      &arg->name_new->string,
+			                      arg->if_exists);
 			break;
 		}
 		case STMT_CREATE_TABLE:
@@ -235,7 +236,8 @@ execute_ddl(Session* self, Stmt* stmt)
 			                          &arg->config->name, false);
 			if (unlikely(view))
 				error("view <%.*s> with the same name exists",
-				      str_size(&arg->config->name), str_of(&arg->config->name));
+				      str_size(&arg->config->name),
+				      str_of(&arg->config->name));
 
 			table_mgr_create(share->table_mgr, trx, arg->config, arg->if_not_exists);
 
@@ -254,9 +256,23 @@ execute_ddl(Session* self, Stmt* stmt)
 		}
 		case STMT_ALTER_TABLE:
 		{
-			// todo
-			//
-			// check existing view
+			auto arg = ast_table_alter_of(stmt->ast);
+
+			// ensure schema exists
+			schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+
+			// ensure view with the same name does not exists
+			auto view = view_mgr_find(share->view_mgr, &arg->schema_new,
+			                          &arg->name_new, false);
+			if (unlikely(view))
+				error("view <%.*s> with the same name exists",
+				      str_size(&arg->name_new),
+				      str_of(&arg->name_new));
+
+			// rename table
+			table_mgr_rename(share->table_mgr, trx, &arg->schema, &arg->name,
+			                 &arg->schema_new, &arg->name_new,
+			                 arg->if_exists);
 			break;
 		}
 
@@ -273,7 +289,8 @@ execute_ddl(Session* self, Stmt* stmt)
 			                            &arg->config->name, false);
 			if (unlikely(table))
 				error("table <%.*s> with the same name exists",
-				      str_size(&arg->config->name), str_of(&arg->config->name));
+				      str_size(&arg->config->name),
+				      str_of(&arg->config->name));
 
 			view_mgr_create(share->view_mgr, trx, arg->config, arg->if_not_exists);
 			break;
@@ -290,10 +307,22 @@ execute_ddl(Session* self, Stmt* stmt)
 		{
 			// alter view
 			auto arg = ast_view_alter_of(stmt->ast);
-			// todo
-			//
-			// check existing table
-			(void)arg;
+
+			// ensure schema exists
+			schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+
+			// ensure table with the same name does not exists
+			auto table = table_mgr_find(share->table_mgr, &arg->schema_new,
+			                            &arg->name_new, false);
+			if (unlikely(table))
+				error("table <%.*s> with the same name exists",
+				      str_size(&arg->name_new),
+				      str_of(&arg->name_new));
+
+			// rename view
+			view_mgr_rename(share->view_mgr, trx, &arg->schema, &arg->name,
+			                &arg->schema_new, &arg->name_new,
+			                arg->if_exists);
 			break;
 		}
 		default:
