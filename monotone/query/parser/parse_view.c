@@ -91,7 +91,13 @@ parse_view_create(Stmt* self)
 	char* start = self->lex->pos;
 	if (! stmt_if(self, KSELECT))
 		error("CREATE VIEW AS <SELECT> expected");
-	parse_select(self);
+
+	// ensure column count match
+	auto select = parse_select(self);
+	if (stmt->config->def.column_count > 0)
+		if (select->expr_count != stmt->config->def.column_count)
+			error("view columns count does not match select");
+
 	Str query;
 	str_init(&query);
 	str_set(&query, start, self->lex->pos - start);
