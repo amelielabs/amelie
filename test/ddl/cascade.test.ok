@@ -1,0 +1,42 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: drop schema with dependency
+create schema test
+create table test.a(id int primary key)
+create table test.b(id int primary key)
+drop schema test
+query: on_error
+{"code": 1, "msg": "table 'a' depends on schema 'test"}
+select *.schema, *.name from mn_tables()
+["test", "a"]
+["test", "b"]
+# test: drop schema cascade
+drop schema test cascade
+select * from mn_schemas()
+{"name": "public", "system": true}
+select *.schema, *.name from mn_tables()
+create schema test
+create table test.a(id int primary key)
+create table test.b(id int primary key)
+drop schema test cascade
+select *.schema, *.name from mn_tables()
+# test: alter schema rename
+create schema test
+create table test.a(id int primary key)
+create table test.b(id int primary key)
+select * from mn_schemas()
+{"name": "public", "system": true}
+{"name": "test", "system": false}
+select *.schema, *.name from mn_tables()
+["test", "a"]
+["test", "b"]
+alter schema test rename test2
+select * from mn_schemas()
+{"name": "public", "system": true}
+{"name": "test2", "system": false}
+select *.schema, *.name from mn_tables()
+["test2", "a"]
+["test2", "b"]
+disconnect S0
+env_close E0
