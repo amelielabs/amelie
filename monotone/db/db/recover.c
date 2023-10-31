@@ -83,9 +83,12 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		schema_mgr_drop(&self->schema_mgr, trx, &name, true);
 		break;
 	}
-	case LOG_SCHEMA_ALTER:
+	case LOG_SCHEMA_RENAME:
 	{
-		// todo:
+		Str name;
+		Str name_new;
+		schema_op_rename_read(&data, &name, &name_new);
+		schema_mgr_rename(&self->schema_mgr, trx, &name, &name_new, true);
 		break;
 	}
 	case LOG_TABLE_CREATE:
@@ -103,13 +106,15 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		table_mgr_drop(&self->table_mgr, trx, &schema, &name, true);
 		break;
 	}
-	case LOG_TABLE_ALTER:
+	case LOG_TABLE_RENAME:
 	{
 		Str schema;
 		Str name;
-		auto config = table_op_alter_read(&data, &schema, &name);
-		guard(config_guard, table_config_free, config);
-		table_mgr_alter(&self->table_mgr, trx, &schema, &name, config, true);
+		Str schema_new;
+		Str name_new;
+		table_op_rename_read(&data, &schema, &name, &schema_new, &name_new);
+		table_mgr_rename(&self->table_mgr, trx, &schema, &name,
+		                 &schema_new, &name_new, true);
 		break;
 	}
 	case LOG_VIEW_CREATE:
@@ -125,6 +130,17 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		Str name;
 		view_op_drop_read(&data, &schema, &name);
 		view_mgr_drop(&self->view_mgr, trx, &schema, &name, true);
+		break;
+	}
+	case LOG_VIEW_RENAME:
+	{
+		Str schema;
+		Str name;
+		Str schema_new;
+		Str name_new;
+		view_op_rename_read(&data, &schema, &name, &schema_new, &name_new);
+		view_mgr_rename(&self->view_mgr, trx, &schema, &name,
+		                &schema_new, &name_new, true);
 		break;
 	}
 	default:
