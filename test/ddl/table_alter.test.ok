@@ -1,0 +1,74 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: alter table statement parsing
+alter
+query: on_error
+{"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|VIEW> expected"}
+alter table
+query: on_error
+{"code": 1, "msg": "ALTER TABLE <name> expected"}
+alter table 123
+query: on_error
+{"code": 1, "msg": "ALTER TABLE <name> expected"}
+alter table if
+query: on_error
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter table if ex
+query: on_error
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter table if exists
+query: on_error
+{"code": 1, "msg": "ALTER TABLE <name> expected"}
+alter table if exists 123
+query: on_error
+{"code": 1, "msg": "ALTER TABLE <name> expected"}
+# test: alter table if exists
+alter table test rename test2
+query: on_error
+{"code": 1, "msg": "table 'test': not exists"}
+alter table if exists test rename test2
+# test: alter table no command
+create table test (id int primary key)
+alter table test
+query: on_error
+{"code": 1, "msg": "ALTER TABLE <RENAME> expected"}
+# test: rename
+alter table test rename
+query: on_error
+{"code": 1, "msg": "ALTER TABLE RENAME <name> expected"}
+alter table test rename to
+query: on_error
+{"code": 1, "msg": "ALTER TABLE RENAME <name> expected"}
+alter table test rename asf junk
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
+alter table test rename to abc
+select *.schema, *.name from mn_tables()
+["public", "abc"]
+# test: rename table exists
+create table test (id int primary key)
+alter table abc rename to test
+query: on_error
+{"code": 1, "msg": "table 'test': already exists"}
+drop table test
+# test: rename conflicting view exists
+create view test as select 1
+alter table abc rename to test
+query: on_error
+{"code": 1, "msg": "view <test> with the same name exists"}
+drop view test
+# test: rename schema not exists
+alter table abc rename to test.test
+query: on_error
+{"code": 1, "msg": "schema 'test': not exists"}
+# test: rename schema
+alter table abc rename to public.test
+select *.schema, *.name from mn_tables()
+["public", "test"]
+create schema test
+alter table public.test rename to test.test
+select *.schema, *.name from mn_tables()
+["test", "test"]
+disconnect S0
+env_close E0

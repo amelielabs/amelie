@@ -1,0 +1,51 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: alter table statement parsing
+alter
+alter table
+alter table 123
+alter table if
+alter table if ex
+alter table if exists
+alter table if exists 123
+
+# test: alter table if exists
+alter table test rename test2
+alter table if exists test rename test2
+
+# test: alter table no command
+create table test (id int primary key)
+alter table test
+
+# test: rename
+alter table test rename
+alter table test rename to
+alter table test rename asf junk
+alter table test rename to abc
+select *.schema, *.name from mn_tables()
+
+# test: rename table exists
+create table test (id int primary key)
+alter table abc rename to test
+drop table test
+
+# test: rename conflicting view exists
+create view test as select 1
+alter table abc rename to test
+drop view test
+
+# test: rename schema not exists
+alter table abc rename to test.test
+
+# test: rename schema
+alter table abc rename to public.test
+select *.schema, *.name from mn_tables()
+create schema test
+alter table public.test rename to test.test
+select *.schema, *.name from mn_tables()
+
+disconnect S0
+env_close E0
