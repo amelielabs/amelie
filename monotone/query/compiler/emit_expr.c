@@ -268,9 +268,17 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	Str ref;
 	str_set_str(&ref, path);
 
+	// get target schema definition
+	Def* def = NULL;
+	if (target->view)
+		def = view_def(target->view);
+	else
+	if (target->table)
+		def = table_def(target->table);
+
 	// find column in the target key
 	int column_order = -1;
-	if (target->table)
+	if (def)
 	{
 		// get column name from the compound path
 		//
@@ -279,20 +287,14 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 		Str  name;
 		bool compound = str_split_or_set(&ref, &name, '.');
 
-		// find column or column reference
-		auto def = table_def(target->table);
+		// find column
 		auto column = def_find_column(def, &name);
 		if (column)
 		{
 			column_order = column->order;
-		} else
-		{
-			// todo: find reference
-		}
 
-		// exclude column name from the path
-		if (column_order != -1)
-		{
+			// exclude column name from the path
+
 			// column.path
 			// column
 			if (compound)
