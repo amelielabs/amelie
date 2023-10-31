@@ -44,7 +44,7 @@ static inline AstViewCreate*
 ast_view_create_allocate(void)
 {
 	AstViewCreate* self;
-	self = ast_allocate(STMT_CREATE_VIEW, sizeof(AstViewCreate));
+	self = ast_allocate(0, sizeof(AstViewCreate));
 	self->if_not_exists = false;
 	self->config        = NULL;
 	return self;
@@ -60,7 +60,7 @@ static inline AstViewDrop*
 ast_view_drop_allocate(void)
 {
 	AstViewDrop* self;
-	self = ast_allocate(STMT_DROP_VIEW, sizeof(AstViewDrop));
+	self = ast_allocate(0, sizeof(AstViewDrop));
 	self->if_exists = false;
 	str_init(&self->schema);
 	str_init(&self->name);
@@ -77,7 +77,7 @@ static inline AstViewAlter*
 ast_view_alter_allocate(void)
 {
 	AstViewAlter* self;
-	self = ast_allocate(STMT_ALTER_SCHEMA, sizeof(AstViewAlter));
+	self = ast_allocate(0, sizeof(AstViewAlter));
 	self->if_exists = false;
 	self->config    = NULL;
 	str_init(&self->schema);

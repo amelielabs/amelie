@@ -42,3 +42,9 @@ view_of(Handle* handle)
 {
 	return (View*)handle;
 }
+
+static inline Def*
+view_def(View* self)
+{
+	return &self->config->def;
+}

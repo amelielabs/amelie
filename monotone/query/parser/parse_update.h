@@ -29,7 +29,7 @@ static inline AstUpdate*
 ast_update_allocate(void)
 {
 	AstUpdate* self;
-	self = ast_allocate(STMT_INSERT, sizeof(AstUpdate));
+	self = ast_allocate(0, sizeof(AstUpdate));
 	return self;
 }
 

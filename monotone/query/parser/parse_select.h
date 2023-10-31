@@ -37,7 +37,7 @@ static inline AstSelect*
 ast_select_allocate(void)
 {
 	AstSelect* self;
-	self = ast_allocate(STMT_SELECT, sizeof(AstSelect));
+	self = ast_allocate(KSELECT, sizeof(AstSelect));
 	self->expr         = NULL;
 	self->expr_count   = 0;
 	self->expr_where   = NULL;

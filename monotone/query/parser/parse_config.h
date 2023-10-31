@@ -31,7 +31,7 @@ ast_show_of(Ast* ast)
 static inline AstShow*
 ast_show_allocate(Ast* expr)
 {
-	AstShow* self = ast_allocate(STMT_SHOW, sizeof(AstShow));
+	AstShow* self = ast_allocate(0, sizeof(AstShow));
 	self->expr = expr;
 	return self;
 }
@@ -45,7 +45,7 @@ ast_set_of(Ast* ast)
 static inline AstSet*
 ast_set_allocate(Ast* name, Ast* value)
 {
-	AstSet* self = ast_allocate(STMT_SET, sizeof(AstSet));
+	AstSet* self = ast_allocate(0, sizeof(AstSet));
 	self->name  = name;
 	self->value = value;
 	return self;

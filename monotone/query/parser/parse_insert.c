@@ -35,7 +35,7 @@ parse_value(Stmt* self)
 	AstStack stack;
 	ast_stack_init(&stack);
 
-	auto value = ast_value_allocate(0);
+	auto value = ast_value_allocate();
 	Ast* last  = NULL;
 	bool done  = false;
 	while (! done)
@@ -114,7 +114,7 @@ parse_row(Stmt* self)
 	if (! stmt_if(self, '('))
 		error("<(> expected");
 
-	auto row  = ast_row_allocate(0);
+	auto row  = ast_row_allocate();
 	Ast* last = NULL;
 	for (;;)
 	{

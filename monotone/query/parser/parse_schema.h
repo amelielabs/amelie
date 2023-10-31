@@ -43,7 +43,7 @@ static inline AstSchemaCreate*
 ast_schema_create_allocate(void)
 {
 	AstSchemaCreate* self;
-	self = ast_allocate(STMT_CREATE_SCHEMA, sizeof(AstSchemaCreate));
+	self = ast_allocate(0, sizeof(AstSchemaCreate));
 	self->if_not_exists = false;
 	self->config        = NULL;
 	return self;
@@ -59,7 +59,7 @@ static inline AstSchemaDrop*
 ast_schema_drop_allocate(void)
 {
 	AstSchemaDrop* self;
-	self = ast_allocate(STMT_DROP_SCHEMA, sizeof(AstSchemaDrop));
+	self = ast_allocate(0, sizeof(AstSchemaDrop));
 	self->if_exists = false;
 	self->cascade   = false;
 	self->name      = NULL;
@@ -76,7 +76,7 @@ static inline AstSchemaAlter*
 ast_schema_alter_allocate(void)
 {
 	AstSchemaAlter* self;
-	self = ast_allocate(STMT_ALTER_SCHEMA, sizeof(AstSchemaAlter));
+	self = ast_allocate(0, sizeof(AstSchemaAlter));
 	self->if_exists = false;
 	self->name      = NULL;
 	self->config    = NULL;

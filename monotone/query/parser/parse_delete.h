@@ -28,7 +28,7 @@ static inline AstDelete*
 ast_delete_allocate(void)
 {
 	AstDelete* self;
-	self = ast_allocate(STMT_INSERT, sizeof(AstDelete));
+	self = ast_allocate(0, sizeof(AstDelete));
 	return self;
 }
 

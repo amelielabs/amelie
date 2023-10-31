@@ -42,9 +42,9 @@ ast_value_of(Ast* ast)
 }
 
 static inline AstValue*
-ast_value_allocate(int id)
+ast_value_allocate(void)
 {
-	AstValue* self = ast_allocate(id, sizeof(AstValue));
+	AstValue* self = ast_allocate(0, sizeof(AstValue));
 	self->expr = NULL;
 	return self;
 }
@@ -56,9 +56,9 @@ ast_row_of(Ast* ast)
 }
 
 static inline AstRow*
-ast_row_allocate(int id)
+ast_row_allocate(void)
 {
-	AstRow* self = ast_allocate(id, sizeof(AstRow));
+	AstRow* self = ast_allocate(0, sizeof(AstRow));
 	self->list       = NULL;
 	self->list_count = 0;
 	return self;
@@ -74,7 +74,7 @@ static inline AstInsert*
 ast_insert_allocate(void)
 {
 	AstInsert* self;
-	self = ast_allocate(STMT_INSERT, sizeof(AstInsert));
+	self = ast_allocate(0, sizeof(AstInsert));
 	self->unique         = false;
 	self->table          = NULL;
 	self->rows           = NULL;

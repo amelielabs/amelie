@@ -44,7 +44,7 @@ static inline AstTableCreate*
 ast_table_create_allocate(void)
 {
 	AstTableCreate* self;
-	self = ast_allocate(STMT_CREATE_TABLE, sizeof(AstTableCreate));
+	self = ast_allocate(0, sizeof(AstTableCreate));
 	self->if_not_exists = false;
 	self->config        = NULL;
 	return self;
@@ -60,7 +60,7 @@ static inline AstTableDrop*
 ast_table_drop_allocate(void)
 {
 	AstTableDrop* self;
-	self = ast_allocate(STMT_DROP_TABLE, sizeof(AstTableDrop));
+	self = ast_allocate(0, sizeof(AstTableDrop));
 	self->if_exists = false;
 	str_init(&self->schema);
 	str_init(&self->name);
@@ -77,7 +77,7 @@ static inline AstTableAlter*
 ast_table_alter_allocate(void)
 {
 	AstTableAlter* self;
-	self = ast_allocate(STMT_ALTER_TABLE, sizeof(AstTableAlter));
+	self = ast_allocate(0, sizeof(AstTableAlter));
 	self->if_exists = false;
 	self->config    = NULL;
 	str_init(&self->schema);
