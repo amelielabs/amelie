@@ -41,12 +41,14 @@ view_config_free(ViewConfig* self)
 static inline void
 view_config_set_schema(ViewConfig* self, Str* schema)
 {
+	str_free(&self->schema);
 	str_copy(&self->schema, schema);
 }
 
 static inline void
 view_config_set_name(ViewConfig* self, Str* name)
 {
+	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
