@@ -33,8 +33,6 @@ vm_init(Vm*          self,
 	self->function_mgr = function_mgr;
 	self->trx          = NULL;
 	self->code         = NULL;
-	self->argc         = 0;
-	self->argv         = NULL;
 	self->shard        = shard;
 	self->dispatch     = NULL;
 	self->command      = NULL;
@@ -71,8 +69,6 @@ vm_run(Vm*          self,
        Command*     command,
        Code*        code,
        CodeData*    code_data,
-       int          argc,
-       Value**      argv,
        Portal*      portal)
 {
 	assert(code_count(code) > 0);
@@ -81,8 +77,6 @@ vm_run(Vm*          self,
 	self->command   = command;
 	self->code      = code;
 	self->code_data = code_data;
-	self->argc      = argc;
-	self->argv      = argv;
 	self->portal    = portal;
 
 	const void* ops[] =
@@ -106,7 +100,6 @@ vm_run(Vm*          self,
 		&&cstring_min,
 		&&cpartial,
 		&&carg,
-		&&carg_name,
 		&&cbor,
 		&&cband,
 		&&cbxor,
@@ -265,10 +258,6 @@ cpartial:
 	op_next;
 
 carg:
-	// todo
-	op_next;
-
-carg_name:
 	// todo
 	op_next;
 

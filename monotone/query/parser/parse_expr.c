@@ -82,7 +82,6 @@ priority_map[UINT8_MAX] =
 	[KFALSE]              = priority_value,
 	[KNULL]               = priority_value,
 	[KARGUMENT]           = priority_value,
-	[KARGUMENT_NAME]      = priority_value,
 	[KNAME]               = priority_value,
 	[KNAME_COMPOUND]      = priority_value,
 	[KNAME_COMPOUND_STAR] = priority_value
@@ -287,7 +286,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	case KARGUMENT:
-	case KARGUMENT_NAME:
 		break;
 
 	// name

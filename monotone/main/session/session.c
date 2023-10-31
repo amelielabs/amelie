@@ -120,7 +120,6 @@ session_execute_distributed(Session* self)
 		       &self->cmd,
 		       &self->compiler.code_coordinator,
 		       &self->compiler.code_data,
-		       0, NULL,
 		       self->portal);
 
 		// add logs to the log set

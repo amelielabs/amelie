@@ -14,8 +14,6 @@ struct Vm
 	Stack        stack;
 	Code*        code;
 	CodeData*    code_data;
-	int          argc;
-	Value**      argv;
 	CursorMgr    cursor_mgr;
 	FunctionMgr* function_mgr;
 	Uuid*        shard;
@@ -29,5 +27,5 @@ struct Vm
 void vm_init(Vm*, Db*, FunctionMgr*, Uuid*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Transaction*, Dispatch*, Command*, Code*, CodeData*,
-            int, Value**, Portal*);
+void vm_run(Vm*, Transaction*, Dispatch*, Command*,
+            Code*, CodeData*, Portal*);

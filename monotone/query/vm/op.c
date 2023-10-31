@@ -52,7 +52,6 @@ OpDesc ops[] =
 
 	// arguments
 	{ CARG,               "arg"               },
-	{ CARG_NAME,          "arg_name"          },
 
 	// expr
 	{ CBOR,               "bor"               },

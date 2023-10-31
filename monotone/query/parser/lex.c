@@ -138,15 +138,6 @@ lex_next(Lex* self)
 				self->pos++;
 			}
 		} else
-		if (isalpha(*self->pos) || *self->pos == '_')
-		{
-			// $<name>
-			ast->id = KARGUMENT_NAME;
-			auto start = self->pos;
-			while (self->pos < self->end && (isalpha(*self->pos) || *self->pos == '_'))
-				self->pos++;
-			str_set(&ast->string, start, self->pos - start);
-		} else
 		{
 			lex_error(self, "bad argument definition");
 		}

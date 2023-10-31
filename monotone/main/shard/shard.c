@@ -41,8 +41,7 @@ shard_execute(Shard* self, Req* req)
 		vm_reset(&self->vm);
 		vm_run(&self->vm, &req->trx, NULL, req->cmd,
 		       &req->code,
-		        req->code_data,
-		        0, NULL, &portal);
+		        req->code_data, &portal);
 	}
 
 	bool abort = false;

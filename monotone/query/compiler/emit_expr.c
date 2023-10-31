@@ -538,22 +538,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_string(self, ast);
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
-	case KARGUMENT_NAME:
-	{
-#if 0
-		if (unlikely(self->args == NULL))
-			error("no arguments defined");
-
-		// find argument by name
-		auto column = def_find_column(self->args, &ast->string);
-		if (column)
-			return op2(self, CARG_NAME, rpin(self), column->order);
-
-		cmd_error(self, "<%.*s> argument not found", str_of(&ast->tstring),
-		          str_size(&ast->string));
-#endif
-		break;
-	}
 
 	// name
 	case KNAME:

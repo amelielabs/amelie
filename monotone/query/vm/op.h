@@ -35,9 +35,8 @@ enum
 	CSTRING_MIN,
 	CPARTIAL,
 
-	// arguments
+	// argument
 	CARG,
-	CARG_NAME,
 
 	// expr
 	CBOR,
