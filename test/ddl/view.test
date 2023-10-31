@@ -1,0 +1,132 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: create view statement parsing
+create view
+create view 123
+create view if
+create view if not
+create view if not 123
+create view if not exists
+create view test abc
+create view test.test
+create view test.test.test
+create view test as
+create view test as abc
+create view test as select
+
+# test: create view
+create view test as select 1
+show views
+select * from mn_views()
+
+# test: create view if not exists
+create view test as select 1
+create view if not exists public.test as select 1
+drop view test
+
+# test: create view schema not exists
+create view test.test as select 1
+
+# test: create view schema
+create schema test
+create view test.test as select 1
+select * from mn_views()
+drop view test
+drop view test.test
+drop schema test
+
+# test: create view with no arguments
+create view test (
+create view test ()
+create view test () as select 1
+drop view test
+
+# test: create view with arguments
+create view test (a
+create view test (a,
+create view test (a,)
+create view test (a, b) as select 1, 2
+drop view test
+
+# test: create view match select columns
+create view test (a) as select 1, 2
+
+# test: create view with conflicting table
+create table test (id int primary key)
+create view test as select 1
+drop table test
+
+# test: create view table
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+create view test_view (id) as select * from test
+select * from mn_views()
+select id from test_view
+select * from test_view
+explain select id from test_view
+drop view test_view
+drop table test
+
+# test: drop view statement parsing
+drop view
+drop view 123
+drop view if
+drop view if exists
+drop view test abc
+
+# test: drop view
+create view test () as select 1
+drop view test
+select * from mn_views()
+
+# test: drop view if exists
+drop view if exists test
+
+# test: alter view statement parsing
+alter
+alter view
+alter view 123
+alter view if
+alter view if ex
+alter view if exists
+alter view if exists 123
+
+# test: alter view if exists
+alter view test rename test2
+alter view if exists test rename test2
+
+# test: alter rename
+create view test as select 1
+alter view test rename
+alter view test rename to
+alter view test rename asf junk
+alter view test rename to abc
+select * from mn_views()
+
+# test: alter rename view exists
+create view test as select 1
+alter view abc rename to test
+drop view test
+
+# test: alter rename conflicting table exists
+create table test (id int primary key)
+alter view abc rename to test
+drop table test
+
+# test: alter rename schema not exists
+alter view abc rename to test.test
+
+# test: alter rename schema
+alter view abc rename to public.test
+select * from mn_views()
+create schema test
+alter view public.test rename to test.test
+select * from mn_views()
+
+disconnect S0
+env_close E0

@@ -1,0 +1,232 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: create view statement parsing
+create view
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <name> expected"}
+create view 123
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <name> expected"}
+create view if
+query: on_error
+{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+create view if not
+query: on_error
+{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+create view if not 123
+query: on_error
+{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+create view if not exists
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <name> expected"}
+create view test abc
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <AS> expected"}
+create view test.test
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <AS> expected"}
+create view test.test.test
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <name> expected"}
+create view test as
+query: on_error
+{"code": 1, "msg": "CREATE VIEW AS <SELECT> expected"}
+create view test as abc
+query: on_error
+{"code": 1, "msg": "CREATE VIEW AS <SELECT> expected"}
+create view test as select
+query: on_error
+{"code": 1, "msg": "bad expression"}
+# test: create view
+create view test as select 1
+show views
+[{"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}]
+select * from mn_views()
+{"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+# test: create view if not exists
+create view test as select 1
+query: on_error
+{"code": 1, "msg": "view 'test': already exists"}
+create view if not exists public.test as select 1
+drop view test
+# test: create view schema not exists
+create view test.test as select 1
+query: on_error
+{"code": 1, "msg": "schema 'test': not exists"}
+# test: create view schema
+create schema test
+create view test.test as select 1
+select * from mn_views()
+{"schema": "test", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+drop view test
+query: on_error
+{"code": 1, "msg": "view 'test': not exists"}
+drop view test.test
+drop schema test
+# test: create view with no arguments
+create view test (
+query: on_error
+{"code": 1, "msg": "CREATE VIEW (<name> expected"}
+create view test ()
+query: on_error
+{"code": 1, "msg": "CREATE VIEW <AS> expected"}
+create view test () as select 1
+drop view test
+# test: create view with arguments
+create view test (a
+query: on_error
+{"code": 1, "msg": "CREATE VIEW (<)> expected"}
+create view test (a,
+query: on_error
+{"code": 1, "msg": "CREATE VIEW (<name> expected"}
+create view test (a,)
+query: on_error
+{"code": 1, "msg": "CREATE VIEW (<name> expected"}
+create view test (a, b) as select 1, 2
+drop view test
+# test: create view match select columns
+create view test (a) as select 1, 2
+query: on_error
+{"code": 1, "msg": "number of view columns does not match select"}
+# test: create view with conflicting table
+create table test (id int primary key)
+create view test as select 1
+query: on_error
+{"code": 1, "msg": "table <test> with the same name exists"}
+drop table test
+# test: create view table
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+create view test_view (id) as select * from test
+select * from mn_views()
+{"schema": "public", "name": "test_view", "query": "select * from test", "def": {"column": [{"name": "id", "type": -1}], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+select id from test_view
+1
+2
+3
+select * from test_view
+[1]
+[2]
+[3]
+explain select id from test_view
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0                 set        0    0    0   
+ 1             int_min        1    0    0   
+ 2                push        1    0    0   
+ 3         cursor_open        0    0    5   # public.test (primary)
+ 4                 jmp        8    0    0   
+ 5         cursor_read        1    0    0   
+ 6             set_add        0    1    0   
+ 7         cursor_next        0    5    0   
+ 8        cursor_close        0    0    0   
+ 9    cursor_open_expr        1    0   11   
+10                 jmp       14    0    0   
+11          cursor_idx        1    1    0   
+12                send        1    0    0   
+13         cursor_next        1   11    0   
+14        cursor_close        1    0    0   
+15                 ret        0    0    0   
+
+"
+drop view test_view
+drop table test
+# test: drop view statement parsing
+drop view
+query: on_error
+{"code": 1, "msg": "DROP VIEW <name> expected"}
+drop view 123
+query: on_error
+{"code": 1, "msg": "DROP VIEW <name> expected"}
+drop view if
+query: on_error
+{"code": 1, "msg": "IF <EXISTS> expected"}
+drop view if exists
+query: on_error
+{"code": 1, "msg": "DROP VIEW <name> expected"}
+drop view test abc
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
+# test: drop view
+create view test () as select 1
+drop view test
+select * from mn_views()
+# test: drop view if exists
+drop view if exists test
+# test: alter view statement parsing
+alter
+query: on_error
+{"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|VIEW> expected"}
+alter view
+query: on_error
+{"code": 1, "msg": "ALTER VIEW <name> expected"}
+alter view 123
+query: on_error
+{"code": 1, "msg": "ALTER VIEW <name> expected"}
+alter view if
+query: on_error
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter view if ex
+query: on_error
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter view if exists
+query: on_error
+{"code": 1, "msg": "ALTER VIEW <name> expected"}
+alter view if exists 123
+query: on_error
+{"code": 1, "msg": "ALTER VIEW <name> expected"}
+# test: alter view if exists
+alter view test rename test2
+query: on_error
+{"code": 1, "msg": "view 'test': not exists"}
+alter view if exists test rename test2
+# test: alter rename
+create view test as select 1
+alter view test rename
+query: on_error
+{"code": 1, "msg": "ALTER VIEW RENAME <name> expected"}
+alter view test rename to
+query: on_error
+{"code": 1, "msg": "ALTER VIEW RENAME <name> expected"}
+alter view test rename asf junk
+query: on_error
+{"code": 1, "msg": "unexpected clause at the end of command"}
+alter view test rename to abc
+select * from mn_views()
+{"schema": "public", "name": "abc", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+# test: alter rename view exists
+create view test as select 1
+alter view abc rename to test
+query: on_error
+{"code": 1, "msg": "view 'test': already exists"}
+drop view test
+# test: alter rename conflicting table exists
+create table test (id int primary key)
+alter view abc rename to test
+query: on_error
+{"code": 1, "msg": "table <test> with the same name exists"}
+drop table test
+# test: alter rename schema not exists
+alter view abc rename to test.test
+query: on_error
+{"code": 1, "msg": "schema 'test': not exists"}
+# test: alter rename schema
+alter view abc rename to public.test
+select * from mn_views()
+{"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+create schema test
+alter view public.test rename to test.test
+select * from mn_views()
+{"schema": "test", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+disconnect S0
+env_close E0
