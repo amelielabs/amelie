@@ -52,7 +52,7 @@ schema_mgr_create(SchemaMgr*    self,
 	auto op = schema_op_create(config);
 
 	// update schemas
-	handle_mgr_write(&self->mgr, trx, LOG_CREATE_SCHEMA, &schema->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_CREATE, &schema->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -70,7 +70,7 @@ schema_mgr_drop_schema(SchemaMgr* self, Transaction* trx, Schema* schema)
 	handle_set_schema(&drop, NULL);
 	handle_set_name(&drop, &schema->config->name);
 
-	handle_mgr_write(&self->mgr, trx, LOG_DROP_SCHEMA, &drop, op);
+	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_DROP, &drop, op);
 	buf_unpin(op);
 }
 
@@ -136,7 +136,7 @@ schema_mgr_alter(SchemaMgr*    self,
 	auto op = schema_op_alter(name, config);
 
 	// update schemas
-	handle_mgr_write(&self->mgr, trx, LOG_ALTER_SCHEMA, &update->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_ALTER, &update->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);

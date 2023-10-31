@@ -52,7 +52,7 @@ view_mgr_create(ViewMgr*     self,
 	auto op = view_op_create(config);
 
 	// update views
-	handle_mgr_write(&self->mgr, trx, LOG_CREATE_VIEW, &view->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_VIEW_CREATE, &view->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -84,7 +84,7 @@ view_mgr_drop(ViewMgr*     self,
 	handle_set_name(&drop, name);
 
 	// update mgr
-	handle_mgr_write(&self->mgr, trx, LOG_DROP_VIEW, &drop, op);
+	handle_mgr_write(&self->mgr, trx, LOG_VIEW_DROP, &drop, op);
 
 	buf_unpin(op);
 }

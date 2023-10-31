@@ -52,7 +52,7 @@ table_mgr_create(TableMgr*    self,
 	auto op = table_op_create(config);
 
 	// update tables
-	handle_mgr_write(&self->mgr, trx, LOG_CREATE_TABLE, &table->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_TABLE_CREATE, &table->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -70,7 +70,7 @@ table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
 	handle_set_schema(&drop, &table->config->schema);
 	handle_set_name(&drop, &table->config->name);
 
-	handle_mgr_write(&self->mgr, trx, LOG_DROP_TABLE, &drop, op);
+	handle_mgr_write(&self->mgr, trx, LOG_TABLE_DROP, &drop, op);
 
 	buf_unpin(op);
 }
@@ -127,7 +127,7 @@ table_mgr_alter(TableMgr*    self,
 	auto op = table_op_alter(schema, name, config);
 
 	// update tables
-	handle_mgr_write(&self->mgr, trx, LOG_ALTER_TABLE, &update->handle, op);
+	handle_mgr_write(&self->mgr, trx, LOG_TABLE_ALTER, &update->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
