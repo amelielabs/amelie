@@ -27,7 +27,7 @@ create user test2 password password
 create user test2 password "test" abc
 create user test2 password "test"
 show users
-select name from mn_users() where name = "test2"
+select name from system.users() where name = "test2"
 
 # test: drop user statment parsing
 drop user

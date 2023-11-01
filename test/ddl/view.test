@@ -20,7 +20,7 @@ create view test as select
 # test: create view
 create view test as select 1
 show views
-select * from mn_views()
+select * from system.views()
 
 # test: create view if not exists
 create view test as select 1
@@ -33,7 +33,7 @@ create view test.test as select 1
 # test: create view schema
 create schema test
 create view test.test as select 1
-select * from mn_views()
+select * from system.views()
 drop view test
 drop view test.test
 drop schema test
@@ -65,7 +65,7 @@ insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 create view test_view (id) as select * from test
-select * from mn_views()
+select * from system.views()
 select id from test_view
 select * from test_view
 explain select id from test_view
@@ -82,7 +82,7 @@ drop view test abc
 # test: drop view
 create view test () as select 1
 drop view test
-select * from mn_views()
+select * from system.views()
 
 # test: drop view if exists
 drop view if exists test
@@ -106,7 +106,7 @@ alter view test rename
 alter view test rename to
 alter view test rename asf junk
 alter view test rename to abc
-select * from mn_views()
+select * from system.views()
 
 # test: alter rename view exists
 create view test as select 1
@@ -123,10 +123,10 @@ alter view abc rename to test.test
 
 # test: alter rename schema
 alter view abc rename to public.test
-select * from mn_views()
+select * from system.views()
 create schema test
 alter view public.test rename to test.test
-select * from mn_views()
+select * from system.views()
 
 disconnect S0
 env_close E0

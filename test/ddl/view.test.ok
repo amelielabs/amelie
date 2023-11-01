@@ -42,7 +42,7 @@ query: on_error
 create view test as select 1
 show views
 [{"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}]
-select * from mn_views()
+select * from system.views()
 {"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 # test: create view if not exists
 create view test as select 1
@@ -57,7 +57,7 @@ query: on_error
 # test: create view schema
 create schema test
 create view test.test as select 1
-select * from mn_views()
+select * from system.views()
 {"schema": "test", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 drop view test
 query: on_error
@@ -101,7 +101,7 @@ insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 create view test_view (id) as select * from test
-select * from mn_views()
+select * from system.views()
 {"schema": "public", "name": "test_view", "query": "select * from test", "def": {"column": [{"name": "id", "type": -1}], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 select id from test_view
 1
@@ -160,7 +160,7 @@ query: on_error
 # test: drop view
 create view test () as select 1
 drop view test
-select * from mn_views()
+select * from system.views()
 # test: drop view if exists
 drop view if exists test
 # test: alter view statement parsing
@@ -202,7 +202,7 @@ alter view test rename asf junk
 query: on_error
 {"code": 1, "msg": "unexpected clause at the end of command"}
 alter view test rename to abc
-select * from mn_views()
+select * from system.views()
 {"schema": "public", "name": "abc", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 # test: alter rename view exists
 create view test as select 1
@@ -222,11 +222,11 @@ query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
 # test: alter rename schema
 alter view abc rename to public.test
-select * from mn_views()
+select * from system.views()
 {"schema": "public", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 create schema test
 alter view public.test rename to test.test
-select * from mn_views()
+select * from system.views()
 {"schema": "test", "name": "test", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 disconnect S0
 env_close E0

@@ -8,30 +8,30 @@ create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 
 # test: drop schema cascade
 drop schema test cascade
-select * from mn_schemas()
-select *.schema, *.name from mn_tables()
+select * from system.schemas()
+select *.schema, *.name from system.tables()
 
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test cascade
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 
 # test: alter schema rename
 create schema test
 
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-select * from mn_schemas()
-select *.schema, *.name from mn_tables()
+select * from system.schemas()
+select *.schema, *.name from system.tables()
 
 alter schema test rename test2
-select * from mn_schemas()
-select *.schema, *.name from mn_tables()
+select * from system.schemas()
+select *.schema, *.name from system.tables()
 
 disconnect S0
 env_close E0

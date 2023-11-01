@@ -17,45 +17,45 @@ query: on_error
 # test: show users
 show users
 []
-select mn_users()
+select system.users()
 []
 # test: show wal
 show wal
 {"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
-select mn_wal()
+select system.wal()
 {"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
 # test: show schemas
 show schemas
-[{"name": "public", "system": true}]
-select mn_schemas()
-[{"name": "public", "system": true}]
+[{"name": "public", "system": true}, {"name": "system", "system": true}]
+select system.schemas()
+[{"name": "public", "system": true}, {"name": "system", "system": true}]
 # test: show tables
 show tables
 []
-select mn_tables()
+select system.tables()
 []
 # test: show views
 show views
 []
-select mn_views()
+select system.views()
 []
 # test: show storages
 show storages
 []
-select mn_storages()
+select system.storages()
 []
 # test: show all
 show all
 {"version": "0.0", "uuid": "00000000-0000-0000-0000-000000000000", "directory": "_output/E0", "backup": "", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_query": false, "tls_cert": "", "tls_key": "", "tls_ca": "", "listen": null, "wal_rotate_wm": 10485760, "wal_sync_on_rotate": false, "wal_sync_on_write": false, "repl_enable": false, "repl_reconnect_ms": 3000, "repl_primary": "", "repl_role": "primary", "cluster_hubs": 1, "cluster_shards": 1, "lsn": 0, "read_only": false}
-select mn_config()
+select system.config()
 {"version": "0.0", "uuid": "00000000-0000-0000-0000-000000000000", "directory": "_output/E0", "backup": "", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_query": false, "tls_cert": "", "tls_key": "", "tls_ca": "", "listen": null, "wal_rotate_wm": 10485760, "wal_sync_on_rotate": false, "wal_sync_on_write": false, "repl_enable": false, "repl_reconnect_ms": 3000, "repl_primary": "", "repl_role": "primary", "cluster_hubs": 1, "cluster_shards": 1, "lsn": 0, "read_only": false}
-select mn_config().directory
+select system.config().directory
 "_output/E0"
-select mn_config()["directory"]
+select system.config()["directory"]
 "_output/E0"
-select mn_config(123)
+select system.config(123)
 query: on_error
-{"code": 1, "msg": "mn_config(): incorrect number of arguments"}
+{"code": 1, "msg": "config(): incorrect number of arguments"}
 # test: show name
 show log_enable
 true

@@ -13,6 +13,10 @@ test set
 test show
 test user
 
+# db
+directory db
+group db
+
 # ddl
 directory ddl
 group ddl
@@ -31,11 +35,6 @@ test json
 
 #directory ddl
 #group ddl
-#test show
-#test set
-#test wait
-#test create_table
-#test drop_table
 #test create_index
 #test drop_index
 #test indexate

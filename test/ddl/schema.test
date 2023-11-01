@@ -5,8 +5,13 @@ connect E0 S0
 
 # test: ensure public schema exists
 show schemas
-select * from mn_schemas() where name = "public"
-select system from mn_schemas() where name = "public"
+select * from system.schemas() where name = "public"
+select system from system.schemas() where name = "public"
+
+# test: ensure system schema exists
+show schemas
+select * from system.schemas() where name = "system"
+select system from system.schemas() where name = "system"
 
 # test: create schema statement parsing
 create
@@ -22,7 +27,7 @@ create schema test abc
 create schema test
 
 show schemas
-select mn_schemas()
+select system.schemas()
 
 # test: create schema if not exists
 create schema test
@@ -66,11 +71,11 @@ alter schema test rename "hello"
 
 # test: alter schema rename
 create schema test
-select mn_schemas()
+select system.schemas()
 
 alter schema test rename test2
-select mn_schemas()
-select mn_schemas()
+select system.schemas()
+select system.schemas()
 
 # test: alter schema system
 alter schema public rename _public

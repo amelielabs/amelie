@@ -48,7 +48,7 @@ query: on_error
 create user test2 password "test"
 show users
 [{"name": "test", "password": false}, {"name": "test2", "password": true}]
-select name from mn_users() where name = "test2"
+select name from system.users() where name = "test2"
 "test2"
 # test: drop user statment parsing
 drop user

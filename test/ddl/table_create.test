@@ -34,32 +34,32 @@ create table test()
 
 # test: column int/integer
 create table test(id int primary key, id2 integer)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column string/text
 create table test(id int primary key, a string, b text)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column real
 create table test(id int primary key, a real)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column map/object
 create table test(id int primary key, a map, b object)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column array
 create table test(id int primary key, a array)
-select def from mn_tables() where name = "test"
+select def from system.tables() where name = "test"
 drop table test
 
 # test: column redefined
@@ -85,16 +85,16 @@ create table test(id int, primary key(idd))
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
 create table if not exists test(id int primary key, primary key(id))
-select def.key from mn_tables() where name = "test"
+select def.key from system.tables() where name = "test"
 drop table test
 
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
-select def.key from mn_tables() where name = "test"
+select def.key from system.tables() where name = "test"
 drop table test
 
 create table test(id int, primary key(id desc))
-select def.key from mn_tables() where name = "test"
+select def.key from system.tables() where name = "test"
 drop table test
 
 # test: primary key ensure valid type
@@ -107,7 +107,7 @@ create table test(data map, primary key(data.id))
 # test: primary key ensure valid nested key type
 create table test(data map, primary key(data.id map))
 create table test(data map, primary key(data.id integer))
-select def.key from mn_tables() where name = "test"
+select def.key from system.tables() where name = "test"
 drop table test
 
 ## test: table already exists
@@ -117,30 +117,30 @@ create table test (id int primary key)
 # test: table create if not exists
 create table test (id int primary key)
 create table if not exists test (id int primary key)
-select name from mn_tables() where name = "test"
+select name from system.tables() where name = "test"
 drop table test
-select name from mn_tables() where name = "test"
+select name from system.tables() where name = "test"
 
 # test: schema default
 create table test (id int primary key)
-select *.schema from mn_tables() where name = "test"
+select *.schema from system.tables() where name = "test"
 drop table test
 
 # test: schema default explicit
 create table public.test (id int primary key)
-select *.schema from mn_tables() where name = "test"
+select *.schema from system.tables() where name = "test"
 drop table public.test
 
 # test: schema non-exists
 create table test.test (id int primary key)
-select *.schema from mn_tables() where name = "test"
+select *.schema from system.tables() where name = "test"
 
 # test: schema set
 create table test (id int primary key)
 create schema test
 create table test.test (id int primary key)
-select *.schema || "." || *.name from mn_tables() where name = "test"
-select name from mn_tables() where *.schema = "test" and name = "test"
+select *.schema || "." || *.name from system.tables() where name = "test"
+select name from system.tables() where *.schema = "test" and name = "test"
 drop table test
 drop table test.test
 drop schema test
@@ -152,7 +152,7 @@ drop view test
 
 # test: reference
 create table test (id int primary key) reference
-select *.name, *.reference from mn_tables()
+select *.name, *.reference from system.tables()
 drop table test
 
 # test: with parsing
@@ -167,7 +167,7 @@ create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000
 
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-select * from mn_tables()
+select * from system.tables()
 drop table test
 
 disconnect S0

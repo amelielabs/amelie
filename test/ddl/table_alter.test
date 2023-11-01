@@ -25,7 +25,7 @@ alter table test rename
 alter table test rename to
 alter table test rename asf junk
 alter table test rename to abc
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 
 # test: rename table exists
 create table test (id int primary key)
@@ -42,10 +42,10 @@ alter table abc rename to test.test
 
 # test: rename schema
 alter table abc rename to public.test
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 create schema test
 alter table public.test rename to test.test
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 
 disconnect S0
 env_close E0

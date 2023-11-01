@@ -11,35 +11,35 @@ show 1234
 
 # test: show users
 show users
-select mn_users()
+select system.users()
 
 # test: show wal
 show wal
-select mn_wal()
+select system.wal()
 
 # test: show schemas
 show schemas
-select mn_schemas()
+select system.schemas()
 
 # test: show tables
 show tables
-select mn_tables()
+select system.tables()
 
 # test: show views
 show views
-select mn_views()
+select system.views()
 
 # test: show storages
 show storages
-select mn_storages()
+select system.storages()
 
 # test: show all
 show all
 
-select mn_config()
-select mn_config().directory
-select mn_config()["directory"]
-select mn_config(123)
+select system.config()
+select system.config().directory
+select system.config()["directory"]
+select system.config(123)
 
 # test: show name
 show log_enable

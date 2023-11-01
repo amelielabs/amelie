@@ -44,7 +44,7 @@ alter table test rename asf junk
 query: on_error
 {"code": 1, "msg": "unexpected clause at the end of command"}
 alter table test rename to abc
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 ["public", "abc"]
 # test: rename table exists
 create table test (id int primary key)
@@ -64,11 +64,11 @@ query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
 # test: rename schema
 alter table abc rename to public.test
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 ["public", "test"]
 create schema test
 alter table public.test rename to test.test
-select *.schema, *.name from mn_tables()
+select *.schema, *.name from system.tables()
 ["test", "test"]
 disconnect S0
 env_close E0
