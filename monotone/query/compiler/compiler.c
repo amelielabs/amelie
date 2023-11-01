@@ -160,12 +160,6 @@ compiler_emit(Compiler* self)
 				compiler_switch(self, true);
 				op0(self, CRECV);
 			}
-
-			/*
-			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
-			compiler_switch(self, true);
-			op0(self, CRECV);
-			*/
 			break;
 
 		default:

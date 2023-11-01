@@ -66,7 +66,7 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 				break;
 			}
 
-			expr = expr->next;
+			expr = expr->r;
 		}
 
 		value = value->next;
