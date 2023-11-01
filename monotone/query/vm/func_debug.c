@@ -24,11 +24,11 @@
 #include <monotone_vm.h>
 
 void
-func_mn_debug(Vm*       vm,
-              Function* func,
-              Value*    result,
-              int       argc,
-              Value**   argv)
+func_debug(Vm*       vm,
+           Function* func,
+           Value*    result,
+           int       argc,
+           Value**   argv)
 {
 	if (argc < 1)
 		error("debug(): incorrect call");

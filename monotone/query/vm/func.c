@@ -100,11 +100,11 @@ func_json(Vm*       vm,
 }
 
 static void
-func_mn_config(Vm*       vm,
-               Function* func,
-               Value*    result,
-               int       argc,
-               Value**   argv)
+func_config(Vm*       vm,
+            Function* func,
+            Value*    result,
+            int       argc,
+            Value**   argv)
 {
 	unused(vm);
 	unused(argv);
@@ -114,11 +114,11 @@ func_mn_config(Vm*       vm,
 }
 
 static void
-func_mn_users(Vm*       vm,
-              Function* func,
-              Value*    result,
-              int       argc,
-              Value**   argv)
+func_users(Vm*       vm,
+           Function* func,
+           Value*    result,
+           int       argc,
+           Value**   argv)
 {
 	unused(vm);
 	unused(argv);
@@ -129,11 +129,11 @@ func_mn_users(Vm*       vm,
 }
 
 static void
-func_mn_schemas(Vm*       vm,
-                Function* func,
-                Value*    result,
-                int       argc,
-                Value**   argv)
+func_schemas(Vm*       vm,
+             Function* func,
+             Value*    result,
+             int       argc,
+             Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -142,11 +142,11 @@ func_mn_schemas(Vm*       vm,
 }
 
 static void
-func_mn_tables(Vm*       vm,
-               Function* func,
-               Value*    result,
-               int       argc,
-               Value**   argv)
+func_tables(Vm*       vm,
+            Function* func,
+            Value*    result,
+            int       argc,
+            Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -155,11 +155,11 @@ func_mn_tables(Vm*       vm,
 }
 
 static void
-func_mn_storages(Vm*       vm,
-                 Function* func,
-                 Value*    result,
-                 int       argc,
-                 Value**   argv)
+func_storages(Vm*       vm,
+              Function* func,
+              Value*    result,
+              int       argc,
+              Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -168,11 +168,11 @@ func_mn_storages(Vm*       vm,
 }
 
 static void
-func_mn_views(Vm*       vm,
-              Function* func,
-              Value*    result,
-              int       argc,
-              Value**   argv)
+func_views(Vm*       vm,
+           Function* func,
+           Value*    result,
+           int       argc,
+           Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -181,11 +181,11 @@ func_mn_views(Vm*       vm,
 }
 
 static void
-func_mn_wal(Vm*       vm,
-            Function* func,
-            Value*    result,
-            int       argc,
-            Value**   argv)
+func_wal(Vm*       vm,
+         Function* func,
+         Value*    result,
+         int       argc,
+         Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -198,30 +198,35 @@ func_setup(FunctionMgr* mgr)
 {
 	struct
 	{
+		const char*  schema;
 		const char*  name;
 		FunctionMain function;
 		int          argc;
 	} def[] =
 	{
-		{ "has",         (FunctionMain)func_has,         2 },
-		{ "set",         (FunctionMain)func_set,         3 },
-		{ "unset",       (FunctionMain)func_unset,       2 },
-		{ "sizeof",      (FunctionMain)func_sizeof,      1 },
-		{ "string",      (FunctionMain)func_string,      1 },
-		{ "json",        (FunctionMain)func_json,        1 },
-		{ "mn_config",   (FunctionMain)func_mn_config,   0 },
-		{ "mn_users",    (FunctionMain)func_mn_users,    0 },
-		{ "mn_storages", (FunctionMain)func_mn_storages, 0 },
-		{ "mn_schemas",  (FunctionMain)func_mn_schemas,  0 },
-		{ "mn_tables",   (FunctionMain)func_mn_tables,   0 },
-		{ "mn_views",    (FunctionMain)func_mn_views,    0 },
-		{ "mn_wal",      (FunctionMain)func_mn_wal,      0 },
-		{ "mn_debug",    (FunctionMain)func_mn_debug,    0 },
-		{  NULL,         NULL,                           0 }
+		// public
+		{ "public", "has",      (FunctionMain)func_has,      2 },
+		{ "public", "set",      (FunctionMain)func_set,      3 },
+		{ "public", "unset",    (FunctionMain)func_unset,    2 },
+		{ "public", "sizeof",   (FunctionMain)func_sizeof,   1 },
+		{ "public", "string",   (FunctionMain)func_string,   1 },
+		{ "public", "json",     (FunctionMain)func_json,     1 },
+		// system
+		{ "system", "config",   (FunctionMain)func_config,   0 },
+		{ "system", "users",    (FunctionMain)func_users,    0 },
+		{ "system", "storages", (FunctionMain)func_storages, 0 },
+		{ "system", "schemas",  (FunctionMain)func_schemas,  0 },
+		{ "system", "tables",   (FunctionMain)func_tables,   0 },
+		{ "system", "views",    (FunctionMain)func_views,    0 },
+		{ "system", "wal",      (FunctionMain)func_wal,      0 },
+		{ "system", "debug",    (FunctionMain)func_debug,    0 },
+		{  NULL,    NULL,       NULL,                        0 }
 	};
 	for (int i = 0; def[i].name; i++)
 	{
-		auto func = function_allocate(def[i].name, def[i].argc, def[i].function);
+		auto func = function_allocate(def[i].schema, def[i].name,
+		                              def[i].argc,
+		                              def[i].function);
 		function_mgr_add(mgr, func);
 	}
 }

@@ -7,4 +7,4 @@
 //
 
 void
-func_mn_debug(Vm*, Function*, Value*, int, Value**);
+func_debug(Vm*, Function*, Value*, int, Value**);
