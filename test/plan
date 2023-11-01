@@ -13,10 +13,6 @@ test set
 test show
 test user
 
-# db
-directory db
-group db
-
 # ddl
 directory ddl
 group ddl
@@ -26,6 +22,10 @@ test table_drop
 test table_alter
 test view
 test cascade
+
+directory dml
+group dml
+test insert
 
 # query
 directory query

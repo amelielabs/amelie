@@ -1,0 +1,128 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: insert statement parsing
+insert
+insert junk
+insert into
+insert into "name"
+insert into 1
+insert into name
+
+create table test (id int primary key)
+
+insert into test
+insert into test values
+insert into test values(
+insert into test values(,
+insert into test values(123
+insert into test values(123,
+insert into test values(123,)
+
+# test: insert type validate
+insert into test values ("123")
+insert into test values (123, 123)
+select * from test
+
+# test: insert
+insert into test values (123)
+
+# test: primary unique key constraint violation
+insert into test values (123)
+
+# test: replace
+replace into test values (123)
+
+# test: insert schema
+drop table test
+
+create schema test
+create table test.test (id int primary key)
+insert into test values (123)
+insert into test.test values (123)
+select * from test
+select * from test.test
+drop table test.test
+
+# test: insert compound key
+create table test (id int, id2 int, primary key (id, id2))
+select def.key from system.tables() where name = "test"
+insert into test values (123)
+insert into test values (1, 2, 3)
+insert into test values (1, 2)
+select * from test
+drop table test
+
+# test: insert nested key
+create table test (obj object, primary key (obj.id int))
+select def.key from system.tables() where name = "test"
+insert into test values (123)
+insert into test values ( {"id": 48} )
+select * from test
+select obj.id from test
+drop table test
+
+# test: insert nested key #2
+create table test (obj object, primary key (obj.data.id int))
+select def.key from system.tables() where name = "test"
+insert into test values (123)
+insert into test values ( {"id": 48} )
+insert into test values ( {"data": []} )
+insert into test values ( {"data": {}} )
+insert into test values ( {"data": {"id": "48"} } )
+insert into test values ( {"data": {"id": 48} } )
+select * from test
+drop table test
+
+# test: insert nested key compound
+create table test (obj object, primary key (obj.data.id int, obj.id int))
+select def.key from system.tables() where name = "test"
+insert into test values ( {"data": {"id": 48} } )
+insert into test values ( {"data": {"id": 48}, "id": 1 } )
+select * from test
+drop table test
+
+# test: insert values clause can be omitted
+create table test (id int primary key, data string)
+insert into test values (1, "hello")
+insert into test (2, "hello")
+select * from test
+drop table test
+
+# test: insert one column expr
+create table test (id string primary key)
+insert into test values ("hello")
+insert into test ("world")
+insert into test "again"
+select * from test
+drop table test
+
+# test: insert one column expr #2
+create table test (id string primary key, data int)
+insert into test "again"
+insert into test "again", 2
+insert into test ("again", 2)
+select * from test
+drop table test
+
+# test: insert one column expr #3
+create table test (id int primary key)
+insert into test 1,2,3
+select * from test
+drop table test
+
+# test: insert map
+create table test (obj object, primary key(obj.id int))
+insert into test values ({"id": 48})
+insert into test ({"id": 49})
+insert into test {"id": 1}
+insert into test {"id": 2}
+insert into test {"id": 3}
+select * from test
+select obj.id from test where obj.id >= 3
+drop table test
+
+disconnect S0
+env_close E0
