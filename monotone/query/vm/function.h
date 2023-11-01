@@ -12,6 +12,7 @@ typedef void (*FunctionMain)(void*, Function*, Value*, int, Value**);
 
 struct Function
 {
+	Str          schema;
 	Str          name;
 	int          argc;
 	FunctionMain main;
@@ -19,12 +20,16 @@ struct Function
 };
 
 static inline Function*
-function_allocate(const char* name, int argc, FunctionMain main)
+function_allocate(const char*  schema,
+                  const char*  name,
+                  int          argc,
+                  FunctionMain main)
 {
 	Function* self = mn_malloc(sizeof(Function));
 	self->argc = argc;
 	self->main = main;
 	guard(guard, mn_free, self);
+	str_strdup(&self->schema, schema);
 	str_strdup(&self->name, name);
 	list_init(&self->link);
 	return unguard(&guard);
@@ -33,6 +38,7 @@ function_allocate(const char* name, int argc, FunctionMain main)
 static inline void
 function_free(Function* self)
 {
+	str_free(&self->schema);
 	str_free(&self->name);
 	mn_free(self);
 }

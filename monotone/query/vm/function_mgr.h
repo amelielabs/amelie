@@ -38,11 +38,13 @@ function_mgr_add(FunctionMgr* self, Function* func)
 }
 
 static inline Function*
-function_mgr_find(FunctionMgr* self, Str* name)
+function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 {
 	list_foreach(&self->list)
 	{
 		auto func = list_at(Function, link);
+		if (! str_compare(&func->schema, schema))
+			continue;
 		if (str_compare(&func->name, name))
 			return func;
 	}
