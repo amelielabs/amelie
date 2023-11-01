@@ -19,16 +19,16 @@ show users
 []
 select system.users()
 []
-# test: show wal
-show wal
-{"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
-select system.wal()
-{"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
 # test: show schemas
 show schemas
 [{"name": "public", "system": true}, {"name": "system", "system": true}]
 select system.schemas()
 [{"name": "public", "system": true}, {"name": "system", "system": true}]
+# test: show functions
+show functions
+[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "storages", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
+select system.functions()
+[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "storages", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
 # test: show tables
 show tables
 []
@@ -44,6 +44,11 @@ show storages
 []
 select system.storages()
 []
+# test: show wal
+show wal
+{"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
+select system.wal()
+{"lsn": 0, "file_count": 1, "file_min": 1, "snapshot_count": 0, "snapshot_min": -1}
 # test: show all
 show all
 {"version": "0.0", "uuid": "00000000-0000-0000-0000-000000000000", "directory": "_output/E0", "backup": "", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_query": false, "tls_cert": "", "tls_key": "", "tls_ca": "", "listen": null, "wal_rotate_wm": 10485760, "wal_sync_on_rotate": false, "wal_sync_on_write": false, "repl_enable": false, "repl_reconnect_ms": 3000, "repl_primary": "", "repl_role": "primary", "cluster_hubs": 1, "cluster_shards": 1, "lsn": 0, "read_only": false}
