@@ -89,7 +89,7 @@ hot static inline int
 emit_call_function(Compiler* self, Target* target, Ast* ast)
 {
 	// (function_name, call)
-	auto name = ast->l;
+	auto path = ast->l;
 	auto call = ast->r;
 	assert(call->id == KCALL);
 
@@ -103,17 +103,21 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 		current = current->next;
 	}
 
-	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &name->string);
-	if (func)
-	{
-		// CALL
-		return op3(self, CCALL, rpin(self), (intptr_t)func, call->integer);
-	}
+	// read schema/name
+	Str schema;
+	Str name;
+	if (! parse_target_path(path, &schema, &name))
+		error("%.*s(): bad function call", str_size(&path->string),
+		      str_of(&path->string));
 
-	error("function <%.*s> not found", str_size(&name->string),
-	      str_of(&name->string));
-	return -1;
+	// find and call function
+	auto func = function_mgr_find(self->function_mgr, &schema, &name);
+	if (! func)
+		error("%.*s(): function not found", str_size(&path->string),
+		      str_of(&path->string));
+
+	// CALL
+	return op3(self, CCALL, rpin(self), (intptr_t)func, call->integer);
 }
 
 hot static inline int
