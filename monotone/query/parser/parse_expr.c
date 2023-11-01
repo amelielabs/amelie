@@ -255,6 +255,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			error("%.*s<(> expected", str_size(&value->string),
 			      str_of(&value->string));
 		auto name = value;
+		name->id = KNAME;
 		value    = ast('(');
 		value->l = name;
 		value->r = expr_call(self, expr, ')', false);
@@ -290,6 +291,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	// name
 	case KNAME:
+	case KNAME_COMPOUND:
 	{
 		auto call = stmt_if(self, '(');
 		if (call)
@@ -301,8 +303,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 		break;
 	}
-	case KNAME_COMPOUND:
-		break;
 
 	default:
 		abort();

@@ -28,19 +28,18 @@ parse_if_exists(Stmt* self)
 	return true;
 }
 
-static inline Ast*
-parse_target(Stmt* self, Str* schema, Str* name)
+static inline bool
+parse_target_path(Ast* path, Str* schema, Str* name)
 {
 	str_init(schema);
 	str_init(name);
 
 	// name
-	auto path = stmt_next(self);
 	if (path->id == KNAME)
 	{
 		str_set(schema, "public", 6);
 		str_set_str(name, &path->string);
-		return path;
+		return true;
 	}
 
 	// schema.name
@@ -50,13 +49,21 @@ parse_target(Stmt* self, Str* schema, Str* name)
 		str_set_str(name, &path->string);
 		str_advance(name, str_size(schema) + 1);
 		if (strnchr(str_of(name), str_size(name), '.'))
-		{
-			stmt_push(self, path);
-			return NULL;
-		}
-		return path;
+			return false;
+		return true;
 	}
 
-	stmt_push(self, path);
-	return NULL;
+	return false;
+}
+
+static inline Ast*
+parse_target(Stmt* self, Str* schema, Str* name)
+{
+	auto path = stmt_next(self);
+	if (! parse_target_path(path, schema, name))
+	{
+		stmt_push(self, path);
+		return NULL;
+	}
+	return path;
 }
