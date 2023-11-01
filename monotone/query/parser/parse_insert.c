@@ -49,8 +49,8 @@ parse_value(Stmt* self)
 		case ']':
 		{
 			auto head = ast_head(&stack);
-			if (!head || head->id != '[')
-				error("expected ']'");
+			if (unlikely(!head || head->id != '['))
+				goto done;
 			ast_pop(&stack);
 			continue;
 		}
@@ -61,15 +61,28 @@ parse_value(Stmt* self)
 		case '}':
 		{
 			auto head = ast_head(&stack);
-			if (!head || head->id != '{')
-				error("expected '}'");
+			if (unlikely(!head || head->id != '{'))
+				goto done;
+			if (unlikely((head->integer % 2) != 0))
+				error("incorrect {} object");
+			head->integer /= 2;
 			ast_pop(&stack);
 			continue;
 		}
 		case ':':
-		case ',':
-			// todo
+		{
+			auto head = ast_head(&stack);
+			if (!head || head->id != '{')
+				goto done;
 			continue;
+		}
+		case ',':
+		{
+			auto head = ast_head(&stack);
+			if (! head)
+				goto done;
+			continue;
+		}
 		case KSTRING:
 			parse_value_add(&stack);
 			break;
@@ -87,16 +100,20 @@ parse_value(Stmt* self)
 			parse_value_add(&stack);
 			break;
 		default:
-			done = true;
-			stmt_push(self, ast);
-			continue;
+			goto done;
 		}
 
 		if (value->expr == NULL)
 			value->expr = ast;
 		else
-			last->next = ast;
+			last->r = ast;
 		last = ast;
+
+		continue;
+done:;
+		done = true;
+		stmt_push(self, ast);
+
 	}
 
 	if (unlikely(ast_head(&stack)))
@@ -108,13 +125,20 @@ parse_value(Stmt* self)
 hot static inline AstRow*
 parse_row(Stmt* self)
 {
-	// (value, ...)
+	auto row = ast_row_allocate();
 
-	// (
+	// ( or expr
 	if (! stmt_if(self, '('))
-		error("<(> expected");
+	{
+		auto value = parse_value(self);
+		if (unlikely(value->expr == NULL))
+			error("bad row value");
+		row->list = &value->ast;
+		row->list_count++;
+		return row;
+	}
 
-	auto row  = ast_row_allocate();
+	// ([value, ...])
 	Ast* last = NULL;
 	for (;;)
 	{
@@ -127,14 +151,14 @@ parse_row(Stmt* self)
 			row->list = &value->ast;
 		else
 			last->next = &value->ast;
-		last = &value->ast;
 		row->list_count++;
+		last = &value->ast;
 
 		// ,
 		if (stmt_if(self, ','))
 			continue;
 
-		// )
+		// )]
 		if (! stmt_if(self, ')'))
 			error("expected ')'");
 		break;
@@ -183,9 +207,8 @@ parse_insert(Stmt* self, bool unique)
 		return;
 	}
 
-	// VALUES
-	if (! stmt_if(self, KVALUES))
-		error("INSERT INTO name <VALUES> expected");
+	// [VALUES]
+	stmt_if(self, KVALUES);
 
 	// row, ...
 	Ast* last = NULL;

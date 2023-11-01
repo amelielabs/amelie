@@ -191,7 +191,7 @@ lex_next(Lex* self)
 		}
 symbol:;
 		ast->id = symbol;
-		ast->integer = symbol;
+		ast->integer = 0;
 		return ast;
 	}
 
