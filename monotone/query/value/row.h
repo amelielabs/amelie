@@ -23,7 +23,7 @@ value_row_key(Def* self, Stack* stack)
 				error("column <%.*s>: does not match key data type",
 				      str_size(&column->name),
 				      str_of(&column->name));
-			size += data_size_string(ref->data_size);
+			size += data_size_string(str_size(&ref->string));
 		} else
 		{
 			if (unlikely(ref->type != VALUE_INT))
