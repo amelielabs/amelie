@@ -95,9 +95,10 @@ storage_set(Storage*     self,
 
 	// update primary index
 	auto prev = index_set(primary, trx, row);
+	unguard(&row_guard);
+
 	if (unlikely(unique && prev))
 		error("unique key constraint violation");
-	unguard(&row_guard);
 }
 
 hot void

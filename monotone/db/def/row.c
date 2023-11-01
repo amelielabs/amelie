@@ -26,7 +26,7 @@ row_create(Def* def, uint8_t* data, int data_size)
 	int count;
 	data_read_array(&pos, &count);
 	if (unlikely(count != def->column_count))
-		error("row has insufficient number of columns");
+		error("row has incorrect number of columns");
 
 	bool is_partial = false;
 	auto column = def->column;
@@ -103,7 +103,7 @@ row_hash(Def* def, uint8_t* data, int data_size)
 	int count;
 	data_read_array(&pos, &count);
 	if (unlikely(count != def->column_count))
-		error("row has insufficient number of columns");
+		error("row has incorrect number of columns");
 
 	uint32_t hash = 0;
 	for (auto column = def->column; column; column = column->next)
