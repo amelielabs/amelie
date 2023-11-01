@@ -50,3 +50,19 @@ function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 	}
 	return NULL;
 }
+
+static inline Buf*
+function_mgr_list(FunctionMgr* self)
+{
+	auto buf = msg_create(MSG_OBJECT);
+	// array
+	encode_array(buf, self->list_count);
+	list_foreach(&self->list)
+	{
+		auto func = list_at(Function, link);
+		// {}
+		function_write(func, buf);
+	}
+	msg_end(buf);
+	return buf;
+}

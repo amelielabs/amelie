@@ -58,3 +58,22 @@ function_validate_arg(Function* self, Value** argv, int order, int type)
 		error("%.*s(): incorrect type of %d argument", str_size(&self->name),
 		      str_of(&self->name), order);
 }
+
+static inline void
+function_write(Function* self, Buf* buf)
+{
+	// map
+	encode_map(buf, 3);
+
+	// schema
+	encode_raw(buf, "schema", 6);
+	encode_string(buf, &self->schema);
+
+	// name
+	encode_raw(buf, "name", 4);
+	encode_string(buf, &self->name);
+
+	// argc
+	encode_raw(buf, "argc", 4);
+	encode_integer(buf, self->argc);
+}
