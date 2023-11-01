@@ -37,7 +37,7 @@ db_free(Db* self)
 }
 
 static void
-db_prepare(Db* self)
+db_create_system_schema(Db* self, const char* schema)
 {
 	Transaction trx;
 	transaction_init(&trx);
@@ -50,10 +50,10 @@ db_prepare(Db* self)
 		transaction_begin(&trx);
 		transaction_set_auto_commit(&trx);
 
-		// create public schema
+		// create system schema
 		Str name;
 		str_init(&name);
-		str_set_cstr(&name, "public");
+		str_set_cstr(&name, schema);
 		auto config = schema_config_allocate();
 		guard(config_guard, schema_config_free, config);
 		schema_config_set_name(config, &name);
@@ -74,8 +74,9 @@ db_prepare(Db* self)
 void
 db_open(Db* self, CatalogMgr* cat_mgr)
 {
-	// prepare system objects
-	db_prepare(self);
+	// prepare system schemas
+	db_create_system_schema(self, "public");
+	db_create_system_schema(self, "system");
 
 	// recover storages
 	storage_mgr_open(&self->storage_mgr);
