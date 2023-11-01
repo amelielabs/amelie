@@ -48,6 +48,9 @@ execute_show(Session* self, Ast* ast)
 	if (str_compare_raw(&arg->expr->string, "schemas", 7))
 		buf = schema_mgr_list(&self->share->db->schema_mgr);
 	else
+	if (str_compare_raw(&arg->expr->string, "functions", 9))
+		buf = function_mgr_list(self->share->function_mgr);
+	else
 	if (str_compare_raw(&arg->expr->string, "tables", 6))
 		buf = table_mgr_list(&self->share->db->table_mgr);
 	else
