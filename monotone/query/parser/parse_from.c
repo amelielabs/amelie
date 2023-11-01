@@ -72,10 +72,20 @@ parse_from_analyze(From* self, Table** table, View** view)
 		return &select->ast;
 	}
 
-	// FROM name()
-	// FROM schema.name()
-	stmt_push(stmt, expr);
-	return parse_expr(stmt, NULL);
+	// function call
+	auto bracket = stmt_if(stmt, '(');
+	if (bracket)
+	{
+		// FROM name()
+		// FROM schema.name()
+		stmt_push(stmt, bracket);
+		stmt_push(stmt, expr);
+		return parse_expr(stmt, NULL);
+	}
+
+	error("FROM <%.*s> table or view is not found", str_size(&expr->string),
+	      str_of(&expr->string));
+	return NULL;
 }
 
 static inline Target*

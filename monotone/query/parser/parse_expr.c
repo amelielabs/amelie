@@ -315,7 +315,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 hot static inline int
 parse_unary(Stmt*     self, Expr* expr,
             AstStack* ops,
-            AstStack* result, Ast* ast,
+            AstStack* result,
+            Ast*      ast,
             int       priority)
 {
 	if (ast->id == '[') 
