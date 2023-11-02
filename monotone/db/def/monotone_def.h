@@ -7,6 +7,7 @@
 //
 
 #include "def/type.h"
+#include "def/constraint.h"
 #include "def/column.h"
 #include "def/key.h"
 #include "def/def.h"

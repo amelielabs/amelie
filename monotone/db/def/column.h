@@ -11,12 +11,13 @@ typedef struct Column Column;
 
 struct Column
 {
-	Str     name;
-	int     order;
-	int64_t type;
-	Key*    key;
-	Key*    key_tail;
-	Column* next;
+	Str        name;
+	int        order;
+	int64_t    type;
+	Constraint constraint;
+	Key*       key;
+	Key*       key_tail;
+	Column*    next;
 };
 
 static inline Column*
@@ -29,6 +30,7 @@ column_allocate(void)
 	self->key_tail = NULL;
 	self->next     = NULL;
 	str_init(&self->name);
+	constraint_init(&self->constraint);
 	return self;
 }
 
@@ -36,6 +38,7 @@ static inline void
 column_free(Column* self)
 {
 	str_free(&self->name);
+	constraint_free(&self->constraint);
 	mn_free(self);
 }
 
@@ -58,6 +61,7 @@ column_copy(Column* self)
 	guard(copy_guard, column_free, copy);
 	column_set_name(copy, &self->name);
 	column_set_type(copy, self->type);
+	constraint_copy(&self->constraint, &copy->constraint);
 	return unguard(&copy_guard);
 }
 
@@ -78,13 +82,17 @@ column_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_integer(pos, &self->type);
 
+	// constraint
+	data_skip(pos);
+	constraint_read(&self->constraint, pos);
+
 	return unguard(&self_guard);
 }
 
 static inline void
 column_write(Column* self, Buf* buf)
 {
-	encode_map(buf, 2);
+	encode_map(buf, 3);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -93,6 +101,10 @@ column_write(Column* self, Buf* buf)
 	// type
 	encode_raw(buf, "type", 4);
 	encode_integer(buf, self->type);
+
+	// constraint
+	encode_raw(buf, "constraint", 10);
+	constraint_write(&self->constraint, buf);
 }
 
 hot static inline void
