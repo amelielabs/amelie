@@ -135,8 +135,9 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			error("<%.*s> column key can be string or int", str_size(&name),
 			      str_of(&name));
 
-		// todo: validate constraints
-			// allow only serial, fail on other default/generated
+		// validate constraints
+		if (! str_empty(&column->constraint.expr))
+			error("DEFAULT constraint cannot be used with keys");
 
 		// force column not_null constraint
 		constraint_set_not_null(&column->constraint, true);
@@ -171,12 +172,39 @@ parse_constraint(Stmt* self, Column* column)
 		if (! stmt_if(self, KNULL))
 			error("NOT <NULL> expected");
 
+		constraint_set_not_null(&column->constraint, true);
 		break;
 	}
 	case KDEFAULT:
 	{
 		// DEFAULT expr
-		(void)column;
+
+		// const
+		char* value_start = self->lex->pos;
+		char* value_end;
+		auto  value = stmt_next(self);
+		value_end = self->lex->pos;
+		stmt_push(self, value);
+
+		auto  expr = parse_expr(self, NULL);
+		switch (expr->id) {
+		case KNULL:
+		case KREAL:
+		case KINT:
+		case KSTRING:
+		case KTRUE:
+		case KFALSE:
+			break;
+		default:
+			error("only consts allowed as DEFAULT expression");
+			break;
+		}
+
+		Str string;
+		str_init(&string);
+		str_set(&string, value_start, value_end - value_start);
+		str_shrink(&string);
+		constraint_set_default(&column->constraint, &string);
 		break;
 	}
 	// todo: GENERATED AS expr
@@ -233,8 +261,9 @@ parser_def(Stmt* self, AstTableCreate* stmt)
 		// PRIMARY KEY
 		if (parse_primary_key(self))
 		{
-			// todo: validate constraints
-				// allow only serial, fail on other default/generated
+			// validate constraints
+			if (! str_empty(&column->constraint.expr))
+				error("DEFAULT constraint cannot be used with keys");
 
 			// force not_null constraint for keys
 			constraint_set_not_null(&column->constraint, true);
