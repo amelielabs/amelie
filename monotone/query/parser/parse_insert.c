@@ -170,7 +170,8 @@ parse_row(Stmt* self)
 hot void
 parse_insert(Stmt* self, bool unique)
 {
-	// [INSERT|REPLACE] INTO name VALUES (value, ..), ...
+	// [INSERT|REPLACE] INTO name [(column_list)]
+	// [VALUES] (value, ..), ...
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 
@@ -206,6 +207,9 @@ parse_insert(Stmt* self, bool unique)
 
 		return;
 	}
+
+	// (column list)
+
 
 	// [VALUES]
 	stmt_if(self, KVALUES);

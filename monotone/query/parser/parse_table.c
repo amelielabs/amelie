@@ -122,11 +122,6 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			error("PRIMARY KEY (<name> expected");
 		}
 
-		// validate key type
-		if (type != TYPE_INT && type != TYPE_STRING)
-			error("<%.*s> column key can be string or int", str_size(&name),
-			      str_of(&name));
-
 		// ASC | DESC
 		bool asc = true;
 		if (stmt_if(self, KASC))
@@ -134,6 +129,17 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 		else
 		if (stmt_if(self, KDESC))
 			asc = false;
+
+		// validate key type
+		if (type != TYPE_INT && type != TYPE_STRING)
+			error("<%.*s> column key can be string or int", str_size(&name),
+			      str_of(&name));
+
+		// todo: validate constraints
+			// allow only serial, fail on other default/generated
+
+		// force column not_null constraint
+		constraint_set_not_null(&column->constraint, true);
 
 		// create key
 		auto key = key_allocate();
@@ -154,9 +160,37 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 }
 
 static void
-parser_key(Stmt* self, AstTableCreate* stmt)
+parse_constraint(Stmt* self, Column* column)
 {
-	// (name type [primary key], ..., primary key())
+	// constraint
+	auto constraint = stmt_next(self);
+	switch (constraint->id) {
+	case KNOT:
+	{
+		// NOT NULL
+		if (! stmt_if(self, KNULL))
+			error("NOT <NULL> expected");
+
+		break;
+	}
+	case KDEFAULT:
+	{
+		// DEFAULT expr
+		(void)column;
+		break;
+	}
+	// todo: GENERATED AS expr
+	default:
+		stmt_push(self, constraint);
+		break;
+	}
+}
+
+static void
+parser_def(Stmt* self, AstTableCreate* stmt)
+{
+	// (name type [not null | default | generated | primary key], ...,
+	//  primary key())
 	auto def = &stmt->config->def;
 
 	// (
@@ -165,9 +199,10 @@ parser_key(Stmt* self, AstTableCreate* stmt)
 
 	for (;;)
 	{
-		// PRIMARY KEY()
+		// PRIMARY KEY ()
 		if (parse_primary_key(self))
 		{
+			// (columns)
 			parse_primary_key_def(self, stmt);
 			goto last;
 		}
@@ -192,17 +227,27 @@ parser_key(Stmt* self, AstTableCreate* stmt)
 		column_set_name(column, &name->string);
 		column_set_type(column, type);
 
+		// NOT NULL | DEFAULT | GENERATED AS
+		parse_constraint(self, column);
+
+		// PRIMARY KEY
 		if (parse_primary_key(self))
 		{
+			// todo: validate constraints
+				// allow only serial, fail on other default/generated
+
+			// force not_null constraint for keys
+			constraint_set_not_null(&column->constraint, true);
+
 			// validate key type
-			if (type != TYPE_INT && type != TYPE_STRING)
+			if (column->type != TYPE_INT && column->type != TYPE_STRING)
 				error("<%.*s> column key can be string or int",
-				      str_size(&name->string), str_of(&name->string));
+				      str_size(&column->name), str_of(&column->name));
 
 			// create key
 			auto key = key_allocate();
 			key_set_column(key, column->order);
-			key_set_type(key, type);
+			key_set_type(key, column->type);
 			def_add_key(def, key);
 		}
 
@@ -214,7 +259,7 @@ last:
 		if (stmt_if(self, ')'))
 			break;
 
-		error("CREATE TABLE name (name TYPE <,)> expected");
+		error("CREATE TABLE name (name type <,)> expected");
 	}
 
 	if (def->key_count == 0)
@@ -295,8 +340,8 @@ parse_table_create(Stmt* self)
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 
-	// (key)
-	parser_key(self, stmt);
+	// (columns)
+	parser_def(self, stmt);
 
 	// [REFERENCE]
 	if (stmt_if(self, KREFERENCE))
