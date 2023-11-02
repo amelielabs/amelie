@@ -238,6 +238,41 @@ create table test (id int primary key) reference
 select *.name, *.reference from system.tables()
 ["test", true]
 drop table test
+# test: constraint default
+create table test (id int primary key, data int default 1)
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": "1"}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+drop table test
+# test: constraint default with key
+create table test (id int default 1 primary key)
+query: on_error
+{"code": 1, "msg": "DEFAULT constraint cannot be used with keys"}
+# test: constraint default with key #2
+create table test (id int default 1, primary key(id))
+query: on_error
+{"code": 1, "msg": "DEFAULT constraint cannot be used with keys"}
+# test: constraint default expr validate
+create table test (id int primary key, data int default 1 + 1)
+query: on_error
+{"code": 1, "msg": "only consts allowed as DEFAULT expression"}
+# test: constraint not null forced for keys
+create table test (id int primary key, data int)
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+drop table test
+# test: constraint not null forced for keys #2
+create table test (id int, data int, primary key(id))
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": true}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+drop table test
+# test: constraint not null
+create table test (id int primary key, data int not)
+query: on_error
+{"code": 1, "msg": "NOT <NULL> expected"}
+create table test (id int primary key, data int not null)
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+drop table test
 # test: with parsing
 create table test (id int primary key) with
 query: on_error

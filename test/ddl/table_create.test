@@ -155,6 +155,36 @@ create table test (id int primary key) reference
 select *.name, *.reference from system.tables()
 drop table test
 
+# test: constraint default
+create table test (id int primary key, data int default 1)
+select def from system.tables()
+drop table test
+
+# test: constraint default with key
+create table test (id int default 1 primary key)
+
+# test: constraint default with key #2
+create table test (id int default 1, primary key(id))
+
+# test: constraint default expr validate
+create table test (id int primary key, data int default 1 + 1)
+
+# test: constraint not null forced for keys
+create table test (id int primary key, data int)
+select def from system.tables()
+drop table test
+
+# test: constraint not null forced for keys #2
+create table test (id int, data int, primary key(id))
+select def from system.tables()
+drop table test
+
+# test: constraint not null
+create table test (id int primary key, data int not)
+create table test (id int primary key, data int not null)
+select def from system.tables()
+drop table test
+
 # test: with parsing
 create table test (id int primary key) with
 create table test (id int primary key) with (
