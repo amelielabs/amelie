@@ -47,7 +47,7 @@ constraint_set_generated(Constraint* self, int value)
 }
 
 static inline void
-constraint_set_expr(Constraint* self, Str* expr)
+constraint_set_default(Constraint* self, Str* expr)
 {
 	str_copy(&self->expr, expr);
 }
@@ -57,7 +57,7 @@ constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
 	constraint_set_generated(copy, self->generated);
-	constraint_set_expr(copy, &self->expr);
+	constraint_set_default(copy, &self->expr);
 }
 
 static inline void
