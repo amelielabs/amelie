@@ -102,7 +102,7 @@ insert into test values (2)
 insert into test values (3)
 create view test_view (id) as select * from test
 select * from system.views()
-{"schema": "public", "name": "test_view", "query": "select * from test", "def": {"column": [{"name": "id", "type": -1}], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
+{"schema": "public", "name": "test_view", "query": "select * from test", "def": {"column": [{"name": "id", "type": -1, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 select id from test_view
 1
 2
