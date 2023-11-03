@@ -182,6 +182,9 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	if (! stmt_if(self, '('))
 		error("expected '('");
 
+	// set next serial value
+	uint64_t serial = serial_next(&stmt->table->serial);
+
 	// value, ...
 	Ast* last = NULL;
 	auto column = def->column;
@@ -212,8 +215,9 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			auto cons = &column->constraint;
 			if (cons->generated == GENERATED_SERIAL)
 			{
-				// todo: set next value
-				value->expr = NULL;
+				// set serial value
+				value->expr = ast(KINT);
+				value->expr->integer = serial;
 			}
 
 			if (value->expr == NULL)

@@ -358,15 +358,10 @@ parse_validate_constraints(AstTableCreate* stmt)
 
 		if (cons->generated == GENERATED_SERIAL)
 		{
-			auto key = column->key;
-			if (! key)
-				error("GENERATED SERIAL can be used only with key columns");
-
 			if (column->type != TYPE_INT)
 				error("GENERATED SERIAL column <%.*s> must be integer",
 				      str_size(&column->name),
 				      str_of(&column->name));
-
 			continue;
 		}
 
