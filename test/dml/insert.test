@@ -19,7 +19,6 @@ insert into test values(
 insert into test values(,
 insert into test values(123
 insert into test values(123,
-insert into test values(123,)
 
 # test: insert type validate
 insert into test values ("123")
@@ -84,17 +83,11 @@ insert into test values ( {"data": {"id": 48}, "id": 1 } )
 select * from test
 drop table test
 
-# test: insert values clause can be omitted
-create table test (id int primary key, data string)
-insert into test values (1, "hello")
-insert into test (2, "hello")
-select * from test
-drop table test
-
 # test: insert one column expr
 create table test (id string primary key)
 insert into test values ("hello")
 insert into test ("world")
+insert into test values ("world")
 insert into test "again"
 select * from test
 drop table test
@@ -104,6 +97,7 @@ create table test (id string primary key, data int)
 insert into test "again"
 insert into test "again", 2
 insert into test ("again", 2)
+insert into test values ("again", 2)
 select * from test
 drop table test
 
@@ -113,15 +107,98 @@ insert into test 1,2,3
 select * from test
 drop table test
 
-# test: insert map
+# test: insert one column expr #4
 create table test (obj object, primary key(obj.id int))
 insert into test values ({"id": 48})
 insert into test ({"id": 49})
+insert into test {"id": 49}
 insert into test {"id": 1}
 insert into test {"id": 2}
 insert into test {"id": 3}
 select * from test
 select obj.id from test where obj.id >= 3
+drop table test
+
+# test: insert list
+create table test (id int primary key, data int)
+insert into test (id, data) values ()
+insert into test (id, data) values (123)
+insert into test (id, data) values (123, 123, 123)
+insert into test (id, data) values (123, 123)
+select * from test
+drop table test
+
+# test: insert list column order
+create table test (id int primary key, data int)
+insert into test (data, id) values (123, 123)
+insert into test (data, id, data) values (123, 123)
+select * from test
+drop table test
+
+# test: insert list column reuse
+create table test (id int primary key, data int)
+insert into test (id, id) values (123, 123)
+insert into test (id, data) values (123, 123)
+select * from test
+drop table test
+
+# test: insert list null
+create table test (id int primary key, data int)
+insert into test (id) values (1)
+insert into test (id, data) values (2, null)
+insert into test (id, data) values (null, null)
+insert into test values (3, null)
+insert into test values (null, null)
+select * from test
+drop table test
+
+# test: insert list null #2
+create table test (data int, id int primary key)
+insert into test (id) values (1)
+select * from test
+drop table test
+
+# test: insert list not null
+create table test (id int primary key, data int not null)
+insert into test (id) values (1)
+insert into test (id, data) values (2, null)
+insert into test values (3, null)
+insert into test values (null, null)
+insert into test (id, data) values (2, 2)
+select * from test
+drop table test
+
+# test: insert list not null key
+create table test (id int primary key, data int)
+insert into test (data) values (123)
+insert into test values (null, 123)
+select * from test
+drop table test
+
+# test: insert list default
+create table test (id int primary key, data int default 123)
+insert into test (id) values (1)
+select * from test
+drop table test
+
+# test: insert list default #2
+create table test (id int primary key, data int default 123)
+insert into test (id) values (1), (2), (3)
+select * from test
+drop table test
+
+# test: insert list default key
+create table test (id int default 123 primary key, data int)
+insert into test (data) values (1)
+select * from test
+insert into test (data) values (1)
+drop table test
+
+# test: insert list default key #2
+create table test (id int default 123 primary key)
+insert into test () values ()
+select * from test
+insert into test () values ()
 drop table test
 
 disconnect S0
