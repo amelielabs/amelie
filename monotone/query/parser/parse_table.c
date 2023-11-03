@@ -135,11 +135,6 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			error("<%.*s> column key can be string or int", str_size(&name),
 			      str_of(&name));
 
-		// validate constraints
-		if (column->constraint.generated != GENERATED_NONE)
-			if (column->constraint.generated != GENERATED_SERIAL)
-				error("GENERATED columns cannot be used with keys");
-
 		// force column not_null constraint
 		constraint_set_not_null(&column->constraint, true);
 
@@ -206,12 +201,22 @@ parse_constraint(Stmt* self, Column* column)
 		constraint_set_default(cons, &string);
 	}
 
-	// GENERATED AS
-	//    todo
+	// GENERATED
+	if (stmt_if(self, KGENERATED))
+	{
+		// SERIAL
+		if (stmt_if(self, KSERIAL))
+		{
+			constraint_set_generated(cons, GENERATED_SERIAL);
+		} else
+		{
+			error("unsupported GENERATED expression");
+		}
+	}
 }
 
 static void
-parser_def(Stmt* self, AstTableCreate* stmt)
+parse_def(Stmt* self, AstTableCreate* stmt)
 {
 	// (name type [not null | default | generated | primary key], ...,
 	//  primary key())
@@ -251,17 +256,12 @@ parser_def(Stmt* self, AstTableCreate* stmt)
 		column_set_name(column, &name->string);
 		column_set_type(column, type);
 
-		// NOT NULL | DEFAULT | GENERATED AS
+		// NOT NULL | DEFAULT | GENERATED
 		parse_constraint(self, column);
 
 		// PRIMARY KEY
 		if (parse_primary_key(self))
 		{
-			// validate constraints
-			if (column->constraint.generated != GENERATED_NONE)
-				if (column->constraint.generated != GENERATED_SERIAL)
-					error("GENERATED columns cannot be used with keys");
-
 			// force not_null constraint for keys
 			constraint_set_not_null(&column->constraint, true);
 
@@ -290,10 +290,11 @@ last:
 
 	if (def->key_count == 0)
 		error("primary key is not defined");
+
 }
 
 static void
-parser_with(Stmt* self, AstTableCreate* stmt)
+parse_with(Stmt* self, AstTableCreate* stmt)
 {
 	// [WITH]
 	if (! stmt_if(self, KWITH))
@@ -341,6 +342,38 @@ parser_with(Stmt* self, AstTableCreate* stmt)
 	}
 }
 
+static inline void
+parse_validate_constraints(AstTableCreate* stmt)
+{
+	auto def = &stmt->config->def;
+
+	// validate constraints
+	auto column = def->column;
+	for (; column; column = column->next)
+	{
+		auto cons = &column->constraint;
+		if (cons->generated == GENERATED_NONE)
+			continue;
+
+		if (cons->generated == GENERATED_SERIAL)
+		{
+			auto key = column->key;
+			if (! key)
+				error("GENERATED SERIAL can be used only with key columns");
+
+			if (column->type != TYPE_INT)
+				error("GENERATED SERIAL column <%.*s> must be integer",
+				      str_size(&column->name),
+				      str_of(&column->name));
+
+			continue;
+		}
+
+		if (column->key)
+			error("GENERATED columns cannot be used with keys");
+	}
+}
+
 void
 parse_table_create(Stmt* self)
 {
@@ -367,14 +400,15 @@ parse_table_create(Stmt* self)
 	table_config_set_name(stmt->config, &name);
 
 	// (columns)
-	parser_def(self, stmt);
+	parse_def(self, stmt);
+	parse_validate_constraints(stmt);
 
 	// [REFERENCE]
 	if (stmt_if(self, KREFERENCE))
 		table_config_set_reference(stmt->config, true);
 
 	// [WITH]
-	parser_with(self, stmt);
+	parse_with(self, stmt);
 }
 
 void

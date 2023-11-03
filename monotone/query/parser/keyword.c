@@ -82,6 +82,7 @@ static Keyword keywords_g[] =
 {
 	{ KGROUP,                 "group",                 5  },
 	{ KGENERATE,              "generate",              8  },
+	{ KGENERATED,             "generated",             9  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -184,6 +185,7 @@ static Keyword keywords_s[] =
 	{ KSTOP,                  "stop",                  4  },
 	{ KSWITCH,                "switch",                6  },
 	{ KSCHEMA,                "schema",                6  },
+	{ KSERIAL,                "serial",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
