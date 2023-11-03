@@ -245,16 +245,19 @@ select def from system.tables()
 drop table test
 # test: constraint default with key
 create table test (id int default 1 primary key)
-query: on_error
-{"code": 1, "msg": "DEFAULT constraint cannot be used with keys"}
+drop table test
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id))
-query: on_error
-{"code": 1, "msg": "DEFAULT constraint cannot be used with keys"}
+drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
 query: on_error
 {"code": 1, "msg": "only consts allowed as DEFAULT expression"}
+# test: constraint not null with key
+create table test (id int not null primary key)
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+drop table test
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
 select def from system.tables()
@@ -272,6 +275,26 @@ query: on_error
 create table test (id int primary key, data int not null)
 select def from system.tables()
 {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+insert into test values(1, 1)
+insert into test values(2, null)
+query: on_error
+{"code": 1, "msg": "column <data> value cannot be NULL"}
+insert into test values(null, null)
+query: on_error
+{"code": 1, "msg": "column <id> value cannot be NULL"}
+drop table test
+# test: constraint not null default
+create table test (id int primary key, data int not null default 123)
+select def from system.tables()
+{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": "123"}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 0}
+insert into test values(1, 1)
+insert into test values(2, null)
+query: on_error
+{"code": 1, "msg": "column <data> value cannot be NULL"}
+insert into test (id) values(3)
+select * from test
+[1, 1]
+[3, 123]
 drop table test
 # test: with parsing
 create table test (id int primary key) with

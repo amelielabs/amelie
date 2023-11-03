@@ -162,12 +162,19 @@ drop table test
 
 # test: constraint default with key
 create table test (id int default 1 primary key)
+drop table test
 
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id))
+drop table test
 
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
+
+# test: constraint not null with key
+create table test (id int not null primary key)
+select def from system.tables()
+drop table test
 
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
@@ -183,6 +190,18 @@ drop table test
 create table test (id int primary key, data int not)
 create table test (id int primary key, data int not null)
 select def from system.tables()
+insert into test values(1, 1)
+insert into test values(2, null)
+insert into test values(null, null)
+drop table test
+
+# test: constraint not null default
+create table test (id int primary key, data int not null default 123)
+select def from system.tables()
+insert into test values(1, 1)
+insert into test values(2, null)
+insert into test (id) values(3)
+select * from test
 drop table test
 
 # test: with parsing
