@@ -157,61 +157,112 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 }
 
 static void
-parse_constraint(Stmt* self, Column* column)
+parse_constraint(Stmt* self, AstTableCreate* stmt, Column* column)
 {
 	// constraint
 	auto cons = &column->constraint;
 
-	// NOT NULL
-	if (stmt_if(self, KNOT))
+	bool primary_key = false;
+	bool done = false;
+	while (! done)
 	{
-		if (! stmt_if(self, KNULL))
-			error("NOT <NULL> expected");
-		constraint_set_not_null(cons, true);
-	}
-
-	// DEFAULT expr
-	if (stmt_if(self, KDEFAULT))
-	{
-		// const
-		char* value_start = self->lex->pos;
-		char* value_end;
-		auto  value = stmt_next(self);
-		value_end = self->lex->pos;
-		stmt_push(self, value);
-
-		auto  expr = parse_expr(self, NULL);
-		switch (expr->id) {
-		case KNULL:
-		case KREAL:
-		case KINT:
-		case KSTRING:
-		case KTRUE:
-		case KFALSE:
-			break;
-		default:
-			error("only consts allowed as DEFAULT expression");
+		auto name = stmt_next(self);
+		switch (name->id) {
+		// NOT NULL
+		case KNOT:
+		{
+			if (! stmt_if(self, KNULL))
+				error("NOT <NULL> expected");
+			constraint_set_not_null(cons, true);
 			break;
 		}
 
-		Str string;
-		str_init(&string);
-		str_set(&string, value_start, value_end - value_start);
-		str_shrink(&string);
-		constraint_set_default(cons, &string);
-	}
+		// DEFAULT expr
+		case KDEFAULT:
+		{
+			// const
+			char* value_start = self->lex->pos;
+			char* value_end;
+			auto  value = stmt_next(self);
+			value_end = self->lex->pos;
+			stmt_push(self, value);
 
-	// GENERATED
-	if (stmt_if(self, KGENERATED))
-	{
+			auto  expr = parse_expr(self, NULL);
+			switch (expr->id) {
+			case KNULL:
+			case KREAL:
+			case KINT:
+			case KSTRING:
+			case KTRUE:
+			case KFALSE:
+				break;
+			default:
+				error("only consts allowed as DEFAULT expression");
+				break;
+			}
+
+			Str string;
+			str_init(&string);
+			str_set(&string, value_start, value_end - value_start);
+			str_shrink(&string);
+			constraint_set_default(cons, &string);
+			break;
+		}
+
 		// SERIAL
-		if (stmt_if(self, KSERIAL))
+		case KSERIAL:
 		{
 			constraint_set_generated(cons, GENERATED_SERIAL);
 			constraint_set_not_null(&column->constraint, true);
-		} else
+			break;
+		}
+
+		// GENERATED
+		case KGENERATED:
 		{
-			error("unsupported GENERATED expression");
+			// SERIAL
+			if (stmt_if(self, KSERIAL))
+			{
+				constraint_set_generated(cons, GENERATED_SERIAL);
+				constraint_set_not_null(&column->constraint, true);
+			} else
+			{
+				error("unsupported GENERATED expression");
+			}
+			break;
+		}
+
+		// PRIMARY KEY
+		case KPRIMARY:
+		{
+			if (! stmt_if(self, KKEY))
+				error("PRIMARY <KEY> expected");
+
+			if (primary_key)
+				error("PRIMARY KEY defined twice");
+
+			// force not_null constraint for keys
+			constraint_set_not_null(&column->constraint, true);
+
+			// validate key type
+			if (column->type != TYPE_INT && column->type != TYPE_STRING)
+				error("<%.*s> column key can be string or int",
+				      str_size(&column->name), str_of(&column->name));
+
+			// create key
+			auto key = key_allocate();
+			key_set_column(key, column->order);
+			key_set_type(key, column->type);
+			def_add_key(&stmt->config->def, key);
+
+			primary_key = true;
+			break;
+		}
+
+		default:
+			stmt_push(self, name);
+			done = true;
+			break;
 		}
 	}
 }
@@ -257,26 +308,8 @@ parse_def(Stmt* self, AstTableCreate* stmt)
 		column_set_name(column, &name->string);
 		column_set_type(column, type);
 
-		// NOT NULL | DEFAULT | GENERATED
-		parse_constraint(self, column);
-
-		// PRIMARY KEY
-		if (parse_primary_key(self))
-		{
-			// force not_null constraint for keys
-			constraint_set_not_null(&column->constraint, true);
-
-			// validate key type
-			if (column->type != TYPE_INT && column->type != TYPE_STRING)
-				error("<%.*s> column key can be string or int",
-				      str_size(&column->name), str_of(&column->name));
-
-			// create key
-			auto key = key_allocate();
-			key_set_column(key, column->order);
-			key_set_type(key, column->type);
-			def_add_key(def, key);
-		}
+		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | GENERATED
+		parse_constraint(self, stmt, column);
 
 		// ,
 		if (stmt_if(self, ','))

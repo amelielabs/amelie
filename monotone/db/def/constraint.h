@@ -50,6 +50,7 @@ constraint_set_generated(Constraint* self, int value)
 static inline void
 constraint_set_default(Constraint* self, Str* expr)
 {
+	str_free(&self->expr);
 	str_copy(&self->expr, expr);
 }
 
