@@ -208,6 +208,7 @@ parse_constraint(Stmt* self, Column* column)
 		if (stmt_if(self, KSERIAL))
 		{
 			constraint_set_generated(cons, GENERATED_SERIAL);
+			constraint_set_not_null(&column->constraint, true);
 		} else
 		{
 			error("unsupported GENERATED expression");
