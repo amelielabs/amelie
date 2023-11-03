@@ -204,6 +204,26 @@ insert into test (id) values(3)
 select * from test
 drop table test
 
+# test: constraint generated expr
+create table test (id int primary key, data int generated)
+create table test (id int primary key, data int generated 123)
+
+# test: constraint generated serial non key
+create table test (id int primary key, data int generated serial)
+
+# test: constraint generated serial key
+create table test (id int generated serial primary key)
+select def from system.tables()
+drop table test
+
+# test: constraint generated serial key #2
+create table test (id int generated serial, primary key(id))
+select def from system.tables()
+drop table test
+
+# test: constraint generated serial key type
+create table test (id string generated serial primary key)
+
 # test: with parsing
 create table test (id int primary key) with
 create table test (id int primary key) with (
