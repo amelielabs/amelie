@@ -159,6 +159,10 @@ create table if not exists test(id int primary key, primary key(id))
 select def.key from system.tables() where name = "test"
 [{"column": 0, "type": 2, "path": "", "asc": true}, {"column": 0, "type": 2, "path": "", "asc": true}]
 drop table test
+# test: primary key redefined #2
+create table test(id int primary key primary key)
+query: on_error
+{"code": 1, "msg": "PRIMARY KEY defined twice"}
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
 select def.key from system.tables() where name = "test"

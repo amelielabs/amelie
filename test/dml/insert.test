@@ -216,6 +216,14 @@ insert into test () values ()
 select * from test
 drop table test
 
+# test: insert serial alias
+create table test (id int primary key serial)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+select * from test
+drop table test
+
 # test: insert serial directly
 create table test (id int generated serial primary key, data int)
 insert into test (data) values (123)

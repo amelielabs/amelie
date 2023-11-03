@@ -88,6 +88,9 @@ create table if not exists test(id int primary key, primary key(id))
 select def.key from system.tables() where name = "test"
 drop table test
 
+# test: primary key redefined #2
+create table test(id int primary key primary key)
+
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
 select def.key from system.tables() where name = "test"
