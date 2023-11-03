@@ -201,5 +201,46 @@ select * from test
 insert into test () values ()
 drop table test
 
+# test: insert serial
+create table test (id int generated serial primary key)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+select * from test
+drop table test
+
+# test: insert serial #2
+create table test (id int generated serial primary key, data int)
+insert into test (data) values (123)
+insert into test () values ()
+select * from test
+drop table test
+
+# test: insert serial directly
+create table test (id int generated serial primary key, data int)
+insert into test (data) values (123)
+insert into test (id, data) values (1, 123)
+insert into test () values ()
+select * from test
+drop table test
+
+# test: insert serial null
+create table test (id int generated serial primary key, data int)
+insert into test (id, data) values (null, 123)
+select * from test
+drop table test
+
+# test: insert serial multiple column
+create table test (id int generated serial primary key, data int generated serial)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+select * from test
+insert into test (data) values (0)
+insert into test (data) values (0)
+insert into test () values ()
+select * from test
+drop table test
+
 disconnect S0
 env_close E0
