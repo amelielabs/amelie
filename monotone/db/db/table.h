@@ -11,6 +11,7 @@ typedef struct Table Table;
 struct Table
 {
 	Handle       handle;
+	Serial       serial;
 	TableConfig* config;
 };
 
@@ -27,6 +28,7 @@ table_allocate(TableConfig* config)
 {
 	Table* self = mn_malloc(sizeof(Table));
 	self->config = NULL;
+	serial_init(&self->serial);
 	guard(self_guard, table_free, self);
 	self->config = table_config_copy(config);
 
