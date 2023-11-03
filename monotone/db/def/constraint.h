@@ -10,7 +10,8 @@ typedef struct Constraint Constraint;
 
 enum
 {
-	GENERATED_NONE
+	GENERATED_NONE,
+	GENERATED_SERIAL
 };
 
 struct Constraint
