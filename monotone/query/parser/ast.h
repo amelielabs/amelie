@@ -18,6 +18,7 @@ struct Ast
 			Str  string;
 			bool string_escape;
 		};
+		Column* column;
 	};
 	int  priority;
 	Ast* l;

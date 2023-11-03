@@ -136,8 +136,9 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 			      str_of(&name));
 
 		// validate constraints
-		if (! str_empty(&column->constraint.expr))
-			error("DEFAULT constraint cannot be used with keys");
+		if (column->constraint.generated != GENERATED_NONE)
+			if (column->constraint.generated != GENERATED_SERIAL)
+				error("GENERATED columns cannot be used with keys");
 
 		// force column not_null constraint
 		constraint_set_not_null(&column->constraint, true);
@@ -164,21 +165,19 @@ static void
 parse_constraint(Stmt* self, Column* column)
 {
 	// constraint
-	auto constraint = stmt_next(self);
-	switch (constraint->id) {
-	case KNOT:
+	auto cons = &column->constraint;
+
+	// NOT NULL
+	if (stmt_if(self, KNOT))
 	{
-		// NOT NULL
 		if (! stmt_if(self, KNULL))
 			error("NOT <NULL> expected");
-
-		constraint_set_not_null(&column->constraint, true);
-		break;
+		constraint_set_not_null(cons, true);
 	}
-	case KDEFAULT:
-	{
-		// DEFAULT expr
 
+	// DEFAULT expr
+	if (stmt_if(self, KDEFAULT))
+	{
 		// const
 		char* value_start = self->lex->pos;
 		char* value_end;
@@ -204,14 +203,11 @@ parse_constraint(Stmt* self, Column* column)
 		str_init(&string);
 		str_set(&string, value_start, value_end - value_start);
 		str_shrink(&string);
-		constraint_set_default(&column->constraint, &string);
-		break;
+		constraint_set_default(cons, &string);
 	}
-	// todo: GENERATED AS expr
-	default:
-		stmt_push(self, constraint);
-		break;
-	}
+
+	// GENERATED AS
+	//    todo
 }
 
 static void
@@ -262,8 +258,9 @@ parser_def(Stmt* self, AstTableCreate* stmt)
 		if (parse_primary_key(self))
 		{
 			// validate constraints
-			if (! str_empty(&column->constraint.expr))
-				error("DEFAULT constraint cannot be used with keys");
+			if (column->constraint.generated != GENERATED_NONE)
+				if (column->constraint.generated != GENERATED_SERIAL)
+					error("GENERATED columns cannot be used with keys");
 
 			// force not_null constraint for keys
 			constraint_set_not_null(&column->constraint, true);
