@@ -22,7 +22,7 @@
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 
-static inline void
+hot static inline void
 parse_value_add(AstStack* stack)
 {
 	if (ast_head(stack))
@@ -122,31 +122,33 @@ done:;
 	return value;
 }
 
-hot static inline AstRow*
-parse_row(Stmt* self)
+hot static AstRow*
+parse_row(Stmt* self, AstInsert* stmt)
 {
+	auto def = table_def(stmt->table);
 	auto row = ast_row_allocate();
 
-	// ( or expr
+	// (
 	if (! stmt_if(self, '('))
-	{
-		auto value = parse_value(self);
-		if (unlikely(value->expr == NULL))
-			error("bad row value");
-		row->list = &value->ast;
-		row->list_count++;
-		return row;
-	}
+		error("expected '('");
 
-	// ([value, ...])
+	// value, ...
 	Ast* last = NULL;
-	for (;;)
+	auto column = def->column;
+	for (; column; column = column->next)
 	{
 		// value
 		auto value = parse_value(self);
 		if (unlikely(value->expr == NULL))
 			error("bad row value");
 
+		// ensure NOT NULL constraint
+		if (column->constraint.not_null)
+			if (unlikely(value->expr->id == KNULL))
+				error("column <%.*s> value cannot be NULL", str_size(&column->name),
+				      str_of(&column->name));
+
+		// add value to the row
 		if (row->list == NULL)
 			row->list = &value->ast;
 		else
@@ -156,15 +158,157 @@ parse_row(Stmt* self)
 
 		// ,
 		if (stmt_if(self, ','))
+		{
+			if (! column->next)
+				error("row has incorrect number of columns");
+			continue;
+		}
+	}
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("expected ')'");
+
+	return row;
+}
+
+hot static AstRow*
+parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
+{
+	auto def = table_def(stmt->table);
+	auto row = ast_row_allocate();
+
+	// (
+	if (! stmt_if(self, '('))
+		error("expected '('");
+
+	// value, ...
+	Ast* last = NULL;
+	auto column = def->column;
+	for (; column; column = column->next)
+	{
+		AstValue* value;
+		if (list && list->column->order == column->order)
+		{
+			// value
+			value = parse_value(self);
+			if (unlikely(value->expr == NULL))
+				error("bad row value");
+
+			list = list->next;
+
+			// ,
+			if (list) {
+				if (! stmt_if(self, ','))
+					error("row has incorrect number of columns");
+			}
+
+		} else
+		{
+			// value is not provided
+			value = ast_value_allocate();
+
+			// GENERATED
+			auto cons = &column->constraint;
+			if (cons->generated == GENERATED_SERIAL)
+			{
+				// todo: set next value
+				value->expr = NULL;
+			}
+
+			if (value->expr == NULL)
+			{
+				if (! str_empty(&cons->expr))
+				{
+					// DEFAULT
+					auto lex_prev = self->lex;
+					Lex lex;
+					lex_init(&lex, lex_prev->keywords);
+					lex_start(&lex, &cons->expr);
+					self->lex = &lex;
+					value->expr = stmt_next(self);
+					self->lex = lex_prev;
+				} else
+				{
+					// SET NULL
+					value->expr = ast(KNULL);
+				}
+			}
+		}
+
+		// ensure NOT NULL constraint
+		if (column->constraint.not_null)
+			if (unlikely(value->expr->id == KNULL))
+				error("column <%.*s> value cannot be NULL", str_size(&column->name),
+				      str_of(&column->name));
+
+		// add value to the row
+		if (row->list == NULL)
+			row->list = &value->ast;
+		else
+			last->next = &value->ast;
+		row->list_count++;
+		last = &value->ast;
+	}
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("expected ')'");
+
+	return row;
+}
+
+hot static inline Ast*
+parse_column_list(Stmt* self, AstInsert* stmt)
+{
+	auto def = table_def(stmt->table);
+
+	// empty column list ()
+	if (unlikely(stmt_if(self, ')')))
+		return NULL;
+
+	Ast* list = NULL;
+	Ast* list_last = NULL;
+	for (;;)
+	{
+		// name
+		auto name = stmt_if(self, KNAME);
+		if (unlikely(! name))
+			error("INSERT INTO name (<column name> expected");
+
+		// find column and validate order
+		auto column = def_find_column(def, &name->string);
+		if (! column)
+			error("<%.*s> column does not exists", str_size(&name->string),
+			      str_of(&name->string));
+
+		if (list == NULL) {
+			list = name;
+		} else
+		{
+			// validate column order
+			if (column->order <= list_last->column->order)
+				error("column list must be in order");
+
+			list_last->next = name;
+		}
+		list_last = name;
+
+		// set column
+		name->column = column;
+
+		// ,
+		if (stmt_if(self, ','))
 			continue;
 
-		// )]
+		// )
 		if (! stmt_if(self, ')'))
 			error("expected ')'");
+
 		break;
 	}
 
-	return row;
+	return list;
 }
 
 hot void
@@ -209,28 +353,71 @@ parse_insert(Stmt* self, bool unique)
 	}
 
 	// (column list)
-
+	Ast* list = NULL;
+	bool list_in_use = stmt_if(self, '(');
+	if (list_in_use)
+		list = parse_column_list(self, stmt);
 
 	// [VALUES]
-	stmt_if(self, KVALUES);
-
-	// row, ...
-	Ast* last = NULL;
-	for (;;)
+	if (stmt_if(self, KVALUES))
 	{
-		auto row = parse_row(self);
-		if (row == NULL)
+		// (value, ...), ...
+		Ast* last = NULL;
+		for (;;)
+		{
+			AstRow* row;
+			if (list_in_use)
+				row = parse_row_list(self, stmt, list);
+			else
+				row = parse_row(self, stmt);
+
+			if (stmt->rows == NULL)
+				stmt->rows = &row->ast;
+			else
+				last->next = &row->ast;
+			last = &row->ast;
+			stmt->rows_count++;
+
+			if (stmt_if(self, ','))
+				continue;
+
 			break;
+		}
 
-		if (stmt->rows == NULL)
-			stmt->rows = &row->ast;
-		else
-			last->next = &row->ast;
-		last = &row->ast;
-		stmt->rows_count++;
+	} else
+	{
+		// one column case
+		auto def = table_def(stmt->table);
+		if (unlikely(list || def->column_count > 1))
+			error("INSERT INTO <VALUES> expected");
 
-		if (stmt_if(self, ','))
-			continue;
-		break;
+		// no constraints applied
+
+		// value, ...
+		Ast* last = NULL;
+		for (;;)
+		{
+			// row
+			auto row = ast_row_allocate();
+
+			// value
+			auto value = parse_value(self);
+			if (unlikely(value->expr == NULL))
+				error("bad row value");
+			row->list = &value->ast;
+			row->list_count++;
+
+			if (stmt->rows == NULL)
+				stmt->rows = &row->ast;
+			else
+				last->next = &row->ast;
+			last = &row->ast;
+			stmt->rows_count++;
+
+			if (stmt_if(self, ','))
+				continue;
+
+			break;
+		}
 	}
 }
