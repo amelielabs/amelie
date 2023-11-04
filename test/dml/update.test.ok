@@ -1,0 +1,436 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: update statement parsing
+create table test(id int primary key)
+update
+query: on_error
+{"code": 1, "msg": "bad expression"}
+update;
+query: on_error
+{"code": 1, "msg": "bad expression"}
+update 1;
+query: on_error
+{"code": 1, "msg": "UPDATE <table name> expected"}
+update "name"
+query: on_error
+{"code": 1, "msg": "UPDATE <table name> expected"}
+update test
+query: on_error
+{"code": 1, "msg": "UPDATE name <SET> expected"}
+update test "path"
+query: on_error
+{"code": 1, "msg": "UPDATE name <SET> expected"}
+update test 1
+query: on_error
+{"code": 1, "msg": "UPDATE name <SET> expected"}
+update test path
+query: on_error
+{"code": 1, "msg": "UPDATE name <SET> expected"}
+update test set path
+query: on_error
+{"code": 1, "msg": "UPDATE name SET path <=> expected"}
+update test set path /
+query: on_error
+{"code": 1, "msg": "UPDATE name SET path <=> expected"}
+update test set path =
+query: on_error
+{"code": 1, "msg": "bad expression"}
+update test set path = expr
+query: on_error
+{"code": 1, "msg": "<path> column does not exists"}
+update test set id = id expr
+query: on_error
+{"code": 1, "msg": "bad expression"}
+drop table test
+# test: update
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+explain update test set data = data + 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0    0    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       16    0    0   
+ 4         cursor_read        0    0    0   
+ 5                push        0    0    0   
+ 6                null        0    0    0   
+ 7                push        0    0    0   
+ 8          cursor_idx        0    0    1   
+ 9                 int        1    1    0   
+10                 add        2    0    1   
+11                push        2    0    0   
+12              assign        0    3    1   
+13                push        0    0    0   
+14              update        0    0    0   
+15         cursor_next        0    4    0   
+16        cursor_close        0    0    0   
+17                 ret        0    0    0   
+
+"
+update test set data = data + 1
+select * from test
+[0, 4]
+[1, 3]
+[2, 2]
+drop table test
+# test: update schema
+create schema test
+create table test.test(id int primary key, data int)
+insert into test.test values (0, 3)
+insert into test.test values (1, 2)
+insert into test.test values (2, 1)
+explain update test.test set data = data + 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0    0    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # test.test (primary)
+ 3                 jmp       16    0    0   
+ 4         cursor_read        0    0    0   
+ 5                push        0    0    0   
+ 6                null        0    0    0   
+ 7                push        0    0    0   
+ 8          cursor_idx        0    0    1   
+ 9                 int        1    1    0   
+10                 add        2    0    1   
+11                push        2    0    0   
+12              assign        0    3    1   
+13                push        0    0    0   
+14              update        0    0    0   
+15         cursor_next        0    4    0   
+16        cursor_close        0    0    0   
+17                 ret        0    0    0   
+
+"
+update test.test set data = data + 1
+select * from test.test
+[0, 4]
+[1, 3]
+[2, 2]
+drop table test.test
+drop schema test
+# test: update star reference
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+update test set data = *[1] + 1
+select * from test
+[0, 4]
+[1, 3]
+[2, 2]
+drop table test
+# test: update multiple ops
+create table test(id int primary key, a int, b int)
+insert into test values (0, 3, 3)
+insert into test values (1, 2, 2)
+insert into test values (2, 1, 1)
+explain update test set a = a + 1, b = b - 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0    0    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       24    0    0   
+ 4         cursor_read        0    0    0   
+ 5                push        0    0    0   
+ 6                null        0    0    0   
+ 7                push        0    0    0   
+ 8          cursor_idx        0    0    1   
+ 9                 int        1    1    0   
+10                 add        2    0    1   
+11                push        2    0    0   
+12              assign        0    3    1   
+13                push        0    0    0   
+14                null        0    0    0   
+15                push        0    0    0   
+16          cursor_idx        0    0    2   
+17                 int        1    1    0   
+18                 sub        2    0    1   
+19                push        2    0    0   
+20              assign        0    3    2   
+21                push        0    0    0   
+22              update        0    0    0   
+23         cursor_next        0    4    0   
+24        cursor_close        0    0    0   
+25                 ret        0    0    0   
+
+"
+update test set a = a + 1, b = b - 1
+select * from test
+[0, 4, 2]
+[1, 3, 1]
+[2, 2, 0]
+drop table test
+# test: update same column twice
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+update test set data = data + 1, data = data + 1
+select * from test
+[0, 4]
+[1, 3]
+[2, 2]
+drop table test
+# test: update object
+create table test(id int primary key, data object)
+insert into test values (0, {"id": 48})
+insert into test values (1, {"id": 49})
+insert into test values (2, {"id": 50})
+update test set data.id = data.id + 1
+update test set data = {"id": data.id + 1}
+select * from test
+[0, {"id": 50}]
+[1, {"id": 51}]
+[2, {"id": 52}]
+drop table test
+# test: update object add key
+create table test(id int primary key, data object)
+insert into test values (0, {"id": 48})
+insert into test values (1, {"id": 49})
+insert into test values (2, {"id": 50})
+update test set data.data = id + 1
+select * from test
+[0, {"id": 48, "data": 1}]
+[1, {"id": 49, "data": 2}]
+[2, {"id": 50, "data": 3}]
+drop table test
+# test: update object rewrite
+create table test(id int primary key serial, data object)
+insert into test (data) values ({"id": 48})
+insert into test (data) values ({"id": 49})
+insert into test (data) values ({"id": 50})
+update test set data = {"id": id}
+select * from test
+[0, {"id": 0}]
+[1, {"id": 1}]
+[2, {"id": 2}]
+drop table test
+# test: update object rewrite #2
+create table test(id int primary key serial, data object)
+insert into test (data) values ({"id": 48})
+insert into test (data) values ({"id": 49})
+insert into test (data) values ({"id": 50})
+update test set data = {"id": *[0], "data": *[1]}
+select * from test
+[0, {"id": 0, "data": {"id": 48}}]
+[1, {"id": 1, "data": {"id": 49}}]
+[2, {"id": 2, "data": {"id": 50}}]
+drop table test
+# test: update key
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+update test set id = id + 1
+query: on_error
+{"code": 1, "msg": "<id> key columns cannot be updated"}
+select * from test
+[0]
+[1]
+[2]
+drop table test
+# test: update key nested
+create table test(data object, primary key(data.id int))
+insert into test values ({"id": 48, "data": null})
+insert into test values ({"id": 49, "data": null})
+insert into test values ({"id": 50, "data": null})
+update test set data.id = data.id + 1
+query: on_error
+{"code": 1, "msg": "<data> column nested key <id> cannot be updated"}
+select * from test
+[{"id": 48, "data": null}]
+[{"id": 49, "data": null}]
+[{"id": 50, "data": null}]
+drop table test
+# test: update key nested prefix
+create table test(data object, primary key(data.id int))
+insert into test values ({"id": 48, "data": null})
+insert into test values ({"id": 49, "data": null})
+insert into test values ({"id": 50, "data": null})
+update test set data = {"id": data.id + 1}
+query: on_error
+{"code": 1, "msg": "<data> column nested key <id> cannot be updated"}
+select * from test
+[{"id": 48, "data": null}]
+[{"id": 49, "data": null}]
+[{"id": 50, "data": null}]
+drop table test
+# test: update key nested prefix #2
+create table test(data object, primary key(data.data.id int))
+insert into test values ({"data": {"id": 1}})
+insert into test values ({"data": {"id": 2}})
+insert into test values ({"data": {"id": 3}})
+update test set data = {"id": data.data.id + 1}
+query: on_error
+{"code": 1, "msg": "<data> column nested key <data.id> cannot be updated"}
+update test set data.id = null
+update test set data.data.id = null
+query: on_error
+{"code": 1, "msg": "<data> column nested key <data.id> cannot be updated"}
+update test set data.data.id2 = null
+update test set data.data = {}
+query: on_error
+{"code": 1, "msg": "<data> column nested key <data.id> cannot be updated"}
+update test set data.id = null, data.data.id = null
+query: on_error
+{"code": 1, "msg": "<data> column nested key <data.id> cannot be updated"}
+select * from test
+[{"data": {"id": 1, "id2": null}, "id": null, "data": null}]
+[{"data": {"id": 2, "id2": null}, "id": null, "data": null}]
+[{"data": {"id": 3, "id2": null}, "id": null, "data": null}]
+drop table test
+# test: update key nested field
+create table test(data object, primary key(data.id int))
+insert into test values ({"id": 48, "data": null})
+insert into test values ({"id": 49, "data": null})
+insert into test values ({"id": 50, "data": null})
+update test set data.data = data.id + 1
+select * from test
+[{"id": 48, "data": 49}]
+[{"id": 49, "data": 50}]
+[{"id": 50, "data": 51}]
+drop table test
+# test: update point-lookup
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+explain update test set data = data + 1 where id = 0
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0    0    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       20    0    0   
+ 4          cursor_idx        0    0    0   
+ 5                 int        1    0    0   
+ 6                 equ        2    0    1   
+ 7                jntr        3    2    0   
+ 8         cursor_read        0    0    0   
+ 9                push        0    0    0   
+10                null        0    0    0   
+11                push        0    0    0   
+12          cursor_idx        0    0    1   
+13                 int        1    1    0   
+14                 add        2    0    1   
+15                push        2    0    0   
+16              assign        0    3    1   
+17                push        0    0    0   
+18              update        0    0    0   
+19         cursor_next        0    4    0   
+20        cursor_close        0    0    0   
+21                 ret        0    0    0   
+
+"
+update test set data = data + 1 where id = 0
+update test set data = data + 1 where id = 1
+update test set data = data + 1 where id = 2
+select * from test
+[0, 4]
+[1, 3]
+[2, 2]
+drop table test
+# test: update range scan
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+explain update test set data = data + 1 where id >= 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0    1    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       20    0    0   
+ 4          cursor_idx        0    0    0   
+ 5                 int        1    1    0   
+ 6                 gte        2    0    1   
+ 7                jntr       19    2    0   
+ 8         cursor_read        0    0    0   
+ 9                push        0    0    0   
+10                null        0    0    0   
+11                push        0    0    0   
+12          cursor_idx        0    0    1   
+13                 int        1    1    0   
+14                 add        2    0    1   
+15                push        2    0    0   
+16              assign        0    3    1   
+17                push        0    0    0   
+18              update        0    0    0   
+19         cursor_next        0    4    0   
+20        cursor_close        0    0    0   
+21                 ret        0    0    0   
+
+"
+update test set data = data + 1 where id > 2
+select * from test
+[0, 3]
+[1, 2]
+[2, 1]
+update test set data = data + 1 where id >= 2
+select * from test
+[0, 3]
+[1, 2]
+[2, 2]
+update test set data = data + 1 where id >= 1
+select * from test
+[0, 3]
+[1, 3]
+[2, 3]
+drop table test
+# test: update update error
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, null)
+update test set data = data + 1
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+select * from test
+[0, 3]
+[1, 2]
+[2, null]
+drop table test
+disconnect S0
+env_close E0
