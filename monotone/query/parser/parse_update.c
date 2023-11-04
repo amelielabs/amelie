@@ -25,10 +25,7 @@
 hot void
 parse_update(Stmt* self)
 {
-	// UPDATE name [SET|UNSET] path = expr [, ... ]
-	// [WHERE expr]
-	// [LIMIT expr]
-	// [OFFSET expr]
+	// UPDATE name SET path = expr [, ... ] [WHERE expr]
 	auto stmt = ast_update_allocate();
 	self->ast = &stmt->ast;
 
@@ -41,19 +38,14 @@ parse_update(Stmt* self)
 
 	// todo: check primary index
 
+	// SET
+	if (! stmt_if(self, KSET))
+		error("UPDATE name <SET> expected");
+
 	Ast* expr_prev = NULL;
 	for (;;)
 	{
-		// [SET | UNSET]
-		auto op = stmt_next(self);
-		switch (op->id) {
-		case KSET:
-		case KUNSET:
-			break;
-		default:
-			error("UPDATE <SET|UNSET> expected");
-			break;
-		}
+		auto op = ast(KSET);
 
 		// name or path
 		op->l = stmt_next(self);
@@ -66,17 +58,12 @@ parse_update(Stmt* self)
 			break;
 		}
 
+		// =
+		if (! stmt_if(self, '='))
+			error("UPDATE name SET path <=> expected");
+
 		// expr
-		if (op->id == KSET)
-		{
-			// SET path = expr
-
-			// =
-			stmt_if(self, '=');
-
-			// expr
-			op->r = parse_expr(self, NULL);
-		}
+		op->r = parse_expr(self, NULL);
 
 		// op(path, expr)
 		if (stmt->expr_update == NULL)
@@ -97,12 +84,4 @@ parse_update(Stmt* self)
 	// combine join on and where expression
 	stmt->expr_where =
 		parse_from_join_on_and_where(stmt->target, stmt->expr_where);
-
-	// [LIMIT]
-	if (stmt_if(self, KLIMIT))
-		stmt->expr_limit = parse_expr(self, NULL);
-
-	// [OFFSET]
-	if (stmt_if(self, KOFFSET))
-		stmt->expr_offset = parse_expr(self, NULL);
 }
