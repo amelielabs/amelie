@@ -105,9 +105,21 @@ str_compare_raw(Str* self, const void* string, int size)
 }
 
 static inline bool
+str_compare_raw_prefix(Str* self, const void* string, int size)
+{
+	return str_size(self) >= size && !memcmp(self->pos, string, size);
+}
+
+static inline bool
 str_compare(Str* self, Str* with)
 {
 	return str_compare_raw(self, str_of(with), str_size(with));
+}
+
+static inline bool
+str_compare_prefix(Str* self, Str* prefix)
+{
+	return str_compare_raw_prefix(self, str_of(prefix), str_size(prefix));
 }
 
 static inline int
