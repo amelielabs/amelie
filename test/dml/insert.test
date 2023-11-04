@@ -250,5 +250,11 @@ insert into test () values ()
 select * from test
 drop table test
 
+# test: insert insert error
+create table test (id int primary key)
+insert into test 1,2,3,1
+select * from test
+drop table test
+
 disconnect S0
 env_close E0
