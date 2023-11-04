@@ -325,48 +325,43 @@ cinsert(Vm* self, Op* op)
 hot void
 cupdate(Vm* self, Op* op)
 {
-	// [cursor, count]
+	// [cursor]
 	auto trx     = self->trx;
 	auto cursor  = cursor_mgr_of(&self->cursor_mgr, op->a);
 	auto storage = cursor->storage;
 
 	// update by cursor
-	int count = op->b;
-	for (int i = 0; i < count; i++)
+	auto value   = stack_at(&self->stack, 1);
+	if (likely(value->type == VALUE_DATA))
 	{
-		auto value = stack_at(&self->stack, count - i);
-
-		if (likely(value->type == VALUE_DATA))
-		{
-			if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
-				error("UPDATE: array, map or data set expected");
-
-			storage_update(storage, trx, cursor->it, value->data, value->data_size);
-		} else
-		if (value->type == VALUE_SET)
-		{
-			auto set = (Set*)value->obj;
-			for (int j = 0; j < set->list_count; j++)
-			{
-				auto ref = &set_at(set, j)->value;
-				if (likely(ref->type == VALUE_DATA))
-				{
-					storage_update(storage, trx, cursor->it, ref->data, ref->data_size);
-				} else
-				{
-					auto buf = buf_create(0);
-					value_write(ref, buf);
-					storage_update(storage, trx, cursor->it, buf->start, buf_size(buf));
-					buf_free(buf);
-				}
-			}
-		} else
-		{
+		if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
 			error("UPDATE: array, map or data set expected");
+
+		storage_update(storage, trx, cursor->it, value->data, value->data_size);
+	} else
+	if (value->type == VALUE_SET)
+	{
+		auto set = (Set*)value->obj;
+		for (int j = 0; j < set->list_count; j++)
+		{
+			auto ref = &set_at(set, j)->value;
+			if (likely(ref->type == VALUE_DATA))
+			{
+				storage_update(storage, trx, cursor->it, ref->data, ref->data_size);
+			} else
+			{
+				auto buf = buf_create(0);
+				value_write(ref, buf);
+				storage_update(storage, trx, cursor->it, buf->start, buf_size(buf));
+				buf_free(buf);
+			}
 		}
+	} else
+	{
+		error("UPDATE: array, map or data set expected");
 	}
 
-	stack_popn(&self->stack, count);
+	stack_popn(&self->stack, 1);
 }
 
 hot void
