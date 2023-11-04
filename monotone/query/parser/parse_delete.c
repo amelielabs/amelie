@@ -25,11 +25,13 @@
 hot void
 parse_delete(Stmt* self)
 {
-	// DELETE FROM name
-	// [WHERE expr]
-	// [LIMIT expr] [OFFSET expr]
+	// DELETE FROM name [WHERE expr]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
+
+	// FROM
+	if (! stmt_if(self, KFROM))
+		error("DELETE <FROM> expected");
 
 	// table_name, expression or join
 	int level = target_list_next_level(&self->target_list);
@@ -47,12 +49,4 @@ parse_delete(Stmt* self)
 	// combine join on and where expression
 	stmt->expr_where =
 		parse_from_join_on_and_where(stmt->target, stmt->expr_where);
-
-	// [LIMIT]
-	if (stmt_if(self, KLIMIT))
-		stmt->expr_limit = parse_expr(self, NULL);
-
-	// [OFFSET]
-	if (stmt_if(self, KOFFSET))
-		stmt->expr_offset = parse_expr(self, NULL);
 }
