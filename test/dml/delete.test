@@ -77,6 +77,7 @@ insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 delete from test where data > 0
+select * from test
 drop table test
 
 # test: delete insert delete

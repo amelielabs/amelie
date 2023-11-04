@@ -170,6 +170,10 @@ insert into test values (2, null)
 delete from test where data > 0
 query: on_error
 {"code": 1, "msg": "bad > expression type"}
+select * from test
+[0, 3]
+[1, 2]
+[2, null]
 drop table test
 # test: delete insert delete
 create table test(id int primary key, data int)
