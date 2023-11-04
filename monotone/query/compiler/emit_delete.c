@@ -33,15 +33,13 @@ emit_delete_on_match(Compiler* self, void *arg)
 void
 emit_delete(Compiler* self, Ast* ast)
 {
-	// DELETE FROM name
-	// [WHERE expr]
-	// [LIMIT expr] [OFFSET expr]
+	// DELETE FROM name [WHERE expr]
 	auto delete = ast_delete_of(ast);
 
 	// delete by cursor
 	scan(self, delete->target,
-	     delete->expr_limit,
-	     delete->expr_offset,
+	     NULL,
+	     NULL,
 	     delete->expr_where,
 	     NULL,
 	     emit_delete_on_match,

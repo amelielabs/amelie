@@ -1,0 +1,102 @@
+
+env_open E0
+connect E0 S0
+
+# test: delete statement parsing
+delete
+delete junk
+delete 1
+delete from 1
+delete from "name"
+delete from test junk
+delete from test where true limit
+
+# test: delete
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+select * from test
+delete from test
+select * from test
+drop table test
+
+# test: delete schema
+create schema test
+create table test.test(id int primary key, data int)
+insert into test.test values (0, 3)
+insert into test.test values (1, 2)
+insert into test.test values (2, 1)
+delete from test.test
+select * from test.test
+drop table test.test
+drop schema test
+
+# test: delete point-lookup
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+explain delete from test where id = 3
+delete from test where id = 3
+select * from test
+delete from test where id = 2
+select * from test
+delete from test where id = 0
+select * from test
+delete from test where id = -1
+select * from test
+delete from test where id = 1
+select * from test
+drop table test
+
+# test: delete range scan
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+select * from test
+delete from test where id > 3
+select * from test
+delete from test where id > 2
+select * from test
+delete from test where id >= 2
+select * from test
+explain delete from test where id > 0 and id < 1
+delete from test where id > 0 and id < 1
+select * from test
+delete from test where id > 0 and id <= 1
+select * from test
+delete from test where id >= 0 and id <= 1
+select * from test
+drop table test
+
+# test: delete delete error
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, null)
+delete from test where data > 0
+drop table test
+
+# test: delete insert delete
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+delete from test
+select * from test
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+select * from test
+delete from test
+select * from test
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+select * from test
+drop table test
+
+disconnect S0
+env_close E0

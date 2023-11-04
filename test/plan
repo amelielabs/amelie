@@ -1,6 +1,6 @@
 #
 
-# runtime unit tests
+# runtime
 #directory runtime
 #group runtime
 #test runtime
@@ -28,6 +28,7 @@ directory dml
 group dml
 test insert
 test update
+test delete
 
 # query
 directory query

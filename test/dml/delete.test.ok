@@ -1,0 +1,199 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: delete statement parsing
+delete
+query: on_error
+{"code": 1, "msg": "DELETE <FROM> expected"}
+delete junk
+query: on_error
+{"code": 1, "msg": "DELETE <FROM> expected"}
+delete 1
+query: on_error
+{"code": 1, "msg": "DELETE <FROM> expected"}
+delete from 1
+query: on_error
+{"code": 1, "msg": "DELETE FROM <table name> expected"}
+delete from "name"
+query: on_error
+{"code": 1, "msg": "DELETE FROM <table name> expected"}
+delete from test junk
+query: on_error
+{"code": 1, "msg": "FROM <test> table or view is not found"}
+delete from test where true limit
+query: on_error
+{"code": 1, "msg": "FROM <test> table or view is not found"}
+# test: delete
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+select * from test
+[0]
+[1]
+[2]
+delete from test
+select * from test
+drop table test
+# test: delete schema
+create schema test
+create table test.test(id int primary key, data int)
+insert into test.test values (0, 3)
+insert into test.test values (1, 2)
+insert into test.test values (2, 1)
+delete from test.test
+select * from test.test
+drop table test.test
+drop schema test
+# test: delete point-lookup
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+explain delete from test where id = 3
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0    3    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       10    0    0   
+ 4          cursor_idx        0    0    0   
+ 5                 int        1    3    0   
+ 6                 equ        2    0    1   
+ 7                jntr        3    2    0   
+ 8              delete        0    0    0   
+ 9         cursor_next        0    4    0   
+10        cursor_close        0    0    0   
+11                 ret        0    0    0   
+
+"
+delete from test where id = 3
+select * from test
+[0]
+[1]
+[2]
+delete from test where id = 2
+select * from test
+[0]
+[1]
+delete from test where id = 0
+select * from test
+[1]
+delete from test where id = -1
+select * from test
+[1]
+delete from test where id = 1
+select * from test
+drop table test
+# test: delete range scan
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+select * from test
+[0]
+[1]
+[2]
+delete from test where id > 3
+select * from test
+[0]
+[1]
+[2]
+delete from test where id > 2
+select * from test
+[0]
+[1]
+[2]
+delete from test where id >= 2
+select * from test
+[0]
+[1]
+explain delete from test where id > 0 and id < 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0    0    0   
+ 1                 ret        0    0    0   
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0    0    0   
+ 1                push        0    0    0   
+ 2         cursor_open        0    0    4   # public.test (primary)
+ 3                 jmp       23    0    0   
+ 4          cursor_idx        0    0    0   
+ 5                 int        1    1    0   
+ 6                  lt        2    0    1   
+ 7                jntr        3    2    0   
+ 8          cursor_idx        1    0    0   
+ 9                 int        2    0    0   
+10                  gt        3    1    2   
+11                jntr       16    3    0   
+12          cursor_idx        1    0    0   
+13                 int        2    1    0   
+14                  lt        4    1    2   
+15                 jtr       18    4    0   
+16                bool        0    0    0   
+17                 jmp       19    0    0   
+18                bool        0    1    0   
+19                 nop        0    0    0   
+20                jntr       22    0    0   
+21              delete        0    0    0   
+22         cursor_next        0    4    0   
+23        cursor_close        0    0    0   
+24                 ret        0    0    0   
+
+"
+delete from test where id > 0 and id < 1
+select * from test
+[0]
+[1]
+delete from test where id > 0 and id <= 1
+select * from test
+[0]
+delete from test where id >= 0 and id <= 1
+select * from test
+drop table test
+# test: delete delete error
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, null)
+delete from test where data > 0
+query: on_error
+{"code": 1, "msg": "bad > expression type"}
+drop table test
+# test: delete insert delete
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+delete from test
+select * from test
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+select * from test
+[0, 3]
+[1, 2]
+[2, 0]
+delete from test
+select * from test
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 0)
+select * from test
+[0, 3]
+[1, 2]
+[2, 0]
+drop table test
+disconnect S0
+env_close E0
