@@ -70,12 +70,21 @@ emit_update_on_match(Compiler* self, void *arg)
 		}
 
 		// ensure we are not updating a key
-		if (column->key)
+		auto key = column->key;
+		for (; key; key = key->next_column)
 		{
-			// todo: check path
-
-			error("<%.*s> key columns cannot be updated",
-			      str_size(&column->name), str_of(&column->name));
+			if (str_empty(&key->path)) {
+				error("<%.*s> key columns cannot be updated", str_size(&column->name),
+				      str_of(&column->name));
+			} else
+			{
+				// path is equal or a prefix of the key path
+				if (path->id == KNULL || str_compare_prefix(&key->path, &path->string))
+					error("<%.*s> column nested key <%.*s> cannot be updated",
+					      str_size(&column->name), str_of(&column->name),
+					      str_size(&key->path),
+					      str_of(&key->path));
+			}
 		}
 
 		// todo: check secondary keys
@@ -97,21 +106,21 @@ emit_update_on_match(Compiler* self, void *arg)
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 	}
+
+	// UPDATE (last modified object)
+	op1(self, CUPDATE, update->target->id);
 }
 
 void
 emit_update(Compiler* self, Ast* ast)
 {
-	// UPDATE name [SET|UNSET] path = expr [, ... ]
-	// [WHERE expr]
-	// [LIMIT expr]
-	// [OFFSET expr]
+	// UPDATE name SET path = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
 
 	// update by cursor
 	scan(self, update->target,
-	     update->expr_limit,
-	     update->expr_offset,
+	     NULL,
+	     NULL,
 	     update->expr_where,
 	     NULL,
 	     emit_update_on_match,
