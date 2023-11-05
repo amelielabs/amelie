@@ -22,27 +22,16 @@
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 
-hot void
-parse_update(Stmt* self)
+hot Ast*
+parse_update_expr(Stmt* self)
 {
-	// UPDATE name SET path = expr [, ... ] [WHERE expr]
-	auto stmt = ast_update_allocate();
-	self->ast = &stmt->ast;
-
-	// table_name, expression or join
-	int level = target_list_next_level(&self->target_list);
-	stmt->target = parse_from(self, level);
-	stmt->table = stmt->target->table;
-	if (stmt->table == NULL)
-		error("UPDATE <table name> expected");
-
-	// todo: ensure target uses primary index
-
 	// SET
 	if (! stmt_if(self, KSET))
-		error("UPDATE name <SET> expected");
+		error("UPDATE <SET> expected");
 
+	// path = expr [, ... ]
 	Ast* expr_prev = NULL;
+	Ast* expr = NULL;
 	for (;;)
 	{
 		auto op = ast(KSET);
@@ -66,8 +55,8 @@ parse_update(Stmt* self)
 		op->r = parse_expr(self, NULL);
 
 		// op(path, expr)
-		if (stmt->expr_update == NULL)
-			stmt->expr_update = op;
+		if (expr == NULL)
+			expr = op;
 		else
 			expr_prev->next = op;
 		expr_prev = op;
@@ -76,6 +65,28 @@ parse_update(Stmt* self)
 		if(! stmt_if(self, ','))
 			break;
 	}
+
+	return expr;
+}
+
+hot void
+parse_update(Stmt* self)
+{
+	// UPDATE name SET path = expr [, ... ] [WHERE expr]
+	auto stmt = ast_update_allocate();
+	self->ast = &stmt->ast;
+
+	// table_name, expression or join
+	int level = target_list_next_level(&self->target_list);
+	stmt->target = parse_from(self, level);
+	stmt->table = stmt->target->table;
+	if (stmt->table == NULL)
+		error("UPDATE <table name> expected");
+
+	// todo: ensure target uses primary index
+
+	// SET path = expr [, ... ]
+	stmt->expr_update = parse_update_expr(self);
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))

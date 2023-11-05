@@ -31,4 +31,5 @@ ast_update_allocate(void)
 	return self;
 }
 
+Ast* parse_update_expr(Stmt*);
 void parse_update(Stmt*);
