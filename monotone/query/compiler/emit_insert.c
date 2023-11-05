@@ -23,65 +23,13 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
-static inline int
-emit_row(CodeData* data, AstRow* row, int* data_size)
-{
-	int start = code_data_pos(data);
-	auto buf = &data->data;
-
-	// []
-	encode_array(buf, row->list_count);
-
-	auto value = row->list;
-	while (value)
-	{
-		auto expr = ast_value_of(value)->expr;
-		while (expr)
-		{
-			switch (expr->id) {
-			case '[':
-				encode_array(buf, expr->integer);
-				break;
-			case '{':
-				encode_map(buf, expr->integer);
-				break;
-			case KSTRING:
-				encode_string(buf, &expr->string);
-				break;
-			case KNULL:
-				encode_null(buf);
-				break;
-			case KTRUE:
-			case KFALSE:
-				encode_bool(buf, expr->id == KTRUE);
-				break;
-			case KINT:
-				encode_integer(buf, expr->integer);
-				break;
-			case KREAL:
-				encode_real(buf, expr->real);
-				break;
-			default:
-				abort();
-				break;
-			}
-
-			expr = expr->r;
-		}
-
-		value = value->next;
-	}
-
-	*data_size = buf_size(buf) - start;
-	return start;
-}
-
 static atomic_u32 seq = 0;
 
 hot void
 emit_insert_generate(Compiler* self, AstInsert* insert)
 {
-	int count = insert->generate_count->integer;
+	auto stmt = self->current;
+	int  count = insert->generate_count->integer;
 	for (int i = 0; i < count; i++)
 	{
 		int key = atomic_u32_inc(&seq);
@@ -98,7 +46,12 @@ emit_insert_generate(Compiler* self, AstInsert* insert)
 		// get the request code
 		uint32_t hash;
 		hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
-		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
+
+		// get route by hash
+		auto route = router_get(self->router, hash);
+
+		// get the request code
+		auto code = &dispatch_add(self->dispatch, stmt->order, route)->code;
 
 		// CINSERT
 		code_add(code, CINSERT, (intptr_t)insert->target->table, data, data_size,
@@ -109,6 +62,7 @@ emit_insert_generate(Compiler* self, AstInsert* insert)
 hot void
 emit_insert(Compiler* self, Ast* ast)
 {
+	auto stmt = self->current;
 	auto insert = ast_insert_of(ast);
 
 	// GENERATE
@@ -132,11 +86,14 @@ emit_insert(Compiler* self, Ast* ast)
 		// validate row and hash keys
 		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
 
-		// get the request code
-		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
+		// get route by hash
+		auto route = router_get(self->router, hash);
+
+		// get the request
+		auto req = dispatch_add(self->dispatch, stmt->order, route);
 
 		// CINSERT
-		code_add(code, CINSERT, (intptr_t)insert->target->table,
+		code_add(&req->code, CINSERT, (intptr_t)insert->target->table,
 		         data,
 		         data_size, insert->unique);
 	}
