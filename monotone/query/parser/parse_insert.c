@@ -125,7 +125,7 @@ done:;
 hot static AstRow*
 parse_row(Stmt* self, AstInsert* stmt)
 {
-	auto def = table_def(stmt->table);
+	auto def = table_def(stmt->target->table);
 	auto row = ast_row_allocate();
 
 	// (
@@ -175,7 +175,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 hot static AstRow*
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
-	auto def = table_def(stmt->table);
+	auto def = table_def(stmt->target->table);
 	auto row = ast_row_allocate();
 
 	// (
@@ -183,7 +183,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		error("expected '('");
 
 	// set next serial value
-	uint64_t serial = serial_next(&stmt->table->serial);
+	uint64_t serial = serial_next(&stmt->target->table->serial);
 
 	// value, ...
 	Ast* last = NULL;
@@ -265,7 +265,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 hot static inline Ast*
 parse_column_list(Stmt* self, AstInsert* stmt)
 {
-	auto def = table_def(stmt->table);
+	auto def = table_def(stmt->target->table);
 
 	// empty column list ()
 	if (unlikely(stmt_if(self, ')')))
@@ -330,6 +330,7 @@ parse_insert(Stmt* self, bool unique)
 	if (! stmt_if(self, KINTO))
 		error("INSERT <INTO> expected");
 
+	/*
 	// name
 	// schema.name
 	Str schema;
@@ -337,6 +338,13 @@ parse_insert(Stmt* self, bool unique)
 	if (! parse_target(self, &schema, &name))
 		error("INSERT INTO <name> expected");
 	stmt->table = table_mgr_find(&self->db->table_mgr, &schema, &name, true);
+	*/
+
+	// table
+	int level = target_list_next_level(&self->target_list);
+	stmt->target = parse_from(self, level);
+	if (stmt->target->table == NULL || stmt->target->next_join)
+		error("INSERT INTO <table> expected");
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))
@@ -391,7 +399,7 @@ parse_insert(Stmt* self, bool unique)
 	} else
 	{
 		// one column case
-		auto def = table_def(stmt->table);
+		auto def = table_def(stmt->target->table);
 		if (unlikely(list || def->column_count > 1))
 			error("INSERT INTO <VALUES> expected");
 

@@ -25,14 +25,14 @@ struct AstRow
 
 struct AstInsert
 {
-	Ast    ast;
-	bool   unique;
-	Table* table;
-	Ast*   rows;
-	int    rows_count;
-	bool   generate;
-	Ast*   generate_count;
-	Ast*   generate_batch;
+	Ast     ast;
+	bool    unique;
+	Target* target;
+	Ast*    rows;
+	int     rows_count;
+	bool    generate;
+	Ast*    generate_count;
+	Ast*    generate_batch;
 };
 
 static inline AstValue*
@@ -76,7 +76,7 @@ ast_insert_allocate(void)
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
 	self->unique         = false;
-	self->table          = NULL;
+	self->target         = NULL;
 	self->rows           = NULL;
 	self->rows_count     = 0;
 	self->generate       = false;

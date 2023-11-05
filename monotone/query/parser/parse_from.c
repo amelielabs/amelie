@@ -83,7 +83,7 @@ parse_from_analyze(From* self, Table** table, View** view)
 		return parse_expr(stmt, NULL);
 	}
 
-	error("FROM <%.*s> table or view is not found", str_size(&expr->string),
+	error("<%.*s> table or view is not found", str_size(&expr->string),
 	      str_of(&expr->string));
 	return NULL;
 }

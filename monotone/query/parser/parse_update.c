@@ -36,7 +36,7 @@ parse_update(Stmt* self)
 	if (stmt->table == NULL)
 		error("UPDATE <table name> expected");
 
-	// todo: check primary index
+	// todo: ensure target uses primary index
 
 	// SET
 	if (! stmt_if(self, KSET))

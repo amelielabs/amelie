@@ -79,41 +79,47 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 static atomic_u32 seq = 0;
 
 hot void
+emit_insert_generate(Compiler* self, AstInsert* insert)
+{
+	int count = insert->generate_count->integer;
+	for (int i = 0; i < count; i++)
+	{
+		int key = atomic_u32_inc(&seq);
+
+		// (batch)
+		int  data = code_data_pos(&self->code_data);
+		auto buf = &self->code_data.data;
+		int  count_batch = insert->generate_batch->integer;
+		encode_array(buf, count_batch);
+		for (int j = 0; j < count_batch; j++)
+			encode_integer(buf, key);
+		int data_size = buf_size(buf) - data;
+
+		// get the request code
+		uint32_t hash;
+		hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
+		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
+
+		// CINSERT
+		code_add(code, CINSERT, (intptr_t)insert->target->table, data, data_size,
+		         insert->unique);
+	}
+}
+
+hot void
 emit_insert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
 
+	// GENERATE
 	if (insert->generate)
 	{
-		int count = insert->generate_count->integer;
-		for (int i = 0; i < count; i++)
-		{
-			int key = atomic_u32_inc(&seq);
-
-			// (batch)
-			int  data = code_data_pos(&self->code_data);
-			auto buf = &self->code_data.data;
-			int  count_batch = insert->generate_batch->integer;
-			encode_array(buf, count_batch);
-			for (int j = 0; j < count_batch; j++)
-				encode_integer(buf, key);
-			int data_size = buf_size(buf) - data;
-
-			// get the request code
-			uint32_t hash;
-			hash = hash_murmur3_32((uint8_t*)&key, sizeof(key), 0);
-			auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
-
-			// CINSERT
-			code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
-			         insert->unique);
-		}
-
+		emit_insert_generate(self, insert);
 		return;
 	}
 
 	// foreach row
-	auto def = table_def(insert->table);
+	auto def = table_def(insert->target->table);
 	auto i = insert->rows;
 	for (; i; i = i->next)
 	{
@@ -130,7 +136,7 @@ emit_insert(Compiler* self, Ast* ast)
 		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
 
 		// CINSERT
-		code_add(code, CINSERT, (intptr_t)insert->table, data, data_size,
+		code_add(code, CINSERT, (intptr_t)insert->target->table, data, data_size,
 		         insert->unique);
 	}
 }
