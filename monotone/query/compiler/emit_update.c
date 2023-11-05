@@ -23,23 +23,21 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
-static inline void
-emit_update_on_match(Compiler* self, void *arg)
+hot void
+emit_update_target(Compiler* self, Target* target, Ast* expr)
 {
-	AstUpdate* update = arg;
-
 	// start from current object
-	int r = op2(self, CCURSOR_READ, rpin(self), update->target->id);
+	int r = op2(self, CCURSOR_READ, rpin(self), target->id);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	auto op = update->expr_update;
+	auto op = expr;
 	for (; op; op = op->next)
 	{
 		auto path = op->l;
 
 		// update column in a row
-		auto def = table_def(update->target->table);
+		auto def = table_def(target->table);
 
 		Column* column = NULL;
 		switch (path->id) {
@@ -90,12 +88,12 @@ emit_update_on_match(Compiler* self, void *arg)
 		// todo: check secondary keys
 
 		// path
-		int rexpr = emit_expr(self, update->target, op->l);
+		int rexpr = emit_expr(self, target, op->l);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
 		// expr
-		rexpr = emit_expr(self, update->target, op->r);
+		rexpr = emit_expr(self, target, op->r);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
@@ -108,7 +106,14 @@ emit_update_on_match(Compiler* self, void *arg)
 	}
 
 	// UPDATE (last modified object)
-	op1(self, CUPDATE, update->target->id);
+	op1(self, CUPDATE, target->id);
+}
+
+static inline void
+emit_update_on_match(Compiler* self, void *arg)
+{
+	AstUpdate* update = arg;
+	emit_update_target(self, update->target, update->expr_update);
 }
 
 void
