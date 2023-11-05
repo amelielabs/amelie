@@ -29,6 +29,7 @@ group dml
 test insert
 test update
 test delete
+test upsert
 
 # query
 directory query

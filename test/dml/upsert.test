@@ -1,0 +1,31 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: on conflict parsing
+create table test (id int primary key, data int)
+
+insert into test values(1, 0) 123
+insert into test values(1, 0) ON
+insert into test values(1, 0) ON 123
+insert into test values(1, 0) on conflict
+insert into test values(1, 0) on conflict 123
+insert into test values(1, 0) on conflict do
+insert into test values(1, 0) on conflict do 123
+insert into test values(1, 0) on conflict do update
+insert into test values(1, 0) on conflict do update set
+insert into test values(1, 0) on conflict do update set 123
+insert into test values(1, 0) on conflict do update set path
+insert into test values(1, 0) on conflict do update set path =
+
+# test: on conflict do replace
+insert into test values(1, 0)
+insert into test values(1, 0)
+insert into test values(1, null) on conflict do replace
+insert into test values(1, null) on conflict do replace
+select * from test
+drop table test
+
+disconnect S0
+env_close E0
