@@ -66,12 +66,9 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_switch(Compiler* self, bool coordinator)
+compiler_switch(Compiler* self, Code* code)
 {
-	if (coordinator)
-		self->code = &self->code_coordinator;
-	else
-		self->code = &self->code_stmt;
+	self->code = code;
 }
 
 bool
@@ -112,13 +109,16 @@ compiler_parse(Compiler* self, Str* text)
 void
 compiler_emit(Compiler* self)
 {
+	// prepare request set
+	dispatch_prepare(self->dispatch, self->parser.stmts_count);
+
 	// process statements
 	list_foreach(&self->parser.stmts)
 	{
 		auto stmt = list_at(Stmt, link);
 		self->current = stmt;
 
-		compiler_switch(self, false);
+		compiler_switch(self, &self->code_stmt);
 		if (stmt->id == STMT_INSERT)
 		{
 			auto insert = ast_insert_of(stmt->ast);
@@ -126,7 +126,7 @@ compiler_emit(Compiler* self)
 				emit_insert(self, stmt->ast);
 			else
 				emit_upsert(self, stmt->ast);
-			compiler_switch(self, true);
+			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			continue;
 		}
@@ -136,7 +136,7 @@ compiler_emit(Compiler* self)
 			emit_update(self, stmt->ast);
 			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
-			compiler_switch(self, true);
+			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			break;
 
@@ -144,7 +144,7 @@ compiler_emit(Compiler* self)
 			emit_delete(self, stmt->ast);
 			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
-			compiler_switch(self, true);
+			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			break;
 
@@ -153,14 +153,14 @@ compiler_emit(Compiler* self)
 			// if all targets are expressions execute locally
 			if (target_list_is_expr(&stmt->target_list))
 			{
-				compiler_switch(self, true);
+				compiler_switch(self, &self->code_coordinator);
 				emit_select(self, stmt->ast, false);
 
 			} else
 			{
 				emit_select(self, stmt->ast, false);
 				dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
-				compiler_switch(self, true);
+				compiler_switch(self, &self->code_coordinator);
 				op0(self, CRECV);
 			}
 			break;

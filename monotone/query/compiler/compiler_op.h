@@ -58,6 +58,12 @@ op_pos(Compiler* self)
 	return code_count(self->code);
 }
 
+static inline Op*
+op_at(Compiler* self, int pos)
+{
+	return code_at(self->code, pos);
+}
+
 static inline void
 op_set_jmp(Compiler* self, int pos, int to)
 {
