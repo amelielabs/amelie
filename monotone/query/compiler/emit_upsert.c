@@ -46,17 +46,16 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 	compiler_switch(self, &req->code);
 
 	// generate upsert logic
-	int jmp_start = 0;
 	if (jmp[route->order] == 0)
 	{
 		// cursor_prepare
 		op2(self, CCURSOR_PREPARE, target->id, (intptr_t)target->table);
 
 		// jmp _start
-		jmp_start = op_pos(self);
+		int jmp_start = op_pos(self);
 		op1(self, CJMP, 0 /* _start */);
 
-		// _jmp_where:
+		// _where:
 		jmp[route->order] = op_pos(self);
 
 		// where expression
@@ -77,7 +76,7 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 		// jmp_pop
 		op0(self, CJMP_POP);
 
-		// jmp _start to upsert
+		// point jmp _start to upsert
 		op_at(self, jmp_start)->a = op_pos(self);
 	}
 
