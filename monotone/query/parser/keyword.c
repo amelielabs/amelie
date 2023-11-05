@@ -45,6 +45,7 @@ static Keyword keywords_b[] =
 
 static Keyword keywords_c[] =
 {
+	{ KCONFLICT,              "conflict",              8  },
 	{ KCOMMIT,                "commit",                6  },
 	{ KCOUNT,                 "count",                 5  },
 	{ KCREATE,                "create",                6  },
@@ -56,6 +57,7 @@ static Keyword keywords_c[] =
 static Keyword keywords_d[] =
 {
 	{ KDELETE,                "delete",                6  },
+	{ KDO,                    "do",                    2  },
 	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
 	{ KDEBUG,                 "debug",                 5  },
@@ -134,6 +136,7 @@ static Keyword keywords_n[] =
 {
 	{ KNULL,                  "null",                  4  },
 	{ KNOT,                   "not",                   3  },
+	{ KNOTHING,               "nothing",               7  },
 	{ KNODE,                  "node",                  4  },
 	{ 0,                       NULL,                   0  }
 };
