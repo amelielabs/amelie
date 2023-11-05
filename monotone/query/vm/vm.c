@@ -84,8 +84,10 @@ vm_run(Vm*          self,
 		&&cret,
 		&&cnop,
 		&&cjmp,
+		&&cjmp_pop,
 		&&cjtr,
 		&&cjntr,
+		&&cjntr_pop,
 		&&csend,
 		&&crecv,
 		&&csleep,
@@ -139,6 +141,7 @@ vm_run(Vm*          self,
 
 		&&ccursor_open,
 		&&ccursor_open_expr,
+		&&ccursor_prepare,
 		&&ccursor_close,
 		&&ccursor_next,
 		&&ccursor_read,
@@ -146,7 +149,8 @@ vm_run(Vm*          self,
 		&&ccall,
 		&&cinsert,
 		&&cupdate,
-		&&cdelete
+		&&cdelete,
+		&&cupsert
 	};
 
 	register auto stack = &self->stack;
@@ -177,6 +181,10 @@ cjmp:
 	op = code_at(code, op->a);
 	op_jmp;
 
+cjmp_pop:
+	op = (Op*)stack_pop(stack)->integer;
+	op_jmp;
+
 cjtr:
 	rc = value_is_true(&r[op->b]);
 	value_free(&r[op->b]);
@@ -195,6 +203,17 @@ cjntr:
 		op = code_at(code, op->a);
 		op_jmp;
 	}
+	op_next;
+
+cjntr_pop:
+	rc = value_is_true(&r[op->a]);
+	value_free(&r[op->a]);
+	if (! rc)
+	{
+		op = (Op*)stack_pop(stack)->integer;
+		op_jmp;
+	}
+	// op remains on stack
 	op_next;
 
 csend:
@@ -484,6 +503,10 @@ ccursor_open_expr:
 	op = ccursor_open_expr(self, op);
 	op_jmp;
 
+ccursor_prepare:
+	ccursor_prepare(self, op);
+	op_next;
+
 ccursor_close:
 	ccursor_close(self, op);
 	op_next;
@@ -515,4 +538,8 @@ cupdate:
 cdelete:
 	cdelete(self, op);
 	op_next;
+
+cupsert:
+	op = cupsert(self, op);
+	op_jmp;
 }

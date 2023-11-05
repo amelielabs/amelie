@@ -29,8 +29,10 @@ OpDesc ops[] =
 	{ CRET,               "ret"               },
 	{ CNOP,               "nop"               },
 	{ CJMP,               "jmp"               },
+	{ CJMP_POP,           "jmp_pop"           },
 	{ CJTR,               "jtr"               },
 	{ CJNTR,              "jntr"              },
+	{ CJNTR_POP,          "jntr_pop"          },
 
 	{ CSEND,              "send"              },
 	{ CRECV,              "recv"              },
@@ -106,6 +108,7 @@ OpDesc ops[] =
 	// cursor
 	{ CCURSOR_OPEN,       "cursor_open"       },
 	{ CCURSOR_OPEN_EXPR,  "cursor_open_expr"  },
+	{ CCURSOR_PREPARE,    "cursor_prepare"    },
 	{ CCURSOR_CLOSE,      "cursor_close"      },
 	{ CCURSOR_NEXT,       "cursor_next"       },
 	{ CCURSOR_READ,       "cursor_read"       },
@@ -117,7 +120,8 @@ OpDesc ops[] =
 	// dml
 	{ CINSERT,            "insert"            },
 	{ CUPDATE,            "update"            },
-	{ CDELETE,            "delete"            }
+	{ CDELETE,            "delete"            },
+	{ CUPSERT,            "upsert"            }
 };
 
 void

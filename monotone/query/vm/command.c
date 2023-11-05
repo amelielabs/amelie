@@ -108,6 +108,24 @@ ccursor_open_expr(Vm* self, Op* op)
 }
 
 hot void
+ccursor_prepare(Vm* self, Op* op)
+{
+	// [target_id, table*]
+	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+
+	// find storage
+	Table* table = (Table*)op->b;
+	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
+	                                    &table->config->id);
+	// prepare cursor
+	cursor->type    = CURSOR_TABLE;
+	cursor->table   = table;
+	cursor->storage = storage;
+	cursor->index   = storage_primary(storage);
+	cursor->it      = index_read(cursor->index);
+}
+
+hot void
 ccursor_close(Vm* self, Op* op)
 {
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
@@ -316,8 +334,8 @@ cinsert(Vm* self, Op* op)
 
 	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;
-	if (unlikely(!data_is_array(data) && !data_is_map(data)))
-		error("INSERT/REPLACE: array, map or data set expected");
+	if (unlikely(! data_is_array(data)))
+		error("INSERT/REPLACE: array expected");
 
 	storage_set(storage, trx, unique, data, data_size);
 }
@@ -370,4 +388,30 @@ cdelete(Vm* self, Op* op)
 	// delete by cursor
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	storage_delete(cursor->storage, self->trx, cursor->it);
+}
+
+hot Op*
+cupsert(Vm* self, Op* op)
+{
+	// [target_id, data_offset, data_size, _jmp]
+	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+
+	// todo: cursor reset
+
+	// upsert
+	uint8_t* data = code_data_at(self->code_data, op->b);
+	uint32_t data_size = op->c;
+	if (unlikely(! data_is_array(data)))
+		error("UPSERT: array expected");
+
+	// on insert goto next operation
+	if (storage_upsert(cursor->storage, self->trx, cursor->it, data, data_size))
+		return ++op;
+
+	// push next operation address
+	auto jmp_op = stack_push(&self->stack);
+	value_set_int(jmp_op, (intptr_t)(op + 1));
+
+	// on conflict
+	return code_at(self->code, op->d);
 }

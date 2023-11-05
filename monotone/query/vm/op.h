@@ -14,8 +14,10 @@ enum
 	CRET,
 	CNOP,
 	CJMP,
+	CJMP_POP,
 	CJTR,
 	CJNTR,
+	CJNTR_POP,
 
 	CSEND,
 	CRECV,
@@ -91,6 +93,7 @@ enum
 	// cursor
 	CCURSOR_OPEN,
 	CCURSOR_OPEN_EXPR,
+	CCURSOR_PREPARE,
 	CCURSOR_CLOSE,
 	CCURSOR_NEXT,
 	CCURSOR_READ,
@@ -102,7 +105,8 @@ enum
 	// dml
 	CINSERT,
 	CUPDATE,
-	CDELETE
+	CDELETE,
+	CUPSERT
 };
 
 struct OpDesc
