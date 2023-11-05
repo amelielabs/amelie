@@ -23,35 +23,92 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
+hot static inline void
+emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
+{
+	auto stmt     = self->current;
+	auto dispatch = self->dispatch;
+	auto target   = insert->target;
+	auto def      = table_def(target->table);
+
+	// write row to the code data
+	int data_size;
+	int data = emit_row(&self->code_data, row, &data_size);
+
+	// validate row and hash keys
+	auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+
+	// get route by hash
+	auto route = router_get(self->router, hash);
+
+	// get the request
+	auto req = dispatch_add(dispatch, stmt->order, route);
+	compiler_switch(self, &req->code);
+
+	// generate upsert logic
+	int jmp_start = 0;
+	if (jmp[route->order] == 0)
+	{
+		// cursor_prepare
+		op2(self, CCURSOR_PREPARE, target->id, (intptr_t)target->table);
+
+		// jmp _start
+		jmp_start = op_pos(self);
+		op1(self, CJMP, 0 /* _start */);
+
+		// _jmp_where:
+		jmp[route->order] = op_pos(self);
+
+		// where expression
+		if (insert->update_where)
+		{
+			// expr
+			int rexpr;
+			rexpr = emit_expr(self, target, insert->update_where);
+
+			// jntr_pop
+			op1(self, CJNTR_POP, rexpr);
+			runpin(self, rexpr);
+		}
+
+		// update
+		emit_update_target(self, target, insert->update_expr);
+
+		// jmp_pop
+		op0(self, CJMP_POP);
+
+		// jmp _start to upsert
+		op_at(self, jmp_start)->a = op_pos(self);
+	}
+
+	// upsert
+	op4(self, CUPSERT, target->id, data, data_size,
+	    jmp[route->order]);
+}
+
 hot void
 emit_upsert(Compiler* self, Ast* ast)
 {
-	auto insert = ast_insert_of(ast);
-	(void)self;
-	(void)insert;
+	auto insert   = ast_insert_of(ast);
+	auto dispatch = self->dispatch;
+	auto target   = insert->target;
 
-#if 0
-	// foreach row
-	auto def = table_def(insert->target->table);
-	auto i = insert->rows;
-	for (; i; i = i->next)
+	int  jmp[dispatch->set_size];
+	memset(jmp, 0, dispatch->set_size * sizeof(int));
+
+	// foreach row generate upsert
+	for (auto i = insert->rows; i; i = i->next)
 	{
 		auto row = ast_row_of(i);
-
-		// write row to the code data
-		int data_size;
-		int data = emit_row(&self->code_data, row, &data_size);
-
-		// validate row and hash keys
-		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
-
-		// get the request code
-		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
-
-		// CINSERT
-		code_add(code, CINSERT, (intptr_t)insert->target->table,
-		         data,
-		         data_size, insert->unique);
+		emit_upsert_row(self, insert, row, jmp);
 	}
-#endif
+
+	// close cursors
+	for (int order = 0; order < dispatch->set_size; order++)
+	{
+		if (! jmp[order])
+			continue;
+		auto req = dispatch_at(dispatch, order);
+		code_add(&req->code, CCURSOR_CLOSE, target->id, 0, 0, 0);
+	}
 }
