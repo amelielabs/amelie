@@ -17,16 +17,16 @@ query: on_error
 {"code": 1, "msg": "UPDATE <table name> expected"}
 update test
 query: on_error
-{"code": 1, "msg": "UPDATE name <SET> expected"}
+{"code": 1, "msg": "UPDATE <SET> expected"}
 update test "path"
 query: on_error
-{"code": 1, "msg": "UPDATE name <SET> expected"}
+{"code": 1, "msg": "UPDATE <SET> expected"}
 update test 1
 query: on_error
-{"code": 1, "msg": "UPDATE name <SET> expected"}
+{"code": 1, "msg": "UPDATE <SET> expected"}
 update test path
 query: on_error
-{"code": 1, "msg": "UPDATE name <SET> expected"}
+{"code": 1, "msg": "UPDATE <SET> expected"}
 update test set path
 query: on_error
 {"code": 1, "msg": "UPDATE name SET path <=> expected"}
