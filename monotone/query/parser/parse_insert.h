@@ -23,6 +23,14 @@ struct AstRow
 	int  list_count;
 };
 
+enum
+{
+	ON_CONFLICT_NONE,
+	ON_CONFLICT_REPLACE,
+	ON_CONFLICT_UPDATE_NONE,
+	ON_CONFLICT_UPDATE
+};
+
 struct AstInsert
 {
 	Ast     ast;
@@ -33,6 +41,9 @@ struct AstInsert
 	bool    generate;
 	Ast*    generate_count;
 	Ast*    generate_batch;
+	int     on_conflict;
+	Ast*    update_expr;
+	Ast*    update_where;
 };
 
 static inline AstValue*
@@ -82,6 +93,9 @@ ast_insert_allocate(void)
 	self->generate       = false;
 	self->generate_count = NULL;
 	self->generate_batch = NULL;
+	self->on_conflict    = ON_CONFLICT_NONE;
+	self->update_expr    = NULL;
+	self->update_where   = NULL;
 	return self;
 }
 

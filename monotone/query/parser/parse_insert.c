@@ -315,11 +315,79 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 	return list;
 }
 
+hot static inline void
+parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
+{
+	// [VALUES]
+	if (stmt_if(self, KVALUES))
+	{
+		// (value, ...), ...
+		Ast* last = NULL;
+		for (;;)
+		{
+			AstRow* row;
+			if (list_in_use)
+				row = parse_row_list(self, stmt, list);
+			else
+				row = parse_row(self, stmt);
+
+			if (stmt->rows == NULL)
+				stmt->rows = &row->ast;
+			else
+				last->next = &row->ast;
+			last = &row->ast;
+			stmt->rows_count++;
+
+			if (stmt_if(self, ','))
+				continue;
+
+			break;
+		}
+
+		return;
+	}
+
+	// one column case
+	auto def = table_def(stmt->target->table);
+	if (unlikely(list || def->column_count > 1))
+		error("INSERT INTO <VALUES> expected");
+
+	// no constraints applied
+
+	// value, ...
+	Ast* last = NULL;
+	for (;;)
+	{
+		// row
+		auto row = ast_row_allocate();
+
+		// value
+		auto value = parse_value(self);
+		if (unlikely(value->expr == NULL))
+			error("bad row value");
+		row->list = &value->ast;
+		row->list_count++;
+
+		if (stmt->rows == NULL)
+			stmt->rows = &row->ast;
+		else
+			last->next = &row->ast;
+		last = &row->ast;
+		stmt->rows_count++;
+
+		if (stmt_if(self, ','))
+			continue;
+
+		break;
+	}
+}
+
 hot void
 parse_insert(Stmt* self, bool unique)
 {
 	// [INSERT|REPLACE] INTO name [(column_list)]
 	// [VALUES] (value, ..), ...
+	// [ON CONFLICT DO REPLACE | NOTHING | UPDATE]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 
@@ -329,16 +397,6 @@ parse_insert(Stmt* self, bool unique)
 	// INTO
 	if (! stmt_if(self, KINTO))
 		error("INSERT <INTO> expected");
-
-	/*
-	// name
-	// schema.name
-	Str schema;
-	Str name;
-	if (! parse_target(self, &schema, &name))
-		error("INSERT INTO <name> expected");
-	stmt->table = table_mgr_find(&self->db->table_mgr, &schema, &name, true);
-	*/
 
 	// table
 	int level = target_list_next_level(&self->target_list);
@@ -370,66 +428,47 @@ parse_insert(Stmt* self, bool unique)
 	if (list_in_use)
 		list = parse_column_list(self, stmt);
 
-	// [VALUES]
-	if (stmt_if(self, KVALUES))
+	// [VALUES] | expr
+	parse_values(self, stmt, list_in_use, list);
+
+	// ON CONFLICT
+	if (stmt_if(self, KON))
 	{
-		// (value, ...), ...
-		Ast* last = NULL;
-		for (;;)
+		// CONFLICT
+		if (! stmt_if(self, KCONFLICT))
+			error("INSERT VALUES ON <CONFLICT> expected");
+
+		// DO
+		if (! stmt_if(self, KDO))
+			error("INSERT VALUES ON CONFLICT <DO> expected");
+
+		// REPLACE | NOTHING | UPDATE
+		auto op = stmt_next(self);
+		switch (op->id) {
+		case KREPLACE:
+			stmt->unique = false;
+			stmt->on_conflict = ON_CONFLICT_REPLACE;
+			break;
+		case KNOTHING:
+			stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
+			break;
+		case KUPDATE:
 		{
-			AstRow* row;
-			if (list_in_use)
-				row = parse_row_list(self, stmt, list);
-			else
-				row = parse_row(self, stmt);
+			stmt->on_conflict = ON_CONFLICT_UPDATE;
 
-			if (stmt->rows == NULL)
-				stmt->rows = &row->ast;
-			else
-				last->next = &row->ast;
-			last = &row->ast;
-			stmt->rows_count++;
+			// SET path = expr [, ... ]
+			stmt->update_expr = parse_update_expr(self);
 
-			if (stmt_if(self, ','))
-				continue;
-
+			// [WHERE]
+			if (stmt_if(self, KWHERE))
+				stmt->update_where = parse_expr(self, NULL);
+			break;
+		}
+		default:
+			error("INSERT VALUES ON CONFLICT DO "
+				  "<REPLACE | NOTHING | UPDATE> expected");
 			break;
 		}
 
-	} else
-	{
-		// one column case
-		auto def = table_def(stmt->target->table);
-		if (unlikely(list || def->column_count > 1))
-			error("INSERT INTO <VALUES> expected");
-
-		// no constraints applied
-
-		// value, ...
-		Ast* last = NULL;
-		for (;;)
-		{
-			// row
-			auto row = ast_row_allocate();
-
-			// value
-			auto value = parse_value(self);
-			if (unlikely(value->expr == NULL))
-				error("bad row value");
-			row->list = &value->ast;
-			row->list_count++;
-
-			if (stmt->rows == NULL)
-				stmt->rows = &row->ast;
-			else
-				last->next = &row->ast;
-			last = &row->ast;
-			stmt->rows_count++;
-
-			if (stmt_if(self, ','))
-				continue;
-
-			break;
-		}
 	}
 }
