@@ -16,6 +16,7 @@ struct Index
 	void        (*update)(Index*, Transaction*, Iterator*, Row*);
 	void        (*delete)(Index*, Transaction*, Iterator*);
 	void        (*delete_by)(Index*, Transaction*, Row*);
+	bool        (*upsert)(Index*, Transaction*, Iterator*, Row*);
 	Iterator*   (*read)(Index*);
 	List          link;
 };
@@ -57,6 +58,12 @@ static inline void
 index_delete_by(Index* self, Transaction* trx, Row* key)
 {
 	self->delete_by(self, trx, key);
+}
+
+static inline bool
+index_upsert(Index* self, Transaction* trx, Iterator* it, Row* row)
+{
+	return self->upsert(self, trx, it, row);
 }
 
 static inline Iterator*

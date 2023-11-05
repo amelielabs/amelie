@@ -162,6 +162,44 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	        key, prev);
 }
 
+hot static bool
+tree_upsert(Index* arg, Transaction* trx, Iterator* it, Row* row)
+{
+	auto self = tree_of(arg);
+
+	// reserve log
+	log_reserve(&trx->log, LOG_REPLACE, self->storage);
+
+	TreeRow* ref = row_reserved(row);
+	rbtree_init_node(&ref->node);
+
+	// find existing row
+	RbtreeNode* node;
+	int rc;
+	rc = tree_find(&self->tree, &self->index.config->def, row, &node);
+	if (rc == 0 && node)
+	{
+		// if row exist, set iterator to its position
+		auto tree_it = tree_iterator_of(it);
+		tree_it->current  = tree_row_of(node);
+		tree_it->pos      = node;
+		tree_it->pos_next = NULL;
+		return false;
+	}
+
+	// insert
+	rbtree_set(&self->tree, node, rc, &ref->node);
+	self->tree_count++;
+
+	// update transaction log
+	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
+	        self->index.config->primary,
+	        self->storage,
+	        &self->index.config->def,
+	        row, NULL);
+	return true;
+}
+
 hot static Iterator*
 tree_read(Index* arg)
 {
@@ -184,6 +222,7 @@ tree_allocate(IndexConfig* config, Uuid* storage)
 	self->index.update    = tree_update;
 	self->index.delete    = tree_delete;
 	self->index.delete_by = tree_delete_by;
+	self->index.upsert    = tree_upsert;
 	self->index.read      = tree_read;
 
 	guard(guard, tree_free, self);

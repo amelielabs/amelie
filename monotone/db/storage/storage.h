@@ -29,6 +29,7 @@ void storage_set(Storage*, Transaction*, bool, uint8_t*, int);
 void storage_update(Storage*, Transaction*, Iterator*, uint8_t*, int);
 void storage_delete(Storage*, Transaction*, Iterator*);
 void storage_delete_by(Storage*, Transaction*, uint8_t*, int);
+bool storage_upsert(Storage*, Transaction*, Iterator*, uint8_t*, int);
 
 Index*
 storage_find(Storage*, Str*, bool);

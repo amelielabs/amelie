@@ -148,3 +148,23 @@ storage_delete_by(Storage*     self,
 	// delete from primary index by key
 	index_delete_by(primary, trx, key);
 }
+
+hot bool
+storage_upsert(Storage*     self,
+               Transaction* trx,
+               Iterator*    it,
+               uint8_t*     data,
+               int          data_size)
+{
+	auto primary = storage_primary(self);
+
+	// allocate row
+	auto row = row_create(&primary->config->def, data, data_size);
+	guard(row_guard, row_free, row);
+
+	// update index
+	bool updated = index_upsert(primary, trx, it, row);
+	if (updated)
+		unguard(&row_guard);
+	return updated;
+}
