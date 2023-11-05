@@ -66,6 +66,7 @@ OBJECTS        = \
                  compiler/emit_insert.o \
                  compiler/emit_update.o \
                  compiler/emit_delete.o \
+                 compiler/emit_upsert.o \
                  compiler/emit_select.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

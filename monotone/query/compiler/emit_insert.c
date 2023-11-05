@@ -136,7 +136,8 @@ emit_insert(Compiler* self, Ast* ast)
 		auto code = &dispatch_map(self->dispatch, hash, self->current->order)->code;
 
 		// CINSERT
-		code_add(code, CINSERT, (intptr_t)insert->target->table, data, data_size,
-		         insert->unique);
+		code_add(code, CINSERT, (intptr_t)insert->target->table,
+		         data,
+		         data_size, insert->unique);
 	}
 }

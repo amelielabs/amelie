@@ -21,4 +21,5 @@
 #include "compiler/emit_insert.h"
 #include "compiler/emit_update.h"
 #include "compiler/emit_delete.h"
+#include "compiler/emit_upsert.h"
 #include "compiler/emit_select.h"

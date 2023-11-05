@@ -121,8 +121,11 @@ compiler_emit(Compiler* self)
 		compiler_switch(self, false);
 		if (stmt->id == STMT_INSERT)
 		{
-			emit_insert(self, stmt->ast);
-
+			auto insert = ast_insert_of(stmt->ast);
+			if (insert->on_conflict == ON_CONFLICT_NONE)
+				emit_insert(self, stmt->ast);
+			else
+				emit_upsert(self, stmt->ast);
 			compiler_switch(self, true);
 			op0(self, CRECV);
 			continue;

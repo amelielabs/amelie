@@ -447,7 +447,6 @@ parse_insert(Stmt* self, bool unique)
 		switch (op->id) {
 		case KREPLACE:
 			stmt->unique = false;
-			stmt->on_conflict = ON_CONFLICT_REPLACE;
 			break;
 		case KNOTHING:
 			stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
