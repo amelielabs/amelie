@@ -77,6 +77,3 @@ code_add(Code*    self,
 	buf_advance(&self->code, sizeof(Op));
 	return op;
 }
-
-void code_save(Code*, CodeData*, Buf*);
-void code_load(Code*, CodeData*, uint8_t**);

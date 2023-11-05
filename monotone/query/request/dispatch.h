@@ -25,7 +25,8 @@ struct Dispatch
 void dispatch_init(Dispatch*, DispatchLock*, ReqCache*, Router*, CodeData*);
 void dispatch_free(Dispatch*);
 void dispatch_reset(Dispatch*);
-Req* dispatch_map(Dispatch*, uint32_t, int);
+void dispatch_prepare(Dispatch*, int);
+Req* dispatch_add(Dispatch*, int, Route*);
 void dispatch_copy(Dispatch*, Code*, int);
 void dispatch_export(Dispatch*, LogSet*);
 

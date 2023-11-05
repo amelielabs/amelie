@@ -80,8 +80,8 @@ dispatch_reset(Dispatch* self)
 	buf_reset(&self->stmt);
 }
 
-hot static inline Req*
-dispatch_add(Dispatch* self, int stmt, Route* route)
+void
+dispatch_prepare(Dispatch* self, int stmts)
 {
 	// prepare request set
 	if (unlikely(self->set == NULL))
@@ -92,6 +92,18 @@ dispatch_add(Dispatch* self, int stmt, Route* route)
 		memset(self->set, 0, size);
 	}
 
+	// prepare request set per stmt set as [statements][routes]
+	int size = sizeof(Req*) * stmts * self->set_size;
+	buf_reserve(&self->stmt, size);
+	auto start = self->stmt.position;
+	memset(start, 0, size);
+	buf_advance(&self->stmt, size);
+	self->stmt_count = stmts;
+}
+
+hot Req*
+dispatch_add(Dispatch* self, int stmt, Route* route)
+{
 	// add request per route
 	auto req = self->set[route->order];
 	if (! req)
@@ -102,30 +114,10 @@ dispatch_add(Dispatch* self, int stmt, Route* route)
 		self->set[route->order] = req;
 	}
 
-	// add request statement as [statement][route]
-	if (stmt == self->stmt_count)
-	{
-		int size = sizeof(Req*) * self->set_size;
-		buf_reserve(&self->stmt, size);
-		auto start = self->stmt.position;
-		memset(start, 0, size);
-		buf_advance(&self->stmt, size);
-		self->stmt_count++;
-	}
-
+	// set request per statement
 	auto index = (Req**)(self->stmt.start);
 	index[stmt * self->set_size + route->order] = req;
 	return req;
-}
-
-hot Req*
-dispatch_map(Dispatch* self, uint32_t hash, int stmt)
-{
-	// get route by hash
-	auto route = router_get(self->router, hash);
-
-	// add request to the route
-	return dispatch_add(self, stmt, route);
 }
 
 hot void
