@@ -457,7 +457,7 @@ cgroup_get_aggr:
 	op_next;
 
 ccntr_init:
-	// [cursor, type, expr
+	// [cursor, type, expr]
 	if (unlikely(r[op->c].type != VALUE_INT))
 		error("LIMIT/OFFSET: integer type expected");
 	cursor = cursor_mgr_of(cursor_mgr, op->a);
