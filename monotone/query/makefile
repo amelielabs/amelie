@@ -38,7 +38,6 @@ OBJECTS        = \
                  aggr/sum.o \
                  aggr/avg.o \
                  aggr/group.o \
-                 request/code.o \
                  request/dispatch.o \
                  request/dispatch_io.o \
                  vm/op.o \
