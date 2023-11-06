@@ -34,26 +34,26 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 	auto op = expr;
 	for (; op; op = op->next)
 	{
-		auto path = op->l;
+		Str path;
+		str_set_str(&path, &op->l->string);
 
 		// update column in a row
 		auto def = table_def(target->table);
-
 		Column* column = NULL;
-		switch (path->id) {
+		switch (op->l->id) {
 		case KNAME:
 		{
-			column = def_find_column(def, &path->string);
+			column = def_find_column(def, &path);
 			if (! column)
-				error("<%.*s> column does not exists", str_size(&path->string),
-				      str_of(&path->string));
-			path->id = KNULL;
+				error("<%.*s> column does not exists", str_size(&path),
+				      str_of(&path));
+			str_init(&path);
 			break;
 		}
 		case KNAME_COMPOUND:
 		{
 			Str name;
-			str_split_or_set(&path->string, &name, '.');
+			str_split_or_set(&path, &name, '.');
 
 			column = def_find_column(def, &name);
 			if (! column)
@@ -61,10 +61,12 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 				      str_of(&name));
 
 			// exclude name from the path
-			str_advance(&path->string, str_size(&name) + 1);
-			path->id = KSTRING;
+			str_advance(&path, str_size(&name) + 1);
 			break;
 		}
+		default:
+			abort();
+			break;
 		}
 
 		// ensure we are not updating a key
@@ -77,7 +79,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			} else
 			{
 				// path is equal or a prefix of the key path
-				if (path->id == KNULL || str_compare_prefix(&key->path, &path->string))
+				if (str_empty(&path) || str_compare_prefix(&key->path, &path))
 					error("<%.*s> column nested key <%.*s> cannot be updated",
 					      str_size(&column->name), str_of(&column->name),
 					      str_size(&key->path),
@@ -88,7 +90,11 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		// todo: check secondary keys
 
 		// path
-		int rexpr = emit_expr(self, target, op->l);
+		int rexpr;
+		if (str_empty(&path))
+			rexpr = op1(self, CNULL, rpin(self));
+		else
+			rexpr = emit_string(self, &path, false);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 

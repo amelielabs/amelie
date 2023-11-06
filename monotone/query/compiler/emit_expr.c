@@ -23,8 +23,8 @@
 #include <monotone_parser.h>
 #include <monotone_compiler.h>
 
-static inline int
-emit_string_as(Compiler* self, bool escape, Str* string)
+hot int
+emit_string(Compiler* self, Str* string, bool escape)
 {
 	int offset;
 	if (escape)
@@ -32,15 +32,6 @@ emit_string_as(Compiler* self, bool escape, Str* string)
 	else
 		offset = code_data_add_string_unescape(&self->code_data, string);
 	return op2(self, CSTRING, rpin(self), offset);
-}
-
-static inline int
-emit_string(Compiler* self, Ast* ast)
-{
-	assert(ast->id == KSTRING ||
-	       ast->id == KNAME   ||
-	       ast->id == KNAME_COMPOUND);
-	return emit_string_as(self, ast->string_escape, &ast->string);
 }
 
 hot static inline int
@@ -541,7 +532,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KFALSE:
 		return op2(self, CBOOL, rpin(self), 0);
 	case KSTRING:
-		return emit_string(self, ast);
+		return emit_string(self, &ast->string, ast->string_escape);
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
 
