@@ -469,6 +469,25 @@ parse_table_alter(Stmt* self)
 	if (! parse_target(self, &stmt->schema, &stmt->name))
 		error("ALTER TABLE <name> expected");
 
+	// [SET]
+	if (stmt_if(self, KSET))
+	{
+		// SERIAL
+		if (! stmt_if(self, KSERIAL))
+			error("ALTER TABLE SET <SERIAL> expected");
+
+		// =
+		if (! stmt_if(self, '='))
+			error("ALTER TABLE SET SERIAL <=> expected");
+
+		// int
+		stmt->serial = stmt_if(self, KINT);
+		if (! stmt->serial)
+			error("ALTER TABLE SET SERIAL = <integer> expected");
+
+		return;
+	}
+
 	// RENAME
 	if (! stmt_if(self, KRENAME))
 		error("ALTER TABLE <RENAME> expected");

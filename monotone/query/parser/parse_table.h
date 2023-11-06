@@ -33,6 +33,7 @@ struct AstTableAlter
 	Str  schema_new;
 	Str  name;
 	Str  name_new;
+	Ast* serial;
 };
 
 static inline AstTableCreate*
@@ -80,6 +81,7 @@ ast_table_alter_allocate(void)
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
 	self->if_exists = false;
+	self->serial    = NULL;
 	str_init(&self->schema);
 	str_init(&self->schema_new);
 	str_init(&self->name);
