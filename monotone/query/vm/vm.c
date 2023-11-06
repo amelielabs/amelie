@@ -135,6 +135,7 @@ vm_run(Vm*          self,
 		&&cgroup_add,
 		&&cgroup_get,
 		&&cgroup_get_aggr,
+		&&cref,
 		&&ccntr_init,
 		&&ccntr_gte,
 		&&ccntr_lte,
@@ -454,6 +455,14 @@ cgroup_get_aggr:
 	assert(cursor->type == CURSOR_GROUP);
 	group_get_aggr(cursor->group, group_at(cursor->group, cursor->group_pos),
 	               op->c, &r[op->a]);
+	op_next;
+
+cref:
+	// [result, target]
+	cursor = cursor_mgr_of(cursor_mgr, op->b);
+	if (unlikely(! cursor->ref))
+		error("@: reference is not defined");
+	value_read(&r[op->a], cursor->ref, NULL);
 	op_next;
 
 ccntr_init:

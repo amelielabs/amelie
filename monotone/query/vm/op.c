@@ -100,6 +100,9 @@ OpDesc ops[] =
 	{ CGROUP_GET,         "group_get"         },
 	{ CGROUP_GET_AGGR,    "group_get_aggr"    },
 
+	// ref
+	{ CREF,               "ref"               },
+
 	// counters
 	{ CCNTR_INIT,         "cntr_init"         },
 	{ CCNTR_GTE,          "cntr_gte"          },
@@ -124,6 +127,7 @@ OpDesc ops[] =
 	{ CUPSERT,            "upsert"            }
 };
 
+#if 0
 void
 op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 {
@@ -192,6 +196,128 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 
 		op++;
 		i++;
+	}
+
+	buf_printf(output, "\n");
+}
+#endif
+
+static inline void
+op_write(Buf* output, Op* op, int pos, bool a, bool b, bool c, char *fmt, ...)
+{
+	buf_printf(output, "%2d  %18s   ", pos, ops[op->op].name);
+
+	if (a)
+		buf_printf(output, "%6" PRIi64 " ", op->a);
+	else
+		buf_printf(output, "%6s ", "-");
+
+	if (b)
+		buf_printf(output, "%6" PRIi64 " ", op->b);
+	else
+		buf_printf(output, "%6s ", "-");
+
+	if (c)
+		buf_printf(output, "%6" PRIi64, op->c);
+	else
+		buf_printf(output, "%6s", "-");
+
+	if (fmt)
+	{
+		buf_printf(output, "      # ");
+		va_list args;
+		va_start(args, fmt);
+		buf_vprintf(output, fmt, args);
+		va_end(args);
+	}
+}
+
+void
+op_dump(Code* self, CodeData* data, Buf* output, Str* section)
+{
+	buf_printf(output, "\n");
+	buf_printf(output, "bytecode [%.*s]\n", str_size(section), str_of(section));
+	buf_printf(output, "--------\n");
+
+	auto op  = (Op*)self->code.start;
+	auto end = (Op*)self->code.position;
+
+	int pos = 0;
+	while (op < end)
+	{
+		switch (op->op) {
+		case CSTRING:
+		{
+			Str str;
+			code_data_at_string(data, op->b, &str);
+			op_write(output, op, pos, true, true, true, "%.*s",
+			         str_size(&str), str_of(&str));
+			break;
+		}
+		case CREAL:
+		{
+			double real = code_data_at_real(data, op->b);
+			op_write(output, op, pos, true, true, true, "%f", real);
+			break;
+		}
+		case CINSERT:
+		{
+			auto table = (Table*)op->a;
+			op_write(output, op, pos, false, true, true,
+			         "%.*s",
+			         str_size(&table->config->name),
+			         str_of(&table->config->name));
+			break;
+		}
+		case CCURSOR_OPEN:
+		{
+			Str schema;
+			Str table;
+			Str index;
+			uint8_t* ref = code_data_at(data, op->b);
+			data_read_string(&ref, &schema);
+			data_read_string(&ref, &table);
+			data_read_string(&ref, &index);
+			op_write(output, op, pos, true, true, true,
+			         "%.*s.%.*s (%.*s)",
+			         str_size(&schema),
+			         str_of(&schema),
+			         str_size(&table),
+			         str_of(&table),
+			         str_size(&index),
+			         str_of(&index));
+			break;
+		}
+		case CCURSOR_PREPARE:
+		{
+			auto table = (Table*)op->b;
+			op_write(output, op, pos, true, false, true,
+			         "%.*s.%.*s",
+			         str_size(&table->config->schema),
+			         str_of(&table->config->schema),
+			         str_size(&table->config->name),
+			         str_of(&table->config->name));
+			break;
+		}
+		case CCALL:
+		{
+			auto function = (Function*)op->b;
+			op_write(output, op, pos, true, false, true,
+			         "%.*s.%.*s",
+			         str_size(&function->schema),
+			         str_of(&function->schema),
+			         str_size(&function->name),
+			         str_of(&function->name));
+			break;
+		}
+		default:
+			op_write(output, op, pos, true, true, true, NULL);
+			break;
+		}
+		buf_printf(output, "\n");
+
+		op++;
+		pos++;
 	}
 
 	buf_printf(output, "\n");

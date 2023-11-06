@@ -85,6 +85,9 @@ enum
 	CGROUP_GET,
 	CGROUP_GET_AGGR,
 
+	// ref
+	CREF,
+
 	// counters
 	CCNTR_INIT,
 	CCNTR_GTE,
