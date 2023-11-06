@@ -27,5 +27,80 @@ insert into test values(1, null) on conflict do replace
 select * from test
 drop table test
 
+# test: on conflict do nothing
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do nothing
+insert into test values(1, 0) on conflict do nothing
+insert into test values(1, 0) on conflict do nothing
+insert into test values(1, 0) on conflict do nothing
+explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
+insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
+select * from test
+drop table test
+
+# test: upsert insert
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do update set data = data + 1
+insert into test values(1, 0) on conflict do update set data = data + 1
+select * from test
+drop table test
+
+# test: upsert
+create table test (id int primary key, data int)
+insert into test values(1, 0) on conflict do update set data = data + 1
+select * from test
+insert into test values(1, 0) on conflict do update set data = data + 1
+select * from test
+insert into test values(1, 0) on conflict do update set data = data + 1
+select * from test
+drop table test
+
+# test: upsert batch
+create table test (id int primary key, data int)
+explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+select * from test
+drop table test
+
+# test: upsert where
+create table test (id int primary key, data int)
+insert into test values (1, 0) on conflict do update set data = data + 1
+insert into test values (1, 0) on conflict do update set data = data + 1
+insert into test values (1, 0) on conflict do update set data = data + 1
+select * from test
+explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
+insert into test values (1, 0) on conflict do update set data = data + 1 where true
+select * from test
+insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3
+select * from test
+insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3
+select * from test
+drop table test
+
+# test: upsert row access
+create table test (id int primary key, data int)
+insert into test values (1, 0) on conflict do update set data = data + 1
+explain insert into test values (1, 123) on conflict do update set data = data + @[1]
+insert into test values (1, 123) on conflict do update set data = data + @[1]
+select * from test
+select *[1] from test
+drop table test
+
+# test: upsert row access #2
+create table test (id int primary key, data int)
+insert into test values (1, 0) on conflict do update set data = data + 1
+select @ from test
+drop table test
+
+# test: upsert error
+create table test (id int primary key, data int)
+insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
+select * from test
+insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
+select * from test
+drop table test
+
 disconnect S0
 env_close E0
