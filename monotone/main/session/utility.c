@@ -261,6 +261,21 @@ execute_ddl(Session* self, Stmt* stmt)
 		{
 			auto arg = ast_table_alter_of(stmt->ast);
 
+			// SET SERIAL
+			if (arg->serial)
+			{
+				auto table = table_mgr_find(share->table_mgr, &arg->schema,
+				                            &arg->name,
+				                            !arg->if_exists);
+				if (! table)
+					break;
+
+				serial_set(&table->serial, arg->serial->integer);
+				break;
+			}
+
+			// RENAME TO
+
 			// ensure schema exists
 			schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
 
