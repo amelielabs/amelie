@@ -67,6 +67,7 @@ priority_map[UINT8_MAX] =
 	//
 	['(']                 = priority_value,
 	['{']                 = priority_value,
+	['@']                 = priority_value,
 	[KSET]                = priority_value,
 	[KUNSET]              = priority_value,
 	[KTSTRING]            = priority_value,
@@ -286,7 +287,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KFALSE:
 		break;
 
+	// request argument
 	case KARGUMENT:
+		break;
+
+	// reference
+	case '@':
 		break;
 
 	// name

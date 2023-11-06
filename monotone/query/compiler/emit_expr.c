@@ -545,6 +545,12 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
 
+	// reference
+	case '@':
+		if (target == NULL)
+			error("<@> no FROM clause defined");
+		return op2(self, CREF, rpin(self), target->id);
+
 	// name
 	case KNAME:
 		return emit_name(self, target, ast);
