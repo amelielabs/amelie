@@ -151,15 +151,21 @@ buf_write_str(Buf* buf, Str* str)
 }
 
 static inline void
+buf_vprintf(Buf* buf, const char* fmt, va_list args)
+{
+	char tmp[512];
+	int  tmp_len;
+	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
+	buf_write(buf, tmp, tmp_len);
+}
+
+static inline void
 buf_printf(Buf* buf, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	char tmp[512];
-	int  tmp_len;
-	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
+	buf_vprintf(buf, fmt, args);
 	va_end(args);
-	buf_write(buf, tmp, tmp_len);
 }
 
 // msg
