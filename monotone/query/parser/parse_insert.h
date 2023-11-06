@@ -37,9 +37,6 @@ struct AstInsert
 	Target* target;
 	Ast*    rows;
 	int     rows_count;
-	bool    generate;
-	Ast*    generate_count;
-	Ast*    generate_batch;
 	int     on_conflict;
 	Ast*    update_expr;
 	Ast*    update_where;
@@ -85,16 +82,13 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
-	self->unique         = false;
-	self->target         = NULL;
-	self->rows           = NULL;
-	self->rows_count     = 0;
-	self->generate       = false;
-	self->generate_count = NULL;
-	self->generate_batch = NULL;
-	self->on_conflict    = ON_CONFLICT_NONE;
-	self->update_expr    = NULL;
-	self->update_where   = NULL;
+	self->unique       = false;
+	self->target       = NULL;
+	self->rows         = NULL;
+	self->rows_count   = 0;
+	self->on_conflict  = ON_CONFLICT_NONE;
+	self->update_expr  = NULL;
+	self->update_where = NULL;
 	return self;
 }
 

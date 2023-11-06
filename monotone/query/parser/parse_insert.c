@@ -330,7 +330,6 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 				row = parse_row_list(self, stmt, list);
 			else
 				row = parse_row(self, stmt);
-
 			if (stmt->rows == NULL)
 				stmt->rows = &row->ast;
 			else
@@ -382,11 +381,84 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 	}
 }
 
+hot static inline void
+parse_generate(Stmt* self, AstInsert* stmt)
+{
+	// insert into () values (), ...
+
+	// GENERATE count
+	auto count = stmt_if(self, KINT);
+	if (! count)
+		error("GENERATE <count> expected");
+
+	auto lbr = ast('(');
+	auto rbr = ast(')');
+
+	Ast* last = NULL;
+	for (uint64_t i = 0; i < count->integer; i++)
+	{
+		// (), ...
+		stmt_push(self, rbr);
+		stmt_push(self, lbr);
+
+		auto row = parse_row_list(self, stmt, NULL);
+		if (stmt->rows == NULL)
+			stmt->rows = &row->ast;
+		else
+			last->next = &row->ast;
+		last = &row->ast;
+		stmt->rows_count++;
+	}
+}
+
+hot static inline void
+parse_on_conflict(Stmt* self, AstInsert* stmt)
+{
+	// ON CONFLICT
+	if (! stmt_if(self, KON))
+		return;
+
+	// CONFLICT
+	if (! stmt_if(self, KCONFLICT))
+		error("INSERT VALUES ON <CONFLICT> expected");
+
+	// DO
+	if (! stmt_if(self, KDO))
+		error("INSERT VALUES ON CONFLICT <DO> expected");
+
+	// REPLACE | NOTHING | UPDATE
+	auto op = stmt_next(self);
+	switch (op->id) {
+	case KREPLACE:
+		stmt->unique = false;
+		break;
+	case KNOTHING:
+		stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
+		break;
+	case KUPDATE:
+	{
+		stmt->on_conflict = ON_CONFLICT_UPDATE;
+
+		// SET path = expr [, ... ]
+		stmt->update_expr = parse_update_expr(self);
+
+		// [WHERE]
+		if (stmt_if(self, KWHERE))
+			stmt->update_where = parse_expr(self, NULL);
+		break;
+	}
+	default:
+		error("INSERT VALUES ON CONFLICT DO "
+		      "<REPLACE | NOTHING | UPDATE> expected");
+		break;
+	}
+}
+
 hot void
 parse_insert(Stmt* self, bool unique)
 {
 	// [INSERT|REPLACE] INTO name [(column_list)]
-	// [VALUES] (value, ..), ...
+	// [GENERATE | VALUES] (value, ..), ...
 	// [ON CONFLICT DO REPLACE | NOTHING | UPDATE]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
@@ -407,67 +479,20 @@ parse_insert(Stmt* self, bool unique)
 	// GENERATE
 	if (stmt_if(self, KGENERATE))
 	{
-		stmt->generate = true;
+		parse_generate(self, stmt);
 
-		// count
-		stmt->generate_count = stmt_if(self, KINT);
-		if (! stmt->generate_count)
-			error("GENERATE <count> expected");
+	} else
+	{
+		// (column list)
+		Ast* list = NULL;
+		bool list_in_use = stmt_if(self, '(');
+		if (list_in_use)
+			list = parse_column_list(self, stmt);
 
-		// batch
-		stmt->generate_batch = stmt_if(self, KINT);
-		if (! stmt->generate_batch)
-			error("GENERATE count <batch count> expected");
-
-		return;
+		// [VALUES] | expr
+		parse_values(self, stmt, list_in_use, list);
 	}
-
-	// (column list)
-	Ast* list = NULL;
-	bool list_in_use = stmt_if(self, '(');
-	if (list_in_use)
-		list = parse_column_list(self, stmt);
-
-	// [VALUES] | expr
-	parse_values(self, stmt, list_in_use, list);
 
 	// ON CONFLICT
-	if (stmt_if(self, KON))
-	{
-		// CONFLICT
-		if (! stmt_if(self, KCONFLICT))
-			error("INSERT VALUES ON <CONFLICT> expected");
-
-		// DO
-		if (! stmt_if(self, KDO))
-			error("INSERT VALUES ON CONFLICT <DO> expected");
-
-		// REPLACE | NOTHING | UPDATE
-		auto op = stmt_next(self);
-		switch (op->id) {
-		case KREPLACE:
-			stmt->unique = false;
-			break;
-		case KNOTHING:
-			stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
-			break;
-		case KUPDATE:
-		{
-			stmt->on_conflict = ON_CONFLICT_UPDATE;
-
-			// SET path = expr [, ... ]
-			stmt->update_expr = parse_update_expr(self);
-
-			// [WHERE]
-			if (stmt_if(self, KWHERE))
-				stmt->update_where = parse_expr(self, NULL);
-			break;
-		}
-		default:
-			error("INSERT VALUES ON CONFLICT DO "
-				  "<REPLACE | NOTHING | UPDATE> expected");
-			break;
-		}
-
-	}
+	parse_on_conflict(self, stmt);
 }
