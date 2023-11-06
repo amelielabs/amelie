@@ -102,5 +102,14 @@ insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = 
 select * from test
 drop table test
 
+# test: upsert generate
+create table test (id int primary key serial, data int default 0)
+insert into test generate 10 on conflict do update set data = data + 1
+select * from test
+alter table test set serial = 0
+insert into test generate 10 on conflict do update set data = data + 1
+select * from test
+drop table test
+
 disconnect S0
 env_close E0

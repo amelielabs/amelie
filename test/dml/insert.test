@@ -256,5 +256,13 @@ insert into test 1,2,3,1
 select * from test
 drop table test
 
+# test: insert generate
+create table test (id int primary key serial, data int default 0)
+insert into test generate
+insert into test generate "10"
+insert into test generate 10
+select * from test
+drop table test
+
 disconnect S0
 env_close E0

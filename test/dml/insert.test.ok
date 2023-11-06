@@ -375,5 +375,26 @@ query: on_error
 {"code": 1, "msg": "unique key constraint violation"}
 select * from test
 drop table test
+# test: insert generate
+create table test (id int primary key serial, data int default 0)
+insert into test generate
+query: on_error
+{"code": 1, "msg": "GENERATE <count> expected"}
+insert into test generate "10"
+query: on_error
+{"code": 1, "msg": "GENERATE <count> expected"}
+insert into test generate 10
+select * from test
+[0, 0]
+[1, 0]
+[2, 0]
+[3, 0]
+[4, 0]
+[5, 0]
+[6, 0]
+[7, 0]
+[8, 0]
+[9, 0]
+drop table test
 disconnect S0
 env_close E0
