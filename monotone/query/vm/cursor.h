@@ -27,6 +27,8 @@ struct Cursor
 	Storage*  storage;
 	Index*    index;
 	Iterator* it;
+	// ref
+	uint8_t*  ref;
 	// expr
 	uint8_t*  array_data;
 	int       array_pos;
@@ -56,6 +58,7 @@ cursor_init(Cursor* self)
 	self->storage     = NULL;
 	self->index       = NULL;
 	self->it          = NULL;
+	self->ref         = NULL;
 	self->array_data  = NULL;
 	self->array_pos   = 0;
 	self->array_count = 0;
@@ -75,6 +78,7 @@ cursor_reset(Cursor* self)
 	self->table       = NULL;
 	self->storage     = NULL;
 	self->index       = NULL;
+	self->ref         = NULL;
 	self->array_data  = NULL;
 	self->array_pos   = 0;
 	self->array_count = 0;

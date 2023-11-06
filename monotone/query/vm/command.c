@@ -305,7 +305,7 @@ ccursor_idx(Vm* self, Op* op)
 hot void
 ccall(Vm* self, Op* op)
 {
-	// [function, argc]
+	// [result, function, argc]
 
 	// prepare call arguments
 	int    argc = op->c;
@@ -396,22 +396,33 @@ cupsert(Vm* self, Op* op)
 	// [target_id, data_offset, data_size, _jmp]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
-	// todo: cursor reset
-
 	// upsert
 	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;
 	if (unlikely(! data_is_array(data)))
 		error("UPSERT: array expected");
 
-	// on insert goto next operation
-	if (storage_upsert(cursor->storage, self->trx, cursor->it, data, data_size))
+	// on insert
+	bool updated;
+	updated = storage_upsert(cursor->storage, self->trx, cursor->it,
+	                         data,
+	                         data_size);
+	if (updated)
+	{
+		// reset reference
+		cursor->ref = NULL;
 		return ++op;
+	}
+
+	// on conflict
+
+	// set cursor ref pointer to the current insert row data
+	cursor->ref = data;
 
 	// push next operation address
 	auto jmp_op = stack_push(&self->stack);
 	value_set_int(jmp_op, (intptr_t)(op + 1));
 
-	// on conflict
+	// update
 	return code_at(self->code, op->d);
 }
