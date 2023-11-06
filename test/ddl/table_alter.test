@@ -46,6 +46,35 @@ select *.schema, *.name from system.tables()
 create schema test
 alter table public.test rename to test.test
 select *.schema, *.name from system.tables()
+drop table test.test
+
+# test: set serial
+create table test (id int primary key serial, data int default 0)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+select * from test
+alter table test set
+alter table test set serial
+alter table test set serial 123
+alter table test set serial =
+alter table test set serial = "123"
+alter table test set serial = 0
+insert  into test () values ()
+insert  into test () values ()
+insert  into test () values ()
+insert  into test () values ()
+select * from test
+alter table test set serial = 0
+replace into test () values ()
+replace into test () values ()
+replace into test () values ()
+select * from test
+drop table test
+
+# test: set serial if exists
+alter table if exists test set serial = 0
+alter table test set serial = 0
 
 disconnect S0
 env_close E0
