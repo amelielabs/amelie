@@ -58,20 +58,24 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 		// _where:
 		jmp[route->order] = op_pos(self);
 
-		// where expression
-		if (insert->update_where)
+		// ON CONFLICT UPDATE or do nothing
+		if (insert->on_conflict == ON_CONFLICT_UPDATE)
 		{
-			// expr
-			int rexpr;
-			rexpr = emit_expr(self, target, insert->update_where);
+			// where expression
+			if (insert->update_where)
+			{
+				// expr
+				int rexpr;
+				rexpr = emit_expr(self, target, insert->update_where);
 
-			// jntr_pop
-			op1(self, CJNTR_POP, rexpr);
-			runpin(self, rexpr);
+				// jntr_pop
+				op1(self, CJNTR_POP, rexpr);
+				runpin(self, rexpr);
+			}
+
+			// update
+			emit_update_target(self, target, insert->update_expr);
 		}
-
-		// update
-		emit_update_target(self, target, insert->update_expr);
 
 		// jmp_pop
 		op0(self, CJMP_POP);
@@ -81,8 +85,7 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 	}
 
 	// upsert
-	op4(self, CUPSERT, target->id, data, data_size,
-	    jmp[route->order]);
+	op4(self, CUPSERT, target->id, data, data_size, jmp[route->order]);
 }
 
 hot void
