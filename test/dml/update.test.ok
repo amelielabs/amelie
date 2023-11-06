@@ -52,30 +52,30 @@ explain update test set data = data + 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0             int_min        0    0    0   
- 1                push        0    0    0   
- 2         cursor_open        0    0    4   # public.test (primary)
- 3                 jmp       16    0    0   
- 4         cursor_read        0    0    0   
- 5                push        0    0    0   
- 6                null        0    0    0   
- 7                push        0    0    0   
- 8          cursor_idx        0    0    1   
- 9                 int        1    1    0   
-10                 add        2    0    1   
-11                push        2    0    0   
-12              assign        0    3    1   
-13                push        0    0    0   
-14              update        0    0    0   
-15         cursor_next        0    4    0   
-16        cursor_close        0    0    0   
-17                 ret        0    0    0   
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       16      0      0
+ 4         cursor_read        0      0      0
+ 5                push        0      0      0
+ 6                null        0      0      0
+ 7                push        0      0      0
+ 8          cursor_idx        0      0      1
+ 9                 int        1      1      0
+10                 add        2      0      1
+11                push        2      0      0
+12              assign        0      3      1
+13                push        0      0      0
+14              update        0      0      0
+15         cursor_next        0      4      0
+16        cursor_close        0      0      0
+17                 ret        0      0      0
 
 "
 update test set data = data + 1
@@ -94,30 +94,30 @@ explain update test.test set data = data + 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0             int_min        0    0    0   
- 1                push        0    0    0   
- 2         cursor_open        0    0    4   # test.test (primary)
- 3                 jmp       16    0    0   
- 4         cursor_read        0    0    0   
- 5                push        0    0    0   
- 6                null        0    0    0   
- 7                push        0    0    0   
- 8          cursor_idx        0    0    1   
- 9                 int        1    1    0   
-10                 add        2    0    1   
-11                push        2    0    0   
-12              assign        0    3    1   
-13                push        0    0    0   
-14              update        0    0    0   
-15         cursor_next        0    4    0   
-16        cursor_close        0    0    0   
-17                 ret        0    0    0   
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # test.test (primary)
+ 3                 jmp       16      0      0
+ 4         cursor_read        0      0      0
+ 5                push        0      0      0
+ 6                null        0      0      0
+ 7                push        0      0      0
+ 8          cursor_idx        0      0      1
+ 9                 int        1      1      0
+10                 add        2      0      1
+11                push        2      0      0
+12              assign        0      3      1
+13                push        0      0      0
+14              update        0      0      0
+15         cursor_next        0      4      0
+16        cursor_close        0      0      0
+17                 ret        0      0      0
 
 "
 update test.test set data = data + 1
@@ -147,38 +147,38 @@ explain update test set a = a + 1, b = b - 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0             int_min        0    0    0   
- 1                push        0    0    0   
- 2         cursor_open        0    0    4   # public.test (primary)
- 3                 jmp       24    0    0   
- 4         cursor_read        0    0    0   
- 5                push        0    0    0   
- 6                null        0    0    0   
- 7                push        0    0    0   
- 8          cursor_idx        0    0    1   
- 9                 int        1    1    0   
-10                 add        2    0    1   
-11                push        2    0    0   
-12              assign        0    3    1   
-13                push        0    0    0   
-14                null        0    0    0   
-15                push        0    0    0   
-16          cursor_idx        0    0    2   
-17                 int        1    1    0   
-18                 sub        2    0    1   
-19                push        2    0    0   
-20              assign        0    3    2   
-21                push        0    0    0   
-22              update        0    0    0   
-23         cursor_next        0    4    0   
-24        cursor_close        0    0    0   
-25                 ret        0    0    0   
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       24      0      0
+ 4         cursor_read        0      0      0
+ 5                push        0      0      0
+ 6                null        0      0      0
+ 7                push        0      0      0
+ 8          cursor_idx        0      0      1
+ 9                 int        1      1      0
+10                 add        2      0      1
+11                push        2      0      0
+12              assign        0      3      1
+13                push        0      0      0
+14                null        0      0      0
+15                push        0      0      0
+16          cursor_idx        0      0      2
+17                 int        1      1      0
+18                 sub        2      0      1
+19                push        2      0      0
+20              assign        0      3      2
+21                push        0      0      0
+22              update        0      0      0
+23         cursor_next        0      4      0
+24        cursor_close        0      0      0
+25                 ret        0      0      0
 
 "
 update test set a = a + 1, b = b - 1
@@ -326,34 +326,34 @@ explain update test set data = data + 1 where id = 0
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0                 int        0    0    0   
- 1                push        0    0    0   
- 2         cursor_open        0    0    4   # public.test (primary)
- 3                 jmp       20    0    0   
- 4          cursor_idx        0    0    0   
- 5                 int        1    0    0   
- 6                 equ        2    0    1   
- 7                jntr        3    2    0   
- 8         cursor_read        0    0    0   
- 9                push        0    0    0   
-10                null        0    0    0   
-11                push        0    0    0   
-12          cursor_idx        0    0    1   
-13                 int        1    1    0   
-14                 add        2    0    1   
-15                push        2    0    0   
-16              assign        0    3    1   
-17                push        0    0    0   
-18              update        0    0    0   
-19         cursor_next        0    4    0   
-20        cursor_close        0    0    0   
-21                 ret        0    0    0   
+ 0                 int        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       20      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      0      0
+ 6                 equ        2      0      1
+ 7                jntr        3      2      0
+ 8         cursor_read        0      0      0
+ 9                push        0      0      0
+10                null        0      0      0
+11                push        0      0      0
+12          cursor_idx        0      0      1
+13                 int        1      1      0
+14                 add        2      0      1
+15                push        2      0      0
+16              assign        0      3      1
+17                push        0      0      0
+18              update        0      0      0
+19         cursor_next        0      4      0
+20        cursor_close        0      0      0
+21                 ret        0      0      0
 
 "
 update test set data = data + 1 where id = 0
@@ -373,34 +373,34 @@ explain update test set data = data + 1 where id >= 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0                 int        0    1    0   
- 1                push        0    0    0   
- 2         cursor_open        0    0    4   # public.test (primary)
- 3                 jmp       20    0    0   
- 4          cursor_idx        0    0    0   
- 5                 int        1    1    0   
- 6                 gte        2    0    1   
- 7                jntr       19    2    0   
- 8         cursor_read        0    0    0   
- 9                push        0    0    0   
-10                null        0    0    0   
-11                push        0    0    0   
-12          cursor_idx        0    0    1   
-13                 int        1    1    0   
-14                 add        2    0    1   
-15                push        2    0    0   
-16              assign        0    3    1   
-17                push        0    0    0   
-18              update        0    0    0   
-19         cursor_next        0    4    0   
-20        cursor_close        0    0    0   
-21                 ret        0    0    0   
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       20      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                 gte        2      0      1
+ 7                jntr       19      2      0
+ 8         cursor_read        0      0      0
+ 9                push        0      0      0
+10                null        0      0      0
+11                push        0      0      0
+12          cursor_idx        0      0      1
+13                 int        1      1      0
+14                 add        2      0      1
+15                push        2      0      0
+16              assign        0      3      1
+17                push        0      0      0
+18              update        0      0      0
+19         cursor_next        0      4      0
+20        cursor_close        0      0      0
+21                 ret        0      0      0
 
 "
 update test set data = data + 1 where id > 2

@@ -115,28 +115,28 @@ explain select id from test_view
 "
 bytecode [coordinator]
 --------
- 0                recv        0    0    0   
- 1                 ret        0    0    0   
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
 
 
 bytecode [shard 0]
 --------
- 0                 set        0    0    0   
- 1             int_min        1    0    0   
- 2                push        1    0    0   
- 3         cursor_open        0    0    5   # public.test (primary)
- 4                 jmp        8    0    0   
- 5         cursor_read        1    0    0   
- 6             set_add        0    1    0   
- 7         cursor_next        0    5    0   
- 8        cursor_close        0    0    0   
- 9    cursor_open_expr        1    0   11   
-10                 jmp       14    0    0   
-11          cursor_idx        1    1    0   
-12                send        1    0    0   
-13         cursor_next        1   11    0   
-14        cursor_close        1    0    0   
-15                 ret        0    0    0   
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11          cursor_idx        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
 
 "
 drop view test_view
