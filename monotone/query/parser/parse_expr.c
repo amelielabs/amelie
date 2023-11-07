@@ -86,7 +86,8 @@ priority_map[UINT8_MAX] =
 	[KARGUMENT]           = priority_value,
 	[KNAME]               = priority_value,
 	[KNAME_COMPOUND]      = priority_value,
-	[KNAME_COMPOUND_STAR] = priority_value
+	[KNAME_COMPOUND_STAR] = priority_value,
+	[KSTAR_STAR]          = priority_value
 };
 
 static inline void
@@ -292,8 +293,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KARGUMENT:
 		break;
 
-	// reference
+	// @, **
 	case '@':
+	case KSTAR_STAR:
 		break;
 
 	// name
