@@ -129,6 +129,9 @@ create table test (id int primary key)
 select *.schema from system.tables() where name = "test"
 drop table test
 
+# test: schema system
+create table system.test (id int primary key)
+
 # test: schema default explicit
 create table public.test (id int primary key)
 select *.schema from system.tables() where name = "test"

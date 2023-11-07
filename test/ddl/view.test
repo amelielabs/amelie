@@ -30,6 +30,9 @@ drop view test
 # test: create view schema not exists
 create view test.test as select 1
 
+# test: create view schema system
+create view system.test as select 1
+
 # test: create view schema
 create schema test
 create view test.test as select 1
@@ -120,6 +123,9 @@ drop table test
 
 # test: alter rename schema not exists
 alter view abc rename to test.test
+
+# test: alter rename schema system
+alter view abc rename to system.test
 
 # test: alter rename schema
 alter view abc rename to public.test

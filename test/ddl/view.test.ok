@@ -54,6 +54,10 @@ drop view test
 create view test.test as select 1
 query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
+# test: create view schema system
+create view system.test as select 1
+query: on_error
+{"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: create view schema
 create schema test
 create view test.test as select 1
@@ -220,6 +224,10 @@ drop table test
 alter view abc rename to test.test
 query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
+# test: alter rename schema system
+alter view abc rename to system.test
+query: on_error
+{"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: alter rename schema
 alter view abc rename to public.test
 select * from system.views()

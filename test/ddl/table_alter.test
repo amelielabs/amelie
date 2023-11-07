@@ -40,6 +40,9 @@ drop view test
 # test: rename schema not exists
 alter table abc rename to test.test
 
+# test: rename schema system
+alter table abc rename to system.test
+
 # test: rename schema
 alter table abc rename to public.test
 select *.schema, *.name from system.tables()

@@ -14,8 +14,8 @@ select *.schema, *.name from system.tables()
 # test: drop schema cascade
 drop schema test cascade
 select * from system.schemas()
-{"name": "public", "system": true}
-{"name": "system", "system": true}
+{"name": "system", "system": true, "create": false}
+{"name": "public", "system": true, "create": true}
 select *.schema, *.name from system.tables()
 create schema test
 create table test.a(id int primary key)
@@ -27,17 +27,17 @@ create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 select * from system.schemas()
-{"name": "public", "system": true}
-{"name": "system", "system": true}
-{"name": "test", "system": false}
+{"name": "system", "system": true, "create": false}
+{"name": "public", "system": true, "create": true}
+{"name": "test", "system": false, "create": true}
 select *.schema, *.name from system.tables()
 ["test", "a"]
 ["test", "b"]
 alter schema test rename test2
 select * from system.schemas()
-{"name": "public", "system": true}
-{"name": "system", "system": true}
-{"name": "test2", "system": false}
+{"name": "system", "system": true, "create": false}
+{"name": "public", "system": true, "create": true}
+{"name": "test2", "system": false, "create": true}
 select *.schema, *.name from system.tables()
 ["test2", "a"]
 ["test2", "b"]
