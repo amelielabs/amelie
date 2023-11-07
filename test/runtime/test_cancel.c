@@ -144,7 +144,7 @@ test_cancel_channel_pause(void *arg)
 	channel_attach(&channel);
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_cancel_channel_pause_main, &channel);
 
 	uint64_t self = mn_self()->id;
@@ -162,7 +162,7 @@ test_cancel_channel_pause(void *arg)
 	task_free(&task);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 
 	coroutine_cancel_resume(mn_self()); // throw
 

@@ -26,7 +26,7 @@ void
 test_rpc(void *arg)
 {
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_rpc_main, NULL);
 
 	int rc;
@@ -57,7 +57,7 @@ void
 test_rpc_execute(void *arg)
 {
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_main, NULL);
 
 	int rc;
@@ -86,7 +86,7 @@ void
 test_rpc_execute_error(void* arg)
 {
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_error_main, NULL);
 
 	Exception e;
@@ -120,7 +120,7 @@ void
 test_rpc_benchmark(void *arg)
 {
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_rpc_benchmark_main, NULL);
 
 	uint64_t time_us;
@@ -172,7 +172,7 @@ void
 test_rpc_mutex_benchmark(void *arg)
 {
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_rpc_mutex_benchmark_main, NULL);
 
 	mutex_init(&bench_mutex);

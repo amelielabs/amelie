@@ -44,7 +44,7 @@ test_condition_task(void *arg)
 	auto cond = condition_create();
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_condition_main, cond);
 
 	bool timeout = condition_wait(cond, -1);
@@ -74,7 +74,7 @@ test_condition_task_timeout(void *arg)
 	auto cond = condition_create();
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_condition_timeout_main, cond);
 
 	bool timeout = condition_wait(cond, 10);

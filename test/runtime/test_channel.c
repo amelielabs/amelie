@@ -27,7 +27,7 @@ test_channel_read_empty(void* arg)
 	test(buf == NULL);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 }
 
 void
@@ -49,7 +49,7 @@ test_channel(void* arg)
 	buf_free(buf);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 }
 
 void
@@ -60,7 +60,7 @@ test_channel_task(void *arg)
 	channel_attach(&channel);
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_channel_main, &channel);
 
 	auto buf = channel_read(&channel, -1);
@@ -72,7 +72,7 @@ test_channel_task(void *arg)
 	buf_free(buf);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 }
 
 void
@@ -82,7 +82,7 @@ test_channel_task_detached(void *arg)
 	channel_init(&channel);
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_channel_main, &channel);
 
 	auto buf = channel_read(&channel, -1);
@@ -94,7 +94,7 @@ test_channel_task_detached(void *arg)
 	buf_free(buf);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 }
 
 static void
@@ -113,7 +113,7 @@ test_channel_task_timeout(void *arg)
 	channel_attach(&channel);
 
 	Task task;
-	task_init(&task, mn_task->buf_cache);
+	task_init(&task);
 	task_create(&task, "test", test_channel_timeout_main, &channel);
 
 	auto buf = channel_read(&channel, 10);
@@ -128,7 +128,7 @@ test_channel_task_timeout(void *arg)
 	buf_free(buf);
 
 	channel_detach(&channel);
-	channel_free(&channel, mn_task->buf_cache);
+	channel_free(&channel);
 }
 
 enum
@@ -190,11 +190,11 @@ test_channel_producer_consumer(void *arg)
 	auto event = condition_create();
 
 	Task consumer;
-	task_init(&consumer, mn_task->buf_cache);
+	task_init(&consumer);
 	task_create(&consumer, "consumer", test_channel_consumer, event);
 
 	Task producer;
-	task_init(&producer, mn_task->buf_cache);
+	task_init(&producer);
 	task_create(&producer, "producer", test_channel_producer, &consumer.channel);
 
 	bool timeout = condition_wait(event, -1);

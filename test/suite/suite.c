@@ -656,11 +656,8 @@ test_suite_unit(TestSuite* self, char* arg)
 	}
 	void (*test_function)(void*) = ptr;
 
-	BufCache buf_cache;
-	buf_cache_init(&buf_cache);
-
 	Task task;
-	task_init(&task, &buf_cache);
+	task_init(&task);
 
 	int rc;
 	rc = task_create_nothrow(&task, name, test_function, NULL, NULL, NULL, NULL);
@@ -672,8 +669,6 @@ test_suite_unit(TestSuite* self, char* arg)
 
 	task_wait(&task);
 	task_free(&task);
-
-	buf_cache_free(&buf_cache);
 	return 0;
 }
 

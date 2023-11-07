@@ -19,11 +19,8 @@ test_task_create_main(void* arg)
 
 void test_task_create(void)
 {
-	BufCache buf_cache;
-	buf_cache_init(&buf_cache);
-
 	Task task;
-	task_init(&task, &buf_cache);
+	task_init(&task);
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_create_main,
@@ -34,8 +31,6 @@ void test_task_create(void)
 	task_free(&task);
 
 	test(called == 1);
-
-	buf_cache_free(&buf_cache);
 }
 
 void
@@ -50,11 +45,8 @@ void test_task_args(void)
 	int arg = 123;
 	int arg_global = 321;
 
-	BufCache buf_cache;
-	buf_cache_init(&buf_cache);
-
 	Task task;
-	task_init(&task, &buf_cache);
+	task_init(&task);
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_args_main,
@@ -75,11 +67,8 @@ test_task_status_main(void* arg)
 
 void test_task_status(void)
 {
-	BufCache buf_cache;
-	buf_cache_init(&buf_cache);
-
 	Task task;
-	task_init(&task, &buf_cache);
+	task_init(&task);
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_status_main,
