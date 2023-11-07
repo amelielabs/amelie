@@ -38,7 +38,7 @@ spinlock_unlock(Spinlock* self)
 }
 
 #if 0
-typedef uint8 spinlock;
+typedef uint8_t Spinlock;
 
 #if defined(__x86_64__) || defined(__i386) || defined(_X86_)
 #  define MN_SPINLOCK_BACKOFF __asm__ ("pause")
@@ -47,25 +47,25 @@ typedef uint8 spinlock;
 #endif
 
 static inline void
-spinlock_init(spinlock* self)
+spinlock_init(Spinlock* self)
 {
 	*self = 0;
 }
 
 static inline void
-spinlock_free(spinlock* self)
+spinlock_free(Spinlock* self)
 {
 	*self = 0;
 }
 
 static inline void
-spinlock_lock(spinlock* self)
+spinlock_lock(Spinlock* self)
 {
-	if (__sync_lockest_and_set(lock, 1) != 0) {
+	if (__sync_lock_test_and_set(self, 1) != 0) {
 		unsigned int spcount = 0U;
 		for (;;) {
 			MN_SPINLOCK_BACKOFF;
-			if (*self == 0U && __sync_lockest_and_set(lock, 1) == 0)
+			if (*self == 0U && __sync_lock_test_and_set(self, 1) == 0)
 				break;
 			if (++spcount > 100U)
 				usleep(0);
@@ -74,8 +74,8 @@ spinlock_lock(spinlock* self)
 }
 
 static inline void
-spinlock_unlock(spinlock* self)
+spinlock_unlock(Spinlock* self)
 {
-	__sync_lock_release(lock);
+	__sync_lock_release(self);
 }
 #endif
