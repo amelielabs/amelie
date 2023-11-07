@@ -40,6 +40,7 @@ enum
 	KNEG,
 	KARRAY,
 	KSTAR,
+	KSTAR_STAR,
 
 	KTMAP,
 	KTARRAY,

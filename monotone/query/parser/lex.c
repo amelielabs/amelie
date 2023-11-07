@@ -153,6 +153,12 @@ lex_next(Lex* self)
 		if (unlikely(self->pos == self->end))
 			goto symbol;
 		char symbol_next = *self->pos;
+		// **
+		if (symbol == '*' && symbol_next == '*') {
+			self->pos++;
+			ast->id = KSTAR_STAR;
+			return ast;
+		}
 		// ::
 		if (symbol == ':' && symbol_next == ':') {
 			self->pos++;
