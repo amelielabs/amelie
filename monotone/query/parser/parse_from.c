@@ -56,6 +56,8 @@ parse_from_analyze(From* self, Table** table, View** view)
 
 	// find view
 	*view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
+
+	// apply view
 	if (*view)
 	{
 		// FROM (SELECT)

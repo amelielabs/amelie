@@ -231,8 +231,12 @@ execute_ddl(Session* self, Stmt* stmt)
 			// create table
 			auto arg = ast_table_create_of(stmt->ast);
 
-			// ensure schema exists
-			schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+			// ensure schema exists and not system
+			auto schema = schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+			if (! schema->config->create)
+				error("system schema <%.*s> cannot be used to create objects",
+				      str_size(&schema->config->name),
+				      str_of(&schema->config->name));
 
 			// ensure view with the same name does not exists
 			auto view = view_mgr_find(share->view_mgr, &arg->config->schema,
@@ -277,7 +281,11 @@ execute_ddl(Session* self, Stmt* stmt)
 			// RENAME TO
 
 			// ensure schema exists
-			schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+			auto schema = schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+			if (! schema->config->create)
+				error("system schema <%.*s> cannot be used to create objects",
+				      str_size(&schema->config->name),
+				      str_of(&schema->config->name));
 
 			// ensure view with the same name does not exists
 			auto view = view_mgr_find(share->view_mgr, &arg->schema_new,
@@ -300,7 +308,11 @@ execute_ddl(Session* self, Stmt* stmt)
 			auto arg = ast_view_create_of(stmt->ast);
 
 			// ensure schema exists
-			schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+			auto schema = schema_mgr_find(share->schema_mgr, &arg->config->schema, true);
+			if (! schema->config->create)
+				error("system schema <%.*s> cannot be used to create objects",
+				      str_size(&schema->config->name),
+				      str_of(&schema->config->name));
 
 			// ensure table with the same name does not exists
 			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
@@ -327,7 +339,11 @@ execute_ddl(Session* self, Stmt* stmt)
 			auto arg = ast_view_alter_of(stmt->ast);
 
 			// ensure schema exists
-			schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+			auto schema = schema_mgr_find(share->schema_mgr, &arg->schema_new, true);
+			if (! schema->config->create)
+				error("system schema <%.*s> cannot be used to create objects",
+				      str_size(&schema->config->name),
+				      str_of(&schema->config->name));
 
 			// ensure table with the same name does not exists
 			auto table = table_mgr_find(share->table_mgr, &arg->schema_new,

@@ -35,6 +35,7 @@ parse_schema_create(Stmt* self)
 	// create schema config
 	stmt->config = schema_config_allocate();
 	schema_config_set_system(stmt->config, false);
+	schema_config_set_create(stmt->config, true);
 
 	// name
 	auto name = stmt_if(self, KNAME);
