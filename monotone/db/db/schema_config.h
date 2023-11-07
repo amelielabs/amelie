@@ -12,6 +12,7 @@ struct SchemaConfig
 {
 	Str  name;
 	bool system;
+	bool create;
 };
 
 static inline SchemaConfig*
@@ -20,6 +21,7 @@ schema_config_allocate(void)
 	SchemaConfig* self;
 	self = mn_malloc(sizeof(SchemaConfig));
 	self->system = false;
+	self->create = false;
 	str_init(&self->name);
 	return self;
 }
@@ -38,6 +40,12 @@ schema_config_set_system(SchemaConfig* self, bool system)
 }
 
 static inline void
+schema_config_set_create(SchemaConfig* self, bool create)
+{
+	self->create = create;
+}
+
+static inline void
 schema_config_set_name(SchemaConfig* self, Str* name)
 {
 	str_free(&self->name);
@@ -51,6 +59,7 @@ schema_config_copy(SchemaConfig* self)
 	guard(copy_guard, schema_config_free, copy);
 	schema_config_set_name(copy, &self->name);
 	schema_config_set_system(copy, self->system);
+	schema_config_set_create(copy, self->create);
 	return unguard(&copy_guard);
 }
 
@@ -72,6 +81,10 @@ schema_config_read(uint8_t** pos)
 	data_skip(pos);
 	data_read_bool(pos, &self->system);
 
+	// create
+	data_skip(pos);
+	data_read_bool(pos, &self->create);
+
 	return unguard(&self_guard);
 }
 
@@ -79,7 +92,7 @@ static inline void
 schema_config_write(SchemaConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 2);
+	encode_map(buf, 3);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -88,4 +101,8 @@ schema_config_write(SchemaConfig* self, Buf* buf)
 	// system
 	encode_raw(buf, "system", 6);
 	encode_bool(buf, self->system);
+
+	// creat
+	encode_raw(buf, "create", 6);
+	encode_bool(buf, self->create);
 }
