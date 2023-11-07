@@ -37,7 +37,7 @@ db_free(Db* self)
 }
 
 static void
-db_create_system_schema(Db* self, const char* schema)
+db_create_system_schema(Db* self, const char* schema, bool create)
 {
 	Transaction trx;
 	transaction_init(&trx);
@@ -58,6 +58,7 @@ db_create_system_schema(Db* self, const char* schema)
 		guard(config_guard, schema_config_free, config);
 		schema_config_set_name(config, &name);
 		schema_config_set_system(config, true);
+		schema_config_set_create(config, create);
 		schema_mgr_create(&self->schema_mgr, &trx, config, false);
 
 		// commit
@@ -75,8 +76,8 @@ void
 db_open(Db* self, CatalogMgr* cat_mgr)
 {
 	// prepare system schemas
-	db_create_system_schema(self, "public");
-	db_create_system_schema(self, "system");
+	db_create_system_schema(self, "system", false);
+	db_create_system_schema(self, "public", true);
 
 	// recover storages
 	storage_mgr_open(&self->storage_mgr);
