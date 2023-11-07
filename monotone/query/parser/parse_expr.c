@@ -61,6 +61,7 @@ priority_map[UINT8_MAX] =
 	['%']                 = 10,
 	// 11 (reserved for unary)
 	// 12
+	[KMETHOD]             = 12,
 	['[']                 = 12,
 	['.']                 = 12,
 	// values (priority is not used)
@@ -400,7 +401,29 @@ parse_expr(Stmt* self, Expr* expr)
 				// operator
 				expr_operator(&ops, &result, ast, priority);
 
-				if (ast->id == '[') 
+				if (ast->id == KMETHOD)
+				{
+					// expr :: path [(call, ...)]
+					// expr -> path [(call, ...)]
+					auto r = stmt_next_shadow(self);
+					if (r->id == KNAME ||
+					    r->id == KNAME_COMPOUND)
+					{
+						// function(expr, ...)
+						auto call = stmt_if(self, '(');
+						if (call)
+						{
+							call->l = r;
+							call->r = expr_call(self, expr, ')', false);
+							r = call;
+						}
+					} else {
+						error("bad '::' or '->' expression");
+					}
+					ast_push(&result, r);
+					unary = false;
+				} else
+				if (ast->id == '[')
 				{
 					// expr[idx]
 					auto r = parse_expr(self, expr);
