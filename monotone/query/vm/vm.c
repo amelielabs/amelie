@@ -136,6 +136,7 @@ vm_run(Vm*          self,
 		&&cgroup_get,
 		&&cgroup_get_aggr,
 		&&cref,
+		&&cref_key,
 		&&ccntr_init,
 		&&ccntr_gte,
 		&&ccntr_lte,
@@ -463,6 +464,14 @@ cref:
 	if (unlikely(! cursor->ref))
 		error("@: reference is not defined");
 	value_read(&r[op->a], cursor->ref, NULL);
+	op_next;
+
+cref_key:
+	// [result, target]
+	cursor = cursor_mgr_of(cursor_mgr, op->b);
+	if (unlikely(! cursor->ref_key))
+		error("**: reference is not defined");
+	value_read(&r[op->a], cursor->ref_key, NULL);
 	op_next;
 
 ccntr_init:

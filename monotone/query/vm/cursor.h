@@ -14,6 +14,7 @@ enum
 	CURSOR_NONE,
 	CURSOR_TABLE,
 	CURSOR_ARRAY,
+	CURSOR_MAP,
 	CURSOR_SET,
 	CURSOR_GROUP
 };
@@ -29,10 +30,11 @@ struct Cursor
 	Iterator* it;
 	// ref
 	uint8_t*  ref;
+	uint8_t*  ref_key;
 	// expr
-	uint8_t*  array_data;
-	int       array_pos;
-	int       array_count;
+	uint8_t*  obj_data;
+	int       obj_pos;
+	int       obj_count;
 	// set
 	Set*      set;
 	int       set_pos;
@@ -52,42 +54,44 @@ struct CursorMgr
 static inline void
 cursor_init(Cursor* self)
 {
-	self->type        = CURSOR_NONE;
-	self->r           = 0;
-	self->table       = NULL;
-	self->storage     = NULL;
-	self->index       = NULL;
-	self->it          = NULL;
-	self->ref         = NULL;
-	self->array_data  = NULL;
-	self->array_pos   = 0;
-	self->array_count = 0;
-	self->set         = NULL;
-	self->set_pos     = 0;
-	self->group       = NULL;
-	self->group_pos   = 0;
-	self->limit       = 0;
-	self->offset      = 0;
+	self->type      = CURSOR_NONE;
+	self->r         = 0;
+	self->table     = NULL;
+	self->storage   = NULL;
+	self->index     = NULL;
+	self->it        = NULL;
+	self->ref       = NULL;
+	self->ref_key   = NULL;
+	self->obj_data  = NULL;
+	self->obj_pos   = 0;
+	self->obj_count = 0;
+	self->set       = NULL;
+	self->set_pos   = 0;
+	self->group     = NULL;
+	self->group_pos = 0;
+	self->limit     = 0;
+	self->offset    = 0;
 }
 
 static inline void
 cursor_reset(Cursor* self)
 {
-	self->type        = CURSOR_NONE;
-	self->r           = 0;
-	self->table       = NULL;
-	self->storage     = NULL;
-	self->index       = NULL;
-	self->ref         = NULL;
-	self->array_data  = NULL;
-	self->array_pos   = 0;
-	self->array_count = 0;
-	self->set         = NULL;
-	self->set_pos     = 0;
-	self->group       = NULL;
-	self->group_pos   = 0;
-	self->limit       = 0;
-	self->offset      = 0;
+	self->type      = CURSOR_NONE;
+	self->r         = 0;
+	self->table     = NULL;
+	self->storage   = NULL;
+	self->index     = NULL;
+	self->ref       = NULL;
+	self->ref_key   = NULL;
+	self->obj_data  = NULL;
+	self->obj_pos   = 0;
+	self->obj_count = 0;
+	self->set       = NULL;
+	self->set_pos   = 0;
+	self->group     = NULL;
+	self->group_pos = 0;
+	self->limit     = 0;
+	self->offset    = 0;
 	if (self->it)
 	{
 		iterator_close(self->it);

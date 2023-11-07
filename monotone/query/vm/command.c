@@ -75,13 +75,29 @@ ccursor_open_expr(Vm* self, Op* op)
 	auto expr = reg_at(&self->r, op->b);
 	if (expr->type == VALUE_DATA)
 	{
-		if (! data_is_array(expr->data))
-			error("FROM: array or data type expected");
-		cursor->type       = CURSOR_ARRAY;
-		cursor->array_pos  = 0;
-		cursor->array_data = expr->data;
-		data_read_array(&cursor->array_data, &cursor->array_count);
-		if (cursor->array_count == 0)
+		if (data_is_array(expr->data))
+		{
+			cursor->type     = CURSOR_ARRAY;
+			cursor->obj_pos  = 0;
+			cursor->obj_data = expr->data;
+			data_read_array(&cursor->obj_data, &cursor->obj_count);
+		} else
+		if (data_is_map(expr->data))
+		{
+			cursor->type     = CURSOR_MAP;
+			cursor->obj_pos  = 0;
+			cursor->obj_data = expr->data;
+			data_read_map(&cursor->obj_data, &cursor->obj_count);
+			if (cursor->obj_count > 0)
+			{
+				cursor->ref_key = cursor->obj_data;
+				data_skip(&cursor->obj_data);
+			}
+
+		} else {
+			error("FROM: array, map or data type expected");
+		}
+		if (cursor->obj_count == 0)
 			return ++op;
 	} else
 	if (expr->type == VALUE_SET)
@@ -133,6 +149,7 @@ ccursor_close(Vm* self, Op* op)
 	case CURSOR_TABLE:
 		break;
 	case CURSOR_ARRAY:
+	case CURSOR_MAP:
 	case CURSOR_SET:
 	case CURSOR_GROUP:
 	{
@@ -165,10 +182,23 @@ ccursor_next(Vm* self, Op* op)
 	case CURSOR_ARRAY:
 	{
 		// array
-		cursor->array_pos++;
-		if (cursor->array_pos >= cursor->array_count)
+		cursor->obj_pos++;
+		if (cursor->obj_pos >= cursor->obj_count)
 			return ++op;
-		data_skip(&cursor->array_data);
+		data_skip(&cursor->obj_data);
+		break;
+	}
+	case CURSOR_MAP:
+	{
+		// map
+		cursor->obj_pos++;
+		if (cursor->obj_pos >= cursor->obj_count)
+			return ++op;
+		// skip previous value
+		data_skip(&cursor->obj_data);
+		// set and skip key
+		cursor->ref_key = cursor->obj_data;
+		data_skip(&cursor->obj_data);
 		break;
 	}
 	case CURSOR_SET:
@@ -213,8 +243,9 @@ ccursor_read(Vm* self, Op* op)
 		break;
 	}
 	case CURSOR_ARRAY:
+	case CURSOR_MAP:
 	{
-		value_read(a, cursor->array_data, NULL);
+		value_read(a, cursor->obj_data, NULL);
 		break;
 	}
 	case CURSOR_SET:
@@ -257,8 +288,9 @@ ccursor_idx(Vm* self, Op* op)
 		break;
 	}
 	case CURSOR_ARRAY:
+	case CURSOR_MAP:
 		data_buf = reg_at(&self->r, cursor->r)->buf;
-		data     = cursor->array_data;
+		data     = cursor->obj_data;
 		break;
 	case CURSOR_SET:
 	{

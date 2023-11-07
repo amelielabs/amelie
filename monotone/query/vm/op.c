@@ -102,6 +102,7 @@ OpDesc ops[] =
 
 	// ref
 	{ CREF,               "ref"               },
+	{ CREF_KEY,           "ref_key"           },
 
 	// counters
 	{ CCNTR_INIT,         "cntr_init"         },
@@ -126,81 +127,6 @@ OpDesc ops[] =
 	{ CDELETE,            "delete"            },
 	{ CUPSERT,            "upsert"            }
 };
-
-#if 0
-void
-op_dump(Code* self, CodeData* data, Buf* output, Str* section)
-{
-	buf_printf(output, "\n");
-	buf_printf(output, "bytecode [%.*s]\n", str_size(section), str_of(section));
-	buf_printf(output, "--------\n");
-
-	auto op  = (Op*)self->code.start;
-	auto end = (Op*)self->code.position;
-
-	int i = 0;
-	while (op < end)
-	{
-		buf_printf(output,
-		           "%2d  %18s   %6" PRIi64 " %4" PRIi64 " %4" PRIi64 "   ",
-		           i,
-		           ops[op->op].name, op->a, op->b, op->c);
-
-		switch (op->op) {
-		case CSTRING:
-		{
-			Str str;
-			code_data_at_string(data, op->b, &str);
-			buf_printf(output, "# %.*s", str_size(&str), str_of(&str));
-			break;
-		}
-		case CREAL:
-		{
-			double real = code_data_at_real(data, op->b);
-			buf_printf(output, "# %f", real);
-			break;
-		}
-		case CINSERT:
-		{
-			auto table = (Table*)op->a;
-			buf_printf(output, "# %.*s", str_size(&table->config->name),
-			           str_of(&table->config->name));
-			break;
-		}
-		case CDELETE:
-			break;
-		case CCURSOR_OPEN:
-		{
-			Str schema;
-			Str table;
-			Str index;
-			uint8_t* pos = code_data_at(data, op->b);
-			data_read_string(&pos, &schema);
-			data_read_string(&pos, &table);
-			data_read_string(&pos, &index);
-			buf_printf(output, "# %.*s.%.*s (%.*s)",
-			           str_size(&schema), str_of(&schema),
-			           str_size(&table), str_of(&table),
-			           str_size(&index), str_of(&index));
-			break;
-		}
-		case CCALL:
-		{
-			auto function = (Function*)op->b;
-			buf_printf(output, "# %.*s", str_size(&function->name),
-			           str_of(&function->name));
-			break;
-		}
-		}
-		buf_printf(output, "\n");
-
-		op++;
-		i++;
-	}
-
-	buf_printf(output, "\n");
-}
-#endif
 
 static inline void
 op_write(Buf* output, Op* op, int pos, bool a, bool b, bool c, char *fmt, ...)

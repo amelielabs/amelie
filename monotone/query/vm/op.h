@@ -87,6 +87,7 @@ enum
 
 	// ref
 	CREF,
+	CREF_KEY,
 
 	// counters
 	CCNTR_INIT,
