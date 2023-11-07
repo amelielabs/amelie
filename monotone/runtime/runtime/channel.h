@@ -17,7 +17,7 @@ struct Channel
 };
 
 void channel_init(Channel*);
-void channel_free(Channel*, BufCache*);
+void channel_free(Channel*);
 int  channel_attach_to(Channel*, Poller*);
 void channel_attach(Channel*);
 void channel_detach(Channel*);

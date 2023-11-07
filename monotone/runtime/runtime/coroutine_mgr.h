@@ -40,11 +40,11 @@ coroutine_mgr_init(CoroutineMgr* self, int stack_size)
 }
 
 static inline void
-coroutine_mgr_free(CoroutineMgr* self, BufCache* cache)
+coroutine_mgr_free(CoroutineMgr* self)
 {
 	list_foreach_safe(&self->list_free) {
 		auto coro = list_at(Coroutine, link);
-		coroutine_free(coro, cache);
+		coroutine_free(coro);
 	}
 }
 

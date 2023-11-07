@@ -36,9 +36,9 @@ resolver_main(void* arg)
 }
 
 void
-resolver_init(Resolver* self, BufCache* buf_cache)
+resolver_init(Resolver* self)
 {
-	task_init(&self->task, buf_cache);
+	task_init(&self->task);
 }
 
 void

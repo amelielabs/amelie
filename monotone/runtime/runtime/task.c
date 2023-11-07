@@ -154,7 +154,7 @@ task_main(void* arg)
 }
 
 void
-task_init(Task* self, BufCache* cache)
+task_init(Task* self)
 {
 	self->main            = NULL;
 	self->main_arg        = NULL;
@@ -163,11 +163,11 @@ task_init(Task* self, BufCache* cache)
 	self->log             = NULL;
 	self->log_arg         = NULL;
 	self->name            = NULL;
-	self->buf_cache       = cache;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 *  18);
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	condition_cache_init(&self->condition_cache);
+	buf_cache_init(&self->buf_cache);
 	channel_init(&self->channel);
 	thread_status_init(&self->thread_status);
 	thread_init(&self->thread);
@@ -176,13 +176,14 @@ task_init(Task* self, BufCache* cache)
 void
 task_free(Task* self)
 {
-	coroutine_mgr_free(&self->coroutine_mgr, self->buf_cache);
+	coroutine_mgr_free(&self->coroutine_mgr);
 	timer_mgr_free(&self->timer_mgr);
 	condition_cache_free(&self->condition_cache);
 	channel_detach(&self->channel);
-	channel_free(&self->channel, self->buf_cache);
+	channel_free(&self->channel);
 	poller_free(&self->poller);
 	thread_status_free(&self->thread_status);
+	buf_cache_free(&self->buf_cache);
 }
 
 bool

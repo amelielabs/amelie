@@ -17,10 +17,10 @@ channel_init(Channel* self)
 }
 
 void
-channel_free(Channel* self, BufCache* buf_cache)
+channel_free(Channel* self)
 {
 	assert(! self->on_write.attached);
-	buf_pool_reset(&self->pool, buf_cache);
+	buf_pool_reset(&self->pool);
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
 }

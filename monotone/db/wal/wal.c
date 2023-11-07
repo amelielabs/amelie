@@ -70,7 +70,7 @@ void
 wal_init(Wal* self)
 {
 	wal_store_init(&self->wal_store);
-	task_init(&self->task, mn_task->buf_cache);
+	task_init(&self->task);
 }
 
 void
@@ -99,7 +99,7 @@ wal_stop(Wal* self)
 		rpc(&self->task.channel, RPC_STOP, 0);
 		task_wait(&self->task);
 		task_free(&self->task);
-		task_init(&self->task, mn_task->buf_cache);
+		task_init(&self->task);
 	}
 }
 

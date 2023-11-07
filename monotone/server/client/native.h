@@ -34,10 +34,10 @@ native_init(Native* self)
 }
 
 static inline void
-native_free(Native* self, BufCache* buf_cache)
+native_free(Native* self)
 {
-	channel_free(&self->src, buf_cache);
-	channel_free(&self->core, buf_cache);
+	channel_free(&self->src);
+	channel_free(&self->core);
 	str_free(&self->uri);
 }
 
@@ -112,7 +112,7 @@ native_close(Native* self, BufCache* buf_cache)
 		if (buf == NULL)
 			continue;
 		int id = msg_of(buf)->id;
-		buf_cache_push(buf_cache, buf);
+		buf_cache_push(buf->cache, buf);
 		if (id == MSG_DISCONNECT)
 			break;
 	}

@@ -72,13 +72,13 @@ buf_pool_pop(BufPool* self, BufPool* to)
 }
 
 hot static inline void
-buf_pool_reset(BufPool* self, BufCache* cache)
+buf_pool_reset(BufPool* self)
 {
 	for (;;) {
 		auto buf = buf_pool_pop(self, NULL);
 		if (buf == NULL)
 			break;
-		buf_cache_push(cache, buf);
+		buf_cache_push(buf->cache, buf);
 	}
 	buf_pool_init(self);
 }

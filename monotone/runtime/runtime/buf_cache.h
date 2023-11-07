@@ -26,7 +26,8 @@ buf_cache_init(BufCache* self)
 static inline void
 buf_cache_free(BufCache* self)
 {
-	list_foreach_safe(&self->list) {
+	list_foreach_safe(&self->list)
+	{
 		auto buf = list_at(Buf, link);
 		buf_free_memory(buf);
 	}
@@ -71,7 +72,7 @@ buf_create_nothrow(BufCache* self, int size)
 		if (unlikely(buf == NULL))
 			return NULL;
 		buf_init(buf);
-		buf->allocated = true;
+		buf->cache = self;
 	}
 	if (unlikely(buf_reserve_nothrow(buf, size) == -1))
 	{

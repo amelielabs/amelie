@@ -186,7 +186,7 @@ shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 	Shard* self = mn_malloc(sizeof(*self));
 	self->order = 0;
 	req_list_init(&self->prepared);
-	task_init(&self->task, mn_task->buf_cache);
+	task_init(&self->task);
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
 	vm_init(&self->vm, db, function_mgr, &self->config->id);
@@ -217,6 +217,6 @@ shard_stop(Shard* self)
 		rpc(&self->task.channel, RPC_STOP, 0);
 		task_wait(&self->task);
 		task_free(&self->task);
-		task_init(&self->task, mn_task->buf_cache);
+		task_init(&self->task);
 	}
 }

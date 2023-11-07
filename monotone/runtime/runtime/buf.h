@@ -6,28 +6,30 @@
 // SQL OLTP database
 //
 
-typedef struct Buf Buf;
+typedef struct BufCache BufCache;
+typedef struct BufPool  BufPool;
+typedef struct Buf      Buf;
 
 struct Buf
 {
-	uint8_t* start;
-	uint8_t* position;
-	uint8_t* end;
-	int      refs;
-	bool     allocated;
-	void*    pool;
-	List     link;
+	uint8_t*  start;
+	uint8_t*  position;
+	uint8_t*  end;
+	int       refs;
+	BufPool*  pool;
+	BufCache* cache;
+	List      link;
 };
 
 static inline void
 buf_init(Buf* self)
 {
-	self->start     = NULL;
-	self->position  = NULL;
-	self->end       = NULL;
-	self->refs      = 0;
-	self->allocated = false;
-	self->pool      = NULL;
+	self->start    = NULL;
+	self->position = NULL;
+	self->end      = NULL;
+	self->refs     = 0;
+	self->pool     = NULL;
+	self->cache    = NULL;
 	list_init(&self->link);
 }
 
@@ -36,7 +38,7 @@ buf_free_memory(Buf* self)
 {
 	if (self->start)
 		mn_free(self->start);
-	if (self->allocated)
+	if (self->cache)
 		mn_free(self);
 }
 

@@ -52,9 +52,9 @@ coroutine_init(Coroutine* self, void* mgr)
 }
 
 static inline void
-coroutine_free(Coroutine* self, BufCache* cache)
+coroutine_free(Coroutine* self)
 {
-	buf_pool_reset(&self->buf_pool, cache);
+	buf_pool_reset(&self->buf_pool);
 	arena_reset(&self->arena);
 	context_stack_free(&self->stack);
 	mn_free(self);

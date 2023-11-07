@@ -142,9 +142,9 @@ main_init(Main* self)
 	buf_cache_init(&self->buf_cache);
 	logger_init(&self->logger);
 	uuid_mgr_init(&self->uuid_mgr);
-	resolver_init(&self->resolver, &self->buf_cache);
+	resolver_init(&self->resolver);
 	config_init(&self->config);
-	task_init(&self->task, &self->buf_cache);
+	task_init(&self->task);
 
 	auto global = &self->global;
 	global->config   = &self->config;

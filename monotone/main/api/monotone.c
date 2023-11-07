@@ -80,15 +80,14 @@ mono_free(void* ptr)
 		mono_session_t* session = ptr;
 		auto main = &session->mono->main;
 		native_close(&session->native, &main->buf_cache);
-		native_free(&session->native, &main->buf_cache);
+		native_free(&session->native);
 		break;
 	}
 	case MONO_OBJ_OBJECT:
 	{
 		mono_object_t* object = ptr;
-		auto mono = object->session->mono;
 		if (object->buf)
-			buf_cache_push(&mono->main.buf_cache, object->buf);
+			buf_cache_push(object->buf->cache, object->buf);
 		break;
 	}
 	case MONO_OBJ_FREED:
@@ -142,7 +141,7 @@ mono_connect(mono_t* mono, const char* uri)
 	return session;
 
 error:
-	native_free(native, &main->buf_cache);
+	native_free(native);
 	free(session);
 	return NULL;
 }
@@ -210,7 +209,7 @@ mono_read(mono_session_t* session, int timeout_ms, mono_object_t** result)
 	if (result && (msg->id == MSG_ERROR || msg->id == MSG_OBJECT))
 		*result = mono_object_create(session, buf);
 	else
-		buf_cache_push(&session->mono->main.buf_cache, buf);
+		buf_cache_push(buf->cache, buf);
 
 	return mono_event;
 }

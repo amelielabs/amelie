@@ -30,8 +30,8 @@ tcp_free(Tcp* self)
 	assert(self->poller == NULL);
 	buf_free(&self->readahead_buf);
 	buf_free(&self->write_iov);
-	buf_pool_reset(&self->write_list, mn_task->buf_cache);
-	buf_pool_reset(&self->read_list, mn_task->buf_cache);
+	buf_pool_reset(&self->write_list);
+	buf_pool_reset(&self->read_list);
 }
 
 void
@@ -51,8 +51,8 @@ tcp_close(Tcp* self)
 	tls_free(&self->tls);
 	tls_init(&self->tls);
 	buf_reset(&self->write_iov);
-	buf_pool_reset(&self->write_list, mn_task->buf_cache);
-	buf_pool_reset(&self->read_list, mn_task->buf_cache);
+	buf_pool_reset(&self->write_list);
+	buf_pool_reset(&self->read_list);
 }
 
 void
@@ -271,7 +271,7 @@ tcp_write(Tcp* self)
 		}
 
 		auto last = buf_pool_pop(&self->write_list, NULL);
-		buf_cache_push(mn_task->buf_cache, last);
+		buf_cache_push(last->cache, last);
 
 		written -= iov->iov_len;
 		self->write_iov_pos++;

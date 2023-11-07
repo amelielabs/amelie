@@ -82,7 +82,7 @@ str_copy(Str* str, Str* src)
 static inline Buf*
 buf_pin(Buf* buf)
 {
-	assert(buf->allocated);
+	assert(buf->cache);
 	buf_pool_add(&mn_self()->buf_pool, buf);
 	return buf;
 }
@@ -90,7 +90,7 @@ buf_pin(Buf* buf)
 static inline Buf*
 buf_unpin(Buf* buf)
 {
-	assert(buf->allocated);
+	assert(buf->cache);
 	buf_pool_detach(buf);
 	return buf;
 }
@@ -98,7 +98,7 @@ buf_unpin(Buf* buf)
 static inline Buf*
 buf_create(int size)
 {
-	auto buf = buf_create_nothrow(mn_task->buf_cache, size);
+	auto buf = buf_create_nothrow(&mn_task->buf_cache, size);
 	if (unlikely(buf == NULL))
 		error_system();
 	buf_pin(buf);
@@ -114,7 +114,7 @@ buf_ref(Buf* buf)
 static inline void
 buf_free(Buf* buf)
 {
-	if (buf->allocated)
+	if (buf->cache)
 	{
 		buf->refs--;
 		if (buf->refs >= 0)
@@ -123,7 +123,7 @@ buf_free(Buf* buf)
 		assert(buf->refs == -1);
 		buf->refs = 0;
 		buf_unpin(buf);
-		buf_cache_push(mn_task->buf_cache, buf);
+		buf_cache_push(buf->cache, buf);
 		return;
 	}
 	buf_free_memory(buf);
@@ -172,7 +172,7 @@ buf_printf(Buf* buf, const char* fmt, ...)
 static inline Buf*
 msg_create(int id)
 {
-	auto buf = msg_create_nothrow(mn_task->buf_cache, id, 0);
+	auto buf = msg_create_nothrow(&mn_task->buf_cache, id, 0);
 	if (unlikely(buf == NULL))
 		error_system();
 	buf_pin(buf);

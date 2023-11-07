@@ -201,7 +201,7 @@ hub_init(Hub* self, Share* share, HubIf* iface)
 	lock_init(&self->cat_lock, &self->cat_lock_cache);
 	client_mgr_init(&self->client_mgr);
 	user_cache_init(&self->user_cache);
-	task_init(&self->task, mn_task->buf_cache);
+	task_init(&self->task);
 }
 
 void
@@ -228,7 +228,7 @@ hub_stop(Hub* self)
 		rpc(&self->task.channel, RPC_STOP, 0);
 		task_wait(&self->task);
 		task_free(&self->task);
-		task_init(&self->task, mn_task->buf_cache);
+		task_init(&self->task);
 	}
 }
 

@@ -15,7 +15,7 @@ struct Task
 	Poller         poller;
 	ConditionCache condition_cache;
 	Channel        channel;
-	BufCache*      buf_cache;
+	BufCache       buf_cache;
 	MainFunction   main;
 	void*          main_arg;
 	void*          main_arg_global;
@@ -35,7 +35,7 @@ mn_self(void)
 	return mn_task->coroutine_mgr.current;
 }
 
-void task_init(Task*, BufCache*);
+void task_init(Task*);
 void task_free(Task*);
 bool task_active(Task*);
 int  task_create_nothrow(Task*, char*, MainFunction, void*, void*,
