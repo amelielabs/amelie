@@ -36,6 +36,7 @@ directory query
 group query
 test expr
 test json
+test method
 
 #directory ddl
 #group ddl

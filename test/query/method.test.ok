@@ -1,0 +1,159 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: method not exist
+select 1 -> name()
+query: on_error
+{"code": 1, "msg": "name(): function not found"}
+select 1 -> schema.name()
+query: on_error
+{"code": 1, "msg": "schema.name(): function not found"}
+select 1 -> schema.name.name()
+query: on_error
+{"code": 1, "msg": "schema.name.name(): bad function call"}
+# test: expr -> method()
+select 1 ->
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1 -> ()
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1 -> []()
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1 -> sizeof()
+1
+select "hello" -> sizeof()
+5
+explain select system.config().directory -> sizeof()
+"
+bytecode [coordinator]
+--------
+ 0                call        0      -      0      # system.config
+ 1              string        1      0      0      # directory
+ 2                 idx        2      0      1
+ 3                push        2      0      0
+ 4                call        0      -      1      # public.sizeof
+ 5                send        0      0      0
+ 6                 ret        0      0      0
+
+"
+select system.config().directory -> sizeof()
+10
+select sizeof(system.config().directory)
+10
+select [] -> set(0, 123)
+[123]
+select set([], 0, 123)
+[123]
+# test: expr -> method() -> method()
+select [1] -> set(1, 2) -> set(2, 3)
+[1, 2, 3]
+select [1] -> set(1, 2) -> set(2, 3) -> set(3, 4)
+[1, 2, 3, 4]
+select {} -> set("a", 1) -> set("b", 2)
+{"a": 1, "b": 2}
+select {} -> public.set("a", 1) -> public.set("b", 2)
+{"a": 1, "b": 2}
+# test: expr -> method
+select 1 -> schema.name
+query: on_error
+{"code": 1, "msg": "schema.name(): function not found"}
+select 1 -> schema.name.name
+query: on_error
+{"code": 1, "msg": "schema.name.name(): bad function call"}
+explain select system.config().directory -> sizeof
+"
+bytecode [coordinator]
+--------
+ 0                call        0      -      0      # system.config
+ 1              string        1      0      0      # directory
+ 2                 idx        2      0      1
+ 3                push        2      0      0
+ 4                call        0      -      1      # public.sizeof
+ 5                send        0      0      0
+ 6                 ret        0      0      0
+
+"
+select system.config().directory -> sizeof
+10
+select sizeof(system.config().directory)
+10
+# test: expr :: method()
+select 1 ::
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1 :: ()
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1 :: []()
+query: on_error
+{"code": 1, "msg": "bad '::' or '->' expression"}
+select 1::sizeof()
+1
+select "hello"::sizeof()
+5
+explain select system.config().directory::sizeof()
+"
+bytecode [coordinator]
+--------
+ 0                call        0      -      0      # system.config
+ 1              string        1      0      0      # directory
+ 2                 idx        2      0      1
+ 3                push        2      0      0
+ 4                call        0      -      1      # public.sizeof
+ 5                send        0      0      0
+ 6                 ret        0      0      0
+
+"
+select system.config().directory::sizeof()
+10
+select []::set(0, 123)
+[123]
+select set([], 0, 123)
+[123]
+# test: expr :: method() :: method()
+select [1]::set(1, 2)::set(2, 3)
+[1, 2, 3]
+select [1]::set(1, 2)::set(2, 3)::set(3, 4)
+[1, 2, 3, 4]
+select {}::set("a", 1)::set("b", 2)
+{"a": 1, "b": 2}
+select {}::public.set("a", 1)::public.set("b", 2)
+{"a": 1, "b": 2}
+# test: expr :: method
+select 1::schema.name
+query: on_error
+{"code": 1, "msg": "schema.name(): function not found"}
+select 1::schema.name.name
+query: on_error
+{"code": 1, "msg": "schema.name.name(): bad function call"}
+explain select system.config().directory::sizeof
+"
+bytecode [coordinator]
+--------
+ 0                call        0      -      0      # system.config
+ 1              string        1      0      0      # directory
+ 2                 idx        2      0      1
+ 3                push        2      0      0
+ 4                call        0      -      1      # public.sizeof
+ 5                send        0      0      0
+ 6                 ret        0      0      0
+
+"
+select system.config().directory::sizeof
+10
+select sizeof(system.config().directory)
+10
+# test: select
+create table test (id int primary key serial, data object)
+insert into test (data) values ({})
+insert into test (data) values ({})
+insert into test (data) values ({})
+select data -> set("id", id) from test
+{"id": 0}
+{"id": 1}
+{"id": 2}
+drop table test
+disconnect S0
+env_close E0

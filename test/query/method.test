@@ -1,0 +1,79 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: method not exist
+select 1 -> name()
+select 1 -> schema.name()
+select 1 -> schema.name.name()
+
+# test: expr -> method()
+select 1 ->
+select 1 -> ()
+select 1 -> []()
+
+select 1 -> sizeof()
+select "hello" -> sizeof()
+
+explain select system.config().directory -> sizeof()
+select system.config().directory -> sizeof()
+select sizeof(system.config().directory)
+
+select [] -> set(0, 123)
+select set([], 0, 123)
+
+# test: expr -> method() -> method()
+select [1] -> set(1, 2) -> set(2, 3)
+select [1] -> set(1, 2) -> set(2, 3) -> set(3, 4)
+
+select {} -> set("a", 1) -> set("b", 2)
+select {} -> public.set("a", 1) -> public.set("b", 2)
+
+# test: expr -> method
+select 1 -> schema.name
+select 1 -> schema.name.name
+
+explain select system.config().directory -> sizeof
+select system.config().directory -> sizeof
+select sizeof(system.config().directory)
+
+# test: expr :: method()
+select 1 ::
+select 1 :: ()
+select 1 :: []()
+
+select 1::sizeof()
+select "hello"::sizeof()
+
+explain select system.config().directory::sizeof()
+select system.config().directory::sizeof()
+
+select []::set(0, 123)
+select set([], 0, 123)
+
+# test: expr :: method() :: method()
+select [1]::set(1, 2)::set(2, 3)
+select [1]::set(1, 2)::set(2, 3)::set(3, 4)
+
+select {}::set("a", 1)::set("b", 2)
+select {}::public.set("a", 1)::public.set("b", 2)
+
+# test: expr :: method
+select 1::schema.name
+select 1::schema.name.name
+
+explain select system.config().directory::sizeof
+select system.config().directory::sizeof
+select sizeof(system.config().directory)
+
+# test: select
+create table test (id int primary key serial, data object)
+insert into test (data) values ({})
+insert into test (data) values ({})
+insert into test (data) values ({})
+select data -> set("id", id) from test
+drop table test
+
+disconnect S0
+env_close E0
