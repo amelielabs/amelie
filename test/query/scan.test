@@ -1,0 +1,53 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: scan key start
+create table test (id int primary key, data int default 1)
+insert into test (id) values (1), (2), (3)
+explain select * from test where id > 1
+select * from test where id > 1
+
+# test: scan key start #2
+explain select * from test where data >= 1 and id > 1
+select * from test where data >= 1 and id > 1
+
+# test: scan key start #3
+explain select * from test where id > 1 and data >= 1
+select * from test where id > 1 and data >= 1
+drop table test
+
+# test: scan key stop
+create table test (id int primary key, data int default 1)
+insert into test (id) values (1), (2), (3)
+explain select * from test where id <= 1
+select * from test where id <= 1
+
+# test: scan key stop #2
+explain select * from test where data >= 1 and id <= 1
+select * from test where data >= 1 and id <= 1
+
+# test: scan key stop #3
+explain select * from test where id <= 1 and data >= 1
+select * from test where id <= 1 and data >= 1
+drop table test
+
+# test: scan point lookup
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain select * from test where id = 2
+select * from test where id = 2
+drop table test
+
+## test: scan point lookup nested
+#create table test (obj object, primary key(obj.id int))
+#insert into test {"id": 1}
+#insert into test {"id": 2}
+#insert into test {"id": 3}
+#explain select * from test where obj.id = 2
+#select * from test where obj.id = 2
+#drop table test
+
+disconnect S0
+env_close E0
