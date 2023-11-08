@@ -277,7 +277,16 @@ reread_as_float:
 				{
 					self->pos++;
 					ast->string.end++;
-					ast->id = KNAME_COMPOUND_STAR;
+
+					// path.**
+					if (self->pos != self->end && *self->pos == '*')
+					{
+						self->pos++;
+						ast->string.end++;
+						ast->id = KNAME_COMPOUND_STAR_STAR;
+					} else {
+						ast->id = KNAME_COMPOUND_STAR;
+					}
 					return ast;
 				}
 				lex_error(self, "bad compound name token");
