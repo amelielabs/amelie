@@ -121,11 +121,11 @@ parse_from_add(From* self)
 		}
 	}
 
-	// ensure target is not exists
+	// ensure target does not exists
 	auto target = target_list_match(target_list, &name);
 	if (target)
 		error("<%.*s> target is redefined, please use different alias for the target",
-		      str_of(&name), str_size(&name));
+		      str_size(&name), str_of(&name));
 
 	target = target_list_add(target_list, self->level, self->level_seq++,
 	                         &name, expr, table);

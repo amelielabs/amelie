@@ -30,64 +30,65 @@ priority_map[UINT8_MAX] =
 	// operators:
 	//
 	// 1
-	[KOR]                 = 1,
+	[KOR]                      = 1,
 	// 2
-	[KAND]                = 2,
+	[KAND]                     = 2,
 	// 3
-	['=']                 = 3,
-	[KNEQU]               = 3,
+	['=']                      = 3,
+	[KNEQU]                    = 3,
 	// 4
-	[KGTE]                = 4,
-	[KLTE]                = 4,
-	['>']                 = 4,
-	['<']                 = 4,
+	[KGTE]                     = 4,
+	[KLTE]                     = 4,
+	['>']                      = 4,
+	['<']                      = 4,
 	// 5
-	['|']                 = 5,
+	['|']                      = 5,
 	// 6
-	['^']                 = 6,
+	['^']                      = 6,
 	// 7
-	['&']                 = 7,
+	['&']                      = 7,
 	// 8
-	[KSHL]                = 8,
-	[KSHR]                = 8,
+	[KSHL]                     = 8,
+	[KSHR]                     = 8,
 	// 9
-	['+']                 = 9,
-	['-']                 = 9,
-	[KNOT]                = 9,
-	[KCAT]                = 9,
+	['+']                      = 9,
+	['-']                      = 9,
+	[KNOT]                     = 9,
+	[KCAT]                     = 9,
 	// 10
-	['*']                 = 10,
-	['/']                 = 10,
-	['%']                 = 10,
+	['*']                      = 10,
+	['/']                      = 10,
+	['%']                      = 10,
 	// 11 (reserved for unary)
 	// 12
-	[KMETHOD]             = 12,
-	['[']                 = 12,
-	['.']                 = 12,
+	[KMETHOD]                  = 12,
+	['[']                      = 12,
+	['.']                      = 12,
 	// values (priority is not used)
 	//
-	['(']                 = priority_value,
-	['{']                 = priority_value,
-	['@']                 = priority_value,
-	[KSET]                = priority_value,
-	[KUNSET]              = priority_value,
-	[KTSTRING]            = priority_value,
-	[KJSON]               = priority_value,
-	[KSELECT]             = priority_value,
-	[KCOUNT]              = priority_value,
-	[KSUM]                = priority_value,
-	[KAVG]                = priority_value,
-	[KREAL]               = priority_value,
-	[KINT]                = priority_value,
-	[KSTRING]             = priority_value,
-	[KTRUE]               = priority_value,
-	[KFALSE]              = priority_value,
-	[KNULL]               = priority_value,
-	[KARGUMENT]           = priority_value,
-	[KNAME]               = priority_value,
-	[KNAME_COMPOUND]      = priority_value,
-	[KNAME_COMPOUND_STAR] = priority_value,
-	[KSTAR_STAR]          = priority_value
+	['(']                      = priority_value,
+	['{']                      = priority_value,
+	['@']                      = priority_value,
+	[KSET]                     = priority_value,
+	[KUNSET]                   = priority_value,
+	[KTSTRING]                 = priority_value,
+	[KJSON]                    = priority_value,
+	[KSELECT]                  = priority_value,
+	[KCOUNT]                   = priority_value,
+	[KSUM]                     = priority_value,
+	[KAVG]                     = priority_value,
+	[KREAL]                    = priority_value,
+	[KINT]                     = priority_value,
+	[KSTRING]                  = priority_value,
+	[KTRUE]                    = priority_value,
+	[KFALSE]                   = priority_value,
+	[KNULL]                    = priority_value,
+	[KARGUMENT]                = priority_value,
+	[KNAME]                    = priority_value,
+	[KNAME_COMPOUND]           = priority_value,
+	[KNAME_COMPOUND_STAR]      = priority_value,
+	[KNAME_COMPOUND_STAR_STAR] = priority_value,
+	[KSTAR_STAR]               = priority_value
 };
 
 static inline void
@@ -299,6 +300,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	// name
+	// name.path
+	// name.path.*
 	case KNAME:
 	case KNAME_COMPOUND:
 	{
@@ -312,6 +315,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 		break;
 	}
+	case KNAME_COMPOUND_STAR:
+	case KNAME_COMPOUND_STAR_STAR:
+		break;
 
 	default:
 		abort();
@@ -456,9 +462,33 @@ parse_expr(Stmt* self, Expr* expr)
 	while (ast_head(&ops))
 		expr_pop(&ops, &result);
 
+	/*
 	// only one result
 	if (!result.list || result.list->next)
 		error("bad expression");
 
 	return ast_pop(&result);
+		*/
+
+	// only one result
+	if (! result.list)
+		error("bad expression");
+
+	if (likely(result.list->next == NULL))
+		return result.list;
+
+	// use head as a result
+	auto head = result.list;
+	head->next->prev = NULL;
+	head->next = NULL;
+
+	// pushback the rest
+	auto prev = result.list_tail;
+	while (prev)
+	{
+		auto prev_prev = prev->prev;
+		stmt_push(self, ast_pop(&result));
+		prev = prev_prev;
+	}
+	return head;
 }
