@@ -142,7 +142,7 @@ shard_rpc(Rpc* rpc, void* arg)
 	Shard* self = arg;
 	switch (rpc->id) {
 	case RPC_STOP:
-		unused(self);
+		vm_reset(&self->vm);
 		break;
 	default:
 		break;
