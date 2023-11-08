@@ -663,6 +663,24 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return op2(self, CCURSOR_READ, rpin(self), target_id);
 	}
 
+	case KNAME_COMPOUND_STAR_STAR:
+	{
+		// path.**
+		Str name;
+		str_split_or_set(&ast->string, &name, '.');
+
+		auto target_list = compiler_target_list(self);
+		auto match = target_list_match(target_list, &name);
+		if (match == NULL)
+			error("<%.*s> target not found", str_size(&name), str_of(&name));
+
+		int target_id = match->id;
+		if (match->group_redirect)
+			target_id = match->group_redirect->id;
+
+		return op2(self, CREF_KEY, rpin(self), target_id);
+	}
+
 	// sub-query
 	case KSELECT:
 		return emit_select(self, ast, true);
