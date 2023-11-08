@@ -116,7 +116,7 @@ ccursor_open_expr(Vm* self, Op* op)
 		cursor->group_pos = group_next(cursor->group, -1);
 	} else
 	{
-		error("FROM: array or data type expected");
+		error("FROM: array, map or data type expected");
 	}
 
 	// jmp on success

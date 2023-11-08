@@ -225,11 +225,24 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			         str_of(&table->config->name));
 			break;
 		}
+		case CCURSOR_IDX:
+		{
+			if (op->d == -1) {
+				op_write(output, op, pos, true, true, true, NULL);
+			} else
+			{
+				Str name;
+				code_data_at_string(data, op->d, &name);
+				op_write(output, op, pos, true, true, true,
+				         "%.*s", str_size(&name), str_of(&name));
+			}
+			break;
+		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
 			op_write(output, op, pos, true, false, true,
-			         "%.*s.%.*s",
+			         "%.*s.%.*s()",
 			         str_size(&function->schema),
 			         str_of(&function->schema),
 			         str_size(&function->name),
