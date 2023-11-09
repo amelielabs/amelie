@@ -46,24 +46,46 @@ scan_key_is_match(Target* target, Ast* ast, Key* key)
 
 	// column
 	if (ast->id == KNAME)
-		if (str_compare(&ast->string, &column->name))
-			return true;
-
-	// target.column
-	if (ast->id == KNAME_COMPOUND)
 	{
-		Str name;
-		str_split_or_set(&ast->string, &name, '.');
-		if (target_compare(target, &name))
-		{
-			// match key path
-			Str path;
-			str_set_str(&path, &ast->string);
-			str_advance(&path, str_size(&name) + 1);
-			if (str_compare(&path, &column->name))
-				return true;
-		}
+		// match by column and key is not nested
+		if (! str_compare(&ast->string, &column->name))
+			return false;
+		return str_empty(&key->path);
 	}
+
+	// [target.]column[.path]
+	if (ast->id != KNAME_COMPOUND)
+		return false;
+
+	Str path;
+	str_set_str(&path, &ast->string);
+	Str name;
+	str_split_or_set(&ast->string, &name, '.');
+
+	// [target.]
+	if (target_compare(target, &name))
+	{
+		str_advance(&path, str_size(&name) + 1);
+
+		// skip target name
+		str_split_or_set(&path, &name, '.');
+	}
+
+	// column[.path]
+	bool compound = str_split_or_set(&path, &name, '.');
+	if (! str_compare(&name, &column->name))
+		return false;
+
+	// column
+	if (! compound)
+		return str_empty(&key->path);
+
+	// skip column name
+	str_advance(&path, str_size(&name) + 1);
+
+	// path
+	if (! str_empty(&key->path))
+		return str_compare(&path, &key->path);
 
 	return false;
 }
