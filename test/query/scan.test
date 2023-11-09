@@ -3,7 +3,7 @@
 env_open E0
 connect E0 S0
 
-# test: scan key column
+# test: key column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 
@@ -16,7 +16,7 @@ explain select * from test where id >= 1
 select * from test where id >= 1
 drop table test
 
-# test: scan key column.path
+# test: key column.path
 create table test (obj object, primary key(obj.id int))
 insert into test {"id": 1}
 insert into test {"id": 2}
@@ -25,7 +25,7 @@ explain select * from test where obj.id > 1
 select * from test where obj.id > 1
 drop table test
 
-# test: scan key column.path.path
+# test: key column.path.path
 create table test (obj object, primary key(obj.data.id int))
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
@@ -34,14 +34,14 @@ explain select * from test where obj.data.id > 1
 select * from test where obj.data.id > 1
 drop table test
 
-# test: scan key target.column
+# test: key target.column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 explain select * from test where test.id > 1
 select * from test where test.id > 1
 drop table test
 
-# test: scan key target.column.path
+# test: key target.column.path
 create table test (obj object, primary key(obj.id int))
 insert into test {"id": 1}
 insert into test {"id": 2}
@@ -50,7 +50,7 @@ explain select * from test where test.obj.id > 1
 select * from test where test.obj.id > 1
 drop table test
 
-# test: scan key target.column.path.path
+# test: key target.column.path.path
 create table test (obj object, primary key(obj.data.id int))
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
@@ -59,14 +59,14 @@ explain select * from test where test.obj.data.id > 1
 select * from test where test.obj.data.id > 1
 drop table test
 
-# test: scan key alias.column
+# test: key alias.column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 explain select * from test alias where alias.id > 1
 select * from test alias where alias.id > 1
 drop table test
 
-# test: scan key alias.column.path
+# test: key alias.column.path
 create table test (obj object, primary key(obj.id int))
 insert into test {"id": 1}
 insert into test {"id": 2}
@@ -75,7 +75,7 @@ explain select * from test alias where alias.obj.id > 1
 select * from test alias where alias.obj.id > 1
 drop table test
 
-# test: scan key alias.column.path.path
+# test: key alias.column.path.path
 create table test (obj object, primary key(obj.data.id int))
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
@@ -84,20 +84,148 @@ explain select * from test alias where alias.obj.data.id > 1
 select * from test alias where alias.obj.data.id > 1
 drop table test
 
-## test: scan point lookup
-#create table test (id int primary key)
-#insert into test values (1), (2), (3)
-#explain select * from test where id = 2
-#select * from test where id = 2
-#drop table test
+# test: key column type mismatch
+create table test (id int primary key, data int default 1)
+explain select * from test where id > "hello"
+select * from test where id > "hello"
+drop table test
 
-## test: scan point lookup nested
-#create table test (obj object, primary key(obj.id int))
-#insert into test {"id": 1}
-#insert into test {"id": 2}
-#insert into test {"id": 3}
-#explain select * from test where obj.id = 2
-#select * from test where obj.id = 2
+# test: key column type mismatch #2
+create table test (id string primary key, data int default 1)
+explain select * from test where id > 1
+select * from test where id > 1
+drop table test
+
+# test: key gt (start condition)
+create table test (id int primary key, data int default 1)
+insert into test (id) values (1), (2), (3)
+explain select * from test where id > 1
+select * from test where id > 1
+
+# test: key gt and gt (same key)
+explain select * from test where id > 1 and id > 1
+select * from test where id > 1 and id > 1
+
+# test: key gt and gt (less)
+explain select * from test where id > 2 and id > 1
+select * from test where id > 2 and id > 1
+
+# test: key gt and gt (greater)
+explain select * from test where id > 1 and id > 2
+select * from test where id > 1 and id > 2
+
+# test: key gt and eq (scan to point lookup)
+explain select * from test where id > 1 and id = 2
+select * from test where id > 1 and id = 2
+
+# test: key lt (stop condition)
+explain select * from test where id < 1
+select * from test where id < 1
+explain select * from test where id <= 2
+select * from test where id <= 2
+
+# test: key lt and lt (same)
+explain select * from test where id < 1 and id < 1
+select * from test where id < 1 and id < 1
+
+# test: key lt and lt (less)
+explain select * from test where id < 2 and id < 1
+select * from test where id < 2 and id < 1
+
+# test: key lt and lt (greater)
+explain select * from test where id < 1 and id < 2
+select * from test where id < 1 and id < 2
+
+# test: key lt and eq (scan to point lookup)
+explain select * from test where id < 1 and id = 2
+select * from test where id < 1 and id = 2
+
+# test: key gt and lt
+explain select * from test where id > 1 and id < 1
+select * from test where id > 1 and id < 1
+explain select * from test where id >= 1 and id <= 2
+select * from test where id >= 1 and id <= 2
+
+# test: key gt and lt and eq
+explain select * from test where id > 1 and id < 1 and id = 1
+select * from test where id > 1 and id < 1 and id = 1
+
+# test: key gt and lt and eq (non key)
+explain select * from test where id > 1 and id < 1 and data = 1
+select * from test where id > 1 and id < 1 and data = 1
+
+# test: key eq (start condition)
+explain select * from test where id = 1
+select * from test where id = 0
+select * from test where id = 1
+select * from test where id = 2
+select * from test where id = 3
+select * from test where id = 4
+
+# test: key eq (non key)
+explain select * from test where data = 1
+select * from test where data = 1
+
+# test: key eq and gt
+explain select * from test where id = 1 and id > 0
+select * from test where id = 1 and id > 0
+
+# test: key eq and gt and lt
+explain select * from test where id = 1 and id > 0 and id < 10
+select * from test where id = 1 and id > 0 and id < 10
+
+# test: key eq and eq
+explain select * from test where id = 1 and id = 2
+select * from test where id = 1 and id = 2
+
+drop table test
+
+# test: key compound gt 1 (start condition)
+create table test (a int, b int, primary key(a, b))
+insert into test values (1, 1), (2, 2), (3, 3)
+
+explain select * from test where a > 1
+select * from test where a > 1
+
+# test: key compound gt full (start condition)
+explain select * from test where a > 1 and b > 1
+select * from test where a > 1 and b > 1
+
+# test: key compound gt and lt (stop condition on inner key)
+explain select * from test where a > 1 and b < 1
+select * from test where a > 1 and b < 1
+
+# test: key compound gt and lt and lt (stop condition on outer key)
+explain select * from test where a > 1 and b < 1 and a < 10
+select * from test where a > 1 and b < 1 and a < 10
+
+# test: key compound gt and eq
+explain select * from test where a > 1 and b = 10
+select * from test where a > 1 and b = 10
+
+# test: key compound gt and eq and eq (inner)
+explain select * from test where a > 1 and b = 10 and b = 20
+select * from test where a > 1 and b = 10 and b = 20
+
+# test: key compound gt and eq and eq (outer)
+explain select * from test where a > 1 and b = 10 and a = 20
+select * from test where a > 1 and b = 10 and a = 20
+
+# test: key compound eq and eq
+explain select * from test where a = 1 and b = 10
+select * from test where a = 1 and b = 10
+
+# test: key compound eq and gt
+explain select * from test where a = 1 and b > 1
+select * from test where a = 1 and b > 1
+
+drop table test
+
+## test: key gt or gt
+#create table test (id int primary key, data int default 1)
+#insert into test (id) values (1), (2), (3)
+#explain select * from test where id > 1 or id > 2
+#select * from test where id > 1 or id > 2
 #drop table test
 
 disconnect S0
