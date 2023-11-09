@@ -11,30 +11,31 @@ typedef struct TargetList TargetList;
 
 struct Target
 {
-	int     id;
-	int     level;
-	int     level_seq;
-	Str     name;
+	int        id;
+	int        level;
+	int        level_seq;
+	Str        name;
 	// aggregates
-	AstList aggs;
+	AstList    aggs;
 	// group by
-	AstList group_by;
-	Target* group_by_target;
-	Target* group_main;
-	Target* group_redirect;
+	AstList    group_by;
+	Target*    group_by_target;
+	Target*    group_main;
+	Target*    group_redirect;
 	// expression target
-	View*   view;
-	Ast*    expr;
-	Ast*    expr_on;
-	int     rexpr;
+	View*      view;
+	Ast*       expr;
+	Ast*       expr_on;
+	int        rexpr;
 	// target
-	bool    stop_ops;
-	bool    is_point_lookup;
-	Table*  table;
+	TargetKey* keys;
+	bool       stop_ops;
+	bool       is_point_lookup;
+	Table*     table;
 	// link
-	Target* outer;
-	Target* next_join;
-	Target* next;
+	Target*    outer;
+	Target*    next_join;
+	Target*    next;
 };
 
 struct TargetList
@@ -58,6 +59,7 @@ target_init(Target* self, Table* table)
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
+	self->keys            = NULL;
 	self->stop_ops        = false;
 	self->is_point_lookup = false;
 	self->table           = table;
