@@ -27,6 +27,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Irequest \
                  -Ivm \
                  -Iparser \
+                 -Isemantic \
                  -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-query.a

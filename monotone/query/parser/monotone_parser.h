@@ -39,6 +39,3 @@
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
 #include "parser/parse.h"
-
-// semantic
-#include "parser/semantic.h"

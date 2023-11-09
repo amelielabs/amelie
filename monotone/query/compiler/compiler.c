@@ -21,6 +21,7 @@
 #include <monotone_request.h>
 #include <monotone_vm.h>
 #include <monotone_parser.h>
+#include <monotone_semantic.h>
 #include <monotone_compiler.h>
 
 void

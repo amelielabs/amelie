@@ -27,6 +27,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../query/request \
                  -I../query/vm \
                  -I../query/parser \
+                 -I../query/semantic \
                  -I../query/compiler \
                  -I. \
                  -Ishard \
