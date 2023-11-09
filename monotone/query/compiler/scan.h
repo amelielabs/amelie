@@ -9,5 +9,4 @@
 typedef void (*ScanFunction)(Compiler*, void*);
 
 void scan(Compiler*, Target*, Ast*, Ast*, Ast*,
-          ScanFunction,
           ScanFunction, void*);

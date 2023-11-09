@@ -34,162 +34,10 @@ typedef struct
 	int          coffset;
 	int          climit;
 	int          climit_eof;
-	ScanFunction on_match_point;
 	ScanFunction on_match;
 	void*        on_match_arg;
 	Compiler*    compiler;
 } Scan;
-
-static inline bool
-scan_key_is_match(Target* target, Ast* ast, Key* key)
-{
-	auto column = def_column_of(table_def(target->table), key->column);
-
-	// column
-	if (ast->id == KNAME)
-	{
-		// match by column and key is not nested
-		if (! str_compare(&ast->string, &column->name))
-			return false;
-		return str_empty(&key->path);
-	}
-
-	// [target.]column[.path]
-	if (ast->id != KNAME_COMPOUND)
-		return false;
-
-	Str path;
-	str_set_str(&path, &ast->string);
-	Str name;
-	str_split_or_set(&ast->string, &name, '.');
-
-	// [target.]
-	if (target_compare(target, &name))
-	{
-		str_advance(&path, str_size(&name) + 1);
-
-		// skip target name
-		str_split_or_set(&path, &name, '.');
-	}
-
-	// column[.path]
-	bool compound = str_split_or_set(&path, &name, '.');
-	if (! str_compare(&name, &column->name))
-		return false;
-
-	// column
-	if (! compound)
-		return str_empty(&key->path);
-
-	// skip column name
-	str_advance(&path, str_size(&name) + 1);
-
-	// path
-	if (! str_empty(&key->path))
-		return str_compare(&path, &key->path);
-
-	return false;
-}
-
-static inline Ast*
-scan_key_match(Scan* self, Target* target, Ast* op, Key* key)
-{
-	auto l = op->l;
-	auto r = op->r;
-
-	//
-	// name = expr
-	// expr = name
-	//
-	Ast* expr_key = NULL;
-	Ast* expr = NULL;
-	if (scan_key_is_match(target, l, key))
-	{
-		expr_key = l;
-		expr     = r;
-	} else
-	if (scan_key_is_match(target, r, key))
-	{
-		expr_key = r;
-		expr     = l;
-	}
-
-	// join: name = name
-	if (expr_key)
-	{
-		// do not match keys for outer targets
-		if (expr->id == KNAME_COMPOUND)
-		{
-			Str name;
-			str_split_or_set(&expr->string, &name, '.');
-
-			auto target_list = compiler_target_list(self->compiler);
-			auto join = target_list_match(target_list, &name);
-			if (join)
-			{
-				if (join == target)
-					return NULL;
-
-				// FROM target, join
-				if (target->level == join->level)
-					if (target->level_seq < join->level_seq)
-						return NULL;
-
-				// SELECT (SELECT FROM join) FROM target
-				if (target->level < join->level)
-					return NULL;
-
-				// SELECT (SELECT FROM target) FROM join
-			}
-		}
-	}
-
-	return expr;
-}
-
-static inline void
-scan_analyze(Scan* self, Target* target)
-{
-	int key_matched_stop = 0;
-	int key_matched_equ  = 0;
-	int key_matched      = 0;
-
-	auto key = table_def(target->table)->key;
-	for (; key; key = key->next)
-	{
-		auto node = self->ops.list;
-		for (; node; node = node->next)
-		{
-			auto expr = scan_key_match(self, target, node->ast, key);
-			if (expr == NULL)
-				continue;
-			switch (node->ast->id) {
-			case '>':
-			case KGTE:
-				key_matched++;
-				break;
-			case '=':
-				key_matched_equ++;
-				key_matched++;
-				break;
-			case '<':
-			case KLTE:
-				key_matched_stop++;
-				break;
-			default:
-				continue;
-			}
-		}
-	}
-
-	// point lookup
-	if (key_matched_equ == table_def(target->table)->key_count)
-		target->is_point_lookup = true;
-
-	// has scan stop expressions <, <=
-	if (key_matched_stop > 0)
-		target->stop_ops = true;
-}
 
 static inline void
 scan_generate_key(Scan* self, Target* target)
@@ -199,44 +47,25 @@ scan_generate_key(Scan* self, Target* target)
 
 	for (; key; key = key->next)
 	{
-		bool match = false;
-		auto node = self->ops.list;
-		for (; node; node = node->next)
-		{
-			auto expr = scan_key_match(self, target, node->ast, key);
-			if (expr == NULL)
-				continue;
-			switch (node->ast->id) {
-			case '>':
-			case KGTE:
-			case '=':
-				break;
-			case '<':
-			case KLTE:
-				continue;
-			case 0:
-				continue;
-			}
+		auto ref = &target->keys[key->order];
 
-			int rexpr = emit_expr(cp, target, expr);
+		// use value from >, >=, = expression as a key
+		if (ref->start)
+		{
+			int rexpr = emit_expr(cp, target, ref->start);
 			op1(cp, CPUSH, rexpr);
 			runpin(cp, rexpr);
-
-			match = true;
-			break;
+			continue;
 		}
 
 		// set min
-		if (unlikely(! match))
-		{
-			int rexpr;
-			if (key->type == TYPE_STRING)
-				rexpr = op1(cp, CSTRING_MIN, rpin(cp));
-			else
-				rexpr = op1(cp, CINT_MIN, rpin(cp));
-			op1(cp, CPUSH, rexpr);
-			runpin(cp, rexpr);
-		}
+		int rexpr;
+		if (key->type == TYPE_STRING)
+			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
+		else
+			rexpr = op1(cp, CINT_MIN, rpin(cp));
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 	}
 }
 
@@ -248,28 +77,17 @@ scan_generate_stop(Scan* self, Target* target, int _eof)
 
 	for (; key; key = key->next)
 	{
-		auto node = self->ops.list;
-		for (; node; node = node->next)
-		{
-			auto expr = scan_key_match(self, target, node->ast, key);
-			if (expr == NULL)
-				continue;
-			switch (node->ast->id) {
-			case '<':
-			case KLTE:
-				break;
-			default:
-				continue;
-			}
+		auto ref = &target->keys[key->order];
+		if (! ref->stop)
+			continue;
 
-			// key <= expr
-			int rexpr;
-			rexpr = emit_expr(cp, target, node->ast);
+		// use <, <= condition
+		int rexpr;
+		rexpr = emit_expr(cp, target, ref->stop_op);
 
-			// jntr _eof
-			op2(cp, CJNTR, _eof, rexpr);
-			runpin(cp, rexpr);
-		}
+		// jntr _eof
+		op2(cp, CJNTR, _eof, rexpr);
+		runpin(cp, rexpr);
 	}
 }
 
@@ -280,23 +98,13 @@ static inline void
 scan_generate_target_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
+	auto target_list = compiler_target_list(cp);
 
 	// analyze where expression per target
-	scan_analyze(self, target);
+	semantic(target_list, target, &self->ops);
 
 	// push cursor keys
 	scan_generate_key(self, target);
-
-	// do fast point lookup path if supported
-	auto target_list = compiler_target_list(cp);
-	if (target->is_point_lookup && target_list->count == 1 &&
-	    self->on_match_point      &&
-	    self->expr_limit  == NULL &&
-	    self->expr_offset == NULL)
-	{
-		self->on_match_point(cp, self->on_match_arg);
-		return;
-	}
 
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
@@ -504,28 +312,26 @@ scan(Compiler*    compiler,
      Ast*         expr_limit,
      Ast*         expr_offset,
      Ast*         expr_where,
-     ScanFunction on_match_point,
      ScanFunction on_match,
      void*        on_match_arg)
 {
 	Scan self =
 	{
-		.target         = target,
-		.expr_limit     = expr_limit,
-		.expr_offset    = expr_offset,
-		.expr_where     = expr_where,
-		.coffset        = -1,
-		.climit         = -1,
-		.climit_eof     = -1,
-		.on_match_point = on_match_point,
-		.on_match       = on_match,
-		.on_match_arg   = on_match_arg,
-		.compiler       = compiler
+		.target       = target,
+		.expr_limit   = expr_limit,
+		.expr_offset  = expr_offset,
+		.expr_where   = expr_where,
+		.coffset      = -1,
+		.climit       = -1,
+		.climit_eof   = -1,
+		.on_match     = on_match,
+		.on_match_arg = on_match_arg,
+		.compiler     = compiler
 	};
 	ast_list_init(&self.ops);
 
 	// get a list of key operations from WHERE expression
-	semantic_get_op(self.expr_where, &self.ops);
+	semantic_op(&self.ops, self.expr_where);
 
 	// generate scan
 	scan_generate(&self);

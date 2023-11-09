@@ -193,7 +193,6 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		     select->expr_limit,
 		     select->expr_offset,
 		     select->expr_where,
-		     NULL,
 		     select->on_match,
 		     select);
 	} else
@@ -225,7 +224,6 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		     NULL,
 		     NULL,
 		     select->expr_where,
-		     NULL,
 		     emit_select_on_match_group_target,
 		     select);
 
@@ -239,7 +237,6 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		     select->expr_limit,
 		     select->expr_offset,
 		     select->expr_having,
-		     NULL,
 		     expr_select_on_match_group,
 		     select);
 

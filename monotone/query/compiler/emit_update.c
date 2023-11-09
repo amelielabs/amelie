@@ -134,7 +134,6 @@ emit_update(Compiler* self, Ast* ast)
 	     NULL,
 	     NULL,
 	     update->expr_where,
-	     NULL,
 	     emit_update_on_match,
 	     update);
 }

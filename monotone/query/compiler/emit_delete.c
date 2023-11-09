@@ -42,7 +42,6 @@ emit_delete(Compiler* self, Ast* ast)
 	     NULL,
 	     NULL,
 	     delete->expr_where,
-	     NULL,
 	     emit_delete_on_match,
 	     delete->target);
 }
