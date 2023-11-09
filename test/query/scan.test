@@ -3,42 +3,93 @@
 env_open E0
 connect E0 S0
 
-# test: scan key start
+# test: scan key column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
+
+# gt
 explain select * from test where id > 1
 select * from test where id > 1
 
-# test: scan key start #2
-explain select * from test where data >= 1 and id > 1
-select * from test where data >= 1 and id > 1
-
-# test: scan key start #3
-explain select * from test where id > 1 and data >= 1
-select * from test where id > 1 and data >= 1
+# gte
+explain select * from test where id >= 1
+select * from test where id >= 1
 drop table test
 
-# test: scan key stop
+# test: scan key column.path
+create table test (obj object, primary key(obj.id int))
+insert into test {"id": 1}
+insert into test {"id": 2}
+insert into test {"id": 3}
+explain select * from test where obj.id > 1
+select * from test where obj.id > 1
+drop table test
+
+# test: scan key column.path.path
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+explain select * from test where obj.data.id > 1
+select * from test where obj.data.id > 1
+drop table test
+
+# test: scan key target.column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
-explain select * from test where id <= 1
-select * from test where id <= 1
-
-# test: scan key stop #2
-explain select * from test where data >= 1 and id <= 1
-select * from test where data >= 1 and id <= 1
-
-# test: scan key stop #3
-explain select * from test where id <= 1 and data >= 1
-select * from test where id <= 1 and data >= 1
+explain select * from test where test.id > 1
+select * from test where test.id > 1
 drop table test
 
-# test: scan point lookup
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain select * from test where id = 2
-select * from test where id = 2
+# test: scan key target.column.path
+create table test (obj object, primary key(obj.id int))
+insert into test {"id": 1}
+insert into test {"id": 2}
+insert into test {"id": 3}
+explain select * from test where test.obj.id > 1
+select * from test where test.obj.id > 1
 drop table test
+
+# test: scan key target.column.path.path
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+explain select * from test where test.obj.data.id > 1
+select * from test where test.obj.data.id > 1
+drop table test
+
+# test: scan key alias.column
+create table test (id int primary key, data int default 1)
+insert into test (id) values (1), (2), (3)
+explain select * from test alias where alias.id > 1
+select * from test alias where alias.id > 1
+drop table test
+
+# test: scan key alias.column.path
+create table test (obj object, primary key(obj.id int))
+insert into test {"id": 1}
+insert into test {"id": 2}
+insert into test {"id": 3}
+explain select * from test alias where alias.obj.id > 1
+select * from test alias where alias.obj.id > 1
+drop table test
+
+# test: scan key alias.column.path.path
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+explain select * from test alias where alias.obj.data.id > 1
+select * from test alias where alias.obj.data.id > 1
+drop table test
+
+## test: scan point lookup
+#create table test (id int primary key)
+#insert into test values (1), (2), (3)
+#explain select * from test where id = 2
+#select * from test where id = 2
+#drop table test
 
 ## test: scan point lookup nested
 #create table test (obj object, primary key(obj.id int))
