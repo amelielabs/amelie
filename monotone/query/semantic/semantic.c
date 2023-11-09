@@ -223,6 +223,10 @@ semantic(TargetList* target_list, Target* target, AstList* ops)
 			case '<':
 			case KLTE:
 			{
+				// stop condition works only on the outer key
+				if (key->order > 0)
+					break;
+
 				// stop condition
 				if (ref->stop == NULL)
 				{
