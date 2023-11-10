@@ -60,7 +60,7 @@ OBJECTS        = \
                  parser/parse_select.o \
                  parser/parse.o \
                  parser/parser.o \
-                 semantic/semantic.o \
+                 semantic/plan.o \
                  compiler/compiler.o \
                  compiler/scan.o \
                  compiler/emit_expr.o \
