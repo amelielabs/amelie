@@ -30,7 +30,6 @@ typedef struct
 	Ast*         expr_limit;
 	Ast*         expr_offset;
 	Ast*         expr_where;
-	AstList      ops;
 	int          coffset;
 	int          climit;
 	int          climit_eof;
@@ -42,12 +41,13 @@ typedef struct
 static inline void
 scan_generate_key(Scan* self, Target* target)
 {
-	auto cp  = self->compiler;
-	auto key = table_def(target->table)->key;
+	auto cp   = self->compiler;
+	auto plan = ast_plan_of(target->plan);
 
+	auto key = table_def(target->table)->key;
 	for (; key; key = key->next)
 	{
-		auto ref = &target->keys[key->order];
+		auto ref = &plan->keys[key->order];
 
 		// use value from >, >=, = expression as a key
 		if (ref->start)
@@ -72,12 +72,13 @@ scan_generate_key(Scan* self, Target* target)
 static inline void
 scan_generate_stop(Scan* self, Target* target, int _eof)
 {
-	auto cp  = self->compiler;
-	auto key = table_def(target->table)->key;
+	auto cp   = self->compiler;
+	auto plan = ast_plan_of(target->plan);
 
+	auto key = table_def(target->table)->key;
 	for (; key; key = key->next)
 	{
-		auto ref = &target->keys[key->order];
+		auto ref = &plan->keys[key->order];
 		if (! ref->stop)
 			continue;
 
@@ -100,8 +101,10 @@ scan_generate_target_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
 
-	// analyze where expression per target
-	semantic(target_list, target, &self->ops);
+	// prepare scan plan using where expression per target
+	if (! target->plan)
+		target->plan = &plan(target_list, target, self->expr_where)->ast;
+	auto plan = ast_plan_of(target->plan);
 
 	// push cursor keys
 	scan_generate_key(self, target);
@@ -132,8 +135,7 @@ scan_generate_target_table(Scan* self, Target* target)
 	code_at(cp->code, _open)->c = _where;
 
 	// generate scan stop conditions for <, <=
-	if (target->stop_ops)
-		scan_generate_stop(self, target, _where_eof);
+	scan_generate_stop(self, target, _where_eof);
 
 	if (target->next_join)
 	{
@@ -171,7 +173,7 @@ scan_generate_target_table(Scan* self, Target* target)
 		if (self->expr_where)
 		{
 			// point lookup
-			if (target->is_point_lookup)
+			if (plan->type == SCAN_LOOKUP)
 				code_at(cp->code, _where_jntr)->a = _where_eof;
 			else
 				code_at(cp->code, _where_jntr)->a = _next;
@@ -183,7 +185,7 @@ scan_generate_target_table(Scan* self, Target* target)
 	// cursor_next
 
 	// do not iterate further for point-lookups on unique index
-	if (target->is_point_lookup && table_def(target->table)->key_unique)
+	if (plan->type == SCAN_LOOKUP && table_def(target->table)->key_unique)
 		op1(cp, CJMP, _where_eof);
 	else
 		op2(cp, CCURSOR_NEXT, target->id, _where);
@@ -328,10 +330,6 @@ scan(Compiler*    compiler,
 		.on_match_arg = on_match_arg,
 		.compiler     = compiler
 	};
-	ast_list_init(&self.ops);
-
-	// get a list of key operations from WHERE expression
-	semantic_op(&self.ops, self.expr_where);
 
 	// generate scan
 	scan_generate(&self);

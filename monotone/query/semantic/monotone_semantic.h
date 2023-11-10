@@ -6,5 +6,4 @@
 // SQL OLTP database
 //
 
-#include "semantic/semantic_op.h"
-#include "semantic/semantic.h"
+#include "semantic/plan.h"
