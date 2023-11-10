@@ -18,7 +18,6 @@
 #include "parser/lex.h"
 
 // target
-#include "parser/target_key.h"
 #include "parser/target.h"
 #include "parser/stmt.h"
 

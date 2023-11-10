@@ -28,9 +28,7 @@ struct Target
 	Ast*       expr_on;
 	int        rexpr;
 	// target
-	TargetKey* keys;
-	bool       stop_ops;
-	bool       is_point_lookup;
+	Ast*       plan;
 	Table*     table;
 	// link
 	Target*    outer;
@@ -59,9 +57,7 @@ target_init(Target* self, Table* table)
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
-	self->keys            = NULL;
-	self->stop_ops        = false;
-	self->is_point_lookup = false;
+	self->plan            = NULL;
 	self->table           = table;
 	self->outer           = NULL;
 	self->next_join       = NULL;
