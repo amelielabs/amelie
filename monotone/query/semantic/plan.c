@@ -297,7 +297,7 @@ plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
 		plan_and_merge_stop(key, l, r);
 	}
 
-	// SCAN or SCAN_LOOKUP
+	// SCAN_LOOKUP
 	if (matched_eq == def->key_count)
 		l->type = SCAN_LOOKUP;
 
@@ -316,9 +316,6 @@ plan(TargetList* target_list, Target* target, Ast* expr)
 	{
 		auto l = plan(target_list, target, expr->l);
 		auto r = plan(target_list, target, expr->r);
-		// todo: LOOKUP_LIST
-
-		// SCAN, SCAN_LOOKUP
 		return plan_and_merge(target, l, r);
 	}
 
@@ -337,7 +334,6 @@ plan(TargetList* target_list, Target* target, Ast* expr)
 		Ast* path, *value;
 		if (! plan_op_of(expr, &path, &value))
 			break;
-		// SCAN, SCAN_LOOKUP
 		auto plan = plan_op(target_list, target, expr, path, value);
 		if (plan)
 			return plan;

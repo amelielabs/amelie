@@ -16,11 +16,7 @@ enum
 	SCAN,
 
 	// point lookup with all keys set
-	SCAN_LOOKUP,
-
-	// OR
-	// list of point lookups
-	SCAN_LOOKUP_LIST
+	SCAN_LOOKUP
 };
 
 struct AstPlanKey
