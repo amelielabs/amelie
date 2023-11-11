@@ -1,0 +1,248 @@
+#
+
+env_open E0
+connect E0 S0
+
+# test: select (select const)
+select (select 0)
+select (select 1234)
+select (select null)
+select (select "hello")
+
+# test: select (select expr)
+select (select 1 + 1)
+select (select 2 * 2)
+select (select 8 * 8)
+select (select 64 / ( 4 + 4 ))
+select (select 64 / 0)
+select (select 64 % 0)
+select (select 1 + 1) + (select 2)
+
+# test: select (select [])
+select (select [])
+select (select [1])
+select (select [1,2,3])
+select (select [1,2,3])[1]
+
+# test: select (select function())
+select system.schemas()
+select (select system.schemas())
+
+# test: select (select {})
+select (select {})
+select (select {"a": 1})
+select (select {"a": 1, "b": null})
+select (select {"a": 1, "b": null}).a
+
+# test: select (select *) from expr
+explain select (select *) from [1,2,3]
+select (select *) from [1,2,3]
+
+# test: select (select alias.*) from expr
+explain select (select t.*) from [1,2,3] t
+select (select t.*) from [1,2,3] t
+select (select t.*) from [1,2,3]
+
+# test: select (select alias.**) from expr
+select (select t.**) from {"a": 1, "b": 2} t
+select (select t.**) from {"a": 1, "b": 2}
+
+# test: select (select *) from table
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+
+select (select *) from test
+select (select test.*) from test
+
+# test: select (select target.*) from table
+explain select (select test.*) from test
+select (select test.*) from test
+
+# test: select (select alias.*) from table
+select (select t.*) from test t
+select (select t.*) from test
+select (select t) from test t
+
+# test: select (select target.column) from table
+explain select (select test.id) from test
+select (select test.id) from test
+select (select id) from test
+
+# test: select (select alias.column) from table
+explain select (select t.id) from test t
+select (select t.id) from test
+select (select t.id) from test t
+
+drop table test
+
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+
+# test: select (select target.path) from table
+select (select test) from test
+select (select test.obj) from test
+select (select test.obj.data) from test
+select (select test.obj.data.id) from test
+
+# test: select (select alias.path) from table
+select (select t) from test t
+select (select t.obj) from test t
+select (select t.obj.data) from test t
+select (select t.obj.data.id) from test t
+
+# test: select (select from outer column) from table
+select t.obj from test t
+select (select ** from t.obj) from test t
+select (select **, * from (t.obj.data)) from test t
+
+drop table test
+
+# test: select from (select const)
+select * from (select 0)
+select * from (select null)
+
+# test: select from (select [])
+select * from (select [])
+select * from (select [1])
+select * from (select [1,2,3])
+
+# test: select from (select function())
+select * from system.schemas()
+select * from (select system.schemas())
+
+# test: select from (select {})
+select * from (select {})
+select * from (select {"a": 1})
+select * from (select {"a": 1, "b": null})
+
+# test: select from (select expr) alias
+select alias.* from (select [1,2,3]) alias
+select alias from (select [1,2,3]) alias
+select alias from (select alias.*) alias
+select alias from (select alias) alias
+
+select (select 123 from alias) from (select alias) alias
+select (select 123 from [1,2,3] alias) from (select alias) alias
+
+# test: select * from (select from table)
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+
+select * from (select * from test)
+explain select * from (select * from test)
+
+# test: select target.* from (select from table)
+select test.* from (select * from test)
+select test from (select * from test)
+
+# test: select alias.* from (select from table)
+select alias from (select * from test) alias
+select alias.* from (select * from test) alias
+
+select alias.* from (select test.* from test) alias
+select alias.* from (select x.* from test x) alias
+select alias.* from (select alias.* from test alias) alias
+select alias.* from (select * from test) alias
+
+drop table test
+
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+
+# test: select target.path from (select from table)
+select obj from (select * from test)
+
+select * from (select * from test) alias
+select *[0] from (select * from test) alias
+select alias.*[0] from (select * from test) alias
+select alias.*[0].data.id from (select * from test) alias
+
+drop table test
+
+# test: select (select *) from view
+create table test (id int primary key)
+create view test_view as select [1,2,3]
+
+explain select (select *) from test_view
+select (select *) from test_view
+
+# test: select (select alias.*) from view
+explain select (select t.*) from test_view t
+select (select t.*) from test_view t
+select (select t.*) from test_view
+
+# test: select (select alias.**) from view
+drop view test_view
+create view test_view as select {"a": 1, "b": 2}
+
+select (select t.**) from test_view t
+select (select t.**) from test_view
+select ** from test_view
+
+drop view test_view
+
+# test: select (select target.*) from table view
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+
+create view test_view as select * from test
+explain select * from test_view
+select * from test_view
+drop view test_view
+drop table test
+
+# test: select (select from table)
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+
+explain select (select * from test)
+select (select * from test)
+
+# test: select (select from table) no result
+select (select * from test where false)
+
+# test: select (select from table) from table
+select (select * from test) from test
+explain select (select inner.* from test inner) from test
+
+# test: select (select from table) from table #2
+explain select (select inner.* from test inner where test.id = inner.id) from test
+select (select inner.* from test inner where test.id = inner.id) from test
+
+# test: select (select from table) from table #3
+create table a (id int primary key serial, data int default 0)
+create table b (id int primary key serial, data int default 1)
+
+insert into a () values (), (), ()
+insert into b () values (), (), ()
+
+explain select (select * from b where a.id = b.id) from a
+select (select * from b where a.id = b.id) from a
+select (select a.*, b.* from b where a.id = b.id) from a
+
+# test: select from table where (select from table)
+explain select * from a where (select true from b where a.id = b.id)
+select * from a where (select true from b where a.id = b.id)
+
+# test: select set operations
+select sizeof(select * from a)
+select (select * from a)[0]
+select (select a.* from test a) + (select b.* from test b)
+
+drop table a
+drop table b
+drop table test
+
+disconnect S0
+env_close E0

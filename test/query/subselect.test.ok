@@ -1,0 +1,686 @@
+env_open E0
+connect E0 S0
+connect: on_connect
+# test: select (select const)
+select (select 0)
+0
+select (select 1234)
+1234
+select (select null)
+null
+select (select "hello")
+"hello"
+# test: select (select expr)
+select (select 1 + 1)
+2
+select (select 2 * 2)
+4
+select (select 8 * 8)
+64
+select (select 64 / ( 4 + 4 ))
+8
+select (select 64 / 0)
+query: on_error
+{"code": 1, "msg": "zero division"}
+select (select 64 % 0)
+query: on_error
+{"code": 1, "msg": "zero division"}
+select (select 1 + 1) + (select 2)
+4
+# test: select (select [])
+select (select [])
+[]
+select (select [1])
+[1]
+select (select [1,2,3])
+[1, 2, 3]
+select (select [1,2,3])[1]
+2
+# test: select (select function())
+select system.schemas()
+[{"name": "system", "system": true, "create": false}, {"name": "public", "system": true, "create": true}]
+select (select system.schemas())
+[{"name": "system", "system": true, "create": false}, {"name": "public", "system": true, "create": true}]
+# test: select (select {})
+select (select {})
+{}
+select (select {"a": 1})
+{"a": 1}
+select (select {"a": 1, "b": null})
+{"a": 1, "b": null}
+select (select {"a": 1, "b": null}).a
+1
+# test: select (select *) from expr
+explain select (select *) from [1,2,3]
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+select (select *) from [1,2,3]
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+# test: select (select alias.*) from expr
+explain select (select t.*) from [1,2,3] t
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7    cursor_open_expr        0      0      9
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10                send        1      0      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                 ret        0      0      0
+
+"
+select (select t.*) from [1,2,3] t
+1
+2
+3
+select (select t.*) from [1,2,3]
+query: on_error
+{"code": 1, "msg": "<t> target not found"}
+# test: select (select alias.**) from expr
+select (select t.**) from {"a": 1, "b": 2} t
+"a"
+"b"
+select (select t.**) from {"a": 1, "b": 2}
+query: on_error
+{"code": 1, "msg": "<t> target not found"}
+# test: select (select *) from table
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+select (select *) from test
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+select (select test.*) from test
+[1]
+[2]
+[3]
+# test: select (select target.*) from table
+explain select (select test.*) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8                 ret        0      0      0
+
+"
+select (select test.*) from test
+[1]
+[2]
+[3]
+# test: select (select alias.*) from table
+select (select t.*) from test t
+[1]
+[2]
+[3]
+select (select t.*) from test
+query: on_error
+{"code": 1, "msg": "<t> target not found"}
+select (select t) from test t
+query: on_error
+{"code": 1, "msg": "<t> target column cannot be found"}
+# test: select (select target.column) from table
+explain select (select test.id) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4          cursor_idx        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8                 ret        0      0      0
+
+"
+select (select test.id) from test
+1
+2
+3
+select (select id) from test
+query: on_error
+{"code": 1, "msg": "<id> target column cannot be found"}
+# test: select (select alias.column) from table
+explain select (select t.id) from test t
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4          cursor_idx        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8                 ret        0      0      0
+
+"
+select (select t.id) from test
+query: on_error
+{"code": 1, "msg": "<t> target cannot be found"}
+select (select t.id) from test t
+1
+2
+3
+drop table test
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+# test: select (select target.path) from table
+select (select test) from test
+query: on_error
+{"code": 1, "msg": "<test> target column cannot be found"}
+select (select test.obj) from test
+{"data": {"id": 1}}
+{"data": {"id": 2}}
+{"data": {"id": 3}}
+select (select test.obj.data) from test
+{"id": 1}
+{"id": 2}
+{"id": 3}
+select (select test.obj.data.id) from test
+1
+2
+3
+# test: select (select alias.path) from table
+select (select t) from test t
+query: on_error
+{"code": 1, "msg": "<t> target column cannot be found"}
+select (select t.obj) from test t
+{"data": {"id": 1}}
+{"data": {"id": 2}}
+{"data": {"id": 3}}
+select (select t.obj.data) from test t
+{"id": 1}
+{"id": 2}
+{"id": 3}
+select (select t.obj.data.id) from test t
+1
+2
+3
+# test: select (select from outer column) from table
+select t.obj from test t
+{"data": {"id": 1}}
+{"data": {"id": 2}}
+{"data": {"id": 3}}
+select (select ** from t.obj) from test t
+query: on_error
+{"code": 1, "msg": "<t.obj> table or view is not found"}
+select (select **, * from (t.obj.data)) from test t
+[["id", 1]]
+[["id", 2]]
+[["id", 3]]
+drop table test
+# test: select from (select const)
+select * from (select 0)
+query: on_error
+{"code": 1, "msg": "FROM: array, map or data type expected"}
+select * from (select null)
+query: on_error
+{"code": 1, "msg": "FROM: array, map or data type expected"}
+# test: select from (select [])
+select * from (select [])
+select * from (select [1])
+1
+select * from (select [1,2,3])
+1
+2
+3
+# test: select from (select function())
+select * from system.schemas()
+{"name": "system", "system": true, "create": false}
+{"name": "public", "system": true, "create": true}
+select * from (select system.schemas())
+{"name": "system", "system": true, "create": false}
+{"name": "public", "system": true, "create": true}
+# test: select from (select {})
+select * from (select {})
+select * from (select {"a": 1})
+1
+select * from (select {"a": 1, "b": null})
+1
+null
+# test: select from (select expr) alias
+select alias.* from (select [1,2,3]) alias
+1
+2
+3
+select alias from (select [1,2,3]) alias
+query: on_error
+{"code": 1, "msg": "current cursor object type is not a map"}
+select alias from (select alias.*) alias
+query: on_error
+{"code": 1, "msg": "*: not in active aggregation"}
+select alias from (select alias) alias
+query: on_error
+{"code": 1, "msg": "<alias> target column cannot be found"}
+select (select 123 from alias) from (select alias) alias
+query: on_error
+{"code": 1, "msg": "<alias> table or view is not found"}
+select (select 123 from [1,2,3] alias) from (select alias) alias
+query: on_error
+{"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
+# test: select * from (select from table)
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+select * from (select * from test)
+[1]
+[2]
+[3]
+explain select * from (select * from test)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
+
+"
+# test: select target.* from (select from table)
+select test.* from (select * from test)
+query: on_error
+{"code": 1, "msg": "*: not in active aggregation"}
+select test from (select * from test)
+query: on_error
+{"code": 1, "msg": "current cursor object type is not a map"}
+# test: select alias.* from (select from table)
+select alias from (select * from test) alias
+query: on_error
+{"code": 1, "msg": "current cursor object type is not a map"}
+select alias.* from (select * from test) alias
+[1]
+[2]
+[3]
+select alias.* from (select test.* from test) alias
+[1]
+[2]
+[3]
+select alias.* from (select x.* from test x) alias
+[1]
+[2]
+[3]
+select alias.* from (select alias.* from test alias) alias
+query: on_error
+{"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
+select alias.* from (select * from test) alias
+[1]
+[2]
+[3]
+drop table test
+create table test (obj object, primary key(obj.data.id int))
+insert into test {"data": {"id": 1}}
+insert into test {"data": {"id": 2}}
+insert into test {"data": {"id": 3}}
+# test: select target.path from (select from table)
+select obj from (select * from test)
+query: on_error
+{"code": 1, "msg": "current cursor object type is not a map"}
+select * from (select * from test) alias
+[{"data": {"id": 1}}]
+[{"data": {"id": 2}}]
+[{"data": {"id": 3}}]
+select *[0] from (select * from test) alias
+{"data": {"id": 1}}
+{"data": {"id": 2}}
+{"data": {"id": 3}}
+select alias.*[0] from (select * from test) alias
+{"data": {"id": 1}}
+{"data": {"id": 2}}
+{"data": {"id": 3}}
+select alias.*[0].data.id from (select * from test) alias
+1
+2
+3
+drop table test
+# test: select (select *) from view
+create table test (id int primary key)
+create view test_view as select [1,2,3]
+explain select (select *) from test_view
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+select (select *) from test_view
+query: on_error
+{"code": 1, "msg": "<*> no FROM clause defined"}
+# test: select (select alias.*) from view
+explain select (select t.*) from test_view t
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7    cursor_open_expr        0      0      9
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10                send        1      0      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                 ret        0      0      0
+
+"
+select (select t.*) from test_view t
+1
+2
+3
+select (select t.*) from test_view
+query: on_error
+{"code": 1, "msg": "<t> target not found"}
+# test: select (select alias.**) from view
+drop view test_view
+create view test_view as select {"a": 1, "b": 2}
+select (select t.**) from test_view t
+"a"
+"b"
+select (select t.**) from test_view
+query: on_error
+{"code": 1, "msg": "<t> target not found"}
+select ** from test_view
+"a"
+"b"
+drop view test_view
+# test: select (select target.*) from table view
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+create view test_view as select * from test
+explain select * from test_view
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
+
+"
+select * from test_view
+[1]
+[2]
+[3]
+drop view test_view
+drop table test
+# test: select (select from table)
+create table test (id int primary key)
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+explain select (select * from test)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9                send        0      0      0
+10                 ret        0      0      0
+
+"
+select (select * from test)
+[[1], [2], [3]]
+# test: select (select from table) no result
+select (select * from test where false)
+[]
+# test: select (select from table) from table
+select (select * from test) from test
+query: on_error
+{"code": 1, "msg": "<test> target is redefined, please use different alias for the target"}
+explain select (select inner.* from test inner) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       15      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     20      9      # public.test (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                send        0      0      0
+14         cursor_next        1      4      0
+15        cursor_close        1      0      0
+16                 ret        0      0      0
+
+"
+# test: select (select from table) from table #2
+explain select (select inner.* from test inner where test.id = inner.id) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       19      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     20      9      # public.test (primary)
+ 8                 jmp       16      0      0
+ 9          cursor_idx        1      1      0
+10          cursor_idx        2      0      0
+11                 equ        3      1      2
+12                jntr       15      3      0
+13         cursor_read        1      0      0
+14             set_add        0      1      0
+15         cursor_next        0      9      0
+16        cursor_close        0      0      0
+17                send        0      0      0
+18         cursor_next        1      4      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
+
+"
+select (select inner.* from test inner where test.id = inner.id) from test
+[[1]]
+[[2]]
+[[3]]
+# test: select (select from table) from table #3
+create table a (id int primary key serial, data int default 0)
+create table b (id int primary key serial, data int default 1)
+insert into a () values (), (), ()
+insert into b () values (), (), ()
+explain select (select * from b where a.id = b.id) from a
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.a (primary)
+ 3                 jmp       19      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     17      9      # public.b (primary)
+ 8                 jmp       16      0      0
+ 9          cursor_idx        1      1      0
+10          cursor_idx        2      0      0
+11                 equ        3      1      2
+12                jntr       15      3      0
+13         cursor_read        1      0      0
+14             set_add        0      1      0
+15         cursor_next        0      9      0
+16        cursor_close        0      0      0
+17                send        0      0      0
+18         cursor_next        1      4      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
+
+"
+select (select * from b where a.id = b.id) from a
+[[0, 1]]
+[[1, 1]]
+[[2, 1]]
+select (select a.*, b.* from b where a.id = b.id) from a
+[[[0, 0], [0, 1]]]
+[[[1, 0], [1, 1]]]
+[[[2, 0], [2, 1]]]
+# test: select from table where (select from table)
+explain select * from a where (select true from b where a.id = b.id)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.a (primary)
+ 3                 jmp       21      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        1     17      9      # public.b (primary)
+ 8                 jmp       16      0      0
+ 9          cursor_idx        1      0      0
+10          cursor_idx        2      1      0
+11                 equ        3      1      2
+12                jntr       15      3      0
+13                bool        1      1      0
+14             set_add        0      1      0
+15         cursor_next        1      9      0
+16        cursor_close        1      0      0
+17                jntr       20      0      0
+18         cursor_read        0      0      0
+19                send        0      0      0
+20         cursor_next        0      4      0
+21        cursor_close        0      0      0
+22                 ret        0      0      0
+
+"
+select * from a where (select true from b where a.id = b.id)
+[0, 0]
+[1, 0]
+[2, 0]
+# test: select set operations
+select sizeof(select * from a)
+3
+select (select * from a)[0]
+query: on_error
+{"code": 1, "msg": "[]: map or array type expected"}
+select (select a.* from test a) + (select b.* from test b)
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+drop table a
+drop table b
+drop table test
+disconnect S0
+env_close E0

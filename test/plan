@@ -1,6 +1,6 @@
 #
 
-# runtime
+## runtime
 #directory runtime
 #group runtime
 #test runtime
@@ -40,6 +40,7 @@ test method
 test select
 test where
 test scan
+test subselect
 
 #directory ddl
 #group ddl
