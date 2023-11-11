@@ -396,6 +396,10 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		error("<%.*s> name cannot be resolved without FROM clause",
 		      str_size(name), str_of(name));
 
+	if (unlikely(target == NULL))
+		error("<%.*s> target column cannot be found",
+		      str_size(name), str_of(name));
+
 	// SELECT name FROM
 	if (target_list->count == 1)
 		return emit_cursor_idx(self, target, name);
@@ -462,6 +466,10 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	auto match = target_list_match(target_list, &name);
 	if (match == NULL)
 	{
+		if (unlikely(! target))
+			error("<%.*s> target cannot be found",
+			      str_size(&name), str_of(&name));
+
 		if (target_is_join(target))
 			error("<%.*s> path is ambiguous for JOIN",
 			      str_size(&name), str_of(&name));
