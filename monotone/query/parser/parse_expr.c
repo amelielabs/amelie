@@ -71,8 +71,6 @@ priority_map[UINT8_MAX] =
 	['@']                      = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
-	[KTSTRING]                 = priority_value,
-	[KJSON]                    = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
 	[KSUM]                     = priority_value,
@@ -251,8 +249,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// builtin functions
 	case KSET:
 	case KUNSET:
-	case KTSTRING:
-	case KJSON:
 	{
 		// function(call, NULL)
 		if (! stmt_if(self, '('))
@@ -461,14 +457,6 @@ parse_expr(Stmt* self, Expr* expr)
 
 	while (ast_head(&ops))
 		expr_pop(&ops, &result);
-
-	/*
-	// only one result
-	if (!result.list || result.list->next)
-		error("bad expression");
-
-	return ast_pop(&result);
-		*/
 
 	// only one result
 	if (! result.list)
