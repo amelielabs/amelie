@@ -170,6 +170,12 @@ parse_from(Stmt* self, int level)
 			continue;
 		}
 
+		// todo:
+		//   INNER
+		//   [OUTER] LEFT
+		//   [OUTER] RIGHT
+		//   FULL [OUTER]
+
 		// JOIN <target> [ON (expr)]
 		if (stmt_if(self, KJOIN))
 		{

@@ -60,16 +60,74 @@ parse_select_group_by(Stmt* self, AstList* list)
 	}
 }
 
+static inline Column*
+order_by_find_column(Stmt* self, Target* target, Ast* ast)
+{
+	if (target == NULL || target->table == NULL)
+		return NULL;
+
+	Str path;
+	str_set_str(&path, &ast->string);
+
+	Column* column = NULL;
+	switch (ast->id) {
+	case KNAME:
+	{
+		auto def = table_def(target->table);
+		column = def_find_column(def, &path);
+		break;
+	}
+	case KNAME_COMPOUND:
+	{
+		Str name;
+		str_split_or_set(&path, &name, '.');
+
+		// [target.]
+		if (! (target && target_compare(target, &name)))
+			target = target_list_match(&self->target_list, &name);
+		if (target)
+		{
+			str_advance(&path, str_size(&name) + 1);
+
+			// skip target name
+			str_split_or_set(&path, &name, '.');
+		}
+		auto def = table_def(target->table);
+
+		// column[.path]
+		bool compound = str_split_or_set(&path, &name, '.');
+		if (compound)
+			break;
+		column = def_find_column(def, &name);
+		break;
+	}
+	}
+
+	return column;
+}
+
 static inline void
-parse_select_order_by(Stmt* self, AstList* list)
+parse_select_order_by(Stmt* self, Target* target, AstList* list)
 {
 	for (;;)
 	{
 		// expr
 		auto expr = parse_expr(self, NULL);
 
-		// type
-		int type = 0;
+		// expect ORDER BY expr <type> if column is not found
+		//
+		int  type   = -1;
+		auto column = order_by_find_column(self, target, expr);
+		if (column)
+		{
+			if (column->type != TYPE_INT && column->type != TYPE_STRING)
+				error("ORDER BY column <%.*s> type expected as int or string",
+				      str_size(&column->name),
+				      str_of(&column->name));
+			type = column->type;
+		}
+
+		// [type]
 		auto ast = stmt_next(self);
 		if (ast->id == KTINT)
 			type = TYPE_INT;
@@ -77,7 +135,12 @@ parse_select_order_by(Stmt* self, AstList* list)
 		if (ast->id == KTSTRING)
 			type = TYPE_STRING;
 		else
-			error("ORDER BY type must be int or string");
+		{
+			// expect type if column was not found
+			if (type == -1)
+				error("ORDER BY expr <type> expected as int or string");
+			stmt_push(self, ast);
+		}
 
 		// [ASC|DESC]
 		bool asc = true;
@@ -187,7 +250,7 @@ parse_select(Stmt* self)
 		if (! stmt_if(self, KBY))
 			error("ORDER <BY> expected");
 
-		parse_select_order_by(self, &select->expr_order_by);
+		parse_select_order_by(self, select->target, &select->expr_order_by);
 	}
 
 	// [LIMIT]
