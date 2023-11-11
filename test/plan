@@ -41,6 +41,7 @@ test select
 test where
 test scan
 test subselect
+test order_by
 
 #directory ddl
 #group ddl
