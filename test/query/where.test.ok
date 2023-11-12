@@ -84,7 +84,8 @@ bytecode [shard 0]
 11                send        0      0      0
 12         cursor_next        0      4      0
 13        cursor_close        0      0      0
-14                 ret        0      0      0
+14               ready        0     -1      0
+15                 ret        0      0      0
 
 "
 select * from test where *[0] >= 0
@@ -119,7 +120,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where id >= 0
@@ -158,7 +160,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where data.data >= 0
@@ -197,7 +200,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where data.data.data >= 0
@@ -232,7 +236,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where test.id >= 0
@@ -267,7 +272,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where test.data.data >= 0
@@ -302,7 +308,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test alias where alias.id >= 0
@@ -337,7 +344,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test alias where alias.data.data >= 0
@@ -368,7 +376,8 @@ bytecode [shard 0]
  7                send        0      0      0
  8         cursor_next        0      4      0
  9        cursor_close        0      0      0
-10                 ret        0      0      0
+10               ready        0     -1      0
+11                 ret        0      0      0
 
 "
 select * from test where true
@@ -402,7 +411,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select * from test where id >= 0
@@ -458,7 +468,8 @@ bytecode [shard 0]
 13                send        0      0      0
 14         cursor_next        0      4      0
 15        cursor_close        0      0      0
-16                 ret        0      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
 
 "
 select * from test where id <= 0
@@ -502,7 +513,8 @@ bytecode [shard 0]
 13                send        0      0      0
 14         cursor_next        0      4      0
 15        cursor_close        0      0      0
-16                 ret        0      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
 
 "
 select * from test where id < 0

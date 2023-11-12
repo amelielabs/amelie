@@ -495,7 +495,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select * from test
@@ -538,7 +539,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select id, data from test
@@ -573,7 +575,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select data.data from test
@@ -608,7 +611,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select data.data.data from test
@@ -643,7 +647,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select test.id, test.data from test
@@ -674,7 +679,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select test.data.data from test
@@ -713,7 +719,8 @@ bytecode [shard 0]
  9                send        0      0      0
 10         cursor_next        0      4      0
 11        cursor_close        0      0      0
-12                 ret        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
 
 "
 select alias.id, alias.data from test alias
@@ -744,7 +751,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select alias.data.data from test alias
@@ -783,7 +791,8 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
 
 "
 select obj.id from test
@@ -828,7 +837,8 @@ bytecode [shard 0]
 18                send        0      0      0
 19         cursor_next        1      4      0
 20        cursor_close        1      0      0
-21                 ret        0      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
 
 "
 select (select **, * from test.*[0]) from test

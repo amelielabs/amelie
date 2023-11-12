@@ -66,7 +66,8 @@ bytecode [shard 0]
  2             jmp_pop        0      0      0
  3              upsert        0      0      3
  4        cursor_close        0      0      0
- 5                 ret        0      0      0
+ 5               ready        0     -1      0
+ 6                 ret        0      0      0
 
 "
 insert into test values(1, 0) on conflict do nothing
@@ -89,7 +90,8 @@ bytecode [shard 0]
  4              upsert        0      3      3
  5              upsert        0      6      3
  6        cursor_close        0      0      0
- 7                 ret        0      0      0
+ 7               ready        0     -1      0
+ 8                 ret        0      0      0
 
 "
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
@@ -125,7 +127,8 @@ bytecode [shard 0]
 13             jmp_pop        0      0      0
 14              upsert        0      0      3
 15        cursor_close        0      0      0
-16                 ret        0      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
 
 "
 insert into test values(1, 0) on conflict do update set data = data + 1
@@ -174,7 +177,8 @@ bytecode [shard 0]
 15              upsert        0      3      3
 16              upsert        0      6      3
 17        cursor_close        0      0      0
-18                 ret        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
 
 "
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
@@ -218,7 +222,8 @@ bytecode [shard 0]
 15             jmp_pop        0      0      0
 16              upsert        0      0      3
 17        cursor_close        0      0      0
-18                 ret        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
 
 "
 insert into test values (1, 0) on conflict do update set data = data + 1 where true
@@ -262,7 +267,8 @@ bytecode [shard 0]
 15             jmp_pop        0      0      0
 16              upsert        0      0      4
 17        cursor_close        0      0      0
-18                 ret        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
 
 "
 insert into test values (1, 123) on conflict do update set data = data + @[1]

@@ -24,12 +24,12 @@
 #test cascade
 
 ## dml
-#directory dml
-#group dml
-#test insert
-#test update
-#test delete
-#test upsert
+directory dml
+group dml
+test insert
+test update
+test delete
+test upsert
 
 # query
 directory query

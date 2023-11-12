@@ -75,7 +75,8 @@ bytecode [shard 0]
 14              update        0      0      0
 15         cursor_next        0      4      0
 16        cursor_close        0      0      0
-17                 ret        0      0      0
+17               ready        0     -1      0
+18                 ret        0      0      0
 
 "
 update test set data = data + 1
@@ -117,7 +118,8 @@ bytecode [shard 0]
 14              update        0      0      0
 15         cursor_next        0      4      0
 16        cursor_close        0      0      0
-17                 ret        0      0      0
+17               ready        0     -1      0
+18                 ret        0      0      0
 
 "
 update test.test set data = data + 1
@@ -178,7 +180,8 @@ bytecode [shard 0]
 22              update        0      0      0
 23         cursor_next        0      4      0
 24        cursor_close        0      0      0
-25                 ret        0      0      0
+25               ready        0     -1      0
+26                 ret        0      0      0
 
 "
 update test set a = a + 1, b = b - 1
@@ -353,7 +356,8 @@ bytecode [shard 0]
 18              update        0      0      0
 19         cursor_next        0      4      0
 20        cursor_close        0      0      0
-21                 ret        0      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
 
 "
 update test set data = data + 1 where id = 0
@@ -400,7 +404,8 @@ bytecode [shard 0]
 18              update        0      0      0
 19         cursor_next        0      4      0
 20        cursor_close        0      0      0
-21                 ret        0      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
 
 "
 update test set data = data + 1 where id > 2

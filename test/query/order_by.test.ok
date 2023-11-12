@@ -106,7 +106,8 @@ bytecode [shard 0]
 10        cursor_close        0      0      0
 11            set_sort        0      0      0
 12            set_send        0      0      0
-13                 ret        0      0      0
+13               ready        0     -1      0
+14                 ret        0      0      0
 
 "
 select * from test order by data
