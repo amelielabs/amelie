@@ -14,7 +14,6 @@ struct Req
 	bool        complete;
 	bool        error;
 	bool        ok;
-	Value       stmt_value;
 	int         stmt;
 	Transaction trx;
 	Code        code;
@@ -22,6 +21,7 @@ struct Req
 	Command*    cmd;
 	Channel*    dst;
 	Channel     src;
+	Result      result;
 	ReqCache*   cache;
 	List        link;
 };
@@ -44,16 +44,16 @@ req_init(Req* self, ReqCache* cache)
 	self->dst       = NULL;
 	self->cache     = cache;
 	code_init(&self->code);
-	value_init(&self->stmt_value);
 	transaction_init(&self->trx);
 	channel_init(&self->src);
+	result_init(&self->result);
 	list_init(&self->link);
 }
 
 static inline void
 req_free(Req* self)
 {
-	value_free(&self->stmt_value);
+	result_free(&self->result);
 	code_free(&self->code);
 	transaction_free(&self->trx);
 	channel_detach(&self->src);
@@ -71,7 +71,7 @@ req_reset(Req* self)
 	self->code_data = NULL;
 	self->cmd       = NULL;
 	self->dst       = NULL;
-	value_free(&self->stmt_value);
+	result_reset(&self->result);
 	event_set_parent(&self->src.on_write.event, NULL);
 	code_reset(&self->code);
 	list_init(&self->link);

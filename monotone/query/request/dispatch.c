@@ -86,11 +86,18 @@ dispatch_prepare(Dispatch* self, int stmts)
 	// prepare request set
 	if (unlikely(self->set == NULL))
 	{
-		int size = sizeof(Req) * self->router->set_size;
+		int size = sizeof(Req*) * self->router->set_size;
 		self->set = mn_malloc(size);
 		self->set_size = self->router->set_size;
 		memset(self->set, 0, size);
 	}
+
+	// [stmts]
+	//         0   1   n  [cores]
+	// 0       x       x
+	// 1           x
+	// n       x   x   x
+	//
 
 	// prepare request set per stmt set as [statements][routes]
 	int size = sizeof(Req*) * stmts * self->set_size;
@@ -111,6 +118,7 @@ dispatch_add(Dispatch* self, int stmt, Route* route)
 		req = req_create(self->cache);
 		req->dst = route->channel;
 		req->code_data = self->code_data;
+		result_prepare(&req->result, self->stmt_count);
 		self->set[route->order] = req;
 	}
 
