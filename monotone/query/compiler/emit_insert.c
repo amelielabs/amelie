@@ -55,4 +55,13 @@ emit_insert(Compiler* self, Ast* ast)
 		         data,
 		         data_size, insert->unique);
 	}
+
+	// CREADY
+	for (int order = 0; order < self->dispatch->set_size; order++)
+	{
+		auto req = dispatch_at_stmt(self->dispatch, stmt->order, order);
+		if (! req)
+			continue;
+		code_add(&req->code, CREADY, stmt->order, -1, 0, 0);
+	}
 }

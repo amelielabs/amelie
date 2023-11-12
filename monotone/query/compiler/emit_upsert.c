@@ -93,6 +93,7 @@ hot void
 emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert   = ast_insert_of(ast);
+	auto stmt     = self->current;
 	auto dispatch = self->dispatch;
 	auto target   = insert->target;
 
@@ -106,6 +107,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		emit_upsert_row(self, insert, row, jmp);
 	}
 
+	/*
 	// close cursors
 	for (int order = 0; order < dispatch->set_size; order++)
 	{
@@ -113,5 +115,20 @@ emit_upsert(Compiler* self, Ast* ast)
 			continue;
 		auto req = dispatch_at(dispatch, order);
 		code_add(&req->code, CCURSOR_CLOSE, target->id, 0, 0, 0);
+	}
+	*/
+
+	// close cursors and send ready
+	for (int order = 0; order < self->dispatch->set_size; order++)
+	{
+		auto req = dispatch_at_stmt(self->dispatch, stmt->order, order);
+		if (! req)
+			continue;
+
+		// CCLOSE_CURSOR
+		code_add(&req->code, CCURSOR_CLOSE, target->id, 0, 0, 0);
+
+		// CREADY
+		code_add(&req->code, CREADY, stmt->order, -1, 0, 0);
 	}
 }

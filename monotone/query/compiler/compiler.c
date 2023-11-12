@@ -127,6 +127,8 @@ compiler_emit(Compiler* self)
 				emit_insert(self, stmt->ast);
 			else
 				emit_upsert(self, stmt->ast);
+
+			// CRECV
 			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			continue;
@@ -135,16 +137,24 @@ compiler_emit(Compiler* self)
 		switch (stmt->id) {
 		case STMT_UPDATE:
 			emit_update(self, stmt->ast);
+
+			// CREADY
+			op2(self, CREADY, stmt->order, -1);
 			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
+			// CRECV
 			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			break;
 
 		case STMT_DELETE:
 			emit_delete(self, stmt->ast);
+
+			// CREADY
+			op2(self, CREADY, stmt->order, -1);
 			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
 
+			// CRECV
 			compiler_switch(self, &self->code_coordinator);
 			op0(self, CRECV);
 			break;
@@ -160,7 +170,12 @@ compiler_emit(Compiler* self)
 			} else
 			{
 				emit_select(self, stmt->ast, false);
+
+				// CREADY
+				op2(self, CREADY, stmt->order, -1);
 				dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+
+				// CRECV
 				compiler_switch(self, &self->code_coordinator);
 				op0(self, CRECV);
 			}
