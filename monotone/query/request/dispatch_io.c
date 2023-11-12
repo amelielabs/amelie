@@ -106,10 +106,8 @@ dispatch_read(Dispatch* self, Req* req, Portal* portal)
 			portal_write(portal, buf);
 		return;
 	case MSG_READY:
-		// set last completed statement and value
+		// set last completed statement
 		req->stmt = self->stmt_current;
-		value_free(&req->stmt_value);
-		// todo: save ready to req->ready value
 		break;
 	case MSG_OK:
 		req->stmt     = INT_MAX;
@@ -168,7 +166,7 @@ dispatch_drain(Dispatch* self)
 	for (int order = 0; order < self->set_size; order++)
 	{
 		auto req = dispatch_at(self, order);
-		value_free(&req->stmt_value);
+		result_reset(&req->result);
 	}
 }
 
@@ -189,7 +187,7 @@ dispatch_recv(Dispatch* self, Portal* portal)
 		for (int order = 0; order < self->set_size; order++)
 		{
 			auto req = dispatch_at_stmt(self, stmt, order);
-			if (!req || req->stmt >= stmt)
+			if (!req || req->complete)
 				continue;
 			processed++;
 			dispatch_read(self, req, portal);
