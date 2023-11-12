@@ -35,6 +35,7 @@ vm_init(Vm*          self,
 	self->code         = NULL;
 	self->shard        = shard;
 	self->dispatch     = NULL;
+	self->result       = NULL;
 	self->command      = NULL;
 	self->portal       = NULL;
 	reg_init(&self->r);
@@ -69,6 +70,7 @@ vm_run(Vm*          self,
        Command*     command,
        Code*        code,
        CodeData*    code_data,
+       Result*      result,
        Portal*      portal)
 {
 	assert(code_count(code) > 0);
@@ -77,6 +79,7 @@ vm_run(Vm*          self,
 	self->command   = command;
 	self->code      = code;
 	self->code_data = code_data;
+	self->result    = result;
 	self->portal    = portal;
 
 	const void* ops[] =
@@ -90,6 +93,7 @@ vm_run(Vm*          self,
 		&&cjntr_pop,
 		&&csend,
 		&&crecv,
+		&&cready,
 		&&csleep,
 		&&cpush,
 		&&cpop,
@@ -228,6 +232,20 @@ csend:
 
 crecv:
 	dispatch_recv(self->dispatch, self->portal);
+	op_next;
+
+cready:
+	// [stmt, result]
+	if (op->b != -1)
+	{
+		*result_at(result, op->a) = r[op->b];
+		r[op->b].type = VALUE_NONE;
+	}
+
+	// READY
+	buf = msg_create(MSG_READY);
+	msg_end(buf);
+	portal_write(portal, buf);
 	op_next;
 
 csleep:

@@ -19,8 +19,12 @@ enum
 	CJNTR,
 	CJNTR_POP,
 
+	// result
 	CSEND,
 	CRECV,
+	CREADY,
+
+	// misc
 	CSLEEP,
 
 	// stack

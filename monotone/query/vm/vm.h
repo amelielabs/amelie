@@ -19,6 +19,7 @@ struct Vm
 	Uuid*        shard;
 	Command*     command;
 	Dispatch*    dispatch;
+	Result*      result;
 	Portal*      portal;
 	Transaction* trx;
 	Db*          db;
@@ -28,4 +29,5 @@ void vm_init(Vm*, Db*, FunctionMgr*, Uuid*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Transaction*, Dispatch*, Command*,
-            Code*, CodeData*, Portal*);
+            Code*, CodeData*, Result*,
+            Portal*);

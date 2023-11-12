@@ -34,8 +34,12 @@ OpDesc ops[] =
 	{ CJNTR,              "jntr"              },
 	{ CJNTR_POP,          "jntr_pop"          },
 
+	// result
 	{ CSEND,              "send"              },
 	{ CRECV,              "recv"              },
+	{ CREADY,             "ready"             },
+
+	// misc
 	{ CSLEEP,             "sleep"             },
 
 	// stack
