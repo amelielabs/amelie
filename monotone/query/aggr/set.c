@@ -130,27 +130,13 @@ set_add_from_stack(Set* self, Value* value, Stack* stack)
 	set_add(self, value, keys);
 }
 
-hot static inline int
-set_compare(Set* self, SetRow* a, SetRow* b)
-{
-	for (int i = 0; i < self->keys_count; i++)
-	{
-		auto key = &self->keys[i];
-		int rc;
-		if (key->type == TYPE_STRING)
-			rc = value_compare_string(&a->keys[i], &b->keys[i]);
-		else
-			rc = value_compare_int(&a->keys[i], &b->keys[i]);
-		if (rc != 0)
-			return (key->asc) ? rc : -rc;
-	}
-	return 0;
-}
-
 hot static int
 set_cmp(const void* p1, const void* p2, void* arg)
 {
-	return set_compare(arg, *(SetRow**)p1, *(SetRow**)p2);
+	Set* self = arg;
+	return set_compare(self->keys, self->keys_count,
+	                   *(SetRow**)p1,
+	                   *(SetRow**)p2);
 }
 
 void
