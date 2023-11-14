@@ -197,6 +197,17 @@ storage_mgr_find_for(StorageMgr* self, Uuid* shard, Uuid* table)
 	return NULL;
 }
 
+Storage*
+storage_mgr_find_for_table(StorageMgr* self, Uuid* table)
+{
+	list_foreach(&self->list)
+	{
+		auto storage = list_at(Storage, link);
+		if (uuid_compare(&storage->config->id_table, table))
+			return storage;
+	}
+	return NULL;
+}
 
 Storage*
 storage_mgr_create(StorageMgr* self, StorageConfig* config)

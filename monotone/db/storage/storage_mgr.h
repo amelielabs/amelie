@@ -22,8 +22,12 @@ Buf* storage_mgr_list(StorageMgr*);
 
 Storage*
 storage_mgr_find(StorageMgr*, Uuid*);
+
 Storage*
 storage_mgr_find_for(StorageMgr*, Uuid*, Uuid*);
+
+Storage*
+storage_mgr_find_for_table(StorageMgr*, Uuid*);
 
 Storage*
 storage_mgr_create(StorageMgr*, StorageConfig*);
