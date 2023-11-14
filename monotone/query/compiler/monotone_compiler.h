@@ -24,3 +24,4 @@
 #include "compiler/emit_delete.h"
 #include "compiler/emit_upsert.h"
 #include "compiler/emit_select.h"
+#include "compiler/pushdown.h"

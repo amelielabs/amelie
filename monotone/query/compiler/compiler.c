@@ -160,32 +160,72 @@ compiler_emit(Compiler* self)
 			break;
 
 		case STMT_SELECT:
-
-			// if all targets are expressions execute locally
-			if (target_list_is_expr(&stmt->target_list))
+		{
+			if (target_list_expr_or_reference(&stmt->target_list))
 			{
+				//
+				// no targets
+				// all targets are expressions
+				// all targets are expressions or reference tables
+				//
+				// select expr
+				// select from [expr/reference]
+				// select (select expr)
+				// select (select from [expr/reference])
+				// select (select expr) from [expr/reference]
+				// select (select from [expr/reference]) from [expr/reference]
+				//
 				compiler_switch(self, &self->code_coordinator);
 				emit_select(self, stmt->ast, false);
-
 			} else
 			{
-				emit_select(self, stmt->ast, false);
+				// select (select from table)
+				// select (select from table) from expr
+				auto select = ast_select_of(stmt->ast);
+				if (! select->target)
+					error("undefined distributed table");
 
-				// CREADY
-				op2(self, CREADY, stmt->order, -1);
-				dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+				// select from (select from table)
+				if (! select->target->table)
+				{
+					auto from_expr = select->target->expr;
+					if (from_expr->id != KSELECT)
+						error("FROM: undefined distributed table");
 
-				// CRECV
-				compiler_switch(self, &self->code_coordinator);
-				op0(self, CRECV);
+					auto from_select = ast_select_of(from_expr);
+					if (from_select->target == NULL ||
+					    from_select->target->table == NULL)
+						error("FROM SELECT: undefined distributed table");
+
+					// validate targets
+					target_list_validate(&stmt->target_list, from_select->target);
+
+					// generate pushdown as nested query, select over
+					// returned SET or MERGE object
+					select->target->rexpr = pushdown(self, from_expr, true);
+					emit_select(self, stmt->ast, false);
+					break;
+				}
+
+				// validate join and nested targets
+				//  - reference
+				//  - shard key/primary key match (by type and count)
+				target_list_validate(&stmt->target_list, select->target);
+
+				// select [select] from table, ...
+				int r = pushdown(self, stmt->ast, false);
+				if (r == -1)
+					break;
+				op1(self, CSEND_SET, r);
+				runpin(self, r);
 			}
-			break;
 
+			break;
+		}
 		default:
 			break;
 		}
 
-		// copy last generated statement
 		code_reset(&self->code_stmt);
 	}
 

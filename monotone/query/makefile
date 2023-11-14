@@ -34,6 +34,7 @@ LIB            = libmonotone-query.a
 OBJECTS        = \
                  value/update.o \
                  aggr/set.o \
+                 aggr/merge.o \
                  aggr/aggrs.o \
                  aggr/count.o \
                  aggr/sum.o \
@@ -68,7 +69,8 @@ OBJECTS        = \
                  compiler/emit_update.o \
                  compiler/emit_delete.o \
                  compiler/emit_upsert.o \
-                 compiler/emit_select.o
+                 compiler/emit_select.o \
+                 compiler/pushdown.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
