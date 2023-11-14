@@ -135,51 +135,71 @@ execute_set(Session* self, Ast* ast)
 		control_save_config();
 }
 
+static inline Storage*
+execute_create_storage(Session* self, Table* table, Shard* shard)
+{
+	auto share = self->share;
+
+	// create storage config
+	auto config = storage_config_allocate();
+	guard(config_guard, storage_config_free, config);
+
+	Uuid id;
+	uuid_mgr_generate(global()->uuid_mgr, &id);
+	storage_config_set_id(config, &id);
+	storage_config_set_id_table(config, &table->config->id);
+	if (shard)
+	{
+		storage_config_set_id_shard(config, &shard->config->id);
+		storage_config_set_range(config, shard->config->range_start,
+		                         shard->config->range_end);
+	}
+
+	// create storage
+	auto storage = storage_mgr_create(share->storage_mgr, config);
+	unguard(&config_guard);
+
+	// create primary index per storage
+
+	// create index config
+	auto index_config = index_config_allocate();
+	guard(index_config_guard, index_config_free, index_config);
+	Str name;
+	str_set_cstr(&name, "primary");
+	index_config_set_name(index_config, &name);
+	index_config_set_type(index_config, INDEX_TREE);
+	index_config_set_primary(index_config, true);
+	def_copy(&index_config->def, &table->config->def);
+
+	// create tree index
+	auto index = tree_allocate(index_config, &storage->config->id);
+	unguard(&index_config_guard);
+	index_config_free(index_config);
+
+	// attach index to the storage
+	storage_mgr_attach(share->storage_mgr, storage, index);
+	return storage;
+}
+
 static inline void
 execute_create_storages(Session* self, Table* table)
 {
 	auto share = self->share;
+
+	// reference table require only single storage
+	if (table->config->reference)
+	{
+		execute_create_storage(self, table, NULL);
+		return;
+	}
 
 	// create storage for each shard
 	for (int i = 0; i < share->shard_mgr->shards_count; i++)
 	{
 		auto shard = share->shard_mgr->shards[i];
 
-		// create storage config
-		auto config = storage_config_allocate();
-		guard(config_guard, storage_config_free, config);
-
-		Uuid id;
-		uuid_mgr_generate(global()->uuid_mgr, &id);
-		storage_config_set_id(config, &id);
-		storage_config_set_id_table(config, &table->config->id);
-		storage_config_set_id_shard(config, &shard->config->id);
-		storage_config_set_range(config, shard->config->range_start,
-		                         shard->config->range_end);
-
-		// create storage
-		auto storage = storage_mgr_create(share->storage_mgr, config);
-		unguard(&config_guard);
-
-		// create primary index per storage
-
-		// create index config
-		auto index_config = index_config_allocate();
-		guard(index_config_guard, index_config_free, index_config);
-		Str name;
-		str_set_cstr(&name, "primary");
-		index_config_set_name(index_config, &name);
-		index_config_set_type(index_config, INDEX_TREE);
-		index_config_set_primary(index_config, true);
-		def_copy(&index_config->def, &table->config->def);
-
-		// create tree index
-		auto index = tree_allocate(index_config, &storage->config->id);
-		unguard(&index_config_guard);
-		index_config_free(index_config);
-
-		// attach index to the storage
-		storage_mgr_attach(share->storage_mgr, storage, index);
+		// create storage with primary index
+		auto storage = execute_create_storage(self, table, shard);
 
 		// attach and start storage on shard
 		rpc(&shard->task.channel, RPC_STORAGE_ATTACH, 1, storage);
