@@ -20,6 +20,7 @@ value_is_true(Value* a)
 	case VALUE_DATA:
 	case VALUE_STRING:
 	case VALUE_SET:
+	case VALUE_MERGE:
 	case VALUE_GROUP:
 	case VALUE_NONE:
 		break;

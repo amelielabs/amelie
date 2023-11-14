@@ -19,6 +19,7 @@ enum
 	VALUE_STRING,
 	VALUE_DATA,
 	VALUE_SET,
+	VALUE_MERGE,
 	VALUE_GROUP
 };
 
@@ -60,7 +61,9 @@ value_free(Value* self)
 	if (unlikely(self->buf))
 		buf_free(self->buf);
 
-	if (unlikely(self->type == VALUE_SET || self->type == VALUE_GROUP))
+	if (unlikely(self->type == VALUE_SET   ||
+	             self->type == VALUE_MERGE ||
+	             self->type == VALUE_GROUP))
 		self->obj->free(self->obj);
 
 	self->type = VALUE_NONE;
@@ -125,6 +128,14 @@ always_inline hot static inline void
 value_set_set(Value* self, ValueObj* obj)
 {
 	self->type = VALUE_SET;
+	self->obj  = obj;
+	self->buf  = NULL;
+}
+
+always_inline hot static inline void
+value_set_merge(Value* self, ValueObj* obj)
+{
+	self->type = VALUE_MERGE;
 	self->obj  = obj;
 	self->buf  = NULL;
 }
@@ -219,6 +230,8 @@ value_write(Value* self, Buf* buf)
 	case VALUE_SET:
 		self->obj->convert(self->obj, buf);
 		break;
+	// VALUE_MERGE
+	// VALUE_GROUP
 	default:
 		assert(0);
 		break;
