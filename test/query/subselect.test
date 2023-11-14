@@ -235,14 +235,25 @@ select (select a.*, b.* from b where a.id = b.id) from a
 explain select * from a where (select true from b where a.id = b.id)
 select * from a where (select true from b where a.id = b.id)
 
-# test: select set operations
-select sizeof(select * from a)
-select (select * from a)[0]
-select (select a.* from test a) + (select b.* from test b)
-
 drop table a
 drop table b
 drop table test
+
+# test: select set operations
+create table a (id int primary key serial, data int default 0) reference
+create table b (id int primary key serial, data int default 1) reference
+
+explain select sizeof(select * from a)
+select sizeof(select * from a)
+
+explain select (select * from a)[0]
+select (select * from a)[0]
+
+explain select (select a.* from a) + (select b.* from b)
+select (select a.* from a) + (select b.* from b)
+
+drop table a
+drop table b
 
 disconnect S0
 env_close E0
