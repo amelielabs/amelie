@@ -21,6 +21,7 @@ enum
 
 	// result
 	CSEND,
+	CSEND_SET,
 	CRECV,
 	CREADY,
 
@@ -80,7 +81,9 @@ enum
 	CSET_ORDERED,
 	CSET_SORT,
 	CSET_ADD,
-	CSET_SEND,
+
+	// merge
+	CMERGE,
 
 	// group
 	CGROUP,

@@ -39,11 +39,17 @@ ccursor_open(Vm* self, Op* op)
 	data_read_string(&pos, &name_index);
 
 	// find table/index by name
-	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto storage = storage_mgr_find_for(&self->db->storage_mgr,
-	                                     self->shard,
-	                                    &table->config->id);
-	auto index   = storage_find(storage, &name_index, true);
+	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+
+	Storage* storage;
+	if (table->config->reference)
+		storage = storage_mgr_find_for_table(&self->db->storage_mgr,
+		                                     &table->config->id);
+	else
+		storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
+		                               &table->config->id);
+
+	auto index = storage_find(storage, &name_index, true);
 
 	// create cursor key
 	auto def = index_def(index);
@@ -103,8 +109,16 @@ ccursor_open_expr(Vm* self, Op* op)
 	if (expr->type == VALUE_SET)
 	{
 		cursor->type = CURSOR_SET;
-		cursor->set  = (Set*)expr->obj;
-		if (cursor->set->list_count == 0)
+		auto set = (Set*)expr->obj;
+		set_iterator_open(&cursor->set_it, set);
+		if (! set_iterator_has(&cursor->set_it))
+			return ++op;
+	} else
+	if (expr->type == VALUE_MERGE)
+	{
+		cursor->type  = CURSOR_MERGE;
+		cursor->merge = (Merge*)expr->obj;
+		if (! merge_has(cursor->merge))
 			return ++op;
 	} else
 	if (expr->type == VALUE_GROUP)
@@ -151,6 +165,7 @@ ccursor_close(Vm* self, Op* op)
 	case CURSOR_ARRAY:
 	case CURSOR_MAP:
 	case CURSOR_SET:
+	case CURSOR_MERGE:
 	case CURSOR_GROUP:
 	{
 		value_free(reg_at(&self->r, cursor->r));
@@ -203,8 +218,15 @@ ccursor_next(Vm* self, Op* op)
 	}
 	case CURSOR_SET:
 	{
-		cursor->set_pos++;
-		if (cursor->set_pos >= cursor->set->list_count)
+		set_iterator_next(&cursor->set_it);
+		if (! set_iterator_has(&cursor->set_it))
+			return ++op;
+		break;
+	}
+	case CURSOR_MERGE:
+	{
+		merge_next(cursor->merge);
+		if (! merge_has(cursor->merge))
 			return ++op;
 		break;
 	}
@@ -250,7 +272,13 @@ ccursor_read(Vm* self, Op* op)
 	}
 	case CURSOR_SET:
 	{
-		auto ref = &set_at(cursor->set, cursor->set_pos)->value;
+		auto ref = &set_iterator_at(&cursor->set_it)->value;
+		value_copy(a, ref);
+		break;
+	}
+	case CURSOR_MERGE:
+	{
+		auto ref = &merge_at(cursor->merge)->value;
 		value_copy(a, ref);
 		break;
 	}
@@ -294,7 +322,16 @@ ccursor_idx(Vm* self, Op* op)
 		break;
 	case CURSOR_SET:
 	{
-		auto value = &set_at(cursor->set, cursor->set_pos)->value;
+		auto value = &set_iterator_at(&cursor->set_it)->value;
+		if (value->type != VALUE_DATA)
+			error("current cursor object type is not a map");
+		data     = value->data;
+		data_buf = value->buf;
+		break;
+	}
+	case CURSOR_MERGE:
+	{
+		auto value = &merge_at(cursor->merge)->value;
 		if (value->type != VALUE_DATA)
 			error("current cursor object type is not a map");
 		data     = value->data;
@@ -457,4 +494,93 @@ cupsert(Vm* self, Op* op)
 
 	// update
 	return code_at(self->code, op->d);
+}
+
+hot void
+cmerge(Vm* self, Op* op)
+{
+	// [merge, stmt, limit, offset]
+	int stmt = op->b;
+
+	// limit
+	int64_t limit = INT64_MAX;
+	if (op->c != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->c)->type != VALUE_INT))
+			error("LIMIT: integer type expected");
+		limit = reg_at(&self->r, op->c)->integer;
+	}
+
+	// offset
+	int64_t offset = 0;
+	if (op->d != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->d)->type != VALUE_INT))
+			error("OFFSET: integer type expected");
+		offset = reg_at(&self->r, op->d)->integer;
+	}
+
+	// create merge object
+	auto merge = merge_create();
+	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
+
+	// add sets from the statement
+	auto dispatch = self->dispatch;
+	for (int order = 0; order < dispatch->set_size; order++)
+	{
+		auto req = dispatch_at_stmt(dispatch, stmt, order);
+		if (! req)
+			continue;
+		auto value = result_at(&req->result, stmt);
+		if (value->type == VALUE_SET)
+		{
+			merge_add(merge, (Set*)value->obj);
+			value->type = VALUE_NONE;
+		}
+	}
+
+	// prepare merge and apply offset
+	merge_open(merge, limit, offset);
+}
+
+hot void
+csend_set(Vm* self, Op* op)
+{
+	// [obj]
+	auto value = reg_at(&self->r, op->a);
+
+	if (value->type == VALUE_MERGE)
+	{
+		auto merge = (Merge*)value->obj;
+		while (merge_has(merge))
+		{
+			auto value = &merge_at(merge)->value;
+			auto buf = msg_create(MSG_OBJECT);
+			value_write(value, buf);
+			msg_end(buf);
+			portal_write(self->portal, buf);
+
+			merge_next(merge);
+		}
+
+	} else
+	if (value->type == VALUE_SET)
+	{
+		auto set = (Set*)value->obj;
+		for (int pos = 0; pos < set->list_count; pos++)
+		{
+			auto value = &set_at(set, pos)->value;
+			auto buf = msg_create(MSG_OBJECT);
+			value_write(value, buf);
+			msg_end(buf);
+			portal_write(self->portal, buf);
+		}
+
+	} else
+	{
+		abort();
+	}
+
+	// set or merge with all sets
+	value_free(value);
 }

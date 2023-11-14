@@ -92,6 +92,7 @@ vm_run(Vm*          self,
 		&&cjntr,
 		&&cjntr_pop,
 		&&csend,
+		&&csend_set,
 		&&crecv,
 		&&cready,
 		&&csleep,
@@ -133,7 +134,7 @@ vm_run(Vm*          self,
 		&&cset_ordered,
 		&&cset_sort,
 		&&cset_add,
-		&&cset_send,
+		&&cmerge,
 		&&cgroup,
 		&&cgroup_add_aggr,
 		&&cgroup_add,
@@ -228,6 +229,11 @@ csend:
 	msg_end(buf);
 	portal_write(portal, buf);
 	value_free(&r[op->a]);
+	op_next;
+
+csend_set:
+	// [stmt, limit, offset]
+	csend_set(self, op);
 	op_next;
 
 crecv:
@@ -431,17 +437,9 @@ cset_add:
 		stack_popn(stack, set->keys_count);
 	op_next;
 
-cset_send:
-	set = (Set*)r[op->a].obj;
-	for (rc = 0; rc < set->list_count; rc++)
-	{
-		auto value = &set_at(set, rc)->value;
-		buf = msg_create(MSG_OBJECT);
-		value_write(value, buf);
-		msg_end(buf);
-		portal_write(portal, buf);
-	}
-	value_free(&r[op->a]);
+cmerge:
+	// [merge, stmt]
+	cmerge(self, op);
 	op_next;
 
 cgroup:

@@ -36,6 +36,7 @@ OpDesc ops[] =
 
 	// result
 	{ CSEND,              "send"              },
+	{ CSEND_SET,          "send_set"          },
 	{ CRECV,              "recv"              },
 	{ CREADY,             "ready"             },
 
@@ -95,7 +96,9 @@ OpDesc ops[] =
 	{ CSET_ORDERED,       "set_ordered"       },
 	{ CSET_SORT,          "set_sort"          },
 	{ CSET_ADD,           "set_add"           },
-	{ CSET_SEND,          "set_send"          },
+
+	// merge
+	{ CMERGE,             "merge"             },
 
 	// group
 	{ CGROUP,             "group"             },
