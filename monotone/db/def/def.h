@@ -237,3 +237,22 @@ def_write(Def* self, Buf* buf)
 	encode_raw(buf, "reserved", 8);
 	encode_integer(buf, self->reserved);
 }
+
+static inline bool
+def_compare_keys(Def* self, Def* with)
+{
+	// compare key count and types
+	if (self->key_count != with->key_count)
+		return false;
+
+	auto key_a = self->key;
+	auto key_b = with->key;
+	while (key_a)
+	{
+		if (key_a->type != key_b->type)
+			return false;
+		key_a = key_a->next;
+		key_b = key_b->next;
+	}
+	return true;
+}
