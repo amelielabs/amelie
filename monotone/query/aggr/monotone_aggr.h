@@ -9,7 +9,7 @@
 // set
 #include "aggr/set.h"
 #include "aggr/set_iterator.h"
-#include "aggr/set_merge.h"
+#include "aggr/merge.h"
 
 // aggregate
 #include "aggr/aggr.h"
