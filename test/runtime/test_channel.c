@@ -65,11 +65,10 @@ test_channel_task(void *arg)
 
 	auto buf = channel_read(&channel, -1);
 	test(buf);
+	buf_free(buf);
 
 	task_wait(&task);
 	task_free(&task);
-
-	buf_free(buf);
 
 	channel_detach(&channel);
 	channel_free(&channel);
@@ -87,11 +86,10 @@ test_channel_task_detached(void *arg)
 
 	auto buf = channel_read(&channel, -1);
 	test(buf);
+	buf_free(buf);
 
 	task_wait(&task);
 	task_free(&task);
-
-	buf_free(buf);
 
 	channel_detach(&channel);
 	channel_free(&channel);
@@ -121,11 +119,10 @@ test_channel_task_timeout(void *arg)
 
 	buf = channel_read(&channel, -1);
 	test(buf);
+	buf_free(buf);
 
 	task_wait(&task);
 	task_free(&task);
-
-	buf_free(buf);
 
 	channel_detach(&channel);
 	channel_free(&channel);
