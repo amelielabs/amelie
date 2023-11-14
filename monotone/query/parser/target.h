@@ -137,19 +137,6 @@ target_list_match(TargetList* self, Str* name)
 	return NULL;
 }
 
-static inline bool
-target_list_is_expr(TargetList* self)
-{
-	auto target = self->list;
-	while (target)
-	{
-		if (target->table)
-			return false;
-		target = target->next;
-	}
-	return true;
-}
-
 static inline Target*
 target_list_first(TargetList* self)
 {
@@ -190,4 +177,56 @@ target_list_add(TargetList* self,
 	self->list_tail = target;
 	self->count++;
 	return target;
+}
+
+static inline bool
+target_list_expr_or_reference(TargetList* self)
+{
+	auto target = self->list;
+	while (target)
+	{
+		if (target->table && !target->table->config->reference)
+			return false;
+		target = target->next;
+	}
+	return true;
+}
+
+static inline void
+target_list_validate(TargetList* self, Target* primary)
+{
+	auto table = primary->table;
+	assert(table);
+
+	// validate join and nested targets:
+	//  - expression
+	//  - reference
+	//  - table
+	//    shard key/primary key match primary target
+	//
+	if (unlikely(table->config->reference))
+		error("primary distributed table cannot be a reference table");
+
+	auto target = self->list;
+	for (; target; target = target->next)
+	{
+		if (target == primary)
+			continue;
+
+		// including views
+		if (target->expr)
+			continue;
+
+		if (target->table->config->reference)
+			continue;
+
+		// compare key count and types
+		if (! def_compare_keys(&primary->table->config->def, &target->table->config->def))
+			error("primary distributed table <%.*s> "
+			      "has incompatible shard key with table <%.*s>",
+			      str_size(&primary->table->config->name),
+			      str_of(&primary->table->config->name),
+			      str_size(&target->table->config->name),
+			      str_of(&target->table->config->name));
+	}
 }
