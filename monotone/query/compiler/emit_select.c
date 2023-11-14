@@ -24,7 +24,7 @@
 #include <monotone_semantic.h>
 #include <monotone_compiler.h>
 
-static inline int
+int
 emit_select_expr(Compiler* self, AstSelect* select)
 {
 	// expr
@@ -49,8 +49,8 @@ emit_select_expr(Compiler* self, AstSelect* select)
 	return rarray;
 }
 
-static inline void
-emit_select_on_match_nested(Compiler* self, void* arg)
+void
+emit_select_on_match_set(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
@@ -74,7 +74,7 @@ emit_select_on_match_nested(Compiler* self, void* arg)
 	runpin(self, rexpr);
 }
 
-static inline void
+void
 emit_select_on_match(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
@@ -116,13 +116,40 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 }
 
 static inline void
-expr_select_on_match_group(Compiler* self, void* arg)
+emit_select_on_match_group(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
 	// set or send
 	ScanFunction on_match = select->on_match;	
 	on_match(self, arg);
+}
+
+int
+emit_select_order_by(Compiler* self, Ast* ast, bool* desc)
+{
+	AstSelect* select = ast_select_of(ast);
+
+	// write order by key types
+	int  offset = code_data_pos(&self->code_data);
+	auto data = &self->code_data.data;
+
+	// [[], ..]
+	encode_array(data, select->expr_order_by.count);
+	auto node = select->expr_order_by.list;
+	while (node)
+	{
+		// [type, asc]
+		auto order = ast_order_of(node->ast);
+		encode_array(data, 2);
+		encode_integer(data, order->type);
+		encode_bool(data, order->asc);
+		if (desc && !order->asc)
+			*desc = true;
+		node = node->next;
+	}
+
+	return offset;
 }
 
 hot int
@@ -157,7 +184,7 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		{
 			rresult = op1(self, CSET, rpin(self));
 			select->rset = rresult;
-			select->on_match = emit_select_on_match_nested;
+			select->on_match = emit_select_on_match_set;
 		} else
 		{
 			select->on_match = emit_select_on_match;
@@ -165,24 +192,10 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 	} else
 	{
 		// write order by key types
-		int  offset = code_data_pos(&self->code_data);
-		auto data = &self->code_data.data;
-		// [[], ..]
-		encode_array(data, select->expr_order_by.count);
-		auto node = select->expr_order_by.list;
-		while (node)
-		{
-			auto order = ast_order_of(node->ast);
-			// [type, asc]
-			encode_array(data, 2);
-			encode_integer(data, order->type);
-			encode_bool(data, order->asc);
-			node = node->next;
-		}
-
+		int offset = emit_select_order_by(self, ast, NULL);
 		rresult = op2(self, CSET_ORDERED, rpin(self), offset);
 		select->rset = rresult;
-		select->on_match = emit_select_on_match_nested;
+		select->on_match = emit_select_on_match_set;
 	}
 
 	if (select->target_group == NULL)
@@ -237,7 +250,7 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		     select->expr_limit,
 		     select->expr_offset,
 		     select->expr_having,
-		     expr_select_on_match_group,
+		     emit_select_on_match_group,
 		     select);
 
 		target_group_redirect(select->target, NULL);
@@ -251,7 +264,7 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		if (! nested)
 		{
 			// send set without creating array
-			op1(self, CSET_SEND, rresult);
+			op1(self, CSEND_SET, rresult);
 			runpin(self, rresult);
 			rresult = -1;
 		}
