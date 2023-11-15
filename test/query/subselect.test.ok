@@ -93,7 +93,7 @@ select (select t.**) from {"a": 1, "b": 2}
 query: on_error
 {"code": 1, "msg": "<t> target not found"}
 # test: select (select *) from table
-create table test (id int primary key)
+create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -109,12 +109,6 @@ explain select (select test.*) from test
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
  0             int_min        0      0      0
  1                push        0      0      0
  2         cursor_open        0      0      4      # public.test (primary)
@@ -123,8 +117,7 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8               ready        0     -1      0
- 9                 ret        0      0      0
+ 8                 ret        0      0      0
 
 "
 select (select test.*) from test
@@ -147,12 +140,6 @@ explain select (select test.id) from test
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
  0             int_min        0      0      0
  1                push        0      0      0
  2         cursor_open        0      0      4      # public.test (primary)
@@ -161,8 +148,7 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8               ready        0     -1      0
- 9                 ret        0      0      0
+ 8                 ret        0      0      0
 
 "
 select (select test.id) from test
@@ -177,12 +163,6 @@ explain select (select t.id) from test t
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
  0             int_min        0      0      0
  1                push        0      0      0
  2         cursor_open        0      0      4      # public.test (primary)
@@ -191,8 +171,7 @@ bytecode [shard 0]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8               ready        0     -1      0
- 9                 ret        0      0      0
+ 8                 ret        0      0      0
 
 "
 select (select t.id) from test
@@ -203,7 +182,7 @@ select (select t.id) from test t
 2
 3
 drop table test
-create table test (obj object, primary key(obj.data.id int))
+create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -302,7 +281,7 @@ select (select 123 from [1,2,3] alias) from (select alias) alias
 query: on_error
 {"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
 # test: select * from (select from table)
-create table test (id int primary key)
+create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -314,19 +293,6 @@ explain select * from (select * from test)
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1               merge        0      0     -1
- 2    cursor_open_expr        1      0      4
- 3                 jmp        7      0      0
- 4         cursor_read        1      1      0
- 5                send        1      0      0
- 6         cursor_next        1      4      0
- 7        cursor_close        1      0      0
- 8                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
  0                 set        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
@@ -336,8 +302,13 @@ bytecode [shard 0]
  6             set_add        0      1      0
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
- 9               ready        0      0      0
-10                 ret        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
 
 "
 # test: select target.* from (select from table)
@@ -371,7 +342,7 @@ select alias.* from (select * from test) alias
 [2]
 [3]
 drop table test
-create table test (obj object, primary key(obj.data.id int))
+create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -397,7 +368,7 @@ select alias.*[0].data.id from (select * from test) alias
 3
 drop table test
 # test: select (select *) from view
-create table test (id int primary key)
+create table test (id int primary key) reference
 create view test_view as select [1,2,3]
 explain select (select *) from test_view
 query: on_error
@@ -455,18 +426,38 @@ explain select * from test_view
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1               merge        0      0     -1
- 2    cursor_open_expr        1      0      4
- 3                 jmp        7      0      0
- 4         cursor_read        1      1      0
- 5                send        1      0      0
- 6         cursor_next        1      4      0
- 7        cursor_close        1      0      0
- 8                 ret        0      0      0
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
 
-
-bytecode [shard 0]
+"
+select * from test_view
+[1]
+[2]
+[3]
+drop view test_view
+drop table test
+# test: select (select from table)
+create table test (id int primary key) reference
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+explain select (select * from test)
+"
+bytecode [coordinator]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -477,31 +468,15 @@ bytecode [shard 0]
  6             set_add        0      1      0
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
- 9               ready        0      0      0
+ 9                send        0      0      0
 10                 ret        0      0      0
 
 "
-select * from test_view
-[1]
-[2]
-[3]
-drop view test_view
-drop table test
-# test: select (select from table)
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
-explain select (select * from test)
-query: on_error
-{"code": 1, "msg": "undefined distributed table"}
 select (select * from test)
-query: on_error
-{"code": 1, "msg": "undefined distributed table"}
+[[1], [2], [3]]
 # test: select (select from table) no result
 select (select * from test where false)
-query: on_error
-{"code": 1, "msg": "undefined distributed table"}
+[]
 # test: select (select from table) from table
 select (select * from test) from test
 query: on_error
@@ -509,12 +484,6 @@ query: on_error
 explain select (select inner.* from test inner) from test
 "
 bytecode [coordinator]
---------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -532,20 +501,13 @@ bytecode [shard 0]
 13                send        0      0      0
 14         cursor_next        1      4      0
 15        cursor_close        1      0      0
-16               ready        0     -1      0
-17                 ret        0      0      0
+16                 ret        0      0      0
 
 "
 # test: select (select from table) from table #2
 explain select (select inner.* from test inner where test.id = inner.id) from test
 "
 bytecode [coordinator]
---------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -567,8 +529,7 @@ bytecode [shard 0]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20               ready        0     -1      0
-21                 ret        0      0      0
+20                 ret        0      0      0
 
 "
 select (select inner.* from test inner where test.id = inner.id) from test
@@ -576,19 +537,13 @@ select (select inner.* from test inner where test.id = inner.id) from test
 [[2]]
 [[3]]
 # test: select (select from table) from table #3
-create table a (id int primary key serial, data int default 0)
-create table b (id int primary key serial, data int default 1)
+create table a (id int primary key serial, data int default 0) reference
+create table b (id int primary key serial, data int default 1) reference
 insert into a () values (), (), ()
 insert into b () values (), (), ()
 explain select (select * from b where a.id = b.id) from a
 "
 bytecode [coordinator]
---------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -610,8 +565,7 @@ bytecode [shard 0]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20               ready        0     -1      0
-21                 ret        0      0      0
+20                 ret        0      0      0
 
 "
 select (select * from b where a.id = b.id) from a
@@ -626,12 +580,6 @@ select (select a.*, b.* from b where a.id = b.id) from a
 explain select * from a where (select true from b where a.id = b.id)
 "
 bytecode [coordinator]
---------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -655,8 +603,7 @@ bytecode [shard 0]
 19                send        0      0      0
 20         cursor_next        0      4      0
 21        cursor_close        0      0      0
-22               ready        0     -1      0
-23                 ret        0      0      0
+22                 ret        0      0      0
 
 "
 select * from a where (select true from b where a.id = b.id)

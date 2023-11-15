@@ -48,7 +48,7 @@ select (select t.**) from {"a": 1, "b": 2} t
 select (select t.**) from {"a": 1, "b": 2}
 
 # test: select (select *) from table
-create table test (id int primary key)
+create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -77,7 +77,7 @@ select (select t.id) from test t
 
 drop table test
 
-create table test (obj object, primary key(obj.data.id int))
+create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -129,7 +129,7 @@ select (select 123 from alias) from (select alias) alias
 select (select 123 from [1,2,3] alias) from (select alias) alias
 
 # test: select * from (select from table)
-create table test (id int primary key)
+create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -152,7 +152,7 @@ select alias.* from (select * from test) alias
 
 drop table test
 
-create table test (obj object, primary key(obj.data.id int))
+create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -168,7 +168,7 @@ select alias.*[0].data.id from (select * from test) alias
 drop table test
 
 # test: select (select *) from view
-create table test (id int primary key)
+create table test (id int primary key) reference
 create view test_view as select [1,2,3]
 
 explain select (select *) from test_view
@@ -201,7 +201,7 @@ drop view test_view
 drop table test
 
 # test: select (select from table)
-create table test (id int primary key)
+create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -221,8 +221,8 @@ explain select (select inner.* from test inner where test.id = inner.id) from te
 select (select inner.* from test inner where test.id = inner.id) from test
 
 # test: select (select from table) from table #3
-create table a (id int primary key serial, data int default 0)
-create table b (id int primary key serial, data int default 1)
+create table a (id int primary key serial, data int default 0) reference
+create table b (id int primary key serial, data int default 1) reference
 
 insert into a () values (), (), ()
 insert into b () values (), (), ()
