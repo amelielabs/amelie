@@ -93,15 +93,12 @@ set_add(Set* self, Value* value, Value** keys)
 
 	SetRow* row = mn_malloc(size);
 	memset(row, 0, size);
-	guard(row_guard, set_free_row, row);
+	buf_write(&self->list, &row, sizeof(SetRow**));
+	self->list_count++;
 
 	value_copy(&row->value, value);
 	for (int i = 0; i < self->keys_count; i++)
 		value_copy(&row->keys[i], keys[i]);
-	buf_write(&self->list, &row, sizeof(SetRow**));
-	self->list_count++;
-
-	unguard(&row_guard);
 }
 
 hot void
