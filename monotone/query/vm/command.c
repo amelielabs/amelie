@@ -39,17 +39,9 @@ ccursor_open(Vm* self, Op* op)
 	data_read_string(&pos, &name_index);
 
 	// find table/index by name
-	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-
-	Storage* storage;
-	if (table->config->reference)
-		storage = storage_mgr_find_for_table(&self->db->storage_mgr,
-		                                     &table->config->id);
-	else
-		storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
-		                               &table->config->id);
-
-	auto index = storage_find(storage, &name_index, true);
+	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
+	auto index   = storage_find(storage, &name_index, true);
 
 	// create cursor key
 	auto def = index_def(index);
@@ -145,8 +137,8 @@ ccursor_prepare(Vm* self, Op* op)
 
 	// find storage
 	Table* table = (Table*)op->b;
-	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
-	                                    &table->config->id);
+	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
+
 	// prepare cursor
 	cursor->type    = CURSOR_TABLE;
 	cursor->table   = table;
@@ -398,8 +390,7 @@ cinsert(Vm* self, Op* op)
 
 	// find storage by id
 	Table* table = (Table*)op->a;
-	auto storage = storage_mgr_find_for(&self->db->storage_mgr, self->shard,
-	                                    &table->config->id);
+	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
 
 	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;
