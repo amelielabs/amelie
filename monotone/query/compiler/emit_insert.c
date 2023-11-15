@@ -25,10 +25,43 @@
 #include <monotone_compiler.h>
 
 hot void
+emit_insert_reference(Compiler* self, AstInsert* insert)
+{
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// foreach row generate insert
+	auto i = insert->rows;
+	for (; i; i = i->next)
+	{
+		auto row = ast_row_of(i);
+
+		// write row to the code data
+		int data_size;
+		int data = emit_row(&self->code_data, row, &data_size);
+
+		// CINSERT
+		op4(self, CINSERT, (intptr_t)insert->target->table,
+		    data,
+		    data_size, insert->unique);
+	}
+}
+
+hot void
 emit_insert(Compiler* self, Ast* ast)
 {
 	auto stmt = self->current;
 	auto insert = ast_insert_of(ast);
+
+	// reference table
+	if (insert->target->table->config->reference)
+	{
+		// execute insert by coordinator directly
+		emit_insert_reference(self, insert);
+		return;
+	}
+
+	// distributed table
 
 	// foreach row generate insert
 	auto def = table_def(insert->target->table);
@@ -64,4 +97,10 @@ emit_insert(Compiler* self, Ast* ast)
 			continue;
 		code_add(&req->code, CREADY, stmt->order, -1, 0, 0);
 	}
+
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// CRECV
+	op0(self, CRECV);
 }
