@@ -127,36 +127,16 @@ compiler_emit(Compiler* self)
 				emit_insert(self, stmt->ast);
 			else
 				emit_upsert(self, stmt->ast);
-
-			// CRECV
-			compiler_switch(self, &self->code_coordinator);
-			op0(self, CRECV);
 			continue;
 		}
 
 		switch (stmt->id) {
 		case STMT_UPDATE:
 			emit_update(self, stmt->ast);
-
-			// CREADY
-			op2(self, CREADY, stmt->order, -1);
-			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
-
-			// CRECV
-			compiler_switch(self, &self->code_coordinator);
-			op0(self, CRECV);
 			break;
 
 		case STMT_DELETE:
 			emit_delete(self, stmt->ast);
-
-			// CREADY
-			op2(self, CREADY, stmt->order, -1);
-			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
-
-			// CRECV
-			compiler_switch(self, &self->code_coordinator);
-			op0(self, CRECV);
 			break;
 
 		case STMT_SELECT:
@@ -177,6 +157,7 @@ compiler_emit(Compiler* self)
 				//
 				compiler_switch(self, &self->code_coordinator);
 				emit_select(self, stmt->ast, false);
+
 			} else
 			{
 				// select (select from table)
@@ -197,19 +178,18 @@ compiler_emit(Compiler* self)
 					    from_select->target->table == NULL)
 						error("FROM SELECT: undefined distributed table");
 
-					// validate targets
+					// validate FROM SELECT targets
 					target_list_validate(&stmt->target_list, from_select->target);
 
-					// generate pushdown as nested query, select over
-					// returned SET or MERGE object
+					// generate pushdown as a nested query
 					select->target->rexpr = pushdown(self, from_expr, true);
+
+					// select over returned SET or MERGE object
 					emit_select(self, stmt->ast, false);
 					break;
 				}
 
-				// validate join and nested targets
-				//  - reference
-				//  - shard key/primary key match (by type and count)
+				// validate supported targets as expression or reference table
 				target_list_validate(&stmt->target_list, select->target);
 
 				// select [select] from table, ...

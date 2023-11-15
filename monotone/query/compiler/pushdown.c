@@ -82,8 +82,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	op2(self, CREADY, self->current->order, select->rset);
 	runpin(self, select->rset);
 
-	// coordinator
+	// copy code to each shards request
 	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+
+	// coordinator
 	compiler_switch(self, &self->code_coordinator);
 
 	// CRECV
@@ -147,8 +149,10 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	op2(self, CREADY, self->current->order, select->rset);
 	runpin(self, select->rset);
 
-	// coordinator
+	// copy code to each shards request
 	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+
+	// coordinator
 	compiler_switch(self, &self->code_coordinator);
 
 	// CRECV
@@ -193,8 +197,10 @@ pushdown_from(Compiler* self, AstSelect* select)
 	// CREADY
 	op2(self, CREADY, self->current->order, -1);
 
-	// coordinator
+	// copy code to each shards request
 	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+
+	// coordinator
 	compiler_switch(self, &self->code_coordinator);
 
 	// CRECV
