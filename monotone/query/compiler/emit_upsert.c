@@ -25,29 +25,12 @@
 #include <monotone_compiler.h>
 
 hot static inline void
-emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
+emit_upsert_op(Compiler* self, AstInsert* insert,
+               int       data,
+               int       data_size, int* jmp)
 {
-	auto stmt     = self->current;
-	auto dispatch = self->dispatch;
-	auto target   = insert->target;
-	auto def      = table_def(target->table);
-
-	// write row to the code data
-	int data_size;
-	int data = emit_row(&self->code_data, row, &data_size);
-
-	// validate row and hash keys
-	auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
-
-	// get route by hash
-	auto route = router_get(self->router, hash);
-
-	// get the request
-	auto req = dispatch_add(dispatch, stmt->order, route);
-	compiler_switch(self, &req->code);
-
-	// generate upsert logic
-	if (jmp[route->order] == 0)
+	auto target = insert->target;
+	if (*jmp == 0)
 	{
 		// cursor_prepare
 		op2(self, CCURSOR_PREPARE, target->id, (intptr_t)target->table);
@@ -57,7 +40,7 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 		op1(self, CJMP, 0 /* _start */);
 
 		// _where:
-		jmp[route->order] = op_pos(self);
+		*jmp = op_pos(self);
 
 		// ON CONFLICT UPDATE or do nothing
 		if (insert->on_conflict == ON_CONFLICT_UPDATE)
@@ -86,7 +69,57 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 	}
 
 	// upsert
-	op4(self, CUPSERT, target->id, data, data_size, jmp[route->order]);
+	op4(self, CUPSERT, target->id, data, data_size, *jmp);
+}
+
+hot static inline void
+emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
+{
+	auto stmt     = self->current;
+	auto dispatch = self->dispatch;
+	auto target   = insert->target;
+	auto def      = table_def(target->table);
+
+	// write row to the code data
+	int data_size;
+	int data = emit_row(&self->code_data, row, &data_size);
+
+	// validate row and hash keys
+	auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+
+	// get route by hash
+	auto route = router_get(self->router, hash);
+
+	// get the request
+	auto req = dispatch_add(dispatch, stmt->order, route);
+	compiler_switch(self, &req->code);
+
+	// generate upsert logic
+	emit_upsert_op(self, insert, data, data_size, &jmp[route->order]);
+}
+
+hot static inline void
+emit_upsert_reference(Compiler* self, AstInsert* insert)
+{
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// foreach row generate upsert
+	int jmp = 0;
+	for (auto i = insert->rows; i; i = i->next)
+	{
+		auto row = ast_row_of(i);
+
+		// write row to the code data
+		int data_size;
+		int data = emit_row(&self->code_data, row, &data_size);
+
+		// generate upsert logic
+		emit_upsert_op(self, insert, data, data_size, &jmp);
+	}
+
+	// CCLOSE_CURSOR
+	op1(self, CCURSOR_CLOSE, insert->target->id);
 }
 
 hot void
@@ -97,7 +130,16 @@ emit_upsert(Compiler* self, Ast* ast)
 	auto dispatch = self->dispatch;
 	auto target   = insert->target;
 
-	int  jmp[dispatch->set_size];
+	// reference table
+	if (insert->target->table->config->reference)
+	{
+		// execute upsert by coordinator directly
+		emit_upsert_reference(self, insert);
+		return;
+	}
+
+	// distributed table
+	int jmp[dispatch->set_size];
 	memset(jmp, 0, dispatch->set_size * sizeof(int));
 
 	// foreach row generate upsert
@@ -106,17 +148,6 @@ emit_upsert(Compiler* self, Ast* ast)
 		auto row = ast_row_of(i);
 		emit_upsert_row(self, insert, row, jmp);
 	}
-
-	/*
-	// close cursors
-	for (int order = 0; order < dispatch->set_size; order++)
-	{
-		if (! jmp[order])
-			continue;
-		auto req = dispatch_at(dispatch, order);
-		code_add(&req->code, CCURSOR_CLOSE, target->id, 0, 0, 0);
-	}
-	*/
 
 	// close cursors and send ready
 	for (int order = 0; order < self->dispatch->set_size; order++)
@@ -131,4 +162,10 @@ emit_upsert(Compiler* self, Ast* ast)
 		// CREADY
 		code_add(&req->code, CREADY, stmt->order, -1, 0, 0);
 	}
+
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// CRECV
+	op0(self, CRECV);
 }
