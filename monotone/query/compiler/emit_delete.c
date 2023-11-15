@@ -31,11 +31,11 @@ emit_delete_on_match(Compiler* self, void *arg)
 	op1(self, CDELETE, target->id);
 }
 
-void
-emit_delete(Compiler* self, Ast* ast)
+hot static inline void
+emit_delete_reference(Compiler* self, AstDelete* delete)
 {
-	// DELETE FROM name [WHERE expr]
-	auto delete = ast_delete_of(ast);
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
 
 	// delete by cursor
 	scan(self, delete->target,
@@ -44,4 +44,42 @@ emit_delete(Compiler* self, Ast* ast)
 	     delete->expr_where,
 	     emit_delete_on_match,
 	     delete->target);
+}
+
+hot void
+emit_delete(Compiler* self, Ast* ast)
+{
+	// DELETE FROM name [WHERE expr]
+	auto delete = ast_delete_of(ast);
+	auto stmt   = self->current;
+
+	// reference table
+	if (delete->target->table->config->reference)
+	{
+		// execute delete by coordinator directly
+		emit_delete_reference(self, delete);
+		return;
+	}
+
+	// distributed table
+
+	// delete by cursor
+	scan(self, delete->target,
+	     NULL,
+	     NULL,
+	     delete->expr_where,
+	     emit_delete_on_match,
+	     delete->target);
+
+	// CREADY
+	op2(self, CREADY, stmt->order, -1);
+
+	// execute code on each shard
+	dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// CRECV
+	op0(self, CRECV);
 }
