@@ -143,7 +143,7 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	     NULL,
 	     select->expr_where,
 	     emit_select_on_match_set,
-		 select);
+	     select);
 
 	// CREADY (return set)
 	op2(self, CREADY, self->current->order, select->rset);
