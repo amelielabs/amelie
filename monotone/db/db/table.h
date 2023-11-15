@@ -50,3 +50,13 @@ table_def(Table* self)
 {
 	return &self->config->def;
 }
+
+static inline Storage*
+table_find_storage(Table* self, StorageMgr* storage_mgr, Uuid* shard)
+{
+	if (self->config->reference)
+		return storage_mgr_find_for_table(storage_mgr, &self->config->id);
+
+	assert(shard);
+	return storage_mgr_find_for(storage_mgr, shard, &self->config->id);
+}
