@@ -337,6 +337,18 @@ value_copy(Value* self, Value* src)
 			value_set_data(self, msg->data, msg_data_size(msg), buf);
 		}
 		break;
+
+	case VALUE_SET:
+	{
+		auto buf = msg_create(MSG_OBJECT);
+		value_write(src, buf);
+		msg_end(buf);
+		auto msg = msg_of(buf);
+		value_set_data(self, msg->data, msg_data_size(msg), buf);
+		break;
+	}
+	// VALUE_MERGE
+	// VALUE_GROUP
 	default:
 		error("operation is not supported");
 		break;
