@@ -7,3 +7,4 @@
 //
 
 #include "semantic/plan.h"
+#include "semantic/target.h"
