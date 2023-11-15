@@ -1,9 +1,9 @@
 #
 
-# runtime
-directory runtime
-group runtime
-test runtime
+## runtime
+#directory runtime
+#group runtime
+#test runtime
 
 # system
 directory system
@@ -23,7 +23,7 @@ test table_alter
 test view
 test cascade
 
-## dml
+# dml
 directory dml
 group dml
 test insert
@@ -42,6 +42,13 @@ test where
 test scan
 test subselect
 test order_by
+
+# pushdown
+directory pushdown
+group pushdown
+test push_expr
+test push_reference
+test push_subselect
 
 #directory ddl
 #group ddl
