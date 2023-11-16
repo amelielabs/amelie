@@ -35,12 +35,32 @@ merge_free(ValueObj* obj)
 	mn_free(self);
 }
 
+static void
+merge_convert(ValueObj* obj, Buf* buf)
+{
+	auto self  = (Merge*)obj;
+	int  count = 0;
+	auto list  = (SetIterator*)self->list.start;
+	for (int i = 0; i < self->list_count; i++)
+	{
+		auto set = list[i].set;
+		count += set->list_count;
+	}
+
+	encode_array(buf, count);
+	while (merge_has(self))
+	{
+		value_write(&merge_at(self)->value, buf);
+		merge_next(self);
+	}
+}
+
 Merge*
 merge_create(void)
 {
 	Merge* self = mn_malloc(sizeof(Merge));
 	self->obj.free    = merge_free;
-	self->obj.convert = NULL;
+	self->obj.convert = merge_convert;
 	self->current     = NULL;
 	self->keys        = NULL;
 	self->keys_count  = 0;
