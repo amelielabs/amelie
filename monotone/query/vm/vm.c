@@ -494,6 +494,8 @@ ccntr_init:
 	// [cursor, type, expr]
 	if (unlikely(r[op->c].type != VALUE_INT))
 		error("LIMIT/OFFSET: integer type expected");
+	if (unlikely(r[op->c].integer < 0))
+		error("LIMIT/OFFSET: positive integer value expected");
 	cursor = cursor_mgr_of(cursor_mgr, op->a);
 	if (op->b == 0)
 		cursor->limit = r[op->c].integer;
