@@ -79,86 +79,153 @@ select * from test order by id desc offset 0
 select * from test order by id desc offset -1
 drop table test
 
-# -----
+# test: select from reference order by
+create table test (id int primary key serial) reference
+insert into test generate 20
+select * from test
 
-## test: select from reference order by
-#create table test (id int primary key serial) reference
-#insert into test generate 20
-#select * from test
+explain select * from test order by id
+select * from test order by id
 
-#explain select * from test order by id
-#select * from test order by id
+# test: select from reference order by asc
+explain select * from test order by id asc
+select * from test order by id asc
 
-## test: select from refernce order by asc
-#explain select * from test order by id asc
-#select * from test order by id asc
+# test: select from reference order by desc
+explain select * from test order by id desc
+select * from test order by id desc
 
-## test: select from reference order by desc
-#explain select * from test order by id desc
-#select * from test order by id desc
+# test: select from reference order by limit
+explain select * from test order by id limit 1
+select * from test order by id limit 1
+select * from test order by id limit 2
+select * from test order by id limit 3
+select * from test order by id limit 4
+select * from test order by id limit 10
+select * from test order by id limit 20
 
-## test: select from reference order by limit
-#explain select * from test order by id limit 1
-#select * from test order by id limit 1
-#select * from test order by id limit 2
-#select * from test order by id limit 3
-#select * from test order by id limit 4
-#select * from test order by id limit 10
-#select * from test order by id limit 20
+# test: select from reference order by limit 0
+explain select * from test order by id limit 0
+select * from test order by id limit 0
+select * from test order by id limit -1
 
-## test: select from reference order by limit 0
-#explain select * from test order by id limit 0
-#select * from test order by id limit 0
-#select * from test order by id limit -1
+# test: select from reference order by desc limit
+explain select * from test order by id desc limit 1
+select * from test order by id desc limit 1
+select * from test order by id desc limit 2
+select * from test order by id desc limit 3
+select * from test order by id desc limit 4
+select * from test order by id desc limit 10
+select * from test order by id desc limit 20
 
-## test: select from reference order by desc limit
-#explain select * from test order by id desc limit 1
-#select * from test order by id desc limit 1
-#select * from test order by id desc limit 2
-#select * from test order by id desc limit 3
-#select * from test order by id desc limit 4
-#select * from test order by id desc limit 10
-#select * from test order by id desc limit 20
+# test: select from reference order by limit offset
+explain select * from test order by id limit 1 offset 0
+select * from test order by id limit 1 offset 0
 
+# test: select from reference order by limit offset #2
+explain select * from test order by id limit 1 offset 1
+select * from test order by id limit 1 offset 1
+select * from test order by id limit 1 offset 2
+select * from test order by id limit 1 offset 3
+select * from test order by id limit 1 offset 4
 
+# test: select from reference order by desc limit offset
+explain select * from test order by id desc limit 1 offset 1
+select * from test order by id desc limit 1 offset 1
+select * from test order by id desc limit 1 offset 2
+select * from test order by id desc limit 1 offset 3
+select * from test order by id desc limit 1 offset 4
 
-## test: select from reference order by limit offset
-#explain select * from test order by id limit 1 offset 0
-#select * from test order by id limit 1 offset 0
+# test: select from reference order by offset
+explain select * from test order by id offset 1
+select * from test order by id offset 1
+select * from test order by id offset 2
+select * from test order by id offset 3
+select * from test order by id offset 4
+select * from test order by id offset 0
+select * from test order by id offset -1
 
-## test: select from refernce order by limit offset #2
-#explain select * from test order by id limit 1 offset 1
-#select * from test order by id limit 1 offset 1
-#select * from test order by id limit 1 offset 2
-#select * from test order by id limit 1 offset 3
-#select * from test order by id limit 1 offset 4
+# test: select from reference order by desc offset
+explain select * from test order by id desc offset 1
+select * from test order by id desc offset 1
+select * from test order by id desc offset 2
+select * from test order by id desc offset 3
+select * from test order by id desc offset 4
+select * from test order by id desc offset 0
+select * from test order by id desc offset -1
+drop table test
 
-## test: select from reference order by desc limit offset
-#explain select * from test order by id desc limit 1 offset 1
-#select * from test order by id desc limit 1 offset 1
-#select * from test order by id desc limit 1 offset 2
-#select * from test order by id desc limit 1 offset 3
-#select * from test order by id desc limit 1 offset 4
+# test: select from expr order by
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 
-## test: select from reference order by offset
-#explain select * from test order by id offset 1
-#select * from test order by id offset 1
-#select * from test order by id offset 2
-#select * from test order by id offset 3
-#select * from test order by id offset 4
-#select * from test order by id offset 0
-#select * from test order by id offset -1
+# test: select from expr order by asc
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int asc
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int asc
 
-## test: select from reference order by desc offset
-#explain select * from test order by id desc offset 1
-#select * from test order by id desc offset 1
-#select * from test order by id desc offset 2
-#select * from test order by id desc offset 3
-#select * from test order by id desc offset 4
-#select * from test order by id desc offset 0
-#select * from test order by id desc offset -1
-#drop table test
+# test: select from expr order by desc
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc
 
+# test: select from expr order by limit
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 10
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 20
+
+# test: select from expr order by limit 0
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit -1
+
+# test: select from expr order by desc limit
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 10
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 20
+
+# test: select from expr order by limit offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 0
+
+# test: select from expr order by limit offset #2
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 4
+
+# test: select from expr order by desc limit offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 4
+
+# test: select from expr order by offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset -1
+
+# test: select from expr order by desc offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset -1
 
 disconnect S0
 env_close E0
