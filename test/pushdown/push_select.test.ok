@@ -1,0 +1,900 @@
+env_open E0 "cluster_shards": 3
+connect E0 S0
+connect: on_connect
+# test: select from table
+create table test (id int primary key, data int default 0)
+insert into test (id) values (1), (2), (3)
+explain select * from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+"
+select * from test
+[3, 0]
+[2, 0]
+[1, 0]
+# test: select from table where
+explain select * from test where id > 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                  gt        2      0      1
+ 7                jntr       10      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                  gt        2      0      1
+ 7                jntr       10      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                  gt        2      0      1
+ 7                jntr       10      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+"
+select * from test where id > 1
+[3, 0]
+[2, 0]
+select * from test where id > 2
+[3, 0]
+select * from test where id > 3
+# test: select from table where point lookup
+explain select * from test where id = 1
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                 equ        2      0      1
+ 7                jntr        3      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                 equ        2      0      1
+ 7                jntr        3      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       11      0      0
+ 4          cursor_idx        0      0      0
+ 5                 int        1      1      0
+ 6                 equ        2      0      1
+ 7                jntr        3      2      0
+ 8         cursor_read        0      0      0
+ 9                send        0      0      0
+10         cursor_next        0      4      0
+11        cursor_close        0      0      0
+12               ready        0     -1      0
+13                 ret        0      0      0
+
+"
+select * from test where id = 1
+[1, 0]
+select * from test where id = 2
+[2, 0]
+select * from test where id = 3
+[3, 0]
+select * from test where id = 4
+select * from test where id = 0
+# test: select (select expr) from table
+explain select (select test.*) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+"
+select (select test.*) from test
+[3, 0]
+[2, 0]
+[1, 0]
+# test: select (select (select expr)) from table
+explain select (select (select (test.*))) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp        7      0      0
+ 4         cursor_read        0      0      0
+ 5                send        0      0      0
+ 6         cursor_next        0      4      0
+ 7        cursor_close        0      0      0
+ 8               ready        0     -1      0
+ 9                 ret        0      0      0
+
+"
+select (select (select (test.*))) from test
+[3, 0]
+[2, 0]
+[1, 0]
+# test: select (select (select from expr)) from table
+explain select (select (select * from [1,2,3])) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       20      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        0      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      0      0
+15             set_add        0      2      0
+16         cursor_next        0     14      0
+17        cursor_close        0      0      0
+18                send        0      0      0
+19         cursor_next        1      4      0
+20        cursor_close        1      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       20      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        0      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      0      0
+15             set_add        0      2      0
+16         cursor_next        0     14      0
+17        cursor_close        0      0      0
+18                send        0      0      0
+19         cursor_next        1      4      0
+20        cursor_close        1      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       20      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        0      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      0      0
+15             set_add        0      2      0
+16         cursor_next        0     14      0
+17        cursor_close        0      0      0
+18                send        0      0      0
+19         cursor_next        1      4      0
+20        cursor_close        1      0      0
+21               ready        0     -1      0
+22                 ret        0      0      0
+
+"
+select (select (select * from [1,2,3])) from test
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+# test: select (select (select from table)) from table
+explain select (select (select * from test t)) from test
+query: on_error
+{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+# test: select (select (select from reference)) from table
+create table ref (id int primary key, data int default 0) reference
+insert into ref (id) values (1), (2), (3)
+explain select (select (select * from ref)) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       15      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                send        0      0      0
+14         cursor_next        1      4      0
+15        cursor_close        1      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       15      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                send        0      0      0
+14         cursor_next        1      4      0
+15        cursor_close        1      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        1      0      4      # public.test (primary)
+ 3                 jmp       15      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13                send        0      0      0
+14         cursor_next        1      4      0
+15        cursor_close        1      0      0
+16               ready        0     -1      0
+17                 ret        0      0      0
+
+"
+select (select (select * from ref)) from test
+[[1, 0], [2, 0], [3, 0]]
+[[1, 0], [2, 0], [3, 0]]
+[[1, 0], [2, 0], [3, 0]]
+# test: select from table where (select from expr)
+explain select * from test where (select * from [1,2,3])
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        1      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      1      0
+15             set_add        0      2      0
+16         cursor_next        1     14      0
+17        cursor_close        1      0      0
+18                jntr       21      0      0
+19         cursor_read        0      0      0
+20                send        0      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        1      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      1      0
+15             set_add        0      2      0
+16         cursor_next        1     14      0
+17        cursor_close        1      0      0
+18                jntr       21      0      0
+19         cursor_read        0      0      0
+20                send        0      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        1      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      1      0
+15             set_add        0      2      0
+16         cursor_next        1     14      0
+17        cursor_close        1      0      0
+18                jntr       21      0      0
+19         cursor_read        0      0      0
+20                send        0      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+"
+select * from test where (select * from [1,2,3])
+[3, 0]
+[2, 0]
+[1, 0]
+# test: select from table where (select from table)
+explain select * from test where (select * from test t)
+query: on_error
+{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+# test: select from table where (select from reference)
+explain select * from test where (select * from ref)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        1     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      1      0
+10             set_add        0      1      0
+11         cursor_next        1      9      0
+12        cursor_close        1      0      0
+13                jntr       16      0      0
+14         cursor_read        0      0      0
+15                send        0      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        1     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      1      0
+10             set_add        0      1      0
+11         cursor_next        1      9      0
+12        cursor_close        1      0      0
+13                jntr       16      0      0
+14         cursor_read        0      0      0
+15                send        0      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4                 set        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        1     20      9      # public.ref (primary)
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      1      0
+10             set_add        0      1      0
+11         cursor_next        1      9      0
+12        cursor_close        1      0      0
+13                jntr       16      0      0
+14         cursor_read        0      0      0
+15                send        0      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+"
+select * from test where (select * from ref)
+[3, 0]
+[2, 0]
+[1, 0]
+# test: select from table, expr
+explain select test.*, t.* from test, [1,2,3] t
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 int        0      1      0
+ 5                push        0      0      0
+ 6                 int        0      2      0
+ 7                push        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10               array        0      3      0
+11    cursor_open_expr        1      0     13
+12                 jmp       20      0      0
+13         cursor_read        1      0      0
+14                push        1      0      0
+15         cursor_read        1      1      0
+16                push        1      0      0
+17               array        1      2      0
+18                send        1      0      0
+19         cursor_next        1     13      0
+20        cursor_close        1      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 int        0      1      0
+ 5                push        0      0      0
+ 6                 int        0      2      0
+ 7                push        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10               array        0      3      0
+11    cursor_open_expr        1      0     13
+12                 jmp       20      0      0
+13         cursor_read        1      0      0
+14                push        1      0      0
+15         cursor_read        1      1      0
+16                push        1      0      0
+17               array        1      2      0
+18                send        1      0      0
+19         cursor_next        1     13      0
+20        cursor_close        1      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       22      0      0
+ 4                 int        0      1      0
+ 5                push        0      0      0
+ 6                 int        0      2      0
+ 7                push        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10               array        0      3      0
+11    cursor_open_expr        1      0     13
+12                 jmp       20      0      0
+13         cursor_read        1      0      0
+14                push        1      0      0
+15         cursor_read        1      1      0
+16                push        1      0      0
+17               array        1      2      0
+18                send        1      0      0
+19         cursor_next        1     13      0
+20        cursor_close        1      0      0
+21         cursor_next        0      4      0
+22        cursor_close        0      0      0
+23               ready        0     -1      0
+24                 ret        0      0      0
+
+"
+select test.*, t.* from test, [1,2,3] t
+[[3, 0], 1]
+[[2, 0], 1]
+[[1, 0], 1]
+[[3, 0], 2]
+[[2, 0], 2]
+[[1, 0], 2]
+[[3, 0], 3]
+[[2, 0], 3]
+[[1, 0], 3]
+# test: select from expr, table
+explain select test.*, t.* from [1,2,3] t, test
+query: on_error
+{"code": 1, "msg": "FROM: undefined distributed table"}
+select test.*, t.* from [1,2,3] t, test
+query: on_error
+{"code": 1, "msg": "FROM: undefined distributed table"}
+# test: select from table, reference
+explain select test.*, ref.* from test, ref
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4             int_min        0      0      0
+ 5                push        0      0      0
+ 6         cursor_open        1     20      8      # public.ref (primary)
+ 7                 jmp       15      0      0
+ 8         cursor_read        0      0      0
+ 9                push        0      0      0
+10         cursor_read        0      1      0
+11                push        0      0      0
+12               array        0      2      0
+13                send        0      0      0
+14         cursor_next        1      8      0
+15        cursor_close        1      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4             int_min        0      0      0
+ 5                push        0      0      0
+ 6         cursor_open        1     20      8      # public.ref (primary)
+ 7                 jmp       15      0      0
+ 8         cursor_read        0      0      0
+ 9                push        0      0      0
+10         cursor_read        0      1      0
+11                push        0      0      0
+12               array        0      2      0
+13                send        0      0      0
+14         cursor_next        1      8      0
+15        cursor_close        1      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0             int_min        0      0      0
+ 1                push        0      0      0
+ 2         cursor_open        0      0      4      # public.test (primary)
+ 3                 jmp       17      0      0
+ 4             int_min        0      0      0
+ 5                push        0      0      0
+ 6         cursor_open        1     20      8      # public.ref (primary)
+ 7                 jmp       15      0      0
+ 8         cursor_read        0      0      0
+ 9                push        0      0      0
+10         cursor_read        0      1      0
+11                push        0      0      0
+12               array        0      2      0
+13                send        0      0      0
+14         cursor_next        1      8      0
+15        cursor_close        1      0      0
+16         cursor_next        0      4      0
+17        cursor_close        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
+
+"
+select test.*, ref.* from test, ref
+[[3, 0], [1, 0]]
+[[2, 0], [1, 0]]
+[[1, 0], [1, 0]]
+[[3, 0], [2, 0]]
+[[2, 0], [2, 0]]
+[[1, 0], [2, 0]]
+[[3, 0], [3, 0]]
+[[2, 0], [3, 0]]
+[[1, 0], [3, 0]]
+# test: select from reference, table
+explain select test.*, ref.* from ref, test
+query: on_error
+{"code": 1, "msg": "primary distributed table cannot be a reference table"}
+select test.*, ref.* from ref, test
+query: on_error
+{"code": 1, "msg": "primary distributed table cannot be a reference table"}
+# test: select from table, table
+explain select t.* from test, test t
+query: on_error
+{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+select t.* from test, test t
+query: on_error
+{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+drop table ref
+drop table test
+disconnect S0
+env_close E0
