@@ -31,7 +31,7 @@ bytecode [coordinator]
 --------
  0                recv        0      0      0
  1                 int        0      1      0
- 2               merge        1      0      0
+ 2          merge_recv        1      0      0
  3            send_set        1      0      0
  4                 ret        0      0      0
 
@@ -143,7 +143,7 @@ bytecode [coordinator]
 --------
  0                recv        0      0      0
  1                 int        0      0      0
- 2               merge        1      0      0
+ 2          merge_recv        1      0      0
  3            send_set        1      0      0
  4                 ret        0      0      0
 
@@ -214,7 +214,7 @@ bytecode [coordinator]
  0                recv        0      0      0
  1                 int        0      1      0
  2                 int        1      0      0
- 3               merge        2      0      0
+ 3          merge_recv        2      0      0
  4            send_set        2      0      0
  5                 ret        0      0      0
 
@@ -289,7 +289,7 @@ bytecode [coordinator]
  0                recv        0      0      0
  1                 int        0      1      0
  2                 int        1      1      0
- 3               merge        2      0      0
+ 3          merge_recv        2      0      0
  4            send_set        2      0      0
  5                 ret        0      0      0
 
@@ -394,7 +394,7 @@ bytecode [coordinator]
 --------
  0                recv        0      0      0
  1                 int        0      1      0
- 2               merge        1      0     -1
+ 2          merge_recv        1      0     -1
  3            send_set        1      0      0
  4                 ret        0      0      0
 

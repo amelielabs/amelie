@@ -33,8 +33,9 @@ bytecode [coordinator]
 14         cursor_next        0     10      0
 15        cursor_close        0      0      0
 16            set_sort        0      0      0
-17            send_set        0      0      0
-18                 ret        0      0      0
+17               merge        1      0     -1
+18            send_set        1      0      0
+19                 ret        0      0      0
 
 "
 select * from 1 order by * int
@@ -88,7 +89,7 @@ explain select * from test order by data
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2            send_set        0      0      0
  3                 ret        0      0      0
 

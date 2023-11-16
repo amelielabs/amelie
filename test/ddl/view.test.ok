@@ -120,7 +120,7 @@ explain select id from test_view
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        1      0      4
  3                 jmp        7      0      0
  4          cursor_idx        1      1      0

@@ -47,7 +47,7 @@ explain select * from (select * from test)
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        1      0      4
  3                 jmp        7      0      0
  4         cursor_read        1      1      0
@@ -112,7 +112,7 @@ explain select * from (select (select 123) from test)
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        1      0      4
  3                 jmp        7      0      0
  4         cursor_read        1      1      0
@@ -179,7 +179,7 @@ explain select * from (select (select * from test2) from test)
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        2      0      4
  3                 jmp        7      0      0
  4         cursor_read        1      2      0
@@ -276,7 +276,7 @@ explain select (select t.*) from (select * from test) t
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        1      0      4
  3                 jmp        7      0      0
  4         cursor_read        1      1      0
@@ -341,7 +341,7 @@ explain select (select t.*, * from [1,2,3]) from (select * from test) t
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        2      0      4
  3                 jmp       24      0      0
  4                 set        1      0      0
@@ -425,7 +425,7 @@ explain select (select t.*, * from test2) from (select * from test) t
 bytecode [coordinator]
 --------
  0                recv        0      0      0
- 1               merge        0      0     -1
+ 1          merge_recv        0      0     -1
  2    cursor_open_expr        2      0      4
  3                 jmp       19      0      0
  4                 set        1      0      0
