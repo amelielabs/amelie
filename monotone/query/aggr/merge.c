@@ -208,5 +208,7 @@ merge_open(Merge* self, int64_t limit, int64_t offset)
 	while (offset-- > 0 && merge_has(self))
 		merge_next(self);
 
-	self->limit = limit;
+	self->limit = limit - 1;
+	if (self->limit < 0)
+		self->current = NULL;
 }
