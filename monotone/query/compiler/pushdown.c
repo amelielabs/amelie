@@ -53,6 +53,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 		//       backwards scan support
 	} else
 	{
+		// push limit only if order by matches primary key
+		// (dont do sort in such case)
+
+		/*
 		if (select->expr_limit && select->expr_offset)
 		{
 			limit = ast('+');
@@ -61,9 +65,8 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 		} else
 		if (select->expr_limit) {
 			limit = select->expr_limit;
-		} else {
-			limit = select->expr_offset;
 		}
+		*/
 	}
 
 	// scan for table/expression and joins
@@ -131,9 +134,6 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	} else
 	if (select->expr_limit) {
 		limit = select->expr_limit;
-	} else
-	if (select->expr_offset) {
-		limit = select->expr_offset;
 	}
 
 	// scan for table/expression and joins

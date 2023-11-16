@@ -208,6 +208,9 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		     select->expr_where,
 		     select->on_match,
 		     select);
+
+		// todo: order by limit case, iterate set separately with limit
+
 	} else
 	{
 		// group by scan
