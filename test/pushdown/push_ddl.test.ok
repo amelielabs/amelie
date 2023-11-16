@@ -1,0 +1,28 @@
+env_open E0 "cluster_shards": 3
+connect E0 S0
+connect: on_connect
+# test: reference table create
+create table test (id int primary key, data int default 0) reference
+select *.name, *.reference from system.tables()
+["test", true]
+# test: reference has single storage
+select sizeof(system.storages()) = 1
+true
+# test: reference has no shard id
+select system.storages()[0].id.id_shard
+"00000000-0000-0000-0000-000000000000"
+drop table test
+# test: table create
+create table test (id int primary key, data int default 0)
+select *.name, *.reference from system.tables()
+["test", false]
+# test: table storage created on each shard
+select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)
+3
+select count(s.*) from system.storages() s, system.tables() t where s.id.id_table = t.id
+3
+select sizeof(select s.* from system.storages() s, system.tables() t where s.id.id_table = t.id)
+3
+drop table test
+disconnect S0
+env_close E0
