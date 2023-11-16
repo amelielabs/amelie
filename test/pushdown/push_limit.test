@@ -1,0 +1,161 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+# test: select from table limit
+create table test (id int primary key serial)
+insert into test generate 20
+select * from test limit 100
+
+explain select * from test limit 1
+select * from test limit 1
+select * from test limit 2
+select * from test limit 3
+select * from test limit 4
+select * from test limit 10
+select * from test limit 20
+
+# test: select from table limit 0
+explain select * from test limit 0
+select * from test limit 0
+select * from test limit -1
+
+# test: select from table limit offset
+explain select * from test limit 1 offset 0
+select * from test limit 1 offset 0
+
+# test: select from table limit offset #2
+explain select * from test limit 1 offset 1
+select * from test limit 1 offset 1
+select * from test limit 1 offset 2
+select * from test limit 1 offset 3
+select * from test limit 1 offset 4
+
+# test: select from table limit offset #3
+select * from test limit 2 offset 1
+select * from test limit 2 offset 2
+select * from test limit 2 offset 3
+select * from test limit 2 offset 4
+
+# test: select from table limit offset #4
+select * from test limit 2 offset 0
+select * from test limit 1 offset -1
+
+# test: select from table limit offset #5
+select * from test limit 0 offset 1
+select * from test limit 0 offset 2
+select * from test limit 0 offset 3
+select * from test limit 0 offset 4
+
+# test: select from table offset
+explain select * from test offset 1
+select * from test offset 1
+select * from test offset 2
+select * from test offset 3
+select * from test offset 4
+select * from test offset 0
+select * from test offset -1
+drop table test
+
+# test: select from reference limit
+create table test (id int primary key serial) reference
+insert into test generate 20
+select * from test limit 100
+
+explain select * from test limit 1
+select * from test limit 1
+select * from test limit 2
+select * from test limit 3
+select * from test limit 4
+select * from test limit 10
+select * from test limit 20
+
+# test: select from reference limit 0
+explain select * from test limit 0
+select * from test limit 0
+select * from test limit -1
+
+# test: select from reference limit offset
+explain select * from test limit 1 offset 0
+select * from test limit 1 offset 0
+
+# test: select from reference limit offset #2
+explain select * from test limit 1 offset 1
+select * from test limit 1 offset 1
+select * from test limit 1 offset 2
+select * from test limit 1 offset 3
+select * from test limit 1 offset 4
+
+# test: select from reference limit offset #3
+select * from test limit 2 offset 1
+select * from test limit 2 offset 2
+select * from test limit 2 offset 3
+select * from test limit 2 offset 4
+
+# test: select from reference limit offset #4
+select * from test limit 2 offset 0
+select * from test limit 1 offset -1
+
+# test: select from reference limit offset #5
+select * from test limit 0 offset 1
+select * from test limit 0 offset 2
+select * from test limit 0 offset 3
+select * from test limit 0 offset 4
+
+# test: select from reference offset
+explain select * from test offset 1
+select * from test offset 1
+select * from test offset 2
+select * from test offset 3
+select * from test offset 4
+select * from test offset 0
+select * from test offset -1
+drop table test
+
+# test: select from expr limit
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 100
+
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 10
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 20
+
+# test: select from expr limit 0
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit -1
+
+# test: select from expr limit offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 3
+
+# test: select from expr limit offset #2
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 3
+
+# test: select from expr limit offset #3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 3
+
+# test: select from expr offset
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset -1
+
+disconnect S0
+env_close E0
