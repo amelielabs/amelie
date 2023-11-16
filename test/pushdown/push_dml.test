@@ -1,0 +1,52 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+# test: reference insert
+create table test (id int primary key, data int default 0) reference
+explain insert into test (id) values (1), (2), (3)
+insert into test (id) values (1), (2), (3)
+
+# test: reference delete
+explain delete from test
+delete from test
+select * from test
+
+# test: reference update
+insert into test (id) values (1), (2), (3)
+explain update test set data = id
+update test set data = id
+select * from test
+
+# test: reference upsert
+explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+select * from test
+drop table test
+
+# test: table insert
+create table test (id int primary key, data int default 0)
+explain insert into test (id) values (1), (2), (3)
+insert into test (id) values (1), (2), (3)
+select * from test
+
+# test: table delete
+explain delete from test
+delete from test
+select * from test
+
+# test: table update
+insert into test (id) values (1), (2), (3)
+explain update test set data = id
+update test set data = id
+select * from test
+
+# test: table upsert
+explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+select * from test
+drop table test
+
+disconnect S0
+env_close E0
