@@ -41,6 +41,7 @@ group_free(ValueObj* obj)
 				continue;
 			for (int j = 0; j < self->keys_count; j++)
 				value_free(&index[i]->keys[j]);
+			mn_free(index[i]);
 		}
 	}
 	self->aggr_size  = 0;
