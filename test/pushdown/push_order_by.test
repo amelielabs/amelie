@@ -1,0 +1,164 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+# test: select from table order by
+create table test (id int primary key serial)
+insert into test generate 20
+select * from test
+
+explain select * from test order by id
+select * from test order by id
+
+# test: select from table order by asc
+explain select * from test order by id asc
+select * from test order by id asc
+
+# test: select from table order by desc
+explain select * from test order by id desc
+select * from test order by id desc
+
+# test: select from table order by limit
+explain select * from test order by id limit 1
+select * from test order by id limit 1
+select * from test order by id limit 2
+select * from test order by id limit 3
+select * from test order by id limit 4
+select * from test order by id limit 10
+select * from test order by id limit 20
+
+# test: select from table order by limit 0
+explain select * from test order by id limit 0
+select * from test order by id limit 0
+select * from test order by id limit -1
+
+# test: select from table order by desc limit
+explain select * from test order by id desc limit 1
+select * from test order by id desc limit 1
+select * from test order by id desc limit 2
+select * from test order by id desc limit 3
+select * from test order by id desc limit 4
+select * from test order by id desc limit 10
+select * from test order by id desc limit 20
+
+# test: select from table order by limit offset
+explain select * from test order by id limit 1 offset 0
+select * from test order by id limit 1 offset 0
+
+# test: select from table order by limit offset #2
+explain select * from test order by id limit 1 offset 1
+select * from test order by id limit 1 offset 1
+select * from test order by id limit 1 offset 2
+select * from test order by id limit 1 offset 3
+select * from test order by id limit 1 offset 4
+
+# test: select from table order by desc limit offset
+explain select * from test order by id desc limit 1 offset 1
+select * from test order by id desc limit 1 offset 1
+select * from test order by id desc limit 1 offset 2
+select * from test order by id desc limit 1 offset 3
+select * from test order by id desc limit 1 offset 4
+
+# test: select from table order by offset
+explain select * from test order by id offset 1
+select * from test order by id offset 1
+select * from test order by id offset 2
+select * from test order by id offset 3
+select * from test order by id offset 4
+select * from test order by id offset 0
+select * from test order by id offset -1
+
+# test: select from table order by desc offset
+explain select * from test order by id desc offset 1
+select * from test order by id desc offset 1
+select * from test order by id desc offset 2
+select * from test order by id desc offset 3
+select * from test order by id desc offset 4
+select * from test order by id desc offset 0
+select * from test order by id desc offset -1
+drop table test
+
+# -----
+
+## test: select from reference order by
+#create table test (id int primary key serial) reference
+#insert into test generate 20
+#select * from test
+
+#explain select * from test order by id
+#select * from test order by id
+
+## test: select from refernce order by asc
+#explain select * from test order by id asc
+#select * from test order by id asc
+
+## test: select from reference order by desc
+#explain select * from test order by id desc
+#select * from test order by id desc
+
+## test: select from reference order by limit
+#explain select * from test order by id limit 1
+#select * from test order by id limit 1
+#select * from test order by id limit 2
+#select * from test order by id limit 3
+#select * from test order by id limit 4
+#select * from test order by id limit 10
+#select * from test order by id limit 20
+
+## test: select from reference order by limit 0
+#explain select * from test order by id limit 0
+#select * from test order by id limit 0
+#select * from test order by id limit -1
+
+## test: select from reference order by desc limit
+#explain select * from test order by id desc limit 1
+#select * from test order by id desc limit 1
+#select * from test order by id desc limit 2
+#select * from test order by id desc limit 3
+#select * from test order by id desc limit 4
+#select * from test order by id desc limit 10
+#select * from test order by id desc limit 20
+
+
+
+## test: select from reference order by limit offset
+#explain select * from test order by id limit 1 offset 0
+#select * from test order by id limit 1 offset 0
+
+## test: select from refernce order by limit offset #2
+#explain select * from test order by id limit 1 offset 1
+#select * from test order by id limit 1 offset 1
+#select * from test order by id limit 1 offset 2
+#select * from test order by id limit 1 offset 3
+#select * from test order by id limit 1 offset 4
+
+## test: select from reference order by desc limit offset
+#explain select * from test order by id desc limit 1 offset 1
+#select * from test order by id desc limit 1 offset 1
+#select * from test order by id desc limit 1 offset 2
+#select * from test order by id desc limit 1 offset 3
+#select * from test order by id desc limit 1 offset 4
+
+## test: select from reference order by offset
+#explain select * from test order by id offset 1
+#select * from test order by id offset 1
+#select * from test order by id offset 2
+#select * from test order by id offset 3
+#select * from test order by id offset 4
+#select * from test order by id offset 0
+#select * from test order by id offset -1
+
+## test: select from reference order by desc offset
+#explain select * from test order by id desc offset 1
+#select * from test order by id desc offset 1
+#select * from test order by id desc offset 2
+#select * from test order by id desc offset 3
+#select * from test order by id desc offset 4
+#select * from test order by id desc offset 0
+#select * from test order by id desc offset -1
+#drop table test
+
+
+disconnect S0
+env_close E0
