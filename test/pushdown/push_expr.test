@@ -35,5 +35,9 @@ select (select a.*, * from [3,2,1]) from [1,2,3] a
 explain select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
 select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
 
+# test: select from expr, expr
+explain select a.*, b.* from [1,2,3] a, [1,2,3] b
+select a.*, b.* from [1,2,3] a, [1,2,3] b
+
 disconnect S0
 env_close E0

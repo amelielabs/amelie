@@ -92,7 +92,7 @@ select (select t.**) from {"a": 1, "b": 2} t
 select (select t.**) from {"a": 1, "b": 2}
 query: on_error
 {"code": 1, "msg": "<t> target not found"}
-# test: select (select *) from table
+# test: select (select *) from reference
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -104,7 +104,7 @@ select (select test.*) from test
 [1]
 [2]
 [3]
-# test: select (select target.*) from table
+# test: select (select target.*) from reference
 explain select (select test.*) from test
 "
 bytecode [coordinator]
@@ -124,7 +124,7 @@ select (select test.*) from test
 [1]
 [2]
 [3]
-# test: select (select alias.*) from table
+# test: select (select alias.*) from reference
 select (select t.*) from test t
 [1]
 [2]
@@ -135,7 +135,7 @@ query: on_error
 select (select t) from test t
 query: on_error
 {"code": 1, "msg": "<t> target column cannot be found"}
-# test: select (select target.column) from table
+# test: select (select target.column) from reference
 explain select (select test.id) from test
 "
 bytecode [coordinator]
@@ -158,7 +158,7 @@ select (select test.id) from test
 select (select id) from test
 query: on_error
 {"code": 1, "msg": "<id> target column cannot be found"}
-# test: select (select alias.column) from table
+# test: select (select alias.column) from reference
 explain select (select t.id) from test t
 "
 bytecode [coordinator]
@@ -186,7 +186,7 @@ create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
-# test: select (select target.path) from table
+# test: select (select target.path) from reference
 select (select test) from test
 query: on_error
 {"code": 1, "msg": "<test> target column cannot be found"}
@@ -202,7 +202,7 @@ select (select test.obj.data.id) from test
 1
 2
 3
-# test: select (select alias.path) from table
+# test: select (select alias.path) from reference
 select (select t) from test t
 query: on_error
 {"code": 1, "msg": "<t> target column cannot be found"}
@@ -218,7 +218,7 @@ select (select t.obj.data.id) from test t
 1
 2
 3
-# test: select (select from outer column) from table
+# test: select (select from outer column) from reference
 select t.obj from test t
 {"data": {"id": 1}}
 {"data": {"id": 2}}
@@ -280,7 +280,7 @@ query: on_error
 select (select 123 from [1,2,3] alias) from (select alias) alias
 query: on_error
 {"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
-# test: select * from (select from table)
+# test: select * from (select from reference)
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -311,14 +311,14 @@ bytecode [coordinator]
 15                 ret        0      0      0
 
 "
-# test: select target.* from (select from table)
+# test: select target.* from (select from reference)
 select test.* from (select * from test)
 query: on_error
 {"code": 1, "msg": "*: not in active aggregation"}
 select test from (select * from test)
 query: on_error
 {"code": 1, "msg": "current cursor object type is not a map"}
-# test: select alias.* from (select from table)
+# test: select alias.* from (select from reference)
 select alias from (select * from test) alias
 query: on_error
 {"code": 1, "msg": "current cursor object type is not a map"}
@@ -346,7 +346,7 @@ create table test (obj object, primary key(obj.data.id int)) reference
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
-# test: select target.path from (select from table)
+# test: select target.path from (select from reference)
 select obj from (select * from test)
 query: on_error
 {"code": 1, "msg": "current cursor object type is not a map"}
@@ -417,7 +417,7 @@ select ** from test_view
 "a"
 "b"
 drop view test_view
-# test: select (select target.*) from table view
+# test: select (select target.*) from reference view
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -450,7 +450,7 @@ select * from test_view
 [3]
 drop view test_view
 drop table test
-# test: select (select from table)
+# test: select (select from reference)
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -474,10 +474,10 @@ bytecode [coordinator]
 "
 select (select * from test)
 [[1], [2], [3]]
-# test: select (select from table) no result
+# test: select (select from reference) no result
 select (select * from test where false)
 []
-# test: select (select from table) from table
+# test: select (select from reference) from reference
 select (select * from test) from test
 query: on_error
 {"code": 1, "msg": "<test> target is redefined, please use different alias for the target"}
@@ -504,7 +504,7 @@ bytecode [coordinator]
 16                 ret        0      0      0
 
 "
-# test: select (select from table) from table #2
+# test: select (select from reference) from reference #2
 explain select (select inner.* from test inner where test.id = inner.id) from test
 "
 bytecode [coordinator]
@@ -536,7 +536,7 @@ select (select inner.* from test inner where test.id = inner.id) from test
 [[1]]
 [[2]]
 [[3]]
-# test: select (select from table) from table #3
+# test: select (select from reference) from reference #3
 create table a (id int primary key serial, data int default 0) reference
 create table b (id int primary key serial, data int default 1) reference
 insert into a () values (), (), ()
@@ -576,7 +576,7 @@ select (select a.*, b.* from b where a.id = b.id) from a
 [[[0, 0], [0, 1]]]
 [[[1, 0], [1, 1]]]
 [[[2, 0], [2, 1]]]
-# test: select from table where (select from table)
+# test: select from table where (select from reference)
 explain select * from a where (select true from b where a.id = b.id)
 "
 bytecode [coordinator]

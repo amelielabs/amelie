@@ -47,7 +47,7 @@ select (select t.*) from [1,2,3]
 select (select t.**) from {"a": 1, "b": 2} t
 select (select t.**) from {"a": 1, "b": 2}
 
-# test: select (select *) from table
+# test: select (select *) from reference
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -56,21 +56,21 @@ insert into test values (3)
 select (select *) from test
 select (select test.*) from test
 
-# test: select (select target.*) from table
+# test: select (select target.*) from reference
 explain select (select test.*) from test
 select (select test.*) from test
 
-# test: select (select alias.*) from table
+# test: select (select alias.*) from reference
 select (select t.*) from test t
 select (select t.*) from test
 select (select t) from test t
 
-# test: select (select target.column) from table
+# test: select (select target.column) from reference
 explain select (select test.id) from test
 select (select test.id) from test
 select (select id) from test
 
-# test: select (select alias.column) from table
+# test: select (select alias.column) from reference
 explain select (select t.id) from test t
 select (select t.id) from test
 select (select t.id) from test t
@@ -82,19 +82,19 @@ insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
 
-# test: select (select target.path) from table
+# test: select (select target.path) from reference
 select (select test) from test
 select (select test.obj) from test
 select (select test.obj.data) from test
 select (select test.obj.data.id) from test
 
-# test: select (select alias.path) from table
+# test: select (select alias.path) from reference
 select (select t) from test t
 select (select t.obj) from test t
 select (select t.obj.data) from test t
 select (select t.obj.data.id) from test t
 
-# test: select (select from outer column) from table
+# test: select (select from outer column) from reference
 select t.obj from test t
 select (select ** from t.obj) from test t
 select (select **, * from (t.obj.data)) from test t
@@ -128,7 +128,7 @@ select alias from (select alias) alias
 select (select 123 from alias) from (select alias) alias
 select (select 123 from [1,2,3] alias) from (select alias) alias
 
-# test: select * from (select from table)
+# test: select * from (select from reference)
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -137,11 +137,11 @@ insert into test values (3)
 select * from (select * from test)
 explain select * from (select * from test)
 
-# test: select target.* from (select from table)
+# test: select target.* from (select from reference)
 select test.* from (select * from test)
 select test from (select * from test)
 
-# test: select alias.* from (select from table)
+# test: select alias.* from (select from reference)
 select alias from (select * from test) alias
 select alias.* from (select * from test) alias
 
@@ -157,7 +157,7 @@ insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
 
-# test: select target.path from (select from table)
+# test: select target.path from (select from reference)
 select obj from (select * from test)
 
 select * from (select * from test) alias
@@ -189,7 +189,7 @@ select ** from test_view
 
 drop view test_view
 
-# test: select (select target.*) from table view
+# test: select (select target.*) from reference view
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -200,7 +200,7 @@ select * from test_view
 drop view test_view
 drop table test
 
-# test: select (select from table)
+# test: select (select from reference)
 create table test (id int primary key) reference
 insert into test values (1)
 insert into test values (2)
@@ -209,18 +209,18 @@ insert into test values (3)
 explain select (select * from test)
 select (select * from test)
 
-# test: select (select from table) no result
+# test: select (select from reference) no result
 select (select * from test where false)
 
-# test: select (select from table) from table
+# test: select (select from reference) from reference
 select (select * from test) from test
 explain select (select inner.* from test inner) from test
 
-# test: select (select from table) from table #2
+# test: select (select from reference) from reference #2
 explain select (select inner.* from test inner where test.id = inner.id) from test
 select (select inner.* from test inner where test.id = inner.id) from test
 
-# test: select (select from table) from table #3
+# test: select (select from reference) from reference #3
 create table a (id int primary key serial, data int default 0) reference
 create table b (id int primary key serial, data int default 1) reference
 
@@ -231,7 +231,7 @@ explain select (select * from b where a.id = b.id) from a
 select (select * from b where a.id = b.id) from a
 select (select a.*, b.* from b where a.id = b.id) from a
 
-# test: select from table where (select from table)
+# test: select from table where (select from reference)
 explain select * from a where (select true from b where a.id = b.id)
 select * from a where (select true from b where a.id = b.id)
 
