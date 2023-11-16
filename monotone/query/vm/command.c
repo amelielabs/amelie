@@ -490,6 +490,46 @@ cupsert(Vm* self, Op* op)
 hot void
 cmerge(Vm* self, Op* op)
 {
+	// [merge, set, limit, offset]
+
+	// limit
+	int64_t limit = INT64_MAX;
+	if (op->c != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->c)->type != VALUE_INT))
+			error("LIMIT: integer type expected");
+		limit = reg_at(&self->r, op->c)->integer;
+		if (unlikely(limit < 0))
+			error("LIMIT: positive integer value expected");
+	}
+
+	// offset
+	int64_t offset = 0;
+	if (op->d != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->d)->type != VALUE_INT))
+			error("OFFSET: integer type expected");
+		offset = reg_at(&self->r, op->d)->integer;
+		if (unlikely(offset < 0))
+			error("OFFSET: positive integer value expected");
+	}
+
+	// create merge object
+	auto merge = merge_create();
+	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
+
+	// add set
+	auto value = reg_at(&self->r, op->b);
+	merge_add(merge, (Set*)value->obj);
+	value->type = VALUE_NONE;
+
+	// prepare merge and apply offset
+	merge_open(merge, limit, offset);
+}
+
+hot void
+cmerge_recv(Vm* self, Op* op)
+{
 	// [merge, stmt, limit, offset]
 	int stmt = op->b;
 

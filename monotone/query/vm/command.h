@@ -22,4 +22,6 @@ void cdelete(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);
 
 void cmerge(Vm*, Op*);
+void cmerge_recv(Vm*, Op*);
+
 void csend_set(Vm*, Op*);

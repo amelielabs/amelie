@@ -84,6 +84,7 @@ enum
 
 	// merge
 	CMERGE,
+	CMERGE_RECV,
 
 	// group
 	CGROUP,

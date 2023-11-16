@@ -135,6 +135,7 @@ vm_run(Vm*          self,
 		&&cset_sort,
 		&&cset_add,
 		&&cmerge,
+		&&cmerge_recv,
 		&&cgroup,
 		&&cgroup_add_aggr,
 		&&cgroup_add,
@@ -438,8 +439,13 @@ cset_add:
 	op_next;
 
 cmerge:
-	// [merge, stmt]
+	// [merge, set, limit, offset]
 	cmerge(self, op);
+	op_next;
+
+cmerge_recv:
+	// [merge, stmt, limit, offset]
+	cmerge_recv(self, op);
 	op_next;
 
 cgroup:

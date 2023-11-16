@@ -99,6 +99,7 @@ OpDesc ops[] =
 
 	// merge
 	{ CMERGE,             "merge"             },
+	{ CMERGE_RECV,        "merge_recv"        },
 
 	// group
 	{ CGROUP,             "group"             },
