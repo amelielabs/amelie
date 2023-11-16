@@ -40,7 +40,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 
 	// write order by key types
 	bool desc   = false;
-	int  offset = emit_select_order_by(self, &select->ast, &desc);
+	int  offset = emit_select_order_by_data(self, select, &desc);
 
 	// CSET_ORDERED
 	select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
@@ -104,8 +104,8 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	if (select->expr_offset)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
-	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self),
+	// CMERGE_RECV
+	int rmerge = op4(self, CMERGE_RECV, rpin(self),
 	                 self->current->order, rlimit, roffset);
 
 	if (rlimit != -1)
@@ -168,8 +168,8 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	if (select->expr_offset)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
-	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self),
+	// CMERGE_RECV
+	int rmerge = op4(self, CMERGE_RECV, rpin(self),
 	                 self->current->order, rlimit, roffset);
 
 	if (rlimit != -1)
@@ -221,14 +221,14 @@ pushdown(Compiler* self, Ast* ast, bool nested)
 	// [LIMIT expr] [OFFSET expr]
 	//
 
-	// all functions below return CMERGE/CSET on coordinator
+	// all functions below return MERGE/SET on coordinator
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (select->target_group)
 		return pushdown_group_by(self, select);
 
-	// SELECT FROM ORDER BY [WHERE] [LIMIT/OFFSET]
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	if (select->expr_order_by.count > 0)
 		return pushdown_order_by(self, select);
 

@@ -126,10 +126,8 @@ emit_select_on_match_group(Compiler* self, void* arg)
 }
 
 int
-emit_select_order_by(Compiler* self, Ast* ast, bool* desc)
+emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 {
-	AstSelect* select = ast_select_of(ast);
-
 	// write order by key types
 	int  offset = code_data_pos(&self->code_data);
 	auto data = &self->code_data.data;
@@ -152,6 +150,213 @@ emit_select_order_by(Compiler* self, Ast* ast, bool* desc)
 	return offset;
 }
 
+hot static int
+emit_select_merge(Compiler* self, AstSelect* select)
+{
+	// sort select set
+	op1(self, CSET_SORT, select->rset);
+
+	// limit
+	int rlimit = -1;
+	if (select->expr_limit)
+		rlimit = emit_expr(self, select->target, select->expr_limit);
+
+	// offset
+	int roffset = -1;
+	if (select->expr_offset)
+		roffset = emit_expr(self, select->target, select->expr_offset);
+
+	// CMERGE
+	int rmerge = op4(self, CMERGE, rpin(self), select->rset,
+	                 rlimit, roffset);
+
+	runpin(self, select->rset);
+	select->rset = -1;
+
+	if (rlimit != -1)
+		runpin(self, rlimit);
+	if (roffset != -1)
+		runpin(self, roffset);
+
+	return rmerge;
+}
+
+hot static void
+emit_select_group_by_scan(Compiler* self, AstSelect* select,
+                          Ast*      limit,
+                          Ast*      offset)
+{
+	// create group
+	int rgroup;
+	rgroup = op2(self, CGROUP, rpin(self), select->expr_group_by.count);
+	select->rgroup = rgroup;
+
+	// add aggregates to the group
+	auto node = select->target->aggs.list;
+	while (node)
+	{
+		auto aggr = ast_aggr_of(node->ast);
+		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->aggregate_id, aggr->order);
+		node = node->next;
+	}
+
+	// set targets
+	auto target_group = select->target_group;
+	assert(target_group != NULL);
+	target_group->rexpr = rgroup;
+
+	// scan over target and process aggregates per group by key
+	scan(self, select->target,
+	     NULL,
+	     NULL,
+	     select->expr_where,
+	     emit_select_on_match_group_target,
+	     select);
+
+	// redirect each target reference to the group scan target
+	target_group_redirect(select->target, target_group);
+
+	// scan over created group
+	//
+	// result will be added to set or send directly
+	//
+	scan(self,
+	     target_group,
+	     limit,
+	     offset,
+	     select->expr_having,
+	     emit_select_on_match_group,
+	     select);
+
+	target_group_redirect(select->target, NULL);
+
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+}
+
+hot static int
+emit_select_group_by(Compiler* self, AstSelect* select, bool nested)
+{
+	//
+	// SELECT expr, ... [FROM name, [...]]
+	// GROUP BY expr, ...
+	// [WHERE expr]
+	// [ORDER BY]
+	// [LIMIT expr] [OFFSET expr]
+	//
+	int rresult = -1;
+	if (select->expr_order_by.count == 0)
+	{
+		// create data set for nested queries
+		if (nested)
+		{
+			select->rset = op1(self, CSET, rpin(self));
+			select->on_match = emit_select_on_match_set;
+		} else
+		{
+			select->on_match = emit_select_on_match;
+		}
+
+		rresult = select->rset;
+
+		// generate group by scan using limit/offset
+		emit_select_group_by_scan(self, select, select->expr_limit,
+		                          select->expr_offset);
+	} else
+	{
+		// write order by key types
+		int offset = emit_select_order_by_data(self, select, NULL);
+		select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
+		select->on_match = emit_select_on_match_set;
+
+		// generate group by scan
+		emit_select_group_by_scan(self, select, NULL, NULL);
+
+		// create merge object and add sorted set, apply limit/offset
+		rresult = emit_select_merge(self, select);
+
+		if (! nested)
+		{
+			// send set without creating array
+			op1(self, CSEND_SET, rresult);
+			runpin(self, rresult);
+			rresult = -1;
+		}
+	}
+
+	return rresult;
+}
+
+hot static int
+emit_select_order_by(Compiler* self, AstSelect* select, bool nested)
+{
+	//
+	// SELECT expr, ... [FROM name, [...]] [WHERE expr]
+	// ORDER BY
+	// [LIMIT expr] [OFFSET expr]
+	//
+
+	// create ordered set
+	int offset = emit_select_order_by_data(self, select, NULL);
+	select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
+	select->on_match = emit_select_on_match_set;
+
+	// scan for table/expression and joins
+	scan(self,
+	     select->target,
+	     NULL,
+	     NULL,
+	     select->expr_where,
+	     select->on_match,
+	     select);
+
+	// create merge object and add sorted set
+	int rmerge = emit_select_merge(self, select);
+
+	if (! nested)
+	{
+		// send set without creating array
+		op1(self, CSEND_SET, rmerge);
+		runpin(self, rmerge);
+		rmerge = -1;
+	}
+
+	return rmerge;
+}
+
+hot static int
+emit_select_scan(Compiler* self, AstSelect* select, bool nested)
+{
+	//
+	// SELECT expr, ... [FROM name, [...]]
+	// [WHERE expr]
+	// [LIMIT expr] [OFFSET expr]
+	//
+
+	// create data set for nested queries
+	int rresult = -1;
+	if (nested)
+	{
+		rresult = op1(self, CSET, rpin(self));
+		select->rset = rresult;
+		select->on_match = emit_select_on_match_set;
+	} else
+	{
+		select->on_match = emit_select_on_match;
+	}
+
+	// scan for table/expression and joins
+	scan(self,
+	     select->target,
+	     select->expr_limit,
+	     select->expr_offset,
+	     select->expr_where,
+	     select->on_match,
+	     select);
+
+	return rresult;
+}
+
 hot int
 emit_select(Compiler* self, Ast* ast, bool nested)
 {
@@ -165,7 +370,6 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 			return rexpr;
 		op1(self, CSEND, rexpr);
 		runpin(self, rexpr);
-		// not used
 		return -1;
 	}
 
@@ -176,102 +380,17 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
 	//
-	int rresult = -1;
-	if (select->expr_order_by.count == 0)
-	{
-		// create data set for nested queries
-		if (nested)
-		{
-			rresult = op1(self, CSET, rpin(self));
-			select->rset = rresult;
-			select->on_match = emit_select_on_match_set;
-		} else
-		{
-			select->on_match = emit_select_on_match;
-		}
-	} else
-	{
-		// write order by key types
-		int offset = emit_select_order_by(self, ast, NULL);
-		rresult = op2(self, CSET_ORDERED, rpin(self), offset);
-		select->rset = rresult;
-		select->on_match = emit_select_on_match_set;
-	}
 
-	if (select->target_group == NULL)
-	{
-		// scan for table/expression and joins
-		scan(self,
-		     select->target,
-		     select->expr_limit,
-		     select->expr_offset,
-		     select->expr_where,
-		     select->on_match,
-		     select);
+	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
+	// SELECT aggregate FROM
+	if (select->target_group)
+		return emit_select_group_by(self, select, nested);
 
-		// todo: order by limit case, iterate set separately with limit
-
-	} else
-	{
-		// group by scan
-		// aggregation without group by keys
-
-		// create group
-		int rgroup;
-		rgroup = op2(self, CGROUP, rpin(self), select->expr_group_by.count);
-		select->rgroup = rgroup;
-
-		// add aggregates to the group
-		auto node = select->target->aggs.list;
-		while (node)
-		{
-			auto aggr = ast_aggr_of(node->ast);
-			op3(self, CGROUP_ADD_AGGR, rgroup, aggr->aggregate_id, aggr->order);
-			node = node->next;
-		}
-
-		// set targets
-		auto target_group = select->target_group;
-		assert(target_group != NULL);
-		target_group->rexpr = rgroup;
-
-		// scan over target and process aggregates per group by key
-		scan(self, select->target,
-		     NULL,
-		     NULL,
-		     select->expr_where,
-		     emit_select_on_match_group_target,
-		     select);
-
-		// scan over created group
-
-		// redirect each target reference to the group scan target
-		target_group_redirect(select->target, target_group);
-
-		scan(self,
-		     target_group,
-		     select->expr_limit,
-		     select->expr_offset,
-		     select->expr_having,
-		     emit_select_on_match_group,
-		     select);
-
-		target_group_redirect(select->target, NULL);
-	}
-
-	// finilize order by
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	if (select->expr_order_by.count > 0)
-	{
-		// sort ordered set
-		op1(self, CSET_SORT, rresult);
-		if (! nested)
-		{
-			// send set without creating array
-			op1(self, CSEND_SET, rresult);
-			runpin(self, rresult);
-			rresult = -1;
-		}
-	}
+		return emit_select_order_by(self, select, nested);
 
-	return rresult;
+	// SELECT FROM [WHERE] LIMIT/OFFSET
+	// SELECT FROM [WHERE]
+	return emit_select_scan(self, select, nested);
 }
