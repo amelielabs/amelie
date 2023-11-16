@@ -228,9 +228,9 @@ value_write(Value* self, Buf* buf)
 		buf_write(buf, self->data, self->data_size);
 		break;
 	case VALUE_SET:
+	case VALUE_MERGE:
 		self->obj->convert(self->obj, buf);
 		break;
-	// VALUE_MERGE
 	// VALUE_GROUP
 	default:
 		assert(0);
@@ -339,6 +339,7 @@ value_copy(Value* self, Value* src)
 		break;
 
 	case VALUE_SET:
+	case VALUE_MERGE:
 	{
 		auto buf = msg_create(MSG_OBJECT);
 		value_write(src, buf);
@@ -347,7 +348,6 @@ value_copy(Value* self, Value* src)
 		value_set_data(self, msg->data, msg_data_size(msg), buf);
 		break;
 	}
-	// VALUE_MERGE
 	// VALUE_GROUP
 	default:
 		error("operation is not supported");
