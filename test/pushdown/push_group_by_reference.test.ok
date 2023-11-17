@@ -1,0 +1,1805 @@
+env_open E0 "cluster_shards": 3
+connect E0 S0
+connect: on_connect
+# test: select from reference group by
+create table test (id int primary key, data int) reference
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+select * from test
+[0, 0]
+[1, 0]
+[2, 1]
+[3, 1]
+[4, 2]
+explain select * from test group by id
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10    cursor_open_expr        1      0     12
+11                 jmp       15      0      0
+12         cursor_read        1      1      0
+13                send        1      0      0
+14         cursor_next        1     12      0
+15        cursor_close        1      0      0
+16                 ret        0      0      0
+
+"
+select * from test group by id
+[0]
+[1]
+[2]
+[3]
+[4]
+explain select * from test group by data
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      1
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10    cursor_open_expr        1      0     12
+11                 jmp       15      0      0
+12         cursor_read        1      1      0
+13                send        1      0      0
+14         cursor_next        1     12      0
+15        cursor_close        1      0      0
+16                 ret        0      0      0
+
+"
+select * from test group by data
+[0]
+[1]
+[2]
+# test: select from reference group by keys only
+select data from test group by id
+query: on_error
+{"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
+# test: select from reference group by column
+select id from test group by id
+0
+1
+2
+3
+4
+select data from test group by data
+0
+1
+2
+# test: select from reference group by column, column
+select id, data from test group by id, data
+[0, 0]
+[2, 1]
+[1, 0]
+[4, 2]
+[3, 1]
+select id, data from test group by data, id
+[0, 0]
+[2, 1]
+[1, 0]
+[4, 2]
+[3, 1]
+# test: select expr from reference group by
+select id, 100 + id from test group by id
+[0, 100]
+[1, 101]
+[2, 102]
+[3, 103]
+[4, 104]
+# test: select from (select from reference  group by)
+explain select * from (select * from test group by id)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       16      0      0
+13         cursor_read        2      1      0
+14             set_add        0      2      0
+15         cursor_next        1     13      0
+16        cursor_close        1      0      0
+17    cursor_open_expr        2      0     19
+18                 jmp       22      0      0
+19         cursor_read        1      2      0
+20                send        1      0      0
+21         cursor_next        2     19      0
+22        cursor_close        2      0      0
+23                 ret        0      0      0
+
+"
+select * from (select * from test group by id)
+[0]
+[1]
+[2]
+[3]
+[4]
+select 100 + * from (select * from test group by id)
+query: on_error
+{"code": 1, "msg": "bad + expression types"}
+select 100 + *[0] from (select * from test group by id)
+100
+101
+102
+103
+104
+select * from (select id, 100 + id from test group by id)
+[0, 100]
+[1, 101]
+[2, 102]
+[3, 103]
+[4, 104]
+# test: select from reference group by limit
+explain select id from test group by id limit 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      0      1
+12    cursor_open_expr        1      0     14
+13                 jmp       18      0      0
+14            cntr_lte        1      0     13
+15           group_get        1      1      0
+16                send        1      0      0
+17         cursor_next        1     14      0
+18        cursor_close        1      0      0
+19                 ret        0      0      0
+
+"
+select id from test group by id limit 2
+0
+1
+select id from test group by id limit 3
+0
+1
+2
+select id from test group by id limit 4
+0
+1
+2
+3
+# test: select from reference group by limit/offset
+explain select id from test group by id limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      1      1
+12                 int        1      1      0
+13           cntr_init        1      0      1
+14    cursor_open_expr        1      0     16
+15                 jmp       21      0      0
+16            cntr_gte        1      1     20
+17            cntr_lte        1      0     15
+18           group_get        1      1      0
+19                send        1      0      0
+20         cursor_next        1     16      0
+21        cursor_close        1      0      0
+22                 ret        0      0      0
+
+"
+select id from test group by id limit 1 offset 1
+1
+select id from test group by id limit 1 offset 2
+2
+select id from test group by id limit 1 offset 3
+3
+select id from test group by id limit 1 offset 4
+4
+# test: select from reference group by offset
+explain select id from test group by id offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      1      1
+12    cursor_open_expr        1      0     14
+13                 jmp       18      0      0
+14            cntr_gte        1      1     17
+15           group_get        1      1      0
+16                send        1      0      0
+17         cursor_next        1     14      0
+18        cursor_close        1      0      0
+19                 ret        0      0      0
+
+"
+select id from test group by id offset 1
+1
+2
+3
+4
+select id from test group by id offset 2
+2
+3
+4
+select id from test group by id offset 3
+3
+4
+select id from test group by id offset 4
+4
+# test: select from (select from reference group by limit)
+explain select * from (select id from test group by id limit 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      0      2
+13    cursor_open_expr        1      1     15
+14                 jmp       19      0      0
+15            cntr_lte        1      0     14
+16           group_get        2      1      0
+17             set_add        0      2      0
+18         cursor_next        1     15      0
+19        cursor_close        1      0      0
+20    cursor_open_expr        2      0     22
+21                 jmp       25      0      0
+22         cursor_read        1      2      0
+23                send        1      0      0
+24         cursor_next        2     22      0
+25        cursor_close        2      0      0
+26                 ret        0      0      0
+
+"
+select * from (select id from test group by id limit 1)
+0
+select * from (select id from test group by id limit 2)
+0
+1
+select * from (select id from test group by id limit 3)
+0
+1
+2
+select * from (select id from test group by id limit 4)
+0
+1
+2
+3
+# test: select from (select from reference group by limit/offset)
+explain select * from (select id from test group by id limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      1      2
+13                 int        2      1      0
+14           cntr_init        1      0      2
+15    cursor_open_expr        1      1     17
+16                 jmp       22      0      0
+17            cntr_gte        1      1     21
+18            cntr_lte        1      0     16
+19           group_get        2      1      0
+20             set_add        0      2      0
+21         cursor_next        1     17      0
+22        cursor_close        1      0      0
+23    cursor_open_expr        2      0     25
+24                 jmp       28      0      0
+25         cursor_read        1      2      0
+26                send        1      0      0
+27         cursor_next        2     25      0
+28        cursor_close        2      0      0
+29                 ret        0      0      0
+
+"
+select * from (select id from test group by id limit 1 offset 1)
+1
+select * from (select id from test group by id limit 1 offset 2)
+2
+select * from (select id from test group by id limit 1 offset 3)
+3
+select * from (select id from test group by id limit 1 offset 4)
+4
+# test: select from (select from reference group by offset)
+explain select * from (select id from test group by id offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      1      2
+13    cursor_open_expr        1      1     15
+14                 jmp       19      0      0
+15            cntr_gte        1      1     18
+16           group_get        2      1      0
+17             set_add        0      2      0
+18         cursor_next        1     15      0
+19        cursor_close        1      0      0
+20    cursor_open_expr        2      0     22
+21                 jmp       25      0      0
+22         cursor_read        1      2      0
+23                send        1      0      0
+24         cursor_next        2     22      0
+25        cursor_close        2      0      0
+26                 ret        0      0      0
+
+"
+select * from (select id from test group by id offset 1)
+1
+2
+3
+4
+select * from (select id from test group by id offset 2)
+2
+3
+4
+select * from (select id from test group by id offset 3)
+3
+4
+select * from (select id from test group by id offset 4)
+4
+# test: select from reference group by having
+explain select id from test group by id having id >= 3
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10    cursor_open_expr        1      0     12
+11                 jmp       19      0      0
+12           group_get        1      1      0
+13                 int        2      3      0
+14                 gte        3      1      2
+15                jntr       18      3      0
+16           group_get        1      1      0
+17                send        1      0      0
+18         cursor_next        1     12      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
+
+"
+select id from test group by id having id >= 3
+3
+4
+select id from test group by id having id = 0
+0
+select id from test group by id having id = 1
+1
+select id from test group by id having id = 2
+2
+select id from test group by id having id = 3
+3
+select id from test group by id having id = 4
+4
+select id from test group by id having id = 5
+select id from test group by id having id >= 1 and id <= 3
+1
+2
+3
+# test: select from reference group by having limit
+explain select id from test group by id having id >= 1 limit 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      0      1
+12    cursor_open_expr        1      0     14
+13                 jmp       22      0      0
+14           group_get        1      1      0
+15                 int        2      1      0
+16                 gte        3      1      2
+17                jntr       21      3      0
+18            cntr_lte        1      0     13
+19           group_get        1      1      0
+20                send        1      0      0
+21         cursor_next        1     14      0
+22        cursor_close        1      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id having id >= 1 limit 1
+1
+select id from test group by id having id >= 1 limit 2
+1
+2
+# test: select from reference group by having limit/offset
+explain select id from test group by id having id >= 1 limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      1      1
+12                 int        1      1      0
+13           cntr_init        1      0      1
+14    cursor_open_expr        1      0     16
+15                 jmp       25      0      0
+16           group_get        1      1      0
+17                 int        2      1      0
+18                 gte        3      1      2
+19                jntr       24      3      0
+20            cntr_gte        1      1     24
+21            cntr_lte        1      0     15
+22           group_get        1      1      0
+23                send        1      0      0
+24         cursor_next        1     16      0
+25        cursor_close        1      0      0
+26                 ret        0      0      0
+
+"
+select id from test group by id having id >= 1 limit 1 offset 1
+2
+select id from test group by id having id >= 1 limit 1 offset 2
+3
+select id from test group by id having id >= 1 limit 1 offset 3
+4
+# test: select from reference group by having offset
+explain select id from test group by id having id >= 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10                 int        1      1      0
+11           cntr_init        1      1      1
+12    cursor_open_expr        1      0     14
+13                 jmp       22      0      0
+14           group_get        1      1      0
+15                 int        2      1      0
+16                 gte        3      1      2
+17                jntr       21      3      0
+18            cntr_gte        1      1     21
+19           group_get        1      1      0
+20                send        1      0      0
+21         cursor_next        1     14      0
+22        cursor_close        1      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id having id >= 1 offset 1
+2
+3
+4
+select id from test group by id having id >= 1 offset 2
+3
+4
+select id from test group by id having id >= 1 offset 3
+4
+# test: select from (select from reference group by having)
+explain select * from (select id from test group by id having id >= 3)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       20      0      0
+13           group_get        2      1      0
+14                 int        3      3      0
+15                 gte        4      2      3
+16                jntr       19      4      0
+17           group_get        2      1      0
+18             set_add        0      2      0
+19         cursor_next        1     13      0
+20        cursor_close        1      0      0
+21    cursor_open_expr        2      0     23
+22                 jmp       26      0      0
+23         cursor_read        1      2      0
+24                send        1      0      0
+25         cursor_next        2     23      0
+26        cursor_close        2      0      0
+27                 ret        0      0      0
+
+"
+select * from (select id from test group by id having id >= 3)
+3
+4
+# test: select from (select from reference group by having limit)
+explain select * from (select id from test group by id having id >= 1 limit 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      0      2
+13    cursor_open_expr        1      1     15
+14                 jmp       23      0      0
+15           group_get        2      1      0
+16                 int        3      1      0
+17                 gte        4      2      3
+18                jntr       22      4      0
+19            cntr_lte        1      0     14
+20           group_get        2      1      0
+21             set_add        0      2      0
+22         cursor_next        1     15      0
+23        cursor_close        1      0      0
+24    cursor_open_expr        2      0     26
+25                 jmp       29      0      0
+26         cursor_read        1      2      0
+27                send        1      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
+
+"
+select * from (select id from test group by id having id >= 1 limit 1)
+1
+select * from (select id from test group by id having id >= 1 limit 2)
+1
+2
+# test: select from (select from reference group by having limit/offset)
+explain select * from (select id from test group by id having id >= 1 limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      1      2
+13                 int        2      1      0
+14           cntr_init        1      0      2
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21            cntr_gte        1      1     25
+22            cntr_lte        1      0     16
+23           group_get        2      1      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27    cursor_open_expr        2      0     29
+28                 jmp       32      0      0
+29         cursor_read        1      2      0
+30                send        1      0      0
+31         cursor_next        2     29      0
+32        cursor_close        2      0      0
+33                 ret        0      0      0
+
+"
+select * from (select id from test group by id having id >= 1 limit 1 offset 1)
+2
+select * from (select id from test group by id having id >= 1 limit 1 offset 2)
+3
+select * from (select id from test group by id having id >= 1 limit 1 offset 3)
+4
+# test: select from (select from reference group by having offset)
+explain select * from (select id from test group by id having id >= 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11                 int        2      1      0
+12           cntr_init        1      1      2
+13    cursor_open_expr        1      1     15
+14                 jmp       23      0      0
+15           group_get        2      1      0
+16                 int        3      1      0
+17                 gte        4      2      3
+18                jntr       22      4      0
+19            cntr_gte        1      1     22
+20           group_get        2      1      0
+21             set_add        0      2      0
+22         cursor_next        1     15      0
+23        cursor_close        1      0      0
+24    cursor_open_expr        2      0     26
+25                 jmp       29      0      0
+26         cursor_read        1      2      0
+27                send        1      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
+
+"
+select * from (select id from test group by id having id >= 1 offset 1)
+2
+3
+4
+select * from (select id from test group by id having id >= 1 offset 2)
+3
+4
+select * from (select id from test group by id having id >= 1 offset 3)
+4
+# test: select from reference group by order by
+explain select id from test group by id order by id
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20               merge        1      0     -1
+21            send_set        1      0      0
+22                 ret        0      0      0
+
+"
+select id from test group by id order by id
+0
+1
+2
+3
+4
+# test: select from reference group by order by keys only
+select id from test group by id order by data
+query: on_error
+{"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
+# test: select from reference group by order by desc
+explain select id from test group by id order by id desc
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20               merge        1      0     -1
+21            send_set        1      0      0
+22                 ret        0      0      0
+
+"
+select id from test group by id order by id desc
+4
+3
+2
+1
+0
+# test: select from (select from reference group by order by)
+explain select * from (select id from test group by id order by id desc)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20               merge        1      0     -1
+21    cursor_open_expr        2      1     23
+22                 jmp       26      0      0
+23         cursor_read        0      2      0
+24                send        0      0      0
+25         cursor_next        2     23      0
+26        cursor_close        2      0      0
+27                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id desc)
+4
+3
+2
+1
+0
+# test: select from reference group by order by asc limit
+explain select id from test group by id order by id asc limit 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0      1
+22            send_set        2      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id order by id asc limit 1
+0
+select id from test group by id order by id asc limit 2
+0
+1
+select id from test group by id order by id asc limit 3
+0
+1
+2
+# test: select from reference group by order by asc limit/offset
+explain select id from test group by id order by id asc limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21                 int        2      1      0
+22               merge        3      0      1
+23            send_set        3      0      0
+24                 ret        0      0      0
+
+"
+select id from test group by id order by id asc limit 1 offset 1
+1
+select id from test group by id order by id asc limit 1 offset 2
+2
+select id from test group by id order by id asc limit 1 offset 3
+3
+# test: select from reference group by order by asc offset
+explain select id from test group by id order by id asc offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0     -1
+22            send_set        2      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id order by id asc offset 1
+1
+2
+3
+4
+select id from test group by id order by id asc offset 2
+2
+3
+4
+select id from test group by id order by id asc offset 3
+3
+4
+# test: select from reference group by order by desc limit
+explain select id from test group by id order by id desc limit 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0      1
+22            send_set        2      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id order by id desc limit 1
+4
+select id from test group by id order by id desc limit 2
+4
+3
+select id from test group by id order by id desc limit 3
+4
+3
+2
+# test: select from reference group by order by desc limit/offset
+explain select id from test group by id order by id desc limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21                 int        2      1      0
+22               merge        3      0      1
+23            send_set        3      0      0
+24                 ret        0      0      0
+
+"
+select id from test group by id order by id desc limit 1 offset 1
+3
+select id from test group by id order by id desc limit 1 offset 2
+2
+select id from test group by id order by id desc limit 1 offset 3
+1
+# test: select from reference group by order by desc offset
+explain select id from test group by id order by id desc offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0     -1
+22            send_set        2      0      0
+23                 ret        0      0      0
+
+"
+select id from test group by id order by id desc offset 0
+4
+3
+2
+1
+0
+select id from test group by id order by id desc offset 1
+3
+2
+1
+0
+select id from test group by id order by id desc offset 2
+2
+1
+0
+select id from test group by id order by id desc offset 3
+1
+0
+# test: select from (select from reference group by order by asc limit)
+explain select * from (select id from test group by id order by id asc limit 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0      1
+22    cursor_open_expr        2      2     24
+23                 jmp       27      0      0
+24         cursor_read        0      2      0
+25                send        0      0      0
+26         cursor_next        2     24      0
+27        cursor_close        2      0      0
+28                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id asc limit 0)
+select * from (select id from test group by id order by id asc limit 1)
+0
+select * from (select id from test group by id order by id asc limit 2)
+0
+1
+select * from (select id from test group by id order by id asc limit 3)
+0
+1
+2
+# test: select from (select from reference group by order by asc limit/offset)
+explain select * from (select id from test group by id order by id asc limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21                 int        2      1      0
+22               merge        3      0      1
+23    cursor_open_expr        2      3     25
+24                 jmp       28      0      0
+25         cursor_read        0      2      0
+26                send        0      0      0
+27         cursor_next        2     25      0
+28        cursor_close        2      0      0
+29                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id asc limit 1 offset 1)
+1
+select * from (select id from test group by id order by id asc limit 1 offset 2)
+2
+select * from (select id from test group by id order by id asc limit 1 offset 3)
+3
+# test: select from (select from reference group by order by asc offset)
+explain select * from (select id from test group by id order by id asc offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0     -1
+22    cursor_open_expr        2      2     24
+23                 jmp       27      0      0
+24         cursor_read        0      2      0
+25                send        0      0      0
+26         cursor_next        2     24      0
+27        cursor_close        2      0      0
+28                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id asc offset 0)
+0
+1
+2
+3
+4
+select * from (select id from test group by id order by id asc offset 1)
+1
+2
+3
+4
+select * from (select id from test group by id order by id asc offset 2)
+2
+3
+4
+select * from (select id from test group by id order by id asc offset 3)
+3
+4
+# test: select from (select from reference group by order by desc limit)
+explain select * from (select id from test group by id order by id desc limit 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0      1
+22    cursor_open_expr        2      2     24
+23                 jmp       27      0      0
+24         cursor_read        0      2      0
+25                send        0      0      0
+26         cursor_next        2     24      0
+27        cursor_close        2      0      0
+28                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id desc limit 0)
+select * from (select id from test group by id order by id desc limit 1)
+4
+select * from (select id from test group by id order by id desc limit 2)
+4
+3
+select * from (select id from test group by id order by id desc limit 3)
+4
+3
+2
+# test: select from (select from reference group by order by desc limit/offset)
+explain select * from (select id from test group by id order by id desc limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21                 int        2      1      0
+22               merge        3      0      1
+23    cursor_open_expr        2      3     25
+24                 jmp       28      0      0
+25         cursor_read        0      2      0
+26                send        0      0      0
+27         cursor_next        2     25      0
+28        cursor_close        2      0      0
+29                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id desc limit 1 offset 1)
+3
+select * from (select id from test group by id order by id desc limit 1 offset 2)
+2
+select * from (select id from test group by id order by id desc limit 1 offset 3)
+1
+# test: select from (select from reference group by order by desc offset)
+explain select * from (select id from test group by id order by id desc offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       10      0      0
+ 6          cursor_idx        2      0      0
+ 7                push        2      0      0
+ 8           group_add        1      0      0
+ 9         cursor_next        0      6      0
+10        cursor_close        0      0      0
+11    cursor_open_expr        1      1     13
+12                 jmp       18      0      0
+13           group_get        2      1      0
+14           group_get        3      1      0
+15                push        3      0      0
+16             set_add        0      2      0
+17         cursor_next        1     13      0
+18        cursor_close        1      0      0
+19            set_sort        0      0      0
+20                 int        1      1      0
+21               merge        2      0     -1
+22    cursor_open_expr        2      2     24
+23                 jmp       27      0      0
+24         cursor_read        0      2      0
+25                send        0      0      0
+26         cursor_next        2     24      0
+27        cursor_close        2      0      0
+28                 ret        0      0      0
+
+"
+select * from (select id from test group by id order by id desc offset 0)
+4
+3
+2
+1
+0
+select * from (select id from test group by id order by id desc offset 1)
+3
+2
+1
+0
+select * from (select id from test group by id order by id desc offset 2)
+2
+1
+0
+select * from (select id from test group by id order by id desc offset 3)
+1
+0
+# test: select from reference group by having order by
+explain select data from test where data > 0 group by data having data >= 1 order by data
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28               merge        1      0     -1
+29            send_set        1      0      0
+30                 ret        0      0      0
+
+"
+select data from test where data > 0 group by data having data >= 1 order by data
+1
+2
+# test: select from reference group by having order by limit
+explain select data from test where data > 0 group by data having data >= 1 order by data limit 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29               merge        2      0      1
+30            send_set        2      0      0
+31                 ret        0      0      0
+
+"
+select data from test where data > 0 group by data having data >= 1 order by data limit 1
+1
+# test: select from reference group by having order by limit/offset
+explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29                 int        2      1      0
+30               merge        3      0      1
+31            send_set        3      0      0
+32                 ret        0      0      0
+
+"
+select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
+2
+# test: select from reference group by having order by offset
+explain select data from test where data > 0 group by data having data >= 1 order by data offset 1
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29               merge        2      0     -1
+30            send_set        2      0      0
+31                 ret        0      0      0
+
+"
+select data from test where data > 0 group by data having data >= 1 order by data offset 1
+2
+# test: select from (select from reference group by having order by)
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28               merge        1      0     -1
+29    cursor_open_expr        2      1     31
+30                 jmp       34      0      0
+31         cursor_read        0      2      0
+32                send        0      0      0
+33         cursor_next        2     31      0
+34        cursor_close        2      0      0
+35                 ret        0      0      0
+
+"
+select * from (select data from test where data > 0 group by data having data >= 1 order by data)
+1
+2
+# test: select from (select from reference group by having order by limit)
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29               merge        2      0      1
+30    cursor_open_expr        2      2     32
+31                 jmp       35      0      0
+32         cursor_read        0      2      0
+33                send        0      0      0
+34         cursor_next        2     32      0
+35        cursor_close        2      0      0
+36                 ret        0      0      0
+
+"
+select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1)
+1
+# test: select from (select from reference group by having order by desc limit)
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29               merge        2      0      1
+30    cursor_open_expr        2      2     32
+31                 jmp       35      0      0
+32         cursor_read        0      2      0
+33                send        0      0      0
+34         cursor_next        2     32      0
+35        cursor_close        2      0      0
+36                 ret        0      0      0
+
+"
+select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1)
+2
+# test: select from (select from reference group by having order by limit/offset)
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29                 int        2      1      0
+30               merge        3      0      1
+31    cursor_open_expr        2      3     33
+32                 jmp       36      0      0
+33         cursor_read        0      2      0
+34                send        0      0      0
+35         cursor_next        2     33      0
+36        cursor_close        2      0      0
+37                 ret        0      0      0
+
+"
+select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1)
+2
+# test: select from (select from reference group by having order by offset)
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1)
+"
+bytecode [coordinator]
+--------
+ 0         set_ordered        0      0      0
+ 1               group        1      1      0
+ 2             int_min        2      0      0
+ 3                push        2      0      0
+ 4         cursor_open        0      4      6      # public.test (primary)
+ 5                 jmp       14      0      0
+ 6          cursor_idx        2      0      1
+ 7                 int        3      0      0
+ 8                  gt        4      2      3
+ 9                jntr       13      4      0
+10          cursor_idx        2      0      1
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0      6      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       26      0      0
+17           group_get        2      1      0
+18                 int        3      1      0
+19                 gte        4      2      3
+20                jntr       25      4      0
+21           group_get        2      1      0
+22           group_get        3      1      0
+23                push        3      0      0
+24             set_add        0      2      0
+25         cursor_next        1     17      0
+26        cursor_close        1      0      0
+27            set_sort        0      0      0
+28                 int        1      1      0
+29               merge        2      0     -1
+30    cursor_open_expr        2      2     32
+31                 jmp       35      0      0
+32         cursor_read        0      2      0
+33                send        0      0      0
+34         cursor_next        2     32      0
+35        cursor_close        2      0      0
+36                 ret        0      0      0
+
+"
+select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1)
+2
+drop table test
+disconnect S0
+env_close E0
