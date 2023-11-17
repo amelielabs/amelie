@@ -217,7 +217,7 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	}
 
 	// create aggregate ast node
-	int order = expr->aggs_global->count;
+	int order = expr->aggs->count;
 	auto aggr = ast_aggr_allocate(function->id, id, order, arg, label);
 	if (expr)
 	{
