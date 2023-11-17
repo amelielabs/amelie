@@ -37,10 +37,10 @@ aggr_sum_free(Aggr* self)
 }
 
 static void
-aggr_sum_state_create(Aggr* self, uint8_t* state_data)
+aggr_sum_state_create(Aggr* self, uint8_t* state)
 {
 	unused(self);
-	int64_t* sum = (int64_t*)state_data;
+	int64_t* sum = (int64_t*)state;
 	*sum = 0;
 }
 
@@ -52,21 +52,29 @@ aggr_sum_state_size(Aggr* self)
 }
 
 hot static void
-aggr_sum_process(Aggr* self, uint8_t* state_data, Value* value)
+aggr_sum_process(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
 	if (unlikely(value->type != VALUE_INT))
 		error("sum: aggr data integer expected");
-	int64_t* state = (int64_t*)state_data;
-	(*state) += value->integer;
+	int64_t* sum = (int64_t*)state;
+	(*sum) += value->integer;
+}
+
+hot static void
+aggr_sum_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
+{
+	unused(self);
+	int64_t* sum = (int64_t*)state;
+	*sum += *(int64_t*)state_with;
 }
 
 static void
-aggr_sum_convert(Aggr* self, uint8_t* state_data, Value* value)
+aggr_sum_convert(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
-	int64_t* state = (int64_t*)state_data;
-	value_set_int(value, *state);
+	int64_t* sum = (int64_t*)state;
+	value_set_int(value, *sum);
 }
 
 AggrIf aggr_sum =
@@ -76,5 +84,6 @@ AggrIf aggr_sum =
 	.state_create = aggr_sum_state_create,
 	.state_size   = aggr_sum_state_size,
 	.process      = aggr_sum_process,
+	.merge        = aggr_sum_merge,
 	.convert      = aggr_sum_convert,
 };

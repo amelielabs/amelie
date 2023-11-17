@@ -37,14 +37,14 @@ aggr_avg_free(Aggr* self)
 }
 
 static void
-aggr_avg_state_create(Aggr* self, uint8_t* state_data)
+aggr_avg_state_create(Aggr* self, uint8_t* state)
 {
 	unused(self);
-	int64_t* state = (int64_t*)state_data;
+	int64_t* avg = (int64_t*)state;
 	// sum
-	state[0] = 0;
+	avg[0] = 0;
 	// count
-	state[1] = 0;
+	avg[1] = 0;
 }
 
 static int
@@ -55,25 +55,36 @@ aggr_avg_state_size(Aggr* self)
 }
 
 hot static void
-aggr_avg_process(Aggr* self, uint8_t* state_data, Value* value)
+aggr_avg_process(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
 	if (unlikely(value->type != VALUE_INT))
 		error("avg: aggr data integer expected");
-	int64_t* state = (int64_t*)state_data;
+	int64_t* avg = (int64_t*)state;
 	// sum
-	state[0] += value->integer;
+	avg[0] += value->integer;
 	// count
-	state[1]++;
+	avg[1]++;
+}
+
+hot static void
+aggr_avg_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
+{
+	unused(self);
+	int64_t* avg = (int64_t*)state;
+	// sum
+	avg[0] += ((int64_t*)state_with)[0];
+	// count
+	avg[1] += ((int64_t*)state_with)[1];
 }
 
 static void
-aggr_avg_convert(Aggr* self, uint8_t* state_data, Value* value)
+aggr_avg_convert(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
-	int64_t* state = (int64_t*)state_data;
-	assert(state[1] > 0);
-	value_set_int(value, state[0] / state[1]);
+	int64_t* avg = (int64_t*)state;
+	assert(avg[1] > 0);
+	value_set_int(value, avg[0] / avg[1]);
 }
 
 AggrIf aggr_avg =
@@ -83,5 +94,6 @@ AggrIf aggr_avg =
 	.state_create = aggr_avg_state_create,
 	.state_size   = aggr_avg_state_size,
 	.process      = aggr_avg_process,
+	.merge        = aggr_avg_merge,
 	.convert      = aggr_avg_convert,
 };

@@ -16,6 +16,7 @@ struct AggrIf
 	void  (*state_create)(Aggr*, uint8_t*);
 	int   (*state_size)(Aggr*);
 	void  (*process)(Aggr*, uint8_t*, Value*);
+	void  (*merge)(Aggr*, uint8_t*, uint8_t*);
 	void  (*convert)(Aggr*, uint8_t*, Value*);
 };
 
@@ -53,6 +54,12 @@ static inline void
 aggr_process(Aggr* self, uint8_t* state, Value* value)
 {
 	self->iface->process(self, state, value);
+}
+
+static inline void
+aggr_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
+{
+	self->iface->merge(self, state, state_with);
 }
 
 static inline void

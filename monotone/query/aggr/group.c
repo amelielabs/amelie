@@ -168,7 +168,7 @@ group_find(GroupKey* key)
 {
 	HashtableNode* node;
 	if (key->self->keys_count == 0)
-		node = hashtable_at(&key->self->ht, key->hash); /* 0 */
+		node = hashtable_at(&key->self->ht, key->hash); // 0
 	else
 		node = hashtable_get(&key->self->ht, key->hash, group_cmp, key);
 	if (likely(node))

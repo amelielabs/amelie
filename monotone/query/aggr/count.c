@@ -37,10 +37,10 @@ aggr_count_free(Aggr* self)
 }
 
 static void
-aggr_count_state_create(Aggr* self, uint8_t* state_data)
+aggr_count_state_create(Aggr* self, uint8_t* state)
 {
 	unused(self);
-	int64_t* count = (int64_t*)state_data;
+	int64_t* count = (int64_t*)state;
 	*count = 0;
 }
 
@@ -52,21 +52,29 @@ aggr_count_state_size(Aggr* self)
 }
 
 hot static void
-aggr_count_process(Aggr* self, uint8_t* state_data, Value* value)
+aggr_count_process(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
 	if (unlikely(value->type == VALUE_NULL))
 		return;
-	int64_t* count = (int64_t*)state_data;
+	int64_t* count = (int64_t*)state;
 	(*count)++;
 }
 
-static void
-aggr_count_convert(Aggr* self, uint8_t* state_data, Value* value)
+hot static void
+aggr_count_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
 {
 	unused(self);
-	int64_t* state = (int64_t*)state_data;
-	value_set_int(value, *state);
+	int64_t* count = (int64_t*)state;
+	*count += *(int64_t*)state_with;
+}
+
+static void
+aggr_count_convert(Aggr* self, uint8_t* state, Value* value)
+{
+	unused(self);
+	int64_t* count = (int64_t*)state;
+	value_set_int(value, *count);
 }
 
 AggrIf aggr_count =
@@ -76,5 +84,6 @@ AggrIf aggr_count =
 	.state_create = aggr_count_state_create,
 	.state_size   = aggr_count_state_size,
 	.process      = aggr_count_process,
+	.merge        = aggr_count_merge,
 	.convert      = aggr_count_convert,
 };
