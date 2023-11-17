@@ -41,6 +41,10 @@ target_list_validate(TargetList* self, Target* primary)
 		if (target->expr)
 			continue;
 
+		// skip group by targets
+		if (target->group_main)
+			continue;
+
 		if (target->table->config->reference)
 			continue;
 
