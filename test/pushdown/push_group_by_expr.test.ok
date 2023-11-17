@@ -1,0 +1,656 @@
+env_open E0 "cluster_shards": 3
+connect E0 S0
+connect: on_connect
+# test: select from expr group by
+explain select * from [0,1,2,3,4] group by *
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19    cursor_open_expr        1      0     21
+20                 jmp       24      0      0
+21         cursor_read        1      1      0
+22                send        1      0      0
+23         cursor_next        1     21      0
+24        cursor_close        1      0      0
+25                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by *
+[0]
+[1]
+[2]
+[3]
+[4]
+# test: select expr from expr group by
+explain select 100 + * from [0,1,2,3,4] group by *
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19    cursor_open_expr        1      0     21
+20                 jmp       26      0      0
+21                 int        1    100      0
+22         cursor_read        2      1      0
+23                 add        3      1      2
+24                send        3      0      0
+25         cursor_next        1     21      0
+26        cursor_close        1      0      0
+27                 ret        0      0      0
+
+"
+select 100 + *[0] from [0,1,2,3,4] group by *
+100
+101
+102
+103
+104
+# test: select from (select from expr group by)
+explain select * from (select * from [0,1,2,3,4] group by *)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2                 int        2      0      0
+ 3                push        2      0      0
+ 4                 int        2      1      0
+ 5                push        2      0      0
+ 6                 int        2      2      0
+ 7                push        2      0      0
+ 8                 int        2      3      0
+ 9                push        2      0      0
+10                 int        2      4      0
+11                push        2      0      0
+12               array        2      5      0
+13    cursor_open_expr        0      2     15
+14                 jmp       19      0      0
+15         cursor_read        3      0      0
+16                push        3      0      0
+17           group_add        1      0      0
+18         cursor_next        0     15      0
+19        cursor_close        0      0      0
+20    cursor_open_expr        1      1     22
+21                 jmp       25      0      0
+22         cursor_read        2      1      0
+23             set_add        0      2      0
+24         cursor_next        1     22      0
+25        cursor_close        1      0      0
+26    cursor_open_expr        2      0     28
+27                 jmp       31      0      0
+28         cursor_read        1      2      0
+29                send        1      0      0
+30         cursor_next        2     28      0
+31        cursor_close        2      0      0
+32                 ret        0      0      0
+
+"
+select * from (select * from [0,1,2,3,4] group by *)
+[0]
+[1]
+[2]
+[3]
+[4]
+# test: select from expr group by limit
+explain select * from [0,1,2,3,4] group by * limit 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      0      1
+21    cursor_open_expr        1      0     23
+22                 jmp       27      0      0
+23            cntr_lte        1      0     22
+24         cursor_read        1      1      0
+25                send        1      0      0
+26         cursor_next        1     23      0
+27        cursor_close        1      0      0
+28                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * limit 2
+[0]
+[1]
+select * from [0,1,2,3,4] group by * limit 3
+[0]
+[1]
+[2]
+select * from [0,1,2,3,4] group by * limit 4
+[0]
+[1]
+[2]
+[3]
+# test: select from expr group by limit/offset
+explain select * from [0,1,2,3,4] group by * limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      1      1
+21                 int        1      1      0
+22           cntr_init        1      0      1
+23    cursor_open_expr        1      0     25
+24                 jmp       30      0      0
+25            cntr_gte        1      1     29
+26            cntr_lte        1      0     24
+27         cursor_read        1      1      0
+28                send        1      0      0
+29         cursor_next        1     25      0
+30        cursor_close        1      0      0
+31                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * limit 1 offset 0
+[0]
+select * from [0,1,2,3,4] group by * limit 1 offset 1
+[1]
+select * from [0,1,2,3,4] group by * limit 1 offset 2
+[2]
+select * from [0,1,2,3,4] group by * limit 1 offset 3
+[3]
+# test: select from expr group by offset
+explain select * from [0,1,2,3,4] group by * offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      1      1
+21    cursor_open_expr        1      0     23
+22                 jmp       27      0      0
+23            cntr_gte        1      1     26
+24         cursor_read        1      1      0
+25                send        1      0      0
+26         cursor_next        1     23      0
+27        cursor_close        1      0      0
+28                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * offset 0
+[0]
+[1]
+[2]
+[3]
+[4]
+select * from [0,1,2,3,4] group by * offset 1
+[1]
+[2]
+[3]
+[4]
+select * from [0,1,2,3,4] group by * offset 2
+[2]
+[3]
+[4]
+select * from [0,1,2,3,4] group by * offset 3
+[3]
+[4]
+# test: select from (select from expr group by limit)
+explain select * from (select * from [0,1,2,3,4] group by * limit 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2                 int        2      0      0
+ 3                push        2      0      0
+ 4                 int        2      1      0
+ 5                push        2      0      0
+ 6                 int        2      2      0
+ 7                push        2      0      0
+ 8                 int        2      3      0
+ 9                push        2      0      0
+10                 int        2      4      0
+11                push        2      0      0
+12               array        2      5      0
+13    cursor_open_expr        0      2     15
+14                 jmp       19      0      0
+15         cursor_read        3      0      0
+16                push        3      0      0
+17           group_add        1      0      0
+18         cursor_next        0     15      0
+19        cursor_close        0      0      0
+20                 int        2      1      0
+21           cntr_init        1      0      2
+22    cursor_open_expr        1      1     24
+23                 jmp       28      0      0
+24            cntr_lte        1      0     23
+25         cursor_read        2      1      0
+26             set_add        0      2      0
+27         cursor_next        1     24      0
+28        cursor_close        1      0      0
+29    cursor_open_expr        2      0     31
+30                 jmp       34      0      0
+31         cursor_read        1      2      0
+32                send        1      0      0
+33         cursor_next        2     31      0
+34        cursor_close        2      0      0
+35                 ret        0      0      0
+
+"
+select * from (select * from [0,1,2,3,4] group by * limit 2)
+[0]
+[1]
+select * from (select * from [0,1,2,3,4] group by * limit 3)
+[0]
+[1]
+[2]
+select * from (select * from [0,1,2,3,4] group by * limit 4)
+[0]
+[1]
+[2]
+[3]
+# test: select from (select from expr group by limit/offset)
+explain select * from (select * from [0,1,2,3,4] group by * limit 1 offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2                 int        2      0      0
+ 3                push        2      0      0
+ 4                 int        2      1      0
+ 5                push        2      0      0
+ 6                 int        2      2      0
+ 7                push        2      0      0
+ 8                 int        2      3      0
+ 9                push        2      0      0
+10                 int        2      4      0
+11                push        2      0      0
+12               array        2      5      0
+13    cursor_open_expr        0      2     15
+14                 jmp       19      0      0
+15         cursor_read        3      0      0
+16                push        3      0      0
+17           group_add        1      0      0
+18         cursor_next        0     15      0
+19        cursor_close        0      0      0
+20                 int        2      1      0
+21           cntr_init        1      1      2
+22                 int        2      1      0
+23           cntr_init        1      0      2
+24    cursor_open_expr        1      1     26
+25                 jmp       31      0      0
+26            cntr_gte        1      1     30
+27            cntr_lte        1      0     25
+28         cursor_read        2      1      0
+29             set_add        0      2      0
+30         cursor_next        1     26      0
+31        cursor_close        1      0      0
+32    cursor_open_expr        2      0     34
+33                 jmp       37      0      0
+34         cursor_read        1      2      0
+35                send        1      0      0
+36         cursor_next        2     34      0
+37        cursor_close        2      0      0
+38                 ret        0      0      0
+
+"
+select * from (select * from [0,1,2,3,4] group by * limit 1 offset 0)
+[0]
+select * from (select * from [0,1,2,3,4] group by * limit 1 offset 1)
+[1]
+select * from (select * from [0,1,2,3,4] group by * limit 1 offset 2)
+[2]
+select * from (select * from [0,1,2,3,4] group by * limit 1 offset 3)
+[3]
+# test: select from (select from expr group by offset)
+explain select * from (select * from [0,1,2,3,4] group by * offset 1)
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1               group        1      1      0
+ 2                 int        2      0      0
+ 3                push        2      0      0
+ 4                 int        2      1      0
+ 5                push        2      0      0
+ 6                 int        2      2      0
+ 7                push        2      0      0
+ 8                 int        2      3      0
+ 9                push        2      0      0
+10                 int        2      4      0
+11                push        2      0      0
+12               array        2      5      0
+13    cursor_open_expr        0      2     15
+14                 jmp       19      0      0
+15         cursor_read        3      0      0
+16                push        3      0      0
+17           group_add        1      0      0
+18         cursor_next        0     15      0
+19        cursor_close        0      0      0
+20                 int        2      1      0
+21           cntr_init        1      1      2
+22    cursor_open_expr        1      1     24
+23                 jmp       28      0      0
+24            cntr_gte        1      1     27
+25         cursor_read        2      1      0
+26             set_add        0      2      0
+27         cursor_next        1     24      0
+28        cursor_close        1      0      0
+29    cursor_open_expr        2      0     31
+30                 jmp       34      0      0
+31         cursor_read        1      2      0
+32                send        1      0      0
+33         cursor_next        2     31      0
+34        cursor_close        2      0      0
+35                 ret        0      0      0
+
+"
+select * from (select * from [0,1,2,3,4] group by * offset 0)
+[0]
+[1]
+[2]
+[3]
+[4]
+select * from (select * from [0,1,2,3,4] group by * offset 1)
+[1]
+[2]
+[3]
+[4]
+select * from (select * from [0,1,2,3,4] group by * offset 2)
+[2]
+[3]
+[4]
+select * from (select * from [0,1,2,3,4] group by * offset 3)
+[3]
+[4]
+# test: select from table group by having
+explain select * from [0,1,2,3,4] group by * having *[0] >= 3
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19    cursor_open_expr        1      0     21
+20                 jmp       30      0      0
+21         cursor_read        1      1      0
+22                 int        2      0      0
+23                 idx        3      1      2
+24                 int        1      3      0
+25                 gte        2      3      1
+26                jntr       29      2      0
+27         cursor_read        1      1      0
+28                send        1      0      0
+29         cursor_next        1     21      0
+30        cursor_close        1      0      0
+31                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * having *[0] >= 3
+[3]
+[4]
+select * from [0,1,2,3,4] group by * having *[0] = 0
+[0]
+select * from [0,1,2,3,4] group by * having *[0] = 1
+[1]
+select * from [0,1,2,3,4] group by * having *[0] = 2
+[2]
+select * from [0,1,2,3,4] group by * having *[0] = 3
+[3]
+select * from [0,1,2,3,4] group by * having *[0] = 4
+[4]
+select * from [0,1,2,3,4] group by * having *[0] = 5
+select * from [0,1,2,3,4] group by * having *[0] >= 1 and *[0] <= 3
+[1]
+[2]
+[3]
+# test: select from table group by having limit
+explain select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      0      1
+21    cursor_open_expr        1      0     23
+22                 jmp       33      0      0
+23         cursor_read        1      1      0
+24                 int        2      0      0
+25                 idx        3      1      2
+26                 int        1      1      0
+27                 gte        2      3      1
+28                jntr       32      2      0
+29            cntr_lte        1      0     22
+30         cursor_read        1      1      0
+31                send        1      0      0
+32         cursor_next        1     23      0
+33        cursor_close        1      0      0
+34                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1
+[1]
+select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 2
+[1]
+[2]
+# test: select from table group by having limit/offset
+explain select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      1      1
+21                 int        1      1      0
+22           cntr_init        1      0      1
+23    cursor_open_expr        1      0     25
+24                 jmp       36      0      0
+25         cursor_read        1      1      0
+26                 int        2      0      0
+27                 idx        3      1      2
+28                 int        1      1      0
+29                 gte        2      3      1
+30                jntr       35      2      0
+31            cntr_gte        1      1     35
+32            cntr_lte        1      0     24
+33         cursor_read        1      1      0
+34                send        1      0      0
+35         cursor_next        1     25      0
+36        cursor_close        1      0      0
+37                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 1
+[2]
+select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 2
+[3]
+select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 3
+[4]
+# test: select from table group by having offset
+explain select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 1
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1                 int        1      0      0
+ 2                push        1      0      0
+ 3                 int        1      1      0
+ 4                push        1      0      0
+ 5                 int        1      2      0
+ 6                push        1      0      0
+ 7                 int        1      3      0
+ 8                push        1      0      0
+ 9                 int        1      4      0
+10                push        1      0      0
+11               array        1      5      0
+12    cursor_open_expr        0      1     14
+13                 jmp       18      0      0
+14         cursor_read        2      0      0
+15                push        2      0      0
+16           group_add        0      0      0
+17         cursor_next        0     14      0
+18        cursor_close        0      0      0
+19                 int        1      1      0
+20           cntr_init        1      1      1
+21    cursor_open_expr        1      0     23
+22                 jmp       33      0      0
+23         cursor_read        1      1      0
+24                 int        2      0      0
+25                 idx        3      1      2
+26                 int        1      1      0
+27                 gte        2      3      1
+28                jntr       32      2      0
+29            cntr_gte        1      1     32
+30         cursor_read        1      1      0
+31                send        1      0      0
+32         cursor_next        1     23      0
+33        cursor_close        1      0      0
+34                 ret        0      0      0
+
+"
+select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 1
+[2]
+[3]
+[4]
+select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 2
+[3]
+[4]
+select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 3
+[4]
+disconnect S0
+env_close E0
