@@ -83,7 +83,7 @@ emit_select_on_match(Compiler* self, void* arg)
 	runpin(self, rexpr);
 }
 
-static inline void
+void
 emit_select_on_match_group_target(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
@@ -115,12 +115,12 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 	op1(self, CGROUP_ADD, select->rgroup);
 }
 
-static inline void
+void
 emit_select_on_match_group(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	// set or send
+	// add to the set or send
 	ScanFunction on_match = select->on_match;	
 	on_match(self, arg);
 }
@@ -200,7 +200,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 		node = node->next;
 	}
 
-	// set targets
+	// set target group
 	auto target_group = select->target_group;
 	assert(target_group != NULL);
 	target_group->rexpr = rgroup;

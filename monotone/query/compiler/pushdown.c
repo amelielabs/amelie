@@ -25,12 +25,158 @@
 #include <monotone_compiler.h>
 
 static inline int
-pushdown_group_by(Compiler* self, AstSelect* select)
+pushdown_group_by_order_by(Compiler* self, AstSelect* select)
 {
-	(void)self;
-	(void)select;
-	// todo
-	return -1;
+	// create ordered data set
+	int offset = emit_select_order_by_data(self, select, NULL);
+	int rset = op2(self, CSET_ORDERED, rpin(self), offset);
+	select->rset = rset;
+	select->on_match = emit_select_on_match_set;
+
+	// redirect each target reference to the group scan target
+	auto target_group = select->target_group;
+	target_group_redirect(select->target, target_group);
+
+	// scan over created group
+	scan(self,
+	     target_group,
+	     NULL,
+	     NULL,
+	     select->expr_having,
+	     emit_select_on_match_group,
+	     select);
+
+	target_group_redirect(select->target, NULL);
+
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+
+	// CSET_SORT
+	op1(self, CSET_SORT, select->rset);
+
+	// no limit/offset (return set)
+	if (select->expr_limit == NULL && select->expr_offset == NULL)
+		return rset;
+
+	// limit/offset (return merge)
+
+	// limit
+	int rlimit = -1;
+	if (select->expr_limit)
+		rlimit = emit_expr(self, select->target, select->expr_limit);
+
+	// offset
+	int roffset = -1;
+	if (select->expr_offset)
+		roffset = emit_expr(self, select->target, select->expr_offset);
+
+	// CMERGE
+	int rmerge = op4(self, CMERGE, rpin(self), rset, rlimit, roffset);
+
+	runpin(self, rset);
+	select->rset = -1;
+	if (rlimit != -1)
+		runpin(self, rlimit);
+	if (roffset != -1)
+		runpin(self, roffset);
+
+	return rmerge;
+}
+
+static inline int
+pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
+{
+	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
+	auto stmt = self->current;
+
+	// shard
+
+	// create group
+	int rgroup;
+	rgroup = op2(self, CGROUP, rpin(self), select->expr_group_by.count);
+	select->rgroup = rgroup;
+
+	// add aggregates to the group
+	auto node = select->target->aggs.list;
+	while (node)
+	{
+		auto aggr = ast_aggr_of(node->ast);
+		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->aggregate_id, aggr->order);
+		node = node->next;
+	}
+
+	// set target
+	auto target_group = select->target_group;
+	assert(target_group != NULL);
+	target_group->rexpr = rgroup;
+
+	// scan over target and process aggregates per group by key
+	scan(self, select->target,
+	     NULL,
+	     NULL,
+	     select->expr_where,
+	     emit_select_on_match_group_target,
+	     select);
+
+	// CREADY (return group)
+	op2(self, CREADY, stmt->order, select->rgroup);
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+
+	// copy code to each shards request
+	dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+
+	// coordinator
+	compiler_switch(self, &self->code_coordinator);
+
+	// CRECV
+	op0(self, CRECV);
+
+	// merge all received groups into one
+	//
+	// CGROUP_MERGE_RECV
+	rgroup = op2(self, CGROUP_MERGE_RECV, rpin(self), stmt->order);
+	select->rgroup = rgroup;
+	target_group->rexpr = rgroup;
+
+	// [ORDER BY]
+	if (select->expr_order_by.count > 0)
+		return pushdown_group_by_order_by(self, select);
+
+	// create data set for nested queries
+	int rset = -1;
+	if (nested)
+	{
+		rset = op1(self, CSET, rpin(self));
+		select->rset = rset;
+		select->on_match = emit_select_on_match_set;
+	} else {
+		select->on_match = emit_select_on_match;
+	}
+
+	// redirect each target reference to the group scan target
+	target_group_redirect(select->target, target_group);
+
+	// scan over created group
+	//
+	// result will be added to set or send directly,
+	// safe to apply limit/offset
+	//
+	scan(self,
+	     target_group,
+	     select->expr_limit,
+	     select->expr_offset,
+	     select->expr_having,
+	     emit_select_on_match_group,
+	     select);
+
+	target_group_redirect(select->target, NULL);
+
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+
+	// group object freed after scan completed
+	return rset;
 }
 
 static inline int
@@ -54,7 +200,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	} else
 	{
 		// push limit only if order by matches primary key
-		// (dont do sort in such case)
+		// (don't do sort in such case)
 
 		/*
 		if (select->expr_limit && select->expr_offset)
@@ -105,8 +251,8 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self),
-	                 self->current->order, rlimit, roffset);
+	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
+	                 rlimit, roffset);
 
 	if (rlimit != -1)
 		runpin(self, rlimit);
@@ -169,8 +315,8 @@ pushdown_limit(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self),
-	                 self->current->order, rlimit, roffset);
+	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
+	                 rlimit, roffset);
 
 	if (rlimit != -1)
 		runpin(self, rlimit);
@@ -217,6 +363,7 @@ pushdown(Compiler* self, Ast* ast, bool nested)
 	// SELECT expr, ... [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
+	// [HAVING expr]
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
 	//
@@ -226,7 +373,7 @@ pushdown(Compiler* self, Ast* ast, bool nested)
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (select->target_group)
-		return pushdown_group_by(self, select);
+		return pushdown_group_by(self, select, nested);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	if (select->expr_order_by.count > 0)

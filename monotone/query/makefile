@@ -40,6 +40,7 @@ OBJECTS        = \
                  aggr/sum.o \
                  aggr/avg.o \
                  aggr/group.o \
+                 aggr/group_merge.o \
                  request/dispatch.o \
                  request/dispatch_io.o \
                  vm/op.o \
