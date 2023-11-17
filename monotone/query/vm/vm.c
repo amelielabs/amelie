@@ -141,6 +141,7 @@ vm_run(Vm*          self,
 		&&cgroup_add,
 		&&cgroup_get,
 		&&cgroup_get_aggr,
+		&&cgroup_merge_recv,
 		&&cref,
 		&&cref_key,
 		&&ccntr_init,
@@ -478,6 +479,11 @@ cgroup_get_aggr:
 	assert(cursor->type == CURSOR_GROUP);
 	group_get_aggr(cursor->group, group_at(cursor->group, cursor->group_pos),
 	               op->c, &r[op->a]);
+	op_next;
+
+cgroup_merge_recv:
+	// [group, stmt]
+	cgroup_merge_recv(self, op);
 	op_next;
 
 cref:

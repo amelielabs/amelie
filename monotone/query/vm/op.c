@@ -107,6 +107,7 @@ OpDesc ops[] =
 	{ CGROUP_ADD,         "group_add"         },
 	{ CGROUP_GET,         "group_get"         },
 	{ CGROUP_GET_AGGR,    "group_get_aggr"    },
+	{ CGROUP_MERGE_RECV,  "group_merge_recv"  },
 
 	// ref
 	{ CREF,               "ref"               },

@@ -579,6 +579,42 @@ cmerge_recv(Vm* self, Op* op)
 }
 
 hot void
+cgroup_merge_recv(Vm* self, Op* op)
+{
+	// [group, stmt]
+	auto   dispatch = self->dispatch;
+	int    stmt = op->b;
+
+	int    list_count = 0;
+	Value* list[dispatch->set_size];
+
+	for (int order = 0; order < dispatch->set_size; order++)
+	{
+		auto req = dispatch_at_stmt(dispatch, stmt, order);
+		if (! req)
+			continue;
+		auto value = result_at(&req->result, stmt);
+		if (value->type != VALUE_GROUP)
+			continue;
+		list[list_count++] = value;
+	}
+
+	if (unlikely(! list_count))
+		error("unexpected group list return");
+
+	// merge partial aggregates into the first group
+	group_merge(list, list_count);
+
+	// free group objects
+	for (int i = 1; i < list_count; i++)
+		value_free(list[i]);
+
+	// return merged group
+	value_set_group(reg_at(&self->r, op->a), list[0]->obj);
+	list[0]->type = VALUE_NONE;
+}
+
+hot void
 csend_set(Vm* self, Op* op)
 {
 	// [obj]
