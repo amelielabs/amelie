@@ -20,3 +20,4 @@
 
 // group
 #include "aggr/group.h"
+#include "aggr/group_merge.h"
