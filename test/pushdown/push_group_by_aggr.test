@@ -1,0 +1,124 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+# test: select count from table
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+select * from test
+
+explain select count(*) from test
+select count(*) from test
+
+# test: select sum from table
+explain select sum(id) from test
+select sum(id) from test
+select sum(data) from test
+
+# test: select avg from table
+explain select avg(id) from test
+select avg(id) from test
+select avg(data) from test
+
+# test: select from (select aggr from table)
+explain select * from (select count(*) from test)
+select * from (select count(*) from test)
+
+# test: select aggr from table group by
+explain select id, count(*) from test group by id
+select id, count(*) from test group by id
+select data, count(*) from test group by data
+
+# test: select from (select aggr from table group by)
+explain select * from (select id, count(*) from test group by id)
+select * from (select id, count(*) from test group by id)
+select * from (select data, count(*) from test group by data)
+
+# test: select from table having label
+explain select id, count(*) c from test group by id having c >= 1
+select id, count(*) c from test group by id having c >= 1
+select id, count(*) c from test group by id having c > 1
+select data, count(*) c from test group by data having c > 1
+select data, count(*) c from test group by data having data > 1
+
+drop table test
+
+# test: select count from reference
+create table test (id int primary key, data int) reference
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+select * from test
+
+explain select count(*) from test
+select count(*) from test
+
+# test: select sum from reference
+explain select sum(id) from test
+select sum(id) from test
+select sum(data) from test
+
+# test: select avg from reference
+explain select avg(id) from test
+select avg(id) from test
+select avg(data) from test
+
+# test: select from (select aggr from reference)
+explain select * from (select count(*) from test)
+select * from (select count(*) from test)
+
+# test: select aggr from reference group by
+explain select id, count(*) from test group by id
+select id, count(*) from test group by id
+select data, count(*) from test group by data
+
+# test: select from (select aggr from reference group by)
+explain select * from (select id, count(*) from test group by id)
+select * from (select id, count(*) from test group by id)
+select * from (select data, count(*) from test group by data)
+
+# test: select from reference having label
+explain select id, count(*) c from test group by id having c >= 1
+select id, count(*) c from test group by id having c >= 1
+select id, count(*) c from test group by id having c > 1
+select data, count(*) c from test group by data having c > 1
+select data, count(*) c from test group by data having data > 1
+drop table test
+
+# test: select count from expr
+explain select count(*) from [0,1,2,3,4]
+select count(*) from [0,1,2,3,4]
+
+# test: select sum from expr
+explain select sum(*) from [0,1,2,3,4]
+select sum(*) from [0,1,2,3,4]
+
+# test: select avg from expr
+explain select avg(*) from [0,1,2,3,4]
+select avg(*) from [0,1,2,3,4]
+
+# test: select from (select aggr from expr)
+explain select * from (select count(*) from [0,1,2,3,4])
+select * from (select count(*) from [0,1,2,3,4])
+
+# test: select aggr from expr group by
+explain select *, count(*) from [0,1,2,3,4] group by *
+select *, count(*) from [0,1,2,3,4] group by *
+
+# test: select from (select aggr from expr group by)
+explain select * from (select *, count(*) from [0,1,2,3,4] group by *)
+select * from (select *, count(*) from [0,1,2,3,4] group by *)
+
+# test: select from expr having label
+explain select *, count(*) c from [0,1,2,3,4] group by * having c >= 1
+select *, count(*) c from [0,1,2,3,4] group by * having c >= 1
+
+disconnect S0
+env_close E0
