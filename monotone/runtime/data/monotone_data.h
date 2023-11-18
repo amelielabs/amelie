@@ -10,6 +10,7 @@
 #include "data/type.h"
 #include "data/data.h"
 #include "data/data_op.h"
+#include "data/compare.h"
 #include "data/encode.h"
 
 // objects

@@ -323,24 +323,6 @@ data_is_integer(uint8_t* data)
 	return *data >= MN_INTV0 && *data <= MN_INT64;
 }
 
-always_inline hot static inline int
-data_compare_integer_read(uint8_t** a, uint8_t** b)
-{
-	int64_t a_value;
-	int64_t b_value;
-	data_read_integer(a, &a_value);
-	data_read_integer(b, &b_value);
-	if (a_value == b_value)
-		return 0;
-	return (a_value > b_value) ? 1 : -1;
-}
-
-always_inline hot static inline int
-data_compare_integer(uint8_t* a, uint8_t* b)
-{
-	return data_compare_integer_read(&a, &b);
-}
-
 // string
 always_inline hot static inline int
 data_size_string(int value)
@@ -486,36 +468,6 @@ data_is_string(uint8_t* data)
 	return *data >= MN_STRINGV0 && *data <= MN_STRING32;
 }
 
-always_inline hot static inline int
-data_compare_string_read(uint8_t** a, uint8_t** b)
-{
-	char* a_value;
-	int   a_value_size;
-	char* b_value;
-	int   b_value_size;
-	data_read_raw(a, &a_value, &a_value_size);
-	data_read_raw(b, &b_value, &b_value_size);
-	int size;
-	if (a_value_size < b_value_size)
-		size = a_value_size;
-	else
-		size = b_value_size;
-	int rc;
-	rc = memcmp(a_value, b_value, size);
-	if (rc == 0) {
-		if (likely(a_value_size == b_value_size))
-			return 0;
-		return (a_value_size < b_value_size) ? -1 : 1;
-	}
-	return rc > 0 ? 1 : -1;
-}
-
-always_inline hot static inline int
-data_compare_string(uint8_t* a, uint8_t* b)
-{
-	return data_compare_string_read(&a, &b);
-}
-
 // bool
 always_inline hot static inline int
 data_size_bool(void)
@@ -560,18 +512,6 @@ always_inline hot static inline bool
 data_is_bool(uint8_t* data)
 {
 	return *data == MN_TRUE || *data == MN_FALSE;
-}
-
-always_inline hot static inline int
-data_compare_bool(uint8_t* a, uint8_t* b)
-{
-	int a_value;
-	int b_value;
-	a_value = data_read_bool_at(a);
-	b_value = data_read_bool_at(b);
-	if (a_value == b_value)
-		return 0;
-	return (a_value > b_value) ? 1 : -1;
 }
 
 // real
@@ -629,18 +569,6 @@ always_inline hot static inline bool
 data_is_real(uint8_t* data)
 {
 	return *data == MN_REAL32 || *data == MN_REAL64;
-}
-
-always_inline hot static inline int
-data_compare_real(uint8_t* a, uint8_t* b)
-{
-	double a_value;
-	double b_value;
-	a_value = data_read_real_at(a);
-	b_value = data_read_real_at(b);
-	if (a_value == b_value)
-		return 0;
-	return (a_value > b_value) ? 1 : -1;
 }
 
 // null
@@ -773,7 +701,6 @@ data_skip(uint8_t** pos)
 		data_skip(pos);
 		break;
 	}
-
 	default:
 		error_data();
 		break;
