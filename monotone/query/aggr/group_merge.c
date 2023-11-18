@@ -109,7 +109,7 @@ group_merge(Value** list, int list_count)
 		if (group->ht.count == 0)
 			continue;
 
-		int pos = 0;
+		int pos = -1;
 		for (;;)
 		{
 			pos = group_next(group, pos);
