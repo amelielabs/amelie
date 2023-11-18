@@ -200,6 +200,22 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 		node = node->next;
 	}
 
+	// select aggr from [without group by]
+	if (select->expr_group_by.count == 0)
+	{
+		// force create empty record per each aggregate
+		// by processing NULL value
+		node = select->expr_aggs.list;
+		while (node)
+		{
+			int rexpr = op1(self, CNULL, rpin(self));
+			op1(self, CPUSH, rexpr);
+			runpin(self, rexpr);
+			node = node->next;
+		}
+		op1(self, CGROUP_ADD, select->rgroup);
+	}
+
 	// set target group
 	auto target_group = select->target_group;
 	assert(target_group != NULL);
