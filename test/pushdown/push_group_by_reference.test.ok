@@ -787,7 +787,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -827,7 +827,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -863,7 +863,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -904,7 +904,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -944,7 +944,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -982,7 +982,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1025,7 +1025,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1065,7 +1065,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1103,7 +1103,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1152,7 +1152,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1198,7 +1198,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1241,7 +1241,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1295,7 +1295,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1341,7 +1341,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1384,7 +1384,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       10      0      0
  6          cursor_idx        2      0      0
  7                push        2      0      0
@@ -1438,7 +1438,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1479,7 +1479,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1520,7 +1520,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1562,7 +1562,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1603,7 +1603,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1649,7 +1649,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1695,7 +1695,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1741,7 +1741,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0
@@ -1788,7 +1788,7 @@ bytecode [coordinator]
  1               group        1      1      0
  2             int_min        2      0      0
  3                push        2      0      0
- 4         cursor_open        0      4      6      # public.test (primary)
+ 4         cursor_open        0      2      6      # public.test (primary)
  5                 jmp       14      0      0
  6          cursor_idx        2      0      1
  7                 int        3      0      0

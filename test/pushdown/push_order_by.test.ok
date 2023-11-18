@@ -40,7 +40,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -58,7 +58,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -76,7 +76,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -126,7 +126,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -144,7 +144,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -162,7 +162,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -212,7 +212,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -230,7 +230,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -248,7 +248,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -299,7 +299,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -317,7 +317,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -335,7 +335,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -411,7 +411,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -429,7 +429,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -447,7 +447,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -481,7 +481,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -499,7 +499,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -517,7 +517,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -594,7 +594,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -612,7 +612,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -630,7 +630,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -663,7 +663,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -681,7 +681,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -699,7 +699,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -738,7 +738,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -756,7 +756,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -774,7 +774,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -812,7 +812,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -830,7 +830,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -848,7 +848,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -976,7 +976,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -994,7 +994,7 @@ bytecode [shard 1]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1012,7 +1012,7 @@ bytecode [shard 2]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1155,7 +1155,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1198,7 +1198,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1241,7 +1241,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1284,7 +1284,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1353,7 +1353,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1380,7 +1380,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1449,7 +1449,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1475,7 +1475,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1507,7 +1507,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1539,7 +1539,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1660,7 +1660,7 @@ bytecode [coordinator]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      0
@@ -1775,7 +1775,7 @@ query: on_error
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
 # test: select from expr order by
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
 "
 bytecode [coordinator]
 --------
@@ -1835,7 +1835,7 @@ bytecode [coordinator]
 53                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
 0
 1
 2
@@ -1857,7 +1857,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 18
 19
 # test: select from expr order by asc
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int asc
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * asc
 "
 bytecode [coordinator]
 --------
@@ -1917,7 +1917,7 @@ bytecode [coordinator]
 53                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int asc
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * asc
 0
 1
 2
@@ -1939,7 +1939,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 18
 19
 # test: select from expr order by desc
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc
 "
 bytecode [coordinator]
 --------
@@ -1999,7 +1999,7 @@ bytecode [coordinator]
 53                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc
 19
 18
 17
@@ -2021,7 +2021,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 1
 0
 # test: select from expr order by limit
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1
 "
 bytecode [coordinator]
 --------
@@ -2082,21 +2082,21 @@ bytecode [coordinator]
 54                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 2
 0
 1
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 3
 0
 1
 2
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 4
 0
 1
 2
 3
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 10
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 10
 0
 1
 2
@@ -2107,7 +2107,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 7
 8
 9
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 20
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 20
 0
 1
 2
@@ -2129,7 +2129,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 18
 19
 # test: select from expr order by limit 0
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 0
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 0
 "
 bytecode [coordinator]
 --------
@@ -2190,12 +2190,12 @@ bytecode [coordinator]
 54                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit -1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit -1
 query: on_error
 {"code": 1, "msg": "LIMIT: positive integer value expected"}
 # test: select from expr order by desc limit
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1
 "
 bytecode [coordinator]
 --------
@@ -2256,21 +2256,21 @@ bytecode [coordinator]
 54                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 2
 19
 18
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 3
 19
 18
 17
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 4
 19
 18
 17
 16
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 10
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 10
 19
 18
 17
@@ -2281,7 +2281,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 12
 11
 10
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 20
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 20
 19
 18
 17
@@ -2303,7 +2303,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 1
 0
 # test: select from expr order by limit offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 0
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 0
 "
 bytecode [coordinator]
 --------
@@ -2365,10 +2365,10 @@ bytecode [coordinator]
 55                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 0
 0
 # test: select from expr order by limit offset #2
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 1
 "
 bytecode [coordinator]
 --------
@@ -2430,16 +2430,16 @@ bytecode [coordinator]
 55                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 1
 1
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 2
 2
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 3
 3
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int limit 1 offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 4
 4
 # test: select from expr order by desc limit offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 1
 "
 bytecode [coordinator]
 --------
@@ -2501,18 +2501,18 @@ bytecode [coordinator]
 55                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 0
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 1
 18
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 2
 17
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 3
 16
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc limit 1 offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 4
 15
 # test: select from expr order by offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 1
 "
 bytecode [coordinator]
 --------
@@ -2573,7 +2573,7 @@ bytecode [coordinator]
 54                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 1
 1
 2
 3
@@ -2593,7 +2593,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 17
 18
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 2
 2
 3
 4
@@ -2612,7 +2612,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 17
 18
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 3
 3
 4
 5
@@ -2630,7 +2630,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 17
 18
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 4
 4
 5
 6
@@ -2647,7 +2647,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 17
 18
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 0
 0
 1
 2
@@ -2668,11 +2668,11 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 17
 18
 19
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int offset -1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset -1
 query: on_error
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from expr order by desc offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 1
+explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 1
 "
 bytecode [coordinator]
 --------
@@ -2733,7 +2733,7 @@ bytecode [coordinator]
 54                 ret        0      0      0
 
 "
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 1
 18
 17
 16
@@ -2753,7 +2753,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 2
 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 2
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 2
 17
 16
 15
@@ -2772,7 +2772,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 2
 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 3
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 3
 16
 15
 14
@@ -2790,7 +2790,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 2
 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 4
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 4
 15
 14
 13
@@ -2807,7 +2807,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 2
 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset 0
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 0
 19
 18
 17
@@ -2828,7 +2828,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int
 2
 1
 0
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * int desc offset -1
+select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset -1
 query: on_error
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 disconnect S0

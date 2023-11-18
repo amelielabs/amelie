@@ -8,11 +8,11 @@ query: on_error
 select * from [1,3,2] order by
 query: on_error
 {"code": 1, "msg": "bad expression"}
-select * from [1,3,2] order by * int
+select * from [1,3,2] order by *
 1
 2
 3
-explain select * from [1,3,2] order by * int
+explain select * from [1,3,2] order by *
 "
 bytecode [coordinator]
 --------
@@ -38,44 +38,44 @@ bytecode [coordinator]
 19                 ret        0      0      0
 
 "
-select * from 1 order by * int
+select * from 1 order by *
 query: on_error
 {"code": 1, "msg": "FROM: array, map or data type expected"}
-select * from 1 order by * string
+select * from 1 order by *
 query: on_error
 {"code": 1, "msg": "FROM: array, map or data type expected"}
-select (select * from [1,3,2] order by * int)
+select (select * from [1,3,2] order by *)
 [1, 2, 3]
-select * from (select * from [1,3,2] order by * int)
+select * from (select * from [1,3,2] order by *)
 1
 2
 3
 # test: order by {}
-select * from {"a": 1, "b": 3, "c": 2} order by * int
+select * from {"a": 1, "b": 3, "c": 2} order by *
 1
 2
 3
-select (select * from {"a": 1, "b": 3, "c": 2} order by * int)
+select (select * from {"a": 1, "b": 3, "c": 2} order by *)
 [1, 2, 3]
-select * from (select * from {"a": 1, "b": 3, "c": 2} order by * int)
+select * from (select * from {"a": 1, "b": 3, "c": 2} order by *)
 1
 2
 3
-select **, * from {"a": 1, "b": 3, "c": 2} order by ** string
+select **, * from {"a": 1, "b": 3, "c": 2} order by **
 ["a", 1]
 ["b", 3]
 ["c", 2]
-select **, * from {"b": 3, "a": 1, "c": 2} order by ** string
+select **, * from {"b": 3, "a": 1, "c": 2} order by **
 ["a", 1]
 ["b", 3]
 ["c", 2]
 # test: order by asc
-select * from [1,3,2] order by * int asc
+select * from [1,3,2] order by * asc
 1
 2
 3
 # test: order by desc
-select * from [1,3,2] order by * int desc
+select * from [1,3,2] order by * desc
 3
 2
 1
@@ -99,7 +99,7 @@ bytecode [shard 0]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      4      5      # public.test (primary)
+ 3         cursor_open        0      2      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      1
@@ -127,11 +127,11 @@ select * from test order by data desc
 [3, 2]
 [1, 1]
 # test: order by column type
-select * from test order by data int
+select * from test order by data
 [1, 1]
 [3, 2]
 [2, 3]
-select * from test order by data int asc
+select * from test order by data asc
 [1, 1]
 [3, 2]
 [2, 3]
@@ -140,19 +140,11 @@ select * from test order by test.data
 [1, 1]
 [3, 2]
 [2, 3]
-select * from test order by test.data int
-[1, 1]
-[3, 2]
-[2, 3]
 select * from test order by test
 query: on_error
-{"code": 1, "msg": "ORDER BY expr <type> expected as int or string"}
+{"code": 1, "msg": "current cursor object type is not a map"}
 # test: order by alias.column
 select * from test alias order by alias.data
-[1, 1]
-[3, 2]
-[2, 3]
-select * from test alias order by alias.data int
 [1, 1]
 [3, 2]
 [2, 3]
