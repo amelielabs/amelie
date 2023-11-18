@@ -55,6 +55,8 @@ hot static void
 aggr_sum_process(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
+	if (unlikely(value->type == VALUE_NULL))
+		return;
 	if (unlikely(value->type != VALUE_INT))
 		error("sum: aggr data integer expected");
 	int64_t* sum = (int64_t*)state;

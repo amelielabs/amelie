@@ -58,6 +58,8 @@ hot static void
 aggr_avg_process(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
+	if (unlikely(value->type == VALUE_NULL))
+		return;
 	if (unlikely(value->type != VALUE_INT))
 		error("avg: aggr data integer expected");
 	int64_t* avg = (int64_t*)state;
@@ -83,8 +85,10 @@ aggr_avg_convert(Aggr* self, uint8_t* state, Value* value)
 {
 	unused(self);
 	int64_t* avg = (int64_t*)state;
-	assert(avg[1] > 0);
-	value_set_int(value, avg[0] / avg[1]);
+	if (avg[1] == 0)
+		value_set_int(value, 0);
+	else
+		value_set_int(value, avg[0] / avg[1]);
 }
 
 AggrIf aggr_avg =
