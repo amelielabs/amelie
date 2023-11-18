@@ -219,7 +219,13 @@ parse_select(Stmt* self)
 
 		// [HAVING]
 		if (stmt_if(self, KHAVING))
-			select->expr_having = parse_expr(self, NULL);
+		{
+			Expr ctx;
+			expr_init(&ctx);
+			ctx.aggs = &select->expr_aggs;
+			ctx.aggs_global = &self->aggr_list;
+			select->expr_having = parse_expr(self, &ctx);
+		}
 	}
 
 	// add group by target
