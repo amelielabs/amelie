@@ -132,15 +132,12 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 	int  offset = code_data_pos(&self->code_data);
 	auto data = &self->code_data.data;
 
-	// [[], ..]
+	// [asc/desc, ..]
 	encode_array(data, select->expr_order_by.count);
 	auto node = select->expr_order_by.list;
 	while (node)
 	{
-		// [type, asc]
 		auto order = ast_order_of(node->ast);
-		encode_array(data, 2);
-		encode_integer(data, order->type);
 		encode_bool(data, order->asc);
 		if (desc && !order->asc)
 			*desc = true;
