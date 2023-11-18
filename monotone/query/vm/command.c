@@ -524,7 +524,7 @@ cmerge(Vm* self, Op* op)
 	value->type = VALUE_NONE;
 
 	// prepare merge and apply offset
-	merge_open(merge, limit, offset);
+	merge_open(merge, false, limit, offset);
 }
 
 hot void
@@ -575,7 +575,7 @@ cmerge_recv(Vm* self, Op* op)
 	}
 
 	// prepare merge and apply offset
-	merge_open(merge, limit, offset);
+	merge_open(merge, false, limit, offset);
 }
 
 hot void

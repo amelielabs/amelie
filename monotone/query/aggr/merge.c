@@ -67,6 +67,7 @@ merge_create(void)
 	self->keys_count  = 0;
 	self->list_count  = 0;
 	self->limit       = INT64_MAX;
+	self->distinct    = false;
 	buf_init(&self->list);
 	return self;
 }
@@ -90,8 +91,8 @@ merge_add(Merge* self, Set* set)
 	}
 }
 
-hot void
-merge_next(Merge* self)
+hot static inline void
+merge_step(Merge* self)
 {
 	auto list = (SetIterator*)self->list.start;
 	if (self->current_it)
@@ -140,9 +141,33 @@ merge_next(Merge* self)
 	self->current    = min;
 }
 
-void
-merge_open(Merge* self, int64_t limit, int64_t offset)
+hot void
+merge_next(Merge* self)
 {
+	if (! self->distinct)
+	{
+		merge_step(self);
+		return;
+	}
+
+	// skip duplicates
+	auto prev = self->current;
+	for (;;)
+	{
+		merge_step(self);
+		auto at = merge_at(self);
+		if (unlikely(!at || !prev))
+			break;
+		if (value_compare(&prev->value, &at->value) != 0)
+			break;
+	}
+}
+
+void
+merge_open(Merge* self, bool distinct, int64_t limit, int64_t offset)
+{
+	self->distinct = distinct;
+
 	// set to position
 	if (offset == 0)
 	{
