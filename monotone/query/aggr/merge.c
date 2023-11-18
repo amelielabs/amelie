@@ -61,6 +61,7 @@ merge_create(void)
 	Merge* self = mn_malloc(sizeof(Merge));
 	self->obj.free    = merge_free;
 	self->obj.convert = merge_convert;
+	self->current_it  = NULL;
 	self->current     = NULL;
 	self->keys        = NULL;
 	self->keys_count  = 0;
@@ -89,84 +90,14 @@ merge_add(Merge* self, Set* set)
 	}
 }
 
-#if 0
 hot void
 merge_next(Merge* self)
 {
 	auto list = (SetIterator*)self->list.start;
-	int dups  = 0;
-	int pos   = 0;
-	for (; pos < self->list_count; pos++)
+	if (self->current_it)
 	{
-		auto current = &list[pos];
-		if (current->advance)
-		{
-			set_iterator_next(current);
-			current->advance = false;
-		}
-	}
-	self->current = NULL;
-
-	// apply limit
-	if (self->limit-- <= 0)
-		return;
-
-	SetRow* min = NULL;
-	for (pos = 0; pos < self->list_count; pos++)
-	{
-		auto current = &list[pos];
-		auto row = set_iterator_at(current);
-		if (row == NULL)
-			continue;
-
-		if (min == NULL)
-		{
-			current->advance = true;
-			min = row;
-			if (! self->keys)
-				break;
-			continue;
-		}
-
-		int rc;
-		rc = set_compare(self->keys, self->keys_count, min, row);
-		switch (rc) {
-		case 0:
-			current->advance = true;
-			dups++;
-			break;
-		case 1:
-		{
-			int i = 0;
-			while (i < self->list_count)
-			{
-				list[i].advance = false;
-				i++;
-			}
-			dups = 0;
-			current->advance = true;
-			min = row; 
-			break;
-		}
-		}
-	}
-	self->current = min;
-}
-#endif
-
-hot void
-merge_next(Merge* self)
-{
-	auto list = (SetIterator*)self->list.start;
-	int pos   = 0;
-	for (; pos < self->list_count; pos++)
-	{
-		auto current = &list[pos];
-		if (current->advance)
-		{
-			set_iterator_next(current);
-			current->advance = false;
-		}
+		set_iterator_next(self->current_it);
+		self->current_it = NULL;
 	}
 	self->current = NULL;
 
@@ -176,7 +107,7 @@ merge_next(Merge* self)
 
 	SetIterator* min_iterator = NULL;
 	SetRow*      min = NULL;
-	for (pos = 0; pos < self->list_count; pos++)
+	for (int pos = 0; pos < self->list_count; pos++)
 	{
 		auto current = &list[pos];
 		auto row = set_iterator_at(current);
@@ -185,7 +116,6 @@ merge_next(Merge* self)
 
 		if (min == NULL)
 		{
-			current->advance = true;
 			min_iterator = current;
 			min = row;
 			if (! self->keys)
@@ -199,16 +129,15 @@ merge_next(Merge* self)
 		case 0:
 			break;
 		case 1:
-			min_iterator->advance = false;
-			current->advance = true;
 			min_iterator = current;
-			min = row; 
+			min = row;
 			break;
 		case -1:
 			break;
 		}
 	}
-	self->current = min;
+	self->current_it = min_iterator;
+	self->current    = min;
 }
 
 void

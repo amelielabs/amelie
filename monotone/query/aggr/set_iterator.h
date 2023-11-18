@@ -12,7 +12,6 @@ struct SetIterator
 {
 	SetRow* current;
 	int     pos;
-	bool    advance;
 	Set*    set;
 };
 
@@ -21,7 +20,6 @@ set_iterator_init(SetIterator* self)
 {
 	self->current = NULL;
 	self->pos     = 0;
-	self->advance = false;
 	self->set     = 0;
 }
 

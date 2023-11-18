@@ -10,13 +10,14 @@ typedef struct Merge Merge;
 
 struct Merge
 {
-	ValueObj obj;
-	SetRow*  current;
-	SetKey*  keys;
-	int      keys_count;
-	Buf      list;
-	int      list_count;
-	int64_t  limit;
+	ValueObj     obj;
+	SetRow*      current;
+	SetIterator* current_it;
+	SetKey*      keys;
+	int          keys_count;
+	Buf          list;
+	int          list_count;
+	int64_t      limit;
 };
 
 Merge* merge_create(void);
