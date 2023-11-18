@@ -18,8 +18,7 @@ struct SetRow
 
 struct SetKey
 {
-	int64_t type;
-	bool    asc;
+	bool asc;
 };
 
 struct Set
@@ -48,11 +47,7 @@ set_compare(SetKey* keys, int keys_count, SetRow* a, SetRow* b)
 	for (int i = 0; i < keys_count; i++)
 	{
 		auto key = &keys[i];
-		int rc;
-		if (key->type == TYPE_STRING)
-			rc = value_compare_string(&a->keys[i], &b->keys[i]);
-		else
-			rc = value_compare_int(&a->keys[i], &b->keys[i]);
+		int rc = value_compare(&a->keys[i], &b->keys[i]);
 		if (rc != 0)
 			return (key->asc) ? rc : -rc;
 	}

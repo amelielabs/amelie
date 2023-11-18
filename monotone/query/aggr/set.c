@@ -67,18 +67,13 @@ set_create(uint8_t* data)
 
 	if (data)
 	{
-		// [[type, asc], ...]
+		// [asc/desc, ...]
 		data_read_array(&data, &self->keys_count);
 		if (self->keys_count > 0)
 		{
 			self->keys = mn_malloc(sizeof(SetKey) * self->keys_count);
 			for (int i = 0; i < self->keys_count; i++)
-			{
-				int count;
-				data_read_array(&data, &count);
-				data_read_integer(&data, &self->keys[i].type);
 				data_read_bool(&data, &self->keys[i].asc);
-			}
 		}
 	}
 
@@ -113,15 +108,6 @@ set_add_from_stack(Set* self, Value* value, Stack* stack)
 	for (int i = 0; i < self->keys_count; i++)
 	{
 		auto value = stack_at(stack, self->keys_count - i);
-		if (self->keys[i].type == TYPE_STRING)
-		{
-			if (value->type != VALUE_STRING)
-				error("ORDER BY expression <%d>: unexpected data type (string expected)", i);
-		} else
-		{
-			if (value->type != VALUE_INT)
-				error("ORDER BY expression <%d>: unexpected data type (int expected)", i);
-		}
 		keys[i] = value;
 	}
 	set_add(self, value, keys);
