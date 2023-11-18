@@ -338,27 +338,6 @@ value_cat(Value* result, Value* a, Value* b)
 	value_set_string(result, &string, buf);
 }
 
-always_inline hot static inline int
-value_compare_int(Value* a, Value* b)
-{
-	if (a->integer == b->integer)
-		return 0;
-	return (a->integer > b->integer) ? 1 : -1;
-}
-
-always_inline hot static inline int
-value_compare_string(Value* a, Value* b)
-{
-	return str_compare_fn(&a->string, &b->string);
-}
-
-always_inline hot static inline bool
-value_compare(Value* a, Str* str)
-{
-	assert(a->type == VALUE_STRING);
-	return str_compare(&a->string, str);
-}
-
 always_inline hot static inline void
 value_sizeof(Value* result, Value* a)
 {
