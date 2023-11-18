@@ -3,8 +3,12 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 
-# test: select from reference group by
+# test: select from reference group by empty
 create table test (id int primary key, data int) reference
+explain select * from test group by id
+select * from test group by id
+
+# test: select from reference group by
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)

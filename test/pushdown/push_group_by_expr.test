@@ -3,6 +3,10 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 
+# test: select from expr group by empty
+explain select * from [] group by *
+select * from [] group by *
+
 # test: select from expr group by
 explain select * from [0,1,2,3,4] group by *
 select * from [0,1,2,3,4] group by *

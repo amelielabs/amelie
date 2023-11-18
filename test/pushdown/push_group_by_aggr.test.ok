@@ -1,8 +1,86 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 connect: on_connect
-# test: select count from table
+# test: select count from table empty
 create table test (id int primary key, data int)
+explain select count(*) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2    cursor_open_expr        1      0      4
+ 3                 jmp        7      0      0
+ 4      group_get_aggr        1      1      0
+ 5                send        1      0      0
+ 6         cursor_next        1      4      0
+ 7        cursor_close        1      0      0
+ 8                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+"
+select count(*) from test
+0
+# test: select count from table
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -33,55 +111,148 @@ bytecode [shard 0]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 1]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 2]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 "
 select count(*) from test
 5
+# test: select sum from table empty
+delete from test
+explain select sum(id) from test
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2    cursor_open_expr        1      0      4
+ 3                 jmp        7      0      0
+ 4      group_get_aggr        1      1      0
+ 5                send        1      0      0
+ 6         cursor_next        1      4      0
+ 7        cursor_close        1      0      0
+ 8                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      1      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      1      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      1      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
+
+"
+select sum(id) from test
+0
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
 # test: select sum from table
 explain select sum(id) from test
 "
@@ -102,57 +273,75 @@ bytecode [shard 0]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      1      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 1]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      1      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 2]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      1      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 "
 select sum(id) from test
 10
 select sum(data) from test
 4
+# test: select avg from table empty
+delete from test
+select avg(id) from test
+0
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
 # test: select avg from table
 explain select avg(id) from test
 "
@@ -173,51 +362,60 @@ bytecode [shard 0]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      2      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 1]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      2      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 2]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      2      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 "
 select avg(id) from test
@@ -251,51 +449,60 @@ bytecode [shard 0]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 1]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 
 bytecode [shard 2]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11               ready        0      0      0
-12                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14               ready        0      0      0
+15                 ret        0      0      0
 
 "
 select * from (select count(*) from test)
@@ -574,9 +781,211 @@ select data, count(*) c from test group by data having c > 1
 [1, 2]
 select data, count(*) c from test group by data having data > 1
 [2, 1]
+# test: select from table having aggr
+explain select data, count(*) from test group by data having count(*) = 2
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2    cursor_open_expr        1      0      4
+ 3                 jmp       15      0      0
+ 4      group_get_aggr        1      1      1
+ 5                 int        2      2      0
+ 6                 equ        3      1      2
+ 7                jntr       14      3      0
+ 8           group_get        1      1      0
+ 9                push        1      0      0
+10      group_get_aggr        1      1      0
+11                push        1      0      0
+12               array        1      2      0
+13                send        1      0      0
+14         cursor_next        1      4      0
+15        cursor_close        1      0      0
+16                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2      group_add_aggr        0      0      1
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (primary)
+ 6                 jmp       15      0      0
+ 7          cursor_idx        1      0      1
+ 8                push        1      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11         cursor_read        1      0      0
+12                push        1      0      0
+13           group_add        0      0      0
+14         cursor_next        0      7      0
+15        cursor_close        0      0      0
+16               ready        0      0      0
+17                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2      group_add_aggr        0      0      1
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (primary)
+ 6                 jmp       15      0      0
+ 7          cursor_idx        1      0      1
+ 8                push        1      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11         cursor_read        1      0      0
+12                push        1      0      0
+13           group_add        0      0      0
+14         cursor_next        0      7      0
+15        cursor_close        0      0      0
+16               ready        0      0      0
+17                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2      group_add_aggr        0      0      1
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (primary)
+ 6                 jmp       15      0      0
+ 7          cursor_idx        1      0      1
+ 8                push        1      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11         cursor_read        1      0      0
+12                push        1      0      0
+13           group_add        0      0      0
+14         cursor_next        0      7      0
+15        cursor_close        0      0      0
+16               ready        0      0      0
+17                 ret        0      0      0
+
+"
+select data, count(*) from test group by data having count(*) = 2
+[0, 2]
+[1, 2]
+explain select data from test group by data having count(*) = 2
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2    cursor_open_expr        1      0      4
+ 3                 jmp       11      0      0
+ 4      group_get_aggr        1      1      0
+ 5                 int        2      2      0
+ 6                 equ        3      1      2
+ 7                jntr       10      3      0
+ 8           group_get        1      1      0
+ 9                send        1      0      0
+10         cursor_next        1      4      0
+11        cursor_close        1      0      0
+12                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+"
+select data from test group by data having count(*) = 2
+0
+1
 drop table test
-# test: select count from reference
+# test: select count from reference empty
 create table test (id int primary key, data int) reference
+explain select count(*) from test
+"
+bytecode [coordinator]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14    cursor_open_expr        1      0     16
+15                 jmp       19      0      0
+16      group_get_aggr        1      1      0
+17                send        1      0      0
+18         cursor_next        1     16      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
+
+"
+select count(*) from test
+0
+# test: select count from reference
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -594,22 +1003,25 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6         cursor_read        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11    cursor_open_expr        1      0     13
-12                 jmp       16      0      0
-13      group_get_aggr        1      1      0
-14                send        1      0      0
-15         cursor_next        1     13      0
-16        cursor_close        1      0      0
-17                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9         cursor_read        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14    cursor_open_expr        1      0     16
+15                 jmp       19      0      0
+16      group_get_aggr        1      1      0
+17                send        1      0      0
+18         cursor_next        1     16      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
 
 "
 select count(*) from test
@@ -621,22 +1033,25 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      1      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11    cursor_open_expr        1      0     13
-12                 jmp       16      0      0
-13      group_get_aggr        1      1      0
-14                send        1      0      0
-15         cursor_next        1     13      0
-16        cursor_close        1      0      0
-17                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14    cursor_open_expr        1      0     16
+15                 jmp       19      0      0
+16      group_get_aggr        1      1      0
+17                send        1      0      0
+18         cursor_next        1     16      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
 
 "
 select sum(id) from test
@@ -650,22 +1065,25 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      2      0
- 2             int_min        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8           group_add        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11    cursor_open_expr        1      0     13
-12                 jmp       16      0      0
-13      group_get_aggr        1      1      0
-14                send        1      0      0
-15         cursor_next        1     13      0
-16        cursor_close        1      0      0
-17                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9          cursor_idx        1      0      0
+10                push        1      0      0
+11           group_add        0      0      0
+12         cursor_next        0      9      0
+13        cursor_close        0      0      0
+14    cursor_open_expr        1      0     16
+15                 jmp       19      0      0
+16      group_get_aggr        1      1      0
+17                send        1      0      0
+18         cursor_next        1     16      0
+19        cursor_close        1      0      0
+20                 ret        0      0      0
 
 "
 select avg(id) from test
@@ -680,28 +1098,31 @@ bytecode [coordinator]
  0                 set        0      0      0
  1               group        1      0      0
  2      group_add_aggr        1      0      0
- 3             int_min        2      0      0
+ 3                null        2      0      0
  4                push        2      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       11      0      0
- 7         cursor_read        2      0      0
- 8                push        2      0      0
- 9           group_add        1      0      0
-10         cursor_next        0      7      0
-11        cursor_close        0      0      0
-12    cursor_open_expr        1      1     14
-13                 jmp       17      0      0
-14      group_get_aggr        2      1      0
-15             set_add        0      2      0
-16         cursor_next        1     14      0
-17        cursor_close        1      0      0
-18    cursor_open_expr        2      0     20
-19                 jmp       23      0      0
-20         cursor_read        1      2      0
-21                send        1      0      0
-22         cursor_next        2     20      0
-23        cursor_close        2      0      0
-24                 ret        0      0      0
+ 5           group_add        1      0      0
+ 6             int_min        2      0      0
+ 7                push        2      0      0
+ 8         cursor_open        0      0     10      # public.test (primary)
+ 9                 jmp       14      0      0
+10         cursor_read        2      0      0
+11                push        2      0      0
+12           group_add        1      0      0
+13         cursor_next        0     10      0
+14        cursor_close        0      0      0
+15    cursor_open_expr        1      1     17
+16                 jmp       20      0      0
+17      group_get_aggr        2      1      0
+18             set_add        0      2      0
+19         cursor_next        1     17      0
+20        cursor_close        1      0      0
+21    cursor_open_expr        2      0     23
+22                 jmp       26      0      0
+23         cursor_read        1      2      0
+24                send        1      0      0
+25         cursor_next        2     23      0
+26        cursor_close        2      0      0
+27                 ret        0      0      0
 
 "
 select * from (select count(*) from test)
@@ -843,6 +1264,35 @@ select data, count(*) c from test group by data having c > 1
 select data, count(*) c from test group by data having data > 1
 [2, 1]
 drop table test
+# test: select count from expr emtpy
+explain select count(*) from []
+"
+bytecode [coordinator]
+--------
+ 0               group        0      0      0
+ 1      group_add_aggr        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5               array        1      0      0
+ 6    cursor_open_expr        0      1      8
+ 7                 jmp       12      0      0
+ 8         cursor_read        2      0      0
+ 9                push        2      0      0
+10           group_add        0      0      0
+11         cursor_next        0      8      0
+12        cursor_close        0      0      0
+13    cursor_open_expr        1      0     15
+14                 jmp       18      0      0
+15      group_get_aggr        1      1      0
+16                send        1      0      0
+17         cursor_next        1     15      0
+18        cursor_close        1      0      0
+19                 ret        0      0      0
+
+"
+select count(*) from []
+0
 # test: select count from expr
 explain select count(*) from [0,1,2,3,4]
 "
@@ -850,31 +1300,34 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2                 int        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4                 int        1      1      0
- 5                push        1      0      0
- 6                 int        1      2      0
- 7                push        1      0      0
- 8                 int        1      3      0
- 9                push        1      0      0
-10                 int        1      4      0
-11                push        1      0      0
-12               array        1      5      0
-13    cursor_open_expr        0      1     15
-14                 jmp       19      0      0
-15         cursor_read        2      0      0
-16                push        2      0      0
-17           group_add        0      0      0
-18         cursor_next        0     15      0
-19        cursor_close        0      0      0
-20    cursor_open_expr        1      0     22
-21                 jmp       25      0      0
-22      group_get_aggr        1      1      0
-23                send        1      0      0
-24         cursor_next        1     22      0
-25        cursor_close        1      0      0
-26                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5                 int        1      0      0
+ 6                push        1      0      0
+ 7                 int        1      1      0
+ 8                push        1      0      0
+ 9                 int        1      2      0
+10                push        1      0      0
+11                 int        1      3      0
+12                push        1      0      0
+13                 int        1      4      0
+14                push        1      0      0
+15               array        1      5      0
+16    cursor_open_expr        0      1     18
+17                 jmp       22      0      0
+18         cursor_read        2      0      0
+19                push        2      0      0
+20           group_add        0      0      0
+21         cursor_next        0     18      0
+22        cursor_close        0      0      0
+23    cursor_open_expr        1      0     25
+24                 jmp       28      0      0
+25      group_get_aggr        1      1      0
+26                send        1      0      0
+27         cursor_next        1     25      0
+28        cursor_close        1      0      0
+29                 ret        0      0      0
 
 "
 select count(*) from [0,1,2,3,4]
@@ -886,31 +1339,34 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      1      0
- 2                 int        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4                 int        1      1      0
- 5                push        1      0      0
- 6                 int        1      2      0
- 7                push        1      0      0
- 8                 int        1      3      0
- 9                push        1      0      0
-10                 int        1      4      0
-11                push        1      0      0
-12               array        1      5      0
-13    cursor_open_expr        0      1     15
-14                 jmp       19      0      0
-15         cursor_read        2      0      0
-16                push        2      0      0
-17           group_add        0      0      0
-18         cursor_next        0     15      0
-19        cursor_close        0      0      0
-20    cursor_open_expr        1      0     22
-21                 jmp       25      0      0
-22      group_get_aggr        1      1      0
-23                send        1      0      0
-24         cursor_next        1     22      0
-25        cursor_close        1      0      0
-26                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5                 int        1      0      0
+ 6                push        1      0      0
+ 7                 int        1      1      0
+ 8                push        1      0      0
+ 9                 int        1      2      0
+10                push        1      0      0
+11                 int        1      3      0
+12                push        1      0      0
+13                 int        1      4      0
+14                push        1      0      0
+15               array        1      5      0
+16    cursor_open_expr        0      1     18
+17                 jmp       22      0      0
+18         cursor_read        2      0      0
+19                push        2      0      0
+20           group_add        0      0      0
+21         cursor_next        0     18      0
+22        cursor_close        0      0      0
+23    cursor_open_expr        1      0     25
+24                 jmp       28      0      0
+25      group_get_aggr        1      1      0
+26                send        1      0      0
+27         cursor_next        1     25      0
+28        cursor_close        1      0      0
+29                 ret        0      0      0
 
 "
 select sum(*) from [0,1,2,3,4]
@@ -922,31 +1378,34 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      2      0
- 2                 int        1      0      0
+ 2                null        1      0      0
  3                push        1      0      0
- 4                 int        1      1      0
- 5                push        1      0      0
- 6                 int        1      2      0
- 7                push        1      0      0
- 8                 int        1      3      0
- 9                push        1      0      0
-10                 int        1      4      0
-11                push        1      0      0
-12               array        1      5      0
-13    cursor_open_expr        0      1     15
-14                 jmp       19      0      0
-15         cursor_read        2      0      0
-16                push        2      0      0
-17           group_add        0      0      0
-18         cursor_next        0     15      0
-19        cursor_close        0      0      0
-20    cursor_open_expr        1      0     22
-21                 jmp       25      0      0
-22      group_get_aggr        1      1      0
-23                send        1      0      0
-24         cursor_next        1     22      0
-25        cursor_close        1      0      0
-26                 ret        0      0      0
+ 4           group_add        0      0      0
+ 5                 int        1      0      0
+ 6                push        1      0      0
+ 7                 int        1      1      0
+ 8                push        1      0      0
+ 9                 int        1      2      0
+10                push        1      0      0
+11                 int        1      3      0
+12                push        1      0      0
+13                 int        1      4      0
+14                push        1      0      0
+15               array        1      5      0
+16    cursor_open_expr        0      1     18
+17                 jmp       22      0      0
+18         cursor_read        2      0      0
+19                push        2      0      0
+20           group_add        0      0      0
+21         cursor_next        0     18      0
+22        cursor_close        0      0      0
+23    cursor_open_expr        1      0     25
+24                 jmp       28      0      0
+25      group_get_aggr        1      1      0
+26                send        1      0      0
+27         cursor_next        1     25      0
+28        cursor_close        1      0      0
+29                 ret        0      0      0
 
 "
 select avg(*) from [0,1,2,3,4]
@@ -959,37 +1418,40 @@ bytecode [coordinator]
  0                 set        0      0      0
  1               group        1      0      0
  2      group_add_aggr        1      0      0
- 3                 int        2      0      0
+ 3                null        2      0      0
  4                push        2      0      0
- 5                 int        2      1      0
- 6                push        2      0      0
- 7                 int        2      2      0
- 8                push        2      0      0
- 9                 int        2      3      0
-10                push        2      0      0
-11                 int        2      4      0
-12                push        2      0      0
-13               array        2      5      0
-14    cursor_open_expr        0      2     16
-15                 jmp       20      0      0
-16         cursor_read        3      0      0
-17                push        3      0      0
-18           group_add        1      0      0
-19         cursor_next        0     16      0
-20        cursor_close        0      0      0
-21    cursor_open_expr        1      1     23
-22                 jmp       26      0      0
-23      group_get_aggr        2      1      0
-24             set_add        0      2      0
-25         cursor_next        1     23      0
-26        cursor_close        1      0      0
-27    cursor_open_expr        2      0     29
-28                 jmp       32      0      0
-29         cursor_read        1      2      0
-30                send        1      0      0
-31         cursor_next        2     29      0
-32        cursor_close        2      0      0
-33                 ret        0      0      0
+ 5           group_add        1      0      0
+ 6                 int        2      0      0
+ 7                push        2      0      0
+ 8                 int        2      1      0
+ 9                push        2      0      0
+10                 int        2      2      0
+11                push        2      0      0
+12                 int        2      3      0
+13                push        2      0      0
+14                 int        2      4      0
+15                push        2      0      0
+16               array        2      5      0
+17    cursor_open_expr        0      2     19
+18                 jmp       23      0      0
+19         cursor_read        3      0      0
+20                push        3      0      0
+21           group_add        1      0      0
+22         cursor_next        0     19      0
+23        cursor_close        0      0      0
+24    cursor_open_expr        1      1     26
+25                 jmp       29      0      0
+26      group_get_aggr        2      1      0
+27             set_add        0      2      0
+28         cursor_next        1     26      0
+29        cursor_close        1      0      0
+30    cursor_open_expr        2      0     32
+31                 jmp       35      0      0
+32         cursor_read        1      2      0
+33                send        1      0      0
+34         cursor_next        2     32      0
+35        cursor_close        2      0      0
+36                 ret        0      0      0
 
 "
 select * from (select count(*) from [0,1,2,3,4])

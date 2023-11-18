@@ -23,30 +23,33 @@ bytecode [coordinator]
 --------
  0               group        0      0      0
  1      group_add_aggr        0      0      0
- 2                call        1      -      0      # system.storages()
- 3    cursor_open_expr        0      1      5
- 4                 jmp       18      0      0
- 5                call        2      -      0      # system.tables()
- 6    cursor_open_expr        1      2      8
- 7                 jmp       16      0      0
- 8          cursor_idx        3      0     -1      # id.id_table
- 9          cursor_idx        4      1     -1      # id
-10                 equ        5      3      4
-11                jntr       15      5      0
-12         cursor_read        3      0      0
-13                push        3      0      0
-14           group_add        0      0      0
-15         cursor_next        1      8      0
-16        cursor_close        1      0      0
-17         cursor_next        0      5      0
-18        cursor_close        0      0      0
-19    cursor_open_expr        2      0     21
-20                 jmp       24      0      0
-21      group_get_aggr        1      2      0
-22                send        1      0      0
-23         cursor_next        2     21      0
-24        cursor_close        2      0      0
-25                 ret        0      0      0
+ 2                null        1      0      0
+ 3                push        1      0      0
+ 4           group_add        0      0      0
+ 5                call        1      -      0      # system.storages()
+ 6    cursor_open_expr        0      1      8
+ 7                 jmp       21      0      0
+ 8                call        2      -      0      # system.tables()
+ 9    cursor_open_expr        1      2     11
+10                 jmp       19      0      0
+11          cursor_idx        3      0     -1      # id.id_table
+12          cursor_idx        4      1     -1      # id
+13                 equ        5      3      4
+14                jntr       18      5      0
+15         cursor_read        3      0      0
+16                push        3      0      0
+17           group_add        0      0      0
+18         cursor_next        1     11      0
+19        cursor_close        1      0      0
+20         cursor_next        0      8      0
+21        cursor_close        0      0      0
+22    cursor_open_expr        2      0     24
+23                 jmp       27      0      0
+24      group_get_aggr        1      2      0
+25                send        1      0      0
+26         cursor_next        2     24      0
+27        cursor_close        2      0      0
+28                 ret        0      0      0
 
 "
 select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)

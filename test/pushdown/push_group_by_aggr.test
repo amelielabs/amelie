@@ -3,8 +3,12 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 
-# test: select count from table
+# test: select count from table empty
 create table test (id int primary key, data int)
+explain select count(*) from test
+select count(*) from test
+
+# test: select count from table
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -15,10 +19,29 @@ select * from test
 explain select count(*) from test
 select count(*) from test
 
+# test: select sum from table empty
+delete from test
+explain select sum(id) from test
+select sum(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+
 # test: select sum from table
 explain select sum(id) from test
 select sum(id) from test
 select sum(data) from test
+
+# test: select avg from table empty
+delete from test
+select avg(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
 
 # test: select avg from table
 explain select avg(id) from test
@@ -46,10 +69,21 @@ select id, count(*) c from test group by id having c > 1
 select data, count(*) c from test group by data having c > 1
 select data, count(*) c from test group by data having data > 1
 
+# test: select from table having aggr
+explain select data, count(*) from test group by data having count(*) = 2
+select data, count(*) from test group by data having count(*) = 2
+
+explain select data from test group by data having count(*) = 2
+select data from test group by data having count(*) = 2
+
 drop table test
 
-# test: select count from reference
+# test: select count from reference empty
 create table test (id int primary key, data int) reference
+explain select count(*) from test
+select count(*) from test
+
+# test: select count from reference
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -91,6 +125,10 @@ select id, count(*) c from test group by id having c > 1
 select data, count(*) c from test group by data having c > 1
 select data, count(*) c from test group by data having data > 1
 drop table test
+
+# test: select count from expr emtpy
+explain select count(*) from []
+select count(*) from []
 
 # test: select count from expr
 explain select count(*) from [0,1,2,3,4]

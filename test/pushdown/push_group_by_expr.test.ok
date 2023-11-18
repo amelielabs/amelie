@@ -1,6 +1,30 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 connect: on_connect
+# test: select from expr group by empty
+explain select * from [] group by *
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1               array        1      0      0
+ 2    cursor_open_expr        0      1      4
+ 3                 jmp        8      0      0
+ 4         cursor_read        2      0      0
+ 5                push        2      0      0
+ 6           group_add        0      0      0
+ 7         cursor_next        0      4      0
+ 8        cursor_close        0      0      0
+ 9    cursor_open_expr        1      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      1      0
+12                send        1      0      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15                 ret        0      0      0
+
+"
+select * from [] group by *
 # test: select from expr group by
 explain select * from [0,1,2,3,4] group by *
 "

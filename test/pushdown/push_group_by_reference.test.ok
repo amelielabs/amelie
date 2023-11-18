@@ -1,8 +1,33 @@
 env_open E0 "cluster_shards": 3
 connect E0 S0
 connect: on_connect
-# test: select from reference group by
+# test: select from reference group by empty
 create table test (id int primary key, data int) reference
+explain select * from test group by id
+"
+bytecode [coordinator]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10    cursor_open_expr        1      0     12
+11                 jmp       15      0      0
+12         cursor_read        1      1      0
+13                send        1      0      0
+14         cursor_next        1     12      0
+15        cursor_close        1      0      0
+16                 ret        0      0      0
+
+"
+select * from test group by id
+# test: select from reference group by
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
