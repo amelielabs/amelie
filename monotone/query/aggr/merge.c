@@ -102,10 +102,6 @@ merge_step(Merge* self)
 	}
 	self->current = NULL;
 
-	// apply limit
-	if (self->limit-- <= 0)
-		return;
-
 	SetIterator* min_iterator = NULL;
 	SetRow*      min = NULL;
 	for (int pos = 0; pos < self->list_count; pos++)
@@ -144,6 +140,14 @@ merge_step(Merge* self)
 hot void
 merge_next(Merge* self)
 {
+	// apply limit
+	if (self->limit-- <= 0)
+	{
+		self->current_it = NULL;
+		self->current    = NULL;
+		return;
+	}
+
 	if (! self->distinct)
 	{
 		merge_step(self);
@@ -158,7 +162,7 @@ merge_next(Merge* self)
 		auto at = merge_at(self);
 		if (unlikely(!at || !prev))
 			break;
-		if (value_compare(&prev->value, &at->value) != 0)
+		if (set_compare(self->keys, self->keys_count, prev, at) != 0)
 			break;
 	}
 }
