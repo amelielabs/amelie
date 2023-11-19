@@ -1,0 +1,94 @@
+
+//
+// monotone
+//	
+// SQL OLTP database
+//
+
+#include <monotone_runtime.h>
+#include <monotone_io.h>
+#include <monotone_data.h>
+#include <monotone_lib.h>
+#include <monotone_config.h>
+#include <monotone_auth.h>
+#include <monotone_client.h>
+#include <monotone_server.h>
+#include <monotone_def.h>
+#include <monotone_transaction.h>
+#include <monotone_storage.h>
+#include <monotone_wal.h>
+#include <monotone_db.h>
+#include <monotone_value.h>
+#include <monotone_aggr.h>
+
+static Aggr*
+aggr_max_create(AggrIf* iface)
+{
+	Aggr* self = mn_malloc(sizeof(Aggr));
+	self->iface = iface;
+	list_init(&self->link);
+	return self;
+}
+
+static void
+aggr_max_free(Aggr* self)
+{
+	mn_free(self);
+}
+
+static void
+aggr_max_state_create(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	int64_t* max = (int64_t*)state;
+	max[0] = 0;
+}
+
+static int
+aggr_max_state_size(Aggr* self)
+{
+	unused(self);
+	return sizeof(int64_t);
+}
+
+hot static void
+aggr_max_process(Aggr* self, uint8_t* state, Value* value)
+{
+	unused(self);
+	if (unlikely(value->type == VALUE_NULL))
+		return;
+	if (unlikely(value->type != VALUE_INT))
+		error("max: aggr data integer expected");
+	int64_t* max = (int64_t*)state;
+	if (value->integer > *max)
+		*max = value->integer;
+}
+
+hot static void
+aggr_max_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
+{
+	unused(self);
+	int64_t* max = (int64_t*)state;
+	int64_t* max_with = (int64_t*)state_with;
+	if (*max_with > *max)
+		*max = *max_with;
+}
+
+static void
+aggr_max_convert(Aggr* self, uint8_t* state, Value* value)
+{
+	unused(self);
+	int64_t* max = (int64_t*)state;
+	value_set_int(value, *max);
+}
+
+AggrIf aggr_max =
+{
+	.create       = aggr_max_create,
+	.free         = aggr_max_free,
+	.state_create = aggr_max_state_create,
+	.state_size   = aggr_max_state_size,
+	.process      = aggr_max_process,
+	.merge        = aggr_max_merge,
+	.convert      = aggr_max_convert,
+};
