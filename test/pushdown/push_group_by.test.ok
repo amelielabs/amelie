@@ -1749,10 +1749,12 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1      0
-14            send_set        2      0      0
-15                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1      0
+16            send_set        2      0      0
+17                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -1829,11 +1831,13 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13                 int        2      1      0
-14               merge        3      1      0
-15            send_set        3      0      0
-16                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15                 int        2      1      0
+16               merge        3      1      0
+17            send_set        3      0      0
+18                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -1907,10 +1911,12 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1     -1
-14            send_set        2      0      0
-15                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1     -1
+16            send_set        2      0      0
+17                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -1990,10 +1996,12 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1      0
-14            send_set        2      0      0
-15                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1      0
+16            send_set        2      0      0
+17                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2070,11 +2078,13 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13                 int        2      1      0
-14               merge        3      1      0
-15            send_set        3      0      0
-16                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15                 int        2      1      0
+16               merge        3      1      0
+17            send_set        3      0      0
+18                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2148,10 +2158,12 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1     -1
-14            send_set        2      0      0
-15                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1     -1
+16            send_set        2      0      0
+17                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2237,15 +2249,17 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1      0
-14    cursor_open_expr        2      2     16
-15                 jmp       19      0      0
-16         cursor_read        0      2      0
-17                send        0      0      0
-18         cursor_next        2     16      0
-19        cursor_close        2      0      0
-20                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1      0
+16    cursor_open_expr        2      2     18
+17                 jmp       21      0      0
+18         cursor_read        0      2      0
+19                send        0      0      0
+20         cursor_next        2     18      0
+21        cursor_close        2      0      0
+22                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2323,16 +2337,18 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13                 int        2      1      0
-14               merge        3      1      0
-15    cursor_open_expr        2      3     17
-16                 jmp       20      0      0
-17         cursor_read        0      2      0
-18                send        0      0      0
-19         cursor_next        2     17      0
-20        cursor_close        2      0      0
-21                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15                 int        2      1      0
+16               merge        3      1      0
+17    cursor_open_expr        2      3     19
+18                 jmp       22      0      0
+19         cursor_read        0      2      0
+20                send        0      0      0
+21         cursor_next        2     19      0
+22        cursor_close        2      0      0
+23                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2406,15 +2422,17 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1     -1
-14    cursor_open_expr        2      2     16
-15                 jmp       19      0      0
-16         cursor_read        0      2      0
-17                send        0      0      0
-18         cursor_next        2     16      0
-19        cursor_close        2      0      0
-20                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1     -1
+16    cursor_open_expr        2      2     18
+17                 jmp       21      0      0
+18         cursor_read        0      2      0
+19                send        0      0      0
+20         cursor_next        2     18      0
+21        cursor_close        2      0      0
+22                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2500,15 +2518,17 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1      0
-14    cursor_open_expr        2      2     16
-15                 jmp       19      0      0
-16         cursor_read        0      2      0
-17                send        0      0      0
-18         cursor_next        2     16      0
-19        cursor_close        2      0      0
-20                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1      0
+16    cursor_open_expr        2      2     18
+17                 jmp       21      0      0
+18         cursor_read        0      2      0
+19                send        0      0      0
+20         cursor_next        2     18      0
+21        cursor_close        2      0      0
+22                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2586,16 +2606,18 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13                 int        2      1      0
-14               merge        3      1      0
-15    cursor_open_expr        2      3     17
-16                 jmp       20      0      0
-17         cursor_read        0      2      0
-18                send        0      0      0
-19         cursor_next        2     17      0
-20        cursor_close        2      0      0
-21                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15                 int        2      1      0
+16               merge        3      1      0
+17    cursor_open_expr        2      3     19
+18                 jmp       22      0      0
+19         cursor_read        0      2      0
+20                send        0      0      0
+21         cursor_next        2     19      0
+22        cursor_close        2      0      0
+23                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2669,15 +2691,17 @@ bytecode [coordinator]
  9         cursor_next        1      5      0
 10        cursor_close        1      0      0
 11            set_sort        1      0      0
-12                 int        0      1      0
-13               merge        2      1     -1
-14    cursor_open_expr        2      2     16
-15                 jmp       19      0      0
-16         cursor_read        0      2      0
-17                send        0      0      0
-18         cursor_next        2     16      0
-19        cursor_close        2      0      0
-20                 ret        0      0      0
+12                bool        0      0      0
+13                push        0      0      0
+14                 int        0      1      0
+15               merge        2      1     -1
+16    cursor_open_expr        2      2     18
+17                 jmp       21      0      0
+18         cursor_read        0      2      0
+19                send        0      0      0
+20         cursor_next        2     18      0
+21        cursor_close        2      0      0
+22                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2855,10 +2879,12 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17               merge        2      1      0
-18            send_set        2      0      0
-19                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19               merge        2      1      0
+20            send_set        2      0      0
+21                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -2944,11 +2970,13 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17                 int        2      1      0
-18               merge        3      1      0
-19            send_set        3      0      0
-20                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19                 int        2      1      0
+20               merge        3      1      0
+21            send_set        3      0      0
+22                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -3034,10 +3062,12 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17               merge        2      1     -1
-18            send_set        2      0      0
-19                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19               merge        2      1     -1
+20            send_set        2      0      0
+21                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -3216,15 +3246,17 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17               merge        2      1      0
-18    cursor_open_expr        2      2     20
-19                 jmp       23      0      0
-20         cursor_read        0      2      0
-21                send        0      0      0
-22         cursor_next        2     20      0
-23        cursor_close        2      0      0
-24                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19               merge        2      1      0
+20    cursor_open_expr        2      2     22
+21                 jmp       25      0      0
+22         cursor_read        0      2      0
+23                send        0      0      0
+24         cursor_next        2     22      0
+25        cursor_close        2      0      0
+26                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -3310,15 +3342,17 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17               merge        2      1      0
-18    cursor_open_expr        2      2     20
-19                 jmp       23      0      0
-20         cursor_read        0      2      0
-21                send        0      0      0
-22         cursor_next        2     20      0
-23        cursor_close        2      0      0
-24                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19               merge        2      1      0
+20    cursor_open_expr        2      2     22
+21                 jmp       25      0      0
+22         cursor_read        0      2      0
+23                send        0      0      0
+24         cursor_next        2     22      0
+25        cursor_close        2      0      0
+26                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -3404,16 +3438,18 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17                 int        2      1      0
-18               merge        3      1      0
-19    cursor_open_expr        2      3     21
-20                 jmp       24      0      0
-21         cursor_read        0      2      0
-22                send        0      0      0
-23         cursor_next        2     21      0
-24        cursor_close        2      0      0
-25                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19                 int        2      1      0
+20               merge        3      1      0
+21    cursor_open_expr        2      3     23
+22                 jmp       26      0      0
+23         cursor_read        0      2      0
+24                send        0      0      0
+25         cursor_next        2     23      0
+26        cursor_close        2      0      0
+27                 ret        0      0      0
 
 
 bytecode [shard 0]
@@ -3499,15 +3535,17 @@ bytecode [coordinator]
 13         cursor_next        1      5      0
 14        cursor_close        1      0      0
 15            set_sort        1      0      0
-16                 int        0      1      0
-17               merge        2      1     -1
-18    cursor_open_expr        2      2     20
-19                 jmp       23      0      0
-20         cursor_read        0      2      0
-21                send        0      0      0
-22         cursor_next        2     20      0
-23        cursor_close        2      0      0
-24                 ret        0      0      0
+16                bool        0      0      0
+17                push        0      0      0
+18                 int        0      1      0
+19               merge        2      1     -1
+20    cursor_open_expr        2      2     22
+21                 jmp       25      0      0
+22         cursor_read        0      2      0
+23                send        0      0      0
+24         cursor_next        2     22      0
+25        cursor_close        2      0      0
+26                 ret        0      0      0
 
 
 bytecode [shard 0]

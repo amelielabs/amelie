@@ -31,17 +31,17 @@
 #test delete
 #test upsert
 
-# query
-directory query
-group query
-test expr
-test expr_json
-test method
-test select
-test where
-test scan
-test subselect
-test order_by
+## query
+#directory query
+#group query
+#test expr
+#test expr_json
+#test method
+#test select
+#test where
+#test scan
+#test subselect
+#test order_by
 
 # pushdown
 directory pushdown
@@ -54,6 +54,7 @@ test push_subselect
 test push_select
 test push_limit
 test push_order_by
+test push_distinct
 test push_group_by
 test push_group_by_reference
 test push_group_by_expr

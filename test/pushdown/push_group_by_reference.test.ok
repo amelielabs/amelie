@@ -803,9 +803,11 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20               merge        1      0     -1
-21            send_set        1      0      0
-22                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22               merge        1      0     -1
+23            send_set        1      0      0
+24                 ret        0      0      0
 
 "
 select id from test group by id order by id
@@ -843,9 +845,11 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20               merge        1      0     -1
-21            send_set        1      0      0
-22                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22               merge        1      0     -1
+23            send_set        1      0      0
+24                 ret        0      0      0
 
 "
 select id from test group by id order by id desc
@@ -879,14 +883,16 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20               merge        1      0     -1
-21    cursor_open_expr        2      1     23
-22                 jmp       26      0      0
-23         cursor_read        0      2      0
-24                send        0      0      0
-25         cursor_next        2     23      0
-26        cursor_close        2      0      0
-27                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22               merge        1      0     -1
+23    cursor_open_expr        2      1     25
+24                 jmp       28      0      0
+25         cursor_read        0      2      0
+26                send        0      0      0
+27         cursor_next        2     25      0
+28        cursor_close        2      0      0
+29                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id desc)
@@ -920,10 +926,12 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0      1
-22            send_set        2      0      0
-23                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0      1
+24            send_set        2      0      0
+25                 ret        0      0      0
 
 "
 select id from test group by id order by id asc limit 1
@@ -960,11 +968,13 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21                 int        2      1      0
-22               merge        3      0      1
-23            send_set        3      0      0
-24                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23                 int        2      1      0
+24               merge        3      0      1
+25            send_set        3      0      0
+26                 ret        0      0      0
 
 "
 select id from test group by id order by id asc limit 1 offset 1
@@ -998,10 +1008,12 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0     -1
-22            send_set        2      0      0
-23                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0     -1
+24            send_set        2      0      0
+25                 ret        0      0      0
 
 "
 select id from test group by id order by id asc offset 1
@@ -1041,10 +1053,12 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0      1
-22            send_set        2      0      0
-23                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0      1
+24            send_set        2      0      0
+25                 ret        0      0      0
 
 "
 select id from test group by id order by id desc limit 1
@@ -1081,11 +1095,13 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21                 int        2      1      0
-22               merge        3      0      1
-23            send_set        3      0      0
-24                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23                 int        2      1      0
+24               merge        3      0      1
+25            send_set        3      0      0
+26                 ret        0      0      0
 
 "
 select id from test group by id order by id desc limit 1 offset 1
@@ -1119,10 +1135,12 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0     -1
-22            send_set        2      0      0
-23                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0     -1
+24            send_set        2      0      0
+25                 ret        0      0      0
 
 "
 select id from test group by id order by id desc offset 0
@@ -1168,15 +1186,17 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0      1
-22    cursor_open_expr        2      2     24
-23                 jmp       27      0      0
-24         cursor_read        0      2      0
-25                send        0      0      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0      1
+24    cursor_open_expr        2      2     26
+25                 jmp       29      0      0
+26         cursor_read        0      2      0
+27                send        0      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id asc limit 0)
@@ -1214,16 +1234,18 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21                 int        2      1      0
-22               merge        3      0      1
-23    cursor_open_expr        2      3     25
-24                 jmp       28      0      0
-25         cursor_read        0      2      0
-26                send        0      0      0
-27         cursor_next        2     25      0
-28        cursor_close        2      0      0
-29                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23                 int        2      1      0
+24               merge        3      0      1
+25    cursor_open_expr        2      3     27
+26                 jmp       30      0      0
+27         cursor_read        0      2      0
+28                send        0      0      0
+29         cursor_next        2     27      0
+30        cursor_close        2      0      0
+31                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id asc limit 1 offset 1)
@@ -1257,15 +1279,17 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0     -1
-22    cursor_open_expr        2      2     24
-23                 jmp       27      0      0
-24         cursor_read        0      2      0
-25                send        0      0      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0     -1
+24    cursor_open_expr        2      2     26
+25                 jmp       29      0      0
+26         cursor_read        0      2      0
+27                send        0      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id asc offset 0)
@@ -1311,15 +1335,17 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0      1
-22    cursor_open_expr        2      2     24
-23                 jmp       27      0      0
-24         cursor_read        0      2      0
-25                send        0      0      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0      1
+24    cursor_open_expr        2      2     26
+25                 jmp       29      0      0
+26         cursor_read        0      2      0
+27                send        0      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id desc limit 0)
@@ -1357,16 +1383,18 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21                 int        2      1      0
-22               merge        3      0      1
-23    cursor_open_expr        2      3     25
-24                 jmp       28      0      0
-25         cursor_read        0      2      0
-26                send        0      0      0
-27         cursor_next        2     25      0
-28        cursor_close        2      0      0
-29                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23                 int        2      1      0
+24               merge        3      0      1
+25    cursor_open_expr        2      3     27
+26                 jmp       30      0      0
+27         cursor_read        0      2      0
+28                send        0      0      0
+29         cursor_next        2     27      0
+30        cursor_close        2      0      0
+31                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id desc limit 1 offset 1)
@@ -1400,15 +1428,17 @@ bytecode [coordinator]
 17         cursor_next        1     13      0
 18        cursor_close        1      0      0
 19            set_sort        0      0      0
-20                 int        1      1      0
-21               merge        2      0     -1
-22    cursor_open_expr        2      2     24
-23                 jmp       27      0      0
-24         cursor_read        0      2      0
-25                send        0      0      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28                 ret        0      0      0
+20                bool        1      0      0
+21                push        1      0      0
+22                 int        1      1      0
+23               merge        2      0     -1
+24    cursor_open_expr        2      2     26
+25                 jmp       29      0      0
+26         cursor_read        0      2      0
+27                send        0      0      0
+28         cursor_next        2     26      0
+29        cursor_close        2      0      0
+30                 ret        0      0      0
 
 "
 select * from (select id from test group by id order by id desc offset 0)
@@ -1462,9 +1492,11 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28               merge        1      0     -1
-29            send_set        1      0      0
-30                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30               merge        1      0     -1
+31            send_set        1      0      0
+32                 ret        0      0      0
 
 "
 select data from test where data > 0 group by data having data >= 1 order by data
@@ -1503,10 +1535,12 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29               merge        2      0      1
-30            send_set        2      0      0
-31                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31               merge        2      0      1
+32            send_set        2      0      0
+33                 ret        0      0      0
 
 "
 select data from test where data > 0 group by data having data >= 1 order by data limit 1
@@ -1544,11 +1578,13 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29                 int        2      1      0
-30               merge        3      0      1
-31            send_set        3      0      0
-32                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31                 int        2      1      0
+32               merge        3      0      1
+33            send_set        3      0      0
+34                 ret        0      0      0
 
 "
 select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
@@ -1586,10 +1622,12 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29               merge        2      0     -1
-30            send_set        2      0      0
-31                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31               merge        2      0     -1
+32            send_set        2      0      0
+33                 ret        0      0      0
 
 "
 select data from test where data > 0 group by data having data >= 1 order by data offset 1
@@ -1627,14 +1665,16 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28               merge        1      0     -1
-29    cursor_open_expr        2      1     31
-30                 jmp       34      0      0
-31         cursor_read        0      2      0
-32                send        0      0      0
-33         cursor_next        2     31      0
-34        cursor_close        2      0      0
-35                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30               merge        1      0     -1
+31    cursor_open_expr        2      1     33
+32                 jmp       36      0      0
+33         cursor_read        0      2      0
+34                send        0      0      0
+35         cursor_next        2     33      0
+36        cursor_close        2      0      0
+37                 ret        0      0      0
 
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data)
@@ -1673,15 +1713,17 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29               merge        2      0      1
-30    cursor_open_expr        2      2     32
-31                 jmp       35      0      0
-32         cursor_read        0      2      0
-33                send        0      0      0
-34         cursor_next        2     32      0
-35        cursor_close        2      0      0
-36                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31               merge        2      0      1
+32    cursor_open_expr        2      2     34
+33                 jmp       37      0      0
+34         cursor_read        0      2      0
+35                send        0      0      0
+36         cursor_next        2     34      0
+37        cursor_close        2      0      0
+38                 ret        0      0      0
 
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1)
@@ -1719,15 +1761,17 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29               merge        2      0      1
-30    cursor_open_expr        2      2     32
-31                 jmp       35      0      0
-32         cursor_read        0      2      0
-33                send        0      0      0
-34         cursor_next        2     32      0
-35        cursor_close        2      0      0
-36                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31               merge        2      0      1
+32    cursor_open_expr        2      2     34
+33                 jmp       37      0      0
+34         cursor_read        0      2      0
+35                send        0      0      0
+36         cursor_next        2     34      0
+37        cursor_close        2      0      0
+38                 ret        0      0      0
 
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1)
@@ -1765,16 +1809,18 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29                 int        2      1      0
-30               merge        3      0      1
-31    cursor_open_expr        2      3     33
-32                 jmp       36      0      0
-33         cursor_read        0      2      0
-34                send        0      0      0
-35         cursor_next        2     33      0
-36        cursor_close        2      0      0
-37                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31                 int        2      1      0
+32               merge        3      0      1
+33    cursor_open_expr        2      3     35
+34                 jmp       38      0      0
+35         cursor_read        0      2      0
+36                send        0      0      0
+37         cursor_next        2     35      0
+38        cursor_close        2      0      0
+39                 ret        0      0      0
 
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1)
@@ -1812,15 +1858,17 @@ bytecode [coordinator]
 25         cursor_next        1     17      0
 26        cursor_close        1      0      0
 27            set_sort        0      0      0
-28                 int        1      1      0
-29               merge        2      0     -1
-30    cursor_open_expr        2      2     32
-31                 jmp       35      0      0
-32         cursor_read        0      2      0
-33                send        0      0      0
-34         cursor_next        2     32      0
-35        cursor_close        2      0      0
-36                 ret        0      0      0
+28                bool        1      0      0
+29                push        1      0      0
+30                 int        1      1      0
+31               merge        2      0     -1
+32    cursor_open_expr        2      2     34
+33                 jmp       37      0      0
+34         cursor_read        0      2      0
+35                send        0      0      0
+36         cursor_next        2     34      0
+37        cursor_close        2      0      0
+38                 ret        0      0      0
 
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1)

@@ -953,6 +953,92 @@ bytecode [shard 2]
 select data from test group by data having count(*) = 2
 0
 1
+# test: select from table group by order by aggr
+explain select * from test group by data order by count(*)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2         set_ordered        1     20      0
+ 3    cursor_open_expr        1      0      5
+ 4                 jmp       10      0      0
+ 5         cursor_read        2      1      0
+ 6      group_get_aggr        3      1      0
+ 7                push        3      0      0
+ 8             set_add        1      2      0
+ 9         cursor_next        1      5      0
+10        cursor_close        1      0      0
+11            set_sort        1      0      0
+12            send_set        1      0      0
+13                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      1      0
+ 1      group_add_aggr        0      0      0
+ 2             int_min        1      0      0
+ 3                push        1      0      0
+ 4         cursor_open        0      0      6      # public.test (primary)
+ 5                 jmp       12      0      0
+ 6          cursor_idx        1      0      1
+ 7                push        1      0      0
+ 8         cursor_read        1      0      0
+ 9                push        1      0      0
+10           group_add        0      0      0
+11         cursor_next        0      6      0
+12        cursor_close        0      0      0
+13               ready        0      0      0
+14                 ret        0      0      0
+
+"
+select * from test group by data order by count(*) desc
+[0]
+[1]
+[2]
+select data, count(*) c from test group by data order by c desc
+[0, 2]
+[1, 2]
+[2, 1]
 drop table test
 # test: select count from reference empty
 create table test (id int primary key, data int) reference

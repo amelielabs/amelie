@@ -76,6 +76,11 @@ select data, count(*) from test group by data having count(*) = 2
 explain select data from test group by data having count(*) = 2
 select data from test group by data having count(*) = 2
 
+# test: select from table group by order by aggr
+explain select * from test group by data order by count(*)
+select * from test group by data order by count(*) desc
+select data, count(*) c from test group by data order by c desc
+
 drop table test
 
 # test: select count from reference empty
