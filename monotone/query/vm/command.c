@@ -492,6 +492,10 @@ cmerge(Vm* self, Op* op)
 {
 	// [merge, set, limit, offset]
 
+	// distinct
+	bool distinct = stack_at(&self->stack, 1)->integer;
+	stack_popn(&self->stack, 1);
+
 	// limit
 	int64_t limit = INT64_MAX;
 	if (op->c != -1)
@@ -524,7 +528,7 @@ cmerge(Vm* self, Op* op)
 	value->type = VALUE_NONE;
 
 	// prepare merge and apply offset
-	merge_open(merge, false, limit, offset);
+	merge_open(merge, distinct, limit, offset);
 }
 
 hot void
@@ -532,6 +536,10 @@ cmerge_recv(Vm* self, Op* op)
 {
 	// [merge, stmt, limit, offset]
 	int stmt = op->b;
+
+	// distinct
+	bool distinct = stack_at(&self->stack, 1)->integer;
+	stack_popn(&self->stack, 1);
 
 	// limit
 	int64_t limit = INT64_MAX;
@@ -575,7 +583,7 @@ cmerge_recv(Vm* self, Op* op)
 	}
 
 	// prepare merge and apply offset
-	merge_open(merge, false, limit, offset);
+	merge_open(merge, distinct, limit, offset);
 }
 
 hot void
