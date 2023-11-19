@@ -17,6 +17,8 @@
 #include "aggr/count.h"
 #include "aggr/sum.h"
 #include "aggr/avg.h"
+#include "aggr/min.h"
+#include "aggr/max.h"
 
 // group
 #include "aggr/group.h"

@@ -10,7 +10,9 @@ enum
 {
 	AGGR_COUNT,
 	AGGR_SUM,
-	AGGR_AVG
+	AGGR_AVG,
+	AGGR_MIN,
+	AGGR_MAX
 };
 
 extern AggrIf *aggrs[];

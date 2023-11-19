@@ -25,5 +25,7 @@ AggrIf* aggrs[] =
 {
 	[AGGR_COUNT] = &aggr_count,
 	[AGGR_SUM]   = &aggr_sum,
-	[AGGR_AVG]   = &aggr_avg
+	[AGGR_AVG]   = &aggr_avg,
+	[AGGR_MIN]   = &aggr_min,
+	[AGGR_MAX]   = &aggr_max
 };
