@@ -122,6 +122,8 @@ enum
 	KCOUNT,
 	KSUM,
 	KAVG,
+	KMIN,
+	KMAX,
 
 	KDELETE,
 	KFROM,

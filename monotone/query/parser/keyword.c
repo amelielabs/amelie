@@ -129,6 +129,8 @@ static Keyword keywords_l[] =
 
 static Keyword keywords_m[] =
 {
+	{ KMIN,                   "min",                   3  },
+	{ KMAX,                   "max",                   3  },
 	{ KTMAP,                  "map",                   3  },
 	{ 0,                       NULL,                   0  }
 };

@@ -75,6 +75,8 @@ priority_map[UINT8_MAX] =
 	[KCOUNT]                   = priority_value,
 	[KSUM]                     = priority_value,
 	[KAVG]                     = priority_value,
+	[KMIN]                     = priority_value,
+	[KMAX]                     = priority_value,
 	[KREAL]                    = priority_value,
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
@@ -214,6 +216,12 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	case KAVG:
 		id = AGGR_AVG;
 		break;
+	case KMIN:
+		id = AGGR_MIN;
+		break;
+	case KMAX:
+		id = AGGR_MAX;
+		break;
 	default:
 		abort();
 		break;
@@ -277,6 +285,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KCOUNT:
 	case KSUM:
 	case KAVG:
+	case KMIN:
+	case KMAX:
 		value = expr_aggregate(self, expr, value);
 		break;
 
