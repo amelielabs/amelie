@@ -405,6 +405,7 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 		return emit_select_group_by(self, select, nested);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
+	// SELECT DISTINCT FROM
 	if (select->expr_order_by.count > 0)
 		return emit_select_order_by(self, select, nested);
 

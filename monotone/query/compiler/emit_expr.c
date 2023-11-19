@@ -698,6 +698,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCOUNT:
 	case KSUM:
 	case KAVG:
+	case KMIN:
+	case KMAX:
 		return emit_aggregate(self, ast);
 
 	default:

@@ -39,6 +39,8 @@ OBJECTS        = \
                  aggr/count.o \
                  aggr/sum.o \
                  aggr/avg.o \
+                 aggr/min.o \
+                 aggr/max.o \
                  aggr/group.o \
                  aggr/group_merge.o \
                  request/dispatch.o \
