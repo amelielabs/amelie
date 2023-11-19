@@ -1,0 +1,218 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+# test: select distinct star from table empty
+create table test (id int primary key serial, data int default 0)
+explain select distinct * from test
+select distinct * from test
+
+insert into test generate 20
+update test set data = id / 2
+select * from test
+select * from test order by id
+
+# test: select distinct star from table
+explain select distinct * from test
+select distinct * from test
+
+# test: select distinct from table
+explain select distinct id from test
+select distinct id from test
+select distinct data from test
+
+# test: select distinct from table #2
+explain select distinct id, data from test
+select distinct id, data from test
+
+# test: select distinct from table limit
+explain select distinct data from test limit 4
+select distinct data from test limit 4
+
+# test: select distinct from table limit 0
+explain select distinct data from test limit 0
+select distinct data from test limit 0
+
+# test: select distinct from table limit/offset
+explain select distinct data from test limit 1 offset 1
+select distinct data from test limit 1 offset 0
+select distinct data from test limit 1 offset 1
+select distinct data from test limit 1 offset 2
+select distinct data from test limit 1 offset 3
+
+# test: select distinct from table offset
+explain select distinct data from test offset 1
+select distinct data from test offset 0
+select distinct data from test offset 1
+select distinct data from test offset 2
+select distinct data from test offset 3
+
+# test: select distinct from table order by
+explain select distinct data from test order by data
+select distinct data from test order by data
+
+# test: select distinct from table group by
+explain select distinct count(*) from test
+select distinct count(*) from test
+
+explain select distinct count(*) from test group by id
+select distinct count(*) from test group by id
+
+# test: select distinct on
+select distinct
+select distinct 123
+select distinct on
+select distinct on (
+select distinct on (123
+select distinct on (123,
+select distinct on (123,)
+select distinct on (123,)
+
+# test: select distinct on from table
+explain select distinct on (*) * from test
+select distinct on (*) * from test
+
+explain select * from test order by data
+explain select distinct on (data) * from test
+select distinct on (data) * from test
+select distinct on (id) * from test
+
+# test: select distinct on from table order by
+explain select distinct on (data) * from test order by data, id
+
+# test: select distinct on from table group by
+explain select distinct on (count(*)) * from test group by id
+select distinct on (count(*)) * from test group by id
+
+select distinct on (count(*)) count(*) from test group by id
+#select distinct on (count(*)) id from test group by id
+select distinct count(*) from test group by id
+select count(*) from test group by id
+
+drop table test
+
+# test: select distinct star from reference empty
+create table test (id int primary key serial, data int default 0) reference
+explain select distinct * from test
+select distinct * from test
+
+insert into test generate 20
+update test set data = id / 2
+select * from test
+select * from test order by id
+
+# test: select distinct star from reference
+explain select distinct * from test
+select distinct * from test
+
+# test: select distinct from reference
+explain select distinct id from test
+select distinct id from test
+select distinct data from test
+
+# test: select distinct from reference #2
+explain select distinct id, data from test
+select distinct id, data from test
+
+# test: select distinct from reference limit
+explain select distinct data from test limit 4
+select distinct data from test limit 4
+
+# test: select distinct from reference limit 0
+explain select distinct data from test limit 0
+select distinct data from test limit 0
+
+# test: select distinct from reference limit/offset
+explain select distinct data from test limit 1 offset 1
+select distinct data from test limit 1 offset 0
+select distinct data from test limit 1 offset 1
+select distinct data from test limit 1 offset 2
+select distinct data from test limit 1 offset 3
+
+# test: select distinct from reference offset
+explain select distinct data from test offset 1
+select distinct data from test offset 0
+select distinct data from test offset 1
+select distinct data from test offset 2
+select distinct data from test offset 3
+
+# test: select distinct from reference order by
+explain select distinct data from test order by data
+select distinct data from test order by data
+
+# test: select distinct from reference group by
+explain select distinct count(*) from test
+select distinct count(*) from test
+
+explain select distinct count(*) from test group by id
+select distinct count(*) from test group by id
+
+# test: select distinct on from reference
+explain select distinct on (*) * from test
+select distinct on (*) * from test
+
+explain select * from test order by data
+explain select distinct on (data) * from test
+select distinct on (data) * from test
+select distinct on (id) * from test
+
+# test: select distinct on from reference order by
+explain select distinct on (data) * from test order by data, id
+
+# test: select distinct on from reference group by
+explain select distinct on (count(*)) * from test group by id
+select distinct on (count(*)) * from test group by id
+
+select distinct on (count(*)) count(*) from test group by id
+#select distinct on (count(*)) id from test group by id
+select distinct count(*) from test group by id
+select count(*) from test group by id
+drop table test
+
+# test: select distinct star from expr empty
+explain select distinct * from []
+select distinct * from []
+
+# test: select distinct star from expr
+explain select distinct * from [0,1,2,3,4,2,3,4]
+select distinct * from [0,1,2,3,4,2,3,4]
+
+# test: select distinct from expr limit
+explain select distinct * from [0,1,2,3,4,2,3,4] limit 2
+select distinct * from [0,1,2,3,4,2,3,4] limit 2
+
+# test: select distinct from expr limit 0
+explain select distinct * from [0,1,2,3,4,2,3,4] limit 0
+select distinct * from [0,1,2,3,4,2,3,4] limit 0
+
+# test: select distinct from expr limit/offset
+explain select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 1
+select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 0
+select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 1
+select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 2
+select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 3
+
+# test: select distinct from expr offset
+explain select distinct * from [0,1,2,3,4,2,3,4] offset 1
+select distinct * from [0,1,2,3,4,2,3,4] offset 0
+select distinct * from [0,1,2,3,4,2,3,4] offset 1
+select distinct * from [0,1,2,3,4,2,3,4] offset 2
+select distinct * from [0,1,2,3,4,2,3,4] offset 3
+
+# test: select distinct from expr order by
+explain select distinct * from [0,1,2,3,4,2,3,4] order by *
+select distinct * from [0,1,2,3,4,2,3,4] order by *
+
+# test: select distinct from expr group by
+explain select distinct count(*) from [0,1,2,3,4,2,3,4] group by *
+select distinct *, count(*) from [0,1,2,3,4,2,3,4] group by *
+select distinct * from [0,1,2,3,4,2,3,4] group by *
+select distinct count(*) from [0,1,2,3,4,2,3,4] group by *
+
+# test: select distinct on from expr
+explain select distinct on (*) * from [0,1,2,3,4,2,3,4]
+select distinct on (*) * from [0,1,2,3,4,2,3,4]
+
+disconnect S0
+env_close E0
