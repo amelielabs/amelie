@@ -147,11 +147,16 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 	return offset;
 }
 
-hot static int
+hot int
 emit_select_merge(Compiler* self, AstSelect* select)
 {
 	// sort select set
 	op1(self, CSET_SORT, select->rset);
+
+	// distinct
+	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
+	op1(self, CPUSH, rdistinct);
+	runpin(self, rdistinct);
 
 	// limit
 	int rlimit = -1;

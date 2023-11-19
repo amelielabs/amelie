@@ -51,36 +51,18 @@ pushdown_group_by_order_by(Compiler* self, AstSelect* select)
 	runpin(self, select->rgroup);
 	select->rgroup = -1;
 
-	// CSET_SORT
-	op1(self, CSET_SORT, select->rset);
-
-	// no limit/offset (return set)
-	if (select->expr_limit == NULL && select->expr_offset == NULL)
+	// no distinct/limit/offset (return set)
+	if (select->distinct    == false &&
+	    select->expr_limit  == NULL &&
+	    select->expr_offset == NULL)
+	{
+		// CSET_SORT
+		op1(self, CSET_SORT, select->rset);
 		return rset;
+	}
 
-	// limit/offset (return merge)
-
-	// limit
-	int rlimit = -1;
-	if (select->expr_limit)
-		rlimit = emit_expr(self, select->target, select->expr_limit);
-
-	// offset
-	int roffset = -1;
-	if (select->expr_offset)
-		roffset = emit_expr(self, select->target, select->expr_offset);
-
-	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self), rset, rlimit, roffset);
-
-	runpin(self, rset);
-	select->rset = -1;
-	if (rlimit != -1)
-		runpin(self, rlimit);
-	if (roffset != -1)
-		runpin(self, roffset);
-
-	return rmerge;
+	// create merge object and apply distinct/limit/offset
+	return emit_select_merge(self, select);
 }
 
 static inline int
@@ -195,6 +177,36 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	return rset;
 }
 
+hot static inline int
+pushdown_merge(Compiler* self, AstSelect* select)
+{
+	// distinct
+	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
+	op1(self, CPUSH, rdistinct);
+	runpin(self, rdistinct);
+
+	// limit
+	int rlimit = -1;
+	if (select->expr_limit)
+		rlimit = emit_expr(self, select->target, select->expr_limit);
+
+	// offset
+	int roffset = -1;
+	if (select->expr_offset)
+		roffset = emit_expr(self, select->target, select->expr_offset);
+
+	// CMERGE_RECV
+	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
+	                 rlimit, roffset);
+
+	if (rlimit != -1)
+		runpin(self, rlimit);
+	if (roffset != -1)
+		runpin(self, roffset);
+
+	return rmerge;
+}
+
 static inline int
 pushdown_order_by(Compiler* self, AstSelect* select)
 {
@@ -256,26 +268,9 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	// CRECV
 	op0(self, CRECV);
 
-	// limit
-	int rlimit = -1;
-	if (select->expr_limit)
-		rlimit = emit_expr(self, select->target, select->expr_limit);
-
-	// offset
-	int roffset = -1;
-	if (select->expr_offset)
-		roffset = emit_expr(self, select->target, select->expr_offset);
-
-	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
-	                 rlimit, roffset);
-
-	if (rlimit != -1)
-		runpin(self, rlimit);
-	if (roffset != -1)
-		runpin(self, roffset);
-
-	return rmerge;
+	// create merge object using received sets and apply
+	// distinct/limit/offset
+	return pushdown_merge(self, select);
 }
 
 static inline int
@@ -320,26 +315,8 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	// CRECV
 	op0(self, CRECV);
 
-	// limit
-	int rlimit = -1;
-	if (select->expr_limit)
-		rlimit = emit_expr(self, select->target, select->expr_limit);
-
-	// offset
-	int roffset = -1;
-	if (select->expr_offset)
-		roffset = emit_expr(self, select->target, select->expr_offset);
-
-	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
-	                 rlimit, roffset);
-
-	if (rlimit != -1)
-		runpin(self, rlimit);
-	if (roffset != -1)
-		runpin(self, roffset);
-
-	return rmerge;
+	// create merge object using received sets and apply limit/offset
+	return pushdown_merge(self, select);
 }
 
 static inline int
