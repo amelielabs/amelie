@@ -174,6 +174,9 @@ done:;
 static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
+	if (unlikely(expr == NULL))
+		error("unexpected aggregate function usage");
+
 	// function (expr)
 	// (
 	if (! stmt_if(self, '('))

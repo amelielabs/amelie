@@ -116,6 +116,7 @@ enum
 	KBY,
 	KASC,
 	KDESC,
+	KDISTINCT,
 	KJOIN,
 
 	KCOUNT,

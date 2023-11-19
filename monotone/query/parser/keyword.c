@@ -57,6 +57,7 @@ static Keyword keywords_c[] =
 static Keyword keywords_d[] =
 {
 	{ KDELETE,                "delete",                6  },
+	{ KDISTINCT,              "distinct",              8  },
 	{ KDO,                    "do",                    2  },
 	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
