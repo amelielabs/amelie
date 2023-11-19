@@ -58,7 +58,7 @@ test push_distinct
 test push_group_by
 test push_group_by_reference
 test push_group_by_expr
-test push_group_by_aggr
+test push_aggregate
 
 #directory ddl
 #group ddl

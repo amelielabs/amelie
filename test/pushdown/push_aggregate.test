@@ -48,6 +48,32 @@ explain select avg(id) from test
 select avg(id) from test
 select avg(data) from test
 
+# test: select min from table empty
+delete from test
+select min(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+
+# test: select min from table
+select min(id) from test
+select min(data) from test
+
+# test: select max from table empty
+delete from test
+select max(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+
+# test: select max from table
+select max(id) from test
+select max(data) from test
+
 # test: select from (select aggr from table)
 explain select * from (select count(*) from test)
 select * from (select count(*) from test)
@@ -109,6 +135,32 @@ explain select avg(id) from test
 select avg(id) from test
 select avg(data) from test
 
+# test: select min from reference empty
+delete from test
+select min(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+
+# test: select min from table
+select min(id) from test
+select min(data) from test
+
+# test: select max from reference empty
+delete from test
+select max(id) from test
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+
+# test: select max from reference
+select max(id) from test
+select max(data) from test
+
 # test: select from (select aggr from reference)
 explain select * from (select count(*) from test)
 select * from (select count(*) from test)
@@ -146,6 +198,14 @@ select sum(*) from [0,1,2,3,4]
 # test: select avg from expr
 explain select avg(*) from [0,1,2,3,4]
 select avg(*) from [0,1,2,3,4]
+
+# test: select min from expr
+explain select min(*) from [0,1,2,3,4]
+select min(*) from [0,1,2,3,4]
+
+# test: select max from expr
+explain select max(*) from [0,1,2,3,4]
+select max(*) from [0,1,2,3,4]
 
 # test: select from (select aggr from expr)
 explain select * from (select count(*) from [0,1,2,3,4])
