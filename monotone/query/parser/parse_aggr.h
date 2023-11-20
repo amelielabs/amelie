@@ -11,10 +11,9 @@ typedef struct AstAggr AstAggr;
 struct AstAggr
 {
 	Ast     ast;
+	int     id;
 	int     order;
-	int     aggregate_id;
 	Ast*    expr;
-	Ast*    label;
 	Target* target;
 };
 
@@ -25,33 +24,15 @@ ast_aggr_of(Ast* ast)
 }
 
 static inline AstAggr*
-ast_aggr_allocate(int id, int id_aggr, int order, Ast* expr, Ast* label)
+ast_aggr_allocate(int id, int order, Ast* expr)
 {
 	AstAggr* self;
-	self = ast_allocate(id, sizeof(AstAggr));
-	self->order        = order;
-	self->aggregate_id = id_aggr;
-	self->expr         = expr;
-	self->label        = label;
-	self->target       = NULL;
+	self = ast_allocate(KAGGR, sizeof(AstAggr));
+	self->id     = id;
+	self->order  = order;
+	self->expr   = expr;
+	self->target = NULL;
 	return self;
-}
-
-static inline AstAggr*
-ast_aggr_match(AstList* list, Str* name)
-{
-	auto node = list->list;
-	while (node)
-	{
-		auto aggr = ast_aggr_of(node->ast);
-		if (aggr->label)
-		{
-			if (str_compare(&aggr->label->string, name))
-				return aggr;
-		}
-		node = node->next;
-	}
-	return NULL;
 }
 
 static inline void

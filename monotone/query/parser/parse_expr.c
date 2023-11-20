@@ -176,7 +176,7 @@ done:;
 static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
-	if (unlikely(expr == NULL))
+	if (unlikely(expr == NULL || !expr->aggs))
 		error("unexpected aggregate function usage");
 
 	// function (expr)
@@ -191,18 +191,6 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	if (! stmt_if(self, ')'))
 		error("%.*s(expr<)> expected", str_size(&function->string),
 		      str_of(&function->string));
-
-	// [label]
-	auto label = stmt_if(self, KNAME);
-	if (label)
-	{
-		if (ast_aggr_match(&self->aggr_list, &label->string))
-			error("<%.*s()> aggregate label '%.*s'redefined",
-			      str_size(&function->string),
-			      str_of(&function->string),
-			      str_size(&label->string),
-			      str_of(&label->string));
-	}
 
 	// get aggregate type
 	int id;
@@ -228,14 +216,8 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	}
 
 	// create aggregate ast node
-	int order = expr->aggs->count;
-	auto aggr = ast_aggr_allocate(function->id, id, order, arg, label);
-	if (expr)
-	{
-		ast_list_add(expr->aggs, &aggr->ast);
-		ast_list_add(&self->aggr_list, &aggr->ast);
-	}
-
+	auto aggr = ast_aggr_allocate(id, expr->aggs->count, arg);
+	ast_list_add(expr->aggs, &aggr->ast);
 	return &aggr->ast;
 }
 
