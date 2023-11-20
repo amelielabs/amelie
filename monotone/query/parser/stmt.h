@@ -38,7 +38,6 @@ struct Stmt
 	StmtId     id;
 	int        order;
 	Ast*       ast;
-	AstList    aggr_list;
 	TargetList target_list;
 	Lex*       lex;
 	Db*        db;
@@ -54,7 +53,6 @@ stmt_allocate(int order, Db* db, Lex* lex)
 	self->ast   = NULL;
 	self->lex   = lex;
 	self->db    = db;
-	ast_list_init(&self->aggr_list);
 	target_list_init(&self->target_list);
 	list_init(&self->link);
 	return self;

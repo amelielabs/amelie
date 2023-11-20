@@ -30,16 +30,19 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 	{
 		auto expr = parse_expr(self, NULL);
 
-		// [AS label]
+		// [AS name]
+		// [name]
 		Ast* label = NULL;
 		if (stmt_if(self, KAS))
 		{
-			// name
-			auto name = stmt_next(self);
-			if (name->id != KNAME && name->id != KNAME_COMPOUND)
-				error("GROUP BY AS <name> expected");
-			label = name;
-		} else
+			label = stmt_if(self, KNAME);
+			if (unlikely(! label))
+				error("AS <label> expected");
+		} else {
+			label = stmt_if(self, KNAME);
+		}
+
+		if (! label)
 		{
 			if (expr->id == KNAME ||
 			    expr->id == KNAME_COMPOUND)
@@ -139,6 +142,34 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	}
 }
 
+static inline void
+parse_select_label(Stmt* self, AstSelect* select, Ast* expr)
+{
+	// [AS name]
+	// [name]
+	Ast* name = NULL;
+	if (stmt_if(self, KAS))
+	{
+		name = stmt_if(self, KNAME);
+		if (unlikely(! name))
+			error("AS <label> expected");
+	} else {
+		name = stmt_if(self, KNAME);
+	}
+	if (! name)
+		return;
+
+	// ensure label does not exists
+	auto label = ast_label_match(&select->expr_labels, &name->string);
+	if (unlikely(label))
+		error("label <%.*s> redefined", str_size(&name->string),
+		      str_of(&name->string));
+
+	// create label
+	label = ast_label_allocate(name, expr, select->expr_count);
+	ast_list_add(&select->expr_labels, &label->ast);
+}
+
 hot AstSelect*
 parse_select(Stmt* self)
 {
@@ -168,6 +199,10 @@ parse_select(Stmt* self)
 		else
 			expr_prev->next = expr;
 		expr_prev = expr;
+
+		// [AS name]
+		// [name]
+		parse_select_label(self, select, expr);
 		select->expr_count++;
 
 		// ,
@@ -192,7 +227,10 @@ parse_select(Stmt* self)
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
+	{
 		select->target = parse_from(self, level);
+		select->target->labels = &select->expr_labels;
+	}
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))

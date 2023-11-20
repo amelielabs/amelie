@@ -124,6 +124,7 @@ enum
 	KAVG,
 	KMIN,
 	KMAX,
+	KAGGR,
 
 	KDELETE,
 	KFROM,

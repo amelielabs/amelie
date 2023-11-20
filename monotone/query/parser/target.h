@@ -28,6 +28,7 @@ struct Target
 	Ast*       expr_on;
 	int        rexpr;
 	// target
+	AstList*   labels;
 	Ast*       plan;
 	Table*     table;
 	// link
@@ -57,6 +58,7 @@ target_init(Target* self, Table* table)
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
+	self->labels          = NULL;
 	self->plan            = NULL;
 	self->table           = table;
 	self->outer           = NULL;

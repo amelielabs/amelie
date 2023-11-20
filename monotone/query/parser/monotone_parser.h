@@ -34,6 +34,7 @@
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
 #include "parser/parse_from.h"
+#include "parser/parse_label.h"
 #include "parser/parse_aggr.h"
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"

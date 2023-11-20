@@ -14,6 +14,7 @@ struct AstSelect
 	Ast*    expr;
 	int     expr_count;
 	AstList expr_aggs;
+	AstList expr_labels;
 	Ast*    expr_where;
 	Ast*    expr_having;
 	Ast*    expr_limit;
@@ -56,6 +57,7 @@ ast_select_allocate(void)
 	self->rset                = -1;
 	self->rgroup              = -1;
 	ast_list_init(&self->expr_aggs);
+	ast_list_init(&self->expr_labels);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
 	return self;
