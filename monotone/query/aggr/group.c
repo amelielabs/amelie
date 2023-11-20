@@ -277,13 +277,18 @@ group_get_aggr(Group* self, GroupNode* node, int pos, Value* value)
 	return aggr_convert(aggr, state, value);
 }
 
-Buf*
-group_get(Group* self, GroupNode* node)
+void
+group_get(Group* self, GroupNode* node, Value* result)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	encode_array(buf, self->keys_count);
-	for (int i = 0; i < self->keys_count; i++)
-		value_write(&node->keys[i], buf);
-	msg_end(buf);
-	return buf;
+	if (self->keys_count > 1)
+	{
+		auto buf = msg_create(MSG_OBJECT);
+		encode_array(buf, self->keys_count);
+		for (int i = 0; i < self->keys_count; i++)
+			value_write(&node->keys[i], buf);
+		auto msg = msg_of(buf);
+		value_set_data(result, msg->data, msg_data_size(msg), buf);
+	} else {
+		value_copy(result, &node->keys[0]);
+	}
 }

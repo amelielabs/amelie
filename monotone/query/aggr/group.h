@@ -32,7 +32,7 @@ group_create(int);
 void group_add_aggr(Group*, AggrIf*);
 void group_add(Group*, Stack*);
 void group_get_aggr(Group*, GroupNode*, int, Value*);
-Buf* group_get(Group*, GroupNode*);
+void group_get(Group*, GroupNode*, Value*);
 
 static inline GroupNode*
 group_at(Group* self, int pos)
