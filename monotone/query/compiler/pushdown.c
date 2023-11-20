@@ -83,7 +83,7 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	while (node)
 	{
 		auto aggr = ast_aggr_of(node->ast);
-		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->aggregate_id, aggr->order);
+		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->id, aggr->order);
 		node = node->next;
 	}
 

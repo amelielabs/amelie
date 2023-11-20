@@ -335,6 +335,13 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	Str ref;
 	str_set_str(&ref, path);
 
+	// get name from the compound path
+	//
+	// name.path
+	//
+	Str  name;
+	bool compound = str_split_or_set(&ref, &name, '.');
+
 	// get target schema definition
 	Def* def = NULL;
 	if (target->view)
@@ -347,33 +354,32 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	int column_order = -1;
 	if (def)
 	{
-		// get column name from the compound path
-		//
-		// column.path
-		//
-		Str  name;
-		bool compound = str_split_or_set(&ref, &name, '.');
-
 		// find column
 		auto column = def_find_column(def, &name);
 		if (column)
-		{
 			column_order = column->order;
-
-			// exclude column name from the path
-
-			// column.path
-			// column
-			if (compound)
-			{
-				// exclude column name from the path
-				str_advance(&ref, str_size(&name) + 1);
-			} else 
-			{
-				// path is empty, using column order
-				str_init(&ref);
-			}
+	} else
+	{
+		// try to resolve target expr labels
+		if (target->expr && target->expr->id == KSELECT)
+		{
+			auto select = ast_select_of(target->expr);
+			auto label  = ast_label_match(&select->expr_labels, &name);
+			if (label)
+				column_order = label->order;
 		}
+	}
+
+	// exclude column or label name from the path
+	if (column_order != -1)
+	{
+		// name.path
+		// name
+		// exclude name from the path
+		if (compound)
+			str_advance(&ref, str_size(&name) + 1);
+		else
+			str_init(&ref);
 	}
 
 	// current[name]
@@ -404,22 +410,6 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 	if (target_list->count == 1)
 		return emit_cursor_idx(self, target, name);
 
-	// match aggregate label first
-	auto aggr = ast_aggr_match(&self->current->aggr_list, name);
-	if (aggr)
-	{
-		// WHERE aggr_label
-		assert(aggr->target);
-		if (unlikely(aggr->target->group_redirect == NULL))
-			error("<%.*s> aggregate target is out of scope",
-			      str_size(name), str_of(name));
-
-		return op3(self, CGROUP_GET_AGGR,
-		           rpin(self),
-		           aggr->target->group_redirect->id,
-		           aggr->order);
-	}
-
 	// GROUP BY / aggregation case
 	if (target_is_join(target))
 		error("<%.*s> path is ambiguous for JOIN",
@@ -429,15 +419,28 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 	if (target->group_redirect == NULL)
 		return emit_cursor_idx(self, target, name);
 
-	// SELECT or HAVING (group by target)
+	// SELECT name GROUP BY
+	// SELECT GROUP BY HAVING name
 
-	// name must match one of the group by keys
+	// name must match
+	//  - expression label
+	//  - group by key label
+	//  - group by key
 
 	// use main target in case of group by target scan
 	auto main = target;
 	if (main->group_main)
 		main = target->group_main;
 
+	// match select label (aggregate or expression)
+	if (main->labels)
+	{
+		auto label = ast_label_match(main->labels, name);
+		if (label)
+			return emit_expr(self, target, label->expr);
+	}
+
+	// match group by key (group by key label)
 	auto group = ast_group_match(&main->group_by, name);
 	if (group == NULL)
 		error("<%.*s> only GROUP BY keys can be selected",
@@ -467,12 +470,12 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	if (match == NULL)
 	{
 		if (unlikely(! target))
-			error("<%.*s> target cannot be found",
-			      str_size(&name), str_of(&name));
+			error("<%.*s> target cannot be found", str_size(&name),
+			      str_of(&name));
 
 		if (target_is_join(target))
-			error("<%.*s> path is ambiguous for JOIN",
-			      str_size(&name), str_of(&name));
+			error("<%.*s> path is ambiguous for JOIN", str_size(&name),
+			      str_of(&name));
 
 		// use current target if table not found
 		match = target;
@@ -487,9 +490,10 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	if (match->group_redirect == NULL)
 		return emit_cursor_idx(self, match, &path);
 
-	// GROUP BY / aggregation 
+	// GROUP BY / aggregation (group by target)
 
-	// SELECT or HAVING (group by target)
+	// SELECT path GROUP BY
+	// SELECT GROUP BY HAVING path
 
 	// match group by list using the outer target
 	auto outer = match->outer;
@@ -529,6 +533,11 @@ emit_aggregate(Compiler* self, Ast* ast)
 
 	auto target = aggr->target;
 	assert(target != NULL);
+
+	if (unlikely(target->group_redirect == NULL))
+		error("<%.*s> aggregate target is out of scope",
+		      str_size(&target->name), str_of(&target->name));
+
 	return op3(self, CGROUP_GET_AGGR, rpin(self), target->group_redirect->id,
 	           aggr->order);
 }
@@ -694,12 +703,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KSELECT:
 		return emit_select(self, ast, true);
 
-	// aggregates
-	case KCOUNT:
-	case KSUM:
-	case KAVG:
-	case KMIN:
-	case KMAX:
+	// aggregate
+	case KAGGR:
 		return emit_aggregate(self, ast);
 
 	default:
