@@ -1,0 +1,60 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+create table ref (id int primary key, data int default 0) reference
+insert into ref (id) values (1), (2), (3)
+
+create table test (id int primary key, data int default 0)
+insert into test (id) values (1), (2), (3)
+
+# test: select from table, expr
+explain select test.*, t.* from test, [1,2,3] t
+select test.*, t.* from test, [1,2,3] t
+
+# test: select from expr, table
+explain select test.*, t.* from [1,2,3] t, test
+select test.*, t.* from [1,2,3] t, test
+
+# test: select from table, reference
+explain select test.*, ref.* from test, ref
+select test.*, ref.* from test, ref
+
+# test: select from reference, table
+explain select test.*, ref.* from ref, test
+select test.*, ref.* from ref, test
+
+# test: select from table, table
+explain select t.* from test, test t
+select t.* from test, test t
+
+# test: select from table join expr
+explain select test.*, t.* from test join [1,2,3] t
+select test.*, t.* from test join [1,2,3] t
+
+# test: select from table join expr on
+explain select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
+select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
+
+# test: select from table join expr on #2
+explain select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
+select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
+
+# test: select from table join reference
+explain select test.id, ref.id from test join ref
+select test.id, ref.id from test join ref
+
+# test: select from table join reference on
+explain select test.id, ref.id from test join ref on (test.id = ref.id)
+select test.id, ref.id from test join ref on (test.id = ref.id)
+
+# test: select from table join reference on #2
+explain select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
+select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
+
+drop table ref
+drop table test
+
+disconnect S0
+env_close E0
