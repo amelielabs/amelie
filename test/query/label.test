@@ -1,0 +1,51 @@
+#
+
+env_open E0
+connect E0 S0
+
+create table test (id int primary key, data int default 1) reference
+insert into test (id) values (1), (2), (3)
+
+# test: select label
+select 1 name
+
+# test: select as label
+select 1 AS name
+
+# test: select from expr having label
+select * name from [1,2,3] group by *
+select * name from [1,2,3] group by * having name > 1
+
+# test: select from reference having label
+select id z from test group by id having z > 1
+select id z from test group by id having id > 1
+
+# test: select from reference having label aggr
+select id, count(*) as z from test group by id having z >= 1
+select id, count(*) as z from test group by id having z > 1
+select id from test group by id having count(*) >= 1
+
+# test: select from reference group by label
+select z from test group by id z having z >= 1
+select * from test group by id z having z >= 1
+
+# test: select from reference group by as label
+select z from test group by id as z having z >= 1
+select * from test group by id as z having z >= 1
+
+# test: select from (select from reference) label
+select * from (select * from test)
+select t.* from (select * from test) t
+
+# test: select from (select label from reference) label
+select t.id from (select * as id from test) t
+select t.id from (select * id from test) t
+select t.id from (select * from test) t
+
+# test: select from (select {} from reference) label
+select t.id from (select {"id": id} from test) t
+
+drop table test
+
+disconnect S0
+env_close E0
