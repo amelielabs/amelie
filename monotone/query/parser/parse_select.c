@@ -67,7 +67,6 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.aggs = &select->expr_aggs;
-	ctx.aggs_global = &self->aggr_list;
 
 	for (;;)
 	{
@@ -112,7 +111,6 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.aggs = &select->expr_aggs;
-	ctx.aggs_global = &self->aggr_list;
 
 	Ast* expr_prev = NULL;
 	for (;;)
@@ -160,7 +158,6 @@ parse_select(Stmt* self)
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.aggs = &select->expr_aggs;
-	ctx.aggs_global = &self->aggr_list;
 
 	Ast* expr_prev = NULL;
 	for (;;)

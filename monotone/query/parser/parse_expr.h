@@ -11,7 +11,6 @@ typedef struct Expr Expr;
 struct Expr
 {
 	AstList* aggs;
-	AstList* aggs_global;
 };
 
 static inline void

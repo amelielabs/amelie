@@ -196,7 +196,7 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	auto label = stmt_if(self, KNAME);
 	if (label)
 	{
-		if (ast_aggr_match(expr->aggs_global, &label->string))
+		if (ast_aggr_match(&self->aggr_list, &label->string))
 			error("<%.*s()> aggregate label '%.*s'redefined",
 			      str_size(&function->string),
 			      str_of(&function->string),
@@ -233,7 +233,7 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	if (expr)
 	{
 		ast_list_add(expr->aggs, &aggr->ast);
-		ast_list_add(expr->aggs_global, &aggr->ast);
+		ast_list_add(&self->aggr_list, &aggr->ast);
 	}
 
 	return &aggr->ast;
