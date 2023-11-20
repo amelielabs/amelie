@@ -39,7 +39,6 @@ select id, 100 + id from test group by id
 explain select * from (select * from test group by id)
 select * from (select * from test group by id)
 select 100 + * from (select * from test group by id)
-select 100 + *[0] from (select * from test group by id)
 select * from (select id, 100 + id from test group by id)
 
 # test: select from reference group by limit

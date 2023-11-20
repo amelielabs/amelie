@@ -39,8 +39,10 @@ select id, 100 + id from test group by id
 # test: select from (select from table group by)
 explain select * from (select * from test group by id)
 select * from (select * from test group by id)
+
+explain select 100 + * from (select * from test group by id)
 select 100 + * from (select * from test group by id)
-select 100 + *[0] from (select * from test group by id)
+
 select * from (select id, 100 + id from test group by id)
 
 # test: select from table group by limit

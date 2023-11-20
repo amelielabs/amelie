@@ -63,11 +63,11 @@ bytecode [coordinator]
 
 "
 select * from test group by id
-[0]
-[1]
-[2]
-[3]
-[4]
+0
+1
+2
+3
+4
 explain select * from test group by data
 "
 bytecode [coordinator]
@@ -92,9 +92,9 @@ bytecode [coordinator]
 
 "
 select * from test group by data
-[0]
-[1]
-[2]
+0
+1
+2
 # test: select from reference group by keys only
 select data from test group by id
 query: on_error
@@ -162,15 +162,12 @@ bytecode [coordinator]
 
 "
 select * from (select * from test group by id)
-[0]
-[1]
-[2]
-[3]
-[4]
+0
+1
+2
+3
+4
 select 100 + * from (select * from test group by id)
-query: on_error
-{"code": 1, "msg": "bad + expression types"}
-select 100 + *[0] from (select * from test group by id)
 100
 101
 102

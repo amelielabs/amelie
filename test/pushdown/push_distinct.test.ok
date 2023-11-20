@@ -1269,7 +1269,7 @@ bytecode [shard 2]
 
 "
 select distinct on (count(*)) * from test group by id
-[0]
+0
 select distinct on (count(*)) count(*) from test group by id
 1
 select distinct count(*) from test group by id
@@ -1915,7 +1915,7 @@ bytecode [coordinator]
 
 "
 select distinct on (count(*)) * from test group by id
-[0]
+0
 select distinct on (count(*)) count(*) from test group by id
 1
 select distinct count(*) from test group by id
@@ -2260,17 +2260,17 @@ bytecode [coordinator]
 
 "
 select distinct *, count(*) from [0,1,2,3,4,2,3,4] group by *
-[[0], 1]
-[[1], 1]
-[[2], 2]
-[[3], 2]
-[[4], 2]
+[0, 1]
+[1, 1]
+[2, 2]
+[3, 2]
+[4, 2]
 select distinct * from [0,1,2,3,4,2,3,4] group by *
-[0]
-[1]
-[2]
-[3]
-[4]
+0
+1
+2
+3
+4
 select distinct count(*) from [0,1,2,3,4,2,3,4] group by *
 1
 2

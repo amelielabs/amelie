@@ -143,11 +143,11 @@ bytecode [shard 2]
 
 "
 select * from test group by id
-[0]
-[1]
-[2]
-[3]
-[4]
+0
+1
+2
+3
+4
 explain select * from test group by data
 "
 bytecode [coordinator]
@@ -212,9 +212,9 @@ bytecode [shard 2]
 
 "
 select * from test group by data
-[0]
-[1]
-[2]
+0
+1
+2
 # test: select from table group by keys only
 select data from test group by id
 query: on_error
@@ -322,15 +322,84 @@ bytecode [shard 2]
 
 "
 select * from (select * from test group by id)
-[0]
-[1]
-[2]
-[3]
-[4]
+0
+1
+2
+3
+4
+explain select 100 + * from (select * from test group by id)
+"
+bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1    group_merge_recv        0      0      0
+ 2                 set        1      0      0
+ 3    cursor_open_expr        1      0      5
+ 4                 jmp        8      0      0
+ 5         cursor_read        2      1      0
+ 6             set_add        1      2      0
+ 7         cursor_next        1      5      0
+ 8        cursor_close        1      0      0
+ 9    cursor_open_expr        2      1     11
+10                 jmp       16      0      0
+11                 int        0    100      0
+12         cursor_read        2      2      0
+13                 add        3      0      2
+14                send        3      0      0
+15         cursor_next        2     11      0
+16        cursor_close        2      0      0
+17                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10               ready        0      0      0
+11                 ret        0      0      0
+
+
+bytecode [shard 1]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10               ready        0      0      0
+11                 ret        0      0      0
+
+
+bytecode [shard 2]
+--------
+ 0               group        0      1      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        9      0      0
+ 5          cursor_idx        1      0      0
+ 6                push        1      0      0
+ 7           group_add        0      0      0
+ 8         cursor_next        0      5      0
+ 9        cursor_close        0      0      0
+10               ready        0      0      0
+11                 ret        0      0      0
+
+"
 select 100 + * from (select * from test group by id)
-query: on_error
-{"code": 1, "msg": "bad + expression types"}
-select 100 + *[0] from (select * from test group by id)
 100
 101
 102

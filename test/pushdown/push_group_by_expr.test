@@ -13,7 +13,7 @@ select * from [0,1,2,3,4] group by *
 
 # test: select expr from expr group by
 explain select 100 + * from [0,1,2,3,4] group by *
-select 100 + *[0] from [0,1,2,3,4] group by *
+select 100 + * from [0,1,2,3,4] group by *
 
 # test: select from (select from expr group by)
 explain select * from (select * from [0,1,2,3,4] group by *)
@@ -60,32 +60,32 @@ select * from (select * from [0,1,2,3,4] group by * offset 2)
 select * from (select * from [0,1,2,3,4] group by * offset 3)
 
 # test: select from table group by having
-explain select * from [0,1,2,3,4] group by * having *[0] >= 3
-select * from [0,1,2,3,4] group by * having *[0] >= 3
-select * from [0,1,2,3,4] group by * having *[0] = 0
-select * from [0,1,2,3,4] group by * having *[0] = 1
-select * from [0,1,2,3,4] group by * having *[0] = 2
-select * from [0,1,2,3,4] group by * having *[0] = 3
-select * from [0,1,2,3,4] group by * having *[0] = 4
-select * from [0,1,2,3,4] group by * having *[0] = 5
-select * from [0,1,2,3,4] group by * having *[0] >= 1 and *[0] <= 3
+explain select * from [0,1,2,3,4] group by * having * >= 3
+select * from [0,1,2,3,4] group by * having * >= 3
+select * from [0,1,2,3,4] group by * having * = 0
+select * from [0,1,2,3,4] group by * having * = 1
+select * from [0,1,2,3,4] group by * having * = 2
+select * from [0,1,2,3,4] group by * having * = 3
+select * from [0,1,2,3,4] group by * having * = 4
+select * from [0,1,2,3,4] group by * having * = 5
+select * from [0,1,2,3,4] group by * having * >= 1 and * <= 3
 
 # test: select from table group by having limit
-explain select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 2
+explain select * from [0,1,2,3,4] group by * having * >= 1 limit 1
+select * from [0,1,2,3,4] group by * having * >= 1 limit 1
+select * from [0,1,2,3,4] group by * having * >= 1 limit 2
 
 # test: select from table group by having limit/offset
-explain select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 2
-select * from [0,1,2,3,4] group by * having *[0] >= 1 limit 1 offset 3
+explain select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 1
+select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 1
+select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 2
+select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 3
 
 # test: select from table group by having offset
-explain select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 1
-select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 2
-select * from [0,1,2,3,4] group by * having *[0] >= 1 offset 3
+explain select * from [0,1,2,3,4] group by * having * >= 1 offset 1
+select * from [0,1,2,3,4] group by * having * >= 1 offset 1
+select * from [0,1,2,3,4] group by * having * >= 1 offset 2
+select * from [0,1,2,3,4] group by * having * >= 1 offset 3
 
 disconnect S0
 env_close E0
