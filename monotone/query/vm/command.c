@@ -277,9 +277,7 @@ ccursor_read(Vm* self, Op* op)
 	case CURSOR_GROUP:
 	{
 		auto node = group_at(cursor->group, cursor->group_pos);
-		auto buf  = group_get(cursor->group, node);
-		auto msg  = msg_of(buf);
-		value_set_data(a, msg->data, msg_data_size(msg), buf);
+		group_get(cursor->group, node, a);
 		break;
 	}
 	default:
