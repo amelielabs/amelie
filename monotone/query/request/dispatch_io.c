@@ -166,6 +166,8 @@ dispatch_drain(Dispatch* self)
 	for (int order = 0; order < self->set_size; order++)
 	{
 		auto req = dispatch_at(self, order);
+		if (! req)
+			continue;
 		result_reset(&req->result);
 	}
 }
