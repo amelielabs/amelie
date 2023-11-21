@@ -1,0 +1,103 @@
+#
+
+env_open E0 "cluster_shards": 3
+connect E0 S0
+
+create table a (id int primary key, data int default 0)
+create table b (id int primary key, data int default 0)
+
+create table ref (id int primary key, data int default 0) reference
+insert into ref values (0, 8), (1, 8), (2, 8);
+
+# test: insert a select a
+insert into a (id) values (0), (1), (2), (3); select * from a
+
+# test: select a select a
+explain select * from a; select * from a
+select * from a; select * from a
+
+# test: select a select a #2
+begin; select * from a; select * from a; commit
+
+# test: replace a select a
+replace into a values (0, 1), (1, 1), (2, 1); select * from a; abort
+select * from a
+
+# test: replace a select a #2
+begin; replace into a values (0, 1), (1, 1), (2, 1); select * from a; abort; commit
+select * from a
+
+# test: replace a abort select a
+explain replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); abort; select * from a
+replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); abort; select * from a
+select * from a
+
+# test: replace a abort select a #2
+begin; replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); abort; select * from a; commit
+select * from a
+
+# test: replace a insert b
+explain replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
+replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
+select * from a
+select * from b
+
+# test: update a update b abort
+update a set data = 0
+explain update a set data = id; update b set data = id; select * from a; select * from b; abort
+update a set data = id; update b set data = id; select * from a; select * from b; abort
+select * from a
+select * from b
+
+# test: update a update b
+update a set data = 0
+update a set data = id; update b set data = id; select * from a; select * from b;
+select * from a
+select * from b
+
+# test: update a join ref update b
+update a set data = 0
+explain update a, ref set data = ref.data where a.id = ref.id; update b set data = data * 2; select * from a; select * from b;
+update a, ref set data = ref.data where a.id = ref.id; update b set data = data * 2; select * from a; select * from b
+select * from a
+select * from b
+
+# test: update a join ref update b #2
+begin; update a join ref on (a.id = ref.id) set data = ref.data; commit
+select * from a
+select * from b
+
+# test: delete a join ref update b abort
+explain delete from a, ref where a.id = ref.id; update b set data = data * 2; abort
+delete from a, ref where a.id = ref.id; update b set data = data * 2; select * from a; abort
+select * from a
+select * from b
+
+# test: delete a join ref update b
+explain begin; delete from a, ref where a.id = ref.id; update b set data = data * 2; commit
+begin delete from a, ref where a.id = ref.id; update b set data = data * 2; select * from a; commit;
+select * from a
+select * from b
+
+# test: upsert a update b abort
+explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; abort
+insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; abort
+select * from a
+select * from b
+
+# test: upsert a update b
+explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a;
+insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a;
+select * from a
+select * from b
+
+drop table a
+drop table b
+drop table ref
+
+# test: non-transactional commands
+begin; show all; commit
+show all; show all
+
+disconnect S0
+env_close E0
