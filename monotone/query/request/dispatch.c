@@ -129,23 +129,6 @@ dispatch_add(Dispatch* self, int stmt, Route* route)
 }
 
 hot void
-dispatch_copy(Dispatch* self, Code* code, int stmt)
-{
-	auto router = self->router;
-	for (int i = 0; i < router->set_size; i++)
-	{
-		// get route by order
-		auto route = router_at(router, i);
-
-		// add request to the route
-		auto req = dispatch_add(self, stmt, route);
-
-		// append code
-		code_copy(&req->code, code);
-	}
-}
-
-hot void
 dispatch_export(Dispatch* self, LogSet* set)
 {
 	for (int i = 0; i < self->set_size; i++)

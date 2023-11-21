@@ -38,12 +38,6 @@ code_reset(Code* self)
 	buf_reset(&self->code);
 }
 
-static inline void
-code_copy(Code* self, Code* from)
-{
-	buf_write(&self->code, from->code.start, buf_size(&from->code));
-}
-
 static inline int
 code_count(Code* self)
 {

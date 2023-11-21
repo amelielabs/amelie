@@ -271,3 +271,42 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 
 	buf_printf(output, "\n");
 }
+
+enum {
+	REL_NONE = 0,
+	REL_A    = 1 << 0,
+	REL_B    = 1 << 1,
+	REL_C    = 1 << 2,
+	REL_D    = 1 << 3
+};
+
+static const uint8_t
+relocate_map[] =
+{
+	[CJMP]              = REL_A,
+	[CJTR]              = REL_A,
+	[CJNTR]             = REL_A,
+	[CCNTR_GTE]         = REL_C,
+	[CCNTR_LTE]         = REL_C,
+	[CCURSOR_OPEN]      = REL_C,
+	[CCURSOR_OPEN_EXPR] = REL_C,
+	[CCURSOR_NEXT]      = REL_B,
+	[CUPSERT]           = REL_D
+};
+
+hot void
+op_relocate(Code* self, Code* src)
+{
+	int offset = code_count(self);
+	auto op    = (Op*)src->code.start;
+	auto end   = (Op*)src->code.position;
+	for (; op < end; op++)
+	{
+		auto ref = relocate_map[op->op];
+		code_add(self, op->op,
+		         ref & REL_A ? op->a + offset: op->a,
+		         ref & REL_B ? op->b + offset: op->b,
+		         ref & REL_C ? op->c + offset: op->c,
+		         ref & REL_D ? op->d + offset: op->d);
+	}
+}
