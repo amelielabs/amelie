@@ -24,6 +24,7 @@ enum
 	CSEND_SET,
 	CRECV,
 	CREADY,
+	CABORT,
 
 	// misc
 	CSLEEP,

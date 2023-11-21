@@ -39,6 +39,7 @@ OpDesc ops[] =
 	{ CSEND_SET,          "send_set"          },
 	{ CRECV,              "recv"              },
 	{ CREADY,             "ready"             },
+	{ CABORT,             "abort"             },
 
 	// misc
 	{ CSLEEP,             "sleep"             },

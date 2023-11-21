@@ -95,6 +95,7 @@ vm_run(Vm*          self,
 		&&csend_set,
 		&&crecv,
 		&&cready,
+		&&cabort,
 		&&csleep,
 		&&cpush,
 		&&cpop,
@@ -254,6 +255,10 @@ cready:
 	buf = msg_create(MSG_READY);
 	msg_end(buf);
 	portal_write(portal, buf);
+	op_next;
+
+cabort:
+	error("aborted");
 	op_next;
 
 csleep:
