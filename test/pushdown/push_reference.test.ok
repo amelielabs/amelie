@@ -18,7 +18,8 @@ bytecode [coordinator]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8                recv        0      0      0
+ 9                 ret        0      0      0
 
 "
 select * from test
@@ -45,7 +46,8 @@ bytecode [coordinator]
 12                send        1      0      0
 13         cursor_next        1     11      0
 14        cursor_close        1      0      0
-15                 ret        0      0      0
+15                recv        0      0      0
+16                 ret        0      0      0
 
 "
 select * from (select * from test)
@@ -65,7 +67,8 @@ bytecode [coordinator]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8                recv        0      0      0
+ 9                 ret        0      0      0
 
 "
 select (select test.*) from test
@@ -87,7 +90,8 @@ bytecode [coordinator]
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
  9                send        0      0      0
-10                 ret        0      0      0
+10                recv        0      0      0
+11                 ret        0      0      0
 
 "
 select (select * from test)
@@ -122,7 +126,8 @@ bytecode [coordinator]
 22                send        1      0      0
 23         cursor_next        1      9      0
 24        cursor_close        1      0      0
-25                 ret        0      0      0
+25                recv        0      0      0
+26                 ret        0      0      0
 
 "
 select (select a.*, * from test) from [1,2,3] a
@@ -158,7 +163,8 @@ bytecode [coordinator]
 22                send        1      0      0
 23         cursor_next        1      9      0
 24        cursor_close        1      0      0
-25                 ret        0      0      0
+25                recv        0      0      0
+26                 ret        0      0      0
 
 "
 select (select a.*, id from test) from [1,2,3] a
@@ -190,7 +196,8 @@ bytecode [coordinator]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select (select a.*, id from test) from test a
@@ -221,7 +228,8 @@ bytecode [coordinator]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select (select a.id, id from test) from test a
@@ -265,7 +273,8 @@ bytecode [coordinator]
 29                send        1      0      0
 30         cursor_next        2     16      0
 31        cursor_close        2      0      0
-32                 ret        0      0      0
+32                recv        0      0      0
+33                 ret        0      0      0
 
 "
 select (select a.*, id from test) from (select * from [1,2,3]) a
@@ -304,7 +313,8 @@ bytecode [coordinator]
 24                send        1      0      0
 25         cursor_next        2     11      0
 26        cursor_close        2      0      0
-27                 ret        0      0      0
+27                recv        0      0      0
+28                 ret        0      0      0
 
 "
 select (select a.*, id from test) from (select * from test t) a
@@ -344,7 +354,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        2     11      0
 28        cursor_close        2      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select (select a.*[0], id from test) from (select * from test t) a
@@ -379,7 +390,8 @@ bytecode [coordinator]
 20        cursor_close        1      0      0
 21         cursor_next        0      4      0
 22        cursor_close        0      0      0
-23                 ret        0      0      0
+23                recv        0      0      0
+24                 ret        0      0      0
 
 "
 select test.*, t.* from test, [1,2,3] t
@@ -420,7 +432,8 @@ bytecode [coordinator]
 20        cursor_close        1      0      0
 21         cursor_next        0      9      0
 22        cursor_close        0      0      0
-23                 ret        0      0      0
+23                recv        0      0      0
+24                 ret        0      0      0
 
 "
 select test.*, t.* from [1,2,3] t, test
@@ -456,7 +469,8 @@ bytecode [coordinator]
 15        cursor_close        1      0      0
 16         cursor_next        0      4      0
 17        cursor_close        0      0      0
-18                 ret        0      0      0
+18                recv        0      0      0
+19                 ret        0      0      0
 
 "
 select test.*, t.* from test, test t

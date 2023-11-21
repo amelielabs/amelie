@@ -49,7 +49,8 @@ bytecode [coordinator]
 25                send        1      0      0
 26         cursor_next        2     24      0
 27        cursor_close        2      0      0
-28                 ret        0      0      0
+28                recv        0      0      0
+29                 ret        0      0      0
 
 "
 select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)

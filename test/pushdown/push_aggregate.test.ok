@@ -1094,7 +1094,8 @@ bytecode [coordinator]
 17                send        1      0      0
 18         cursor_next        1     16      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select count(*) from test
@@ -1135,7 +1136,8 @@ bytecode [coordinator]
 17                send        1      0      0
 18         cursor_next        1     16      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select count(*) from test
@@ -1165,7 +1167,8 @@ bytecode [coordinator]
 17                send        1      0      0
 18         cursor_next        1     16      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select sum(id) from test
@@ -1197,7 +1200,8 @@ bytecode [coordinator]
 17                send        1      0      0
 18         cursor_next        1     16      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select avg(id) from test
@@ -1264,7 +1268,8 @@ bytecode [coordinator]
 24                send        1      0      0
 25         cursor_next        2     23      0
 26        cursor_close        2      0      0
-27                 ret        0      0      0
+27                recv        0      0      0
+28                 ret        0      0      0
 
 "
 select * from (select count(*) from test)
@@ -1297,7 +1302,8 @@ bytecode [coordinator]
 20                send        1      0      0
 21         cursor_next        1     15      0
 22        cursor_close        1      0      0
-23                 ret        0      0      0
+23                recv        0      0      0
+24                 ret        0      0      0
 
 "
 select id, count(*) from test group by id
@@ -1345,7 +1351,8 @@ bytecode [coordinator]
 27                send        1      0      0
 28         cursor_next        2     26      0
 29        cursor_close        2      0      0
-30                 ret        0      0      0
+30                recv        0      0      0
+31                 ret        0      0      0
 
 "
 select * from (select id, count(*) from test group by id)
@@ -1390,7 +1397,8 @@ bytecode [coordinator]
 24                send        1      0      0
 25         cursor_next        1     15      0
 26        cursor_close        1      0      0
-27                 ret        0      0      0
+27                recv        0      0      0
+28                 ret        0      0      0
 
 "
 select id, count(*) c from test group by id having c >= 1
@@ -1430,7 +1438,8 @@ bytecode [coordinator]
 16                send        1      0      0
 17         cursor_next        1     15      0
 18        cursor_close        1      0      0
-19                 ret        0      0      0
+19                recv        0      0      0
+20                 ret        0      0      0
 
 "
 select count(*) from []
@@ -1469,7 +1478,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        1     25      0
 28        cursor_close        1      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select count(*) from [0,1,2,3,4]
@@ -1508,7 +1518,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        1     25      0
 28        cursor_close        1      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select sum(*) from [0,1,2,3,4]
@@ -1547,7 +1558,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        1     25      0
 28        cursor_close        1      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select avg(*) from [0,1,2,3,4]
@@ -1586,7 +1598,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        1     25      0
 28        cursor_close        1      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select min(*) from [0,1,2,3,4]
@@ -1625,7 +1638,8 @@ bytecode [coordinator]
 26                send        1      0      0
 27         cursor_next        1     25      0
 28        cursor_close        1      0      0
-29                 ret        0      0      0
+29                recv        0      0      0
+30                 ret        0      0      0
 
 "
 select max(*) from [0,1,2,3,4]
@@ -1671,7 +1685,8 @@ bytecode [coordinator]
 33                send        1      0      0
 34         cursor_next        2     32      0
 35        cursor_close        2      0      0
-36                 ret        0      0      0
+36                recv        0      0      0
+37                 ret        0      0      0
 
 "
 select * from (select count(*) from [0,1,2,3,4])
@@ -1713,7 +1728,8 @@ bytecode [coordinator]
 29                send        1      0      0
 30         cursor_next        1     24      0
 31        cursor_close        1      0      0
-32                 ret        0      0      0
+32                recv        0      0      0
+33                 ret        0      0      0
 
 "
 select *, count(*) from [0,1,2,3,4] group by *
@@ -1766,7 +1782,8 @@ bytecode [coordinator]
 36                send        1      0      0
 37         cursor_next        2     35      0
 38        cursor_close        2      0      0
-39                 ret        0      0      0
+39                recv        0      0      0
+40                 ret        0      0      0
 
 "
 select * from (select *, count(*) from [0,1,2,3,4] group by *)
@@ -1816,7 +1833,8 @@ bytecode [coordinator]
 33                send        1      0      0
 34         cursor_next        1     24      0
 35        cursor_close        1      0      0
-36                 ret        0      0      0
+36                recv        0      0      0
+37                 ret        0      0      0
 
 "
 select *, count(*) c from [0,1,2,3,4] group by * having c >= 1

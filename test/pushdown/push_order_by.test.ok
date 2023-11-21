@@ -1190,7 +1190,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select * from test order by id
@@ -1235,7 +1236,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select * from test order by id asc
@@ -1280,7 +1282,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select * from test order by id desc
@@ -1326,7 +1329,8 @@ bytecode [coordinator]
 14                 int        1      1      0
 15               merge        2      0      1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select * from test order by id limit 1
@@ -1397,7 +1401,8 @@ bytecode [coordinator]
 14                 int        1      0      0
 15               merge        2      0      1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select * from test order by id limit 0
@@ -1426,7 +1431,8 @@ bytecode [coordinator]
 14                 int        1      1      0
 15               merge        2      0      1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select * from test order by id desc limit 1
@@ -1498,7 +1504,8 @@ bytecode [coordinator]
 15                 int        2      0      0
 16               merge        3      0      1
 17            send_set        3      0      0
-18                 ret        0      0      0
+18                recv        0      0      0
+19                 ret        0      0      0
 
 "
 select * from test order by id limit 1 offset 0
@@ -1526,7 +1533,8 @@ bytecode [coordinator]
 15                 int        2      1      0
 16               merge        3      0      1
 17            send_set        3      0      0
-18                 ret        0      0      0
+18                recv        0      0      0
+19                 ret        0      0      0
 
 "
 select * from test order by id limit 1 offset 1
@@ -1560,7 +1568,8 @@ bytecode [coordinator]
 15                 int        2      1      0
 16               merge        3      0      1
 17            send_set        3      0      0
-18                 ret        0      0      0
+18                recv        0      0      0
+19                 ret        0      0      0
 
 "
 select * from test order by id desc limit 1 offset 1
@@ -1593,7 +1602,8 @@ bytecode [coordinator]
 14                 int        1      1      0
 15               merge        2      0     -1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select * from test order by id offset 1
@@ -1716,7 +1726,8 @@ bytecode [coordinator]
 14                 int        1      1      0
 15               merge        2      0     -1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select * from test order by id desc offset 1
@@ -1878,7 +1889,8 @@ bytecode [coordinator]
 52                push        1      0      0
 53               merge        1      0     -1
 54            send_set        1      0      0
-55                 ret        0      0      0
+55                recv        0      0      0
+56                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
@@ -1962,7 +1974,8 @@ bytecode [coordinator]
 52                push        1      0      0
 53               merge        1      0     -1
 54            send_set        1      0      0
-55                 ret        0      0      0
+55                recv        0      0      0
+56                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * asc
@@ -2046,7 +2059,8 @@ bytecode [coordinator]
 52                push        1      0      0
 53               merge        1      0     -1
 54            send_set        1      0      0
-55                 ret        0      0      0
+55                recv        0      0      0
+56                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc
@@ -2131,7 +2145,8 @@ bytecode [coordinator]
 53                 int        1      1      0
 54               merge        2      0      1
 55            send_set        2      0      0
-56                 ret        0      0      0
+56                recv        0      0      0
+57                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1
@@ -2241,7 +2256,8 @@ bytecode [coordinator]
 53                 int        1      0      0
 54               merge        2      0      1
 55            send_set        2      0      0
-56                 ret        0      0      0
+56                recv        0      0      0
+57                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 0
@@ -2309,7 +2325,8 @@ bytecode [coordinator]
 53                 int        1      1      0
 54               merge        2      0      1
 55            send_set        2      0      0
-56                 ret        0      0      0
+56                recv        0      0      0
+57                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1
@@ -2420,7 +2437,8 @@ bytecode [coordinator]
 54                 int        2      0      0
 55               merge        3      0      1
 56            send_set        3      0      0
-57                 ret        0      0      0
+57                recv        0      0      0
+58                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 0
@@ -2487,7 +2505,8 @@ bytecode [coordinator]
 54                 int        2      1      0
 55               merge        3      0      1
 56            send_set        3      0      0
-57                 ret        0      0      0
+57                recv        0      0      0
+58                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 1
@@ -2560,7 +2579,8 @@ bytecode [coordinator]
 54                 int        2      1      0
 55               merge        3      0      1
 56            send_set        3      0      0
-57                 ret        0      0      0
+57                recv        0      0      0
+58                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 0
@@ -2634,7 +2654,8 @@ bytecode [coordinator]
 53                 int        1      1      0
 54               merge        2      0     -1
 55            send_set        2      0      0
-56                 ret        0      0      0
+56                recv        0      0      0
+57                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 1
@@ -2796,7 +2817,8 @@ bytecode [coordinator]
 53                 int        1      1      0
 54               merge        2      0     -1
 55            send_set        2      0      0
-56                 ret        0      0      0
+56                recv        0      0      0
+57                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 1

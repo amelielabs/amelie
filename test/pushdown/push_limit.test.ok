@@ -592,7 +592,8 @@ bytecode [coordinator]
  8                send        0      0      0
  9         cursor_next        0      6      0
 10        cursor_close        0      0      0
-11                 ret        0      0      0
+11                recv        0      0      0
+12                 ret        0      0      0
 
 "
 select * from test limit 1
@@ -657,7 +658,8 @@ bytecode [coordinator]
  8                send        0      0      0
  9         cursor_next        0      6      0
 10        cursor_close        0      0      0
-11                 ret        0      0      0
+11                recv        0      0      0
+12                 ret        0      0      0
 
 "
 select * from test limit 0
@@ -683,7 +685,8 @@ bytecode [coordinator]
 11                send        0      0      0
 12         cursor_next        0      8      0
 13        cursor_close        0      0      0
-14                 ret        0      0      0
+14                recv        0      0      0
+15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 0
@@ -707,7 +710,8 @@ bytecode [coordinator]
 11                send        0      0      0
 12         cursor_next        0      8      0
 13        cursor_close        0      0      0
-14                 ret        0      0      0
+14                recv        0      0      0
+15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 1
@@ -759,7 +763,8 @@ bytecode [coordinator]
  8                send        0      0      0
  9         cursor_next        0      6      0
 10        cursor_close        0      0      0
-11                 ret        0      0      0
+11                recv        0      0      0
+12                 ret        0      0      0
 
 "
 select * from test offset 1
@@ -937,7 +942,8 @@ bytecode [coordinator]
 47                send        1      0      0
 48         cursor_next        0     45      0
 49        cursor_close        0      0      0
-50                 ret        0      0      0
+50                recv        0      0      0
+51                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
@@ -1041,7 +1047,8 @@ bytecode [coordinator]
 47                send        1      0      0
 48         cursor_next        0     45      0
 49        cursor_close        0      0      0
-50                 ret        0      0      0
+50                recv        0      0      0
+51                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
@@ -1106,7 +1113,8 @@ bytecode [coordinator]
 50                send        1      0      0
 51         cursor_next        0     47      0
 52        cursor_close        0      0      0
-53                 ret        0      0      0
+53                recv        0      0      0
+54                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
@@ -1175,7 +1183,8 @@ bytecode [coordinator]
 50                send        1      0      0
 51         cursor_next        0     47      0
 52        cursor_close        0      0      0
-53                 ret        0      0      0
+53                recv        0      0      0
+54                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
@@ -1249,7 +1258,8 @@ bytecode [coordinator]
 47                send        1      0      0
 48         cursor_next        0     45      0
 49        cursor_close        0      0      0
-50                 ret        0      0      0
+50                recv        0      0      0
+51                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1

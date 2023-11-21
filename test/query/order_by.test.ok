@@ -37,7 +37,8 @@ bytecode [coordinator]
 18                push        1      0      0
 19               merge        1      0     -1
 20            send_set        1      0      0
-21                 ret        0      0      0
+21                recv        0      0      0
+22                 ret        0      0      0
 
 "
 select * from 1 order by *

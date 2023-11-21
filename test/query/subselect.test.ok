@@ -75,7 +75,8 @@ bytecode [coordinator]
 10                send        1      0      0
 11         cursor_next        0      9      0
 12        cursor_close        0      0      0
-13                 ret        0      0      0
+13                recv        0      0      0
+14                 ret        0      0      0
 
 "
 select (select t.*) from [1,2,3] t
@@ -117,7 +118,8 @@ bytecode [coordinator]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8                recv        0      0      0
+ 9                 ret        0      0      0
 
 "
 select (select test.*) from test
@@ -148,7 +150,8 @@ bytecode [coordinator]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8                recv        0      0      0
+ 9                 ret        0      0      0
 
 "
 select (select test.id) from test
@@ -171,7 +174,8 @@ bytecode [coordinator]
  5                send        0      0      0
  6         cursor_next        0      4      0
  7        cursor_close        0      0      0
- 8                 ret        0      0      0
+ 8                recv        0      0      0
+ 9                 ret        0      0      0
 
 "
 select (select t.id) from test
@@ -308,7 +312,8 @@ bytecode [coordinator]
 12                send        1      0      0
 13         cursor_next        1     11      0
 14        cursor_close        1      0      0
-15                 ret        0      0      0
+15                recv        0      0      0
+16                 ret        0      0      0
 
 "
 # test: select target.* from (select from reference)
@@ -394,7 +399,8 @@ bytecode [coordinator]
 10                send        1      0      0
 11         cursor_next        0      9      0
 12        cursor_close        0      0      0
-13                 ret        0      0      0
+13                recv        0      0      0
+14                 ret        0      0      0
 
 "
 select (select t.*) from test_view t
@@ -441,7 +447,8 @@ bytecode [coordinator]
 12                send        1      0      0
 13         cursor_next        1     11      0
 14        cursor_close        1      0      0
-15                 ret        0      0      0
+15                recv        0      0      0
+16                 ret        0      0      0
 
 "
 select * from test_view
@@ -469,7 +476,8 @@ bytecode [coordinator]
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
  9                send        0      0      0
-10                 ret        0      0      0
+10                recv        0      0      0
+11                 ret        0      0      0
 
 "
 select (select * from test)
@@ -501,7 +509,8 @@ bytecode [coordinator]
 13                send        0      0      0
 14         cursor_next        1      4      0
 15        cursor_close        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 # test: select (select from reference) from reference #2
@@ -529,7 +538,8 @@ bytecode [coordinator]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select (select inner.* from test inner where test.id = inner.id) from test
@@ -565,7 +575,8 @@ bytecode [coordinator]
 17                send        0      0      0
 18         cursor_next        1      4      0
 19        cursor_close        1      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select (select * from b where a.id = b.id) from a
@@ -603,7 +614,8 @@ bytecode [coordinator]
 19                send        0      0      0
 20         cursor_next        0      4      0
 21        cursor_close        0      0      0
-22                 ret        0      0      0
+22                recv        0      0      0
+23                 ret        0      0      0
 
 "
 select * from a where (select true from b where a.id = b.id)
@@ -632,7 +644,8 @@ bytecode [coordinator]
  9                push        0      0      0
 10                call        0      -      1      # public.sizeof()
 11                send        0      0      0
-12                 ret        0      0      0
+12                recv        0      0      0
+13                 ret        0      0      0
 
 "
 select sizeof(select * from a)
@@ -653,7 +666,8 @@ bytecode [coordinator]
  9                 int        1      0      0
 10                 idx        2      0      1
 11                send        2      0      0
-12                 ret        0      0      0
+12                recv        0      0      0
+13                 ret        0      0      0
 
 "
 select (select * from a)[0]
@@ -683,7 +697,8 @@ bytecode [coordinator]
 17        cursor_close        1      0      0
 18                 add        2      0      1
 19                send        2      0      0
-20                 ret        0      0      0
+20                recv        0      0      0
+21                 ret        0      0      0
 
 "
 select (select a.* from a) + (select b.* from b)

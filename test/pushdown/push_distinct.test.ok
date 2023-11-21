@@ -1318,7 +1318,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select distinct * from test
@@ -1387,7 +1388,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select distinct * from test
@@ -1432,7 +1434,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select distinct id from test
@@ -1494,7 +1497,8 @@ bytecode [coordinator]
 19                push        1      0      0
 20               merge        1      0     -1
 21            send_set        1      0      0
-22                 ret        0      0      0
+22                recv        0      0      0
+23                 ret        0      0      0
 
 "
 select distinct id, data from test
@@ -1540,7 +1544,8 @@ bytecode [coordinator]
 14                 int        1      4      0
 15               merge        2      0      1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select distinct data from test limit 4
@@ -1570,7 +1575,8 @@ bytecode [coordinator]
 14                 int        1      0      0
 15               merge        2      0      1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select distinct data from test limit 0
@@ -1597,7 +1603,8 @@ bytecode [coordinator]
 15                 int        2      1      0
 16               merge        3      0      1
 17            send_set        3      0      0
-18                 ret        0      0      0
+18                recv        0      0      0
+19                 ret        0      0      0
 
 "
 select distinct data from test limit 1 offset 0
@@ -1630,7 +1637,8 @@ bytecode [coordinator]
 14                 int        1      1      0
 15               merge        2      0     -1
 16            send_set        2      0      0
-17                 ret        0      0      0
+17                recv        0      0      0
+18                 ret        0      0      0
 
 "
 select distinct data from test offset 0
@@ -1711,7 +1719,8 @@ bytecode [coordinator]
 25                push        1      0      0
 26               merge        1      0     -1
 27            send_set        1      0      0
-28                 ret        0      0      0
+28                recv        0      0      0
+29                 ret        0      0      0
 
 "
 select distinct count(*) from test
@@ -1747,7 +1756,8 @@ bytecode [coordinator]
 24                push        1      0      0
 25               merge        1      0     -1
 26            send_set        1      0      0
-27                 ret        0      0      0
+27                recv        0      0      0
+28                 ret        0      0      0
 
 "
 select distinct count(*) from test group by id
@@ -1773,7 +1783,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select distinct on (*) * from test
@@ -1817,7 +1828,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 explain select distinct on (data) * from test
@@ -1840,7 +1852,8 @@ bytecode [coordinator]
 13                push        1      0      0
 14               merge        1      0     -1
 15            send_set        1      0      0
-16                 ret        0      0      0
+16                recv        0      0      0
+17                 ret        0      0      0
 
 "
 select distinct on (data) * from test
@@ -1911,7 +1924,8 @@ bytecode [coordinator]
 24                push        1      0      0
 25               merge        1      0     -1
 26            send_set        1      0      0
-27                 ret        0      0      0
+27                recv        0      0      0
+28                 ret        0      0      0
 
 "
 select distinct on (count(*)) * from test group by id
@@ -1962,7 +1976,8 @@ bytecode [coordinator]
 12                push        1      0      0
 13               merge        1      0     -1
 14            send_set        1      0      0
-15                 ret        0      0      0
+15                recv        0      0      0
+16                 ret        0      0      0
 
 "
 select distinct * from []
@@ -2002,7 +2017,8 @@ bytecode [coordinator]
 28                push        1      0      0
 29               merge        1      0     -1
 30            send_set        1      0      0
-31                 ret        0      0      0
+31                recv        0      0      0
+32                 ret        0      0      0
 
 "
 select distinct * from [0,1,2,3,4,2,3,4]
@@ -2048,7 +2064,8 @@ bytecode [coordinator]
 29                 int        1      2      0
 30               merge        2      0      1
 31            send_set        2      0      0
-32                 ret        0      0      0
+32                recv        0      0      0
+33                 ret        0      0      0
 
 "
 select distinct * from [0,1,2,3,4,2,3,4] limit 2
@@ -2091,7 +2108,8 @@ bytecode [coordinator]
 29                 int        1      0      0
 30               merge        2      0      1
 31            send_set        2      0      0
-32                 ret        0      0      0
+32                recv        0      0      0
+33                 ret        0      0      0
 
 "
 select distinct * from [0,1,2,3,4,2,3,4] limit 0
@@ -2133,7 +2151,8 @@ bytecode [coordinator]
 30                 int        2      1      0
 31               merge        3      0      1
 32            send_set        3      0      0
-33                 ret        0      0      0
+33                recv        0      0      0
+34                 ret        0      0      0
 
 "
 select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 0
@@ -2181,7 +2200,8 @@ bytecode [coordinator]
 29                 int        1      1      0
 30               merge        2      0     -1
 31            send_set        2      0      0
-32                 ret        0      0      0
+32                recv        0      0      0
+33                 ret        0      0      0
 
 "
 select distinct * from [0,1,2,3,4,2,3,4] offset 0
@@ -2256,7 +2276,8 @@ bytecode [coordinator]
 39                push        1      0      0
 40               merge        1      0     -1
 41            send_set        1      0      0
-42                 ret        0      0      0
+42                recv        0      0      0
+43                 ret        0      0      0
 
 "
 select distinct *, count(*) from [0,1,2,3,4,2,3,4] group by *
@@ -2310,7 +2331,8 @@ bytecode [coordinator]
 28                push        1      0      0
 29               merge        1      0     -1
 30            send_set        1      0      0
-31                 ret        0      0      0
+31                recv        0      0      0
+32                 ret        0      0      0
 
 "
 select distinct on (*) * from [0,1,2,3,4,2,3,4]
