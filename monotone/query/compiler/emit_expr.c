@@ -508,7 +508,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
-emit_aggregate(Compiler* self, Ast* ast)
+emit_aggregate(Compiler* self, Target* target, Ast* ast)
 {
 	auto aggr = ast_aggr_of(ast);
 
@@ -531,13 +531,13 @@ emit_aggregate(Compiler* self, Ast* ast)
 	}
 #endif
 
-	auto target = aggr->target;
-	assert(target != NULL);
+	// target is target->group_target
+	assert(target->group_redirect);
 
-	if (unlikely(target->group_redirect == NULL))
-		error("<%.*s> aggregate target is out of scope",
-		      str_size(&target->name), str_of(&target->name));
+	// SELECT aggr GROUP BY
+	// SELECT GROUP BY HAVING aggr
 
+	// use main target id
 	return op3(self, CGROUP_GET_AGGR, rpin(self), target->group_redirect->id,
 	           aggr->order);
 }
@@ -705,7 +705,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 
 	// aggregate
 	case KAGGR:
-		return emit_aggregate(self, ast);
+		return emit_aggregate(self, target, ast);
 
 	default:
 		assert(0);

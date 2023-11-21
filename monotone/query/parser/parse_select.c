@@ -283,10 +283,7 @@ parse_select(Stmt* self)
 
 		// set aggregates target
 		if (select->expr_aggs.count)
-		{
 			select->target->aggs = select->expr_aggs;
-			ast_aggr_set_target(&select->expr_aggs, select->target);
-		}
 
 		select->target_group =
 			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL);
