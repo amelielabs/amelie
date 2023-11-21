@@ -89,35 +89,6 @@ compiler_distribute(Compiler* self)
 	}
 }
 
-bool
-compiler_is_utility(Compiler* self)
-{
-	if (self->parser.stmts_count != 1)
-		return false;
-
-	auto stmt = compiler_first(self);
-	switch (stmt->id) {
-	case STMT_SHOW:
-	case STMT_SET:
-	case STMT_CREATE_USER:
-	case STMT_CREATE_SCHEMA:
-	case STMT_CREATE_TABLE:
-	case STMT_CREATE_VIEW:
-	case STMT_DROP_USER:
-	case STMT_DROP_SCHEMA:
-	case STMT_DROP_TABLE:
-	case STMT_DROP_VIEW:
-	case STMT_ALTER_USER:
-	case STMT_ALTER_SCHEMA:
-	case STMT_ALTER_TABLE:
-	case STMT_ALTER_VIEW:
-		return true;
-	default:
-		break;
-	}
-	return false;
-}
-
 void
 compiler_parse(Compiler* self, Str* text)
 {
@@ -174,6 +145,9 @@ compiler_emit(Compiler* self)
 				//
 				compiler_switch(self, &self->code_coordinator);
 				emit_select(self, stmt->ast, false);
+
+				// CRECV (advance dispatch stmt)
+				op0(self, CRECV);
 
 			} else
 			{
@@ -234,7 +208,9 @@ compiler_emit(Compiler* self)
 			op0(self, CRECV);
 			break;
 		}
+
 		default:
+			abort();
 			break;
 		}
 

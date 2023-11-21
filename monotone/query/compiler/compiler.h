@@ -30,7 +30,6 @@ void compiler_switch(Compiler*, Code*);
 void compiler_distribute(Compiler*);
 void compiler_parse(Compiler*, Str*);
 void compiler_emit(Compiler*);
-bool compiler_is_utility(Compiler*);
 
 static inline Stmt*
 compiler_first(Compiler* self)
@@ -42,4 +41,10 @@ static inline TargetList*
 compiler_target_list(Compiler* self)
 {
 	return &self->current->target_list;
+}
+
+static inline bool
+compiler_is_utility(Compiler* self)
+{
+	return parser_has_utility(&self->parser);
 }
