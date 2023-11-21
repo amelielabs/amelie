@@ -67,12 +67,12 @@ session_free(Session *self)
 static inline void
 session_reset(Session* self)
 {
-	palloc_truncate(0);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	explain_reset(&self->explain);
 	dispatch_reset(&self->dispatch);
 	log_set_reset(&self->log_set);
+	palloc_truncate(0);
 }
 
 hot static inline void
@@ -183,7 +183,6 @@ session_execute(Session* self, Buf* buf)
 
 		session_reset(self);
 		session_main(self, buf);
-		palloc_truncate(0);
 	}
 
 	bool ro = false;
