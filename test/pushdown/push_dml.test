@@ -13,11 +13,31 @@ explain delete from test
 delete from test
 select * from test
 
+# test: reference delete join expr
+insert into test (id) values (1), (2), (3), (4)
+explain delete from test, [1,2,3] e where test.id = e.*
+delete from test, [1,2,3] e where test.id = e.*
+select * from test
+
+# test: reference delete join on expr join on expr
+delete from test
+insert into test (id) values (1), (2), (3), (4)
+explain delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
+delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
+select * from test
+delete from test
+
 # test: reference update
 insert into test (id) values (1), (2), (3)
 explain update test set data = id
 update test set data = id
 select * from test
+
+# test: reference update join expr
+explain update test join [1,2,3] e on (test.id = e.*) set data = e.* * 2
+update test join [1,2,3] e on (test.id = e.*) set data = e.* * 2
+select * from test
+update test set data = id
 
 # test: reference upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
@@ -35,6 +55,20 @@ select * from test
 explain delete from test
 delete from test
 select * from test
+
+# test: table delete join expr
+insert into test (id) values (1), (2), (3), (4)
+explain delete from test, [1,2,3] e where test.id = e.*
+delete from test, [1,2,3] e where test.id = e.*
+select * from test
+
+# test: table delete join on expr join on expr
+delete from test
+insert into test (id) values (1), (2), (3), (4)
+explain delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
+delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
+select * from test
+delete from test
 
 # test: table update
 insert into test (id) values (1), (2), (3)
