@@ -42,7 +42,6 @@ session_create(Share* share, Portal* portal)
 	compiler_init(&self->compiler, share->db, share->function_mgr,
 	              share->router, &self->dispatch);
 	command_init(&self->cmd);
-	transaction_init(&self->trx);
 	explain_init(&self->explain);
 	dispatch_init(&self->dispatch, share->dispatch_lock,
 	               share->req_cache,
@@ -62,7 +61,6 @@ session_free(Session *self)
 	dispatch_reset(&self->dispatch);
 	dispatch_free(&self->dispatch);
 	log_set_free(&self->log_set);
-	transaction_free(&self->trx);
 	mn_free(self);
 }
 
@@ -95,10 +93,12 @@ hot static inline void
 session_execute_distributed(Session* self)
 {
 	auto dispatch = &self->dispatch;
-	auto log_set = &self->log_set;
+	auto log_set  = &self->log_set;
 
 	// lock catalog
 	session_lock(self, LOCK_SHARED);
+
+	// todo: reference lock
 
 	// generate request
 	compiler_emit(&self->compiler);
@@ -117,7 +117,7 @@ session_execute_distributed(Session* self)
 	if (try(&e))
 	{
 		// execute coordinator
-		vm_run(&self->vm, &self->trx, &self->dispatch,
+		vm_run(&self->vm, NULL, &self->dispatch,
 		       &self->cmd,
 		       &self->compiler.code_coordinator,
 		       &self->compiler.code_data,

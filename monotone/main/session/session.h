@@ -21,7 +21,6 @@ struct Session
 	Vm          vm;
 	Compiler    compiler;
 	Command     cmd;
-	Transaction trx;
 	// catalog lock
 	SessionLock lock;
 	CatLock     lock_req;

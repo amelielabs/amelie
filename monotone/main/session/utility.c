@@ -209,32 +209,34 @@ execute_create_storages(Session* self, Table* table)
 static inline void
 execute_ddl(Session* self, Stmt* stmt)
 {
-	auto trx = &self->trx;
 	auto share = self->share;
 
 	// get exclusive catalog lock
 	session_lock(self, LOCK_EXCLUSIVE);
 
+	Transaction trx;
+	transaction_init(&trx);
+
 	Exception e;
 	if (try(&e))
 	{
 		// begin
-		transaction_begin(trx);
-		transaction_set_auto_commit(trx);
+		transaction_begin(&trx);
+		transaction_set_auto_commit(&trx);
 
 		switch (stmt->id) {
 		case STMT_CREATE_SCHEMA:
 		{
 			// create schema
 			auto arg = ast_schema_create_of(stmt->ast);
-			schema_mgr_create(share->schema_mgr, trx, arg->config, arg->if_not_exists);
+			schema_mgr_create(share->schema_mgr, &trx, arg->config, arg->if_not_exists);
 			break;
 		}
 		case STMT_DROP_SCHEMA:
 		{
 			// drop schema
 			auto arg = ast_schema_drop_of(stmt->ast);
-			cascade_schema_drop(share->db, trx, &arg->name->string, arg->cascade,
+			cascade_schema_drop(share->db, &trx, &arg->name->string, arg->cascade,
 			                    arg->if_exists);
 			break;
 		}
@@ -242,7 +244,7 @@ execute_ddl(Session* self, Stmt* stmt)
 		{
 			// rename schema
 			auto arg = ast_schema_alter_of(stmt->ast);
-			cascade_schema_rename(share->db, trx, &arg->name->string,
+			cascade_schema_rename(share->db, &trx, &arg->name->string,
 			                      &arg->name_new->string,
 			                      arg->if_exists);
 			break;
@@ -267,7 +269,7 @@ execute_ddl(Session* self, Stmt* stmt)
 				      str_size(&arg->config->name),
 				      str_of(&arg->config->name));
 
-			table_mgr_create(share->table_mgr, trx, arg->config, arg->if_not_exists);
+			table_mgr_create(share->table_mgr, &trx, arg->config, arg->if_not_exists);
 
 			// create storage for each shard
 			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
@@ -278,7 +280,7 @@ execute_ddl(Session* self, Stmt* stmt)
 		case STMT_DROP_TABLE:
 		{
 			auto arg = ast_table_drop_of(stmt->ast);
-			table_mgr_drop(share->table_mgr, trx, &arg->schema, &arg->name,
+			table_mgr_drop(share->table_mgr, &trx, &arg->schema, &arg->name,
 			               arg->if_exists);
 			break;
 		}
@@ -317,7 +319,7 @@ execute_ddl(Session* self, Stmt* stmt)
 				      str_of(&arg->name_new));
 
 			// rename table
-			table_mgr_rename(share->table_mgr, trx, &arg->schema, &arg->name,
+			table_mgr_rename(share->table_mgr, &trx, &arg->schema, &arg->name,
 			                 &arg->schema_new, &arg->name_new,
 			                 arg->if_exists);
 			break;
@@ -343,14 +345,14 @@ execute_ddl(Session* self, Stmt* stmt)
 				      str_size(&arg->config->name),
 				      str_of(&arg->config->name));
 
-			view_mgr_create(share->view_mgr, trx, arg->config, arg->if_not_exists);
+			view_mgr_create(share->view_mgr, &trx, arg->config, arg->if_not_exists);
 			break;
 		}
 		case STMT_DROP_VIEW:
 		{
 			// drop view
 			auto arg = ast_view_drop_of(stmt->ast);
-			view_mgr_drop(share->view_mgr, trx, &arg->schema, &arg->name,
+			view_mgr_drop(share->view_mgr, &trx, &arg->schema, &arg->name,
 			              arg->if_exists);
 			break;
 		}
@@ -375,7 +377,7 @@ execute_ddl(Session* self, Stmt* stmt)
 				      str_of(&arg->name_new));
 
 			// rename view
-			view_mgr_rename(share->view_mgr, trx, &arg->schema, &arg->name,
+			view_mgr_rename(share->view_mgr, &trx, &arg->schema, &arg->name,
 			                &arg->schema_new, &arg->name_new,
 			                arg->if_exists);
 			break;
@@ -386,20 +388,22 @@ execute_ddl(Session* self, Stmt* stmt)
 		}
 
 		// wal write
-		if (! transaction_read_only(trx))
+		if (! transaction_read_only(&trx))
 		{
-			log_set_add(&self->log_set, &trx->log);
+			log_set_add(&self->log_set, &trx.log);
 			wal_write(share->wal, &self->log_set);
 		}
 
 		// commit
-		transaction_set_lsn(trx, trx->log.lsn);
-		transaction_commit(trx);
+		transaction_set_lsn(&trx, trx.log.lsn);
+		transaction_commit(&trx);
+		transaction_free(&trx);
 	}
 
 	if (catch(&e))
 	{
-		transaction_abort(trx);
+		transaction_abort(&trx);
+		transaction_free(&trx);
 		rethrow();
 	}
 }
