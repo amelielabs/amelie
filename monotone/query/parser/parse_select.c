@@ -281,10 +281,6 @@ parse_select(Stmt* self)
 		if (select->target == NULL)
 			error("no targets to use with GROUP BY or aggregates");
 
-		// set aggregates target
-		if (select->expr_aggs.count)
-			select->target->aggs = select->expr_aggs;
-
 		select->target_group =
 			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL);
 

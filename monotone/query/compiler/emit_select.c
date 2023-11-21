@@ -194,7 +194,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	select->rgroup = rgroup;
 
 	// add aggregates to the group
-	auto node = select->target->aggs.list;
+	auto node = select->expr_aggs.list;
 	while (node)
 	{
 		auto aggr = ast_aggr_of(node->ast);

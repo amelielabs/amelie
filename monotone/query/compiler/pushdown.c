@@ -79,7 +79,7 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	select->rgroup = rgroup;
 
 	// add aggregates to the group
-	auto node = select->target->aggs.list;
+	auto node = select->expr_aggs.list;
 	while (node)
 	{
 		auto aggr = ast_aggr_of(node->ast);
