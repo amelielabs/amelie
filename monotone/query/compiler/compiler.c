@@ -202,6 +202,21 @@ compiler_emit(Compiler* self)
 
 			break;
 		}
+		case STMT_ABORT:
+		{
+			// produce error
+			op0(self, CABORT);
+
+			// copy code to each shards request
+			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+
+			// coordinator
+			compiler_switch(self, &self->code_coordinator);
+
+			// CRECV
+			op0(self, CRECV);
+			break;
+		}
 		default:
 			break;
 		}

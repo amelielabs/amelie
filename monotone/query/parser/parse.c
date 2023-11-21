@@ -122,6 +122,13 @@ parse(Parser* self, Str* str)
 			self->complete = true;
 			break;
 
+		case KABORT:
+			// ABORT
+			stmt->id = STMT_ABORT;
+			parser_validate(self, true);
+			self->complete = true;
+			break;
+
 		case KSHOW:
 			// SHOW name
 			stmt->id = STMT_SHOW;

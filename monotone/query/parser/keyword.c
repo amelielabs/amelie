@@ -31,6 +31,7 @@ static Keyword keywords_a[] =
 	{ KAVG,                   "avg",                   3  },
 	{ KAS,                    "as",                    2  },
 	{ KTARRAY,                "array",                 5  },
+	{ KABORT,                 "abort",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
