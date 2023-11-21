@@ -22,17 +22,6 @@
 #include <monotone_vm.h>
 #include <monotone_parser.h>
 
-static inline void
-parser_validate(Parser* self, bool transactional)
-{
-	if (unlikely(self->complete))
-		error("transaction is complete");
-
-	if (! transactional)
-		if (unlikely(self->in_transaction || self->stmts_count > 1))
-			error("operation is not transactional");
-}
-
 static inline Stmt*
 parser_add(Parser* self)
 {
@@ -71,6 +60,162 @@ parse_set(Stmt* self)
 	self->ast = &stmt->ast;
 }
 
+hot static inline void
+parse_stmt(Parser* self)
+{
+	auto lex  = &self->lex;
+	auto stmt = parser_add(self);
+
+	auto ast = lex_next(lex);
+	if (ast->id == KEOF)
+		return;
+
+	switch (ast->id) {
+	case KBEGIN:
+		error("BEGIN: already in transaction");
+		break;
+
+	case KABORT:
+		// ABORT
+		stmt->id = STMT_ABORT;
+		break;
+
+	case KSHOW:
+		// SHOW name
+		stmt->id = STMT_SHOW;
+		parse_show(stmt);
+		break;
+
+	case KSET:
+		// SET name TO INT | STRING
+		stmt->id = STMT_SET;
+		parse_set(stmt);
+		break;
+
+	case KCREATE:
+	{
+		// CREATE USER | SCHEMA | TABLE | VIEW
+		if (lex_if(lex, KUSER))
+		{
+			stmt->id = STMT_CREATE_USER;
+			parse_user_create(stmt);
+		} else
+		if (lex_if(lex, KSCHEMA))
+		{
+			stmt->id = STMT_CREATE_SCHEMA;
+			parse_schema_create(stmt);
+		} else
+		if (lex_if(lex, KTABLE))
+		{
+			stmt->id = STMT_CREATE_TABLE;
+			parse_table_create(stmt);
+		} else
+		if (lex_if(lex, KVIEW))
+		{
+			stmt->id = STMT_CREATE_VIEW;
+			parse_view_create(stmt);
+		} else {
+			error("CREATE <USER|SCHEMA|TABLE|VIEW> expected");
+		}
+		break;
+	}
+
+	case KDROP:
+	{
+		// DROP USER | SCHEMA | TABLE | VIEW
+		if (lex_if(lex, KUSER))
+		{
+			stmt->id = STMT_DROP_USER;
+			parse_user_drop(stmt);
+		} else
+		if (lex_if(lex, KSCHEMA))
+		{
+			stmt->id = STMT_DROP_SCHEMA;
+			parse_schema_drop(stmt);
+		} else
+		if (lex_if(lex, KTABLE))
+		{
+			stmt->id = STMT_DROP_TABLE;
+			parse_table_drop(stmt);
+		} else
+		if (lex_if(lex, KVIEW))
+		{
+			stmt->id = STMT_DROP_VIEW;
+			parse_view_drop(stmt);
+		} else {
+			error("DROP <USER|SCHEMA|TABLE|VIEW> expected");
+		}
+		break;
+	}
+
+	case KALTER:
+	{
+		// ALTER USER | SCHEMA | TABLE | VIEW
+		if (lex_if(lex, KUSER))
+		{
+			stmt->id = STMT_ALTER_USER;
+			parse_user_alter(stmt);
+		} else
+		if (lex_if(lex, KSCHEMA))
+		{
+			stmt->id = STMT_ALTER_SCHEMA;
+			parse_schema_alter(stmt);
+		} else
+		if (lex_if(lex, KTABLE))
+		{
+			stmt->id = STMT_ALTER_TABLE;
+			parse_table_alter(stmt);
+		} else
+		if (lex_if(lex, KVIEW))
+		{
+			stmt->id = STMT_ALTER_VIEW;
+			parse_view_alter(stmt);
+		} else {
+			error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
+		}
+		break;
+	}
+
+	case KINSERT:
+	case KREPLACE:
+		stmt->id = STMT_INSERT;
+		parse_insert(stmt, ast->id == KINSERT);
+		break;
+
+	case KUPDATE:
+		stmt->id = STMT_UPDATE;
+		parse_update(stmt);
+		break;
+
+	case KDELETE:
+		stmt->id = STMT_DELETE;
+		parse_delete(stmt);
+		break;
+
+	case KSELECT:
+	{
+		stmt->id = STMT_SELECT;
+		auto select = parse_select(stmt);
+		stmt->ast = &select->ast;
+		break;
+	}
+
+	default:
+		error("unknown command");
+		break;
+	}
+
+	// ; | EOF
+	ast = lex_next(lex);
+	if (likely(ast->id == ';' || ast->id == KEOF))
+	{
+		lex_push(lex, ast);
+		return;
+	}
+
+	error("unexpected clause at the end of command");
+}
+
 hot void
 parse(Parser* self, Str* str)
 {
@@ -95,182 +240,53 @@ parse(Parser* self, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
-	// statements
+	// [BEGIN]
+	bool begin  = false;
+	bool commit = false;
+	if (lex_if(lex, KBEGIN))
+		begin = true;
+
+	// statement [; statement]
 	for (;;)
 	{
-		auto ast = lex_next(lex);
-		if (ast->id == KEOF)
-			break;
-
-		auto stmt = parser_add(self);
-		switch (ast->id) {
-		case KBEGIN:
-			// BEGIN
-			stmt->id = STMT_BEGIN;
-			parser_validate(self, true);
-			if (self->in_transaction)
-				error("already in transaction");
-			self->in_transaction = true;
-			break;
-
-		case KCOMMIT:
-			// COMMIT
-			stmt->id = STMT_COMMIT;
-			parser_validate(self, true);
-			if (! self->in_transaction)
-				error("not in transaction");
-			self->complete = true;
-			break;
-
-		case KABORT:
-			// ABORT
-			stmt->id = STMT_ABORT;
-			parser_validate(self, true);
-			self->complete = true;
-			break;
-
-		case KSHOW:
-			// SHOW name
-			stmt->id = STMT_SHOW;
-			parser_validate(self, false);
-			parse_show(stmt);
-			break;
-
-		case KSET:
-			// SET name TO INT | STRING
-			stmt->id = STMT_SET;
-			parser_validate(self, false);
-			parse_set(stmt);
-			break;
-
-		case KCREATE:
-		{
-			// CREATE USER | SCHEMA | TABLE | VIEW
-			parser_validate(self, false);
-			if (lex_if(lex, KUSER))
-			{
-				stmt->id = STMT_CREATE_USER;
-				parse_user_create(stmt);
-			} else
-			if (lex_if(lex, KSCHEMA))
-			{
-				stmt->id = STMT_CREATE_SCHEMA;
-				parse_schema_create(stmt);
-			} else
-			if (lex_if(lex, KTABLE))
-			{
-				stmt->id = STMT_CREATE_TABLE;
-				parse_table_create(stmt);
-			} else
-			if (lex_if(lex, KVIEW))
-			{
-				stmt->id = STMT_CREATE_VIEW;
-				parse_view_create(stmt);
-			} else {
-				error("CREATE <USER|SCHEMA|TABLE|VIEW> expected");
-			}
-			break;
-		}
-
-		case KDROP:
-		{
-			// DROP USER | SCHEMA | TABLE | VIEW
-			parser_validate(self, false);
-			if (lex_if(lex, KUSER))
-			{
-				stmt->id = STMT_DROP_USER;
-				parse_user_drop(stmt);
-			} else
-			if (lex_if(lex, KSCHEMA))
-			{
-				stmt->id = STMT_DROP_SCHEMA;
-				parse_schema_drop(stmt);
-			} else
-			if (lex_if(lex, KTABLE))
-			{
-				stmt->id = STMT_DROP_TABLE;
-				parse_table_drop(stmt);
-			} else
-			if (lex_if(lex, KVIEW))
-			{
-				stmt->id = STMT_DROP_VIEW;
-				parse_view_drop(stmt);
-			} else {
-				error("DROP <USER|SCHEMA|TABLE|VIEW> expected");
-			}
-			break;
-		}
-
-		case KALTER:
-		{
-			// ALTER USER | SCHEMA | TABLE | VIEW
-			parser_validate(self, false);
-			if (lex_if(lex, KUSER))
-			{
-				stmt->id = STMT_ALTER_USER;
-				parse_user_alter(stmt);
-			} else
-			if (lex_if(lex, KSCHEMA))
-			{
-				stmt->id = STMT_ALTER_SCHEMA;
-				parse_schema_alter(stmt);
-			} else
-			if (lex_if(lex, KTABLE))
-			{
-				stmt->id = STMT_ALTER_TABLE;
-				parse_table_alter(stmt);
-			} else
-			if (lex_if(lex, KVIEW))
-			{
-				stmt->id = STMT_ALTER_VIEW;
-				parse_view_alter(stmt);
-			} else {
-				error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
-			}
-			break;
-		}
-
-		case KINSERT:
-		case KREPLACE:
-			stmt->id = STMT_INSERT;
-			parser_validate(self, true);
-			parse_insert(stmt, ast->id == KINSERT);
-			break;
-
-		case KUPDATE:
-			stmt->id = STMT_UPDATE;
-			parser_validate(self, true);
-			parse_update(stmt);
-			break;
-
-		case KDELETE:
-			stmt->id = STMT_DELETE;
-			parser_validate(self, true);
-			parse_delete(stmt);
-			break;
-
-		case KSELECT:
-		{
-			stmt->id = STMT_SELECT;
-			parser_validate(self, true);
-			auto select = parse_select(stmt);
-			stmt->ast = &select->ast;
-			break;
-		}
-
-		default:
-			error("unknown command");
-			break;
-		}
-
-		// EOF
-		if (lex_if(&self->lex, KEOF))
-			break;
-
 		// ;
-		if (lex_if(&self->lex, ';'))
+		if (lex_if(lex, ';'))
 			continue;
 
-		error("unexpected clause at the end of command");
+		// EOF
+		if (lex_if(lex, KEOF))
+			break;
+
+		// [COMMIT]
+		if (lex_if(lex, KCOMMIT))
+		{
+			if (! begin)
+				error("COMMIT without BEGIN");
+			commit = true;
+
+			// [;]
+			lex_if(lex, ';');
+
+			// EOF
+			if (unlikely(! lex_if(lex, KEOF)))
+				error("unexpected command after COMMIT");
+
+			break;
+		}
+
+		// statement
+		parse_stmt(self);
 	}
+
+	// ensure we did not forget about COMMIT
+	if (unlikely(begin && !commit))
+		error("COMMIT is missing at the end of the multi-statement transaction");
+
+	// ensure EXPLAIN has command
+	if (unlikely(self->explain && !self->stmts_count))
+		error("EXPLAIN without command");
+
+	// ensure we are can execute transactional commands
+	if (parser_has_utility(self) && (begin || self->stmts_count != 1))
+		error("DDL and utility operations are not transactional");
 }

@@ -17,8 +17,6 @@ enum
 
 struct Parser
 {
-	bool in_transaction;
-	bool complete;
 	int  explain;
 	List stmts;
 	int  stmts_count;
@@ -28,3 +26,4 @@ struct Parser
 
 void parser_init(Parser*, Db*);
 void parser_reset(Parser*);
+bool parser_has_utility(Parser*);

@@ -25,11 +25,9 @@
 void
 parser_init(Parser* self, Db* db)
 {
-	self->in_transaction = false;
-	self->complete       = false;
-	self->explain        = EXPLAIN_NONE;
-	self->stmts_count    = 0;
-	self->db             = db;
+	self->explain     = EXPLAIN_NONE;
+	self->stmts_count = 0;
+	self->db          = db;
 	list_init(&self->stmts);
 	lex_init(&self->lex, keywords);
 }
@@ -37,10 +35,8 @@ parser_init(Parser* self, Db* db)
 void
 parser_reset(Parser* self)
 {
-	self->in_transaction = false;
-	self->complete       = false;
-	self->explain        = EXPLAIN_NONE;
-	self->stmts_count    = 0;
+	self->explain     = EXPLAIN_NONE;
+	self->stmts_count = 0;
 	list_foreach(&self->stmts)
 	{
 		auto stmt = list_at(Stmt, link);
@@ -86,4 +82,33 @@ parser_reset(Parser* self)
 	}
 	list_init(&self->stmts);
 	lex_reset(&self->lex);
+}
+
+bool
+parser_has_utility(Parser* self)
+{
+	list_foreach(&self->stmts)
+	{
+		auto stmt = list_at(Stmt, link);
+		switch (stmt->id) {
+		case STMT_SHOW:
+		case STMT_SET:
+		case STMT_CREATE_USER:
+		case STMT_CREATE_SCHEMA:
+		case STMT_CREATE_TABLE:
+		case STMT_CREATE_VIEW:
+		case STMT_DROP_USER:
+		case STMT_DROP_SCHEMA:
+		case STMT_DROP_TABLE:
+		case STMT_DROP_VIEW:
+		case STMT_ALTER_USER:
+		case STMT_ALTER_SCHEMA:
+		case STMT_ALTER_TABLE:
+		case STMT_ALTER_VIEW:
+			return true;
+		default:
+			break;
+		}
+	}
+	return false;
 }

@@ -11,8 +11,6 @@ typedef struct Stmt Stmt;
 typedef enum
 {
 	STMT_UNDEF,
-	STMT_BEGIN,
-	STMT_COMMIT,
 	STMT_ABORT,
 	STMT_SHOW,
 	STMT_SET,
