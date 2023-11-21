@@ -72,6 +72,23 @@ compiler_switch(Compiler* self, Code* code)
 	self->code = code;
 }
 
+hot void
+compiler_distribute(Compiler* self)
+{
+	auto router = self->dispatch->router;
+	for (int i = 0; i < router->set_size; i++)
+	{
+		// get route by order
+		auto route = router_at(router, i);
+
+		// add request to the route
+		auto req = dispatch_add(self->dispatch, self->current->order, route);
+
+		// copy and relocate current stmt code
+		op_relocate(&req->code, &self->code_stmt);
+	}
+}
+
 bool
 compiler_is_utility(Compiler* self)
 {
@@ -207,8 +224,8 @@ compiler_emit(Compiler* self)
 			// produce error
 			op0(self, CABORT);
 
-			// copy code to each shards request
-			dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+			// copy statement code to each shard
+			compiler_distribute(self);
 
 			// coordinator
 			compiler_switch(self, &self->code_coordinator);

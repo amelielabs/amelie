@@ -121,8 +121,8 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	runpin(self, select->rgroup);
 	select->rgroup = -1;
 
-	// copy code to each shards request
-	dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+	// copy statement code to each shard
+	compiler_distribute(self);
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);
@@ -259,8 +259,8 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	op2(self, CREADY, self->current->order, select->rset);
 	runpin(self, select->rset);
 
-	// copy code to each shards request
-	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+	// copy statement code to each shard
+	compiler_distribute(self);
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);
@@ -306,8 +306,8 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	op2(self, CREADY, self->current->order, select->rset);
 	runpin(self, select->rset);
 
-	// copy code to each shards request
-	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+	// copy statement code to each shard
+	compiler_distribute(self);
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);
@@ -336,8 +336,8 @@ pushdown_from(Compiler* self, AstSelect* select)
 	// CREADY
 	op2(self, CREADY, self->current->order, -1);
 
-	// copy code to each shards request
-	dispatch_copy(self->dispatch, &self->code_stmt, self->current->order);
+	// copy statement code to each shard
+	compiler_distribute(self);
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);

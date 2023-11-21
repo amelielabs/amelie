@@ -38,8 +38,6 @@ emit_delete(Compiler* self, Ast* ast)
 	auto delete = ast_delete_of(ast);
 	auto stmt   = self->current;
 
-	// distributed table
-
 	// delete by cursor
 	scan(self, delete->target,
 	     NULL,
@@ -60,12 +58,12 @@ emit_delete(Compiler* self, Ast* ast)
 		auto req = dispatch_add(self->dispatch, stmt->order, route);
 
 		// append code
-		code_copy(&req->code, &self->code_stmt);
+		op_relocate(&req->code, &self->code_stmt);
 
 	} else
 	{
-		// execute code on each shard
-		dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+		// copy statement code to each shard
+		compiler_distribute(self);
 	}
 
 	// coordinator

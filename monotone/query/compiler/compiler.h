@@ -27,6 +27,7 @@ void compiler_init(Compiler*, Db*, FunctionMgr*, Router*, Dispatch*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_switch(Compiler*, Code*);
+void compiler_distribute(Compiler*);
 void compiler_parse(Compiler*, Str*);
 void compiler_emit(Compiler*);
 bool compiler_is_utility(Compiler*);
