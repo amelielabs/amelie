@@ -123,37 +123,12 @@ emit_update_on_match(Compiler* self, void *arg)
 	emit_update_target(self, update->target, update->expr_update);
 }
 
-hot static inline void
-emit_update_reference(Compiler* self, AstUpdate* update)
-{
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// update by cursor
-	scan(self, update->target,
-	     NULL,
-	     NULL,
-	     update->expr_where,
-	     emit_update_on_match,
-	     update);
-}
-
 hot void
 emit_update(Compiler* self, Ast* ast)
 {
 	// UPDATE name SET path = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
 	auto stmt   = self->current;
-
-	// reference table
-	if (update->target->table->config->reference)
-	{
-		// execute update by coordinator directly
-		emit_update_reference(self, update);
-		return;
-	}
-
-	// distributed table
 
 	// update by cursor
 	scan(self, update->target,
@@ -166,8 +141,22 @@ emit_update(Compiler* self, Ast* ast)
 	// CREADY
 	op2(self, CREADY, stmt->order, -1);
 
-	// execute code on each shard
-	dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+	if (update->target->table->config->reference)
+	{
+		// get route by order
+		auto route = router_at(self->router, 0);
+
+		// get the request
+		auto req = dispatch_add(self->dispatch, stmt->order, route);
+
+		// append code
+		code_copy(&req->code, &self->code_stmt);
+
+	} else
+	{
+		// execute code on each shard
+		dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+	}
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);

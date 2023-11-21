@@ -31,35 +31,12 @@ emit_delete_on_match(Compiler* self, void *arg)
 	op1(self, CDELETE, target->id);
 }
 
-hot static inline void
-emit_delete_reference(Compiler* self, AstDelete* delete)
-{
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// delete by cursor
-	scan(self, delete->target,
-	     NULL,
-	     NULL,
-	     delete->expr_where,
-	     emit_delete_on_match,
-	     delete->target);
-}
-
 hot void
 emit_delete(Compiler* self, Ast* ast)
 {
 	// DELETE FROM name [WHERE expr]
 	auto delete = ast_delete_of(ast);
 	auto stmt   = self->current;
-
-	// reference table
-	if (delete->target->table->config->reference)
-	{
-		// execute delete by coordinator directly
-		emit_delete_reference(self, delete);
-		return;
-	}
 
 	// distributed table
 
@@ -74,8 +51,22 @@ emit_delete(Compiler* self, Ast* ast)
 	// CREADY
 	op2(self, CREADY, stmt->order, -1);
 
-	// execute code on each shard
-	dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+	if (delete->target->table->config->reference)
+	{
+		// get route by order
+		auto route = router_at(self->router, 0);
+
+		// get the request
+		auto req = dispatch_add(self->dispatch, stmt->order, route);
+
+		// append code
+		code_copy(&req->code, &self->code_stmt);
+
+	} else
+	{
+		// execute code on each shard
+		dispatch_copy(self->dispatch, &self->code_stmt, stmt->order);
+	}
 
 	// coordinator
 	compiler_switch(self, &self->code_coordinator);

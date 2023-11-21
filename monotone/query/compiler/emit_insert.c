@@ -25,46 +25,13 @@
 #include <monotone_compiler.h>
 
 hot void
-emit_insert_reference(Compiler* self, AstInsert* insert)
-{
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// foreach row generate insert
-	auto i = insert->rows;
-	for (; i; i = i->next)
-	{
-		auto row = ast_row_of(i);
-
-		// write row to the code data
-		int data_size;
-		int data = emit_row(&self->code_data, row, &data_size);
-
-		// CINSERT
-		op4(self, CINSERT, (intptr_t)insert->target->table,
-		    data,
-		    data_size, insert->unique);
-	}
-}
-
-hot void
 emit_insert(Compiler* self, Ast* ast)
 {
-	auto stmt = self->current;
+	auto stmt   = self->current;
 	auto insert = ast_insert_of(ast);
-
-	// reference table
-	if (insert->target->table->config->reference)
-	{
-		// execute insert by coordinator directly
-		emit_insert_reference(self, insert);
-		return;
-	}
-
-	// distributed table
+	auto table  = insert->target->table;
 
 	// foreach row generate insert
-	auto def = table_def(insert->target->table);
 	auto i = insert->rows;
 	for (; i; i = i->next)
 	{
@@ -74,11 +41,22 @@ emit_insert(Compiler* self, Ast* ast)
 		int data_size;
 		int data = emit_row(&self->code_data, row, &data_size);
 
-		// validate row and hash keys
-		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+		Route* route;
+		if (table->config->reference)
+		{
+			// get route by order
+			route = router_at(self->router, 0);
 
-		// get route by hash
-		auto route = router_get(self->router, hash);
+		} else
+		{
+			// validate row and hash keys
+			auto hash = row_hash(table_def(table),
+			                     code_data_at(&self->code_data, data),
+			                     data_size);
+
+			// get route by hash
+			route = router_get(self->router, hash);
+		}
 
 		// get the request
 		auto req = dispatch_add(self->dispatch, stmt->order, route);

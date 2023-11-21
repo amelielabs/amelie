@@ -84,11 +84,20 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 	int data_size;
 	int data = emit_row(&self->code_data, row, &data_size);
 
-	// validate row and hash keys
-	auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+	Route* route;
+	if (target->table->config->reference)
+	{
+		// get route by order
+		route = router_at(self->router, 0);
 
-	// get route by hash
-	auto route = router_get(self->router, hash);
+	} else
+	{
+		// validate row and hash keys
+		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
+
+		// get route by hash
+		route = router_get(self->router, hash);
+	}
 
 	// get the request
 	auto req = dispatch_add(dispatch, stmt->order, route);
@@ -98,30 +107,6 @@ emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
 	emit_upsert_op(self, insert, data, data_size, &jmp[route->order]);
 }
 
-hot static inline void
-emit_upsert_reference(Compiler* self, AstInsert* insert)
-{
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// foreach row generate upsert
-	int jmp = 0;
-	for (auto i = insert->rows; i; i = i->next)
-	{
-		auto row = ast_row_of(i);
-
-		// write row to the code data
-		int data_size;
-		int data = emit_row(&self->code_data, row, &data_size);
-
-		// generate upsert logic
-		emit_upsert_op(self, insert, data, data_size, &jmp);
-	}
-
-	// CCLOSE_CURSOR
-	op1(self, CCURSOR_CLOSE, insert->target->id);
-}
-
 hot void
 emit_upsert(Compiler* self, Ast* ast)
 {
@@ -129,14 +114,6 @@ emit_upsert(Compiler* self, Ast* ast)
 	auto stmt     = self->current;
 	auto dispatch = self->dispatch;
 	auto target   = insert->target;
-
-	// reference table
-	if (insert->target->table->config->reference)
-	{
-		// execute upsert by coordinator directly
-		emit_upsert_reference(self, insert);
-		return;
-	}
 
 	// distributed table
 	int jmp[dispatch->set_size];
