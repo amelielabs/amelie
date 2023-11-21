@@ -7,10 +7,17 @@ explain insert into test (id) values (1), (2), (3)
 "
 bytecode [coordinator]
 --------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
  0              insert        -      0      3      # test
  1              insert        -      3      3      # test
  2              insert        -      6      3      # test
- 3                 ret        0      0      0
+ 3               ready        0     -1      0
+ 4                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3)
@@ -19,6 +26,12 @@ explain delete from test
 "
 bytecode [coordinator]
 --------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
+--------
  0             int_min        0      0      0
  1                push        0      0      0
  2         cursor_open        0      0      4      # public.test (primary)
@@ -26,7 +39,8 @@ bytecode [coordinator]
  4              delete        0      0      0
  5         cursor_next        0      4      0
  6        cursor_close        0      0      0
- 7                 ret        0      0      0
+ 7               ready        0     -1      0
+ 8                 ret        0      0      0
 
 "
 delete from test
@@ -36,6 +50,12 @@ insert into test (id) values (1), (2), (3)
 explain update test set data = id
 "
 bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -52,7 +72,8 @@ bytecode [coordinator]
 12              update        0      0      0
 13         cursor_next        0      4      0
 14        cursor_close        0      0      0
-15                 ret        0      0      0
+15               ready        0     -1      0
+16                 ret        0      0      0
 
 "
 update test set data = id
@@ -64,6 +85,12 @@ select * from test
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
+--------
+ 0                recv        0      0      0
+ 1                 ret        0      0      0
+
+
+bytecode [shard 0]
 --------
  0      cursor_prepare        0      -      0      # public.test
  1                 jmp       14      0      0
@@ -83,7 +110,8 @@ bytecode [coordinator]
 15              upsert        0      3      3
 16              upsert        0      6      3
 17        cursor_close        0      0      0
-18                 ret        0      0      0
+18               ready        0     -1      0
+19                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
