@@ -20,17 +20,8 @@ target_list_expr_or_reference(TargetList* self)
 }
 
 static inline void
-target_list_validate(TargetList* self, Target* primary)
+target_list_validate_subqueries(TargetList* self, Target* primary)
 {
-	auto table = primary->table;
-	assert(table);
-
-	// SELECT FROM distributed table
-
-	// validate supported targets as expression or reference table
-	if (unlikely(table->config->reference))
-		error("primary distributed table cannot be a reference table");
-
 	auto target = self->list;
 	for (; target; target = target->next)
 	{
@@ -50,4 +41,40 @@ target_list_validate(TargetList* self, Target* primary)
 
 		error("subqueries to distributed tables are not supported");
 	}
+}
+
+static inline void
+target_list_validate(TargetList* self, Target* primary)
+{
+	auto table = primary->table;
+	assert(table);
+
+	// SELECT FROM distributed table
+	if (unlikely(table->config->reference))
+		error("primary distributed table cannot be a reference table");
+
+	// validate supported targets as expression or reference table
+	target_list_validate_subqueries(self, primary);
+}
+
+static inline void
+target_list_validate_dml(TargetList* self, Target* primary)
+{
+	auto table = primary->table;
+	assert(table);
+
+	// DELETE table, ...
+	// UPDATE FROM table, ...
+
+	// ensure we are not joining with self
+	auto target = primary->next_join;
+	while (target)
+	{
+		if (target->table == table)
+			error("DML JOIN using the same table are not supported");
+		target = target->next_join;
+	}
+
+	// validate supported targets as expression or reference table
+	target_list_validate_subqueries(self, primary);
 }

@@ -120,12 +120,28 @@ compiler_emit(Compiler* self)
 
 		switch (stmt->id) {
 		case STMT_UPDATE:
+		{
+			auto update = ast_update_of(stmt->ast);
+
+			// validate join tables
+			// validate supported targets as expression or reference table
+			target_list_validate_dml(&stmt->target_list, update->target);
+
 			emit_update(self, stmt->ast);
 			break;
+		}
 
 		case STMT_DELETE:
+		{
+			auto delete = ast_delete_of(stmt->ast);
+
+			// validate join tables
+			// validate supported targets as expression or reference table
+			target_list_validate_dml(&stmt->target_list, delete->target);
+
 			emit_delete(self, stmt->ast);
 			break;
+		}
 
 		case STMT_SELECT:
 		{
