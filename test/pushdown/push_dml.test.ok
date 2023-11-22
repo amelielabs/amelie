@@ -149,8 +149,12 @@ delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id =
 select * from test
 [4, 0]
 delete from test
-# test: reference update
+# test: reference delete join self
 insert into test (id) values (1), (2), (3)
+explain delete from test, test e where test.id = e.id
+query: on_error
+{"code": 1, "msg": "DML JOIN using the same table are not supported"}
+# test: reference update
 explain update test set data = id
 "
 bytecode [coordinator]
@@ -238,6 +242,10 @@ select * from test
 [2, 4]
 [3, 6]
 update test set data = id
+# test: reference update join self
+explain update test join test e on (test.id = e.id) set data = e.id * 2
+query: on_error
+{"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: reference upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 "
@@ -619,8 +627,12 @@ delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id =
 select * from test
 [4, 0]
 delete from test
-# test: table update
+# test: table delete join self
 insert into test (id) values (1), (2), (3)
+explain delete from test, test e where test.id = e.id
+query: on_error
+{"code": 1, "msg": "DML JOIN using the same table are not supported"}
+# test: table update
 explain update test set data = id
 "
 bytecode [coordinator]
@@ -697,6 +709,10 @@ select * from test
 [3, 3]
 [2, 2]
 [1, 1]
+# test: table update join self
+explain update test join test e on (test.id = e.id) set data = e.id * 2
+query: on_error
+{"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: table upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 "
