@@ -56,7 +56,6 @@ OpDesc ops[] =
 	{ CREAL,              "real"              },
 	{ CSTRING,            "string"            },
 	{ CSTRING_MIN,        "string_min"        },
-	{ CPARTIAL,           "partial"           },
 
 	// arguments
 	{ CARG,               "arg"               },

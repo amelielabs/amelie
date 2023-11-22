@@ -600,44 +600,6 @@ data_is_null(uint8_t* data)
 	return *data == MN_NULL;
 }
 
-// partial
-always_inline hot static inline int
-data_size_partial(void)
-{
-	return data_size_type();
-}
-
-always_inline hot static inline void
-data_read_partial(uint8_t** pos, int* type)
-{
-	if (unlikely(! (**pos >= MN_PARTIAL && **pos <= MN_PARTIALMAX)))
-		data_error(*pos, MN_PARTIAL);
-	*type = **pos - MN_PARTIAL;
-	*pos += data_size_type();
-}
-
-always_inline hot static inline int
-data_read_partial_at(uint8_t* pos)
-{
-	if (unlikely(! (*pos >= MN_PARTIAL && *pos <= MN_PARTIALMAX)))
-		data_error(pos, MN_PARTIAL);
-	return *pos - MN_PARTIAL;
-}
-
-always_inline hot static inline void
-data_write_partial(uint8_t** pos, int type)
-{
-	uint8_t* data = *pos;
-	*data = MN_PARTIAL + type;
-	*pos += data_size_type();
-}
-
-always_inline hot static inline bool
-data_is_partial(uint8_t* data)
-{
-	return *data >= MN_PARTIAL && *data <= MN_PARTIALMAX;
-}
-
 // misc
 hot static inline void
 data_skip(uint8_t** pos)
@@ -692,13 +654,6 @@ data_skip(uint8_t** pos)
 		int   value_size;
 		char* value;
 		data_read_raw(pos, &value, &value_size);
-		break;
-	}
-	case MN_PARTIAL ... MN_PARTIALMAX:
-	{
-		int type;
-		data_read_partial(pos, &type);
-		data_skip(pos);
 		break;
 	}
 	default:

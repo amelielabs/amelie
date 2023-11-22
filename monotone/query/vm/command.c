@@ -608,7 +608,7 @@ cgroup_merge_recv(Vm* self, Op* op)
 	if (unlikely(! list_count))
 		error("unexpected group list return");
 
-	// merge partial aggregates into the first group
+	// merge aggregates into the first group
 	group_merge(list, list_count);
 
 	// free group objects

@@ -12,8 +12,7 @@ struct Row
 {
 	uint8_t size_factor: 2;
 	uint8_t is_secondary: 1;
-	uint8_t is_partial: 1;
-	uint8_t flags: 3;
+	uint8_t flags: 5;
 	uint8_t data[];
 	//   reserved[]
 	//   size
@@ -148,7 +147,6 @@ row_allocate(Def* def, int data_size)
 	Row* self = mn_malloc(size);
 	self->size_factor = size_factor;
 	self->is_secondary = false;
-	self->is_partial   = false;
 	self->flags        = 0;
 
 	// set data size

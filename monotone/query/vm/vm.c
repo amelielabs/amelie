@@ -106,7 +106,6 @@ vm_run(Vm*          self,
 		&&creal,
 		&&cstring,
 		&&cstring_min,
-		&&cpartial,
 		&&carg,
 		&&cbor,
 		&&cband,
@@ -302,11 +301,6 @@ cstring:
 cstring_min:
 	str_set(&string, "", 0);
 	value_set_string(&r[op->a], &string, NULL);
-	op_next;
-
-cpartial:
-	// todo
-	//value_partial(&r[op->a], op->b, &r[op->c]);
 	op_next;
 
 carg:

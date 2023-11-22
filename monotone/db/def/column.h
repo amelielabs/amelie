@@ -120,11 +120,7 @@ column_find(Column* self, uint8_t** pos)
 
 	// validate data type
 	if (! type_validate(self->type, *pos))
-	{
-		if (data_is_partial(*pos))
-			return;
 		error("column <%.*s>: does not match data type",
 		      str_size(&self->name),
 		      str_of(&self->name));
-	}
 }

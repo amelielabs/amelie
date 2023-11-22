@@ -37,10 +37,7 @@ enum
 	MN_STRINGV31  = 146,
 	MN_STRING8    = 147,
 	MN_STRING16   = 148,
-	MN_STRING32   = 149,
-
-	MN_PARTIAL    = 150, // reserved values for partials
-	MN_PARTIALMAX = 200
+	MN_STRING32   = 149
 };
 
 static inline char*
@@ -63,8 +60,6 @@ type_to_string(int type)
 		return "map";
 	case MN_STRINGV0 ... MN_STRING32:
 		return "string";
-	case MN_PARTIAL ... MN_PARTIALMAX:
-		return "partial";
 	}
 	return "<unknown>";
 }

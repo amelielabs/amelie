@@ -28,29 +28,21 @@ row_create(Def* def, uint8_t* data, int data_size)
 	if (unlikely(count != def->column_count))
 		error("row has incorrect number of columns");
 
-	bool is_partial = false;
 	auto column = def->column;
 	for (; column; column = column->next)
 	{
 		// validate column data type
-		if (data_is_partial(pos))
+		if (data_is_null(pos))
 		{
-			is_partial = true;
-			assert(! column->key);
-		} else
-		{
-			if (data_is_null(pos))
-			{
-				if (unlikely(column->constraint.not_null))
-					error("column <%.*s>: cannot be null",
-					      str_size(&column->name),
-					      str_of(&column->name));
-			} else
-			if (unlikely(! type_validate(column->type, pos))) {
-				error("column <%.*s>: does not match data type",
+			if (unlikely(column->constraint.not_null))
+				error("column <%.*s>: cannot be null",
 				      str_size(&column->name),
 				      str_of(&column->name));
-			}
+		} else
+		if (unlikely(! type_validate(column->type, pos))) {
+			error("column <%.*s>: does not match data type",
+			      str_size(&column->name),
+			      str_of(&column->name));
 		}
 
 		// indexate keys per column
@@ -91,7 +83,6 @@ row_create(Def* def, uint8_t* data, int data_size)
 
 	// create row
 	auto self = row_allocate(def, data_size);
-	self->is_partial = is_partial;
 	for (int i = 0; i < def->key_count; i++)
 		row_key_set_index(self, def, i, index[i]);
 	memcpy(row_data(self, def), data, data_size);
@@ -117,20 +108,17 @@ row_hash(Def* def, uint8_t* data, int data_size)
 	for (auto column = def->column; column; column = column->next)
 	{
 		// validate column data type
-		if (likely(! data_is_partial(pos)))
+		if (data_is_null(pos))
 		{
-			if (data_is_null(pos))
-			{
-				if (unlikely(column->constraint.not_null))
-					error("column <%.*s>: cannot be null",
-					      str_size(&column->name),
-					      str_of(&column->name));
-			} else
-			if (unlikely(! type_validate(column->type, pos))) {
-				error("column <%.*s>: does not match data type",
+			if (unlikely(column->constraint.not_null))
+				error("column <%.*s>: cannot be null",
 				      str_size(&column->name),
 				      str_of(&column->name));
-			}
+		} else
+		if (unlikely(! type_validate(column->type, pos))) {
+			error("column <%.*s>: does not match data type",
+			      str_size(&column->name),
+			      str_of(&column->name));
 		}
 
 		// hash keys per column

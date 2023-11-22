@@ -95,10 +95,3 @@ encode_null(Buf* self)
 	auto pos = buf_reserve(self, data_size_null());
 	data_write_null(pos);
 }
-
-always_inline hot static inline void
-encode_partial(Buf* self, int type)
-{
-	auto pos = buf_reserve(self, data_size_partial());
-	data_write_partial(pos, type);
-}

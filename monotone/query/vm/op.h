@@ -41,7 +41,6 @@ enum
 	CREAL,
 	CSTRING,
 	CSTRING_MIN,
-	CPARTIAL,
 
 	// argument
 	CARG,

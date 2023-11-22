@@ -512,25 +512,6 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 {
 	auto aggr = ast_aggr_of(ast);
 
-	// partial aggregate
-#if 0
-	if (aggr->target == NULL)
-	{
-		if (ast->token.type != KCOUNT)
-			cmd_error(self, "unknown partial aggregate");
-
-		int type = PARTIAL_COUNT;
-
-		int rexpr;
-		rexpr = emit(self, NULL, aggr->expr);
-
-		int rpartial;
-		rpartial = op3(self, CPARTIAL, rpin(self), type, rexpr);
-		runpin(self, rexpr);
-		return rpartial;
-	}
-#endif
-
 	// target is target->group_target
 	assert(target->group_redirect);
 
