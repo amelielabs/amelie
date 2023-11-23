@@ -35,6 +35,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

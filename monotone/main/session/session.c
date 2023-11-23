@@ -77,7 +77,7 @@ session_reset(Session* self)
 }
 
 hot static inline void
-session_execute_explain(Session* self)
+session_explain(Session* self)
 {
 	// todo: profile
 
@@ -107,7 +107,7 @@ session_execute_distributed(Session* self)
 	// explain
 	if (self->compiler.parser.explain != EXPLAIN_NONE)
 	{
-		session_execute_explain(self);
+		session_explain(self);
 		return;
 	}
 
@@ -118,7 +118,8 @@ session_execute_distributed(Session* self)
 	if (try(&e))
 	{
 		// execute coordinator
-		vm_run(&self->vm, NULL, &self->dispatch,
+		vm_run(&self->vm, NULL,
+		       &self->dispatch,
 		       &self->cmd,
 		       &self->compiler.code_coordinator,
 		       &self->compiler.code_data,

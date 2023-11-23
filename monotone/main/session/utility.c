@@ -409,6 +409,98 @@ execute_ddl(Session* self, Stmt* stmt)
 	}
 }
 
+#if 0
+static inline void
+execute_checkpoint(Session* self, Ast* ast)
+{
+	auto share = self->share;
+	(void)ast;
+
+	auto on_complete = condition_create();
+	guard(guard, condition_free, on_complete);
+
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	{
+		auto shard = share->shard_mgr->shards[i];
+
+		pid_t pid = snapshot(share->storage_mgr, on_complete, &shard->config->id);
+		condition_wait(on_complete, -1);
+
+		int status = 0;
+		int rc = waitpid(pid, &status, 0);
+		if (rc == -1)
+			error_system();
+
+		bool failed = false;
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == EXIT_FAILURE)
+				failed = true;
+		} else {
+			failed = true;
+		}
+
+		if (failed)
+			error("failed to create snapshot");
+	}
+}
+#endif
+
+static inline void
+execute_checkpoint(Session* self, Ast* ast)
+{
+	auto share = self->share;
+	(void)ast;
+
+	struct
+	{
+		pid_t      pid;
+		Condition* on_complete;
+	} state[share->shard_mgr->shards_count];
+
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	{
+		state[i].pid = -1;
+		state[i].on_complete = condition_create();
+	}
+
+	session_lock(self, LOCK_EXCLUSIVE);
+
+	// execute
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	{
+		auto shard = share->shard_mgr->shards[i];
+		state[i].pid = snapshot(share->storage_mgr, state[i].on_complete,
+		                        &shard->config->id);
+	}
+
+	session_unlock(self);
+
+	// wait for completion
+	bool failed = false;
+	for (int i = 0; i < share->shard_mgr->shards_count; i++)
+	{
+		condition_wait(state[i].on_complete, -1);
+		condition_free(state[i].on_complete);
+
+		int status = 0;
+		int rc = waitpid(state[i].pid, &status, 0);
+		if (rc == -1)
+			error_system();
+
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == EXIT_FAILURE)
+				failed = true;
+		} else {
+			failed = true;
+		}
+	}
+
+	if (failed)
+		error("failed to create snapshot");
+}
+
 void
 session_execute_utility(Session* self)
 {
@@ -420,6 +512,10 @@ session_execute_utility(Session* self)
 
 	case STMT_SET:
 		execute_set(self, stmt->ast);
+		break;
+
+	case STMT_CHECKPOINT:
+		execute_checkpoint(self, stmt->ast);
 		break;
 
 	case STMT_CREATE_USER:
