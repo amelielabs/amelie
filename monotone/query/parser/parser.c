@@ -94,6 +94,7 @@ parser_has_utility(Parser* self)
 		switch (stmt->id) {
 		case STMT_SHOW:
 		case STMT_SET:
+		case STMT_CHECKPOINT:
 		case STMT_CREATE_USER:
 		case STMT_CREATE_SCHEMA:
 		case STMT_CREATE_TABLE:

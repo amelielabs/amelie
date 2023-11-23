@@ -93,6 +93,11 @@ parse_stmt(Parser* self)
 		parse_set(stmt);
 		break;
 
+	case KCHECKPOINT:
+		// CHECKPOINT
+		stmt->id = STMT_CHECKPOINT;
+		break;
+
 	case KCREATE:
 	{
 		// CREATE USER | SCHEMA | TABLE | VIEW
