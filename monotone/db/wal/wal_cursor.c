@@ -32,9 +32,9 @@ wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn_start)
 	// find nearest file with id <= lsn_start
 	uint64_t id;
 	if (lsn_start == 0)
-		id = snapshot_mgr_min(&wal->wal_store.list);
+		id = id_mgr_min(&wal->wal_store.list);
 	else
-		id = snapshot_mgr_find(&wal->wal_store.list, lsn_start);
+		id = id_mgr_find(&wal->wal_store.list, lsn_start);
 	if (id == UINT64_MAX)
 		return;
 	self->file = wal_file_allocate(id);
@@ -97,7 +97,7 @@ wal_cursor_next(WalCursor* self)
 
 		// get to the next file id
 		uint64_t id;
-		id = snapshot_mgr_next(&wal->wal_store.list, file->id);
+		id = id_mgr_next(&wal->wal_store.list, file->id);
 		if (id == UINT64_MAX)
 			break;
 

@@ -46,7 +46,7 @@ wal_store_recover(WalStore* self, char *path)
 		int64_t id = wal_file_id_of(entry->d_name);
 		if (unlikely(id == -1))
 			continue;
-		snapshot_mgr_add(&self->list, id);
+		id_mgr_add(&self->list, id);
 	}
 }
 
@@ -66,7 +66,7 @@ wal_store_open(WalStore* self)
 	// open last log file and set it as current
 	if (self->list.list_count > 0)
 	{
-		uint64_t last = snapshot_mgr_max(&self->list);
+		uint64_t last = id_mgr_max(&self->list);
 		self->current = wal_file_allocate(last);
 		wal_file_open(self->current);
 		file_seek_to_end(&self->current->file);

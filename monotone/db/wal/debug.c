@@ -116,7 +116,7 @@ wal_debug_read(Wal* self, uint64_t lsn)
 Buf*
 wal_debug_snapshot(Wal* self, uint64_t snapshot)
 {
-	snapshot_mgr_add(&self->wal_store.snapshot, snapshot);
+	id_mgr_add(&self->wal_store.snapshot, snapshot);
 
 	auto buf = msg_create(MSG_OBJECT);
 	encode_bool(buf, true);
@@ -127,7 +127,7 @@ wal_debug_snapshot(Wal* self, uint64_t snapshot)
 Buf*
 wal_debug_snapshot_del(Wal* self, uint64_t snapshot)
 {
-	snapshot_mgr_delete(&self->wal_store.snapshot, snapshot);
+	id_mgr_delete(&self->wal_store.snapshot, snapshot);
 
 	auto buf = msg_create(MSG_OBJECT);
 	encode_bool(buf, true);
