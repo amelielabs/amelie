@@ -185,7 +185,6 @@ snapshot_mgr_unlink(Snapshot* self)
 		uuid_to_string(&snapshot->uuid, uuid, sizeof(uuid));
 
 		log("snapshot: remove previous snapshot %s.%020" PRIu64,
-		    config_directory(),
 		    uuid,
 			self->id);
 

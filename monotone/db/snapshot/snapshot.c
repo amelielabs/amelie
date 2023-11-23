@@ -45,6 +45,8 @@ snapshot_storage(SnapshotFile* file, SnapshotBatch* batch, Storage* storage)
 				snapshot_file_write(file, &batch->iov);
 				snapshot_batch_reset(batch);
 			}
+
+			iterator_next(it);
 		}
 
 		// flush
@@ -106,8 +108,11 @@ snapshot(StorageMgr* storage_mgr, Condition* on_complete, Uuid* id)
 		snapshot_file_complete(&file);
 	}
 
+	bool error = false;
 	if (catch(&e))
 	{
+		error = true;
+
 		// todo: can throw
 		snapshot_file_abort(&file);
 	}
@@ -118,6 +123,6 @@ snapshot(StorageMgr* storage_mgr, Condition* on_complete, Uuid* id)
 	condition_signal(on_complete);
 
 	// done
-	_exit(EXIT_SUCCESS);
+	_exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
 	return -1;
 }

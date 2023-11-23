@@ -41,7 +41,6 @@ snapshot_file_create(SnapshotFile* self, Uuid* uuid, uint64_t id)
 	file_create(&self->file, path);
 
 	log("snapshot: begin %s.%020" PRIu64 ".incomplete",
-	    config_directory(),
 	    self->uuid,
 	    id);
 }
@@ -63,8 +62,7 @@ snapshot_file_complete(SnapshotFile* self)
 	file_rename(&self->file, path);
 	file_close(&self->file);
 
-	log("snapshot: complete %s.%020" PRIu64 ".incomplete",
-	    config_directory(),
+	log("snapshot: complete %s.%020" PRIu64,
 	    self->uuid,
 	    self->id);
 }
