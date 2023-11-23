@@ -45,3 +45,4 @@ uuid_compare(Uuid *l, Uuid *r)
 
 void uuid_to_string(Uuid*, char*, int);
 void uuid_from_string(Uuid*, Str*);
+int  uuid_from_string_nothrow(Uuid*, Str*);

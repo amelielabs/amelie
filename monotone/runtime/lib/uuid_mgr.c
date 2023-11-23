@@ -107,7 +107,7 @@ uuid_to_string(Uuid* self, char* string, int size)
 	         bits->d, bits->e, bits->f);
 }
 
-static inline int
+int
 uuid_from_string_nothrow(Uuid* self, Str* src)
 {
 	if (unlikely(str_size(src) < (UUID_SZ - 1)))
