@@ -6,9 +6,9 @@
 // SQL OLTP database
 //
 
-typedef struct SnapshotMgr SnapshotMgr;
+typedef struct IdMgr IdMgr;
 
-struct SnapshotMgr
+struct IdMgr
 {
 	Spinlock lock;
 	int      list_count;
@@ -16,7 +16,7 @@ struct SnapshotMgr
 };
 
 static inline void
-snapshot_mgr_init(SnapshotMgr* self)
+id_mgr_init(IdMgr* self)
 {
 	self->list_count = 0;
 	spinlock_init(&self->lock);
@@ -24,14 +24,14 @@ snapshot_mgr_init(SnapshotMgr* self)
 }
 
 static inline void
-snapshot_mgr_free(SnapshotMgr* self)
+id_mgr_free(IdMgr* self)
 {
 	spinlock_free(&self->lock);
 	buf_free(&self->list);
 }
 
 static inline void
-snapshot_mgr_add(SnapshotMgr* self, uint64_t id)
+id_mgr_add(IdMgr* self, uint64_t id)
 {
 	spinlock_lock(&self->lock);
 
@@ -58,7 +58,7 @@ snapshot_mgr_add(SnapshotMgr* self, uint64_t id)
 }
 
 static inline void
-snapshot_mgr_delete(SnapshotMgr* self, uint64_t id)
+id_mgr_delete(IdMgr* self, uint64_t id)
 {
 	spinlock_lock(&self->lock);
 
@@ -78,7 +78,7 @@ snapshot_mgr_delete(SnapshotMgr* self, uint64_t id)
 }
 
 static inline int
-snapshot_mgr_copy(SnapshotMgr* self, Buf* dest, uint64_t limit)
+id_mgr_copy(IdMgr* self, Buf* dest, uint64_t limit)
 {
 	int count = 0;
 	spinlock_lock(&self->lock);
@@ -105,7 +105,7 @@ snapshot_mgr_copy(SnapshotMgr* self, Buf* dest, uint64_t limit)
 }
 
 static inline uint64_t
-snapshot_mgr_min(SnapshotMgr* self)
+id_mgr_min(IdMgr* self)
 {
 	uint64_t id;
 	spinlock_lock(&self->lock);
@@ -119,7 +119,7 @@ snapshot_mgr_min(SnapshotMgr* self)
 }
 
 static inline uint64_t
-snapshot_mgr_max(SnapshotMgr* self)
+id_mgr_max(IdMgr* self)
 {
 	uint64_t id;
 	spinlock_lock(&self->lock);
@@ -133,7 +133,7 @@ snapshot_mgr_max(SnapshotMgr* self)
 }
 
 static inline void
-snapshot_mgr_stats(SnapshotMgr* self, int* count, uint64_t* min)
+id_mgr_stats(IdMgr* self, int* count, uint64_t* min)
 {
 	spinlock_lock(&self->lock);
 
@@ -152,7 +152,7 @@ snapshot_mgr_stats(SnapshotMgr* self, int* count, uint64_t* min)
 }
 
 static inline uint64_t
-snapshot_mgr_find(SnapshotMgr* self, uint64_t value)
+id_mgr_find(IdMgr* self, uint64_t value)
 {
 	spinlock_lock(&self->lock);
 
@@ -170,7 +170,7 @@ snapshot_mgr_find(SnapshotMgr* self, uint64_t value)
 }
 
 static inline uint64_t
-snapshot_mgr_next(SnapshotMgr* self, uint64_t value)
+id_mgr_next(IdMgr* self, uint64_t value)
 {
 	spinlock_lock(&self->lock);
 
@@ -190,7 +190,7 @@ snapshot_mgr_next(SnapshotMgr* self, uint64_t value)
 }
 
 static inline int
-snapshot_mgr_gc_between(SnapshotMgr* self, Buf* dest, uint64_t id)
+id_mgr_gc_between(IdMgr* self, Buf* dest, uint64_t id)
 {
 	spinlock_lock(&self->lock);
 

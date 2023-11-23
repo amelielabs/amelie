@@ -10,8 +10,8 @@
 #include "lib/rbtree.h"
 #include "lib/hash_table.h"
 
-// snapshot manager
-#include "lib/snapshot_mgr.h"
+// id manager
+#include "lib/id_mgr.h"
 
 // hashing
 #include "lib/hash.h"
