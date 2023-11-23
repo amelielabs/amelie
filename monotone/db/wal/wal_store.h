@@ -10,8 +10,8 @@ typedef struct WalStore WalStore;
 
 struct WalStore
 {
-	SnapshotMgr snapshot;
-	SnapshotMgr list;
+	IdMgr       snapshot;
+	IdMgr       list;
 	WalFile*    current;
 	WalEventMgr event_mgr;
 };

@@ -18,8 +18,8 @@ void
 wal_store_init(WalStore* self)
 {
 	self->current = NULL;
-	snapshot_mgr_init(&self->list);
-	snapshot_mgr_init(&self->snapshot);
+	id_mgr_init(&self->list);
+	id_mgr_init(&self->snapshot);
 	wal_event_mgr_init(&self->event_mgr);
 }
 
@@ -33,8 +33,8 @@ wal_store_free(WalStore* self)
 		wal_file_free(file);
 		self->current = NULL;
 	}
-	snapshot_mgr_free(&self->list);
-	snapshot_mgr_free(&self->snapshot);
+	id_mgr_free(&self->list);
+	id_mgr_free(&self->snapshot);
 	wal_event_mgr_free(&self->event_mgr);
 }
 
@@ -67,7 +67,7 @@ wal_store_rotate(WalStore* self, uint64_t next_lsn)
 
 	// add to the list and set as current
 	self->current = file;
-	snapshot_mgr_add(&self->list, next_lsn);
+	id_mgr_add(&self->list, next_lsn);
 
 	// sync and close prev file
 	if (file_prev)
@@ -82,7 +82,7 @@ wal_store_rotate(WalStore* self, uint64_t next_lsn)
 void
 wal_store_gc(WalStore* self, uint64_t snapshot)
 {
-	uint64_t snapshot_min = snapshot_mgr_min(&self->snapshot);
+	uint64_t snapshot_min = id_mgr_min(&self->snapshot);
 	uint64_t min = snapshot;
 	if (snapshot_min < min)
 		min = snapshot_min;
@@ -92,7 +92,7 @@ wal_store_gc(WalStore* self, uint64_t snapshot)
 	guard(list_guard, buf_free, &list);
 
 	int list_count;
-	list_count = snapshot_mgr_gc_between(&self->list, &list, min);
+	list_count = id_mgr_gc_between(&self->list, &list, min);
 
 	// remove files by id
 	if (list_count > 0)
@@ -115,12 +115,12 @@ void
 wal_store_snapshot(WalStore* self, WalSnapshot* snapshot)
 {
 	// set snapshot to a first file id
-	snapshot->snapshot     = snapshot_mgr_min(&self->list);
-	snapshot->snapshot_mgr = &self->snapshot;
-	snapshot_mgr_add(&self->snapshot, snapshot->snapshot);
+	snapshot->snapshot = id_mgr_min(&self->list);
+	snapshot->id_mgr   = &self->snapshot;
+	id_mgr_add(&self->snapshot, snapshot->snapshot);
 
 	// copy file list
-	snapshot->list_count = snapshot_mgr_copy(&self->list, &snapshot->list, UINT64_MAX);
+	snapshot->list_count = id_mgr_copy(&self->list, &snapshot->list, UINT64_MAX);
 
 	// set position of the last file and lsn
 	snapshot->lsn       = config_lsn();
@@ -171,7 +171,7 @@ wal_store_status(WalStore* self)
 
 	int      list_count;
 	uint64_t list_min;
-	snapshot_mgr_stats(&self->list, &list_count, &list_min);
+	id_mgr_stats(&self->list, &list_count, &list_min);
 
 	// file_count
 	encode_raw(buf, "file_count", 10);
@@ -183,7 +183,7 @@ wal_store_status(WalStore* self)
 
 	int      snapshot_count;
 	uint64_t snapshot_min;
-	snapshot_mgr_stats(&self->snapshot, &snapshot_count, &snapshot_min);
+	id_mgr_stats(&self->snapshot, &snapshot_count, &snapshot_min);
 
 	// snapshot_count
 	encode_raw(buf, "snapshot_count", 14);
