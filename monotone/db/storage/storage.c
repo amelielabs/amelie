@@ -12,6 +12,7 @@
 #include <monotone_config.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
+#include <monotone_snapshot.h>
 #include <monotone_storage.h>
 
 Storage*

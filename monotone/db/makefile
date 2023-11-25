@@ -14,8 +14,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I. \
                  -Idef \
                  -Itransaction \
-                 -Istorage \
                  -Isnapshot \
+                 -Istorage \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
@@ -24,13 +24,10 @@ OBJECTS        = \
                  def/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
+                 snapshot/snapshot.o \
                  storage/tree.o \
                  storage/storage.o \
                  storage/storage_mgr.o \
-                 snapshot/snapshot_file.o \
-                 snapshot/snapshot_cursor.o \
-                 snapshot/snapshot_mgr.o \
-                 snapshot/snapshot.o \
                  wal/wal_store.o \
                  wal/wal_store_open.o \
                  wal/wal.o \
