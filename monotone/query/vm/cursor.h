@@ -96,7 +96,6 @@ cursor_reset(Cursor* self)
 	if (self->it)
 	{
 		iterator_close(self->it);
-		iterator_free(self->it);
 		self->it = NULL;
 	}
 	set_iterator_init(&self->set_it);

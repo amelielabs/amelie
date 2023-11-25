@@ -8,21 +8,18 @@
 
 typedef struct Iterator Iterator;
 
+typedef bool (*IteratorHas)(Iterator*);
+typedef Row* (*IteratorAt)(Iterator*);
+typedef void (*IteratorNext)(Iterator*);
+typedef void (*IteratorClose)(Iterator*);
+
 struct Iterator
 {
-	bool (*open)(Iterator*, Row*);
-	bool (*has)(Iterator*);
-	Row* (*at)(Iterator*);
-	void (*next)(Iterator*);
-	void (*close)(Iterator*);
-	void (*free)(Iterator*);
+	IteratorHas   has;
+	IteratorAt    at;
+	IteratorNext  next;
+	IteratorClose close;
 };
-
-static inline bool
-iterator_open(Iterator* self, Row* key)
-{
-	return self->open(self, key);
-}
 
 static inline bool
 iterator_has(Iterator* self)
@@ -45,11 +42,6 @@ iterator_next(Iterator* self)
 static inline void
 iterator_close(Iterator* self)
 {
-	self->close(self);
-}
-
-static inline void
-iterator_free(Iterator* self)
-{
-	self->free(self);
+	if (self->close)
+		self->close(self);
 }

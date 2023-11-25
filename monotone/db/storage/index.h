@@ -17,7 +17,7 @@ struct Index
 	void        (*delete)(Index*, Transaction*, Iterator*);
 	void        (*delete_by)(Index*, Transaction*, Row*);
 	bool        (*upsert)(Index*, Transaction*, Iterator*, Row*);
-	Iterator*   (*read)(Index*);
+	Iterator*   (*open)(Index*, Row*, bool);
 	List          link;
 };
 
@@ -67,9 +67,9 @@ index_upsert(Index* self, Transaction* trx, Iterator* it, Row* row)
 }
 
 static inline Iterator*
-index_read(Index* self)
+index_open(Index* self, Row* key, bool start)
 {
-	return self->read(self);
+	return self->open(self, key, start);
 }
 
 static inline Def*

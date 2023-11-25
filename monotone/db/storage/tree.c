@@ -202,10 +202,13 @@ tree_upsert(Index* arg, Transaction* trx, Iterator* it, Row* row)
 }
 
 hot static Iterator*
-tree_read(Index* arg)
+tree_open(Index* arg, Row* key, bool start)
 {
 	auto self = tree_of(arg);
-	return tree_iterator_allocate(self);
+	auto it = tree_iterator_allocate(self);
+	if (start)
+		tree_iterator_open(it, key);
+	return it;
 }
 
 Index*
@@ -224,7 +227,7 @@ tree_allocate(IndexConfig* config, Uuid* storage)
 	self->index.delete    = tree_delete;
 	self->index.delete_by = tree_delete_by;
 	self->index.upsert    = tree_upsert;
-	self->index.read      = tree_read;
+	self->index.open      = tree_open;
 
 	guard(guard, tree_free, self);
 	self->index.config = index_config_copy(config);

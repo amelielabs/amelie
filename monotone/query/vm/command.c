@@ -55,8 +55,7 @@ ccursor_open(Vm* self, Op* op)
 	cursor->table   = table;
 	cursor->storage = storage;
 	cursor->index   = index;
-	cursor->it      = index_read(index);
-	iterator_open(cursor->it, key);
+	cursor->it      = index_open(index, key, true);
 
 	// jmp if has data
 	if (iterator_has(cursor->it))
@@ -145,7 +144,7 @@ ccursor_prepare(Vm* self, Op* op)
 	cursor->table   = table;
 	cursor->storage = storage;
 	cursor->index   = storage_primary(storage);
-	cursor->it      = index_read(cursor->index);
+	cursor->it      = index_open(cursor->index, NULL, false);
 }
 
 hot void

@@ -89,11 +89,6 @@ tree_iterator_close(Iterator* arg)
 	self->pos      = 0;
 	self->pos_next = 0;
 	self->tree     = NULL;
-}
-
-static inline void
-tree_iterator_free(Iterator* arg)
-{
 	mn_free(arg);
 }
 
@@ -101,12 +96,10 @@ static inline Iterator*
 tree_iterator_allocate(Tree* tree)
 {
 	TreeIterator* self = mn_malloc(sizeof(*self));
-	self->it.open  = tree_iterator_open;
 	self->it.has   = tree_iterator_has;
 	self->it.at    = tree_iterator_at;
 	self->it.next  = tree_iterator_next;
 	self->it.close = tree_iterator_close;
-	self->it.free  = tree_iterator_free;
 	self->current  = NULL;
 	self->pos      = 0;
 	self->pos_next = 0;
