@@ -18,8 +18,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db \
                  -I../db/def \
                  -I../db/transaction \
-                 -I../db/storage \
                  -I../db/snapshot \
+                 -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
                  -I. \

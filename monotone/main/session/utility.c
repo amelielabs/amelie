@@ -444,7 +444,6 @@ execute_checkpoint(Session* self, Ast* ast)
 			error("failed to create snapshot");
 	}
 }
-#endif
 
 static inline void
 execute_checkpoint(Session* self, Ast* ast)
@@ -499,6 +498,14 @@ execute_checkpoint(Session* self, Ast* ast)
 
 	if (failed)
 		error("failed to create snapshot");
+}
+#endif
+
+static inline void
+execute_checkpoint(Session* self, Ast* ast)
+{
+	(void)self;
+	(void)ast;
 }
 
 void
