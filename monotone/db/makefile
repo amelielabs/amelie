@@ -25,7 +25,8 @@ OBJECTS        = \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
                  snapshot/snapshot.o \
-                 storage/tree.o \
+                 snapshot/snapshot_cursor.o \
+#                storage/tree.o \
                  storage/storage.o \
                  storage/storage_mgr.o \
                  wal/wal_store.o \
