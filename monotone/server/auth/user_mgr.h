@@ -39,7 +39,7 @@ user_mgr_save(UserMgr* self)
 
 	// update and save state
 	var_data_set_buf(&config()->users, dump);
-	control_save_config();
+	control_save_state();
 	buf_free(dump);
 }
 
