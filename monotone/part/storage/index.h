@@ -1,0 +1,79 @@
+#pragma once
+
+//
+// monotone
+//
+// SQL OLTP database
+//
+
+typedef struct Index Index;
+
+struct Index
+{
+	IndexConfig*  config;
+	void        (*free)(Index*);
+	bool        (*set)(Index*, Transaction*, Row*);
+	void        (*update)(Index*, Transaction*, Iterator*, Row*);
+	void        (*delete)(Index*, Transaction*, Iterator*);
+	void        (*delete_by)(Index*, Transaction*, Row*);
+	bool        (*upsert)(Index*, Transaction*, Iterator*, Row*);
+	Iterator*   (*open)(Index*, Row*, bool);
+	List          link;
+};
+
+static inline void
+index_init(Index* self)
+{
+	memset(self, 0, sizeof(*self));
+	list_init(&self->link);
+}
+
+static inline void
+index_free(Index* self)
+{
+	if (self->config)
+		index_config_free(self->config);
+	self->free(self);
+}
+
+static inline bool
+index_set(Index* self, Transaction* trx, Row* row)
+{
+	return self->set(self, trx, row);
+}
+
+static inline void
+index_update(Index* self, Transaction* trx, Iterator* it, Row* row)
+{
+	self->update(self, trx, it, row);
+}
+
+static inline void
+index_delete(Index* self, Transaction* trx, Iterator* it)
+{
+	self->delete(self, trx, it);
+}
+
+static inline void
+index_delete_by(Index* self, Transaction* trx, Row* key)
+{
+	self->delete_by(self, trx, key);
+}
+
+static inline bool
+index_upsert(Index* self, Transaction* trx, Iterator* it, Row* row)
+{
+	return self->upsert(self, trx, it, row);
+}
+
+static inline Iterator*
+index_open(Index* self, Row* key, bool start)
+{
+	return self->open(self, key, start);
+}
+
+static inline Def*
+index_def(Index* self)
+{
+	return &self->config->def;
+}
