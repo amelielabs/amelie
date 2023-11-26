@@ -125,6 +125,7 @@ handle_mgr_write(HandleMgr*   self,
 	    cmd == LOG_SCHEMA_RENAME ||
 	    cmd == LOG_TABLE_CREATE  ||
 	    cmd == LOG_TABLE_RENAME  ||
+	    cmd == LOG_PART_CREATE   ||
 	    cmd == LOG_VIEW_CREATE   ||
 	    cmd == LOG_VIEW_RENAME)
 	{
