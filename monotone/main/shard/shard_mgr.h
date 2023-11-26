@@ -64,7 +64,7 @@ shard_mgr_save(ShardMgr* self)
 
 	// update and save state
 	var_data_set_buf(&config()->shards, dump);
-	control_save_config();
+	control_save_state();
 	buf_free(dump);
 }
 

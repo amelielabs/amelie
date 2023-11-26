@@ -134,11 +134,11 @@ execute_set(Session* self, Ast* ast)
 
 	// save state for persistent vars
 	if (var_is(var, VAR_P))
-		control_save_config();
+		control_save_state();
 }
 
 static inline Part*
-execute_create_part(Session* self, Table* table, Shard* shard)
+execute_create_part(Session* self, Transaction* trx, Table* table, Shard* shard)
 {
 	auto share = self->share;
 
@@ -158,8 +158,7 @@ execute_create_part(Session* self, Table* table, Shard* shard)
 	}
 
 	// create partition
-	auto part = part_mgr_create(share->part_mgr, config);
-	unguard(&config_guard);
+	auto part = part_mgr_create(share->part_mgr, trx, config);
 
 	// create primary index
 
@@ -178,20 +177,20 @@ execute_create_part(Session* self, Table* table, Shard* shard)
 	unguard(&index_config_guard);
 	index_config_free(index_config);
 
-	// attach index to the partition
-	part_mgr_attach(share->part_mgr, part, index);
+	// attach index to the storage
+	storage_attach(&part->storage, index);
 	return part;
 }
 
 static inline void
-execute_create_parts(Session* self, Table* table)
+execute_create_parts(Session* self, Transaction* trx, Table* table)
 {
 	auto share = self->share;
 
 	// reference table require only one partition
 	if (table->config->reference)
 	{
-		execute_create_part(self, table, NULL);
+		execute_create_part(self, trx, table, NULL);
 		return;
 	}
 
@@ -201,7 +200,7 @@ execute_create_parts(Session* self, Table* table)
 		auto shard = share->shard_mgr->shards[i];
 
 		// create partition with primary index
-		execute_create_part(self, table, shard);
+		execute_create_part(self, trx, table, shard);
 	}
 }
 
@@ -273,14 +272,17 @@ execute_ddl(Session* self, Stmt* stmt)
 			// create partition for each shard
 			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
 			                            &arg->config->name, true);
-			execute_create_parts(self, table);
+
+			execute_create_parts(self, &trx, table);
 			break;
 		}
 		case STMT_DROP_TABLE:
 		{
 			auto arg = ast_table_drop_of(stmt->ast);
-			table_mgr_drop(share->table_mgr, &trx, &arg->schema, &arg->name,
-			               arg->if_exists);
+
+			// drop table and related partitions
+			cascade_table_drop(share->db, &trx, &arg->schema, &arg->name,
+			                   arg->if_exists);
 			break;
 		}
 		case STMT_ALTER_TABLE:
@@ -504,6 +506,8 @@ execute_checkpoint(Session* self, Ast* ast)
 {
 	(void)self;
 	(void)ast;
+
+	control_save_catalog();
 }
 
 void
