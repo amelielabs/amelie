@@ -35,10 +35,6 @@ db_catalog_dump(Catalog* cat, Buf* buf)
 static void
 db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 {
-	// [table_config]
-	int count;
-	data_read_array(pos, &count);
-
 	Transaction trx;
 	transaction_init(&trx);
 	guard(trx_guard, transaction_free, &trx);
@@ -72,10 +68,6 @@ db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 static void
 db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 {
-	// [table_config]
-	int count;
-	data_read_array(pos, &count);
-
 	Transaction trx;
 	transaction_init(&trx);
 	guard(trx_guard, transaction_free, &trx);
@@ -109,10 +101,6 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 static void
 db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 {
-	// [view_config]
-	int count;
-	data_read_array(pos, &count);
-
 	Transaction trx;
 	transaction_init(&trx);
 	guard(trx_guard, transaction_free, &trx);
