@@ -45,18 +45,17 @@ core_is_backup(void)
 }
 
 static void
-core_save_config(void *arg)
+core_save_state(void *arg)
 {
 	Core* self = arg;
 	config_state_save(&self->config_state, global()->config);
 }
 
 static void
-core_checkpoint(void* arg, bool full)
+core_save_catalog(void *arg)
 {
-	(void)arg;
-	(void)full;
-	// todo
+	Core* self = arg;
+	catalog_mgr_dump(&self->catalog_mgr, config_lsn());
 }
 
 Core*
@@ -66,11 +65,11 @@ core_create(void)
 
 	// set control
 	auto control = &self->control;
-	control->core        = &mn_task->channel;
-	control->save_config = core_save_config;
-	control->checkpoint  = core_checkpoint;
-	control->arg         = self;
-	global()->control    = control;
+	control->core         = &mn_task->channel;
+	control->save_state   = core_save_state;
+	control->save_catalog = core_save_catalog;
+	control->arg          = self;
+	global()->control     = control;
 
 	// config state
 	config_state_init(&self->config_state);
@@ -134,19 +133,6 @@ core_uuid_set(void)
 		uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
 		var_string_set_raw(&config()->uuid, uuid_sz, sizeof(uuid_sz) - 1);
 	}
-}
-
-static void
-core_recover(Core* self)
-{
-	// restore tables and catalog objects
-	catalog_mgr_restore(&self->catalog_mgr);
-	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
-
-	// replay logs
-	recover(&self->db);
-
-	log("recover: complete");
 }
 
 static void
@@ -234,9 +220,6 @@ core_start(Core* self, bool bootstrap)
 	// prepare builtin functions
 	func_setup(&self->function_mgr);
 
-	// open db
-	db_open(&self->db, &self->catalog_mgr);
-
 	// prepare shards
 	shard_mgr_open(&self->shard_mgr);
 	if (! self->shard_mgr.shards_count)
@@ -246,11 +229,20 @@ core_start(Core* self, bool bootstrap)
 	}
 	shard_mgr_set_partition_map(&self->shard_mgr, &self->router);
 
+	// todo: prepare part mgr with shards
+
+	// create system object and register catalogs
+	db_open(&self->db, &self->catalog_mgr);
+
+	// restore catalogs (partitions, schemas, tables, views)
+	catalog_mgr_restore(&self->catalog_mgr);
+	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
+
 	// start shards and recover partitions
 	shard_mgr_start(&self->shard_mgr);
 
-	// recover system to the previous state
-	core_recover(self);
+	// replay logs
+	recover(&self->db);
 
 	// todo: start checkpoint worker
 
@@ -281,7 +273,7 @@ core_stop(Core* self)
 	// stop shards
 	shard_mgr_stop(&self->shard_mgr);
 
-	// stop db
+	// close db
 	db_close(&self->db);
 
 	// close config state file
