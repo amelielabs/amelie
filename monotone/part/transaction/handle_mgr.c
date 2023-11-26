@@ -32,25 +32,33 @@ handle_mgr_free(HandleMgr* self)
 	list_init(&self->list);
 }
 
-Handle*
-handle_mgr_set(HandleMgr* self, Handle* handle)
+void
+handle_mgr_delete(HandleMgr* self, Handle* handle)
 {
-	auto prev = handle_mgr_delete(self, handle->schema, handle->name);
-	list_append(&self->list, &handle->link);
-	self->list_count++;
+	list_unlink(&handle->link);
+	list_init(&handle->link);
+	self->list_count--;
+}
+
+static inline Handle*
+handle_mgr_delete_if_exists(HandleMgr* self, Handle* handle)
+{
+	Handle* prev;
+	if (handle->id)
+		prev = handle_mgr_get_by_id(self, handle->id);
+	else
+		prev = handle_mgr_get(self, handle->schema, handle->name);
+	if (prev)
+		handle_mgr_delete(self, prev);
 	return prev;
 }
 
 Handle*
-handle_mgr_delete(HandleMgr* self, Str* schema, Str* name)
+handle_mgr_set(HandleMgr* self, Handle* handle)
 {
-	auto prev = handle_mgr_get(self, schema, name);
-	if (prev)
-	{
-		list_unlink(&prev->link);
-		list_init(&prev->link);
-		self->list_count--;
-	}
+	auto prev = handle_mgr_delete_if_exists(self, handle);
+	list_append(&self->list, &handle->link);
+	self->list_count++;
 	return prev;
 }
 
@@ -68,15 +76,26 @@ handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 	return NULL;
 }
 
+Handle*
+handle_mgr_get_by_id(HandleMgr* self, Uuid* id)
+{
+	list_foreach(&self->list)
+	{
+		auto handle = list_at(Handle, link);
+		if (uuid_compare(handle->id, id))
+			return handle;
+	}
+	return NULL;
+}
+
 void
 handle_mgr_abort(HandleMgr* self, Handle* handle, Handle* prev)
 {
 	if (handle)
 	{
-		handle_mgr_delete(self, handle->schema, handle->name);
+		handle_mgr_delete(self, handle);
 		handle_free(handle);
 	}
-
 	if (prev)
 		handle_mgr_set(self, prev);
 }
@@ -112,7 +131,7 @@ handle_mgr_write(HandleMgr*   self,
 		prev = handle_mgr_set(self, handle);
 	} else
 	{
-		prev = handle_mgr_delete(self, handle->schema, handle->name);
+		prev = handle_mgr_delete_if_exists(self, handle);
 		handle = NULL;
 	}
 
