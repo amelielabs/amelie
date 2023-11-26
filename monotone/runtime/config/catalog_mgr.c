@@ -59,7 +59,7 @@ catalog_mgr_dump(CatalogMgr* self, uint64_t lsn)
 	// catalog
 	var_data_set_buf(&config()->catalog, dump);
 
-	control_save_config();
+	control_save_state();
 	buf_free(dump);
 }
 

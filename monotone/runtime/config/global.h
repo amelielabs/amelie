@@ -52,15 +52,15 @@ config_lsn_follow(uint64_t value)
 
 // control
 static inline void
-control_save_config(void)
+control_save_state(void)
 {
-	global()->control->save_config(global()->control->arg);
+	global()->control->save_state(global()->control->arg);
 }
 
 static inline void
-control_checkpoint(bool full)
+control_save_catalog(void)
 {
-	global()->control->checkpoint(global()->control->arg, full);
+	global()->control->save_catalog(global()->control->arg);
 }
 
 // error injection
