@@ -27,7 +27,8 @@ OBJECTS        = \
                  snapshot/snapshot_cursor.o \
                  storage/tree.o \
                  storage/storage.o \
-                 part/part_mgr.o
+                 part/part_mgr.o \
+                 part/part_catalog.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
