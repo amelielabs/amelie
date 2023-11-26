@@ -82,10 +82,10 @@ config_prepare(Config* self)
 		{ "cluster_shards",          VAR_INT,    VAR_C,                &self->cluster_shards,          NULL,        1                },
 		{ "lsn",                     VAR_INT,    0,                    &self->lsn,                     NULL,        0                },
 		{ "read_only",               VAR_BOOL,   0,                    &self->read_only,               NULL,        false            },
-		{ "storages",                VAR_DATA,   VAR_H|VAR_P,          &self->storages,                NULL,        0                },
 		{ "shards",                  VAR_DATA,   VAR_H|VAR_P,          &self->shards,                  NULL,        0                },
 		{ "nodes",                   VAR_DATA,   VAR_H|VAR_P,          &self->nodes,                   NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_H|VAR_P,          &self->users,                   NULL,        0                },
+		{ "parts",                   VAR_DATA,   VAR_H|VAR_P,          &self->parts,                   NULL,        0                },
 		{ "catalog",                 VAR_DATA,   VAR_H|VAR_P,          &self->catalog,                 NULL,        0                },
 		{ "catalog_snapshot",        VAR_INT,    VAR_H|VAR_P,          &self->catalog_snapshot,        NULL,        0                },
 		// testing

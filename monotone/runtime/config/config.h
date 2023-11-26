@@ -43,10 +43,10 @@ struct Config
 	Var  lsn;
 	Var  read_only;
 	// state
-	Var  storages;
 	Var  shards;
 	Var  nodes;
 	Var  users;
+	Var  parts;
 	Var  catalog;
 	Var  catalog_snapshot;
 	// testing
