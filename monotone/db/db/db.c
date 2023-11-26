@@ -14,13 +14,14 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 
 void
 db_init(Db* self)
 {
-	storage_mgr_init(&self->storage_mgr);
+	part_mgr_init(&self->part_mgr);
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
@@ -30,7 +31,7 @@ db_init(Db* self)
 void
 db_free(Db* self)
 {
-	storage_mgr_free(&self->storage_mgr);
+	part_mgr_free(&self->part_mgr);
 	table_mgr_free(&self->table_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
@@ -80,8 +81,8 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	db_create_system_schema(self, "system", false);
 	db_create_system_schema(self, "public", true);
 
-	// recover storages
-	storage_mgr_open(&self->storage_mgr);
+	// recover partitions
+	part_mgr_open(&self->part_mgr);
 
 	// register catalog
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
@@ -100,6 +101,6 @@ db_close(Db* self)
 	// free tables
 	table_mgr_free(&self->table_mgr);
 
-	// stop storages
-	storage_mgr_free(&self->storage_mgr);
+	// free partitions
+	part_mgr_free(&self->part_mgr);
 }

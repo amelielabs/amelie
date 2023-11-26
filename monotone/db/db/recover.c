@@ -14,6 +14,7 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 
@@ -49,14 +50,15 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
-		// find storage by uuid
-		auto storage = storage_mgr_find(&self->storage_mgr, &uuid);
-		if (unlikely(storage == NULL))
+		// find partition by uuid
+		auto part = part_mgr_find(&self->part_mgr, &uuid);
+		if (unlikely(part == NULL))
 			return;
 
 		// todo: serial recover
 
 		// replay write
+		auto storage = part_storage(part);
 		if (type == LOG_REPLACE)
 			storage_set(storage, trx, false, data, data_size);
 		else

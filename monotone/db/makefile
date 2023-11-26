@@ -11,24 +11,18 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/lib \
                  -I../runtime/config \
+                 -I../part \
+                 -I../part/def \
+                 -I../part/transaction \
+                 -I../part/snapshot \
+                 -I../part/storage \
+                 -I../part/part \
                  -I. \
-                 -Idef \
-                 -Itransaction \
-                 -Isnapshot \
-                 -Istorage \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-db.a
 OBJECTS        = \
-                 def/row.o \
-                 transaction/handle_mgr.o \
-                 transaction/commit.o \
-                 snapshot/snapshot.o \
-                 snapshot/snapshot_cursor.o \
-                 storage/tree.o \
-                 storage/storage.o \
-                 storage/storage_mgr.o \
                  wal/wal_store.o \
                  wal/wal_store_open.o \
                  wal/wal.o \
