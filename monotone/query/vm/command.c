@@ -17,6 +17,7 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -41,7 +42,8 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table/index by name
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
+	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
+	auto storage = part_storage(part);
 	auto index   = storage_find(storage, &name_index, true);
 
 	// create cursor key
@@ -137,7 +139,8 @@ ccursor_prepare(Vm* self, Op* op)
 
 	// find storage
 	Table* table = (Table*)op->b;
-	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
+	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
+	auto storage = part_storage(part);
 
 	// prepare cursor
 	cursor->type    = CURSOR_TABLE;
@@ -388,7 +391,8 @@ cinsert(Vm* self, Op* op)
 
 	// find storage by id
 	Table* table = (Table*)op->a;
-	auto storage = table_find_storage(table, &self->db->storage_mgr, self->shard);
+	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
+	auto storage = part_storage(part);
 
 	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;

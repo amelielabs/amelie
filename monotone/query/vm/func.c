@@ -17,6 +17,7 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -190,7 +191,7 @@ func_storages(Vm*       vm,
 {
 	unused(argv);
 	function_validate_argc(func, argc);
-	auto buf = storage_mgr_list(&vm->db->storage_mgr);
+	auto buf = part_mgr_list(&vm->db->part_mgr);
 	value_set_data_from(result, buf);
 }
 
