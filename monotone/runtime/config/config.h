@@ -46,7 +46,6 @@ struct Config
 	Var  shards;
 	Var  nodes;
 	Var  users;
-	Var  parts;
 	Var  catalog;
 	Var  catalog_snapshot;
 	// testing

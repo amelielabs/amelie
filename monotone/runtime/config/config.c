@@ -85,7 +85,6 @@ config_prepare(Config* self)
 		{ "shards",                  VAR_DATA,   VAR_H|VAR_P,          &self->shards,                  NULL,        0                },
 		{ "nodes",                   VAR_DATA,   VAR_H|VAR_P,          &self->nodes,                   NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_H|VAR_P,          &self->users,                   NULL,        0                },
-		{ "parts",                   VAR_DATA,   VAR_H|VAR_P,          &self->parts,                   NULL,        0                },
 		{ "catalog",                 VAR_DATA,   VAR_H|VAR_P,          &self->catalog,                 NULL,        0                },
 		{ "catalog_snapshot",        VAR_INT,    VAR_H|VAR_P,          &self->catalog_snapshot,        NULL,        0                },
 		// testing
