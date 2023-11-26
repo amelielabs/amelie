@@ -26,9 +26,9 @@ select system.schemas()
 [{"name": "system", "system": true, "create": false}, {"name": "public", "system": true, "create": true}]
 # test: show functions
 show functions
-[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "storages", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
+[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "partitions", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
 select system.functions()
-[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "storages", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
+[{"schema": "public", "name": "has", "argc": 2}, {"schema": "public", "name": "set", "argc": 3}, {"schema": "public", "name": "unset", "argc": 2}, {"schema": "public", "name": "sizeof", "argc": 1}, {"schema": "public", "name": "string", "argc": 1}, {"schema": "public", "name": "json", "argc": 1}, {"schema": "system", "name": "config", "argc": 0}, {"schema": "system", "name": "users", "argc": 0}, {"schema": "system", "name": "schemas", "argc": 0}, {"schema": "system", "name": "functions", "argc": 0}, {"schema": "system", "name": "tables", "argc": 0}, {"schema": "system", "name": "views", "argc": 0}, {"schema": "system", "name": "partitions", "argc": 0}, {"schema": "system", "name": "wal", "argc": 0}, {"schema": "system", "name": "debug", "argc": 0}]
 # test: show tables
 show tables
 []
@@ -39,10 +39,10 @@ show views
 []
 select system.views()
 []
-# test: show storages
-show storages
+# test: show partitions
+show partitions
 []
-select system.storages()
+select system.partitions()
 []
 # test: show wal
 show wal

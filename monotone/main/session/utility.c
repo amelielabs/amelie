@@ -45,7 +45,7 @@ execute_show(Session* self, Ast* ast)
 	if (str_compare_raw(&arg->expr->string, "wal", 3))
 		buf = wal_status(self->share->wal);
 	else
-	if (str_compare_raw(&arg->expr->string, "storages", 8))
+	if (str_compare_raw(&arg->expr->string, "partitions", 10))
 		buf = part_mgr_list(&self->share->db->part_mgr);
 	else
 	if (str_compare_raw(&arg->expr->string, "schemas", 7))

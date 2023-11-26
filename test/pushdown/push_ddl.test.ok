@@ -5,19 +5,19 @@ connect: on_connect
 create table test (id int primary key, data int default 0) reference
 select *.name, *.reference from system.tables()
 ["test", true]
-# test: reference has single storage
-select sizeof(system.storages()) = 1
+# test: reference has single partition
+select sizeof(system.partitions()) = 1
 true
 # test: reference has no shard id
-select system.storages()[0].id.id_shard
+select system.partitions()[0].id.id_shard
 "00000000-0000-0000-0000-000000000000"
 drop table test
 # test: table create
 create table test (id int primary key, data int default 0)
 select *.name, *.reference from system.tables()
 ["test", false]
-# test: table storage created on each shard
-explain select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)
+# test: table partitions created on each shard
+explain select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
 "
 bytecode [coordinator]
 --------
@@ -26,7 +26,7 @@ bytecode [coordinator]
  2                null        1      0      0
  3                push        1      0      0
  4           group_add        0      0      0
- 5                call        1      -      0      # system.storages()
+ 5                call        1      -      0      # system.partitions()
  6    cursor_open_expr        0      1      8
  7                 jmp       21      0      0
  8                call        2      -      0      # system.tables()
@@ -53,11 +53,11 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 "
-select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)
+select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
 3
-select count(s.*) from system.storages() s, system.tables() t where s.id.id_table = t.id
+select count(s.*) from system.partitions() s, system.tables() t where s.id.id_table = t.id
 3
-select sizeof(select s.* from system.storages() s, system.tables() t where s.id.id_table = t.id)
+select sizeof(select s.* from system.partitions() s, system.tables() t where s.id.id_table = t.id)
 3
 drop table test
 disconnect S0

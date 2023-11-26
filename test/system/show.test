@@ -29,9 +29,9 @@ select system.tables()
 show views
 select system.views()
 
-# test: show storages
-show storages
-select system.storages()
+# test: show partitions
+show partitions
+select system.partitions()
 
 # test: show wal
 show wal

@@ -183,11 +183,11 @@ func_views(Vm*       vm,
 }
 
 static void
-func_storages(Vm*       vm,
-              Function* func,
-              Value*    result,
-              int       argc,
-              Value**   argv)
+func_partitions(Vm*       vm,
+                Function* func,
+                Value*    result,
+                int       argc,
+                Value**   argv)
 {
 	unused(argv);
 	function_validate_argc(func, argc);
@@ -220,23 +220,23 @@ func_setup(FunctionMgr* mgr)
 	} def[] =
 	{
 		// public
-		{ "public", "has",       (FunctionMain)func_has,       2 },
-		{ "public", "set",       (FunctionMain)func_set,       3 },
-		{ "public", "unset",     (FunctionMain)func_unset,     2 },
-		{ "public", "sizeof",    (FunctionMain)func_sizeof,    1 },
-		{ "public", "string",    (FunctionMain)func_string,    1 },
-		{ "public", "json",      (FunctionMain)func_json,      1 },
+		{ "public", "has",        (FunctionMain)func_has,        2 },
+		{ "public", "set",        (FunctionMain)func_set,        3 },
+		{ "public", "unset",      (FunctionMain)func_unset,      2 },
+		{ "public", "sizeof",     (FunctionMain)func_sizeof,     1 },
+		{ "public", "string",     (FunctionMain)func_string,     1 },
+		{ "public", "json",       (FunctionMain)func_json,       1 },
 		// system
-		{ "system", "config",    (FunctionMain)func_config,    0 },
-		{ "system", "users",     (FunctionMain)func_users,     0 },
-		{ "system", "schemas",   (FunctionMain)func_schemas,   0 },
-		{ "system", "functions", (FunctionMain)func_functions, 0 },
-		{ "system", "tables",    (FunctionMain)func_tables,    0 },
-		{ "system", "views",     (FunctionMain)func_views,     0 },
-		{ "system", "storages",  (FunctionMain)func_storages,  0 },
-		{ "system", "wal",       (FunctionMain)func_wal,       0 },
-		{ "system", "debug",     (FunctionMain)func_debug,     0 },
-		{  NULL,    NULL,        NULL,                         0 }
+		{ "system", "config",     (FunctionMain)func_config,     0 },
+		{ "system", "users",      (FunctionMain)func_users,      0 },
+		{ "system", "schemas",    (FunctionMain)func_schemas,    0 },
+		{ "system", "functions",  (FunctionMain)func_functions,  0 },
+		{ "system", "tables",     (FunctionMain)func_tables,     0 },
+		{ "system", "views",      (FunctionMain)func_views,      0 },
+		{ "system", "partitions", (FunctionMain)func_partitions, 0 },
+		{ "system", "wal",        (FunctionMain)func_wal,        0 },
+		{ "system", "debug",      (FunctionMain)func_debug,      0 },
+		{  NULL,     NULL,         NULL,                         0 }
 	};
 	for (int i = 0; def[i].name; i++)
 	{

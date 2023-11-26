@@ -7,11 +7,11 @@ connect E0 S0
 create table test (id int primary key, data int default 0) reference
 select *.name, *.reference from system.tables()
 
-# test: reference has single storage
-select sizeof(system.storages()) = 1
+# test: reference has single partition
+select sizeof(system.partitions()) = 1
 
 # test: reference has no shard id
-select system.storages()[0].id.id_shard
+select system.partitions()[0].id.id_shard
 
 drop table test
 
@@ -19,11 +19,11 @@ drop table test
 create table test (id int primary key, data int default 0)
 select *.name, *.reference from system.tables()
 
-# test: table storage created on each shard
-explain select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)
-select count(s.*) from system.storages() s join system.tables() t on (s.id.id_table = t.id)
-select count(s.*) from system.storages() s, system.tables() t where s.id.id_table = t.id
-select sizeof(select s.* from system.storages() s, system.tables() t where s.id.id_table = t.id)
+# test: table partitions created on each shard
+explain select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
+select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
+select count(s.*) from system.partitions() s, system.tables() t where s.id.id_table = t.id
+select sizeof(select s.* from system.partitions() s, system.tables() t where s.id.id_table = t.id)
 
 drop table test
 
