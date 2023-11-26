@@ -19,122 +19,79 @@
 void
 part_mgr_init(PartMgr* self)
 {
-	self->list_count = 0;
-	list_init(&self->list);
+	handle_mgr_init(&self->mgr);
 }
 
 void
 part_mgr_free(PartMgr* self)
 {
-	list_foreach_safe(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_free(part);
-	}
-	self->list_count = 0;
-	list_init(&self->list);
+	handle_mgr_free(&self->mgr);
+}
+
+void
+part_mgr_open(PartMgr* self, CatalogMgr* cat_mgr)
+{
+	// register catalog
+	auto cat = catalog_allocate("partitions", &part_catalog_if, self);
+	catalog_mgr_add(cat_mgr, cat);
+}
+
+Part*
+part_mgr_create(PartMgr* self, Transaction* trx, PartConfig* config)
+{
+	// allocate partition
+	auto part = part_allocate(config);
+	guard(guard, part_free, part);
+
+	// save create partition operation
+	auto op = part_op_create(config);
+
+	// update partitions
+	handle_mgr_write(&self->mgr, trx, LOG_PART_CREATE, &part->handle, op);
+
+	buf_unpin(op);
+	unguard(&guard);
+	return part;
 }
 
 static void
-part_mgr_save(PartMgr* self)
+part_mgr_drop(PartMgr* self, Transaction* trx, Part* part)
 {
-	// dump a list of parts
-	auto dump = buf_create(0);
-	encode_array(dump, self->list_count);
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
+	// save drop partition operation
+	auto op = part_op_drop(&part->config->id);
 
-		// array
-		encode_array(dump, 2);
+	// drop partition by id
+	Handle drop;
+	handle_init(&drop);
+	handle_set_id(&drop, &part->config->id);
 
-		// part config
-		part_config_write(part->config, dump);
-
-		// indexes
-		encode_array(dump, part->storage.indexes_count);
-		list_foreach(&part->storage.indexes)
-		{
-			auto index = list_at(Index, link);
-			index_config_write(index->config, dump);
-		}
-	}
-
-	// update and save state
-	var_data_set_buf(&config()->parts, dump);
-	control_save_config();
-	buf_free(dump);
+	handle_mgr_write(&self->mgr, trx, LOG_PART_DROP, &drop, op);
+	buf_unpin(op);
 }
 
-static void
-part_mgr_recover(PartMgr* self)
+void
+part_mgr_drop_by_id(PartMgr* self, Transaction* trx, Uuid* id)
 {
-	auto parts = &config()->parts;
-	if (! var_data_is_set(parts))
-		return;
-	auto pos = var_data_of(parts);
-	if (data_is_null(pos))
-		return;
-
-	// array
-	int count;
-	data_read_array(&pos, &count);
-	for (int i = 0; i < count; i++)
+	list_foreach_safe(&self->mgr.list)
 	{
-		// array
-		int count;
-		data_read_array(&pos, &count);
-
-		// part config
-		auto config = part_config_read(&pos);
-		guard(config_guard, part_config_free, config);
-
-		// prepare part
-		auto part = part_allocate(config);
-		list_append(&self->list, &part->link);
-		self->list_count++;
-
-		// indexes
-		data_read_array(&pos, &count);
-		for (int i = 0; i < count; i++)
+		auto part = part_of(list_at(Handle, link));
+		if (uuid_compare(&part->config->id, id))
 		{
-			auto index_config = index_config_read(&pos);
-			guard(config_index_guard, index_config_free, index_config);
-
-			// todo: chose by type
-			auto index = tree_allocate(index_config, &part->config->id);
-			storage_attach(&part->storage, index);
+			part_mgr_drop(self, trx, part);
+			break;
 		}
-
-		// reusing config
-		unguard(&config_guard);
 	}
 }
 
 void
-part_mgr_open(PartMgr* self)
+part_mgr_drop_by_id_table(PartMgr* self, Transaction* trx, Uuid* id)
 {
-	// recover parts objects
-	part_mgr_recover(self);
-}
-
-void
-part_mgr_gc(PartMgr* self)
-{
-	bool updated = false;
-	list_foreach_safe(&self->list)
+	list_foreach_safe(&self->mgr.list)
 	{
-		auto part = list_at(Part, link);
-		if (part->refs > 0)
-			continue;
-		list_unlink(&part->link);
-		self->list_count--;
-		part_free(part);
-		updated = true;
+		auto part = part_of(list_at(Handle, link));
+		if (uuid_compare(&part->config->id_table, id))
+			part_mgr_drop(self, trx, part);
 	}
-
-	if (updated)
-		part_mgr_save(self);
 }
 
 Buf*
@@ -143,18 +100,13 @@ part_mgr_list(PartMgr* self)
 	auto buf = msg_create(MSG_OBJECT);
 
 	// array
-	encode_array(buf, self->list_count);
-	list_foreach(&self->list)
+	encode_array(buf, self->mgr.list_count);
+	list_foreach(&self->mgr.list)
 	{
-		// {}
-		auto part = list_at(Part, link);
+		auto part = part_of(list_at(Handle, link));
 
 		// map
-		encode_map(buf, 3);
-
-		// refs
-		encode_raw(buf, "refs", 3);
-		encode_integer(buf, part->refs);
+		encode_map(buf, 2);
 
 		// config
 		encode_raw(buf, "id", 2);
@@ -177,9 +129,9 @@ part_mgr_list(PartMgr* self)
 Part*
 part_mgr_find(PartMgr* self, Uuid* id)
 {
-	list_foreach(&self->list)
+	list_foreach(&self->mgr.list)
 	{
-		auto part = list_at(Part, link);
+		auto part = part_of(list_at(Handle, link));
 		if (uuid_compare(&part->config->id, id))
 			return part;
 	}
@@ -189,9 +141,9 @@ part_mgr_find(PartMgr* self, Uuid* id)
 Part*
 part_mgr_find_for(PartMgr* self, Uuid* shard, Uuid* table)
 {
-	list_foreach(&self->list)
+	list_foreach(&self->mgr.list)
 	{
-		auto part = list_at(Part, link);
+		auto part = part_of(list_at(Handle, link));
 		if (uuid_compare(&part->config->id_shard, shard) &&
 		    uuid_compare(&part->config->id_table, table))
 			return part;
@@ -202,36 +154,35 @@ part_mgr_find_for(PartMgr* self, Uuid* shard, Uuid* table)
 Part*
 part_mgr_find_for_table(PartMgr* self, Uuid* table)
 {
-	list_foreach(&self->list)
+	list_foreach(&self->mgr.list)
 	{
-		auto part = list_at(Part, link);
+		auto part = part_of(list_at(Handle, link));
 		if (uuid_compare(&part->config->id_table, table))
 			return part;
 	}
 	return NULL;
 }
 
-Part*
-part_mgr_create(PartMgr* self, PartConfig* config)
-{
-	auto part = part_allocate(config);
-	list_append(&self->list, &part->link);
-	self->list_count++;
-
-	part_mgr_save(self);
-	return part;
-}
-
 void
-part_mgr_attach(PartMgr* self, Part* part, Index* index)
+part_mgr_dump(PartMgr* self, Buf* buf)
 {
-	storage_attach(&part->storage, index);
-	part_mgr_save(self);
-}
+	// array
+	encode_array(buf, self->mgr.list_count);
+	list_foreach(&self->mgr.list)
+	{
+		// array
+		encode_array(buf, 2);
 
-void
-part_mgr_detach(PartMgr* self, Part* part, Index* index)
-{
-	storage_detach(&part->storage, index);
-	part_mgr_save(self);
+		// config
+		auto part = part_of(list_at(Handle, link));
+		part_config_write(part->config, buf);
+
+		// indexes
+		encode_array(buf, part->storage.indexes_count);
+		list_foreach(&part->storage.indexes)
+		{
+			auto index = list_at(Index, link);
+			index_config_write(index->config, buf);
+		}
+	}
 }
