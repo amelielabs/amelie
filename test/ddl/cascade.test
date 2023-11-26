@@ -10,10 +10,22 @@ create table test.b(id int primary key)
 drop schema test
 select *.schema, *.name from system.tables()
 
+create view test.test_view as select 1
+select * from system.views()
+
 # test: drop schema cascade
+
 drop schema test cascade
 select * from system.schemas()
+
+# test: drop schema cascade (tables)
 select *.schema, *.name from system.tables()
+
+# test: drop schema cascade (partitions)
+select * from system.partitions()
+
+# test: drop schema cascade (views)
+select * from system.views()
 
 create schema test
 create table test.a(id int primary key)

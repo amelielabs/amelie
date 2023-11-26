@@ -23,8 +23,12 @@ drop table if exists test
 create table test(id int primary key)
 select name from system.tables()
 "test"
+select sizeof(system.partitions()) > 0
+true
 drop table test
 select name from system.tables()
+# test: drop table drops partitions
+select * from system.partitions()
 # test: drop table if exists
 create table test(id int primary key)
 select name from system.tables()

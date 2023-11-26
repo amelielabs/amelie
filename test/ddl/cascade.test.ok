@@ -11,12 +11,20 @@ query: on_error
 select *.schema, *.name from system.tables()
 ["test", "a"]
 ["test", "b"]
+create view test.test_view as select 1
+select * from system.views()
+{"schema": "test", "name": "test_view", "query": "select 1", "def": {"column": [], "key": [], "key_unique": false, "key_exclude": 0, "reserved": 0}}
 # test: drop schema cascade
 drop schema test cascade
 select * from system.schemas()
 {"name": "system", "system": true, "create": false}
 {"name": "public", "system": true, "create": true}
+# test: drop schema cascade (tables)
 select *.schema, *.name from system.tables()
+# test: drop schema cascade (partitions)
+select * from system.partitions()
+# test: drop schema cascade (views)
+select * from system.views()
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
