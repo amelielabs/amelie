@@ -19,6 +19,31 @@
 #include <monotone_db.h>
 
 static void
+cascade_table_drop_of(Db* self, Transaction* trx, Table* table)
+{
+	// drop all partitions related to the table
+	part_mgr_drop_by_id_table(&self->part_mgr, trx, &table->config->id);
+
+	// drop table by object
+	table_mgr_drop_of(&self->table_mgr, trx, table);
+}
+
+void
+cascade_table_drop(Db* self, Transaction* trx, Str* schema, Str* name,
+                   bool if_exists)
+{
+	auto table = table_mgr_find(&self->table_mgr, schema, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
+	cascade_table_drop_of(self, trx, table);
+}
+
+static void
 cascade_drop(Db* self, Transaction* trx, Str* schema)
 {
 	// tables
@@ -26,8 +51,7 @@ cascade_drop(Db* self, Transaction* trx, Str* schema)
 	{
 		auto table = table_of(list_at(Handle, link));
 		if (str_compare(&table->config->schema, schema))
-			table_mgr_drop(&self->table_mgr, trx, &table->config->schema,
-			               &table->config->name, false);
+			cascade_table_drop_of(self, trx, table);
 	}
 
 	// views
