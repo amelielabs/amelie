@@ -147,8 +147,11 @@ schema_mgr_rename(SchemaMgr*   self,
 void
 schema_mgr_dump(SchemaMgr* self, Buf* buf)
 {
+	// exclude system objects
+	int count = self->mgr.list_count - 2;
+
 	// array
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf, count);
 	list_foreach(&self->mgr.list)
 	{
 		auto schema = schema_of(list_at(Handle, link));

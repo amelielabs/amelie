@@ -111,6 +111,20 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		table_mgr_drop(&self->table_mgr, trx, &schema, &name, true);
 		break;
 	}
+	case LOG_PART_CREATE:
+	{
+		auto config = part_op_create_read(&data);
+		guard(config_guard, part_config_free, config);
+		part_mgr_create(&self->part_mgr, trx, config);
+		break;
+	}
+	case LOG_PART_DROP:
+	{
+		Uuid id;
+		part_op_drop_read(&data, &id);
+		part_mgr_drop_by_id(&self->part_mgr, trx, &id);
+		break;
+	}
 	case LOG_TABLE_RENAME:
 	{
 		Str schema;
@@ -197,8 +211,6 @@ recover_write(Db* self, uint64_t lsn, uint8_t* pos, bool write_wal)
 static void
 recover_wal(Db* self)
 {
-	log("recover: begin wal replay");
-
 	WalCursor cursor;
 	wal_cursor_init(&cursor);
 	guard(cursor_guard, wal_cursor_close, &cursor);
@@ -240,8 +252,12 @@ recover(Db* self)
 	wal_open(&self->wal);
 
 	// replay logs
+	log("recover: begin wal replay");
+
 	recover_wal(self);
 
 	// start wal mgr
 	wal_start(&self->wal);
+
+	log("recover: complete");
 }

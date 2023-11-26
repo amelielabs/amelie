@@ -60,8 +60,8 @@ table_mgr_create(TableMgr*    self,
 	unguard(&guard);
 }
 
-static void
-table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
+void
+table_mgr_drop_of(TableMgr* self, Transaction* trx, Table* table)
 {
 	// save drop table operation
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
@@ -73,7 +73,6 @@ table_mgr_drop_table(TableMgr* self, Transaction* trx, Table* table)
 	handle_set_name(&drop, &table->config->name);
 
 	handle_mgr_write(&self->mgr, trx, LOG_TABLE_DROP, &drop, op);
-
 	buf_unpin(op);
 }
 
@@ -89,7 +88,7 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 			      str_of(name));
 		return;
 	}
-	table_mgr_drop_table(self, trx, table);
+	table_mgr_drop_of(self, trx, table);
 }
 
 void
@@ -124,7 +123,7 @@ table_mgr_rename(TableMgr*    self,
 	table_config_set_name(update->config, name_new);
 
 	// drop previous table object
-	table_mgr_drop_table(self, trx, table);
+	table_mgr_drop_of(self, trx, table);
 
 	// save rename table operation
 	auto op = table_op_rename(schema, name, schema_new, name_new);

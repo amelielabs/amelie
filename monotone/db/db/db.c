@@ -81,10 +81,10 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	db_create_system_schema(self, "system", false);
 	db_create_system_schema(self, "public", true);
 
-	// recover partitions
-	part_mgr_open(&self->part_mgr);
+	// register partitions catalog
+	part_mgr_open(&self->part_mgr, cat_mgr);
 
-	// register catalog
+	// register db catalog
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
 	catalog_mgr_add(cat_mgr, cat);
 }
