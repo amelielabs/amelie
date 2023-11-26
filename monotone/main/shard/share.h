@@ -14,7 +14,7 @@ struct Share
 	SchemaMgr*    schema_mgr;
 	ViewMgr*      view_mgr;
 	TableMgr*     table_mgr;
-	StorageMgr*   storage_mgr;
+	PartMgr*      part_mgr;
 	Wal*          wal;
 	Db*           db;
 	Router*       router;

@@ -15,11 +15,13 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../server/auth \
                  -I../server/client \
                  -I../server/server \
+                 -I../part \
+                 -I../part/def \
+                 -I../part/transaction \
+                 -I../part/snapshot \
+                 -I../part/storage \
+                 -I../part/part \
                  -I../db \
-                 -I../db/def \
-                 -I../db/transaction \
-                 -I../db/snapshot \
-                 -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
                  -I../query \

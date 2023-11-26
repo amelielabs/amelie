@@ -17,6 +17,7 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -97,7 +98,7 @@ core_create(void)
 	share->schema_mgr    = &self->db.schema_mgr;
 	share->view_mgr      = &self->db.view_mgr;
 	share->table_mgr     = &self->db.table_mgr;
-	share->storage_mgr   = &self->db.storage_mgr;
+	share->part_mgr      = &self->db.part_mgr;
 	share->wal           = &self->db.wal;
 	share->db            = &self->db;
 	share->shard_mgr     = &self->shard_mgr;
@@ -245,7 +246,7 @@ core_start(Core* self, bool bootstrap)
 	}
 	shard_mgr_set_partition_map(&self->shard_mgr, &self->router);
 
-	// start shards and recover storages
+	// start shards and recover partitions
 	shard_mgr_start(&self->shard_mgr);
 
 	// recover system to the previous state
