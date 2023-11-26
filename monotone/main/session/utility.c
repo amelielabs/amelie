@@ -17,6 +17,7 @@
 #include <monotone_transaction.h>
 #include <monotone_snapshot.h>
 #include <monotone_storage.h>
+#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -45,7 +46,7 @@ execute_show(Session* self, Ast* ast)
 		buf = wal_status(self->share->wal);
 	else
 	if (str_compare_raw(&arg->expr->string, "storages", 8))
-		buf = storage_mgr_list(&self->share->db->storage_mgr);
+		buf = part_mgr_list(&self->share->db->part_mgr);
 	else
 	if (str_compare_raw(&arg->expr->string, "schemas", 7))
 		buf = schema_mgr_list(&self->share->db->schema_mgr);
@@ -136,31 +137,31 @@ execute_set(Session* self, Ast* ast)
 		control_save_config();
 }
 
-static inline Storage*
-execute_create_storage(Session* self, Table* table, Shard* shard)
+static inline Part*
+execute_create_part(Session* self, Table* table, Shard* shard)
 {
 	auto share = self->share;
 
-	// create storage config
-	auto config = storage_config_allocate();
-	guard(config_guard, storage_config_free, config);
+	// create partition config
+	auto config = part_config_allocate();
+	guard(config_guard, part_config_free, config);
 
 	Uuid id;
 	uuid_mgr_generate(global()->uuid_mgr, &id);
-	storage_config_set_id(config, &id);
-	storage_config_set_id_table(config, &table->config->id);
+	part_config_set_id(config, &id);
+	part_config_set_id_table(config, &table->config->id);
 	if (shard)
 	{
-		storage_config_set_id_shard(config, &shard->config->id);
-		storage_config_set_range(config, shard->config->range_start,
-		                         shard->config->range_end);
+		part_config_set_id_shard(config, &shard->config->id);
+		part_config_set_range(config, shard->config->range_start,
+		                      shard->config->range_end);
 	}
 
-	// create storage
-	auto storage = storage_mgr_create(share->storage_mgr, config);
+	// create partition
+	auto part = part_mgr_create(share->part_mgr, config);
 	unguard(&config_guard);
 
-	// create primary index per storage
+	// create primary index
 
 	// create index config
 	auto index_config = index_config_allocate();
@@ -173,37 +174,34 @@ execute_create_storage(Session* self, Table* table, Shard* shard)
 	def_copy(&index_config->def, &table->config->def);
 
 	// create tree index
-	auto index = tree_allocate(index_config, &storage->config->id);
+	auto index = tree_allocate(index_config, &part->config->id);
 	unguard(&index_config_guard);
 	index_config_free(index_config);
 
-	// attach index to the storage
-	storage_mgr_attach(share->storage_mgr, storage, index);
-	return storage;
+	// attach index to the partition
+	part_mgr_attach(share->part_mgr, part, index);
+	return part;
 }
 
 static inline void
-execute_create_storages(Session* self, Table* table)
+execute_create_parts(Session* self, Table* table)
 {
 	auto share = self->share;
 
-	// reference table require only single storage
+	// reference table require only one partition
 	if (table->config->reference)
 	{
-		execute_create_storage(self, table, NULL);
+		execute_create_part(self, table, NULL);
 		return;
 	}
 
-	// create storage for each shard
+	// create partition per each shard
 	for (int i = 0; i < share->shard_mgr->shards_count; i++)
 	{
 		auto shard = share->shard_mgr->shards[i];
 
-		// create storage with primary index
-		auto storage = execute_create_storage(self, table, shard);
-
-		// attach and start storage on shard
-		rpc(&shard->task.channel, RPC_STORAGE_ATTACH, 1, storage);
+		// create partition with primary index
+		execute_create_part(self, table, shard);
 	}
 }
 
@@ -272,10 +270,10 @@ execute_ddl(Session* self, Stmt* stmt)
 
 			table_mgr_create(share->table_mgr, &trx, arg->config, arg->if_not_exists);
 
-			// create storage for each shard
+			// create partition for each shard
 			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
 			                            &arg->config->name, true);
-			execute_create_storages(self, table);
+			execute_create_parts(self, table);
 			break;
 		}
 		case STMT_DROP_TABLE:
