@@ -6,14 +6,15 @@
 // SQL OLTP database
 //
 
-typedef struct LogOpIf LogOpIf;
-typedef struct LogOp   LogOp;
-typedef struct Log     Log;
+typedef struct LogOp LogOp;
+typedef struct Log   Log;
 
 typedef enum
 {
 	LOG_WRITE,
-	LOG_WRITE_HANDLE
+	LOG_CREATE,
+	LOG_DROP,
+	LOG_ALTER
 } LogType;
 
 typedef enum
@@ -35,31 +36,26 @@ typedef enum
 	LOG_VIEW_RENAME
 } LogCmd;
 
-struct LogOpIf
-{
-	void (*abort)(void*, LogCmd, Row*, Row*);
-};
+typedef void (*LogAbort)(LogOp*);
 
 struct LogOp
 {
-	LogType type;
-	LogCmd  cmd;
+	LogType  type;
+	LogCmd   cmd;
+	LogAbort abort;
+	void*    abort_arg;
 	union
 	{
 		struct
 		{
-			Row*     row;
-			Row*     prev;
-			LogOpIf* iface;
-			void*    iface_arg;
-		} write;
+			Row* row;
+			Row* prev;
+		} row;
 		struct
 		{
-			void* handle_mgr;
 			void* handle;
-			void* handle_prev;
 			Buf*  data;
-		} write_handle;
+		} handle;
 	};
 };
 
@@ -140,10 +136,10 @@ log_reserve(Log* self, LogCmd cmd, Uuid* uuid)
 }
 
 hot static inline void
-log_add(Log*     self,
+log_row(Log*     self,
         LogCmd   cmd,
-        LogOpIf* iface,
-        void*    iface_arg,
+        LogAbort abort,
+        void*    abort_arg,
         bool     persistent,
         Uuid*    uuid,
         Def*     def,
@@ -152,12 +148,12 @@ log_add(Log*     self,
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->type            = LOG_WRITE;
-	op->cmd             = cmd;
-	op->write.iface     = iface;
-	op->write.iface_arg = iface_arg;
-	op->write.row       = row;
-	op->write.prev      = prev;
+	op->type      = LOG_WRITE;
+	op->cmd       = cmd;
+	op->abort     = abort;
+	op->abort_arg = abort_arg;
+	op->row.row   = row;
+	op->row.prev  = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 	if (prev)
@@ -165,57 +161,34 @@ log_add(Log*     self,
 	if (! persistent)
 		return;
 
-	// [cmd, uuid a/b, row]
-
+	// todo: [cmd, uuid a/b, row]
 	(void)uuid;
 	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
 
-	// TODO
-	/*
-	int data_offset = buf_size(&self->data);
-	int data_size;
-	encode_array(&self->data, 4);
-	encode_integer(&self->data, cmd);
-	encode_integer(&self->data, uuid->a);
-	encode_integer(&self->data, uuid->b);
-	data_size = buf_size(&self->data) - data_offset;
-	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
-	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
-	*/
 	self->count_persistent++;
 }
 
 static inline void
-log_add_handle(Log*   self,
-               LogCmd cmd,
-               void*  handle_mgr,
-               void*  handle,
-               void*  handle_prev,
-               Buf*   data)
+log_handle(Log*     self,
+           LogType  type,
+           LogCmd   cmd,
+           LogAbort abort,
+           void*    abort_arg,
+           void*    handle,
+           Buf*     data)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->type                     = LOG_WRITE_HANDLE;
-	op->cmd                      = cmd;
-	op->write_handle.handle_mgr  = handle_mgr;
-	op->write_handle.handle      = handle;
-	op->write_handle.handle_prev = handle_prev;
-	op->write_handle.data        = data;
+	op->type          = type;
+	op->cmd           = cmd;
+	op->abort         = abort;
+	op->abort_arg     = abort_arg;
+	op->handle.handle = handle;
+	op->handle.data   = data;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 	self->count_handle++;
 
-	// [cmd, data]
-
-	// TODO
-	/*
-	int data_offset = buf_size(&self->data);
-	int data_size;
-	encode_array(&self->data, 2);
-	encode_integer(&self->data, op->cmd);
-	data_size = buf_size(&self->data) - data_offset;
-	iov_add_buf(&self->data_iov, &self->data, data_offset, data_size);
-	iov_add(&self->data_iov, data->start, buf_size(data));
-	*/
+	// todo: [cmd, data]
 	self->count_persistent++;
 }

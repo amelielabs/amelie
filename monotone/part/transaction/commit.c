@@ -55,21 +55,24 @@ transaction_commit(Transaction* self)
 		auto op = log_of(log, pos);
 		switch (op->type) {
 		case LOG_WRITE:
-		{	
-			// free previous version
-			if (op->write.prev)
-				row_free(op->write.prev);
+		{
+			if (op->row.prev)
+				row_free(op->row.prev);
 			break;
 		}
-		case LOG_WRITE_HANDLE:
+		case LOG_CREATE:
+		case LOG_ALTER:
 		{
-			// set lsn and free previous handle
-			handle_mgr_commit(op->write_handle.handle_mgr,
-			                  op->write_handle.handle,
-			                  op->write_handle.handle_prev,
-			                  self->lsn);
-			if (op->write_handle.data)
-				buf_free(op->write_handle.data);
+			Handle* handle = op->handle.handle;
+			handle->lsn = self->lsn;
+			buf_free(op->handle.data);
+			break;
+		}
+		case LOG_DROP:
+		{
+			Handle* handle = op->handle.handle;
+			handle_free(handle);
+			buf_free(op->handle.data);
 			break;
 		}
 		}
@@ -84,33 +87,11 @@ transaction_abort(Transaction* self)
 	if (unlikely(! transaction_active(self)))
 		error("transaction is not active");
 
-	int pos;
-	pos = self->log.count - 1;
+	int pos = self->log.count - 1;
 	for (; pos >= 0; pos--)
 	{
 		auto op = log_of(&self->log, pos);
-
-		switch (op->type) {
-		case LOG_WRITE:
-		{	
-			// reverse operation
-			op->write.iface->abort(op->write.iface_arg,
-			                       op->cmd,
-			                       op->write.row,
-			                       op->write.prev);
-			break;
-		}
-		case LOG_WRITE_HANDLE:
-		{
-			// remove handle from the mgr and bring previous one
-			handle_mgr_abort(op->write_handle.handle_mgr,
-			                 op->write_handle.handle,
-			                 op->write_handle.handle_prev);
-			if (op->write_handle.data)
-				buf_free(op->write_handle.data);
-			break;
-		}
-		}
+		op->abort(op);
 	}
 
 	transaction_end(self, true);
