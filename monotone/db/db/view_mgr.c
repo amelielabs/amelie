@@ -54,28 +54,10 @@ view_mgr_create(ViewMgr*     self,
 	auto op = view_op_create(config);
 
 	// update views
-	handle_mgr_write(&self->mgr, trx, LOG_VIEW_CREATE, &view->handle, op);
+	handle_mgr_create(&self->mgr, trx, LOG_VIEW_CREATE, &view->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
-}
-
-static void
-view_mgr_drop_view(ViewMgr* self, Transaction* trx, View* view)
-{
-	// save drop view operation
-	auto op = view_op_drop(&view->config->schema, &view->config->name);
-
-	// drop by name
-	Handle drop;
-	handle_init(&drop);
-	handle_set_schema(&drop, &view->config->schema);
-	handle_set_name(&drop, &view->config->name);
-
-	// update mgr
-	handle_mgr_write(&self->mgr, trx, LOG_VIEW_DROP, &drop, op);
-
-	buf_unpin(op);
 }
 
 void
@@ -94,8 +76,28 @@ view_mgr_drop(ViewMgr*     self,
 		return;
 	}
 
-	// drop view
-	view_mgr_drop_view(self, trx, view);
+	// save drop view operation
+	auto op = view_op_drop(&view->config->schema, &view->config->name);
+
+	// update mgr
+	handle_mgr_drop(&self->mgr, trx, LOG_VIEW_DROP, &view->handle, op);
+
+	buf_unpin(op);
+}
+
+static void
+view_mgr_rename_abort(LogOp* op)
+{
+	auto self = view_of(op->handle.handle);
+	uint8_t* pos = op->handle.data->start;
+	Str schema;
+	Str name;
+	Str schema_new;
+	Str name_new;
+	view_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
+	view_config_set_schema(self->config, &schema);
+	view_config_set_name(self->config, &name);
+	buf_free(op->handle.data);
 }
 
 void
@@ -121,25 +123,19 @@ view_mgr_rename(ViewMgr*     self,
 		error("view '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
-	// allocate new view
-	auto update = view_allocate(view->config);
-	guard(guard, view_free, update);
-
-	// set new view name
-	view_config_set_schema(update->config, schema_new);
-	view_config_set_name(update->config, name_new);
-
-	// drop previous view object
-	view_mgr_drop_view(self, trx, view);
-
 	// save rename view operation
 	auto op = view_op_rename(schema, name, schema_new, name_new);
 
-	// update views
-	handle_mgr_write(&self->mgr, trx, LOG_VIEW_RENAME, &update->handle, op);
-
+	// update view
+	handle_mgr_alter(&self->mgr, trx, LOG_VIEW_RENAME, &view->handle, op,
+	                 view_mgr_rename_abort, NULL);
 	buf_unpin(op);
-	unguard(&guard);
+
+	// set new view name
+	if (! str_compare(&view->config->schema, schema_new))
+		view_config_set_schema(view->config, schema_new);
+	if (! str_compare(&view->config->name, name_new))
+		view_config_set_name(view->config, name_new);
 }
 
 void
