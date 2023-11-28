@@ -14,7 +14,6 @@ create view test.test_view as select 1
 select * from system.views()
 
 # test: drop schema cascade
-
 drop schema test cascade
 select * from system.schemas()
 
