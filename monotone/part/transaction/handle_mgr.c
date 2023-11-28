@@ -32,34 +32,20 @@ handle_mgr_free(HandleMgr* self)
 	list_init(&self->list);
 }
 
-void
+static inline void
+handle_mgr_set(HandleMgr* self, Handle* handle)
+{
+	// previous version should not exists
+	list_append(&self->list, &handle->link);
+	self->list_count++;
+}
+
+static inline void
 handle_mgr_delete(HandleMgr* self, Handle* handle)
 {
 	list_unlink(&handle->link);
 	list_init(&handle->link);
 	self->list_count--;
-}
-
-static inline Handle*
-handle_mgr_delete_if_exists(HandleMgr* self, Handle* handle)
-{
-	Handle* prev;
-	if (handle->id)
-		prev = handle_mgr_get_by_id(self, handle->id);
-	else
-		prev = handle_mgr_get(self, handle->schema, handle->name);
-	if (prev)
-		handle_mgr_delete(self, prev);
-	return prev;
-}
-
-Handle*
-handle_mgr_set(HandleMgr* self, Handle* handle)
-{
-	auto prev = handle_mgr_delete_if_exists(self, handle);
-	list_append(&self->list, &handle->link);
-	self->list_count++;
-	return prev;
 }
 
 Handle*
@@ -88,54 +74,69 @@ handle_mgr_get_by_id(HandleMgr* self, Uuid* id)
 	return NULL;
 }
 
-void
-handle_mgr_abort(HandleMgr* self, Handle* handle, Handle* prev)
+static void
+handle_mgr_create_abort(LogOp* op)
 {
-	if (handle)
-	{
-		handle_mgr_delete(self, handle);
-		handle_free(handle);
-	}
-	if (prev)
-		handle_mgr_set(self, prev);
+	HandleMgr* self = op->abort_arg;
+	handle_mgr_delete(self, op->handle.handle);
+	handle_free(op->handle.handle);
+	buf_free(op->handle.data);
 }
 
 void
-handle_mgr_commit(HandleMgr* self, Handle* handle, Handle* prev, uint64_t lsn)
-{
-	unused(self);
-	if (handle)
-		handle->lsn = lsn;
-	if (prev)
-		handle_free(prev);
-}
-
-void
-handle_mgr_write(HandleMgr*   self,
-                 Transaction* trx,
-                 LogCmd       cmd,
-                 Handle*      handle,
-                 Buf*         data)
+handle_mgr_create(HandleMgr*   self,
+                  Transaction* trx,
+                  LogCmd       cmd,
+                  Handle*      handle,
+                  Buf*         data)
 {
 	log_reserve(&trx->log, cmd, NULL);
 
 	// update handle mgr
-	Handle* prev = NULL;
-	if (cmd == LOG_SCHEMA_CREATE ||
-	    cmd == LOG_SCHEMA_RENAME ||
-	    cmd == LOG_TABLE_CREATE  ||
-	    cmd == LOG_TABLE_RENAME  ||
-	    cmd == LOG_PART_CREATE   ||
-	    cmd == LOG_VIEW_CREATE   ||
-	    cmd == LOG_VIEW_RENAME)
-	{
-		prev = handle_mgr_set(self, handle);
-	} else
-	{
-		prev = handle_mgr_delete_if_exists(self, handle);
-		handle = NULL;
-	}
+	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_add_handle(&trx->log, cmd, self, handle, prev, data);
+	log_handle(&trx->log, LOG_CREATE, cmd, handle_mgr_create_abort, self,
+	           handle, data);
+}
+
+static void
+handle_mgr_drop_abort(LogOp* op)
+{
+	HandleMgr* self = op->abort_arg;
+	handle_mgr_set(self, op->handle.handle);
+	buf_free(op->handle.data);
+}
+
+void
+handle_mgr_drop(HandleMgr*   self,
+                Transaction* trx,
+                LogCmd       cmd,
+                Handle*      handle,
+                Buf*         data)
+{
+	log_reserve(&trx->log, cmd, NULL);
+
+	// update handle mgr
+	handle_mgr_delete(self, handle);
+
+	// update transaction log
+	log_handle(&trx->log, LOG_DROP, cmd, handle_mgr_drop_abort, self,
+	           handle, data);
+}
+
+void
+handle_mgr_alter(HandleMgr*   self,
+                 Transaction* trx,
+                 LogCmd       cmd,
+                 Handle*      handle,
+                 Buf*         data,
+                 LogAbort     abort,
+                 void*        abort_arg)
+{
+	unused(self);
+
+	// update transaction log
+	log_handle(&trx->log, LOG_ALTER, cmd, abort, abort_arg,
+	           handle, data);
 }
