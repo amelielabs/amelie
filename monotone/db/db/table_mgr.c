@@ -54,7 +54,7 @@ table_mgr_create(TableMgr*    self,
 	auto op = table_op_create(config);
 
 	// update tables
-	handle_mgr_write(&self->mgr, trx, LOG_TABLE_CREATE, &table->handle, op);
+	handle_mgr_create(&self->mgr, trx, LOG_TABLE_CREATE, &table->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -66,13 +66,8 @@ table_mgr_drop_of(TableMgr* self, Transaction* trx, Table* table)
 	// save drop table operation
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
 
-	// drop table by name
-	Handle drop;
-	handle_init(&drop);
-	handle_set_schema(&drop, &table->config->schema);
-	handle_set_name(&drop, &table->config->name);
-
-	handle_mgr_write(&self->mgr, trx, LOG_TABLE_DROP, &drop, op);
+	// drop table by object
+	handle_mgr_drop(&self->mgr, trx, LOG_TABLE_DROP, &table->handle, op);
 	buf_unpin(op);
 }
 
@@ -89,6 +84,21 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 		return;
 	}
 	table_mgr_drop_of(self, trx, table);
+}
+
+static void
+table_mgr_rename_abort(LogOp* op)
+{
+	auto self = table_of(op->handle.handle);
+	uint8_t* pos = op->handle.data->start;
+	Str schema;
+	Str name;
+	Str schema_new;
+	Str name_new;
+	table_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
+	table_config_set_schema(self->config, &schema);
+	table_config_set_name(self->config, &name);
+	buf_free(op->handle.data);
 }
 
 void
@@ -114,25 +124,19 @@ table_mgr_rename(TableMgr*    self,
 		error("table '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
-	// allocate new table
-	auto update = table_allocate(table->config);
-	guard(guard, table_free, update);
-
-	// set new table name
-	table_config_set_schema(update->config, schema_new);
-	table_config_set_name(update->config, name_new);
-
-	// drop previous table object
-	table_mgr_drop_of(self, trx, table);
-
 	// save rename table operation
 	auto op = table_op_rename(schema, name, schema_new, name_new);
 
-	// update tables
-	handle_mgr_write(&self->mgr, trx, LOG_TABLE_RENAME, &update->handle, op);
-
+	// update table
+	handle_mgr_alter(&self->mgr, trx, LOG_TABLE_RENAME, &table->handle, op,
+	                 table_mgr_rename_abort, NULL);
 	buf_unpin(op);
-	unguard(&guard);
+
+	// set new table name
+	if (! str_compare(&table->config->schema, schema_new))
+		table_config_set_schema(table->config, schema_new);
+	if (! str_compare(&table->config->name, name_new))
+		table_config_set_name(table->config, name_new);
 }
 
 void
