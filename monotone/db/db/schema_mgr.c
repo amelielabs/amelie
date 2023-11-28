@@ -54,26 +54,10 @@ schema_mgr_create(SchemaMgr*    self,
 	auto op = schema_op_create(config);
 
 	// update schemas
-	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_CREATE, &schema->handle, op);
+	handle_mgr_create(&self->mgr, trx, LOG_SCHEMA_CREATE, &schema->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
-}
-
-static void
-schema_mgr_drop_schema(SchemaMgr* self, Transaction* trx, Schema* schema)
-{
-	// save drop schema operation
-	auto op = schema_op_drop(&schema->config->name);
-
-	// drop schema by name
-	Handle drop;
-	handle_init(&drop);
-	handle_set_schema(&drop, NULL);
-	handle_set_name(&drop, &schema->config->name);
-
-	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_DROP, &drop, op);
-	buf_unpin(op);
 }
 
 void
@@ -95,8 +79,25 @@ schema_mgr_drop(SchemaMgr*   self,
 		error("schema '%.*s': system schema cannot be dropped", str_size(name),
 		       str_of(name));
 
-	// drop schema object
-	schema_mgr_drop_schema(self, trx, schema);
+	// save drop schema operation
+	auto op = schema_op_drop(&schema->config->name);
+
+	// drop schema by object
+	handle_mgr_drop(&self->mgr, trx, LOG_SCHEMA_DROP, &schema->handle, op);
+	buf_unpin(op);
+}
+
+static void
+schema_mgr_rename_abort(LogOp* op)
+{
+	auto self = schema_of(op->handle.handle);
+	// set previous name
+	uint8_t* pos = op->handle.data->start;
+	Str name;
+	Str name_new;
+	schema_op_rename_read(&pos, &name, &name_new);
+	schema_config_set_name(self->config, &name);
+	buf_free(op->handle.data);
 }
 
 void
@@ -124,24 +125,16 @@ schema_mgr_rename(SchemaMgr*   self,
 		error("schema '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
-	// allocate new schema object
-	auto update = schema_allocate(schema->config);
-	guard(guard, schema_free, update);
-
-	// set new name
-	schema_config_set_name(update->config, name_new);
-
-	// drop previus schema object
-	schema_mgr_drop_schema(self, trx, schema);
-
-	// save  schema operation
+	// save schema operation
 	auto op = schema_op_rename(name, name_new);
 
 	// update schemas
-	handle_mgr_write(&self->mgr, trx, LOG_SCHEMA_RENAME, &update->handle, op);
-
+	handle_mgr_alter(&self->mgr, trx, LOG_SCHEMA_RENAME, &schema->handle, op,
+	                 schema_mgr_rename_abort, NULL);
 	buf_unpin(op);
-	unguard(&guard);
+
+	// set new name
+	schema_config_set_name(schema->config, name_new);
 }
 
 void
