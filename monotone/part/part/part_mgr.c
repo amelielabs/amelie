@@ -47,7 +47,7 @@ part_mgr_create(PartMgr* self, Transaction* trx, PartConfig* config)
 	auto op = part_op_create(config);
 
 	// update partitions
-	handle_mgr_write(&self->mgr, trx, LOG_PART_CREATE, &part->handle, op);
+	handle_mgr_create(&self->mgr, trx, LOG_PART_CREATE, &part->handle, op);
 
 	buf_unpin(op);
 	unguard(&guard);
@@ -60,12 +60,8 @@ part_mgr_drop(PartMgr* self, Transaction* trx, Part* part)
 	// save drop partition operation
 	auto op = part_op_drop(&part->config->id);
 
-	// drop partition by id
-	Handle drop;
-	handle_init(&drop);
-	handle_set_id(&drop, &part->config->id);
-
-	handle_mgr_write(&self->mgr, trx, LOG_PART_DROP, &drop, op);
+	// drop partition by object
+	handle_mgr_drop(&self->mgr, trx, LOG_PART_DROP, &part->handle, op);
 	buf_unpin(op);
 }
 

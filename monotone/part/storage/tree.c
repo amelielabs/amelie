@@ -30,7 +30,24 @@ tree_free(Index* arg)
 
 hot rbtree_get(tree_find, compare(arg, tree_row_of(n), key));
 
-extern LogOpIf tree_iface;
+static void
+tree_set_abort(LogOp* op)
+{
+	auto self = (Tree*)op->abort_arg;
+	TreeRow* ref = row_reserved(op->row.row);
+	if (op->row.prev)
+	{
+		// abort replace
+		TreeRow* ref_prev = row_reserved(op->row.prev);
+		rbtree_replace(&self->tree, &ref->node, &ref_prev->node);
+	} else
+	{
+		// abort insert
+		rbtree_remove(&self->tree, &ref->node);
+		self->tree_count--;
+	}
+	row_free(op->row.row);
+}
 
 hot static bool
 tree_set(Index* arg, Transaction* trx, Row* row)
@@ -62,7 +79,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	}
 
 	// update transaction log
-	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
+	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
 	        self->index.config->primary,
 	        self->storage,
 	        &self->index.config->def,
@@ -93,11 +110,25 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	tree_it->pos = &ref->node;
 
 	// update transaction log
-	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
+	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
 	        self->index.config->primary,
 	        self->storage,
 	        &self->index.config->def,
 	        row, prev);
+}
+
+static void
+tree_delete_abort(LogOp* op)
+{
+	auto self = (Tree*)op->abort_arg;
+	RbtreeNode* node;
+	int rc = tree_find(&self->tree, &self->index.config->def, op->row.prev, &node);
+	TreeRow* ref_prev = row_reserved(op->row.prev);
+	rbtree_init_node(&ref_prev->node);
+	rbtree_set(&self->tree, node, rc, &ref_prev->node);
+	self->tree_count++;
+
+	// delete row is not allocated
 }
 
 hot static void
@@ -120,7 +151,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	self->tree_count--;
 
 	// update transaction log
-	log_add(&trx->log, LOG_DELETE, &tree_iface, self,
+	log_row(&trx->log, LOG_DELETE, tree_delete_abort, self,
 	        self->index.config->primary,
 	        self->storage,
 	        &self->index.config->def,
@@ -156,7 +187,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	}
 
 	// update transaction log
-	log_add(&trx->log, LOG_DELETE, &tree_iface, self,
+	log_row(&trx->log, LOG_DELETE, tree_delete_abort, self,
 	        self->index.config->primary,
 	        self->storage,
 	        &self->index.config->def,
@@ -193,7 +224,7 @@ tree_upsert(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	self->tree_count++;
 
 	// update transaction log
-	log_add(&trx->log, LOG_REPLACE, &tree_iface, self,
+	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
 	        self->index.config->primary,
 	        self->storage,
 	        &self->index.config->def,
@@ -235,41 +266,3 @@ tree_allocate(IndexConfig* config, Uuid* storage)
 	unguard(&guard);
 	return &self->index;
 }
-
-static void
-tree_abort(void* arg, LogCmd cmd, Row* row, Row* prev)
-{
-	Tree* self = arg;
-	RbtreeNode* node;
-	int rc;
-	if (cmd == LOG_REPLACE)
-	{
-		TreeRow* ref = row_reserved(row);
-		if (prev)
-		{
-			// abort replace
-			TreeRow* ref_prev = row_reserved(prev);
-			rbtree_replace(&self->tree, &ref->node, &ref_prev->node);
-		} else
-		{
-			// abort insert
-			rbtree_remove(&self->tree, &ref->node);
-			self->tree_count--;
-		}
-		row_free(row);
-	} else
-	{
-		// abort delete
-		rc = tree_find(&self->tree, &self->index.config->def, prev, &node);
-		TreeRow* ref_prev = row_reserved(prev);
-		rbtree_init_node(&ref_prev->node);
-		rbtree_set(&self->tree, node, rc, &ref_prev->node);
-		self->tree_count++;
-		// delete row is not allocated
-	}
-}
-
-LogOpIf tree_iface =
-{
-	.abort = tree_abort
-};
