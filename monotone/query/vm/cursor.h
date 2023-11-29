@@ -22,30 +22,30 @@ enum
 
 struct Cursor
 {
-	int         type;
-	int         r;
+	int             type;
+	int             r;
 	// storage
-	Table*      table;
-	Storage*    storage;
-	Index*      index;
-	Iterator*   it;
+	Table*          table;
+	Def*            def;
+	Storage*        storage;
+	StorageIterator it;
 	// ref
-	uint8_t*    ref;
-	uint8_t*    ref_key;
+	uint8_t*        ref;
+	uint8_t*        ref_key;
 	// expr
-	uint8_t*    obj_data;
-	int         obj_pos;
-	int         obj_count;
+	uint8_t*        obj_data;
+	int             obj_pos;
+	int             obj_count;
 	// set
-	SetIterator set_it;
+	SetIterator     set_it;
 	// merge
-	Merge*      merge;
+	Merge*          merge;
 	// group
-	Group*      group;
-	int         group_pos;
+	Group*          group;
+	int             group_pos;
 	// limit/offset
-	int64_t     limit;
-	int64_t     offset;
+	int64_t         limit;
+	int64_t         offset;
 };
 
 struct CursorMgr
@@ -59,9 +59,8 @@ cursor_init(Cursor* self)
 	self->type      = CURSOR_NONE;
 	self->r         = 0;
 	self->table     = NULL;
+	self->def       = NULL;
 	self->storage   = NULL;
-	self->index     = NULL;
-	self->it        = NULL;
 	self->ref       = NULL;
 	self->ref_key   = NULL;
 	self->obj_data  = NULL;
@@ -72,6 +71,7 @@ cursor_init(Cursor* self)
 	self->group_pos = 0;
 	self->limit     = 0;
 	self->offset    = 0;
+	storage_iterator_init(&self->it);
 	set_iterator_init(&self->set_it);
 }
 
@@ -81,8 +81,8 @@ cursor_reset(Cursor* self)
 	self->type      = CURSOR_NONE;
 	self->r         = 0;
 	self->table     = NULL;
+	self->def       = NULL;
 	self->storage   = NULL;
-	self->index     = NULL;
 	self->ref       = NULL;
 	self->ref_key   = NULL;
 	self->obj_data  = NULL;
@@ -93,11 +93,7 @@ cursor_reset(Cursor* self)
 	self->group_pos = 0;
 	self->limit     = 0;
 	self->offset    = 0;
-	if (self->it)
-	{
-		iterator_close(self->it);
-		self->it = NULL;
-	}
+	storage_iterator_reset(&self->it);
 	set_iterator_init(&self->set_it);
 }
 
