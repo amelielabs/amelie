@@ -228,7 +228,7 @@ select ** from system.config()
 "read_only"
 # test: select from function #2
 create table test (id int primary key serial)
-select ** from system.tables()[0].def
+select ** from system.tables()[0].indexes[0].def
 "column"
 "key"
 "key_unique"

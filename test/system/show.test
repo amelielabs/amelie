@@ -29,10 +29,6 @@ select system.tables()
 show views
 select system.views()
 
-# test: show partitions
-show partitions
-select system.partitions()
-
 # test: show wal
 show wal
 select system.wal()

@@ -71,7 +71,7 @@ select * from test.test
 drop table test.test
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 [{"column": 0, "type": 2, "path": "", "asc": true}, {"column": 1, "type": 2, "path": "", "asc": true}]
 insert into test values (123)
 query: on_error
@@ -85,7 +85,7 @@ select * from test
 drop table test
 # test: insert nested key
 create table test (obj object, primary key (obj.id int))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 [{"column": 0, "type": 2, "path": "id", "asc": true}]
 insert into test values (123)
 query: on_error
@@ -98,7 +98,7 @@ select obj.id from test
 drop table test
 # test: insert nested key #2
 create table test (obj object, primary key (obj.data.id int))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 [{"column": 0, "type": 2, "path": "data.id", "asc": true}]
 insert into test values (123)
 query: on_error
@@ -121,7 +121,7 @@ select * from test
 drop table test
 # test: insert nested key compound
 create table test (obj object, primary key (obj.data.id int, obj.id int))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 [{"column": 0, "type": 2, "path": "data.id", "asc": true}, {"column": 0, "type": 2, "path": "id", "asc": true}]
 insert into test values ( {"data": {"id": 48} } )
 query: on_error

@@ -20,9 +20,6 @@ select * from system.schemas()
 # test: drop schema cascade (tables)
 select *.schema, *.name from system.tables()
 
-# test: drop schema cascade (partitions)
-select * from system.partitions()
-
 # test: drop schema cascade (views)
 select * from system.views()
 

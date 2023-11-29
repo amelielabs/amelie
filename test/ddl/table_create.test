@@ -34,32 +34,32 @@ create table test()
 
 # test: column int/integer
 create table test(id int primary key, id2 integer)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column string/text
 create table test(id int primary key, a string, b text)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column real
 create table test(id int primary key, a real)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column map/object
 create table test(id int primary key, a map, b object)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column array
 create table test(id int primary key, a array)
-select def from system.tables() where name = "test"
+select indexes[0] from system.tables() where name = "test"
 drop table test
 
 # test: column redefined
@@ -85,7 +85,7 @@ create table test(id int, primary key(idd))
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
 create table if not exists test(id int primary key, primary key(id))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 drop table test
 
 # test: primary key redefined #2
@@ -93,11 +93,11 @@ create table test(id int primary key primary key)
 
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 drop table test
 
 create table test(id int, primary key(id desc))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 drop table test
 
 # test: primary key ensure valid type
@@ -110,7 +110,7 @@ create table test(data map, primary key(data.id))
 # test: primary key ensure valid nested key type
 create table test(data map, primary key(data.id map))
 create table test(data map, primary key(data.id integer))
-select def.key from system.tables() where name = "test"
+select indexes[0].def.key from system.tables() where name = "test"
 drop table test
 
 ## test: table already exists
@@ -163,7 +163,7 @@ drop table test
 
 # test: constraint default
 create table test (id int primary key, data int default 1)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint default with key
@@ -179,23 +179,23 @@ create table test (id int primary key, data int default 1 + 1)
 
 # test: constraint not null with key
 create table test (id int not null primary key)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint not null
 create table test (id int primary key, data int not)
 create table test (id int primary key, data int not null)
-select def from system.tables()
+select indexes[0].def from system.tables()
 insert into test values(1, 1)
 insert into test values(2, null)
 insert into test values(null, null)
@@ -203,7 +203,7 @@ drop table test
 
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123)
-select def from system.tables()
+select indexes[0].def from system.tables()
 insert into test values(1, 1)
 insert into test values(2, null)
 insert into test (id) values(3)
@@ -216,17 +216,17 @@ create table test (id int primary key, data int generated 123)
 
 # test: constraint generated serial
 create table test (id int primary key, data int generated serial)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint generated serial key
 create table test (id int generated serial primary key)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint generated serial key #2
 create table test (id int generated serial, primary key(id))
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: constraint generated serial key type
@@ -234,7 +234,7 @@ create table test (id string generated serial primary key)
 
 # test: constraint generated serial multiple columns
 create table test (id int generated serial primary key, data int generated serial)
-select def from system.tables()
+select indexes[0].def from system.tables()
 drop table test
 
 # test: with parsing
@@ -249,7 +249,7 @@ create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000
 
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-select * from system.tables()
+select id from system.tables()
 drop table test
 
 disconnect S0

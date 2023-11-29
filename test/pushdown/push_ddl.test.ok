@@ -5,11 +5,11 @@ connect: on_connect
 create table test (id int primary key, data int default 0) reference
 select *.name, *.reference from system.tables()
 ["test", true]
-# test: reference has single partition
-select sizeof(system.partitions()) = 1
+# test: reference has single storage
+select sizeof(storages) = 1 from system.tables()
 true
 # test: reference has no shard id
-select system.partitions()[0].id.id_shard
+select storages[0].shard from system.tables()
 "00000000-0000-0000-0000-000000000000"
 drop table test
 # test: table create
@@ -17,48 +17,8 @@ create table test (id int primary key, data int default 0)
 select *.name, *.reference from system.tables()
 ["test", false]
 # test: table partitions created on each shard
-explain select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
-"
-bytecode [coordinator]
---------
- 0               group        0      0      0
- 1      group_add_aggr        0      0      0
- 2                null        1      0      0
- 3                push        1      0      0
- 4           group_add        0      0      0
- 5                call        1      -      0      # system.partitions()
- 6    cursor_open_expr        0      1      8
- 7                 jmp       21      0      0
- 8                call        2      -      0      # system.tables()
- 9    cursor_open_expr        1      2     11
-10                 jmp       19      0      0
-11          cursor_idx        3      0     -1      # id.id_table
-12          cursor_idx        4      1     -1      # id
-13                 equ        5      3      4
-14                jntr       18      5      0
-15         cursor_read        3      0      0
-16                push        3      0      0
-17           group_add        0      0      0
-18         cursor_next        1     11      0
-19        cursor_close        1      0      0
-20         cursor_next        0      8      0
-21        cursor_close        0      0      0
-22    cursor_open_expr        2      0     24
-23                 jmp       27      0      0
-24      group_get_aggr        1      2      0
-25                send        1      0      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28                recv        0      0      0
-29                 ret        0      0      0
-
-"
-select count(s.*) from system.partitions() s join system.tables() t on (s.id.id_table = t.id)
-3
-select count(s.*) from system.partitions() s, system.tables() t where s.id.id_table = t.id
-3
-select sizeof(select s.* from system.partitions() s, system.tables() t where s.id.id_table = t.id)
-3
+select sizeof(storages) = 3 from system.tables()
+true
 drop table test
 disconnect S0
 env_close E0
