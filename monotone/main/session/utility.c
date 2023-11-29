@@ -15,9 +15,8 @@
 #include <monotone_server.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -44,9 +43,6 @@ execute_show(Session* self, Ast* ast)
 	else
 	if (str_compare_raw(&arg->expr->string, "wal", 3))
 		buf = wal_status(self->share->wal);
-	else
-	if (str_compare_raw(&arg->expr->string, "partitions", 10))
-		buf = part_mgr_list(&self->share->db->part_mgr);
 	else
 	if (str_compare_raw(&arg->expr->string, "schemas", 7))
 		buf = schema_mgr_list(&self->share->db->schema_mgr);
@@ -137,70 +133,40 @@ execute_set(Session* self, Ast* ast)
 		control_save_state();
 }
 
-static inline Part*
-execute_create_part(Session* self, Transaction* trx, Table* table, Shard* shard)
+static inline void
+execute_add_storage(TableConfig* table_config, Shard* shard)
 {
-	auto share = self->share;
-
-	// create partition config
-	auto config = part_config_allocate();
-	guard(config_guard, part_config_free, config);
-
+	// create storage config
+	auto config = storage_config_allocate();
 	Uuid id;
 	uuid_mgr_generate(global()->uuid_mgr, &id);
-	part_config_set_id(config, &id);
-	part_config_set_id_table(config, &table->config->id);
+	storage_config_set_id(config, &id);
 	if (shard)
 	{
-		part_config_set_id_shard(config, &shard->config->id);
-		part_config_set_range(config, shard->config->range_start,
-		                      shard->config->range_end);
+		storage_config_set_shard(config, &shard->config->id);
+		storage_config_set_range(config, shard->config->range_start,
+		                         shard->config->range_end);
 	}
-
-	// create partition
-	auto part = part_mgr_create(share->part_mgr, trx, config);
-
-	// create primary index
-
-	// create index config
-	auto index_config = index_config_allocate();
-	guard(index_config_guard, index_config_free, index_config);
-	Str name;
-	str_set_cstr(&name, "primary");
-	index_config_set_name(index_config, &name);
-	index_config_set_type(index_config, INDEX_TREE);
-	index_config_set_primary(index_config, true);
-	def_copy(&index_config->def, &table->config->def);
-
-	// create tree index
-	auto index = tree_allocate(index_config, &part->config->id);
-	unguard(&index_config_guard);
-	index_config_free(index_config);
-
-	// attach index to the storage
-	storage_attach(&part->storage, index);
-	return part;
+	table_config_add_storage(table_config, config);
 }
 
 static inline void
-execute_create_parts(Session* self, Transaction* trx, Table* table)
+execute_add_storages(Session* self, TableConfig* config)
 {
 	auto share = self->share;
 
-	// reference table require only one partition
-	if (table->config->reference)
+	// reference table require only one storage
+	if (config->reference)
 	{
-		execute_create_part(self, trx, table, NULL);
+		execute_add_storage(config, NULL);
 		return;
 	}
 
-	// create partition per each shard
+	// create storage for each shard
 	for (int i = 0; i < share->shard_mgr->shards_count; i++)
 	{
 		auto shard = share->shard_mgr->shards[i];
-
-		// create partition with primary index
-		execute_create_part(self, trx, table, shard);
+		execute_add_storage(config, shard);
 	}
 }
 
@@ -267,13 +233,10 @@ execute_ddl(Session* self, Stmt* stmt)
 				      str_size(&arg->config->name),
 				      str_of(&arg->config->name));
 
+			// configure sharded table storages
+			execute_add_storages(self, arg->config);
+
 			table_mgr_create(share->table_mgr, &trx, arg->config, arg->if_not_exists);
-
-			// create partition for each shard
-			auto table = table_mgr_find(share->table_mgr, &arg->config->schema,
-			                            &arg->config->name, true);
-
-			execute_create_parts(self, &trx, table);
 			break;
 		}
 		case STMT_DROP_TABLE:
