@@ -13,9 +13,8 @@
 #include <monotone_auth.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -72,10 +71,8 @@ parse_primary_key(Stmt* self)
 }
 
 static void
-parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
+parse_primary_key_def(Stmt* self, Def* def)
 {
-	auto def = &stmt->config->def;
-
 	// (
 	if (! stmt_if(self, '('))
 		error("PRIMARY KEY <(> expected");
@@ -159,7 +156,7 @@ parse_primary_key_def(Stmt* self, AstTableCreate* stmt)
 }
 
 static void
-parse_constraint(Stmt* self, AstTableCreate* stmt, Column* column)
+parse_constraint(Stmt* self, Def* def, Column* column)
 {
 	// constraint
 	auto cons = &column->constraint;
@@ -255,7 +252,7 @@ parse_constraint(Stmt* self, AstTableCreate* stmt, Column* column)
 			auto key = key_allocate();
 			key_set_column(key, column->order);
 			key_set_type(key, column->type);
-			def_add_key(&stmt->config->def, key);
+			def_add_key(def, key);
 
 			primary_key = true;
 			break;
@@ -270,11 +267,10 @@ parse_constraint(Stmt* self, AstTableCreate* stmt, Column* column)
 }
 
 static void
-parse_def(Stmt* self, AstTableCreate* stmt)
+parse_def(Stmt* self, Def* def)
 {
 	// (name type [not null | default | generated | primary key], ...,
 	//  primary key())
-	auto def = &stmt->config->def;
 
 	// (
 	if (! stmt_if(self, '('))
@@ -286,7 +282,7 @@ parse_def(Stmt* self, AstTableCreate* stmt)
 		if (parse_primary_key(self))
 		{
 			// (columns)
-			parse_primary_key_def(self, stmt);
+			parse_primary_key_def(self, def);
 			goto last;
 		}
 
@@ -311,7 +307,7 @@ parse_def(Stmt* self, AstTableCreate* stmt)
 		column_set_type(column, type);
 
 		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | GENERATED
-		parse_constraint(self, stmt, column);
+		parse_constraint(self, def, column);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -326,7 +322,6 @@ last:
 
 	if (def->key_count == 0)
 		error("primary key is not defined");
-
 }
 
 static void
@@ -379,10 +374,8 @@ parse_with(Stmt* self, AstTableCreate* stmt)
 }
 
 static inline void
-parse_validate_constraints(AstTableCreate* stmt)
+parse_validate_constraints(Def* def)
 {
-	auto def = &stmt->config->def;
-
 	// validate constraints
 	auto column = def->column;
 	for (; column; column = column->next)
@@ -416,27 +409,46 @@ parse_table_create(Stmt* self)
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// create table config
-	stmt->config = table_config_allocate();
-	Uuid id;
-	uuid_mgr_generate(global()->uuid_mgr, &id);
-	table_config_set_id(stmt->config, &id);
-
 	// name
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
 		error("CREATE TABLE <name> expected");
+
+	// create table config
+	stmt->config = table_config_allocate();
+	Uuid id;
+	uuid_mgr_generate(global()->uuid_mgr, &id);
+	table_config_set_id(stmt->config, &id);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 
+	// create partition map
+	stmt->config->map = storage_map_allocate();
+	storage_map_set_type(stmt->config->map, MAP_SHARD);
+
+	// create primary index config
+	auto index_config = index_config_allocate();
+	auto def = &index_config->def;
+	table_config_add_index(stmt->config, index_config);
+
+	Str index_name;
+	str_set_cstr(&index_name, "primary");
+	index_config_set_name(index_config, &index_name);
+	index_config_set_type(index_config, INDEX_TREE);
+	index_config_set_primary(index_config, true);
+	def_set_reserved(def, tree_row_reserved());
+
 	// (columns)
-	parse_def(self, stmt);
-	parse_validate_constraints(stmt);
+	parse_def(self, def);
+	parse_validate_constraints(def);
 
 	// [REFERENCE]
 	if (stmt_if(self, KREFERENCE))
+	{
 		table_config_set_reference(stmt->config, true);
+		storage_map_set_type(stmt->config->map, MAP_NONE);
+	}
 
 	// [WITH]
 	parse_with(self, stmt);
