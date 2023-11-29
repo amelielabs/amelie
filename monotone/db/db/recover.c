@@ -12,16 +12,15 @@
 #include <monotone_config.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 
 hot static void
 recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 {
-	// [type, uuid a/b, data]
+	// [type, table, storage, data]
 	int count;
 	data_read_array(pos, &count);
 
@@ -29,16 +28,22 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	int64_t type;
 	data_read_integer(pos, &type);
 
-	// uuid
-	Uuid uuid;
-	uuid_init(&uuid);
+	// id_table
+	Uuid id_table;
+	Uuid id_storage;
+	uuid_init(&id_table);
+	uuid_init(&id_storage);
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
 		int64_t a, b;
 		data_read_integer(pos, &a);
 		data_read_integer(pos, &b);
-		uuid.a = a;
-		uuid.b = b;
+		id_table.a = a;
+		id_table.b = b;
+		data_read_integer(pos, &a);
+		data_read_integer(pos, &b);
+		id_storage.a = a;
+		id_storage.b = b;
 	}
 
 	// data
@@ -50,19 +55,29 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
-		// find partition by uuid
-		auto part = part_mgr_find(&self->part_mgr, &uuid);
-		if (unlikely(part == NULL))
+		// find table by uuid
+		auto table = table_mgr_find_by_id(&self->table_mgr, &id_table);
+		if (unlikely(! table ))
 			return;
+
+		// find storage
+		auto storage = storage_mgr_find(&table->storage_mgr, &id_storage);
+		assert(storage);
+
+		// find or create partition
+		bool created = false;
+		auto part = storage_map(storage, data, data_size, &created);
+		if (created)
+			part_open(part, &table->config->indexes);
 
 		// todo: serial recover
 
 		// replay write
-		auto storage = part_storage(part);
 		if (type == LOG_REPLACE)
-			storage_set(storage, trx, false, data, data_size);
+			part_set(part, trx, false, data, data_size);
 		else
-			storage_delete_by(storage, trx, data, data_size);
+			part_delete_by(part, trx, data, data_size);
+
 		return;
 	}
 
@@ -109,20 +124,6 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		Str name;
 		table_op_drop_read(&data, &schema, &name);
 		table_mgr_drop(&self->table_mgr, trx, &schema, &name, true);
-		break;
-	}
-	case LOG_PART_CREATE:
-	{
-		auto config = part_op_create_read(&data);
-		guard(config_guard, part_config_free, config);
-		part_mgr_create(&self->part_mgr, trx, config);
-		break;
-	}
-	case LOG_PART_DROP:
-	{
-		Uuid id;
-		part_op_drop_read(&data, &id);
-		part_mgr_drop_by_id(&self->part_mgr, trx, &id);
 		break;
 	}
 	case LOG_TABLE_RENAME:
