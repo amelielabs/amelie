@@ -11,12 +11,11 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/lib \
                  -I../runtime/config \
-                 -I../part \
-                 -I../part/def \
-                 -I../part/transaction \
-                 -I../part/snapshot \
-                 -I../part/storage \
-                 -I../part/part \
+                 -I../storage \
+                 -I../storage/def \
+                 -I../storage/transaction \
+                 -I../storage/index \
+                 -I../storage/storage \
                  -I. \
                  -Iwal \
                  -Idb
