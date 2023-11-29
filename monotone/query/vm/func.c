@@ -15,9 +15,8 @@
 #include <monotone_server.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -183,19 +182,6 @@ func_views(Vm*       vm,
 }
 
 static void
-func_partitions(Vm*       vm,
-                Function* func,
-                Value*    result,
-                int       argc,
-                Value**   argv)
-{
-	unused(argv);
-	function_validate_argc(func, argc);
-	auto buf = part_mgr_list(&vm->db->part_mgr);
-	value_set_data_from(result, buf);
-}
-
-static void
 func_wal(Vm*       vm,
          Function* func,
          Value*    result,
@@ -233,7 +219,6 @@ func_setup(FunctionMgr* mgr)
 		{ "system", "functions",  (FunctionMain)func_functions,  0 },
 		{ "system", "tables",     (FunctionMain)func_tables,     0 },
 		{ "system", "views",      (FunctionMain)func_views,      0 },
-		{ "system", "partitions", (FunctionMain)func_partitions, 0 },
 		{ "system", "wal",        (FunctionMain)func_wal,        0 },
 		{ "system", "debug",      (FunctionMain)func_debug,      0 },
 		{  NULL,     NULL,         NULL,                         0 }
