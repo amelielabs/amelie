@@ -12,9 +12,8 @@
 #include <monotone_config.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 
@@ -58,6 +57,9 @@ table_mgr_create(TableMgr*    self,
 
 	buf_unpin(op);
 	unguard(&guard);
+
+	// prepare storage manager
+	table_open(table);
 }
 
 void
@@ -135,6 +137,7 @@ table_mgr_rename(TableMgr*    self,
 	// set new table name
 	if (! str_compare(&table->config->schema, schema_new))
 		table_config_set_schema(table->config, schema_new);
+
 	if (! str_compare(&table->config->name, name_new))
 		table_config_set_name(table->config, name_new);
 }
