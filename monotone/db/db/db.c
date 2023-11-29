@@ -12,16 +12,14 @@
 #include <monotone_config.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 
 void
 db_init(Db* self)
 {
-	part_mgr_init(&self->part_mgr);
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
@@ -31,7 +29,6 @@ db_init(Db* self)
 void
 db_free(Db* self)
 {
-	part_mgr_free(&self->part_mgr);
 	table_mgr_free(&self->table_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
@@ -81,9 +78,6 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	db_create_system_schema(self, "system", false);
 	db_create_system_schema(self, "public", true);
 
-	// register partitions catalog
-	part_mgr_open(&self->part_mgr, cat_mgr);
-
 	// register db catalog
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
 	catalog_mgr_add(cat_mgr, cat);
@@ -100,7 +94,4 @@ db_close(Db* self)
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
-
-	// free partitions
-	part_mgr_free(&self->part_mgr);
 }

@@ -13,7 +13,6 @@ struct Db
 	SchemaMgr schema_mgr;
 	ViewMgr   view_mgr;
 	TableMgr  table_mgr;
-	PartMgr   part_mgr;
 	Wal       wal;
 };
 
