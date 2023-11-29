@@ -15,9 +15,8 @@
 #include <monotone_server.h>
 #include <monotone_def.h>
 #include <monotone_transaction.h>
-#include <monotone_snapshot.h>
+#include <monotone_index.h>
 #include <monotone_storage.h>
-#include <monotone_part.h>
 #include <monotone_wal.h>
 #include <monotone_db.h>
 #include <monotone_value.h>
@@ -40,14 +39,12 @@ ccursor_open(Vm* self, Op* op)
 	data_read_string(&pos, &name_table);
 	data_read_string(&pos, &name_index);
 
-	// find table/index by name
+	// find table, index and storage per shard
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
-	auto storage = part_storage(part);
-	auto index   = storage_find(storage, &name_index, true);
+	auto def     = table_find_index_def(table, &name_index, true);
+	auto storage = storage_mgr_find(&table->storage_mgr, self->shard);
 
 	// create cursor key
-	auto def = index_def(index);
 	auto key = value_row_key(def, &self->stack);
 	guard(row_guard, row_free, key);
 	stack_popn(&self->stack, def->key_count);
@@ -55,12 +52,12 @@ ccursor_open(Vm* self, Op* op)
 	// open cursor
 	cursor->type    = CURSOR_TABLE;
 	cursor->table   = table;
+	cursor->def     = def;
 	cursor->storage = storage;
-	cursor->index   = index;
-	cursor->it      = index_open(index, key, true);
+	storage_iterator_open(&cursor->it, storage, &name_index, key);
 
 	// jmp if has data
-	if (iterator_has(cursor->it))
+	if (storage_iterator_has(&cursor->it))
 		return code_at(self->code, op->c);
 	return ++op;
 }
@@ -139,15 +136,12 @@ ccursor_prepare(Vm* self, Op* op)
 
 	// find storage
 	Table* table = (Table*)op->b;
-	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
-	auto storage = part_storage(part);
 
 	// prepare cursor
 	cursor->type    = CURSOR_TABLE;
 	cursor->table   = table;
-	cursor->storage = storage;
-	cursor->index   = storage_primary(storage);
-	cursor->it      = index_open(cursor->index, NULL, false);
+	cursor->def     = table_def(table);
+	cursor->storage = storage_mgr_find(&table->storage_mgr, self->shard);
 }
 
 hot void
@@ -182,10 +176,10 @@ ccursor_next(Vm* self, Op* op)
 	case CURSOR_TABLE:
 	{
 		// next
-		iterator_next(cursor->it);
+		storage_iterator_next(&cursor->it);
 
 		// check for eof
-		if (! iterator_has(cursor->it))
+		if (! storage_iterator_has(&cursor->it))
 			return ++op;
 		break;
 	}
@@ -251,10 +245,10 @@ ccursor_read(Vm* self, Op* op)
 	switch (cursor->type) {
 	case CURSOR_TABLE:
 	{
-		if (unlikely(! iterator_has(cursor->it)))
+		if (unlikely(! storage_iterator_has(&cursor->it)))
 			error("*: not in active aggregation");
-		auto def = index_def(cursor->index);
-		auto current = iterator_at(cursor->it);
+		auto current = storage_iterator_at(&cursor->it);
+		auto def = cursor->def;
 		assert(current != NULL);
 		value_set_data(a, row_data(current, def), row_data_size(current, def), NULL);
 		break;
@@ -300,11 +294,11 @@ ccursor_idx(Vm* self, Op* op)
 	switch (cursor->type) {
 	case CURSOR_TABLE:
 	{
-		if (unlikely(! iterator_has(cursor->it)))
+		if (unlikely(! storage_iterator_has(&cursor->it)))
 			error("*: not in active aggregation");
-		auto current = iterator_at(cursor->it);
+		auto current = storage_iterator_at(&cursor->it);
 		assert(current != NULL);
-		data     = row_data(current, index_def(cursor->index));
+		data     = row_data(current, cursor->def);
 		data_buf = NULL;
 		break;
 	}
@@ -389,35 +383,38 @@ cinsert(Vm* self, Op* op)
 	auto trx    = self->trx;
 	bool unique = op->d;
 
-	// find storage by id
-	Table* table = (Table*)op->a;
-	auto part    = table_find_part(table, &self->db->part_mgr, self->shard);
-	auto storage = part_storage(part);
-
 	uint8_t* data = code_data_at(self->code_data, op->b);
 	uint32_t data_size = op->c;
 	if (unlikely(! data_is_array(data)))
 		error("INSERT/REPLACE: array expected");
 
-	storage_set(storage, trx, unique, data, data_size);
+	// find or create partition
+	Table* table = (Table*)op->a;
+	auto part = table_map(table, self->shard, data, data_size);
+	assert(part);
+
+	// insert or replace
+	part_set(part, trx, unique, data, data_size);
 }
 
 hot void
 cupdate(Vm* self, Op* op)
 {
 	// [cursor]
-	auto trx     = self->trx;
-	auto cursor  = cursor_mgr_of(&self->cursor_mgr, op->a);
-	auto storage = cursor->storage;
+	auto trx           = self->trx;
+	auto cursor        = cursor_mgr_of(&self->cursor_mgr, op->a);
+	auto part          = cursor->it.part;
+	auto part_iterator = cursor->it.part_iterator;
 
 	// update by cursor
-	auto value   = stack_at(&self->stack, 1);
+	auto value  = stack_at(&self->stack, 1);
 	if (likely(value->type == VALUE_DATA))
 	{
 		if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
 			error("UPDATE: array, map or data set expected");
 
-		storage_update(storage, trx, cursor->it, value->data, value->data_size);
+		part_update(part, trx, part_iterator, value->data, value->data_size);
+
 	} else
 	if (value->type == VALUE_SET)
 	{
@@ -427,12 +424,13 @@ cupdate(Vm* self, Op* op)
 			auto ref = &set_at(set, j)->value;
 			if (likely(ref->type == VALUE_DATA))
 			{
-				storage_update(storage, trx, cursor->it, ref->data, ref->data_size);
+				part_update(part, trx, part_iterator, ref->data, ref->data_size);
 			} else
 			{
 				auto buf = buf_create(0);
 				value_write(ref, buf);
-				storage_update(storage, trx, cursor->it, buf->start, buf_size(buf));
+				part_update(part, trx, part_iterator, buf->start,
+				            buf_size(buf));
 				buf_free(buf);
 			}
 		}
@@ -448,8 +446,11 @@ hot void
 cdelete(Vm* self, Op* op)
 {
 	// delete by cursor
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	storage_delete(cursor->storage, self->trx, cursor->it);
+	auto cursor        = cursor_mgr_of(&self->cursor_mgr, op->a);
+	auto part          = cursor->it.part;
+	auto part_iterator = cursor->it.part_iterator;
+
+	part_delete(part, self->trx, part_iterator);
 }
 
 hot Op*
@@ -464,19 +465,24 @@ cupsert(Vm* self, Op* op)
 	if (unlikely(! data_is_array(data)))
 		error("UPSERT: array expected");
 
+	// find or create partition
+	auto part = table_map(cursor->table, self->shard, data, data_size);
+	assert(part);
+
 	// on insert
-	bool updated;
-	updated = storage_upsert(cursor->storage, self->trx, cursor->it,
-	                         data,
-	                         data_size);
-	if (updated)
+	Iterator *it = NULL;
+	auto on_insert = part_upsert(part, self->trx, &it, data, data_size);
+	if (on_insert)
 	{
-		// reset reference
 		cursor->ref = NULL;
 		return ++op;
 	}
 
-	// on conflict
+	// upsert
+
+	// open storage cursor using partition iterator
+	storage_iterator_reset(&cursor->it);
+	storage_iterator_open_as(&cursor->it, cursor->storage, NULL, part, it);
 
 	// set cursor ref pointer to the current insert row data
 	cursor->ref = data;
