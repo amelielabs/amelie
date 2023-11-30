@@ -6,65 +6,65 @@
 // SQL OLTP database
 //
 
-typedef struct StorageMap StorageMap;
+typedef struct Mapping Mapping;
 
 enum
 {
-	MAP_NONE,
 	MAP_SHARD,
 	MAP_SHARD_RANGE,
 	MAP_SHARD_RANGE_AUTO,
+	MAP_REFERENCE
 };
 
-struct StorageMap
+struct Mapping
 {
 	int64_t type;
 	int64_t interval;
 };
 
-static inline StorageMap*
-storage_map_allocate(void)
+static inline Mapping*
+mapping_allocate(void)
 {
-	StorageMap* self;
-	self = mn_malloc(sizeof(StorageMap));
-	self->type = MAP_NONE;
+	Mapping* self;
+	self = mn_malloc(sizeof(Mapping));
+	self->type = MAP_SHARD;
 	self->interval = 0;
 	return self;
 }
 
 static inline void
-storage_map_free(StorageMap* self)
+mapping_free(Mapping* self)
 {
 	mn_free(self);
 }
 
 static inline void
-storage_map_set_type(StorageMap* self, int type)
+mapping_set_type(Mapping* self, int type)
 {
 	self->type = type;
 }
 
 static inline void
-storage_map_set_interval(StorageMap* self, int interval)
+mapping_set_interval(Mapping* self, int interval)
 {
 	self->interval = interval;
 }
 
-static inline StorageMap*
-storage_map_copy(StorageMap* self)
+static inline Mapping*
+mapping_copy(Mapping* self)
 {
-	auto copy = storage_map_allocate();
-	guard(copy_guard, storage_map_free, copy);
-	storage_map_set_type(copy, self->type);
-	storage_map_set_interval(copy, self->interval);
+	auto copy = mapping_allocate();
+	guard(copy_guard, mapping_free, copy);
+	mapping_set_type(copy, self->type);
+	mapping_set_interval(copy, self->interval);
 	return unguard(&copy_guard);
 }
 
-static inline StorageMap*
-storage_map_read(uint8_t** pos)
+static inline Mapping*
+mapping_read(uint8_t** pos)
 {
-	auto self = storage_map_allocate();
-	guard(self_guard, storage_map_free, self);
+	auto self = mapping_allocate();
+	guard(self_guard, mapping_free, self);
 
 	// map
 	int count;
@@ -81,7 +81,7 @@ storage_map_read(uint8_t** pos)
 }
 
 static inline void
-storage_map_write(StorageMap* self, Buf* buf)
+mapping_write(Mapping* self, Buf* buf)
 {
 	// map
 	encode_map(buf, 2);

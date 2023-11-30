@@ -16,7 +16,7 @@
 #include <monotone_storage.h>
 
 Storage*
-storage_allocate(StorageConfig* config, StorageMap* map, Uuid* table)
+storage_allocate(StorageConfig* config, Mapping* map, Uuid* table)
 {
 	auto self = (Storage*)mn_malloc(sizeof(Part));
 	self->list_count = 0;
@@ -62,7 +62,8 @@ storage_open(Storage* self, List* indexes)
 hot Part*
 storage_map(Storage* self, uint8_t* data, int data_size, bool* created)
 {
-	if (self->map->type == MAP_NONE ||
+	// reference or non-partitioned sharding
+	if (self->map->type == MAP_REFERENCE ||
 	    self->map->type == MAP_SHARD)
 		return container_of(self->list.next, Part, link);
 

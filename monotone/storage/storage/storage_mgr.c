@@ -36,7 +36,8 @@ storage_mgr_free(StorageMgr* self)
 }
 
 void
-storage_mgr_open(StorageMgr* self, StorageMap* map,
+storage_mgr_open(StorageMgr* self,
+                 Mapping*    map,
                  Uuid*       table,
                  List*       storages,
                  List*       indexes)
@@ -61,7 +62,7 @@ storage_mgr_open(StorageMgr* self, StorageMap* map,
 hot Storage*
 storage_mgr_find(StorageMgr* self, Uuid* shard)
 {
-	if (self->map->type == MAP_NONE)
+	if (self->map->type == MAP_REFERENCE)
 	{
 		assert(self->list_count == 1);
 		return container_of(self->list.next, Storage, link);

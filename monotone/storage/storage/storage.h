@@ -14,13 +14,13 @@ struct Storage
 	int            list_count;
 	PartTree       tree;
 	Uuid*          table;
-	StorageMap*    map;
+	Mapping*       map;
 	StorageConfig* config;
 	List           link;
 };
 
 Storage*
-storage_allocate(StorageConfig*, StorageMap*, Uuid*);
+storage_allocate(StorageConfig*, Mapping*, Uuid*);
 void  storage_free(Storage*);
 void  storage_open(Storage*, List*);
 Part* storage_map(Storage*, uint8_t*, int, bool*);
