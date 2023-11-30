@@ -97,15 +97,17 @@ parse_value(Stmt* self)
 			auto next = stmt_if(self, KINT);
 			if (next)
 			{
-				next->integer = -next->integer;
+				parse_value_add(&stack);
 				ast = next;
+				next->integer = -next->integer;
 				break;
 			}
 			next = stmt_if(self, KREAL);
 			if (next)
 			{
-				next->real = -next->real;
+				parse_value_add(&stack);
 				ast = next;
+				next->real = -next->real;
 				break;
 			}
 			stmt_push(self, ast);
