@@ -125,3 +125,26 @@ key_write(Key* self, Buf* buf)
 	encode_raw(buf, "asc", 3);
 	encode_bool(buf, self->asc);
 }
+
+static inline void
+key_find(Column* column, Key* key, uint8_t** pos)
+{
+	// find by path
+	if (str_empty(&key->path))
+		return;
+
+	if (! map_find_path(pos, &key->path))
+		error("column %.*s: key path <%.*s> is not found",
+		      str_size(&column->name),
+		      str_of(&column->name),
+		      str_size(&key->path),
+		      str_of(&key->path));
+
+	// validate data type
+	if (! type_validate(key->type, *pos))
+		error("column %.*s: key path <%.*s> does not match data type",
+		      str_size(&column->name),
+		      str_of(&column->name),
+		      str_size(&key->path),
+		      str_of(&key->path));
+}

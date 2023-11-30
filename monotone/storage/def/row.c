@@ -51,25 +51,7 @@ row_create(Def* def, uint8_t* data, int data_size)
 		{
 			// find key path and validate data type
 			uint8_t* pos_key = pos;
-
-			// find by path
-			if (! str_empty(&key->path))
-			{
-				if (! map_find_path(&pos_key, &key->path))
-					error("column %.*s: key path <%.*s> is not found",
-					      str_size(&column->name),
-					      str_of(&column->name),
-					      str_size(&key->path),
-					      str_of(&key->path));
-
-				// validate data type
-				if (! type_validate(key->type, pos_key))
-					error("column %.*s: key path <%.*s> does not match data type",
-					      str_size(&column->name),
-					      str_of(&column->name),
-					      str_size(&key->path),
-					      str_of(&key->path));
-			}
+			key_find(column, key, &pos_key);
 
 			// set key index
 			index[key->order] = pos_key - data;
