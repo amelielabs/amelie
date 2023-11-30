@@ -169,6 +169,19 @@ func_tables(Vm*       vm,
 }
 
 static void
+func_partitions(Vm*       vm,
+                Function* func,
+                Value*    result,
+                int       argc,
+                Value**   argv)
+{
+	unused(argv);
+	function_validate_argc(func, argc);
+	auto buf = table_mgr_list_partitions(&vm->db->table_mgr);
+	value_set_data_from(result, buf);
+}
+
+static void
 func_views(Vm*       vm,
            Function* func,
            Value*    result,
@@ -218,6 +231,7 @@ func_setup(FunctionMgr* mgr)
 		{ "system", "schemas",    (FunctionMain)func_schemas,    0 },
 		{ "system", "functions",  (FunctionMain)func_functions,  0 },
 		{ "system", "tables",     (FunctionMain)func_tables,     0 },
+		{ "system", "partitions", (FunctionMain)func_partitions, 0 },
 		{ "system", "views",      (FunctionMain)func_views,      0 },
 		{ "system", "wal",        (FunctionMain)func_wal,        0 },
 		{ "system", "debug",      (FunctionMain)func_debug,      0 },
