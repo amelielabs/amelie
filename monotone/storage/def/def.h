@@ -138,6 +138,18 @@ def_find_key(Def* self, Str* name)
 	return NULL;
 }
 
+hot static inline Key*
+def_find_column_key(Column* self, Str* path)
+{
+	auto key = self->key;
+	for (; key; key = key->next_column)
+	{
+		if (str_compare(&key->path, path))
+			return key;
+	}
+	return NULL;
+}
+
 static inline void
 def_copy(Def* self, Def* src)
 {
