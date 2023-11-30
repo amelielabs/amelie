@@ -22,6 +22,7 @@ test table_drop
 test table_alter
 test view
 test cascade
+test partition_by
 
 # dml
 directory dml
@@ -74,20 +75,6 @@ test transaction
 #test create_index
 #test drop_index
 #test indexate
-
-#directory query
-#group query
-#test select
-#test expression
-#test json
-#test point_lookup
-#test range_scan
-#test limit_offset
-#test order_by
-#test group_by
-#test aggregate
-#test join
-#test nested_query
 
 #group networking
 #test ping
