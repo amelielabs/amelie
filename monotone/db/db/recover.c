@@ -59,14 +59,16 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		auto table = table_mgr_find_by_id(&self->table_mgr, &id_table);
 		if (unlikely(! table ))
 			return;
+		auto def = table_def(table);
 
 		// find storage
 		auto storage = storage_mgr_find(&table->storage_mgr, &id_storage);
-		assert(storage);
+		if (! storage)
+			return;
 
 		// find or create partition
 		bool created = false;
-		auto part = storage_map(storage, data, data_size, &created);
+		auto part = storage_map(storage, def, data, data_size, &created);
 		if (created)
 			part_open(part, &table->config->indexes);
 

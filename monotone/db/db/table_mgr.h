@@ -23,3 +23,4 @@ void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
 Table* table_mgr_find_by_id(TableMgr*, Uuid*);
 Buf*   table_mgr_list(TableMgr*);
+Buf*   table_mgr_list_partitions(TableMgr*);

@@ -196,3 +196,18 @@ table_mgr_list(TableMgr* self)
 	msg_end(buf);
 	return buf;
 }
+
+Buf*
+table_mgr_list_partitions(TableMgr* self)
+{
+	auto buf = msg_create(MSG_OBJECT);
+	// array
+	encode_array(buf, self->mgr.list_count);
+	list_foreach(&self->mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		storage_mgr_list(&table->storage_mgr, buf);
+	}
+	msg_end(buf);
+	return buf;
+}

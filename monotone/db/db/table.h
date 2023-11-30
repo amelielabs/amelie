@@ -57,14 +57,14 @@ table_of(Handle* handle)
 	return (Table*)handle;
 }
 
-hot static inline Def*
-table_find_index_def(Table* self, Str* name, bool error_if_not_exists)
+hot static inline IndexConfig*
+table_find_index(Table* self, Str* name, bool error_if_not_exists)
 {
 	list_foreach(&self->config->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
 		if (str_compare(&config->name, name))
-			return &config->def;
+			return config;
 	}
 
 	if (error_if_not_exists)
@@ -85,12 +85,15 @@ hot static inline Part*
 table_map(Table* self, Uuid* shard, uint8_t* data, int data_size)
 {
 	// find storage related to the shard
-	auto storage = storage_mgr_find(&self->storage_mgr, shard);
+	auto storage = storage_mgr_find_by_shard(&self->storage_mgr, shard);
 	assert(storage);
+
+	// get partition key
+	auto def = table_def(self);
 
 	// find or create partition
 	bool created = false;
-	auto part = storage_map(storage, data, data_size, &created);
+	auto part = storage_map(storage, def, data, data_size, &created);
 	if (created)
 		part_open(part, &self->config->indexes);
 
