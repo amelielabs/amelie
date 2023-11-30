@@ -474,7 +474,13 @@ parse_partition_by(Stmt* self, Def* def, Mapping* map)
 	if (! expr)
 		error("PARTITION BY () FOR INTERVAL <integer> expected");
 
+	if (expr->integer == 0)
+		error("PARTITION BY interval cannot be zero");
+
 	// set mapping
+	if (map->type == MAP_REFERENCE)
+		error("PARTITION BY cannot be used with a reference table");
+
 	if (automatic)
 		mapping_set_type(map, MAP_RANGE_AUTO);
 	else
