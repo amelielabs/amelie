@@ -34,22 +34,34 @@ static inline void
 storage_iterator_open(StorageIterator* self,
                       Storage*         storage,
                       Str*             index_name,
+                      Def*             def,
                       Row*             row)
 {
+	if (storage->list_count == 0)
+		return;
+
 	self->index   = index_name;
 	self->storage = storage;
 
 	// find partition
-	uint64_t key = 0;
-	(void)row;
-		// todo
-
-	self->part = part_tree_match(&storage->tree, key);
+	if (storage->map->type == MAP_NONE ||
+	    storage->map->type == MAP_REFERENCE)
+	{
+		self->part = storage_partition(storage);
+	} else
+	{
+		// find partition by partition key
+		uint8_t* pos = row_key(row, def, 0);
+		int64_t key;
+		data_read_integer(&pos, &key);
+		self->part = part_tree_match(&storage->tree, key);
+	}
 	assert(self->part);
 
 	// find partition index
 	auto index = part_find(self->part, index_name, true);
 
+	// create index iterator
 	self->part_iterator = index_open(index, row, true);
 	if (unlikely(! iterator_has(self->part_iterator)))
 	{

@@ -46,9 +46,13 @@ storage_open(Storage* self, List* indexes)
 	// todo
 	//   recover empty partitions
 	//   bootstrap
-	
+
+	if  (self->map->type == MAP_RANGE ||
+	     self->map->type == MAP_RANGE_AUTO)
+		return;
+
 	// allocate partition
-	auto part = part_allocate(self->table, &self->config->id, 0);
+	auto part = part_allocate(self->table, &self->config->id);
 	list_append(&self->list, &part->link);
 	self->list_count++;
 
@@ -59,29 +63,68 @@ storage_open(Storage* self, List* indexes)
 	part_open(part, indexes);
 }
 
-hot Part*
-storage_map(Storage* self, uint8_t* data, int data_size, bool* created)
+hot static inline int64_t
+storage_map_key(Def* def, uint8_t* data)
 {
+	auto key = def->key;
+	auto column = def_column_of(def, key->column);
+
+	// validate row and rewind to the column
+	column_find(column, &data);
+
+	// find key by path
+	key_find(column, key, &data);
+
+	// read key value
+	int64_t value;
+	data_read_integer(&data, &value);
+	return value;
+}
+
+hot Part*
+storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
+            bool* created)
+{
+	unused(data_size);
+
 	// reference or non-partitioned sharding
-	if (self->map->type == MAP_REFERENCE ||
-	    self->map->type == MAP_SHARD)
+	if (self->map->type == MAP_NONE ||
+	    self->map->type == MAP_REFERENCE)
 		return container_of(self->list.next, Part, link);
 
-	// MAP_SHARD_RANGE
-	// MAP_SHARD_RANGE_AUTO
+	// MAP_RANGE
+	// MAP_RANGE_AUTO
 
-	// todo: get first key value from data
-	uint64_t key = 0;
-	(void)key;
-	(void)created;
+	// read partition key
+	auto key = storage_map_key(def, data);
 
-	// todo:
-	//  - get partition key (use Def first key)
-	//  - find or create new partition
-	//  - create empty new parition without indexes
-	//
-	(void)data;
-	(void)data_size;
+	// find matching partition
+	if (likely(self->list_count > 0))
+	{
+		// validate partition range
+		auto part = part_tree_match(&self->tree, key);
+		if (likely(key >= part->min && key < part->max))
+			return part;
+	}
 
-	return container_of(self->list.next, Part, link);
+	// partition must exists for declarative partitioning
+	if (self->map->type == MAP_RANGE)
+		error("partition for key '%" PRIu64 "' does not exists", key);
+
+	// create new partition
+
+	// allocate partition
+	auto part = part_allocate(self->table, &self->config->id);
+	list_append(&self->list, &part->link);
+	self->list_count++;
+
+	int64_t min = key - (key % self->map->interval);
+	part->min = min;
+	part->max = min + self->map->interval;
+
+	// add partition to the partition tree
+	part_tree_add(&self->tree, part);
+
+	*created = true;
+	return part;
 }

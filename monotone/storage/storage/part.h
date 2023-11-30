@@ -10,11 +10,10 @@ typedef struct Part Part;
 
 struct Part
 {
-	uint64_t   id;
 	Uuid*      id_storage;
 	Uuid*      id_table;
-	uint64_t   min;
-	uint64_t   max;
+	int64_t    min;
+	int64_t    max;
 	List       indexes;
 	int        indexes_count;
 	RbtreeNode link_node;
@@ -22,7 +21,7 @@ struct Part
 };
 
 Part*
-part_allocate(Uuid*, Uuid*, uint64_t);
+part_allocate(Uuid*, Uuid*);
 void part_free(Part*);
 void part_open(Part*, List*);
 
@@ -42,7 +41,7 @@ part_primary(Part* self)
 }
 
 static inline int
-part_compare(Part* self, uint64_t value)
+part_compare(Part* self, int64_t value)
 {
 	if (self->min == value)
 		return 0;

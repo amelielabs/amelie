@@ -10,10 +10,10 @@ typedef struct Mapping Mapping;
 
 enum
 {
-	MAP_SHARD,
-	MAP_SHARD_RANGE,
-	MAP_SHARD_RANGE_AUTO,
-	MAP_REFERENCE
+	MAP_NONE,
+	MAP_REFERENCE,
+	MAP_RANGE,
+	MAP_RANGE_AUTO
 };
 
 struct Mapping
@@ -27,7 +27,7 @@ mapping_allocate(void)
 {
 	Mapping* self;
 	self = mn_malloc(sizeof(Mapping));
-	self->type = MAP_SHARD;
+	self->type = MAP_NONE;
 	self->interval = 0;
 	return self;
 }
@@ -45,7 +45,7 @@ mapping_set_type(Mapping* self, int type)
 }
 
 static inline void
-mapping_set_interval(Mapping* self, int interval)
+mapping_set_interval(Mapping* self, int64_t interval)
 {
 	self->interval = interval;
 }

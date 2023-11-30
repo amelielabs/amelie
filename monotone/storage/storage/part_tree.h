@@ -30,7 +30,7 @@ static inline int
 part_tree_compare(RbtreeNode* node, void* ptr)
 {
 	auto part = container_of(node, Part, link_node);
-	uint64_t* key = ptr;
+	int64_t* key = ptr;
 	return part_compare(part, *key);
 }
 
@@ -64,7 +64,7 @@ part_tree_next(PartTree* self, Part* part)
 }
 
 hot static inline Part*
-part_tree_match(PartTree* self, uint64_t key)
+part_tree_match(PartTree* self, int64_t key)
 {
 	// part[n].min >= key && key < part[n + 1].min
 	RbtreeNode* part_ptr;
