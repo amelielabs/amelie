@@ -84,10 +84,6 @@ table_def(Table* self)
 hot static inline Part*
 table_map(Table* self, Uuid* shard, uint8_t* data, int data_size)
 {
-	// reference tables has no shard associted
-	if (self->config->reference)
-		shard = NULL;
-
 	// find storage related to the shard
 	auto storage = storage_mgr_find(&self->storage_mgr, shard);
 	assert(storage);
