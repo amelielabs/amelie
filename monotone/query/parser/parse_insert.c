@@ -85,21 +85,33 @@ parse_value(Stmt* self)
 			continue;
 		}
 		case KSTRING:
-			parse_value_add(&stack);
-			break;
 		case KNULL:
-			parse_value_add(&stack);
-			break;
 		case KTRUE:
 		case KFALSE:
-			parse_value_add(&stack);
-			break;
 		case KINT:
-			parse_value_add(&stack);
-			break;
 		case KREAL:
 			parse_value_add(&stack);
 			break;
+		case '-':
+		{
+			auto next = stmt_if(self, KINT);
+			if (next)
+			{
+				next->integer = -next->integer;
+				ast = next;
+				break;
+			}
+			next = stmt_if(self, KREAL);
+			if (next)
+			{
+				next->real = -next->real;
+				ast = next;
+				break;
+			}
+			stmt_push(self, ast);
+			goto done;
+		}
+
 		default:
 			goto done;
 		}
@@ -114,7 +126,6 @@ parse_value(Stmt* self)
 done:;
 		done = true;
 		stmt_push(self, ast);
-
 	}
 
 	if (unlikely(ast_head(&stack)))
