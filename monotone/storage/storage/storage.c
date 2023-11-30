@@ -55,10 +55,12 @@ storage_dump_list(Storage* self)
 
 	// array
 	encode_array(buf, self->list_count);
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
+	if (! self->list_count)
+		return;
 
+	auto part = part_tree_min(&self->tree);
+	while (part)
+	{
 		// map
 		encode_map(buf, 2);
 
@@ -69,6 +71,8 @@ storage_dump_list(Storage* self)
 		// max
 		encode_raw(buf, "max", 3);
 		encode_integer(buf, part->max);
+
+		part = part_tree_next(&self->tree, part);
 	}
 }
 
@@ -154,14 +158,20 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 	list_append(&self->list, &part->link);
 	self->list_count++;
 
-	int64_t min;
 	if (key >= 0)
-		min = key - (key % self->map->interval);
-	else
-		min = key + (key % self->map->interval);
-
-	part->min = min;
-	part->max = min + self->map->interval;
+	{
+		int64_t min = key - (key % self->map->interval);
+		part->min = min;
+		part->max = min + self->map->interval;
+	} else
+	{
+		key = -key;
+		int64_t min = key - (key % self->map->interval);
+		part->min =  min + self->map->interval;
+		part->max =  min;
+		part->min = -part->min;
+		part->max = -part->max;
+	}
 
 	// add partition to the partition tree
 	part_tree_add(&self->tree, part);
