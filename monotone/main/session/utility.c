@@ -53,6 +53,9 @@ execute_show(Session* self, Ast* ast)
 	if (str_compare_raw(&arg->expr->string, "tables", 6))
 		buf = table_mgr_list(&self->share->db->table_mgr);
 	else
+	if (str_compare_raw(&arg->expr->string, "partitions", 10))
+		buf = table_mgr_list_partitions(&self->share->db->table_mgr);
+	else
 	if (str_compare_raw(&arg->expr->string, "views", 5))
 		buf = view_mgr_list(&self->share->db->view_mgr);
 	else
