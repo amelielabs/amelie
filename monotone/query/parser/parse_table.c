@@ -424,8 +424,8 @@ parse_table_create(Stmt* self)
 	table_config_set_name(stmt->config, &name);
 
 	// create partition map
-	stmt->config->map = storage_map_allocate();
-	storage_map_set_type(stmt->config->map, MAP_SHARD);
+	stmt->config->map = mapping_allocate();
+	mapping_set_type(stmt->config->map, MAP_SHARD);
 
 	// create primary index config
 	auto index_config = index_config_allocate();
@@ -447,7 +447,7 @@ parse_table_create(Stmt* self)
 	if (stmt_if(self, KREFERENCE))
 	{
 		table_config_set_reference(stmt->config, true);
-		storage_map_set_type(stmt->config->map, MAP_NONE);
+		mapping_set_type(stmt->config->map, MAP_REFERENCE);
 	}
 
 	// [WITH]

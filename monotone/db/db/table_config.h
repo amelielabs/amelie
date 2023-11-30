@@ -10,15 +10,15 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Uuid        id;
-	Str         schema;
-	Str         name;
-	bool        reference;
-	List        indexes;
-	int         indexes_count;
-	StorageMap* map;
-	List        storages;
-	int         storages_count;
+	Uuid     id;
+	Str      schema;
+	Str      name;
+	bool     reference;
+	List     indexes;
+	int      indexes_count;
+	Mapping* map;
+	List     storages;
+	int      storages_count;
 };
 
 static inline TableConfig*
@@ -45,7 +45,7 @@ table_config_free(TableConfig* self)
 	str_free(&self->name);
 
 	if (self->map)
-		storage_map_free(self->map);
+		mapping_free(self->map);
 
 	list_foreach_safe(&self->indexes)
 	{
@@ -89,7 +89,7 @@ table_config_set_reference(TableConfig* self, bool reference)
 }
 
 static inline void
-table_config_set_map(TableConfig* self, StorageMap* map)
+table_config_set_map(TableConfig* self, Mapping* map)
 {
 	self->map = map;
 }
@@ -117,7 +117,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_reference(copy, self->reference);
-	table_config_set_map(copy, storage_map_copy(self->map));
+	table_config_set_map(copy, mapping_copy(self->map));
 
 	list_foreach(&self->indexes)
 	{
@@ -183,7 +183,7 @@ table_config_read(uint8_t** pos)
 
 	// map
 	data_skip(pos);
-	self->map = storage_map_read(pos);
+	self->map = mapping_read(pos);
 
 	return unguard(&self_guard);
 }
@@ -232,5 +232,5 @@ table_config_write(TableConfig* self, Buf* buf)
 
 	// map
 	encode_raw(buf, "map", 3);
-	storage_map_write(self->map, buf);
+	mapping_write(self->map, buf);
 }
