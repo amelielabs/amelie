@@ -18,11 +18,13 @@
 Storage*
 storage_allocate(StorageConfig* config, Mapping* map, Uuid* table)
 {
-	auto self = (Storage*)mn_malloc(sizeof(Part));
+	auto self = (Storage*)mn_malloc(sizeof(Storage));
 	self->list_count = 0;
 	self->table      = table;
 	self->map        = map;
 	self->config     = config;
+	buf_init(&self->list_dump);
+	mutex_init(&self->list_dump_lock);
 	list_init(&self->list);
 	list_init(&self->link);
 	part_tree_init(&self->tree);
@@ -37,7 +39,37 @@ storage_free(Storage* self)
 		auto part = list_at(Part, link);
 		part_free(part);
 	}
+	buf_free(&self->list_dump);
+	mutex_free(&self->list_dump_lock);
 	mn_free(self);
+}
+
+static void
+storage_dump_list(Storage* self)
+{
+	mutex_lock(&self->list_dump_lock);
+	guard(unlock, mutex_unlock, &self->list_dump_lock);
+
+	auto buf = &self->list_dump;
+	buf_reset(buf);
+
+	// array
+	encode_array(buf, self->list_count);
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+
+		// map
+		encode_map(buf, 2);
+
+		// min
+		encode_raw(buf, "min", 3);
+		encode_integer(buf, part->min);
+
+		// max
+		encode_raw(buf, "max", 3);
+		encode_integer(buf, part->max);
+	}
 }
 
 void
@@ -49,7 +81,10 @@ storage_open(Storage* self, List* indexes)
 
 	if  (self->map->type == MAP_RANGE ||
 	     self->map->type == MAP_RANGE_AUTO)
+	{
+		storage_dump_list(self);
 		return;
+	}
 
 	// allocate partition
 	auto part = part_allocate(self->table, &self->config->id);
@@ -58,6 +93,7 @@ storage_open(Storage* self, List* indexes)
 
 	// add partition to the partition tree
 	part_tree_add(&self->tree, part);
+	storage_dump_list(self);
 
 	// create indexes
 	part_open(part, indexes);
@@ -109,7 +145,7 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 
 	// partition must exists for declarative partitioning
 	if (self->map->type == MAP_RANGE)
-		error("partition for key '%" PRIu64 "' does not exists", key);
+		error("partition for key '%" PRIi64 "' does not exists", key);
 
 	// create new partition
 
@@ -118,12 +154,18 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 	list_append(&self->list, &part->link);
 	self->list_count++;
 
-	int64_t min = key - (key % self->map->interval);
+	int64_t min;
+	if (key >= 0)
+		min = key - (key % self->map->interval);
+	else
+		min = key + (key % self->map->interval);
+
 	part->min = min;
 	part->max = min + self->map->interval;
 
 	// add partition to the partition tree
 	part_tree_add(&self->tree, part);
+	storage_dump_list(self);
 
 	*created = true;
 	return part;

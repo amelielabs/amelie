@@ -21,7 +21,7 @@ part_allocate(Uuid* id_table, Uuid* id_storage)
 	auto self = (Part*)mn_malloc(sizeof(Part));
 	self->id_storage    = id_storage;
 	self->id_table      = id_table;
-	self->min           = 0;
+	self->min           = INT64_MIN;
 	self->max           = INT64_MAX;
 	self->indexes_count = 0;
 	list_init(&self->indexes);

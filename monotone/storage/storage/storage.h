@@ -10,9 +10,11 @@ typedef struct Storage Storage;
 
 struct Storage
 {
+	PartTree       tree;
 	List           list;
 	int            list_count;
-	PartTree       tree;
+	Buf            list_dump;
+	Mutex          list_dump_lock;
 	Uuid*          table;
 	Mapping*       map;
 	StorageConfig* config;

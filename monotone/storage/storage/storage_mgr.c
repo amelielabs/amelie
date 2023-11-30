@@ -67,6 +67,7 @@ storage_mgr_list(StorageMgr* self, Buf* buf)
 	list_foreach_safe(&self->list)
 	{
 		auto storage = list_at(Storage, link);
+		guard(unlock, mutex_unlock, &storage->list_dump_lock);
 
 		// []
 		encode_array(buf, 2);
@@ -75,22 +76,7 @@ storage_mgr_list(StorageMgr* self, Buf* buf)
 		storage_config_write(storage->config, buf);
 
 		// partitions
-		encode_array(buf, storage->list_count);
-		list_foreach(&storage->list)
-		{
-			auto part = list_at(Part, link);
-
-			// map
-			encode_map(buf, 2);
-
-			// min
-			encode_raw(buf, "min", 3);
-			encode_integer(buf, part->min);
-
-			// max
-			encode_raw(buf, "max", 3);
-			encode_integer(buf, part->max);
-		}
+		buf_write(buf, storage->list_dump.start, buf_size(&storage->list_dump));
 	}
 }
 
