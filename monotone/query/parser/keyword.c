@@ -33,6 +33,7 @@ static Keyword keywords_a[] =
 	{ KAS,                    "as",                    2  },
 	{ KTARRAY,                "array",                 5  },
 	{ KABORT,                 "abort",                 5  },
+	{ KAUTOMATIC,             "automatic",             9  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -80,6 +81,7 @@ static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
+	{ KFOR,                   "for",                   3  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -106,6 +108,7 @@ static Keyword keywords_i[] =
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
+	{ KINTERVAL,              "interval",              8  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -162,6 +165,7 @@ static Keyword keywords_p[] =
 	{ KPASSWORD,              "password",              8  },
 	{ KPRIMARY,               "primary",               7  },
 	{ KPROMOTE,               "promote",               7  },
+	{ KPARTITION,             "partition",             9  },
 	{ 0,                       NULL,                   0  }
 };
 

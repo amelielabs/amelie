@@ -24,7 +24,7 @@
 #include <monotone_parser.h>
 
 static int
-parse_type(Stmt* self, Ast* path)
+parse_type(Stmt* self, Column* column, Str* path)
 {
 	auto ast = stmt_next(self);
 	int  type = 0;
@@ -52,8 +52,16 @@ parse_type(Stmt* self, Ast* path)
 		type = TYPE_STRING;
 		break;
 	default:
-		error("%.*s <TYPE> expected", str_size(&path->string),
-		      str_of(&path->string));
+		if (column && path)
+			error("%.*s.%.*s <TYPE> expected",
+			      str_size(&column->name),
+			      str_of(&column->name),
+			      str_size(path),
+			      str_of(path));
+		else
+			error("%.*s <TYPE> expected",
+			      str_size(&column->name),
+			      str_of(&column->name));
 		break;
 	}
 	return type;
@@ -70,6 +78,43 @@ parse_primary_key(Stmt* self)
 	return true;
 }
 
+static Column*
+parse_primary_key_column(Stmt* self, Def* def, Str* path)
+{
+	Column* column = NULL;
+
+	Str     name;
+	str_init(&name);
+
+	auto tk = stmt_next(self);
+	if (tk->id == KNAME)
+	{
+		// column
+		str_set_str(&name, &tk->string);
+
+	} else
+	if (tk->id == KNAME_COMPOUND)
+	{
+		// column.path
+		str_split_or_set(&tk->string, &name, '.');
+
+		// exclude column name from the path
+		str_set_str(path, &tk->string);
+		str_advance(path, str_size(&name) + 1);
+
+	} else {
+		return NULL;
+	}
+
+	// find column
+	column = def_find_column(def, &name);
+	if (! column)
+		error("<%.*s> column does not exists", str_size(&name),
+		      str_of(&name));
+
+	return column;
+}
+
 static void
 parse_primary_key_def(Stmt* self, Def* def)
 {
@@ -79,47 +124,21 @@ parse_primary_key_def(Stmt* self, Def* def)
 
 	for (;;)
 	{
-		Str     name;
-		Str     path;
-		Column* column;
-		int     type;
-		str_init(&name);
+		Str path;
 		str_init(&path);
 
-		auto tk = stmt_next(self);
-		if (tk->id == KNAME)
-		{
-			// (column, ...)
-			str_set_str(&name, &tk->string);
-
-			// find column and validate type
-			column = def_find_column(def, &name);
-			if (! column)
-				error("<%.*s> column does not exists", str_size(&name),
-				      str_of(&name));
-
-			type = column->type;
-		} else
-		if (tk->id == KNAME_COMPOUND)
-		{
-			// (column.path type, ...)
-			str_split_or_set(&tk->string, &name, '.');
-
-			// exclude column name from the path
-			str_set_str(&path, &tk->string);
-			str_advance(&path, str_size(&name) + 1);
-
-			// find column and validate type
-			column = def_find_column(def, &name);
-			if (! column)
-				error("<%.*s> column does not exists", str_size(&name),
-				      str_of(&name));
-
-			// type
-			type = parse_type(self, tk);
-		} else {
+		// (column, ...)
+		// (column.path type, ...)
+		auto column = parse_primary_key_column(self, def, &path);
+		if (column == NULL)
 			error("PRIMARY KEY (<name> expected");
-		}
+
+		// [type]
+		int type;
+		if (str_empty(&path))
+			type = column->type;
+		else
+			type = parse_type(self, column, &path);
 
 		// ASC | DESC
 		bool asc = true;
@@ -131,8 +150,8 @@ parse_primary_key_def(Stmt* self, Def* def)
 
 		// validate key type
 		if (type != TYPE_INT && type != TYPE_STRING)
-			error("<%.*s> column key can be string or int", str_size(&name),
-			      str_of(&name));
+			error("<%.*s> column key can be string or int", str_size(&column->name),
+			      str_of(&column->name));
 
 		// force column not_null constraint
 		constraint_set_not_null(&column->constraint, true);
@@ -291,9 +310,6 @@ parse_def(Stmt* self, Def* def)
 		if (! name)
 			error("(<name> expected");
 
-		// type
-		int type = parse_type(self, name);
-
 		// ensure column does not exists
 		auto column = def_find_column(def, &name->string);
 		if (column)
@@ -304,6 +320,9 @@ parse_def(Stmt* self, Def* def)
 		column = column_allocate();
 		def_add_column(def, column);
 		column_set_name(column, &name->string);
+
+		// type
+		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
 		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | GENERATED
@@ -398,6 +417,71 @@ parse_validate_constraints(Def* def)
 	}
 }
 
+static inline void
+parse_partition_by(Stmt* self, Def* def, Mapping* map)
+{
+	// [AUTOMATIC]
+	bool automatic = stmt_if(self, KAUTOMATIC);
+
+	// [PARTITION BY]
+	if (! stmt_if(self, KPARTITION))
+	{
+		if (automatic)
+			error("AUTOMATIC <PARTITION> expected");
+		return;
+	}
+
+	// BY
+	if (! stmt_if(self, KBY))
+		error("PARTITION <BY> expected");
+
+	// (
+	if (! stmt_if(self, '('))
+		error("PARTITION BY <(> expected");
+
+	// path
+	Str path;
+	str_init(&path);
+	auto column = parse_primary_key_column(self, def, &path);
+	if (! column)
+		error("PARTITION BY (<key> expected");
+
+	// validate partition key
+	auto key = def_find_column_key(column, &path);
+	if (! key)
+		error("PARTITION BY key must be a part of the PRIMARY KEY");
+
+	if (key->order != 0)
+		error("PARTITION BY key must be first in the PRIMARY KEY order");
+
+	if (key->type != TYPE_INT)
+		error("PARTITION BY key must be integer");
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("PARTITION BY (<)> expected");
+
+	// [FOR]
+	if (! stmt_if(self, KFOR))
+		error("PARTITION BY () <FOR> expected");
+
+	// [INTERVAL]
+	if (! stmt_if(self, KINTERVAL))
+		error("PARTITION BY () FOR <INTERVAL> expected");
+
+	// integer
+	auto expr = stmt_if(self, KINT);
+	if (! expr)
+		error("PARTITION BY () FOR INTERVAL <integer> expected");
+
+	// set mapping
+	if (automatic)
+		mapping_set_type(map, MAP_RANGE_AUTO);
+	else
+		mapping_set_type(map, MAP_RANGE);
+	mapping_set_interval(map, expr->integer);
+}
+
 void
 parse_table_create(Stmt* self)
 {
@@ -425,7 +509,7 @@ parse_table_create(Stmt* self)
 
 	// create partition map
 	stmt->config->map = mapping_allocate();
-	mapping_set_type(stmt->config->map, MAP_SHARD);
+	mapping_set_type(stmt->config->map, MAP_NONE);
 
 	// create primary index config
 	auto index_config = index_config_allocate();
@@ -452,6 +536,9 @@ parse_table_create(Stmt* self)
 
 	// [WITH]
 	parse_with(self, stmt);
+
+	// [PARTITION BY]
+	parse_partition_by(self, def, stmt->config->map);
 }
 
 void
