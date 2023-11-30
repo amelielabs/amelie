@@ -41,8 +41,9 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table, index and storage per shard
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto def     = table_find_index_def(table, &name_index, true);
-	auto storage = storage_mgr_find(&table->storage_mgr, self->shard);
+	auto index   = table_find_index(table, &name_index, true);
+	auto def     = &index->def;
+	auto storage = storage_mgr_find_by_shard(&table->storage_mgr, self->shard);
 
 	// create cursor key
 	auto key = value_row_key(def, &self->stack);
@@ -54,7 +55,7 @@ ccursor_open(Vm* self, Op* op)
 	cursor->table   = table;
 	cursor->def     = def;
 	cursor->storage = storage;
-	storage_iterator_open(&cursor->it, storage, &name_index, key);
+	storage_iterator_open(&cursor->it, storage, &index->name, def, key);
 
 	// jmp if has data
 	if (storage_iterator_has(&cursor->it))
@@ -141,7 +142,7 @@ ccursor_prepare(Vm* self, Op* op)
 	cursor->type    = CURSOR_TABLE;
 	cursor->table   = table;
 	cursor->def     = table_def(table);
-	cursor->storage = storage_mgr_find(&table->storage_mgr, self->shard);
+	cursor->storage = storage_mgr_find_by_shard(&table->storage_mgr, self->shard);
 }
 
 hot void
