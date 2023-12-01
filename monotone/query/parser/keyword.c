@@ -33,7 +33,6 @@ static Keyword keywords_a[] =
 	{ KAS,                    "as",                    2  },
 	{ KTARRAY,                "array",                 5  },
 	{ KABORT,                 "abort",                 5  },
-	{ KAUTOMATIC,             "automatic",             9  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -81,7 +80,6 @@ static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
-	{ KFOR,                   "for",                   3  },
 	{ 0,                       NULL,                   0  }
 };
 

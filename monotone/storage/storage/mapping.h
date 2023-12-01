@@ -12,8 +12,7 @@ enum
 {
 	MAP_NONE,
 	MAP_REFERENCE,
-	MAP_RANGE,
-	MAP_RANGE_AUTO
+	MAP_RANGE
 };
 
 struct Mapping

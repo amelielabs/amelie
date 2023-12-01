@@ -83,8 +83,7 @@ storage_open(Storage* self, List* indexes)
 	//   recover empty partitions
 	//   bootstrap
 
-	if  (self->map->type == MAP_RANGE ||
-	     self->map->type == MAP_RANGE_AUTO)
+	if  (self->map->type == MAP_RANGE)
 	{
 		storage_dump_list(self);
 		return;
@@ -133,7 +132,6 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 		return container_of(self->list.next, Part, link);
 
 	// MAP_RANGE
-	// MAP_RANGE_AUTO
 
 	// read partition key
 	auto key = storage_map_key(def, data);
@@ -146,10 +144,6 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 		if (likely(key >= part->min && key < part->max))
 			return part;
 	}
-
-	// partition must exists for declarative partitioning
-	if (self->map->type == MAP_RANGE)
-		error("partition for key '%" PRIi64 "' does not exists", key);
 
 	// create new partition
 

@@ -420,16 +420,9 @@ parse_validate_constraints(Def* def)
 static inline void
 parse_partition_by(Stmt* self, Def* def, Mapping* map)
 {
-	// [AUTOMATIC]
-	bool automatic = stmt_if(self, KAUTOMATIC);
-
 	// [PARTITION BY]
 	if (! stmt_if(self, KPARTITION))
-	{
-		if (automatic)
-			error("AUTOMATIC <PARTITION> expected");
 		return;
-	}
 
 	// BY
 	if (! stmt_if(self, KBY))
@@ -461,18 +454,14 @@ parse_partition_by(Stmt* self, Def* def, Mapping* map)
 	if (! stmt_if(self, ')'))
 		error("PARTITION BY (<)> expected");
 
-	// [FOR]
-	if (! stmt_if(self, KFOR))
-		error("PARTITION BY () <FOR> expected");
-
 	// [INTERVAL]
 	if (! stmt_if(self, KINTERVAL))
-		error("PARTITION BY () FOR <INTERVAL> expected");
+		error("PARTITION BY () <INTERVAL> expected");
 
 	// integer
 	auto expr = stmt_if(self, KINT);
 	if (! expr)
-		error("PARTITION BY () FOR INTERVAL <integer> expected");
+		error("PARTITION BY () INTERVAL <integer> expected");
 
 	if (expr->integer == 0)
 		error("PARTITION BY interval cannot be zero");
@@ -481,10 +470,7 @@ parse_partition_by(Stmt* self, Def* def, Mapping* map)
 	if (map->type == MAP_REFERENCE)
 		error("PARTITION BY cannot be used with a reference table");
 
-	if (automatic)
-		mapping_set_type(map, MAP_RANGE_AUTO);
-	else
-		mapping_set_type(map, MAP_RANGE);
+	mapping_set_type(map, MAP_RANGE);
 	mapping_set_interval(map, expr->integer);
 }
 
