@@ -14,68 +14,64 @@ create table test(id int primary key) partition by ("123"
 create table test(id int primary key) partition by (name
 create table test(id int primary key) partition by (id)
 create table test(id int primary key) partition by (id) for
-create table test(id int primary key) partition by (id) for interval
-create table test(id int primary key) partition by (id) for interval "123"
+create table test(id int primary key) partition by (id) interval
+create table test(id int primary key) partition by (id) interval "123"
 
 # test: partition by primary key
-create table test(id int primary key) automatic partition by (id) for interval 123
+create table test(id int primary key) partition by (id) interval 123
 select *.map from system.tables()
 drop table test
 
 # test: partition by reference
-create table test(id int primary key) reference automatic partition by (id) for interval 123
+create table test(id int primary key) reference partition by (id) interval 123
 
 # test: partition by key order
-create table test(id int, data int, primary key(data, id)) automatic partition by (id) for interval 123
+create table test(id int, data int, primary key(data, id)) partition by (id) interval 123
 
 # test: partition by key type
-create table test(id string, primary key(id)) automatic partition by (id) for interval 123
+create table test(id string, primary key(id)) partition by (id) interval 123
 
 # test: partition by zero interval
-create table test(id int primary key) automatic partition by (id) for interval 0
+create table test(id int primary key) partition by (id) interval 0
 
-# test: partition by automatic
-create table test(id int primary key) automatic
-create table test(id int primary key) automatic 123
-create table test(id int primary key) automatic partition by (id) for interval 123
+# test: partition by
+create table test(id int primary key) partition by (id) interval 123
 select *.map from system.tables()
 drop table test
 
-# test: partition by automatic no default
-create table test(id int primary key) automatic partition by (id) for interval 123
+# test: partition by no default
+create table test(id int primary key) partition by (id) interval 123
 select system.partitions()[0][0][1]
 drop table test
 
-# test: partition by automatic create on insert
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (3), (15), (48)
 select system.partitions()[0][0][1]
 
-# test: partition by automatic iterate over partitions
+# test: partition by iterate over partitions
 select * from test
 select * from test where id >= 2
 select * from test where id >= 10
 select * from test where id >= 30
 drop table test
 
-# test: partition by automatic create on insert negative
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert negative
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (-3), (-15), (-48), (0), (3), (15)
 select system.partitions()[0][0][1]
 select * from test
 drop table test
 
-debug
-
-# test: partition by automatic create on insert negative #2
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert negative #2
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (3), (-3), (0)
 select system.partitions()[0][0][1]
 select * from test
 drop table test
 
-# test: partition by automatic nested key
-create table test(data map, primary key(data.id integer)) automatic partition by (data.id) for interval 10
+# test: partition by nested key
+create table test(data map, primary key(data.id integer)) partition by (data.id) interval 10
 insert into test {"id": 48}, {"id": -48}, {"id": 3}, {"id": -3}, {"id": 0}
 select system.partitions()[0][0][1]
 select * from test

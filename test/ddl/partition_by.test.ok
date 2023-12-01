@@ -28,59 +28,53 @@ query: on_error
 {"code": 1, "msg": "<name> column does not exists"}
 create table test(id int primary key) partition by (id)
 query: on_error
-{"code": 1, "msg": "PARTITION BY () <FOR> expected"}
+{"code": 1, "msg": "PARTITION BY () <INTERVAL> expected"}
 create table test(id int primary key) partition by (id) for
 query: on_error
-{"code": 1, "msg": "PARTITION BY () FOR <INTERVAL> expected"}
-create table test(id int primary key) partition by (id) for interval
+{"code": 1, "msg": "PARTITION BY () <INTERVAL> expected"}
+create table test(id int primary key) partition by (id) interval
 query: on_error
-{"code": 1, "msg": "PARTITION BY () FOR INTERVAL <integer> expected"}
-create table test(id int primary key) partition by (id) for interval "123"
+{"code": 1, "msg": "PARTITION BY () INTERVAL <integer> expected"}
+create table test(id int primary key) partition by (id) interval "123"
 query: on_error
-{"code": 1, "msg": "PARTITION BY () FOR INTERVAL <integer> expected"}
+{"code": 1, "msg": "PARTITION BY () INTERVAL <integer> expected"}
 # test: partition by primary key
-create table test(id int primary key) automatic partition by (id) for interval 123
+create table test(id int primary key) partition by (id) interval 123
 select *.map from system.tables()
-{"type": 3, "interval": 123}
+{"type": 2, "interval": 123}
 drop table test
 # test: partition by reference
-create table test(id int primary key) reference automatic partition by (id) for interval 123
+create table test(id int primary key) reference partition by (id) interval 123
 query: on_error
 {"code": 1, "msg": "PARTITION BY cannot be used with a reference table"}
 # test: partition by key order
-create table test(id int, data int, primary key(data, id)) automatic partition by (id) for interval 123
+create table test(id int, data int, primary key(data, id)) partition by (id) interval 123
 query: on_error
 {"code": 1, "msg": "PARTITION BY key must be first in the PRIMARY KEY order"}
 # test: partition by key type
-create table test(id string, primary key(id)) automatic partition by (id) for interval 123
+create table test(id string, primary key(id)) partition by (id) interval 123
 query: on_error
 {"code": 1, "msg": "PARTITION BY key must be integer"}
 # test: partition by zero interval
-create table test(id int primary key) automatic partition by (id) for interval 0
+create table test(id int primary key) partition by (id) interval 0
 query: on_error
 {"code": 1, "msg": "PARTITION BY interval cannot be zero"}
-# test: partition by automatic
-create table test(id int primary key) automatic
-query: on_error
-{"code": 1, "msg": "AUTOMATIC <PARTITION> expected"}
-create table test(id int primary key) automatic 123
-query: on_error
-{"code": 1, "msg": "AUTOMATIC <PARTITION> expected"}
-create table test(id int primary key) automatic partition by (id) for interval 123
+# test: partition by
+create table test(id int primary key) partition by (id) interval 123
 select *.map from system.tables()
-{"type": 3, "interval": 123}
+{"type": 2, "interval": 123}
 drop table test
-# test: partition by automatic no default
-create table test(id int primary key) automatic partition by (id) for interval 123
+# test: partition by no default
+create table test(id int primary key) partition by (id) interval 123
 select system.partitions()[0][0][1]
 []
 drop table test
-# test: partition by automatic create on insert
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (3), (15), (48)
 select system.partitions()[0][0][1]
 [{"min": 0, "max": 10}, {"min": 10, "max": 20}, {"min": 40, "max": 50}]
-# test: partition by automatic iterate over partitions
+# test: partition by iterate over partitions
 select * from test
 [3]
 [15]
@@ -95,8 +89,8 @@ select * from test where id >= 10
 select * from test where id >= 30
 [48]
 drop table test
-# test: partition by automatic create on insert negative
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert negative
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (-3), (-15), (-48), (0), (3), (15)
 select system.partitions()[0][0][1]
 [{"min": -50, "max": -40}, {"min": -20, "max": -10}, {"min": -10, "max": 0}, {"min": 0, "max": 10}, {"min": 10, "max": 20}]
@@ -108,9 +102,8 @@ select * from test
 [3]
 [15]
 drop table test
-debug
-# test: partition by automatic create on insert negative #2
-create table test(id int primary key) automatic partition by (id) for interval 10
+# test: partition by create on insert negative #2
+create table test(id int primary key) partition by (id) interval 10
 insert into test values (3), (-3), (0)
 select system.partitions()[0][0][1]
 [{"min": -10, "max": 0}, {"min": 0, "max": 10}]
@@ -119,8 +112,8 @@ select * from test
 [0]
 [3]
 drop table test
-# test: partition by automatic nested key
-create table test(data map, primary key(data.id integer)) automatic partition by (data.id) for interval 10
+# test: partition by nested key
+create table test(data map, primary key(data.id integer)) partition by (data.id) interval 10
 insert into test {"id": 48}, {"id": -48}, {"id": 3}, {"id": -3}, {"id": 0}
 select system.partitions()[0][0][1]
 [{"min": -50, "max": -40}, {"min": -10, "max": 0}, {"min": 0, "max": 10}, {"min": 40, "max": 50}]
