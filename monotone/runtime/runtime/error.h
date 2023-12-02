@@ -14,7 +14,7 @@ enum
 	ERROR,
 	ERROR_CONFLICT,
 	ERROR_RO,
-	CANCEL,
+	CANCEL
 };
 
 struct Error

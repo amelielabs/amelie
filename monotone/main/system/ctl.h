@@ -6,4 +6,4 @@
 // SQL OLTP database
 //
 
-void session_execute_utility(Session*);
+void system_ctl(System*, Session*, Stmt*);
