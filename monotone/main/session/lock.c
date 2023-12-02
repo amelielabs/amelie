@@ -48,7 +48,7 @@ session_lock(Session* self, SessionLock lock)
 		req->on_lock = condition_create();
 
 		// RPC_CAT_LOCK_REQ
-		channel_write(global()->control->core, cat_lock_msg(req));
+		channel_write(global()->control->system, cat_lock_msg(req));
 
 		// wait for exclusive lock to be taken on all hubs (including this one)
 		condition_wait(req->on_lock, -1);
@@ -71,7 +71,7 @@ session_unlock(Session* self)
 	}
 	case LOCK_EXCLUSIVE:
 	{
-		// ask core to unlock hubs
+		// ask system to unlock hubs
 		auto req = &self->lock_req;
 		if (req->on_lock)
 		{

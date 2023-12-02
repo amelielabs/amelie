@@ -49,7 +49,7 @@ hub_native(Hub* self, Native* client)
 
 	for (;;)
 	{
-		auto buf = channel_read(&client->core, -1);
+		auto buf = channel_read(&client->system, -1);
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 

@@ -29,7 +29,7 @@
 #include <monotone_shard.h>
 #include <monotone_hub.h>
 #include <monotone_session.h>
-#include <monotone_core.h>
+#include <monotone_system.h>
 #include <monotone_main.h>
 
 typedef struct
@@ -103,7 +103,7 @@ main_runner(void* arg)
 	MainArgs* args = arg;
 	Main* self = args->self;
 
-	Core* core = NULL;
+	System* system = NULL;
 	Exception e;
 	if (try(&e))
 	{
@@ -111,25 +111,25 @@ main_runner(void* arg)
 		bool bootstrap;
 		bootstrap = main_prepare(self, args);
 
-		// start core
-		core = core_create();
-		core_start(core, bootstrap);
+		// start system
+		system = system_create();
+		system_start(system, bootstrap);
 
 		// notify main_start about start completion
 		thread_status_set(&self->task.thread_status, true);
 
 		// handle local connections until stop
-		core_main(core);
+		system_main(system);
 	}
 
 	if (catch(&e))
 	{ }
 
 	// shutdown
-	if (core)
+	if (system)
 	{
-		core_stop(core);
-		core_free(core);
+		system_stop(system);
+		system_free(system);
 	}
 
 	// stop resolver

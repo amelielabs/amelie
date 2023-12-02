@@ -82,7 +82,7 @@ native_main(void* arg)
 	if (try(&e))
 	{
 		// attach channel
-		channel_attach(&native->core);
+		channel_attach(&native->system);
 
 		if (native->relay)
 		{
@@ -96,7 +96,7 @@ native_main(void* arg)
 			native_on_connect(native);
 
 			// retransmit data
-			relay(client, &native->core, &native->src);
+			relay(client, &native->system, &native->src);
 		} else
 		{
 			// notify api
@@ -111,7 +111,7 @@ native_main(void* arg)
 	{}
 
 	// detach ipc
-	channel_detach(&native->core);
+	channel_detach(&native->system);
 	native_on_disconnect(native);
 }
 

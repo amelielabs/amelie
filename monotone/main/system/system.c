@@ -29,44 +29,44 @@
 #include <monotone_shard.h>
 #include <monotone_hub.h>
 #include <monotone_session.h>
-#include <monotone_core.h>
+#include <monotone_system.h>
 
 static inline bool
-core_is_client_only(void)
+system_is_client_only(void)
 {
 	return !var_string_is_set(&config()->directory);
 }
 
 static inline bool
-core_is_backup(void)
+system_is_backup(void)
 {
 	return var_string_is_set(&config()->backup);
 }
 
 static void
-core_save_state(void *arg)
+system_save_state(void *arg)
 {
-	Core* self = arg;
+	System* self = arg;
 	config_state_save(&self->config_state, global()->config);
 }
 
 static void
-core_save_catalog(void *arg)
+system_save_catalog(void *arg)
 {
-	Core* self = arg;
+	System* self = arg;
 	catalog_mgr_dump(&self->catalog_mgr, config_lsn());
 }
 
-Core*
-core_create(void)
+System*
+system_create(void)
 {
-	Core* self = mn_malloc(sizeof(Core));
+	System* self = mn_malloc(sizeof(System));
 
 	// set control
 	auto control = &self->control;
-	control->core         = &mn_task->channel;
-	control->save_state   = core_save_state;
-	control->save_catalog = core_save_catalog;
+	control->system       = &mn_task->channel;
+	control->save_state   = system_save_state;
+	control->save_catalog = system_save_catalog;
 	control->arg          = self;
 	global()->control     = control;
 
@@ -106,7 +106,7 @@ core_create(void)
 }
 
 void
-core_free(Core* self)
+system_free(System* self)
 {
 	shard_mgr_free(&self->shard_mgr);
 	router_free(&self->router);
@@ -121,7 +121,7 @@ core_free(Core* self)
 }
 
 static void
-core_uuid_set(void)
+system_uuid_set(void)
 {
 	if (! var_string_is_set(&config()->uuid))
 	{
@@ -134,48 +134,48 @@ core_uuid_set(void)
 }
 
 static void
-core_on_connect(Client* client, void* arg)
+system_on_connect(Client* client, void* arg)
 {
 	auto buf = msg_create(MSG_CLIENT);
 	buf_write(buf, &client, sizeof(void**));
 	msg_end(buf);
 
-	Core* self = arg;
+	System* self = arg;
 	hub_mgr_forward(&self->hub_mgr, buf);
 }
 
 static void*
-core_session_create(Share* share, Portal* portal)
+system_session_create(Share* share, Portal* portal)
 {
 	return session_create(share, portal);
 }
 
 static void
-core_session_free(void* session)
+system_session_free(void* session)
 {
 	session_free(session);
 }
 
 static void
-core_session_execute(void* session, Buf* buf)
+system_session_execute(void* session, Buf* buf)
 {
 	session_execute(session, buf);
 }
 
 static HubIf hub_if =
 {
-	.session_create  = core_session_create,
-	.session_free    = core_session_free,
-	.session_execute = core_session_execute
+	.session_create  = system_session_create,
+	.session_free    = system_session_free,
+	.session_execute = system_session_execute
 };
 
 void
-core_start(Core* self, bool bootstrap)
+system_start(System* self, bool bootstrap)
 {
 	// set uuid from config or generate a new one
-	core_uuid_set();
+	system_uuid_set();
 
-	if (core_is_client_only())
+	if (system_is_client_only())
 	{
 		// listen for relay connections only
 		hub_mgr_start(&self->hub_mgr, &self->share, &hub_if, 1);
@@ -187,7 +187,7 @@ core_start(Core* self, bool bootstrap)
 	log("monotone.");
 	log("");
 
-	if (core_is_backup())
+	if (system_is_backup())
 	{
 		if (! bootstrap)
 			error("restore: directory already exists");
@@ -256,11 +256,11 @@ core_start(Core* self, bool bootstrap)
 	log("");
 
 	// start server
-	server_start(&self->server, core_on_connect, self);
+	server_start(&self->server, system_on_connect, self);
 }
 
 void
-core_stop(Core* self)
+system_stop(System* self)
 {
 	// stop server
 	server_stop(&self->server);
@@ -279,9 +279,9 @@ core_stop(Core* self)
 }
 
 static void
-core_rpc(Rpc* rpc, void* arg)
+system_rpc(Rpc* rpc, void* arg)
 {
-	Core* self = arg;
+	System* self = arg;
 	switch (rpc->id) {
 	case RPC_USER_CREATE:
 	{
@@ -318,7 +318,7 @@ core_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-core_catalog_lock(Core* self, CatLock* cat_lock)
+system_catalog_lock(System* self, CatLock* cat_lock)
 {
 	// get exlusive catalog lock on each hub
 	hub_mgr_cat_lock(&self->hub_mgr);
@@ -339,7 +339,7 @@ core_catalog_lock(Core* self, CatLock* cat_lock)
 }
 
 void
-core_main(Core* self)
+system_main(System* self)
 {
 	bool stop = false;
 	while (! stop)
@@ -361,11 +361,11 @@ core_main(Core* self)
 
 		if (msg->id == RPC_CAT_LOCK_REQ)
 		{
-			core_catalog_lock(self, cat_lock_of(buf));
+			system_catalog_lock(self, cat_lock_of(buf));
 			continue;
 		}
 
-		// core command
-		rpc_execute(buf, core_rpc, self);
+		// system command
+		rpc_execute(buf, system_rpc, self);
 	}
 }

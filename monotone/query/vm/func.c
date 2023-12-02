@@ -125,7 +125,7 @@ func_users(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	Buf* buf;
-	rpc(global()->control->core, RPC_USER_SHOW, 1, &buf);
+	rpc(global()->control->system, RPC_USER_SHOW, 1, &buf);
 	value_set_data_from(result, buf);
 }
 

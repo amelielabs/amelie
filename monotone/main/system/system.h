@@ -6,9 +6,9 @@
 // SQL OLTP database
 //
 
-typedef struct Core Core;
+typedef struct System System;
 
-struct Core
+struct System
 {
 	Share        share;
 	// vm
@@ -29,9 +29,9 @@ struct Core
 	Control      control;
 };
 
-Core*
-core_create(void);
-void core_free(Core*);
-void core_start(Core*, bool);
-void core_stop(Core*);
-void core_main(Core*);
+System*
+system_create(void);
+void system_free(System*);
+void system_start(System*, bool);
+void system_stop(System*);
+void system_main(System*);

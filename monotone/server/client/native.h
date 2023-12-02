@@ -11,7 +11,7 @@ typedef struct Native Native;
 struct Native
 {
 	Channel  src;
-	Channel  core;
+	Channel  system;
 	bool     connected;
 	uint64_t coroutine_id;
 	bool     relay;
@@ -29,7 +29,7 @@ native_init(Native* self)
 	self->arg          = NULL;
 	str_init(&self->uri);
 	channel_init(&self->src);
-	channel_init(&self->core);
+	channel_init(&self->system);
 	list_init(&self->link);
 }
 
@@ -37,7 +37,7 @@ static inline void
 native_free(Native* self)
 {
 	channel_free(&self->src);
-	channel_free(&self->core);
+	channel_free(&self->system);
 	str_free(&self->uri);
 }
 
@@ -103,7 +103,7 @@ native_close(Native* self, BufCache* buf_cache)
 	auto buf = msg_create_nothrow(buf_cache, MSG_DISCONNECT, 0);
 	if (unlikely(buf == NULL))
 		return -1;
-	channel_write(&self->core, buf);
+	channel_write(&self->system, buf);
 
 	// wait DISCONNECT event
 	for (;;)
@@ -131,6 +131,6 @@ native_command(Native*        self,
 	auto buf = command_create(buf_cache, text, argc, argv);
 	if (unlikely(buf == NULL))
 		return -1;
-	channel_write(&self->core, buf);
+	channel_write(&self->system, buf);
 	return 0;
 }

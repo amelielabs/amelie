@@ -30,5 +30,5 @@
 #include <monotone_shard.h>
 #include <monotone_session.h>
 #include <monotone_hub.h>
-#include <monotone_core.h>
+#include <monotone_system.h>
 #include <monotone_main.h>

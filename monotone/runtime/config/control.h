@@ -10,7 +10,7 @@ typedef struct Control Control;
 
 struct Control
 {
-	Channel*  core;
+	Channel*  system;
 	void    (*save_state)(void*);
 	void    (*save_catalog)(void*);
 	void*     arg;

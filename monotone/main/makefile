@@ -35,7 +35,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Ishard \
                  -Ihub \
                  -Isession \
-                 -Icore \
+                 -Isystem \
                  -Imain \
                  -Iapi
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
@@ -48,7 +48,7 @@ OBJECTS        = \
                  session/session.o \
                  session/lock.o \
                  session/utility.o \
-                 core/core.o \
+                 system/system.o \
                  main/main.o \
                  api/monotone.o
 $(LIB): clean $(OBJECTS)

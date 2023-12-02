@@ -39,7 +39,7 @@ execute_show(Session* self, Ast* ast)
 	auto arg = ast_show_of(ast);
 	Buf* buf = NULL;
 	if (str_compare_raw(&arg->expr->string, "users", 5))
-		rpc(global()->control->core, RPC_USER_SHOW, 1, &buf);
+		rpc(global()->control->system, RPC_USER_SHOW, 1, &buf);
 	else
 	if (str_compare_raw(&arg->expr->string, "wal", 3))
 		buf = wal_status(self->share->wal);
@@ -496,7 +496,7 @@ session_execute_utility(Session* self)
 	case STMT_CREATE_USER:
 	{
 		auto arg = ast_user_create_of(stmt->ast);
-		rpc(global()->control->core, RPC_USER_CREATE, 2,
+		rpc(global()->control->system, RPC_USER_CREATE, 2,
 		    arg->config, arg->if_not_exists);
 		break;
 	}
@@ -504,7 +504,7 @@ session_execute_utility(Session* self)
 	case STMT_DROP_USER:
 	{
 		auto arg = ast_user_drop_of(stmt->ast);
-		rpc(global()->control->core, RPC_USER_DROP, 2,
+		rpc(global()->control->system, RPC_USER_DROP, 2,
 		    &arg->name->string, arg->if_exists);
 		break;
 	}
@@ -512,7 +512,7 @@ session_execute_utility(Session* self)
 	case STMT_ALTER_USER:
 	{
 		auto arg = ast_user_alter_of(stmt->ast);
-		rpc(global()->control->core, RPC_USER_ALTER, 1, arg->config);
+		rpc(global()->control->system, RPC_USER_ALTER, 1, arg->config);
 		break;
 	}
 
