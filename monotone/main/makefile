@@ -46,9 +46,9 @@ OBJECTS        = \
                  hub/client.o \
                  session/explain.o \
                  session/session.o \
-                 session/lock.o \
-                 session/utility.o \
                  system/system.o \
+                 system/ctl.o \
+                 system/ddl.o \
                  main/main.o \
                  api/monotone.o
 $(LIB): clean $(OBJECTS)

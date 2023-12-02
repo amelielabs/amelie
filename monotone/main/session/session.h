@@ -6,25 +6,15 @@
 // SQL OLTP database
 //
 
-typedef struct Ctx Ctx;
 typedef struct Session Session;
-
-typedef enum
-{
-	LOCK_NONE,
-	LOCK_SHARED,
-	LOCK_EXCLUSIVE
-} SessionLock;
 
 struct Session
 {
 	Vm          vm;
 	Compiler    compiler;
 	Command     cmd;
-	// catalog lock
-	SessionLock lock;
-	CatLock     lock_req;
-	Locker*     lock_shared;
+	// session lock
+	Locker*     lock;
 	// request
 	Explain     explain;
 	Dispatch    dispatch;

@@ -18,9 +18,10 @@ struct HubIf
 
 struct Hub
 {
-	Lock        cat_lock;
-	Locker*     cat_locker;
-	LockerCache cat_lock_cache;
+	Lock        session_lock;
+	Locker*     session_locker;
+	LockerCache locker_cache;
+
 	ReqCache    req_cache;
 	ClientMgr   client_mgr;
 	UserCache   user_cache;

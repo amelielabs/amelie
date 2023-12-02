@@ -34,11 +34,9 @@ Session*
 session_create(Share* share, Portal* portal)
 {
 	auto self = (Session*)mn_malloc(sizeof(Session));
-	self->lock        = LOCK_NONE;
-	self->lock_shared = NULL;
-	self->share       = share;
-	self->portal      = portal;
-	cat_lock_init(&self->lock_req);
+	self->lock   = NULL;
+	self->share  = share;
+	self->portal = portal;
 	vm_init(&self->vm, share->db, share->function_mgr, NULL);
 	compiler_init(&self->compiler, share->db, share->function_mgr,
 	              share->router, &self->dispatch);
@@ -55,7 +53,7 @@ session_create(Share* share, Portal* portal)
 void
 session_free(Session *self)
 {
-	assert(self->lock == LOCK_NONE);
+	assert(! self->lock);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	command_free(&self->cmd);
@@ -74,6 +72,22 @@ session_reset(Session* self)
 	dispatch_reset(&self->dispatch);
 	log_set_reset(&self->log_set);
 	palloc_truncate(0);
+}
+
+static inline void
+session_lock(Session* self)
+{
+	// take shared session lock
+	self->lock = lock_lock(self->share->session_lock, true);
+}
+
+static inline void
+session_unlock(Session* self)
+{
+	if (! self->lock)
+		return;
+	lock_unlock(self->lock);
+	self->lock = NULL;
 }
 
 hot static inline void
@@ -96,8 +110,8 @@ session_execute_distributed(Session* self)
 	auto dispatch = &self->dispatch;
 	auto log_set  = &self->log_set;
 
-	// lock catalog
-	session_lock(self, LOCK_SHARED);
+	// shared session lock
+	session_lock(self);
 
 	// todo: reference lock
 
@@ -160,8 +174,9 @@ session_main(Session* self, Buf* buf)
 
 	if (compiler_is_utility(&self->compiler))
 	{
-		// DDL or system command
-		session_execute_utility(self);
+		// execute utility or DDL command by system
+		auto stmt = compiler_first(&self->compiler);
+		rpc(global()->control->system, RPC_CTL, 2, self, stmt);
 	} else
 	{
 		// DML or Select

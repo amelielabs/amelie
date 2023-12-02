@@ -20,5 +20,5 @@ struct Share
 	DispatchLock* dispatch_lock;
 	ReqCache*     req_cache;
 	ShardMgr*     shard_mgr;
-	Lock*         cat_lock;
+	Lock*         session_lock;
 };

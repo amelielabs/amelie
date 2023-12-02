@@ -126,18 +126,18 @@ hub_rpc(Rpc* rpc, void* arg)
 		user_cache_sync(&self->user_cache, with);
 		break;
 	}
-	case RPC_CAT_LOCK:
+	case RPC_SESSION_LOCK:
 	{
-		// take exclusive catalog lock
-		assert(! self->cat_locker);
-		self->cat_locker = lock_lock(&self->cat_lock, false);
+		// take exclusive session lock
+		assert(! self->session_locker);
+		self->session_locker = lock_lock(&self->session_lock, false);
 		break;
 	}
-	case RPC_CAT_UNLOCK:
+	case RPC_SESSION_UNLOCK:
 	{
-		assert(self->cat_locker);
-		lock_unlock(self->cat_locker);
-		self->cat_locker = NULL;
+		assert(self->session_locker);
+		lock_unlock(self->session_locker);
+		self->session_locker = NULL;
 		break;
 	}
 	case RPC_STOP:
@@ -193,14 +193,15 @@ hub_main(void* arg)
 void
 hub_init(Hub* self, Share* share, HubIf* iface)
 {
-	self->iface           = iface;
-	self->share           = *share;
-	self->share.cat_lock  = &self->cat_lock;
-	self->share.req_cache = &self->req_cache;
-	self->cat_locker      = NULL;
+	self->iface              = iface;
+	self->share              = *share;
+	self->share.req_cache    = &self->req_cache;
+	self->share.session_lock = &self->session_lock;
+	self->session_locker     = NULL;
+
+	locker_cache_init(&self->locker_cache);
+	lock_init(&self->session_lock, &self->locker_cache);
 	req_cache_init(&self->req_cache);
-	locker_cache_init(&self->cat_lock_cache);
-	lock_init(&self->cat_lock, &self->cat_lock_cache);
 	client_mgr_init(&self->client_mgr);
 	user_cache_init(&self->user_cache);
 	task_init(&self->task);
@@ -209,7 +210,7 @@ hub_init(Hub* self, Share* share, HubIf* iface)
 void
 hub_free(Hub* self)
 {
-	locker_cache_free(&self->cat_lock_cache);
+	locker_cache_free(&self->locker_cache);
 	req_cache_free(&self->req_cache);
 	client_mgr_free(&self->client_mgr);
 	user_cache_free(&self->user_cache);

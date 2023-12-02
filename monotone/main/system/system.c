@@ -101,7 +101,7 @@ system_create(void)
 	share->shard_mgr     = &self->shard_mgr;
 	share->dispatch_lock = &self->dispatch_lock;
 	share->router        = &self->router;
-	share->cat_lock      = NULL;
+	share->session_lock  = NULL;
 	return self;
 }
 
@@ -283,6 +283,14 @@ system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
 	switch (rpc->id) {
+	case RPC_CTL:
+	{
+		Session* session = rpc_arg_ptr(rpc, 0);
+		Stmt* stmt = rpc_arg_ptr(rpc, 1);
+		system_ctl(self, session, stmt);
+		break;
+	}
+	/*
 	case RPC_USER_CREATE:
 	{
 		UserConfig* config = rpc_arg_ptr(rpc, 0);
@@ -306,6 +314,7 @@ system_rpc(Rpc* rpc, void* arg)
 		hub_mgr_sync_user_cache(&self->hub_mgr, &self->user_mgr.cache);
 		break;
 	}
+	*/
 	case RPC_USER_SHOW:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
@@ -315,27 +324,6 @@ system_rpc(Rpc* rpc, void* arg)
 	default:
 		break;
 	}
-}
-
-static void
-system_catalog_lock(System* self, CatLock* cat_lock)
-{
-	// get exlusive catalog lock on each hub
-	hub_mgr_cat_lock(&self->hub_mgr);
-
-	// notify on completion
-	auto on_unlock = condition_create();
-	cat_lock->on_unlock = on_unlock;
-	condition_signal(cat_lock->on_lock);
-
-	// wait for unlock
-	condition_wait(on_unlock, -1);
-
-	// release exclusive lock from hubs
-	hub_mgr_cat_unlock(&self->hub_mgr);
-
-	// done
-	condition_free(on_unlock);
 }
 
 void
@@ -358,12 +346,6 @@ system_main(System* self)
 
 		if (msg->id == RPC_STOP)
 			break;
-
-		if (msg->id == RPC_CAT_LOCK_REQ)
-		{
-			system_catalog_lock(self, cat_lock_of(buf));
-			continue;
-		}
 
 		// system command
 		rpc_execute(buf, system_rpc, self);
