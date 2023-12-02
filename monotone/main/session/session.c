@@ -176,7 +176,10 @@ session_main(Session* self, Buf* buf)
 	{
 		// execute utility or DDL command by system
 		auto stmt = compiler_first(&self->compiler);
-		rpc(global()->control->system, RPC_CTL, 2, self, stmt);
+		Buf* buf = NULL;
+		rpc(global()->control->system, RPC_CTL, 3, self, stmt, &buf);
+		if (buf)
+			portal_write(self->portal, buf);
 	} else
 	{
 		// DML or Select

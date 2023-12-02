@@ -10,17 +10,17 @@ typedef struct Session Session;
 
 struct Session
 {
-	Vm          vm;
-	Compiler    compiler;
-	Command     cmd;
+	Vm       vm;
+	Compiler compiler;
+	Command  cmd;
 	// session lock
-	Locker*     lock;
+	Locker*  lock;
 	// request
-	Explain     explain;
-	Dispatch    dispatch;
-	LogSet      log_set;
-	Portal*     portal;
-	Share*      share;
+	Explain  explain;
+	Dispatch dispatch;
+	LogSet   log_set;
+	Portal*  portal;
+	Share*   share;
 };
 
 Session*

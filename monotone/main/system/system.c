@@ -287,7 +287,8 @@ system_rpc(Rpc* rpc, void* arg)
 	{
 		Session* session = rpc_arg_ptr(rpc, 0);
 		Stmt* stmt = rpc_arg_ptr(rpc, 1);
-		system_ctl(self, session, stmt);
+		Buf** buf = rpc_arg_ptr(rpc, 2);
+		*buf = system_ctl(self, session, stmt);
 		break;
 	}
 	case RPC_USER_SHOW:

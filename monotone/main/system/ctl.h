@@ -6,4 +6,4 @@
 // SQL OLTP database
 //
 
-void system_ctl(System*, Session*, Stmt*);
+Buf* system_ctl(System*, Session*, Stmt*);

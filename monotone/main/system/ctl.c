@@ -31,8 +31,8 @@
 #include <monotone_session.h>
 #include <monotone_system.h>
 
-static void
-ctl_show(System* self, Session* session, Stmt* stmt)
+static Buf*
+ctl_show(System* self, Stmt* stmt)
 {
 	auto arg  = ast_show_of(stmt->ast);
 	auto name = &arg->expr->string;
@@ -70,8 +70,7 @@ ctl_show(System* self, Session* session, Stmt* stmt)
 			      str_of(name));
 		buf = var_msg_create(var);
 	}
-	if (buf)
-		portal_write(session->portal, buf);
+	return buf;
 }
 
 static void
@@ -166,36 +165,30 @@ ctl_checkpoint(System* self, Session* session, Stmt* stmt)
 	(void)stmt;
 }
 
-void
+Buf*
 system_ctl(System* self, Session* session, Stmt* stmt)
 {
 	switch (stmt->id) {
 	case STMT_SHOW:
-		ctl_show(self, session, stmt);
-		break;
-
+		return ctl_show(self, stmt);
 	case STMT_SET:
 		ctl_set(session, stmt);
 		break;
-
 	case STMT_CREATE_USER:
 		ctl_create_user(self, stmt);
 		break;
-
 	case STMT_DROP_USER:
 		ctl_drop_user(self, stmt);
 		break;
-
 	case STMT_ALTER_USER:
 		ctl_alter_user(self, stmt);
 		break;
-
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self, session, stmt);
 		break;
-
 	default:
 		system_ddl(self, session, stmt);
 		break;
 	}
+	return NULL;
 }
