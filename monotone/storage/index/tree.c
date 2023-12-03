@@ -19,8 +19,10 @@ tree_commit(LogOp* op, uint64_t lsn)
 {
 	auto self = (Tree*)op->arg;
 	self->lsn = lsn;
+
+	// free row or add row to the free list
 	if (op->row.prev)
-		row_free(op->row.prev);
+		row_gc(&self->gc, op->row.prev);
 }
 
 static void
@@ -265,9 +267,15 @@ tree_free(Index* arg)
 	auto self = tree_of(arg);
 	if (self->tree.root)
 		tree_truncate(self->tree.root, NULL);
-	rbtree_init(&self->tree);
-	self->tree_count = 0;
+	row_gc_free(&self->gc);
 	mn_free(self);
+}
+
+static RowGc*
+tree_gc(Index* arg)
+{
+	auto self = tree_of(arg);
+	return &self->gc;
 }
 
 Index*
@@ -282,12 +290,13 @@ tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
 	index_init(&self->index, config, table, storage);
 
 	auto iface = &self->index.iface;
-	iface->free      = tree_free;
 	iface->set       = tree_set;
 	iface->update    = tree_update;
 	iface->delete    = tree_delete;
 	iface->delete_by = tree_delete_by;
 	iface->upsert    = tree_upsert;
 	iface->open      = tree_open;
+	iface->free      = tree_free;
+	iface->gc        = tree_gc;
 	return &self->index;
 }

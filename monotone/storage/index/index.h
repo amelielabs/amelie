@@ -11,13 +11,14 @@ typedef struct Index   Index;
 
 struct IndexIf
 {
-	void      (*free)(Index*);
 	bool      (*set)(Index*, Transaction*, Row*);
 	void      (*update)(Index*, Transaction*, Iterator*, Row*);
 	void      (*delete)(Index*, Transaction*, Iterator*);
 	void      (*delete_by)(Index*, Transaction*, Row*);
 	bool      (*upsert)(Index*, Transaction*, Iterator**, Row*);
 	Iterator* (*open)(Index*, Row*, bool);
+	void      (*free)(Index*);
+	RowGc*    (*gc)(Index*);
 };
 
 struct Index
@@ -81,6 +82,12 @@ static inline Iterator*
 index_open(Index* self, Row* key, bool start)
 {
 	return self->iface.open(self, key, start);
+}
+
+static inline RowGc*
+index_gc(Index* self)
+{
+	return self->iface.gc(self);
 }
 
 static inline Def*

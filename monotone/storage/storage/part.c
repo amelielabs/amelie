@@ -24,7 +24,6 @@ part_allocate(Uuid* id_table, Uuid* id_storage)
 	self->min           = INT64_MIN;
 	self->max           = INT64_MAX;
 	self->indexes_count = 0;
-	row_gc_init(&self->gc);
 	list_init(&self->indexes);
 	list_init(&self->link);
 	rbtree_init_node(&self->link_node);
@@ -39,7 +38,6 @@ part_free(Part* self)
 		auto index = list_at(Index, link);
 		index_free(index);
 	}
-	row_gc_free(&self->gc);
 	mn_free(self);
 }
 
