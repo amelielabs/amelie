@@ -259,6 +259,20 @@ tree_open(Index* arg, Row* key, bool start)
 	return it;
 }
 
+static int64_t
+tree_count(Index* arg)
+{
+	auto self = tree_of(arg);
+	return self->tree_count;
+}
+
+static uint64_t
+tree_lsn(Index* arg)
+{
+	auto self = tree_of(arg);
+	return self->lsn;
+}
+
 rbtree_free(tree_truncate, row_free(tree_row_of(n)))
 
 static void
@@ -296,6 +310,8 @@ tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
 	iface->delete_by = tree_delete_by;
 	iface->upsert    = tree_upsert;
 	iface->open      = tree_open;
+	iface->count     = tree_count;
+	iface->lsn       = tree_lsn;
 	iface->free      = tree_free;
 	iface->gc        = tree_gc;
 	return &self->index;

@@ -17,6 +17,8 @@ struct IndexIf
 	void      (*delete_by)(Index*, Transaction*, Row*);
 	bool      (*upsert)(Index*, Transaction*, Iterator**, Row*);
 	Iterator* (*open)(Index*, Row*, bool);
+	int64_t   (*count)(Index*);
+	uint64_t  (*lsn)(Index*);
 	void      (*free)(Index*);
 	RowGc*    (*gc)(Index*);
 };
@@ -76,6 +78,18 @@ static inline bool
 index_upsert(Index* self, Transaction* trx, Iterator** it, Row* row)
 {
 	return self->iface.upsert(self, trx, it, row);
+}
+
+static inline int64_t
+index_count(Index* self)
+{
+	return self->iface.count(self);
+}
+
+static inline uint64_t
+index_lsn(Index* self)
+{
+	return self->iface.lsn(self);
 }
 
 static inline Iterator*
