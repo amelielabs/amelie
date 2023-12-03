@@ -23,6 +23,7 @@ part_allocate(Uuid* id_table, Uuid* id_storage)
 	self->id_table      = id_table;
 	self->min           = INT64_MIN;
 	self->max           = INT64_MAX;
+	self->snapshot      = 0;
 	self->indexes_count = 0;
 	list_init(&self->indexes);
 	list_init(&self->link);
@@ -157,4 +158,40 @@ part_upsert(Part*        self,
 	if (updated)
 		unguard(&row_guard);
 	return updated;
+}
+
+void
+part_snapshot(Part*           self,
+              SnapshotWriter* writer,
+              Snapshot*       snapshot,
+              uint64_t        lsn)
+{
+	// create primary index snapshot
+	auto primary = part_primary(self);
+	auto gc = index_gc(primary);
+
+	SnapshotId id;
+	snapshot_id_set(&id, self->id_storage, self->min, self->max, lsn);
+	snapshot_reset(snapshot);
+	snapshot_create(snapshot, &id, primary);
+
+	// start index gc to prevent rows in the snapshot
+	// being freed during the process
+	row_gc_start(gc);
+
+	// call snapshot writer to create snapshot file
+	Exception e;
+	if (try(&e))
+		snapshot_write(writer, snapshot);
+
+	// free rows
+	row_gc_stop(gc);
+
+	if (catch(&e))
+		rethrow();
+
+	// set partition snapshot
+	self->snapshot = lsn;
+
+	// todo: gc
 }
