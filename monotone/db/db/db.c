@@ -23,6 +23,7 @@ db_init(Db* self)
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
+	snapshot_writer_init(&self->snapshot_writer);
 	wal_init(&self->wal);
 }
 
@@ -81,17 +82,23 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	// register db catalog
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
 	catalog_mgr_add(cat_mgr, cat);
+
+	// start snapshot writer
+	snapshot_writer_start(&self->snapshot_writer);
 }
 
 void
 db_close(Db* self)
 {
-	// stop wal
-	wal_stop(&self->wal);
-
 	// free views
 	view_mgr_free(&self->view_mgr);
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
+
+	// stop wal
+	wal_stop(&self->wal);
+
+	// stop snapshot writer
+	snapshot_writer_stop(&self->snapshot_writer);
 }
