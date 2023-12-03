@@ -16,6 +16,7 @@ struct Part
 	int64_t    max;
 	List       indexes;
 	int        indexes_count;
+	RowGc      gc;
 	RbtreeNode link_node;
 	List       link;
 };
