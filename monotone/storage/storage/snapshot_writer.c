@@ -20,7 +20,7 @@ snapshot_writer_write(Rpc* rpc, void* arg)
 {
 	unused(arg);
 	Snapshot* snapshot = rpc_arg_ptr(rpc, 0);
-	snapshot_create(snapshot);
+	snapshot_create_file(snapshot);
 }
 
 static void

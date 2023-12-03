@@ -10,7 +10,7 @@ typedef struct SnapshotId SnapshotId;
 
 struct SnapshotId
 {
-	char     uuid[UUID_SZ];
+	Uuid     uuid;
 	int64_t  min;
 	int64_t  max;
 	uint64_t lsn;
@@ -28,20 +28,23 @@ snapshot_id_set(SnapshotId* self, Uuid* uuid,
                 int64_t min,
                 int64_t max, uint64_t lsn)
 {
-	self->min = min;
-	self->max = max;
-	self->lsn = lsn;
-	uuid_to_string(uuid, self->uuid, sizeof(self->uuid));
+	self->uuid = *uuid;
+	self->min  =  min;
+	self->max  =  max;
+	self->lsn  =  lsn;
 }
 
 static inline void
 snapshot_id_path(SnapshotId* self, char* path, bool incomplete)
 {
 	// <base>/storage_uuid/min.max.lsn[.incomplete]
+	char uuid[UUID_SZ];
+	uuid_to_string(&self->uuid, uuid, sizeof(uuid));
+
 	snprintf(path, PATH_MAX,
 	         "%s/%s/%020" PRIi64 ".%020" PRIi64 ".%020" PRIu64 "%s",
 	         config_directory(),
-	         self->uuid,
+	         uuid,
 	         self->min,
 	         self->max,
 	         self->lsn,

@@ -38,14 +38,6 @@ snapshot_reset(Snapshot* self)
 	buf_reset(&self->data);
 }
 
-static inline void
-snapshot_prepare(Snapshot* self, SnapshotId* id, int count)
-{
-	self->id = id;
-	buf_reserve(&self->data, sizeof(Msg) * count);
-	iov_reserve(&self->iov, 2 * count);
-}
-
 hot static inline void
 snapshot_add(Snapshot* self, Def* def, Row* row)
 {
@@ -63,8 +55,31 @@ snapshot_add(Snapshot* self, Def* def, Row* row)
 	msg->size = sizeof(Msg) + data_size;
 }
 
+hot static inline void
+snapshot_create(Snapshot* self, SnapshotId* id, Index* index)
+{
+	auto def = index_def(index);
+	self->id = id;
+
+	// prepare snapshot data
+	int64_t count = index_count(index);
+	buf_reserve(&self->data, sizeof(Msg) * count);
+	iov_reserve(&self->iov, 2 * count);
+
+	// dump index rows
+	Iterator* it = index_open(index, NULL, true);
+	guard(guard, iterator_close, it);
+	for (;;)
+	{
+		auto row = iterator_at(it);
+		if (unlikely(! row))
+			break;
+		snapshot_add(self, def, row);
+	}
+}
+
 static inline void
-snapshot_create(Snapshot* self)
+snapshot_create_file(Snapshot* self)
 {
 	char path[PATH_MAX];
 	File file;
