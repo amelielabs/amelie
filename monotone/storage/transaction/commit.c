@@ -53,29 +53,7 @@ transaction_commit(Transaction* self)
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);
-		switch (op->type) {
-		case LOG_WRITE:
-		{
-			if (op->row.prev)
-				row_free(op->row.prev);
-			break;
-		}
-		case LOG_CREATE:
-		case LOG_ALTER:
-		{
-			Handle* handle = op->handle.handle;
-			handle->lsn = self->lsn;
-			buf_free(op->handle.data);
-			break;
-		}
-		case LOG_DROP:
-		{
-			Handle* handle = op->handle.handle;
-			handle_free(handle);
-			buf_free(op->handle.data);
-			break;
-		}
-		}
+		op->commit(op, self->lsn);
 	}
 
 	transaction_end(self, false);

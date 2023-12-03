@@ -30,9 +30,18 @@ tree_free(Index* arg)
 hot rbtree_get(tree_find, compare(arg, tree_row_of(n), key));
 
 static void
+tree_commit(LogOp* op, uint64_t lsn)
+{
+	auto self = (Tree*)op->arg;
+	self->lsn = lsn;
+	if (op->row.prev)
+		row_free(op->row.prev);
+}
+
+static void
 tree_set_abort(LogOp* op)
 {
-	auto self = (Tree*)op->abort_arg;
+	auto self = (Tree*)op->arg;
 	TreeRow* ref = row_reserved(op->row.row);
 	if (op->row.prev)
 	{
@@ -78,7 +87,10 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
+	log_row(&trx->log, LOG_REPLACE,
+	        tree_commit,
+	        tree_set_abort,
+	        self,
 	        self->index.config->primary,
 	        arg->id_table,
 	        arg->id_storage,
@@ -110,7 +122,10 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	tree_it->pos = &ref->node;
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
+	log_row(&trx->log, LOG_REPLACE,
+	        tree_commit,
+	        tree_set_abort,
+	        self,
 	        self->index.config->primary,
 	        arg->id_table,
 	        arg->id_storage,
@@ -121,7 +136,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 static void
 tree_delete_abort(LogOp* op)
 {
-	auto self = (Tree*)op->abort_arg;
+	auto self = (Tree*)op->arg;
 	RbtreeNode* node;
 	int rc = tree_find(&self->tree, &self->index.config->def, op->row.prev, &node);
 	TreeRow* ref_prev = row_reserved(op->row.prev);
@@ -152,7 +167,10 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	self->tree_count--;
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE, tree_delete_abort, self,
+	log_row(&trx->log, LOG_DELETE,
+	        tree_commit,
+	        tree_delete_abort,
+	        self,
 	        self->index.config->primary,
 	        arg->id_table,
 	        arg->id_storage,
@@ -189,7 +207,10 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE, tree_delete_abort, self,
+	log_row(&trx->log, LOG_DELETE,
+	        tree_commit,
+	        tree_delete_abort,
+	        self,
 	        self->index.config->primary,
 	        arg->id_table,
 	        arg->id_storage,
@@ -227,7 +248,10 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	self->tree_count++;
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, tree_set_abort, self,
+	log_row(&trx->log, LOG_REPLACE,
+	        tree_commit,
+	        tree_set_abort,
+	        self,
 	        self->index.config->primary,
 	        arg->id_table,
 	        arg->id_storage,

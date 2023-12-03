@@ -75,9 +75,17 @@ handle_mgr_get_by_id(HandleMgr* self, Uuid* id)
 }
 
 static void
+handle_mgr_create_commit(LogOp* op, uint64_t lsn)
+{
+	Handle* handle = op->handle.handle;
+	handle->lsn = lsn;
+	buf_free(op->handle.data);
+}
+
+static void
 handle_mgr_create_abort(LogOp* op)
 {
-	HandleMgr* self = op->abort_arg;
+	HandleMgr* self = op->arg;
 	handle_mgr_delete(self, op->handle.handle);
 	handle_free(op->handle.handle);
 	buf_free(op->handle.data);
@@ -96,14 +104,25 @@ handle_mgr_create(HandleMgr*   self,
 	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_CREATE, cmd, handle_mgr_create_abort, self,
+	log_handle(&trx->log, LOG_CREATE, cmd,
+	           handle_mgr_create_commit,
+	           handle_mgr_create_abort, self,
 	           handle, data);
+}
+
+static void
+handle_mgr_drop_commit(LogOp* op, uint64_t lsn)
+{
+	unused(lsn);
+	Handle* handle = op->handle.handle;
+	handle_free(handle);
+	buf_free(op->handle.data);
 }
 
 static void
 handle_mgr_drop_abort(LogOp* op)
 {
-	HandleMgr* self = op->abort_arg;
+	HandleMgr* self = op->arg;
 	handle_mgr_set(self, op->handle.handle);
 	buf_free(op->handle.data);
 }
@@ -121,7 +140,9 @@ handle_mgr_drop(HandleMgr*   self,
 	handle_mgr_delete(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_DROP, cmd, handle_mgr_drop_abort, self,
+	log_handle(&trx->log, LOG_DROP, cmd,
+	           handle_mgr_drop_commit,
+	           handle_mgr_drop_abort, self,
 	           handle, data);
 }
 
@@ -137,6 +158,9 @@ handle_mgr_alter(HandleMgr*   self,
 	unused(self);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_ALTER, cmd, abort, abort_arg,
+	log_handle(&trx->log, LOG_ALTER, cmd,
+	           handle_mgr_create_commit,
+	           abort,
+	           abort_arg,
 	           handle, data);
 }

@@ -34,14 +34,16 @@ typedef enum
 	LOG_VIEW_RENAME
 } LogCmd;
 
+typedef void (*LogCommit)(LogOp*, uint64_t);
 typedef void (*LogAbort)(LogOp*);
 
 struct LogOp
 {
-	LogType  type;
-	LogCmd   cmd;
-	LogAbort abort;
-	void*    abort_arg;
+	LogType   type;
+	LogCmd    cmd;
+	LogCommit commit;
+	LogAbort  abort;
+	void*     arg;
 	union
 	{
 		struct
@@ -136,26 +138,28 @@ log_reserve(Log* self, LogCmd cmd, Uuid* table, Uuid* storage)
 }
 
 hot static inline void
-log_row(Log*     self,
-        LogCmd   cmd,
-        LogAbort abort,
-        void*    abort_arg,
-        bool     persistent,
-        Uuid*    id_table,
-        Uuid*    id_storage,
-        Def*     def,
-        Row*     row,
-        Row*     prev)
+log_row(Log*      self,
+        LogCmd    cmd,
+        LogCommit commit,
+        LogAbort  abort,
+        void*     arg,
+        bool      persistent,
+        Uuid*     id_table,
+        Uuid*     id_storage,
+        Def*      def,
+        Row*      row,
+        Row*      prev)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 
 	auto op = (LogOp*)self->op.position;
-	op->type      = LOG_WRITE;
-	op->cmd       = cmd;
-	op->abort     = abort;
-	op->abort_arg = abort_arg;
-	op->row.row   = row;
-	op->row.prev  = prev;
+	op->type     = LOG_WRITE;
+	op->cmd      = cmd;
+	op->commit   = commit;
+	op->abort    = abort;
+	op->arg      = arg;
+	op->row.row  = row;
+	op->row.prev = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 	if (prev)
@@ -172,20 +176,22 @@ log_row(Log*     self,
 }
 
 static inline void
-log_handle(Log*     self,
-           LogType  type,
-           LogCmd   cmd,
-           LogAbort abort,
-           void*    abort_arg,
-           void*    handle,
-           Buf*     data)
+log_handle(Log*      self,
+           LogType   type,
+           LogCmd    cmd,
+           LogCommit commit,
+           LogAbort  abort,
+           void*     arg,
+           void*     handle,
+           Buf*      data)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
 	op->type          = type;
 	op->cmd           = cmd;
+	op->commit        = commit;
 	op->abort         = abort;
-	op->abort_arg     = abort_arg;
+	op->arg           = arg;
 	op->handle.handle = handle;
 	op->handle.data   = data;
 	buf_advance(&self->op, sizeof(LogOp));
