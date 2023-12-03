@@ -174,3 +174,27 @@ storage_map(Storage* self, Def* def, uint8_t* data, int data_size,
 	*created = true;
 	return part;
 }
+
+hot Part*
+storage_schedule(Storage* self, uint64_t lsn)
+{
+	auto part = part_tree_min(&self->tree);
+	for (; part; part = part_tree_next(&self->tree, part))
+	{
+		// snapshot was previously created
+		if (part->snapshot >= lsn)
+			continue;
+
+		// snapshot created in the past without new updates
+		auto index = part_primary(part);
+		auto lsn_commit = index_lsn(index);
+		if (lsn_commit == part->snapshot)
+			continue;
+
+		// snapshot created in the past with new updates
+		//
+		// snapshot lsn < commit lsn <= lsn
+		return part;
+	}
+	return NULL;
+}
