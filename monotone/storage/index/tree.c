@@ -14,21 +14,6 @@
 #include <monotone_transaction.h>
 #include <monotone_index.h>
 
-rbtree_free(tree_truncate, row_free(tree_row_of(n)))
-
-static void
-tree_free(Index* arg)
-{
-	auto self = tree_of(arg);
-	if (self->tree.root)
-		tree_truncate(self->tree.root, NULL);
-	rbtree_init(&self->tree);
-	self->tree_count = 0;
-	mn_free(self);
-}
-
-hot rbtree_get(tree_find, compare(arg, tree_row_of(n), key));
-
 static void
 tree_commit(LogOp* op, uint64_t lsn)
 {
@@ -56,6 +41,8 @@ tree_set_abort(LogOp* op)
 	}
 	row_free(op->row.row);
 }
+
+hot rbtree_get(tree_find, compare(arg, tree_row_of(n), key));
 
 hot static bool
 tree_set(Index* arg, Transaction* trx, Row* row)
@@ -270,6 +257,19 @@ tree_open(Index* arg, Row* key, bool start)
 	return it;
 }
 
+rbtree_free(tree_truncate, row_free(tree_row_of(n)))
+
+static void
+tree_free(Index* arg)
+{
+	auto self = tree_of(arg);
+	if (self->tree.root)
+		tree_truncate(self->tree.root, NULL);
+	rbtree_init(&self->tree);
+	self->tree_count = 0;
+	mn_free(self);
+}
+
 Index*
 tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
 {
@@ -277,15 +277,17 @@ tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
 	self->tree_count = 0;
 	self->lsn        = 0;
 	rbtree_init(&self->tree);
+	row_gc_init(&self->gc);
 
-	index_init(&self->index, table, storage);
-	self->index.free      = tree_free;
-	self->index.set       = tree_set;
-	self->index.update    = tree_update;
-	self->index.delete    = tree_delete;
-	self->index.delete_by = tree_delete_by;
-	self->index.upsert    = tree_upsert;
-	self->index.open      = tree_open;
-	self->index.config    = config;
+	index_init(&self->index, config, table, storage);
+
+	auto iface = &self->index.iface;
+	iface->free      = tree_free;
+	iface->set       = tree_set;
+	iface->update    = tree_update;
+	iface->delete    = tree_delete;
+	iface->delete_by = tree_delete_by;
+	iface->upsert    = tree_upsert;
+	iface->open      = tree_open;
 	return &self->index;
 }

@@ -19,6 +19,7 @@ struct Tree
 	Index    index;
 	Rbtree   tree;
 	int      tree_count;
+	RowGc    gc;
 	uint64_t lsn;
 };
 
