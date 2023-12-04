@@ -10,7 +10,6 @@
 #include "storage/snapshot_id.h"
 #include "storage/snapshot.h"
 #include "storage/snapshot_cursor.h"
-#include "storage/snapshot_writer.h"
 
 // partition
 #include "storage/part.h"

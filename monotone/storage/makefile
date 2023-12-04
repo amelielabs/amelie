@@ -24,7 +24,6 @@ OBJECTS        = \
                  transaction/commit.o \
                  index/tree.o \
                  storage/snapshot_cursor.o \
-                 storage/snapshot_writer.o \
                  storage/part.o \
                  storage/storage.o \
                  storage/storage_mgr.o

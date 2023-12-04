@@ -160,10 +160,9 @@ part_upsert(Part*        self,
 	return updated;
 }
 
+#if 0
 void
-part_snapshot(Part*           self,
-              SnapshotWriter* writer,
-              Snapshot*       snapshot)
+part_snapshot(Part* self, Snapshot*snapshot)
 {
 	// create primary index snapshot
 	auto primary = part_primary(self);
@@ -195,3 +194,4 @@ part_snapshot(Part*           self,
 
 	// todo: gc
 }
+#endif
