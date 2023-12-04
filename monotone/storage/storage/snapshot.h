@@ -88,14 +88,19 @@ snapshot_create_file(Snapshot* self)
 	Exception e;
 	if (try(&e))
 	{
+		// create <base>/storage_uuid/ if not exists
+		snapshot_id_path_storage(self->id, path);
+		if (! fs_exists("%s", path))
+			fs_mkdir(0755, "%s", path);
+
 		// <base>/storage_uuid/min.max.lsn.incomplete
 		snapshot_id_path(self->id, path, true);
 
 		// create
 		file_create(&file, path);
 
-		snapshot_id_name(self->id, path, true);
-		log("snapshot: begin %s/%s", self->id->uuid, path);
+		snapshot_id_path_name(self->id, path, true);
+		log("snapshot: begin %s/%s", self->id->uuid_sz, path);
 
 		// write snapshot content
 		file_writev(&file, iov_pointer(&self->iov), self->iov.iov_count);
@@ -107,8 +112,8 @@ snapshot_create_file(Snapshot* self)
 		snapshot_id_path(self->id, path, false);
 		file_rename(&file, path);
 
-		snapshot_id_name(self->id, path, false);
-		log("snapshot: complete %s/%s", self->id->uuid, path);
+		snapshot_id_path_name(self->id, path, false);
+		log("snapshot: complete %s/%s", self->id->uuid_sz, path);
 	}
 
 	file_close(&file);

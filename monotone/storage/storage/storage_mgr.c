@@ -80,26 +80,6 @@ storage_mgr_list(StorageMgr* self, Buf* buf)
 	}
 }
 
-hot void
-storage_mgr_snapshot(StorageMgr*     self,
-                     SnapshotWriter* writer,
-                     Snapshot*       snapshot,
-                     uint64_t        lsn)
-{
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		for (;;)
-		{
-			auto part = storage_schedule(storage, lsn);
-			if (! part)
-				break;
-
-			part_snapshot(part, writer, snapshot, lsn);
-		}
-	}
-}
-
 hot Storage*
 storage_mgr_find(StorageMgr* self, Uuid* id)
 {
