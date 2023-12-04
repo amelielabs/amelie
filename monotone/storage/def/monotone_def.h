@@ -16,7 +16,6 @@
 // row
 #include "def/row.h"
 #include "def/compare.h"
-#include "def/gc.h"
 
 // serial
 #include "def/serial.h"

@@ -20,7 +20,6 @@ struct IndexIf
 	int64_t   (*count)(Index*);
 	uint64_t  (*lsn)(Index*);
 	void      (*free)(Index*);
-	RowGc*    (*gc)(Index*);
 };
 
 struct Index
@@ -96,12 +95,6 @@ static inline Iterator*
 index_open(Index* self, Row* key, bool start)
 {
 	return self->iface.open(self, key, start);
-}
-
-static inline RowGc*
-index_gc(Index* self)
-{
-	return self->iface.gc(self);
 }
 
 static inline Def*
