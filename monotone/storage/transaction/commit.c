@@ -44,12 +44,6 @@ transaction_commit(Transaction* self)
 		error("transaction is not active");
 
 	auto log = &self->log;
-	if (!log->count_prev && !log->count_handle)
-	{
-		transaction_end(self, false);
-		return;
-	}
-
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);

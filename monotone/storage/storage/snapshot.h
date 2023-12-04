@@ -75,6 +75,7 @@ snapshot_create(Snapshot* self, SnapshotId* id, Index* index)
 		if (unlikely(! row))
 			break;
 		snapshot_add(self, def, row);
+		iterator_next(it);
 	}
 }
 

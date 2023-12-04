@@ -163,11 +163,11 @@ part_upsert(Part*        self,
 void
 part_snapshot(Part*           self,
               SnapshotWriter* writer,
-              Snapshot*       snapshot,
-              uint64_t        lsn)
+              Snapshot*       snapshot)
 {
 	// create primary index snapshot
 	auto primary = part_primary(self);
+	auto lsn = index_lsn(primary);
 	auto gc = index_gc(primary);
 
 	SnapshotId id;
