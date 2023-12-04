@@ -41,7 +41,6 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libmonotone-main.a
 OBJECTS        = \
-                 shard/checkpoint.o \
                  shard/shard.o \
                  hub/hub.o \
                  hub/client.o \

@@ -23,10 +23,12 @@ OBJECTS        = \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
                  index/tree.o \
+                 storage/snapshot.o \
                  storage/snapshot_cursor.o \
                  storage/part.o \
                  storage/storage.o \
-                 storage/storage_mgr.o
+                 storage/storage_mgr.o \
+                 storage/checkpoint.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

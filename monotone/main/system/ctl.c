@@ -158,15 +158,53 @@ ctl_alter_user(System* self, Stmt* stmt)
 }
 
 static void
-ctl_checkpoint(System* self, Session* session, Stmt* stmt)
+ctl_checkpoint(System* self)
 {
-	(void)stmt;
-	(void)session;
+	// get exclusive session lock
+	hub_mgr_session_lock(&self->hub_mgr);
+	bool locked = true;
 
+	// get a list of partitions
 	uint64_t lsn = config_lsn();
-	log("checkpoint: %" PRIu64, lsn);
-	shard_mgr_checkpoint(&self->shard_mgr, lsn);
-	log("checkpoint: %" PRIu64 " complete", lsn);
+	Checkpoint cp;
+	checkpoint_init(&cp, lsn);
+	list_foreach(&self->db.table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		checkpoint_add(&cp, &table->storage_mgr);
+	}
+
+	// nothing to do
+	if (! cp.list_count)
+	{
+		hub_mgr_session_unlock(&self->hub_mgr);
+		return;
+	}
+
+	Exception e;
+	if (try(&e))
+	{
+		// fork
+		checkpoint_run(&cp);
+
+		// unlock sessions
+		hub_mgr_session_unlock(&self->hub_mgr);
+		locked = false;
+
+		// wait for completion
+		checkpoint_wait(&cp);
+	}
+
+	if (locked)
+		hub_mgr_session_unlock(&self->hub_mgr);
+	checkpoint_free(&cp);
+
+	if (catch(&e))
+	{
+		// rpc by unlock changes code
+		mn_self()->error.code = ERROR;
+		rethrow();
+	}
 }
 
 Buf*
@@ -188,7 +226,7 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 		ctl_alter_user(self, stmt);
 		break;
 	case STMT_CHECKPOINT:
-		ctl_checkpoint(self, session, stmt);
+		ctl_checkpoint(self);
 		break;
 	default:
 		system_ddl(self, session, stmt);
