@@ -19,13 +19,13 @@ struct Part
 	int        indexes_count;
 	RbtreeNode link_node;
 	List       link;
+	List       link_cp;
 };
 
 Part*
 part_allocate(Uuid*, Uuid*);
 void part_free(Part*);
 void part_open(Part*, List*);
-void part_snapshot(Part*, Snapshot*);
 
 void part_set(Part*, Transaction*, bool, uint8_t*, int);
 void part_update(Part*, Transaction*, Iterator*, uint8_t*, int);

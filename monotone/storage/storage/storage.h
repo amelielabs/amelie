@@ -26,7 +26,6 @@ storage_allocate(StorageConfig*, Mapping*, Uuid*);
 void  storage_free(Storage*);
 void  storage_open(Storage*, List*);
 Part* storage_map(Storage*, Def*, uint8_t*, int, bool*);
-Part* storage_schedule(Storage*, uint64_t);
 
 static inline Part*
 storage_partition(Storage* self)

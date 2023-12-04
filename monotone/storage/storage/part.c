@@ -27,6 +27,7 @@ part_allocate(Uuid* id_table, Uuid* id_storage)
 	self->indexes_count = 0;
 	list_init(&self->indexes);
 	list_init(&self->link);
+	list_init(&self->link_cp);
 	rbtree_init_node(&self->link_node);
 	return self;
 }
@@ -159,39 +160,3 @@ part_upsert(Part*        self,
 		unguard(&row_guard);
 	return updated;
 }
-
-#if 0
-void
-part_snapshot(Part* self, Snapshot*snapshot)
-{
-	// create primary index snapshot
-	auto primary = part_primary(self);
-	auto lsn = index_lsn(primary);
-	auto gc = index_gc(primary);
-
-	SnapshotId id;
-	snapshot_id_set(&id, self->id_storage, self->min, self->max, lsn);
-	snapshot_reset(snapshot);
-	snapshot_create(snapshot, &id, primary);
-
-	// start index gc to prevent rows in the snapshot
-	// being freed during the process
-	row_gc_start(gc);
-
-	// call snapshot writer to create snapshot file
-	Exception e;
-	if (try(&e))
-		snapshot_write(writer, snapshot);
-
-	// free rows
-	row_gc_stop(gc);
-
-	if (catch(&e))
-		rethrow();
-
-	// set partition snapshot
-	self->snapshot = lsn;
-
-	// todo: gc
-}
-#endif

@@ -21,3 +21,6 @@
 #include "storage/storage.h"
 #include "storage/storage_iterator.h"
 #include "storage/storage_mgr.h"
+
+// checkpoint
+#include "storage/checkpoint.h"
