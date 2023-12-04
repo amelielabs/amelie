@@ -13,7 +13,6 @@ struct Shard
 	int          order;
 	ReqList      prepared;
 	Vm           vm;
-	Checkpoint   checkpoint;
 	ShardConfig* config;
 	Task         task;
 };

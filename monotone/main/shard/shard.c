@@ -40,9 +40,6 @@ shard_execute(Shard* self, Req* req)
 	Exception e;
 	if (try(&e))
 	{
-		// take shared checkpoint lock
-		req->lock = checkpoint_lock(&self->checkpoint, true);
-
 		vm_reset(&self->vm);
 		vm_run(&self->vm, &req->trx, NULL, req->cmd,
 		       &req->code,
@@ -72,13 +69,6 @@ shard_execute(Shard* self, Req* req)
 	} else
 	{
 		transaction_abort(&req->trx);
-
-		// release checkpoint lock
-		if (req->lock)
-		{
-			checkpoint_unlock(req->lock);
-			req->lock = NULL;
-		}
 	}
 
 	// OK
@@ -111,10 +101,6 @@ shard_commit(Shard* self, Req* req)
 	// done
 	req_list_remove(&self->prepared, req);
 
-	// release checkpoint lock
-	checkpoint_unlock(req->lock);
-	req->lock = NULL;
-
 	// put request back to the cache
 	req_cache_push(req->cache, req);
 }
@@ -132,10 +118,6 @@ shard_abort(Shard* self, Req* req)
 		transaction_abort(&ref->trx);
 
 		req_list_remove(&self->prepared, ref);
-
-		// release checkpoint lock
-		checkpoint_unlock(ref->lock);
-		ref->lock = NULL;
 
 		if (ref == req)
 			break;
@@ -164,7 +146,6 @@ shard_rpc(Rpc* rpc, void* arg)
 	Shard* self = arg;
 	switch (rpc->id) {
 	case RPC_STOP:
-		checkpoint_stop(&self->checkpoint);
 		vm_reset(&self->vm);
 		break;
 	default:
@@ -176,9 +157,6 @@ static void
 shard_main(void* arg)
 {
 	Shard* self = arg;
-
-	// start checkpoint worker
-	checkpoint_start(&self->checkpoint);
 
 	bool stop = false;
 	while (! stop)
@@ -197,13 +175,6 @@ shard_main(void* arg)
 		case RPC_REQUEST_ABORT:
 			shard_abort(self, req_of(buf));
 			break;
-		case RPC_CHECKPOINT:
-		{
-			auto rpc = rpc_of(buf);
-			uint64_t lsn = rpc_arg(rpc, 0);
-			checkpoint(&self->checkpoint, lsn, rpc);
-			break;
-		}
 		default:
 		{
 			stop = msg->id == RPC_STOP;
@@ -224,7 +195,6 @@ shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 	guard(self_guard, shard_free, self);
 	self->config = shard_config_copy(config);
 	vm_init(&self->vm, db, function_mgr, &self->config->id);
-	checkpoint_init(&self->checkpoint, db, &self->config->id);
 	return unguard(&self_guard);
 }
 
@@ -232,7 +202,6 @@ void
 shard_free(Shard* self)
 {
 	vm_free(&self->vm);
-	checkpoint_free(&self->checkpoint);
 	if (self->config)
 		shard_config_free(self->config);
 	mn_free(self);

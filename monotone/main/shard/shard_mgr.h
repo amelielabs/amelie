@@ -197,13 +197,3 @@ shard_mgr_stop(ShardMgr* self)
 		shard_stop(shard);
 	}
 }
-
-static inline void
-shard_mgr_checkpoint(ShardMgr* self, uint64_t lsn)
-{
-	for (int i = 0; i < self->shards_count; i++)
-	{
-		auto shard = self->shards[i];
-		rpc(&shard->task.channel, RPC_CHECKPOINT, 1, lsn);
-	}
-}

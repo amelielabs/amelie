@@ -6,9 +6,6 @@
 // SQL OLTP database
 //
 
-// checkpoint
-#include "shard/checkpoint.h"
-
 // shard
 #include "shard/shard_config.h"
 #include "shard/shard.h"
