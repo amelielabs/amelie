@@ -16,6 +16,7 @@ struct Req
 	bool        ok;
 	int         stmt;
 	Transaction trx;
+	Locker*     lock;
 	Code        code;
 	CodeData*   code_data;
 	Command*    cmd;
@@ -39,6 +40,7 @@ req_init(Req* self, ReqCache* cache)
 	self->error     = false;
 	self->ok        = false;
 	self->stmt      = -1;
+	self->lock      = NULL;
 	self->code_data = NULL;
 	self->cmd       = NULL;
 	self->dst       = NULL;
@@ -68,6 +70,7 @@ req_reset(Req* self)
 	self->error     = false;
 	self->ok        = false;
 	self->stmt      = -1;
+	self->lock      = NULL;
 	self->code_data = NULL;
 	self->cmd       = NULL;
 	self->dst       = NULL;

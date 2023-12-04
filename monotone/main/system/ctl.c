@@ -160,9 +160,13 @@ ctl_alter_user(System* self, Stmt* stmt)
 static void
 ctl_checkpoint(System* self, Session* session, Stmt* stmt)
 {
-	(void)self;
-	(void)session;
 	(void)stmt;
+	(void)session;
+
+	uint64_t lsn = config_lsn();
+	log("checkpoint: %" PRIu64, lsn);
+	shard_mgr_checkpoint(&self->shard_mgr, lsn);
+	log("checkpoint: %" PRIu64 " complete", lsn);
 }
 
 Buf*

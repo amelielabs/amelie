@@ -147,6 +147,8 @@ session_execute_distributed(Session* self)
 		uint64_t lsn = 0;
 		if (log_set->count > 0)
 		{
+			lsn = config_lsn_next();
+
 			//wal_write(share->wal, log_set);
 			//lsn = log_set->lsn;
 		}
