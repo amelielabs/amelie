@@ -1,20 +1,20 @@
 #
-# monotone cli makefile
+# indigo cli makefile
 # 
 CC             = clang
 RM             = rm
 CFLAGS         = -Wall -pthread -O0 -g
-CFLAGS_INCLUDE = -I. -I../monotone/main/api
+CFLAGS_INCLUDE = -I. -I../indigo/main/api
 LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
-                  ../monotone/runtime/libmonotone-runtime.a \
-                  ../monotone/server/libmonotone-server.a \
-                  ../monotone/storage/libmonotone-storage.a \
-                  ../monotone/db/libmonotone-db.a \
-                  ../monotone/query/libmonotone-query.a \
-				  ../monotone/main/libmonotone-main.a \
+                  ../indigo/runtime/libindigo-runtime.a \
+                  ../indigo/server/libindigo-server.a \
+                  ../indigo/storage/libindigo-storage.a \
+                  ../indigo/db/libindigo-db.a \
+                  ../indigo/query/libindigo-query.a \
+				  ../indigo/main/libindigo-main.a \
                   -Wl,-no-whole-archive -lm -lreadline -lzstd -lssl -lcrypto
-SRC            = monotone.c
-TARGET         = monotone
+SRC            = indigo.c
+TARGET         = indigo
 $(TARGET): clean $(OBJECTS)
 	@$(CC) $(SRC) $(CFLAGS_INCLUDE) $(CFLAGS) $(LFLAGS) -o $(TARGET)
 	@echo $(CC) $(SRC) $(CFLAGS) -o $(TARGET)

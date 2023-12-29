@@ -1,6 +1,6 @@
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //
@@ -17,32 +17,32 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <monotone.h>
+#include <indigo.h>
 
 static inline void
-print_error(mono_object_t* object, int verbose)
+print_error(indigo_object_t* object, int verbose)
 {
 	// map
-	mono_type_t type;
-	mono_arg_t  data;
-	mono_next(object, &data, &type);
-	if (type != MONO_MAP && data.data_size != 2)
+	indigo_type_t type;
+	indigo_arg_t  data;
+	indigo_next(object, &data, &type);
+	if (type != INDIGO_MAP && data.data_size != 2)
 		goto error;
 
 	// code
-	mono_next(object, &data, &type);
-	if (type != MONO_STRING)
+	indigo_next(object, &data, &type);
+	if (type != INDIGO_STRING)
 		goto error;
-	mono_next(object, &data, &type);
-	if (type != MONO_INT)
+	indigo_next(object, &data, &type);
+	if (type != INDIGO_INT)
 		goto error;
 
 	// msg
-	mono_next(object, &data, &type);
-	if (type != MONO_STRING)
+	indigo_next(object, &data, &type);
+	if (type != INDIGO_STRING)
 		goto error;
-	mono_next(object, &data, &type);
-	if (type != MONO_STRING)
+	indigo_next(object, &data, &type);
+	if (type != INDIGO_STRING)
 		goto error;
 
 	char* msg = data.data;
@@ -55,33 +55,33 @@ error:
 }
 
 static inline void
-print_object(mono_object_t* object, int deep)
+print_object(indigo_object_t* object, int deep)
 {
-	mono_arg_t  data;
-	mono_type_t type;
-	if (! mono_next(object, &data, &type))
+	indigo_arg_t  data;
+	indigo_type_t type;
+	if (! indigo_next(object, &data, &type))
 		return;
 
 	switch (type) {
-	case MONO_REAL:
+	case INDIGO_REAL:
 		printf("%f", *(double*)data.data);
 		break;
-	case MONO_BOOL:
+	case INDIGO_BOOL:
 		if (*(int8_t*)data.data > 0)
 			printf("true");
 		else
 			printf("false");
 		break;
-	case MONO_INT:
+	case INDIGO_INT:
 		printf("%" PRIi64, *(int64_t*)data.data);
 		break;
-	case MONO_STRING:
+	case INDIGO_STRING:
 		printf("\"%.*s\"", data.data_size, (char*)data.data);
 		break;
-	case MONO_NULL:
+	case INDIGO_NULL:
 		printf("null");
 		break;
-	case MONO_ARRAY:
+	case INDIGO_ARRAY:
 	{
 		int count = *(int64_t*)data.data;
 		printf("[ ");
@@ -94,7 +94,7 @@ print_object(mono_object_t* object, int deep)
 		printf(" ]");
 		break;
 	}
-	case MONO_MAP:
+	case INDIGO_MAP:
 	{
 		int i = 0;
 		int count = *(int64_t*)data.data;
@@ -128,28 +128,28 @@ print_object(mono_object_t* object, int deep)
 	}
 }
 
-static mono_event_t
-read_event(mono_session_t* session)
+static indigo_event_t
+read_event(indigo_session_t* session)
 {
 	for (;;)
 	{
-		mono_object_t* result = NULL;
-		mono_event_t event;
-		event = mono_read(session, -1, &result);
+		indigo_object_t* result = NULL;
+		indigo_event_t event;
+		event = indigo_read(session, -1, &result);
 		switch (event) {
-		case MONO_CONNECT:
+		case INDIGO_CONNECT:
 			printf("connected\n");
 			return event;
-		case MONO_DISCONNECT:
+		case INDIGO_DISCONNECT:
 			printf("disconnected\n");
 			return event;
-		case MONO_OK:
+		case INDIGO_OK:
 			return event;
-		case MONO_ERROR:
+		case INDIGO_ERROR:
 			if (result)
 				print_error(result, 0);
 			break;
-		case MONO_OBJECT:
+		case INDIGO_OBJECT:
 			print_object(result, 0);
 			printf("\n");
 			break;
@@ -157,44 +157,44 @@ read_event(mono_session_t* session)
 			assert(0);
 		}
 		if (result)
-			mono_free(result);
+			indigo_free(result);
 	}
 
-	return MONO_OK;
+	return INDIGO_OK;
 }
 
 static void
 init(void)
 {
-	mono_t* env = mono_init();
+	indigo_t* env = indigo_init();
 	if (env == NULL) {
-		printf("error: mono_init() failed\n");
+		printf("error: indigo_init() failed\n");
 		return;
 	}
 
 	char options[] = "{  \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"cluster_shards\": 1 }";
 	int rc;
-	rc = mono_open(env, "./t", options);
+	rc = indigo_open(env, "./t", options);
 	if (rc == -1) {
-		printf("error: mono_open() failed\n");
-		mono_free(env);
+		printf("error: indigo_open() failed\n");
+		indigo_free(env);
 		return;
 	}
 
-	mono_session_t* session;
-	session = mono_connect(env, NULL);
+	indigo_session_t* session;
+	session = indigo_connect(env, NULL);
 	if (session == NULL)
 	{
-		printf("error: mono_connect() failed\n");
-		mono_free(env);
+		printf("error: indigo_connect() failed\n");
+		indigo_free(env);
 		return;
 	}
 
-	mono_event_t event = read_event(session);
-	if (event != MONO_CONNECT)
+	indigo_event_t event = read_event(session);
+	if (event != INDIGO_CONNECT)
 	{
-		mono_free(session);
-		mono_free(env);
+		indigo_free(session);
+		indigo_free(env);
 		return;
 	}
 
@@ -210,20 +210,20 @@ init(void)
 			break;
 
 		int rc;
-		rc = mono_execute(session, text, 0, NULL);
+		rc = indigo_execute(session, text, 0, NULL);
 		if (rc == -1)
 		{
-			printf("error: mono_execute() failed\n");
+			printf("error: indigo_execute() failed\n");
 			break;
 		}
 
 		event = read_event(session);
-		if (event != MONO_OK)
+		if (event != INDIGO_OK)
 			break;
 	}
 
-	mono_free(session);
-	mono_free(env);
+	indigo_free(session);
+	indigo_free(env);
 }
 
 int
