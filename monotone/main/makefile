@@ -1,5 +1,5 @@
 #
-# monotone main makefile
+# indigo main makefile
 #
 CC             = clang
 AR             = ar
@@ -39,7 +39,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Imain \
                  -Iapi
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-main.a
+LIB            = libindigo-main.a
 OBJECTS        = \
                  shard/shard.o \
                  hub/hub.o \
@@ -50,7 +50,7 @@ OBJECTS        = \
                  system/ctl.o \
                  system/ddl.o \
                  main/main.o \
-                 api/monotone.o
+                 api/indigo.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

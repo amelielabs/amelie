@@ -1,35 +1,35 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_auth.h>
-#include <monotone_client.h>
-#include <monotone_server.h>
-#include <monotone_def.h>
-#include <monotone_transaction.h>
-#include <monotone_index.h>
-#include <monotone_storage.h>
-#include <monotone_wal.h>
-#include <monotone_db.h>
-#include <monotone_value.h>
-#include <monotone_aggr.h>
-#include <monotone_request.h>
-#include <monotone_vm.h>
-#include <monotone_parser.h>
-#include <monotone_semantic.h>
-#include <monotone_compiler.h>
-#include <monotone_shard.h>
-#include <monotone_hub.h>
-#include <monotone_session.h>
-#include <monotone_system.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_auth.h>
+#include <indigo_client.h>
+#include <indigo_server.h>
+#include <indigo_def.h>
+#include <indigo_transaction.h>
+#include <indigo_index.h>
+#include <indigo_storage.h>
+#include <indigo_wal.h>
+#include <indigo_db.h>
+#include <indigo_value.h>
+#include <indigo_aggr.h>
+#include <indigo_request.h>
+#include <indigo_vm.h>
+#include <indigo_parser.h>
+#include <indigo_semantic.h>
+#include <indigo_compiler.h>
+#include <indigo_shard.h>
+#include <indigo_hub.h>
+#include <indigo_session.h>
+#include <indigo_system.h>
 
 static inline bool
 system_is_client_only(void)
@@ -184,7 +184,7 @@ system_start(System* self, bool bootstrap)
 
 	// hello
 	log("");
-	log("monotone.");
+	log("indigo.");
 	log("");
 
 	if (system_is_backup())
@@ -204,7 +204,7 @@ system_start(System* self, bool bootstrap)
 	char path[PATH_MAX];
 	if (bootstrap)
 	{
-		snprintf(path, sizeof(path), "%s/monotone.conf", config_directory());
+		snprintf(path, sizeof(path), "%s/indigo.conf", config_directory());
 		config_create(config(), path);
 	}
 
