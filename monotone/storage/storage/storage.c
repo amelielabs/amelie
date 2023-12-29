@@ -1,19 +1,19 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_def.h>
-#include <monotone_transaction.h>
-#include <monotone_index.h>
-#include <monotone_storage.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_def.h>
+#include <indigo_transaction.h>
+#include <indigo_index.h>
+#include <indigo_storage.h>
 
 Storage*
 storage_allocate(StorageConfig* config, Mapping* map, Uuid* table)

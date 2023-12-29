@@ -1,17 +1,17 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_def.h>
-#include <monotone_transaction.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_def.h>
+#include <indigo_transaction.h>
 
 void
 transaction_begin(Transaction* self)

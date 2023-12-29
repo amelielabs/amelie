@@ -1,18 +1,18 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_auth.h>
-#include <monotone_client.h>
-#include <monotone_server.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_auth.h>
+#include <indigo_client.h>
+#include <indigo_server.h>
 
 static void
 server_listen_main(void* arg)

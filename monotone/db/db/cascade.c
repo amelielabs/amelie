@@ -1,21 +1,21 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_def.h>
-#include <monotone_transaction.h>
-#include <monotone_index.h>
-#include <monotone_storage.h>
-#include <monotone_wal.h>
-#include <monotone_db.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_def.h>
+#include <indigo_transaction.h>
+#include <indigo_index.h>
+#include <indigo_storage.h>
+#include <indigo_wal.h>
+#include <indigo_db.h>
 
 void
 cascade_table_drop(Db* self, Transaction* trx, Str* schema, Str* name,

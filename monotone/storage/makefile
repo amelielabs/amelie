@@ -1,5 +1,5 @@
 #
-# monotone storage makefile
+# indigo storage makefile
 #
 CC             = clang
 AR             = ar
@@ -17,7 +17,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iindex \
                  -Istorage
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-storage.a
+LIB            = libindigo-storage.a
 OBJECTS        = \
                  def/row.o \
                  transaction/handle_mgr.o \

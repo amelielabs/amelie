@@ -1,5 +1,5 @@
 #
-# monotone server makefile
+# indigo server makefile
 #
 CC             = clang
 AR             = ar
@@ -16,7 +16,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iclient \
                  -Iserver
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-server.a
+LIB            = libindigo-server.a
 OBJECTS        = \
                  auth/auth.o \
                  client/client.o \

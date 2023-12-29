@@ -1,5 +1,5 @@
 #
-# monotone db makefile
+# indigo db makefile
 #
 CC             = clang
 AR             = ar
@@ -20,7 +20,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-db.a
+LIB            = libindigo-db.a
 OBJECTS        = \
                  wal/wal_store.o \
                  wal/wal_store_open.o \
