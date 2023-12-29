@@ -1,14 +1,14 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
 
 void
 portal_to_channel(Portal* self, Buf* buf)

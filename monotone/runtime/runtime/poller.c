@@ -1,11 +1,11 @@
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
+#include <indigo_runtime.h>
 
 void
 poller_init(Poller* self)

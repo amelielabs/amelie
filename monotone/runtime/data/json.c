@@ -1,13 +1,13 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
 
 void
 json_init(Json* self)

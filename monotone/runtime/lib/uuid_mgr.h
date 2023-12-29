@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //

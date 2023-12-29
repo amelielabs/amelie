@@ -1,12 +1,12 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
 
 int
 vfs_unlink(const char* path)

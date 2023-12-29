@@ -1,14 +1,14 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
 
 void
 uri_init(Uri* self)
@@ -58,12 +58,12 @@ uri_error(void)
 static inline void
 uri_parse_protocol(Uri* self)
 {
-	if (! strncmp(self->pos, "monotone://", 11))
+	if (! strncmp(self->pos, "indigo://", 9))
 	{
 		self->proto = URI_PROTO_DEFAULT;
 		self->pos += 9;
 	} else
-	if (! strncmp(self->pos, "monotone+mock://", 16))
+	if (! strncmp(self->pos, "indigo+mock://", 14))
 	{
 		self->proto = URI_PROTO_MOCK;
 		self->pos += 14;
@@ -324,7 +324,7 @@ uri_parse(Uri* self, bool safe, Str* spec)
 	str_copy(&self->uri, spec);
 	self->pos = self->uri.pos;
 
-	// [monotone://]
+	// [indigo://]
 	uri_parse_protocol(self);
 
 	// [user[:password]@]

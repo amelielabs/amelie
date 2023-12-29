@@ -1,5 +1,5 @@
 #
-# monotone runtime makefile
+# indigo runtime makefile
 #
 CC             = clang
 AR             = ar
@@ -12,7 +12,7 @@ CFLAGS_INCLUDE = -I. \
                  -Ilib \
                  -Iconfig
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-runtime.a
+LIB            = libindigo-runtime.a
 OBJECTS        = \
                  runtime/timer_mgr.o \
                  runtime/poller.o \
