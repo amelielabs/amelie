@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //
@@ -31,18 +31,18 @@ struct TestGroup
 
 struct TestEnv
 {
-	char*   name;
-	mono_t* handle;
-	int     sessions;
-	List    link;
+	char*     name;
+	indigo_t* handle;
+	int       sessions;
+	List      link;
 };
 
 struct TestSession
 {
-	char*           name;
-	mono_session_t* handle;
-	TestEnv*        env;
-	List            link;
+	char*             name;
+	indigo_session_t* handle;
+	TestEnv*          env;
+	List              link;
 };
 
 struct TestSuite

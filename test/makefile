@@ -1,23 +1,23 @@
 #
-# monotone test-suite
+# indigo test-suite
 # 
 CC              = clang
 RM              = rm
 CFLAGS          = -Wall -pthread -O0 -g -fPIE
-CFLAGS_INCLUDE  = -I../monotone/runtime \
-                  -I../monotone/runtime/runtime \
-                  -I../monotone/runtime/io \
-                  -I../monotone/runtime/data \
-                  -I../monotone/main/api \
+CFLAGS_INCLUDE  = -I../indigo/runtime \
+                  -I../indigo/runtime/runtime \
+                  -I../indigo/runtime/io \
+                  -I../indigo/runtime/data \
+                  -I../indigo/main/api \
                   -I. \
                   -Isuite
 LFLAGS          = -rdynamic -pthread -Wl,-whole-archive \
-                   ../monotone/runtime/libmonotone-runtime.a \
-                   ../monotone/server/libmonotone-server.a \
-                   ../monotone/storage/libmonotone-storage.a \
-                   ../monotone/db/libmonotone-db.a \
-                   ../monotone/query/libmonotone-query.a \
-                   ../monotone/main/libmonotone-main.a \
+                   ../indigo/runtime/libindigo-runtime.a \
+                   ../indigo/server/libindigo-server.a \
+                   ../indigo/storage/libindigo-storage.a \
+                   ../indigo/db/libindigo-db.a \
+                   ../indigo/query/libindigo-query.a \
+                   ../indigo/main/libindigo-main.a \
                    -Wl,-no-whole-archive -lm -lzstd -lssl -lcrypto
 TARGET          = test
 OBJECTS_RUNTIME = runtime/test_task.o \

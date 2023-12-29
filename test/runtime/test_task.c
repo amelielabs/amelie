@@ -1,13 +1,13 @@
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone.h>
-#include <monotone_test.h>
+#include <indigo_runtime.h>
+#include <indigo.h>
+#include <indigo_test.h>
 
 static int called = 0;
 

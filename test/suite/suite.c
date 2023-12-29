@@ -1,13 +1,13 @@
 
 //
-// monotone
+// indigo
 //
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone.h>
-#include <monotone_test.h>
+#include <indigo_runtime.h>
+#include <indigo.h>
+#include <indigo_test.h>
 #include <dlfcn.h>
 
 static inline void
@@ -145,7 +145,7 @@ test_group_find(TestSuite* self, const char* name)
 }
 
 static TestEnv*
-test_env_new(TestSuite* self, const char* name, mono_t* handle)
+test_env_new(TestSuite* self, const char* name, indigo_t* handle)
 {
 	TestEnv* env = malloc(sizeof(*env));
 	if (env == NULL)
@@ -168,7 +168,7 @@ test_env_free(TestSuite* self, TestEnv* env)
 	(void)self;
 	list_unlink(&env->link);
 	if (env->handle)
-		mono_free(env->handle);
+		indigo_free(env->handle);
 	free(env->name);
 	free(env);
 }
@@ -187,7 +187,7 @@ test_env_find(TestSuite* self, const char* name)
 
 static TestSession*
 test_session_new(TestSuite* self, TestEnv* env, const char* name,
-                 mono_session_t* handle)
+                 indigo_session_t* handle)
 {
 	TestSession* session = malloc(sizeof(*session));
 	if (session == NULL)
@@ -212,7 +212,7 @@ test_session_free(TestSuite* self, TestSession* session)
 	session->env->sessions--;
 	assert(session->env->sessions >= 0);
 	if (session->handle)
-		mono_free(session->handle);
+		indigo_free(session->handle);
 	free(session->name);
 	free(session);
 }
@@ -390,9 +390,9 @@ test_suite_env_open(TestSuite* self, char* arg)
 		return -1;
 	}
 
-	mono_t* handle = mono_init();
+	indigo_t* handle = indigo_init();
 	if (handle == NULL) {
-		test_error(self, "line %d: env_open: mono_init() failed",
+		test_error(self, "line %d: env_open: indigo_init() failed",
 		           self->current_line);
 		return -1;
 	}
@@ -418,9 +418,9 @@ test_suite_env_open(TestSuite* self, char* arg)
 	          (self->current_test_options && config) ? ", " : "",
 	          (config) ? config : "");
 	int rc;
-	rc = mono_open(handle, path, prefmt_config);
+	rc = indigo_open(handle, path, prefmt_config);
 	if (rc == -1) {
-		test_error(self, "line %d: mono_open() failed",
+		test_error(self, "line %d: indigo_open() failed",
 		           self->current_line);
 		return -1;
 	}
@@ -461,22 +461,22 @@ test_suite_connect(TestSuite* self, char* arg)
 		return -1;
 	}
 
-	auto handle = mono_connect(env->handle, uri);
+	auto handle = indigo_connect(env->handle, uri);
 	if (handle == NULL) {
-		test_error(self, "line %d: connect: mono_connect(): failed",
+		test_error(self, "line %d: connect: indigo_connect(): failed",
 		           self->current_line);
 		return -1;
 	}
 
-	auto event = mono_read(handle, -1, NULL);
+	auto event = indigo_read(handle, -1, NULL);
 	switch (event) {
-	case MONO_CONNECT:
+	case INDIGO_CONNECT:
 		test_log(self, "%s", "connect: on_connect\n");
 		break;
-	case MONO_DISCONNECT:
+	case INDIGO_DISCONNECT:
 		test_log(self, "%s", "connect: on_disconnect\n");
 		break;
-	case MONO_ERROR:
+	case INDIGO_ERROR:
 		test_log(self, "%s", "connect: on_error\n");
 		return 0;
 	default:
@@ -530,13 +530,13 @@ test_suite_debug(TestSuite* self, char* arg)
 }
 
 static void
-test_log_object(TestSuite* self, mono_object_t* object,
+test_log_object(TestSuite* self, indigo_object_t* object,
                 int limit, int in_map)
 {
-	mono_arg_t  data;
-	mono_type_t type;
+	indigo_arg_t  data;
+	indigo_type_t type;
 	int count = 0;
-	while (count < limit && mono_next(object, &data, &type)) {
+	while (count < limit && indigo_next(object, &data, &type)) {
 		if (in_map) {
 			if ((count % 2) != 0)
 				test_log(self, ": ");
@@ -548,30 +548,30 @@ test_log_object(TestSuite* self, mono_object_t* object,
 				test_log(self, ", ");
 		}
 		switch (type) {
-		case MONO_REAL:
+		case INDIGO_REAL:
 			test_log(self, "%f", *(double*)data.data);
 			break;
-		case MONO_BOOL:
+		case INDIGO_BOOL:
 			if (*(int8_t*)data.data > 0)
 				test_log(self, "true");
 			else
 				test_log(self, "false");
 			break;
-		case MONO_INT:
+		case INDIGO_INT:
 			test_log(self, "%" PRIi64, *(int64_t*)data.data);
 			break;
-		case MONO_STRING:
+		case INDIGO_STRING:
 			test_log(self, "\"%.*s\"", data.data_size, (char*)data.data);
 			break;
-		case MONO_NULL:
+		case INDIGO_NULL:
 			test_log(self, "null");
 			break;
-		case MONO_MAP:
+		case INDIGO_MAP:
 			test_log(self, "{");
 			test_log_object(self, object, *(int64_t*)data.data * 2, 1);
 			test_log(self, "}");
 			break;
-		case MONO_ARRAY:
+		case INDIGO_ARRAY:
 			test_log(self, "[");
 			test_log_object(self, object, *(int64_t*)data.data, 0);
 			test_log(self, "]");
@@ -591,9 +591,9 @@ test_suite_query(TestSuite* self, const char* query)
 	}
 
 	int rc;
-	rc = mono_execute(self->current_session->handle, query, 0, NULL);
+	rc = indigo_execute(self->current_session->handle, query, 0, NULL);
 	if (rc == -1) {
-		test_error(self, "%d: mono_execute(%s, %s) failed",
+		test_error(self, "%d: indigo_execute(%s, %s) failed",
 		           self->current_line,
 		           self->current_session->name,
 		           query);
@@ -603,18 +603,18 @@ test_suite_query(TestSuite* self, const char* query)
 	int ready = 0;
 	while (! ready)
 	{
-		mono_object_t* result = NULL;
-		auto event = mono_read(self->current_session->handle, -1, &result);
+		indigo_object_t* result = NULL;
+		auto event = indigo_read(self->current_session->handle, -1, &result);
 		switch (event) {
-		case MONO_DISCONNECT:
+		case INDIGO_DISCONNECT:
 			test_log(self, "%s", "query: on_disconnect\n");
 			return 0;
-		case MONO_ERROR:
+		case INDIGO_ERROR:
 			test_log(self, "%s", "query: on_error\n");
 			break;
-		case MONO_OBJECT:
+		case INDIGO_OBJECT:
 			break;
-		case MONO_OK:
+		case INDIGO_OK:
 			ready = 1;
 			continue;
 		default:
@@ -623,7 +623,7 @@ test_suite_query(TestSuite* self, const char* query)
 		}
 		test_log_object(self, result, INT_MAX, 0);
 		test_log(self, "\n");
-		mono_free(result);
+		indigo_free(result);
 	}
 
 	return 0;
