@@ -18,7 +18,7 @@ static inline UserConfig*
 user_config_allocate(void)
 {
 	UserConfig* self;
-	self = mn_malloc(sizeof(*self));
+	self = in_malloc(sizeof(*self));
 	str_init(&self->name);
 	str_init(&self->secret);
 	return self;
@@ -29,7 +29,7 @@ user_config_free(UserConfig* self)
 {
 	str_free(&self->name);
 	str_free(&self->secret);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

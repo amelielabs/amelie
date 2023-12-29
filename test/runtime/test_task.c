@@ -37,7 +37,7 @@ void
 test_task_args_main(void* arg)
 {
 	test( *(int*)arg == 123 );
-	test( *(int*)mn_task->main_arg_global == 321 );
+	test( *(int*)in_task->main_arg_global == 321 );
 }
 
 void test_task_args(void)
@@ -62,7 +62,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
-	thread_status_set(&mn_task->thread_status, 123);
+	thread_status_set(&in_task->thread_status, 123);
 }
 
 void test_task_status(void)

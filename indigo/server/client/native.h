@@ -56,16 +56,16 @@ native_set_connected(Native* self, bool value)
 static inline void
 native_set_coroutine(Native* self)
 {
-	self->coroutine_id = mn_self()->id;
+	self->coroutine_id = in_self()->id;
 }
 
 static inline void
 native_set_coroutine_name(Native* self)
 {
 	if (self->relay)
-		coroutine_set_name(mn_self(), "native (relay)");
+		coroutine_set_name(in_self(), "native (relay)");
 	else
-		coroutine_set_name(mn_self(), "native");
+		coroutine_set_name(in_self(), "native");
 }
 
 static inline void

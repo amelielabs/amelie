@@ -28,7 +28,7 @@ static inline IndexConfig*
 index_config_allocate(void)
 {
 	IndexConfig *self;
-	self = mn_malloc(sizeof(IndexConfig));
+	self = in_malloc(sizeof(IndexConfig));
 	self->type    = INDEX_UNDEF;
 	self->primary = false;
 	str_init(&self->name);
@@ -42,7 +42,7 @@ index_config_free(IndexConfig* self)
 {
 	str_free(&self->name);
 	def_free(&self->def);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

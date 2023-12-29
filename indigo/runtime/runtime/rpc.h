@@ -54,7 +54,7 @@ rpc_execute(Buf* buf,
 	if (try(&e))
 		callback(rpc, callback_arg);
 	if (unlikely(catch(&e)))
-		*rpc->error = mn_self()->error;
+		*rpc->error = in_self()->error;
 	rpc_done(rpc);
 }
 
@@ -71,7 +71,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
-	auto error = &mn_self()->error;
+	auto error = &in_self()->error;
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{

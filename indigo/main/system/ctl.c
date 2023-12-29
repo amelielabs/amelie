@@ -202,7 +202,7 @@ ctl_checkpoint(System* self)
 	if (catch(&e))
 	{
 		// rpc by unlock changes code
-		mn_self()->error.code = ERROR;
+		in_self()->error.code = ERROR;
 		rethrow();
 	}
 }

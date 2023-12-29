@@ -19,13 +19,13 @@ schema_free(Schema* self)
 {
 	if (self->config)
 		schema_config_free(self->config);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline Schema*
 schema_allocate(SchemaConfig* config)
 {
-	Schema* self = mn_malloc(sizeof(Schema));
+	Schema* self = in_malloc(sizeof(Schema));
 	self->config = NULL;
 	guard(self_guard, schema_free, self);
 	self->config = schema_config_copy(config);

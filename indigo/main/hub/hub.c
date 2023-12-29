@@ -158,7 +158,7 @@ hub_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&mn_task->channel, -1);
+		auto buf = channel_read(&in_task->channel, -1);
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 

@@ -119,7 +119,7 @@ tcp_attach(Tcp* self)
 {
 	assert(self->poller == NULL);
 	assert(self->fd.fd != -1);
-	auto poller = &mn_task->poller;
+	auto poller = &in_task->poller;
 	int rc;
 	rc = poller_add(poller, &self->fd);
 	if (unlikely(rc == -1))
@@ -445,7 +445,7 @@ tcp_recv(Tcp* self)
 {
 	for (;;)
 	{
-		auto msg = buf_pool_pop(&self->read_list, &mn_self()->buf_pool);
+		auto msg = buf_pool_pop(&self->read_list, &in_self()->buf_pool);
 		if (msg)
 			return msg;
 		poll_read(&self->fd, -1);
@@ -461,20 +461,20 @@ tcp_recv(Tcp* self)
 Buf*
 tcp_recv_try(Tcp* self)
 {
-	auto msg = buf_pool_pop(&self->read_list, &mn_self()->buf_pool);
+	auto msg = buf_pool_pop(&self->read_list, &in_self()->buf_pool);
 	if (msg)
 		return msg;
 	bool eof;
 	eof = tcp_read(self);
 	if (eof)
 		return NULL;
-	return buf_pool_pop(&self->read_list, &mn_self()->buf_pool);
+	return buf_pool_pop(&self->read_list, &in_self()->buf_pool);
 }
 
 void
 tcp_read_start(Tcp* self, Event* on_read)
 {
-	auto poller = &mn_task->poller;
+	auto poller = &in_task->poller;
 	int rc;
 	rc = poller_read(poller, &self->fd, poll_on_read_event, on_read);
 	if (unlikely(rc == -1))
@@ -484,6 +484,6 @@ tcp_read_start(Tcp* self, Event* on_read)
 void
 tcp_read_stop(Tcp* self)
 {
-	auto poller = &mn_task->poller;
+	auto poller = &in_task->poller;
 	poller_read(poller, &self->fd, NULL, NULL);
 }

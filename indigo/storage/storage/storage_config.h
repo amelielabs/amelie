@@ -21,7 +21,7 @@ static inline StorageConfig*
 storage_config_allocate(void)
 {
 	StorageConfig* self;
-	self = mn_malloc(sizeof(StorageConfig));
+	self = in_malloc(sizeof(StorageConfig));
 	self->shard_min = 0;
 	self->shard_max = 0;
 	uuid_init(&self->id);
@@ -33,7 +33,7 @@ storage_config_allocate(void)
 static inline void
 storage_config_free(StorageConfig* self)
 {
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

@@ -14,7 +14,7 @@ resolver_main(void* arg)
 	unused(arg);
 	for (bool active = true; active;)
 	{
-		auto buf = channel_read(&mn_task->channel, -1);
+		auto buf = channel_read(&in_task->channel, -1);
 		auto rpc = rpc_of(buf);
 		buf_free(buf);
 		switch (rpc->id) {

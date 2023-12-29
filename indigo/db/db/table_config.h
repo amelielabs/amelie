@@ -25,7 +25,7 @@ static inline TableConfig*
 table_config_allocate(void)
 {
 	TableConfig* self;
-	self = mn_malloc(sizeof(TableConfig));
+	self = in_malloc(sizeof(TableConfig));
 	self->reference      = false;
 	self->map            = NULL;
 	self->indexes_count  = 0;
@@ -59,7 +59,7 @@ table_config_free(TableConfig* self)
 		storage_config_free(config);
 	}
 
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

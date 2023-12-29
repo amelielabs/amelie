@@ -60,11 +60,11 @@ system_save_catalog(void *arg)
 System*
 system_create(void)
 {
-	System* self = mn_malloc(sizeof(System));
+	System* self = in_malloc(sizeof(System));
 
 	// set control
 	auto control = &self->control;
-	control->system       = &mn_task->channel;
+	control->system       = &in_task->channel;
 	control->save_state   = system_save_state;
 	control->save_catalog = system_save_catalog;
 	control->arg          = self;
@@ -117,7 +117,7 @@ system_free(System* self)
 	user_mgr_free(&self->user_mgr);
 	config_state_free(&self->config_state);
 	catalog_mgr_free(&self->catalog_mgr);
-	mn_free(self);
+	in_free(self);
 }
 
 static void
@@ -192,7 +192,7 @@ system_start(System* self, bool bootstrap)
 		if (! bootstrap)
 			error("restore: directory already exists");
 
-		coroutine_set_name(mn_self(), "backup");
+		coroutine_set_name(in_self(), "backup");
 		// todo: restore
 
 		// listen for relay connections only
@@ -308,7 +308,7 @@ system_main(System* self)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&mn_task->channel, -1);
+		auto buf = channel_read(&in_task->channel, -1);
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 

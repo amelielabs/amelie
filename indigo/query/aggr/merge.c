@@ -33,7 +33,7 @@ merge_free(ValueObj* obj)
 		set->obj.free(&set->obj);
 	}
 	buf_free(&self->list);
-	mn_free(self);
+	in_free(self);
 }
 
 static void
@@ -59,7 +59,7 @@ merge_convert(ValueObj* obj, Buf* buf)
 Merge*
 merge_create(void)
 {
-	Merge* self = mn_malloc(sizeof(Merge));
+	Merge* self = in_malloc(sizeof(Merge));
 	self->obj.free    = merge_free;
 	self->obj.convert = merge_convert;
 	self->current_it  = NULL;

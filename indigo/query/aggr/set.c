@@ -29,7 +29,7 @@ set_free_row(Set* self, SetRow* row)
 	int i = 0;
 	for (; i < self->keys_count ; i++)
 		value_free(&row->keys[i]);
-	mn_free(row);
+	in_free(row);
 }
 
 static void
@@ -40,8 +40,8 @@ set_free(ValueObj* obj)
 		set_free_row(self, set_at(self, i));
 	buf_free(&self->list);
 	if (self->keys)
-		mn_free(self->keys);
-	mn_free(self);
+		in_free(self->keys);
+	in_free(self);
 }
 
 static void
@@ -57,7 +57,7 @@ set_convert(ValueObj* obj, Buf* buf)
 Set*
 set_create(uint8_t* data)
 {
-	Set* self = mn_malloc(sizeof(Set));
+	Set* self = in_malloc(sizeof(Set));
 	self->obj.free    = set_free;
 	self->obj.convert = set_convert;
 	self->list_count  = 0;
@@ -72,7 +72,7 @@ set_create(uint8_t* data)
 		data_read_array(&data, &self->keys_count);
 		if (self->keys_count > 0)
 		{
-			self->keys = mn_malloc(sizeof(SetKey) * self->keys_count);
+			self->keys = in_malloc(sizeof(SetKey) * self->keys_count);
 			for (int i = 0; i < self->keys_count; i++)
 				data_read_bool(&data, &self->keys[i].asc);
 		}
@@ -87,7 +87,7 @@ set_add(Set* self, Value* value, Value** keys)
 	buf_reserve(&self->list, sizeof(SetRow**));
 	int size = sizeof(SetRow) + sizeof(Value) * self->keys_count;
 
-	SetRow* row = mn_malloc(size);
+	SetRow* row = in_malloc(size);
 	memset(row, 0, size);
 	buf_write(&self->list, &row, sizeof(SetRow**));
 	self->list_count++;

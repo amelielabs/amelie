@@ -19,14 +19,14 @@ user_free(User* user)
 {
 	if (user->config)
 		user_config_free(user->config);
-	mn_free(user);
+	in_free(user);
 }
 
 static inline User*
 user_allocate(UserConfig* config)
 {
 	User* self;
-	self = mn_malloc(sizeof(*self));
+	self = in_malloc(sizeof(*self));
 	self->config = NULL;
 	list_init(&self->link);
 	guard(self_guard, user_free, self);

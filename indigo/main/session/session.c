@@ -33,7 +33,7 @@
 Session*
 session_create(Share* share, Portal* portal)
 {
-	auto self = (Session*)mn_malloc(sizeof(Session));
+	auto self = (Session*)in_malloc(sizeof(Session));
 	self->lock   = NULL;
 	self->share  = share;
 	self->portal = portal;
@@ -60,7 +60,7 @@ session_free(Session *self)
 	dispatch_reset(&self->dispatch);
 	dispatch_free(&self->dispatch);
 	log_set_free(&self->log_set);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void
@@ -212,7 +212,7 @@ session_execute(Session* self, Buf* buf)
 	{
 		session_unlock(self);
 
-		auto error = &mn_self()->error;
+		auto error = &in_self()->error;
 		reply = make_error(error);
 		portal_write(self->portal, reply);
 		ro = (error->code == ERROR_RO);

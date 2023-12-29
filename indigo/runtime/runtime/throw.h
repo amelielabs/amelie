@@ -8,18 +8,18 @@
 
 // try-catch
 #define try(exception) \
-	exception_mgr_try(&mn_self()->exception_mgr, exception)
+	exception_mgr_try(&in_self()->exception_mgr, exception)
 
 #define catch(exception) \
-	exception_mgr_catch(&mn_self()->exception_mgr, exception)
+	exception_mgr_catch(&in_self()->exception_mgr, exception)
 
 // throw
 #define rethrow() \
-	exception_mgr_throw(&mn_self()->exception_mgr)
+	exception_mgr_throw(&in_self()->exception_mgr)
 
 #define throw(code, fmt, ...) \
-	error_throw(&mn_self()->error, \
-	            &mn_self()->exception_mgr, \
+	error_throw(&in_self()->error, \
+	            &in_self()->exception_mgr, \
 	            source_file, \
 	            source_function, \
 	            source_line, \
@@ -38,6 +38,6 @@
 
 // cancel
 #define cancellation_point() ({ \
-	if (unlikely(mn_self()->cancel)) \
+	if (unlikely(in_self()->cancel)) \
 		throw(CANCEL, "cancelled"); \
 })

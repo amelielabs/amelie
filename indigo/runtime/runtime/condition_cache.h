@@ -27,7 +27,7 @@ condition_cache_free(ConditionCache* self)
 	list_foreach_safe(&self->list) {
 		auto event = list_at(Condition, link);
 		condition_detach(event);
-		free(event);
+		in_free(event);
 	}
 }
 
@@ -60,7 +60,7 @@ condition_create_nothrow(ConditionCache* self)
 		event_init(&event->event);
 		return event;
 	}
-	event = mn_malloc_nothrow(sizeof(Condition));
+	event = in_malloc_nothrow(sizeof(Condition));
 	if (unlikely(event == NULL))
 		return NULL;
 	condition_init(event);

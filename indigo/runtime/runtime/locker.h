@@ -37,7 +37,7 @@ locker_cache_free(LockerCache* self)
 	list_foreach_safe(&self->list)
 	{
 		auto locker = list_at(Locker, link);
-		mn_free(locker);
+		in_free(locker);
 	}
 }
 
@@ -52,13 +52,13 @@ locker_cache_pop(LockerCache* self)
 		self->list_count--;
 	} else
 	{
-		locker = mn_malloc(sizeof(Locker));
+		locker = in_malloc(sizeof(Locker));
 		list_init(&locker->link);
 	}
 	locker->refs      = 0;
 	locker->lock      = NULL;
 	locker->shared    = false;
-	locker->coroutine = mn_self();
+	locker->coroutine = in_self();
 	return locker;
 }
 

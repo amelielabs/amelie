@@ -7,7 +7,7 @@
 
 #include <indigo_runtime.h>
 
-__thread Task* mn_task;
+__thread Task* in_task;
 
 static inline void
 task_shutdown(CoroutineMgr* mgr)
@@ -24,7 +24,7 @@ task_shutdown(CoroutineMgr* mgr)
 	}
 
 	// wait for completion
-	wait_event(&mgr->on_exit, &mn_task->timer_mgr, mn_self(), -1);
+	wait_event(&mgr->on_exit, &in_task->timer_mgr, in_self(), -1);
 }
 
 hot void
@@ -52,10 +52,10 @@ task_coroutine_main(void* arg)
 	}
 
 	// main exit
-	if (coro == mn_task->main_coroutine)
+	if (coro == in_task->main_coroutine)
 	{
 		if (e.triggered)
-			thread_status_set(&mn_task->thread_status, -1);
+			thread_status_set(&in_task->thread_status, -1);
 
 		// cancel all coroutines, except current one
 		task_shutdown(mgr);
@@ -130,7 +130,7 @@ task_main(void* arg)
 	Task* self = thread->arg;
 
 	// set global variable
-	mn_task = self;
+	in_task = self;
 
 	// block signals
 	thread_set_sigmask_default();

@@ -17,7 +17,7 @@ Client*
 client_create(Access access)
 {
 	Client* self;
-	self = mn_malloc(sizeof(Client));
+	self = in_malloc(sizeof(Client));
 	self->access       = access;
 	self->mode         = ACCESS_MODE_ANY;
 	self->host         = NULL;
@@ -40,7 +40,7 @@ client_free(Client* self)
 	auth_free(&self->auth);
 	uri_free(&self->uri);
 	tcp_free(&self->tcp);
-	mn_free(self);
+	in_free(self);
 }
 
 void
@@ -74,7 +74,7 @@ client_set_coroutine_name(Client* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(mn_self(), "client %s", addr);
+	coroutine_set_name(in_self(), "client %s", addr);
 }
 
 void
@@ -82,7 +82,7 @@ client_attach(Client* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
-	self->coroutine_id = mn_self()->id;
+	self->coroutine_id = in_self()->id;
 }
 
 void

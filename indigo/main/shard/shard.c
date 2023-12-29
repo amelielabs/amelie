@@ -52,7 +52,7 @@ shard_execute(Shard* self, Req* req)
 	if (catch(&e))
 	{
 		// error
-		reply = make_error(&mn_self()->error);
+		reply = make_error(&in_self()->error);
 		portal_write(&portal, reply);
 		abort = true;
 	}
@@ -161,7 +161,7 @@ shard_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&mn_task->channel, -1);
+		auto buf = channel_read(&in_task->channel, -1);
 		auto msg = msg_of(buf);
 		guard(buf_guard, buf_free, buf);
 
@@ -188,7 +188,7 @@ shard_main(void* arg)
 Shard*
 shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 {
-	Shard* self = mn_malloc(sizeof(*self));
+	Shard* self = in_malloc(sizeof(*self));
 	self->order = 0;
 	req_list_init(&self->prepared);
 	task_init(&self->task);
@@ -204,7 +204,7 @@ shard_free(Shard* self)
 	vm_free(&self->vm);
 	if (self->config)
 		shard_config_free(self->config);
-	mn_free(self);
+	in_free(self);
 }
 
 void

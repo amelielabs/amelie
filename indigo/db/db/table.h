@@ -22,13 +22,13 @@ table_free(Table* self)
 	storage_mgr_free(&self->storage_mgr);
 	if (self->config)
 		table_config_free(self->config);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline Table*
 table_allocate(TableConfig* config)
 {
-	Table* self = mn_malloc(sizeof(Table));
+	Table* self = in_malloc(sizeof(Table));
 	self->config = NULL;
 	storage_mgr_init(&self->storage_mgr);
 	serial_init(&self->serial);

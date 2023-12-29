@@ -26,7 +26,7 @@ server_listen_main(void* arg)
 		// set listen address
 		char addr_name[128];
 		socket_getaddrname(listen->addr->ai_addr, addr_name, sizeof(addr_name), true, true);
-		coroutine_set_name(mn_self(), "listen %s", addr_name);
+		coroutine_set_name(in_self(), "listen %s", addr_name);
 
 		// bind
 		listen_start(&listen->listen, 4096, listen->addr->ai_addr);

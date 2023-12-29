@@ -63,7 +63,7 @@ test_tcp_server(void *arg)
 		if (catch(&e))
 			break;
 
-		Tcp* client = mn_malloc(sizeof(Tcp));
+		Tcp* client = in_malloc(sizeof(Tcp));
 		tcp_init(client);
 		tcp_set_fd(client, fd);
 		tcp_connect_fd(client);

@@ -25,10 +25,10 @@ function_allocate(const char*  schema,
                   int          argc,
                   FunctionMain main)
 {
-	Function* self = mn_malloc(sizeof(Function));
+	Function* self = in_malloc(sizeof(Function));
 	self->argc = argc;
 	self->main = main;
-	guard(guard, mn_free, self);
+	guard(guard, in_free, self);
 	str_strdup(&self->schema, schema);
 	str_strdup(&self->name, name);
 	list_init(&self->link);
@@ -40,7 +40,7 @@ function_free(Function* self)
 {
 	str_free(&self->schema);
 	str_free(&self->name);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

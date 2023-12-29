@@ -37,9 +37,9 @@ static inline void
 buf_free_memory(Buf* self)
 {
 	if (self->start)
-		mn_free(self->start);
+		in_free(self->start);
 	if (self->cache)
-		mn_free(self);
+		in_free(self);
 }
 
 static inline int
@@ -78,7 +78,7 @@ buf_reserve_nothrow(Buf* self, int size)
 		size_grow = size_actual;
 
 	uint8_t* pointer;
-	pointer = mn_realloc_nothrow(self->start, size_grow);
+	pointer = in_realloc_nothrow(self->start, size_grow);
 	if (unlikely(pointer == NULL))
 		return -1;
 

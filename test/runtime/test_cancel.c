@@ -32,7 +32,7 @@ test_cancel_main(void *arg)
 {
 	Event* event = arg;
 	event_wait(event, -1);
-	test( mn_self()->cancel );
+	test( in_self()->cancel );
 }
 
 void
@@ -48,7 +48,7 @@ test_cancel(void *arg)
 	coroutine_sleep(0);
 
 	coroutine_kill(id);
-	test(! mn_self()->cancel );
+	test(! in_self()->cancel );
 }
 
 static bool pause_started = false;
@@ -59,14 +59,14 @@ test_cancel_pause_main(void* arg)
 {
 	Event* event = arg;
 
-	coroutine_cancel_pause(mn_self());
+	coroutine_cancel_pause(in_self());
 	pause_started = true;
 
 	event_wait(event, -1);
 	pause_handled = true;
 
 	/* cancellation point */
-	coroutine_cancel_resume(mn_self());
+	coroutine_cancel_resume(in_self());
 
 	/* unreach */
 	test( 0 );
@@ -93,7 +93,7 @@ test_cancel_pause(void *arg)
 	test( pause_handled );
 
 	coroutine_wait(id);
-	test(! mn_self()->cancel );
+	test(! in_self()->cancel );
 }
 
 static void
@@ -101,7 +101,7 @@ test_cancel_condition_main(void *arg)
 {
 	Condition* cond = arg;
 	condition_wait(cond, -1);
-	test( mn_self()->cancel );
+	test( in_self()->cancel );
 }
 
 void
@@ -116,7 +116,7 @@ test_cancel_condition(void *arg)
 	coroutine_sleep(0);
 
 	coroutine_kill(id);
-	test(! mn_self()->cancel );
+	test(! in_self()->cancel );
 
 	condition_free(cond);
 }
@@ -147,12 +147,12 @@ test_cancel_channel_pause(void *arg)
 	task_init(&task);
 	task_create(&task, "test", test_cancel_channel_pause_main, &channel);
 
-	uint64_t self = mn_self()->id;
+	uint64_t self = in_self()->id;
 	uint64_t id;
 	id = coroutine_create(test_cancel_channel_pause_canceller, &self);
 	test( id != 0 );
 
-	coroutine_cancel_pause(mn_self());
+	coroutine_cancel_pause(in_self());
 
 	auto buf = channel_read(&channel, -1);
 	test(buf);
@@ -164,7 +164,7 @@ test_cancel_channel_pause(void *arg)
 	channel_detach(&channel);
 	channel_free(&channel);
 
-	coroutine_cancel_resume(mn_self()); // throw
+	coroutine_cancel_resume(in_self()); // throw
 
 	/* unreach */
 	test( 0 );

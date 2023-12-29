@@ -19,13 +19,13 @@ view_free(View* self)
 {
 	if (self->config)
 		view_config_free(self->config);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline View*
 view_allocate(ViewConfig* config)
 {
-	View* self = mn_malloc(sizeof(View));
+	View* self = in_malloc(sizeof(View));
 	self->config = NULL;
 	guard(self_guard, view_free, self);
 	self->config = view_config_copy(config);

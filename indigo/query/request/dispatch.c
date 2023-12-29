@@ -52,7 +52,7 @@ dispatch_free(Dispatch* self)
 			if (req)
 				req_cache_push(self->cache, req);
 		}
-		mn_free(self->set);
+		in_free(self->set);
 	}
 	if (self->error)
 		buf_free(self->error);
@@ -88,7 +88,7 @@ dispatch_prepare(Dispatch* self, int stmts)
 	if (unlikely(self->set == NULL))
 	{
 		int size = sizeof(Req*) * self->router->set_size;
-		self->set = mn_malloc(size);
+		self->set = in_malloc(size);
 		self->set_size = self->router->set_size;
 		memset(self->set, 0, size);
 	}

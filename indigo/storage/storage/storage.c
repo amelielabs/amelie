@@ -18,7 +18,7 @@
 Storage*
 storage_allocate(StorageConfig* config, Mapping* map, Uuid* table)
 {
-	auto self = (Storage*)mn_malloc(sizeof(Storage));
+	auto self = (Storage*)in_malloc(sizeof(Storage));
 	self->list_count = 0;
 	self->table      = table;
 	self->map        = map;
@@ -41,7 +41,7 @@ storage_free(Storage* self)
 	}
 	buf_free(&self->list_dump);
 	mutex_free(&self->list_dump_lock);
-	mn_free(self);
+	in_free(self);
 }
 
 static void

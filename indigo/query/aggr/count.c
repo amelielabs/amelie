@@ -25,7 +25,7 @@
 static Aggr*
 aggr_count_create(AggrIf* iface)
 {
-	Aggr* self = mn_malloc(sizeof(Aggr));
+	Aggr* self = in_malloc(sizeof(Aggr));
 	self->iface = iface;
 	list_init(&self->link);
 	return self;
@@ -34,7 +34,7 @@ aggr_count_create(AggrIf* iface)
 static void
 aggr_count_free(Aggr* self)
 {
-	mn_free(self);
+	in_free(self);
 }
 
 static void

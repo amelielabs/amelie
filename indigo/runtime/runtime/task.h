@@ -27,12 +27,12 @@ struct Task
 	Thread         thread;
 };
 
-extern __thread Task* mn_task;
+extern __thread Task* in_task;
 
 static inline Coroutine*
-mn_self(void)
+in_self(void)
 {
-	return mn_task->coroutine_mgr.current;
+	return in_task->coroutine_mgr.current;
 }
 
 void task_init(Task*);

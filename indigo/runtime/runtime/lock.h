@@ -36,7 +36,7 @@ lock_init(Lock* self, LockerCache* locker_cache)
 hot static inline Locker*
 lock_lock(Lock* self, bool shared)
 {
-	auto coro = mn_self();
+	auto coro = in_self();
 	bool wait = false;
 
 	Locker* locker = NULL;
@@ -103,7 +103,7 @@ lock_lock(Lock* self, bool shared)
 hot static inline void
 lock_unlock(Locker* locker)
 {
-	assert(locker->coroutine == mn_self());
+	assert(locker->coroutine == in_self());
 	Lock* self = locker->lock;
 
 	// reentrant

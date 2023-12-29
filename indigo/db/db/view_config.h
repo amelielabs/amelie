@@ -20,7 +20,7 @@ static inline ViewConfig*
 view_config_allocate(void)
 {
 	ViewConfig* self;
-	self = mn_malloc(sizeof(ViewConfig));
+	self = in_malloc(sizeof(ViewConfig));
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_init(&self->query);
@@ -35,7 +35,7 @@ view_config_free(ViewConfig* self)
 	str_free(&self->name);
 	str_free(&self->query);
 	def_free(&self->def);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

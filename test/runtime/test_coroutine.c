@@ -15,7 +15,7 @@ static void
 test_coroutine_main(void* arg)
 {
 	(void)arg;
-	coroutine_called = mn_self()->id;
+	coroutine_called = in_self()->id;
 }
 
 void

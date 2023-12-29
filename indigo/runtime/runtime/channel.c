@@ -34,7 +34,7 @@ channel_attach_to(Channel* self, Poller* poller)
 void
 channel_attach(Channel* self)
 {
-	int rc = channel_attach_to(self, &mn_task->poller);
+	int rc = channel_attach_to(self, &in_task->poller);
 	if (unlikely(rc == -1))
 		error_system();
 }
@@ -62,7 +62,7 @@ hot static inline Buf*
 read_and_pin(Channel* self)
 {
 	mutex_lock(&self->lock);
-	auto next = buf_pool_pop(&self->pool, &mn_self()->buf_pool);
+	auto next = buf_pool_pop(&self->pool, &in_self()->buf_pool);
 	mutex_unlock(&self->lock);
 	return next;
 }

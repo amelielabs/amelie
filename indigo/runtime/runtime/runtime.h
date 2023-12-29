@@ -8,18 +8,18 @@
 
 // memory
 static inline void*
-mn_malloc(size_t size)
+in_malloc(size_t size)
 {
-	auto ptr = mn_malloc_nothrow(size);
+	auto ptr = in_malloc_nothrow(size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
 }
 
 static inline void*
-mn_realloc(void* pointer, size_t size)
+in_realloc(void* pointer, size_t size)
 {
-	auto ptr = mn_realloc_nothrow(pointer, size);
+	auto ptr = in_realloc_nothrow(pointer, size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
@@ -28,7 +28,7 @@ mn_realloc(void* pointer, size_t size)
 static inline void*
 palloc(size_t size)
 {
-	auto ptr = arena_allocate_nothrow(&mn_self()->arena, size);
+	auto ptr = arena_allocate_nothrow(&in_self()->arena, size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
@@ -37,20 +37,20 @@ palloc(size_t size)
 static inline int
 palloc_snapshot(void)
 {
-	return mn_self()->arena.offset;
+	return in_self()->arena.offset;
 }
 
 static inline void
 palloc_truncate(int snapshot)
 {
-	arena_truncate(&mn_self()->arena, snapshot);
+	arena_truncate(&in_self()->arena, snapshot);
 }
 
 // string
 static inline int
 str_strndup_nothrow(Str* str, const void* string, int size)
 {
-	char* pos = mn_malloc_nothrow(size + 1);
+	char* pos = in_malloc_nothrow(size + 1);
 	if (unlikely(pos == NULL))
 		return -1;
 	memcpy(pos, string, size);
@@ -83,7 +83,7 @@ static inline Buf*
 buf_pin(Buf* buf)
 {
 	assert(buf->cache);
-	buf_pool_add(&mn_self()->buf_pool, buf);
+	buf_pool_add(&in_self()->buf_pool, buf);
 	return buf;
 }
 
@@ -98,7 +98,7 @@ buf_unpin(Buf* buf)
 static inline Buf*
 buf_create(int size)
 {
-	auto buf = buf_create_nothrow(&mn_task->buf_cache, size);
+	auto buf = buf_create_nothrow(&in_task->buf_cache, size);
 	if (unlikely(buf == NULL))
 		error_system();
 	buf_pin(buf);
@@ -172,7 +172,7 @@ buf_printf(Buf* buf, const char* fmt, ...)
 static inline Buf*
 msg_create(int id)
 {
-	auto buf = msg_create_nothrow(&mn_task->buf_cache, id, 0);
+	auto buf = msg_create_nothrow(&in_task->buf_cache, id, 0);
 	if (unlikely(buf == NULL))
 		error_system();
 	buf_pin(buf);
@@ -184,7 +184,7 @@ hot static inline bool
 event_wait(Event* event, int time_ms)
 {
 	cancellation_point();
-	bool timedout = wait_event(event, &mn_task->timer_mgr, mn_self(), time_ms);
+	bool timedout = wait_event(event, &in_task->timer_mgr, in_self(), time_ms);
 	cancellation_point();
 	return timedout;
 }
@@ -193,14 +193,14 @@ event_wait(Event* event, int time_ms)
 static inline Condition*
 condition_create(void)
 {
-	auto cond = condition_create_nothrow(&mn_task->condition_cache);
+	auto cond = condition_create_nothrow(&in_task->condition_cache);
 	if (unlikely(cond == NULL))
 		error_system();
 	int rc;
-	rc = condition_attach(cond, &mn_task->poller);
+	rc = condition_attach(cond, &in_task->poller);
 	if (unlikely(rc == -1))
 	{
-		condition_cache_push(&mn_task->condition_cache, cond);
+		condition_cache_push(&in_task->condition_cache, cond);
 		error_system();
 	}
 	return cond;
@@ -209,7 +209,7 @@ condition_create(void)
 static inline void
 condition_free(Condition* cond)
 {
-	condition_cache_push(&mn_task->condition_cache, cond);
+	condition_cache_push(&in_task->condition_cache, cond);
 }
 
 hot static inline bool
@@ -223,7 +223,7 @@ static inline uint64_t
 coroutine_create(MainFunction function, void* arg)
 {
 	auto coro =
-		coroutine_mgr_create(&mn_task->coroutine_mgr, task_coroutine_main,
+		coroutine_mgr_create(&in_task->coroutine_mgr, task_coroutine_main,
 		                     function, arg);
 	if (unlikely(coro == NULL))
 		error_system();
@@ -233,19 +233,19 @@ coroutine_create(MainFunction function, void* arg)
 static inline void
 coroutine_wait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&mn_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&in_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
-	auto self = mn_self();
+	auto self = in_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &mn_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, &in_task->timer_mgr, self, -1);
 	coroutine_cancel_resume(self);
 }
 
 static inline void
 coroutine_kill_nowait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&mn_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&in_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
@@ -254,13 +254,13 @@ coroutine_kill_nowait(uint64_t id)
 static inline void
 coroutine_kill(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&mn_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&in_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
-	auto self = mn_self();
+	auto self = in_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &mn_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, &in_task->timer_mgr, self, -1);
 	coroutine_cancel_resume(self);
 }
 
@@ -289,9 +289,9 @@ task_create(Task*        self,
 {
 	int rc;
 	rc = task_create_nothrow(self, name, main, main_arg,
-	                         mn_task->main_arg_global,
-	                         mn_task->log,
-	                         mn_task->log_arg);
+	                         in_task->main_arg_global,
+	                         in_task->log,
+	                         in_task->log_arg);
 	if (unlikely(rc == -1))
 		error_system();
 }
@@ -300,7 +300,7 @@ task_create(Task*        self,
 static inline uint64_t
 time_ms(void)
 {
-	return timer_mgr_time_ms(&mn_task->timer_mgr);
+	return timer_mgr_time_ms(&in_task->timer_mgr);
 }
 
 // log
@@ -310,7 +310,7 @@ log_at(const char* file,
        const char* prefix,
        const char* fmt, ...)
 {
-	if (mn_task->log == NULL)
+	if (in_task->log == NULL)
 		return;
 
 	va_list args;
@@ -319,21 +319,21 @@ log_at(const char* file,
 	vsnprintf(text, sizeof(text), fmt, args);
 	va_end(args);
 
-	auto self = mn_self();
+	auto self = in_self();
 	if (self->name[0] != 0)
-		mn_task->log(mn_task->log_arg,
+		in_task->log(in_task->log_arg,
 		             file,
 		             function,
 		             line,
 		             "%s %s  %s%s",
-		             mn_task->name, self->name, prefix, text);
+		             in_task->name, self->name, prefix, text);
 	else
-		mn_task->log(mn_task->log_arg,
+		in_task->log(in_task->log_arg,
 		             file,
 		             function,
 		             line,
 		             "%s  %s%s",
-		             mn_task->name, prefix, text);
+		             in_task->name, prefix, text);
 }
 
 #define log(fmt, ...) \

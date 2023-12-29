@@ -58,7 +58,7 @@ def_free(Def* self)
 		column = next;
 	}
 	if (self->column_index)
-		mn_free(self->column_index);
+		in_free(self->column_index);
 
 	auto key = self->key;
 	while (key)
@@ -79,7 +79,7 @@ static inline void
 def_add_column(Def* self, Column* column)
 {
 	Column** column_index;
-	column_index = mn_realloc(self->column_index,
+	column_index = in_realloc(self->column_index,
 	                          sizeof(Column*) * (self->column_count + 1));
 	column->order = self->column_count;
 	if (self->column == NULL)

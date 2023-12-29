@@ -57,7 +57,7 @@ coroutine_free(Coroutine* self)
 	buf_pool_reset(&self->buf_pool);
 	arena_reset(&self->arena);
 	context_stack_free(&self->stack);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

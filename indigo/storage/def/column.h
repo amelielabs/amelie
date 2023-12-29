@@ -23,7 +23,7 @@ struct Column
 static inline Column*
 column_allocate(void)
 {
-	Column* self = mn_malloc(sizeof(Column));
+	Column* self = in_malloc(sizeof(Column));
 	self->order    = 0;
 	self->type     = -1;
 	self->key      = NULL;
@@ -39,7 +39,7 @@ column_free(Column* self)
 {
 	str_free(&self->name);
 	constraint_free(&self->constraint);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

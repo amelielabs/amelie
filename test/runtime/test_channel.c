@@ -141,7 +141,7 @@ static void
 test_channel_consumer(void *arg)
 {
 	Condition* on_complete = arg;
-	auto channel = &mn_task->channel; 
+	auto channel = &in_task->channel; 
 	for (;;)
 	{
 		auto buf = channel_read(channel, -1);

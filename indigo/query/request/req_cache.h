@@ -67,7 +67,7 @@ req_create(ReqCache* self)
 		list_init(&req->link);
 	} else
 	{
-		req = mn_malloc(sizeof(Req));
+		req = in_malloc(sizeof(Req));
 		req_init(req, self);
 		guard(guard, req_free, req);
 		channel_attach(&req->src);

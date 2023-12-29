@@ -131,7 +131,7 @@ coroutine_mgr_create(CoroutineMgr* self,
 		arena_reset(&coro->arena);
 	} else
 	{
-		coro = mn_malloc_nothrow(sizeof(Coroutine));
+		coro = in_malloc_nothrow(sizeof(Coroutine));
 		if (unlikely(coro == NULL))
 			return NULL;
 		coroutine_init(coro, self);
@@ -139,7 +139,7 @@ coroutine_mgr_create(CoroutineMgr* self,
 		rc = context_stack_allocate(&coro->stack, self->stack_size);
 		if (unlikely(rc == -1))
 		{
-			mn_free(coro);
+			in_free(coro);
 			return NULL;
 		}
 	}

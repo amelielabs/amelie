@@ -16,7 +16,7 @@ struct Global
 	Resolver* resolver;
 };
 
-#define global() ((Global*)mn_task->main_arg_global)
+#define global() ((Global*)in_task->main_arg_global)
 #define config()  global()->config
 
 static inline const char*

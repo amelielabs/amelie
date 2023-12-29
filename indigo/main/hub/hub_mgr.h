@@ -31,7 +31,7 @@ hub_mgr_start(HubMgr* self, Share* share,
 	if (count == 0)
 		return;
 	self->workers_count = count;
-	self->workers = mn_malloc(sizeof(Hub) * count);
+	self->workers = in_malloc(sizeof(Hub) * count);
 	int i = 0;
 	for (; i < count; i++)
 		hub_init(&self->workers[i], share, iface);
@@ -49,7 +49,7 @@ hub_mgr_stop(HubMgr* self)
 		hub_stop(&self->workers[i]);
 		hub_free(&self->workers[i]);
 	}
-	mn_free(self->workers);
+	in_free(self->workers);
 	self->workers = NULL;
 }
 

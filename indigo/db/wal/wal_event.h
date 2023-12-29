@@ -87,7 +87,7 @@ wal_event_mgr_wait(WalEventMgr* self, WalEvent* event, uint64_t lsn,
 	spinlock_unlock(&self->lock);
 
 	// wait for signal
-	coroutine_cancel_pause(mn_self());
+	coroutine_cancel_pause(in_self());
 	bool timedout;
 	timedout = condition_wait(event->event, time_ms);
 
@@ -102,7 +102,7 @@ wal_event_mgr_wait(WalEventMgr* self, WalEvent* event, uint64_t lsn,
 	spinlock_unlock(&self->lock);
 
 	// cancellation point
-	coroutine_cancel_resume(mn_self());
+	coroutine_cancel_resume(in_self());
 	return timedout;
 }
 

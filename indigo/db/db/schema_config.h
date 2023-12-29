@@ -19,7 +19,7 @@ static inline SchemaConfig*
 schema_config_allocate(void)
 {
 	SchemaConfig* self;
-	self = mn_malloc(sizeof(SchemaConfig));
+	self = in_malloc(sizeof(SchemaConfig));
 	self->system = false;
 	self->create = false;
 	str_init(&self->name);
@@ -30,7 +30,7 @@ static inline void
 schema_config_free(SchemaConfig* self)
 {
 	str_free(&self->name);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

@@ -22,7 +22,7 @@ struct Key
 static inline Key*
 key_allocate(void)
 {
-	Key* self = mn_malloc(sizeof(Key));
+	Key* self = in_malloc(sizeof(Key));
 	self->order       = -1;
 	self->column      = -1;
 	self->type        = -1;
@@ -37,7 +37,7 @@ static inline void
 key_free(Key* self)
 {
 	str_free(&self->path);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

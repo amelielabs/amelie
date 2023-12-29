@@ -25,7 +25,7 @@ poller_free(Poller* self)
 		self->fd = -1;
 	}
 	if (self->list)
-		free(self->list);
+		in_free(self->list);
 }
 
 int
@@ -35,7 +35,7 @@ poller_create(Poller* self)
 
 	// prepare event list
 	int size = sizeof(struct epoll_event)*  1024;
-	self->list = mn_malloc_nothrow(size);
+	self->list = in_malloc_nothrow(size);
 	if (unlikely(self->list == NULL))
 		return -1;
 	memset(self->list, 0, size);
@@ -92,7 +92,7 @@ poller_add(Poller* self, Fd* fd)
 	if (count >= self->list_max)
 	{
 		int   list_max = self->list_max*  2;
-		void* list = mn_realloc_nothrow(self->list, list_max * sizeof(struct epoll_event));
+		void* list = in_realloc_nothrow(self->list, list_max * sizeof(struct epoll_event));
 		if (unlikely(list == NULL))
 			return -1;
 		self->list = list;

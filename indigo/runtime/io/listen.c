@@ -50,7 +50,7 @@ listen_socket_init(int fd, struct sockaddr* addr)
 void
 listen_start(Listen* self, int backlog, struct sockaddr* addr)
 {
-	auto poller = &mn_task->poller;
+	auto poller = &in_task->poller;
 
 	self->fd.fd = socket_for(addr);
 	if (unlikely(self->fd.fd == -1))

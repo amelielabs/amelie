@@ -18,7 +18,7 @@
 Part*
 part_allocate(Uuid* id_table, Uuid* id_storage)
 {
-	auto self = (Part*)mn_malloc(sizeof(Part));
+	auto self = (Part*)in_malloc(sizeof(Part));
 	self->id_storage    = id_storage;
 	self->id_table      = id_table;
 	self->min           = INT64_MIN;
@@ -40,7 +40,7 @@ part_free(Part* self)
 		auto index = list_at(Index, link);
 		index_free(index);
 	}
-	mn_free(self);
+	in_free(self);
 }
 
 void

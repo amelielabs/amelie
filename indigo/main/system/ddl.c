@@ -303,7 +303,7 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 	if (catch(&e))
 	{
 		// rpc by unlock changes code
-		mn_self()->error.code = ERROR;
+		in_self()->error.code = ERROR;
 
 		transaction_abort(&trx);
 		transaction_free(&trx);

@@ -144,7 +144,7 @@ row_allocate(Def* def, int data_size)
 
 	// allocate row
 	int size = row_size_meta(def, size_factor) + data_size;
-	Row* self = mn_malloc(size);
+	Row* self = in_malloc(size);
 	self->size_factor = size_factor;
 	self->is_secondary = false;
 	self->flags        = 0;
@@ -157,7 +157,7 @@ row_allocate(Def* def, int data_size)
 static inline void
 row_free(Row* self)
 {
-	mn_free(self);
+	in_free(self);
 }
 
 Row* row_create(Def*, uint8_t*, int);

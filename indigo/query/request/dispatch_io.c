@@ -180,7 +180,7 @@ dispatch_recv(Dispatch* self, Portal* portal)
 		return;
 
 	assert(! self->error);
-	coroutine_cancel_pause(mn_self());
+	coroutine_cancel_pause(in_self());
 
 	// process routes 1 by 1 to get deterministic result
 	int stmt = self->stmt_current;
@@ -202,7 +202,7 @@ dispatch_recv(Dispatch* self, Portal* portal)
 
 	// complete stmt
 	self->stmt_current++;
-	coroutine_cancel_resume(mn_self());
+	coroutine_cancel_resume(in_self());
 
 	if (unlikely(self->error))
 	{

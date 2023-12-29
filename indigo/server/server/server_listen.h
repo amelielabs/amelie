@@ -24,7 +24,7 @@ static inline ServerListen*
 server_listen_allocate(ServerConfig* config)
 {
 	ServerListen* self;
-	self = (ServerListen*)mn_malloc(sizeof(*self));
+	self = (ServerListen*)in_malloc(sizeof(*self));
 	self->worker      = UINT64_MAX;
 	self->addr        = NULL;
 	self->tls         = false;
@@ -39,5 +39,5 @@ server_listen_allocate(ServerConfig* config)
 static inline void
 server_listen_free(ServerListen* self)
 {
-	mn_free(self);
+	in_free(self);
 }

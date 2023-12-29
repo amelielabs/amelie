@@ -38,9 +38,9 @@ static inline void
 router_free(Router* self)
 {
 	if (self->map)
-		mn_free(self->map);
+		in_free(self->map);
 	if (self->set)
-		mn_free(self->set);
+		in_free(self->set);
 }
 
 static inline void
@@ -48,13 +48,13 @@ router_create(Router* self, int count)
 {
 	// partition map
 	int size = sizeof(Route) * PARTITION_MAX;
-	self->map      = mn_malloc(size);
+	self->map      = in_malloc(size);
 	self->map_size = PARTITION_MAX;
 	memset(self->map, 0, size);
 
 	// routes
 	size = sizeof(Route) * count;
-	self->set = mn_malloc(size);
+	self->set = in_malloc(size);
 	self->set_size = count;
 	memset(self->set, 0, size);
 }

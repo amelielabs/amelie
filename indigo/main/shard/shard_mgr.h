@@ -38,7 +38,7 @@ shard_mgr_free(ShardMgr* self)
 				shard_free(shard);
 			}
 		}
-		mn_free(self->shards);
+		in_free(self->shards);
 	}
 }
 
@@ -83,7 +83,7 @@ shard_mgr_open(ShardMgr* self)
 
 	int allocated = count * sizeof(Shard*);
 	self->shards_count = count;
-	self->shards = mn_malloc(allocated);
+	self->shards = in_malloc(allocated);
 	memset(self->shards, 0, allocated);
 	for (int i = 0; i < count; i++)
 	{
@@ -105,7 +105,7 @@ shard_mgr_create(ShardMgr* self, int count)
 	// prepare index
 	int allocated = count * sizeof(Shard*);
 	self->shards_count = count;
-	self->shards = mn_malloc(allocated);
+	self->shards = in_malloc(allocated);
 	memset(self->shards, 0, allocated);
 
 	// partition_max / shards_count

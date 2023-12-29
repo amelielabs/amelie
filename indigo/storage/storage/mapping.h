@@ -25,7 +25,7 @@ static inline Mapping*
 mapping_allocate(void)
 {
 	Mapping* self;
-	self = mn_malloc(sizeof(Mapping));
+	self = in_malloc(sizeof(Mapping));
 	self->type = MAP_NONE;
 	self->interval = 0;
 	return self;
@@ -34,7 +34,7 @@ mapping_allocate(void)
 static inline void
 mapping_free(Mapping* self)
 {
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

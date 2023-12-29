@@ -42,7 +42,7 @@ group_free(ValueObj* obj)
 				continue;
 			for (int j = 0; j < self->keys_count; j++)
 				value_free(&index[i]->keys[j]);
-			mn_free(index[i]);
+			in_free(index[i]);
 		}
 	}
 	self->aggr_size  = 0;
@@ -50,13 +50,13 @@ group_free(ValueObj* obj)
 	self->keys_count = 0;
 
 	hashtable_free(&self->ht);
-	mn_free(self);
+	in_free(self);
 }
 
 Group*
 group_create(int keys_count)
 {
-	Group* self = mn_malloc(sizeof(Group));
+	Group* self = in_malloc(sizeof(Group));
 	self->obj.free    = group_free;
 	self->obj.convert = NULL;
 	self->aggr_size   = 0;
@@ -115,7 +115,7 @@ group_create_node(GroupKey* key)
 	// allocate new node
 	int index_size = sizeof(Value) * self->keys_count;
 	GroupNode* node;
-	node = mn_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
+	node = in_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
 	node->node.hash = key->hash;
 
 	// copy keys

@@ -20,7 +20,7 @@ static inline ShardConfig*
 shard_config_allocate(void)
 {
 	ShardConfig* self;
-	self = mn_malloc(sizeof(*self));
+	self = in_malloc(sizeof(*self));
 	self->range_start = 0;
 	self->range_start = 0;
 	uuid_init(&self->id);
@@ -32,7 +32,7 @@ static inline void
 shard_config_free(ShardConfig* self)
 {
 	str_free(&self->name);
-	mn_free(self);
+	in_free(self);
 }
 
 static inline void

@@ -281,13 +281,13 @@ tree_free(Index* arg)
 	auto self = tree_of(arg);
 	if (self->tree.root)
 		tree_truncate(self->tree.root, NULL);
-	mn_free(self);
+	in_free(self);
 }
 
 Index*
 tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
 {
-	Tree* self = mn_malloc(sizeof(*self));
+	Tree* self = in_malloc(sizeof(*self));
 	self->tree_count = 0;
 	self->lsn        = 0;
 	rbtree_init(&self->tree);

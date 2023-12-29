@@ -68,7 +68,7 @@ buf_create_nothrow(BufCache* self, int size)
 		buf_reset(buf);
 	} else
 	{
-		buf = mn_malloc_nothrow(sizeof(Buf));
+		buf = in_malloc_nothrow(sizeof(Buf));
 		if (unlikely(buf == NULL))
 			return NULL;
 		buf_init(buf);

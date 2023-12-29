@@ -60,7 +60,7 @@ group_node_free(void** argv)
 	GroupNode* node = ((void**)argv)[1];
 	for (int j = 0; j < self->keys_count; j++)
 		value_free(&node->keys[j]);
-	mn_free(node);
+	in_free(node);
 }
 
 hot static inline void
