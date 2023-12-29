@@ -1,26 +1,26 @@
 
 //
-// monotone
+// indigo
 //	
 // SQL OLTP database
 //
 
-#include <monotone_runtime.h>
-#include <monotone_io.h>
-#include <monotone_data.h>
-#include <monotone_lib.h>
-#include <monotone_config.h>
-#include <monotone_auth.h>
-#include <monotone_client.h>
-#include <monotone_server.h>
-#include <monotone_def.h>
-#include <monotone_transaction.h>
-#include <monotone_index.h>
-#include <monotone_storage.h>
-#include <monotone_wal.h>
-#include <monotone_db.h>
-#include <monotone_value.h>
-#include <monotone_aggr.h>
+#include <indigo_runtime.h>
+#include <indigo_io.h>
+#include <indigo_data.h>
+#include <indigo_lib.h>
+#include <indigo_config.h>
+#include <indigo_auth.h>
+#include <indigo_client.h>
+#include <indigo_server.h>
+#include <indigo_def.h>
+#include <indigo_transaction.h>
+#include <indigo_index.h>
+#include <indigo_storage.h>
+#include <indigo_wal.h>
+#include <indigo_db.h>
+#include <indigo_value.h>
+#include <indigo_aggr.h>
 
 static Aggr*
 aggr_max_create(AggrIf* iface)

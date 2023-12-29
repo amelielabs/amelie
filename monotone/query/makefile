@@ -1,5 +1,5 @@
 #
-# monotone query makefile
+# indigo query makefile
 #
 CC             = clang
 AR             = ar
@@ -32,7 +32,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Isemantic \
                  -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libmonotone-query.a
+LIB            = libindigo-query.a
 OBJECTS        = \
                  value/update.o \
                  aggr/set.o \
