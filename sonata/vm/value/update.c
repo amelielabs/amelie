@@ -1,25 +1,21 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
 
 static inline bool
 update_path_has(char** path, int* path_size)
@@ -363,54 +359,46 @@ update_unset_to(Buf* buf, uint8_t** pos, char** path, int* path_size)
 hot void
 update_set(Value* result, uint8_t* data, Str* path, Value* value)
 {
-	auto  buf = msg_create(MSG_OBJECT);
+	auto  buf = buf_begin();
 	bool  found = false;
 	char* path_ptr = str_of(path);
 	int   path_size = str_size(path);
 	update_set_to(buf, &data, &path_ptr, &path_size, value, &found);
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 hot void
 update_set_array(Value* result, uint8_t* data, int idx,
                  Str* path, Value* value)
 {
-	auto  buf = msg_create(MSG_OBJECT);
+	auto  buf = buf_begin();
 	bool  found = false;
 	char* path_ptr = str_of(path);
 	int   path_size = str_size(path);
 	update_set_to_array(buf, &data, idx, &path_ptr, &path_size, value, &found);
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 hot void
 update_unset(Value* result, uint8_t* data, Str* path)
 {
-	auto  buf = msg_create(MSG_OBJECT);
+	auto  buf = buf_begin();
 	char* path_ptr = str_of(path);
 	int   path_size = str_size(path);
 	update_unset_to(buf, &data, &path_ptr, &path_size);
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 hot void
 update_unset_array(Value* result, uint8_t* data, int idx, Str* path)
 {
-	auto  buf = msg_create(MSG_OBJECT);
+	auto  buf = buf_begin();
 	char* path_ptr = str_of(path);
 	int   path_size = str_size(path);
 	update_unset_to_array(buf, &data, idx, &path_ptr, &path_size);
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }

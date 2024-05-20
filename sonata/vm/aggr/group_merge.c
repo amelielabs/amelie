@@ -1,26 +1,22 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
 
 hot static inline bool
 group_node_cmp(HashtableNode* node, void* ptr)
@@ -43,7 +39,7 @@ group_node_find(Group* self, GroupNode* key)
 {
 	HashtableNode* node;
 	if (self->keys_count == 0) {
-		node = hashtable_at(&self->ht, 0); // 0
+		node = hashtable_at(&self->ht, 0);
 	} else {
 		void* argv[] = { self, key };
 		node = hashtable_get(&self->ht, key->node.hash, group_node_cmp, argv);
@@ -60,14 +56,14 @@ group_node_free(void** argv)
 	GroupNode* node = ((void**)argv)[1];
 	for (int j = 0; j < self->keys_count; j++)
 		value_free(&node->keys[j]);
-	in_free(node);
+	so_free(node);
 }
 
 hot static inline void
 group_merge_node(Group* self, GroupNode* node)
 {
 	void* argv[] = { self, node };
-	guard(node_guard, group_node_free, argv);
+	guard(group_node_free, argv);
 
 	// move node if not exists
 	auto src = group_node_find(self, node);
@@ -78,7 +74,7 @@ group_merge_node(Group* self, GroupNode* node)
 
 		// move node
 		hashtable_set(&self->ht, &node->node);
-		unguard(&node_guard);
+		unguard();
 		return;
 	}
 

@@ -1,16 +1,16 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Stack Stack;
 
 struct Stack
 {
-	Value lifo[1100];
+	Value lifo[300];
 	int   size;
 	int   size_max;
 };
@@ -19,7 +19,7 @@ static inline void
 stack_init(Stack* self)
 {
 	self->size     = 0;
-	self->size_max = 1100;
+	self->size_max = 300;
 	memset(self->lifo, 0, sizeof(self->lifo));
 }
 

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct FunctionMgr FunctionMgr;
@@ -54,15 +54,12 @@ function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 static inline Buf*
 function_mgr_list(FunctionMgr* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// array
+	auto buf = buf_begin();
 	encode_array(buf, self->list_count);
 	list_foreach(&self->list)
 	{
 		auto func = list_at(Function, link);
-		// {}
 		function_write(func, buf);
 	}
-	msg_end(buf);
-	return buf;
+	return buf_end(buf);
 }

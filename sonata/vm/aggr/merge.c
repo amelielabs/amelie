@@ -1,74 +1,99 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
 
 static void
 merge_free(ValueObj* obj)
 {
 	auto self = (Merge*)obj;
-	auto list = (SetIterator*)self->list.start;
+	auto list = (Set**)self->list.start;
 	for (int i = 0; i < self->list_count; i++)
 	{
-		auto set = list[i].set;
+		auto set = list[i];
 		set->obj.free(&set->obj);
 	}
 	buf_free(&self->list);
-	in_free(self);
+	so_free(self);
 }
 
 static void
-merge_convert(ValueObj* obj, Buf* buf)
+merge_encode(ValueObj* obj, Buf* buf)
 {
-	auto self  = (Merge*)obj;
-	int  count = 0;
-	auto list  = (SetIterator*)self->list.start;
-	for (int i = 0; i < self->list_count; i++)
+	auto self = (Merge*)obj;
+	MergeIterator it;
+	merge_iterator_init(&it);
+	guard(merge_iterator_free, &it);
+
+	// []
+	int start = buf_size(buf);
+	encode_array32(buf, 0);
+
+	merge_iterator_open(&it, self);
+	int count = 0;
+	while (merge_iterator_has(&it))
 	{
-		auto set = list[i].set;
-		count += set->list_count;
+		auto row = merge_iterator_at(&it);
+		value_write(&row->value, buf);
+		merge_iterator_next(&it);
+		count++;
 	}
 
-	encode_array(buf, count);
-	while (merge_has(self))
+	// update pos
+	uint8_t* pos = buf->start + start;
+	data_write_array32(&pos, count);
+}
+
+static void
+merge_decode(ValueObj* obj, Body* body)
+{
+	auto self = (Merge*)obj;
+	MergeIterator it;
+	merge_iterator_init(&it);
+	guard(merge_iterator_free, &it);
+
+	merge_iterator_open(&it, self);
+	auto first = true;
+	while (merge_iterator_has(&it))
 	{
-		value_write(&merge_at(self)->value, buf);
-		merge_next(self);
+		auto row = merge_iterator_at(&it);
+		if (! first)
+			body_add_comma(body);
+		else
+			first = false;
+		body_add(body, &row->value);
+		merge_iterator_next(&it);
 	}
 }
 
 Merge*
 merge_create(void)
 {
-	Merge* self = in_malloc(sizeof(Merge));
-	self->obj.free    = merge_free;
-	self->obj.convert = merge_convert;
-	self->current_it  = NULL;
-	self->current     = NULL;
-	self->keys        = NULL;
-	self->keys_count  = 0;
-	self->list_count  = 0;
-	self->limit       = INT64_MAX;
-	self->distinct    = false;
+	Merge* self = so_malloc(sizeof(Merge));
+	self->obj.free   = merge_free;
+	self->obj.encode = merge_encode;
+	self->obj.decode = merge_decode;
+	self->keys       = NULL;
+	self->keys_count = 0;
+	self->list_count = 0;
+	self->limit      = INT64_MAX;
+	self->offset     = 0;
+	self->distinct   = false;
 	buf_init(&self->list);
 	return self;
 }
@@ -77,11 +102,7 @@ void
 merge_add(Merge* self, Set* set)
 {
 	// add set iterator
-	buf_reserve(&self->list, sizeof(SetIterator));
-	auto it = (SetIterator*)self->list.position;
-	set_iterator_init(it);
-	set_iterator_open(it, set);
-	buf_advance(&self->list, sizeof(SetIterator));
+	buf_write(&self->list, &set, sizeof(Set**));
 	self->list_count++;
 
 	// set keys
@@ -92,102 +113,10 @@ merge_add(Merge* self, Set* set)
 	}
 }
 
-hot static inline void
-merge_step(Merge* self)
-{
-	auto list = (SetIterator*)self->list.start;
-	if (self->current_it)
-	{
-		set_iterator_next(self->current_it);
-		self->current_it = NULL;
-	}
-	self->current = NULL;
-
-	SetIterator* min_iterator = NULL;
-	SetRow*      min = NULL;
-	for (int pos = 0; pos < self->list_count; pos++)
-	{
-		auto current = &list[pos];
-		auto row = set_iterator_at(current);
-		if (row == NULL)
-			continue;
-
-		if (min == NULL)
-		{
-			min_iterator = current;
-			min = row;
-			if (! self->keys)
-				break;
-			continue;
-		}
-
-		int rc;
-		rc = set_compare(self->keys, self->keys_count, min, row);
-		switch (rc) {
-		case 0:
-			break;
-		case 1:
-			min_iterator = current;
-			min = row;
-			break;
-		case -1:
-			break;
-		}
-	}
-	self->current_it = min_iterator;
-	self->current    = min;
-}
-
-hot void
-merge_next(Merge* self)
-{
-	// apply limit
-	if (self->limit-- <= 0)
-	{
-		self->current_it = NULL;
-		self->current    = NULL;
-		return;
-	}
-
-	if (! self->distinct)
-	{
-		merge_step(self);
-		return;
-	}
-
-	// skip duplicates
-	auto prev = self->current;
-	for (;;)
-	{
-		merge_step(self);
-		auto at = merge_at(self);
-		if (unlikely(!at || !prev))
-			break;
-		if (set_compare(self->keys, self->keys_count, prev, at) != 0)
-			break;
-	}
-}
-
 void
 merge_open(Merge* self, bool distinct, int64_t limit, int64_t offset)
 {
 	self->distinct = distinct;
-
-	// set to position
-	if (offset == 0)
-	{
-		self->limit = limit;
-		merge_next(self);
-		return;
-	}
-
-	merge_next(self);
-
-	// apply offset
-	while (offset-- > 0 && merge_has(self))
-		merge_next(self);
-
-	self->limit = limit - 1;
-	if (self->limit < 0)
-		self->current = NULL;
+	self->limit    = limit;
+	self->offset   = offset;
 }

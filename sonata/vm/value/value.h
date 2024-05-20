@@ -1,15 +1,16 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
+typedef struct Body     Body;
 typedef struct ValueObj ValueObj;
 typedef struct Value    Value;
 
-enum
+typedef enum
 {
 	VALUE_NONE,
 	VALUE_INT,
@@ -21,17 +22,18 @@ enum
 	VALUE_SET,
 	VALUE_MERGE,
 	VALUE_GROUP
-};
+} ValueType;
 
 struct ValueObj
 {
 	void (*free)(ValueObj*);
-	void (*convert)(ValueObj*, Buf*);
+	void (*encode)(ValueObj*, Buf*);
+	void (*decode)(ValueObj*, Body*);
 };
 
 struct Value
 {
-	int type;
+	ValueType type;
 	union
 	{
 		int64_t integer;
@@ -118,10 +120,9 @@ value_set_data(Value* self, uint8_t* data, int data_size, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_data_from(Value* self, Buf* buf)
+value_set_buf(Value* self, Buf* buf)
 {
-	auto msg = msg_of(buf);
-	value_set_data(self, msg->data, msg_data_size(msg), buf);
+	value_set_data(self, buf->start, buf_size(buf), buf);
 }
 
 always_inline hot static inline void
@@ -152,36 +153,36 @@ hot static inline void
 value_read(Value* self, uint8_t* data, Buf* buf)
 {
 	switch (*data) {
-	case MN_TRUE:
-	case MN_FALSE:
+	case SO_TRUE:
+	case SO_FALSE:
 	{
 		bool boolean;
 		data_read_bool(&data, &boolean);
 		value_set_bool(self, boolean);
 		break;
 	}
-	case MN_NULL:
+	case SO_NULL:
 	{
 		value_set_null(self);
 		break;
 	}
-	case MN_REAL32:
-	case MN_REAL64:
+	case SO_REAL32:
+	case SO_REAL64:
 	{
 		double real;
 		data_read_real(&data, &real);
 		value_set_real(self, real);
 		break;
 	}
-	case MN_INTV0 ... MN_INT64:
+	case SO_INTV0 ... SO_INT64:
 	{
 		int64_t integer;
 		data_read_integer(&data, &integer);
 		value_set_int(self, integer);
 		break;
 	}
-	case MN_ARRAYV0 ... MN_ARRAY32:
-	case MN_MAPV0 ... MN_MAP32:
+	case SO_ARRAYV0 ... SO_ARRAY32:
+	case SO_MAPV0 ... SO_MAP32:
 	{
 		uint8_t* end = data;
 		data_skip(&end);
@@ -190,7 +191,7 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 			buf_ref(buf);
 		break;
 	}
-	case MN_STRINGV0 ... MN_STRING32:
+	case SO_STRINGV0 ... SO_STRING32:
 	{
 		Str string;
 		data_read_string(&data, &string);
@@ -229,7 +230,7 @@ value_write(Value* self, Buf* buf)
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
-		self->obj->convert(self->obj, buf);
+		self->obj->encode(self->obj, buf);
 		break;
 	// VALUE_GROUP
 	default:
@@ -313,11 +314,10 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = msg_create(MSG_OBJECT);
+			auto buf = buf_begin();
 			encode_string(buf, &src->string);
-			msg_end(buf);
-
-			uint8_t* pos = msg_of(buf)->data;
+			buf_end(buf);
+			uint8_t* pos = buf->start;
 			Str string;
 			data_read_string(&pos, &string);
 			value_set_string(self, &string, buf);
@@ -330,22 +330,58 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = msg_create(MSG_OBJECT);
+			auto buf = buf_begin();
 			buf_write(buf, src->data, src->data_size);
-			msg_end(buf);
-			auto msg = msg_of(buf);
-			value_set_data(self, msg->data, msg_data_size(msg), buf);
+			buf_end(buf);
+			value_set_buf(self, buf);
 		}
 		break;
 
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
-		auto buf = msg_create(MSG_OBJECT);
+		auto buf = buf_begin();
 		value_write(src, buf);
-		msg_end(buf);
-		auto msg = msg_of(buf);
-		value_set_data(self, msg->data, msg_data_size(msg), buf);
+		buf_end(buf);
+		value_set_buf(self, buf);
+		break;
+	}
+	// VALUE_GROUP
+	default:
+		error("operation is not supported");
+		break;
+	}
+}
+
+always_inline hot static inline void
+value_copy_ref(Value* self, Value* src)
+{
+	switch (src->type) {
+	case VALUE_INT:
+		value_set_int(self, src->integer);
+		break;
+	case VALUE_BOOL:
+		value_set_bool(self, src->integer);
+		break;
+	case VALUE_REAL:
+		value_set_real(self, src->real);
+		break;
+	case VALUE_NULL:
+		value_set_null(self);
+		break;
+	case VALUE_STRING:
+		value_set_string(self, &src->string, NULL);
+		break;
+	case VALUE_DATA:
+		value_set_data(self, src->data, src->data_size, NULL);
+		break;
+	case VALUE_SET:
+	case VALUE_MERGE:
+	{
+		auto buf = buf_begin();
+		value_write(src, buf);
+		buf_end(buf);
+		value_set_buf(self, buf);
 		break;
 	}
 	// VALUE_GROUP

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 // value
@@ -12,7 +12,6 @@
 // value objects
 #include "value/reg.h"
 #include "value/stack.h"
-#include "value/result.h"
 
 // objects
 #include "value/map.h"
@@ -23,3 +22,6 @@
 // operations
 #include "value/op.h"
 #include "value/compare.h"
+
+// body
+#include "value/body.h"

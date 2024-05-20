@@ -1,44 +1,50 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
 
 void
 vm_init(Vm*          self,
         Db*          db,
-        FunctionMgr* function_mgr,
-        Uuid*        shard)
+        Uuid*        shard,
+        Executor*    executor,
+        Plan*        plan,
+        Body*        body,
+        FunctionMgr* function_mgr)
 {
-	self->db           = db;
-	self->function_mgr = function_mgr;
-	self->trx          = NULL;
 	self->code         = NULL;
+	self->code_data    = NULL;
+	self->code_arg     = NULL;
 	self->shard        = shard;
-	self->dispatch     = NULL;
+	self->executor     = executor;
+	self->plan         = plan;
+	self->cte          = NULL;
 	self->result       = NULL;
-	self->command      = NULL;
-	self->portal       = NULL;
+	self->body         = body;
+	self->trx          = NULL;
+	self->function_mgr = function_mgr;
+	self->db           = db;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	cursor_mgr_init(&self->cursor_mgr);
@@ -67,36 +73,35 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*          self,
        Transaction* trx,
-       Dispatch*    dispatch,
-       Command*     command,
        Code*        code,
        CodeData*    code_data,
-       Result*      result,
-       Portal*      portal)
+       Buf*         code_arg,
+       Result*      cte,
+       Value*       result,
+       int          start)
 {
-	assert(code_count(code) > 0);
-	self->trx       = trx;
-	self->dispatch  = dispatch;
-	self->command   = command;
-	self->code      = code;
-	self->code_data = code_data;
-	self->result    = result;
-	self->portal    = portal;
+	self->trx        = trx;
+	self->code       = code;
+	self->code_data  = code_data;
+	self->code_arg   = code_arg;
+	self->cte        = cte;
+	self->result     = result;
 
 	const void* ops[] =
 	{
 		&&cret,
 		&&cnop,
 		&&cjmp,
-		&&cjmp_pop,
 		&&cjtr,
 		&&cjntr,
-		&&cjntr_pop,
 		&&csend,
-		&&csend_set,
+		&&csend_first,
+		&&csend_all,
 		&&crecv,
-		&&cready,
-		&&cabort,
+		&&crecv_to,
+		&&cresult,
+		&&cbody,
+		&&ccte_set,
 		&&csleep,
 		&&cpush,
 		&&cpop,
@@ -138,10 +143,10 @@ vm_run(Vm*          self,
 		&&cmerge,
 		&&cmerge_recv,
 		&&cgroup,
-		&&cgroup_add_aggr,
 		&&cgroup_add,
-		&&cgroup_get,
-		&&cgroup_get_aggr,
+		&&cgroup_write,
+		&&cgroup_read,
+		&&cgroup_read_aggr,
 		&&cgroup_merge_recv,
 		&&cref,
 		&&cref_key,
@@ -151,6 +156,7 @@ vm_run(Vm*          self,
 
 		&&ccursor_open,
 		&&ccursor_open_expr,
+		&&ccursor_open_cte,
 		&&ccursor_prepare,
 		&&ccursor_close,
 		&&ccursor_next,
@@ -165,12 +171,11 @@ vm_run(Vm*          self,
 
 	register auto stack = &self->stack;
 	register auto r     =  self->r.r;
-	register auto op    = code_at(self->code, 0);
+	register auto op    = code_at(self->code, start);
 	auto cursor_mgr     = &self->cursor_mgr;
 	Cursor* cursor;
 
 	int64_t rc;
-	Buf*    buf;
 	Str     string;
 	Value*  a;
 	Value*  b;
@@ -189,10 +194,6 @@ cnop:
 
 cjmp:
 	op = code_at(code, op->a);
-	op_jmp;
-
-cjmp_pop:
-	op = (Op*)stack_pop(stack)->integer;
 	op_jmp;
 
 cjtr:
@@ -215,50 +216,41 @@ cjntr:
 	}
 	op_next;
 
-cjntr_pop:
-	rc = value_is_true(&r[op->a]);
-	value_free(&r[op->a]);
-	if (! rc)
-	{
-		op = (Op*)stack_pop(stack)->integer;
-		op_jmp;
-	}
-	// op remains on stack
-	op_next;
-
 csend:
-	buf = msg_create(MSG_OBJECT);
-	value_write(&r[op->a], buf);
-	msg_end(buf);
-	portal_write(portal, buf);
-	value_free(&r[op->a]);
+	csend(self, op);
 	op_next;
 
-csend_set:
-	// [stmt, limit, offset]
-	csend_set(self, op);
+csend_first:
+	csend_first(self, op);
+	op_next;
+
+csend_all:
+	csend_all(self, op);
 	op_next;
 
 crecv:
-	dispatch_recv(self->dispatch, self->portal);
+	crecv(self, op);
 	op_next;
 
-cready:
-	// [stmt, result]
-	if (op->b != -1)
-	{
-		*result_at(result, op->a) = r[op->b];
-		r[op->b].type = VALUE_NONE;
-	}
-
-	// READY
-	buf = msg_create(MSG_READY);
-	msg_end(buf);
-	portal_write(portal, buf);
+crecv_to:
+	crecv_to(self, op);
 	op_next;
 
-cabort:
-	error("aborted");
+cresult:
+	// [result]
+	*self->result = r[op->a];
+	r[op->a].type = VALUE_NONE;
+	op_next;
+
+cbody:
+	// [order]
+	body_add(self->body, result_at(cte, op->a));
+	op_next;
+
+ccte_set:
+	// [order, result]
+	*result_at(cte, op->a) = r[op->b];
+	r[op->b].type = VALUE_NONE;
 	op_next;
 
 csleep:
@@ -433,8 +425,10 @@ cset_sort:
 	op_next;
 
 cset_add:
+	// [set, value]
 	set = (Set*)r[op->a].obj;
 	set_add_from_stack(set, &r[op->b], stack);
+	value_free(&r[op->b]);
 	if (set->keys_count > 0)
 		stack_popn(stack, set->keys_count);
 	op_next;
@@ -454,31 +448,31 @@ cgroup:
 	value_set_group(&r[op->a], &group_create(op->b)->obj);
 	op_next;
 
-cgroup_add_aggr:
-	// [group, aggrype]
-	group_add_aggr((Group*)r[op->a].obj, aggrs[op->b]);
+cgroup_add:
+	// [group, type]
+	group_add((Group*)r[op->a].obj, aggrs[op->b]);
 	op_next;
 
-cgroup_add:
+cgroup_write:
 	// get group by keys and aggregate data
 	group = (Group*)r[op->a].obj;
-	group_add(group, stack);
+	group_write(group, stack);
 	stack_popn(stack, group->keys_count + group->aggr_count);
 	op_next;
 
-cgroup_get:
+cgroup_read:
 	// [result, target, pos]
 	cursor = cursor_mgr_of(cursor_mgr, op->b);
 	assert(cursor->type == CURSOR_GROUP);
 	value_copy(&r[op->a], &group_at(cursor->group, cursor->group_pos)->keys[op->c]);
 	op_next;
 
-cgroup_get_aggr:
+cgroup_read_aggr:
 	// [result, target, pos]
 	cursor = cursor_mgr_of(cursor_mgr, op->b);
 	assert(cursor->type == CURSOR_GROUP);
-	group_get_aggr(cursor->group, group_at(cursor->group, cursor->group_pos),
-	               op->c, &r[op->a]);
+	group_read_aggr(cursor->group, group_at(cursor->group, cursor->group_pos),
+	                op->c, &r[op->a]);
 	op_next;
 
 cgroup_merge_recv:
@@ -549,6 +543,10 @@ ccursor_open:
 
 ccursor_open_expr:
 	op = ccursor_open_expr(self, op);
+	op_jmp;
+
+ccursor_open_cte:
+	op = ccursor_open_cte(self, op);
 	op_jmp;
 
 ccursor_prepare:

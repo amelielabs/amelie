@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Vm Vm;
@@ -14,20 +14,21 @@ struct Vm
 	Stack        stack;
 	Code*        code;
 	CodeData*    code_data;
+	Buf*         code_arg;
 	CursorMgr    cursor_mgr;
-	FunctionMgr* function_mgr;
 	Uuid*        shard;
-	Command*     command;
-	Dispatch*    dispatch;
-	Result*      result;
-	Portal*      portal;
+	Executor*    executor;
+	Plan*        plan;
+	Result*      cte;
+	Value*       result;
+	Body*        body;
 	Transaction* trx;
+	FunctionMgr* function_mgr;
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, FunctionMgr*, Uuid*);
+void vm_init(Vm*, Db*, Uuid*, Executor*, Plan*, Body*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Transaction*, Dispatch*, Command*,
-            Code*, CodeData*, Result*,
-            Portal*);
+void vm_run(Vm*, Transaction*, Code*, CodeData*, Buf*,
+            Result*, Value*, int);

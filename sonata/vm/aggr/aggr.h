@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct AggrIf AggrIf;
@@ -15,9 +15,9 @@ struct AggrIf
 	void  (*free)(Aggr*);
 	void  (*state_create)(Aggr*, uint8_t*);
 	int   (*state_size)(Aggr*);
-	void  (*process)(Aggr*, uint8_t*, Value*);
+	void  (*read)(Aggr*, uint8_t*, Value*);
+	void  (*write)(Aggr*, uint8_t*, Value*);
 	void  (*merge)(Aggr*, uint8_t*, uint8_t*);
-	void  (*convert)(Aggr*, uint8_t*, Value*);
 };
 
 struct Aggr
@@ -51,19 +51,19 @@ aggr_state_create(Aggr* self, uint8_t* state)
 }
 
 static inline void
-aggr_process(Aggr* self, uint8_t* state, Value* value)
+aggr_read(Aggr* self, uint8_t* state, Value* value)
 {
-	self->iface->process(self, state, value);
+	self->iface->read(self, state, value);
+}
+
+static inline void
+aggr_write(Aggr* self, uint8_t* state, Value* value)
+{
+	self->iface->write(self, state, value);
 }
 
 static inline void
 aggr_merge(Aggr* self, uint8_t* state, uint8_t* state_with)
 {
 	self->iface->merge(self, state, state_with);
-}
-
-static inline void
-aggr_convert(Aggr* self, uint8_t* state, Value* value)
-{
-	self->iface->convert(self, state, value);
 }

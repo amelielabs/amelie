@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct OpDesc OpDesc;
@@ -14,17 +14,20 @@ enum
 	CRET,
 	CNOP,
 	CJMP,
-	CJMP_POP,
 	CJTR,
 	CJNTR,
-	CJNTR_POP,
 
 	// result
 	CSEND,
-	CSEND_SET,
+	CSEND_FIRST,
+	CSEND_ALL,
 	CRECV,
-	CREADY,
-	CABORT,
+	CRECV_TO,
+	CRESULT,
+	CBODY,
+
+	// cte
+	CCTE_SET,
 
 	// misc
 	CSLEEP,
@@ -88,10 +91,10 @@ enum
 
 	// group
 	CGROUP,
-	CGROUP_ADD_AGGR,
 	CGROUP_ADD,
-	CGROUP_GET,
-	CGROUP_GET_AGGR,
+	CGROUP_WRITE,
+	CGROUP_READ,
+	CGROUP_READ_AGGR,
 	CGROUP_MERGE_RECV,
 
 	// ref
@@ -106,6 +109,7 @@ enum
 	// cursor
 	CCURSOR_OPEN,
 	CCURSOR_OPEN_EXPR,
+	CCURSOR_OPEN_CTE,
 	CCURSOR_PREPARE,
 	CCURSOR_CLOSE,
 	CCURSOR_NEXT,
@@ -131,4 +135,3 @@ struct OpDesc
 extern OpDesc ops[];
 
 void op_dump(Code*, CodeData*, Buf*, Str*);
-void op_relocate(Code*, Code*);

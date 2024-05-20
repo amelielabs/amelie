@@ -1,28 +1,28 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
 
 hot static void
 func_has(Vm*       vm,
@@ -100,6 +100,21 @@ func_json(Vm*       vm,
 	value_to_json(result, argv[0]);
 }
 
+hot static void
+func_error(Vm*       vm,
+           Function* func,
+           Value*    result,
+           int       argc,
+           Value**   argv)
+{
+	unused(vm);
+	unused(result);
+	function_validate_argc(func, argc);
+	function_validate_arg(func, argv, 0, VALUE_STRING);
+	auto arg = argv[0];
+	error("%.*s", str_size(&arg->string), str_of(&arg->string));
+}
+
 static void
 func_config(Vm*       vm,
             Function* func,
@@ -111,7 +126,7 @@ func_config(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	auto buf = config_list(config());
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -126,7 +141,7 @@ func_users(Vm*       vm,
 	function_validate_argc(func, argc);
 	Buf* buf;
 	rpc(global()->control->system, RPC_USER_SHOW, 1, &buf);
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -139,7 +154,7 @@ func_schemas(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	auto buf = schema_mgr_list(&vm->db->schema_mgr);
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -152,7 +167,7 @@ func_functions(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	auto buf = function_mgr_list(vm->function_mgr);
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -165,20 +180,7 @@ func_tables(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	auto buf = table_mgr_list(&vm->db->table_mgr);
-	value_set_data_from(result, buf);
-}
-
-static void
-func_partitions(Vm*       vm,
-                Function* func,
-                Value*    result,
-                int       argc,
-                Value**   argv)
-{
-	unused(argv);
-	function_validate_argc(func, argc);
-	auto buf = table_mgr_list_partitions(&vm->db->table_mgr);
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -191,7 +193,7 @@ func_views(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	auto buf = view_mgr_list(&vm->db->view_mgr);
-	value_set_data_from(result, buf);
+	value_set_buf(result, buf);
 }
 
 static void
@@ -203,8 +205,10 @@ func_wal(Vm*       vm,
 {
 	unused(argv);
 	function_validate_argc(func, argc);
-	auto buf = wal_status(&vm->db->wal);
-	value_set_data_from(result, buf);
+	// todo
+	(void)result;
+	(void)vm;
+	error("todo: ");
 }
 
 void
@@ -225,16 +229,15 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "sizeof",     (FunctionMain)func_sizeof,     1 },
 		{ "public", "string",     (FunctionMain)func_string,     1 },
 		{ "public", "json",       (FunctionMain)func_json,       1 },
+		{ "public", "error",      (FunctionMain)func_error,      1 },
 		// system
 		{ "system", "config",     (FunctionMain)func_config,     0 },
 		{ "system", "users",      (FunctionMain)func_users,      0 },
 		{ "system", "schemas",    (FunctionMain)func_schemas,    0 },
 		{ "system", "functions",  (FunctionMain)func_functions,  0 },
 		{ "system", "tables",     (FunctionMain)func_tables,     0 },
-		{ "system", "partitions", (FunctionMain)func_partitions, 0 },
 		{ "system", "views",      (FunctionMain)func_views,      0 },
 		{ "system", "wal",        (FunctionMain)func_wal,        0 },
-		{ "system", "debug",      (FunctionMain)func_debug,      0 },
 		{  NULL,     NULL,         NULL,                         0 }
 	};
 	for (int i = 0; def[i].name; i++)

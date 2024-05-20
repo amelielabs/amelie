@@ -1,28 +1,28 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
 
 OpDesc ops[] =
 {
@@ -30,17 +30,20 @@ OpDesc ops[] =
 	{ CRET,               "ret"               },
 	{ CNOP,               "nop"               },
 	{ CJMP,               "jmp"               },
-	{ CJMP_POP,           "jmp_pop"           },
 	{ CJTR,               "jtr"               },
 	{ CJNTR,              "jntr"              },
-	{ CJNTR_POP,          "jntr_pop"          },
 
 	// result
 	{ CSEND,              "send"              },
-	{ CSEND_SET,          "send_set"          },
+	{ CSEND_FIRST,        "send_first"        },
+	{ CSEND_ALL,          "send_all"          },
 	{ CRECV,              "recv"              },
-	{ CREADY,             "ready"             },
-	{ CABORT,             "abort"             },
+	{ CRECV_TO,           "recv_to"           },
+	{ CRESULT,            "result"            },
+	{ CBODY,              "body"              },
+
+	// cte
+	{ CCTE_SET,           "cte_set"           },
 
 	// misc
 	{ CSLEEP,             "sleep"             },
@@ -104,10 +107,10 @@ OpDesc ops[] =
 
 	// group
 	{ CGROUP,             "group"             },
-	{ CGROUP_ADD_AGGR,    "group_add_aggr"    },
 	{ CGROUP_ADD,         "group_add"         },
-	{ CGROUP_GET,         "group_get"         },
-	{ CGROUP_GET_AGGR,    "group_get_aggr"    },
+	{ CGROUP_WRITE,       "group_write"       },
+	{ CGROUP_READ,        "group_read"        },
+	{ CGROUP_READ_AGGR,   "group_read_aggr"   },
 	{ CGROUP_MERGE_RECV,  "group_merge_recv"  },
 
 	// ref
@@ -122,6 +125,7 @@ OpDesc ops[] =
 	// cursor
 	{ CCURSOR_OPEN,       "cursor_open"       },
 	{ CCURSOR_OPEN_EXPR,  "cursor_open_expr"  },
+	{ CCURSOR_OPEN_CTE,   "cursor_open_cte"   },
 	{ CCURSOR_PREPARE,    "cursor_prepare"    },
 	{ CCURSOR_CLOSE,      "cursor_close"      },
 	{ CCURSOR_NEXT,       "cursor_next"       },
@@ -193,14 +197,27 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		case CREAL:
 		{
 			double real = code_data_at_real(data, op->b);
-			op_write(output, op, pos, true, true, true, "%f", real);
+			op_write(output, op, pos, true, true, true, "%g", real);
+			break;
+		}
+		case CSEND:
+		{
+			auto table = (Table*)op->c;
+			op_write(output, op, pos, true, true, false,
+			         "%.*s.%.*s",
+			         str_size(&table->config->schema),
+			         str_of(&table->config->schema),
+			         str_size(&table->config->name),
+			         str_of(&table->config->name));
 			break;
 		}
 		case CINSERT:
 		{
 			auto table = (Table*)op->a;
 			op_write(output, op, pos, false, true, true,
-			         "%.*s",
+			         "%.*s.%.*s",
+			         str_size(&table->config->schema),
+			         str_of(&table->config->schema),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
@@ -270,43 +287,4 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 	}
 
 	buf_printf(output, "\n");
-}
-
-enum {
-	REL_NONE = 0,
-	REL_A    = 1 << 0,
-	REL_B    = 1 << 1,
-	REL_C    = 1 << 2,
-	REL_D    = 1 << 3
-};
-
-static const uint8_t
-relocate_map[] =
-{
-	[CJMP]              = REL_A,
-	[CJTR]              = REL_A,
-	[CJNTR]             = REL_A,
-	[CCNTR_GTE]         = REL_C,
-	[CCNTR_LTE]         = REL_C,
-	[CCURSOR_OPEN]      = REL_C,
-	[CCURSOR_OPEN_EXPR] = REL_C,
-	[CCURSOR_NEXT]      = REL_B,
-	[CUPSERT]           = REL_D
-};
-
-hot void
-op_relocate(Code* self, Code* src)
-{
-	int offset = code_count(self);
-	auto op    = (Op*)src->code.start;
-	auto end   = (Op*)src->code.position;
-	for (; op < end; op++)
-	{
-		auto ref = relocate_map[op->op];
-		code_add(self, op->op,
-		         ref & REL_A ? op->a + offset: op->a,
-		         ref & REL_B ? op->b + offset: op->b,
-		         ref & REL_C ? op->c + offset: op->c,
-		         ref & REL_D ? op->d + offset: op->d);
-	}
 }

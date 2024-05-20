@@ -1,26 +1,22 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
 
 static inline void
 set_free_row(Set* self, SetRow* row)
@@ -29,7 +25,7 @@ set_free_row(Set* self, SetRow* row)
 	int i = 0;
 	for (; i < self->keys_count ; i++)
 		value_free(&row->keys[i]);
-	in_free(row);
+	so_free(row);
 }
 
 static void
@@ -40,12 +36,12 @@ set_free(ValueObj* obj)
 		set_free_row(self, set_at(self, i));
 	buf_free(&self->list);
 	if (self->keys)
-		in_free(self->keys);
-	in_free(self);
+		so_free(self->keys);
+	so_free(self);
 }
 
 static void
-set_convert(ValueObj* obj, Buf* buf)
+set_encode(ValueObj* obj, Buf* buf)
 {
 	auto self = (Set*)obj;
 	encode_array(buf, self->list_count);
@@ -54,17 +50,31 @@ set_convert(ValueObj* obj, Buf* buf)
 		value_write(&set_at(self, i)->value, buf);
 }
 
+static void
+set_decode(ValueObj* obj, Body* body)
+{
+	auto self = (Set*)obj;
+	int i = 0;
+	for (; i < self->list_count ; i++)
+	{
+		if (i > 0)
+			body_add_comma(body);
+		body_add(body, &set_at(self, i)->value);
+	}
+}
+
 Set*
 set_create(uint8_t* data)
 {
-	Set* self = in_malloc(sizeof(Set));
-	self->obj.free    = set_free;
-	self->obj.convert = set_convert;
-	self->list_count  = 0;
-	self->keys        = NULL;
-	self->keys_count  = 0;
+	Set* self = so_malloc(sizeof(Set));
+	self->obj.free   = set_free;
+	self->obj.encode = set_encode;
+	self->obj.decode = set_decode;
+	self->list_count = 0;
+	self->keys       = NULL;
+	self->keys_count = 0;
 	buf_init(&self->list);
-	guard(self_guard, set_free, self);
+	guard(set_free, self);
 
 	if (data)
 	{
@@ -72,13 +82,13 @@ set_create(uint8_t* data)
 		data_read_array(&data, &self->keys_count);
 		if (self->keys_count > 0)
 		{
-			self->keys = in_malloc(sizeof(SetKey) * self->keys_count);
+			self->keys = so_malloc(sizeof(SetKey) * self->keys_count);
 			for (int i = 0; i < self->keys_count; i++)
 				data_read_bool(&data, &self->keys[i].asc);
 		}
 	}
 
-	return unguard(&self_guard);
+	return unguard();
 }
 
 hot void
@@ -87,7 +97,7 @@ set_add(Set* self, Value* value, Value** keys)
 	buf_reserve(&self->list, sizeof(SetRow**));
 	int size = sizeof(SetRow) + sizeof(Value) * self->keys_count;
 
-	SetRow* row = in_malloc(size);
+	SetRow* row = so_malloc(size);
 	memset(row, 0, size);
 	buf_write(&self->list, &row, sizeof(SetRow**));
 	self->list_count++;

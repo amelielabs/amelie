@@ -1,15 +1,15 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 static inline void
 value_array(Value* result, Stack* stack, int count)
 {
-	auto buf = msg_create(MSG_OBJECT);
+	auto buf = buf_begin();
 	encode_array(buf, count);
 	int i = 0;
 	for (; i < count ; i++)
@@ -17,9 +17,8 @@ value_array(Value* result, Stack* stack, int count)
 		auto ref = stack_at(stack, count - i);
 		value_write(ref, buf);
 	}
-	msg_end(buf);
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 static inline void
@@ -28,7 +27,7 @@ value_array_set(Value* result, uint8_t* pos, int idx, Value* value)
 	int count;
 	data_read_array(&pos, &count);
 
-	auto buf = msg_create(MSG_OBJECT);
+	auto buf = buf_begin();
 	if (idx >= 0 && idx < count)
 	{
 		// replace
@@ -60,10 +59,8 @@ value_array_set(Value* result, uint8_t* pos, int idx, Value* value)
 	{
 		error("<%d>: array index is out of bounds", idx);
 	}
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 static inline void
@@ -80,7 +77,7 @@ value_array_remove(Value* result, uint8_t* pos, int idx)
 	if (idx < 0 || idx >= count)
 		error("<%d>: array index is out of bounds", idx);
 
-	auto buf = msg_create(MSG_OBJECT);
+	auto buf = buf_begin();
 	encode_array(buf, count - 1);
 	int i = 0;
 	for (; i < count; i++)
@@ -91,10 +88,8 @@ value_array_remove(Value* result, uint8_t* pos, int idx)
 			continue;
 		buf_write(buf, start, (pos - start));
 	}
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 static inline void

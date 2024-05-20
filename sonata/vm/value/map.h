@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 static inline void
@@ -12,11 +12,10 @@ value_map(Value* result, Stack* stack, int count)
 	if (unlikely((count % 2) != 0))
 		error("{}: incorrect map size");
 
-	auto buf = msg_create(MSG_OBJECT);
+	auto buf = buf_begin();
 
 	int actual_count = count / 2;
 	encode_map(buf, actual_count);
-
 	int i = 0;
 	for (; i < count ; i++)
 	{
@@ -29,10 +28,8 @@ value_map(Value* result, Stack* stack, int count)
 		value_write(ref, buf);
 	}
 
-	msg_end(buf);
-
-	auto msg = msg_of(buf);
-	value_set_data(result, msg->data, msg_data_size(msg), buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 static inline void

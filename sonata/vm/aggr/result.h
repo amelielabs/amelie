@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Result Result;
@@ -27,7 +27,10 @@ static inline void
 result_reset(Result* self)
 {
 	for (int i = 0; i < self->set_size; i++)
-		value_free(&self->set[i]);
+	{
+		auto value = &self->set[i];
+		value_free(value);
+	}
 	self->set      = NULL;
 	self->set_size = 0;
 	buf_reset(&self->data);
@@ -41,7 +44,7 @@ result_free(Result* self)
 }
 
 static inline void
-result_prepare(Result* self, int size)
+result_create(Result* self, int size)
 {
 	assert(! self->set);
 	int allocated = sizeof(Value) * size;

@@ -1,15 +1,21 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 // set
 #include "aggr/set.h"
 #include "aggr/set_iterator.h"
+
+// merge
 #include "aggr/merge.h"
+#include "aggr/merge_iterator.h"
+
+// result
+#include "aggr/result.h"
 
 // aggregate
 #include "aggr/aggr.h"

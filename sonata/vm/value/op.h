@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 always_inline hot static inline bool
@@ -323,18 +323,18 @@ value_cat(Value* result, Value* a, Value* b)
 	if (! (a->type == VALUE_STRING && b->type == VALUE_STRING))
 		error("bad || expression types");
 
-	auto buf = msg_create(MSG_OBJECT);
+	auto buf = buf_begin();
 	uint8_t** pos;
 	pos = buf_reserve(buf, data_size_string(str_size(&a->string) + str_size(&b->string)));
 	data_write_string_cat(pos, str_of(&a->string),
 	                      str_of(&b->string),
 	                      str_size(&a->string),
 	                      str_size(&b->string));
-	msg_end(buf);
-
-	uint8_t* pos_str = msg_of(buf)->data;
+	uint8_t* pos_str = buf->start;
 	Str string;
 	data_read_string(&pos_str, &string);
+	buf_end(buf);
+
 	value_set_string(result, &string, buf);
 }
 
@@ -369,17 +369,19 @@ value_to_string(Value* result, Value* a)
 	if (unlikely(a->type != VALUE_DATA))
 		error("to_string(): array/map type expected");
 
-	auto data = buf_create(0);
+	auto data = buf_begin();
 	value_write(a, data);
 	auto data_pos = data->start;
-	auto buf = buf_create(0);
-	json_to_string(buf, &data_pos);
+	auto buf = buf_begin();
+	json_export(buf, &data_pos);
+	buf_end(data);
+	buf_free(data);
 
 	Str string;
 	str_init(&string);
 	str_set(&string, (char*)buf->start, buf_size(buf));
 	value_set_string(result, &string, buf);
-	buf_free(data);
+	buf_end(buf);
 }
 
 always_inline hot static inline void
@@ -389,10 +391,13 @@ value_to_json(Value* result, Value* a)
 		error("json(): string type expected");
 	Json json;
 	json_init(&json);
-	guard(guard, json_free, &json);
+	guard(json_free, &json);
 	json_parse(&json, &a->string);
-	auto data = make_copy_buf(json.buf);
-	value_set_data_from(result, data);
+
+	auto buf = buf_begin();
+	buf_write(buf, json.buf.start, buf_size(&json.buf));
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 always_inline hot static inline void
@@ -515,4 +520,3 @@ value_idx(Value* result, Value* a, Value* b)
 		error("[]: map or array type expected");
 	}
 }
-

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 // bytecode
@@ -18,4 +18,3 @@
 #include "vm/vm.h"
 #include "vm/command.h"
 #include "vm/func.h"
-#include "vm/func_debug.h"

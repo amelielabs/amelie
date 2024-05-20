@@ -1,26 +1,22 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
 
 static void
 group_free(ValueObj* obj)
@@ -42,7 +38,7 @@ group_free(ValueObj* obj)
 				continue;
 			for (int j = 0; j < self->keys_count; j++)
 				value_free(&index[i]->keys[j]);
-			in_free(index[i]);
+			so_free(index[i]);
 		}
 	}
 	self->aggr_size  = 0;
@@ -50,28 +46,28 @@ group_free(ValueObj* obj)
 	self->keys_count = 0;
 
 	hashtable_free(&self->ht);
-	in_free(self);
+	so_free(self);
 }
 
 Group*
 group_create(int keys_count)
 {
-	Group* self = in_malloc(sizeof(Group));
-	self->obj.free    = group_free;
-	self->obj.convert = NULL;
-	self->aggr_size   = 0;
-	self->aggr_count  = 0;
-	self->keys_count  = keys_count;
+	Group* self = so_malloc(sizeof(Group));
+	self->obj.free   = group_free;
+	self->obj.encode = NULL;
+	self->aggr_size  = 0;
+	self->aggr_count = 0;
+	self->keys_count = keys_count;
 	list_init(&self->aggrs);
 	hashtable_init(&self->ht);
 
-	guard(guard, group_free, self);
+	guard(group_free, self);
 	hashtable_create(&self->ht, 256);
-	return unguard(&guard);
+	return unguard();
 }
 
 void
-group_add_aggr(Group* self, AggrIf* iface)
+group_add(Group* self, AggrIf* iface)
 {
 	auto aggr = aggr_create(iface);
 	self->aggr_size += aggr_state_size(aggr);
@@ -115,7 +111,7 @@ group_create_node(GroupKey* key)
 	// allocate new node
 	int index_size = sizeof(Value) * self->keys_count;
 	GroupNode* node;
-	node = in_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
+	node = so_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
 	node->node.hash = key->hash;
 
 	// copy keys
@@ -215,6 +211,9 @@ group_find_or_create(Group* self, Value** target_data)
 		case VALUE_GROUP:
 			error("GROUP BY: unsupported key type");
 			break;
+		default:
+			assert(0);
+			break;
 		}
 		key.hash ^= hash_fnv(data, data_size);
 	}
@@ -227,21 +226,21 @@ group_find_or_create(Group* self, Value** target_data)
 }
 
 hot static inline void
-group_process(Group* self, GroupNode* node, Value** target_data_aggs)
+group_write_node(Group* self, GroupNode* node, Value** target_data_aggs)
 {
 	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
 	int i = 0;
 	list_foreach(&self->aggrs)
 	{
 		auto aggr = list_at(Aggr, link);
-		aggr_process(aggr, aggr_state, target_data_aggs[i]);
+		aggr_write(aggr, aggr_state, target_data_aggs[i]);
 		aggr_state += aggr_state_size(aggr);
 		i++;
 	}
 }
 
 hot void
-group_add(Group* self, Stack* stack)
+group_write(Group* self, Stack* stack)
 {
 	int count = self->keys_count + self->aggr_count;
 	Value* data[count];
@@ -255,11 +254,11 @@ group_add(Group* self, Stack* stack)
 	auto node = group_find_or_create(self, target_data);
 
 	// process aggrs
-	group_process(self, node, target_data_aggs);
+	group_write_node(self, node, target_data_aggs);
 }
 
 void
-group_get_aggr(Group* self, GroupNode* node, int pos, Value* value)
+group_read_aggr(Group* self, GroupNode* node, int pos, Value* value)
 {
 	Aggr* aggr = NULL;
 	uint8_t* state = (uint8_t*)node + node->aggr_offset;
@@ -275,20 +274,20 @@ group_get_aggr(Group* self, GroupNode* node, int pos, Value* value)
 		}
 		break;
 	}
-	return aggr_convert(aggr, state, value);
+	return aggr_read(aggr, state, value);
 }
 
 void
-group_get(Group* self, GroupNode* node, Value* result)
+group_read(Group* self, GroupNode* node, Value* result)
 {
 	if (self->keys_count > 1)
 	{
-		auto buf = msg_create(MSG_OBJECT);
+		auto buf = buf_begin();
 		encode_array(buf, self->keys_count);
 		for (int i = 0; i < self->keys_count; i++)
 			value_write(&node->keys[i], buf);
-		auto msg = msg_of(buf);
-		value_set_data(result, msg->data, msg_data_size(msg), buf);
+		buf_end(buf);
+		value_set_buf(result, buf);
 	} else {
 		value_copy(result, &node->keys[0]);
 	}

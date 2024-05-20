@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Function Function;
@@ -25,14 +25,14 @@ function_allocate(const char*  schema,
                   int          argc,
                   FunctionMain main)
 {
-	Function* self = in_malloc(sizeof(Function));
+	Function* self = so_malloc(sizeof(Function));
 	self->argc = argc;
 	self->main = main;
-	guard(guard, in_free, self);
+	guard(so_free, self);
 	str_strdup(&self->schema, schema);
 	str_strdup(&self->name, name);
 	list_init(&self->link);
-	return unguard(&guard);
+	return unguard();
 }
 
 static inline void
@@ -40,7 +40,7 @@ function_free(Function* self)
 {
 	str_free(&self->schema);
 	str_free(&self->name);
-	in_free(self);
+	so_free(self);
 }
 
 static inline void
@@ -52,7 +52,7 @@ function_validate_argc(Function* self, int argc)
 }
 
 static inline void
-function_validate_arg(Function* self, Value** argv, int order, int type)
+function_validate_arg(Function* self, Value** argv, int order, ValueType type)
 {
 	if (unlikely(argv[order]->type != type))
 		error("%.*s(): incorrect type of %d argument", str_size(&self->name),

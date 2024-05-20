@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct GroupNode GroupNode;
@@ -29,10 +29,10 @@ struct Group
 
 Group*
 group_create(int);
-void group_add_aggr(Group*, AggrIf*);
-void group_add(Group*, Stack*);
-void group_get_aggr(Group*, GroupNode*, int, Value*);
-void group_get(Group*, GroupNode*, Value*);
+void group_add(Group*, AggrIf*);
+void group_write(Group*, Stack*);
+void group_read_aggr(Group*, GroupNode*, int, Value*);
+void group_read(Group*, GroupNode*, Value*);
 
 static inline GroupNode*
 group_at(Group* self, int pos)
