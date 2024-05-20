@@ -1,5 +1,5 @@
 #
-# indigo main makefile
+# sonata main makefile
 #
 CC             = clang
 AR             = ar
@@ -8,49 +8,47 @@ CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/runtime \
                  -I../runtime/io \
-                 -I../runtime/data \
                  -I../runtime/lib \
+                 -I../runtime/data \
                  -I../runtime/config \
                  -I../server \
                  -I../server/auth \
+                 -I../server/http \
                  -I../server/client \
                  -I../server/server \
-                 -I../storage \
-                 -I../storage/def \
-                 -I../storage/transaction \
-                 -I../storage/index \
-                 -I../storage/storage \
                  -I../db \
+                 -I../db/def \
+                 -I../db/transaction \
+                 -I../db/index \
+                 -I../db/storage \
                  -I../db/wal \
                  -I../db/db \
-                 -I../query \
-                 -I../query/value \
-                 -I../query/aggr \
-                 -I../query/request \
-                 -I../query/vm \
-                 -I../query/parser \
-                 -I../query/semantic \
-                 -I../query/compiler \
+                 -I../vm \
+                 -I../vm/value \
+                 -I../vm/aggr \
+                 -I../vm/executor \
+                 -I../vm/vm \
+                 -I../compiler \
+                 -I../compiler/parser \
+                 -I../compiler/semantic \
+                 -I../compiler/compiler \
                  -I. \
+                 -Ifrontend \
                  -Ishard \
-                 -Ihub \
                  -Isession \
-                 -Isystem \
-                 -Imain \
-                 -Iapi
+                 -Imain
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libindigo-main.a
+LIB            = libsonata-main.a
 OBJECTS        = \
                  shard/shard.o \
-                 hub/hub.o \
-                 hub/client.o \
+                 shard/shard_mgr.o \
+                 frontend/frontend.o \
                  session/explain.o \
                  session/session.o \
-                 system/system.o \
-                 system/ctl.o \
-                 system/ddl.o \
-                 main/main.o \
-                 api/indigo.o
+                 main/system.o \
+                 main/ctl.o \
+                 main/ddl.o \
+                 main/main.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

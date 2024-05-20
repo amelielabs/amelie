@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Explain Explain;
@@ -13,14 +13,12 @@ struct Explain
 	bool     active;
 	uint64_t time_run_us;
 	uint64_t time_commit_us;
-	uint64_t sent_objects;
 	uint64_t sent_size;
-	Portal   portal;
 };
 
 void explain_init(Explain*);
 void explain_reset(Explain*);
-Buf* explain(Explain*, Code*, CodeData*, Dispatch*, bool);
+Buf* explain(Explain*, Code*, Code*, CodeData*, Plan*, bool);
 
 static inline void
 explain_start(Explain* self, uint64_t* metric)

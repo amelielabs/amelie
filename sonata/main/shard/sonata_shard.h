@@ -1,15 +1,11 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-// shard
 #include "shard/shard_config.h"
 #include "shard/shard.h"
 #include "shard/shard_mgr.h"
-
-// share
-#include "shard/share.h"

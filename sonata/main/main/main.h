@@ -1,18 +1,17 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Main Main;
 
 struct Main
 {
-	BufCache buf_cache;
 	Logger   logger;
-	UuidMgr  uuid_mgr;
+	Random   random;
 	Resolver resolver;
 	Config   config;
 	Global   global;
@@ -23,4 +22,3 @@ void main_init(Main*);
 void main_free(Main*);
 int  main_start(Main*, Str*, Str*);
 void main_stop(Main*);
-int  main_connect(Main*, Native*);

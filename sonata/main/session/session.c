@@ -1,52 +1,55 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
-#include <indigo_shard.h>
-#include <indigo_hub.h>
-#include <indigo_session.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
+#include <sonata_shard.h>
+#include <sonata_frontend.h>
+#include <sonata_session.h>
 
 Session*
-session_create(Share* share, Portal* portal)
+session_create(Client* client, Frontend* frontend, Share* share)
 {
-	auto self = (Session*)in_malloc(sizeof(Session));
-	self->lock   = NULL;
-	self->share  = share;
-	self->portal = portal;
-	vm_init(&self->vm, share->db, share->function_mgr, NULL);
-	compiler_init(&self->compiler, share->db, share->function_mgr,
-	              share->router, &self->dispatch);
-	command_init(&self->cmd);
+	auto self = (Session*)so_malloc(sizeof(Session));
+	self->client   = client;
+	self->frontend = frontend;
+	self->lock     = NULL;
+	self->share    = share;
+	request_init(&self->request);
+	reply_init(&self->reply);
+	body_init(&self->body);
 	explain_init(&self->explain);
-	dispatch_init(&self->dispatch, share->dispatch_lock,
-	               share->req_cache,
-	               share->router,
-	               &self->compiler.code_data);
-	log_set_init(&self->log_set);
+	vm_init(&self->vm, share->db, NULL,
+	        share->executor,
+	        &self->plan,
+	        &self->body,
+	        share->function_mgr);
+	compiler_init(&self->compiler, share->db, share->function_mgr);
+	plan_init(&self->plan, share->router, &frontend->trx_cache,
+	          &frontend->req_cache);
 	return self;
 }
 
@@ -56,29 +59,28 @@ session_free(Session *self)
 	assert(! self->lock);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
-	command_free(&self->cmd);
-	dispatch_reset(&self->dispatch);
-	dispatch_free(&self->dispatch);
-	log_set_free(&self->log_set);
-	in_free(self);
+	plan_free(&self->plan);
+	request_free(&self->request);
+	reply_free(&self->reply);
+	body_free(&self->body);
+	so_free(self);
 }
 
 static inline void
 session_reset(Session* self)
 {
+	explain_reset(&self->explain);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
-	explain_reset(&self->explain);
-	dispatch_reset(&self->dispatch);
-	log_set_reset(&self->log_set);
+	plan_reset(&self->plan);
 	palloc_truncate(0);
 }
 
 static inline void
 session_lock(Session* self)
 {
-	// take shared session lock
-	self->lock = lock_lock(self->share->session_lock, true);
+	// take shared frontend lock
+	self->lock = lock_lock(&self->frontend->lock, true);
 }
 
 static inline void
@@ -94,134 +96,144 @@ hot static inline void
 session_explain(Session* self)
 {
 	// todo: profile
-
+	(void)self;
 	auto buf = explain(&self->explain,
 	                   &self->compiler.code_coordinator,
+	                   &self->compiler.code_shard,
 	                   &self->compiler.code_data,
-	                   &self->dispatch,
+	                   &self->plan,
 	                   false);
-
-	portal_write(self->portal, buf);
+	guard_buf(buf);
+	body_add_buf(&self->body, buf);
 }
 
 hot static inline void
 session_execute_distributed(Session* self)
 {
-	auto dispatch = &self->dispatch;
-	auto log_set  = &self->log_set;
+	auto compiler = &self->compiler;
+	auto executor = self->share->executor;
+	auto plan = &self->plan;
 
-	// shared session lock
-	session_lock(self);
+	// todo: reference lock?
 
-	// todo: reference lock
-
-	// generate request
+	// generate bytecode
 	compiler_emit(&self->compiler);
 
+	// prepare plan
+	int stmts = compiler->parser.stmt_list.list_count;
+	int last  = -1;
+	if (compiler->last)
+		last = compiler->last->order;
+	plan_create(plan, &compiler->code_shard, &compiler->code_data, stmts, last);
+
+	// mark plan for distributed snapshot case
+	if (compiler->snapshot)
+		plan_set_snapshot(plan);
+
 	// explain
-	if (self->compiler.parser.explain != EXPLAIN_NONE)
+	if (compiler->parser.explain != EXPLAIN_NONE)
 	{
 		session_explain(self);
 		return;
 	}
 
-	// send for shard execution
-	dispatch_send(dispatch);
-
+	// execute coordinator
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
-		// execute coordinator
 		vm_run(&self->vm, NULL,
-		       &self->dispatch,
-		       &self->cmd,
-		       &self->compiler.code_coordinator,
-		       &self->compiler.code_data,
+		       &compiler->code_coordinator,
+		       &compiler->code_data,
 		       NULL,
-		       self->portal);
-
-		// add logs to the log set
-		dispatch_export(dispatch, log_set);
-
-		// wal write
-		uint64_t lsn = 0;
-		if (log_set->count > 0)
-		{
-			lsn = config_lsn_next();
-
-			//wal_write(share->wal, log_set);
-			//lsn = log_set->lsn;
-		}
-
-		// send COMMIT
-		dispatch_commit(dispatch, lsn);
+		       &plan->cte, NULL, 0);
 	}
-
-	if (catch(&e))
+	if (leave(&e))
 	{
-		// send ABORT and rethrow
-		dispatch_abort(dispatch);
-		rethrow();
+		plan_shutdown(plan);	
+		auto buf = msg_error(&so_self()->error);
+		plan_set_error(plan, buf);
 	}
+
+	// mark plan as completed
+	executor_complete(executor, plan);
+
+	// coordinate wal write and group commit, handle abort
+	executor_commit(executor, plan);
 }
 
-hot static inline void
-session_main(Session* self, Buf* buf)
+static void
+session_execute(Session* self)
 {
-	// read command
-	command_set(&self->cmd, buf);
+	// take shared session lock (catalog access during parsing)
+	session_lock(self);
 
 	// parse query
-	compiler_parse(&self->compiler, &self->cmd.text);
+	auto compiler = &self->compiler;	
+	compiler_parse(compiler, &self->request.content);
 
-	if (compiler_is_utility(&self->compiler))
+	if (! compiler->parser.stmt_list.list_count)
 	{
-		// execute utility or DDL command by system
-		auto stmt = compiler_first(&self->compiler);
-		Buf* buf = NULL;
-		rpc(global()->control->system, RPC_CTL, 3, self, stmt, &buf);
-		if (buf)
-			portal_write(self->portal, buf);
-	} else
-	{
-		// DML or Select
-		session_execute_distributed(self);
+		session_unlock(self);
+		return;
 	}
 
-	session_unlock(self);
-}
-
-hot bool
-session_execute(Session* self, Buf* buf)
-{
-	Buf* reply;
-
-	Exception e;
-	if (try(&e))
-	{
-		auto msg = msg_of(buf);
-		if (unlikely(msg->id != MSG_COMMAND))
-			error("unrecognized request: %d", msg->id);
-
-		session_reset(self);
-		session_main(self, buf);
-	}
-
-	bool ro = false;
-	if (catch(&e))
+	// execute utility or DDL command by system
+	auto stmt = compiler_stmt(compiler);
+	if (stmt && stmt_is_utility(stmt))
 	{
 		session_unlock(self);
 
-		auto error = &in_self()->error;
-		reply = make_error(error);
-		portal_write(self->portal, reply);
-		ro = (error->code == ERROR_RO);
+		Buf* buf = NULL;
+		rpc(global()->control->system, RPC_CTL, 3, self, stmt, &buf);
+		if (buf)
+		{
+			guard_buf(buf);
+			body_add_buf(&self->body, buf);
+		}
+		return;
 	}
 
-	// ready
-	reply = msg_create(MSG_OK);
-	encode_integer(reply, false);
-	msg_end(reply);
-	portal_write(self->portal, reply);
-	return ro;
+	// DML or Select
+	session_execute_distributed(self);
+	session_unlock(self);
+}
+
+void
+session_main(Session* self)
+{
+	auto reply = &self->reply;
+	auto body  = &self->body;
+	for (;;)
+	{
+		// read request
+		request_reset(&self->request);
+		request_read(&self->request, &self->client->tcp);
+		/*request_log(&self->request);*/
+
+		// prepare body
+		body_reset(body);
+
+		// execute
+		Exception e;
+		if (enter(&e))
+		{
+			session_reset(self);
+			session_execute(self);
+		}
+
+		// reply
+		if (leave(&e))
+		{
+			session_unlock(self);
+
+			auto error = &so_self()->error;
+			body_reset(body);
+			body_error(body, error);
+			reply_create(reply, 400, "Bad Request", &body->buf);
+		} else {
+			reply_create(reply, 200, "OK", &body->buf);
+		}
+
+		reply_write(reply, &self->client->tcp);
+	}
 }

@@ -1,143 +1,112 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
-#include <indigo_shard.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_shard.h>
 
 hot static void
-shard_execute(Shard* self, Req* req)
+shard_execute(Shard* self, Trx* trx)
 {
-	transaction_begin(&req->trx);
+	transaction_begin(&trx->trx);
 
-	Portal portal;
-	portal_init(&portal, portal_to_channel, &req->src);
-
-	// execute
-	Exception e;
-	if (try(&e))
+	// execute transaction requests
+	for (;;)
 	{
-		vm_reset(&self->vm);
-		vm_run(&self->vm, &req->trx, NULL, req->cmd,
-		       &req->code,
-		        req->code_data, &req->result,
-		       &portal);
-	}
-
-	bool abort = false;
-	Buf* reply;
-	if (catch(&e))
-	{
-		// error
-		reply = make_error(&in_self()->error);
-		portal_write(&portal, reply);
-		abort = true;
-	}
-
-	if (likely(! abort))
-	{
-		// add transaction to the prepared list
-		req_list_add(&self->prepared, req);
-
-		// wait for previous transaction to be commited before
-		// acknowledge
-		if (self->prepared.list_count > 1)
-			return;
-	} else
-	{
-		transaction_abort(&req->trx);
-	}
-
-	// OK
-	req->ok = true;
-	reply = msg_create(MSG_OK);
-	msg_end(reply);
-	portal_write(&portal, reply);
-}
-
-hot static void
-shard_commit(Shard* self, Req* req)
-{
-	// commit transaction
-	transaction_commit(&req->trx);
-
-	// acknowledge all pending prepared transaction
-	list_foreach_after(&self->prepared.list, &req->link)
-	{
-		auto ref = list_at(Req, link);
-		if (ref->ok)
-			continue;
-
-		// OK
-		auto reply = msg_create(MSG_OK);
-		msg_end(reply);
-		channel_write(&ref->src, reply);
-		ref->ok = true;
-	}
-
-	// done
-	req_list_remove(&self->prepared, req);
-
-	// put request back to the cache
-	req_cache_push(req->cache, req);
-}
-
-hot static void
-shard_abort(Shard* self, Req* req)
-{
-	// abort all prepared transactions up to current one
-	// in reverse order
-	list_foreach_reverse_safe(&self->prepared.list)
-	{
-		auto ref = list_at(Req, link);
-
-		// abort
-		transaction_abort(&ref->trx);
-
-		req_list_remove(&self->prepared, ref);
-
-		if (ref == req)
+		auto req = req_queue_get(&trx->queue);
+		if (! req)
 			break;
 
-		// send error to the pending transaction
-		Str msg;
-		str_init(&msg);
-		str_set_cstr(&msg, "transaction conflict, abort");
-		auto reply = make_error_as(ERROR_CONFLICT, &msg);
-		channel_write(&ref->src, reply);
+		// execute request
+		Exception e;
+		if (enter(&e))
+		{
+			vm_reset(&self->vm);
+			vm_run(&self->vm, &trx->trx, trx->code, trx->code_data,
+			       &req->arg,
+			        trx->cte,
+			       &req->result,
+			        req->op);
+		}
 
-		// OK
-		reply = msg_create(MSG_OK);
-		msg_end(reply);
-		channel_write(&ref->src, reply);
-		ref->ok = true;
+		// respond with OK or ERROR
+		Buf* buf;
+		if (leave(&e)) {
+			buf = msg_error(&so_self()->error);
+		} else {
+			buf = msg_begin(MSG_OK);
+			msg_end(buf);
+		}
+		channel_write(&trx->src, buf);
+
+		if (e.triggered)
+			break;
 	}
 
-	// put request back to the cache
-	req_cache_push(req->cache, req);
+	// add transaction to the prepared list (even on error)
+	trx_list_add(&self->prepared, trx);
+}
+
+hot static void
+shard_commit(Shard* self, Trx* last)
+{
+	// commit all prepared transaction till the last one
+	trx_list_commit(&self->prepared, last);
+}
+
+hot static void
+shard_abort(Shard* self, Trx* last)
+{
+	// abort all prepared transactions
+	unused(last);
+	trx_list_abort(&self->prepared);
+}
+
+static void
+shard_recover(Shard* self)
+{
+	// restore storages related to the current shard
+	Exception e;
+	if (enter(&e))
+	{
+		auto db = self->vm.db;
+		list_foreach(&db->table_mgr.mgr.list)
+		{
+			auto table = table_of(list_at(Handle, link));
+			storage_mgr_recover(&table->storage_mgr, &self->config->id);
+		}
+	}
+
+	Buf* buf;
+	if (leave(&e)) {
+		buf = msg_error(&so_self()->error);
+	} else {
+		buf = msg_begin(MSG_OK);
+		msg_end(buf);
+	}
+
+	// notify system
+	channel_write(global()->control->system, buf);
 }
 
 static void
@@ -146,6 +115,7 @@ shard_rpc(Rpc* rpc, void* arg)
 	Shard* self = arg;
 	switch (rpc->id) {
 	case RPC_STOP:
+		unused(self);
 		vm_reset(&self->vm);
 		break;
 	default:
@@ -161,19 +131,22 @@ shard_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&in_task->channel, -1);
+		auto buf = channel_read(&so_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard(buf_guard, buf_free, buf);
+		guard(buf_free, buf);
 
 		switch (msg->id) {
-		case RPC_REQUEST:
-			shard_execute(self, req_of(buf));
+		case RPC_BEGIN:
+			shard_execute(self, trx_of(buf));
 			break;
-		case RPC_REQUEST_COMMIT:
-			shard_commit(self, req_of(buf));
+		case RPC_COMMIT:
+			shard_commit(self, trx_of(buf));
 			break;
-		case RPC_REQUEST_ABORT:
-			shard_abort(self, req_of(buf));
+		case RPC_ABORT:
+			shard_abort(self, trx_of(buf));
+			break;
+		case RPC_RECOVER:
+			shard_recover(self);
 			break;
 		default:
 		{
@@ -188,14 +161,14 @@ shard_main(void* arg)
 Shard*
 shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
 {
-	Shard* self = in_malloc(sizeof(*self));
+	Shard* self = so_malloc(sizeof(*self));
 	self->order = 0;
-	req_list_init(&self->prepared);
+	trx_list_init(&self->prepared);
 	task_init(&self->task);
-	guard(self_guard, shard_free, self);
+	guard(shard_free, self);
 	self->config = shard_config_copy(config);
-	vm_init(&self->vm, db, function_mgr, &self->config->id);
-	return unguard(&self_guard);
+	vm_init(&self->vm, db, &self->config->id, NULL, NULL, NULL, function_mgr);
+	return unguard();
 }
 
 void
@@ -204,7 +177,7 @@ shard_free(Shard* self)
 	vm_free(&self->vm);
 	if (self->config)
 		shard_config_free(self->config);
-	in_free(self);
+	so_free(self);
 }
 
 void

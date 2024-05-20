@@ -1,36 +1,35 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
-#include <indigo_shard.h>
-#include <indigo_hub.h>
-#include <indigo_session.h>
-#include <indigo_system.h>
-#include <indigo_main.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
+#include <sonata_shard.h>
+#include <sonata_frontend.h>
+#include <sonata_session.h>
+#include <sonata_main.h>
 
 typedef struct
 {
@@ -49,7 +48,7 @@ main_prepare(Main* self, MainArgs* args)
 	tls_lib_init();
 
 	// init uuid manager
-	uuid_mgr_open(&self->uuid_mgr);
+	random_open(&self->random);
 
 	// start resolver
 	resolver_start(&self->resolver);
@@ -59,41 +58,57 @@ main_prepare(Main* self, MainArgs* args)
 
 	// set directory
 	char path[PATH_MAX];
-	if (! str_empty(args->directory))
-	{
-		var_string_set(&config->directory, args->directory);
+	var_string_set(&config->directory, args->directory);
 
-		// create directory if not exists
-		bootstrap = !fs_exists("%s", str_of(args->directory));
-		if (bootstrap)
+	// prepare logger
+	auto logger = &self->logger;
+	logger_set_enable(logger, true);
+	logger_set_to_stdout(logger, true);
+
+	// create directory if not exists
+	bootstrap = !fs_exists("%s", str_of(args->directory));
+	if (bootstrap)
+	{
+		fs_mkdir(0755, "%s", config_directory());
+
+		// set options first, to properly generate config
+		if (! str_empty(args->options))
+			config_set(config, args->options);
+
+		// generate uuid, unless it is set
+		if (! var_string_is_set(&config()->uuid))
 		{
-			fs_mkdir(0755, "%s", str_of(args->directory));
-		} else
-		{
-			// read config file
-			snprintf(path, sizeof(path), "%s/indigo.conf",
-			         str_of(args->directory));
-			config_open(config, path);
+			Uuid uuid;
+			uuid_generate(&uuid, &self->random);
+			char uuid_sz[UUID_SZ];
+			uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
+			var_string_set_raw(&config()->uuid, uuid_sz, sizeof(uuid_sz) - 1);
 		}
+
+		// create config file
+		snprintf(path, sizeof(path), "%s/config.json", config_directory());
+		config_open(config, path);
 
 	} else
 	{
-		var_int_set(&config->log_to_file, false);
+		// open config file
+		snprintf(path, sizeof(path), "%s/config.json", config_directory());
+		config_open(config, path);
+
+		// redefine options
+		if (! str_empty(args->options))
+			config_set(config, args->options);
 	}
 
-	// set options
-	if (! str_empty(args->options))
-		config_set(config, false, args->options);
-
 	// configure logger
-	auto logger = &self->logger;
 	logger_set_enable(logger, var_int_of(&config->log_enable));
 	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
 	if (var_int_of(&config->log_to_file))
 	{
-		snprintf(path, sizeof(path), "%s/indigo.log", str_of(args->directory));
+		snprintf(path, sizeof(path), "%s/log", str_of(args->directory));
 		logger_open(logger, path);
 	}
+
 	return bootstrap;
 }
 
@@ -105,7 +120,7 @@ main_runner(void* arg)
 
 	System* system = NULL;
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// create base directory and setup logger
 		bool bootstrap;
@@ -118,12 +133,13 @@ main_runner(void* arg)
 		// notify main_start about start completion
 		thread_status_set(&self->task.thread_status, true);
 
-		// handle local connections until stop
+		// handle connections until stop
 		system_main(system);
 	}
 
-	if (catch(&e))
-	{ }
+	if (leave(&e)) {
+		log("error: %s", so_self()->error.text);
+	}
 
 	// shutdown
 	if (system)
@@ -141,9 +157,8 @@ main_runner(void* arg)
 void
 main_init(Main* self)
 {
-	buf_cache_init(&self->buf_cache);
 	logger_init(&self->logger);
-	uuid_mgr_init(&self->uuid_mgr);
+	random_init(&self->random);
 	resolver_init(&self->resolver);
 	config_init(&self->config);
 	task_init(&self->task);
@@ -151,7 +166,7 @@ main_init(Main* self)
 	auto global = &self->global;
 	global->config   = &self->config;
 	global->control  = NULL;
-	global->uuid_mgr = &self->uuid_mgr;
+	global->random   = &self->random;
 	global->resolver = &self->resolver;
 }
 
@@ -160,9 +175,8 @@ main_free(Main* self)
 {
 	task_free(&self->task);
 	config_free(&self->config);
-	uuid_mgr_free(&self->uuid_mgr);
+	random_free(&self->random);
 	logger_close(&self->logger);
-	buf_cache_free(&self->buf_cache);
 	tls_lib_free();
 }
 
@@ -193,19 +207,9 @@ main_start(Main* self, Str* directory, Str* options)
 void
 main_stop(Main* self)
 {
-	auto buf = msg_create_nothrow(&self->buf_cache, RPC_STOP, 0);
+	auto buf = msg_create_nothrow(&self->task.buf_cache, RPC_STOP, 0);
 	if (! buf)
 		abort();
 	channel_write(&self->task.channel, buf);
 	task_wait(&self->task);
-}
-
-int
-main_connect(Main* self, Native* client)
-{
-	auto buf = native_connect(client, &self->buf_cache);
-	if (unlikely(buf == NULL))
-		return -1;
-	channel_write(&self->task.channel, buf);
-	return 0;
 }

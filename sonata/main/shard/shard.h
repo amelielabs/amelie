@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Shard Shard;
@@ -11,7 +11,7 @@ typedef struct Shard Shard;
 struct Shard
 {
 	int          order;
-	ReqList      prepared;
+	TrxList      prepared;
 	Vm           vm;
 	ShardConfig* config;
 	Task         task;

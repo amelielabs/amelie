@@ -1,10 +1,11 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
+#include "session/share.h"
 #include "session/explain.h"
 #include "session/session.h"

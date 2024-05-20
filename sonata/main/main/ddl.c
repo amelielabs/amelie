@@ -1,35 +1,35 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
-#include <indigo_shard.h>
-#include <indigo_hub.h>
-#include <indigo_session.h>
-#include <indigo_system.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
+#include <sonata_shard.h>
+#include <sonata_frontend.h>
+#include <sonata_session.h>
+#include <sonata_main.h>
 
 static void
 ddl_create_schema(System* self, Transaction* trx, Stmt* stmt)
@@ -61,13 +61,12 @@ ddl_create_storage(TableConfig* table_config, Shard* shard)
 	// create storage config
 	auto config = storage_config_allocate();
 	Uuid id;
-	uuid_mgr_generate(global()->uuid_mgr, &id);
+	uuid_generate(&id, global()->random);
 	storage_config_set_id(config, &id);
 	if (shard)
 	{
 		storage_config_set_shard(config, &shard->config->id);
-		storage_config_set_range(config, shard->config->range_start,
-		                         shard->config->range_end);
+		storage_config_set_range(config, shard->config->min, shard->config->max);
 	}
 	table_config_add_storage(table_config, config);
 }
@@ -239,13 +238,13 @@ void
 system_ddl(System* self, Session* session, Stmt* stmt)
 {
 	// get exclusive session lock
-	hub_mgr_session_lock(&self->hub_mgr);
+	frontend_mgr_lock(&self->frontend_mgr);
 
 	Transaction trx;
 	transaction_init(&trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// begin
 		transaction_begin(&trx);
@@ -287,8 +286,9 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 		// wal write
 		if (! transaction_read_only(&trx))
 		{
-			log_set_add(&session->log_set, &trx.log);
-			wal_write(&self->db.wal, &session->log_set);
+			(void)session;
+			//log_set_add(&session->log_set, &trx.log);
+			//wal_write(&self->db.wal, &session->log_set);
 		}
 
 		// commit
@@ -298,12 +298,12 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 	}
 
 	// unlock sessions
-	hub_mgr_session_unlock(&self->hub_mgr);
+	frontend_mgr_unlock(&self->frontend_mgr);
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		// rpc by unlock changes code
-		in_self()->error.code = ERROR;
+		so_self()->error.code = ERROR;
 
 		transaction_abort(&trx);
 		transaction_free(&trx);

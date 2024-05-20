@@ -1,29 +1,29 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Session Session;
 
 struct Session
 {
-	Vm       vm;
-	Compiler compiler;
-	Command  cmd;
-	// session lock
-	Locker*  lock;
-	// request
-	Explain  explain;
-	Dispatch dispatch;
-	LogSet   log_set;
-	Portal*  portal;
-	Share*   share;
+	Vm        vm;
+	Compiler  compiler;
+	Plan      plan;
+	Explain   explain;
+	Request   request;
+	Reply     reply;
+	Body      body;
+	Client*   client;
+	Locker*   lock;
+	Frontend* frontend;
+	Share*    share;
 };
 
 Session*
-session_create(Share*, Portal*);
+session_create(Client*, Frontend*, Share*);
 void session_free(Session*);
-bool session_execute(Session*, Buf*);
+void session_main(Session*);
