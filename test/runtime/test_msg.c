@@ -1,18 +1,17 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 
 void
 test_msg(void* arg)
 {
-	auto buf = msg_create(123);
+	auto buf = msg_begin(123);
 	auto msg = msg_of(buf);
 	test(msg->id == 123);
 	test(msg->size == sizeof(Msg));

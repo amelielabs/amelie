@@ -1,7 +1,7 @@
 #
 
-env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
-connect E0 S0
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 
 # test: set statement parsing
 set
@@ -61,4 +61,4 @@ set test_data to 1234
 show test_data
 
 disconnect S0
-env_close E0
+stop E0

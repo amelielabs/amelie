@@ -1,13 +1,12 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 
 static int coroutine_called = -1;
 
@@ -15,7 +14,7 @@ static void
 test_coroutine_main(void* arg)
 {
 	(void)arg;
-	coroutine_called = in_self()->id;
+	coroutine_called = so_self()->id;
 }
 
 void

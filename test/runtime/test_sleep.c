@@ -1,13 +1,12 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 
 static int sleep_complete = 0;
 

@@ -1,57 +1,53 @@
-env_open E0
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: drop table statement parsing
 drop
-query: on_error
 {"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
 drop 1
-query: on_error
 {"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
 drop table "name"
-query: on_error
 {"code": 1, "msg": "DROP TABLE <name> expected"}
 drop table name junk
-query: on_error
-{"code": 1, "msg": "unexpected clause at the end of command"}
+{"code": 1, "msg": "unknown command: <junk>"}
 # test: drop non-existing table
 drop table name
-query: on_error
 {"code": 1, "msg": "table 'name': not exists"}
 drop table if exists test
 # test: drop table
 create table test(id int primary key)
 select name from system.tables()
-"test"
+["test"]
 drop table test
 select name from system.tables()
+[]
 # test: drop table if exists
 create table test(id int primary key)
 select name from system.tables()
-"test"
+["test"]
 drop table test
 select name from system.tables()
+[]
 drop table if exists test
 drop table if exists test.test
 # test: recreate same table after drop
 create table test (id int primary key)
 select name from system.tables()
-"test"
+["test"]
 drop table test
 create table test (id int primary key)
 select name from system.tables()
-"test"
+["test"]
 drop table test
 # test: drop table schema
 create schema test
 create table test.test (id int primary key)
 select name from system.tables() where *.schema = "test" and name = "test"
-"test"
+["test"]
 drop table test
-query: on_error
 {"code": 1, "msg": "table 'test': not exists"}
 drop table test.test
 drop schema test
 select name from system.tables() where *.schema = "test" and name = "test"
+[]
 disconnect S0
-env_close E0
+stop E0

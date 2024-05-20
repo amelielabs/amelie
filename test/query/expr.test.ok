@@ -1,6 +1,5 @@
-env_open E0
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: consts
 select 0
 0
@@ -21,27 +20,27 @@ select sizeof(123456789)
 select sizeof(123456789012345)
 1
 select 1.0
-1.000000
+1
 select 1.1234
-1.123400
+1.1234
 select 1.17549e-38
-0.000000
+1.17549e-38
 select 3.40282e+38
-340282001837565597733306976381245063168.000000
+3.40282e+38
 select 2.2250738585072014e-308
-0.000000
+2.22507e-308
 select 1.79769e+308
-179769000000000006323030492138942643493033036433685336215410983289126434148906289940615299632196609445533816320312774433484859900046491141051651091672734470972759941382582304802812882753059262973637182942535982636884444611376868582636745405553206881859340916340092953230149901406738427651121855107737424232448.000000
+1.79769e+308
 select 1e1
-10.000000
+10
 select 1e2
-100.000000
+100
 select 1e4
-10000.000000
+10000
 select 1e8
-100000000.000000
+1e+08
 select 1e40
-10000000000000000303786028427003666890752.000000
+1e+40
 select "hello world"
 "hello world"
 select ""
@@ -57,13 +56,10 @@ false
 select null
 null
 select name
-query: on_error
 {"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
 select path.to.name
-query: on_error
 {"code": 1, "msg": "<path> name cannot be resolved without FROM clause"}
 select *
-query: on_error
 {"code": 1, "msg": "<*> no FROM clause defined"}
 # test: basic operations
 select 0 + 0
@@ -73,13 +69,10 @@ select 2 + 2
 select 32 - 2
 30
 select "a" + 0
-query: on_error
 {"code": 1, "msg": "bad + expression types"}
 select 0 + "a"
-query: on_error
 {"code": 1, "msg": "bad + expression types"}
 select 0 || 0
-query: on_error
 {"code": 1, "msg": "bad || expression types"}
 select 2 * 2
 4
@@ -88,10 +81,8 @@ select 8 * 8
 select 64 / ( 4 + 4 )
 8
 select 64 / 0
-query: on_error
 {"code": 1, "msg": "zero division"}
 select 64 % 0
-query: on_error
 {"code": 1, "msg": "zero division"}
 select 60 & 13
 12
@@ -112,15 +103,12 @@ false
 select 0 <= 0
 true
 select "a" < 0
-query: on_error
 {"code": 1, "msg": "bad < expression type"}
 select "a" < "b"
-query: on_error
 {"code": 1, "msg": "bad < expression type"}
 select -20
 -20
 select - "test"
-query: on_error
 {"code": 1, "msg": "bad - expression type"}
 select not 20
 false
@@ -175,41 +163,39 @@ true
 select not 0 or not 0
 true
 select "a" + "b"
-query: on_error
 {"code": 1, "msg": "bad + expression types"}
 select "a" || "b"
 "ab"
 select "a"[0]
-query: on_error
 {"code": 1, "msg": "[]: map or array type expected"}
 select "\"Hello World\""
 "\"Hello World\""
 select 1.1 + 1.1
-2.200000
+2.2
 select 1.2 - 1.1
-0.100000
+0.1
 select 1.1234 - 1.12
-0.003400
+0.00339997
 select 1 + 1.1
-2.100000
+2.1
 select 1.1 + 1
-2.100000
+2.1
 select 1 - 1.1
--0.100000
+-0.1
 select 1.1 - 1
-0.100000
+0.1
 select 12 * 1.4
-16.799999
+16.8
 select 1.4 * 12
-16.799999
+16.8
 select 12 / 1.4
-8.571428
+8.57143
 select 1.4 / 12.0
 0.116667
 select 12.2 * 1.4
-17.080000
+17.08
 select 12.4 / 1.4
-8.857142
+8.85714
 select 1.0 >= 1.0
 true
 select 1.0 >= 1.1
@@ -223,9 +209,9 @@ true
 select 2.8 < 3.4
 true
 select -7.6
--7.600000
+-7.6
 select -7.6 + 1
--6.600000
+-6.6
 select 1.1 and 0.0
 false
 select 1.1 or 0.0
@@ -233,13 +219,10 @@ true
 select not 2.8
 false
 select 2.8 & 3.4
-query: on_error
 {"code": 1, "msg": "bad & expression type"}
 select 0[0]
-query: on_error
 {"code": 1, "msg": "[]: map or array type expected"}
 select name[0]
-query: on_error
 {"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
 # test: array
 select []
@@ -249,7 +232,6 @@ select [0, 1, 2]
 select [0, [1, 2], 3]
 [0, [1, 2], 3]
 select [][0]
-query: on_error
 {"code": 1, "msg": "<0>: array index not found"}
 select [0, 1, 2][0]
 0
@@ -258,7 +240,6 @@ select [0, 1, 2][1]
 select [0, 1, 2][2]
 2
 select [0, 1, 2][3]
-query: on_error
 {"code": 1, "msg": "<3>: array index not found"}
 select [0, [1, 2], 3][1]
 [1, 2]
@@ -268,17 +249,21 @@ select sizeof([0, [1, 2], 3])
 3
 # test: map
 select {}
-{}
+{
+}
 select {"a"}
-query: on_error
 {"code": 1, "msg": "{}: {name <:>} expected"}
 select {"a": 0}
-{"a": 0}
+{
+  "a": 0
+}
 select {"a": 0, "b"}
-query: on_error
 {"code": 1, "msg": "{}: {name <:>} expected"}
 select {"a": 0, "b": 1}
-{"a": 0, "b": 1}
+{
+  "a": 0,
+  "b": 1
+}
 select {"a": 123}.a
 123
 select {"a": 123}["a"]
@@ -298,64 +283,136 @@ true
 select has({"a": {"b": 777}}, "a.c")
 false
 select set({"a": 0}, "a", 1)
-{"a": 1}
+{
+  "a": 1
+}
 select set({"a": 0}, "a", {"b": 2})
-{"a": {"b": 2}}
+{
+  "a": {
+    "b": 2
+  }
+}
 select set({"a": 0}, "a", {"b": 2}).a.b
 2
 select set({"a": 0}, "a", {"b": 2})["a.b"]
 2
 select set({"a": 0}, "b", {"c": 3})
-{"a": 0, "b": {"c": 3}}
+{
+  "a": 0,
+  "b": {
+    "c": 3
+  }
+}
 select set({"a": 0}, "b", [1, 2]).b
 [1, 2]
 select set({"a": 0}, "b", [1, 2]).b[1]
 2
 select set({"a": 88}, "a", 34)
-{"a": 34}
+{
+  "a": 34
+}
 select set({"a": 88}, "", 34)
-query: on_error
 {"code": 1, "msg": "update: incorrect path"}
 select set({"a": 88}, " ", 34)
-query: on_error
 {"code": 1, "msg": "update: incorrect path"}
 select set({"a": 88}, ".", 34)
-query: on_error
 {"code": 1, "msg": "set: incorrect path"}
 select set({"a": {"b": 22}}, "a.b", 34)
-{"a": {"b": 34}}
+{
+  "a": {
+    "b": 34
+  }
+}
 select set({"a": {"b": {"c": 55}}}, "a.b", 34)
-{"a": {"b": 34}}
+{
+  "a": {
+    "b": 34
+  }
+}
 select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
-{"a": {"b": {"c": 34}}}
+{
+  "a": {
+    "b": {
+      "c": 34
+    }
+  }
+}
 select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
-{"a": {"b": {"c": {"d": 0}}}}
+{
+  "a": {
+    "b": {
+      "c": {
+        "d": 0
+      }
+    }
+  }
+}
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
-{"a": {"b": 34}, "c": 88}
+{
+  "a": {
+    "b": 34
+  },
+  "c": 88
+}
 select unset({}, "a")
-{}
+{
+}
 select unset({}, "")
-query: on_error
 {"code": 1, "msg": "update: incorrect path"}
 select unset({"a": 0}, "a")
-{}
+{
+}
 select unset({"a": 0}, "b")
-{"a": 0}
+{
+  "a": 0
+}
 select unset({"a": {"b": 2}}, "a")
-{}
+{
+}
 select unset({"a": {"b": 2}}, "a.b")
-{"a": {}}
+{
+  "a": {
+  }
+}
 select unset({"a": {"b": 2}, "g": 3}, "a")
-{"g": 3}
+{
+  "g": 3
+}
 select unset({"a": {"b": 22}}, "a.b")
-{"a": {}}
+{
+  "a": {
+  }
+}
 select unset({"a": {"b": {"c": 55}}}, "a.b")
-{"a": {}}
+{
+  "a": {
+  }
+}
 select unset({"a": {"b": {"c": 55}}}, "a.b.c")
-{"a": {"b": {}}}
+{
+  "a": {
+    "b": {
+    }
+  }
+}
 select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
-{"a": {"b": {"c": {}}}}
+{
+  "a": {
+    "b": {
+      "c": {
+      }
+    }
+  }
+}
 select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
-{"a": {"b": {"c": {"v": 77}}}}
+{
+  "a": {
+    "b": {
+      "c": {
+        "v": 77
+      }
+    }
+  }
+}
 disconnect S0
-env_close E0
+stop E0

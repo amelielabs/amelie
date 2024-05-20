@@ -1,24 +1,23 @@
-env_open E0 "cluster_shards": 3
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
 # test: reference table create
 create table test (id int primary key, data int default 0) reference
 select *.name, *.reference from system.tables()
-["test", true]
+[["test", true]]
 # test: reference has single storage
 select sizeof(storages) = 1 from system.tables()
-true
+[true]
 # test: reference has no shard id
 select storages[0].shard from system.tables()
-"00000000-0000-0000-0000-000000000000"
+["00000000-0000-0000-0000-000000000000"]
 drop table test
 # test: table create
 create table test (id int primary key, data int default 0)
 select *.name, *.reference from system.tables()
-["test", false]
+[["test", false]]
 # test: table partitions created on each shard
 select sizeof(storages) = 3 from system.tables()
-true
+[true]
 drop table test
 disconnect S0
-env_close E0
+stop E0

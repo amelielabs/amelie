@@ -1,11 +1,11 @@
 #
 
-env_open E0 "cluster_shards": 3
-connect E0 S0
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
 
 # test: select expr
-explain select system.config().cluster_shards
-select system.config().cluster_shards
+explain select system.config().shards
+select system.config().shards
 
 # test: select from expr
 explain select * from [1,2,3]
@@ -40,4 +40,4 @@ explain select a.*, b.* from [1,2,3] a, [1,2,3] b
 select a.*, b.* from [1,2,3] a, [1,2,3] b
 
 disconnect S0
-env_close E0
+stop E0

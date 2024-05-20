@@ -1,37 +1,27 @@
-env_open E0 "uuid": "00000000-0000-0000-0000-000000000000"
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: set statement parsing
 set
-query: on_error
 {"code": 1, "msg": "SET <name> expected"}
 set name
-query: on_error
 {"code": 1, "msg": "SET name <TO> expected"}
 set "log_enable"
-query: on_error
 {"code": 1, "msg": "SET <name> expected"}
 set log_enable
-query: on_error
 {"code": 1, "msg": "SET name <TO> expected"}
 set log_enable to
-query: on_error
 {"code": 1, "msg": "SET name TO <value> expected string or int"}
 set log_enable to 0
-query: on_error
 {"code": 1, "msg": "SET 'log_enable': variable is read-only"}
 set query_dump to 0 junk
-query: on_error
-{"code": 1, "msg": "unexpected clause at the end of command"}
+{"code": 1, "msg": "unknown command: <junk>"}
 # test: set read-only
 set log_enable to 0 # ro
-query: on_error
 {"code": 1, "msg": "SET 'log_enable': variable is read-only"}
 # test: set int
 show test_int
 0
 set test_int to "test"
-query: on_error
 {"code": 1, "msg": "SET 'test_int': integer value expected"}
 show test_int
 0
@@ -39,7 +29,6 @@ set test_int to 1234
 show test_int
 1234
 set test_int to -1
-query: on_error
 {"code": 1, "msg": "SET name TO <value> expected string or int"}
 show test_int
 1234
@@ -62,7 +51,6 @@ show test_int
 show test_string
 ""
 set test_string to 1234
-query: on_error
 {"code": 1, "msg": "SET 'test_string': string value expected"}
 show test_string
 ""
@@ -79,9 +67,8 @@ show test_string
 show test_data
 null
 set test_data to 1234
-query: on_error
 {"code": 1, "msg": "SET 'test_data': variable cannot be changed"}
 show test_data
 null
 disconnect S0
-env_close E0
+stop E0

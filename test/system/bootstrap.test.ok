@@ -1,16 +1,60 @@
-env_open E0 "uuid": "abc00000-0000-0000-0000-000000000000"
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "abc00000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: ensure custom instance uuid
 show all
-{"version": "0.0", "uuid": "abc00000-0000-0000-0000-000000000000", "directory": "_output/E0", "backup": "", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_query": false, "tls_cert": "", "tls_key": "", "tls_ca": "", "listen": null, "wal_rotate_wm": 10485760, "wal_sync_on_rotate": false, "wal_sync_on_write": false, "repl_enable": false, "repl_reconnect_ms": 3000, "repl_primary": "", "repl_role": "primary", "cluster_hubs": 1, "cluster_shards": 1, "lsn": 0, "read_only": false}
+{
+  "version": "0.0",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "frontends": 1,
+  "shards": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "lsn": 0
+}
 # test: ensure uuid recover
 disconnect S0
-env_close E0
-env_open E0
-connect E0 S0
-connect: on_connect
+stop E0
+start E0
+connect E0 S0 localhost:3485
 show all
-{"version": "0.0", "uuid": "abc00000-0000-0000-0000-000000000000", "directory": "_output/E0", "backup": "", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_query": false, "tls_cert": "", "tls_key": "", "tls_ca": "", "listen": null, "wal_rotate_wm": 10485760, "wal_sync_on_rotate": false, "wal_sync_on_write": false, "repl_enable": false, "repl_reconnect_ms": 3000, "repl_primary": "", "repl_role": "primary", "cluster_hubs": 1, "cluster_shards": 1, "lsn": 0, "read_only": false}
+{
+  "version": "0.0",
+  "uuid": "abc00000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "frontends": 1,
+  "shards": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "lsn": 0
+}
 disconnect S0
-env_close E0
+stop E0

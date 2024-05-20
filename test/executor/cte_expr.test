@@ -1,0 +1,137 @@
+#
+
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
+
+# test: cte parsing
+with
+with 1
+with test
+with test 1
+with test as
+with test as 1
+with test (
+with test (1
+with test (name
+with test (name,
+with test (name,,
+with test (name,)
+with test (name,
+with test (name)
+with test as (
+
+# test: cte without main stmt
+with test as (select 1)
+explain with test as (select 1)
+
+with test as (select 1,2,3)
+explain with test as (select 1,2,3)
+
+with test as (select * from [1,2,3])
+explain with test as (select * from [1,2,3])
+
+# test: cte with main stmt (cte not used)
+with test as (select * from [1,2,3]) select 1
+explain with test as (select * from [1,2,3]) select 1
+
+# test: cte without stmt
+with test as ()
+
+# test: select from cte (expr)
+with test as (select 1) select * from test
+explain with test as (select 1) select * from test
+
+# test: select from cte (array)
+with test as (select [1]) select * from test
+explain with test as (select [1]) select * from test
+
+with test as (select [1,2]) select * from test
+explain with test as (select [1,2]) select * from test
+
+# test: select from cte (map)
+with test as (select {"a": 0, "b": 1}) select * from test
+explain with test as (select {"a": 0, "b": 1}) select * from test
+
+# test: select from cte
+with test as (select * from [1,2,3]) select * from test
+explain with test as (select * from [1,2,3]) select * from test
+
+# test: select from cte column
+with test (a) as (select * from [1,2,3]) select a from test
+explain with test (a) as (select * from [1,2,3]) select a from test
+
+with test (a) as (select [*] from [1,2,3]) select a from test
+explain with test (a) as (select [*] from [1,2,3]) select a from test
+
+with test (a, b) as (select [*, * * 2] from [1,2,3]) select a, b from test
+explain with test (a, b) as (select [*, * * 2] from [1,2,3]) select a, b from test
+
+with test (a, b) as (select [e.*, e.* * 2] from [1,2,3] e) select test.a, test.b from test
+explain with test (a, b) as (select [e.*, e.* * 2] from [1,2,3] e) select test.a, test.b from test
+
+# test: select from cte column (not exists)
+with test (a) as (select * from [1,2,3]) select b from test
+with test (a) as (select * from [1,2,3]) select test.b from test
+
+# test: select from a,a
+with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
+explain with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
+
+# test: with a, b
+with a as (select [1,2,3]),
+with a as (select [1,2,3]), b
+with a as (select [1,2,3]), b 1
+with a as (select [1,2,3]), b as
+
+with a as (select [1,2,3]), b as (select [3,2,1])
+explain with a as (select [1,2,3]), b as (select [3,2,1])
+
+# test: select from a,b
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
+
+# test: select from a,b join
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+
+# test: with a, b(a)
+with a as (select [1,2,3]), b as (select * from a)
+explain with a as (select [1,2,3]), b as (select * from a)
+
+with a as (select [1,2,3]), b as (select * from a) select * from b
+explain with a as (select [1,2,3]), b as (select * from a) select * from b
+
+# test: select (select from a)
+with a as (select [1,2,3]) select (select * from a)
+with a as (select [1,2,3]) select (select * from a), (select * from a), (select * from a)
+with a as (select [1,2,3]) select (select * from a A), (select * from a B), (select * from a C)
+
+# test: with a(a) recursive
+with a as (select * from a)
+
+# test: with a(b), b
+with a as (select * from b), b as (select [1,2,3])
+
+# test: with (ddl)
+with a as (show all)
+
+# test: multi-stmt (expr)
+select 1;
+explain select 1;
+
+select 1; select 1
+explain select 1; select 1
+
+select 1; select 2; select * from [1,2,3]
+explain select 1; select 2; select * from [1,2,3]
+
+# test: multi-stmt (ddl)
+select 1; show all
+show all; select 1
+
+with config as (select system.config()) select * from config
+select (select * from system.config())
+select * from (select * from system.config())
+
+disconnect S0
+stop E0

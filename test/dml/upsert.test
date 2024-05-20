@@ -1,7 +1,7 @@
 #
 
-env_open E0
-connect E0 S0
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 
 # test: on conflict parsing
 create table test (id int primary key, data int)
@@ -106,10 +106,10 @@ drop table test
 create table test (id int primary key serial, data int default 0)
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
-alter table test set serial = 0
+alter table test set serial to 0
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
 drop table test
 
 disconnect S0
-env_close E0
+stop E0

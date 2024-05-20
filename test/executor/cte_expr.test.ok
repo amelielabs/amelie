@@ -1,0 +1,723 @@
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
+# test: cte parsing
+with
+{"code": 1, "msg": "WITH <name> expected"}
+with 1
+{"code": 1, "msg": "WITH <name> expected"}
+with test
+{"code": 1, "msg": "WITH name <AS> expected"}
+with test 1
+{"code": 1, "msg": "WITH name <AS> expected"}
+with test as
+{"code": 1, "msg": "WITH name AS <(> expected"}
+with test as 1
+{"code": 1, "msg": "WITH name AS <(> expected"}
+with test (
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (1
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (name
+{"code": 1, "msg": "WITH name (<)> expected"}
+with test (name,
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (name,,
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (name,)
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (name,
+{"code": 1, "msg": "WITH name (<name> expected"}
+with test (name)
+{"code": 1, "msg": "WITH name <AS> expected"}
+with test as (
+{"code": 1, "msg": "WITH name AS (<)> expected"}
+# test: cte without main stmt
+with test as (select 1)
+explain with test as (select 1)
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1             cte_set        0      0      0
+ 2                 ret        0      0      0
+
+"
+with test as (select 1,2,3)
+explain with test as (select 1,2,3)
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 ret        0      0      0
+
+"
+with test as (select * from [1,2,3])
+explain with test as (select * from [1,2,3])
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                 ret        0      0      0
+
+"
+# test: cte with main stmt (cte not used)
+with test as (select * from [1,2,3]) select 1
+1
+explain with test as (select * from [1,2,3]) select 1
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                 int        0      1      0
+16             cte_set        1      0      0
+17                body        1      0      0
+18                 ret        0      0      0
+
+"
+# test: cte without stmt
+with test as ()
+{"code": 1, "msg": "unknown command"}
+# test: select from cte (expr)
+with test as (select 1) select * from test
+{"code": 1, "msg": "FROM: array, map or data type expected"}
+explain with test as (select 1) select * from test
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1             cte_set        0      0      0
+ 2                 set        0      0      0
+ 3     cursor_open_cte        0      0      5
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9             cte_set        1      0      0
+10                body        1      0      0
+11                 ret        0      0      0
+
+"
+# test: select from cte (array)
+with test as (select [1]) select * from test
+[1]
+explain with test as (select [1]) select * from test
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2               array        0      1      0
+ 3             cte_set        0      0      0
+ 4                 set        0      0      0
+ 5     cursor_open_cte        0      0      7
+ 6                 jmp       10      0      0
+ 7         cursor_read        1      0      0
+ 8             set_add        0      1      0
+ 9         cursor_next        0      7      0
+10        cursor_close        0      0      0
+11             cte_set        1      0      0
+12                body        1      0      0
+13                 ret        0      0      0
+
+"
+with test as (select [1,2]) select * from test
+[1, 2]
+explain with test as (select [1,2]) select * from test
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4               array        0      2      0
+ 5             cte_set        0      0      0
+ 6                 set        0      0      0
+ 7     cursor_open_cte        0      0      9
+ 8                 jmp       12      0      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      9      0
+12        cursor_close        0      0      0
+13             cte_set        1      0      0
+14                body        1      0      0
+15                 ret        0      0      0
+
+"
+# test: select from cte (map)
+with test as (select {"a": 0, "b": 1}) select * from test
+[0, 1]
+explain with test as (select {"a": 0, "b": 1}) select * from test
+"
+bytecode [coordinator]
+--------
+ 0              string        0      0      0      # a
+ 1                push        0      0      0
+ 2                 int        0      0      0
+ 3                push        0      0      0
+ 4              string        0      6      0      # b
+ 5                push        0      0      0
+ 6                 int        0      1      0
+ 7                push        0      0      0
+ 8                 map        0      4      0
+ 9             cte_set        0      0      0
+10                 set        0      0      0
+11     cursor_open_cte        0      0     13
+12                 jmp       16      0      0
+13         cursor_read        1      0      0
+14             set_add        0      1      0
+15         cursor_next        0     13      0
+16        cursor_close        0      0      0
+17             cte_set        1      0      0
+18                body        1      0      0
+19                 ret        0      0      0
+
+"
+# test: select from cte
+with test as (select * from [1,2,3]) select * from test
+[1, 2, 3]
+explain with test as (select * from [1,2,3]) select * from test
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                 set        0      0      0
+16     cursor_open_cte        0      0     18
+17                 jmp       21      0      0
+18         cursor_read        1      0      0
+19             set_add        0      1      0
+20         cursor_next        0     18      0
+21        cursor_close        0      0      0
+22             cte_set        1      0      0
+23                body        1      0      0
+24                 ret        0      0      0
+
+"
+# test: select from cte column
+with test (a) as (select * from [1,2,3]) select a from test
+{"code": 1, "msg": "current cursor object type is not a map"}
+explain with test (a) as (select * from [1,2,3]) select a from test
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                 set        0      0      0
+16     cursor_open_cte        0      0     18
+17                 jmp       21      0      0
+18          cursor_idx        1      0      0
+19             set_add        0      1      0
+20         cursor_next        0     18      0
+21        cursor_close        0      0      0
+22             cte_set        1      0      0
+23                body        1      0      0
+24                 ret        0      0      0
+
+"
+with test (a) as (select [*] from [1,2,3]) select a from test
+[1, 2, 3]
+explain with test (a) as (select [*] from [1,2,3]) select a from test
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       15      0      0
+10         cursor_read        2      0      0
+11                push        2      0      0
+12               array        2      1      0
+13             set_add        0      2      0
+14         cursor_next        0     10      0
+15        cursor_close        0      0      0
+16             cte_set        0      0      0
+17                 set        0      0      0
+18     cursor_open_cte        0      0     20
+19                 jmp       23      0      0
+20          cursor_idx        1      0      0
+21             set_add        0      1      0
+22         cursor_next        0     20      0
+23        cursor_close        0      0      0
+24             cte_set        1      0      0
+25                body        1      0      0
+26                 ret        0      0      0
+
+"
+with test (a, b) as (select [*, * * 2] from [1,2,3]) select a, b from test
+[[1, 2], [2, 4], [3, 6]]
+explain with test (a, b) as (select [*, * * 2] from [1,2,3]) select a, b from test
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       19      0      0
+10         cursor_read        2      0      0
+11                push        2      0      0
+12         cursor_read        2      0      0
+13                 int        3      2      0
+14                 mul        4      2      3
+15                push        4      0      0
+16               array        2      2      0
+17             set_add        0      2      0
+18         cursor_next        0     10      0
+19        cursor_close        0      0      0
+20             cte_set        0      0      0
+21                 set        0      0      0
+22     cursor_open_cte        0      0     24
+23                 jmp       31      0      0
+24          cursor_idx        1      0      0
+25                push        1      0      0
+26          cursor_idx        1      0      1
+27                push        1      0      0
+28               array        1      2      0
+29             set_add        0      1      0
+30         cursor_next        0     24      0
+31        cursor_close        0      0      0
+32             cte_set        1      0      0
+33                body        1      0      0
+34                 ret        0      0      0
+
+"
+with test (a, b) as (select [e.*, e.* * 2] from [1,2,3] e) select test.a, test.b from test
+[[1, 2], [2, 4], [3, 6]]
+explain with test (a, b) as (select [e.*, e.* * 2] from [1,2,3] e) select test.a, test.b from test
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       19      0      0
+10         cursor_read        2      0      0
+11                push        2      0      0
+12         cursor_read        2      0      0
+13                 int        3      2      0
+14                 mul        4      2      3
+15                push        4      0      0
+16               array        2      2      0
+17             set_add        0      2      0
+18         cursor_next        0     10      0
+19        cursor_close        0      0      0
+20             cte_set        0      0      0
+21                 set        0      0      0
+22     cursor_open_cte        0      0     24
+23                 jmp       31      0      0
+24          cursor_idx        1      0      0
+25                push        1      0      0
+26          cursor_idx        1      0      1
+27                push        1      0      0
+28               array        1      2      0
+29             set_add        0      1      0
+30         cursor_next        0     24      0
+31        cursor_close        0      0      0
+32             cte_set        1      0      0
+33                body        1      0      0
+34                 ret        0      0      0
+
+"
+# test: select from cte column (not exists)
+with test (a) as (select * from [1,2,3]) select b from test
+{"code": 1, "msg": "current cursor object type is not a map"}
+with test (a) as (select * from [1,2,3]) select test.b from test
+{"code": 1, "msg": "current cursor object type is not a map"}
+# test: select from a,a
+with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
+[[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]
+explain with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                 set        0      0      0
+16     cursor_open_cte        0      0     18
+17                 jmp       29      0      0
+18     cursor_open_cte        1      0     20
+19                 jmp       27      0      0
+20         cursor_read        1      0      0
+21                push        1      0      0
+22         cursor_read        1      1      0
+23                push        1      0      0
+24               array        1      2      0
+25             set_add        0      1      0
+26         cursor_next        1     20      0
+27        cursor_close        1      0      0
+28         cursor_next        0     18      0
+29        cursor_close        0      0      0
+30             cte_set        1      0      0
+31                body        1      0      0
+32                 ret        0      0      0
+
+"
+# test: with a, b
+with a as (select [1,2,3]),
+{"code": 1, "msg": "WITH <name> expected"}
+with a as (select [1,2,3]), b
+{"code": 1, "msg": "WITH name <AS> expected"}
+with a as (select [1,2,3]), b 1
+{"code": 1, "msg": "WITH name <AS> expected"}
+with a as (select [1,2,3]), b as
+{"code": 1, "msg": "WITH name AS <(> expected"}
+with a as (select [1,2,3]), b as (select [3,2,1])
+explain with a as (select [1,2,3]), b as (select [3,2,1])
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10                 int        0      2      0
+11                push        0      0      0
+12                 int        0      1      0
+13                push        0      0      0
+14               array        0      3      0
+15             cte_set        1      0      0
+16                 ret        0      0      0
+
+"
+# test: select from a,b
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
+[[1, 3], [1, 2], [1, 1], [2, 3], [2, 2], [2, 1], [3, 3], [3, 2], [3, 1]]
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10                 int        0      2      0
+11                push        0      0      0
+12                 int        0      1      0
+13                push        0      0      0
+14               array        0      3      0
+15             cte_set        1      0      0
+16                 set        0      0      0
+17     cursor_open_cte        0      0     19
+18                 jmp       30      0      0
+19     cursor_open_cte        1      1     21
+20                 jmp       28      0      0
+21         cursor_read        1      0      0
+22                push        1      0      0
+23         cursor_read        1      1      0
+24                push        1      0      0
+25               array        1      2      0
+26             set_add        0      1      0
+27         cursor_next        1     21      0
+28        cursor_close        1      0      0
+29         cursor_next        0     19      0
+30        cursor_close        0      0      0
+31             cte_set        2      0      0
+32                body        2      0      0
+33                 ret        0      0      0
+
+"
+# test: select from a,b join
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+[[1, 1], [2, 2], [3, 3]]
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 int        0      3      0
+ 9                push        0      0      0
+10                 int        0      2      0
+11                push        0      0      0
+12                 int        0      1      0
+13                push        0      0      0
+14               array        0      3      0
+15             cte_set        1      0      0
+16                 set        0      0      0
+17     cursor_open_cte        0      0     19
+18                 jmp       34      0      0
+19     cursor_open_cte        1      1     21
+20                 jmp       32      0      0
+21         cursor_read        1      0      0
+22         cursor_read        2      1      0
+23                 equ        3      1      2
+24                jntr       31      3      0
+25         cursor_read        1      0      0
+26                push        1      0      0
+27         cursor_read        1      1      0
+28                push        1      0      0
+29               array        1      2      0
+30             set_add        0      1      0
+31         cursor_next        1     21      0
+32        cursor_close        1      0      0
+33         cursor_next        0     19      0
+34        cursor_close        0      0      0
+35             cte_set        2      0      0
+36                body        2      0      0
+37                 ret        0      0      0
+
+"
+# test: with a, b(a)
+with a as (select [1,2,3]), b as (select * from a)
+explain with a as (select [1,2,3]), b as (select * from a)
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 set        0      0      0
+ 9     cursor_open_cte        0      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      0      0
+12             set_add        0      1      0
+13         cursor_next        0     11      0
+14        cursor_close        0      0      0
+15             cte_set        1      0      0
+16                 ret        0      0      0
+
+"
+with a as (select [1,2,3]), b as (select * from a) select * from b
+[1, 2, 3]
+explain with a as (select [1,2,3]), b as (select * from a) select * from b
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1                push        0      0      0
+ 2                 int        0      2      0
+ 3                push        0      0      0
+ 4                 int        0      3      0
+ 5                push        0      0      0
+ 6               array        0      3      0
+ 7             cte_set        0      0      0
+ 8                 set        0      0      0
+ 9     cursor_open_cte        0      0     11
+10                 jmp       14      0      0
+11         cursor_read        1      0      0
+12             set_add        0      1      0
+13         cursor_next        0     11      0
+14        cursor_close        0      0      0
+15             cte_set        1      0      0
+16                 set        0      0      0
+17     cursor_open_cte        0      1     19
+18                 jmp       22      0      0
+19         cursor_read        1      0      0
+20             set_add        0      1      0
+21         cursor_next        0     19      0
+22        cursor_close        0      0      0
+23             cte_set        2      0      0
+24                body        2      0      0
+25                 ret        0      0      0
+
+"
+# test: select (select from a)
+with a as (select [1,2,3]) select (select * from a)
+[1, 2, 3]
+with a as (select [1,2,3]) select (select * from a), (select * from a), (select * from a)
+{"code": 1, "msg": "<a> target is redefined, please use different alias for the target"}
+with a as (select [1,2,3]) select (select * from a A), (select * from a B), (select * from a C)
+[[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+# test: with a(a) recursive
+with a as (select * from a)
+{"code": 1, "msg": "<a> recursive CTE are not supported"}
+# test: with a(b), b
+with a as (select * from b), b as (select [1,2,3])
+{"code": 1, "msg": "<b> table or view is not found"}
+# test: with (ddl)
+with a as (show all)
+{"code": 1, "msg": "CTE must DML or Select"}
+# test: multi-stmt (expr)
+select 1;
+1
+explain select 1;
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1             cte_set        0      0      0
+ 2                body        0      0      0
+ 3                 ret        0      0      0
+
+"
+select 1; select 1
+1
+explain select 1; select 1
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1             cte_set        0      0      0
+ 2                 int        0      1      0
+ 3             cte_set        1      0      0
+ 4                body        1      0      0
+ 5                 ret        0      0      0
+
+"
+select 1; select 2; select * from [1,2,3]
+[1, 2, 3]
+explain select 1; select 2; select * from [1,2,3]
+"
+bytecode [coordinator]
+--------
+ 0                 int        0      1      0
+ 1             cte_set        0      0      0
+ 2                 int        0      2      0
+ 3             cte_set        1      0      0
+ 4                 set        0      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11               array        1      3      0
+12    cursor_open_expr        0      1     14
+13                 jmp       17      0      0
+14         cursor_read        2      0      0
+15             set_add        0      2      0
+16         cursor_next        0     14      0
+17        cursor_close        0      0      0
+18             cte_set        2      0      0
+19                body        2      0      0
+20                 ret        0      0      0
+
+"
+# test: multi-stmt (ddl)
+select 1; show all
+{"code": 1, "msg": "CTE or multi-statement utility commands are not supported"}
+show all; select 1
+{"code": 1, "msg": "CTE or multi-statement utility commands are not supported"}
+with config as (select system.config()) select * from config
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", true, true, false, true, false, "", "", "", [{
+  "host": "127.0.0.1",
+  "port": 3485
+}], 1, 3, true, 104857600, false, false, 0]
+select (select * from system.config())
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", true, true, false, true, false, "", "", "", [{
+  "host": "127.0.0.1",
+  "port": 3485
+}], 1, 3, true, 104857600, false, false, 0]
+select * from (select * from system.config())
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", true, true, false, true, false, "", "", "", [{
+  "host": "127.0.0.1",
+  "port": 3485
+}], 1, 3, true, 104857600, false, false, 0]
+disconnect S0
+stop E0

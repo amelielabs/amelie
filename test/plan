@@ -22,7 +22,6 @@ test table_drop
 test table_alter
 test view
 test cascade
-test partition_by
 
 # dml
 directory dml
@@ -63,18 +62,9 @@ test push_group_by_expr
 test push_aggregate
 test push_join
 
-# commit
-directory commit
-group commit
-test begin_commit
+# executor
+directory executor
+group executor
+test cte_expr
+test cte
 test abort
-test transaction
-
-#directory ddl
-#group ddl
-#test create_index
-#test drop_index
-#test indexate
-
-#group networking
-#test ping

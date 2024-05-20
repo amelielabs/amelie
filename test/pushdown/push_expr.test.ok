@@ -1,55 +1,54 @@
-env_open E0 "cluster_shards": 3
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
 # test: select expr
-explain select system.config().cluster_shards
+explain select system.config().shards
 "
 bytecode [coordinator]
 --------
  0                call        0      -      0      # system.config()
- 1              string        1      0      0      # cluster_shards
+ 1              string        1      0      0      # shards
  2                 idx        2      0      1
- 3                send        2      0      0
- 4                recv        0      0      0
+ 3             cte_set        0      2      0
+ 4                body        0      0      0
  5                 ret        0      0      0
 
 "
-select system.config().cluster_shards
+select system.config().shards
 3
 # test: select from expr
 explain select * from [1,2,3]
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1                push        0      0      0
- 2                 int        0      2      0
- 3                push        0      0      0
- 4                 int        0      3      0
- 5                push        0      0      0
- 6               array        0      3      0
- 7    cursor_open_expr        0      0      9
- 8                 jmp       12      0      0
- 9         cursor_read        1      0      0
-10                send        1      0      0
-11         cursor_next        0      9      0
-12        cursor_close        0      0      0
-13                recv        0      0      0
-14                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                body        0      0      0
+16                 ret        0      0      0
 
 "
 select * from [1,2,3]
-1
-2
-3
+[1, 2, 3]
 # test: select (select expr)
 explain select (select 123)
 "
 bytecode [coordinator]
 --------
  0                 int        0    123      0
- 1                send        0      0      0
- 2                recv        0      0      0
+ 1             cte_set        0      0      0
+ 2                body        0      0      0
  3                 ret        0      0      0
 
 "
@@ -60,27 +59,27 @@ explain select (select a.*) from [1,2,3] a
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1                push        0      0      0
- 2                 int        0      2      0
- 3                push        0      0      0
- 4                 int        0      3      0
- 5                push        0      0      0
- 6               array        0      3      0
- 7    cursor_open_expr        0      0      9
- 8                 jmp       12      0      0
- 9         cursor_read        1      0      0
-10                send        1      0      0
-11         cursor_next        0      9      0
-12        cursor_close        0      0      0
-13                recv        0      0      0
-14                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                body        0      0      0
+16                 ret        0      0      0
 
 "
 select (select a.*) from [1,2,3] a
-1
-2
-3
+[1, 2, 3]
 # test: select (select from expr)
 explain select (select * from [1, 2, 3])
 "
@@ -100,8 +99,8 @@ bytecode [coordinator]
 11             set_add        0      2      0
 12         cursor_next        0     10      0
 13        cursor_close        0      0      0
-14                send        0      0      0
-15                recv        0      0      0
+14             cte_set        0      0      0
+15                body        0      0      0
 16                 ret        0      0      0
 
 "
@@ -112,72 +111,29 @@ explain select * from (select [1,2,3])
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1                push        0      0      0
- 2                 int        0      2      0
- 3                push        0      0      0
- 4                 int        0      3      0
- 5                push        0      0      0
- 6               array        0      3      0
- 7    cursor_open_expr        0      0      9
- 8                 jmp       12      0      0
- 9         cursor_read        1      0      0
-10                send        1      0      0
-11         cursor_next        0      9      0
-12        cursor_close        0      0      0
-13                recv        0      0      0
-14                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       13      0      0
+10         cursor_read        2      0      0
+11             set_add        0      2      0
+12         cursor_next        0     10      0
+13        cursor_close        0      0      0
+14             cte_set        0      0      0
+15                body        0      0      0
+16                 ret        0      0      0
 
 "
 select * from (select [1,2,3])
-1
-2
-3
+[1, 2, 3]
 # test: select (select expr from) from expr
 explain select (select a.*, * from [3,2,1]) from [1,2,3] a
-"
-bytecode [coordinator]
---------
- 0                 int        0      1      0
- 1                push        0      0      0
- 2                 int        0      2      0
- 3                push        0      0      0
- 4                 int        0      3      0
- 5                push        0      0      0
- 6               array        0      3      0
- 7    cursor_open_expr        1      0      9
- 8                 jmp       29      0      0
- 9                 set        1      0      0
-10                 int        2      3      0
-11                push        2      0      0
-12                 int        2      2      0
-13                push        2      0      0
-14                 int        2      1      0
-15                push        2      0      0
-16               array        2      3      0
-17    cursor_open_expr        0      2     19
-18                 jmp       26      0      0
-19         cursor_read        3      1      0
-20                push        3      0      0
-21         cursor_read        3      0      0
-22                push        3      0      0
-23               array        3      2      0
-24             set_add        1      3      0
-25         cursor_next        0     19      0
-26        cursor_close        0      0      0
-27                send        1      0      0
-28         cursor_next        1      9      0
-29        cursor_close        1      0      0
-30                recv        0      0      0
-31                 ret        0      0      0
-
-"
-select (select a.*, * from [3,2,1]) from [1,2,3] a
-[[1, 3], [1, 2], [1, 1]]
-[[2, 3], [2, 2], [2, 1]]
-[[3, 3], [3, 2], [3, 1]]
-# test: select (select expr from) from (select from expr)
-explain select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
 "
 bytecode [coordinator]
 --------
@@ -190,88 +146,125 @@ bytecode [coordinator]
  6                push        1      0      0
  7               array        1      3      0
  8    cursor_open_expr        1      1     10
- 9                 jmp       13      0      0
-10         cursor_read        2      1      0
-11             set_add        0      2      0
-12         cursor_next        1     10      0
-13        cursor_close        1      0      0
-14    cursor_open_expr        2      0     16
-15                 jmp       36      0      0
-16                 set        1      0      0
-17                 int        2      3      0
-18                push        2      0      0
-19                 int        2      2      0
-20                push        2      0      0
-21                 int        2      1      0
-22                push        2      0      0
-23               array        2      3      0
-24    cursor_open_expr        0      2     26
-25                 jmp       33      0      0
-26         cursor_read        3      2      0
-27                push        3      0      0
-28         cursor_read        3      0      0
-29                push        3      0      0
-30               array        3      2      0
-31             set_add        1      3      0
-32         cursor_next        0     26      0
-33        cursor_close        0      0      0
-34                send        1      0      0
-35         cursor_next        2     16      0
-36        cursor_close        2      0      0
-37                recv        0      0      0
-38                 ret        0      0      0
+ 9                 jmp       30      0      0
+10                 set        2      0      0
+11                 int        3      3      0
+12                push        3      0      0
+13                 int        3      2      0
+14                push        3      0      0
+15                 int        3      1      0
+16                push        3      0      0
+17               array        3      3      0
+18    cursor_open_expr        0      3     20
+19                 jmp       27      0      0
+20         cursor_read        4      1      0
+21                push        4      0      0
+22         cursor_read        4      0      0
+23                push        4      0      0
+24               array        4      2      0
+25             set_add        2      4      0
+26         cursor_next        0     20      0
+27        cursor_close        0      0      0
+28             set_add        0      2      0
+29         cursor_next        1     10      0
+30        cursor_close        1      0      0
+31             cte_set        0      0      0
+32                body        0      0      0
+33                 ret        0      0      0
+
+"
+select (select a.*, * from [3,2,1]) from [1,2,3] a
+[[[1, 3], [1, 2], [1, 1]], [[2, 3], [2, 2], [2, 1]], [[3, 3], [3, 2], [3, 1]]]
+# test: select (select expr from) from (select from expr)
+explain select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
+"
+bytecode [coordinator]
+--------
+ 0                 set        0      0      0
+ 1                 set        1      0      0
+ 2                 int        2      1      0
+ 3                push        2      0      0
+ 4                 int        2      2      0
+ 5                push        2      0      0
+ 6                 int        2      3      0
+ 7                push        2      0      0
+ 8               array        2      3      0
+ 9    cursor_open_expr        1      2     11
+10                 jmp       14      0      0
+11         cursor_read        3      1      0
+12             set_add        1      3      0
+13         cursor_next        1     11      0
+14        cursor_close        1      0      0
+15    cursor_open_expr        2      1     17
+16                 jmp       37      0      0
+17                 set        2      0      0
+18                 int        3      3      0
+19                push        3      0      0
+20                 int        3      2      0
+21                push        3      0      0
+22                 int        3      1      0
+23                push        3      0      0
+24               array        3      3      0
+25    cursor_open_expr        0      3     27
+26                 jmp       34      0      0
+27         cursor_read        4      2      0
+28                push        4      0      0
+29         cursor_read        4      0      0
+30                push        4      0      0
+31               array        4      2      0
+32             set_add        2      4      0
+33         cursor_next        0     27      0
+34        cursor_close        0      0      0
+35             set_add        0      2      0
+36         cursor_next        2     17      0
+37        cursor_close        2      0      0
+38             cte_set        0      0      0
+39                body        0      0      0
+40                 ret        0      0      0
 
 "
 select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
-[[1, 3], [1, 2], [1, 1]]
-[[2, 3], [2, 2], [2, 1]]
-[[3, 3], [3, 2], [3, 1]]
+[[[1, 3], [1, 2], [1, 1]], [[2, 3], [2, 2], [2, 1]], [[3, 3], [3, 2], [3, 1]]]
 # test: select from expr, expr
 explain select a.*, b.* from [1,2,3] a, [1,2,3] b
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1                push        0      0      0
- 2                 int        0      2      0
- 3                push        0      0      0
- 4                 int        0      3      0
- 5                push        0      0      0
- 6               array        0      3      0
- 7    cursor_open_expr        0      0      9
- 8                 jmp       27      0      0
- 9                 int        1      1      0
-10                push        1      0      0
-11                 int        1      2      0
-12                push        1      0      0
-13                 int        1      3      0
-14                push        1      0      0
-15               array        1      3      0
-16    cursor_open_expr        1      1     18
-17                 jmp       25      0      0
-18         cursor_read        2      0      0
-19                push        2      0      0
-20         cursor_read        2      1      0
-21                push        2      0      0
-22               array        2      2      0
-23                send        2      0      0
-24         cursor_next        1     18      0
-25        cursor_close        1      0      0
-26         cursor_next        0      9      0
-27        cursor_close        0      0      0
-28                recv        0      0      0
-29                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                push        1      0      0
+ 3                 int        1      2      0
+ 4                push        1      0      0
+ 5                 int        1      3      0
+ 6                push        1      0      0
+ 7               array        1      3      0
+ 8    cursor_open_expr        0      1     10
+ 9                 jmp       28      0      0
+10                 int        2      1      0
+11                push        2      0      0
+12                 int        2      2      0
+13                push        2      0      0
+14                 int        2      3      0
+15                push        2      0      0
+16               array        2      3      0
+17    cursor_open_expr        1      2     19
+18                 jmp       26      0      0
+19         cursor_read        3      0      0
+20                push        3      0      0
+21         cursor_read        3      1      0
+22                push        3      0      0
+23               array        3      2      0
+24             set_add        0      3      0
+25         cursor_next        1     19      0
+26        cursor_close        1      0      0
+27         cursor_next        0     10      0
+28        cursor_close        0      0      0
+29             cte_set        0      0      0
+30                body        0      0      0
+31                 ret        0      0      0
 
 "
 select a.*, b.* from [1,2,3] a, [1,2,3] b
-[1, 1]
-[1, 2]
-[1, 3]
-[2, 1]
-[2, 2]
-[2, 3]
-[3, 1]
-[3, 2]
-[3, 3]
+[[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]
 disconnect S0
-env_close E0
+stop E0

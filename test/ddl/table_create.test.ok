@@ -1,255 +1,474 @@
-env_open E0
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: create table statement parsing
 create
-query: on_error
 {"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create junk
-query: on_error
 {"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create unique
-query: on_error
 {"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create unique table
-query: on_error
 {"code": 1, "msg": "CREATE <USER|SCHEMA|TABLE|VIEW> expected"}
 create table
-query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table "junk_name"
-query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table if
-query: on_error
 {"code": 1, "msg": "IF <NOT> EXISTS expected"}
 create table if not
-query: on_error
 {"code": 1, "msg": "IF NOT <EXISTS> expected"}
 create table if not exists
-query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table 1234
-query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table test(
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table test(0
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table test("123"
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table test(name
-query: on_error
 {"code": 1, "msg": "name <TYPE> expected"}
 create table test(name junk_type
-query: on_error
 {"code": 1, "msg": "name <TYPE> expected"}
 create table test(name int
-query: on_error
 {"code": 1, "msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int,
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table test(name int,)
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table if not exists 1234
-query: on_error
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table if not exists test(
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table if not exists test(0
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table if not exists test("123"
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 create table if not exists test(name
-query: on_error
 {"code": 1, "msg": "name <TYPE> expected"}
 create table if not exists test(name junk_type
-query: on_error
 {"code": 1, "msg": "name <TYPE> expected"}
 create table if not exists test(name int
-query: on_error
 {"code": 1, "msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int) junk
-query: on_error
 {"code": 1, "msg": "primary key is not defined"}
 create table test()
-query: on_error
 {"code": 1, "msg": "(<name> expected"}
 # test: column int/integer
 create table test(id int primary key, id2 integer)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "id2", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "id2",
+      "type": 2,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "a", "type": 3, "constraint": {"not_null": false, "generated": 0, "default": ""}}, {"name": "b", "type": 3, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "a",
+      "type": 3,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "b",
+      "type": 3,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column string/text
 create table test(id int primary key, a string, b text)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "a", "type": 5, "constraint": {"not_null": false, "generated": 0, "default": ""}}, {"name": "b", "type": 5, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "a",
+      "type": 5,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "b",
+      "type": 5,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column real
 create table test(id int primary key, a real)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "a", "type": 4, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "a",
+      "type": 4,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column map/object
 create table test(id int primary key, a map, b object)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "a", "type": 0, "constraint": {"not_null": false, "generated": 0, "default": ""}}, {"name": "b", "type": 0, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "a",
+      "type": 0,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "b",
+      "type": 0,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column array
 create table test(id int primary key, a array)
 select indexes[0] from system.tables() where name = "test"
-{"name": "primary", "type": 2, "primary": true, "def": {"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "a", "type": 1, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}}
+[{
+  "name": "primary",
+  "type": 2,
+  "primary": true,
+  "def": {
+    "column": [{
+      "name": "id",
+      "type": 2,
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "default": ""
+      }
+    }, {
+      "name": "a",
+      "type": 1,
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "default": ""
+      }
+    }],
+    "key": [{
+      "column": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }],
+    "key_unique": false,
+    "key_exclude": 0,
+    "reserved": 0
+  }
+}]
 drop table test
 # test: column redefined
 create table test(id int, id int)
-query: on_error
 {"code": 1, "msg": "<id> column redefined"}
 # test: primary key is not defined
 create table test(id int)
-query: on_error
 {"code": 1, "msg": "primary key is not defined"}
 # test: primary key clause parsing
 create table test(primary)
-query: on_error
 {"code": 1, "msg": "PRIMARY <KEY> expected"}
 create table test(primary key(
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY (<name> expected"}
 create table test(primary key()
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY (<name> expected"}
 create table test(primary key())
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY (<name> expected"}
 create table test(primary key(abc))
-query: on_error
 {"code": 1, "msg": "<abc> column does not exists"}
 create table test(id int, primary key())
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY (<name> expected"}
 create table test(id int, primary key(id, ))
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY (<name> expected"}
 create table test(primary key(id), id int)
-query: on_error
 {"code": 1, "msg": "<id> column does not exists"}
 # test: primary key is not found
 create table test(id int, primary key(idd))
-query: on_error
 {"code": 1, "msg": "<idd> column does not exists"}
 # test: primary key redefined
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
-query: on_error
 {"code": 1, "msg": "table 'test': already exists"}
 create table if not exists test(id int primary key, primary key(id))
 select indexes[0].def.key from system.tables() where name = "test"
-[{"column": 0, "type": 2, "path": "", "asc": true}, {"column": 0, "type": 2, "path": "", "asc": true}]
+[[{
+  "column": 0,
+  "type": 2,
+  "path": "",
+  "asc": true
+}, {
+  "column": 0,
+  "type": 2,
+  "path": "",
+  "asc": true
+}]]
 drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
-query: on_error
 {"code": 1, "msg": "PRIMARY KEY defined twice"}
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
 select indexes[0].def.key from system.tables() where name = "test"
-[{"column": 0, "type": 2, "path": "", "asc": true}]
+[[{
+  "column": 0,
+  "type": 2,
+  "path": "",
+  "asc": true
+}]]
 drop table test
 create table test(id int, primary key(id desc))
 select indexes[0].def.key from system.tables() where name = "test"
-[{"column": 0, "type": 2, "path": "", "asc": false}]
+[[{
+  "column": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: primary key ensure valid type
 create table test(id map primary key)
-query: on_error
 {"code": 1, "msg": "<id> column key can be string or int"}
 create table test(id map, primary key(id))
-query: on_error
 {"code": 1, "msg": "<id> column key can be string or int"}
 # test: primary key ensure nested key required
 create table test(data map, primary key(data.id))
-query: on_error
 {"code": 1, "msg": "data.id <TYPE> expected"}
 # test: primary key ensure valid nested key type
 create table test(data map, primary key(data.id map))
-query: on_error
 {"code": 1, "msg": "<data> column key can be string or int"}
 create table test(data map, primary key(data.id integer))
 select indexes[0].def.key from system.tables() where name = "test"
-[{"column": 0, "type": 2, "path": "id", "asc": true}]
+[[{
+  "column": 0,
+  "type": 2,
+  "path": "id",
+  "asc": true
+}]]
 drop table test
 create table test (id int primary key)
 create table test (id int primary key)
-query: on_error
 {"code": 1, "msg": "table 'test': already exists"}
 # test: table create if not exists
 create table test (id int primary key)
-query: on_error
 {"code": 1, "msg": "table 'test': already exists"}
 create table if not exists test (id int primary key)
 select name from system.tables() where name = "test"
-"test"
+["test"]
 drop table test
 select name from system.tables() where name = "test"
+[]
 # test: schema default
 create table test (id int primary key)
 select *.schema from system.tables() where name = "test"
-"public"
+["public"]
 drop table test
 # test: schema system
 create table system.test (id int primary key)
-query: on_error
 {"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: schema default explicit
 create table public.test (id int primary key)
 select *.schema from system.tables() where name = "test"
-"public"
+["public"]
 drop table public.test
 # test: schema non-exists
 create table test.test (id int primary key)
-query: on_error
 {"code": 1, "msg": "schema 'test': not exists"}
 select *.schema from system.tables() where name = "test"
+[]
 # test: schema set
 create table test (id int primary key)
 create schema test
 create table test.test (id int primary key)
 select *.schema || "." || *.name from system.tables() where name = "test"
-"public.test"
-"test.test"
+["public.test", "test.test"]
 select name from system.tables() where *.schema = "test" and name = "test"
-"test"
+["test"]
 drop table test
 drop table test.test
 drop schema test
 # test: table create with conflicting view
 create view test as select 1
 create table test (id int primary key)
-query: on_error
 {"code": 1, "msg": "view <test> with the same name exists"}
 drop view test
 # test: reference
 create table test (id int primary key) reference
 select *.name, *.reference from system.tables()
-["test", true]
+[["test", true]]
 drop table test
 # test: constraint default
 create table test (id int primary key, data int default 1)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": "1"}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "default": "1"
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint default with key
 create table test (id int default 1 primary key)
@@ -259,111 +478,313 @@ create table test (id int default 1, primary key(id))
 drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
-query: on_error
 {"code": 1, "msg": "only consts allowed as DEFAULT expression"}
 # test: constraint not null with key
 create table test (id int not null primary key)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": false, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": true}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint not null
 create table test (id int primary key, data int not)
-query: on_error
 {"code": 1, "msg": "NOT <NULL> expected"}
 create table test (id int primary key, data int not null)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 insert into test values(1, 1)
 insert into test values(2, null)
-query: on_error
 {"code": 1, "msg": "column <data> value cannot be NULL"}
 insert into test values(null, null)
-query: on_error
 {"code": 1, "msg": "column <id> value cannot be NULL"}
 drop table test
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": "123"}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": "123"
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 insert into test values(1, 1)
 insert into test values(2, null)
-query: on_error
 {"code": 1, "msg": "column <data> value cannot be NULL"}
 insert into test (id) values(3)
 select * from test
-[1, 1]
-[3, 123]
+[[1, 1], [3, 123]]
 drop table test
 # test: constraint generated expr
 create table test (id int primary key, data int generated)
-query: on_error
 {"code": 1, "msg": "unsupported GENERATED expression"}
 create table test (id int primary key, data int generated 123)
-query: on_error
 {"code": 1, "msg": "unsupported GENERATED expression"}
 # test: constraint generated serial
 create table test (id int primary key, data int generated serial)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 0, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 1, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 1,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint generated serial key
 create table test (id int generated serial primary key)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 1, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 1,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint generated serial key #2
 create table test (id int generated serial, primary key(id))
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 1, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": true}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 1,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: constraint generated serial key type
 create table test (id string generated serial primary key)
-query: on_error
 {"code": 1, "msg": "GENERATED SERIAL column <id> must be integer"}
 # test: constraint generated serial multiple columns
 create table test (id int generated serial primary key, data int generated serial)
 select indexes[0].def from system.tables()
-{"column": [{"name": "id", "type": 2, "constraint": {"not_null": true, "generated": 1, "default": ""}}, {"name": "data", "type": 2, "constraint": {"not_null": true, "generated": 1, "default": ""}}], "key": [{"column": 0, "type": 2, "path": "", "asc": false}], "key_unique": false, "key_exclude": 0, "reserved": 32}
+[{
+  "column": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 1,
+      "default": ""
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 1,
+      "default": ""
+    }
+  }],
+  "key": [{
+    "column": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }],
+  "key_unique": false,
+  "key_exclude": 0,
+  "reserved": 0
+}]
 drop table test
 # test: with parsing
 create table test (id int primary key) with
-query: on_error
 {"code": 1, "msg": "WITH <(> expected"}
 create table test (id int primary key) with (
-query: on_error
 {"code": 1, "msg": "WITH (<name> expected"}
 create table test (id int primary key) with (,
-query: on_error
 {"code": 1, "msg": "WITH (<name> expected"}
 create table test (id int primary key) with (abc
-query: on_error
 {"code": 1, "msg": "<abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = 10)
-query: on_error
 {"code": 1, "msg": "<abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = "")
-query: on_error
 {"code": 1, "msg": "<abc> unrecognized parameter"}
 create table test (id int primary key) with (uuid = 10)
-query: on_error
 {"code": 1, "msg": "WITH (uuid = <string>) expected"}
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000") junk
-query: on_error
-{"code": 1, "msg": "unexpected clause at the end of command"}
+{"code": 1, "msg": "unknown command: <junk>"}
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
 select id from system.tables()
-"00000000-0000-0000-0000-000000000000"
+["00000000-0000-0000-0000-000000000000"]
 drop table test
 disconnect S0
-env_close E0
+stop E0

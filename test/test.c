@@ -1,19 +1,17 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
-
-TestSuite suite;
+#include <sonata.h>
+#include <sonata_test.h>
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
+	TestSuite suite;
 	test_suite_init(&suite);
 	suite.option_result_dir = "_output";
 	suite.option_plan_file  = "plan";
@@ -36,16 +34,16 @@ main(int argc, char *argv[])
 		case 'h':
 		default:
 			printf("usage: %s [-o output_dir] [-t test] [-g group] [-h] [-f]\n", argv[0]);
-			return 0;
+			return EXIT_SUCCESS;
 		}
 	}
 
 	int rc;
 	rc = test_suite_run(&suite);
 	if (rc == -1)
-		return -1;
+		return EXIT_FAILURE;
 
 	test_suite_cleanup(&suite);
 	test_suite_free(&suite);
-	return 0;
+	return EXIT_SUCCESS;
 }

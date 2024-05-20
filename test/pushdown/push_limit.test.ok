@@ -1,44 +1,26 @@
-env_open E0 "cluster_shards": 3
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
 # test: select from table limit
 create table test (id int primary key serial)
 insert into test generate 20
 select * from test limit 100
-[0]
-[3]
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[0], [3], [4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 explain select * from test limit 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                bool        0      0      0
- 2                push        0      0      0
- 3                 int        0      1      0
- 4          merge_recv        1      0      0
- 5            send_set        1      0      0
- 6                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5          merge_recv        1      0     -1
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 set        0      0      0
  1                 int        1      1      0
@@ -52,107 +34,39 @@ bytecode [shard 0]
  9             set_add        0      1      0
 10         cursor_next        0      7      0
 11        cursor_close        0      0      0
-12               ready        0      0      0
-13                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2           cntr_init        0      0      1
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       11      0      0
- 7            cntr_lte        0      0      6
- 8         cursor_read        1      0      0
- 9             set_add        0      1      0
-10         cursor_next        0      7      0
-11        cursor_close        0      0      0
-12               ready        0      0      0
-13                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2           cntr_init        0      0      1
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       11      0      0
- 7            cntr_lte        0      0      6
- 8         cursor_read        1      0      0
- 9             set_add        0      1      0
-10         cursor_next        0      7      0
-11        cursor_close        0      0      0
-12               ready        0      0      0
+12              result        0      0      0
 13                 ret        0      0      0
 
 "
 select * from test limit 1
-[0]
+[[0]]
 select * from test limit 2
-[0]
-[3]
+[[0], [3]]
 select * from test limit 3
-[0]
-[3]
-[4]
+[[0], [3], [4]]
 select * from test limit 4
-[0]
-[3]
-[4]
-[5]
+[[0], [3], [4], [5]]
 select * from test limit 10
-[0]
-[3]
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
+[[0], [3], [4], [5], [8], [9], [13], [16], [18], [2]]
 select * from test limit 20
-[0]
-[3]
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[0], [3], [4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 # test: select from table limit 0
 explain select * from test limit 0
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                bool        0      0      0
- 2                push        0      0      0
- 3                 int        0      0      0
- 4          merge_recv        1      0      0
- 5            send_set        1      0      0
- 6                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      0      0
+ 5          merge_recv        1      0     -1
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 set        0      0      0
  1                 int        1      0      0
@@ -166,66 +80,32 @@ bytecode [shard 0]
  9             set_add        0      1      0
 10         cursor_next        0      7      0
 11        cursor_close        0      0      0
-12               ready        0      0      0
-13                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0                 set        0      0      0
- 1                 int        1      0      0
- 2           cntr_init        0      0      1
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       11      0      0
- 7            cntr_lte        0      0      6
- 8         cursor_read        1      0      0
- 9             set_add        0      1      0
-10         cursor_next        0      7      0
-11        cursor_close        0      0      0
-12               ready        0      0      0
-13                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0                 set        0      0      0
- 1                 int        1      0      0
- 2           cntr_init        0      0      1
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       11      0      0
- 7            cntr_lte        0      0      6
- 8         cursor_read        1      0      0
- 9             set_add        0      1      0
-10         cursor_next        0      7      0
-11        cursor_close        0      0      0
-12               ready        0      0      0
+12              result        0      0      0
 13                 ret        0      0      0
 
 "
 select * from test limit 0
+[]
 select * from test limit -1
-query: on_error
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from table limit offset
 explain select * from test limit 1 offset 0
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                bool        0      0      0
- 2                push        0      0      0
- 3                 int        0      1      0
- 4                 int        1      0      0
- 5          merge_recv        2      0      0
- 6            send_set        2      0      0
- 7                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5                 int        1      0      0
+ 6          merge_recv        2      0      1
+ 7             cte_set        0      2      0
+ 8                body        0      0      0
+ 9                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 set        0      0      0
  1                 int        1      1      0
@@ -241,68 +121,30 @@ bytecode [shard 0]
 11             set_add        0      1      0
 12         cursor_next        0      9      0
 13        cursor_close        0      0      0
-14               ready        0      0      0
-15                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                 int        2      0      0
- 3                 add        3      1      2
- 4           cntr_init        0      0      3
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9            cntr_lte        0      0      8
-10         cursor_read        1      0      0
-11             set_add        0      1      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14               ready        0      0      0
-15                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                 int        2      0      0
- 3                 add        3      1      2
- 4           cntr_init        0      0      3
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9            cntr_lte        0      0      8
-10         cursor_read        1      0      0
-11             set_add        0      1      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14               ready        0      0      0
+14              result        0      0      0
 15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 0
-[0]
+[[0]]
 # test: select from table limit offset #2
 explain select * from test limit 1 offset 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                bool        0      0      0
- 2                push        0      0      0
- 3                 int        0      1      0
- 4                 int        1      1      0
- 5          merge_recv        2      0      0
- 6            send_set        2      0      0
- 7                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5                 int        1      1      0
+ 6          merge_recv        2      0      1
+ 7             cte_set        0      2      0
+ 8                body        0      0      0
+ 9                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 set        0      0      0
  1                 int        1      1      0
@@ -318,98 +160,58 @@ bytecode [shard 0]
 11             set_add        0      1      0
 12         cursor_next        0      9      0
 13        cursor_close        0      0      0
-14               ready        0      0      0
-15                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                 int        2      1      0
- 3                 add        3      1      2
- 4           cntr_init        0      0      3
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9            cntr_lte        0      0      8
-10         cursor_read        1      0      0
-11             set_add        0      1      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14               ready        0      0      0
-15                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                 int        2      1      0
- 3                 add        3      1      2
- 4           cntr_init        0      0      3
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9            cntr_lte        0      0      8
-10         cursor_read        1      0      0
-11             set_add        0      1      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14               ready        0      0      0
+14              result        0      0      0
 15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 1
-[3]
+[[3]]
 select * from test limit 1 offset 2
-[4]
+[[4]]
 select * from test limit 1 offset 3
-[5]
+[[5]]
 select * from test limit 1 offset 4
-[8]
+[[8]]
 # test: select from table limit offset #3
 select * from test limit 2 offset 1
-[3]
-[4]
+[[3], [4]]
 select * from test limit 2 offset 2
-[4]
-[5]
+[[4], [5]]
 select * from test limit 2 offset 3
-[5]
-[8]
+[[5], [8]]
 select * from test limit 2 offset 4
-[8]
-[9]
+[[8], [9]]
 # test: select from table limit offset #4
 select * from test limit 2 offset 0
-[0]
-[3]
+[[0], [3]]
 select * from test limit 1 offset -1
-query: on_error
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from table limit offset #5
 select * from test limit 0 offset 1
+[]
 select * from test limit 0 offset 2
+[]
 select * from test limit 0 offset 3
+[]
 select * from test limit 0 offset 4
+[]
 # test: select from table offset
 explain select * from test offset 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                bool        0      0      0
- 2                push        0      0      0
- 3                 int        0      1      0
- 4          merge_recv        1      0     -1
- 5            send_set        1      0      0
- 6                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5          merge_recv        1     -1      0
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -420,945 +222,625 @@ bytecode [shard 0]
  6             set_add        0      1      0
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
- 9               ready        0      0      0
-10                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9               ready        0      0      0
-10                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9               ready        0      0      0
+ 9              result        0      0      0
 10                 ret        0      0      0
 
 "
 select * from test offset 1
-[3]
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[3], [4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 select * from test offset 2
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 select * from test offset 3
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 select * from test offset 4
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 select * from test offset 0
-[0]
-[3]
-[4]
-[5]
-[8]
-[9]
-[13]
-[16]
-[18]
-[2]
-[6]
-[7]
-[10]
-[11]
-[19]
-[1]
-[12]
-[14]
-[15]
-[17]
+[[0], [3], [4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
 select * from test offset -1
-query: on_error
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
 # test: select from reference limit
 create table test (id int primary key serial) reference
 insert into test generate 20
 select * from test limit 100
-[0]
-[1]
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 explain select * from test limit 1
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1           cntr_init        0      0      0
- 2             int_min        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
  3                push        0      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6            cntr_lte        0      0      5
- 7         cursor_read        0      0      0
- 8                send        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11                recv        0      0      0
-12                 ret        0      0      0
+ 4                 int        0      1      0
+ 5          merge_recv        1      0     -1
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2           cntr_init        0      0      1
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (primary)
+ 6                 jmp       11      0      0
+ 7            cntr_lte        0      0      6
+ 8         cursor_read        1      0      0
+ 9             set_add        0      1      0
+10         cursor_next        0      7      0
+11        cursor_close        0      0      0
+12              result        0      0      0
+13                 ret        0      0      0
 
 "
 select * from test limit 1
-[0]
+[[0]]
 select * from test limit 2
-[0]
-[1]
+[[0], [1]]
 select * from test limit 3
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 select * from test limit 4
-[0]
-[1]
-[2]
-[3]
+[[0], [1], [2], [3]]
 select * from test limit 10
-[0]
-[1]
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
+[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
 select * from test limit 20
-[0]
-[1]
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from reference limit 0
 explain select * from test limit 0
 "
 bytecode [coordinator]
 --------
- 0                 int        0      0      0
- 1           cntr_init        0      0      0
- 2             int_min        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
  3                push        0      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6            cntr_lte        0      0      5
- 7         cursor_read        0      0      0
- 8                send        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11                recv        0      0      0
-12                 ret        0      0      0
+ 4                 int        0      0      0
+ 5          merge_recv        1      0     -1
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      0      0
+ 2           cntr_init        0      0      1
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (primary)
+ 6                 jmp       11      0      0
+ 7            cntr_lte        0      0      6
+ 8         cursor_read        1      0      0
+ 9             set_add        0      1      0
+10         cursor_next        0      7      0
+11        cursor_close        0      0      0
+12              result        0      0      0
+13                 ret        0      0      0
 
 "
 select * from test limit 0
+[]
 select * from test limit -1
-query: on_error
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from reference limit offset
 explain select * from test limit 1 offset 0
 "
 bytecode [coordinator]
 --------
- 0                 int        0      0      0
- 1           cntr_init        0      1      0
- 2                 int        0      1      0
- 3           cntr_init        0      0      0
- 4             int_min        0      0      0
- 5                push        0      0      0
- 6         cursor_open        0      0      8      # public.test (primary)
- 7                 jmp       13      0      0
- 8            cntr_gte        0      1     12
- 9            cntr_lte        0      0      7
-10         cursor_read        0      0      0
-11                send        0      0      0
-12         cursor_next        0      8      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5                 int        1      0      0
+ 6          merge_recv        2      0      1
+ 7             cte_set        0      2      0
+ 8                body        0      0      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                 int        2      0      0
+ 3                 add        3      1      2
+ 4           cntr_init        0      0      3
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9            cntr_lte        0      0      8
+10         cursor_read        1      0      0
+11             set_add        0      1      0
+12         cursor_next        0      9      0
 13        cursor_close        0      0      0
-14                recv        0      0      0
+14              result        0      0      0
 15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 0
-[0]
+[[0]]
 # test: select from reference limit offset #2
 explain select * from test limit 1 offset 1
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1           cntr_init        0      1      0
- 2                 int        0      1      0
- 3           cntr_init        0      0      0
- 4             int_min        0      0      0
- 5                push        0      0      0
- 6         cursor_open        0      0      8      # public.test (primary)
- 7                 jmp       13      0      0
- 8            cntr_gte        0      1     12
- 9            cntr_lte        0      0      7
-10         cursor_read        0      0      0
-11                send        0      0      0
-12         cursor_next        0      8      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4                 int        0      1      0
+ 5                 int        1      1      0
+ 6          merge_recv        2      0      1
+ 7             cte_set        0      2      0
+ 8                body        0      0      0
+ 9                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2                 int        2      1      0
+ 3                 add        3      1      2
+ 4           cntr_init        0      0      3
+ 5             int_min        1      0      0
+ 6                push        1      0      0
+ 7         cursor_open        0      0      9      # public.test (primary)
+ 8                 jmp       13      0      0
+ 9            cntr_lte        0      0      8
+10         cursor_read        1      0      0
+11             set_add        0      1      0
+12         cursor_next        0      9      0
 13        cursor_close        0      0      0
-14                recv        0      0      0
+14              result        0      0      0
 15                 ret        0      0      0
 
 "
 select * from test limit 1 offset 1
-[1]
+[[1]]
 select * from test limit 1 offset 2
-[2]
+[[2]]
 select * from test limit 1 offset 3
-[3]
+[[3]]
 select * from test limit 1 offset 4
-[4]
+[[4]]
 # test: select from reference limit offset #3
 select * from test limit 2 offset 1
-[1]
-[2]
+[[1], [2]]
 select * from test limit 2 offset 2
-[2]
-[3]
+[[2], [3]]
 select * from test limit 2 offset 3
-[3]
-[4]
+[[3], [4]]
 select * from test limit 2 offset 4
-[4]
-[5]
+[[4], [5]]
 # test: select from reference limit offset #4
 select * from test limit 2 offset 0
-[0]
-[1]
+[[0], [1]]
 select * from test limit 1 offset -1
-query: on_error
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from reference limit offset #5
 select * from test limit 0 offset 1
+[]
 select * from test limit 0 offset 2
+[]
 select * from test limit 0 offset 3
+[]
 select * from test limit 0 offset 4
+[]
 # test: select from reference offset
 explain select * from test offset 1
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1           cntr_init        0      1      0
- 2             int_min        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
  3                push        0      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       10      0      0
- 6            cntr_gte        0      1      9
- 7         cursor_read        0      0      0
- 8                send        0      0      0
- 9         cursor_next        0      6      0
-10        cursor_close        0      0      0
-11                recv        0      0      0
-12                 ret        0      0      0
+ 4                 int        0      1      0
+ 5          merge_recv        1     -1      0
+ 6             cte_set        0      1      0
+ 7                body        0      0      0
+ 8                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9              result        0      0      0
+10                 ret        0      0      0
 
 "
 select * from test offset 1
-[1]
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset 2
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset 3
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset 4
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset 0
-[0]
-[1]
-[2]
-[3]
-[4]
-[5]
-[6]
-[7]
-[8]
-[9]
-[10]
-[11]
-[12]
-[13]
-[14]
-[15]
-[16]
-[17]
-[18]
-[19]
+[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset -1
-query: on_error
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
 # test: select from expr limit
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 100
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1           cntr_init        0      0      0
- 2                 int        0      0      0
- 3                push        0      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10                 int        0      4      0
-11                push        0      0      0
-12                 int        0      5      0
-13                push        0      0      0
-14                 int        0      6      0
-15                push        0      0      0
-16                 int        0      7      0
-17                push        0      0      0
-18                 int        0      8      0
-19                push        0      0      0
-20                 int        0      9      0
-21                push        0      0      0
-22                 int        0     10      0
-23                push        0      0      0
-24                 int        0     11      0
-25                push        0      0      0
-26                 int        0     12      0
-27                push        0      0      0
-28                 int        0     13      0
-29                push        0      0      0
-30                 int        0     14      0
-31                push        0      0      0
-32                 int        0     15      0
-33                push        0      0      0
-34                 int        0     16      0
-35                push        0      0      0
-36                 int        0     17      0
-37                push        0      0      0
-38                 int        0     18      0
-39                push        0      0      0
-40                 int        0     19      0
-41                push        0      0      0
-42               array        0     20      0
-43    cursor_open_expr        0      0     45
-44                 jmp       49      0      0
-45            cntr_lte        0      0     44
-46         cursor_read        1      0      0
-47                send        1      0      0
-48         cursor_next        0     45      0
-49        cursor_close        0      0      0
-50                recv        0      0      0
-51                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2           cntr_init        0      0      1
+ 3                 int        1      0      0
+ 4                push        1      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11                 int        1      4      0
+12                push        1      0      0
+13                 int        1      5      0
+14                push        1      0      0
+15                 int        1      6      0
+16                push        1      0      0
+17                 int        1      7      0
+18                push        1      0      0
+19                 int        1      8      0
+20                push        1      0      0
+21                 int        1      9      0
+22                push        1      0      0
+23                 int        1     10      0
+24                push        1      0      0
+25                 int        1     11      0
+26                push        1      0      0
+27                 int        1     12      0
+28                push        1      0      0
+29                 int        1     13      0
+30                push        1      0      0
+31                 int        1     14      0
+32                push        1      0      0
+33                 int        1     15      0
+34                push        1      0      0
+35                 int        1     16      0
+36                push        1      0      0
+37                 int        1     17      0
+38                push        1      0      0
+39                 int        1     18      0
+40                push        1      0      0
+41                 int        1     19      0
+42                push        1      0      0
+43               array        1     20      0
+44    cursor_open_expr        0      1     46
+45                 jmp       50      0      0
+46            cntr_lte        0      0     45
+47         cursor_read        2      0      0
+48             set_add        0      2      0
+49         cursor_next        0     46      0
+50        cursor_close        0      0      0
+51             cte_set        0      0      0
+52                body        0      0      0
+53                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
-0
+[0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2
-0
-1
+[0, 1]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 3
-0
-1
-2
+[0, 1, 2]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 4
-0
-1
-2
-3
+[0, 1, 2, 3]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 10
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 20
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from expr limit 0
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
 "
 bytecode [coordinator]
 --------
- 0                 int        0      0      0
- 1           cntr_init        0      0      0
- 2                 int        0      0      0
- 3                push        0      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10                 int        0      4      0
-11                push        0      0      0
-12                 int        0      5      0
-13                push        0      0      0
-14                 int        0      6      0
-15                push        0      0      0
-16                 int        0      7      0
-17                push        0      0      0
-18                 int        0      8      0
-19                push        0      0      0
-20                 int        0      9      0
-21                push        0      0      0
-22                 int        0     10      0
-23                push        0      0      0
-24                 int        0     11      0
-25                push        0      0      0
-26                 int        0     12      0
-27                push        0      0      0
-28                 int        0     13      0
-29                push        0      0      0
-30                 int        0     14      0
-31                push        0      0      0
-32                 int        0     15      0
-33                push        0      0      0
-34                 int        0     16      0
-35                push        0      0      0
-36                 int        0     17      0
-37                push        0      0      0
-38                 int        0     18      0
-39                push        0      0      0
-40                 int        0     19      0
-41                push        0      0      0
-42               array        0     20      0
-43    cursor_open_expr        0      0     45
-44                 jmp       49      0      0
-45            cntr_lte        0      0     44
-46         cursor_read        1      0      0
-47                send        1      0      0
-48         cursor_next        0     45      0
-49        cursor_close        0      0      0
-50                recv        0      0      0
-51                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      0      0
+ 2           cntr_init        0      0      1
+ 3                 int        1      0      0
+ 4                push        1      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11                 int        1      4      0
+12                push        1      0      0
+13                 int        1      5      0
+14                push        1      0      0
+15                 int        1      6      0
+16                push        1      0      0
+17                 int        1      7      0
+18                push        1      0      0
+19                 int        1      8      0
+20                push        1      0      0
+21                 int        1      9      0
+22                push        1      0      0
+23                 int        1     10      0
+24                push        1      0      0
+25                 int        1     11      0
+26                push        1      0      0
+27                 int        1     12      0
+28                push        1      0      0
+29                 int        1     13      0
+30                push        1      0      0
+31                 int        1     14      0
+32                push        1      0      0
+33                 int        1     15      0
+34                push        1      0      0
+35                 int        1     16      0
+36                push        1      0      0
+37                 int        1     17      0
+38                push        1      0      0
+39                 int        1     18      0
+40                push        1      0      0
+41                 int        1     19      0
+42                push        1      0      0
+43               array        1     20      0
+44    cursor_open_expr        0      1     46
+45                 jmp       50      0      0
+46            cntr_lte        0      0     45
+47         cursor_read        2      0      0
+48             set_add        0      2      0
+49         cursor_next        0     46      0
+50        cursor_close        0      0      0
+51             cte_set        0      0      0
+52                body        0      0      0
+53                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
+[]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit -1
-query: on_error
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from expr limit offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
 "
 bytecode [coordinator]
 --------
- 0                 int        0      0      0
- 1           cntr_init        0      1      0
- 2                 int        0      1      0
- 3           cntr_init        0      0      0
- 4                 int        0      0      0
- 5                push        0      0      0
- 6                 int        0      1      0
- 7                push        0      0      0
- 8                 int        0      2      0
- 9                push        0      0      0
-10                 int        0      3      0
-11                push        0      0      0
-12                 int        0      4      0
-13                push        0      0      0
-14                 int        0      5      0
-15                push        0      0      0
-16                 int        0      6      0
-17                push        0      0      0
-18                 int        0      7      0
-19                push        0      0      0
-20                 int        0      8      0
-21                push        0      0      0
-22                 int        0      9      0
-23                push        0      0      0
-24                 int        0     10      0
-25                push        0      0      0
-26                 int        0     11      0
-27                push        0      0      0
-28                 int        0     12      0
-29                push        0      0      0
-30                 int        0     13      0
-31                push        0      0      0
-32                 int        0     14      0
-33                push        0      0      0
-34                 int        0     15      0
-35                push        0      0      0
-36                 int        0     16      0
-37                push        0      0      0
-38                 int        0     17      0
-39                push        0      0      0
-40                 int        0     18      0
-41                push        0      0      0
-42                 int        0     19      0
-43                push        0      0      0
-44               array        0     20      0
-45    cursor_open_expr        0      0     47
-46                 jmp       52      0      0
-47            cntr_gte        0      1     51
-48            cntr_lte        0      0     46
-49         cursor_read        1      0      0
-50                send        1      0      0
-51         cursor_next        0     47      0
-52        cursor_close        0      0      0
-53                recv        0      0      0
-54                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      0      0
+ 2           cntr_init        0      1      1
+ 3                 int        1      1      0
+ 4           cntr_init        0      0      1
+ 5                 int        1      0      0
+ 6                push        1      0      0
+ 7                 int        1      1      0
+ 8                push        1      0      0
+ 9                 int        1      2      0
+10                push        1      0      0
+11                 int        1      3      0
+12                push        1      0      0
+13                 int        1      4      0
+14                push        1      0      0
+15                 int        1      5      0
+16                push        1      0      0
+17                 int        1      6      0
+18                push        1      0      0
+19                 int        1      7      0
+20                push        1      0      0
+21                 int        1      8      0
+22                push        1      0      0
+23                 int        1      9      0
+24                push        1      0      0
+25                 int        1     10      0
+26                push        1      0      0
+27                 int        1     11      0
+28                push        1      0      0
+29                 int        1     12      0
+30                push        1      0      0
+31                 int        1     13      0
+32                push        1      0      0
+33                 int        1     14      0
+34                push        1      0      0
+35                 int        1     15      0
+36                push        1      0      0
+37                 int        1     16      0
+38                push        1      0      0
+39                 int        1     17      0
+40                push        1      0      0
+41                 int        1     18      0
+42                push        1      0      0
+43                 int        1     19      0
+44                push        1      0      0
+45               array        1     20      0
+46    cursor_open_expr        0      1     48
+47                 jmp       53      0      0
+48            cntr_gte        0      1     52
+49            cntr_lte        0      0     47
+50         cursor_read        2      0      0
+51             set_add        0      2      0
+52         cursor_next        0     48      0
+53        cursor_close        0      0      0
+54             cte_set        0      0      0
+55                body        0      0      0
+56                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
-0
+[0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 1
-1
+[1]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 2
-2
+[2]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 3
-3
+[3]
 # test: select from expr limit offset #2
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
 "
 bytecode [coordinator]
 --------
- 0                 int        0      0      0
- 1           cntr_init        0      1      0
- 2                 int        0      2      0
- 3           cntr_init        0      0      0
- 4                 int        0      0      0
- 5                push        0      0      0
- 6                 int        0      1      0
- 7                push        0      0      0
- 8                 int        0      2      0
- 9                push        0      0      0
-10                 int        0      3      0
-11                push        0      0      0
-12                 int        0      4      0
-13                push        0      0      0
-14                 int        0      5      0
-15                push        0      0      0
-16                 int        0      6      0
-17                push        0      0      0
-18                 int        0      7      0
-19                push        0      0      0
-20                 int        0      8      0
-21                push        0      0      0
-22                 int        0      9      0
-23                push        0      0      0
-24                 int        0     10      0
-25                push        0      0      0
-26                 int        0     11      0
-27                push        0      0      0
-28                 int        0     12      0
-29                push        0      0      0
-30                 int        0     13      0
-31                push        0      0      0
-32                 int        0     14      0
-33                push        0      0      0
-34                 int        0     15      0
-35                push        0      0      0
-36                 int        0     16      0
-37                push        0      0      0
-38                 int        0     17      0
-39                push        0      0      0
-40                 int        0     18      0
-41                push        0      0      0
-42                 int        0     19      0
-43                push        0      0      0
-44               array        0     20      0
-45    cursor_open_expr        0      0     47
-46                 jmp       52      0      0
-47            cntr_gte        0      1     51
-48            cntr_lte        0      0     46
-49         cursor_read        1      0      0
-50                send        1      0      0
-51         cursor_next        0     47      0
-52        cursor_close        0      0      0
-53                recv        0      0      0
-54                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      0      0
+ 2           cntr_init        0      1      1
+ 3                 int        1      2      0
+ 4           cntr_init        0      0      1
+ 5                 int        1      0      0
+ 6                push        1      0      0
+ 7                 int        1      1      0
+ 8                push        1      0      0
+ 9                 int        1      2      0
+10                push        1      0      0
+11                 int        1      3      0
+12                push        1      0      0
+13                 int        1      4      0
+14                push        1      0      0
+15                 int        1      5      0
+16                push        1      0      0
+17                 int        1      6      0
+18                push        1      0      0
+19                 int        1      7      0
+20                push        1      0      0
+21                 int        1      8      0
+22                push        1      0      0
+23                 int        1      9      0
+24                push        1      0      0
+25                 int        1     10      0
+26                push        1      0      0
+27                 int        1     11      0
+28                push        1      0      0
+29                 int        1     12      0
+30                push        1      0      0
+31                 int        1     13      0
+32                push        1      0      0
+33                 int        1     14      0
+34                push        1      0      0
+35                 int        1     15      0
+36                push        1      0      0
+37                 int        1     16      0
+38                push        1      0      0
+39                 int        1     17      0
+40                push        1      0      0
+41                 int        1     18      0
+42                push        1      0      0
+43                 int        1     19      0
+44                push        1      0      0
+45               array        1     20      0
+46    cursor_open_expr        0      1     48
+47                 jmp       53      0      0
+48            cntr_gte        0      1     52
+49            cntr_lte        0      0     47
+50         cursor_read        2      0      0
+51             set_add        0      2      0
+52         cursor_next        0     48      0
+53        cursor_close        0      0      0
+54             cte_set        0      0      0
+55                body        0      0      0
+56                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
-0
-1
+[0, 1]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 1
-1
-2
+[1, 2]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 2
-2
-3
+[2, 3]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 3
-3
-4
+[3, 4]
 # test: select from expr limit offset #3
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 0
+[]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 1
+[]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 3
+[]
 # test: select from expr offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1           cntr_init        0      1      0
- 2                 int        0      0      0
- 3                push        0      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10                 int        0      4      0
-11                push        0      0      0
-12                 int        0      5      0
-13                push        0      0      0
-14                 int        0      6      0
-15                push        0      0      0
-16                 int        0      7      0
-17                push        0      0      0
-18                 int        0      8      0
-19                push        0      0      0
-20                 int        0      9      0
-21                push        0      0      0
-22                 int        0     10      0
-23                push        0      0      0
-24                 int        0     11      0
-25                push        0      0      0
-26                 int        0     12      0
-27                push        0      0      0
-28                 int        0     13      0
-29                push        0      0      0
-30                 int        0     14      0
-31                push        0      0      0
-32                 int        0     15      0
-33                push        0      0      0
-34                 int        0     16      0
-35                push        0      0      0
-36                 int        0     17      0
-37                push        0      0      0
-38                 int        0     18      0
-39                push        0      0      0
-40                 int        0     19      0
-41                push        0      0      0
-42               array        0     20      0
-43    cursor_open_expr        0      0     45
-44                 jmp       49      0      0
-45            cntr_gte        0      1     48
-46         cursor_read        1      0      0
-47                send        1      0      0
-48         cursor_next        0     45      0
-49        cursor_close        0      0      0
-50                recv        0      0      0
-51                 ret        0      0      0
+ 0                 set        0      0      0
+ 1                 int        1      1      0
+ 2           cntr_init        0      1      1
+ 3                 int        1      0      0
+ 4                push        1      0      0
+ 5                 int        1      1      0
+ 6                push        1      0      0
+ 7                 int        1      2      0
+ 8                push        1      0      0
+ 9                 int        1      3      0
+10                push        1      0      0
+11                 int        1      4      0
+12                push        1      0      0
+13                 int        1      5      0
+14                push        1      0      0
+15                 int        1      6      0
+16                push        1      0      0
+17                 int        1      7      0
+18                push        1      0      0
+19                 int        1      8      0
+20                push        1      0      0
+21                 int        1      9      0
+22                push        1      0      0
+23                 int        1     10      0
+24                push        1      0      0
+25                 int        1     11      0
+26                push        1      0      0
+27                 int        1     12      0
+28                push        1      0      0
+29                 int        1     13      0
+30                push        1      0      0
+31                 int        1     14      0
+32                push        1      0      0
+33                 int        1     15      0
+34                push        1      0      0
+35                 int        1     16      0
+36                push        1      0      0
+37                 int        1     17      0
+38                push        1      0      0
+39                 int        1     18      0
+40                push        1      0      0
+41                 int        1     19      0
+42                push        1      0      0
+43               array        1     20      0
+44    cursor_open_expr        0      1     46
+45                 jmp       50      0      0
+46            cntr_gte        0      1     49
+47         cursor_read        2      0      0
+48             set_add        0      2      0
+49         cursor_next        0     46      0
+50        cursor_close        0      0      0
+51             cte_set        0      0      0
+52                body        0      0      0
+53                 ret        0      0      0
 
 "
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 2
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 3
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 4
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 0
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset -1
-query: on_error
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 disconnect S0
-env_close E0
+stop E0

@@ -1,23 +1,22 @@
-env_open E0 "cluster_shards": 3
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
 # test: reference insert
 create table test (id int primary key, data int default 0) reference
 explain insert into test (id) values (1), (2), (3)
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
- 0              insert        -      0      3      # test
- 1              insert        -      3      3      # test
- 2              insert        -      6      3      # test
- 3               ready        0     -1      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
  4                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0              insert        -      1      0      # public.test
+ 1                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3)
@@ -26,11 +25,14 @@ explain delete from test
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -39,23 +41,26 @@ bytecode [shard 0]
  4              delete        0      0      0
  5         cursor_next        0      4      0
  6        cursor_close        0      0      0
- 7               ready        0     -1      0
- 8                 ret        0      0      0
+ 7                 ret        0      0      0
 
 "
 delete from test
 select * from test
+[]
 # test: reference delete join expr
 insert into test (id) values (1), (2), (3), (4)
 explain delete from test, [1,2,3] e where test.id = e.*
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -79,13 +84,12 @@ bytecode [shard 0]
 19        cursor_close        1      0      0
 20         cursor_next        0      4      0
 21        cursor_close        0      0      0
-22               ready        0     -1      0
-23                 ret        0      0      0
+22                 ret        0      0      0
 
 "
 delete from test, [1,2,3] e where test.id = e.*
 select * from test
-[4, 0]
+[[4, 0]]
 # test: reference delete join on expr join on expr
 delete from test
 insert into test (id) values (1), (2), (3), (4)
@@ -93,11 +97,14 @@ explain delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (t
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -141,29 +148,30 @@ bytecode [shard 0]
 39        cursor_close        1      0      0
 40         cursor_next        0      4      0
 41        cursor_close        0      0      0
-42               ready        0     -1      0
-43                 ret        0      0      0
+42                 ret        0      0      0
 
 "
 delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
 select * from test
-[4, 0]
+[[4, 0]]
 delete from test
 # test: reference delete join self
 insert into test (id) values (1), (2), (3)
 explain delete from test, test e where test.id = e.id
-query: on_error
 {"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: reference update
 explain update test set data = id
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -180,25 +188,25 @@ bytecode [shard 0]
 12              update        0      0      0
 13         cursor_next        0      4      0
 14        cursor_close        0      0      0
-15               ready        0     -1      0
-16                 ret        0      0      0
+15                 ret        0      0      0
 
 "
 update test set data = id
 select * from test
-[1, 1]
-[2, 2]
-[3, 3]
+[[1, 1], [2, 2], [3, 3]]
 # test: reference update join expr
 explain update test join [1,2,3] e on (test.id = e.*) set data = e.* * 2
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0          send_first        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -232,33 +240,32 @@ bytecode [shard 0]
 29        cursor_close        1      0      0
 30         cursor_next        0      4      0
 31        cursor_close        0      0      0
-32               ready        0     -1      0
-33                 ret        0      0      0
+32                 ret        0      0      0
 
 "
 update test join [1,2,3] e on (test.id = e.*) set data = e.* * 2
 select * from test
-[1, 2]
-[2, 4]
-[3, 6]
+[[1, 2], [2, 4], [3, 6]]
 update test set data = id
 # test: reference update join self
 explain update test join test e on (test.id = e.id) set data = e.id * 2
-query: on_error
 {"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: reference upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
+ 1                 jmp       13      0      0
  2         cursor_read        0      0      0
  3                push        0      0      0
  4                null        0      0      0
@@ -270,20 +277,14 @@ bytecode [shard 0]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      0      3
-15              upsert        0      3      3
-16              upsert        0      6      3
-17        cursor_close        0      0      0
-18               ready        0     -1      0
-19                 ret        0      0      0
+13              upsert        0      2      0
+14        cursor_close        0      0      0
+15                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 select * from test
-[1, 2]
-[2, 3]
-[3, 4]
+[[1, 2], [2, 3], [3, 4]]
 drop table test
 # test: table insert
 create table test (id int primary key, data int default 0)
@@ -291,46 +292,35 @@ explain insert into test (id) values (1), (2), (3)
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
+
+
+bytecode [shard]
+--------
+ 0              insert        -      1      0      # public.test
  1                 ret        0      0      0
-
-
-bytecode [shard 0]
---------
- 0              insert        -      6      3      # test
- 1               ready        0     -1      0
- 2                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0              insert        -      3      3      # test
- 1               ready        0     -1      0
- 2                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0              insert        -      0      3      # test
- 1               ready        0     -1      0
- 2                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3)
 select * from test
-[3, 0]
-[2, 0]
-[1, 0]
+[[3, 0], [2, 0], [1, 0]]
 # test: table delete
 explain delete from test
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -339,49 +329,26 @@ bytecode [shard 0]
  4              delete        0      0      0
  5         cursor_next        0      4      0
  6        cursor_close        0      0      0
- 7               ready        0     -1      0
- 8                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp        6      0      0
- 4              delete        0      0      0
- 5         cursor_next        0      4      0
- 6        cursor_close        0      0      0
- 7               ready        0     -1      0
- 8                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp        6      0      0
- 4              delete        0      0      0
- 5         cursor_next        0      4      0
- 6        cursor_close        0      0      0
- 7               ready        0     -1      0
- 8                 ret        0      0      0
+ 7                 ret        0      0      0
 
 "
 delete from test
 select * from test
+[]
 # test: table delete join expr
 insert into test (id) values (1), (2), (3), (4)
 explain delete from test, [1,2,3] e where test.id = e.*
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -405,69 +372,12 @@ bytecode [shard 0]
 19        cursor_close        1      0      0
 20         cursor_next        0      4      0
 21        cursor_close        0      0      0
-22               ready        0     -1      0
-23                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       21      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10               array        0      3      0
-11    cursor_open_expr        1      0     13
-12                 jmp       19      0      0
-13          cursor_idx        1      0      0
-14         cursor_read        2      1      0
-15                 equ        3      1      2
-16                jntr       18      3      0
-17              delete        0      0      0
-18         cursor_next        1     13      0
-19        cursor_close        1      0      0
-20         cursor_next        0      4      0
-21        cursor_close        0      0      0
-22               ready        0     -1      0
-23                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       21      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10               array        0      3      0
-11    cursor_open_expr        1      0     13
-12                 jmp       19      0      0
-13          cursor_idx        1      0      0
-14         cursor_read        2      1      0
-15                 equ        3      1      2
-16                jntr       18      3      0
-17              delete        0      0      0
-18         cursor_next        1     13      0
-19        cursor_close        1      0      0
-20         cursor_next        0      4      0
-21        cursor_close        0      0      0
-22               ready        0     -1      0
-23                 ret        0      0      0
+22                 ret        0      0      0
 
 "
 delete from test, [1,2,3] e where test.id = e.*
 select * from test
-[4, 0]
+[[4, 0]]
 # test: table delete join on expr join on expr
 delete from test
 insert into test (id) values (1), (2), (3), (4)
@@ -475,11 +385,14 @@ explain delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (t
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -523,125 +436,30 @@ bytecode [shard 0]
 39        cursor_close        1      0      0
 40         cursor_next        0      4      0
 41        cursor_close        0      0      0
-42               ready        0     -1      0
-43                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       41      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10               array        0      3      0
-11    cursor_open_expr        1      0     13
-12                 jmp       39      0      0
-13                 int        1      3      0
-14                push        1      0      0
-15                 int        1      2      0
-16                push        1      0      0
-17                 int        1      1      0
-18                push        1      0      0
-19               array        1      3      0
-20    cursor_open_expr        2      1     22
-21                 jmp       37      0      0
-22          cursor_idx        3      0      0
-23         cursor_read        4      1      0
-24                 equ        5      3      4
-25                jntr       30      5      0
-26          cursor_idx        3      0      0
-27         cursor_read        4      2      0
-28                 equ        6      3      4
-29                 jtr       32      6      0
-30                bool        2      0      0
-31                 jmp       33      0      0
-32                bool        2      1      0
-33                 nop        0      0      0
-34                jntr       36      2      0
-35              delete        0      0      0
-36         cursor_next        2     22      0
-37        cursor_close        2      0      0
-38         cursor_next        1     13      0
-39        cursor_close        1      0      0
-40         cursor_next        0      4      0
-41        cursor_close        0      0      0
-42               ready        0     -1      0
-43                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       41      0      0
- 4                 int        0      1      0
- 5                push        0      0      0
- 6                 int        0      2      0
- 7                push        0      0      0
- 8                 int        0      3      0
- 9                push        0      0      0
-10               array        0      3      0
-11    cursor_open_expr        1      0     13
-12                 jmp       39      0      0
-13                 int        1      3      0
-14                push        1      0      0
-15                 int        1      2      0
-16                push        1      0      0
-17                 int        1      1      0
-18                push        1      0      0
-19               array        1      3      0
-20    cursor_open_expr        2      1     22
-21                 jmp       37      0      0
-22          cursor_idx        3      0      0
-23         cursor_read        4      1      0
-24                 equ        5      3      4
-25                jntr       30      5      0
-26          cursor_idx        3      0      0
-27         cursor_read        4      2      0
-28                 equ        6      3      4
-29                 jtr       32      6      0
-30                bool        2      0      0
-31                 jmp       33      0      0
-32                bool        2      1      0
-33                 nop        0      0      0
-34                jntr       36      2      0
-35              delete        0      0      0
-36         cursor_next        2     22      0
-37        cursor_close        2      0      0
-38         cursor_next        1     13      0
-39        cursor_close        1      0      0
-40         cursor_next        0      4      0
-41        cursor_close        0      0      0
-42               ready        0     -1      0
-43                 ret        0      0      0
+42                 ret        0      0      0
 
 "
 delete from test join [1,2,3] e on (test.id = e.*) join [3,2,1] e2 on (test.id = e2.*)
 select * from test
-[4, 0]
+[[4, 0]]
 delete from test
 # test: table delete join self
 insert into test (id) values (1), (2), (3)
 explain delete from test, test e where test.id = e.id
-query: on_error
 {"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: table update
 explain update test set data = id
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -658,74 +476,31 @@ bytecode [shard 0]
 12              update        0      0      0
 13         cursor_next        0      4      0
 14        cursor_close        0      0      0
-15               ready        0     -1      0
-16                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       14      0      0
- 4         cursor_read        0      0      0
- 5                push        0      0      0
- 6                null        0      0      0
- 7                push        0      0      0
- 8          cursor_idx        0      0      0
- 9                push        0      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13         cursor_next        0      4      0
-14        cursor_close        0      0      0
-15               ready        0     -1      0
-16                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       14      0      0
- 4         cursor_read        0      0      0
- 5                push        0      0      0
- 6                null        0      0      0
- 7                push        0      0      0
- 8          cursor_idx        0      0      0
- 9                push        0      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13         cursor_next        0      4      0
-14        cursor_close        0      0      0
-15               ready        0     -1      0
-16                 ret        0      0      0
+15                 ret        0      0      0
 
 "
 update test set data = id
 select * from test
-[3, 3]
-[2, 2]
-[1, 1]
+[[3, 3], [2, 2], [1, 1]]
 # test: table update join self
 explain update test join test e on (test.id = e.id) set data = e.id * 2
-query: on_error
 {"code": 1, "msg": "DML JOIN using the same table are not supported"}
 # test: table upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
+ 1                 jmp       13      0      0
  2         cursor_read        0      0      0
  3                push        0      0      0
  4                null        0      0      0
@@ -737,62 +512,14 @@ bytecode [shard 0]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      6      3
-15        cursor_close        0      0      0
-16               ready        0     -1      0
-17                 ret        0      0      0
-
-
-bytecode [shard 1]
---------
- 0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
- 2         cursor_read        0      0      0
- 3                push        0      0      0
- 4                null        0      0      0
- 5                push        0      0      0
- 6          cursor_idx        0      0      1
- 7                 int        1      1      0
- 8                 add        2      0      1
- 9                push        2      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      3      3
-15        cursor_close        0      0      0
-16               ready        0     -1      0
-17                 ret        0      0      0
-
-
-bytecode [shard 2]
---------
- 0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
- 2         cursor_read        0      0      0
- 3                push        0      0      0
- 4                null        0      0      0
- 5                push        0      0      0
- 6          cursor_idx        0      0      1
- 7                 int        1      1      0
- 8                 add        2      0      1
- 9                push        2      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      0      3
-15        cursor_close        0      0      0
-16               ready        0     -1      0
-17                 ret        0      0      0
+13              upsert        0      2      0
+14        cursor_close        0      0      0
+15                 ret        0      0      0
 
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 select * from test
-[3, 4]
-[2, 3]
-[1, 2]
+[[3, 4], [2, 3], [1, 2]]
 drop table test
 disconnect S0
-env_close E0
+stop E0

@@ -1,19 +1,19 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 
 static void
 test_channel_main(void *arg)
 {
 	Channel* channel = arg;
-	channel_write(channel, buf_create(0)); 
+	auto buf = buf_end(buf_begin());
+	channel_write(channel, buf); 
 }
 
 void
@@ -74,33 +74,12 @@ test_channel_task(void *arg)
 	channel_free(&channel);
 }
 
-void
-test_channel_task_detached(void *arg)
-{
-	Channel channel;
-	channel_init(&channel);
-
-	Task task;
-	task_init(&task);
-	task_create(&task, "test", test_channel_main, &channel);
-
-	auto buf = channel_read(&channel, -1);
-	test(buf);
-	buf_free(buf);
-
-	task_wait(&task);
-	task_free(&task);
-
-	channel_detach(&channel);
-	channel_free(&channel);
-}
-
 static void
 test_channel_timeout_main(void *arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
-	channel_write(channel, buf_create(0)); 
+	channel_write(channel, buf_end(buf_begin())); 
 }
 
 void
@@ -141,7 +120,7 @@ static void
 test_channel_consumer(void *arg)
 {
 	Condition* on_complete = arg;
-	auto channel = &in_task->channel; 
+	auto channel = &so_task->channel; 
 	for (;;)
 	{
 		auto buf = channel_read(channel, -1);
@@ -170,14 +149,15 @@ test_channel_producer(void *arg)
 	uint64_t i = 0;
 	while (i < 1000)
 	{
-		buf = msg_create(DATA);
+		buf = msg_begin(DATA);
 		buf_write(buf, &i, sizeof(i));
 		msg_end(buf);
 		channel_write(consumer_channel, buf);
 		i++;
 	}
 
-	buf = msg_create(STOP);
+	buf = msg_begin(STOP);
+	msg_end(buf);
 	channel_write(consumer_channel, buf);
 }
 

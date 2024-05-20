@@ -48,8 +48,6 @@ unit test_condition_task_timeout
 unit test_channel
 # test: test channel task
 unit test_channel_task
-# test: test channel task detached
-unit test_channel_task_detached
 # test: test channel task timeout
 unit test_channel_task_timeout
 # test: test channel producer consumer
@@ -80,9 +78,3 @@ unit test_lock_read0
 unit test_lock_read1
 # test: test sleep
 unit test_sleep
-# test: test blob
-unit test_blob
-# test: test tcp (10 clients)
-unit test_tcp_10
-# test: test tcp (100 clients)
-unit test_tcp_100

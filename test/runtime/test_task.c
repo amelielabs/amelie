@@ -1,13 +1,12 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 
 static int called = 0;
 
@@ -37,7 +36,7 @@ void
 test_task_args_main(void* arg)
 {
 	test( *(int*)arg == 123 );
-	test( *(int*)in_task->main_arg_global == 321 );
+	test( *(int*)so_task->main_arg_global == 321 );
 }
 
 void test_task_args(void)
@@ -62,7 +61,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
-	thread_status_set(&in_task->thread_status, 123);
+	thread_status_set(&so_task->thread_status, 123);
 }
 
 void test_task_status(void)

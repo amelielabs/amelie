@@ -1,27 +1,19 @@
-env_open E0
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: delete statement parsing
 delete
-query: on_error
 {"code": 1, "msg": "DELETE <FROM> expected"}
 delete junk
-query: on_error
 {"code": 1, "msg": "DELETE <FROM> expected"}
 delete 1
-query: on_error
 {"code": 1, "msg": "DELETE <FROM> expected"}
 delete from 1
-query: on_error
 {"code": 1, "msg": "DELETE FROM <table name> expected"}
 delete from "name"
-query: on_error
 {"code": 1, "msg": "DELETE FROM <table name> expected"}
 delete from test junk
-query: on_error
 {"code": 1, "msg": "<test> table or view is not found"}
 delete from test where true limit
-query: on_error
 {"code": 1, "msg": "<test> table or view is not found"}
 # test: delete
 create table test(id int primary key)
@@ -29,11 +21,10 @@ insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 select * from test
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 delete from test
 select * from test
+[]
 drop table test
 # test: delete schema
 create schema test
@@ -43,6 +34,7 @@ insert into test.test values (1, 2)
 insert into test.test values (2, 1)
 delete from test.test
 select * from test.test
+[]
 drop table test.test
 drop schema test
 # test: delete point-lookup
@@ -54,11 +46,14 @@ explain delete from test where id = 3
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 int        0      3      0
  1                push        0      0      0
@@ -71,27 +66,24 @@ bytecode [shard 0]
  8              delete        0      0      0
  9         cursor_next        0      4      0
 10        cursor_close        0      0      0
-11               ready        0     -1      0
-12                 ret        0      0      0
+11                 ret        0      0      0
 
 "
 delete from test where id = 3
 select * from test
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 delete from test where id = 2
 select * from test
-[0]
-[1]
+[[0], [1]]
 delete from test where id = 0
 select * from test
-[1]
+[[1]]
 delete from test where id = -1
 select * from test
-[1]
+[[1]]
 delete from test where id = 1
 select * from test
+[]
 drop table test
 # test: delete range scan
 create table test(id int primary key)
@@ -99,32 +91,28 @@ insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 select * from test
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 delete from test where id > 3
 select * from test
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 delete from test where id > 2
 select * from test
-[0]
-[1]
-[2]
+[[0], [1], [2]]
 delete from test where id >= 2
 select * from test
-[0]
-[1]
+[[0], [1]]
 explain delete from test where id > 0 and id < 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0                 int        0      0      0
  1                push        0      0      0
@@ -150,19 +138,18 @@ bytecode [shard 0]
 21              delete        0      0      0
 22         cursor_next        0      4      0
 23        cursor_close        0      0      0
-24               ready        0     -1      0
-25                 ret        0      0      0
+24                 ret        0      0      0
 
 "
 delete from test where id > 0 and id < 1
 select * from test
-[0]
-[1]
+[[0], [1]]
 delete from test where id > 0 and id <= 1
 select * from test
-[0]
+[[0]]
 delete from test where id >= 0 and id <= 1
 select * from test
+[]
 drop table test
 # test: delete delete error
 create table test(id int primary key, data int)
@@ -170,12 +157,9 @@ insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 delete from test where data > 0
-query: on_error
 {"code": 1, "msg": "bad > expression type"}
 select * from test
-[0, 3]
-[1, 2]
-[2, null]
+[[0, 3], [1, 2], [2, null]]
 drop table test
 # test: delete insert delete
 create table test(id int primary key, data int)
@@ -184,22 +168,20 @@ insert into test values (1, 2)
 insert into test values (2, 0)
 delete from test
 select * from test
+[]
 insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, 0)
 select * from test
-[0, 3]
-[1, 2]
-[2, 0]
+[[0, 3], [1, 2], [2, 0]]
 delete from test
 select * from test
+[]
 insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, 0)
 select * from test
-[0, 3]
-[1, 2]
-[2, 0]
+[[0, 3], [1, 2], [2, 0]]
 drop table test
 disconnect S0
-env_close E0
+stop E0

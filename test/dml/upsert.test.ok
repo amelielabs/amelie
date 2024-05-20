@@ -1,53 +1,39 @@
-env_open E0
-connect E0 S0
-connect: on_connect
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
 # test: on conflict parsing
 create table test (id int primary key, data int)
 insert into test values(1, 0) 123
-query: on_error
-{"code": 1, "msg": "unexpected clause at the end of command"}
+{"code": 1, "msg": "unknown command"}
 insert into test values(1, 0) ON
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON <CONFLICT> expected"}
 insert into test values(1, 0) ON 123
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON <CONFLICT> expected"}
 insert into test values(1, 0) on conflict
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict 123
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <REPLACE | NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do 123
-query: on_error
 {"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <REPLACE | NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do update
-query: on_error
 {"code": 1, "msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
-query: on_error
 {"code": 1, "msg": "UPDATE name SET <path> expected"}
 insert into test values(1, 0) on conflict do update set 123
-query: on_error
 {"code": 1, "msg": "UPDATE name SET <path> expected"}
 insert into test values(1, 0) on conflict do update set path
-query: on_error
 {"code": 1, "msg": "UPDATE name SET path <=> expected"}
 insert into test values(1, 0) on conflict do update set path =
-query: on_error
 {"code": 1, "msg": "bad expression"}
 # test: on conflict do replace
 insert into test values(1, 0)
 insert into test values(1, 0)
-query: on_error
 {"code": 1, "msg": "unique key constraint violation"}
 insert into test values(1, null) on conflict do replace
 insert into test values(1, null) on conflict do replace
 select * from test
-[1, null]
+[[1, null]]
 drop table test
 # test: on conflict do nothing
 create table test (id int primary key, data int)
@@ -55,19 +41,20 @@ explain insert into test values(1, 0) on conflict do nothing
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp        3      0      0
- 2             jmp_pop        0      0      0
- 3              upsert        0      0      3
- 4        cursor_close        0      0      0
- 5               ready        0     -1      0
- 6                 ret        0      0      0
+ 1                 jmp        2      0      0
+ 2              upsert        0      2      0
+ 3        cursor_close        0      0      0
+ 4                 ret        0      0      0
 
 "
 insert into test values(1, 0) on conflict do nothing
@@ -77,27 +64,25 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp        3      0      0
- 2             jmp_pop        0      0      0
- 3              upsert        0      0      3
- 4              upsert        0      3      3
- 5              upsert        0      6      3
- 6        cursor_close        0      0      0
- 7               ready        0     -1      0
- 8                 ret        0      0      0
+ 1                 jmp        2      0      0
+ 2              upsert        0      2      0
+ 3        cursor_close        0      0      0
+ 4                 ret        0      0      0
 
 "
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
-[1, 0]
-[2, 0]
+[[1, 0], [2, 0]]
 drop table test
 # test: upsert insert
 create table test (id int primary key, data int)
@@ -105,14 +90,17 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
+ 1                 jmp       13      0      0
  2         cursor_read        0      0      0
  3                push        0      0      0
  4                null        0      0      0
@@ -124,28 +112,26 @@ bytecode [shard 0]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      0      3
-15        cursor_close        0      0      0
-16               ready        0     -1      0
-17                 ret        0      0      0
+13              upsert        0      2      0
+14        cursor_close        0      0      0
+15                 ret        0      0      0
 
 "
 insert into test values(1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 0]
+[[1, 0]]
 drop table test
 # test: upsert
 create table test (id int primary key, data int)
 insert into test values(1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 0]
+[[1, 0]]
 insert into test values(1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 1]
+[[1, 1]]
 insert into test values(1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 2]
+[[1, 2]]
 drop table test
 # test: upsert batch
 create table test (id int primary key, data int)
@@ -153,14 +139,17 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       14      0      0
+ 1                 jmp       13      0      0
  2         cursor_read        0      0      0
  3                push        0      0      0
  4                null        0      0      0
@@ -172,20 +161,16 @@ bytecode [shard 0]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13             jmp_pop        0      0      0
-14              upsert        0      0      3
-15              upsert        0      3      3
-16              upsert        0      6      3
-17        cursor_close        0      0      0
-18               ready        0     -1      0
-19                 ret        0      0      0
+13              upsert        0      2      0
+14        cursor_close        0      0      0
+15                 ret        0      0      0
 
 "
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 8]
+[[1, 8]]
 drop table test
 # test: upsert where
 create table test (id int primary key, data int)
@@ -193,21 +178,24 @@ insert into test values (1, 0) on conflict do update set data = data + 1
 insert into test values (1, 0) on conflict do update set data = data + 1
 insert into test values (1, 0) on conflict do update set data = data + 1
 select * from test
-[1, 2]
+[[1, 2]]
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       16      0      0
+ 1                 jmp       15      0      0
  2                bool        0      1      0
- 3            jntr_pop        0      0      0
+ 3                jntr       15      0      0
  4         cursor_read        0      0      0
  5                push        0      0      0
  6                null        0      0      0
@@ -219,22 +207,20 @@ bytecode [shard 0]
 12              assign        0      3      1
 13                push        0      0      0
 14              update        0      0      0
-15             jmp_pop        0      0      0
-16              upsert        0      0      3
-17        cursor_close        0      0      0
-18               ready        0     -1      0
-19                 ret        0      0      0
+15              upsert        0      2      0
+16        cursor_close        0      0      0
+17                 ret        0      0      0
 
 "
 insert into test values (1, 0) on conflict do update set data = data + 1 where true
 select * from test
-[1, 3]
+[[1, 3]]
 insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3
 select * from test
-[1, 3]
+[[1, 3]]
 insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3
 select * from test
-[1, 4]
+[[1, 4]]
 drop table test
 # test: upsert row access
 create table test (id int primary key, data int)
@@ -243,14 +229,17 @@ explain insert into test values (1, 123) on conflict do update set data = data +
 "
 bytecode [coordinator]
 --------
- 0                recv        0      0      0
- 1                 ret        0      0      0
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                null        0      0      0
+ 3             cte_set        0      0      0
+ 4                 ret        0      0      0
 
 
-bytecode [shard 0]
+bytecode [shard]
 --------
  0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       16      0      0
+ 1                 jmp       15      0      0
  2         cursor_read        0      0      0
  3                push        0      0      0
  4                null        0      0      0
@@ -264,68 +253,42 @@ bytecode [shard 0]
 12              assign        0      3      1
 13                push        0      0      0
 14              update        0      0      0
-15             jmp_pop        0      0      0
-16              upsert        0      0      4
-17        cursor_close        0      0      0
-18               ready        0     -1      0
-19                 ret        0      0      0
+15              upsert        0      2      0
+16        cursor_close        0      0      0
+17                 ret        0      0      0
 
 "
 insert into test values (1, 123) on conflict do update set data = data + @[1]
 select * from test
-[1, 123]
+[[1, 123]]
 select *[1] from test
-123
+[123]
 drop table test
 # test: upsert row access #2
 create table test (id int primary key, data int)
 insert into test values (1, 0) on conflict do update set data = data + 1
 select @ from test
-query: on_error
 {"code": 1, "msg": "@: reference is not defined"}
 drop table test
 # test: upsert error
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
 select * from test
-[1, 0]
-[2, 0]
-[3, null]
+[[1, 0], [2, 0], [3, null]]
 insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
-query: on_error
 {"code": 1, "msg": "bad + expression types"}
 select * from test
-[1, 0]
-[2, 0]
-[3, null]
+[[1, 0], [2, 0], [3, null]]
 drop table test
 # test: upsert generate
 create table test (id int primary key serial, data int default 0)
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
-[0, 0]
-[1, 0]
-[2, 0]
-[3, 0]
-[4, 0]
-[5, 0]
-[6, 0]
-[7, 0]
-[8, 0]
-[9, 0]
-alter table test set serial = 0
+[[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
+alter table test set serial to 0
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
-[0, 1]
-[1, 1]
-[2, 1]
-[3, 1]
-[4, 1]
-[5, 1]
-[6, 1]
-[7, 1]
-[8, 1]
-[9, 1]
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
 drop table test
 disconnect S0
-env_close E0
+stop E0

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Test        Test;
@@ -31,18 +31,19 @@ struct TestGroup
 
 struct TestEnv
 {
-	char*     name;
-	indigo_t* handle;
-	int       sessions;
-	List      link;
+	char* name;
+	Main  main;
+	int   sessions;
+	List  link;
 };
 
 struct TestSession
 {
-	char*             name;
-	indigo_session_t* handle;
-	TestEnv*          env;
-	List              link;
+	char*    name;
+	CURL*    handle;
+	void*    headers;
+	TestEnv* env;
+	List     link;
 };
 
 struct TestSuite
@@ -76,6 +77,39 @@ void test_suite_init(TestSuite*);
 void test_suite_free(TestSuite*);
 void test_suite_cleanup(TestSuite*);
 int  test_suite_run(TestSuite*);
+
+static inline void
+test_info(TestSuite* self, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	va_end(args);
+	fflush(stdout);
+}
+
+static inline void
+test_error(TestSuite* self, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	printf("\n");
+	printf("error: ");
+	vprintf(fmt, args);
+	printf("\n");
+	va_end(args);
+	fflush(stdout);
+}
+
+static inline void
+test_log(TestSuite* self, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(self->current_test_result, fmt, args);
+	va_end(args);
+	fflush(self->current_test_result);
+}
 
 static inline int
 test_sh(TestSuite* self, const char* fmt, ...)

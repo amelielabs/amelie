@@ -1,0 +1,136 @@
+#
+
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
+
+# test: insert abort by error
+create table test (id int primary key, data int default 0)
+
+insert into test (id) values (0), (1), (2), (3), (1)
+select * from test
+
+# test: insert abort by error #2
+insert into test (id) values (0), (1), (2), (3)
+select * from test
+
+# test: insert abort by error #3
+insert into test (id) values (4), (5), (1), (6)
+select * from test
+
+# test: insert abort by error #4
+insert into test (id) values (4), (5), (1), (6); select error("abort")
+select * from test
+
+# test: replace abort
+explain replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
+replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
+select * from test
+
+# test: delete abort
+explain delete from test; select error("abort")
+delete from test; select error("abort")
+select * from test
+
+# test: update abort
+explain update test set data = id; select error("abort")
+update test set data = id; select error("abort")
+select * from test
+
+# test: upsert abort
+explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
+insert into test values(1, 0) on conflict do update set data = id; select error("abort")
+select * from test
+drop table test
+
+# test: reference insert abort by error
+create table test (id int primary key, data int default 0) reference
+
+insert into test (id) values (0), (1), (2), (3), (1)
+select * from test
+
+# test: reference insert abort by error #2
+insert into test (id) values (0), (1), (2), (3)
+select * from test
+
+# test: reference insert abort by error #3
+insert into test (id) values (4), (5), (1), (6)
+select * from test
+
+# test: reference insert abort by error #4
+insert into test (id) values (4), (5), (1), (6); select error("abort")
+select * from test
+
+# test: reference replace abort
+explain replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
+replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
+select * from test
+
+# test: reference delete abort
+explain delete from test; select error("abort")
+delete from test; select error("abort")
+select * from test
+
+# test: reference update abort
+explain update test set data = id; select error("abort")
+update test set data = id; select error("abort")
+select * from test
+
+# test: reference upsert abort
+explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
+insert into test values(1, 0) on conflict do update set data = id; select error("abort")
+select * from test
+drop table test
+
+create table a (id int primary key, data int default 0)
+create table b (id int primary key, data int default 0)
+
+create table ref (id int primary key, data int default 0) reference
+insert into ref values (0, 8), (1, 8), (2, 8);
+
+# test: insert a select a
+insert into a (id) values (0), (1), (2), (3); select * from a
+
+# test: replace a select a abort (by coordinator)
+replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort")
+select * from a
+
+# test: replace a select a abort (by shard)
+replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort") from a
+select * from a
+
+# test: replace a select abort select a
+explain replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
+replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
+select * from a
+
+# test: replace a insert b
+explain replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
+replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
+select * from a
+select * from b
+
+# test: update a update b abort
+update a set data = 0
+explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
+update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
+select * from a
+select * from b
+
+# test: delete a join ref update b abort
+explain delete from a, ref where a.id = ref.id; update b set data = data * 2; select error("abort")
+delete from a, ref where a.id = ref.id; update b set data = data * 2; select * from a; select error("abort")
+select * from a
+select * from b
+
+# test: upsert a update b abort
+explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
+insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
+select * from a
+select * from b
+
+drop table a
+drop table b
+drop table ref
+
+disconnect S0
+stop E0

@@ -1,47 +1,13 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo.h>
-#include <indigo_test.h>
+#include <sonata.h>
+#include <sonata_test.h>
 #include <dlfcn.h>
-
-static inline void
-test_info(TestSuite* self, const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vprintf(fmt, args);
-	va_end(args);
-	fflush(stdout);
-}
-
-static inline void
-test_error(TestSuite* self, const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	printf("\n");
-	printf("error: ");
-	vprintf(fmt, args);
-	printf("\n");
-	va_end(args);
-	fflush(stdout);
-}
-
-static inline void
-test_log(TestSuite* self, const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(self->current_test_result, fmt, args);
-	va_end(args);
-	fflush(self->current_test_result);
-}
 
 static Test*
 test_new(TestSuite*  self, TestGroup* group,
@@ -145,18 +111,18 @@ test_group_find(TestSuite* self, const char* name)
 }
 
 static TestEnv*
-test_env_new(TestSuite* self, const char* name, indigo_t* handle)
+test_env_new(TestSuite* self, const char* name)
 {
 	TestEnv* env = malloc(sizeof(*env));
 	if (env == NULL)
 		return NULL;
-	env->handle = handle;
 	env->name = strdup(name);
 	if (env->name == NULL) {
 		free(env);
 		return NULL;
 	}
 	env->sessions = 0;
+	main_init(&env->main);
 	list_init(&env->link);
 	list_append(&self->list_env, &env->link);
 	return env;
@@ -167,8 +133,8 @@ test_env_free(TestSuite* self, TestEnv* env)
 {
 	(void)self;
 	list_unlink(&env->link);
-	if (env->handle)
-		indigo_free(env->handle);
+	main_stop(&env->main);
+	main_free(&env->main);
 	free(env->name);
 	free(env);
 }
@@ -181,50 +147,6 @@ test_env_find(TestSuite* self, const char* name)
 		auto env = list_at(TestEnv, link);
 		if (strcasecmp(name, env->name) == 0)
 			return env;
-	}
-	return NULL;
-}
-
-static TestSession*
-test_session_new(TestSuite* self, TestEnv* env, const char* name,
-                 indigo_session_t* handle)
-{
-	TestSession* session = malloc(sizeof(*session));
-	if (session == NULL)
-		return NULL;
-	session->handle = handle;
-	session->name = strdup(name);
-	if (session->name == NULL) {
-		free(session);
-		return NULL;
-	}
-	session->env = env;
-	list_init(&session->link);
-	list_append(&self->list_session, &session->link);
-	env->sessions++;
-	return session;
-}
-
-static void
-test_session_free(TestSuite* self, TestSession* session)
-{
-	list_unlink(&session->link);
-	session->env->sessions--;
-	assert(session->env->sessions >= 0);
-	if (session->handle)
-		indigo_free(session->handle);
-	free(session->name);
-	free(session);
-}
-
-static TestSession*
-test_session_find(TestSuite* self, const char* name)
-{
-	list_foreach(&self->list_session)
-	{
-		auto session = list_at(TestSession, link);
-		if (strcasecmp(name, session->name) == 0)
-			return session;
 	}
 	return NULL;
 }
@@ -378,27 +300,35 @@ error:
 }
 
 static int
-test_suite_env_open(TestSuite* self, char* arg)
+test_suite_start(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
 	char* config = arg;
 
-	auto env = test_env_find(self, name);
-	if (env) {
-		test_error(self, "line %d: env_open: name redefined",
+	if (name == NULL)
+	{
+		test_error(self, "line %d: start <name> expected",
 		           self->current_line);
 		return -1;
 	}
 
-	indigo_t* handle = indigo_init();
-	if (handle == NULL) {
-		test_error(self, "line %d: env_open: indigo_init() failed",
+	auto env = test_env_find(self, name);
+	if (env) {
+		test_error(self, "line %d: start: name redefined",
 		           self->current_line);
 		return -1;
 	}
+
+	env = test_env_new(self, name);
+	if (env == NULL)
+		return -1;
 
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
+
+	Str directory;
+	str_init(&directory);
+	str_set_cstr(&directory, path);
 
 	char prefmt_config[4096];
 	snprintf(prefmt_config, sizeof(prefmt_config),
@@ -407,8 +337,8 @@ test_suite_env_open(TestSuite* self, char* arg)
 	         " \"log_to_stdout\": false, "
 	         " \"wal_sync_on_rotate\": false, "
 	         " \"wal_sync_on_write\": false, "
-	         " \"cluster_shards\": 1, "
-	         " \"cluster_hubs\": 1 "
+	         " \"shards\": 1, "
+	         " \"frontends\": 1 "
 			 " %s"
 	         " %s%s "
 	         " %s "
@@ -417,29 +347,41 @@ test_suite_env_open(TestSuite* self, char* arg)
 	          (self->current_test_options) ? self->current_test_options : "",
 	          (self->current_test_options && config) ? ", " : "",
 	          (config) ? config : "");
-	int rc;
-	rc = indigo_open(handle, path, prefmt_config);
-	if (rc == -1) {
-		test_error(self, "line %d: indigo_open() failed",
-		           self->current_line);
+
+	Str options;
+	str_init(&options);
+	str_set_cstr(&options, prefmt_config);
+
+	int rc = main_start(&env->main, &directory, &options);
+	if (rc == -1)
+	{
+		test_error(self, "line %d: start failed", self->current_line);
+		test_env_free(self, env);
 		return -1;
 	}
-	test_env_new(self, name, handle);
+
 	return 0;
 }
 
 static int
-test_suite_env_close(TestSuite* self, char* arg)
+test_suite_stop(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
-	auto  env = test_env_find(self, name);
+	if (name == NULL)
+	{
+		test_error(self, "line %d: stop <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
+	auto env = test_env_find(self, name);
 	if (! env) {
-		test_error(self, "line %d: env_open: env name not found",
+		test_error(self, "line %d: stop: env name not found",
 		           self->current_line);
 		return -1;
 	}
 	if (env->sessions) {
-		test_error(self, "line %d: env_open: has active sessions",
+		test_error(self, "line %d: stop: has active sessions",
 		           self->current_line);
 		return -1;
 	}
@@ -454,38 +396,25 @@ test_suite_connect(TestSuite* self, char* arg)
 	char* name = test_suite_arg(&arg);
 	char* uri = test_suite_arg(&arg);
 
+	if (env_name == NULL || name == NULL || uri == NULL)
+	{
+		test_error(self, "line %d: connect <env_name> <name> <uri> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	auto env = test_env_find(self, env_name);
 	if (! env) {
-		test_error(self, "line %d: env_connect: env name not found",
+		test_error(self, "line %d: connect: env name not found",
 		           self->current_line);
 		return -1;
 	}
 
-	auto handle = indigo_connect(env->handle, uri);
-	if (handle == NULL) {
-		test_error(self, "line %d: connect: indigo_connect(): failed",
-		           self->current_line);
-		return -1;
-	}
-
-	auto event = indigo_read(handle, -1, NULL);
-	switch (event) {
-	case INDIGO_CONNECT:
-		test_log(self, "%s", "connect: on_connect\n");
-		break;
-	case INDIGO_DISCONNECT:
-		test_log(self, "%s", "connect: on_disconnect\n");
-		break;
-	case INDIGO_ERROR:
-		test_log(self, "%s", "connect: on_error\n");
-		return 0;
-	default:
-		assert(0);
-	}
-
-	auto session = test_session_new(self, env, name, handle);
+	auto session = test_session_new(self, env, name);
 	if (session == NULL)
-		abort();
+		return -1;
+
+	test_session_connect(self, session, uri);
 	self->current_session = session;
 	return 0;
 }
@@ -494,6 +423,13 @@ static int
 test_suite_disconnect(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
+	if (name == NULL)
+	{
+		test_error(self, "line %d: disconnect <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	auto session = test_session_find(self, name);
 	if (session == NULL) {
 		test_error(self, "line %d: disconnect: session %s is not found",
@@ -510,6 +446,13 @@ static int
 test_suite_switch(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
+	if (name == NULL)
+	{
+		test_error(self, "line %d: switch <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	auto session = test_session_find(self, name);
 	if (session == NULL) {
 		test_error(self, "line %d: switch: session %s is not found",
@@ -529,58 +472,6 @@ test_suite_debug(TestSuite* self, char* arg)
 	return 0;
 }
 
-static void
-test_log_object(TestSuite* self, indigo_object_t* object,
-                int limit, int in_map)
-{
-	indigo_arg_t  data;
-	indigo_type_t type;
-	int count = 0;
-	while (count < limit && indigo_next(object, &data, &type)) {
-		if (in_map) {
-			if ((count % 2) != 0)
-				test_log(self, ": ");
-			else
-			if (count > 0)
-				test_log(self, ", ");
-		} else {
-			if (count > 0)
-				test_log(self, ", ");
-		}
-		switch (type) {
-		case INDIGO_REAL:
-			test_log(self, "%f", *(double*)data.data);
-			break;
-		case INDIGO_BOOL:
-			if (*(int8_t*)data.data > 0)
-				test_log(self, "true");
-			else
-				test_log(self, "false");
-			break;
-		case INDIGO_INT:
-			test_log(self, "%" PRIi64, *(int64_t*)data.data);
-			break;
-		case INDIGO_STRING:
-			test_log(self, "\"%.*s\"", data.data_size, (char*)data.data);
-			break;
-		case INDIGO_NULL:
-			test_log(self, "null");
-			break;
-		case INDIGO_MAP:
-			test_log(self, "{");
-			test_log_object(self, object, *(int64_t*)data.data * 2, 1);
-			test_log(self, "}");
-			break;
-		case INDIGO_ARRAY:
-			test_log(self, "[");
-			test_log_object(self, object, *(int64_t*)data.data, 0);
-			test_log(self, "]");
-			break;
-		}
-		count++;
-	}
-}
-
 static int
 test_suite_query(TestSuite* self, const char* query)
 {
@@ -589,43 +480,7 @@ test_suite_query(TestSuite* self, const char* query)
 		           self->current_line);
 		return -1;
 	}
-
-	int rc;
-	rc = indigo_execute(self->current_session->handle, query, 0, NULL);
-	if (rc == -1) {
-		test_error(self, "%d: indigo_execute(%s, %s) failed",
-		           self->current_line,
-		           self->current_session->name,
-		           query);
-		return -1;
-	}
-
-	int ready = 0;
-	while (! ready)
-	{
-		indigo_object_t* result = NULL;
-		auto event = indigo_read(self->current_session->handle, -1, &result);
-		switch (event) {
-		case INDIGO_DISCONNECT:
-			test_log(self, "%s", "query: on_disconnect\n");
-			return 0;
-		case INDIGO_ERROR:
-			test_log(self, "%s", "query: on_error\n");
-			break;
-		case INDIGO_OBJECT:
-			break;
-		case INDIGO_OK:
-			ready = 1;
-			continue;
-		default:
-			assert(0);
-			break;
-		}
-		test_log_object(self, result, INT_MAX, 0);
-		test_log(self, "\n");
-		indigo_free(result);
-	}
-
+	test_session_execute(self, self->current_session, query);
 	return 0;
 }
 
@@ -633,6 +488,13 @@ static int
 test_suite_unit_function(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
+	if (name == NULL)
+	{
+		test_error(self, "line %d: unit_function <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	void* ptr = dlsym(self->dlhandle, name);
 	if (ptr == NULL)
 	{
@@ -648,6 +510,13 @@ static int
 test_suite_unit(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
+	if (name == NULL)
+	{
+		test_error(self, "line %d: unit <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	void* ptr = dlsym(self->dlhandle, name);
 	if (ptr == NULL)
 	{
@@ -814,17 +683,17 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 			continue;
 		}
 
-		// env_open
-		if (strncmp(query, "env_open", 8) == 0) {
-			rc = test_suite_env_open(self, query + 8);
+		// start
+		if (strncmp(query, "start", 5) == 0) {
+			rc = test_suite_start(self, query + 5);
 			if (rc == -1)
 				return -1;
 			continue;
 		}
 
-		// env_close
-		if (strncmp(query, "env_close", 9) == 0) {
-			rc = test_suite_env_close(self, query + 9);
+		// stop
+		if (strncmp(query, "stop", 4) == 0) {
+			rc = test_suite_stop(self, query + 4);
 			if (rc == -1)
 				return -1;
 			continue;
