@@ -1,11 +1,11 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
+#include <sonata_runtime.h>
 
 static void
 notify_on_read(Fd* fd)
@@ -60,15 +60,6 @@ notify_close(Notify* self)
 	self->fd.fd = -1;
 }
 
-static inline void
-notify_send(int fd)
-{
-	if (unlikely(fd == -1))
-		return;
-	uint64_t id = 1;
-	write(fd, &id, sizeof(id));
-}
-
 void
 notify_signal(Notify* self)
 {
@@ -76,5 +67,6 @@ notify_signal(Notify* self)
 		return;
 	if (__sync_lock_test_and_set(&self->signaled, 1) == 1)
 		return;
-	notify_send(self->fd.fd);
+	uint64_t id = 1;
+	write(self->fd.fd, &id, sizeof(id));
 }

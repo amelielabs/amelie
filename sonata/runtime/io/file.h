@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct File File;
@@ -32,32 +32,38 @@ file_error(File* self, const char* operation)
 }
 
 static inline void
-file_open(File* self, const char* path)
+file_open_as(File* self, const char* path, int flags, int mode)
 {
-	// open existing file
+	// open or create file
 	str_strdup(&self->path, path);
 
 	// get file size
-	int64_t size = vfs_size(str_of(&self->path));
-	if (unlikely(size == -1))
-		file_error(self, "stat");
-	self->size = size;
+	if (! (flags & O_CREAT))
+	{
+		int64_t size = vfs_size(str_of(&self->path));
+		if (unlikely(size == -1))
+			file_error(self, "stat");
+		self->size = size;
+	}
 
 	// open
-	self->fd = vfs_open(str_of(&self->path), O_RDWR, 0644);
+	self->fd = vfs_open(str_of(&self->path), flags, mode);
 	if (unlikely(self->fd == -1))
 		file_error(self, "open");
 }
 
 static inline void
+file_open(File* self, const char* path)
+{
+	// open existing file
+	file_open_as(self, path, O_RDWR, 0);
+}
+
+static inline void
 file_create(File* self, const char* path)
 {
-	// create new File
-	str_strdup(&self->path, path);
-
-	self->fd = vfs_open(str_of(&self->path), O_CREAT|O_RDWR, 0644);
-	if (unlikely(self->fd == -1))
-		file_error(self, "open");
+	// create file
+	file_open_as(self, path, O_CREAT|O_RDWR, 0644);
 }
 
 static inline void
@@ -210,7 +216,7 @@ file_pread_buf(File* self, Buf* buf, int size, uint64_t offset)
 }
 
 static inline void
-file_import_to(Buf* buf, const char* fmt, ...)
+file_import(Buf* buf, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -220,25 +226,7 @@ file_import_to(Buf* buf, const char* fmt, ...)
 
 	File file;
 	file_init(&file);
-	guard(file_guard, file_close, &file);
+	guard(file_close, &file);
 	file_open(&file, path);
 	file_pread_buf(&file, buf, file.size, 0);
-}
-
-static inline Buf*
-file_import(const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
-	va_end(args);
-
-	File file;
-	file_init(&file);
-	guard(file_guard, file_close, &file);
-	file_open(&file, path);
-	auto buf = buf_create(file.size);
-	file_pread_buf(&file, buf, file.size, 0);
-	return buf;
 }

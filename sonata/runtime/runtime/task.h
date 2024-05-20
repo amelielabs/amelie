@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Task Task;
@@ -27,12 +27,12 @@ struct Task
 	Thread         thread;
 };
 
-extern __thread Task* in_task;
+extern __thread Task* so_task;
 
 static inline Coroutine*
-in_self(void)
+so_self(void)
 {
-	return in_task->coroutine_mgr.current;
+	return so_task->coroutine_mgr.current;
 }
 
 void task_init(Task*);

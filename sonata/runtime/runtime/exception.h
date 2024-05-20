@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Guard        Guard;
@@ -61,7 +61,7 @@ exception_mgr_throw(ExceptionMgr* self)
 	longjmp(self->last->buf, 1);
 }
 
-#define exception_mgr_try(self, exception) \
+#define exception_mgr_enter(self, exception) \
 ({ \
 	(exception)->prev = (self)->last; \
  	(exception)->triggered = false; \
@@ -71,7 +71,7 @@ exception_mgr_throw(ExceptionMgr* self)
 })
 
 always_inline static inline bool
-exception_mgr_catch(ExceptionMgr* self, Exception* exception)
+exception_mgr_leave(ExceptionMgr* self, Exception* exception)
 {
 	self->last = exception->prev;
 	return exception->triggered;

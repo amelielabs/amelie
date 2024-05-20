@@ -1,18 +1,17 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Channel Channel;
 
 struct Channel
 {
-	Mutex     lock;
-	CondVar   cond_var;
-	BufPool   pool;
+	Spinlock  lock;
+	BufList   list;
 	Condition on_write;
 };
 

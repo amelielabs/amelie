@@ -1,13 +1,13 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
+#include <sonata_runtime.h>
 
-__thread Task* in_task;
+__thread Task* so_task;
 
 static inline void
 task_shutdown(CoroutineMgr* mgr)
@@ -24,7 +24,7 @@ task_shutdown(CoroutineMgr* mgr)
 	}
 
 	// wait for completion
-	wait_event(&mgr->on_exit, &in_task->timer_mgr, in_self(), -1);
+	wait_event(&mgr->on_exit, &so_task->timer_mgr, so_self(), -1);
 }
 
 hot void
@@ -35,13 +35,13 @@ task_coroutine_main(void* arg)
 
 	// main
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		cancellation_point();
 		coro->main(coro->main_arg);
 	}
 
-	if (unlikely(catch(&e)))
+	if (unlikely(leave(&e)))
 	{
 		auto error = &coro->error;
 		const char* prefix = "error: ";
@@ -52,10 +52,10 @@ task_coroutine_main(void* arg)
 	}
 
 	// main exit
-	if (coro == in_task->main_coroutine)
+	if (coro == so_task->main_coroutine)
 	{
 		if (e.triggered)
-			thread_status_set(&in_task->thread_status, -1);
+			thread_status_set(&so_task->thread_status, -1);
 
 		// cancel all coroutines, except current one
 		task_shutdown(mgr);
@@ -130,7 +130,7 @@ task_main(void* arg)
 	Task* self = thread->arg;
 
 	// set global variable
-	in_task = self;
+	so_task = self;
 
 	// block signals
 	thread_set_sigmask_default();

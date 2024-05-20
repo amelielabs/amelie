@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Tcp Tcp;
@@ -14,11 +14,6 @@ struct Tcp
 	bool    connected;
 	bool    eof;
 	Tls     tls;
-	Buf     readahead_buf;
-	BufPool read_list;
-	Buf     write_iov;
-	int     write_iov_pos;
-	BufPool write_list;
 	Poller* poller;
 };
 
@@ -35,11 +30,5 @@ bool tcp_connected(Tcp*);
 bool tcp_eof(Tcp*);
 void tcp_connect_fd(Tcp*);
 void tcp_connect(Tcp*, struct sockaddr*);
-void tcp_flush(Tcp*);
-void tcp_send_add(Tcp*, Buf*);
-void tcp_send(Tcp*, Buf*);
-void tcp_send_list(Tcp*, BufPool*);
-Buf* tcp_recv(Tcp*);
-Buf* tcp_recv_try(Tcp*);
-void tcp_read_start(Tcp*, Event*);
-void tcp_read_stop(Tcp*);
+int  tcp_read(Tcp*, Buf*, int);
+void tcp_write(Tcp*, Iov*);

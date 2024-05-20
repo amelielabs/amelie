@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct List List;
@@ -25,6 +25,24 @@ list_empty(List* self)
 {
 	return self->next == self &&
 	       self->prev == self;
+}
+
+static inline List*
+list_first(List* self)
+{
+	return self->next;
+}
+
+static inline List*
+list_last(List* self)
+{
+	return self->prev;
+}
+
+static inline bool
+list_is_first(List* self, List* link)
+{
+	return self->next == link;
 }
 
 static inline bool

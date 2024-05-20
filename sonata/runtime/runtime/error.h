@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Error Error;
@@ -34,12 +34,12 @@ error_init(Error* self)
 }
 
 static inline void no_return
-error_throw(Error*        self,
-            ExceptionMgr* mgr,
-            const char*   file,
-            const char*   function, int line,
-            int           code,
-            const char*   fmt, ...)
+error_throw_as(Error*        self,
+               ExceptionMgr* mgr,
+               const char*   file,
+               const char*   function, int line,
+               int           code,
+               const char*   fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

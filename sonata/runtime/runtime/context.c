@@ -1,14 +1,14 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
+#include <sonata_runtime.h>
 
 #if !defined(__amd64) && !defined(__i386)
-#  error unsupported architecture
+#error unsupported architecture
 #endif
 
 asm (
@@ -81,10 +81,10 @@ context_prepare(ContextStack* stack)
 	*--sp = (void*)(uintptr_t)context_entry;
 #if __amd64
 	sp -= 6;
-	memset(sp, 0, sizeof(void*)*  6);
+	memset(sp, 0, sizeof(void*) * 6);
 #else
 	sp -= 4;
-	memset(sp, 0, sizeof(void*)*  4);
+	memset(sp, 0, sizeof(void*) * 4);
 #endif
 	return sp;
 }

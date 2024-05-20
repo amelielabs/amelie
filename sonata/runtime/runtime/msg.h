@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Msg Msg;
@@ -38,10 +38,4 @@ static inline int
 msg_data_size(Msg* msg)
 {
 	return msg->size - sizeof(Msg);
-}
-
-static inline void
-msg_end(Buf* buf)
-{
-	msg_of(buf)->size = buf_size(buf);
 }

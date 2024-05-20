@@ -1,14 +1,13 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
 
 typedef struct uuid_bits uuid_bits_t;
 
@@ -30,70 +29,10 @@ uuid_init(Uuid* self)
 }
 
 void
-uuid_mgr_init(UuidMgr* self)
+uuid_generate(Uuid* self, Random* random)
 {
-	self->seed[0] = 0;
-	self->seed[1] = 0;
-	spinlock_init(&self->lock);
-}
-
-void
-uuid_mgr_free(UuidMgr* self)
-{
-	spinlock_free(&self->lock);
-}
-
-void
-uuid_mgr_open(UuidMgr* self)
-{
-	uint64_t seed_random_dev[2] = { 0, 0 };
-
-	int fd;
-	fd = vfs_open("/dev/urandom", O_RDONLY, 0644);
-	if (unlikely(fd != -1))
-	{
-		vfs_read(fd, seed_random_dev, sizeof(uint64_t) * 2);
-		vfs_close(fd);
-	}
-
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-
-	uint64_t seed;
-	seed = getpid() ^ getuid() ^ ts.tv_sec ^ ts.tv_nsec;
-	seed_random_dev[0] ^= seed ^ rand();
-	seed_random_dev[1] ^= seed ^ rand();
-
-	self->seed[0] = seed_random_dev[0];
-	self->seed[1] = seed_random_dev[1];
-}
-
-static inline uint64_t
-uuid_xorshift128plus(UuidMgr* self)
-{
-	uint64_t a = self->seed[0];
-	uint64_t b = self->seed[1];
-	self->seed[0] = b;
-	a ^= a << 23;
-	self->seed[1] = a ^ b ^ (a >> 17) ^ (b >> 26);
-	return self->seed[1] + b;
-}
-
-void
-uuid_mgr_generate(UuidMgr* self, Uuid* uuid)
-{
-	spinlock_lock(&self->lock);
-	uuid->a = uuid_xorshift128plus(self);
-	uuid->b = uuid_xorshift128plus(self);
-	spinlock_unlock(&self->lock);
-}
-
-uint64_t
-uuid_mgr_random(UuidMgr* self)
-{
-	Uuid uuid;
-	uuid_mgr_generate(self, &uuid);
-	return uuid.a ^ uuid.b;
+	self->a = random_generate(random);
+	self->b = random_generate(random);
 }
 
 void

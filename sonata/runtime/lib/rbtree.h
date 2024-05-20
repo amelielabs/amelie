@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct RbtreeNode RbtreeNode;
@@ -41,16 +41,18 @@ name(Rbtree*      self, \
 	unused(key); \
 	RbtreeNode *n = self->root; \
 	*match = NULL; \
-	int rc = 0; \
-	while (n) { \
+	int64_t rc = 0; \
+	while (n) \
+	{ \
 		*match = n; \
-		switch ((rc = (compare))) { \
-		case  0: return 0; \
-		case -1: n = n->r; \
+		rc = (compare); \
+		if (rc < 0) \
+			n = n->r; \
+		else \
+		if (rc > 0) \
+			n = n->l; \
+		else \
 			break; \
-		case  1: n = n->l; \
-			break; \
-		} \
 	} \
 	return rc; \
 }

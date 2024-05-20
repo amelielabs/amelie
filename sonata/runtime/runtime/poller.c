@@ -1,11 +1,11 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
+#include <sonata_runtime.h>
 
 void
 poller_init(Poller* self)
@@ -25,7 +25,7 @@ poller_free(Poller* self)
 		self->fd = -1;
 	}
 	if (self->list)
-		in_free(self->list);
+		so_free(self->list);
 }
 
 int
@@ -34,8 +34,8 @@ poller_create(Poller* self)
 	self->list_max = 1024;
 
 	// prepare event list
-	int size = sizeof(struct epoll_event)*  1024;
-	self->list = in_malloc_nothrow(size);
+	int size = sizeof(struct epoll_event) * 1024;
+	self->list = so_malloc_nothrow(size);
 	if (unlikely(self->list == NULL))
 		return -1;
 	memset(self->list, 0, size);
@@ -92,7 +92,7 @@ poller_add(Poller* self, Fd* fd)
 	if (count >= self->list_max)
 	{
 		int   list_max = self->list_max*  2;
-		void* list = in_realloc_nothrow(self->list, list_max * sizeof(struct epoll_event));
+		void* list = so_realloc_nothrow(self->list, list_max * sizeof(struct epoll_event));
 		if (unlikely(list == NULL))
 			return -1;
 		self->list = list;

@@ -1,5 +1,5 @@
 #
-# indigo runtime makefile
+# sonata runtime makefile
 #
 CC             = clang
 AR             = ar
@@ -8,11 +8,11 @@ CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I. \
                  -Iruntime \
                  -Iio \
-                 -Idata \
                  -Ilib \
+                 -Idata \
                  -Iconfig
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libindigo-runtime.a
+LIB            = libsonata-runtime.a
 OBJECTS        = \
                  runtime/timer_mgr.o \
                  runtime/poller.o \
@@ -30,17 +30,12 @@ OBJECTS        = \
                  io/tcp.o \
                  io/listen.o \
                  io/resolver.o \
-                 data/json.o \
-                 data/to_string.o \
                  lib/rbtree.o \
-                 lib/sha1.o \
+                 lib/random.o \
+                 lib/uuid.o \
                  lib/crc.o \
-                 lib/uuid_mgr.o \
-                 lib/compression.o \
-                 lib/uri.o \
-                 lib/portal.o \
+                 data/json.o \
                  config/config.o \
-                 config/config_state.o \
                  config/catalog_mgr.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

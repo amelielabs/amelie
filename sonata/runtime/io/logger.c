@@ -1,12 +1,12 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
 
 void
 logger_set_enable(Logger* self, bool enable)
@@ -71,7 +71,7 @@ logger_writev(Logger*     self,
 	len += strftime(buffer + len, sizeof(buffer) - len, "%d.%m.%y %H:%M:%S.",
 	                localtime(&tv.tv_sec));
 	len += snprintf(buffer + len, sizeof(buffer) - len, "%03d ",
-	                  (signed)tv.tv_usec / 1000);
+	                (signed)tv.tv_usec / 1000);
 
 	// message
 	len += vsnprintf(buffer + len, sizeof(buffer) - len, fmt, args);

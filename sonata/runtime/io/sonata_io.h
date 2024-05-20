@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 // file io
@@ -12,9 +12,6 @@
 #include "io/fs.h"
 #include "io/file.h"
 #include "io/logger.h"
-
-// blob
-#include "io/blob.h"
 
 // tls
 #include "io/tls_lib.h"

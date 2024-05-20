@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Str Str;
@@ -27,7 +27,7 @@ static inline void
 str_free(Str* self)
 {
 	if (self->allocated)
-		in_free(self->pos);
+		so_free(self->pos);
 	str_init(self);
 }
 
@@ -44,6 +44,14 @@ str_set(Str* self, char* pos, int size)
 {
 	self->pos = pos;
 	self->end = pos + size;
+	self->allocated = false;
+}
+
+static inline void
+str_set_u8(Str* self, uint8_t* pos, int size)
+{
+	self->pos = (char*)pos;
+	self->end = (char*)pos + size;
 	self->allocated = false;
 }
 
@@ -111,6 +119,12 @@ str_compare_raw_prefix(Str* self, const void* string, int size)
 }
 
 static inline bool
+str_compare_cstr(Str* self, const void* string)
+{
+	return str_compare_raw(self, string, strlen(string));
+}
+
+static inline bool
 str_compare(Str* self, Str* with)
 {
 	return str_compare_raw(self, str_of(with), str_size(with));
@@ -167,4 +181,20 @@ str_shrink(Str* self)
 		self->pos++;
 	while ((self->end - 1) > self->pos && isspace(*(self->end - 1)))
 		self->end--;
+}
+
+static inline int
+str_toint(Str* self, int64_t* value)
+{
+	char* pos = self->pos;
+	char* end = self->end;
+	*value = 0;
+	while (pos < end)
+	{
+		if (unlikely(! isdigit(*pos)))
+			return -1;
+		*value = (*value * 10) + *pos - '0';
+		pos++;
+	}
+	return 0;
 }

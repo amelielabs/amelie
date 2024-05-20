@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 static inline void
@@ -18,7 +18,7 @@ poll_read(Fd* fd, int time_ms)
 {
 	cancellation_point();
 
-	auto poller = &in_task->poller;
+	auto poller = &so_task->poller;
 	Event on_read;
 	event_init(&on_read);
 	int rc;
@@ -43,7 +43,7 @@ poll_write(Fd* fd, int time_ms)
 {
 	cancellation_point();
 
-	auto poller = &in_task->poller;
+	auto poller = &so_task->poller;
 	Event on_write;
 	event_init(&on_write);
 	int rc;

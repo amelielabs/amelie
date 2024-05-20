@@ -1,25 +1,25 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 static inline void*
-in_malloc_nothrow(size_t size)
+so_malloc_nothrow(size_t size)
 {
 	return malloc(size);
 }
 
 static inline void*
-in_realloc_nothrow(void* pointer, size_t size)
+so_realloc_nothrow(void* pointer, size_t size)
 {
 	return realloc(pointer, size);
 }
 
 static inline void
-in_free(void* pointer)
+so_free(void* pointer)
 {
 	free(pointer);
 }

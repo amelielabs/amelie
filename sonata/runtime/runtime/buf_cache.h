@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct BufCache BufCache;
@@ -68,7 +68,7 @@ buf_create_nothrow(BufCache* self, int size)
 		buf_reset(buf);
 	} else
 	{
-		buf = in_malloc_nothrow(sizeof(Buf));
+		buf = so_malloc_nothrow(sizeof(Buf));
 		if (unlikely(buf == NULL))
 			return NULL;
 		buf_init(buf);

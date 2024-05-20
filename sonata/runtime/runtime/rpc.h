@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Rpc Rpc;
@@ -51,10 +51,11 @@ rpc_execute(Buf* buf,
 {
 	auto rpc = rpc_of(buf);
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 		callback(rpc, callback_arg);
-	if (unlikely(catch(&e)))
-		*rpc->error = in_self()->error;
+	leave(&e);
+	if (unlikely(e.triggered))
+		*rpc->error = so_self()->error;
 	rpc_done(rpc);
 }
 
@@ -71,7 +72,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
-	auto error = &in_self()->error;
+	auto error = &so_self()->error;
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{
@@ -87,7 +88,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	auto rpc_ptr = &rpc;
 
 	// do rpc call and wait for completion
-	auto buf = msg_create(id);
+	auto buf = msg_begin(id);
 	buf_write(buf, &rpc_ptr, sizeof(void**));
 	msg_end(buf);
 	channel_write(channel, buf);

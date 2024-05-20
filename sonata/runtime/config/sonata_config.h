@@ -1,15 +1,14 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 // config
 #include "config/var.h"
 #include "config/config.h"
-#include "config/config_state.h"
 #include "config/control.h"
 
 // catalog

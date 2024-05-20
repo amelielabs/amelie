@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 always_inline hot static inline int
@@ -56,8 +56,8 @@ hot static inline int
 data_compare(uint8_t* a, uint8_t* b)
 {
 	switch (*a) {
-	case MN_TRUE:
-	case MN_FALSE:
+	case SO_TRUE:
+	case SO_FALSE:
 	{
 		if (! data_is_bool(b))
 			return compare_int64(*a, *b);
@@ -67,14 +67,14 @@ data_compare(uint8_t* a, uint8_t* b)
 		b_value = data_read_bool_at(b);
 		return compare_int64(a_value, b_value);
 	}
-	case MN_NULL:
+	case SO_NULL:
 	{
 		if (! data_is_null(b))
 			return compare_int64(*a, *b);
 		return 0;
 	}
-	case MN_REAL32:
-	case MN_REAL64:
+	case SO_REAL32:
+	case SO_REAL64:
 	{
 		if (! data_is_real(b))
 			return compare_int64(*a, *b);
@@ -86,19 +86,19 @@ data_compare(uint8_t* a, uint8_t* b)
 			return 0;
 		return (a_value > b_value) ? 1 : -1;
 	}
-	case MN_INTV0 ... MN_INT64:
+	case SO_INTV0 ... SO_INT64:
 	{
 		if (! data_is_integer(b))
 			return compare_int64(*a, *b);
 		return data_compare_integer(a, b);
 	}
-	case MN_STRINGV0 ... MN_STRING32:
+	case SO_STRINGV0 ... SO_STRING32:
 	{
 		if (! data_is_string(b))
 			return compare_int64(*a, *b);
 		return data_compare_string(a, b);
 	}
-	case MN_ARRAYV0 ... MN_ARRAY32:
+	case SO_ARRAYV0 ... SO_ARRAY32:
 	{
 		if (! data_is_array(b))
 			return compare_int64(*a, *b);
@@ -118,7 +118,7 @@ data_compare(uint8_t* a, uint8_t* b)
 		}
 		return 0;
 	}
-	case MN_MAPV0 ... MN_MAP32:
+	case SO_MAPV0 ... SO_MAP32:
 	{
 		if (! data_is_map(b))
 			return compare_int64(*a, *b);

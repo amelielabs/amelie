@@ -6,4 +6,4 @@
 // SQL Database for JSON.
 //
 
-uint32_t crc32(uint32_t, const void*, int);
+#define guard_buf(buf) guard(buf_free, buf)

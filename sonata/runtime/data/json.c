@@ -1,13 +1,14 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
 
 void
 json_init(Json* self)
@@ -15,14 +16,13 @@ json_init(Json* self)
 	self->json      = NULL;
 	self->json_size = 0;
 	self->pos       = 0;
-	self->buf       = &self->buf_data;
-	buf_init(&self->buf_data);
+	buf_init(&self->buf);
 }
 
 void
 json_free(Json* self)
 {
-	buf_free(&self->buf_data);
+	buf_free(&self->buf);
 }
 
 void
@@ -31,7 +31,7 @@ json_reset(Json* self)
 	self->json      = NULL;
 	self->json_size = 0;
 	self->pos       = 0;
-	buf_reset(self->buf);
+	buf_reset(&self->buf);
 }
 
 hot static inline int
@@ -56,7 +56,7 @@ json_read(Json* self, int skip)
 	if (unlikely(token <= 0))
 		return token;
 
-	auto data = self->buf;
+	auto data = &self->buf;
 	int rc;
 	switch (token) {
 	case '[':
@@ -102,7 +102,7 @@ json_read(Json* self, int skip)
 	}
 	case '{':
 	{
-		// { "key" : value, "key", value }
+		// { "key" : value, ... }
 		offset = buf_size(data);
 		encode_map32(data, 0);
 
@@ -235,7 +235,8 @@ json_read(Json* self, int skip)
 		encode_integer(data, value);
 		return token;
 fp:;
-		char* end;
+		errno = 0;
+		char*  end;
 		double real = strtod(self->json + self->pos, &end);
 		if (errno == ERANGE)
 			return -1;
@@ -259,10 +260,134 @@ json_parse(Json* self, Str* string)
 	self->json      = str_of(string);
 	self->json_size = str_size(string);
 	self->pos       = 0;
-	self->buf       = &self->buf_data;
 	int rc;
 	rc = json_read(self, 0);
 	if (unlikely(rc == -1))
 		error("%s", "json parse error");
-	assert(self->buf->position <= self->buf->end);
+	assert(self->buf.position <= self->buf.end);
+}
+
+static void
+json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
+{
+	char buf[256];
+	int  buf_len;
+	switch (**pos) {
+	case SO_NULL:
+		data_read_null(pos);
+		buf_write(data, "null", 4);
+		break;
+	case SO_TRUE:
+	case SO_FALSE:
+	{
+		bool value;
+		data_read_bool(pos, &value);
+		if (value)
+			buf_write(data, "true", 4);
+		else
+			buf_write(data, "false", 5);
+		break;
+	}
+	case SO_REAL32:
+	case SO_REAL64:
+	{
+		double value;
+		data_read_real(pos, &value);
+		buf_len = snprintf(buf, sizeof(buf), "%g", value);
+		buf_write(data, buf, buf_len);
+		break;
+	}
+	case SO_INTV0 ... SO_INT64:
+	{
+		int64_t value;
+		data_read_integer(pos, &value);
+		buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value);
+		buf_write(data, buf, buf_len);
+		break;
+	}
+	case SO_STRINGV0 ... SO_STRING32:
+	{
+		// todo: quouting
+		char* value;
+		int   size;
+		data_read_raw(pos, &value, &size);
+		buf_write(data, "\"", 1);
+		buf_write(data, value, size);
+		buf_write(data, "\"", 1);
+		break;
+	}
+	case SO_ARRAYV0 ... SO_ARRAY32:
+	{
+		int value;
+		data_read_array(pos, &value);
+		buf_write(data, "[", 1);
+		while (value-- > 0)
+		{
+			json_export_as(data, pretty, deep, pos);
+			if (value > 0)
+				buf_write(data, ", ", 2);
+		}
+		buf_write(data, "]", 1);
+		break;
+	}
+	case SO_MAPV0 ... SO_MAP32:
+	{
+		int value;
+		data_read_map(pos, &value);
+		if (pretty)
+		{
+			buf_write(data, "{\n", 2);
+			int i;
+			while (value-- > 0)
+			{
+				for (i = 0; i < deep + 1; i++)
+					buf_write(data, "  ", 2);
+				// key
+				json_export_as(data, pretty, deep + 1, pos);
+				buf_write(data, ": ", 2);
+				// value
+				json_export_as(data, pretty, deep + 1, pos);
+				// ,
+				if (value > 0)
+					buf_write(data, ",\n", 2);
+				else
+					buf_write(data, "\n", 1);
+			}
+			for (i = 0; i < deep; i++)
+				buf_write(data, "  ", 2);
+			buf_write(data, "}", 1);
+		} else
+		{
+			buf_write(data, "{", 1);
+			while (value-- > 0)
+			{
+				// key
+				json_export_as(data, pretty, deep + 1, pos);
+				buf_write(data, ": ", 2);
+				// value
+				json_export_as(data, pretty, deep + 1, pos);
+				// ,
+				if (value > 0)
+					buf_write(data, ", ", 2);
+			}
+			buf_write(data, "}", 1);
+		}
+		break;
+	}
+	default:
+		error_data();
+		break;
+	}
+}
+
+void
+json_export(Buf* self, uint8_t** pos)
+{
+	json_export_as(self, false, 0, pos);
+}
+
+void
+json_export_pretty(Buf* self, uint8_t** pos)
+{
+	json_export_as(self, true, 0, pos);
 }

@@ -1,25 +1,27 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Var Var;
 
 enum
 {
+	// can be set
+	VAR_C = 1 << 0,
+	// can be set in runtime
+	VAR_R = 1 << 1,
 	// hidden
-	VAR_H = 1,
+	VAR_H = 1 << 2,
 	// secret
-	VAR_S = 2,
-	// can be set on start in config
-	VAR_C = 4,
-	// can be updated in runtime
-	VAR_R = 8,
-	// persistent
-	VAR_P = 16
+	VAR_S = 1 << 3,
+	// excluded from config
+	VAR_E = 1 << 4,
+	// cannot be zero
+	VAR_Z = 1 << 5
 };
 
 typedef enum
@@ -192,7 +194,7 @@ var_print(Var* self)
 }
 
 static inline void
-var_msg_write(Var* self, Buf* buf)
+var_encode(Var* self, Buf* buf)
 {
 	switch (self->type) {
 	case VAR_STRING:
@@ -211,13 +213,4 @@ var_msg_write(Var* self, Buf* buf)
 		encode_integer(buf, var_int_of(self));
 		break;
 	}
-}
-
-static inline Buf*
-var_msg_create(Var* self)
-{
-	auto buf = msg_create(MSG_OBJECT);
-	var_msg_write(self, buf);
-	msg_end(buf);
-	return buf;
 }

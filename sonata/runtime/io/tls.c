@@ -1,12 +1,12 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
 
 #include <openssl/opensslv.h>
 #include <openssl/ssl.h>
@@ -207,7 +207,7 @@ tls_verify_common_name(Tls* self, const char* name)
 		tls_error(self, 0, "SSL_get_peer_certificate()");
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		X509_NAME* subject_name;
 		subject_name = X509_get_subject_name(cert);
@@ -222,7 +222,7 @@ tls_verify_common_name(Tls* self, const char* name)
 	}
 	X509_free(cert);
 
-	if (catch(&e))
+	if (leave(&e))
 		rethrow();
 }
 

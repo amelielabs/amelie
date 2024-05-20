@@ -1,13 +1,12 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct BufCache BufCache;
-typedef struct BufPool  BufPool;
 typedef struct Buf      Buf;
 
 struct Buf
@@ -16,7 +15,6 @@ struct Buf
 	uint8_t*  position;
 	uint8_t*  end;
 	int       refs;
-	BufPool*  pool;
 	BufCache* cache;
 	List      link;
 };
@@ -28,7 +26,6 @@ buf_init(Buf* self)
 	self->position = NULL;
 	self->end      = NULL;
 	self->refs     = 0;
-	self->pool     = NULL;
 	self->cache    = NULL;
 	list_init(&self->link);
 }
@@ -37,9 +34,9 @@ static inline void
 buf_free_memory(Buf* self)
 {
 	if (self->start)
-		in_free(self->start);
+		so_free(self->start);
 	if (self->cache)
-		in_free(self);
+		so_free(self);
 }
 
 static inline int
@@ -78,7 +75,7 @@ buf_reserve_nothrow(Buf* self, int size)
 		size_grow = size_actual;
 
 	uint8_t* pointer;
-	pointer = in_realloc_nothrow(self->start, size_grow);
+	pointer = so_realloc_nothrow(self->start, size_grow);
 	if (unlikely(pointer == NULL))
 		return -1;
 

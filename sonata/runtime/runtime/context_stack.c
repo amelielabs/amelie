@@ -1,11 +1,11 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
+#include <sonata_runtime.h>
 #include <valgrind/valgrind.h>
 
 void
@@ -20,7 +20,7 @@ int
 context_stack_allocate(ContextStack* self, int size)
 {
 	self->size = size;
-	self->pointer = in_malloc_nothrow(size);
+	self->pointer = so_malloc_nothrow(size);
 	if (unlikely(self->pointer == NULL))
 		return -1;
 	self->valgrind_id =
@@ -33,5 +33,5 @@ context_stack_free(ContextStack* self)
 {
 	VALGRIND_STACK_DEREGISTER(self->valgrind_id);
 	if (self->pointer)
-		in_free(self->pointer);
+		so_free(self->pointer);
 }

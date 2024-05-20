@@ -1,12 +1,12 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
 
 static void
 resolver_main(void* arg)
@@ -14,7 +14,7 @@ resolver_main(void* arg)
 	unused(arg);
 	for (bool active = true; active;)
 	{
-		auto buf = channel_read(&in_task->channel, -1);
+		auto buf = channel_read(&so_task->channel, -1);
 		auto rpc = rpc_of(buf);
 		buf_free(buf);
 		switch (rpc->id) {

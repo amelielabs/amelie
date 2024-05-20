@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Global Global;
@@ -12,13 +12,21 @@ struct Global
 {
 	Config*   config;
 	Control*  control;
-	UuidMgr*  uuid_mgr;
+	Random*   random;
 	Resolver* resolver;
 };
 
-#define global() ((Global*)in_task->main_arg_global)
+#define global() ((Global*)so_task->main_arg_global)
 #define config()  global()->config
 
+// control
+static inline void
+control_save_config(void)
+{
+	global()->control->save_config(global()->control->arg);
+}
+
+// directory
 static inline const char*
 config_directory(void)
 {
@@ -49,21 +57,3 @@ config_lsn_follow(uint64_t value)
 {
 	return var_int_follow(&config()->lsn, value);
 }
-
-// control
-static inline void
-control_save_state(void)
-{
-	global()->control->save_state(global()->control->arg);
-}
-
-static inline void
-control_save_catalog(void)
-{
-	global()->control->save_catalog(global()->control->arg);
-}
-
-// error injection
-#define error_injection(name) \
-	if (unlikely(var_int_of(config()->name))) \
-		error("(%s:%d) error injection: %s", source_file, source_line, #name)

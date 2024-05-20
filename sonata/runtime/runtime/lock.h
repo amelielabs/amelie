@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Lock Lock;
@@ -36,7 +36,7 @@ lock_init(Lock* self, LockerCache* locker_cache)
 hot static inline Locker*
 lock_lock(Lock* self, bool shared)
 {
-	auto coro = in_self();
+	auto coro = so_self();
 	bool wait = false;
 
 	Locker* locker = NULL;
@@ -72,7 +72,7 @@ lock_lock(Lock* self, bool shared)
 	} else
 	{
 		// exclusive is not reentrant
-		assert(!self->writer || self->writer && self->writer->coroutine != coro);
+		assert(!self->writer || (self->writer && self->writer->coroutine != coro));
 
 		// prepare new locker
 		locker = locker_create(self->locker_cache, self, shared);
@@ -103,7 +103,7 @@ lock_lock(Lock* self, bool shared)
 hot static inline void
 lock_unlock(Locker* locker)
 {
-	assert(locker->coroutine == in_self());
+	assert(locker->coroutine == so_self());
 	Lock* self = locker->lock;
 
 	// reentrant

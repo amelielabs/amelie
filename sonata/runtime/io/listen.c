@@ -1,12 +1,12 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
 
 void
 listen_init(Listen* self)
@@ -50,7 +50,7 @@ listen_socket_init(int fd, struct sockaddr* addr)
 void
 listen_start(Listen* self, int backlog, struct sockaddr* addr)
 {
-	auto poller = &in_task->poller;
+	auto poller = &so_task->poller;
 
 	self->fd.fd = socket_for(addr);
 	if (unlikely(self->fd.fd == -1))
@@ -59,7 +59,7 @@ listen_start(Listen* self, int backlog, struct sockaddr* addr)
 	self->poller = poller;
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// set socket options
 		listen_socket_init(self->fd.fd, addr);
@@ -81,7 +81,7 @@ listen_start(Listen* self, int backlog, struct sockaddr* addr)
 			error_system();
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		socket_close(self->fd.fd);
 		self->fd.fd = -1;
@@ -106,18 +106,14 @@ listen_stop(Listen* self)
 int
 listen_accept(Listen* self)
 {
+	int client_fd = -1;
 	for (;;)
 	{
 		poll_read(&self->fd, -1);
-
-		int client_fd;
 		client_fd = socket_accept(self->fd.fd, NULL, NULL);
 		if (unlikely(client_fd == -1))
 			continue;
-
-		return client_fd;
+		break;
 	}
-
-	// unreach
-	return 0;
+	return client_fd;
 }

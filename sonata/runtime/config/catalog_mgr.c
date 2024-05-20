@@ -1,15 +1,15 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
 
 void
 catalog_mgr_init(CatalogMgr* self)
@@ -37,7 +37,7 @@ catalog_mgr_add(CatalogMgr* self, Catalog* cat)
 static Buf*
 catalog_mgr_dump_create(CatalogMgr* self)
 {
-	auto buf = buf_create(0);
+	auto buf = buf_begin();
 	encode_map(buf, self->list_count);
 	list_foreach(&self->list)
    	{
@@ -45,22 +45,22 @@ catalog_mgr_dump_create(CatalogMgr* self)
 		encode_string(buf, &cat->name);
 		cat->iface->dump(cat, buf);
 	}
-	return buf;
+	return buf_end(buf);
 }
 
 void
 catalog_mgr_dump(CatalogMgr* self, uint64_t lsn)
 {
-	auto dump = catalog_mgr_dump_create(self);
+	auto buf = catalog_mgr_dump_create(self);
+	guard_buf(buf);
 
 	// catalog_snapshot
 	var_int_set(&config()->catalog_snapshot, lsn);
 
 	// catalog
-	var_data_set_buf(&config()->catalog, dump);
+	var_data_set_buf(&config()->catalog, buf);
 
-	control_save_state();
-	buf_free(dump);
+	control_save_config();
 }
 
 static Catalog*

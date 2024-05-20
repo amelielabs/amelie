@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Iov Iov;
@@ -59,4 +59,10 @@ iov_add(Iov* self, void* pointer, int size)
 	buf_advance(&self->iov, sizeof(struct iovec));
 	self->iov_count++;
 	self->size += size;
+}
+
+static inline void
+iov_add_buf(Iov* self, Buf* buf)
+{
+	iov_add(self, buf->start, buf_size(buf));
 }

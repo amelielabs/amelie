@@ -1,26 +1,21 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
 
 void
 tcp_init(Tcp* self)
 {
-	self->connected     = false;
-	self->eof           = false;
-	self->poller        = NULL;
-	self->write_iov_pos = 0;
+	self->connected = false;
+	self->eof       = false;
+	self->poller    = NULL;
 	fd_init(&self->fd);
 	tls_init(&self->tls);
-	buf_init(&self->write_iov);
-	buf_init(&self->readahead_buf);
-	buf_pool_init(&self->write_list);
-	buf_pool_init(&self->read_list);
 }
 
 void
@@ -28,10 +23,6 @@ tcp_free(Tcp* self)
 {
 	assert(! self->connected);
 	assert(self->poller == NULL);
-	buf_free(&self->readahead_buf);
-	buf_free(&self->write_iov);
-	buf_pool_reset(&self->write_list);
-	buf_pool_reset(&self->read_list);
 }
 
 void
@@ -47,12 +38,8 @@ tcp_close(Tcp* self)
 	self->eof           = false;
 	self->poller        = NULL;
 	self->fd.fd         = -1;
-	self->write_iov_pos = 0;
 	tls_free(&self->tls);
 	tls_init(&self->tls);
-	buf_reset(&self->write_iov);
-	buf_pool_reset(&self->write_list);
-	buf_pool_reset(&self->read_list);
 }
 
 void
@@ -119,7 +106,7 @@ tcp_attach(Tcp* self)
 {
 	assert(self->poller == NULL);
 	assert(self->fd.fd != -1);
-	auto poller = &in_task->poller;
+	auto poller = &so_task->poller;
 	int rc;
 	rc = poller_add(poller, &self->fd);
 	if (unlikely(rc == -1))
@@ -159,7 +146,7 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 	self->connected = false;
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// set socket options
 		tcp_socket_init(self->fd.fd);
@@ -178,7 +165,7 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 		}
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		tcp_close(self);
 		rethrow();
@@ -225,265 +212,108 @@ tcp_eof(Tcp* self)
 }
 
 static inline int
-tcp_write(Tcp* self)
+tcp_read_tls(Tcp* self, Buf* buf, int size)
 {
-	if (buf_pool_size(&self->write_list) == 0)
-		return 0;
-
-	int iov_to_write = buf_pool_size(&self->write_list);
-	if (unlikely(iov_to_write > IOV_MAX))
-		iov_to_write = IOV_MAX;
-
-	auto iov = (struct iovec*)self->write_iov.start + self->write_iov_pos;
-
 	int rc;
-	if (tls_is_set(&self->tls))
+	rc = tls_read(&self->tls, buf, size);
+	if (rc == -1)
 	{
-		rc = tls_writev(&self->tls, iov, iov_to_write);
-		if (unlikely(rc == -1))
-		{
-			// retry
-			assert(errno == EAGAIN);
-			goto done;
-		}
-
-	} else
-	{
-		rc = socket_writev(self->fd.fd, iov, iov_to_write);
-		if (unlikely(rc == -1))
-		{
-			if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
-				error_system();
-
-			// retry
-			goto done;
-		}
+		// need more data
+		assert(errno == EAGAIN);
+		return -1;
 	}
 
-	int written = rc;
-	while (buf_pool_size(&self->write_list) > 0)
-	{
-		if (iov->iov_len > (size_t)written)
-		{
-			iov->iov_base = (char*)iov->iov_base + written;
-			iov->iov_len -= written;
-			break;
-		}
-
-		auto last = buf_pool_pop(&self->write_list, NULL);
-		buf_cache_push(last->cache, last);
-
-		written -= iov->iov_len;
-		self->write_iov_pos++;
-		iov++;
-	}
-
-	if (buf_pool_size(&self->write_list) == 0)
-	{
-		self->write_iov_pos = 0;
-		buf_reset(&self->write_iov);
-	}
-
-done:
-	return buf_pool_size(&self->write_list);
+	// might be zero in case of eof
+	buf_advance(buf, rc);
+	return rc;
 }
 
-hot void
-tcp_flush(Tcp* self)
+static inline int
+tcp_read_socket(Tcp* self, Buf* buf, int size)
 {
-	for (;;)
-	{
-		if (tcp_write(self) == 0)
-			break;
-		poll_write(&self->fd, -1);
-	}
-}
-
-hot void
-tcp_send_add(Tcp* self, Buf* buf)
-{
-	buf_pool_add(&self->write_list, buf);
-	buf_reserve(&self->write_iov, sizeof(struct iovec));
-	auto iov = (struct iovec*)self->write_iov.position;
-	iov->iov_base = buf->start;
-	iov->iov_len = buf_size(buf);
-	buf_advance(&self->write_iov, sizeof(struct iovec));
-}
-
-void
-tcp_send(Tcp* self, Buf* msg)
-{
-	if (msg)
-		tcp_send_add(self, msg);
-	tcp_flush(self);
-}
-
-void
-tcp_send_list(Tcp* self, BufPool* list)
-{
-	Buf* buf;
-	while ((buf = buf_pool_pop(list, NULL)))
-		tcp_send_add(self, buf);
-	tcp_flush(self);
-}
-
-hot static inline void
-tcp_pipeline(Tcp* self)
-{
-	auto readahead = &self->readahead_buf;
-	auto position = readahead->start;
-	auto end = readahead->position;
-
-	uint32_t data_left = end - position;
-	while (data_left > 0)
-	{
-		if (data_left < sizeof(Msg))
-		{
-			memmove(readahead->start, position, data_left);
-			readahead->position = readahead->start + data_left;
-			// need more data
-			return;
-		}
-
-		auto msg = (Msg*)(position);
-		if (data_left < msg->size)
-		{
-			memmove(readahead->start, position, data_left);
-			readahead->position = readahead->start + data_left;
-			// need more data
-			return;
-		}
-
-		// create message and add to the read list
-		auto buf = buf_create(msg->size);
-		memcpy(buf->start, position, msg->size);
-		buf_advance(buf, msg->size);
-		buf_pool_add(&self->read_list, buf);
-
-		position += msg->size;
-		data_left = end - position;
-	}
-
-	buf_reset(readahead);
-}
-
-hot static inline bool
-tcp_read_tls(Tcp* self)
-{
-	for (;;)
-	{
-		buf_reserve(&self->readahead_buf, 8096);
-
-		int rc;
-		rc = tls_read(&self->tls, self->readahead_buf.position, 8096);
-		if (rc == -1)
-		{
-			// need more data
-			assert(errno == EAGAIN);
-			break;
-		}
-
-		// eof
-		if (rc == 0)
-			return true;
-
-		buf_advance(&self->readahead_buf, rc);
-
-		// process more data from tls buffer
-		if (! tls_read_pending(&self->tls))
-			break;
-	}
-	return false;
-}
-
-hot static inline bool
-tcp_read_socket(Tcp* self)
-{
-	buf_reserve(&self->readahead_buf, 8096);
-
 	int rc;
-	rc = socket_read(self->fd.fd, self->readahead_buf.position, 8096);
+	rc = socket_read(self->fd.fd, buf->position, size);
 	if (rc == -1)
 	{
 		if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
 			error_system();
-
 		// retry
-		return false;
+		return -1;
 	}
+
+	// might be zero in case of eof
+	buf_advance(buf, rc);
+	return rc;
+}
+
+int
+tcp_read(Tcp* self, Buf* buf, int size)
+{
+	bool poll = true;
+	if (tls_is_set(&self->tls) && tls_read_pending(&self->tls))
+		poll = false;
+	if (poll)
+		poll_read(&self->fd, -1);
+
+	buf_reserve(buf, size);
+
+	// read data from socket or tls
+	int rc;
+	if (tls_is_set(&self->tls))
+		rc = tcp_read_tls(self, buf, size);
+	else
+		rc = tcp_read_socket(self, buf, size);
 
 	// eof
 	if (rc == 0)
-		return true;
-
-	buf_advance(&self->readahead_buf, rc);
-	return false;
-}
-
-hot static inline bool
-tcp_read(Tcp* self)
-{
-	// read data from socket or tls
-	bool eof;
-	if (tls_is_set(&self->tls))
-		eof = tcp_read_tls(self);
-	else
-		eof = tcp_read_socket(self);
-	if (eof)
-	{
 		self->eof = true;
-		return eof;
-	}
 
-	// process messages
-	tcp_pipeline(self);
-	return false;
+	return rc;
 }
 
-Buf*
-tcp_recv(Tcp* self)
+void
+tcp_write(Tcp* self, Iov* iov)
 {
-	for (;;)
+	auto iovec = iov_pointer(iov);
+	auto iovec_count = iov->iov_count;
+
+	while (iovec_count > 0)
 	{
-		auto msg = buf_pool_pop(&self->read_list, &in_self()->buf_pool);
-		if (msg)
-			return msg;
-		poll_read(&self->fd, -1);
-		bool eof = tcp_read(self);
-		if (eof)
-			break;
+		int rc;
+		if (tls_is_set(&self->tls))
+		{
+			rc = tls_writev(&self->tls, iovec, iovec_count);
+			if (unlikely(rc == -1)) {
+				assert(errno == EAGAIN);
+			}
+		} else
+		{
+			rc = socket_writev(self->fd.fd, iovec, iovec_count);
+			if (unlikely(rc == -1))
+			{
+				if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
+					error_system();
+			}
+		}
+
+		// retry
+		if (rc == -1)
+		{
+			poll_write(&self->fd, -1);
+			continue;
+		}
+
+		while (iovec_count > 0)
+		{
+			if (iovec->iov_len > (size_t)rc)
+			{
+				iovec->iov_base = (char*)iovec->iov_base + rc;
+				iovec->iov_len -= rc;
+				break;
+			}
+			rc -= iovec->iov_len;
+			iovec++;
+			iovec_count--;
+		}
 	}
-
-	// eof
-	return NULL;
-}
-
-Buf*
-tcp_recv_try(Tcp* self)
-{
-	auto msg = buf_pool_pop(&self->read_list, &in_self()->buf_pool);
-	if (msg)
-		return msg;
-	bool eof;
-	eof = tcp_read(self);
-	if (eof)
-		return NULL;
-	return buf_pool_pop(&self->read_list, &in_self()->buf_pool);
-}
-
-void
-tcp_read_start(Tcp* self, Event* on_read)
-{
-	auto poller = &in_task->poller;
-	int rc;
-	rc = poller_read(poller, &self->fd, poll_on_read_event, on_read);
-	if (unlikely(rc == -1))
-		error_system();
-}
-
-void
-tcp_read_stop(Tcp* self)
-{
-	auto poller = &in_task->poller;
-	poller_read(poller, &self->fd, NULL, NULL);
 }

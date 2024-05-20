@@ -1,64 +1,64 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 enum
 {
-	MN_NULL       = 0,
-	MN_TRUE       = 1,
-	MN_FALSE      = 2,
-	MN_REAL32     = 3,
-	MN_REAL64     = 4,
+	SO_NULL       = 0,
+	SO_TRUE       = 1,
+	SO_FALSE      = 2,
+	SO_REAL32     = 3,
+	SO_REAL64     = 4,
 
-	MN_INTV0      = 5,   // reserved values from 0 .. 31
-	MN_INTV31     = 37,
-	MN_INT8       = 38,
-	MN_INT16      = 39,
-	MN_INT32      = 40,
-	MN_INT64      = 41,
+	SO_INTV0      = 5,   // reserved values from 0 .. 31
+	SO_INTV31     = 37,
+	SO_INT8       = 38,
+	SO_INT16      = 39,
+	SO_INT32      = 40,
+	SO_INT64      = 41,
 
-	MN_ARRAYV0    = 42,  // reserved values from 0 .. 31
-	MN_ARRAYV31   = 74,
-	MN_ARRAY8     = 75,
-	MN_ARRAY16    = 76,
-	MN_ARRAY32    = 77,
+	SO_ARRAYV0    = 42,  // reserved values from 0 .. 31
+	SO_ARRAYV31   = 74,
+	SO_ARRAY8     = 75,
+	SO_ARRAY16    = 76,
+	SO_ARRAY32    = 77,
 
-	MN_MAPV0      = 78,  // reserved values from 0 .. 31
-	MN_MAPV31     = 110,
-	MN_MAP8       = 111,
-	MN_MAP16      = 112,
-	MN_MAP32      = 113,
+	SO_MAPV0      = 78,  // reserved values from 0 .. 31
+	SO_MAPV31     = 110,
+	SO_MAP8       = 111,
+	SO_MAP16      = 112,
+	SO_MAP32      = 113,
 
-	MN_STRINGV0   = 114, // reserved values from 0 .. 31
-	MN_STRINGV31  = 146,
-	MN_STRING8    = 147,
-	MN_STRING16   = 148,
-	MN_STRING32   = 149
+	SO_STRINGV0   = 114, // reserved values from 0 .. 31
+	SO_STRINGV31  = 146,
+	SO_STRING8    = 147,
+	SO_STRING16   = 148,
+	SO_STRING32   = 149
 };
 
 static inline char*
 type_to_string(int type)
 {
 	switch (type) {
-	case MN_TRUE:
-	case MN_FALSE:
+	case SO_TRUE:
+	case SO_FALSE:
 		return "bool";
-	case MN_NULL:
+	case SO_NULL:
 		return "null";
-	case MN_REAL32:
-	case MN_REAL64:
+	case SO_REAL32:
+	case SO_REAL64:
 		return "real";
-	case MN_INTV0 ... MN_INT64:
+	case SO_INTV0 ... SO_INT64:
 		return "int";
-	case MN_ARRAYV0 ... MN_ARRAY32:
+	case SO_ARRAYV0 ... SO_ARRAY32:
 		return "array";
-	case MN_MAPV0 ... MN_MAP32:
+	case SO_MAPV0 ... SO_MAP32:
 		return "map";
-	case MN_STRINGV0 ... MN_STRING32:
+	case SO_STRINGV0 ... SO_STRING32:
 		return "string";
 	}
 	return "<unknown>";

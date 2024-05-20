@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Coroutine Coroutine;
@@ -14,9 +14,9 @@ struct Coroutine
 	Context      context;
 	ContextStack stack;
 	ExceptionMgr exception_mgr;
+	BufList      buf_list;
 	Error        error;
 	Arena        arena;
-	BufPool      buf_pool;
 	bool         cancel;
 	int          cancel_pause;
 	int          cancel_pause_recv;
@@ -43,9 +43,9 @@ coroutine_init(Coroutine* self, void* mgr)
 	memset(&self->context, 0, sizeof(self->context));
 	context_stack_init(&self->stack);
 	exception_mgr_init(&self->exception_mgr);
+	buf_list_init(&self->buf_list);
 	error_init(&self->error);
 	arena_init(&self->arena, 4000);
-	buf_pool_init(&self->buf_pool);
 	list_init(&self->link);
 	list_init(&self->link_ready);
 	event_init(&self->on_exit);
@@ -54,10 +54,10 @@ coroutine_init(Coroutine* self, void* mgr)
 static inline void
 coroutine_free(Coroutine* self)
 {
-	buf_pool_reset(&self->buf_pool);
+	buf_list_free(&self->buf_list);
 	arena_reset(&self->arena);
 	context_stack_free(&self->stack);
-	in_free(self);
+	so_free(self);
 }
 
 static inline void
@@ -92,9 +92,9 @@ coroutine_cancel_resume(Coroutine* self)
 	{
 		self->cancel_pause_recv = 0;
 		self->cancel = true;
-		error_throw(&self->error, &self->exception_mgr,
-		            source_file,
-		            source_function,
-		            source_line, CANCEL, "cancelled");
+		error_throw_as(&self->error, &self->exception_mgr,
+		               source_file,
+		               source_function,
+		               source_line, CANCEL, "cancelled");
 	}
 }

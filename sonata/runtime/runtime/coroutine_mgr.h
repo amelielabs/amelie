@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct CoroutineMgr CoroutineMgr;
@@ -131,7 +131,7 @@ coroutine_mgr_create(CoroutineMgr* self,
 		arena_reset(&coro->arena);
 	} else
 	{
-		coro = in_malloc_nothrow(sizeof(Coroutine));
+		coro = so_malloc_nothrow(sizeof(Coroutine));
 		if (unlikely(coro == NULL))
 			return NULL;
 		coroutine_init(coro, self);
@@ -139,7 +139,7 @@ coroutine_mgr_create(CoroutineMgr* self,
 		rc = context_stack_allocate(&coro->stack, self->stack_size);
 		if (unlikely(rc == -1))
 		{
-			in_free(coro);
+			so_free(coro);
 			return NULL;
 		}
 	}

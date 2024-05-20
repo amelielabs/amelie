@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Control Control;
@@ -11,8 +11,7 @@ typedef struct Control Control;
 struct Control
 {
 	Channel*  system;
-	void    (*save_state)(void*);
-	void    (*save_catalog)(void*);
+	void    (*save_config)(void*);
 	void*     arg;
 };
 

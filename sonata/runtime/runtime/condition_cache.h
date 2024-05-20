@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct ConditionCache ConditionCache;
@@ -27,7 +27,7 @@ condition_cache_free(ConditionCache* self)
 	list_foreach_safe(&self->list) {
 		auto event = list_at(Condition, link);
 		condition_detach(event);
-		in_free(event);
+		so_free(event);
 	}
 }
 
@@ -60,7 +60,7 @@ condition_create_nothrow(ConditionCache* self)
 		event_init(&event->event);
 		return event;
 	}
-	event = in_malloc_nothrow(sizeof(Condition));
+	event = so_malloc_nothrow(sizeof(Condition));
 	if (unlikely(event == NULL))
 		return NULL;
 	condition_init(event);

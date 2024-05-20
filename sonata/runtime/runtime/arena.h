@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct ArenaPage ArenaPage;
@@ -42,7 +42,7 @@ arena_reset(Arena* self)
 	while (page)
 	{
 		auto next = page->next;
-		in_free(page);
+		so_free(page);
 		page = next;
 	}
 	self->list       = NULL;
@@ -54,7 +54,7 @@ static inline ArenaPage*
 arena_add_page(Arena* self)
 {
 	ArenaPage* page;
-	page = in_malloc_nothrow(sizeof(ArenaPage) + self->page_size);
+	page = so_malloc_nothrow(sizeof(ArenaPage) + self->page_size);
 	if (unlikely(page == NULL))
 		return NULL;
 	page->used = 0;
@@ -113,7 +113,7 @@ arena_truncate(Arena* self, int offset)
 	while (page_next)
 	{
 		ArenaPage* next = page_next->next;
-		in_free(page_next);
+		so_free(page_next);
 		page_next = next;
 		self->list_count--;
 	}
