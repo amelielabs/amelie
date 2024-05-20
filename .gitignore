@@ -2,9 +2,7 @@
 *.a
 *.so
 test/test
-cli/indigo
+cli/sonata
 cli/t
-qa/test
-qa/_output
-prof/_test
-prof/prof
+test/sonata-test
+test/_output

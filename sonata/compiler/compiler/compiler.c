@@ -158,7 +158,7 @@ emit_stmt(Compiler* self)
 
 			auto from_select = ast_select_of(from_expr);
 			if (from_select->target == NULL ||
-				from_select->target->table == NULL)
+			    from_select->target->table == NULL)
 				error("FROM SELECT: undefined distributed table");
 
 			// validate FROM SELECT targets
