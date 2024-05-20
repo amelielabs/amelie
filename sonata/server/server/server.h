@@ -1,14 +1,14 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Server Server;
 
-typedef void (*ServerEvent)(Client*, void*);
+typedef void (*ServerEvent)(Server*, Client*);
 
 struct Server
 {

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct UserCache UserCache;
@@ -90,28 +90,25 @@ user_cache_sync(UserCache* self, UserCache* with)
 static inline Buf*
 user_cache_dump(UserCache* self)
 {
-	auto dump = buf_create(0);
-	// array
-	encode_array(dump, self->list_count);
+	auto buf = buf_begin();
+	encode_array(buf, self->list_count);
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
-		user_config_write(user->config, dump);
+		user_config_write(user->config, buf, true);
 	}
-	return dump;
+	return buf_end(buf);
 }
 
 static inline Buf*
 user_cache_list(UserCache* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// array
+	auto buf = buf_begin();
 	encode_array(buf, self->list_count);
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
-		user_config_write_safe(user->config, buf);
+		user_config_write(user->config, buf, false);
 	}
-	msg_end(buf);
-	return buf;
+	return buf_end(buf);
 }

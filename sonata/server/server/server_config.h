@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct ServerConfig ServerConfig;
@@ -22,7 +22,7 @@ static inline ServerConfig*
 server_config_allocate(void)
 {
 	ServerConfig* self;
-	self = in_malloc(sizeof(*self));
+	self = so_malloc(sizeof(*self));
 	self->tls       = false;
 	self->host_addr = NULL;
 	self->port      = 3485;
@@ -39,14 +39,14 @@ server_config_free(ServerConfig* self)
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
 	str_free(&self->host);
-	in_free(self);
+	so_free(self);
 }
 
 static inline ServerConfig*
 server_config_read(uint8_t** pos)
 {
 	auto self = server_config_allocate();
-	guard(self_guard, server_config_free, self);
+	guard(server_config_free, self);
 
 	// map
 	if (! data_is_map(*pos))
@@ -85,5 +85,5 @@ server_config_read(uint8_t** pos)
 		}
 	}
 
-	return unguard(&self_guard);
+	return unguard();
 }

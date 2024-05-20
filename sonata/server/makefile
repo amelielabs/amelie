@@ -1,5 +1,5 @@
 #
-# indigo server makefile
+# sonata server makefile
 #
 CC             = clang
 AR             = ar
@@ -8,19 +8,20 @@ CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/runtime \
                  -I../runtime/io \
-                 -I../runtime/data \
                  -I../runtime/lib \
+                 -I../runtime/data \
                  -I../runtime/config \
                  -I. \
                  -Iauth \
+                 -Ihttp \
                  -Iclient \
                  -Iserver
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libindigo-server.a
+LIB            = libsonata-server.a
 OBJECTS        = \
-                 auth/auth.o \
+                 auth/user_mgr.o \
+                 http/request.o \
                  client/client.o \
-                 client/relay.o \
                  server/server.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

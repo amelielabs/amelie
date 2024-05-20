@@ -1,18 +1,19 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_client.h>
-#include <indigo_server.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
 
 static void
 server_listen_main(void* arg)
@@ -21,12 +22,12 @@ server_listen_main(void* arg)
 	Server*       self = listen->arg;
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// set listen address
 		char addr_name[128];
 		socket_getaddrname(listen->addr->ai_addr, addr_name, sizeof(addr_name), true, true);
-		coroutine_set_name(in_self(), "listen %s", addr_name);
+		coroutine_set_name(so_self(), "listen %s", addr_name);
 
 		// bind
 		listen_start(&listen->listen, 4096, listen->addr->ai_addr);
@@ -40,21 +41,21 @@ server_listen_main(void* arg)
 
 			Client* client = NULL;
 			Exception e;
-			if (try(&e))
+			if (enter(&e))
 			{
 				// create new client
-				client = client_create(ACCESS_UNDEF);
+				client = client_create();
 				client->arg = self;
-				if (listen->tls_context)
+				if (listen->tls)
 					tcp_set_tls(&client->tcp, listen->tls_context);
 				tcp_set_fd(&client->tcp, fd);
 				fd = -1;
 
 				// process client
-				self->on_connect(client, self->on_connect_arg);
+				self->on_connect(self, client);
 			}
 
-			if (catch(&e))
+			if (leave(&e))
 			{
 				if (client)
 					client_free(client);
@@ -63,8 +64,8 @@ server_listen_main(void* arg)
 			}
 		}
 	}
-	if (catch(&e))
-	{}
+	if (leave(&e))
+	{ }
 
 	listen_stop(&listen->listen);
 }

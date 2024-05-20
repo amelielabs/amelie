@@ -1,16 +1,12 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-// user
 #include "auth/user_config.h"
 #include "auth/user.h"
 #include "auth/user_cache.h"
 #include "auth/user_mgr.h"
-
-// authentication
-#include "auth/auth.h"

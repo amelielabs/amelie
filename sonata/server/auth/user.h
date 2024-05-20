@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct User User;
@@ -19,17 +19,17 @@ user_free(User* user)
 {
 	if (user->config)
 		user_config_free(user->config);
-	in_free(user);
+	so_free(user);
 }
 
 static inline User*
 user_allocate(UserConfig* config)
 {
 	User* self;
-	self = in_malloc(sizeof(*self));
+	self = so_malloc(sizeof(*self));
 	self->config = NULL;
 	list_init(&self->link);
-	guard(self_guard, user_free, self);
+	guard(user_free, self);
 	self->config = user_config_copy(config);
-	return unguard(&self_guard);
+	return unguard();
 }
