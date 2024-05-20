@@ -1,86 +1,84 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
 
-static inline Stmt*
-parser_add(Parser* self)
+void
+parse_stmt_free(Stmt* stmt)
 {
-	auto stmt = stmt_allocate(self->stmts_count, self->db, &self->lex);
-	list_append(&self->stmts, &stmt->link);
-	self->stmts_count++;
-	return stmt;
-}
-
-static inline void
-parse_show(Stmt* self)
-{
-	// SHOW name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("SHOW <name> expected");
-	auto stmt = ast_show_allocate(name);
-	self->ast = &stmt->ast;
-}
-
-static inline void
-parse_set(Stmt* self)
-{
-	// SET name TO INT|STRING
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("SET <name> expected");
-	// TO
-	if (! stmt_if(self, KTO))
-		error("SET name <TO> expected");
-	// value
-	auto value = stmt_next(self);
-	if (value->id != KINT && value->id != KSTRING)
-		error("SET name TO <value> expected string or int");
-	auto stmt = ast_set_allocate(name, value);
-	self->ast = &stmt->ast;
+	switch (stmt->id) {
+	case STMT_CREATE_USER:
+	{
+		auto ast = ast_user_create_of(stmt->ast);
+		if (ast->config)
+			user_config_free(ast->config);
+		break;
+	}
+	case STMT_ALTER_USER:
+	{
+		auto ast = ast_user_alter_of(stmt->ast);
+		if (ast->config)
+			user_config_free(ast->config);
+		break;
+	}
+	case STMT_CREATE_SCHEMA:
+	{
+		auto ast = ast_schema_create_of(stmt->ast);
+		if (ast->config)
+			schema_config_free(ast->config);
+		break;
+	}
+	case STMT_CREATE_TABLE:
+	{
+		auto ast = ast_table_create_of(stmt->ast);
+		if (ast->config)
+			table_config_free(ast->config);
+		break;
+	}
+	case STMT_CREATE_VIEW:
+	{
+		auto ast = ast_view_create_of(stmt->ast);
+		if (ast->config)
+			view_config_free(ast->config);
+		break;
+	}
+	default:
+		break;
+	}
+	def_free(&stmt->def);
 }
 
 hot static inline void
-parse_stmt(Parser* self)
+parse_stmt(Parser* self, Stmt* stmt)
 {
-	auto lex  = &self->lex;
-	auto stmt = parser_add(self);
-
+	auto lex = &self->lex;
 	auto ast = lex_next(lex);
 	if (ast->id == KEOF)
 		return;
 
 	switch (ast->id) {
-	case KBEGIN:
-		error("BEGIN: already in transaction");
-		break;
-
-	case KABORT:
-		// ABORT
-		stmt->id = STMT_ABORT;
-		break;
-
 	case KSHOW:
 		// SHOW name
 		stmt->id = STMT_SHOW;
@@ -96,6 +94,7 @@ parse_stmt(Parser* self)
 	case KCHECKPOINT:
 		// CHECKPOINT
 		stmt->id = STMT_CHECKPOINT;
+		parse_checkpoint(stmt);
 		break;
 
 	case KCREATE:
@@ -207,19 +206,97 @@ parse_stmt(Parser* self)
 	}
 
 	default:
+	{
+		if (ast->id == KNAME)
+			error("unknown command: <%.*s>", str_size(&ast->string),
+			      str_of(&ast->string));
 		error("unknown command");
 		break;
 	}
+	}
+}
 
-	// ; | EOF
-	ast = lex_next(lex);
-	if (likely(ast->id == ';' || ast->id == KEOF))
-	{
-		lex_push(lex, ast);
+hot void
+parse_cte_args(Parser* self, Stmt* cte)
+{
+	// )
+	auto lex = &self->lex;
+	if (lex_if(lex, ')'))
 		return;
+
+	for (;;)
+	{
+		// name
+		auto name = lex_if(lex, KNAME);
+		if (! name)
+			error("WITH name (<name> expected");
+
+		// ensure arg does not exists
+		auto arg = def_find_column(&cte->def, &name->string);
+		if (arg)
+			error("<%.*s> view argument redefined", str_size(&name->string),
+			      str_of(&name->string));
+
+		// add argument
+		arg = column_allocate();
+		def_add_column(&cte->def, arg);
+		column_set_name(arg, &name->string);
+
+		// ,
+		if (! lex_if(lex, ','))
+			break;
 	}
 
-	error("unexpected clause at the end of command");
+	// )
+	if (! lex_if(lex, ')'))
+		error("WITH name (<)> expected");
+}
+
+hot void
+parse_cte(Parser* self)
+{
+	auto lex = &self->lex;
+
+	// WITH
+	if (! lex_if(lex, KWITH))
+		return;
+
+	for (;;)
+	{
+		// name [(args)] AS ( stmt )[, ...]
+		auto cte = stmt_allocate(self->db, &self->lex, &self->stmt_list);
+		stmt_list_add(&self->stmt_list, cte);
+
+		// name
+		cte->name = lex_if(lex, KNAME);
+		if (! cte->name)
+			error("WITH <name> expected");
+
+		// (args)
+		if (lex_if(lex, '('))
+			parse_cte_args(self, cte);
+
+		// AS
+		if (! lex_if(lex, KAS))
+			error("WITH name <AS> expected");
+
+		// (
+		if (! lex_if(lex, '('))
+			error("WITH name AS <(> expected");
+
+		// stmt (cannot be a utility statement)
+		parse_stmt(self, cte);
+		if (stmt_is_utility(cte))
+			error("CTE must DML or Select");
+
+		// )
+		if (! lex_if(lex, ')'))
+			error("WITH name AS (<)> expected");
+
+		// ,
+		if (! lex_if(lex, ','))
+			break;
+	}
 }
 
 hot void
@@ -246,53 +323,35 @@ parse(Parser* self, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
-	// [BEGIN]
-	bool begin  = false;
-	bool commit = false;
-	if (lex_if(lex, KBEGIN))
-		begin = true;
+	// [WITH name AS ( cte )[, name AS (...)]]
+	parse_cte(self);
 
-	// statement [; statement]
+	// stmt [; stmt]
+	bool has_utility = false;	
 	for (;;)
 	{
-		// ;
-		if (lex_if(lex, ';'))
-			continue;
-
 		// EOF
 		if (lex_if(lex, KEOF))
 			break;
 
-		// [COMMIT]
-		if (lex_if(lex, KCOMMIT))
-		{
-			if (! begin)
-				error("COMMIT without BEGIN");
-			commit = true;
-
-			// [;]
-			lex_if(lex, ';');
-
-			// EOF
-			if (unlikely(! lex_if(lex, KEOF)))
-				error("unexpected command after COMMIT");
-
+		// ; | EOF
+		lex_if(lex, ';');
+		if (lex_if(lex, KEOF))
 			break;
-		}
 
-		// statement
-		parse_stmt(self);
+		// stmt (last stmt is main)
+		self->stmt = stmt_allocate(self->db, &self->lex, &self->stmt_list);
+		stmt_list_add(&self->stmt_list, self->stmt);
+		parse_stmt(self, self->stmt);
+		if (stmt_is_utility(self->stmt))
+			has_utility = true;
 	}
 
-	// ensure we did not forget about COMMIT
-	if (unlikely(begin && !commit))
-		error("COMMIT is missing at the end of the multi-statement transaction");
-
 	// ensure EXPLAIN has command
-	if (unlikely(self->explain && !self->stmts_count))
+	if (unlikely(self->explain && !self->stmt_list.list_count))
 		error("EXPLAIN without command");
 
-	// ensure we are can execute transactional commands
-	if (parser_has_utility(self) && (begin || self->stmts_count != 1))
-		error("DDL and utility operations are not transactional");
+	// ensure main stmt is not utility when using CTE
+	if (has_utility && self->stmt_list.list_count > 1)
+		error("CTE or multi-statement utility commands are not supported");
 }

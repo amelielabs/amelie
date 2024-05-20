@@ -1,9 +1,10 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 void parse(Parser*, Str*);
+void parse_stmt_free(Stmt*);

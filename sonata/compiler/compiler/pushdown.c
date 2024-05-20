@@ -1,78 +1,36 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
-static inline int
-pushdown_group_by_order_by(Compiler* self, AstSelect* select)
-{
-	// create ordered data set
-	int offset = emit_select_order_by_data(self, select, NULL);
-	int rset = op2(self, CSET_ORDERED, rpin(self), offset);
-	select->rset = rset;
-	select->on_match = emit_select_on_match_set;
-
-	// redirect each target reference to the group scan target
-	auto target_group = select->target_group;
-	target_group_redirect(select->target, target_group);
-
-	// scan over created group
-	scan(self,
-	     target_group,
-	     NULL,
-	     NULL,
-	     select->expr_having,
-	     emit_select_on_match_group,
-	     select);
-
-	target_group_redirect(select->target, NULL);
-
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
-
-	// no distinct/limit/offset (return set)
-	if (select->distinct    == false &&
-	    select->expr_limit  == NULL &&
-	    select->expr_offset == NULL)
-	{
-		// CSET_SORT
-		op1(self, CSET_SORT, select->rset);
-		return rset;
-	}
-
-	// create merge object and apply distinct/limit/offset
-	return emit_select_merge(self, select);
-}
-
-static inline int
-pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
+static inline void
+pushdown_group_by(Compiler* self, AstSelect* select)
 {
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
-	auto stmt = self->current;
-
-	// shard
 
 	// create group
 	int rgroup;
@@ -84,7 +42,7 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	while (node)
 	{
 		auto aggr = ast_aggr_of(node->ast);
-		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->id, aggr->order);
+		op3(self, CGROUP_ADD, rgroup, aggr->id, aggr->order);
 		node = node->next;
 	}
 
@@ -101,7 +59,7 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 			runpin(self, rexpr);
 			node = node->next;
 		}
-		op1(self, CGROUP_ADD, select->rgroup);
+		op1(self, CGROUP_WRITE, select->rgroup);
 	}
 
 	// set target
@@ -117,102 +75,15 @@ pushdown_group_by(Compiler* self, AstSelect* select, bool nested)
 	     emit_select_on_match_group_target,
 	     select);
 
-	// CREADY (return group)
-	op2(self, CREADY, stmt->order, select->rgroup);
+	// CRESULT (return group)
+	op1(self, CRESULT, select->rgroup);
 	runpin(self, select->rgroup);
 	select->rgroup = -1;
-
-	// copy statement code to each shard
-	compiler_distribute(self);
-
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// CRECV
-	op0(self, CRECV);
-
-	// merge all received groups into one
-	//
-	// CGROUP_MERGE_RECV
-	rgroup = op2(self, CGROUP_MERGE_RECV, rpin(self), stmt->order);
-	select->rgroup = rgroup;
-	target_group->rexpr = rgroup;
-
-	// [ORDER BY]
-	if (select->expr_order_by.count > 0)
-		return pushdown_group_by_order_by(self, select);
-
-	// create data set for nested queries
-	int rset = -1;
-	if (nested)
-	{
-		rset = op1(self, CSET, rpin(self));
-		select->rset = rset;
-		select->on_match = emit_select_on_match_set;
-	} else {
-		select->on_match = emit_select_on_match;
-	}
-
-	// redirect each target reference to the group scan target
-	target_group_redirect(select->target, target_group);
-
-	// scan over created group
-	//
-	// result will be added to set or send directly,
-	// safe to apply limit/offset
-	//
-	scan(self,
-	     target_group,
-	     select->expr_limit,
-	     select->expr_offset,
-	     select->expr_having,
-	     emit_select_on_match_group,
-	     select);
-
-	target_group_redirect(select->target, NULL);
-
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
-
-	// group object freed after scan completed
-	return rset;
 }
 
-hot static inline int
-pushdown_merge(Compiler* self, AstSelect* select)
-{
-	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
-	op1(self, CPUSH, rdistinct);
-	runpin(self, rdistinct);
-
-	// limit
-	int rlimit = -1;
-	if (select->expr_limit)
-		rlimit = emit_expr(self, select->target, select->expr_limit);
-
-	// offset
-	int roffset = -1;
-	if (select->expr_offset)
-		roffset = emit_expr(self, select->target, select->expr_offset);
-
-	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self), self->current->order,
-	                 rlimit, roffset);
-
-	if (rlimit != -1)
-		runpin(self, rlimit);
-	if (roffset != -1)
-		runpin(self, roffset);
-
-	return rmerge;
-}
-
-static inline int
+static inline void
 pushdown_order_by(Compiler* self, AstSelect* select)
 {
-	// shard
-
 	// write order by key types
 	bool desc   = false;
 	int  offset = emit_select_order_by_data(self, select, &desc);
@@ -250,35 +121,20 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	     limit,
 	     NULL,
 	     select->expr_where,
-	     emit_select_on_match_set,
+	     emit_select_on_match,
 	     select);
 
 	// CSET_SORT
 	op1(self, CSET_SORT, select->rset);
 
-	// CREADY (return set)
-	op2(self, CREADY, self->current->order, select->rset);
+	// CRESULT (return set)
+	op1(self, CRESULT, select->rset);
 	runpin(self, select->rset);
-
-	// copy statement code to each shard
-	compiler_distribute(self);
-
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// CRECV
-	op0(self, CRECV);
-
-	// create merge object using received sets and apply
-	// distinct/limit/offset
-	return pushdown_merge(self, select);
 }
 
-static inline int
+static inline void
 pushdown_limit(Compiler* self, AstSelect* select)
 {
-	// shard
-
 	// create result set
 	select->rset = op1(self, CSET, rpin(self));
 
@@ -300,56 +156,16 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	     limit,
 	     NULL,
 	     select->expr_where,
-	     emit_select_on_match_set,
-	     select);
-
-	// CREADY (return set)
-	op2(self, CREADY, self->current->order, select->rset);
-	runpin(self, select->rset);
-
-	// copy statement code to each shard
-	compiler_distribute(self);
-
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// CRECV
-	op0(self, CRECV);
-
-	// create merge object using received sets and apply limit/offset
-	return pushdown_merge(self, select);
-}
-
-static inline int
-pushdown_from(Compiler* self, AstSelect* select)
-{
-	// shard
-
-	// scan for table/expression and joins
-	scan(self,
-	     select->target,
-	     NULL,
-	     NULL,
-	     select->expr_where,
 	     emit_select_on_match,
 	     select);
 
-	// CREADY
-	op2(self, CREADY, self->current->order, -1);
-
-	// copy statement code to each shard
-	compiler_distribute(self);
-
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// CRECV
-	op0(self, CRECV);
-	return -1;
+	// CRESULT (return set)
+	op1(self, CRESULT, select->rset);
+	runpin(self, select->rset);
 }
 
-hot int
-pushdown(Compiler* self, Ast* ast, bool nested)
+hot void
+pushdown(Compiler* self, Ast* ast)
 {
 	AstSelect* select = ast_select_of(ast);
 
@@ -362,25 +178,168 @@ pushdown(Compiler* self, Ast* ast, bool nested)
 	// [LIMIT expr] [OFFSET expr]
 	//
 
+	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
+	// SELECT aggregate FROM
+	if (select->target_group)
+	{
+		pushdown_group_by(self, select);
+		return;
+	}
+
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
+	if (select->expr_order_by.count > 0)
+	{
+		pushdown_order_by(self, select);
+		return;
+	}
+
+	// SELECT FROM [WHERE] LIMIT/OFFSET
+	// SELECT FROM [WHERE]
+	pushdown_limit(self, select);
+}
+
+void
+pushdown_first(Compiler* self, Ast* ast)
+{
+	// emit select query as is and pushdown to the first shard
+	int r = emit_select(self, ast);
+
+	// CRESULT (return set)
+	op1(self, CRESULT, r);
+	runpin(self, r);
+}
+
+static inline int
+pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
+{
+	// create ordered data set
+	int offset = emit_select_order_by_data(self, select, NULL);
+	int rset = op2(self, CSET_ORDERED, rpin(self), offset);
+	select->rset = rset;
+	select->on_match = emit_select_on_match;
+
+	// redirect each target reference to the group scan target
+	auto target_group = select->target_group;
+	target_group_redirect(select->target, target_group);
+
+	// scan over created group
+	scan(self,
+	     target_group,
+	     NULL,
+	     NULL,
+	     select->expr_having,
+	     emit_select_on_match_group,
+	     select);
+
+	target_group_redirect(select->target, NULL);
+
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+
+	// no distinct/limit/offset (return set)
+	if (select->distinct    == false &&
+	    select->expr_limit  == NULL &&
+	    select->expr_offset == NULL)
+	{
+		// CSET_SORT
+		op1(self, CSET_SORT, select->rset);
+		return rset;
+	}
+
+	// create merge object and apply distinct/limit/offset
+	return emit_select_merge(self, select);
+}
+
+static int
+pushdown_group_by_recv(Compiler* self, AstSelect* select)
+{
+	// merge all received groups into one
+	//
+	// CGROUP_MERGE_RECV
+	auto rgroup = op2(self, CGROUP_MERGE_RECV, rpin(self), self->current->order);
+	select->rgroup = rgroup;
+
+	auto target_group = select->target_group;
+	target_group->rexpr = rgroup;
+
+	// [ORDER BY]
+	if (select->expr_order_by.count > 0)
+		return pushdown_group_by_recv_order_by(self, select);
+
+	// create set
+	int rset = op1(self, CSET, rpin(self));
+	select->rset = rset;
+	select->on_match = emit_select_on_match;
+
+	// redirect each target reference to the group scan target
+	target_group_redirect(select->target, target_group);
+
+	// scan over created group
+	//
+	// result will be added to set or send directly,
+	// safe to apply limit/offset
+	//
+	scan(self,
+		 target_group,
+		 select->expr_limit,
+		 select->expr_offset,
+		 select->expr_having,
+		 emit_select_on_match_group,
+		 select);
+
+	target_group_redirect(select->target, NULL);
+
+	runpin(self, select->rgroup);
+	select->rgroup = -1;
+
+	// group object freed after scan completed
+	return rset;
+}
+
+int
+pushdown_recv(Compiler* self, Ast* ast)
+{
 	// all functions below return MERGE/SET on coordinator
+	AstSelect* select = ast_select_of(ast);
+
+	// CRECV
+	op1(self, CRECV, self->current->order);
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (select->target_group)
-		return pushdown_group_by(self, select, nested);
+		return pushdown_group_by_recv(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
-	if (select->expr_order_by.count > 0)
-		return pushdown_order_by(self, select);
-
 	// SELECT FROM [WHERE] LIMIT/OFFSET
-	if (select->expr_limit || select->expr_offset)
-		return pushdown_limit(self, select);
-
 	// SELECT FROM [WHERE]
-	if (nested)
-		return pushdown_limit(self, select);
 
-	// no return
-	return pushdown_from(self, select);
+	// create merge object using received sets and apply
+	// distinct/limit/offset
+	
+	// distinct
+	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
+	op1(self, CPUSH, rdistinct);
+	runpin(self, rdistinct);
+
+	// limit
+	int rlimit = -1;
+	if (select->expr_limit)
+		rlimit = emit_expr(self, select->target, select->expr_limit);
+
+	// offset
+	int roffset = -1;
+	if (select->expr_offset)
+		roffset = emit_expr(self, select->target, select->expr_offset);
+
+	// CMERGE_RECV
+	int rmerge = op4(self, CMERGE_RECV, rpin(self), rlimit, roffset,
+	                 self->current->order);
+
+	if (rlimit != -1)
+		runpin(self, rlimit);
+	if (roffset != -1)
+		runpin(self, roffset);
+
+	return rmerge;
 }

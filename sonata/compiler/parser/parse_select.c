@@ -1,27 +1,29 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
 
 static inline void
 parse_select_group_by(Stmt* self, AstSelect* select)
@@ -283,7 +285,7 @@ parse_select(Stmt* self)
 			error("no targets to use with GROUP BY or aggregates");
 
 		select->target_group =
-			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL);
+			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL, NULL);
 
 		select->target_group->group_redirect = select->target_group;
 		select->target_group->group_main     = select->target;

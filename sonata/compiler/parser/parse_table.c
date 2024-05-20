@@ -1,27 +1,29 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
 
 static int
 parse_type(Stmt* self, Column* column, Str* path)
@@ -288,7 +290,7 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 static void
 parse_def(Stmt* self, Def* def)
 {
-	// (name type [not null | default | generated | primary key], ...,
+	// (name type [not null | default | serial | generated | primary key], ...,
 	//  primary key())
 
 	// (
@@ -417,63 +419,6 @@ parse_validate_constraints(Def* def)
 	}
 }
 
-static inline void
-parse_partition_by(Stmt* self, Def* def, Mapping* map)
-{
-	// [PARTITION BY]
-	if (! stmt_if(self, KPARTITION))
-		return;
-
-	// BY
-	if (! stmt_if(self, KBY))
-		error("PARTITION <BY> expected");
-
-	// (
-	if (! stmt_if(self, '('))
-		error("PARTITION BY <(> expected");
-
-	// path
-	Str path;
-	str_init(&path);
-	auto column = parse_primary_key_column(self, def, &path);
-	if (! column)
-		error("PARTITION BY (<key> expected");
-
-	// validate partition key
-	auto key = def_find_column_key(column, &path);
-	if (! key)
-		error("PARTITION BY key must be a part of the PRIMARY KEY");
-
-	if (key->order != 0)
-		error("PARTITION BY key must be first in the PRIMARY KEY order");
-
-	if (key->type != TYPE_INT)
-		error("PARTITION BY key must be integer");
-
-	// )
-	if (! stmt_if(self, ')'))
-		error("PARTITION BY (<)> expected");
-
-	// [INTERVAL]
-	if (! stmt_if(self, KINTERVAL))
-		error("PARTITION BY () <INTERVAL> expected");
-
-	// integer
-	auto expr = stmt_if(self, KINT);
-	if (! expr)
-		error("PARTITION BY () INTERVAL <integer> expected");
-
-	if (expr->integer == 0)
-		error("PARTITION BY interval cannot be zero");
-
-	// set mapping
-	if (map->type == MAP_REFERENCE)
-		error("PARTITION BY cannot be used with a reference table");
-
-	mapping_set_type(map, MAP_RANGE);
-	mapping_set_interval(map, expr->integer);
-}
-
 void
 parse_table_create(Stmt* self)
 {
@@ -494,14 +439,10 @@ parse_table_create(Stmt* self)
 	// create table config
 	stmt->config = table_config_allocate();
 	Uuid id;
-	uuid_mgr_generate(global()->uuid_mgr, &id);
+	uuid_generate(&id, global()->random);
 	table_config_set_id(stmt->config, &id);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
-
-	// create partition map
-	stmt->config->map = mapping_allocate();
-	mapping_set_type(stmt->config->map, MAP_NONE);
 
 	// create primary index config
 	auto index_config = index_config_allocate();
@@ -513,7 +454,7 @@ parse_table_create(Stmt* self)
 	index_config_set_name(index_config, &index_name);
 	index_config_set_type(index_config, INDEX_TREE);
 	index_config_set_primary(index_config, true);
-	def_set_reserved(def, tree_row_reserved());
+	def_set_reserved(def, 0);
 
 	// (columns)
 	parse_def(self, def);
@@ -521,16 +462,10 @@ parse_table_create(Stmt* self)
 
 	// [REFERENCE]
 	if (stmt_if(self, KREFERENCE))
-	{
 		table_config_set_reference(stmt->config, true);
-		mapping_set_type(stmt->config->map, MAP_REFERENCE);
-	}
 
 	// [WITH]
 	parse_with(self, stmt);
-
-	// [PARTITION BY]
-	parse_partition_by(self, def, stmt->config->map);
 }
 
 void
@@ -552,6 +487,7 @@ void
 parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME [schema.]name
+	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -569,14 +505,14 @@ parse_table_alter(Stmt* self)
 		if (! stmt_if(self, KSERIAL))
 			error("ALTER TABLE SET <SERIAL> expected");
 
-		// =
-		if (! stmt_if(self, '='))
-			error("ALTER TABLE SET SERIAL <=> expected");
+		// TO
+		if (! stmt_if(self, KTO))
+			error("ALTER TABLE SET SERIAL <TO> expected");
 
 		// int
 		stmt->serial = stmt_if(self, KINT);
 		if (! stmt->serial)
-			error("ALTER TABLE SET SERIAL = <integer> expected");
+			error("ALTER TABLE SET SERIAL TO <integer> expected");
 
 		return;
 	}

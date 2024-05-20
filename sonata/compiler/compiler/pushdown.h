@@ -1,9 +1,11 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-int pushdown(Compiler*, Ast*, bool);
+void pushdown(Compiler*, Ast*);
+void pushdown_first(Compiler*, Ast*);
+int  pushdown_recv(Compiler*, Ast*);

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Compiler Compiler;
@@ -12,29 +12,27 @@ struct Compiler
 {
 	Parser       parser;
 	Rmap         map;
-	Stmt*        current;
 	Code*        code;
 	Code         code_coordinator;
-	Code         code_stmt;
+	Code         code_shard;
 	CodeData     code_data;
-	Dispatch*    dispatch;
-	Router*      router;
+	bool         snapshot;
+	Stmt*        current;
+	Stmt*        last;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
 
-void compiler_init(Compiler*, Db*, FunctionMgr*, Router*, Dispatch*);
+void compiler_init(Compiler*, Db*, FunctionMgr*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
-void compiler_switch(Compiler*, Code*);
-void compiler_distribute(Compiler*);
 void compiler_parse(Compiler*, Str*);
 void compiler_emit(Compiler*);
 
 static inline Stmt*
-compiler_first(Compiler* self)
+compiler_stmt(Compiler* self)
 {
-	return container_of(self->parser.stmts.next, Stmt, link);
+	return self->parser.stmt;
 }
 
 static inline TargetList*
@@ -43,8 +41,14 @@ compiler_target_list(Compiler* self)
 	return &self->current->target_list;
 }
 
-static inline bool
-compiler_is_utility(Compiler* self)
+static inline void
+compiler_switch_coordinator(Compiler* self)
 {
-	return parser_has_utility(&self->parser);
+	self->code = &self->code_coordinator;
+}
+
+static inline void
+compiler_switch_shard(Compiler* self)
+{
+	self->code = &self->code_shard;
 }

@@ -1,29 +1,31 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
 hot int
 emit_string(Compiler* self, Str* string, bool escape)
@@ -345,6 +347,9 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 
 	// get target schema definition
 	Def* def = NULL;
+	if (target->cte)
+		def = &target->cte->def;
+	else
 	if (target->view)
 		def = view_def(target->view);
 	else
@@ -447,7 +452,7 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		error("<%.*s> only GROUP BY keys can be selected",
 		      str_size(name), str_of(name));
 
-	return op3(self, CGROUP_GET, rpin(self), target->group_redirect->id,
+	return op3(self, CGROUP_READ, rpin(self), target->group_redirect->id,
 	           group->order);
 }
 
@@ -504,7 +509,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	if (group == NULL)
 		error("<%.*s> only GROUP BY keys can be selected",
 		      str_size(&name), str_of(&name));
-	return op3(self, CGROUP_GET, rpin(self), match->group_redirect->id,
+	return op3(self, CGROUP_READ, rpin(self), match->group_redirect->id,
 	           group->order);
 }
 
@@ -520,7 +525,7 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	// SELECT GROUP BY HAVING aggr
 
 	// use main target id
-	return op3(self, CGROUP_GET_AGGR, rpin(self), target->group_redirect->id,
+	return op3(self, CGROUP_READ_AGGR, rpin(self), target->group_redirect->id,
 	           aggr->order);
 }
 
@@ -683,7 +688,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 
 	// sub-query
 	case KSELECT:
-		return emit_select(self, ast, true);
+		return emit_select(self, ast);
 
 	// aggregate
 	case KAGGR:

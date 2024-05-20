@@ -1,29 +1,31 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
 typedef struct
 {
@@ -202,16 +204,25 @@ scan_generate_target_expr(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 
-	// expr
-	int rexpr;
-	if (target->rexpr != -1)
-		rexpr = target->rexpr;
-	else
-		rexpr = emit_expr(cp, target, target->expr);
-
-	// cursor_open_expr
-	int _open = op_pos(cp);
-	op3(cp, CCURSOR_OPEN_EXPR, target->id, rexpr, 0 /* _where */);
+	// use expression or CTE result for open
+	int _open;
+	int rexpr = -1;
+	if (target->cte)
+	{
+		// cursor_open_cte
+		_open = op_pos(cp);
+		op3(cp, CCURSOR_OPEN_CTE, target->id, target->cte->order, 0 /* _where */);
+	} else
+	{
+		// expr
+		if (target->rexpr != -1)
+			rexpr = target->rexpr;
+		else
+			rexpr = emit_expr(cp, target, target->expr);
+		// cursor_open_expr
+		_open = op_pos(cp);
+		op3(cp, CCURSOR_OPEN_EXPR, target->id, rexpr, 0 /* _where */);
+	}
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -269,7 +280,8 @@ scan_generate_target_expr(Scan* self, Target* target)
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
 	op1(cp, CCURSOR_CLOSE, target->id);
-	runpin(cp, rexpr);
+	if (rexpr != -1)
+		runpin(cp, rexpr);
 }
 
 static inline void

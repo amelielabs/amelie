@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Keyword Keyword;
@@ -61,20 +61,17 @@ enum
 
 	KEXPLAIN,
 	KPROFILE,
+
 	KTO,
 	KSHOW,
 
 	KCHECKPOINT,
+	KWORKERS,
 
 	KREPL,
 	KREPLICATION,
 	KPROMOTE,
 	KEXEC,
-
-	KBEGIN,
-	KCOMMIT,
-	KROLLBACK,
-	KABORT,
 
 	KCREATE,
 	KUSER,
@@ -90,8 +87,6 @@ enum
 	KKEY,
 	KDEFAULT,
 	KREFERENCE,
-	KPARTITION,
-	KINTERVAL,
 	KINCLUDE,
 	KON,
 	KIF,

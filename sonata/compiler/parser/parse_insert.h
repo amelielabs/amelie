@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct AstValue  AstValue;
@@ -37,6 +37,7 @@ struct AstInsert
 	Target* target;
 	Ast*    rows;
 	int     rows_count;
+	int     rows_offset;
 	int     on_conflict;
 	Ast*    update_expr;
 	Ast*    update_where;
@@ -86,6 +87,7 @@ ast_insert_allocate(void)
 	self->target       = NULL;
 	self->rows         = NULL;
 	self->rows_count   = 0;
+	self->rows_offset  = 0;
 	self->on_conflict  = ON_CONFLICT_NONE;
 	self->update_expr  = NULL;
 	self->update_where = NULL;

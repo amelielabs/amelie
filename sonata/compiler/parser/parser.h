@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Parser Parser;
@@ -17,13 +17,12 @@ enum
 
 struct Parser
 {
-	int  explain;
-	List stmts;
-	int  stmts_count;
-	Lex  lex;
-	Db*  db;
+	int      explain;
+	StmtList stmt_list;
+	Stmt*    stmt;
+	Lex      lex;
+	Db*      db;
 };
 
 void parser_init(Parser*, Db*);
 void parser_reset(Parser*);
-bool parser_has_utility(Parser*);

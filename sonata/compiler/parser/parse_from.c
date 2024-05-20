@@ -1,27 +1,29 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
 
 typedef struct
 {
@@ -33,7 +35,7 @@ typedef struct
 } From;
 
 static inline Ast*
-parse_from_analyze(From* self, Table** table, View** view)
+parse_from_analyze(From* self, Stmt** cte, Table** table, View** view)
 {
 	auto stmt = self->stmt;
 
@@ -50,7 +52,18 @@ parse_from_analyze(From* self, Table** table, View** view)
 		return parse_expr(stmt, NULL);
 	}
 
-	// find table first
+	// find cte
+	*cte = stmt_list_find(stmt->stmt_list, &name);
+	if (*cte)
+	{
+		if (*cte == self->stmt)
+			error("<%.*s> recursive CTE are not supported",
+			      str_size(&self->stmt->name->string),
+			      str_of(&self->stmt->name->string));
+		return NULL;
+	}
+
+	// find table
 	*table = table_mgr_find(&stmt->db->table_mgr, &schema, &name, false);
 	if (*table)
 		return NULL;
@@ -95,11 +108,12 @@ static inline Target*
 parse_from_add(From* self)
 {
 	auto   stmt  = self->stmt;
+	Stmt*  cte   = NULL;
 	Table* table = NULL;
 	View*  view  = NULL;
 
 	// FROM <expr> [alias]
-	auto expr = parse_from_analyze(self, &table, &view);
+	auto expr = parse_from_analyze(self, &cte, &table, &view);
 	auto target_list = &self->stmt->target_list;
 
 	// [alias]
@@ -111,6 +125,9 @@ parse_from_add(From* self)
 		str_set_str(&name, &alias->string);
 	} else
 	{
+		if (cte) {
+			str_set_str(&name, &cte->name->string);
+		} else
 		if (table) {
 			str_set_str(&name, &table->config->name);
 		} else
@@ -129,7 +146,7 @@ parse_from_add(From* self)
 		      str_size(&name), str_of(&name));
 
 	target = target_list_add(target_list, self->level, self->level_seq++,
-	                         &name, expr, table);
+	                         &name, expr, table, cte);
 	if (self->head == NULL)
 		self->head = target;
 	else

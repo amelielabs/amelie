@@ -1,29 +1,31 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
 int
 emit_select_expr(Compiler* self, AstSelect* select)
@@ -51,7 +53,7 @@ emit_select_expr(Compiler* self, AstSelect* select)
 }
 
 void
-emit_select_on_match_set(Compiler* self, void* arg)
+emit_select_on_match(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
@@ -72,15 +74,6 @@ emit_select_on_match_set(Compiler* self, void* arg)
 
 	// add to the set
 	op2(self, CSET_ADD, select->rset, rexpr);
-	runpin(self, rexpr);
-}
-
-void
-emit_select_on_match(Compiler* self, void* arg)
-{
-	AstSelect* select = arg;
-	int rexpr = emit_select_expr(self, select);
-	op1(self, CSEND, rexpr);
 	runpin(self, rexpr);
 }
 
@@ -113,7 +106,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 		node = node->next;
 	}
 
-	op1(self, CGROUP_ADD, select->rgroup);
+	op1(self, CGROUP_WRITE, select->rgroup);
 }
 
 void
@@ -199,7 +192,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	while (node)
 	{
 		auto aggr = ast_aggr_of(node->ast);
-		op3(self, CGROUP_ADD_AGGR, rgroup, aggr->id, aggr->order);
+		op3(self, CGROUP_ADD, rgroup, aggr->id, aggr->order);
 		node = node->next;
 	}
 
@@ -216,7 +209,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 			runpin(self, rexpr);
 			node = node->next;
 		}
-		op1(self, CGROUP_ADD, select->rgroup);
+		op1(self, CGROUP_WRITE, select->rgroup);
 	}
 
 	// set target group
@@ -254,7 +247,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 }
 
 hot static int
-emit_select_group_by(Compiler* self, AstSelect* select, bool nested)
+emit_select_group_by(Compiler* self, AstSelect* select)
 {
 	//
 	// SELECT expr, ... [FROM name, [...]]
@@ -267,15 +260,8 @@ emit_select_group_by(Compiler* self, AstSelect* select, bool nested)
 	if (select->expr_order_by.count == 0)
 	{
 		// create data set for nested queries
-		if (nested)
-		{
-			select->rset = op1(self, CSET, rpin(self));
-			select->on_match = emit_select_on_match_set;
-		} else
-		{
-			select->on_match = emit_select_on_match;
-		}
-
+		select->rset = op1(self, CSET, rpin(self));
+		select->on_match = emit_select_on_match;
 		rresult = select->rset;
 
 		// generate group by scan using limit/offset
@@ -286,28 +272,19 @@ emit_select_group_by(Compiler* self, AstSelect* select, bool nested)
 		// write order by key types
 		int offset = emit_select_order_by_data(self, select, NULL);
 		select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
-		select->on_match = emit_select_on_match_set;
+		select->on_match = emit_select_on_match;
 
 		// generate group by scan
 		emit_select_group_by_scan(self, select, NULL, NULL);
 
 		// create merge object and add sorted set, apply limit/offset
 		rresult = emit_select_merge(self, select);
-
-		if (! nested)
-		{
-			// send set without creating array
-			op1(self, CSEND_SET, rresult);
-			runpin(self, rresult);
-			rresult = -1;
-		}
 	}
-
 	return rresult;
 }
 
 hot static int
-emit_select_order_by(Compiler* self, AstSelect* select, bool nested)
+emit_select_order_by(Compiler* self, AstSelect* select)
 {
 	//
 	// SELECT expr, ... [FROM name, [...]] [WHERE expr]
@@ -318,7 +295,7 @@ emit_select_order_by(Compiler* self, AstSelect* select, bool nested)
 	// create ordered set
 	int offset = emit_select_order_by_data(self, select, NULL);
 	select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
-	select->on_match = emit_select_on_match_set;
+	select->on_match = emit_select_on_match;
 
 	// scan for table/expression and joins
 	scan(self,
@@ -330,21 +307,11 @@ emit_select_order_by(Compiler* self, AstSelect* select, bool nested)
 	     select);
 
 	// create merge object and add sorted set
-	int rmerge = emit_select_merge(self, select);
-
-	if (! nested)
-	{
-		// send set without creating array
-		op1(self, CSEND_SET, rmerge);
-		runpin(self, rmerge);
-		rmerge = -1;
-	}
-
-	return rmerge;
+	return emit_select_merge(self, select);
 }
 
 hot static int
-emit_select_scan(Compiler* self, AstSelect* select, bool nested)
+emit_select_scan(Compiler* self, AstSelect* select)
 {
 	//
 	// SELECT expr, ... [FROM name, [...]]
@@ -353,16 +320,9 @@ emit_select_scan(Compiler* self, AstSelect* select, bool nested)
 	//
 
 	// create data set for nested queries
-	int rresult = -1;
-	if (nested)
-	{
-		rresult = op1(self, CSET, rpin(self));
-		select->rset = rresult;
-		select->on_match = emit_select_on_match_set;
-	} else
-	{
-		select->on_match = emit_select_on_match;
-	}
+	int rresult = op1(self, CSET, rpin(self));
+	select->rset = rresult;
+	select->on_match = emit_select_on_match;
 
 	// scan for table/expression and joins
 	scan(self,
@@ -377,20 +337,13 @@ emit_select_scan(Compiler* self, AstSelect* select, bool nested)
 }
 
 hot int
-emit_select(Compiler* self, Ast* ast, bool nested)
+emit_select(Compiler* self, Ast* ast)
 {
 	AstSelect* select = ast_select_of(ast);
 
 	// SELECT expr[, ...]
 	if (select->target == NULL)
-	{
-		int rexpr = emit_select_expr(self, select);
-		if (nested)
-			return rexpr;
-		op1(self, CSEND, rexpr);
-		runpin(self, rexpr);
-		return -1;
-	}
+		return emit_select_expr(self, select);
 
 	//
 	// SELECT expr, ... [FROM name, [...]]
@@ -403,14 +356,14 @@ emit_select(Compiler* self, Ast* ast, bool nested)
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (select->target_group)
-		return emit_select_group_by(self, select, nested);
+		return emit_select_group_by(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	// SELECT DISTINCT FROM
 	if (select->expr_order_by.count > 0)
-		return emit_select_order_by(self, select, nested);
+		return emit_select_order_by(self, select);
 
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
-	return emit_select_scan(self, select, nested);
+	return emit_select_scan(self, select);
 }

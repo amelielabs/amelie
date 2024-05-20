@@ -26,25 +26,19 @@
 #include <sonata_parser.h>
 
 void
-parser_init(Parser* self, Db* db)
+parse_checkpoint(Stmt* self)
 {
-	self->explain = EXPLAIN_NONE;
-	self->stmt    = NULL;
-	self->db      = db;
-	stmt_list_init(&self->stmt_list);
-	lex_init(&self->lex, keywords);
-}
+	// CHECKPOINT [WORKERS n]
+	auto stmt = ast_checkpoint_allocate();
+	self->ast = &stmt->ast;
 
-void
-parser_reset(Parser* self)
-{
-	self->explain = EXPLAIN_NONE;
-	self->stmt    = NULL;
-	list_foreach_safe(&self->stmt_list.list)
+	// [WORKERS]
+	if (stmt_if(self, KWORKERS))
 	{
-		auto stmt = list_at(Stmt, link);
-		parse_stmt_free(stmt);
+		stmt->workers = stmt_if(self, KINT);
+		if (! stmt->workers)
+			error("CHECKPOINT WORKERS <int> expected");
+		if (stmt->workers->integer <= 0)
+			error("CHECKPOINT WORKERS number must be positive");
 	}
-	stmt_list_init(&self->stmt_list);
-	lex_reset(&self->lex);
 }

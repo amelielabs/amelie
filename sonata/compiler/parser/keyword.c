@@ -1,27 +1,29 @@
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
 
 static Keyword keywords_a[] =
 {
@@ -32,13 +34,11 @@ static Keyword keywords_a[] =
 	{ KAVG,                   "avg",                   3  },
 	{ KAS,                    "as",                    2  },
 	{ KTARRAY,                "array",                 5  },
-	{ KABORT,                 "abort",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
 static Keyword keywords_b[] =
 {
-	{ KBEGIN,                 "begin",                 5  },
 	{ KBY,                    "by",                    2  },
 	{ KTBOOL,                 "bool",                  4  },
 	{ KTBOOLEAN,              "boolean",               7  },
@@ -48,7 +48,6 @@ static Keyword keywords_b[] =
 static Keyword keywords_c[] =
 {
 	{ KCONFLICT,              "conflict",              8  },
-	{ KCOMMIT,                "commit",                6  },
 	{ KCOUNT,                 "count",                 5  },
 	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
@@ -106,7 +105,6 @@ static Keyword keywords_i[] =
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
-	{ KINTERVAL,              "interval",              8  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -163,7 +161,6 @@ static Keyword keywords_p[] =
 	{ KPASSWORD,              "password",              8  },
 	{ KPRIMARY,               "primary",               7  },
 	{ KPROMOTE,               "promote",               7  },
-	{ KPARTITION,             "partition",             9  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -176,7 +173,6 @@ static Keyword keywords_r[] =
 {
 	{ KTREAL,                 "real",                  4  },
 	{ KREPLACE,               "replace",               7  },
-	{ KROLLBACK,              "rollback",              8  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
@@ -230,6 +226,7 @@ static Keyword keywords_w[] =
 	{ KWHERE,                 "where",                 5  },
 	{ KWITH,                  "with",                  4  },
 	{ KWAIT,                  "wait",                  4  },
+	{ KWORKERS,               "workers",               7  },
 	{ 0,                       NULL,                   0  }
 };
 

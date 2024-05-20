@@ -1,12 +1,12 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
-static inline int
+hot static inline int
 emit_row(CodeData* data, AstRow* row, int* data_size)
 {
 	int start = code_data_pos(data);

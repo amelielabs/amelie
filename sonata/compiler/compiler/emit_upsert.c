@@ -1,149 +1,99 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
-
-hot static inline void
-emit_upsert_op(Compiler* self, AstInsert* insert,
-               int       data,
-               int       data_size, int* jmp)
-{
-	auto target = insert->target;
-	if (*jmp == 0)
-	{
-		// cursor_prepare
-		op2(self, CCURSOR_PREPARE, target->id, (intptr_t)target->table);
-
-		// jmp _start
-		int jmp_start = op_pos(self);
-		op1(self, CJMP, 0 /* _start */);
-
-		// _where:
-		*jmp = op_pos(self);
-
-		// ON CONFLICT UPDATE or do nothing
-		if (insert->on_conflict == ON_CONFLICT_UPDATE)
-		{
-			// where expression
-			if (insert->update_where)
-			{
-				// expr
-				int rexpr;
-				rexpr = emit_expr(self, target, insert->update_where);
-
-				// jntr_pop
-				op1(self, CJNTR_POP, rexpr);
-				runpin(self, rexpr);
-			}
-
-			// update
-			emit_update_target(self, target, insert->update_expr);
-		}
-
-		// jmp_pop
-		op0(self, CJMP_POP);
-
-		// point jmp _start to upsert
-		op_at(self, jmp_start)->a = op_pos(self);
-	}
-
-	// upsert
-	op4(self, CUPSERT, target->id, data, data_size, *jmp);
-}
-
-hot static inline void
-emit_upsert_row(Compiler* self, AstInsert* insert, AstRow* row, int jmp[])
-{
-	auto stmt     = self->current;
-	auto dispatch = self->dispatch;
-	auto target   = insert->target;
-	auto def      = table_def(target->table);
-
-	// write row to the code data
-	int data_size;
-	int data = emit_row(&self->code_data, row, &data_size);
-
-	Route* route;
-	if (target->table->config->reference)
-	{
-		// get route by order
-		route = router_at(self->router, 0);
-
-	} else
-	{
-		// validate row and hash keys
-		auto hash = row_hash(def, code_data_at(&self->code_data, data), data_size);
-
-		// get route by hash
-		route = router_get(self->router, hash);
-	}
-
-	// get the request
-	auto req = dispatch_add(dispatch, stmt->order, route);
-	compiler_switch(self, &req->code);
-
-	// generate upsert logic
-	emit_upsert_op(self, insert, data, data_size, &jmp[route->order]);
-}
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
 hot void
 emit_upsert(Compiler* self, Ast* ast)
 {
-	auto insert   = ast_insert_of(ast);
-	auto stmt     = self->current;
-	auto dispatch = self->dispatch;
-	auto target   = insert->target;
+	auto insert = ast_insert_of(ast);
+	auto target = insert->target;
+	auto table  = target->table;
 
-	// distributed table
-	int jmp[dispatch->set_size];
-	memset(jmp, 0, dispatch->set_size * sizeof(int));
+	// emit rows
+	insert->rows_offset = code_data_offset(&self->code_data);
 
-	// foreach row generate upsert
-	for (auto i = insert->rows; i; i = i->next)
+	// []
+	encode_array(&self->code_data.data, insert->rows_count);
+
+	auto i = insert->rows;
+	for (; i; i = i->next)
 	{
 		auto row = ast_row_of(i);
-		emit_upsert_row(self, insert, row, jmp);
+		int data_size;
+		emit_row(&self->code_data, row, &data_size);
 	}
 
-	// close cursors and send ready
-	for (int order = 0; order < self->dispatch->set_size; order++)
+	// generate upsert
+
+	// CCLOSE_PREPARE
+	op2(self, CCURSOR_PREPARE, target->id, (intptr_t)table);
+
+	// jmp _start
+	int jmp_start = op_pos(self);
+	op1(self, CJMP, 0 /* _start */);
+
+	// _where:
+	int jmp_where = op_pos(self);
+
+	// ON CONFLICT UPDATE or do nothing
+	if (insert->on_conflict == ON_CONFLICT_UPDATE)
 	{
-		auto req = dispatch_at_stmt(self->dispatch, stmt->order, order);
-		if (! req)
-			continue;
+		// where expression
+		int jmp_where_jntr = 0;
+		if (insert->update_where)
+		{
+			// expr
+			int rexpr;
+			rexpr = emit_expr(self, target, insert->update_where);
 
-		// CCLOSE_CURSOR
-		code_add(&req->code, CCURSOR_CLOSE, target->id, 0, 0, 0);
+			// jntr _start
+			jmp_where_jntr = op_pos(self);
 
-		// CREADY
-		code_add(&req->code, CREADY, stmt->order, -1, 0, 0);
+			op2(self, CJNTR, 0 /* _start */, rexpr);
+			runpin(self, rexpr);
+		}
+
+		// update
+		emit_update_target(self, target, insert->update_expr);
+
+		// set jntr _start to _start
+		if (insert->update_where)
+			op_at(self, jmp_where_jntr)->a = op_pos(self);
 	}
 
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
+	// _start:
 
-	// CRECV
-	op0(self, CRECV);
+	// set jmp_start to _start
+	op_at(self, jmp_start)->a = op_pos(self);
+
+	// CUPSERT
+	op2(self, CUPSERT, target->id, jmp_where);
+	
+	// CCLOSE_CURSOR
+	op1(self, CCURSOR_CLOSE, target->id);
 }

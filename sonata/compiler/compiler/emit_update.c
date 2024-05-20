@@ -1,29 +1,31 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_auth.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
-#include <indigo_value.h>
-#include <indigo_aggr.h>
-#include <indigo_request.h>
-#include <indigo_vm.h>
-#include <indigo_parser.h>
-#include <indigo_semantic.h>
-#include <indigo_compiler.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_auth.h>
+#include <sonata_http.h>
+#include <sonata_client.h>
+#include <sonata_server.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
+#include <sonata_value.h>
+#include <sonata_aggr.h>
+#include <sonata_executor.h>
+#include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 
 hot void
 emit_update_target(Compiler* self, Target* target, Ast* expr)
@@ -129,7 +131,6 @@ emit_update(Compiler* self, Ast* ast)
 {
 	// UPDATE name SET path = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
-	auto stmt   = self->current;
 
 	// update by cursor
 	scan(self, update->target,
@@ -138,30 +139,4 @@ emit_update(Compiler* self, Ast* ast)
 	     update->expr_where,
 	     emit_update_on_match,
 	     update);
-
-	// CREADY
-	op2(self, CREADY, stmt->order, -1);
-
-	if (update->target->table->config->reference)
-	{
-		// get route by order
-		auto route = router_at(self->router, 0);
-
-		// get the request
-		auto req = dispatch_add(self->dispatch, stmt->order, route);
-
-		// append code
-		op_relocate(&req->code, &self->code_stmt);
-
-	} else
-	{
-		// copy statement code to each shard
-		compiler_distribute(self);
-	}
-
-	// coordinator
-	compiler_switch(self, &self->code_coordinator);
-
-	// CRECV
-	op0(self, CRECV);
 }
