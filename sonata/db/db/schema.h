@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Schema Schema;
@@ -19,22 +19,22 @@ schema_free(Schema* self)
 {
 	if (self->config)
 		schema_config_free(self->config);
-	in_free(self);
+	so_free(self);
 }
 
 static inline Schema*
 schema_allocate(SchemaConfig* config)
 {
-	Schema* self = in_malloc(sizeof(Schema));
+	Schema* self = so_malloc(sizeof(Schema));
 	self->config = NULL;
-	guard(self_guard, schema_free, self);
+	guard(schema_free, self);
 	self->config = schema_config_copy(config);
 
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, NULL);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)schema_free);
-	return unguard(&self_guard);
+	return unguard();
 }
 
 static inline Schema*

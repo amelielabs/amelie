@@ -1,5 +1,5 @@
 #
-# indigo db makefile
+# sonata db makefile
 #
 CC             = clang
 AR             = ar
@@ -8,25 +8,30 @@ CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
 CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/runtime \
                  -I../runtime/io \
-                 -I../runtime/data \
                  -I../runtime/lib \
+                 -I../runtime/data \
                  -I../runtime/config \
-                 -I../storage \
-                 -I../storage/def \
-                 -I../storage/transaction \
-                 -I../storage/index \
-                 -I../storage/storage \
                  -I. \
+                 -Idef \
+                 -Itransaction \
+                 -Iindex \
+                 -Istorage \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libindigo-db.a
+LIB            = libsonata-db.a
 OBJECTS        = \
-                 wal/wal_store.o \
-                 wal/wal_store_open.o \
-                 wal/wal.o \
-                 wal/wal_cursor.o \
-                 wal/debug.o \
+                 def/row.o \
+                 transaction/handle_mgr.o \
+                 transaction/commit.o \
+                 index/ttree.o \
+                 index/tree.o \
+                 storage/snapshot.o \
+                 storage/snapshot_cursor.o \
+                 storage/snapshot_mgr.o \
+                 storage/storage.o \
+                 storage/storage_mgr.o \
+                 storage/checkpoint.o \
                  db/schema_mgr.o \
                  db/table_mgr.o \
                  db/view_mgr.o \
@@ -34,6 +39,11 @@ OBJECTS        = \
                  db/db_catalog.o \
                  db/recover.o \
                  db/cascade.o
+#                wal/wal_store.o \
+                 wal/wal_store_open.o \
+                 wal/wal.o \
+                 wal/wal_cursor.o \
+                 wal/debug.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

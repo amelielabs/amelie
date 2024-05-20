@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 hot static void
 recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
@@ -47,10 +46,8 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	}
 
 	// data
-	int data_size;
 	uint8_t* data = *pos;
 	data_skip(pos);
-	data_size = *pos - data;
 
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
@@ -59,27 +56,21 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 		auto table = table_mgr_find_by_id(&self->table_mgr, &id_table);
 		if (unlikely(! table ))
 			return;
-		auto def = table_def(table);
 
 		// find storage
 		auto storage = storage_mgr_find(&table->storage_mgr, &id_storage);
 		if (! storage)
 			return;
 
-		// find or create partition
-		bool created = false;
-		auto part = storage_map(storage, def, data, data_size, &created);
-		if (created)
-			part_open(part, &table->config->indexes);
-
 		// todo: serial recover
+
+		// todo: check last snapshot
 
 		// replay write
 		if (type == LOG_REPLACE)
-			part_set(part, trx, false, data, data_size);
+			storage_set(storage, trx, false, &data);
 		else
-			part_delete_by(part, trx, data, data_size);
-
+			storage_delete_by(storage, trx, &data);
 		return;
 	}
 
@@ -94,7 +85,7 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	case LOG_SCHEMA_CREATE:
 	{
 		auto config = schema_op_create_read(&data);
-		guard(config_guard, schema_config_free, config);
+		guard(schema_config_free, config);
 		schema_mgr_create(&self->schema_mgr, trx, config, false);
 		break;
 	}
@@ -116,7 +107,7 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	case LOG_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(&data);
-		guard(config_guard, table_config_free, config);
+		guard(table_config_free, config);
 		table_mgr_create(&self->table_mgr, trx, config, false);
 		break;
 	}
@@ -142,7 +133,7 @@ recover_log(Db* self, Transaction* trx, uint64_t lsn, uint8_t** pos)
 	case LOG_VIEW_CREATE:
 	{
 		auto config = view_op_create_read(&data);
-		guard(config_guard, view_config_free, config);
+		guard(view_config_free, config);
 		view_mgr_create(&self->view_mgr, trx, config, false);
 		break;
 	}
@@ -176,10 +167,10 @@ recover_write(Db* self, uint64_t lsn, uint8_t* pos, bool write_wal)
 {
 	Transaction trx;
 	transaction_init(&trx);
-	guard(trx_guard, transaction_free, &trx);
+	guard(transaction_free, &trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// begin
 		transaction_begin(&trx);
@@ -203,7 +194,7 @@ recover_write(Db* self, uint64_t lsn, uint8_t* pos, bool write_wal)
 		transaction_commit(&trx);
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		log("recover: wal lsn %" PRIu64 ": replay error", lsn);
 		transaction_abort(&trx);
@@ -211,6 +202,7 @@ recover_write(Db* self, uint64_t lsn, uint8_t* pos, bool write_wal)
 	}
 }
 
+#if 0
 static void
 recover_wal(Db* self)
 {
@@ -263,4 +255,13 @@ recover(Db* self)
 	wal_start(&self->wal);
 
 	log("recover: complete");
+}
+#endif
+
+void
+recover(Db* self)
+{
+	// todo
+	(void)self;
+	(void)recover_write;
 }

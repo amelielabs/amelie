@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 void
 table_mgr_init(TableMgr* self)
@@ -47,16 +46,17 @@ table_mgr_create(TableMgr*    self,
 
 	// allocate table
 	auto table = table_allocate(config);
-	guard(guard, table_free, table);
+	guard(table_free, table);
 
 	// save create table operation
 	auto op = table_op_create(config);
+	guard_buf(op);
 
 	// update tables
 	handle_mgr_create(&self->mgr, trx, LOG_TABLE_CREATE, &table->handle, op);
 
-	buf_unpin(op);
-	unguard(&guard);
+	unguard();
+	unguard();
 
 	// prepare storage manager
 	table_open(table);
@@ -67,10 +67,11 @@ table_mgr_drop_of(TableMgr* self, Transaction* trx, Table* table)
 {
 	// save drop table operation
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
+	guard_buf(op);
 
 	// drop table by object
 	handle_mgr_drop(&self->mgr, trx, LOG_TABLE_DROP, &table->handle, op);
-	buf_unpin(op);
+	unguard();
 }
 
 void
@@ -128,11 +129,12 @@ table_mgr_rename(TableMgr*    self,
 
 	// save rename table operation
 	auto op = table_op_rename(schema, name, schema_new, name_new);
+	guard_buf(op);
 
 	// update table
 	handle_mgr_alter(&self->mgr, trx, LOG_TABLE_RENAME, &table->handle, op,
 	                 table_mgr_rename_abort, NULL);
-	buf_unpin(op);
+	unguard();
 
 	// set new table name
 	if (! str_compare(&table->config->schema, schema_new))
@@ -184,30 +186,12 @@ table_mgr_find_by_id(TableMgr* self, Uuid* id)
 Buf*
 table_mgr_list(TableMgr* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// array
+	auto buf = buf_begin();
 	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// {}
 		auto table = table_of(list_at(Handle, link));
 		table_config_write(table->config, buf);
 	}
-	msg_end(buf);
-	return buf;
-}
-
-Buf*
-table_mgr_list_partitions(TableMgr* self)
-{
-	auto buf = msg_create(MSG_OBJECT);
-	// array
-	encode_array(buf, self->mgr.list_count);
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		storage_mgr_list(&table->storage_mgr, buf);
-	}
-	msg_end(buf);
-	return buf;
+	return buf_end(buf);
 }

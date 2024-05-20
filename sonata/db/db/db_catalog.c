@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 static void
 db_catalog_dump(Catalog* cat, Buf* buf)
@@ -36,10 +35,10 @@ db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
-	guard(trx_guard, transaction_free, &trx);
+	guard(transaction_free, &trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// start transaction
 		transaction_begin(&trx);
@@ -47,13 +46,13 @@ db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 
 		// read schema config
 		auto config = schema_config_read(pos);
-		guard(config_guard, schema_config_free, config);
+		guard(schema_config_free, config);
 
 		// create schema
 		schema_mgr_create(&self->schema_mgr, &trx, config, false);
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		transaction_abort(&trx);
 		rethrow();
@@ -69,10 +68,10 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
-	guard(trx_guard, transaction_free, &trx);
+	guard(transaction_free, &trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// start transaction
 		transaction_begin(&trx);
@@ -80,13 +79,13 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 
 		// read table config
 		auto config = table_config_read(pos);
-		guard(config_guard, table_config_free, config);
+		guard(table_config_free, config);
 
 		// create table
 		table_mgr_create(&self->table_mgr, &trx, config, false);
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		transaction_abort(&trx);
 		rethrow();
@@ -102,10 +101,10 @@ db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
-	guard(trx_guard, transaction_free, &trx);
+	guard(transaction_free, &trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// start transaction
 		transaction_begin(&trx);
@@ -113,13 +112,13 @@ db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 
 		// read view config
 		auto config = view_config_read(pos);
-		guard(config_guard, view_config_free, config);
+		guard(view_config_free, config);
 
 		// create view
 		view_mgr_create(&self->view_mgr, &trx, config, false);
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		transaction_abort(&trx);
 		rethrow();
@@ -136,27 +135,34 @@ db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
 	// { schemas, tables, views }
 	Db* self = cat->iface_arg;
 
-	int count;
-	data_read_map(pos, &count);
+	uint8_t* pos_schemas  = NULL;
+	uint8_t* pos_tables = NULL;
+	uint8_t* pos_views = NULL;
+	Decode map[] =
+	{
+		{ DECODE_ARRAY, "schemas", &pos_schemas },
+		{ DECODE_ARRAY, "tables",  &pos_tables  },
+		{ DECODE_ARRAY, "views",   &pos_views   },
+		{ 0,             NULL,      NULL        },
+	};
+	decode_map(map, pos);
 
 	// schemas
-	data_skip(pos);
-	data_read_array(pos, &count);
+	int count;
+	data_read_array(&pos_schemas, &count);
 	int i = 0;
 	for (; i < count; i++)
-		db_catalog_restore_schema(self, lsn, pos);
+		db_catalog_restore_schema(self, lsn, &pos_schemas);
 
 	// tables
-	data_skip(pos);
-	data_read_array(pos, &count);
+	data_read_array(&pos_tables, &count);
 	for (i = 0; i < count; i++)
-		db_catalog_restore_table(self, lsn, pos);
+		db_catalog_restore_table(self, lsn, &pos_tables);
 
 	// views
-	data_skip(pos);
-	data_read_array(pos, &count);
+	data_read_array(&pos_views, &count);
 	for (i = 0; i < count; i++)
-		db_catalog_restore_view(self, lsn, pos);
+		db_catalog_restore_view(self, lsn, &pos_views);
 }
 
 CatalogIf db_catalog_if =

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct SchemaConfig SchemaConfig;
@@ -19,7 +19,7 @@ static inline SchemaConfig*
 schema_config_allocate(void)
 {
 	SchemaConfig* self;
-	self = in_malloc(sizeof(SchemaConfig));
+	self = so_malloc(sizeof(SchemaConfig));
 	self->system = false;
 	self->create = false;
 	str_init(&self->name);
@@ -30,7 +30,7 @@ static inline void
 schema_config_free(SchemaConfig* self)
 {
 	str_free(&self->name);
-	in_free(self);
+	so_free(self);
 }
 
 static inline void
@@ -56,36 +56,27 @@ static inline SchemaConfig*
 schema_config_copy(SchemaConfig* self)
 {
 	auto copy = schema_config_allocate();
-	guard(copy_guard, schema_config_free, copy);
+	guard(schema_config_free, copy);
 	schema_config_set_name(copy, &self->name);
 	schema_config_set_system(copy, self->system);
 	schema_config_set_create(copy, self->create);
-	return unguard(&copy_guard);
+	return unguard();
 }
 
 static inline SchemaConfig*
 schema_config_read(uint8_t** pos)
 {
 	auto self = schema_config_allocate();
-	guard(self_guard, schema_config_free, self);
-
-	// map
-	int count;
-	data_read_map(pos, &count);
-
-	// name
-	data_skip(pos);
-	data_read_string_copy(pos, &self->name);
-
-	// system
-	data_skip(pos);
-	data_read_bool(pos, &self->system);
-
-	// create
-	data_skip(pos);
-	data_read_bool(pos, &self->create);
-
-	return unguard(&self_guard);
+	guard(schema_config_free, self);
+	Decode map[] =
+	{
+		{ DECODE_STRING, "name",       &self->name   },
+		{ DECODE_BOOL,   "system",     &self->system },
+		{ DECODE_BOOL,   "create",     &self->create },
+		{ 0,              NULL,        NULL          },
+	};
+	decode_map(map, pos);
+	return unguard();
 }
 
 static inline void
@@ -102,7 +93,7 @@ schema_config_write(SchemaConfig* self, Buf* buf)
 	encode_raw(buf, "system", 6);
 	encode_bool(buf, self->system);
 
-	// creat
+	// create
 	encode_raw(buf, "create", 6);
 	encode_bool(buf, self->create);
 }

@@ -1,33 +1,31 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Uuid     id;
-	Str      schema;
-	Str      name;
-	bool     reference;
-	List     indexes;
-	int      indexes_count;
-	Mapping* map;
-	List     storages;
-	int      storages_count;
+	Uuid id;
+	Str  schema;
+	Str  name;
+	bool reference;
+	List indexes;
+	int  indexes_count;
+	List storages;
+	int  storages_count;
 };
 
 static inline TableConfig*
 table_config_allocate(void)
 {
 	TableConfig* self;
-	self = in_malloc(sizeof(TableConfig));
+	self = so_malloc(sizeof(TableConfig));
 	self->reference      = false;
-	self->map            = NULL;
 	self->indexes_count  = 0;
 	self->storages_count = 0;
 	uuid_init(&self->id);
@@ -44,9 +42,6 @@ table_config_free(TableConfig* self)
 	str_free(&self->schema);
 	str_free(&self->name);
 
-	if (self->map)
-		mapping_free(self->map);
-
 	list_foreach_safe(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
@@ -59,7 +54,7 @@ table_config_free(TableConfig* self)
 		storage_config_free(config);
 	}
 
-	in_free(self);
+	so_free(self);
 }
 
 static inline void
@@ -89,12 +84,6 @@ table_config_set_reference(TableConfig* self, bool reference)
 }
 
 static inline void
-table_config_set_map(TableConfig* self, Mapping* map)
-{
-	self->map = map;
-}
-
-static inline void
 table_config_add_storage(TableConfig* self, StorageConfig* config)
 {
 	list_append(&self->storages, &config->link);
@@ -112,87 +101,71 @@ static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
-	guard(copy_guard, table_config_free, copy);
+	guard(table_config_free, copy);
 	table_config_set_id(copy, &self->id);
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_reference(copy, self->reference);
-	table_config_set_map(copy, mapping_copy(self->map));
-
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
 		auto config_copy = index_config_copy(config);
 		table_config_add_index(copy, config_copy);
 	}
-
 	list_foreach(&self->storages)
 	{
 		auto config = list_at(StorageConfig, link);
 		auto config_copy = storage_config_copy(config);
 		table_config_add_storage(copy, config_copy);
 	}
-	return unguard(&copy_guard);
+	return unguard();
 }
 
 static inline TableConfig*
 table_config_read(uint8_t** pos)
 {
 	auto self = table_config_allocate();
-	guard(self_guard, table_config_free, self);
+	guard(table_config_free, self);
 
-	// map
-	int count;
-	data_read_map(pos, &count);
-
-	// id
-	data_skip(pos);
-	Str id;
-	data_read_string(pos, &id);
-	uuid_from_string(&self->id, &id);
-
-	// schema
-	data_skip(pos);
-	data_read_string_copy(pos, &self->schema);
-
-	// name
-	data_skip(pos);
-	data_read_string_copy(pos, &self->name);
-
-	// reference
-	data_skip(pos);
-	data_read_bool(pos, &self->reference);
+	uint8_t* pos_indexes  = NULL;
+	uint8_t* pos_storages = NULL;
+	Decode map[] =
+	{
+		{ DECODE_UUID,   "id",        &self->id        },
+		{ DECODE_STRING, "schema",    &self->schema    },
+		{ DECODE_STRING, "name",      &self->name      },
+		{ DECODE_BOOL,   "reference", &self->reference },
+		{ DECODE_ARRAY,  "indexes",   &pos_indexes     },
+		{ DECODE_ARRAY,  "storages",  &pos_storages    },
+		{ 0,              NULL,       NULL             },
+	};
+	decode_map(map, pos);
 
 	// indexes
-	data_skip(pos);
-	data_read_array(pos, &count);
+	int count;
+	data_read_array(&pos_indexes, &count);
 	while (count-- > 0)
 	{
-		auto config = index_config_read(pos);
+		auto config = index_config_read(&pos_indexes);
 		table_config_add_index(self, config);
 	}
 
 	// storages
-	data_skip(pos);
-	data_read_array(pos, &count);
+	data_read_array(&pos_storages, &count);
 	while (count-- > 0)
 	{
-		auto config = storage_config_read(pos);
+		auto config = storage_config_read(&pos_storages);
 		table_config_add_storage(self, config);
 	}
 
-	// map
-	data_skip(pos);
-	self->map = mapping_read(pos);
-
-	return unguard(&self_guard);
+	return unguard();
 }
 
 static inline void
 table_config_write(TableConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 7);
+	encode_map(buf, 6);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -229,8 +202,4 @@ table_config_write(TableConfig* self, Buf* buf)
 		auto config = list_at(StorageConfig, link);
 		storage_config_write(config, buf);
 	}
-
-	// map
-	encode_raw(buf, "map", 3);
-	mapping_write(self->map, buf);
 }

@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct View View;
@@ -19,22 +19,22 @@ view_free(View* self)
 {
 	if (self->config)
 		view_config_free(self->config);
-	in_free(self);
+	so_free(self);
 }
 
 static inline View*
 view_allocate(ViewConfig* config)
 {
-	View* self = in_malloc(sizeof(View));
+	View* self = so_malloc(sizeof(View));
 	self->config = NULL;
-	guard(self_guard, view_free, self);
+	guard(view_free, self);
 	self->config = view_config_copy(config);
 
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)view_free);
-	return unguard(&self_guard);
+	return unguard();
 }
 
 static inline View*

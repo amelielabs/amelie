@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 typedef struct Table Table;
@@ -22,33 +22,38 @@ table_free(Table* self)
 	storage_mgr_free(&self->storage_mgr);
 	if (self->config)
 		table_config_free(self->config);
-	in_free(self);
+	so_free(self);
 }
 
 static inline Table*
 table_allocate(TableConfig* config)
 {
-	Table* self = in_malloc(sizeof(Table));
+	Table* self = so_malloc(sizeof(Table));
 	self->config = NULL;
 	storage_mgr_init(&self->storage_mgr);
 	serial_init(&self->serial);
-	guard(self_guard, table_free, self);
+	guard(table_free, self);
 	self->config = table_config_copy(config);
 
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)table_free);
-	return unguard(&self_guard);
+	return unguard();
 }
 
 static inline void
 table_open(Table* self)
 {
-	storage_mgr_open(&self->storage_mgr, self->config->map,
-	                 &self->config->id,
+	storage_mgr_open(&self->storage_mgr, &self->config->id,
 	                 &self->config->storages,
 	                 &self->config->indexes);
+}
+
+static inline void
+table_recover(Table* self, Uuid* shard)
+{
+	storage_mgr_recover(&self->storage_mgr, shard);
 }
 
 static inline Table*
@@ -79,23 +84,4 @@ table_def(Table* self)
 {
 	auto primary = container_of(self->config->indexes.next, IndexConfig, link);
 	return &primary->def;
-}
-
-hot static inline Part*
-table_map(Table* self, Uuid* shard, uint8_t* data, int data_size)
-{
-	// find storage related to the shard
-	auto storage = storage_mgr_find_by_shard(&self->storage_mgr, shard);
-	assert(storage);
-
-	// get partition key
-	auto def = table_def(self);
-
-	// find or create partition
-	bool created = false;
-	auto part = storage_map(storage, def, data, data_size, &created);
-	if (created)
-		part_open(part, &self->config->indexes);
-
-	return part;
 }

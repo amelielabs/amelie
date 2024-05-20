@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 void
 view_mgr_init(ViewMgr* self)
@@ -47,16 +46,17 @@ view_mgr_create(ViewMgr*     self,
 
 	// allocate view and init
 	auto view = view_allocate(config);
-	guard(guard, view_free, view);
+	guard(view_free, view);
 
 	// save create view operation
 	auto op = view_op_create(config);
+	guard_buf(op);
 
 	// update views
 	handle_mgr_create(&self->mgr, trx, LOG_VIEW_CREATE, &view->handle, op);
 
-	buf_unpin(op);
-	unguard(&guard);
+	unguard();
+	unguard();
 }
 
 void
@@ -77,11 +77,11 @@ view_mgr_drop(ViewMgr*     self,
 
 	// save drop view operation
 	auto op = view_op_drop(&view->config->schema, &view->config->name);
+	guard_buf(op);
 
 	// update mgr
 	handle_mgr_drop(&self->mgr, trx, LOG_VIEW_DROP, &view->handle, op);
-
-	buf_unpin(op);
+	unguard();
 }
 
 static void
@@ -124,15 +124,17 @@ view_mgr_rename(ViewMgr*     self,
 
 	// save rename view operation
 	auto op = view_op_rename(schema, name, schema_new, name_new);
+	guard_buf(op);
 
 	// update view
 	handle_mgr_alter(&self->mgr, trx, LOG_VIEW_RENAME, &view->handle, op,
 	                 view_mgr_rename_abort, NULL);
-	buf_unpin(op);
+	unguard();
 
 	// set new view name
 	if (! str_compare(&view->config->schema, schema_new))
 		view_config_set_schema(view->config, schema_new);
+
 	if (! str_compare(&view->config->name, name_new))
 		view_config_set_name(view->config, name_new);
 }
@@ -167,15 +169,12 @@ view_mgr_find(ViewMgr* self, Str* schema, Str* name,
 Buf*
 view_mgr_list(ViewMgr* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// array
+	auto buf = buf_begin();
 	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// {}
 		auto view = view_of(list_at(Handle, link));
 		view_config_write(view->config, buf);
 	}
-	msg_end(buf);
-	return buf;
+	return buf_end(buf);
 }

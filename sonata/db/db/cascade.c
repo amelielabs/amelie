@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 void
 cascade_table_drop(Db* self, Transaction* trx, Str* schema, Str* name,

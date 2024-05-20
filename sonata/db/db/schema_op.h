@@ -1,40 +1,40 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 static inline Buf*
 schema_op_create(SchemaConfig* config)
 {
 	// [config]
-	auto buf = buf_create(0);
+	auto buf = buf_begin();
 	encode_array(buf, 1);
 	schema_config_write(config, buf);
-	return buf;
+	return buf_end(buf);
 }
 
 static inline Buf*
 schema_op_drop(Str* name)
 {
 	// [name]
-	auto buf = buf_create(0);
+	auto buf = buf_begin();
 	encode_array(buf, 1);
 	encode_string(buf, name);
-	return buf;
+	return buf_end(buf);
 }
 
 static inline Buf*
 schema_op_rename(Str* name, Str* name_new)
 {
 	// [name, name_new]
-	auto buf = buf_create(0);
+	auto buf = buf_begin();
 	encode_array(buf, 2);
 	encode_string(buf, name);
 	encode_string(buf, name_new);
-	return buf;
+	return buf_end(buf);
 }
 
 static inline SchemaConfig*

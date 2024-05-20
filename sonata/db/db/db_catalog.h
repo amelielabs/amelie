@@ -1,9 +1,9 @@
 #pragma once
 
 //
-// indigo
+// sonata.
 //
-// SQL OLTP database
+// SQL Database for JSON.
 //
 
 extern CatalogIf db_catalog_if;

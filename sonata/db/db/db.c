@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 void
 db_init(Db* self)
@@ -23,7 +22,6 @@ db_init(Db* self)
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
-	wal_init(&self->wal);
 }
 
 void
@@ -32,7 +30,6 @@ db_free(Db* self)
 	table_mgr_free(&self->table_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
-	wal_free(&self->wal);
 }
 
 static void
@@ -40,10 +37,10 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 {
 	Transaction trx;
 	transaction_init(&trx);
-	guard(trx_guard, transaction_free, &trx);
+	guard(transaction_free, &trx);
 
 	Exception e;
-	if (try(&e))
+	if (enter(&e))
 	{
 		// begin
 		transaction_begin(&trx);
@@ -54,7 +51,7 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 		str_init(&name);
 		str_set_cstr(&name, schema);
 		auto config = schema_config_allocate();
-		guard(config_guard, schema_config_free, config);
+		guard(schema_config_free, config);
 		schema_config_set_name(config, &name);
 		schema_config_set_system(config, true);
 		schema_config_set_create(config, create);
@@ -64,7 +61,7 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 		transaction_commit(&trx);
 	}
 
-	if (catch(&e))
+	if (leave(&e))
 	{
 		transaction_abort(&trx);
 		rethrow();
@@ -91,7 +88,4 @@ db_close(Db* self)
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
-
-	// stop wal
-	wal_stop(&self->wal);
 }

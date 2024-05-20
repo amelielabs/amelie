@@ -1,21 +1,20 @@
 
 //
-// indigo
-//	
-// SQL OLTP database
+// sonata.
+//
+// SQL Database for JSON.
 //
 
-#include <indigo_runtime.h>
-#include <indigo_io.h>
-#include <indigo_data.h>
-#include <indigo_lib.h>
-#include <indigo_config.h>
-#include <indigo_def.h>
-#include <indigo_transaction.h>
-#include <indigo_index.h>
-#include <indigo_storage.h>
-#include <indigo_wal.h>
-#include <indigo_db.h>
+#include <sonata_runtime.h>
+#include <sonata_io.h>
+#include <sonata_lib.h>
+#include <sonata_data.h>
+#include <sonata_config.h>
+#include <sonata_def.h>
+#include <sonata_transaction.h>
+#include <sonata_index.h>
+#include <sonata_storage.h>
+#include <sonata_db.h>
 
 void
 schema_mgr_init(SchemaMgr* self)
@@ -47,16 +46,18 @@ schema_mgr_create(SchemaMgr*    self,
 
 	// allocate schema and init
 	auto schema = schema_allocate(config);
-	guard(guard, schema_free, schema);
+	guard(schema_free, schema);
 
 	// save create schema operation
 	auto op = schema_op_create(config);
+	guard_buf(op);
 
 	// update schemas
-	handle_mgr_create(&self->mgr, trx, LOG_SCHEMA_CREATE, &schema->handle, op);
+	handle_mgr_create(&self->mgr, trx, LOG_SCHEMA_CREATE,
+	                  &schema->handle, op);
 
-	buf_unpin(op);
-	unguard(&guard);
+	unguard();
+	unguard();
 }
 
 void
@@ -76,14 +77,15 @@ schema_mgr_drop(SchemaMgr*   self,
 
 	if (schema->config->system)
 		error("schema '%.*s': system schema cannot be dropped", str_size(name),
-		       str_of(name));
+		      str_of(name));
 
 	// save drop schema operation
 	auto op = schema_op_drop(&schema->config->name);
+	guard_buf(op);
 
 	// drop schema by object
 	handle_mgr_drop(&self->mgr, trx, LOG_SCHEMA_DROP, &schema->handle, op);
-	buf_unpin(op);
+	unguard();
 }
 
 static void
@@ -126,11 +128,12 @@ schema_mgr_rename(SchemaMgr*   self,
 
 	// save schema operation
 	auto op = schema_op_rename(name, name_new);
+	guard_buf(op);
 
 	// update schemas
 	handle_mgr_alter(&self->mgr, trx, LOG_SCHEMA_RENAME, &schema->handle, op,
 	                 schema_mgr_rename_abort, NULL);
-	buf_unpin(op);
+	unguard();
 
 	// set new name
 	schema_config_set_name(schema->config, name_new);
@@ -170,15 +173,12 @@ schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 Buf*
 schema_mgr_list(SchemaMgr* self)
 {
-	auto buf = msg_create(MSG_OBJECT);
-	// array
+	auto buf = buf_begin();
 	encode_array(buf, self->mgr.list_count);
 	list_foreach(&self->mgr.list)
 	{
-		// {}
 		auto schema = schema_of(list_at(Handle, link));
 		schema_config_write(schema->config, buf);
 	}
-	msg_end(buf);
-	return buf;
+	return buf_end(buf);
 }
