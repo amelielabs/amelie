@@ -116,7 +116,7 @@ row_key(Row* self, Def* def, int pos)
 	if (self->size_factor == 0)
 		offset = row_data_1(self, def)[1 + pos];
 	else
-	if (self->size_factor == 0)
+	if (self->size_factor == 1)
 		offset = row_data_2(self, def)[1 + pos];
 	else
 		offset = row_data_4(self, def)[1 + pos];
