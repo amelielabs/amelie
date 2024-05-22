@@ -60,14 +60,10 @@ ddl_create_storage(TableConfig* table_config, Shard* shard)
 {
 	// create storage config
 	auto config = storage_config_allocate();
-	Uuid id;
-	uuid_generate(&id, global()->random);
-	storage_config_set_id(config, &id);
-	if (shard)
-	{
-		storage_config_set_shard(config, &shard->config->id);
-		storage_config_set_range(config, shard->config->min, shard->config->max);
-	}
+	auto ssn = config_ssn_next();
+	storage_config_set_id(config, ssn);
+	storage_config_set_shard(config, &shard->config->id);
+	storage_config_set_range(config, shard->config->min, shard->config->max);
 	table_config_add_storage(table_config, config);
 }
 
@@ -94,13 +90,14 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&config->name));
 
 	// reference table require only one storage
+	auto shard_mgr = &self->shard_mgr;
 	if (config->reference)
 	{
-		ddl_create_storage(config, NULL);
+		auto shard = shard_mgr->shards[0];
+		ddl_create_storage(config, shard);
 	} else
 	{
 		// create storage config for each shard
-		auto shard_mgr = &self->shard_mgr;
 		for (int i = 0; i < shard_mgr->shards_count; i++)
 		{
 			auto shard = shard_mgr->shards[i];

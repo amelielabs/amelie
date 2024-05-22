@@ -93,7 +93,7 @@ shard_recover(Shard* self)
 		list_foreach(&db->table_mgr.mgr.list)
 		{
 			auto table = table_of(list_at(Handle, link));
-			storage_mgr_recover(&table->storage_mgr, &self->config->id);
+			table_recover(table, &self->config->id);
 		}
 	}
 

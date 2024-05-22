@@ -120,16 +120,8 @@ system_recover(System* self, bool bootstrap)
 	log("recover: begin");
 	unused(bootstrap);
 
-	// do parallel per-shard recover and at the same time
-	// recover reference tables
+	// do parallel per-shard recover
 	shard_mgr_recover(&self->shard_mgr);
-
-	// recover reference tables
-	list_foreach(&self->db.table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		storage_mgr_recover(&table->storage_mgr, NULL);
-	}
 
 	// wait for completion
 	int complete = 0;
@@ -178,12 +170,8 @@ system_start(System* self, bool bootstrap)
 	// prepare executor
 	executor_create(&self->executor);
 
-	// create system object and register catalogs
+	// create system object and objects from last snapshot
 	db_open(&self->db, &self->catalog_mgr);
-
-	// restore catalogs (schemas, tables, views)
-	catalog_mgr_restore(&self->catalog_mgr);
-	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
 
 	// start shards
 	shard_mgr_start(&self->shard_mgr);

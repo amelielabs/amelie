@@ -363,7 +363,7 @@ parse_with(Stmt* self, AstTableCreate* stmt)
 		if (! key)
 			error("WITH (<name> expected");
 
-		// uuid
+#if 0
 		if (str_compare_raw(&key->string, "uuid", 4))
 		{
 			// =
@@ -380,9 +380,13 @@ parse_with(Stmt* self, AstTableCreate* stmt)
 			table_config_set_id(stmt->config, &uuid);
 
 		} else {
-			error("<%.*s> unrecognized parameter",
-			      str_size(&key->string), str_of(&key->string));
 		}
+#endif
+		(void)stmt;
+
+		// todo:
+		error("<%.*s> unrecognized parameter",
+		      str_size(&key->string), str_of(&key->string));
 
 		// ,
 		if (stmt_if(self, ','))
@@ -438,9 +442,6 @@ parse_table_create(Stmt* self)
 
 	// create table config
 	stmt->config = table_config_allocate();
-	Uuid id;
-	uuid_generate(&id, global()->random);
-	table_config_set_id(stmt->config, &id);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 
