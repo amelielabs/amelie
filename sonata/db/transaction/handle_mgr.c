@@ -62,18 +62,6 @@ handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 	return NULL;
 }
 
-Handle*
-handle_mgr_get_by_id(HandleMgr* self, Uuid* id)
-{
-	list_foreach(&self->list)
-	{
-		auto handle = list_at(Handle, link);
-		if (uuid_compare(handle->id, id))
-			return handle;
-	}
-	return NULL;
-}
-
 static void
 handle_mgr_create_commit(LogOp* op, uint64_t lsn)
 {
@@ -98,7 +86,7 @@ handle_mgr_create(HandleMgr*   self,
                   Handle*      handle,
                   Buf*         data)
 {
-	log_reserve(&trx->log, cmd, NULL, NULL);
+	log_reserve(&trx->log);
 
 	// update handle mgr
 	handle_mgr_set(self, handle);
@@ -134,7 +122,7 @@ handle_mgr_drop(HandleMgr*   self,
                 Handle*      handle,
                 Buf*         data)
 {
-	log_reserve(&trx->log, cmd, NULL, NULL);
+	log_reserve(&trx->log);
 
 	// update handle mgr
 	handle_mgr_delete(self, handle);

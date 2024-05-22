@@ -14,7 +14,6 @@ struct Handle
 {
 	Str*       schema;
 	Str*       name;
-	Uuid*      id;
 	uint64_t   lsn;
 	HandleFree free_function;
 	List       link;
@@ -25,7 +24,6 @@ handle_init(Handle* self)
 {
 	self->schema        = NULL;
 	self->name          = NULL;
-	self->id            = NULL;
 	self->lsn           = 0;
 	self->free_function = NULL;
 	list_init(&self->link);
@@ -41,12 +39,6 @@ static inline void
 handle_set_name(Handle* self, Str* name)
 {
 	self->name = name;
-}
-
-static inline void
-handle_set_id(Handle* self, Uuid* id)
-{
-	self->id = id;
 }
 
 static inline void
