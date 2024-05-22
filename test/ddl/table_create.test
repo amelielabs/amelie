@@ -244,13 +244,9 @@ create table test (id int primary key) with (,
 create table test (id int primary key) with (abc
 create table test (id int primary key) with (abc = 10)
 create table test (id int primary key) with (abc = "")
-create table test (id int primary key) with (uuid = 10)
-create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000") junk
 
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-select id from system.tables()
-drop table test
 
 disconnect S0
 stop E0

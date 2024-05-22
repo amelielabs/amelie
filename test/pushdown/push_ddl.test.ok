@@ -7,9 +7,6 @@ select *.name, *.reference from system.tables()
 # test: reference has single storage
 select sizeof(storages) = 1 from system.tables()
 [true]
-# test: reference has no shard id
-select storages[0].shard from system.tables()
-["00000000-0000-0000-0000-000000000000"]
 drop table test
 # test: table create
 create table test (id int primary key, data int default 0)

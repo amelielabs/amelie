@@ -190,7 +190,8 @@ show all
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
-  "lsn": 0
+  "lsn": 0,
+  "ssn": 0
 }
 select system.config()
 {
@@ -215,7 +216,8 @@ select system.config()
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
-  "lsn": 0
+  "lsn": 0,
+  "ssn": 0
 }
 select system.config().directory
 "_output/E0"

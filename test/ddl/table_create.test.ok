@@ -777,14 +777,8 @@ create table test (id int primary key) with (abc = 10)
 {"code": 1, "msg": "<abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = "")
 {"code": 1, "msg": "<abc> unrecognized parameter"}
-create table test (id int primary key) with (uuid = 10)
-{"code": 1, "msg": "WITH (uuid = <string>) expected"}
-create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000") junk
-{"code": 1, "msg": "unknown command: <junk>"}
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-select id from system.tables()
-["00000000-0000-0000-0000-000000000000"]
-drop table test
+{"code": 1, "msg": "<uuid> unrecognized parameter"}
 disconnect S0
 stop E0
