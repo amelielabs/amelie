@@ -43,7 +43,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	auto self = tree_of(arg);
 
 	// reserve log
-	log_reserve(&trx->log, LOG_REPLACE, arg->id_table, arg->id_storage);
+	log_reserve(&trx->log);
 
 	auto prev = ttree_set(&self->tree, row);
 
@@ -53,8 +53,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->id_table,
-	        arg->id_storage,
+	        arg->storage,
 	        &self->index.config->def,
 	        row, prev);
 
@@ -68,7 +67,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	auto self = tree_of(arg);
 
 	// reserve log
-	log_reserve(&trx->log, LOG_REPLACE, arg->id_table, arg->id_storage);
+	log_reserve(&trx->log);
 
 	// replace
 	auto tree_it = tree_iterator_of(it);
@@ -80,8 +79,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->id_table,
-	        arg->id_storage,
+	        arg->storage,
 	        &self->index.config->def,
 	        row, prev);
 }
@@ -100,7 +98,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	auto self = tree_of(arg);
 
 	// reserve log
-	log_reserve(&trx->log, LOG_DELETE, arg->id_table, arg->id_storage);
+	log_reserve(&trx->log);
 
 	// delete by using current position
 	auto tree_it = tree_iterator_of(it);
@@ -112,8 +110,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	        tree_delete_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->id_table,
-	        arg->id_storage,
+	        arg->storage,
 	        &self->index.config->def,
 	        prev, prev);
 }
@@ -124,7 +121,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	auto self = tree_of(arg);
 
 	// reserve log
-	log_reserve(&trx->log, LOG_DELETE, arg->id_table, arg->id_storage);
+	log_reserve(&trx->log);
 
 	// delete by key
 	auto prev = ttree_unset(&self->tree, key);
@@ -140,8 +137,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	        tree_delete_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->id_table,
-	        arg->id_storage,
+	        arg->storage,
 	        &self->index.config->def,
 	        key, prev);
 }
@@ -152,7 +148,7 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	auto self = tree_of(arg);
 
 	// reserve log
-	log_reserve(&trx->log, LOG_REPLACE, arg->id_table, arg->id_storage);
+	log_reserve(&trx->log);
 
 	// insert or return iterator on existing position
 	TtreePos pos;
@@ -171,8 +167,7 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->id_table,
-	        arg->id_storage,
+	        arg->storage,
 	        &self->index.config->def,
 	        row, NULL);
 
@@ -206,11 +201,11 @@ tree_free(Index* arg)
 }
 
 Index*
-tree_allocate(IndexConfig* config, Uuid* table, Uuid* storage)
+tree_allocate(IndexConfig* config, uint64_t storage)
 {
 	Tree* self = so_malloc(sizeof(*self));
 	ttree_init(&self->tree, 512, 256, &config->def);
-	index_init(&self->index, config, table, storage);
+	index_init(&self->index, config, storage);
 
 	auto iface = &self->index.iface;
 	iface->set       = tree_set;

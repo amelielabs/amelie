@@ -21,4 +21,4 @@ tree_of(Index* self)
 }
 
 Index*
-tree_allocate(IndexConfig*, Uuid*, Uuid*);
+tree_allocate(IndexConfig*, uint64_t);

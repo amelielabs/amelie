@@ -25,22 +25,18 @@ struct Index
 {
 	IndexIf      iface;
 	uint64_t     lsn;
+	uint64_t     storage;
 	IndexConfig* config;
-	Uuid*        id_storage;
-	Uuid*        id_table;
 	List         link;
 };
 
 static inline void
-index_init(Index* self, IndexConfig* config,
-           Uuid*  id_table,
-           Uuid*  id_storage)
+index_init(Index* self, IndexConfig* config, uint64_t storage)
 {
 	memset(&self->iface, 0, sizeof(*self));
-	self->lsn        = 0;
-	self->config     = config;
-	self->id_table   = id_table;
-	self->id_storage = id_storage;
+	self->lsn     = 0;
+	self->storage = storage;
+	self->config  = config;
 	list_init(&self->link);
 }
 
