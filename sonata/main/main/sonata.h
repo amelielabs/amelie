@@ -19,6 +19,7 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_storage.h>
+#include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
 #include <sonata_aggr.h>

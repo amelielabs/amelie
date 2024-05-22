@@ -18,6 +18,7 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_storage.h>
+#include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
 #include <sonata_aggr.h>
@@ -63,7 +64,7 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	shard_mgr_init(&self->shard_mgr, &self->db, &self->function_mgr);
 	router_init(&self->router);
-	executor_init(&self->executor, &self->router);
+	executor_init(&self->executor, &self->db, &self->router);
 
 	// db
 	db_init(&self->db);
