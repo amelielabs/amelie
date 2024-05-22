@@ -7,3 +7,4 @@
 //
 
 void recover(Db*);
+void recover_basedir(Db*);

@@ -78,6 +78,13 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	// register db catalog
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
 	catalog_mgr_add(cat_mgr, cat);
+
+	// restore catalogs (schemas, tables, views)
+	catalog_mgr_restore(cat_mgr);
+	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
+
+	// get a list of snapshots
+	recover_basedir(self);
 }
 
 void
