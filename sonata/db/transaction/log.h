@@ -113,25 +113,9 @@ log_reset(Log* self)
 }
 
 static inline void
-log_reserve(Log* self, LogCmd cmd, Uuid* table, Uuid* storage)
+log_reserve(Log* self)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
-	if (table)
-	{
-		buf_reserve(&self->data,
-		            data_size_array(4) +
-		            data_size_integer(cmd) +
-		            data_size_integer(table->a) +
-		            data_size_integer(table->b) +
-		            data_size_integer(storage->a) +
-		            data_size_integer(storage->b));
-	} else
-	{
-		buf_reserve(&self->data,
-		            data_size_array(2) +
-		            data_size_integer(cmd));
-	}
-	iov_reserve(&self->data_iov, 2);
 }
 
 hot static inline void
@@ -141,8 +125,7 @@ log_row(Log*      self,
         LogAbort  abort,
         void*     arg,
         bool      persistent,
-        Uuid*     id_table,
-        Uuid*     id_storage,
+        uint64_t  storage,
         Def*      def,
         Row*      row,
         Row*      prev)
@@ -162,9 +145,8 @@ log_row(Log*      self,
 	if (! persistent)
 		return;
 
-	// todo: [cmd, table, storage, row]
-	(void)id_table;
-	(void)id_storage;
+	// todo: [cmd, storage, row]
+	(void)storage;
 	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
 
 	self->count_persistent++;
