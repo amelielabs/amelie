@@ -14,6 +14,7 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_storage.h>
+#include <sonata_wal.h>
 #include <sonata_db.h>
 
 #if 0
@@ -263,8 +264,18 @@ recover(Db* self)
 void
 recover(Db* self)
 {
-	// todo
-	(void)self;
+	if (! var_int_of(&config()->wal))
+		return;
+
+	// prepare wal mgr
+	wal_open(&self->wal);
+
+	// replay logs
+	log("recover: begin wal replay");
+
+	//recover_wal(self);
+
+	log("recover: complete");
 }
 
 static inline int

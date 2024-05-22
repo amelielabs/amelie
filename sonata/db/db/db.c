@@ -14,6 +14,7 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_storage.h>
+#include <sonata_wal.h>
 #include <sonata_db.h>
 
 void
@@ -22,6 +23,7 @@ db_init(Db* self)
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
+	wal_init(&self->wal);
 }
 
 void
@@ -30,6 +32,7 @@ db_free(Db* self)
 	table_mgr_free(&self->table_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
+	wal_free(&self->wal);
 }
 
 static void
@@ -95,4 +98,6 @@ db_close(Db* self)
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
+
+	// todo: wal close?
 }

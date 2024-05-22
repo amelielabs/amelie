@@ -32,6 +32,8 @@ OBJECTS        = \
                  storage/storage.o \
                  storage/storage_mgr.o \
                  storage/checkpoint.o \
+                 wal/wal.o \
+                 wal/wal_cursor.o \
                  db/schema_mgr.o \
                  db/table_mgr.o \
                  db/view_mgr.o \

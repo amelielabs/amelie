@@ -13,7 +13,7 @@ struct Db
 	SchemaMgr schema_mgr;
 	ViewMgr   view_mgr;
 	TableMgr  table_mgr;
-	//        wal
+	Wal       wal;
 };
 
 void db_init(Db*);
