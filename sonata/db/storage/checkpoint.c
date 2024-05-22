@@ -103,7 +103,7 @@ checkpoint_worker_main(CheckpointWorker* self)
 			auto primary = storage_primary(storage);
 
 			SnapshotId id;
-			snapshot_id_set(&id, &storage->config->id, primary->lsn);
+			snapshot_id_set(&id, storage->config->id, primary->lsn);
 			snapshot_reset(&snapshot);
 			snapshot_create(&snapshot, &id, primary);
 		}

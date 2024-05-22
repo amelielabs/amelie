@@ -18,6 +18,7 @@
 void
 storage_mgr_init(StorageMgr* self)
 {
+	self->reference  = false;
 	self->list_count = 0;
 	list_init(&self->list);
 }
@@ -35,50 +36,29 @@ storage_mgr_free(StorageMgr* self)
 }
 
 void
-storage_mgr_open(StorageMgr* self,
-                 Uuid*       table,
-                 List*       storages,
-                 List*       indexes)
+storage_mgr_open(StorageMgr* self, bool reference, List* storages, List* indexes)
 {
+	self->reference = reference;
+
 	list_foreach(storages)
 	{
 		auto config = list_at(StorageConfig, link);
+		config_ssn_follow(config->id);
 
 		// prepare storage
-		auto storage = storage_allocate(config, table);
+		auto storage = storage_allocate(config);
 		list_append(&self->list, &storage->link);
 		self->list_count++;
 
-		// prepare indexes and read storage directory
+		// prepare indexes
 		storage_open(storage, indexes);
-	}
-}
-
-static void
-storage_mgr_recover_reference(StorageMgr* self)
-{
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		if (storage_is_reference(storage))
-		{
-			storage_recover(storage);
-			break;
-		}
 	}
 }
 
 void
 storage_mgr_recover(StorageMgr* self, Uuid* shard)
 {
-	// recover reference storage (shard is NULL) or storages
-	// which match the specified shard
-	if (shard == NULL)
-	{
-		storage_mgr_recover_reference(self);
-		return;
-	}
-
+	// recover snapshots
 	list_foreach(&self->list)
 	{
 		auto storage = list_at(Storage, link);
@@ -94,32 +74,38 @@ storage_mgr_gc(StorageMgr* self)
 	list_foreach(&self->list)
 	{
 		auto storage = list_at(Storage, link);
-		snapshot_mgr_gc(&storage->snapshot_mgr);
+		storage_gc(storage);
 	}
 }
 
 hot Storage*
-storage_mgr_find(StorageMgr* self, Uuid* id)
+storage_mgr_find(StorageMgr* self, uint64_t id)
 {
 	list_foreach(&self->list)
 	{
 		auto storage = list_at(Storage, link);
-		if (uuid_compare(&storage->config->id, id))
+		if (storage->config->id == (int64_t)id)
 			return storage;
 	}
 	return NULL;
 }
 
 hot Storage*
-storage_mgr_find_by_shard(StorageMgr* self, Uuid* shard)
+storage_mgr_match(StorageMgr* self, Uuid* shard)
 {
+	// get first storage, if reference or find storage by shard id
+	if (self->reference)
+	{
+		auto first = list_first(&self->list);
+		return container_of(first, Storage, link);
+	}
+
 	list_foreach(&self->list)
 	{
 		auto storage = list_at(Storage, link);
-		if (storage_is_reference(storage))
-			return storage;
-		if (uuid_compare(&storage->config->shard, shard))
-			return storage;
+		if (! uuid_compare(&storage->config->shard, shard))
+			continue;
+		return storage;
 	}
 	return NULL;
 }

@@ -46,19 +46,17 @@ snapshot_reset(Snapshot* self)
 static bool
 snapshot_begin(Snapshot* self)
 {
-	// <base>/storage_uuid/lsn.incomplete
+	// <base>/<storage_id>.<lsn>.incomplete
 	char path[PATH_MAX];
 	snapshot_id_path(self->id, path, true);
 
 	if (fs_exists("%s", path))
 	{
-		log("checkpoint %" PRIu64 ": %s already exists", self->id->lsn,
-		    self->id->uuid_sz);
+		log("checkpoint %" PRIu64 ": %s already exists", self->id->lsn, path);
 		return false;
 	}
 
-	log("checkpoint %" PRIu64 ": %s begin", self->id->lsn,
-	    self->id->uuid_sz);
+	log("checkpoint %" PRIu64 ": %s begin", self->id->lsn, path);
 
 	// prepare batch
 	buf_reserve(&self->data, sizeof(Msg) * self->count_batch);
@@ -74,15 +72,16 @@ snapshot_end(Snapshot* self)
 {
 	// todo: sync?
 
-	// rename incomplete file to <base>/storage_uuid/lsn
+	// rename incomplete file to <base>/<storage_id>.<lsn>
 	char path[PATH_MAX];
 	snapshot_id_path(self->id, path, false);
+
 	file_rename(&self->file, path);
 	file_close(&self->file);
 
 	double size = self->file.size / 1024 / 1024;
 	log("checkpoint %" PRIu64 ": %s complete (%.2f MiB)", self->id->lsn,
-	    self->id->uuid_sz, size);
+	    path, size);
 }
 
 static void
@@ -150,7 +149,7 @@ snapshot_create(Snapshot* self, SnapshotId* id, Index* index)
 	Exception e;
 	if (enter(&e))
 	{
-		// create <base>/storage_uuid/lsn.incomplete
+		// create <base>/<storage_id>.<lsn>.incomplete
 		
 		// do nothing, if file exists
 		if (snapshot_begin(self))

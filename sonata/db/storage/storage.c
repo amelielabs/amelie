@@ -16,16 +16,18 @@
 #include <sonata_storage.h>
 
 Storage*
-storage_allocate(StorageConfig* config, Uuid* table)
+storage_allocate(StorageConfig* config)
 {
 	auto self = (Storage*)so_malloc(sizeof(Storage));
-	self->table         = table;
-	self->config        = config;
+	self->config        = NULL;
 	self->indexes_count = 0;
-	snapshot_mgr_init(&self->snapshot_mgr);
+	snapshot_mgr_init(&self->snapshot_mgr, config->id);
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
+	guard(storage_free, self);
+	self->config = storage_config_copy(config);
+	unguard();
 	return self;
 }
 
@@ -37,6 +39,7 @@ storage_free(Storage* self)
 		auto index = list_at(Index, link);
 		index_free(index);
 	}
+	storage_config_free(self->config);
 	snapshot_mgr_free(&self->snapshot_mgr);
 	so_free(self);
 }
@@ -44,18 +47,14 @@ storage_free(Storage* self)
 void
 storage_open(Storage* self, List* indexes)
 {
+	// recreate indexes
 	list_foreach(indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-
-		// create tree index
-		auto index = tree_allocate(config, self->table, &self->config->id);
+		auto index  = tree_allocate(config, self->config->id);
 		list_append(&self->indexes, &index->link);
 		self->indexes_count++;
 	}
-
-	// read or create storage repository
-	snapshot_mgr_open(&self->snapshot_mgr, &self->config->id);
 }
 
 void
@@ -68,9 +67,9 @@ storage_recover(Storage* self)
 	auto primary = storage_primary(self);
 
 	SnapshotId id;
-	snapshot_id_set(&id, &self->config->id, snapshot);
+	snapshot_id_set(&id, self->config->id, snapshot);
 
-	log("recover %" PRIu64 ": %s begin", snapshot, id.uuid_sz);
+	log("recover %" PRIu64 ".%" PRIu64 ": begin", id.storage, id.lsn);
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);
@@ -99,7 +98,13 @@ storage_recover(Storage* self)
 	// set index lsn
 	primary->lsn = snapshot;
 
-	log("recover %" PRIu64 ": %s complete", snapshot, id.uuid_sz);
+	log("recover %" PRIu64 ".%" PRIu64 ": complete", id.storage, id.lsn);
+}
+
+void
+storage_gc(Storage* self)
+{
+	snapshot_mgr_gc(&self->snapshot_mgr);
 }
 
 hot void

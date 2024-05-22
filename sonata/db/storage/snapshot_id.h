@@ -10,8 +10,7 @@ typedef struct SnapshotId SnapshotId;
 
 struct SnapshotId
 {
-	Uuid     uuid;
-	char     uuid_sz[UUID_SZ];
+	uint64_t storage;
 	uint64_t lsn;
 	bool     incomplete;
 };
@@ -19,42 +18,26 @@ struct SnapshotId
 static inline void
 snapshot_id_init(SnapshotId* self)
 {
-	memset(self, 0, sizeof(*self));
+	self->storage    = 0;
+	self->lsn        = 0;
+	self->incomplete = false;
 }
 
 static inline void
-snapshot_id_set(SnapshotId* self, Uuid* uuid, uint64_t lsn)
+snapshot_id_set(SnapshotId* self, uint64_t storage, uint64_t lsn)
 {
-	self->lsn  =  lsn;
-	self->uuid = *uuid;
-	uuid_to_string(&self->uuid, self->uuid_sz, sizeof(self->uuid_sz));
+	self->storage = storage;
+	self->lsn     = lsn;
 }
 
 static inline void
 snapshot_id_path(SnapshotId* self, char* path, bool incomplete)
 {
-	// <base>/storage_uuid/lsn[.incomplete]
+	// <base>/<storage_id>.<lsn>[.incomplete]
 	snprintf(path, PATH_MAX,
-	         "%s/%s/%020" PRIu64 "%s",
+	         "%s/%" PRIu64 ".%020" PRIu64 "%s",
 	         config_directory(),
-	         self->uuid_sz,
+	         self->storage,
 	         self->lsn,
-	         incomplete ? ".incomplete" : "");
-}
-
-/*
-static inline void
-snapshot_id_path_storage(SnapshotId* self, char* path)
-{
-	// <base>/storage_uuid
-	snprintf(path, PATH_MAX, "%s/%s", config_directory(), self->uuid_sz);
-}
-*/
-
-static inline void
-snapshot_id_path_name(SnapshotId* self, char* path, bool incomplete)
-{
-	// lsn[.incomplete]
-	snprintf(path, PATH_MAX, "%020" PRIu64 "%s", self->lsn,
 	         incomplete ? ".incomplete" : "");
 }

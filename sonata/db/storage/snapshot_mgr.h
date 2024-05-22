@@ -10,14 +10,13 @@ typedef struct SnapshotMgr SnapshotMgr;
 
 struct SnapshotMgr
 {
-	Uuid  uuid;
-	IdMgr list_snapshot;
-	IdMgr list;
+	uint64_t storage;
+	IdMgr    list_snapshot;
+	IdMgr    list;
 };
 
-void snapshot_mgr_init(SnapshotMgr*);
+void snapshot_mgr_init(SnapshotMgr*, uint64_t);
 void snapshot_mgr_free(SnapshotMgr*);
-void snapshot_mgr_open(SnapshotMgr*, Uuid*);
 void snapshot_mgr_gc(SnapshotMgr*);
 void snapshot_mgr_add(SnapshotMgr*, uint64_t);
 
