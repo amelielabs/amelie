@@ -10,7 +10,6 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Uuid id;
 	Str  schema;
 	Str  name;
 	bool reference;
@@ -28,7 +27,6 @@ table_config_allocate(void)
 	self->reference      = false;
 	self->indexes_count  = 0;
 	self->storages_count = 0;
-	uuid_init(&self->id);
 	str_init(&self->schema);
 	str_init(&self->name);
 	list_init(&self->indexes);
@@ -55,12 +53,6 @@ table_config_free(TableConfig* self)
 	}
 
 	so_free(self);
-}
-
-static inline void
-table_config_set_id(TableConfig* self, Uuid* id)
-{
-	self->id = *id;
 }
 
 static inline void
@@ -102,7 +94,6 @@ table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
 	guard(table_config_free, copy);
-	table_config_set_id(copy, &self->id);
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_reference(copy, self->reference);
@@ -131,7 +122,6 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_storages = NULL;
 	Decode map[] =
 	{
-		{ DECODE_UUID,   "id",        &self->id        },
 		{ DECODE_STRING, "schema",    &self->schema    },
 		{ DECODE_STRING, "name",      &self->name      },
 		{ DECODE_BOOL,   "reference", &self->reference },
@@ -165,13 +155,7 @@ static inline void
 table_config_write(TableConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 6);
-
-	// id
-	encode_raw(buf, "id", 2);
-	char uuid[UUID_SZ];
-	uuid_to_string(&self->id, uuid, sizeof(uuid));
-	encode_raw(buf, uuid, sizeof(uuid) - 1);
+	encode_map(buf, 5);
 
 	// schema
 	encode_raw(buf, "schema", 6);

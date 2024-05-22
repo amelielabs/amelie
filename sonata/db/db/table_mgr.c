@@ -171,18 +171,6 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 	return table_of(handle);
 }
 
-Table*
-table_mgr_find_by_id(TableMgr* self, Uuid* id)
-{
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		if (uuid_compare(&table->config->id, id))
-			return table;
-	}
-	return NULL;
-}
-
 Buf*
 table_mgr_list(TableMgr* self)
 {
@@ -194,4 +182,17 @@ table_mgr_list(TableMgr* self)
 		table_config_write(table->config, buf);
 	}
 	return buf_end(buf);
+}
+
+Storage*
+table_mgr_find_storage(TableMgr* self, uint64_t id)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		auto storage = storage_mgr_find(&table->storage_mgr, id);
+		if (storage)
+			return storage;
+	}
+	return NULL;
 }

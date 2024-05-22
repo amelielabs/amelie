@@ -21,5 +21,6 @@ void   table_mgr_drop_of(TableMgr*, Transaction*, Table*);
 void   table_mgr_rename(TableMgr*, Transaction*, Str*, Str*, Str*, Str*, bool);
 void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
-Table* table_mgr_find_by_id(TableMgr*, Uuid*);
 Buf*   table_mgr_list(TableMgr*);
+Storage*
+table_mgr_find_storage(TableMgr*, uint64_t);

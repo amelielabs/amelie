@@ -45,7 +45,7 @@ table_allocate(TableConfig* config)
 static inline void
 table_open(Table* self)
 {
-	storage_mgr_open(&self->storage_mgr, &self->config->id,
+	storage_mgr_open(&self->storage_mgr, self->config->reference,
 	                 &self->config->storages,
 	                 &self->config->indexes);
 }
