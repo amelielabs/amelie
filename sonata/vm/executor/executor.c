@@ -18,14 +18,16 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_storage.h>
+#include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
 #include <sonata_aggr.h>
 #include <sonata_executor.h>
 
 void
-executor_init(Executor* self, Router* router)
+executor_init(Executor* self, Db* db, Router* router)
 {
+	self->db         = db;
 	self->router     = router;
 	self->list_count = 0;
 	list_init(&self->list);
@@ -157,6 +159,57 @@ executor_commit_end(Executor* self, PlanState state)
 }
 
 hot void
+executor_wal_write(Executor* self)
+{
+	auto wal = &self->db->wal;
+	auto wal_enabled = var_int_of(&config()->wal);
+
+	list_foreach(&self->group.list)
+	{
+		auto plan = list_at(Plan, link_group);
+
+		// get next lsn
+		uint64_t lsn = config_lsn() + 1;
+
+		auto router = self->router;
+		for (int i = 0; i < router->set_size; i++)
+		{
+			auto trx = dispatch_get(&plan->dispatch, i);
+			if (trx == NULL)
+				continue;
+			transaction_set_lsn(&trx->trx, lsn);
+			if (! wal_enabled)
+				continue;
+
+			// wal write
+
+			// [header] [row meta] [row]
+			auto log_set = &trx->trx.log.log_set;
+			WalWrite write =
+			{
+				.crc  = 0,
+				.lsn  = lsn,
+				.size = log_set->iov.size + sizeof(WalWrite) + buf_size(&log_set->data),
+				.type = 0
+			};
+
+			auto iov = iov_pointer(&log_set->iov);
+			iov[0].iov_base = &write;
+			iov[0].iov_len  = sizeof(write);
+			iov[1].iov_base = log_set->data.start;
+			iov[1].iov_len  = buf_size(&log_set->data);
+
+			auto rotate_ready = wal_write(wal, &log_set->iov);
+			if (rotate_ready)
+				wal_rotate(wal, 0);
+		}
+
+		// update lsn globally
+		config_lsn_set(lsn);
+	}
+}
+
+hot void
 executor_commit(Executor* self, Plan* plan)
 {
 	for (;;)
@@ -217,24 +270,7 @@ executor_commit(Executor* self, Plan* plan)
 		Exception e;
 		if (enter(&e))
 		{
-			// todo: combine logs for each trx into one
-			//
-			// todo: wal write
-				// set lsns for all transactions
-			list_foreach(&self->group.list)
-			{
-				auto plan = list_at(Plan, link_group);
-				uint64_t lsn = config_lsn() + 1;
-				auto router = self->router;
-				for (int i = 0; i < router->set_size; i++)
-				{
-					auto trx = dispatch_get(&plan->dispatch, i);
-					if (trx == NULL)
-						continue;
-					transaction_set_lsn(&trx->trx, lsn);
-				}
-				config_lsn_set(lsn);
-			}
+			executor_wal_write(self);
 		}
 		if (leave(&e))
 		{

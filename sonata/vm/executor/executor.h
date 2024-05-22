@@ -15,9 +15,10 @@ struct Executor
 	List      list;
 	PlanGroup group;
 	Router*   router;
+	Db*       db;
 };
 
-void executor_init(Executor*, Router*);
+void executor_init(Executor*, Db*, Router*);
 void executor_free(Executor*);
 void executor_create(Executor*);
 void executor_send(Executor*, Plan*, int, ReqList*);
