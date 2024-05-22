@@ -35,6 +35,7 @@ struct Config
 	Var  wal_sync_on_write;
 	// state
 	Var  lsn;
+	Var  ssn;
 	Var  state_shards;
 	Var  users;
 	Var  catalog_snapshot;
