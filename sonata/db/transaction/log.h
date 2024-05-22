@@ -62,12 +62,10 @@ struct LogOp
 struct Log
 {
 	Buf      op; 
-	Buf      data;
-	Iov      data_iov;
 	int      count;
-	int      count_persistent;
 	int      count_handle;
 	uint64_t lsn;
+	LogSet   log_set;
 	List     link;
 };
 
@@ -81,13 +79,11 @@ log_of(Log* self, int pos)
 static inline void
 log_init(Log* self)
 {
-	self->count            = 0;
-	self->count_persistent = 0;
-	self->count_handle     = 0;
-	self->lsn              = 0;
+	self->count        = 0;
+	self->count_handle = 0;
+	self->lsn          = 0;
 	buf_init(&self->op);
-	buf_init(&self->data);
-	iov_init(&self->data_iov);
+	log_set_init(&self->log_set);
 	list_init(&self->link);
 }
 
@@ -95,21 +91,24 @@ static inline void
 log_free(Log* self)
 {
 	buf_free(&self->op);
-	buf_free(&self->data);
-	iov_free(&self->data_iov);
+	log_set_free(&self->log_set);
 }
 
 static inline void
 log_reset(Log* self)
 {
-	self->count            = 0;
-	self->count_persistent = 0;
-	self->count_handle     = 0;
-	self->lsn              = 0;
+	self->count        = 0;
+	self->count_handle = 0;
+	self->lsn          = 0;
 	buf_reset(&self->op);
-	buf_reset(&self->data);
-	iov_reset(&self->data_iov);
+	log_set_reset(&self->log_set);
 	list_init(&self->link);
+}
+
+static inline void
+log_prepare(Log* self)
+{
+	log_set_prepare(&self->log_set);
 }
 
 static inline void
@@ -146,10 +145,7 @@ log_row(Log*      self,
 		return;
 
 	// todo: [cmd, storage, row]
-	(void)storage;
-	iov_add(&self->data_iov, row_data(row, def), row_data_size(row, def));
-
-	self->count_persistent++;
+	log_set_add(&self->log_set, cmd, storage, def, row);
 }
 
 static inline void
@@ -176,5 +172,4 @@ log_handle(Log*      self,
 	self->count_handle++;
 
 	// todo: [cmd, data]
-	self->count_persistent++;
 }

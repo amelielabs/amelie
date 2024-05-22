@@ -7,8 +7,8 @@
 //
 
 // transaction
-#include "transaction/log.h"
 #include "transaction/log_set.h"
+#include "transaction/log.h"
 #include "transaction/transaction.h"
 
 // handle
