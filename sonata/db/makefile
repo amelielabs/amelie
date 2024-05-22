@@ -39,11 +39,6 @@ OBJECTS        = \
                  db/db_catalog.o \
                  db/recover.o \
                  db/cascade.o
-#                wal/wal_store.o \
-                 wal/wal_store_open.o \
-                 wal/wal.o \
-                 wal/wal_cursor.o \
-                 wal/debug.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

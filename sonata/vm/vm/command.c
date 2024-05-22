@@ -41,7 +41,7 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table, storage and index
 	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto storage = storage_mgr_find_by_shard(&table->storage_mgr, self->shard);
+	auto storage = storage_mgr_match(&table->storage_mgr, self->shard);
 	auto index   = storage_find(storage, &name_index, true);
 	auto def     = index_def(index);
 
@@ -164,7 +164,7 @@ ccursor_prepare(Vm* self, Op* op)
 	cursor->type    = CURSOR_TABLE;
 	cursor->table   = table;
 	cursor->def     = table_def(table);
-	cursor->storage = storage_mgr_find_by_shard(&table->storage_mgr, self->shard);
+	cursor->storage = storage_mgr_match(&table->storage_mgr, self->shard);
 	cursor->it      = NULL;
 }
 
@@ -412,7 +412,7 @@ cinsert(Vm* self, Op* op)
 	
 	// find storage
 	auto table   = (Table*)op->a;
-	auto storage = storage_mgr_find_by_shard(&table->storage_mgr, self->shard);
+	auto storage = storage_mgr_match(&table->storage_mgr, self->shard);
 	auto unique  = op->b;
 
 	// insert or replace

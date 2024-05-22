@@ -221,6 +221,20 @@ executor_commit(Executor* self, Plan* plan)
 			//
 			// todo: wal write
 				// set lsns for all transactions
+			list_foreach(&self->group.list)
+			{
+				auto plan = list_at(Plan, link_group);
+				uint64_t lsn = config_lsn() + 1;
+				auto router = self->router;
+				for (int i = 0; i < router->set_size; i++)
+				{
+					auto trx = dispatch_get(&plan->dispatch, i);
+					if (trx == NULL)
+						continue;
+					transaction_set_lsn(&trx->trx, lsn);
+				}
+				config_lsn_set(lsn);
+			}
 		}
 		if (leave(&e))
 		{
