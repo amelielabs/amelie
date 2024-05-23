@@ -50,12 +50,6 @@ table_open(Table* self)
 	                 &self->config->indexes);
 }
 
-static inline void
-table_recover(Table* self, Uuid* shard)
-{
-	storage_mgr_recover(&self->storage_mgr, shard);
-}
-
 static inline Table*
 table_of(Handle* handle)
 {

@@ -26,11 +26,11 @@ OBJECTS        = \
                  transaction/commit.o \
                  index/ttree.o \
                  index/tree.o \
-                 storage/snapshot.o \
-                 storage/snapshot_cursor.o \
-                 storage/snapshot_mgr.o \
                  storage/storage.o \
                  storage/storage_mgr.o \
+                 storage/snapshot.o \
+                 storage/snapshot_cursor.o \
+                 storage/checkpoint_mgr.o \
                  storage/checkpoint.o \
                  wal/wal.o \
                  wal/wal_cursor.o \
@@ -40,7 +40,6 @@ OBJECTS        = \
                  db/db.o \
                  db/db_catalog.o \
                  db/recover.o \
-                 db/recover_dir.o \
                  db/cascade.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

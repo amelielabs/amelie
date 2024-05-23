@@ -23,6 +23,7 @@ db_init(Db* self)
 	table_mgr_init(&self->table_mgr);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
+	checkpoint_mgr_init(&self->checkpoint_mgr);
 	wal_init(&self->wal);
 }
 
@@ -32,6 +33,7 @@ db_free(Db* self)
 	table_mgr_free(&self->table_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
+	checkpoint_mgr_free(&self->checkpoint_mgr);
 	wal_free(&self->wal);
 }
 
@@ -82,12 +84,9 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	auto cat = catalog_allocate("db", &db_catalog_if, self);
 	catalog_mgr_add(cat_mgr, cat);
 
-	// restore catalogs (schemas, tables, views)
-	catalog_mgr_restore(cat_mgr);
-	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
-
-	// get a list of snapshots
-	recover_dir(self);
+	// read directory and restore last checkpoint catalog
+	// (schemas, tables, views)
+	checkpoint_mgr_open(&self->checkpoint_mgr, cat_mgr);
 }
 
 void

@@ -18,6 +18,64 @@
 #include <sonata_db.h>
 
 hot static void
+recover_storage(Storage* self, Table* table)
+{
+	auto checkpoint = config_checkpoint();
+	log("recover %" PRIu64 ": %.*s.%.*s (storage %" PRIu64 ")",
+	    checkpoint,
+	    str_size(&table->config->schema),
+	    str_of(&table->config->schema),
+	    str_size(&table->config->name),
+	    str_of(&table->config->name),
+	    self->config->id);
+
+	SnapshotCursor cursor;
+	snapshot_cursor_init(&cursor);
+	guard(snapshot_cursor_close, &cursor);
+
+	snapshot_cursor_open(&cursor, checkpoint, self->config->id);
+	uint64_t count = 0;
+	for (;;)
+	{
+		auto buf = snapshot_cursor_next(&cursor);
+		if (! buf)
+			break;
+		guard_buf(buf);
+		auto pos = msg_of(buf)->data;
+		storage_ingest(self, &pos);
+		count++;
+	}
+
+	// set index lsn
+	storage_primary(self)->lsn = checkpoint;
+
+	log("recover %" PRIu64 ": %.*s.%.*s (storage %" PRIu64 ") %" PRIu64 " rows loaded",
+	    checkpoint,
+	    str_size(&table->config->schema),
+	    str_of(&table->config->schema),
+	    str_size(&table->config->name),
+	    str_of(&table->config->name),
+	    self->config->id,
+	    count);
+}
+
+hot void
+recover(Db* self, Uuid* shard)
+{
+	list_foreach(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		list_foreach(&table->storage_mgr.list)
+		{
+			auto storage = list_at(Storage, link);
+			if (! uuid_compare(&storage->config->shard, shard))
+				continue;
+			recover_storage(storage, table);
+		}
+	}
+}
+
+hot static void
 recover_cmd(Db* self, Transaction* trx, uint8_t** meta, uint8_t** data)
 {
 	// [dml, storage]
@@ -169,30 +227,8 @@ recover_log(Db* self, WalWrite* write)
 	}
 }
 
-static void
-recover_wal(Db* self)
-{
-	WalCursor cursor;
-	wal_cursor_init(&cursor);
-	guard(wal_cursor_close, &cursor);
-
-	wal_cursor_open(&cursor, &self->wal, 0);
-	for (uint64_t total = 0;;)
-	{
-		if (! wal_cursor_next(&cursor))
-			break;
-		auto header = wal_cursor_at(&cursor);
-		recover_log(self, header);
-
-		total += header->count;
-		if ((total % 100000) == 0)
-			log("recover: %.1f million records processed",
-			    total / 1000000.0);
-	}
-}
-
 void
-recover(Db* self)
+recover_wal(Db* self)
 {
 	if (! var_int_of(&config()->wal))
 		return;
@@ -200,10 +236,30 @@ recover(Db* self)
 	// prepare wal mgr
 	wal_open(&self->wal);
 
-	// replay logs
-	log("recover: begin wal replay");
+	// start wal recover from the last checkpoint
+	auto checkpoint = config_checkpoint() + 1;
+	log("recover: wal from: %" PRIu64, checkpoint);
 
-	recover_wal(self);
+	WalCursor cursor;
+	wal_cursor_init(&cursor);
+	guard(wal_cursor_close, &cursor);
 
-	log("recover: complete");
+	int64_t total = 0;
+	int64_t total_writes = 0;
+	wal_cursor_open(&cursor, &self->wal, checkpoint);
+	for (;;)
+	{
+		if (! wal_cursor_next(&cursor))
+			break;
+		auto header = wal_cursor_at(&cursor);
+		recover_log(self, header);
+
+		total_writes += header->count;
+		total++;
+		if ((total % 10000) == 0)
+			log("recover: %.1f million records processed",
+			    total_writes / 1000000.0);
+	}
+
+	log("recover: complete (%" PRIu64 " writes)", total_writes);
 }

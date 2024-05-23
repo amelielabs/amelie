@@ -6,4 +6,5 @@
 // SQL Database for JSON.
 //
 
-void recover(Db*);
+void recover(Db*, Uuid*);
+void recover_wal(Db*);
