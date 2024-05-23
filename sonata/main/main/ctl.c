@@ -161,12 +161,7 @@ ctl_alter_user(System* self, Stmt* stmt)
 static void
 ctl_gc(System* self)
 {
-	// delete old snapshots
-	list_foreach(&self->db.table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		storage_mgr_gc(&table->storage_mgr);
-	}
+	checkpoint_mgr_gc(&self->db.checkpoint_mgr);
 }
 
 static void
@@ -178,13 +173,16 @@ ctl_checkpoint(System* self, Stmt* stmt)
 	frontend_mgr_lock(&self->frontend_mgr);
 	bool locked = true;
 
-	// execute checkpoint
+	// prepare checkpoint
 	uint64_t lsn = config_lsn();
-
+	if (lsn == config_checkpoint())
+	{
+		frontend_mgr_unlock(&self->frontend_mgr);
+		return;
+	}
 	int workers = self->shard_mgr.shards_count;
 	if (arg->workers)
 		workers = arg->workers->integer;
-	log("checkpoint %" PRIu64 ": using %d workers", lsn, workers);
 
 	Checkpoint cp;
 	checkpoint_init(&cp);
@@ -192,8 +190,8 @@ ctl_checkpoint(System* self, Stmt* stmt)
 	Exception e;
 	if (enter(&e))
 	{
-		// prepare workers
-		checkpoint_prepare(&cp, workers);
+		// prepare checkpoint
+		checkpoint_begin(&cp, &self->catalog_mgr, lsn, workers);
 
 		// prepare storages
 		list_foreach(&self->db.table_mgr.mgr.list)
@@ -210,25 +208,19 @@ ctl_checkpoint(System* self, Stmt* stmt)
 		locked = false;
 
 		// wait for completion
-		checkpoint_wait(&cp);
+		checkpoint_wait(&cp, &self->db.checkpoint_mgr);
 	}
 
 	if (locked)
 		frontend_mgr_unlock(&self->frontend_mgr);
 
 	checkpoint_free(&cp);
-
 	if (leave(&e))
 	{
 		// rpc by unlock changes code
 		so_self()->error.code = ERROR;
 		rethrow();
 	}
-
-	// dump catalog and update config
-	catalog_mgr_dump(&self->catalog_mgr, lsn);
-
-	log("checkpoint %" PRIu64 ": complete", lsn);
 
 	// run system cleanup
 	ctl_gc(self);

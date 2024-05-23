@@ -88,16 +88,9 @@ shard_recover(Shard* self)
 {
 	// restore storages related to the current shard
 	Exception e;
-	if (enter(&e))
-	{
-		auto db = self->vm.db;
-		list_foreach(&db->table_mgr.mgr.list)
-		{
-			auto table = table_of(list_at(Handle, link));
-			table_recover(table, &self->config->id);
-		}
+	if (enter(&e)) {
+		recover(self->vm.db, &self->config->id);
 	}
-
 	Buf* buf;
 	if (leave(&e)) {
 		buf = msg_error(&so_self()->error);

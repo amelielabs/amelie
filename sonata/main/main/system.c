@@ -116,11 +116,8 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 }
 
 void
-system_recover(System* self, bool bootstrap)
+system_recover(System* self)
 {
-	log("recover: begin");
-	unused(bootstrap);
-
 	// do parallel recover per shard
 	shard_mgr_recover(&self->shard_mgr);
 
@@ -140,14 +137,14 @@ system_recover(System* self, bool bootstrap)
 		error("recovery: failed");
 
 	// replay wals
-	recover(&self->db);
-
-	log("recover: complete");
+	recover_wal(&self->db);
 }
 
 void
 system_start(System* self, bool bootstrap)
 {
+	unused(bootstrap);
+
 	// hello
 	log("");
 	log("sonata.");
@@ -178,7 +175,7 @@ system_start(System* self, bool bootstrap)
 	shard_mgr_start(&self->shard_mgr);
 
 	// recover
-	system_recover(self, bootstrap);
+	system_recover(self);
 
 	// todo: start checkpoint worker
 
