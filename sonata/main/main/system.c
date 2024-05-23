@@ -121,7 +121,7 @@ system_recover(System* self, bool bootstrap)
 	log("recover: begin");
 	unused(bootstrap);
 
-	// do parallel per-shard recover
+	// do parallel recover per shard
 	shard_mgr_recover(&self->shard_mgr);
 
 	// wait for completion

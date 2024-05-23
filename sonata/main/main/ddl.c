@@ -235,11 +235,16 @@ ddl_alter_view(System* self, Transaction* trx, Stmt* stmt)
 void
 system_ddl(System* self, Session* session, Stmt* stmt)
 {
+	(void)session;
+
 	// get exclusive session lock
 	frontend_mgr_lock(&self->frontend_mgr);
 
 	Transaction trx;
 	transaction_init(&trx);
+
+	WalBatch wal_batch;
+	wal_batch_init(&wal_batch);
 
 	Exception e;
 	if (enter(&e))
@@ -284,15 +289,18 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 		// wal write
 		if (! transaction_read_only(&trx))
 		{
-			(void)session;
-			//log_set_add(&session->log_set, &trx.log);
-			//wal_write(&self->db.wal, &session->log_set);
+			uint64_t lsn = config_lsn() + 1;
+			wal_batch_begin(&wal_batch, lsn);
+			wal_batch_add(&wal_batch, &trx.log.log_set);
+			wal_write(&self->db.wal, &wal_batch);
+			config_lsn_set(lsn);
 		}
 
 		// commit
 		transaction_set_lsn(&trx, trx.log.lsn);
 		transaction_commit(&trx);
 		transaction_free(&trx);
+		wal_batch_free(&wal_batch);
 	}
 
 	// unlock sessions
@@ -305,6 +313,8 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 
 		transaction_abort(&trx);
 		transaction_free(&trx);
+
+		wal_batch_free(&wal_batch);
 		rethrow();
 	}
 }
