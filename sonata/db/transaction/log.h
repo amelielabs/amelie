@@ -118,7 +118,7 @@ log_row(Log*      self,
         LogAbort  abort,
         void*     arg,
         bool      persistent,
-        uint64_t  storage,
+        uint64_t  partition,
         Def*      def,
         Row*      row,
         Row*      prev)
@@ -138,8 +138,8 @@ log_row(Log*      self,
 	if (! persistent)
 		return;
 
-	// [cmd, storage, row]
-	log_set_add(&self->log_set, cmd, storage, def, row);
+	// [cmd, partition, row]
+	log_set_add(&self->log_set, cmd, partition, def, row);
 }
 
 static inline void

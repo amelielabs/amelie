@@ -13,7 +13,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 
 void
 checkpoint_mgr_init(CheckpointMgr* self)
@@ -54,7 +54,7 @@ checkpoint_id_of(const char* name, bool* incomplete)
 static void
 checkpoint_mgr_open_dir(CheckpointMgr* self)
 {
-	// read storage directory, get a list of checkpoints
+	// read directory, get a list of checkpoints
 	auto path = config_directory();
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))

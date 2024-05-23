@@ -19,7 +19,7 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/db/def \
                  -I../sonata/db/transaction \
                  -I../sonata/db/index \
-                 -I../sonata/db/storage \
+                 -I../sonata/db/partition \
                  -I../sonata/db/wal \
                  -I../sonata/db/db \
                  -I../sonata/vm \

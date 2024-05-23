@@ -13,7 +13,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 
 void
 snapshot_cursor_init(SnapshotCursor* self)
@@ -23,14 +23,14 @@ snapshot_cursor_init(SnapshotCursor* self)
 }
 
 void
-snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t storage)
+snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t partition)
 {
-	// <base>/<lsn>/<storage>
+	// <base>/<lsn>/<partition>
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%" PRIu64 "/%" PRIu64,
 	         config_directory(),
 	         lsn,
-	         storage);
+	         partition);
 	file_open(&self->file, path);
 }
 

@@ -13,7 +13,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 
 void
 checkpoint_init(Checkpoint* self)
@@ -64,7 +64,7 @@ checkpoint_begin(Checkpoint* self, CatalogMgr* catalog,
 }
 
 static void
-checkpoint_add_storage(Checkpoint* self, Storage* storage)
+checkpoint_add_partition(Checkpoint* self, Part* part)
 {
 	// distribute among workers
 	if (self->rr == self->workers_count)
@@ -72,18 +72,18 @@ checkpoint_add_storage(Checkpoint* self, Storage* storage)
 	int order = self->rr++;
 	auto worker = &self->workers[order];
 
-	list_init(&storage->link_cp);
-	list_append(&worker->list, &storage->link_cp);
+	list_init(&part->link_cp);
+	list_append(&worker->list, &part->link_cp);
 	worker->list_count++;
 }
 
 void
-checkpoint_add(Checkpoint* self, StorageMgr* storage_mgr)
+checkpoint_add(Checkpoint* self, PartMgr* part_mgr)
 {
-	list_foreach(&storage_mgr->list)
+	list_foreach(&part_mgr->list)
 	{
-		auto storage = list_at(Storage, link);
-		checkpoint_add_storage(self, storage);
+		auto part = list_at(Part, link);
+		checkpoint_add_partition(self, part);
 	}
 }
 
@@ -96,12 +96,12 @@ checkpoint_worker_main(Checkpoint* self, CheckpointWorker* worker)
 	Exception e;
 	if (enter(&e))
 	{
-		// create primary index snapshot per storage
+		// create primary index snapshot per partition
 		list_foreach(&worker->list)
 		{
-			auto storage = list_at(Storage, link_cp);
+			auto part = list_at(Part, link_cp);
 			snapshot_reset(&snapshot);
-			snapshot_create(&snapshot, storage, self->lsn);
+			snapshot_create(&snapshot, part, self->lsn);
 		}
 	}
 	snapshot_free(&snapshot);
@@ -199,7 +199,7 @@ checkpoint_run(Checkpoint* self)
 	// create <base>/<lsn>.incomplete/catalog
 	checkpoint_create_catalog(self);
 
-	// run workers to dump storages
+	// run workers
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];

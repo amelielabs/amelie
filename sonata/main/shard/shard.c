@@ -17,7 +17,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
@@ -86,7 +86,7 @@ shard_abort(Shard* self, Trx* last)
 static void
 shard_recover(Shard* self)
 {
-	// restore storages related to the current shard
+	// restore partitions related to the current shard
 	Exception e;
 	if (enter(&e)) {
 		recover(self->vm.db, &self->config->id);

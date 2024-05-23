@@ -4,8 +4,8 @@ connect E0 S0 localhost:3485
 create table test (id int primary key, data int default 0) reference
 select *.name, *.reference from system.tables()
 [["test", true]]
-# test: reference has single storage
-select sizeof(storages) = 1 from system.tables()
+# test: reference has single partition
+select sizeof(partitions) = 1 from system.tables()
 [true]
 drop table test
 # test: table create
@@ -13,7 +13,7 @@ create table test (id int primary key, data int default 0)
 select *.name, *.reference from system.tables()
 [["test", false]]
 # test: table partitions created on each shard
-select sizeof(storages) = 3 from system.tables()
+select sizeof(partitions) = 3 from system.tables()
 [true]
 drop table test
 disconnect S0

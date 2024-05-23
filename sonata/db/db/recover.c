@@ -13,15 +13,15 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 
 hot static void
-recover_storage(Storage* self, Table* table)
+recover_partition(Part* self, Table* table)
 {
 	auto checkpoint = config_checkpoint();
-	log("recover %" PRIu64 ": %.*s.%.*s (storage %" PRIu64 ")",
+	log("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ")",
 	    checkpoint,
 	    str_size(&table->config->schema),
 	    str_of(&table->config->schema),
@@ -42,14 +42,14 @@ recover_storage(Storage* self, Table* table)
 			break;
 		guard_buf(buf);
 		auto pos = msg_of(buf)->data;
-		storage_ingest(self, &pos);
+		part_ingest(self, &pos);
 		count++;
 	}
 
 	// set index lsn
-	storage_primary(self)->lsn = checkpoint;
+	part_primary(self)->lsn = checkpoint;
 
-	log("recover %" PRIu64 ": %.*s.%.*s (storage %" PRIu64 ") %" PRIu64 " rows loaded",
+	log("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ") %" PRIu64 " rows loaded",
 	    checkpoint,
 	    str_size(&table->config->schema),
 	    str_of(&table->config->schema),
@@ -65,12 +65,12 @@ recover(Db* self, Uuid* shard)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		list_foreach(&table->storage_mgr.list)
+		list_foreach(&table->part_mgr.list)
 		{
-			auto storage = list_at(Storage, link);
-			if (! uuid_compare(&storage->config->shard, shard))
+			auto part = list_at(Part, link);
+			if (! uuid_compare(&part->config->shard, shard))
 				continue;
-			recover_storage(storage, table);
+			recover_partition(part, table);
 		}
 	}
 }
@@ -78,7 +78,7 @@ recover(Db* self, Uuid* shard)
 hot static void
 recover_cmd(Db* self, Transaction* trx, uint8_t** meta, uint8_t** data)
 {
-	// [dml, storage]
+	// [dml, partition]
 	// [ddl]
 
 	// type
@@ -88,21 +88,21 @@ recover_cmd(Db* self, Transaction* trx, uint8_t** meta, uint8_t** data)
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
-		int64_t storage_id;
-		data_read_integer(meta, &storage_id);
+		int64_t partition_id;
+		data_read_integer(meta, &partition_id);
 
-		// find storage by id
-		auto storage = table_mgr_find_storage(&self->table_mgr, storage_id);
-		if (! storage)
-			error("");
+		// find partition by id
+		auto part = table_mgr_find_partition(&self->table_mgr, partition_id);
+		if (! part)
+			error("failed to find partition %" PRIu64, partition_id);
 
 		// todo: serial recover
 
 		// replay write
 		if (type == LOG_REPLACE)
-			storage_set(storage, trx, false, data);
+			part_set(part, trx, false, data);
 		else
-			storage_delete_by(storage, trx, data);
+			part_delete_by(part, trx, data);
 		return;
 	}
 

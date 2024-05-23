@@ -22,5 +22,4 @@ void   table_mgr_rename(TableMgr*, Transaction*, Str*, Str*, Str*, Str*, bool);
 void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
 Buf*   table_mgr_list(TableMgr*);
-Storage*
-table_mgr_find_storage(TableMgr*, uint64_t);
+Part*  table_mgr_find_partition(TableMgr*, uint64_t);

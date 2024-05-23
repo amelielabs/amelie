@@ -39,11 +39,11 @@ log_set_reset(LogSet* self)
 }
 
 hot static inline void
-log_set_add(LogSet* self, int cmd, uint64_t storage, Def* def, Row* row)
+log_set_add(LogSet* self, int cmd, uint64_t partition, Def* def, Row* row)
 {
-	// [cmd, storage]
+	// [cmd, partition]
 	encode_integer(&self->meta, cmd);
-	encode_integer(&self->meta, storage);
+	encode_integer(&self->meta, partition);
 
 	// row
 	iov_add(&self->iov, row_data(row, def), row_data_size(row, def));

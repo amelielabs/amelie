@@ -25,18 +25,18 @@ struct Index
 {
 	IndexIf      iface;
 	uint64_t     lsn;
-	uint64_t     storage;
+	uint64_t     partition;
 	IndexConfig* config;
 	List         link;
 };
 
 static inline void
-index_init(Index* self, IndexConfig* config, uint64_t storage)
+index_init(Index* self, IndexConfig* config, uint64_t partition)
 {
 	memset(&self->iface, 0, sizeof(*self));
-	self->lsn     = 0;
-	self->storage = storage;
-	self->config  = config;
+	self->lsn       = 0;
+	self->partition = partition;
+	self->config    = config;
 	list_init(&self->link);
 }
 

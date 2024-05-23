@@ -53,7 +53,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->storage,
+	        arg->partition,
 	        &self->index.config->def,
 	        row, prev);
 
@@ -79,7 +79,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->storage,
+	        arg->partition,
 	        &self->index.config->def,
 	        row, prev);
 }
@@ -110,7 +110,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	        tree_delete_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->storage,
+	        arg->partition,
 	        &self->index.config->def,
 	        prev, prev);
 }
@@ -137,7 +137,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	        tree_delete_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->storage,
+	        arg->partition,
 	        &self->index.config->def,
 	        key, prev);
 }
@@ -167,7 +167,7 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	        tree_set_abort,
 	        self,
 	        self->index.config->primary,
-	        arg->storage,
+	        arg->partition,
 	        &self->index.config->def,
 	        row, NULL);
 
@@ -201,11 +201,11 @@ tree_free(Index* arg)
 }
 
 Index*
-tree_allocate(IndexConfig* config, uint64_t storage)
+tree_allocate(IndexConfig* config, uint64_t partition)
 {
 	Tree* self = so_malloc(sizeof(*self));
 	ttree_init(&self->tree, 512, 256, &config->def);
-	index_init(&self->index, config, storage);
+	index_init(&self->index, config, partition);
 
 	auto iface = &self->index.iface;
 	iface->set       = tree_set;

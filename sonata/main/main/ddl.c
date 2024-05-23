@@ -17,7 +17,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
@@ -57,15 +57,15 @@ ddl_alter_schema(System* self, Transaction* trx, Stmt* stmt)
 }
 
 static inline void
-ddl_create_storage(TableConfig* table_config, Shard* shard)
+ddl_create_partition(TableConfig* table_config, Shard* shard)
 {
-	// create storage config
-	auto config = storage_config_allocate();
+	// create partition config
+	auto config = part_config_allocate();
 	auto ssn = config_ssn_next();
-	storage_config_set_id(config, ssn);
-	storage_config_set_shard(config, &shard->config->id);
-	storage_config_set_range(config, shard->config->min, shard->config->max);
-	table_config_add_storage(table_config, config);
+	part_config_set_id(config, ssn);
+	part_config_set_shard(config, &shard->config->id);
+	part_config_set_range(config, shard->config->min, shard->config->max);
+	table_config_add_partition(table_config, config);
 }
 
 static void
@@ -90,19 +90,19 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		      str_size(&config->name),
 		      str_of(&config->name));
 
-	// reference table require only one storage
+	// reference table require only one partition
 	auto shard_mgr = &self->shard_mgr;
 	if (config->reference)
 	{
 		auto shard = shard_mgr->shards[0];
-		ddl_create_storage(config, shard);
+		ddl_create_partition(config, shard);
 	} else
 	{
-		// create storage config for each shard
+		// create partition config for each shard
 		for (int i = 0; i < shard_mgr->shards_count; i++)
 		{
 			auto shard = shard_mgr->shards[i];
-			ddl_create_storage(config, shard);
+			ddl_create_partition(config, shard);
 		}
 	}
 

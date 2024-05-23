@@ -17,7 +17,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
@@ -40,11 +40,11 @@ ccursor_open(Vm* self, Op* op)
 	data_read_string(&pos, &name_table);
 	data_read_string(&pos, &name_index);
 
-	// find table, storage and index
-	auto table   = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto storage = storage_mgr_match(&table->storage_mgr, self->shard);
-	auto index   = storage_find(storage, &name_index, true);
-	auto def     = index_def(index);
+	// find table, partition and index
+	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+	auto part  = part_mgr_match(&table->part_mgr, self->shard);
+	auto index = part_find(part, &name_index, true);
+	auto def   = index_def(index);
 
 	// create cursor key
 	auto key = value_row_key(def, &self->stack);
@@ -52,11 +52,11 @@ ccursor_open(Vm* self, Op* op)
 	stack_popn(&self->stack, def->key_count);
 
 	// open cursor
-	cursor->type    = CURSOR_TABLE;
-	cursor->table   = table;
-	cursor->def     = def;
-	cursor->storage = storage;
-	cursor->it      = index_open(index, key, true);
+	cursor->type  = CURSOR_TABLE;
+	cursor->table = table;
+	cursor->def   = def;
+	cursor->part  = part;
+	cursor->it    = index_open(index, key, true);
 
 	// jmp if has data
 	if (iterator_has(cursor->it))
@@ -158,15 +158,15 @@ ccursor_prepare(Vm* self, Op* op)
 	// [target_id, table*]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
-	// find storage
+	// find partition
 	Table* table = (Table*)op->b;
 
 	// prepare cursor
-	cursor->type    = CURSOR_TABLE;
-	cursor->table   = table;
-	cursor->def     = table_def(table);
-	cursor->storage = storage_mgr_match(&table->storage_mgr, self->shard);
-	cursor->it      = NULL;
+	cursor->type  = CURSOR_TABLE;
+	cursor->table = table;
+	cursor->def   = table_def(table);
+	cursor->part  = part_mgr_match(&table->part_mgr, self->shard);
+	cursor->it    = NULL;
 }
 
 hot void
@@ -411,10 +411,10 @@ cinsert(Vm* self, Op* op)
 {
 	// [table_ptr, unique]
 	
-	// find storage
-	auto table   = (Table*)op->a;
-	auto storage = storage_mgr_match(&table->storage_mgr, self->shard);
-	auto unique  = op->b;
+	// find partition
+	auto table  = (Table*)op->a;
+	auto part   = part_mgr_match(&table->part_mgr, self->shard);
+	auto unique = op->b;
 
 	// insert or replace
 	auto list       = buf_u32(self->code_arg);
@@ -424,7 +424,7 @@ cinsert(Vm* self, Op* op)
 		uint8_t* pos = code_data_at(self->code_data, list[i]);
 		if (unlikely(! data_is_array(pos)))
 			error("INSERT/REPLACE: array expected");
-		storage_set(storage, self->trx, unique, &pos);
+		part_set(part, self->trx, unique, &pos);
 	}
 }
 
@@ -432,10 +432,10 @@ hot void
 cupdate(Vm* self, Op* op)
 {
 	// [cursor]
-	auto trx     = self->trx;
-	auto cursor  = cursor_mgr_of(&self->cursor_mgr, op->a);
-	auto storage = cursor->storage;
-	auto it      = cursor->it;
+	auto trx    = self->trx;
+	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	auto part   = cursor->part;
+	auto it     = cursor->it;
 
 	// update by cursor
 	uint8_t* pos;
@@ -446,7 +446,7 @@ cupdate(Vm* self, Op* op)
 			error("UPDATE: array, map or data set expected");
 
 		pos = value->data;
-		storage_update(storage, trx, it, &pos);
+		part_update(part, trx, it, &pos);
 
 	} else
 	if (value->type == VALUE_SET)
@@ -468,7 +468,7 @@ cupdate(Vm* self, Op* op)
 				value_write(ref, buf);
 				pos = buf->start;
 			}
-			storage_update(storage, trx, it, &pos);
+			part_update(part, trx, it, &pos);
 		}
 	} else
 	{
@@ -483,7 +483,7 @@ cdelete(Vm* self, Op* op)
 {
 	// delete by cursor
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	storage_delete(cursor->storage, self->trx, cursor->it);
+	part_delete(cursor->part, self->trx, cursor->it);
 }
 
 hot Op*
@@ -516,7 +516,7 @@ cupsert(Vm* self, Op* op)
 		cursor->ref_pos++;
 
 		// do insert or return iterator
-		storage_upsert(cursor->storage, self->trx, &cursor->it, &pos);
+		part_upsert(cursor->part, self->trx, &cursor->it, &pos);
 
 		// upsert
 		if (cursor->it)

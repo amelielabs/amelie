@@ -23,10 +23,10 @@ enum
 struct Cursor
 {
 	int           type;
-	// storage
+	// partition
 	Table*        table;
 	Def*          def;
-	Storage*      storage;
+	Part*         part;
 	Iterator*     it;
 	// ref
 	int           ref_pos;
@@ -62,7 +62,7 @@ cursor_init(Cursor* self)
 	self->type      = CURSOR_NONE;
 	self->table     = NULL;
 	self->def       = NULL;
-	self->storage   = NULL;
+	self->part      = NULL;
 	self->it        = NULL;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
@@ -87,7 +87,7 @@ cursor_reset(Cursor* self)
 	self->type      = CURSOR_NONE;
 	self->table     = NULL;
 	self->def       = NULL;
-	self->storage   = NULL;
+	self->part      = NULL;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
 	self->ref       = NULL;

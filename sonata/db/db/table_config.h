@@ -15,8 +15,8 @@ struct TableConfig
 	bool reference;
 	List indexes;
 	int  indexes_count;
-	List storages;
-	int  storages_count;
+	List partitions;
+	int  partitions_count;
 };
 
 static inline TableConfig*
@@ -24,13 +24,13 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = so_malloc(sizeof(TableConfig));
-	self->reference      = false;
-	self->indexes_count  = 0;
-	self->storages_count = 0;
+	self->reference        = false;
+	self->indexes_count    = 0;
+	self->partitions_count = 0;
 	str_init(&self->schema);
 	str_init(&self->name);
 	list_init(&self->indexes);
-	list_init(&self->storages);
+	list_init(&self->partitions);
 	return self;
 }
 
@@ -46,10 +46,10 @@ table_config_free(TableConfig* self)
 		index_config_free(config);
 	}
 
-	list_foreach_safe(&self->storages)
+	list_foreach_safe(&self->partitions)
 	{
-		auto config = list_at(StorageConfig, link);
-		storage_config_free(config);
+		auto config = list_at(PartConfig, link);
+		part_config_free(config);
 	}
 
 	so_free(self);
@@ -76,10 +76,10 @@ table_config_set_reference(TableConfig* self, bool reference)
 }
 
 static inline void
-table_config_add_storage(TableConfig* self, StorageConfig* config)
+table_config_add_partition(TableConfig* self, PartConfig* config)
 {
-	list_append(&self->storages, &config->link);
-	self->storages_count++;
+	list_append(&self->partitions, &config->link);
+	self->partitions_count++;
 }
 
 static inline void
@@ -103,11 +103,11 @@ table_config_copy(TableConfig* self)
 		auto config_copy = index_config_copy(config);
 		table_config_add_index(copy, config_copy);
 	}
-	list_foreach(&self->storages)
+	list_foreach(&self->partitions)
 	{
-		auto config = list_at(StorageConfig, link);
-		auto config_copy = storage_config_copy(config);
-		table_config_add_storage(copy, config_copy);
+		auto config = list_at(PartConfig, link);
+		auto config_copy = part_config_copy(config);
+		table_config_add_partition(copy, config_copy);
 	}
 	return unguard();
 }
@@ -118,16 +118,16 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	guard(table_config_free, self);
 
-	uint8_t* pos_indexes  = NULL;
-	uint8_t* pos_storages = NULL;
+	uint8_t* pos_indexes    = NULL;
+	uint8_t* pos_partitions = NULL;
 	Decode map[] =
 	{
-		{ DECODE_STRING, "schema",    &self->schema    },
-		{ DECODE_STRING, "name",      &self->name      },
-		{ DECODE_BOOL,   "reference", &self->reference },
-		{ DECODE_ARRAY,  "indexes",   &pos_indexes     },
-		{ DECODE_ARRAY,  "storages",  &pos_storages    },
-		{ 0,              NULL,       NULL             },
+		{ DECODE_STRING, "schema",     &self->schema    },
+		{ DECODE_STRING, "name",       &self->name      },
+		{ DECODE_BOOL,   "reference",  &self->reference },
+		{ DECODE_ARRAY,  "indexes",    &pos_indexes     },
+		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
+		{ 0,              NULL,        NULL             },
 	};
 	decode_map(map, pos);
 
@@ -140,12 +140,12 @@ table_config_read(uint8_t** pos)
 		table_config_add_index(self, config);
 	}
 
-	// storages
-	data_read_array(&pos_storages, &count);
+	// partitions
+	data_read_array(&pos_partitions, &count);
 	while (count-- > 0)
 	{
-		auto config = storage_config_read(&pos_storages);
-		table_config_add_storage(self, config);
+		auto config = part_config_read(&pos_partitions);
+		table_config_add_partition(self, config);
 	}
 
 	return unguard();
@@ -178,12 +178,12 @@ table_config_write(TableConfig* self, Buf* buf)
 		index_config_write(config, buf);
 	}
 
-	// storages
-	encode_raw(buf, "storages", 8);
-	encode_array(buf, self->storages_count);
-	list_foreach(&self->storages)
+	// partitions
+	encode_raw(buf, "partitions", 10);
+	encode_array(buf, self->partitions_count);
+	list_foreach(&self->partitions)
 	{
-		auto config = list_at(StorageConfig, link);
-		storage_config_write(config, buf);
+		auto config = list_at(PartConfig, link);
+		part_config_write(config, buf);
 	}
 }

@@ -13,7 +13,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 
@@ -59,7 +59,7 @@ table_mgr_create(TableMgr*    self,
 	unguard();
 	unguard();
 
-	// prepare storage manager
+	// prepare partition manager
 	table_open(table);
 }
 
@@ -185,15 +185,15 @@ table_mgr_list(TableMgr* self)
 	return buf_end(buf);
 }
 
-Storage*
-table_mgr_find_storage(TableMgr* self, uint64_t id)
+Part*
+table_mgr_find_partition(TableMgr* self, uint64_t id)
 {
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		auto storage = storage_mgr_find(&table->storage_mgr, id);
-		if (storage)
-			return storage;
+		auto part  = part_mgr_find(&table->part_mgr, id);
+		if (part)
+			return part;
 	}
 	return NULL;
 }

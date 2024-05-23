@@ -15,7 +15,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Idef \
                  -Itransaction \
                  -Iindex \
-                 -Istorage \
+                 -Ipartition \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
@@ -26,12 +26,12 @@ OBJECTS        = \
                  transaction/commit.o \
                  index/ttree.o \
                  index/tree.o \
-                 storage/storage.o \
-                 storage/storage_mgr.o \
-                 storage/snapshot.o \
-                 storage/snapshot_cursor.o \
-                 storage/checkpoint_mgr.o \
-                 storage/checkpoint.o \
+                 partition/part.o \
+                 partition/part_mgr.o \
+                 partition/snapshot.o \
+                 partition/snapshot_cursor.o \
+                 partition/checkpoint_mgr.o \
+                 partition/checkpoint.o \
                  wal/wal.o \
                  wal/wal_cursor.o \
                  db/schema_mgr.o \

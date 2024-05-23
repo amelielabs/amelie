@@ -20,7 +20,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/def \
                  -I../db/transaction \
                  -I../db/index \
-                 -I../db/storage \
+                 -I../db/partition \
                  -I../db/wal \
                  -I../db/db \
                  -I. \

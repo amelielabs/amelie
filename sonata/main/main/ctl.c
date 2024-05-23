@@ -17,7 +17,7 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 #include <sonata_wal.h>
 #include <sonata_db.h>
 #include <sonata_value.h>
@@ -193,11 +193,11 @@ ctl_checkpoint(System* self, Stmt* stmt)
 		// prepare checkpoint
 		checkpoint_begin(&cp, &self->catalog_mgr, lsn, workers);
 
-		// prepare storages
+		// prepare partitions
 		list_foreach(&self->db.table_mgr.mgr.list)
 		{
 			auto table = table_of(list_at(Handle, link));
-			checkpoint_add(&cp, &table->storage_mgr);
+			checkpoint_add(&cp, &table->part_mgr);
 		}
 
 		// run workers and create snapshots

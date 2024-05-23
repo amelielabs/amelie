@@ -6,9 +6,9 @@
 // SQL Database for JSON.
 //
 
-typedef struct StorageConfig StorageConfig;
+typedef struct PartConfig PartConfig;
 
-struct StorageConfig
+struct PartConfig
 {
 	int64_t id;
 	Uuid    shard;
@@ -17,11 +17,11 @@ struct StorageConfig
 	List    link;
 };
 
-static inline StorageConfig*
-storage_config_allocate(void)
+static inline PartConfig*
+part_config_allocate(void)
 {
-	StorageConfig* self;
-	self = so_malloc(sizeof(StorageConfig));
+	PartConfig* self;
+	self = so_malloc(sizeof(PartConfig));
 	self->id        = 0;
 	self->shard_min = 0;
 	self->shard_max = 0;
@@ -31,46 +31,46 @@ storage_config_allocate(void)
 }
 
 static inline void
-storage_config_free(StorageConfig* self)
+part_config_free(PartConfig* self)
 {
 	so_free(self);
 }
 
 static inline void
-storage_config_set_id(StorageConfig* self, uint64_t id)
+part_config_set_id(PartConfig* self, uint64_t id)
 {
 	self->id = id;
 }
 
 static inline void
-storage_config_set_shard(StorageConfig* self, Uuid* id)
+part_config_set_shard(PartConfig* self, Uuid* id)
 {
 	self->shard = *id;
 }
 
 static inline void
-storage_config_set_range(StorageConfig* self, int min, int max)
+part_config_set_range(PartConfig* self, int min, int max)
 {
 	self->shard_min = min;
 	self->shard_max = max;
 }
 
-static inline StorageConfig*
-storage_config_copy(StorageConfig* self)
+static inline PartConfig*
+part_config_copy(PartConfig* self)
 {
-	auto copy = storage_config_allocate();
-	guard(storage_config_free, copy);
-	storage_config_set_id(copy, self->id);
-	storage_config_set_shard(copy, &self->shard);
-	storage_config_set_range(copy, self->shard_min, self->shard_max);
+	auto copy = part_config_allocate();
+	guard(part_config_free, copy);
+	part_config_set_id(copy, self->id);
+	part_config_set_shard(copy, &self->shard);
+	part_config_set_range(copy, self->shard_min, self->shard_max);
 	return unguard();
 }
 
-static inline StorageConfig*
-storage_config_read(uint8_t** pos)
+static inline PartConfig*
+part_config_read(uint8_t** pos)
 {
-	auto self = storage_config_allocate();
-	guard(storage_config_free, self);
+	auto self = part_config_allocate();
+	guard(part_config_free, self);
 	Decode map[] =
 	{
 		{ DECODE_INT,  "id",        &self->id        },
@@ -84,7 +84,7 @@ storage_config_read(uint8_t** pos)
 }
 
 static inline void
-storage_config_write(StorageConfig* self, Buf* buf)
+part_config_write(PartConfig* self, Buf* buf)
 {
 	// map
 	encode_map(buf, 4);

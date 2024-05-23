@@ -13,14 +13,14 @@
 #include <sonata_def.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
-#include <sonata_storage.h>
+#include <sonata_partition.h>
 
 void
 snapshot_init(Snapshot* self)
 {
 	self->count       = 0;
 	self->count_batch = 10000;
-	self->storage     = 0;
+	self->partition   = 0;
 	self->lsn         = 0;
 	file_init(&self->file);
 	iov_init(&self->iov);
@@ -37,9 +37,9 @@ snapshot_free(Snapshot* self)
 void
 snapshot_reset(Snapshot* self)
 {
-	self->count   = 0;
-	self->storage = 0;
-	self->lsn     = 0;
+	self->count     = 0;
+	self->partition = 0;
+	self->lsn       = 0;
 	file_init(&self->file);
 	iov_reset(&self->iov);
 	buf_reset(&self->data);
@@ -48,13 +48,13 @@ snapshot_reset(Snapshot* self)
 static void
 snapshot_begin(Snapshot* self)
 {
-	// <base>/<lsn>.incomplete/<storage_id>
+	// <base>/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
 	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
 	         config_directory(),
 	         self->lsn,
-	         self->storage);
+	         self->partition);
 
 	log("snapshot: %s begin", path);
 
@@ -77,7 +77,7 @@ snapshot_end(Snapshot* self)
 	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
 	         config_directory(),
 	         self->lsn,
-	         self->storage);
+	         self->partition);
 
 	double size = self->file.size / 1024 / 1024;
 	log("snapshot: %s complete (%.2f MiB)", path, size);
@@ -132,17 +132,17 @@ snapshot_main(Snapshot* self, Index* index)
 }
 
 hot void
-snapshot_create(Snapshot* self, Storage* storage, uint64_t lsn)
+snapshot_create(Snapshot* self, Part* part, uint64_t lsn)
 {
-	self->storage = storage->config->id;
-	self->lsn     = lsn;
+	self->partition = part->config->id;
+	self->lsn       = lsn;
 
 	Exception e;
 	if (enter(&e))
 	{
-		// create <base>/<lsn>.incomplete/<storage_id>
+		// create <base>/<lsn>.incomplete/<partition_id>
 		snapshot_begin(self);
-		snapshot_main(self, storage_primary(storage));
+		snapshot_main(self, part_primary(part));
 		snapshot_end(self);
 	}
 	if (leave(&e))
