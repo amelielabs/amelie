@@ -111,7 +111,7 @@ checkpoint_mgr_open_catalog(CatalogMgr* catalog_mgr)
 
 	// restore system objects
 	uint8_t* pos = json.buf.start;
-	catalog_mgr_restore(catalog_mgr, &pos, checkpoint);
+	catalog_mgr_restore(catalog_mgr, &pos);
 }
 
 void

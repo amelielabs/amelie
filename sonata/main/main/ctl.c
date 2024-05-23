@@ -162,6 +162,8 @@ static void
 ctl_gc(System* self)
 {
 	checkpoint_mgr_gc(&self->db.checkpoint_mgr);
+
+	wal_gc(&self->db.wal, config_checkpoint());
 }
 
 static void

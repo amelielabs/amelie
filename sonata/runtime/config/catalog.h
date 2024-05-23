@@ -12,7 +12,7 @@ typedef struct Catalog   Catalog;
 struct CatalogIf
 {
 	void (*dump)(Catalog*, Buf*);
-	void (*restore)(Catalog*, uint64_t, uint8_t**);
+	void (*restore)(Catalog*, uint8_t**);
 };
 
 struct Catalog

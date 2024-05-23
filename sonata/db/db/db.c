@@ -49,7 +49,6 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 	{
 		// begin
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		// create system schema
 		Str name;

@@ -168,9 +168,15 @@ executor_wal_write(Executor* self)
 	list_foreach(&self->group.list)
 	{
 		auto plan = list_at(Plan, link_group);
+		if (! wal_enabled)
+		{
+			config_lsn_next();
+			continue;
+		}
 
 		// get next lsn
 		uint64_t lsn = config_lsn() + 1;
+
 		wal_batch_reset(wal_batch);
 		wal_batch_begin(wal_batch, lsn);
 
@@ -180,14 +186,11 @@ executor_wal_write(Executor* self)
 			auto trx = dispatch_get(&plan->dispatch, i);
 			if (trx == NULL)
 				continue;
-			transaction_set_lsn(&trx->trx, lsn);
-			if (! wal_enabled)
-				continue;
 			wal_batch_add(wal_batch, &trx->trx.log.log_set);
 		}
 
 		// wal write
-		if (wal_enabled && wal_batch->header.count > 0)
+		if (wal_batch->header.count > 0)
 		{
 			auto rotate_ready = wal_write(wal, wal_batch);
 			if (rotate_ready)

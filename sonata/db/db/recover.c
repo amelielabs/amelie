@@ -46,9 +46,6 @@ recover_partition(Part* self, Table* table)
 		count++;
 	}
 
-	// set index lsn
-	part_primary(self)->lsn = checkpoint;
-
 	log("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ") %" PRIu64 " rows loaded",
 	    checkpoint,
 	    str_size(&table->config->schema),
@@ -200,7 +197,6 @@ recover_log(Db* self, WalWrite* write)
 	{
 		// begin
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		// replay transaction log
 
@@ -213,7 +209,6 @@ recover_log(Db* self, WalWrite* write)
 		// todo: wal write
 
 		// commit
-		transaction_set_lsn(&trx, write->lsn);
 		transaction_commit(&trx);
 
 		config_lsn_follow(write->lsn);

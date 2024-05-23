@@ -60,7 +60,7 @@ catalog_mgr_find(CatalogMgr* self, Str* name)
 }
 
 void
-catalog_mgr_restore(CatalogMgr* self, uint8_t** pos, uint64_t lsn)
+catalog_mgr_restore(CatalogMgr* self, uint8_t** pos)
 {
 	int count;
 	data_read_map(pos, &count);
@@ -73,6 +73,6 @@ catalog_mgr_restore(CatalogMgr* self, uint8_t** pos, uint64_t lsn)
 		if (unlikely(cat == NULL))
 			error("catalog: <%.*s> not found", str_size(&name),
 			      str_of(&name));
-		cat->iface->restore(cat, lsn, pos);
+		cat->iface->restore(cat, pos);
 	}
 }

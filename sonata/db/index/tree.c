@@ -15,11 +15,8 @@
 #include <sonata_index.h>
 
 static void
-tree_commit(LogOp* op, uint64_t lsn)
+tree_commit(LogOp* op)
 {
-	auto self = (Tree*)op->arg;
-	self->index.lsn = lsn;
-
 	// free row or add row to the free list
 	if (op->row.prev)
 		row_free(op->row.prev);

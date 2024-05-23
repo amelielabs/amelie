@@ -34,7 +34,7 @@ typedef enum
 	LOG_VIEW_RENAME
 } LogCmd;
 
-typedef void (*LogCommit)(LogOp*, uint64_t);
+typedef void (*LogCommit)(LogOp*);
 typedef void (*LogAbort)(LogOp*);
 
 struct LogOp

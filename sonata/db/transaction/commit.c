@@ -18,11 +18,9 @@ transaction_begin(Transaction* self)
 {
 	if (unlikely(transaction_active(self)))
 		error("transaction is active");
-	self->lsn         = 0;
-	self->active      = true;
-	self->aborted     = false;
-	self->auto_commit = false;
-	self->arg         = NULL;
+	self->active  = true;
+	self->aborted = false;
+	self->arg     = NULL;
 }
 
 static inline void
@@ -32,9 +30,8 @@ transaction_end(Transaction* self, bool aborted)
 	log_reset(&self->log);
 
 	// done
-	self->active      = false;
-	self->aborted     = aborted;
-	self->auto_commit = false;
+	self->active  = false;
+	self->aborted = aborted;
 }
 
 hot void
@@ -47,7 +44,7 @@ transaction_commit(Transaction* self)
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);
-		op->commit(op, self->lsn);
+		op->commit(op);
 	}
 
 	transaction_end(self, false);

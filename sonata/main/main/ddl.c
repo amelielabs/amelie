@@ -251,7 +251,6 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 	{
 		// begin
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		switch (stmt->id) {
 		case STMT_CREATE_SCHEMA:
@@ -297,7 +296,6 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 		}
 
 		// commit
-		transaction_set_lsn(&trx, trx.log.lsn);
 		transaction_commit(&trx);
 		transaction_free(&trx);
 		wal_batch_free(&wal_batch);

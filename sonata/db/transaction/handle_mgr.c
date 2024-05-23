@@ -63,10 +63,8 @@ handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 }
 
 static void
-handle_mgr_create_commit(LogOp* op, uint64_t lsn)
+handle_mgr_create_commit(LogOp* op)
 {
-	Handle* handle = op->handle.handle;
-	handle->lsn = lsn;
 	buf_free(op->handle.data);
 }
 
@@ -99,9 +97,8 @@ handle_mgr_create(HandleMgr*   self,
 }
 
 static void
-handle_mgr_drop_commit(LogOp* op, uint64_t lsn)
+handle_mgr_drop_commit(LogOp* op)
 {
-	unused(lsn);
 	Handle* handle = op->handle.handle;
 	handle_free(handle);
 	buf_free(op->handle.data);

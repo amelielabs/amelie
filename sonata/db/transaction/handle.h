@@ -14,7 +14,6 @@ struct Handle
 {
 	Str*       schema;
 	Str*       name;
-	uint64_t   lsn;
 	HandleFree free_function;
 	List       link;
 };
@@ -24,7 +23,6 @@ handle_init(Handle* self)
 {
 	self->schema        = NULL;
 	self->name          = NULL;
-	self->lsn           = 0;
 	self->free_function = NULL;
 	list_init(&self->link);
 }

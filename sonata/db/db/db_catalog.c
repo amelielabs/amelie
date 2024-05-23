@@ -32,7 +32,7 @@ db_catalog_dump(Catalog* cat, Buf* buf)
 }
 
 static void
-db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
+db_catalog_restore_schema(Db* self, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
@@ -43,7 +43,6 @@ db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 	{
 		// start transaction
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		// read schema config
 		auto config = schema_config_read(pos);
@@ -59,13 +58,12 @@ db_catalog_restore_schema(Db* self, uint64_t lsn, uint8_t** pos)
 		rethrow();
 	}
 
-	// set lsn and commit
-	transaction_set_lsn(&trx, lsn);
+	// commit
 	transaction_commit(&trx);
 }
 
 static void
-db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
+db_catalog_restore_table(Db* self, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
@@ -76,7 +74,6 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 	{
 		// start transaction
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		// read table config
 		auto config = table_config_read(pos);
@@ -92,13 +89,12 @@ db_catalog_restore_table(Db* self, uint64_t lsn, uint8_t** pos)
 		rethrow();
 	}
 
-	// set lsn and commit
-	transaction_set_lsn(&trx, lsn);
+	// commit
 	transaction_commit(&trx);
 }
 
 static void
-db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
+db_catalog_restore_view(Db* self, uint8_t** pos)
 {
 	Transaction trx;
 	transaction_init(&trx);
@@ -109,7 +105,6 @@ db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 	{
 		// start transaction
 		transaction_begin(&trx);
-		transaction_set_auto_commit(&trx);
 
 		// read view config
 		auto config = view_config_read(pos);
@@ -125,13 +120,12 @@ db_catalog_restore_view(Db* self, uint64_t lsn, uint8_t** pos)
 		rethrow();
 	}
 
-	// set lsn and commit
-	transaction_set_lsn(&trx, lsn);
+	// commit
 	transaction_commit(&trx);
 }
 
 static void
-db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
+db_catalog_restore(Catalog* cat, uint8_t** pos)
 {
 	// { schemas, tables, views }
 	Db* self = cat->iface_arg;
@@ -153,17 +147,17 @@ db_catalog_restore(Catalog* cat, uint64_t lsn, uint8_t** pos)
 	data_read_array(&pos_schemas, &count);
 	int i = 0;
 	for (; i < count; i++)
-		db_catalog_restore_schema(self, lsn, &pos_schemas);
+		db_catalog_restore_schema(self, &pos_schemas);
 
 	// tables
 	data_read_array(&pos_tables, &count);
 	for (i = 0; i < count; i++)
-		db_catalog_restore_table(self, lsn, &pos_tables);
+		db_catalog_restore_table(self, &pos_tables);
 
 	// views
 	data_read_array(&pos_views, &count);
 	for (i = 0; i < count; i++)
-		db_catalog_restore_view(self, lsn, &pos_views);
+		db_catalog_restore_view(self, &pos_views);
 }
 
 CatalogIf db_catalog_if =
