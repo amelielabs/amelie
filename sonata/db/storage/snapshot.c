@@ -20,7 +20,8 @@ snapshot_init(Snapshot* self)
 {
 	self->count       = 0;
 	self->count_batch = 10000;
-	self->id          = NULL;
+	self->storage     = 0;
+	self->lsn         = 0;
 	file_init(&self->file);
 	iov_init(&self->iov);
 	buf_init(&self->data);
@@ -36,27 +37,26 @@ snapshot_free(Snapshot* self)
 void
 snapshot_reset(Snapshot* self)
 {
-	self->count = 0;
-	self->id    = NULL;
+	self->count   = 0;
+	self->storage = 0;
+	self->lsn     = 0;
 	file_init(&self->file);
 	iov_reset(&self->iov);
 	buf_reset(&self->data);
 }
 
-static bool
+static void
 snapshot_begin(Snapshot* self)
 {
-	// <base>/<storage_id>.<lsn>.incomplete
+	// <base>/<lsn>.incomplete/<storage_id>
 	char path[PATH_MAX];
-	snapshot_id_path(self->id, path, true);
+	snprintf(path, sizeof(path),
+	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
+	         config_directory(),
+	         self->lsn,
+	         self->storage);
 
-	if (fs_exists("%s", path))
-	{
-		log("checkpoint %" PRIu64 ": %s already exists", self->id->lsn, path);
-		return false;
-	}
-
-	log("checkpoint %" PRIu64 ": %s begin", self->id->lsn, path);
+	log("snapshot: %s begin", path);
 
 	// prepare batch
 	buf_reserve(&self->data, sizeof(Msg) * self->count_batch);
@@ -64,33 +64,23 @@ snapshot_begin(Snapshot* self)
 
 	// create
 	file_create(&self->file, path);
-	return true;
 }
 
 static void
 snapshot_end(Snapshot* self)
 {
 	// todo: sync?
-
-	// rename incomplete file to <base>/<storage_id>.<lsn>
-	char path[PATH_MAX];
-	snapshot_id_path(self->id, path, false);
-
-	file_rename(&self->file, path);
 	file_close(&self->file);
+
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path),
+	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
+	         config_directory(),
+	         self->lsn,
+	         self->storage);
 
 	double size = self->file.size / 1024 / 1024;
-	log("checkpoint %" PRIu64 ": %s complete (%.2f MiB)", self->id->lsn,
-	    path, size);
-}
-
-static void
-snapshot_abort(Snapshot* self)
-{
-	char path[PATH_MAX];
-	snapshot_id_path(self->id, path, true);
-	file_close(&self->file);
-	fs_unlink("%s", path);
+	log("snapshot: %s complete (%.2f MiB)", path, size);
 }
 
 hot static inline void
@@ -142,29 +132,22 @@ snapshot_main(Snapshot* self, Index* index)
 }
 
 hot void
-snapshot_create(Snapshot* self, SnapshotId* id, Index* index)
+snapshot_create(Snapshot* self, Storage* storage, uint64_t lsn)
 {
-	self->id = id;
+	self->storage = storage->config->id;
+	self->lsn     = lsn;
 
 	Exception e;
 	if (enter(&e))
 	{
-		// create <base>/<storage_id>.<lsn>.incomplete
-		
-		// do nothing, if file exists
-		if (snapshot_begin(self))
-		{
-			// write index rows
-			snapshot_main(self, index);
-
-			// rename snapshot file as completed
-			snapshot_end(self);
-		}
+		// create <base>/<lsn>.incomplete/<storage_id>
+		snapshot_begin(self);
+		snapshot_main(self, storage_primary(storage));
+		snapshot_end(self);
 	}
-
 	if (leave(&e))
 	{
-		snapshot_abort(self);
+		file_close(&self->file);
 		rethrow();
 	}
 }

@@ -18,6 +18,8 @@
 void
 checkpoint_init(Checkpoint* self)
 {
+	self->catalog       = NULL;
+	self->lsn           = 0;
 	self->workers       = NULL;
 	self->workers_count = 0;
 	self->rr            = 0;
@@ -38,13 +40,19 @@ checkpoint_free(Checkpoint* self)
 	}
 	self->workers = NULL;
 	self->workers_count = 0;
+	if (self->catalog)
+		buf_free(self->catalog);
 }
 
 void
-checkpoint_prepare(Checkpoint* self, int count)
+checkpoint_begin(Checkpoint* self, CatalogMgr* catalog,
+                 uint64_t    lsn,
+                 int         workers)
 {
-	self->workers_count = count;
-	self->workers = so_malloc(sizeof(CheckpointWorker) * count);
+	self->catalog = catalog_mgr_dump(catalog);
+	self->lsn = lsn;
+	self->workers_count = workers;
+	self->workers = so_malloc(sizeof(CheckpointWorker) * workers);
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
@@ -58,15 +66,7 @@ checkpoint_prepare(Checkpoint* self, int count)
 static void
 checkpoint_add_storage(Checkpoint* self, Storage* storage)
 {
-	// ensure index has updates since the last snapshot
-	auto index = storage_primary(storage);
-
-	// last snapshot lsn < commit lsn
-	uint64_t max = snapshot_mgr_last(&storage->snapshot_mgr);
-	if (max == index->lsn)
-		return;
-
-	// get next worker
+	// distribute among workers
 	if (self->rr == self->workers_count)
 		self->rr = 0;
 	int order = self->rr++;
@@ -88,7 +88,7 @@ checkpoint_add(Checkpoint* self, StorageMgr* storage_mgr)
 }
 
 hot static bool
-checkpoint_worker_main(CheckpointWorker* self)
+checkpoint_worker_main(Checkpoint* self, CheckpointWorker* worker)
 {
 	Snapshot snapshot;
 	snapshot_init(&snapshot);
@@ -97,15 +97,11 @@ checkpoint_worker_main(CheckpointWorker* self)
 	if (enter(&e))
 	{
 		// create primary index snapshot per storage
-		list_foreach(&self->list)
+		list_foreach(&worker->list)
 		{
 			auto storage = list_at(Storage, link_cp);
-			auto primary = storage_primary(storage);
-
-			SnapshotId id;
-			snapshot_id_set(&id, storage->config->id, primary->lsn);
 			snapshot_reset(&snapshot);
-			snapshot_create(&snapshot, &id, primary);
+			snapshot_create(&snapshot, storage, self->lsn);
 		}
 	}
 	snapshot_free(&snapshot);
@@ -117,11 +113,11 @@ checkpoint_worker_main(CheckpointWorker* self)
 }
 
 static void
-checkpoint_worker_run(CheckpointWorker* self)
+checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 {
 	// create new process
-	self->pid = fork();
-	switch (self->pid) {
+	worker->pid = fork();
+	switch (worker->pid) {
 	case -1:
 		error_system();
 	case  0:
@@ -131,10 +127,10 @@ checkpoint_worker_run(CheckpointWorker* self)
 	}
 
 	// create snapshots
-	auto error = checkpoint_worker_main(self);
+	auto error = checkpoint_worker_main(self, worker);
 
 	// signal waiter process
-	condition_signal(self->on_complete);
+	condition_signal(worker->on_complete);
 
 	// done
 	_exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
@@ -164,20 +160,57 @@ checkpoint_worker_wait(CheckpointWorker* self)
 	return failed;
 }
 
+static void
+checkpoint_create_catalog(Checkpoint* self)
+{
+	// create <base>/<lsn>.incomplete/catalog
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete/catalog",
+	         config_directory(), self->lsn);
+
+	// convert catalog to json
+	Buf text;
+	buf_init(&text);
+	guard(buf_free, &text);
+	uint8_t* pos = self->catalog->start;
+	json_export_pretty(&text, &pos);
+
+	// create config file
+	File file;
+	file_init(&file);
+	guard(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_write_buf(&file, &text);
+}
+
 void
 checkpoint_run(Checkpoint* self)
 {
+	// create <base>/<lsn>.incomplete
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete",
+	         config_directory(), self->lsn);
+
+	log("checkpoint %" PRIu64 ": using %d workers", self->lsn,
+	    self->workers_count);
+
+	fs_mkdir(0755, "%s", path);
+
+	// create <base>/<lsn>.incomplete/catalog
+	checkpoint_create_catalog(self);
+
+	// run workers to dump storages
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];
 		if (worker->list_count == 0)
 			continue;
-		checkpoint_worker_run(worker);
+		checkpoint_worker_run(self, worker);
 	}
 }
 
 void
-checkpoint_wait(Checkpoint* self)
+checkpoint_wait(Checkpoint* self, CheckpointMgr* checkpoint_mgr)
 {
 	int errors = 0;
 	for (int i = 0; i < self->workers_count; i++)
@@ -185,7 +218,6 @@ checkpoint_wait(Checkpoint* self)
 		auto worker = &self->workers[i];
 		if (worker->list_count == 0)
 			continue;
-
 		bool error;
 		error = checkpoint_worker_wait(worker);
 		if (error)
@@ -193,16 +225,24 @@ checkpoint_wait(Checkpoint* self)
 			errors++;
 			continue;
 		}
-
-		// add snapshots update snaphot lsn
-		list_foreach(&worker->list)
-		{
-			auto storage = list_at(Storage, link_cp);
-			auto primary = storage_primary(storage);
-			snapshot_mgr_add(&storage->snapshot_mgr, primary->lsn);
-		}
+	}
+	if (errors > 0)
+	{
+		fs_rmdir("%s/%" PRIu64 ".incomplete", config_directory(), self->lsn);
+		error("checkpoint %" PRIu64 ": failed", self->lsn);
 	}
 
-	if (errors > 0)
-		error("failed to create snapshot");
+	// rename as completed
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete",
+	         config_directory(), self->lsn);
+	fs_rename(path, "%s/%" PRIu64, config_directory(), self->lsn);
+
+	// register checkpoint
+	checkpoint_mgr_add(checkpoint_mgr, self->lsn);
+
+	// done
+	var_int_set(&config()->checkpoint, self->lsn);
+
+	log("checkpoint %" PRIu64 ": complete", self->lsn);
 }

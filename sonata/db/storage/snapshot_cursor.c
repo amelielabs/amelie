@@ -23,13 +23,14 @@ snapshot_cursor_init(SnapshotCursor* self)
 }
 
 void
-snapshot_cursor_open(SnapshotCursor* self, SnapshotId* id)
+snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t storage)
 {
-	// <base>/storage_uuid/min.max.lsn
+	// <base>/<lsn>/<storage>
 	char path[PATH_MAX];
-	snapshot_id_path(id, path, false);
-
-	// open
+	snprintf(path, sizeof(path), "%s/%" PRIu64 "/%" PRIu64,
+	         config_directory(),
+	         lsn,
+	         storage);
 	file_open(&self->file, path);
 }
 

@@ -21,7 +21,6 @@ storage_allocate(StorageConfig* config)
 	auto self = (Storage*)so_malloc(sizeof(Storage));
 	self->config        = NULL;
 	self->indexes_count = 0;
-	snapshot_mgr_init(&self->snapshot_mgr, config->id);
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
@@ -40,7 +39,6 @@ storage_free(Storage* self)
 		index_free(index);
 	}
 	storage_config_free(self->config);
-	snapshot_mgr_free(&self->snapshot_mgr);
 	so_free(self);
 }
 
@@ -57,54 +55,20 @@ storage_open(Storage* self, List* indexes)
 	}
 }
 
-void
-storage_recover(Storage* self)
+hot void
+storage_ingest(Storage* self, uint8_t** pos)
 {
-	uint64_t snapshot = snapshot_mgr_last(&self->snapshot_mgr);
-	if (snapshot == UINT64_MAX)
-		return;
-
 	auto primary = storage_primary(self);
 
-	SnapshotId id;
-	snapshot_id_set(&id, self->config->id, snapshot);
+	// allocate row
+	auto row = row_create(&primary->config->def, pos);
+	guard(row_free, row);
 
-	log("recover %" PRIu64 ".%" PRIu64 ": begin", id.storage, id.lsn);
+	// update primary index
+	index_ingest(primary, row);
+	unguard();
 
-	SnapshotCursor cursor;
-	snapshot_cursor_init(&cursor);
-	guard(snapshot_cursor_close, &cursor);
-
-	snapshot_cursor_open(&cursor, &id);
-	for (;;)
-	{
-		auto buf = snapshot_cursor_next(&cursor);
-		if (! buf)
-			break;
-		guard_buf(buf);
-
-		// allocate row
-		auto pos = msg_of(buf)->data;
-		auto row = row_create(&primary->config->def, &pos);
-		guard(row_free, row);
-
-		// update primary index
-		index_ingest(primary, row);
-		unguard();
-
-		// todo: secondary indexes
-	}
-
-	// set index lsn
-	primary->lsn = snapshot;
-
-	log("recover %" PRIu64 ".%" PRIu64 ": complete", id.storage, id.lsn);
-}
-
-void
-storage_gc(Storage* self)
-{
-	snapshot_mgr_gc(&self->snapshot_mgr);
+	// todo: secondary indexes
 }
 
 hot void

@@ -12,7 +12,6 @@ struct Storage
 {
 	List           indexes;
 	int            indexes_count;
-	SnapshotMgr    snapshot_mgr;
 	StorageConfig* config;
 	List           link_cp;
 	List           link;
@@ -22,8 +21,7 @@ Storage*
 storage_allocate(StorageConfig*);
 void storage_free(Storage*);
 void storage_open(Storage*, List*);
-void storage_recover(Storage*);
-void storage_gc(Storage*);
+void storage_ingest(Storage*, uint8_t**);
 void storage_set(Storage*, Transaction*, bool, uint8_t**);
 void storage_update(Storage*, Transaction*, Iterator*, uint8_t**);
 void storage_delete(Storage*, Transaction*, Iterator*);

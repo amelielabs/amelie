@@ -19,6 +19,8 @@ struct CheckpointWorker
 
 struct Checkpoint
 {
+	Buf*              catalog;
+	uint64_t          lsn;
 	CheckpointWorker* workers;
 	int               workers_count;
 	int               rr;
@@ -26,7 +28,7 @@ struct Checkpoint
 
 void checkpoint_init(Checkpoint*);
 void checkpoint_free(Checkpoint*);
-void checkpoint_prepare(Checkpoint*, int);
+void checkpoint_begin(Checkpoint*, CatalogMgr*, uint64_t, int);
 void checkpoint_add(Checkpoint*, StorageMgr*);
 void checkpoint_run(Checkpoint*);
-void checkpoint_wait(Checkpoint*);
+void checkpoint_wait(Checkpoint*, CheckpointMgr*);

@@ -55,29 +55,6 @@ storage_mgr_open(StorageMgr* self, bool reference, List* storages, List* indexes
 	}
 }
 
-void
-storage_mgr_recover(StorageMgr* self, Uuid* shard)
-{
-	// recover snapshots
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		if (! uuid_compare(&storage->config->shard, shard))
-			continue;
-		storage_recover(storage);
-	}
-}
-
-void
-storage_mgr_gc(StorageMgr* self)
-{
-	list_foreach(&self->list)
-	{
-		auto storage = list_at(Storage, link);
-		storage_gc(storage);
-	}
-}
-
 hot Storage*
 storage_mgr_find(StorageMgr* self, uint64_t id)
 {

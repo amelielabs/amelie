@@ -18,8 +18,6 @@ struct StorageMgr
 void storage_mgr_init(StorageMgr*);
 void storage_mgr_free(StorageMgr*);
 void storage_mgr_open(StorageMgr*, bool, List*, List*);
-void storage_mgr_recover(StorageMgr*, Uuid*);
-void storage_mgr_gc(StorageMgr*);
 
 Storage*
 storage_mgr_find(StorageMgr*, uint64_t);
