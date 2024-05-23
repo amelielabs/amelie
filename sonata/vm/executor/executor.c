@@ -163,6 +163,7 @@ executor_wal_write(Executor* self)
 {
 	auto wal = &self->db->wal;
 	auto wal_enabled = var_int_of(&config()->wal);
+	auto wal_batch = &self->group.wal_batch;
 
 	list_foreach(&self->group.list)
 	{
@@ -170,6 +171,8 @@ executor_wal_write(Executor* self)
 
 		// get next lsn
 		uint64_t lsn = config_lsn() + 1;
+		wal_batch_reset(wal_batch);
+		wal_batch_begin(wal_batch, lsn);
 
 		auto router = self->router;
 		for (int i = 0; i < router->set_size; i++)
@@ -180,26 +183,13 @@ executor_wal_write(Executor* self)
 			transaction_set_lsn(&trx->trx, lsn);
 			if (! wal_enabled)
 				continue;
+			wal_batch_add(wal_batch, &trx->trx.log.log_set);
+		}
 
-			// wal write
-
-			// [header] [row meta] [row]
-			auto log_set = &trx->trx.log.log_set;
-			WalWrite write =
-			{
-				.crc  = 0,
-				.lsn  = lsn,
-				.size = log_set->iov.size + sizeof(WalWrite) + buf_size(&log_set->data),
-				.type = 0
-			};
-
-			auto iov = iov_pointer(&log_set->iov);
-			iov[0].iov_base = &write;
-			iov[0].iov_len  = sizeof(write);
-			iov[1].iov_base = log_set->data.start;
-			iov[1].iov_len  = buf_size(&log_set->data);
-
-			auto rotate_ready = wal_write(wal, &log_set->iov);
+		// wal write
+		if (wal_enabled && wal_batch->header.count > 0)
+		{
+			auto rotate_ready = wal_write(wal, wal_batch);
 			if (rotate_ready)
 				wal_rotate(wal, 0);
 		}

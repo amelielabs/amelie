@@ -10,11 +10,11 @@ typedef struct PlanGroup PlanGroup;
 
 struct PlanGroup
 {
-	int     list_count;
-	List    list;
-	Trx**   set;
-	// log_set;
-	Router* router;
+	int      list_count;
+	List     list;
+	Trx**    set;
+	WalBatch wal_batch;
+	Router*  router;
 };
 
 static inline void
@@ -24,6 +24,7 @@ plan_group_init(PlanGroup* self, Router* router)
 	self->set        = NULL;
 	self->list_count = 0;
 	list_init(&self->list);
+	wal_batch_init(&self->wal_batch);
 }
 
 static inline void
@@ -31,6 +32,7 @@ plan_group_free(PlanGroup* self)
 {
 	if (self->set)
 		so_free(self->set);
+	wal_batch_free(&self->wal_batch);
 }
 
 static inline void
@@ -43,6 +45,7 @@ plan_group_reset(PlanGroup* self)
 	}
 	self->list_count = 0;
 	list_init(&self->list);
+	wal_batch_reset(&self->wal_batch);
 }
 
 static inline void
