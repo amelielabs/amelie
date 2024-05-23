@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 void update_set(Value*, uint8_t*, Str*, Value*);

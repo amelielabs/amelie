@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 typedef struct TlsContext TlsContext;

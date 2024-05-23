@@ -2,7 +2,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 #include <sonata_runtime.h>

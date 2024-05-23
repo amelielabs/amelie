@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 void emit_select_on_match(Compiler*, void*);

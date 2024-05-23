@@ -2,7 +2,7 @@
 //
 // sonata.
 //
-// SQL OLTP database
+// Real-Time SQL Database.
 //
 
 #include <sonata.h>

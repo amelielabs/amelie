@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 #define likely(expr)      __builtin_expect(!! (expr), 1)

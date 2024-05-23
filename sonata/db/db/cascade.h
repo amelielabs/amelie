@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 void cascade_table_drop(Db*, Transaction*, Str*, Str*, bool);
