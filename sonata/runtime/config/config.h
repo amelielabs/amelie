@@ -36,10 +36,9 @@ struct Config
 	// state
 	Var  lsn;
 	Var  ssn;
+	Var  checkpoint;
 	Var  state_shards;
 	Var  users;
-	Var  catalog_snapshot;
-	Var  catalog;
 	// testing
 	Var  test_bool;
 	Var  test_int;

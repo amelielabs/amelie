@@ -17,5 +17,5 @@ struct CatalogMgr
 void catalog_mgr_init(CatalogMgr*);
 void catalog_mgr_free(CatalogMgr*);
 void catalog_mgr_add(CatalogMgr*, Catalog*);
-void catalog_mgr_dump(CatalogMgr*, uint64_t);
-void catalog_mgr_restore(CatalogMgr*);
+Buf* catalog_mgr_dump(CatalogMgr*);
+void catalog_mgr_restore(CatalogMgr*, uint8_t**, uint64_t);

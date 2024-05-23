@@ -34,8 +34,8 @@ catalog_mgr_add(CatalogMgr* self, Catalog* cat)
 	self->list_count++;
 }
 
-static Buf*
-catalog_mgr_dump_create(CatalogMgr* self)
+Buf*
+catalog_mgr_dump(CatalogMgr* self)
 {
 	auto buf = buf_begin();
 	encode_map(buf, self->list_count);
@@ -46,21 +46,6 @@ catalog_mgr_dump_create(CatalogMgr* self)
 		cat->iface->dump(cat, buf);
 	}
 	return buf_end(buf);
-}
-
-void
-catalog_mgr_dump(CatalogMgr* self, uint64_t lsn)
-{
-	auto buf = catalog_mgr_dump_create(self);
-	guard_buf(buf);
-
-	// catalog_snapshot
-	var_int_set(&config()->catalog_snapshot, lsn);
-
-	// catalog
-	var_data_set_buf(&config()->catalog, buf);
-
-	control_save_config();
 }
 
 static Catalog*
@@ -75,32 +60,19 @@ catalog_mgr_find(CatalogMgr* self, Str* name)
 }
 
 void
-catalog_mgr_restore(CatalogMgr* self)
+catalog_mgr_restore(CatalogMgr* self, uint8_t** pos, uint64_t lsn)
 {
-	auto cp = &config()->catalog;
-	if (! var_data_is_set(cp))
-		return;
-	auto data = var_data_of(cp);
-	if (data_is_null(data))
-		return;
-
-	// restore catalogs
-	uint64_t lsn = var_int_of(&config()->catalog_snapshot);
-
-	// map
-	uint8_t* pos = data;
 	int count;
-	data_read_map(&pos, &count);
+	data_read_map(pos, &count);
 	while (count-- > 0)
 	{
 		// catalog
 		Str name;
-		data_read_string(&pos, &name);
-
+		data_read_string(pos, &name);
 		auto cat = catalog_mgr_find(self, &name);
 		if (unlikely(cat == NULL))
 			error("catalog: <%.*s> not found", str_size(&name),
 			      str_of(&name));
-		cat->iface->restore(cat, lsn, &pos);
+		cat->iface->restore(cat, lsn, pos);
 	}
 }

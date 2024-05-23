@@ -33,6 +33,13 @@ config_directory(void)
 	return var_string_of(&config()->directory);
 }
 
+// checkpoint
+static inline uint64_t
+config_checkpoint(void)
+{
+	return var_int_of(&config()->checkpoint);
+}
+
 // lsn
 static inline uint64_t
 config_lsn(void)

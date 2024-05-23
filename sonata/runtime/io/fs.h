@@ -66,3 +66,10 @@ fs_size(const char* fmt, ...)
 	va_end(args);
 	return vfs_size(path);
 }
+
+static inline void
+fs_rmdir(const char* fmt, ...)
+{
+	(void)fmt;
+	// todo: remove files in the dir and the dir
+}

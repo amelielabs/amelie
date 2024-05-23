@@ -100,10 +100,9 @@ config_prepare(Config* self)
 		// state
 		{ "lsn",                     VAR_INT,    VAR_E,                &self->lsn,                     NULL,        0                },
 		{ "ssn",                     VAR_INT,    VAR_E,                &self->ssn,                     NULL,        0                },
+		{ "checkpoint",              VAR_INT,    VAR_E,                &self->checkpoint,              NULL,        0                },
 		{ "state_shards",            VAR_DATA,   VAR_C|VAR_H,          &self->state_shards,            NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->users,                   NULL,        0                },
-		{ "catalog_snapshot",        VAR_INT,    VAR_C|VAR_H,          &self->catalog_snapshot,        NULL,        0                },
-		{ "catalog",                 VAR_DATA,   VAR_C|VAR_H,          &self->catalog,                 NULL,        0                },
 		// testing
 		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,    &self->test_bool,               NULL,        false            },
 		{ "test_int",                VAR_INT,    VAR_E|VAR_H|VAR_R,    &self->test_int,                NULL,        0                },
