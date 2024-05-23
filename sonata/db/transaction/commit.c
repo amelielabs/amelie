@@ -23,7 +23,6 @@ transaction_begin(Transaction* self)
 	self->aborted     = false;
 	self->auto_commit = false;
 	self->arg         = NULL;
-	log_prepare(&self->log);
 }
 
 static inline void

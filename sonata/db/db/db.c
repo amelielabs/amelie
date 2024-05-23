@@ -87,7 +87,7 @@ db_open(Db* self, CatalogMgr* cat_mgr)
 	config_lsn_follow(var_int_of(&config()->catalog_snapshot));
 
 	// get a list of snapshots
-	recover_basedir(self);
+	recover_dir(self);
 }
 
 void

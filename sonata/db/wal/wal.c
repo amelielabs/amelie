@@ -191,13 +191,22 @@ wal_open(Wal* self)
 }
 
 hot bool
-wal_write(Wal* self, Iov* iov)
+wal_write(Wal* self, WalBatch* batch)
 {
 	mutex_lock(&self->lock);
 	guard(mutex_unlock, &self->lock);
 
 	// write wal file
-	wal_file_write(self->current, iov_pointer(iov), iov->iov_count);
+	// todo: truncate on error
+
+	// [header][rows meta][rows]
+	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);
+	list_foreach(&batch->list)
+	{
+		auto log_set = list_at(LogSet, link);
+		wal_file_write(self->current, iov_pointer(&log_set->iov),
+		               log_set->iov.iov_count);
+	}
 
 	// return true if wal is ready to be rotated
 	auto wm = var_int_of(&config()->wal_rotate_wm);

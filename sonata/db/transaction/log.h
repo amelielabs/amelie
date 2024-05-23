@@ -106,12 +106,6 @@ log_reset(Log* self)
 }
 
 static inline void
-log_prepare(Log* self)
-{
-	log_set_prepare(&self->log_set);
-}
-
-static inline void
 log_reserve(Log* self)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
@@ -144,7 +138,7 @@ log_row(Log*      self,
 	if (! persistent)
 		return;
 
-	// todo: [cmd, storage, row]
+	// [cmd, storage, row]
 	log_set_add(&self->log_set, cmd, storage, def, row);
 }
 
@@ -171,5 +165,6 @@ log_handle(Log*      self,
 	self->count++;
 	self->count_handle++;
 
-	// todo: [cmd, data]
+	// [cmd, data]
+	log_set_add_op(&self->log_set, cmd, data);
 }

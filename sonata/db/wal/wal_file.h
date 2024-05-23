@@ -6,16 +6,7 @@
 // SQL Database for JSON.
 //
 
-typedef struct WalWrite WalWrite;
-typedef struct WalFile  WalFile;
-
-struct WalWrite
-{
-	uint32_t crc;
-	uint64_t lsn;
-	uint8_t  type;
-	uint32_t size;
-} packed;
+typedef struct WalFile WalFile;
 
 struct WalFile
 {
