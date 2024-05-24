@@ -56,7 +56,7 @@ parse_value(Stmt* self)
 			if (unlikely(!head || head->id != '['))
 				goto done;
 			ast_pop(&stack);
-			continue;
+			break;
 		}
 		case '{':
 			parse_value_add(&stack);
@@ -71,7 +71,7 @@ parse_value(Stmt* self)
 				error("incorrect {} object");
 			head->integer /= 2;
 			ast_pop(&stack);
-			continue;
+			break;
 		}
 		case ':':
 		{
@@ -333,7 +333,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 }
 
 hot static inline void
-parse_values(Stmt* self, AstInsert* stmt, Ast* list)
+parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 {
 	// [VALUES]
 	if (stmt_if(self, KVALUES))
@@ -343,7 +343,7 @@ parse_values(Stmt* self, AstInsert* stmt, Ast* list)
 		for (;;)
 		{
 			AstRow* row;
-			if (list)
+			if (list_in_use)
 				row = parse_row_list(self, stmt, list);
 			else
 				row = parse_row(self, stmt);
@@ -502,11 +502,12 @@ parse_insert(Stmt* self, bool unique)
 	{
 		// (column list)
 		Ast* list = NULL;
-		if (stmt_if(self, '('))
+		bool list_in_use = stmt_if(self, '(');
+		if (list_in_use)
 			list = parse_column_list(self, stmt);
 
 		// [VALUES] | expr
-		parse_values(self, stmt, list);
+		parse_values(self, stmt, list_in_use, list);
 	}
 
 	// ON CONFLICT

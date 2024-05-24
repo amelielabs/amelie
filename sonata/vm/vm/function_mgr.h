@@ -55,11 +55,12 @@ static inline Buf*
 function_mgr_list(FunctionMgr* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->list_count);
+	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto func = list_at(Function, link);
 		function_write(func, buf);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }

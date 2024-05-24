@@ -163,9 +163,8 @@ server_listen_configure(Server* self)
 	if (! data_is_array(pos))
 		error("server: <listen> option expected to be array or null"); 
 
-	int count;
-	data_read_array(&pos, &count);
-	for (int i = 0; i < count; i++)
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
 	{
 		auto config = server_config_read(&pos);
 		list_append(&self->config, &config->link);

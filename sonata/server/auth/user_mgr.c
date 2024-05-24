@@ -46,9 +46,8 @@ user_mgr_open(UserMgr* self)
 	if (data_is_null(pos))
 		return;
 
-	int count;
-	data_read_array(&pos, &count);
-	for (int i = 0; i < count; i++)
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
 	{
 		// value
 		auto config = user_config_read(&pos);

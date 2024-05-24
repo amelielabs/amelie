@@ -71,29 +71,29 @@ ccursor_open_value(Vm* self, int target, Value* value)
 
 	if (value->type == VALUE_DATA)
 	{
+		bool end = false;
 		if (data_is_array(value->data))
 		{
-			cursor->type     = CURSOR_ARRAY;
-			cursor->obj_pos  = 0;
-			cursor->obj_data = value->data;
-			data_read_array(&cursor->obj_data, &cursor->obj_count);
+			cursor->type    = CURSOR_ARRAY;
+			cursor->obj_pos = value->data;
+			data_read_array(&cursor->obj_pos);
+			end = data_is_array_end(cursor->obj_pos);
 		} else
 		if (data_is_map(value->data))
 		{
-			cursor->type     = CURSOR_MAP;
-			cursor->obj_pos  = 0;
-			cursor->obj_data = value->data;
-			data_read_map(&cursor->obj_data, &cursor->obj_count);
-			if (cursor->obj_count > 0)
+			cursor->type    = CURSOR_MAP;
+			cursor->obj_pos = value->data;
+			data_read_map(&cursor->obj_pos);
+			end = data_is_map_end(cursor->obj_pos);
+			if (! end)
 			{
-				cursor->ref_key = cursor->obj_data;
-				data_skip(&cursor->obj_data);
+				cursor->ref_key = cursor->obj_pos;
+				data_skip(&cursor->obj_pos);
 			}
-
 		} else {
 			error("FROM: array, map or data type expected");
 		}
-		if (cursor->obj_count == 0)
+		if (end)
 			return false;
 	} else
 	if (value->type == VALUE_SET)
@@ -213,23 +213,20 @@ ccursor_next(Vm* self, Op* op)
 	case CURSOR_ARRAY:
 	{
 		// array
-		cursor->obj_pos++;
-		if (cursor->obj_pos >= cursor->obj_count)
+		data_skip(&cursor->obj_pos);
+		if (data_read_array_end(&cursor->obj_pos))
 			return ++op;
-		data_skip(&cursor->obj_data);
 		break;
 	}
 	case CURSOR_MAP:
 	{
-		// map
-		cursor->obj_pos++;
-		if (cursor->obj_pos >= cursor->obj_count)
-			return ++op;
 		// skip previous value
-		data_skip(&cursor->obj_data);
+		data_skip(&cursor->obj_pos);
+		if (data_read_map_end(&cursor->obj_pos))
+			return ++op;
 		// set and skip key
-		cursor->ref_key = cursor->obj_data;
-		data_skip(&cursor->obj_data);
+		cursor->ref_key = cursor->obj_pos;
+		data_skip(&cursor->obj_pos);
 		break;
 	}
 	case CURSOR_SET:
@@ -283,7 +280,7 @@ ccursor_read(Vm* self, Op* op)
 	case CURSOR_ARRAY:
 	case CURSOR_MAP:
 	{
-		value_read(a, cursor->obj_data, NULL);
+		value_read(a, cursor->obj_pos, NULL);
 		break;
 	}
 	case CURSOR_SET:
@@ -332,7 +329,7 @@ ccursor_idx(Vm* self, Op* op)
 	case CURSOR_ARRAY:
 	case CURSOR_MAP:
 		data_buf = reg_at(&self->r, cursor->r)->buf;
-		data     = cursor->obj_data;
+		data     = cursor->obj_pos;
 		break;
 	case CURSOR_SET:
 	{
@@ -681,9 +678,8 @@ csend(Vm* self, Op* op)
 	Req* map[router->set_size];
 	memset(map, 0, sizeof(map));
 
-	int count;
-	data_read_array(&data, &count);
-	for (; count > 0; count--)
+	data_read_array(&data);
+	while (! data_read_array_end(&data))
 	{
 		// hash row keys
 		uint32_t offset = data - data_start;

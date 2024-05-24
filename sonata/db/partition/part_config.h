@@ -87,7 +87,7 @@ static inline void
 part_config_write(PartConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 4);
+	encode_map(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -106,4 +106,6 @@ part_config_write(PartConfig* self, Buf* buf)
 	// shard_max
 	encode_raw(buf, "shard_max", 9);
 	encode_integer(buf, self->shard_max);
+
+	encode_map_end(buf);
 }

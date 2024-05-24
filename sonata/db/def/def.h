@@ -191,19 +191,16 @@ def_read(Def* self, uint8_t** pos)
 	decode_map(map, pos);
 
 	// column
-	int count;
-	data_read_array(&pos_column, &count);
-	int i = 0;
-	for (; i < count; i++)
+	data_read_array(&pos_column);
+	while (! data_read_array_end(&pos_column))
 	{
 		auto column = column_read(&pos_column);
 		def_add_column(self, column);
 	}
 
 	// key
-	data_read_array(&pos_key, &count);
-	i = 0;
-	for (; i < count; i++)
+	data_read_array(&pos_key);
+	while (! data_read_array_end(&pos_key))
 	{
 		auto key = key_read(&pos_key);
 		def_add_key(self, key);
@@ -214,21 +211,23 @@ static inline void
 def_write(Def* self, Buf* buf)
 {
 	// { column:[], key:[], key_unique, key_exclude, reserved }
-	encode_map(buf, 5);
+	encode_map(buf);
 
 	// column
 	encode_raw(buf, "column", 6);
-	encode_array(buf, self->column_count);
+	encode_array(buf);
 	auto column = self->column;
 	for (; column; column = column->next)
 		column_write(column, buf);
+	encode_array_end(buf);
 
 	// key
 	encode_raw(buf, "key", 3);
-	encode_array(buf, self->key_count);
+	encode_array(buf);
 	auto key = self->key;
 	for (; key; key = key->next)
 		key_write(key, buf);
+	encode_array_end(buf);
 
 	// key_unique
 	encode_raw(buf, "key_unique", 10);
@@ -241,4 +240,6 @@ def_write(Def* self, Buf* buf)
 	// reserved
 	encode_raw(buf, "reserved", 8);
 	encode_integer(buf, self->reserved);
+
+	encode_map_end(buf);
 }

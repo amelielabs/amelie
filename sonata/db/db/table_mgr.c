@@ -150,12 +150,13 @@ void
 table_mgr_dump(TableMgr* self, Buf* buf)
 {
 	// array
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
 		table_config_write(table->config, buf);
 	}
+	encode_array_end(buf);
 }
 
 Table*
@@ -177,12 +178,13 @@ Buf*
 table_mgr_list(TableMgr* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
 		table_config_write(table->config, buf);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }
 

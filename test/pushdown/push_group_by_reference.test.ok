@@ -1011,7 +1011,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1359,7 +1359,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1416,7 +1416,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1472,7 +1472,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1529,7 +1529,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1586,7 +1586,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1642,7 +1642,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       11      0      0
  7          cursor_idx        3      0      0
  8                push        3      0      0
@@ -1908,7 +1908,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       15      0      0
  7          cursor_idx        3      0      1
  8                 int        4      0      0
@@ -1966,7 +1966,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       15      0      0
  7          cursor_idx        3      0      1
  8                 int        4      0      0
@@ -2025,7 +2025,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       15      0      0
  7          cursor_idx        3      0      1
  8                 int        4      0      0
@@ -2084,7 +2084,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       15      0      0
  7          cursor_idx        3      0      1
  8                 int        4      0      0
@@ -2144,7 +2144,7 @@ bytecode [shard]
  2               group        2      1      0
  3             int_min        3      0      0
  4                push        3      0      0
- 5         cursor_open        0      2      7      # public.test (primary)
+ 5         cursor_open        0      3      7      # public.test (primary)
  6                 jmp       15      0      0
  7          cursor_idx        3      0      1
  8                 int        4      0      0

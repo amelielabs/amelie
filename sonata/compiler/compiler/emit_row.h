@@ -13,8 +13,7 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 	auto buf = &data->data;
 
 	// []
-	encode_array(buf, row->list_count);
-
+	encode_array(buf);
 	auto value = row->list;
 	while (value)
 	{
@@ -23,10 +22,16 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 		{
 			switch (expr->id) {
 			case '[':
-				encode_array(buf, expr->integer);
+				encode_array(buf);
+				break;
+			case ']':
+				encode_array_end(buf);
 				break;
 			case '{':
-				encode_map(buf, expr->integer);
+				encode_map(buf);
+				break;
+			case '}':
+				encode_map_end(buf);
 				break;
 			case KSTRING:
 				encode_string(buf, &expr->string);
@@ -54,6 +59,7 @@ emit_row(CodeData* data, AstRow* row, int* data_size)
 
 		value = value->next;
 	}
+	encode_array_end(buf);
 
 	*data_size = buf_size(buf) - start;
 	return start;

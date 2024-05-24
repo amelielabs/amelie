@@ -23,14 +23,14 @@ row_create(Def* def, uint8_t** pos)
 	uint8_t* data = *pos;	
 	if (unlikely(! data_is_array(*pos)))
 		error("row type expected to be array");
-	int count;
-	data_read_array(pos, &count);
-	if (unlikely(count != def->column_count))
-		error("row has incorrect number of columns");
+	data_read_array(pos);
 
 	auto column = def->column;
 	for (; column; column = column->next)
 	{
+		if (unlikely(data_is_array_end(*pos)))
+			error("row has incorrect number of columns");
+
 		// validate column data type
 		if (data_is_null(*pos))
 		{
@@ -64,6 +64,9 @@ row_create(Def* def, uint8_t** pos)
 		data_skip(pos);
 	}
 
+	if (unlikely(! data_read_array_end(pos)))
+		error("row has incorrect number of columns");
+
 	// create row
 	uint32_t data_size = *pos - data;
 	auto self = row_allocate(def, data_size);
@@ -81,14 +84,14 @@ row_hash(Def* def, uint8_t** pos)
 	// []
 	if (unlikely(! data_is_array(*pos)))
 		error("row type expected to be array");
-	int count;
-	data_read_array(pos, &count);
-	if (unlikely(count != def->column_count))
-		error("row has incorrect number of columns");
+	data_read_array(pos);
 
 	uint32_t hash = 0;
 	for (auto column = def->column; column; column = column->next)
 	{
+		if (unlikely(data_is_array_end(*pos)))
+			error("row has incorrect number of columns");
+
 		// validate column data type
 		if (data_is_null(*pos))
 		{
@@ -137,6 +140,9 @@ row_hash(Def* def, uint8_t** pos)
 
 		data_skip(pos);
 	}
+
+	if (unlikely(! data_read_array_end(pos)))
+		error("row has incorrect number of columns");
 
 	return hash;
 }

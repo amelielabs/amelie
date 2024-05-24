@@ -38,13 +38,14 @@ Buf*
 catalog_mgr_dump(CatalogMgr* self)
 {
 	auto buf = buf_begin();
-	encode_map(buf, self->list_count);
+	encode_map(buf);
 	list_foreach(&self->list)
    	{
 		auto cat = list_at(Catalog, link);
 		encode_string(buf, &cat->name);
 		cat->iface->dump(cat, buf);
 	}
+	encode_map_end(buf);
 	return buf_end(buf);
 }
 
@@ -62,9 +63,8 @@ catalog_mgr_find(CatalogMgr* self, Str* name)
 void
 catalog_mgr_restore(CatalogMgr* self, uint8_t** pos)
 {
-	int count;
-	data_read_map(pos, &count);
-	while (count-- > 0)
+	data_read_map(pos);
+	while (! data_read_map_end(pos))
 	{
 		// catalog
 		Str name;

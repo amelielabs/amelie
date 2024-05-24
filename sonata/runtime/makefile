@@ -4,7 +4,7 @@
 CC             = clang
 AR             = ar
 RM             = rm
-CFLAGS_OPTS    = -Wall -Wextra -g -fPIC -O0
+CFLAGS_OPTS    = -Wall -Wextra -g -O0
 CFLAGS_INCLUDE = -I. \
                  -Iruntime \
                  -Iio \

@@ -87,7 +87,6 @@ view_config_read(uint8_t** pos)
 	};
 	decode_map(map, pos);
 	def_read(&self->def, &def);
-
 	return unguard();
 }
 
@@ -95,7 +94,7 @@ static inline void
 view_config_write(ViewConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 4);
+	encode_map(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -112,4 +111,6 @@ view_config_write(ViewConfig* self, Buf* buf)
 	// def
 	encode_raw(buf, "def", 3);
 	def_write(&self->def, buf);
+
+	encode_map_end(buf);
 }

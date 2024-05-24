@@ -42,9 +42,7 @@ merge_encode(ValueObj* obj, Buf* buf)
 	guard(merge_iterator_free, &it);
 
 	// []
-	int start = buf_size(buf);
-	encode_array32(buf, 0);
-
+	encode_array(buf);
 	merge_iterator_open(&it, self);
 	int count = 0;
 	while (merge_iterator_has(&it))
@@ -54,10 +52,7 @@ merge_encode(ValueObj* obj, Buf* buf)
 		merge_iterator_next(&it);
 		count++;
 	}
-
-	// update pos
-	uint8_t* pos = buf->start + start;
-	data_write_array32(&pos, count);
+	encode_array_end(buf);
 }
 
 static void

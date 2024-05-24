@@ -56,12 +56,13 @@ static inline Buf*
 shard_mgr_dump(ShardMgr* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->shards_count);
+	encode_array(buf);
 	for (int i = 0; i < self->shards_count; i++)
 	{
 		auto shard = self->shards[i];
 		shard_config_write(shard->config, buf);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }
 
@@ -86,15 +87,16 @@ shard_mgr_open(ShardMgr* self)
 	auto pos = var_data_of(shards);
 	if (data_is_null(pos))
 		return;
-
-	int count;
-	data_read_array(&pos, &count);
+	int count = array_size(pos);
 
 	int allocated = count * sizeof(Shard*);
 	self->shards_count = count;
 	self->shards = so_malloc(allocated);
 	memset(self->shards, 0, allocated);
-	for (int i = 0; i < count; i++)
+
+	int i = 0;
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
 	{
 		// value
 		auto config = shard_config_read(&pos);
@@ -105,6 +107,7 @@ shard_mgr_open(ShardMgr* self)
 
 		// set shard order
 		shard->order = i;
+		i++;
 	}
 }
 

@@ -7,31 +7,31 @@
 //
 
 always_inline hot static inline void
-encode_map(Buf* self, int count)
+encode_map(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_map(count));
-	data_write_map(pos, count);
+	auto pos = buf_reserve(self, data_size_map());
+	data_write_map(pos);
 }
 
 always_inline hot static inline void
-encode_map32(Buf* self, int size)
+encode_map_end(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_map32());
-	data_write_map32(pos, size);
+	auto pos = buf_reserve(self, data_size_map_end());
+	data_write_map_end(pos);
 }
 
 always_inline hot static inline void
-encode_array(Buf* self, int count)
+encode_array(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_array(count));
-	data_write_array(pos, count);
+	auto pos = buf_reserve(self, data_size_array());
+	data_write_array(pos);
 }
 
 always_inline hot static inline void
-encode_array32(Buf* self, int count)
+encode_array_end(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_array32());
-	data_write_array32(pos, count);
+	auto pos = buf_reserve(self, data_size_array_end());
+	data_write_array_end(pos);
 }
 
 always_inline hot static inline void

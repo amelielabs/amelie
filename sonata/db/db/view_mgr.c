@@ -144,12 +144,13 @@ void
 view_mgr_dump(ViewMgr* self, Buf* buf)
 {
 	// array
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto view = view_of(list_at(Handle, link));
 		view_config_write(view->config, buf);
 	}
+	encode_array_end(buf);
 }
 
 View*
@@ -171,11 +172,12 @@ Buf*
 view_mgr_list(ViewMgr* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto view = view_of(list_at(Handle, link));
 		view_config_write(view->config, buf);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }

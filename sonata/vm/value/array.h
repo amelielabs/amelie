@@ -10,13 +10,13 @@ static inline void
 value_array(Value* result, Stack* stack, int count)
 {
 	auto buf = buf_begin();
-	encode_array(buf, count);
-	int i = 0;
-	for (; i < count ; i++)
+	encode_array(buf);
+	for (int i = 0; i < count ; i++)
 	{
 		auto ref = stack_at(stack, count - i);
 		value_write(ref, buf);
 	}
+	encode_array_end(buf);
 	buf_end(buf);
 	value_set_buf(result, buf);
 }
@@ -24,41 +24,31 @@ value_array(Value* result, Stack* stack, int count)
 static inline void
 value_array_set(Value* result, uint8_t* pos, int idx, Value* value)
 {
-	int count;
-	data_read_array(&pos, &count);
+	data_read_array(&pos);
 
 	auto buf = buf_begin();
-	if (idx >= 0 && idx < count)
+	encode_array(buf);
+	int i = 0;
+	while (! data_read_array_end(&pos))
 	{
+		uint8_t* start = pos;
+		data_skip(&pos);
 		// replace
-		encode_array(buf, count);
-		int i = 0;
-		for (; i < count; i++)
-		{
-			uint8_t* start = pos;
-			data_skip(&pos);
-			if (i == idx)
-				value_write(value, buf);
-			else
-				buf_write(buf, start, pos - start);
-		}
-	} else
-	if (idx == count)
-	{
-		// extend by one
-		encode_array(buf, count + 1);
-		int i = 0;
-		for (; i < count; i++)
-		{
-			uint8_t* start = pos;
-			data_skip(&pos);
+		if (i == idx)
+			value_write(value, buf);
+		else
 			buf_write(buf, start, pos - start);
-		}
-		value_write(value, buf);
-	} else
-	{
-		error("<%d>: array index is out of bounds", idx);
+		i++;
 	}
+
+	// extend by one
+	if (idx == i)
+		value_write(value, buf);
+	else
+	if (idx < 0 || idx > i)
+		error("<%d>: array index is out of bounds", idx);
+	encode_array_end(buf);
+
 	buf_end(buf);
 	value_set_buf(result, buf);
 }
@@ -66,28 +56,23 @@ value_array_set(Value* result, uint8_t* pos, int idx, Value* value)
 static inline void
 value_array_remove(Value* result, uint8_t* pos, int idx)
 {
-	int count;
-	data_read_array(&pos, &count);
-
-	if (unlikely(count == 0))
-		error("array is empty");
-
-	if (idx < 0)
-		idx = count + idx;
-	if (idx < 0 || idx >= count)
-		error("<%d>: array index is out of bounds", idx);
+	data_read_array(&pos);
 
 	auto buf = buf_begin();
-	encode_array(buf, count - 1);
+	encode_array(buf);
 	int i = 0;
-	for (; i < count; i++)
+	while (! data_read_array_end(&pos))
 	{
 		uint8_t* start = pos;
 		data_skip(&pos);
-		if (i == idx)
-			continue;
-		buf_write(buf, start, (pos - start));
+		if (i != idx)
+			buf_write(buf, start, (pos - start));
+		i++;
 	}
+	if (idx < 0 || idx >= i)
+		error("<%d>: array index is out of bounds", idx);
+	encode_array_end(buf);
+
 	buf_end(buf);
 	value_set_buf(result, buf);
 }
@@ -95,10 +80,17 @@ value_array_remove(Value* result, uint8_t* pos, int idx)
 static inline void
 value_array_has(Value* result, uint8_t* pos, int idx)
 {
-	int count;
-	data_read_array(&pos, &count);
-	if (idx < 0)
-		idx = count + idx;
-	bool not_exists = (idx < 0 || idx >= count);
-	value_set_bool(result, !not_exists);
+	bool found = false;
+	int i = 0;
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
+	{
+		if (i == idx) {
+			found = true;
+			break;
+		}
+		data_skip(&pos);
+		i++;
+	}
+	value_set_bool(result, found);
 }

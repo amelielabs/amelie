@@ -60,11 +60,13 @@ shard_config_read(uint8_t** pos)
 static inline void
 shard_config_write(ShardConfig* self, Buf* buf)
 {
-	encode_map(buf, 1);
+	encode_map(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
 	char uuid[UUID_SZ];
 	uuid_to_string(&self->id, uuid, sizeof(uuid));
 	encode_raw(buf, uuid, sizeof(uuid) - 1);
+
+	encode_map_end(buf);
 }

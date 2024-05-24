@@ -36,9 +36,7 @@ struct Cursor
 	// expr
 	int           r;
 	bool          cte;
-	uint8_t*      obj_data;
-	int           obj_pos;
-	int           obj_count;
+	uint8_t*      obj_pos;
 	// set
 	SetIterator   set_it;
 	// merge
@@ -70,9 +68,7 @@ cursor_init(Cursor* self)
 	self->ref_key   = NULL;
 	self->r         = 0;
 	self->cte       = false;
-	self->obj_data  = NULL;
-	self->obj_pos   = 0;
-	self->obj_count = 0;
+	self->obj_pos   = NULL;
 	self->group     = NULL;
 	self->group_pos = 0;
 	self->limit     = 0;
@@ -94,9 +90,7 @@ cursor_reset(Cursor* self)
 	self->ref_key   = NULL;
 	self->r         = 0;
 	self->cte       = false;
-	self->obj_data  = NULL;
-	self->obj_pos   = 0;
-	self->obj_count = 0;
+	self->obj_pos   = NULL;
 	self->group     = NULL;
 	self->group_pos = 0;
 	self->limit     = 0;

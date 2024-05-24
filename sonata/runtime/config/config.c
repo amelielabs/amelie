@@ -118,9 +118,8 @@ config_prepare(Config* self)
 static void
 config_set_data(Config* self, uint8_t** pos)
 {
-	int count;
-	data_read_map(pos, &count);
-	for (int i = 0; i < count; i++)
+	data_read_map(pos);
+	while (! data_read_map_end(pos))
 	{
 		// key
 		Str name;
@@ -195,13 +194,14 @@ config_set(Config* self, Str* options)
 static void
 config_list_persistent(Config* self, Buf* buf)
 {
-	encode_map(buf, self->count_persistent);
+	encode_map(buf);
 	list_foreach(&self->list_persistent)
 	{
 		auto var = list_at(Var, link_persistent);
 		encode_string(buf, &var->name);
 		var_encode(var, buf);
 	}
+	encode_map_end(buf);
 }
 
 static void
@@ -287,7 +287,7 @@ Buf*
 config_list(Config* self)
 {
 	auto buf = buf_begin();
-	encode_map(buf, self->count_visible);
+	encode_map(buf);
 	list_foreach(&self->list)
 	{
 		auto var = list_at(Var, link);
@@ -296,6 +296,7 @@ config_list(Config* self)
 		encode_string(buf, &var->name);
 		var_encode(var, buf);
 	}
+	encode_map_end(buf);
 	return buf_end(buf);
 }
 

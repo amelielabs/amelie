@@ -9,10 +9,8 @@
 hot static inline bool
 map_find(uint8_t** pos, const char* name, int64_t name_size)
 {
-	int count;
-	data_read_map(pos, &count);
-	int i;
-	for (i = 0; i < count; i++)
+	data_read_map(pos);
+	while (! data_read_map_end(pos))
 	{
 		Str key;
 		data_read_string(pos, &key);
@@ -57,21 +55,50 @@ map_has(uint8_t* map, Str* path)
 	return map_find_path(&map, path) > 0;
 }
 
+hot static inline int
+map_size(uint8_t* pos)
+{
+	int count = 0;
+	data_read_map(&pos);
+	while (! data_read_map_end(&pos))
+	{
+		data_skip(&pos);
+		data_skip(&pos);
+		count++;
+	}
+	return count;
+}
+
 hot static inline bool
 array_find(uint8_t** pos, int position)
 {
-	int count;
-	data_read_array(pos, &count);
-	if (unlikely(count <= position))
-		return false;
-	int i;
-	for (i = 0; i < position; i++)
+	data_read_array(pos);
+	int i = 0;
+	while (! data_read_array_end(pos))
+	{
+		if (i == position)
+			return true;
 		data_skip(pos);
-	return true;
+		i++;
+	}
+	return false;
 }
 
 static inline bool
-array_has(uint8_t* array, int idx)
+array_has(uint8_t* array, int position)
 {
-	return array_find(&array, idx) > 0;
+	return array_find(&array, position);
+}
+
+hot static inline int
+array_size(uint8_t* pos)
+{
+	int count = 0;
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
+	{
+		data_skip(&pos);
+		count++;
+	}
+	return count;
 }

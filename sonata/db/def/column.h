@@ -86,7 +86,7 @@ column_read(uint8_t** pos)
 static inline void
 column_write(Column* self, Buf* buf)
 {
-	encode_map(buf, 3);
+	encode_map(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -99,6 +99,8 @@ column_write(Column* self, Buf* buf)
 	// constraint
 	encode_raw(buf, "constraint", 10);
 	constraint_write(&self->constraint, buf);
+
+	encode_map_end(buf);
 }
 
 hot static inline void

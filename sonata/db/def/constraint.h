@@ -78,7 +78,7 @@ constraint_read(Constraint* self, uint8_t** pos)
 static inline void
 constraint_write(Constraint* self, Buf* buf)
 {
-	encode_map(buf, 3);
+	encode_map(buf);
 
 	// not_null
 	encode_raw(buf, "not_null", 8);
@@ -91,4 +91,6 @@ constraint_write(Constraint* self, Buf* buf)
 	// default
 	encode_raw(buf, "default", 7);
 	encode_string(buf, &self->expr);
+
+	encode_map_end(buf);
 }

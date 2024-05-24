@@ -21,7 +21,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -62,7 +62,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -97,7 +97,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      0
  6          cursor_idx        2      0      0
@@ -134,7 +134,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      3      5      # public.test (primary)
+ 3         cursor_open        0      4      5      # public.test (primary)
  4                 jmp       16      0      0
  5          cursor_idx        1      0      0
  6                push        1      0      0
@@ -176,7 +176,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -212,7 +212,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -249,7 +249,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -291,7 +291,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -448,7 +448,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -482,7 +482,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      1
@@ -514,7 +514,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      1
@@ -609,7 +609,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -650,7 +650,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -685,7 +685,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      0
  6          cursor_idx        2      0      0
@@ -722,7 +722,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      3      5      # public.test (primary)
+ 3         cursor_open        0      4      5      # public.test (primary)
  4                 jmp       16      0      0
  5          cursor_idx        1      0      0
  6                push        1      0      0
@@ -764,7 +764,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -800,7 +800,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -837,7 +837,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -879,7 +879,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5          cursor_idx        1      0      1
  6          cursor_idx        2      0      1
@@ -1019,7 +1019,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6         cursor_read        2      0      0
@@ -1053,7 +1053,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      1
@@ -1085,7 +1085,7 @@ bytecode [shard]
  0         set_ordered        0      0      0
  1             int_min        1      0      0
  2                push        1      0      0
- 3         cursor_open        0      2      5      # public.test (primary)
+ 3         cursor_open        0      3      5      # public.test (primary)
  4                 jmp       10      0      0
  5         cursor_read        1      0      0
  6          cursor_idx        2      0      1

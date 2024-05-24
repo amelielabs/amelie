@@ -14,10 +14,8 @@ value_map(Value* result, Stack* stack, int count)
 
 	auto buf = buf_begin();
 
-	int actual_count = count / 2;
-	encode_map(buf, actual_count);
-	int i = 0;
-	for (; i < count ; i++)
+	encode_map(buf);
+	for (int i = 0; i < count ; i++)
 	{
 		auto ref = stack_at(stack, count - i);
 		if ((i % 2) == 0)
@@ -27,6 +25,7 @@ value_map(Value* result, Stack* stack, int count)
 		}
 		value_write(ref, buf);
 	}
+	encode_map_end(buf);
 
 	buf_end(buf);
 	value_set_buf(result, buf);

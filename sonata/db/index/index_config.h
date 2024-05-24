@@ -92,7 +92,6 @@ index_config_read(uint8_t** pos)
 	};
 	decode_map(map, pos);
 	def_read(&self->def, &def);
-
 	return unguard();
 }
 
@@ -100,7 +99,7 @@ static inline void
 index_config_write(IndexConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 4);
+	encode_map(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -117,4 +116,6 @@ index_config_write(IndexConfig* self, Buf* buf)
 	// def
 	encode_raw(buf, "def", 3);
 	def_write(&self->def, buf);
+
+	encode_map_end(buf);
 }

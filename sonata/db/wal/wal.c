@@ -216,7 +216,7 @@ wal_show(Wal* self, Buf* buf)
 	id_mgr_stats(&self->list, &list_count, &list_min);
 
 	// map
-	encode_map(buf, 7);
+	encode_map(buf);
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -245,4 +245,6 @@ wal_show(Wal* self, Buf* buf)
 	// files
 	encode_raw(buf, "files", 5);
 	encode_integer(buf, list_count);
+
+	encode_map_end(buf);
 }

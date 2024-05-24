@@ -83,7 +83,7 @@ static inline void
 schema_config_write(SchemaConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 3);
+	encode_map(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -96,4 +96,6 @@ schema_config_write(SchemaConfig* self, Buf* buf)
 	// create
 	encode_raw(buf, "create", 6);
 	encode_bool(buf, self->create);
+
+	encode_map_end(buf);
 }

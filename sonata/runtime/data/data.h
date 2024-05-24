@@ -58,186 +58,6 @@ data_size_of(uint64_t value)
 	return data_size64();
 }
 
-// map
-always_inline hot static inline int
-data_size_map(int value)
-{
-	return data_size_of(value);
-}
-
-always_inline hot static inline int
-data_size_map32(void)
-{
-	return data_size32();
-}
-
-always_inline hot static inline void
-data_read_map(uint8_t** pos, int* value)
-{
-	switch (**pos) {
-	case SO_MAPV0 ... SO_MAPV31:
-		*value = **pos - SO_MAPV0;
-		*pos += data_size_type();
-		break;
-	case SO_MAP8:
-		*value = *(int8_t*)(*pos + data_size_type());
-		*pos += data_size8();
-		break;
-	case SO_MAP16:
-		*value = *(int16_t*)(*pos + data_size_type());
-		*pos += data_size16();
-		break;
-	case SO_MAP32:
-		*value = *(int32_t*)(*pos + data_size_type());
-		*pos += data_size32();
-		break;
-	default:
-		data_error(*pos, SO_MAPV0);
-		break;
-	}
-}
-
-always_inline hot static inline int
-data_read_map_at(uint8_t* pos)
-{
-	int value;
-	data_read_map(&pos, &value);
-	return value;
-}
-
-always_inline hot static inline void
-data_write_map(uint8_t** pos, uint32_t value)
-{
-	uint8_t* data = *pos;
-	if (value <= 31)
-	{
-		*data = SO_MAPV0 + value;
-		*pos += data_size_type();
-	} else
-	if (value <= INT8_MAX)
-	{
-		*data = SO_MAP8;
-		*(int8_t*)(data + data_size_type()) = value;
-		*pos += data_size8();
-	} else
-	if (value <= INT16_MAX)
-	{
-		*data = SO_MAP16;
-		*(int16_t*)(data + data_size_type()) = value;
-		*pos += data_size16();
-	} else
-	{
-		*data = SO_MAP32;
-		*(int32_t*)(data + data_size_type()) = value;
-		*pos += data_size32();
-	}
-}
-
-always_inline hot static inline void
-data_write_map32(uint8_t** pos, uint32_t value)
-{
-	uint8_t *data = *pos;
-	*data = SO_MAP32;
-	*(int32_t*)(data + data_size_type()) = value;
-	*pos += data_size32();
-}
-
-always_inline hot static inline bool
-data_is_map(uint8_t* data)
-{
-	return *data >= SO_MAPV0 && *data <= SO_MAP32;
-}
-
-// array
-always_inline hot static inline int
-data_size_array(int value)
-{
-	return data_size_of(value);
-}
-
-always_inline hot static inline int
-data_size_array32(void)
-{
-	return data_size32();
-}
-
-always_inline hot static inline void
-data_read_array(uint8_t** pos, int* value)
-{
-	switch (**pos) {
-	case SO_ARRAYV0 ... SO_ARRAYV31:
-		*value = **pos - SO_ARRAYV0;
-		*pos += data_size_type();
-		break;
-	case SO_ARRAY8:
-		*value = *(int8_t*)(*pos + data_size_type());
-		*pos += data_size8();
-		break;
-	case SO_ARRAY16:
-		*value = *(int16_t*)(*pos + data_size_type());
-		*pos += data_size16();
-		break;
-	case SO_ARRAY32:
-		*value = *(int32_t*)(*pos + data_size_type());
-		*pos += data_size32();
-		break;
-	default:
-		data_error(*pos, SO_ARRAYV0);
-		break;
-	}
-}
-
-always_inline hot static inline int
-data_read_array_at(uint8_t* pos)
-{
-	int value;
-	data_read_array(&pos, &value);
-	return value;
-}
-
-always_inline hot static inline void
-data_write_array(uint8_t** pos, uint32_t value)
-{
-	uint8_t* data = *pos;
-	if (value <= 31)
-	{
-		*data = SO_ARRAYV0 + value;
-		*pos += data_size_type();
-	} else
-	if (value <= INT8_MAX)
-	{
-		*data = SO_ARRAY8;
-		*(int8_t*)(data + data_size_type()) = value;
-		*pos += data_size8();
-	} else
-	if (value <= INT16_MAX)
-	{
-		*data = SO_ARRAY16;
-		*(int16_t*)(data + data_size_type()) = value;
-		*pos += data_size16();
-	} else
-	{
-		*data = SO_ARRAY32;
-		*(int32_t*)(data + data_size_type()) = value;
-		*pos += data_size32();
-	}
-}
-
-always_inline hot static inline void
-data_write_array32(uint8_t** pos, uint32_t value)
-{
-	uint8_t* data = *pos;
-	*data = SO_ARRAY32;
-	*(int32_t*)(data + data_size_type()) = value;
-	*pos += data_size32();
-}
-
-always_inline hot static inline bool
-data_is_array(uint8_t* data)
-{
-	return *data >= SO_ARRAYV0 && *data <= SO_ARRAY32;
-}
-
 //  integer
 always_inline hot static inline int
 data_size_integer(uint64_t value)
@@ -571,6 +391,122 @@ data_is_real(uint8_t* data)
 	return *data == SO_REAL32 || *data == SO_REAL64;
 }
 
+// map
+always_inline hot static inline int
+data_size_map(void)
+{
+	return data_size_type();
+}
+
+always_inline hot static inline int
+data_size_map_end(void)
+{
+	return data_size_type();
+}
+
+always_inline hot static inline void
+data_read_map(uint8_t** pos)
+{
+	if (unlikely(**pos != SO_MAP))
+		data_error(*pos, SO_MAP);
+	*pos += data_size_type();
+}
+
+always_inline hot static inline bool
+data_read_map_end(uint8_t** pos)
+{
+	if (unlikely(**pos != SO_MAP_END))
+		return false;
+	*pos += data_size_type();
+	return true;
+}
+
+always_inline hot static inline void
+data_write_map(uint8_t** pos)
+{
+	uint8_t* data = *pos;
+	*data = SO_MAP;
+	*pos += data_size_type();
+}
+
+always_inline hot static inline void
+data_write_map_end(uint8_t** pos)
+{
+	uint8_t* data = *pos;
+	*data = SO_MAP_END;
+	*pos += data_size_type();
+}
+
+always_inline hot static inline bool
+data_is_map(uint8_t* data)
+{
+	return *data == SO_MAP;
+}
+
+always_inline hot static inline bool
+data_is_map_end(uint8_t* data)
+{
+	return *data == SO_MAP_END;
+}
+
+// array
+always_inline hot static inline int
+data_size_array(void)
+{
+	return data_size_type();
+}
+
+always_inline hot static inline int
+data_size_array_end(void)
+{
+	return data_size_type();
+}
+
+always_inline hot static inline void
+data_read_array(uint8_t** pos)
+{
+	if (unlikely(**pos != SO_ARRAY))
+		data_error(*pos, SO_ARRAY);
+	*pos += data_size_type();
+}
+
+always_inline hot static inline bool
+data_read_array_end(uint8_t** pos)
+{
+	if (unlikely(**pos != SO_ARRAY_END))
+		return false;
+	*pos += data_size_type();
+	return true;
+}
+
+always_inline hot static inline void
+data_write_array(uint8_t** pos)
+{
+	uint8_t* data = *pos;
+	*data = SO_ARRAY;
+	*pos += data_size_type();
+}
+
+always_inline hot static inline void
+data_write_array_end(uint8_t** pos)
+{
+	uint8_t* data = *pos;
+	*data = SO_ARRAY_END;
+	*pos += data_size_type();
+}
+
+always_inline hot static inline bool
+data_is_array(uint8_t* data)
+{
+	return *data == SO_ARRAY;
+}
+
+always_inline hot static inline bool
+data_is_array_end(uint8_t* data)
+{
+	return *data == SO_ARRAY_END;
+}
+
 // null
 always_inline hot static inline int
 data_size_null(void)
@@ -600,64 +536,58 @@ data_is_null(uint8_t* data)
 	return *data == SO_NULL;
 }
 
-// misc
 hot static inline void
 data_skip(uint8_t** pos)
 {
-	switch (**pos) {
-	case SO_TRUE:
-	case SO_FALSE:
+	int level = 0;
+	do
 	{
-		bool value;
-		data_read_bool(pos, &value);
-		break;
-	}
-	case SO_NULL:
-	{
-		data_read_null(pos);
-		break;
-	}
-	case SO_REAL32:
-	case SO_REAL64:
-	{
-		double value;
-		data_read_real(pos, &value);
-		break;
-	}
-	case SO_INTV0 ... SO_INT64:
-	{
-		int64_t value;
-		data_read_integer(pos, &value);
-		break;
-	}
-	case SO_ARRAYV0 ... SO_ARRAY32:
-	{
-		int count;
-		data_read_array(pos, &count);
-		while (count-- > 0)
-			data_skip(pos);
-		break;
-	}
-	case SO_MAPV0 ... SO_MAP32:
-	{
-		int count;
-		data_read_map(pos, &count);
-		while (count-- > 0)
+		switch (**pos) {
+		case SO_TRUE:
+		case SO_FALSE:
 		{
-			data_skip(pos);
-			data_skip(pos);
+			bool value;
+			data_read_bool(pos, &value);
+			break;
 		}
-		break;
-	}
-	case SO_STRINGV0 ... SO_STRING32:
-	{
-		int   value_size;
-		char* value;
-		data_read_raw(pos, &value, &value_size);
-		break;
-	}
-	default:
-		error_data();
-		break;
-	}
+		case SO_NULL:
+		{
+			data_read_null(pos);
+			break;
+		}
+		case SO_REAL32:
+		case SO_REAL64:
+		{
+			double value;
+			data_read_real(pos, &value);
+			break;
+		}
+		case SO_INTV0 ... SO_INT64:
+		{
+			int64_t value;
+			data_read_integer(pos, &value);
+			break;
+		}
+		case SO_STRINGV0 ... SO_STRING32:
+		{
+			int   value_size;
+			char* value;
+			data_read_raw(pos, &value, &value_size);
+			break;
+		}
+		case SO_ARRAY:
+		case SO_MAP:
+			*pos += data_size_type();
+			level++;
+			break;
+		case SO_ARRAY_END:
+		case SO_MAP_END:
+			*pos += data_size_type();
+			level--;
+			break;
+		default:
+			error_data();
+			break;
+		}
+	} while (level > 0);
 }

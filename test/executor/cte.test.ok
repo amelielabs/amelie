@@ -403,7 +403,7 @@ bytecode [shard]
 11         set_ordered        0     20      0
 12             int_min        1      0      0
 13                push        1      0      0
-14         cursor_open        0     22     16      # public.test (primary)
+14         cursor_open        0     23     16      # public.test (primary)
 15                 jmp       29      0      0
 16     cursor_open_cte        1      0     18
 17                 jmp       27      0      0

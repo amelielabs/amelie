@@ -84,14 +84,16 @@ user_config_write(UserConfig* self, Buf* buf, bool safe)
 {
 	if (safe)
 	{
-		encode_map(buf, 2);
+		encode_map(buf);
 		encode_raw(buf, "name", 4);
 		encode_string(buf, &self->name);
 		encode_raw(buf, "secret", 6);
 		encode_string(buf, &self->secret);
+		encode_map_end(buf);
 		return;
 	}
-	encode_map(buf, 1);
+	encode_map(buf);
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
+	encode_map_end(buf);
 }

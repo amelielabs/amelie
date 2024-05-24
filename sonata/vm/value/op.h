@@ -348,10 +348,10 @@ value_sizeof(Value* result, Value* a)
 		break;
 	case VALUE_DATA:
 		if (data_is_array(a->data))
-			rc = data_read_array_at(a->data);
+			rc = array_size(a->data);
 		else
 		if (data_is_map(a->data))
-			rc = data_read_map_at(a->data);
+			rc = map_size(a->data);
 		break;
 	case VALUE_STRING:
 		rc = str_size(&a->string);

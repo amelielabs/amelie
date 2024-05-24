@@ -91,12 +91,13 @@ static inline Buf*
 user_cache_dump(UserCache* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->list_count);
+	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
 		user_config_write(user->config, buf, true);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }
 
@@ -104,11 +105,12 @@ static inline Buf*
 user_cache_list(UserCache* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->list_count);
+	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
 		user_config_write(user->config, buf, false);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }

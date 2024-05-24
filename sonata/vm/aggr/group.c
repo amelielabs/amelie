@@ -284,9 +284,10 @@ group_read(Group* self, GroupNode* node, Value* result)
 	if (self->keys_count > 1)
 	{
 		auto buf = buf_begin();
-		encode_array(buf, self->keys_count);
+		encode_array(buf);
 		for (int i = 0; i < self->keys_count; i++)
 			value_write(&node->keys[i], buf);
+		encode_array_end(buf);
 		buf_end(buf);
 		value_set_buf(result, buf);
 	} else {

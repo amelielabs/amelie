@@ -181,21 +181,21 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_int(self, integer);
 		break;
 	}
-	case SO_ARRAYV0 ... SO_ARRAY32:
-	case SO_MAPV0 ... SO_MAP32:
-	{
-		uint8_t* end = data;
-		data_skip(&end);
-		value_set_data(self, data, end - data, buf);
-		if (buf)
-			buf_ref(buf);
-		break;
-	}
 	case SO_STRINGV0 ... SO_STRING32:
 	{
 		Str string;
 		data_read_string(&data, &string);
 		value_set_string(self, &string, buf);
+		if (buf)
+			buf_ref(buf);
+		break;
+	}
+	case SO_ARRAY:
+	case SO_MAP:
+	{
+		uint8_t* end = data;
+		data_skip(&end);
+		value_set_data(self, data, end - data, buf);
 		if (buf)
 			buf_ref(buf);
 		break;

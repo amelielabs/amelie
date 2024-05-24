@@ -63,7 +63,7 @@ static inline void
 function_write(Function* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 3);
+	encode_map(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -76,4 +76,6 @@ function_write(Function* self, Buf* buf)
 	// argc
 	encode_raw(buf, "argc", 4);
 	encode_integer(buf, self->argc);
+
+	encode_map_end(buf);
 }

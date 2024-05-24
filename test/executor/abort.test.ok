@@ -29,7 +29,7 @@ bytecode [coordinator]
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0     13      0      # abort
+ 4              string        0     18      0      # abort
  5                push        0      0      0
  6                call        0      -      1      # public.error()
  7             cte_set        1      0      0
@@ -130,7 +130,7 @@ bytecode [coordinator]
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0      4      0      # abort
+ 4              string        0      6      0      # abort
  5                push        0      0      0
  6                call        0      -      1      # public.error()
  7             cte_set        1      0      0
@@ -190,7 +190,7 @@ bytecode [coordinator]
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0     13      0      # abort
+ 4              string        0     18      0      # abort
  5                push        0      0      0
  6                call        0      -      1      # public.error()
  7             cte_set        1      0      0
@@ -291,7 +291,7 @@ bytecode [coordinator]
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0      4      0      # abort
+ 4              string        0      6      0      # abort
  5                push        0      0      0
  6                call        0      -      1      # public.error()
  7             cte_set        1      0      0
@@ -348,7 +348,7 @@ bytecode [coordinator]
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0     22      0      # abort
+ 4              string        0     30      0      # abort
  5                push        0      0      0
  6                call        0      -      1      # public.error()
  7             cte_set        1      0      0
@@ -369,7 +369,7 @@ bytecode [shard]
  2                 set        0      0      0
  3             int_min        1      0      0
  4                push        1      0      0
- 5         cursor_open        0     32      7      # public.a (primary)
+ 5         cursor_open        0     40      7      # public.a (primary)
  6                 jmp       10      0      0
  7         cursor_read        1      0      0
  8             set_add        0      1      0
@@ -596,7 +596,7 @@ bytecode [coordinator]
 11                push        0      0      0
 12          merge_recv        0     -1     -1
 13             cte_set        2      0      0
-14              string        0     41      0      # abort
+14              string        0     44      0      # abort
 15                push        0      0      0
 16                call        0      -      1      # public.error()
 17             cte_set        3      0      0
@@ -622,7 +622,7 @@ bytecode [shard]
 13                 ret        0      0      0
 14             int_min        0      0      0
 15                push        0      0      0
-16         cursor_open        0      7     18      # public.b (primary)
+16         cursor_open        0     10     18      # public.b (primary)
 17                 jmp       30      0      0
 18         cursor_read        0      0      0
 19                push        0      0      0
@@ -641,7 +641,7 @@ bytecode [shard]
 32                 set        0      0      0
 33             int_min        1      0      0
 34                push        1      0      0
-35         cursor_open        0     24     37      # public.a (primary)
+35         cursor_open        0     27     37      # public.a (primary)
 36                 jmp       40      0      0
 37         cursor_read        1      0      0
 38             set_add        0      1      0

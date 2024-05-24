@@ -96,7 +96,7 @@ key_read(uint8_t** pos)
 static inline void
 key_write(Key* self, Buf* buf)
 {
-	encode_map(buf, 4);
+	encode_map(buf);
 
 	// column
 	encode_raw(buf, "column", 6);
@@ -113,6 +113,8 @@ key_write(Key* self, Buf* buf)
 	// asc
 	encode_raw(buf, "asc", 3);
 	encode_bool(buf, self->asc);
+
+	encode_map_end(buf);
 }
 
 static inline void

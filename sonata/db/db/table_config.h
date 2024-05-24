@@ -132,17 +132,16 @@ table_config_read(uint8_t** pos)
 	decode_map(map, pos);
 
 	// indexes
-	int count;
-	data_read_array(&pos_indexes, &count);
-	while (count-- > 0)
+	data_read_array(&pos_indexes);
+	while (! data_read_array_end(&pos_indexes))
 	{
 		auto config = index_config_read(&pos_indexes);
 		table_config_add_index(self, config);
 	}
 
 	// partitions
-	data_read_array(&pos_partitions, &count);
-	while (count-- > 0)
+	data_read_array(&pos_partitions);
+	while (! data_read_array_end(&pos_partitions))
 	{
 		auto config = part_config_read(&pos_partitions);
 		table_config_add_partition(self, config);
@@ -155,7 +154,7 @@ static inline void
 table_config_write(TableConfig* self, Buf* buf)
 {
 	// map
-	encode_map(buf, 5);
+	encode_map(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -171,19 +170,22 @@ table_config_write(TableConfig* self, Buf* buf)
 
 	// indexes
 	encode_raw(buf, "indexes", 7);
-	encode_array(buf, self->indexes_count);
+	encode_array(buf);
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
 		index_config_write(config, buf);
 	}
+	encode_array_end(buf);
 
 	// partitions
 	encode_raw(buf, "partitions", 10);
-	encode_array(buf, self->partitions_count);
+	encode_array(buf);
 	list_foreach(&self->partitions)
 	{
 		auto config = list_at(PartConfig, link);
 		part_config_write(config, buf);
 	}
+	encode_array_end(buf);
+	encode_map_end(buf);
 }

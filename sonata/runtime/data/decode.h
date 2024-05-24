@@ -32,9 +32,8 @@ static inline void
 decode_map(Decode* self, uint8_t** pos)
 {
 	// read map and compare against keys
-	int count;
-	data_read_map(pos, &count);
-	while (count-- > 0)
+	data_read_map(pos);
+	while (! data_read_map_end(pos))
 	{
 		Str key;
 		data_read_string(pos, &key);

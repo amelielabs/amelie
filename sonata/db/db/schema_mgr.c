@@ -143,11 +143,8 @@ schema_mgr_rename(SchemaMgr*   self,
 void
 schema_mgr_dump(SchemaMgr* self, Buf* buf)
 {
-	// exclude system objects
-	int count = self->mgr.list_count - 2;
-
 	// array
-	encode_array(buf, count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto schema = schema_of(list_at(Handle, link));
@@ -155,6 +152,7 @@ schema_mgr_dump(SchemaMgr* self, Buf* buf)
 			continue;
 		schema_config_write(schema->config, buf);
 	}
+	encode_array_end(buf);
 }
 
 Schema*
@@ -175,11 +173,12 @@ Buf*
 schema_mgr_list(SchemaMgr* self)
 {
 	auto buf = buf_begin();
-	encode_array(buf, self->mgr.list_count);
+	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto schema = schema_of(list_at(Handle, link));
 		schema_config_write(schema->config, buf);
 	}
+	encode_array_end(buf);
 	return buf_end(buf);
 }

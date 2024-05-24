@@ -51,7 +51,6 @@ json_next(Json* self, int n)
 hot static inline int
 json_read(Json* self, int skip)
 {
-	int offset;
 	int token = json_next(self, skip);
 	if (unlikely(token <= 0))
 		return token;
@@ -62,26 +61,24 @@ json_read(Json* self, int skip)
 	case '[':
 	{
 		// [ v, v, v ]
-		offset = buf_size(data);
-		encode_array32(data, 0);
+		encode_array(data);
 
 		// []
 		rc = json_next(self, 1);
 		if (unlikely(rc <= 0))
 			return -1;
-		if (rc == ']') {
+		if (rc == ']')
+		{
 			self->pos++;
+			encode_array_end(data);
 			return token;
 		}
-
-		int count = 0;
 		for (;;)
 		{
 			// [v, ...]
 			rc = json_read(self, 0);
 			if (unlikely(rc <= 0))
 				return -1;
-			count++;
 			// ,]
 			rc = json_next(self, 0);
 			if (rc == ']') {
@@ -95,27 +92,25 @@ json_read(Json* self, int skip)
 				return -1;
 		}
 
-		// update array size
-		uint8_t* pos_size = data->start + offset;
-		data_write_array32(&pos_size, count);
+		encode_array_end(data);
 		return token;
 	}
 	case '{':
 	{
 		// { "key" : value, ... }
-		offset = buf_size(data);
-		encode_map32(data, 0);
+		encode_map(data);
 
 		// {}
 		rc = json_next(self, 1);
 		if (unlikely(rc <= 0))
 			return -1;
-		if (rc == '}') {
+		if (rc == '}')
+		{
 			self->pos++;
+			encode_map_end(data);
 			return token;
 		}
 
-		int count = 0;
 		for (;;)
 		{
 			// "key"
@@ -130,8 +125,6 @@ json_read(Json* self, int skip)
 			rc = json_read(self, 1);
 			if (unlikely(rc == -1))
 				return -1;
-			count++;
-
 			// ,}
 			rc = json_next(self, 0);
 			if (rc == '}') {
@@ -145,15 +138,13 @@ json_read(Json* self, int skip)
 				return -1;
 		}
 
-		// update map size
-		uint8_t* pos_size = data->start + offset;
-		data_write_map32(&pos_size, count);
+		encode_map_end(data);
 		return token;
 	}
 	case '\"':
 	{
-		offset = ++self->pos;
-		int slash = 0;
+		int offset = ++self->pos;
+		int slash  = 0;
 		for (; self->pos < self->json_size; self->pos++)
 		{
 			if (likely(!slash) ){
@@ -316,31 +307,29 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case SO_ARRAYV0 ... SO_ARRAY32:
+	case SO_ARRAY:
 	{
-		int value;
-		data_read_array(pos, &value);
+		data_read_array(pos);
 		buf_write(data, "[", 1);
-		while (value-- > 0)
+		while (! data_read_array_end(pos))
 		{
 			json_export_as(data, pretty, deep, pos);
-			if (value > 0)
+			// ,
+			if (! data_is_array_end(*pos))
 				buf_write(data, ", ", 2);
 		}
 		buf_write(data, "]", 1);
 		break;
 	}
-	case SO_MAPV0 ... SO_MAP32:
+	case SO_MAP:
 	{
-		int value;
-		data_read_map(pos, &value);
+		data_read_map(pos);
 		if (pretty)
 		{
 			buf_write(data, "{\n", 2);
-			int i;
-			while (value-- > 0)
+			while (! data_read_map_end(pos))
 			{
-				for (i = 0; i < deep + 1; i++)
+				for (int i = 0; i < deep + 1; i++)
 					buf_write(data, "  ", 2);
 				// key
 				json_export_as(data, pretty, deep + 1, pos);
@@ -348,18 +337,18 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 				// value
 				json_export_as(data, pretty, deep + 1, pos);
 				// ,
-				if (value > 0)
-					buf_write(data, ",\n", 2);
-				else
+				if (data_is_map_end(*pos))
 					buf_write(data, "\n", 1);
+				else
+					buf_write(data, ",\n", 2);
 			}
-			for (i = 0; i < deep; i++)
+			for (int i = 0; i < deep; i++)
 				buf_write(data, "  ", 2);
 			buf_write(data, "}", 1);
 		} else
 		{
 			buf_write(data, "{", 1);
-			while (value-- > 0)
+			while (! data_read_map_end(pos))
 			{
 				// key
 				json_export_as(data, pretty, deep + 1, pos);
@@ -367,7 +356,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 				// value
 				json_export_as(data, pretty, deep + 1, pos);
 				// ,
-				if (value > 0)
+				if (! data_is_map_end(*pos))
 					buf_write(data, ", ", 2);
 			}
 			buf_write(data, "}", 1);

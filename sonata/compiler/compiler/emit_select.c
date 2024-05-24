@@ -128,7 +128,7 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 	auto data = &self->code_data.data;
 
 	// [asc/desc, ..]
-	encode_array(data, select->expr_order_by.count);
+	encode_array(data);
 	auto node = select->expr_order_by.list;
 	while (node)
 	{
@@ -138,7 +138,7 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 			*desc = true;
 		node = node->next;
 	}
-
+	encode_array_end(data);
 	return offset;
 }
 

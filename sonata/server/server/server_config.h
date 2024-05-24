@@ -51,9 +51,8 @@ server_config_read(uint8_t** pos)
 	// map
 	if (! data_is_map(*pos))
 		error("server: listen[<{}>] element must be a map"); 
-	int count;
-	data_read_map(pos, &count);
-	for (int i = 0; i < count; i++)
+	data_read_map(pos);
+	while (! data_read_map_end(pos))
 	{
 		// key
 		Str name;

@@ -22,13 +22,19 @@ db_catalog_dump(Catalog* cat, Buf* buf)
 {
 	// { schemas, tables, views }
 	Db* self = cat->iface_arg;
-	encode_map(buf, 3);
+
+	encode_map(buf);
+
 	encode_raw(buf, "schemas", 7);
 	schema_mgr_dump(&self->schema_mgr, buf);
+
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
+
 	encode_raw(buf, "views", 5);
 	view_mgr_dump(&self->view_mgr, buf);
+
+	encode_map_end(buf);
 }
 
 static void
@@ -143,20 +149,18 @@ db_catalog_restore(Catalog* cat, uint8_t** pos)
 	decode_map(map, pos);
 
 	// schemas
-	int count;
-	data_read_array(&pos_schemas, &count);
-	int i = 0;
-	for (; i < count; i++)
+	data_read_array(&pos_schemas);
+	while (! data_read_array_end(&pos_schemas))
 		db_catalog_restore_schema(self, &pos_schemas);
 
 	// tables
-	data_read_array(&pos_tables, &count);
-	for (i = 0; i < count; i++)
+	data_read_array(&pos_tables);
+	while (! data_read_array_end(&pos_tables))
 		db_catalog_restore_table(self, &pos_tables);
 
 	// views
-	data_read_array(&pos_views, &count);
-	for (i = 0; i < count; i++)
+	data_read_array(&pos_views);
+	while (! data_read_array_end(&pos_views))
 		db_catalog_restore_view(self, &pos_views);
 }
 

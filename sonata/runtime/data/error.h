@@ -10,11 +10,12 @@ static inline Buf*
 msg_error(Error* e)
 {
 	auto buf = msg_begin(MSG_ERROR);
-	encode_map(buf, 2);
+	encode_map(buf);
 	encode_raw(buf, "code", 4);
 	encode_integer(buf, e->code);
 	encode_raw(buf, "msg", 3);
 	encode_raw(buf, e->text, e->text_len);
+	encode_map_end(buf);
 	return msg_end(buf);
 }
 
@@ -22,11 +23,12 @@ static inline Buf*
 msg_error_as(int code, Str* msg)
 {
 	auto buf = msg_begin(MSG_ERROR);
-	encode_map(buf, 2);
+	encode_map(buf);
 	encode_raw(buf, "code", 4);
 	encode_integer(buf, code);
 	encode_raw(buf, "msg", 3);
 	encode_string(buf, msg);
+	encode_map_end(buf);
 	return msg_end(buf);
 }
 
@@ -34,8 +36,7 @@ static inline Buf*
 msg_error_rethrow(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;
-	int count;
-	data_read_map(&pos, &count);
+	data_read_map(&pos);
 	// code
 	data_skip(&pos);
 	data_skip(&pos);

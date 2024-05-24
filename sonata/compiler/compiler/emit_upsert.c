@@ -39,8 +39,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	insert->rows_offset = code_data_offset(&self->code_data);
 
 	// []
-	encode_array(&self->code_data.data, insert->rows_count);
-
+	encode_array(&self->code_data.data);
 	auto i = insert->rows;
 	for (; i; i = i->next)
 	{
@@ -48,6 +47,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		int data_size;
 		emit_row(&self->code_data, row, &data_size);
 	}
+	encode_array_end(&self->code_data.data);
 
 	// generate upsert
 

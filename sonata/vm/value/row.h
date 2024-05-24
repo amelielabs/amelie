@@ -10,7 +10,7 @@ hot static inline Row*
 value_row_key(Def* self, Stack* stack)
 {
 	// calculate row size and validate columns
-	int size = data_size_array(self->key_count);
+	int size = data_size_array() + data_size_array_end();
 
 	auto key = self->key;
 	for (; key; key = key->next)
@@ -39,8 +39,7 @@ value_row_key(Def* self, Stack* stack)
 	// copy keys and indexate
 	uint8_t* start = row_data(row, self);
 	uint8_t* pos = start;
-	data_write_array(&pos, self->key_count);
-
+	data_write_array(&pos);
 	key = self->key;
 	for (; key; key = key->next)
 	{
@@ -51,6 +50,6 @@ value_row_key(Def* self, Stack* stack)
 		else
 			data_write_integer(&pos, ref->integer);
 	}
-
+	data_write_array_end(&pos);
 	return row;
 }

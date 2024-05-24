@@ -84,57 +84,51 @@ update_set_to_array(Buf*      buf,
 {
 	if (unlikely(! data_is_array(*pos)))
 		error("set: unexpected data type");
-	int count;
-	data_read_array(pos, &count);
+	data_read_array(pos);
 
-	if (idx < count)
+	encode_array(buf);
+	int i = 0;
+	while (! data_read_array_end(pos))
 	{
 		// replace
-		encode_array(buf, count);
-		for (int i = 0; i < count; i++)
+		if (i == idx)
 		{
-			if (i == idx)
+			if (update_path_has(path, path_size))
 			{
-				if (update_path_has(path, path_size))
-				{
-					update_set_to(buf, pos, path, path_size, value, found);
-				} else
-				{
-					// replace value
-					value_write(value, buf);
-					assert(! *found);
-					*found = true;
-					data_skip(pos);
-				}
-				continue;
+				update_set_to(buf, pos, path, path_size, value, found);
+			} else
+			{
+				// replace value
+				value_write(value, buf);
+				assert(! *found);
+				*found = true;
+				data_skip(pos);
 			}
-			uint8_t* start = *pos;
-			data_skip(pos);
-			buf_write(buf, start, *pos - start);
+
+			i++;
+			continue;
 		}
 
-	} else
-	if (idx == count)
+		uint8_t* start = *pos;
+		data_skip(pos);
+		buf_write(buf, start, *pos - start);
+		i++;
+	}
+
+	// extend array by one
+	if (idx == i)
 	{
-		// extend array by one
 		if (update_path_has(path, path_size))
 			error("set: incorrect path");
-
-		encode_array(buf, count + 1);
-		for (int i = 0; i < count; i++)
-		{
-			uint8_t* start = *pos;
-			data_skip(pos);
-			buf_write(buf, start, *pos - start);
-		}
 		value_write(value, buf);
 		assert(! *found);
 		*found = true;
-
 	} else
+	if (idx > i)
 	{
 		error("set: incorrect array position");
 	}
+	encode_array_end(buf);
 }
 
 hot static inline void
@@ -149,14 +143,10 @@ update_set_to_map(Buf*      buf,
 {
 	if (unlikely(! data_is_map(*pos)))
 		error("set: unexpected data type");
-	int count;
-	data_read_map(pos, &count);
+	data_read_map(pos);
 
-	// map
-	int map_offset = buf_size(buf);
-	encode_map32(buf, count);
-
-	for (int i = 0; i < count; i++)
+	encode_map(buf);
+	while (! data_read_map_end(pos))
 	{
 		// key 
 		Str key;
@@ -196,11 +186,8 @@ update_set_to_map(Buf*      buf,
 
 		// value
 		value_write(value, buf);
-
-		// update map size
-		uint8_t* map_ptr = buf->start + map_offset;
-		data_write_map32(&map_ptr, count + 1);
 	}
+	encode_map_end(buf);
 }
 
 hot static inline void
@@ -246,17 +233,14 @@ update_unset_to_array(Buf*      buf,
 	if (unlikely(! data_is_array(*pos)))
 		error("unset: unexpected data type");
 
-	int count;
-	data_read_array(pos, &count);
-	if (unlikely(idx >= count))
-		error("unset: array index is out of bounds");
+	data_read_array(pos);
 
+	encode_array(buf);
 	if (update_path_has(path, path_size))
 	{
 		// replace array element
-		encode_array(buf, count);
 		int i = 0;
-		for (; i < count; i++)
+		while (! data_read_array_end(pos))
 		{
 			if (i == idx)
 			{
@@ -267,21 +251,23 @@ update_unset_to_array(Buf*      buf,
 				data_skip(pos);
 				buf_write(buf, start, *pos - start);
 			}
+			i++;
 		}
+
 	} else
 	{
 		// remove array element
-		encode_array(buf, count - 1);
 		int i = 0;
-		for (; i < count; i++)
+		while (! data_read_array_end(pos))
 		{
 			uint8_t* start = *pos;
 			data_skip(pos);
-			if (i == idx)
-				continue;
-			buf_write(buf, start, *pos - start);
+			if (i != idx)
+				buf_write(buf, start, *pos - start);
+			i++;
 		}
 	}
+	encode_array_end(buf);
 }
 
 hot static inline void
@@ -294,20 +280,16 @@ update_unset_to_map(Buf*      buf,
 {
 	if (unlikely(! data_is_map(*pos)))
 		error("unset: unexpected data type");
-	int count;
-	data_read_map(pos, &count);
+	data_read_map(pos);
 
-	// map
-	int map_offset = buf_size(buf);
-	encode_map32(buf, count);
-
-	for (int i = 0; i < count; i++)
+	encode_map(buf);
+	while (! data_read_map_end(pos))
 	{
 		// key
 		Str key;
 		data_read_string(pos, &key);
 
-		/* path match */
+		// path match
 		if (str_compare_raw(&key, name, name_size))
 		{
 			if (update_path_has(path, path_size))
@@ -317,10 +299,6 @@ update_unset_to_map(Buf*      buf,
 			} else
 			{
 				data_skip(pos);
-
-				// update map size
-				uint8_t* map_ptr = buf->start + map_offset;
-				data_write_map32(&map_ptr, count - 1);
 			}
 			continue;
 		}
@@ -331,6 +309,7 @@ update_unset_to_map(Buf*      buf,
 		data_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
+	encode_map_end(buf);
 }
 
 hot static inline void

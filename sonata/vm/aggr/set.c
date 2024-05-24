@@ -45,10 +45,11 @@ static void
 set_encode(ValueObj* obj, Buf* buf)
 {
 	auto self = (Set*)obj;
-	encode_array(buf, self->list_count);
+	encode_array(buf);
 	int i = 0;
 	for (; i < self->list_count ; i++)
 		value_write(&set_at(self, i)->value, buf);
+	encode_array_end(buf);
 }
 
 static void
@@ -80,7 +81,8 @@ set_create(uint8_t* data)
 	if (data)
 	{
 		// [asc/desc, ...]
-		data_read_array(&data, &self->keys_count);
+		self->keys_count = array_size(data);
+		data_read_array(&data);
 		if (self->keys_count > 0)
 		{
 			self->keys = so_malloc(sizeof(SetKey) * self->keys_count);
@@ -88,7 +90,6 @@ set_create(uint8_t* data)
 				data_read_bool(&data, &self->keys[i].asc);
 		}
 	}
-
 	return unguard();
 }
 
