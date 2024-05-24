@@ -333,7 +333,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 }
 
 hot static inline void
-parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
+parse_values(Stmt* self, AstInsert* stmt, Ast* list)
 {
 	// [VALUES]
 	if (stmt_if(self, KVALUES))
@@ -343,7 +343,7 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 		for (;;)
 		{
 			AstRow* row;
-			if (list_in_use)
+			if (list)
 				row = parse_row_list(self, stmt, list);
 			else
 				row = parse_row(self, stmt);
@@ -502,12 +502,11 @@ parse_insert(Stmt* self, bool unique)
 	{
 		// (column list)
 		Ast* list = NULL;
-		bool list_in_use = stmt_if(self, '(');
-		if (list_in_use)
+		if (stmt_if(self, '('))
 			list = parse_column_list(self, stmt);
 
 		// [VALUES] | expr
-		parse_values(self, stmt, list_in_use, list);
+		parse_values(self, stmt, list);
 	}
 
 	// ON CONFLICT
