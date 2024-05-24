@@ -21,6 +21,7 @@ part_mgr_init(PartMgr* self)
 	self->reference  = false;
 	self->list_count = 0;
 	list_init(&self->list);
+	part_map_init(&self->map);
 }
 
 void
@@ -33,6 +34,7 @@ part_mgr_free(PartMgr* self)
 	}
 	self->list_count = 0;
 	list_init(&self->list);
+	part_map_free(&self->map);
 }
 
 void

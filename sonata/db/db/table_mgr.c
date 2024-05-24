@@ -29,7 +29,7 @@ table_mgr_free(TableMgr* self)
 	handle_mgr_free(&self->mgr);
 }
 
-void
+bool
 table_mgr_create(TableMgr*    self,
                  Transaction* trx,
                  TableConfig* config,
@@ -42,7 +42,7 @@ table_mgr_create(TableMgr*    self,
 		if (! if_not_exists)
 			error("table '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
-		return;
+		return false;
 	}
 
 	// allocate table
@@ -61,6 +61,7 @@ table_mgr_create(TableMgr*    self,
 
 	// prepare partition manager
 	table_open(table);
+	return true;
 }
 
 void

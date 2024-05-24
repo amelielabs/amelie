@@ -15,7 +15,7 @@ struct TableMgr
 
 void   table_mgr_init(TableMgr*);
 void   table_mgr_free(TableMgr*);
-void   table_mgr_create(TableMgr*, Transaction*, TableConfig*, bool);
+bool   table_mgr_create(TableMgr*, Transaction*, TableConfig*, bool);
 void   table_mgr_drop(TableMgr*, Transaction*, Str*, Str*, bool);
 void   table_mgr_drop_of(TableMgr*, Transaction*, Table*);
 void   table_mgr_rename(TableMgr*, Transaction*, Str*, Str*, Str*, Str*, bool);

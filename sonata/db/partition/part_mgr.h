@@ -10,9 +10,10 @@ typedef struct PartMgr PartMgr;
 
 struct PartMgr
 {
-	bool reference;
-	List list;
-	int  list_count;
+	bool    reference;
+	List    list;
+	int     list_count;
+	PartMap map;
 };
 
 void part_mgr_init(PartMgr*);

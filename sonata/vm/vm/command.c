@@ -677,50 +677,32 @@ csend(Vm* self, Op* op)
 
 	auto data_start = code_data_at(self->code_data, 0);
 	auto data       = code_data_at(self->code_data, op->d);
-	if (table->config->reference)
+
+	Req* map[router->set_size];
+	memset(map, 0, sizeof(map));
+
+	int count;
+	data_read_array(&data, &count);
+	for (; count > 0; count--)
 	{
-		auto req = req_create(req_cache);
-		req->op    = start;
-		req->order = 0;
-		req_list_add(&list, req);
+		// hash row keys
+		uint32_t offset = data - data_start;
+		auto hash = row_hash(def, &data);
 
-		int count;
-		data_read_array(&data, &count);
-		for (; count > 0; count--)
+		// map to shard
+		auto order = part_map_get(&table->part_mgr.map, hash);
+		auto req = map[order];
+		if (req == NULL)
 		{
-			uint32_t offset = data - data_start;
-			data_skip(&data);
-			// write u32 offset to req->arg
-			buf_write(&req->arg, &offset, sizeof(offset));
+			req = req_create(req_cache);
+			req->op    = start;
+			req->order = order;
+			req_list_add(&list, req);
+			map[order] = req;
 		}
-	} else
-	{
-		Req* map[router->set_size];
-		memset(map, 0, sizeof(map));
 
-		int count;
-		data_read_array(&data, &count);
-		for (; count > 0; count--)
-		{
-			// hash row keys
-			uint32_t offset = data - data_start;
-			auto hash = row_hash(def, &data);
-
-			// map to shard
-			auto route = router_get(router, hash);
-			auto req = map[route->order];
-			if (req == NULL)
-			{
-				req = req_create(req_cache);
-				req->op    = start;
-				req->order = route->order;
-				req_list_add(&list, req);
-				map[route->order] = req;
-			}
-
-			// write u32 offset to req->arg
-			buf_write(&req->arg, &offset, sizeof(offset));
-		}
+		// write u32 offset to req->arg
+		buf_write(&req->arg, &offset, sizeof(offset));
 	}
 
 	executor_send(self->executor, self->plan, op->a, &list);

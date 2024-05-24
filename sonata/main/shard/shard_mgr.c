@@ -111,16 +111,10 @@ shard_mgr_open(ShardMgr* self)
 void
 shard_mgr_create(ShardMgr* self, int count)
 {
-	// prepare index
 	int allocated = count * sizeof(Shard*);
 	self->shards_count = count;
 	self->shards = so_malloc(allocated);
 	memset(self->shards, 0, allocated);
-
-	// partition_max / shards_count
-	int range_max      = PARTITION_MAX;
-	int range_interval = range_max / count;
-	int range_start    = 0;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -132,19 +126,6 @@ shard_mgr_create(ShardMgr* self, int count)
 		Uuid id;
 		uuid_generate(&id, global()->random);
 		shard_config_set_id(config, &id);
-
-		// set shard range
-		int range_step;
-		if ((i + 1) < count)
-			range_step = range_interval;
-		else
-			range_step = range_max - range_start;
-		if ((range_start + range_step) > range_max)
-			range_step = range_max - range_start;
-
-		shard_config_set_range(config, range_start, range_start + range_step);
-
-		range_start += range_step;
 
 		// create shard
 		auto shard = shard_allocate(config, self->db, self->function_mgr);
@@ -158,26 +139,46 @@ shard_mgr_create(ShardMgr* self, int count)
 }
 
 void
-shard_mgr_set_partition_map(ShardMgr* mgr, Router* router)
+shard_mgr_set_router(ShardMgr* self, Router* router)
 {
-	router_create(router, mgr->shards_count);
-
-	// create routes to each shard based on the partition mapping
-	for (int order = 0; order < mgr->shards_count; order++)
+	router_create(router, self->shards_count);
+	for (int i = 0; i < self->shards_count; i++)
 	{
-		auto shard = mgr->shards[order];
-		auto route = router_at(router, order);
+		auto shard = self->shards[i];
+		auto route = router_at(router, i);
 		route->order   =  shard->order;
 		route->channel = &shard->task.channel;
-
-		int j = shard->config->min;
-		for (; j < shard->config->max; j++)
-		{
-			route = &router->map[j];
-			route->order   =  shard->order;
-			route->channel = &shard->task.channel;
-		}
 	}
+}
+
+void
+shard_mgr_set_partition_map(ShardMgr* self, PartMgr* part_mgr)
+{
+	// create partition map and set each partition range to the shard order
+	auto map = &part_mgr->map;
+	part_map_create(map);
+	list_foreach(&part_mgr->list)
+	{
+		auto part  = list_at(Part, link);
+		auto shard = shard_mgr_find(self, &part->config->shard);
+		if (! shard)
+			error("partition shard cannot be found");
+		int i = part->config->shard_min;
+		for (; i < part->config->shard_max; i++)
+			part_map_set(map, i, shard->order);
+	}
+}
+
+Shard*
+shard_mgr_find(ShardMgr* self, Uuid* uuid)
+{
+	for (int i = 0; i < self->shards_count; i++)
+	{
+		auto shard = self->shards[i];
+		if (uuid_compare(&shard->config->id, uuid))
+			return shard;
+	}
+	return NULL;
 }
 
 void

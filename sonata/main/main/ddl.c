@@ -57,14 +57,14 @@ ddl_alter_schema(System* self, Transaction* trx, Stmt* stmt)
 }
 
 static inline void
-ddl_create_partition(TableConfig* table_config, Shard* shard)
+ddl_create_partition(TableConfig* table_config, Shard* shard, uint64_t min, uint64_t max)
 {
 	// create partition config
 	auto config = part_config_allocate();
 	auto ssn = config_ssn_next();
 	part_config_set_id(config, ssn);
 	part_config_set_shard(config, &shard->config->id);
-	part_config_set_range(config, shard->config->min, shard->config->max);
+	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
 }
 
@@ -90,24 +90,52 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		      str_size(&config->name),
 		      str_of(&config->name));
 
-	// reference table require only one partition
+	// create table partitions
 	auto shard_mgr = &self->shard_mgr;
 	if (config->reference)
 	{
+		// reference table require only one partition
 		auto shard = shard_mgr->shards[0];
-		ddl_create_partition(config, shard);
+		ddl_create_partition(config, shard, 0, PARTITION_MAX);
 	} else
 	{
-		// create partition config for each shard
+		// create partition for each shard
+
+		// partition_max / shards_count
+		int range_max      = PARTITION_MAX;
+		int range_interval = range_max / shard_mgr->shards_count;
+		int range_start    = 0;
 		for (int i = 0; i < shard_mgr->shards_count; i++)
 		{
 			auto shard = shard_mgr->shards[i];
-			ddl_create_partition(config, shard);
+
+			// set partition range
+			int range_step;
+			if ((i + 1) < shard_mgr->shards_count)
+				range_step = range_interval;
+			else
+				range_step = range_max - range_start;
+			if ((range_start + range_step) > range_max)
+				range_step = range_max - range_start;
+
+			ddl_create_partition(config, shard,
+			                     range_start,
+			                     range_start + range_step);
+
+			range_start += range_step;
 		}
 	}
 
 	// create table
-	table_mgr_create(&db->table_mgr, trx, config, arg->if_not_exists);
+	bool created;
+	created = table_mgr_create(&db->table_mgr, trx, config, arg->if_not_exists);
+
+	// set partition map
+	if (created)
+	{
+		auto table = table_mgr_find(&db->table_mgr, &config->schema, &config->name, true);
+		shard_mgr_set_partition_map(&self->shard_mgr, &table->part_mgr);
+	}
 }
 
 static void

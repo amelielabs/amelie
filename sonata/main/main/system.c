@@ -163,7 +163,7 @@ system_start(System* self, bool bootstrap)
 		auto shards = var_int_of(&config()->shards);
 		shard_mgr_create(&self->shard_mgr, shards);
 	}
-	shard_mgr_set_partition_map(&self->shard_mgr, &self->router);
+	shard_mgr_set_router(&self->shard_mgr, &self->router);
 
 	// prepare executor
 	executor_create(&self->executor);
@@ -176,6 +176,13 @@ system_start(System* self, bool bootstrap)
 
 	// recover
 	system_recover(self);
+
+	// set tables partition mapping
+	list_foreach(&self->db.table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		shard_mgr_set_partition_map(&self->shard_mgr, &table->part_mgr);
+	}
 
 	// todo: start checkpoint worker
 
