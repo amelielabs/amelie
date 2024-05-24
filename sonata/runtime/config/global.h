@@ -65,27 +65,27 @@ config_lsn_follow(uint64_t value)
 	return var_int_follow(&config()->lsn, value);
 }
 
-// ssn
+// psn
 static inline uint64_t
-config_ssn(void)
+config_psn(void)
 {
-	return var_int_of(&config()->ssn);
+	return var_int_of(&config()->psn);
 }
 
 static inline void
-config_ssn_set(uint64_t value)
+config_psn_set(uint64_t value)
 {
-	return var_int_set(&config()->ssn, value);
+	return var_int_set(&config()->psn, value);
 }
 
 static inline uint64_t
-config_ssn_next(void)
+config_psn_next(void)
 {
-	return var_int_set_next(&config()->ssn);
+	return var_int_set_next(&config()->psn);
 }
 
 static inline void
-config_ssn_follow(uint64_t value)
+config_psn_follow(uint64_t value)
 {
-	return var_int_follow(&config()->ssn, value);
+	return var_int_follow(&config()->psn, value);
 }

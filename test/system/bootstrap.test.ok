@@ -25,7 +25,7 @@ show all
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
   "lsn": 0,
-  "ssn": 0,
+  "psn": 0,
   "checkpoint": 0
 }
 # test: ensure uuid recover
@@ -57,7 +57,7 @@ show all
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
   "lsn": 0,
-  "ssn": 0,
+  "psn": 0,
   "checkpoint": 0
 }
 disconnect S0

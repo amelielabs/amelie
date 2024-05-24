@@ -180,7 +180,7 @@ select *, * from {"a": 1, "b": 2, "c": 3}
 [[1, 1], [2, 2], [3, 3]]
 # test: select from function
 select ** from system.config()
-["version", "uuid", "directory", "log_enable", "log_to_file", "log_to_stdout", "log_connections", "log_query", "tls_cert", "tls_key", "tls_ca", "listen", "frontends", "shards", "wal", "wal_rotate_wm", "wal_sync_on_rotate", "wal_sync_on_write", "lsn", "ssn", "checkpoint"]
+["version", "uuid", "directory", "log_enable", "log_to_file", "log_to_stdout", "log_connections", "log_query", "tls_cert", "tls_key", "tls_ca", "listen", "frontends", "shards", "wal", "wal_rotate_wm", "wal_sync_on_rotate", "wal_sync_on_write", "lsn", "psn", "checkpoint"]
 # test: select from function #2
 create table test (id int primary key serial)
 select ** from system.tables()[0].indexes[0].def

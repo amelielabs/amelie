@@ -99,7 +99,7 @@ config_prepare(Config* self)
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                &self->wal_sync_on_write,       NULL,        false            },
 		// state
 		{ "lsn",                     VAR_INT,    VAR_E,                &self->lsn,                     NULL,        0                },
-		{ "ssn",                     VAR_INT,    VAR_E,                &self->ssn,                     NULL,        0                },
+		{ "psn",                     VAR_INT,    VAR_E,                &self->psn,                     NULL,        0                },
 		{ "checkpoint",              VAR_INT,    VAR_E,                &self->checkpoint,              NULL,        0                },
 		{ "state_shards",            VAR_DATA,   VAR_C|VAR_H,          &self->state_shards,            NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->users,                   NULL,        0                },

@@ -45,7 +45,7 @@ part_mgr_open(PartMgr* self, bool reference, List* parts, List* indexes)
 	list_foreach(parts)
 	{
 		auto config = list_at(PartConfig, link);
-		config_ssn_follow(config->id);
+		config_psn_follow(config->id);
 
 		// prepare part
 		auto part = part_allocate(config);

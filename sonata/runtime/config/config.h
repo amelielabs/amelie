@@ -35,7 +35,7 @@ struct Config
 	Var  wal_sync_on_write;
 	// state
 	Var  lsn;
-	Var  ssn;
+	Var  psn;
 	Var  checkpoint;
 	Var  state_shards;
 	Var  users;

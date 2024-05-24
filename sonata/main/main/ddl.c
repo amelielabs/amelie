@@ -61,8 +61,8 @@ ddl_create_partition(TableConfig* table_config, Shard* shard, uint64_t min, uint
 {
 	// create partition config
 	auto config = part_config_allocate();
-	auto ssn = config_ssn_next();
-	part_config_set_id(config, ssn);
+	auto psn = config_psn_next();
+	part_config_set_id(config, psn);
 	part_config_set_shard(config, &shard->config->id);
 	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
