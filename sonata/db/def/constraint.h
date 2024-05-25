@@ -18,7 +18,7 @@ struct Constraint
 {
 	bool    not_null;
 	int64_t generated;
-	Str     expr;
+	Buf     value;
 };
 
 static inline void
@@ -26,13 +26,13 @@ constraint_init(Constraint* self)
 {
 	self->not_null  = false;
 	self->generated = GENERATED_NONE;
-	str_init(&self->expr);
+	buf_init(&self->value);
 }
 
 static inline void
 constraint_free(Constraint* self)
 {
-	str_free(&self->expr);
+	buf_free(&self->value);
 }
 
 static inline void
@@ -48,10 +48,10 @@ constraint_set_generated(Constraint* self, int value)
 }
 
 static inline void
-constraint_set_default(Constraint* self, Str* expr)
+constraint_set_default(Constraint* self, Buf* buf)
 {
-	str_free(&self->expr);
-	str_copy(&self->expr, expr);
+	buf_reset(&self->value);
+	buf_write(&self->value, buf->start, buf_size(buf));
 }
 
 static inline void
@@ -59,7 +59,7 @@ constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
 	constraint_set_generated(copy, self->generated);
-	constraint_set_default(copy, &self->expr);
+	constraint_set_default(copy, &self->value);
 }
 
 static inline void
@@ -67,10 +67,10 @@ constraint_read(Constraint* self, uint8_t** pos)
 {
 	Decode map[] =
 	{
-		{ DECODE_BOOL,   "not_null",  &self->not_null  },
-		{ DECODE_INT,    "generated", &self->generated },
-		{ DECODE_STRING, "default",   &self->expr      },
-		{ 0,              NULL,       NULL             },
+		{ DECODE_BOOL, "not_null",  &self->not_null  },
+		{ DECODE_INT,  "generated", &self->generated },
+		{ DECODE_DATA, "default",   &self->value     },
+		{ 0,            NULL,       NULL             },
 	};
 	decode_map(map, pos);
 }
@@ -90,7 +90,7 @@ constraint_write(Constraint* self, Buf* buf)
 
 	// default
 	encode_raw(buf, "default", 7);
-	encode_string(buf, &self->expr);
+	buf_write(buf, self->value.start, buf_size(&self->value));
 
 	encode_map_end(buf);
 }
