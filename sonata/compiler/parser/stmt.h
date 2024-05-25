@@ -42,6 +42,8 @@ struct Stmt
 	Def        def;
 	TargetList target_list;
 	StmtList*  stmt_list;
+	CodeData*  data;
+	Json*      json;
 	Lex*       lex;
 	Db*        db;
 	List       link;
@@ -54,7 +56,8 @@ struct StmtList
 };
 
 static inline Stmt*
-stmt_allocate(Db* db, Lex* lex, StmtList* stmt_list)
+stmt_allocate(Db* db, Lex* lex, CodeData* data, Json* json,
+              StmtList* stmt_list)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id        = STMT_UNDEF;
@@ -62,6 +65,8 @@ stmt_allocate(Db* db, Lex* lex, StmtList* stmt_list)
 	self->order     = 0;
 	self->name      = NULL;
 	self->stmt_list = stmt_list;
+	self->data      = data;
+	self->json      = json;
 	self->lex       = lex;
 	self->db        = db;
 	def_init(&self->def);

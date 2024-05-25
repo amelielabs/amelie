@@ -20,11 +20,12 @@ struct Ast
 		};
 		Column* column;
 	};
-	int  priority;
-	Ast* l;
-	Ast* r;
-	Ast* next;
-	Ast* prev;
+	char* pos;
+	int   priority;
+	Ast*  l;
+	Ast*  r;
+	Ast*  next;
+	Ast*  prev;
 };
 
 static inline void*
@@ -33,6 +34,7 @@ ast_allocate(int id, int size)
 	assert(size >= (int)sizeof(Ast));
 	Ast* self = palloc(size);
 	memset(self, 0, size);
+	self->pos = NULL;
 	self->id = id;
 	return self;
 }

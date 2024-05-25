@@ -18,7 +18,6 @@
 
 // emit
 #include "compiler/emit_expr.h"
-#include "compiler/emit_row.h"
 #include "compiler/emit_insert.h"
 #include "compiler/emit_update.h"
 #include "compiler/emit_delete.h"

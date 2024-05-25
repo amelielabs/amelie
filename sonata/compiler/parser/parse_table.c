@@ -184,6 +184,7 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 	auto cons = &column->constraint;
 
 	bool primary_key = false;
+	bool has_default = false;
 	bool done = false;
 	while (! done)
 	{
@@ -201,32 +202,32 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 		// DEFAULT expr
 		case KDEFAULT:
 		{
-			// const
-			char* value_start = self->lex->pos;
-			char* value_end;
-			auto  value = stmt_next(self);
-			value_end = self->lex->pos;
-			stmt_push(self, value);
-
-			auto  expr = parse_expr(self, NULL);
+			buf_reset(&cons->value);
+			auto expr = parse_expr(self, NULL);
 			switch (expr->id) {
 			case KNULL:
+				encode_null(&cons->value);
+				break;
 			case KREAL:
+				encode_real(&cons->value, expr->real);
+				break;
 			case KINT:
+				encode_integer(&cons->value, expr->integer);
+				break;
 			case KSTRING:
+				encode_string(&cons->value, &expr->string);
+				break;
 			case KTRUE:
+				encode_bool(&cons->value, true);
+				break;
 			case KFALSE:
+				encode_bool(&cons->value, false);
 				break;
 			default:
 				error("only consts allowed as DEFAULT expression");
 				break;
 			}
-
-			Str string;
-			str_init(&string);
-			str_set(&string, value_start, value_end - value_start);
-			str_shrink(&string);
-			constraint_set_default(cons, &string);
+			has_default = true;
 			break;
 		}
 
@@ -286,6 +287,10 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 			break;
 		}
 	}
+
+	// set DEFAULT NULL by default
+	if (! has_default)
+		encode_null(&cons->value);
 }
 
 static void

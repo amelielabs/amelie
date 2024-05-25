@@ -34,20 +34,6 @@ emit_insert(Compiler* self, Ast* ast)
 	auto insert = ast_insert_of(ast);
 	auto table = insert->target->table;
 
-	// emit rows
-	insert->rows_offset = code_data_offset(&self->code_data);
-
-	// []
-	encode_array(&self->code_data.data);
-	auto i = insert->rows;
-	for (; i; i = i->next)
-	{
-		auto row = ast_row_of(i);
-		int data_size;
-		emit_row(&self->code_data, row, &data_size);
-	}
-	encode_array_end(&self->code_data.data);
-
 	// CINSERT
 	op2(self, CINSERT, (intptr_t)table, insert->unique);
 }

@@ -50,6 +50,7 @@ parse_view_args(Stmt* self, AstViewCreate* stmt)
 		arg = column_allocate();
 		def_add_column(&stmt->config->def, arg);
 		column_set_name(arg, &name->string);
+		encode_null(&arg->constraint.value);
 
 		// ,
 		if (! stmt_if(self, ','))

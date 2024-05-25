@@ -42,14 +42,14 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_coordinator);
 	code_init(&self->code_shard);
 	code_data_init(&self->code_data);
-	parser_init(&self->parser, db);
+	parser_init(&self->parser, db, &self->code_data);
 	rmap_init(&self->map);
 }
 
 void
 compiler_free(Compiler* self)
 {
-	parser_reset(&self->parser);
+	parser_free(&self->parser);
 	code_free(&self->code_coordinator);
 	code_free(&self->code_shard);
 	code_data_free(&self->code_data);
@@ -199,8 +199,8 @@ emit_send(Compiler* self, int start)
 	{
 		auto insert = ast_insert_of(stmt->ast);
 		// CSEND
-		op4(self, CSEND, stmt->order, start,
-		    (intptr_t)insert->target->table, insert->rows_offset);
+		auto table = (intptr_t)insert->target->table;
+		op4(self, CSEND, stmt->order, start, table, insert->rows);
 		break;
 	}
 	case STMT_UPDATE:

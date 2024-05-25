@@ -109,6 +109,7 @@ lex_next(Lex* self)
 	}
 
 	Ast* ast = ast_allocate(KEOF, sizeof(Ast));
+	ast->pos = self->pos;
 
 	// skip white spaces and comments
 	for (;;)

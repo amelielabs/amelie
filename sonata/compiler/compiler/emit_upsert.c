@@ -35,20 +35,6 @@ emit_upsert(Compiler* self, Ast* ast)
 	auto target = insert->target;
 	auto table  = target->table;
 
-	// emit rows
-	insert->rows_offset = code_data_offset(&self->code_data);
-
-	// []
-	encode_array(&self->code_data.data);
-	auto i = insert->rows;
-	for (; i; i = i->next)
-	{
-		auto row = ast_row_of(i);
-		int data_size;
-		emit_row(&self->code_data, row, &data_size);
-	}
-	encode_array_end(&self->code_data.data);
-
 	// generate upsert
 
 	// CCLOSE_PREPARE

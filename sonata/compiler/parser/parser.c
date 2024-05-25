@@ -27,13 +27,15 @@
 #include <sonata_parser.h>
 
 void
-parser_init(Parser* self, Db* db)
+parser_init(Parser* self, Db* db, CodeData* data)
 {
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
+	self->data    = data;
 	self->db      = db;
 	stmt_list_init(&self->stmt_list);
 	lex_init(&self->lex, keywords);
+	json_init(&self->json);
 }
 
 void
@@ -48,4 +50,12 @@ parser_reset(Parser* self)
 	}
 	stmt_list_init(&self->stmt_list);
 	lex_reset(&self->lex);
+	json_reset(&self->json);
+}
+
+void
+parser_free(Parser* self)
+{
+	parser_reset(self);
+	json_free(&self->json);
 }

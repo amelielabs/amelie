@@ -17,12 +17,15 @@ enum
 
 struct Parser
 {
-	int      explain;
-	StmtList stmt_list;
-	Stmt*    stmt;
-	Lex      lex;
-	Db*      db;
+	int       explain;
+	StmtList  stmt_list;
+	Stmt*     stmt;
+	CodeData* data;
+	Json      json;
+	Lex       lex;
+	Db*       db;
 };
 
-void parser_init(Parser*, Db*);
+void parser_init(Parser*, Db*, CodeData*);
 void parser_reset(Parser*);
+void parser_free(Parser*);
