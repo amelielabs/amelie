@@ -35,6 +35,7 @@ OBJECTS        = \
                  lib/uuid.o \
                  lib/crc.o \
                  data/json.o \
+                 data/json_export.o \
                  config/config.o \
                  config/catalog_mgr.o
 $(LIB): clean $(OBJECTS)

@@ -57,6 +57,12 @@ buf_size(Buf* self)
 	return self->position - self->start;
 }
 
+static inline bool
+buf_empty(Buf* self)
+{
+	return self->position == self->start;
+}
+
 static inline void
 buf_reset(Buf* self)
 {

@@ -104,13 +104,14 @@ checkpoint_mgr_open_catalog(CatalogMgr* catalog_mgr)
 
 	Str catalog_data;
 	str_set_u8(&catalog_data, buf.start, buf_size(&buf));
+
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &catalog_data);
+	json_parse(&json, &catalog_data, NULL);
 
 	// restore system objects
-	uint8_t* pos = json.buf.start;
+	uint8_t* pos = json.buf->start;
 	catalog_mgr_restore(catalog_mgr, &pos);
 }
 

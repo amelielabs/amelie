@@ -13,370 +13,337 @@
 void
 json_init(Json* self)
 {
-	self->json      = NULL;
-	self->json_size = 0;
-	self->pos       = 0;
-	buf_init(&self->buf);
+	self->pos = NULL;
+	self->end = NULL;
+	self->buf = NULL;
+	buf_init(&self->buf_data);
+	buf_init(&self->stack);
 }
 
 void
 json_free(Json* self)
 {
-	buf_free(&self->buf);
+	buf_free(&self->buf_data);
+	buf_free(&self->stack);
 }
 
 void
 json_reset(Json* self)
 {
-	self->json      = NULL;
-	self->json_size = 0;
-	self->pos       = 0;
-	buf_reset(&self->buf);
+	self->pos = NULL;
+	self->end = NULL;
+	self->buf = NULL;
+	buf_reset(&self->buf_data);
+	buf_reset(&self->stack);
 }
 
-hot static inline int
-json_next(Json* self, int n)
+typedef enum
 {
-	if (unlikely(self->pos + n > self->json_size))
-		return -1;
-	self->pos += n;
-	while (self->pos < self->json_size && isspace(self->json[self->pos]))
+	JSON_VALUE,
+	JSON_ARRAY_NEXT,
+	JSON_MAP_KEY,
+	JSON_MAP_NEXT
+} JsonState;
+
+hot static inline void
+json_push(Json* self, JsonState state)
+{
+	buf_write(&self->stack, &state, sizeof(state));
+}
+
+hot static inline JsonState
+json_pop(Json* self)
+{
+	if (unlikely(buf_empty(&self->stack)))
+		error("json: unexpected end of object");
+	buf_truncate(&self->stack, sizeof(JsonState));
+	return *(JsonState*)self->stack.position;
+}
+
+hot static inline uint8_t
+json_next(Json* self)
+{
+	while (self->pos < self->end && isspace(*self->pos))
 		self->pos++;
-	// eof
-	if (self->pos == self->json_size)
-		return 0;
-	return self->json[self->pos];
+	if (unlikely(self->pos == self->end))
+		error("json: unexpected end of string");
+	return *self->pos;
 }
 
-hot static inline int
-json_read(Json* self, int skip)
+hot static inline void
+json_parse_string(Json* self)
 {
-	int token = json_next(self, skip);
-	if (unlikely(token <= 0))
-		return token;
+	if (unlikely(*self->pos != '\"'))
+		error("json: string expected");
+	self->pos++;
 
-	auto data = &self->buf;
-	int rc;
-	switch (token) {
-	case '[':
+	auto start = self->pos;
+	bool slash = false;
+	while (self->pos < self->end)
 	{
-		// [ v, v, v ]
-		encode_array(data);
-
-		// []
-		rc = json_next(self, 1);
-		if (unlikely(rc <= 0))
-			return -1;
-		if (rc == ']')
-		{
-			self->pos++;
-			encode_array_end(data);
-			return token;
-		}
-		for (;;)
-		{
-			// [v, ...]
-			rc = json_read(self, 0);
-			if (unlikely(rc <= 0))
-				return -1;
-			// ,]
-			rc = json_next(self, 0);
-			if (rc == ']') {
+		if (*self->pos == '\"') {
+			if (slash) {
+				slash = false;
 				self->pos++;
-				break;
-			}
-			if (rc != ',')
-				return -1;
-			rc = json_next(self, 1);
-			if (unlikely(rc <= 0))
-				return -1;
-		}
-
-		encode_array_end(data);
-		return token;
-	}
-	case '{':
-	{
-		// { "key" : value, ... }
-		encode_map(data);
-
-		// {}
-		rc = json_next(self, 1);
-		if (unlikely(rc <= 0))
-			return -1;
-		if (rc == '}')
-		{
-			self->pos++;
-			encode_map_end(data);
-			return token;
-		}
-
-		for (;;)
-		{
-			// "key"
-			rc = json_read(self, 0);
-			if (unlikely(rc != '\"'))
-				return -1;
-			// :
-			rc = json_next(self, 0);
-			if (unlikely(rc != ':'))
-				return -1;
-			// value
-			rc = json_read(self, 1);
-			if (unlikely(rc == -1))
-				return -1;
-			// ,}
-			rc = json_next(self, 0);
-			if (rc == '}') {
-				self->pos++;
-				break;
-			}
-			if (rc != ',')
-				return -1;
-			rc = json_next(self, 1);
-			if (unlikely(rc <= 0))
-				return -1;
-		}
-
-		encode_map_end(data);
-		return token;
-	}
-	case '\"':
-	{
-		int offset = ++self->pos;
-		int slash  = 0;
-		for (; self->pos < self->json_size; self->pos++)
-		{
-			if (likely(!slash) ){
-				if (self->json[self->pos] == '\\') {
-					slash = 1;
-					continue;
-				}
-				if (self->json[self->pos] == '"')
-					break;
 				continue;
 			}
-			slash = 0;
+			break;
+		}
+		if (unlikely(*self->pos == '\n'))
+			error("json: unterminated string");
+		if (*self->pos == '\\') {
+			slash = !slash;
+		} else {
+			slash = false;
 		}
 		self->pos++;
-		if (unlikely(self->pos > self->json_size))
-			return -1;
-		int size = self->pos - offset - 1;
-		encode_raw(data, self->json + offset, size);
-		return token;
 	}
-	case 'n':
-		if (unlikely(self->pos + 3 >= self->json_size ||
-		             memcmp(self->json + self->pos, "null", 4) != 0))
-			return -1;
-		self->pos += 4;
-		encode_null(data);
-		return token;
-	case 't':
-		if (unlikely(self->pos + 3 >= self->json_size ||
-		             memcmp(self->json + self->pos, "true", 4) != 0))
-			return -1;
-		self->pos += 4;
-		encode_bool(data, true);
-		return token;
+	if (unlikely(self->pos == self->end))
+		error("json: unterminated string");
 
-	case 'f':
-		if (unlikely(self->pos + 4 >= self->json_size ||
-		             memcmp(self->json + self->pos, "false", 5) != 0))
-			return -1;
-		self->pos += 5;
-		encode_bool(data, false);
-		return token;
-	case '.':
-	case '-': case '0': case '1' : case '2': case '3' : case '4':
-	case '5': case '6': case '7' : case '8': case '9':
+	encode_raw(self->buf, start, self->pos - start);
+	self->pos++;
+}
+
+hot static inline void
+json_parse_keyword(Json* self, const char* name, int name_size)
+{
+	if (unlikely(self->pos + name_size > self->end) ||
+	             memcmp(self->pos, name, name_size) != 0)
+		error("json: unexpected token");
+	self->pos += name_size;
+}
+
+hot static inline void
+json_parse_integer(Json* self)
+{
+	bool minus = false;
+	if (*self->pos == '-')
 	{
-		int start = self->pos;
-		int negative = 0;
-		if (self->json[start] == '-') {
-			negative = 1;
-			start++;
-			self->pos++;
-		}
-		if (unlikely(self->pos == self->json_size))
-			return -1;
+		minus = true;
+		self->pos++;
+	}
 
-		// float
-		if (self->json[start] == '.')
-			goto fp;
-
-		int64_t value = 0;
-		while (self->pos < self->json_size)
+	int64_t value = 0;
+	auto start = self->pos;
+	while (self->pos < self->end)
+	{
+		if (*self->pos == '.' ||
+		    *self->pos == 'e' ||
+		    *self->pos == 'E')
 		{
-			// float
-			char symbol = self->json[self->pos];
-			if (symbol == '.' || 
-			    symbol == 'e' || 
-			    symbol == 'E') {
-				self->pos = start;
-				goto fp;
-			}
-			if (! isdigit(symbol))
-				break;
-			value = (value * 10) + symbol - '0';
-			self->pos++;
+			self->pos = start;
+			goto read_as_double;
 		}
-		if (negative)
-			value = -value;
-		encode_integer(data, value);
-		return token;
-fp:;
-		errno = 0;
-		char*  end;
-		double real = strtod(self->json + self->pos, &end);
-		if (errno == ERANGE)
-			return -1;
-		self->pos += (end - (self->json + self->pos));
-		if (unlikely(self->pos > self->json_size))
-			return -1;
-		if (negative)
-			real = -real;
-		encode_real(data, real);
-		return token;
+		if (! isdigit(*self->pos))
+			break;
+		value = (value * 10) + *self->pos - '0';
+		self->pos++;
 	}
+
+	if (minus)
+		value = -value;
+	encode_integer(self->buf, value);
+	return;
+
+read_as_double:
+	errno = 0;
+	char* end = NULL;
+	double real = strtod(start, &end);
+	if (errno == ERANGE)
+		error("json: bad float number token");
+	self->pos = end;
+	if (minus)
+		real = -real;
+	encode_real(self->buf, real);
+}
+
+hot static inline void
+json_parse_const(Json* self)
+{
+	switch (*self->pos) {
+	case '"':
+		json_parse_string(self);
+		return;
+	case 'n':
+		json_parse_keyword(self, "null", 4);
+		encode_null(self->buf);
+		return;
+	case 't':
+		json_parse_keyword(self, "true", 4);
+		encode_bool(self->buf, true);
+		return;
+	case 'f':
+		json_parse_keyword(self, "false", 5);
+		encode_bool(self->buf, false);
+		return;
 	default:
-		return -1;
+		if (likely(isdigit(*self->pos) || *self->pos == '.' || *self->pos == '-'))
+		{
+			json_parse_integer(self);
+			return;
+		}
+		break;
 	}
-	return -1;
+	error("json: unexpected token");
 }
 
 hot void
-json_parse(Json* self, Str* string)
+json_parse(Json* self, Str* text, Buf* buf)
 {
-	self->json      = str_of(string);
-	self->json_size = str_size(string);
-	self->pos       = 0;
-	int rc;
-	rc = json_read(self, 0);
-	if (unlikely(rc == -1))
-		error("%s", "json parse error");
-	assert(self->buf.position <= self->buf.end);
-}
+	self->pos = str_of(text);
+	self->end = str_of(text) + str_size(text);
+	if (buf == NULL)
+	{
+		self->buf = &self->buf_data;
+		buf = self->buf;
+	} else
+	{
+		self->buf = buf;
+	}
 
-static void
-json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
-{
-	char buf[256];
-	int  buf_len;
-	switch (**pos) {
-	case SO_NULL:
-		data_read_null(pos);
-		buf_write(data, "null", 4);
-		break;
-	case SO_TRUE:
-	case SO_FALSE:
+	// array ::=  [ [obj] [, ...] ]
+	// map   ::=  { ["key": obj] [, ...] }
+	// const ::=  int | real  | bool | string | null
+	// obj   ::=  array | map | const
+
+	// push obj
+	//
+	// while has stack
+	//
+	//    pop = stack()
+	//    switch pop
+	//      obj:
+	//         if [
+	//            if ]
+	//              write []
+	//            push array_next
+	//            push obj
+	//         if {, push map_key
+	//            if }
+	//              write {}
+	//            push map_key
+	//         if const, push const
+	//         or error
+	//
+	//      array_next:
+	//         if ,
+	//            push array_next
+	//            push obj
+	//         if ], end
+	//         or error
+	//
+	//      map_key:
+	//        if not "key", error
+	//        if not ":", error
+	//        push map_next
+	//        push obj
+	//
+	//      map_next:
+	//         if ,
+	//            push map_key
+	//         if }, end
+	//         or error
+	//
+
+	json_push(self, JSON_VALUE);
+
+	while (! buf_empty(&self->stack))
 	{
-		bool value;
-		data_read_bool(pos, &value);
-		if (value)
-			buf_write(data, "true", 4);
-		else
-			buf_write(data, "false", 5);
-		break;
-	}
-	case SO_REAL32:
-	case SO_REAL64:
-	{
-		double value;
-		data_read_real(pos, &value);
-		buf_len = snprintf(buf, sizeof(buf), "%g", value);
-		buf_write(data, buf, buf_len);
-		break;
-	}
-	case SO_INTV0 ... SO_INT64:
-	{
-		int64_t value;
-		data_read_integer(pos, &value);
-		buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value);
-		buf_write(data, buf, buf_len);
-		break;
-	}
-	case SO_STRINGV0 ... SO_STRING32:
-	{
-		// todo: quouting
-		char* value;
-		int   size;
-		data_read_raw(pos, &value, &size);
-		buf_write(data, "\"", 1);
-		buf_write(data, value, size);
-		buf_write(data, "\"", 1);
-		break;
-	}
-	case SO_ARRAY:
-	{
-		data_read_array(pos);
-		buf_write(data, "[", 1);
-		while (! data_read_array_end(pos))
+		auto next = json_next(self);
+		auto term = json_pop(self);
+		switch (term) {
+		case JSON_VALUE:
 		{
-			json_export_as(data, pretty, deep, pos);
-			// ,
-			if (! data_is_array_end(*pos))
-				buf_write(data, ", ", 2);
-		}
-		buf_write(data, "]", 1);
-		break;
-	}
-	case SO_MAP:
-	{
-		data_read_map(pos);
-		if (pretty)
-		{
-			buf_write(data, "{\n", 2);
-			while (! data_read_map_end(pos))
+			if (next == '[')
 			{
-				for (int i = 0; i < deep + 1; i++)
-					buf_write(data, "  ", 2);
-				// key
-				json_export_as(data, pretty, deep + 1, pos);
-				buf_write(data, ": ", 2);
-				// value
-				json_export_as(data, pretty, deep + 1, pos);
-				// ,
-				if (data_is_map_end(*pos))
-					buf_write(data, "\n", 1);
-				else
-					buf_write(data, ",\n", 2);
-			}
-			for (int i = 0; i < deep; i++)
-				buf_write(data, "  ", 2);
-			buf_write(data, "}", 1);
-		} else
-		{
-			buf_write(data, "{", 1);
-			while (! data_read_map_end(pos))
+				encode_array(buf);
+				self->pos++;
+
+				// []
+				next = json_next(self);
+				if (next == ']')
+				{
+					encode_array_end(buf);
+					self->pos++;
+					break;
+				}
+
+				// [value, ...]
+				json_push(self, JSON_ARRAY_NEXT);
+				json_push(self, JSON_VALUE);
+			} else
+			if (next == '{')
 			{
-				// key
-				json_export_as(data, pretty, deep + 1, pos);
-				buf_write(data, ": ", 2);
-				// value
-				json_export_as(data, pretty, deep + 1, pos);
-				// ,
-				if (! data_is_map_end(*pos))
-					buf_write(data, ", ", 2);
+				encode_map(buf);
+				self->pos++;
+
+				// {}
+				next = json_next(self);
+				if (next == '}')
+				{
+					encode_map_end(buf);
+					self->pos++;
+					break;
+				}
+
+				// {"key": value}
+				json_push(self, JSON_MAP_KEY);
+			} else
+			{
+				json_parse_const(self);
 			}
-			buf_write(data, "}", 1);
+			break;
 		}
-		break;
+		case JSON_ARRAY_NEXT:
+		{
+			if (next == ',')
+			{
+				json_push(self, JSON_ARRAY_NEXT);
+				json_push(self, JSON_VALUE);
+				self->pos++;
+				break;
+			}
+			if (next == ']')
+			{
+				encode_array_end(buf);
+				self->pos++;
+				break;
+			}
+			error("json: unexpected array token");
+			break;
+		}
+		case JSON_MAP_KEY:
+		{
+			// "key"
+			json_parse_string(self);
+			// ':'
+			next = json_next(self);
+			if (next != ':')
+				error("json: unexpected map token");
+			self->pos++;
+			// value
+			json_push(self, JSON_MAP_NEXT);
+			json_push(self, JSON_VALUE);
+			break;
+		}
+		case JSON_MAP_NEXT:
+		{
+			if (next == ',')
+			{
+				json_push(self, JSON_MAP_KEY);
+				self->pos++;
+				break;
+			}
+			if (next == '}')
+			{
+				encode_map_end(buf);
+				self->pos++;
+				break;
+			}
+			error("json: unexpected map token");
+			break;
+		}
+		}
 	}
-	default:
-		error_data();
-		break;
-	}
-}
-
-void
-json_export(Buf* self, uint8_t** pos)
-{
-	json_export_as(self, false, 0, pos);
-}
-
-void
-json_export_pretty(Buf* self, uint8_t** pos)
-{
-	json_export_as(self, true, 0, pos);
 }

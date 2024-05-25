@@ -389,13 +389,12 @@ value_to_json(Value* result, Value* a)
 {
 	if (unlikely(a->type != VALUE_STRING))
 		error("json(): string type expected");
+
+	auto buf = buf_begin();
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &a->string);
-
-	auto buf = buf_begin();
-	buf_write(buf, json.buf.start, buf_size(&json.buf));
+	json_parse(&json, &a->string, buf);
 	buf_end(buf);
 	value_set_buf(result, buf);
 }

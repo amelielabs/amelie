@@ -186,8 +186,8 @@ config_set(Config* self, Str* options)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, options);
-	uint8_t* pos = json.buf.start;
+	json_parse(&json, options, NULL);
+	uint8_t* pos = json.buf->start;
 	config_set_data(self, &pos);
 }
 
