@@ -69,7 +69,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "id2",
@@ -77,7 +77,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -106,7 +106,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "a",
@@ -114,7 +114,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "b",
@@ -122,7 +122,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -151,7 +151,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "a",
@@ -159,7 +159,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "b",
@@ -167,7 +167,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -196,7 +196,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "a",
@@ -204,7 +204,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -233,7 +233,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "a",
@@ -241,7 +241,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "b",
@@ -249,7 +249,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -278,7 +278,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": true,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }, {
       "name": "a",
@@ -286,7 +286,7 @@ select indexes[0] from system.tables() where name = "test"
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [{
@@ -448,7 +448,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -456,7 +456,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": false,
       "generated": 0,
-      "default": "1"
+      "default": 1
     }
   }],
   "key": [{
@@ -489,7 +489,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -513,7 +513,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -521,7 +521,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": false,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -545,7 +545,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -553,7 +553,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": false,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -579,7 +579,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -587,7 +587,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -616,7 +616,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -624,7 +624,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": "123"
+      "default": 123
     }
   }],
   "key": [{
@@ -659,7 +659,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 0,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -667,7 +667,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 1,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -691,7 +691,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 1,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -715,7 +715,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 1,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{
@@ -742,7 +742,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 1,
-      "default": ""
+      "default": null
     }
   }, {
     "name": "data",
@@ -750,7 +750,7 @@ select indexes[0].def from system.tables()
     "constraint": {
       "not_null": true,
       "generated": 1,
-      "default": ""
+      "default": null
     }
   }],
   "key": [{

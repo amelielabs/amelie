@@ -4,5 +4,7 @@
 test/test
 cli/sonata
 cli/t
+cli/core
 test/sonata-test
+test/core
 test/_output

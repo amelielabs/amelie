@@ -126,7 +126,7 @@ select * from system.views()
       "constraint": {
         "not_null": false,
         "generated": 0,
-        "default": ""
+        "default": null
       }
     }],
     "key": [],
