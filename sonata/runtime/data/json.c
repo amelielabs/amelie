@@ -55,7 +55,7 @@ hot static inline JsonState
 json_pop(Json* self)
 {
 	if (unlikely(buf_empty(&self->stack)))
-		error("json: unexpected end of object");
+		error("unexpected end of object");
 	buf_truncate(&self->stack, sizeof(JsonState));
 	return *(JsonState*)self->stack.position;
 }
@@ -66,15 +66,14 @@ json_next(Json* self)
 	while (self->pos < self->end && isspace(*self->pos))
 		self->pos++;
 	if (unlikely(self->pos == self->end))
-		error("json: unexpected end of string");
+		error("unexpected end of line");
 	return *self->pos;
 }
 
 hot static inline void
 json_parse_string(Json* self)
 {
-	if (unlikely(*self->pos != '\"'))
-		error("json: string expected");
+	// "
 	self->pos++;
 
 	auto start = self->pos;
@@ -90,7 +89,7 @@ json_parse_string(Json* self)
 			break;
 		}
 		if (unlikely(*self->pos == '\n'))
-			error("json: unterminated string");
+			error("unterminated string");
 		if (*self->pos == '\\') {
 			slash = !slash;
 		} else {
@@ -99,7 +98,7 @@ json_parse_string(Json* self)
 		self->pos++;
 	}
 	if (unlikely(self->pos == self->end))
-		error("json: unterminated string");
+		error("unterminated string");
 
 	encode_raw(self->buf, start, self->pos - start);
 	self->pos++;
@@ -110,7 +109,7 @@ json_parse_keyword(Json* self, const char* name, int name_size)
 {
 	if (unlikely(self->pos + name_size > self->end) ||
 	             memcmp(self->pos, name, name_size) != 0)
-		error("json: unexpected token");
+		error("unexpected token");
 	self->pos += name_size;
 }
 
@@ -151,7 +150,7 @@ read_as_double:
 	char* end = NULL;
 	double real = strtod(start, &end);
 	if (errno == ERANGE)
-		error("json: bad float number token");
+		error("bad float number token");
 	self->pos = end;
 	if (minus)
 		real = -real;
@@ -185,7 +184,7 @@ json_parse_const(Json* self)
 		}
 		break;
 	}
-	error("json: unexpected token");
+	error("unexpected token");
 }
 
 hot void
@@ -310,17 +309,19 @@ json_parse(Json* self, Str* text, Buf* buf)
 				self->pos++;
 				break;
 			}
-			error("json: unexpected array token");
+			error("unexpected array token");
 			break;
 		}
 		case JSON_MAP_KEY:
 		{
 			// "key"
+			if (unlikely(*self->pos != '\"'))
+				error("map key expected");
 			json_parse_string(self);
 			// ':'
 			next = json_next(self);
 			if (next != ':')
-				error("json: unexpected map token");
+				error("unexpected map token");
 			self->pos++;
 			// value
 			json_push(self, JSON_MAP_NEXT);
@@ -341,7 +342,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 				self->pos++;
 				break;
 			}
-			error("json: unexpected map token");
+			error("unexpected map token");
 			break;
 		}
 		}

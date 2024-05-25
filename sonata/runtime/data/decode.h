@@ -18,7 +18,8 @@ enum
 	DECODE_NULL   = 1 << 5,
 	DECODE_ARRAY  = 1 << 6,
 	DECODE_MAP    = 1 << 7,
-	DECODE_FOUND  = 1 << 8
+	DECODE_DATA   = 1 << 8,
+	DECODE_FOUND  = 1 << 9
 };
 
 struct Decode
@@ -111,6 +112,14 @@ decode_map(Decode* self, uint8_t** pos)
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
 				data_skip(pos);
+				break;
+			}
+			case DECODE_DATA:
+			{
+				auto value = (Buf*)ref->value;
+				auto start = *pos;
+				data_skip(pos);
+				buf_write(value, start, *pos - start);
 				break;
 			}
 			default:
