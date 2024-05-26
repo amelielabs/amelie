@@ -29,7 +29,7 @@
 hot static inline void
 parse_value(Stmt* self)
 {
-	// parse and encode json value
+	// get the begining of current text position
 	auto lex = self->lex;
 	auto pos = lex->pos;
 	while (lex->backlog)
@@ -37,6 +37,8 @@ parse_value(Stmt* self)
 		pos = lex->backlog->pos;
 		lex->backlog = lex->backlog->prev;
 	}
+
+	// parse and encode json value
 	json_reset(self->json);
 	Str in;
 	str_set(&in, pos, self->lex->end - pos);
