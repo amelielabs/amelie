@@ -165,12 +165,15 @@ session_execute_distributed(Session* self)
 static void
 session_execute(Session* self)
 {
+	auto compiler = &self->compiler;
+
 	// take shared session lock (catalog access during parsing)
 	session_lock(self);
 
-	// parse query
-	auto compiler = &self->compiler;	
-	compiler_parse(compiler, &self->request.content);
+	// parse SQL query
+	Str text;
+	buf_str(&self->request.content, &text);
+	compiler_parse(compiler, &text);
 
 	if (! compiler->parser.stmt_list.list_count)
 	{

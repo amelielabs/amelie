@@ -163,7 +163,7 @@ task_init(Task* self)
 	self->log             = NULL;
 	self->log_arg         = NULL;
 	self->name            = NULL;
-	coroutine_mgr_init(&self->coroutine_mgr, 4096 *  18);
+	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 25); // 100kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	condition_cache_init(&self->condition_cache);

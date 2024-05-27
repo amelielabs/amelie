@@ -20,10 +20,10 @@ struct Request
 	Str       method;
 	Str       url;
 	Str       version;
-	Str       content;
 	int       headers_count;
 	Buf       headers;
 	Buf       raw;
+	Buf       content;
 	Readahead readahead;
 };
 

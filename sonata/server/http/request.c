@@ -20,15 +20,16 @@ request_init(Request* self)
 	str_init(&self->method);
 	str_init(&self->url);
 	str_init(&self->version);
-	str_init(&self->content);
+	buf_init(&self->content);
 	buf_init(&self->raw);
 	buf_init(&self->headers);
-	readahead_init(&self->readahead);
+	readahead_init(&self->readahead, 32 * 1024);
 }
 
 void
 request_free(Request* self)
 {
+	buf_free(&self->content);
 	buf_free(&self->raw);
 	buf_free(&self->headers);
 	readahead_free(&self->readahead);
@@ -41,9 +42,9 @@ request_reset(Request* self)
 	str_init(&self->method);
 	str_init(&self->url);
 	str_init(&self->version);
-	str_init(&self->content);
 	buf_reset(&self->raw);
 	buf_reset(&self->headers);
+	buf_reset(&self->content);
 	readahead_reset(&self->readahead);
 }
 
@@ -63,18 +64,40 @@ request_log(Request* self)
 		    str_size(&header->value), str_of(&header->value));
 	}
 
-	log("content: %.*s", str_size(&self->content), str_of(&self->content));
+	log("content: %.*s", buf_size(&self->content), self->content.start);
+}
+
+hot static inline void
+request_read_header(Request* self, Tcp* tcp)
+{
+	for (;;)
+	{
+		uint8_t* pos = NULL;
+		int size = readahead_read(&self->readahead, tcp, 256, &pos);
+		buf_write(&self->raw, pos, size);
+
+		// match header end marker
+		auto start = self->raw.start;
+		uint8_t* end = memmem(start, buf_size(&self->raw), "\r\n\r\n", 4);
+		if (end)
+		{
+			int before_truncate = buf_size(&self->raw);
+			self->raw.position = end + 4;
+
+			int pushback = before_truncate - buf_size(&self->raw);
+			readahead_pushback(&self->readahead, pushback);
+			break;
+		}
+		if (unlikely(buf_size(&self->raw) >= 512))
+			error("HTTP header size limit exceeded");
+	}
 }
 
 hot static inline void
 request_process(Request* self, Tcp* tcp)
 {
 	// read reader
-	Str header;
-	readahead_header(&self->readahead, tcp, &header);
-
-	// copy header
-	buf_write_str(&self->raw, &header);	
+	request_read_header(self, tcp);
 
 	// parse header
 	auto pos = self->raw.start;
@@ -183,7 +206,7 @@ request_read(Request* self, Tcp* tcp)
 	// read header
 	request_process(self, tcp);
 
-	// validate header
+	// todo: validate header
 
 	// read content
 	auto content_len = request_find(self, "content-length", 14);
@@ -193,6 +216,20 @@ request_read(Request* self, Tcp* tcp)
 		if (str_toint(&content_len->value, &len) == -1)
 			error("failed to parse HTTP request");
 
-		readahead_content(&self->readahead, tcp, &self->content, len);
+		buf_reserve(&self->content, len + 1);
+		for (;;)
+		{
+			int left = len - buf_size(&self->content);
+			if (left == 0)
+				break;
+			int to_read = self->readahead.readahead;
+			if (left < to_read)
+				to_read = left;
+
+			uint8_t* pos = NULL;
+			int size = readahead_read(&self->readahead, tcp, to_read, &pos);
+			buf_write(&self->content, pos, size);
+		}
+		*self->content.position = '\0';
 	}
 }

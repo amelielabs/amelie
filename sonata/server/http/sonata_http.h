@@ -6,6 +6,5 @@
 // Real-Time SQL Database.
 //
 
-#include "http/readahead.h"
 #include "http/request.h"
 #include "http/reply.h"
