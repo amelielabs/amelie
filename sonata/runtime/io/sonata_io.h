@@ -22,6 +22,7 @@
 #include "io/socket.h"
 #include "io/poll.h"
 #include "io/tcp.h"
+#include "io/readahead.h"
 #include "io/listen.h"
 
 // resolver
