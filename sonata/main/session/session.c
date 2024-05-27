@@ -215,8 +215,11 @@ session_main(Session* self)
 		http_read_content(&self->request, &self->client->tcp);
 		/*http_log(&self->request);*/
 
-		// prepare body
 		body_reset(body);
+
+		// handle backup request
+		if (backup(self))
+			break;
 
 		// execute
 		Exception e;

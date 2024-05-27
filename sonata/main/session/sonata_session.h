@@ -9,3 +9,4 @@
 #include "session/share.h"
 #include "session/explain.h"
 #include "session/session.h"
+#include "session/backup.h"

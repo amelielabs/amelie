@@ -239,6 +239,15 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = user_mgr_list(&self->user_mgr);
 		break;
 	}
+	case RPC_BACKUP:
+	{
+		frontend_mgr_lock(&self->frontend_mgr);
+		guard(frontend_mgr_unlock, &self->frontend_mgr);
+
+		Backup* backup = rpc_arg_ptr(rpc, 0);
+		backup_prepare(backup);
+		break;
+	}
 	default:
 		break;
 	}

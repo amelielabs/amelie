@@ -14,6 +14,5 @@ struct Share
 	Router*      router;
 	ShardMgr*    shard_mgr;
 	FunctionMgr* function_mgr;
-	// wal
 	Db*          db;
 };

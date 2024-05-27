@@ -45,6 +45,7 @@ OBJECTS        = \
                  frontend/frontend.o \
                  session/explain.o \
                  session/session.o \
+                 session/backup.o \
                  main/system.o \
                  main/ctl.o \
                  main/ddl.o \
