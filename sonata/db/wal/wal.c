@@ -41,7 +41,7 @@ wal_free(Wal* self)
 static inline bool
 wal_rotate_ready(Wal* self, uint64_t wm)
 {
-	return !self->current || self->current->file.size > wm;
+	return !self->current || self->current->file.size >= wm;
 }
 
 void

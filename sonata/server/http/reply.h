@@ -36,6 +36,23 @@ reply_reset(Reply* self)
 }
 
 static inline void
+reply_create_header(Buf*        buf,
+                    int         code,
+                    const char* msg,
+                    const char* content_type,
+                    uint64_t    content_length)
+{
+	buf_printf(buf,
+	           "HTTP/1.1 %d %s\r\n"
+	           "Content-Type: %s\r\n"
+	           "Content-Length: %" PRIu64 "\r\n"
+	           "\r\n",
+	           code, msg,
+	           content_type,
+	           content_length);
+}
+
+static inline void
 reply_create(Reply* self, int code, const char* msg, Buf* body)
 {
 	reply_reset(self);
@@ -55,5 +72,5 @@ reply_create(Reply* self, int code, const char* msg, Buf* body)
 static inline void
 reply_write(Reply* self, Tcp* tcp)
 {
-	tcp_write(tcp, &self->iov);
+	tcp_write(tcp, iov_pointer(&self->iov), self->iov.iov_count);
 }
