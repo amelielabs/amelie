@@ -272,23 +272,20 @@ tcp_read(Tcp* self, Buf* buf, int size)
 }
 
 void
-tcp_write(Tcp* self, Iov* iov)
+tcp_write(Tcp* self, struct iovec* iov, int iov_count)
 {
-	auto iovec = iov_pointer(iov);
-	auto iovec_count = iov->iov_count;
-
-	while (iovec_count > 0)
+	while (iov_count > 0)
 	{
 		int rc;
 		if (tls_is_set(&self->tls))
 		{
-			rc = tls_writev(&self->tls, iovec, iovec_count);
+			rc = tls_writev(&self->tls, iov, iov_count);
 			if (unlikely(rc == -1)) {
 				assert(errno == EAGAIN);
 			}
 		} else
 		{
-			rc = socket_writev(self->fd.fd, iovec, iovec_count);
+			rc = socket_writev(self->fd.fd, iov, iov_count);
 			if (unlikely(rc == -1))
 			{
 				if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
@@ -303,17 +300,28 @@ tcp_write(Tcp* self, Iov* iov)
 			continue;
 		}
 
-		while (iovec_count > 0)
+		while (iov_count > 0)
 		{
-			if (iovec->iov_len > (size_t)rc)
+			if (iov->iov_len > (size_t)rc)
 			{
-				iovec->iov_base = (char*)iovec->iov_base + rc;
-				iovec->iov_len -= rc;
+				iov->iov_base = (char*)iov->iov_base + rc;
+				iov->iov_len -= rc;
 				break;
 			}
-			rc -= iovec->iov_len;
-			iovec++;
-			iovec_count--;
+			rc -= iov->iov_len;
+			iov++;
+			iov_count--;
 		}
 	}
+}
+
+void
+tcp_write_buf(Tcp* self, Buf* buf)
+{
+	struct iovec iov =
+	{
+		.iov_base = buf->start,
+		.iov_len  = buf_size(buf)
+	};
+	tcp_write(self, &iov, 1);
 }

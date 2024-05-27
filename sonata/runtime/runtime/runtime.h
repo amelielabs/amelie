@@ -80,11 +80,18 @@ str_copy(Str* self, Str* src)
 
 // buf
 static inline Buf*
-buf_begin(void)
+buf_create(void)
 {
 	auto self = buf_create_nothrow(&so_task->buf_cache, 0);
 	if (unlikely(self == NULL))
 		error_system();
+	return self;
+}
+
+static inline Buf*
+buf_begin(void)
+{
+	auto self = buf_create();
 	buf_list_add(&so_self()->buf_list, self);
 	return self;
 }

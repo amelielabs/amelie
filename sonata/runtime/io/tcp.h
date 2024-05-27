@@ -31,4 +31,5 @@ bool tcp_eof(Tcp*);
 void tcp_connect_fd(Tcp*);
 void tcp_connect(Tcp*, struct sockaddr*);
 int  tcp_read(Tcp*, Buf*, int);
-void tcp_write(Tcp*, Iov*);
+void tcp_write(Tcp*, struct iovec*, int);
+void tcp_write_buf(Tcp*, Buf*);
