@@ -14,7 +14,7 @@ struct Session
 	Compiler  compiler;
 	Plan      plan;
 	Explain   explain;
-	Request   request;
+	Http      request;
 	Reply     reply;
 	Body      body;
 	Client*   client;

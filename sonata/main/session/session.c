@@ -39,7 +39,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->frontend = frontend;
 	self->lock     = NULL;
 	self->share    = share;
-	request_init(&self->request);
+	http_init(&self->request, HTTP_REQUEST);
 	reply_init(&self->reply);
 	body_init(&self->body);
 	explain_init(&self->explain);
@@ -61,7 +61,7 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
-	request_free(&self->request);
+	http_free(&self->request);
 	reply_free(&self->reply);
 	body_free(&self->body);
 	so_free(self);
@@ -210,9 +210,10 @@ session_main(Session* self)
 	for (;;)
 	{
 		// read request
-		request_reset(&self->request);
-		request_read(&self->request, &self->client->tcp);
-		/*request_log(&self->request);*/
+		http_reset(&self->request);
+		http_read(&self->request, &self->client->tcp);
+		http_read_content(&self->request, &self->client->tcp);
+		/*http_log(&self->request);*/
 
 		// prepare body
 		body_reset(body);

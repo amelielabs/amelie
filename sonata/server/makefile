@@ -20,7 +20,7 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-server.a
 OBJECTS        = \
                  auth/user_mgr.o \
-                 http/request.o \
+                 http/http.o \
                  client/client.o \
                  server/server.o
 $(LIB): clean $(OBJECTS)
