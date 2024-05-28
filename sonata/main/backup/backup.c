@@ -36,7 +36,7 @@ backup_send(Backup* self, Str* url)
 	buf_reset(buf);
 
 	// open file (partition or wal file)
-	if (! str_compare_raw(url, "/backup/", 8))
+	if (! str_compare_raw_prefix(url, "/backup/", 8))
 		error("backup: unexpected request");
 	str_advance(url, 8);
 
@@ -50,12 +50,21 @@ backup_send(Backup* self, Str* url)
 	guard(file_close, &file);
 	file_open(&file, path);
 
+	log("%.*s (%" PRIu64 " bytes)", str_size(url), str_of(url),
+	    file.size);
+
 	// prepare header
 	reply_create_header(buf, 200, "OK", "application/octet-stream",
 	                    file.size);
 
 	// transfer file content
 	uint64_t size = file.size;
+	if (size == 0)
+	{
+		tcp_write_buf(self->tcp, buf);
+		return;
+	}
+
 	while (size > 0)
 	{
 		uint64_t chunk = 256 * 1024;
@@ -81,13 +90,15 @@ backup_main(void* arg)
 
 		// process file copy requests (till disconnect)
 		Http request;
-		http_init(&request, HTTP_REQUEST);
+		http_init(&request, HTTP_REQUEST, 1024);
 		guard(http_free, &request);
 		for (;;)
 		{
 			http_reset(&request);
-			http_read(&request, tcp);
-			http_read_content(&request, tcp);
+			auto eof = http_read(&request, tcp);
+			if (eof)
+				break;
+			http_read_content(&request, tcp, &request.content);
 			backup_send(self, &request.url);
 		}
 	}
@@ -96,6 +107,7 @@ backup_main(void* arg)
 	{ }
 
 	condition_signal(self->on_complete);
+	log("complete");
 }
 
 void
@@ -165,10 +177,6 @@ backup_prepare_state(Backup* self)
 	// prepare backup state
 	auto buf = &self->buf_state;
 	encode_map(buf);
-
-	// uuid
-	encode_raw(buf, "uuid", 4);
-	encode_string(buf, &config()->uuid.string);
 
 	// checkpoint
 	uint64_t checkpoint = config_checkpoint();
@@ -244,7 +252,7 @@ backup_run(Backup* self, Tcp* tcp)
 void
 backup(Db* db, Tcp* tcp, Reply* reply, Body* body)
 {
-	log("backup");
+	log("begin backup");
 
 	Backup backup;
 	backup_init(&backup, db);
@@ -270,5 +278,4 @@ backup(Db* db, Tcp* tcp, Reply* reply, Body* body)
 	backup_free(&backup);
 	tcp_init(tcp);
 
-	log("backup complete");
 }
