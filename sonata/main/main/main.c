@@ -37,6 +37,7 @@ typedef struct
 {
 	Str*  directory;
 	Str*  options;
+	Str*  backup;
 	Main* self;
 } MainArgs;
 
@@ -62,55 +63,17 @@ main_prepare(Main* self, MainArgs* args)
 	char path[PATH_MAX];
 	var_string_set(&config->directory, args->directory);
 
-	// prepare logger
+	// create directory if not exists
+	bootstrap = !fs_exists("%s", config_directory());
+	if (bootstrap)
+		fs_mkdir(0755, "%s", config_directory());
+
+	// prepare default logger settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
 	logger_set_to_stdout(logger, true);
-
-	// create directory if not exists
-	bootstrap = !fs_exists("%s", str_of(args->directory));
-	if (bootstrap)
-	{
-		fs_mkdir(0755, "%s", config_directory());
-
-		// set options first, to properly generate config
-		if (! str_empty(args->options))
-			config_set(config, args->options);
-
-		// generate uuid, unless it is set
-		if (! var_string_is_set(&config()->uuid))
-		{
-			Uuid uuid;
-			uuid_generate(&uuid, &self->random);
-			char uuid_sz[UUID_SZ];
-			uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
-			var_string_set_raw(&config()->uuid, uuid_sz, sizeof(uuid_sz) - 1);
-		}
-
-		// create config file
-		snprintf(path, sizeof(path), "%s/config.json", config_directory());
-		config_open(config, path);
-
-	} else
-	{
-		// open config file
-		snprintf(path, sizeof(path), "%s/config.json", config_directory());
-		config_open(config, path);
-
-		// redefine options
-		if (! str_empty(args->options))
-			config_set(config, args->options);
-	}
-
-	// configure logger
-	logger_set_enable(logger, var_int_of(&config->log_enable));
-	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
-	if (var_int_of(&config->log_to_file))
-	{
-		snprintf(path, sizeof(path), "%s/log", str_of(args->directory));
-		logger_open(logger, path);
-	}
-
+	snprintf(path, sizeof(path), "%s/log", config_directory());
+	logger_open(logger, path);
 	return bootstrap;
 }
 
@@ -128,20 +91,27 @@ main_runner(void* arg)
 		bool bootstrap;
 		bootstrap = main_prepare(self, args);
 
-		// start system
-		system = system_create();
-		system_start(system, bootstrap);
+		// do system restore or start
+		if (args->backup)
+		{
+			if (! bootstrap)
+				error("directory already exists");
+			restore(args->backup);
+		} else
+		{
+			system = system_create();
+			system_start(system, args->options, bootstrap);
 
-		// notify main_start about start completion
-		thread_status_set(&self->task.thread_status, true);
+			// notify main_start about start completion
+			thread_status_set(&self->task.thread_status, true);
 
-		// handle connections until stop
-		system_main(system);
+			// handle connections until stop
+			system_main(system);
+		}
 	}
 
-	if (leave(&e)) {
-		log("error: %s", so_self()->error.text);
-	}
+	if (leave(&e))
+	{ }
 
 	// shutdown
 	if (system)
@@ -169,6 +139,7 @@ main_init(Main* self)
 	global->config   = &self->config;
 	global->control  = NULL;
 	global->random   = &self->random;
+	global->logger   = &self->logger;
 	global->resolver = &self->resolver;
 }
 
@@ -183,13 +154,14 @@ main_free(Main* self)
 }
 
 int
-main_start(Main* self, Str* directory, Str* options)
+main_start(Main* self, Str* directory, Str* options, Str* backup)
 {
 	// start main task
 	MainArgs args =
 	{
 		.directory = directory,
 		.options   = options,
+		.backup    = backup,
 		.self      = self
 	};
 	int rc;

@@ -116,7 +116,7 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 	session_main(session);
 }
 
-void
+static void
 system_recover(System* self)
 {
 	// do parallel recover per shard
@@ -141,10 +141,54 @@ system_recover(System* self)
 	recover_wal(&self->db);
 }
 
-void
-system_start(System* self, bool bootstrap)
+static void
+system_configure(Str* options, bool bootstrap)
 {
-	unused(bootstrap);
+	auto config = config();
+
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/config.json", config_directory());
+	if (bootstrap)
+	{
+		// set options first, to properly generate config
+		if (! str_empty(options))
+			config_set(config, options);
+
+		// generate uuid, unless it is set
+		if (! var_string_is_set(&config->uuid))
+		{
+			Uuid uuid;
+			uuid_generate(&uuid, global()->random);
+			char uuid_sz[UUID_SZ];
+			uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
+			var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
+		}
+
+		// create config file
+		config_open(config, path);
+	} else
+	{
+		// open config file
+		config_open(config, path);
+
+		// redefine options
+		if (! str_empty(options))
+			config_set(config, options);
+	}
+
+	// reconfigure logger
+	auto logger = global()->logger;
+	logger_set_enable(logger, var_int_of(&config->log_enable));
+	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
+	if (! var_int_of(&config->log_to_file))
+		logger_close(logger);
+}
+
+void
+system_start(System* self, Str* options, bool bootstrap)
+{
+	// open or create config
+	system_configure(options, bootstrap);
 
 	// hello
 	log("");

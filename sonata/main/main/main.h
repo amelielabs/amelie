@@ -20,5 +20,5 @@ struct Main
 
 void main_init(Main*);
 void main_free(Main*);
-int  main_start(Main*, Str*, Str*);
+int  main_start(Main*, Str*, Str*, Str*);
 void main_stop(Main*);
