@@ -142,7 +142,7 @@ checkpoint_mgr_gc(CheckpointMgr* self)
 	list_count = id_mgr_gc_between(&self->list, &list, min);
 	if (list_count > 0)
 	{
-		auto lsns = (uint64_t*)list.start;
+		auto lsns = buf_u64(&list);
 		for (int i = 0; i < list_count; i++)
 			fs_rmdir("%s/%" PRIu64, config_directory(), lsns[i]);
 	}

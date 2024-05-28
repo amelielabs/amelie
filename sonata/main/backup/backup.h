@@ -24,4 +24,4 @@ void backup_init(Backup*, Db*);
 void backup_free(Backup*);
 void backup_prepare(Backup*);
 void backup_run(Backup*, Tcp*);
-void backup(Db*, Tcp*, Reply*, Body*);
+void backup(Db*, Tcp*);

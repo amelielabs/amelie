@@ -109,14 +109,13 @@ wal_gc(Wal* self, uint64_t min)
 	list_count = id_mgr_gc_between(&self->list, &list, min);
 	if (list_count > 0)
 	{
-		char path[PATH_MAX];
-		uint64_t *ids = (uint64_t*)list.start;
-		int i = 0;
-		for (; i < list_count; i++)
+		auto id_list = buf_u64(&list);
+		for (int i = 0; i < list_count; i++)
 		{
+			char path[PATH_MAX];
 			snprintf(path, sizeof(path), "%s/wal/%020" PRIu64 ".wal",
 			         config_directory(),
-			         ids[i]);
+			         id_list[i]);
 			log("wal: removing %s", path);
 			fs_unlink("%s", path);
 		}

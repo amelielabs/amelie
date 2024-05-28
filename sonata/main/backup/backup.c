@@ -40,8 +40,7 @@ backup_send(Backup* self, Str* url)
 		error("backup: unexpected request");
 	str_advance(url, 8);
 
-	// todo: validate path for .. and .
-
+	// todo: validate path
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
 	         str_size(url), str_of(url));
@@ -50,8 +49,7 @@ backup_send(Backup* self, Str* url)
 	guard(file_close, &file);
 	file_open(&file, path);
 
-	log("%.*s (%" PRIu64 " bytes)", str_size(url), str_of(url),
-	    file.size);
+	log("%.*s (%" PRIu64 " bytes)", str_size(url), str_of(url), file.size);
 
 	// prepare header
 	reply_create_header(buf, 200, "OK", "application/octet-stream",
@@ -64,7 +62,6 @@ backup_send(Backup* self, Str* url)
 		tcp_write_buf(self->tcp, buf);
 		return;
 	}
-
 	while (size > 0)
 	{
 		uint64_t chunk = 256 * 1024;
@@ -83,10 +80,27 @@ backup_main(void* arg)
 	Backup* self = arg;
 	auto tcp = self->tcp;
 
+	log("begin");
+
 	Exception e;
 	if (enter(&e))
 	{
 		tcp_attach(tcp);
+
+		// create backup state
+		rpc(global()->control->system, RPC_BACKUP, 1, self);
+
+		// send backup state
+		Body body;
+		body_init(&body);
+		guard(body_free, &body);
+		body_add_buf(&body, &self->buf_state);
+
+		Reply reply;
+		reply_init(&reply);
+		guard(reply_free, &reply);
+		reply_create(&reply, 200, "OK", &body.buf);
+		reply_write(&reply, tcp);
 
 		// process file copy requests (till disconnect)
 		Http request;
@@ -187,14 +201,12 @@ backup_prepare_state(Backup* self)
 	encode_raw(buf, "files", 5);
 	encode_array(buf);
 
-	// list files in the last checkpoint
+	// list files for backup (checkpoint and wal)
 	if (checkpoint > 0)
 	{
 		snprintf(path, sizeof(path), "%" PRIu64, checkpoint);
 		backup_list(buf, path);
 	}
-
-	// list all wal files
 	backup_list(buf, "wal");
 	encode_array_end(buf);
 
@@ -250,25 +262,16 @@ backup_run(Backup* self, Tcp* tcp)
 }
 
 void
-backup(Db* db, Tcp* tcp, Reply* reply, Body* body)
+backup(Db* db, Tcp* tcp)
 {
 	log("begin backup");
 
+	// processs backup and wait for completion
 	Backup backup;
 	backup_init(&backup, db);
 
 	Exception e;
-	if (enter(&e))
-	{
-		// create backup state
-		rpc(global()->control->system, RPC_BACKUP, 1, &backup);
-
-		// send backup state
-		body_add_buf(body, &backup.buf_state);
-		reply_create(reply, 200, "OK", &body->buf);
-		reply_write(reply, tcp);
-
-		// processs backup and wait for completion
+	if (enter(&e)) {
 		backup_run(&backup, tcp);
 	}
 
@@ -276,6 +279,5 @@ backup(Db* db, Tcp* tcp, Reply* reply, Body* body)
 	{ }
 
 	backup_free(&backup);
-	tcp_init(tcp);
-
+	tcp_close(tcp);
 }

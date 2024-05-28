@@ -222,7 +222,7 @@ session_main(Session* self)
 		// handle backup request
 		if (unlikely(str_compare_raw(&self->request.url, "/backup", 7)))
 		{
-			backup(self->share->db, tcp, reply, body);
+			backup(self->share->db, tcp);
 			break;
 		}
 
