@@ -33,21 +33,29 @@ error_init(Error* self)
 	memset(self, 0, sizeof(*self));
 }
 
-static inline void no_return
-error_throw_as(Error*        self,
-               ExceptionMgr* mgr,
-               const char*   file,
-               const char*   function, int line,
-               int           code,
-               const char*   fmt, ...)
+static inline void
+error_set(Error*      self,
+          const char* file,
+          const char* function,
+          int         line,
+          int         code,
+          const char* text)
 {
-	va_list args;
-	va_start(args, fmt);
 	self->code     = code;
 	self->file     = file;
 	self->function = function;
 	self->line     = line;
-	self->text_len = vsnprintf(self->text, sizeof(self->text), fmt, args);
-	va_end(args);
+	self->text_len = snprintf(self->text, sizeof(self->text), "%s", text);
+}
+
+static inline void no_return
+error_throw(Error*        self,
+            ExceptionMgr* mgr,
+            const char*   file,
+            const char*   function, int line,
+            int           code,
+            const char*   text)
+{
+	error_set(self, file, function, line, code, text);
 	exception_mgr_throw(mgr);
 }

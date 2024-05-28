@@ -17,27 +17,30 @@
 #define rethrow() \
 	exception_mgr_throw(&so_self()->exception_mgr)
 
-#define error_throw(code, fmt, ...) \
-	error_throw_as(&so_self()->error, \
-	               &so_self()->exception_mgr, \
-	               source_file, \
-	               source_function, \
-	               source_line, \
-	               code, fmt, ## __VA_ARGS__)
-
 // errors
+#define error_as(code, fmt, ...) \
+	report(source_file, \
+	       source_function, \
+	       source_line, code, "error: ", true, fmt, ## __VA_ARGS__)
+
 #define error(fmt, ...) \
-	error_throw(ERROR, fmt, ## __VA_ARGS__)
+	error_as(ERROR, fmt, ## __VA_ARGS__)
 
 #define error_system() \
-	error_throw(ERROR, "%s(): %s (errno: %d)", source_function, \
-	            strerror(errno), errno)
+	error_as(ERROR, "%s(): %s (errno: %d)", source_function, \
+	         strerror(errno), errno)
 
 #define error_data() \
-	error_throw(ERROR, "data read error")
+	error_as(ERROR, "data read error")
 
 // cancel
 #define cancellation_point() ({ \
 	if (unlikely(so_self()->cancel)) \
-		error_throw(CANCEL, "cancelled"); \
+		error_as(CANCEL, "cancelled"); \
 })
+
+// log
+#define log(fmt, ...) \
+	report(source_file, \
+	       source_function, \
+	       source_line, 0, "", false, fmt, ## __VA_ARGS__)

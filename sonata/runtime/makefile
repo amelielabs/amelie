@@ -21,6 +21,7 @@ OBJECTS        = \
                  runtime/context.o \
                  runtime/channel.o \
                  runtime/task.o \
+                 runtime/report.o \
                  io/vfs.o \
                  io/logger.o \
                  io/tls_lib.o \

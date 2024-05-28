@@ -32,7 +32,7 @@ msg_error_as(int code, Str* msg)
 	return msg_end(buf);
 }
 
-static inline Buf*
+static inline void
 msg_error_rethrow(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;

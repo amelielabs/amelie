@@ -38,8 +38,8 @@
 
 // exception
 #include "runtime/exception.h"
-#include "runtime/error.h"
 #include "runtime/log.h"
+#include "runtime/error.h"
 
 // cooperative multitasking
 #include "runtime/context_stack.h"
@@ -56,6 +56,7 @@
 #include "runtime/condition_cache.h"
 #include "runtime/channel.h"
 #include "runtime/task.h"
+#include "runtime/report.h"
 
 // runtime
 #include "runtime/throw.h"

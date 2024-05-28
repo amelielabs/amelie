@@ -44,11 +44,9 @@ task_coroutine_main(void* arg)
 	if (unlikely(leave(&e)))
 	{
 		auto error = &coro->error;
-		const char* prefix = "error: ";
-		if (error->code == CANCEL)
-			prefix = "";
-		log_at(error->file, error->function, error->line,
-		       prefix, "%s", error->text);
+		report(error->file, error->function, error->line,
+		       error->code, "error: ",
+		       false, "%s", error->text);
 	}
 
 	// main exit
@@ -160,8 +158,8 @@ task_init(Task* self)
 	self->main_arg        = NULL;
 	self->main_arg_global = NULL;
 	self->main_coroutine  = NULL;
-	self->log             = NULL;
-	self->log_arg         = NULL;
+	self->log_write       = NULL;
+	self->log_write_arg   = NULL;
 	self->name            = NULL;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 25); // 100kb
 	timer_mgr_init(&self->timer_mgr);
@@ -206,8 +204,8 @@ task_create_nothrow(Task*        self,
 	self->main            = main;
 	self->main_arg        = main_arg;
 	self->main_arg_global = main_arg_global;
-	self->log             = log;
-	self->log_arg         = log_arg;
+	self->log_write       = log;
+	self->log_write_arg   = log_arg;
 
 	// prepare poller
 	int rc = poller_create(&self->poller);

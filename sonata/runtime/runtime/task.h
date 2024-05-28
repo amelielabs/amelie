@@ -21,8 +21,8 @@ struct Task
 	void*          main_arg_global;
 	Coroutine*     main_coroutine;
 	char*          name;
-	LogFunction    log;
-	void*          log_arg;
+	LogFunction    log_write;
+	void*          log_write_arg;
 	ThreadStatus   thread_status;
 	Thread         thread;
 };

@@ -13,6 +13,7 @@ struct Global
 	Config*   config;
 	Control*  control;
 	Random*   random;
+	Logger*   logger;
 	Resolver* resolver;
 };
 

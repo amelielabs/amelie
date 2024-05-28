@@ -305,8 +305,8 @@ task_create(Task*        self,
 	int rc;
 	rc = task_create_nothrow(self, name, main, main_arg,
 	                         so_task->main_arg_global,
-	                         so_task->log,
-	                         so_task->log_arg);
+	                         so_task->log_write,
+	                         so_task->log_write_arg);
 	if (unlikely(rc == -1))
 		error_system();
 }
@@ -317,41 +317,3 @@ time_ms(void)
 {
 	return timer_mgr_time_ms(&so_task->timer_mgr);
 }
-
-// log
-static inline void
-log_at(const char* file,
-       const char* function, int line,
-       const char* prefix,
-       const char* fmt, ...)
-{
-	if (so_task->log == NULL)
-		return;
-
-	va_list args;
-	va_start(args, fmt);
-	char text[1024];
-	vsnprintf(text, sizeof(text), fmt, args);
-	va_end(args);
-
-	auto self = so_self();
-	if (self->name[0] != 0)
-		so_task->log(so_task->log_arg,
-		             file,
-		             function,
-		             line,
-		             "%s %s  %s%s",
-		             so_task->name, self->name, prefix, text);
-	else
-		so_task->log(so_task->log_arg,
-		             file,
-		             function,
-		             line,
-		             "%s  %s%s",
-		             so_task->name, prefix, text);
-}
-
-#define log(fmt, ...) \
-	log_at(source_file, \
-	       source_function, \
-	       source_line, "", fmt, ## __VA_ARGS__)
