@@ -21,6 +21,7 @@ LIB            = libsonata-server.a
 OBJECTS        = \
                  auth/user_mgr.o \
                  http/http.o \
+                 http/uri.o \
                  client/client.o \
                  server/server.o
 $(LIB): clean $(OBJECTS)
