@@ -27,9 +27,7 @@
 #include <sonata_parser.h>
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
-#include <sonata_shard.h>
-#include <sonata_frontend.h>
-#include <sonata_session.h>
+#include <sonata_backup.h>
 
 static void
 backup_send(Backup* self, Str* url)
@@ -244,17 +242,13 @@ backup_run(Backup* self, Tcp* tcp)
 	task_wait(&self->task);
 }
 
-bool
-backup(Session* self)
+void
+backup(Db* db, Tcp* tcp, Reply* reply, Body* body)
 {
-	auto tcp = &self->client->tcp;
-	if (likely(! str_compare_raw(&self->request.url, "/backup", 7)))
-		return false;
-
 	log("backup");
 
 	Backup backup;
-	backup_init(&backup, self->share->db);
+	backup_init(&backup, db);
 
 	Exception e;
 	if (enter(&e))
@@ -263,20 +257,19 @@ backup(Session* self)
 		rpc(global()->control->system, RPC_BACKUP, 1, &backup);
 
 		// send backup state
-		body_add_buf(&self->body, &backup.buf_state);
-		reply_create(&self->reply, 200, "OK", &self->body.buf);
-		reply_write(&self->reply, tcp);
+		body_add_buf(body, &backup.buf_state);
+		reply_create(reply, 200, "OK", &body->buf);
+		reply_write(reply, tcp);
 
 		// processs backup and wait for completion
 		backup_run(&backup, tcp);
 	}
 
-	backup_free(&backup);
 	if (leave(&e))
 	{ }
 
-	log("backup complete");
-
+	backup_free(&backup);
 	tcp_init(tcp);
-	return true;
+
+	log("backup complete");
 }

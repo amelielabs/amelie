@@ -33,6 +33,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../compiler/semantic \
                  -I../compiler/compiler \
                  -I. \
+                 -Ibackup \
                  -Ifrontend \
                  -Ishard \
                  -Isession \
@@ -40,12 +41,12 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-main.a
 OBJECTS        = \
+                 backup/backup.o \
                  shard/shard.o \
                  shard/shard_mgr.o \
                  frontend/frontend.o \
                  session/explain.o \
                  session/session.o \
-                 session/backup.o \
                  main/system.o \
                  main/ctl.o \
                  main/ddl.o \

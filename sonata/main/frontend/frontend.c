@@ -24,6 +24,8 @@
 #include <sonata_aggr.h>
 #include <sonata_executor.h>
 #include <sonata_vm.h>
+#include <sonata_backup.h>
+#include <sonata_shard.h>
 #include <sonata_frontend.h>
 
 hot static void

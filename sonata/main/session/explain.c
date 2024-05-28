@@ -27,6 +27,7 @@
 #include <sonata_parser.h>
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
+#include <sonata_backup.h>
 #include <sonata_shard.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>

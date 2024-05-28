@@ -27,6 +27,7 @@
 #include <sonata_parser.h>
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
+#include <sonata_backup.h>
 #include <sonata_shard.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
@@ -207,19 +208,23 @@ session_main(Session* self)
 {
 	auto reply = &self->reply;
 	auto body  = &self->body;
+	auto tcp   = &self->client->tcp;
 	for (;;)
 	{
 		// read request
 		http_reset(&self->request);
-		http_read(&self->request, &self->client->tcp);
-		http_read_content(&self->request, &self->client->tcp);
+		http_read(&self->request, tcp);
+		http_read_content(&self->request, tcp);
 		/*http_log(&self->request);*/
 
 		body_reset(body);
 
 		// handle backup request
-		if (backup(self))
+		if (unlikely(str_compare_raw(&self->request.url, "/backup", 7)))
+		{
+			backup(self->share->db, tcp, reply, body);
 			break;
+		}
 
 		// execute
 		Exception e;
@@ -242,6 +247,6 @@ session_main(Session* self)
 			reply_create(reply, 200, "OK", &body->buf);
 		}
 
-		reply_write(reply, &self->client->tcp);
+		reply_write(reply, tcp);
 	}
 }
