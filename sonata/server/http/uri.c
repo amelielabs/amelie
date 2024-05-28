@@ -193,12 +193,12 @@ static inline int
 decode_hex(char digit)
 {
 	int value = 0;
-    if ('0' <= digit && digit <= '9')
-        value = digit - '0';
-    else if ('A' <= digit && digit <= 'F')
-        value = digit - 'A' + 10;
-    else if ('a' <= digit && digit <= 'f')
-        value = digit - 'a' + 10;
+	if ('0' <= digit && digit <= '9')
+		value = digit - '0';
+	else if ('A' <= digit && digit <= 'F')
+		value = digit - 'A' + 10;
+	else if ('a' <= digit && digit <= 'f')
+		value = digit - 'a' + 10;
 	else
 		error("failed to parse uri, incorrect percent value");
 	return value;
