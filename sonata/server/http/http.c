@@ -34,7 +34,7 @@ http_free(Http* self)
 {
 	buf_free(&self->headers);
 	buf_free(&self->raw);
-	buf_init(&self->content);
+	buf_free(&self->content);
 	readahead_free(&self->readahead);
 }
 

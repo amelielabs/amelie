@@ -116,9 +116,7 @@ backup_free(Backup* self)
 {
 	auto db = self->db;
 	if (self->wal_snapshot != -1)
-	{
-		// todo:
-	}
+		id_mgr_delete(&db->wal.list_snapshot, 0);
 	if (self->checkpoint_snapshot != -1)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	if (self->on_complete)
@@ -214,6 +212,7 @@ backup_prepare(Backup* self)
 	wal_rotate(&db->wal, 0);
 
 	// take wal snapshot
+	id_mgr_add(&db->wal.list_snapshot, 0);
 	self->wal_snapshot = 0;
 
 	// add checkpoint snapshot

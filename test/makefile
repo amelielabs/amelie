@@ -32,6 +32,7 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/compiler/semantic \
                  -I../sonata/compiler/compiler \
                  -I../sonata/main \
+                 -I../sonata/main/backup \
                  -I../sonata/main/frontend \
                  -I../sonata/main/shard \
                  -I../sonata/main/session \

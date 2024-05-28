@@ -21,6 +21,7 @@ wal_init(Wal* self)
 {
 	self->current = NULL;
 	mutex_init(&self->lock);
+	id_mgr_init(&self->list_snapshot);
 	id_mgr_init(&self->list);
 }
 
@@ -34,6 +35,7 @@ wal_free(Wal* self)
 		wal_file_free(file);
 		self->current = NULL;
 	}
+	id_mgr_free(&self->list_snapshot);
 	id_mgr_free(&self->list);
 	mutex_free(&self->lock);
 }
@@ -92,18 +94,19 @@ wal_rotate(Wal* self, uint64_t wm)
 }
 
 void
-wal_gc(Wal* self, uint64_t snapshot)
+wal_gc(Wal* self, uint64_t min)
 {
-	uint64_t min = snapshot;
+	uint64_t snapshot_min = id_mgr_min(&self->list_snapshot);
+	if (snapshot_min < min)
+		min = snapshot_min;
 
+	// remove wal files < min
 	Buf list;
 	buf_init(&list);
 	guard(buf_free, &list);
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);
-
-	// remove files by id
 	if (list_count > 0)
 	{
 		char path[PATH_MAX];

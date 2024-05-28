@@ -11,6 +11,7 @@ typedef struct Wal Wal;
 struct Wal
 {
 	Mutex    lock;
+	IdMgr    list_snapshot;
 	IdMgr    list;
 	WalFile* current;
 };

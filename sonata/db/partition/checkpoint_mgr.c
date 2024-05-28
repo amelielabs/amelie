@@ -128,7 +128,10 @@ checkpoint_mgr_open(CheckpointMgr* self, CatalogMgr* catalog_mgr)
 void
 checkpoint_mgr_gc(CheckpointMgr* self)
 {
-    uint64_t min = id_mgr_min(&self->list_snapshot);
+	uint64_t min = config_checkpoint();
+	uint64_t snapshot_min = id_mgr_min(&self->list_snapshot);
+	if (snapshot_min < min)
+		min = snapshot_min;
 
 	// remove checkpoints < min
 	Buf list;
@@ -137,8 +140,6 @@ checkpoint_mgr_gc(CheckpointMgr* self)
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);
-
-	// remove by id
 	if (list_count > 0)
 	{
 		auto lsns = (uint64_t*)list.start;
