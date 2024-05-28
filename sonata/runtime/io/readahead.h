@@ -54,7 +54,7 @@ readahead_read(Readahead* self, Tcp* tcp, int size, uint8_t** pos)
 		buf_reset(&self->buf);
 		int rc = tcp_read(tcp, &self->buf, self->readahead);
 		if (unlikely(rc == 0))
-			error("disconnected");
+			return 0;
 	}
 	return size;
 }

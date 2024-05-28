@@ -45,8 +45,8 @@ task_coroutine_main(void* arg)
 	{
 		auto error = &coro->error;
 		report(error->file, error->function, error->line,
-		       error->code, "error: ",
-		       false, "%s", error->text);
+		       "error: ",
+		       "unhandled exception: %s", error->text);
 	}
 
 	// main exit

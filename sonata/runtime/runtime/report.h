@@ -9,7 +9,11 @@
 void
 report(const char* file,
        const char* function, int line,
-       int         code,
        const char* prefix,
-       bool        error,
        const char* fmt, ...);
+
+void no_return
+report_throw(const char* file,
+             const char* function, int line,
+             int         code,
+             const char* fmt, ...);

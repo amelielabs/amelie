@@ -19,9 +19,9 @@
 
 // errors
 #define error_as(code, fmt, ...) \
-	report(source_file, \
-	       source_function, \
-	       source_line, code, "error: ", true, fmt, ## __VA_ARGS__)
+	report_throw(source_file, \
+	             source_function, \
+	             source_line, code, fmt, ## __VA_ARGS__)
 
 #define error(fmt, ...) \
 	error_as(ERROR, fmt, ## __VA_ARGS__)
@@ -43,4 +43,4 @@
 #define log(fmt, ...) \
 	report(source_file, \
 	       source_function, \
-	       source_line, 0, "", false, fmt, ## __VA_ARGS__)
+	       source_line, "", fmt, ## __VA_ARGS__)

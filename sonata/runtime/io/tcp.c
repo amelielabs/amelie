@@ -235,10 +235,14 @@ tcp_read_socket(Tcp* self, Buf* buf, int size)
 	rc = socket_read(self->fd.fd, buf->position, size);
 	if (rc == -1)
 	{
+#if 0
 		if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
 			error_system();
 		// retry
 		return -1;
+#endif
+		// treat socket errors as eof
+		return 0;
 	}
 
 	// might be zero in case of eof
