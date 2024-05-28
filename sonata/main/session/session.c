@@ -40,7 +40,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->frontend = frontend;
 	self->lock     = NULL;
 	self->share    = share;
-	http_init(&self->request, HTTP_REQUEST);
+	http_init(&self->request, HTTP_REQUEST, 32 * 1024);
 	reply_init(&self->reply);
 	body_init(&self->body);
 	explain_init(&self->explain);
@@ -213,10 +213,10 @@ session_main(Session* self)
 	{
 		// read request
 		http_reset(&self->request);
-		http_read(&self->request, tcp);
-		http_read_content(&self->request, tcp);
-		/*http_log(&self->request);*/
-
+		auto eof = http_read(&self->request, tcp);
+		if (unlikely(eof))
+			break;
+		http_read_content(&self->request, tcp, &self->request.content);
 		body_reset(body);
 
 		// handle backup request

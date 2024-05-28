@@ -42,6 +42,7 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-main.a
 OBJECTS        = \
                  backup/backup.o \
+                 backup/restore.o \
                  shard/shard.o \
                  shard/shard_mgr.o \
                  frontend/frontend.o \
