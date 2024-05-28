@@ -352,7 +352,7 @@ test_suite_start(TestSuite* self, char* arg)
 	str_init(&options);
 	str_set_cstr(&options, prefmt_config);
 
-	int rc = main_start(&env->main, &directory, &options);
+	int rc = main_start(&env->main, &directory, &options, NULL);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);

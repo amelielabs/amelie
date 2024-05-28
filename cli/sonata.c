@@ -91,7 +91,7 @@ server(int argc, char** argv)
 	char options[] = "{ \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"frontends\": 3, \"shards\": 6 }";
 	str_set_cstr(&config, options);
 
-	int rc = main_start(&main, &directory, &config);
+	int rc = main_start(&main, &directory, &config, NULL);
 	if (rc == -1)
 	{
 		main_stop(&main);
@@ -100,19 +100,40 @@ server(int argc, char** argv)
 	}
 
 	client(argc, argv);
-	/*
-	for (;;)
+
+	main_stop(&main);
+	main_free(&main);
+	return EXIT_SUCCESS;
+}
+
+static int
+server_backup(int argc, char** argv)
+{
+	Main main;
+	main_init(&main);
+
+	Str directory;
+	str_init(&directory);
+	str_set_cstr(&directory, "./t");
+
+	Str config;
+	str_init(&config);
+	char options[] = "{ \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"frontends\": 3, \"shards\": 6 }";
+	str_set_cstr(&config, options);
+
+	Str backup;
+	str_init(&backup);
+	str_set_cstr(&backup, "127.0.0.1:3485");
+
+	int rc = main_start(&main, &directory, &config, &backup);
+	if (rc == -1)
 	{
-		if (isatty(fileno(stdin)))
-		{
-			printf("> ");
-			fflush(stdout);
-		}
-		char text[1024];
-		if (! fgets(text, sizeof(text), stdin))
-			break;
+		main_stop(&main);
+		main_free(&main);
+		return EXIT_FAILURE;
 	}
-	*/
+
+	/*client(argc, argv);*/
 
 	main_stop(&main);
 	main_free(&main);
@@ -124,6 +145,9 @@ main(int argc, char* argv[])
 {
 	if (argc >= 2 && !strcmp(argv[1], "server"))
 		return server(argc, argv);
+
+	if (argc >= 2 && !strcmp(argv[1], "backup"))
+		return server_backup(argc, argv);
 
 	return client(argc, argv);
 }
