@@ -36,9 +36,11 @@ struct Http
 	Readahead readahead;
 };
 
-void http_init(Http*, HttpType);
+void http_init(Http*, HttpType, int);
 void http_free(Http*);
 void http_reset(Http*);
 void http_log(Http*);
-void http_read(Http*, Tcp*);
-void http_read_content(Http*, Tcp*);
+bool http_read(Http*, Tcp*);
+void http_read_content(Http*, Tcp*, Buf*);
+HttpHeader*
+http_find(Http*, const char*, int);

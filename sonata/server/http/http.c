@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 
 void
-http_init(Http* self, HttpType type)
+http_init(Http* self, HttpType type, int readahead)
 {
 	self->type = type;
 	self->headers_count = 0;
@@ -26,7 +26,7 @@ http_init(Http* self, HttpType type)
 	buf_init(&self->headers);
 	buf_init(&self->raw);
 	buf_init(&self->content);
-	readahead_init(&self->readahead, 32 * 1024);
+	readahead_init(&self->readahead, readahead);
 }
 
 void
@@ -78,13 +78,20 @@ http_log(Http* self)
 	}
 }
 
-hot static inline void
+hot static inline bool
 http_read_header(Http* self, Tcp* tcp)
 {
 	for (;;)
 	{
 		uint8_t* pos = NULL;
 		int size = readahead_read(&self->readahead, tcp, 256, &pos);
+		if (size == 0)
+		{
+			// eof
+			if (unlikely(! buf_empty(&self->raw)))
+				error("http: unexpected eof");
+			return true;
+		}
 		buf_write(&self->raw, pos, size);
 
 		// match header end marker
@@ -102,13 +109,16 @@ http_read_header(Http* self, Tcp* tcp)
 		if (unlikely(buf_size(&self->raw) >= 512))
 			error("HTTP header size limit exceeded");
 	}
+	return false;
 }
 
-hot static inline void
+hot static inline bool
 http_process(Http* self, Tcp* tcp)
 {
 	// read reader
-	http_read_header(self, tcp);
+	auto eof = http_read_header(self, tcp);
+	if (unlikely(eof))
+		return true;
 
 	// parse header
 	auto pos   = self->raw.start;
@@ -179,11 +189,12 @@ http_process(Http* self, Tcp* tcp)
 
 		// msg
 		start = pos;
-		while (pos < end && *pos != ' ')
+		while (*pos != '\r')
 			pos++;
-		if (unlikely(pos == end))
-			goto error;
 		str_set_u8(&self->msg, start, pos - start);
+		pos++;
+		if (unlikely(*pos != '\n'))
+			goto error;
 		pos++;
 		if (unlikely(str_empty(&self->msg)))
 			goto error;
@@ -231,13 +242,13 @@ http_process(Http* self, Tcp* tcp)
 		pos++;
 	}
 
-	return;
+	return false;
 
 error:
 	error("failed to parse HTTP request");
 }
 
-static inline HttpHeader*
+HttpHeader*
 http_find(Http* self, const char* name, int name_size)
 {
 	auto pos = (HttpHeader*)self->headers.start;
@@ -250,17 +261,18 @@ http_find(Http* self, const char* name, int name_size)
 	return NULL;
 }
 
-hot void
+hot bool
 http_read(Http* self, Tcp* tcp)
 {
 	// read header
-	http_process(self, tcp);
+	auto eof = http_process(self, tcp);
 
 	// todo: validate header
+	return eof;
 }
 
 hot void
-http_read_content(Http* self, Tcp* tcp)
+http_read_content(Http* self, Tcp* tcp, Buf* content)
 {
 	// read content
 	auto content_len = http_find(self, "content-length", 14);
@@ -271,10 +283,10 @@ http_read_content(Http* self, Tcp* tcp)
 	if (str_toint(&content_len->value, &len) == -1)
 		error("failed to parse HTTP request");
 
-	buf_reserve(&self->content, len + 1);
+	buf_reserve(content, len + 1);
 	for (;;)
 	{
-		int left = len - buf_size(&self->content);
+		int left = len - buf_size(content);
 		if (left == 0)
 			break;
 		int to_read = self->readahead.readahead;
@@ -283,7 +295,9 @@ http_read_content(Http* self, Tcp* tcp)
 
 		uint8_t* pos = NULL;
 		int size = readahead_read(&self->readahead, tcp, to_read, &pos);
-		buf_write(&self->content, pos, size);
+		if (unlikely(size == 0))
+			error("http: unexpected eof");
+		buf_write(content, pos, size);
 	}
-	*self->content.position = '\0';
+	*content->position = '\0';
 }
