@@ -219,32 +219,60 @@ wal_write(Wal* self, WalBatch* batch)
 		               log_set->iov.iov_count);
 	}
 
+	// notify pending slots
+	list_foreach(&self->slots)
+	{
+		auto slot = list_at(WalSlot, link);
+		wal_slot_signal(slot, batch->header.lsn);
+	}
+
 	// return true if wal is ready to be rotated
 	auto wm = var_int_of(&config()->wal_rotate_wm);
 	return wal_rotate_ready(self, wm);
 }
 
 void
-wal_attach(Wal* self, WalSlot* slot)
+wal_add(Wal* self, WalSlot* slot)
 {
-	assert(! slot->attached);
+	assert(! slot->added);
 	mutex_lock(&self->lock);
 	list_append(&self->slots, &slot->link);
 	self->slots_count++;
-	slot->attached = true;
+	slot->added = true;
+	mutex_unlock(&self->lock);
+}
+
+void
+wal_del(Wal* self, WalSlot* slot)
+{
+	if (! slot->added)
+		return;
+	mutex_lock(&self->lock);
+	list_unlink(&slot->link);
+	self->slots_count--;
+	slot->added = false;
+	mutex_unlock(&self->lock);
+}
+
+void
+wal_attach(Wal* self, WalSlot* slot)
+{
+	assert(! slot->on_write);
+	auto on_write = condition_create();
+	mutex_lock(&self->lock);
+	slot->on_write = on_write;
 	mutex_unlock(&self->lock);
 }
 
 void
 wal_detach(Wal* self, WalSlot* slot)
 {
-	if (! slot->attached)
-		return;
 	mutex_lock(&self->lock);
-	list_unlink(&slot->link);
-	self->slots_count--;
-	slot->attached = false;
+	auto on_write = slot->on_write;
+	slot->on_write = NULL;
 	mutex_unlock(&self->lock);
+	if (on_write)
+		condition_free(on_write);
 }
 
 void

@@ -141,7 +141,7 @@ void
 backup_free(Backup* self)
 {
 	auto db = self->db;
-	wal_detach(&db->wal, &self->wal_slot);
+	wal_del(&db->wal, &self->wal_slot);
 	if (self->checkpoint_snapshot != -1)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	if (self->on_complete)
@@ -232,7 +232,7 @@ backup_prepare(Backup* self)
 
 	// create wal slot
 	wal_slot_set(&self->wal_slot, 0);
-	wal_attach(&db->wal, &self->wal_slot);
+	wal_add(&db->wal, &self->wal_slot);
 
 	// add checkpoint snapshot
 	id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);
