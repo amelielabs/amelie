@@ -3,7 +3,7 @@
 //
 // sonata.
 //
-// SQL Database for JSON.
+// Real-Time SQL Database.
 //
 
 void json_export(Buf*, uint8_t**);
