@@ -1,5 +1,5 @@
 #
-# sonata main makefile
+# sonata replication makefile
 #
 CC             = clang
 AR             = ar
@@ -32,25 +32,13 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../compiler/parser \
                  -I../compiler/semantic \
                  -I../compiler/compiler \
-                 -I../replication \
-                 -I../replication/backup \
                  -I. \
-                 -Ifrontend \
-                 -Ishard \
-                 -Isession \
-                 -Imain
+                 -Ibackup
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-main.a
+LIB            = libsonata-replication.a
 OBJECTS        = \
-                 shard/shard.o \
-                 shard/shard_mgr.o \
-                 frontend/frontend.o \
-                 session/explain.o \
-                 session/session.o \
-                 main/system.o \
-                 main/ctl.o \
-                 main/ddl.o \
-                 main/main.o
+                 backup/backup.o \
+                 backup/restore.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

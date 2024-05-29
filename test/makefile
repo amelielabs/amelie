@@ -31,6 +31,8 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/compiler/parser \
                  -I../sonata/compiler/semantic \
                  -I../sonata/compiler/compiler \
+                 -I../sonata/replication \
+                 -I../sonata/replication/backup \
                  -I../sonata/main \
                  -I../sonata/main/backup \
                  -I../sonata/main/frontend \
@@ -45,7 +47,8 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../sonata/db/libsonata-db.a \
                   ../sonata/vm/libsonata-vm.a \
                   ../sonata/compiler/libsonata-compiler.a \
-				  ../sonata/main/libsonata-main.a \
+                  ../sonata/replication/libsonata-replication.a \
+                  ../sonata/main/libsonata-main.a \
                   -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto
 OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_exception.o \
