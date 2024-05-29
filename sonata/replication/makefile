@@ -33,12 +33,14 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../compiler/semantic \
                  -I../compiler/compiler \
                  -I. \
-                 -Ibackup
+                 -Ibackup \
+                 -Istreamer
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-replication.a
 OBJECTS        = \
                  backup/backup.o \
-                 backup/restore.o
+                 backup/restore.o \
+                 streamer/streamer.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
