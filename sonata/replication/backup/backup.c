@@ -127,11 +127,11 @@ backup_main(void* arg)
 void
 backup_init(Backup* self, Db* db)
 {
-	self->wal_snapshot        = -1;
 	self->checkpoint_snapshot = -1;
 	self->on_complete         = NULL;
 	self->tcp                 = NULL;
 	self->db                  = db;
+	wal_slot_init(&self->wal_slot);
 	buf_init(&self->buf_state);
 	buf_init(&self->buf);
 	task_init(&self->task);
@@ -141,8 +141,7 @@ void
 backup_free(Backup* self)
 {
 	auto db = self->db;
-	if (self->wal_snapshot != -1)
-		id_mgr_delete(&db->wal.list_snapshot, 0);
+	wal_detach(&db->wal, &self->wal_slot);
 	if (self->checkpoint_snapshot != -1)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	if (self->on_complete)
@@ -231,9 +230,9 @@ backup_prepare(Backup* self)
 	// create new wal
 	wal_rotate(&db->wal, 0);
 
-	// take wal snapshot
-	id_mgr_add(&db->wal.list_snapshot, 0);
-	self->wal_snapshot = 0;
+	// create wal slot
+	wal_slot_set(&self->wal_slot, 0);
+	wal_attach(&db->wal, &self->wal_slot);
 
 	// add checkpoint snapshot
 	id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);

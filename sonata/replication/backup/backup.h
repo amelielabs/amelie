@@ -10,8 +10,8 @@ typedef struct Backup Backup;
 
 struct Backup
 {
-	int64_t    wal_snapshot;
 	int64_t    checkpoint_snapshot;
+	WalSlot    wal_slot;
 	Buf        buf_state;
 	Buf        buf;
 	Tcp*       tcp;

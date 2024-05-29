@@ -20,9 +20,10 @@ void
 wal_init(Wal* self)
 {
 	self->current = NULL;
+	self->slots_count = 0;
 	mutex_init(&self->lock);
-	id_mgr_init(&self->list_snapshot);
 	id_mgr_init(&self->list);
+	list_init(&self->slots);
 }
 
 void
@@ -35,7 +36,6 @@ wal_free(Wal* self)
 		wal_file_free(file);
 		self->current = NULL;
 	}
-	id_mgr_free(&self->list_snapshot);
 	id_mgr_free(&self->list);
 	mutex_free(&self->lock);
 }
@@ -93,12 +93,26 @@ wal_rotate(Wal* self, uint64_t wm)
 	}
 }
 
+static int
+wal_slots(Wal* self, uint64_t* min)
+{
+	mutex_lock(&self->lock);
+	int count = self->slots_count;
+	list_foreach(&self->slots)
+	{
+		auto slot = list_at(WalSlot, link);
+		uint64_t lsn = atomic_u64_of(&slot->lsn);
+		if (*min < lsn)
+			*min = lsn;
+	}
+	mutex_unlock(&self->lock);
+	return count;
+}
+
 void
 wal_gc(Wal* self, uint64_t min)
 {
-	uint64_t snapshot_min = id_mgr_min(&self->list_snapshot);
-	if (snapshot_min < min)
-		min = snapshot_min;
+	wal_slots(self, &min);
 
 	// remove wal files < min
 	Buf list;
@@ -211,11 +225,38 @@ wal_write(Wal* self, WalBatch* batch)
 }
 
 void
+wal_attach(Wal* self, WalSlot* slot)
+{
+	assert(! slot->attached);
+	mutex_lock(&self->lock);
+	list_append(&self->slots, &slot->link);
+	self->slots_count++;
+	slot->attached = true;
+	mutex_unlock(&self->lock);
+}
+
+void
+wal_detach(Wal* self, WalSlot* slot)
+{
+	if (! slot->attached)
+		return;
+	mutex_lock(&self->lock);
+	list_unlink(&slot->link);
+	self->slots_count--;
+	slot->attached = false;
+	mutex_unlock(&self->lock);
+}
+
+void
 wal_show(Wal* self, Buf* buf)
 {
 	int      list_count;
 	uint64_t list_min;
 	id_mgr_stats(&self->list, &list_count, &list_min);
+
+	uint64_t slots_min = UINT64_MAX;
+	int      slots_count;
+	slots_count = wal_slots(self, &slots_min);
 
 	// map
 	encode_map(buf);
@@ -247,6 +288,14 @@ wal_show(Wal* self, Buf* buf)
 	// files
 	encode_raw(buf, "files", 5);
 	encode_integer(buf, list_count);
+
+	// slots
+	encode_raw(buf, "slots", 5);
+	encode_integer(buf, slots_count);
+
+	// slots_min
+	encode_raw(buf, "slots_min", 9);
+	encode_integer(buf, slots_min);
 
 	encode_map_end(buf);
 }
