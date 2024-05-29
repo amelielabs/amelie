@@ -76,22 +76,27 @@ wal_cursor_at(WalCursor* self)
 	return (WalWrite*)self->buf.start;
 }
 
-bool
-wal_cursor_next(WalCursor* self)
+hot static WalWrite*
+wal_cursor_read(WalCursor* self)
 {
 	if (unlikely(self->file == NULL))
-		return false;
+		return NULL;
 
 	auto wal = self->wal;
 	for (;;)
 	{
+		auto buf_offset = buf_size(&self->buf);
 		auto file = self->file;
 		if (wal_file_pread(file, self->file_offset, &self->buf))
 		{
-			auto write = wal_cursor_at(self);
+			auto write = (WalWrite*)(self->buf.start + buf_offset);
 			self->file_offset += write->size;
-			return true;
+			return write;
 		}
+
+		// retry read if file size has changed
+		if (file_update_size(&file->file))
+			continue;
 
 		// get to the next file id
 		uint64_t id;
@@ -110,5 +115,31 @@ wal_cursor_next(WalCursor* self)
 		wal_file_open(self->file);
 	}
 
+	return NULL;
+}
+
+bool
+wal_cursor_next(WalCursor* self)
+{
+	buf_reset(&self->buf);
+	auto write = wal_cursor_read(self);
+	if (write)
+		return true;
 	return false;
+}
+
+bool
+wal_cursor_collect(WalCursor* self, int size, uint64_t* lsn)
+{
+	buf_reset(&self->buf);
+	int collected = 0;
+	while (collected < size)
+	{
+		auto write = wal_cursor_read(self);
+		if (! write)
+			break;
+		*lsn = write->lsn;
+		collected += write->size;
+	}
+	return collected > 0;
 }

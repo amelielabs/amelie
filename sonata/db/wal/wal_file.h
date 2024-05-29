@@ -71,8 +71,6 @@ wal_file_eof(WalFile* self, uint32_t offset, uint32_t size)
 static inline bool
 wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 {
-	buf_reset(buf);
-
 	// check for eof
 	if (wal_file_eof(self, offset, sizeof(WalWrite)))
 		return false;
