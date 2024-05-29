@@ -187,7 +187,7 @@ streamer_stop(Streamer* self)
 	msg_end(buf);
 	channel_write(&self->task.channel, buf);
 
-	// wait for backup completion
+	// wait for completion
 	coroutine_cancel_pause(so_self());
 	condition_wait(self->on_complete, -1);
 	coroutine_cancel_resume(so_self());
