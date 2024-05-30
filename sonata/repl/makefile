@@ -34,13 +34,14 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../compiler/compiler \
                  -I. \
                  -Ibackup \
-                 -Ireplication
+                 -Irepl
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-replication.a
+LIB            = libsonata-repl.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
-                 replication/pusher.o
+                 repl/pusher.o \
+                 repl/puller.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

@@ -28,7 +28,7 @@
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
-#include <sonata_replication.h>
+#include <sonata_repl.h>
 
 void
 pusher_init(Pusher* self, Wal* wal)

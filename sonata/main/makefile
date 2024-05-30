@@ -32,8 +32,9 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../compiler/parser \
                  -I../compiler/semantic \
                  -I../compiler/compiler \
-                 -I../replication \
-                 -I../replication/backup \
+                 -I../repl \
+                 -I../repl/backup \
+                 -I../repl/repl \
                  -I. \
                  -Ifrontend \
                  -Ishard \

@@ -6,4 +6,5 @@
 // Real-Time SQL Database.
 //
 
-#include "replication/pusher.h"
+#include "repl/pusher.h"
+#include "repl/puller.h"
