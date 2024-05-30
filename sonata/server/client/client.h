@@ -10,6 +10,9 @@ typedef struct Client Client;
 
 struct Client
 {
+	Http        request;
+	Http        reply;
+	Readahead   readahead;
 	Tcp         tcp;
 	TlsContext* tls_context;
 	UriHost*    host;

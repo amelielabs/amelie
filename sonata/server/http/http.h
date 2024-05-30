@@ -11,9 +11,13 @@ typedef struct Http       Http;
 
 typedef enum
 {
-	HTTP_REQUEST,
-	HTTP_REPLY
-} HttpType;
+	HTTP_METHOD,
+	HTTP_URL,
+	HTTP_VERSION,
+	HTTP_CODE,
+	HTTP_MSG,
+	HTTP_MAX
+} HttpOption;
 
 struct HttpHeader
 {
@@ -23,24 +27,22 @@ struct HttpHeader
 
 struct Http
 {
-	HttpType  type;
-	Str       method;
-	Str       url;
-	Str       version;
-	Str       code;
-	Str       msg;
-	int       headers_count;
-	Buf       headers;
-	Buf       raw;
-	Buf       content;
-	Readahead readahead;
+	Str options[HTTP_MAX];
+	int headers_count;
+	Buf headers;
+	Buf raw;
+	Buf content;
 };
 
-void http_init(Http*, HttpType, int);
+void http_init(Http*);
 void http_free(Http*);
 void http_reset(Http*);
 void http_log(Http*);
-bool http_read(Http*, Tcp*);
-void http_read_content(Http*, Tcp*, Buf*);
+bool http_read(Http*, Readahead*, bool);
+void http_read_content(Http*, Readahead*, Buf*);
+void http_write_request(Http*, char*, ...);
+void http_write_reply(Http*, int, char*);
+void http_write(Http*, char*, char*, ...);
+void http_write_end(Http*);
 HttpHeader*
-http_find(Http*, const char*, int);
+http_find(Http*, char*, int);

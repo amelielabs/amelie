@@ -14,19 +14,14 @@
 #include <sonata_http.h>
 
 void
-http_init(Http* self, HttpType type, int readahead)
+http_init(Http* self)
 {
-	self->type = type;
 	self->headers_count = 0;
-	str_init(&self->method);
-	str_init(&self->url);
-	str_init(&self->version);
-	str_init(&self->code);
-	str_init(&self->msg);
+	for (int i = 0; i < HTTP_MAX; i++)
+		str_init(&self->options[i]);
 	buf_init(&self->headers);
 	buf_init(&self->raw);
 	buf_init(&self->content);
-	readahead_init(&self->readahead, readahead);
 }
 
 void
@@ -35,38 +30,46 @@ http_free(Http* self)
 	buf_free(&self->headers);
 	buf_free(&self->raw);
 	buf_free(&self->content);
-	readahead_free(&self->readahead);
 }
 
 void
 http_reset(Http* self)
 {
 	self->headers_count = 0;
-	str_init(&self->method);
-	str_init(&self->url);
-	str_init(&self->version);
-	str_init(&self->code);
-	str_init(&self->msg);
+	for (int i = 0; i < HTTP_MAX; i++)
+		str_init(&self->options[i]);
 	buf_reset(&self->headers);
 	buf_reset(&self->raw);
 	buf_reset(&self->content);
-	readahead_reset(&self->readahead);
+}
+
+HttpHeader*
+http_find(Http* self, char* name, int name_size)
+{
+	auto pos = (HttpHeader*)self->headers.start;
+	auto end = (HttpHeader*)self->headers.position;
+	for (; pos < end; pos++)
+	{
+		if (str_strncasecmp(&pos->name, name, name_size))
+			return pos;
+	}
+	return NULL;
 }
 
 void
 http_log(Http* self)
 {
-	if (self->type == HTTP_REQUEST)
-	{
-		log("method: %.*s", str_size(&self->method), str_of(&self->method));
-		log("url: %.*s", str_size(&self->url), str_of(&self->url));
-		log("version: %.*s", str_size(&self->version), str_of(&self->version));
-	} else
-	{
-		log("version: %.*s", str_size(&self->version), str_of(&self->version));
-		log("code: %.*s", str_size(&self->code), str_of(&self->code));
-		log("msg: %.*s", str_size(&self->msg), str_of(&self->msg));
-	}
+	auto method  = &self->options[HTTP_METHOD];
+	auto url     = &self->options[HTTP_URL];
+	auto version = &self->options[HTTP_VERSION];
+	auto code    = &self->options[HTTP_CODE];
+	auto msg     = &self->options[HTTP_CODE];
+
+	log("method:  %.*s", str_size(method), str_of(method));
+	log("url:     %.*s", str_size(url), str_of(url));
+	log("version: %.*s", str_size(version), str_of(version));
+	log("code  :  %.*s", str_size(code), str_of(code));
+	log("msg:     %.*s", str_size(msg), str_of(msg));
 
 	auto header = (HttpHeader*)self->headers.start;
 	auto end    = (HttpHeader*)self->headers.position;
@@ -79,12 +82,12 @@ http_log(Http* self)
 }
 
 hot static inline bool
-http_read_header(Http* self, Tcp* tcp)
+http_read_header(Http* self, Readahead* readahead)
 {
 	for (;;)
 	{
 		uint8_t* pos = NULL;
-		int size = readahead_read(&self->readahead, tcp, 256, &pos);
+		int size = readahead_read(readahead, 256, &pos);
 		if (size == 0)
 		{
 			// eof
@@ -103,7 +106,7 @@ http_read_header(Http* self, Tcp* tcp)
 			self->raw.position = end + 4;
 
 			int pushback = before_truncate - buf_size(&self->raw);
-			readahead_pushback(&self->readahead, pushback);
+			readahead_pushback(readahead, pushback);
 			break;
 		}
 		if (unlikely(buf_size(&self->raw) >= 512))
@@ -112,11 +115,11 @@ http_read_header(Http* self, Tcp* tcp)
 	return false;
 }
 
-hot static inline bool
-http_process(Http* self, Tcp* tcp)
+hot bool
+http_read(Http* self, Readahead* readahead, bool request)
 {
 	// read reader
-	auto eof = http_read_header(self, tcp);
+	auto eof = http_read_header(self, readahead);
 	if (unlikely(eof))
 		return true;
 
@@ -125,82 +128,55 @@ http_process(Http* self, Tcp* tcp)
 	auto start = pos;
 	auto end   = pos + buf_size(&self->raw);
 
-	if (self->type == HTTP_REQUEST)
+	// parse request or reply options
+	Str *a, *b, *c;
+	if (request)
 	{
 		// <method> <url> <version>\r\n
-
-		// method
-		while (pos < end && *pos != ' ')
-			pos++;
-		if (unlikely(pos == end))
-			goto error;
-		str_set_u8(&self->method, start, pos - start);
-		pos++;
-		if (unlikely(str_empty(&self->method)))
-			goto error;
-
-		// url
-		start = pos;
-		while (pos < end && *pos != ' ')
-			pos++;
-		if (unlikely(pos == end))
-			goto error;
-		str_set_u8(&self->url, start, pos - start);
-		pos++;
-		if (unlikely(str_empty(&self->url)))
-			goto error;
-
-		// version
-		start = pos;
-		while (*pos != '\r')
-			pos++;
-		str_set_u8(&self->version, start, pos - start);
-		pos++;
-		if (unlikely(*pos != '\n'))
-			goto error;
-		pos++;
-		if (unlikely(str_empty(&self->version)))
-			goto error;
-	} else
-	{
+		a = &self->options[HTTP_METHOD];
+		b = &self->options[HTTP_URL];
+		c = &self->options[HTTP_VERSION];
+	} else {
 		// <version> <code> <msg>\r\n
-
-		// version
-		auto start = pos;
-		while (pos < end && *pos != ' ')
-			pos++;
-		if (unlikely(pos == end))
-			goto error;
-		str_set_u8(&self->version, start, pos - start);
-		pos++;
-		if (unlikely(str_empty(&self->version)))
-			goto error;
-
-		// code
-		start = pos;
-		while (pos < end && *pos != ' ')
-			pos++;
-		if (unlikely(pos == end))
-			goto error;
-		str_set_u8(&self->code, start, pos - start);
-		pos++;
-		if (unlikely(str_empty(&self->code)))
-			goto error;
-
-		// msg
-		start = pos;
-		while (*pos != '\r')
-			pos++;
-		str_set_u8(&self->msg, start, pos - start);
-		pos++;
-		if (unlikely(*pos != '\n'))
-			goto error;
-		pos++;
-		if (unlikely(str_empty(&self->msg)))
-			goto error;
+		a = &self->options[HTTP_VERSION];
+		b = &self->options[HTTP_CODE];
+		c = &self->options[HTTP_MSG];
 	}
 
-	// headers
+	// a
+	while (pos < end && *pos != ' ')
+		pos++;
+	if (unlikely(pos == end))
+		goto error;
+	str_set_u8(a, start, pos - start);
+	pos++;
+	if (unlikely(str_empty(a)))
+		goto error;
+
+	// b
+	start = pos;
+	while (pos < end && *pos != ' ')
+		pos++;
+	if (unlikely(pos == end))
+		goto error;
+	str_set_u8(b, start, pos - start);
+	pos++;
+	if (unlikely(str_empty(b)))
+		goto error;
+
+	// c
+	start = pos;
+	while (*pos != '\r')
+		pos++;
+	str_set_u8(c, start, pos - start);
+	pos++;
+	if (unlikely(*pos != '\n'))
+		goto error;
+	pos++;
+	if (unlikely(str_empty(c)))
+		goto error;
+
+	// parse headers
 	for (;;)
 	{
 		// \r\n (eof)
@@ -212,9 +188,7 @@ http_process(Http* self, Tcp* tcp)
 			break;
 		}
 
-		// reserve header
-		HttpHeader* header;
-		header = (HttpHeader*)buf_claim(&self->headers, sizeof(HttpHeader));
+		auto header = (HttpHeader*)buf_claim(&self->headers, sizeof(HttpHeader));
 		self->headers_count++;
 
 		// <name>: value\r\n
@@ -228,7 +202,7 @@ http_process(Http* self, Tcp* tcp)
 
 		// ' '
 		if (unlikely(*pos != ' '))
-			error("");
+			goto error;
 		pos++;
 
 		// value
@@ -248,31 +222,8 @@ error:
 	error("failed to parse HTTP request");
 }
 
-HttpHeader*
-http_find(Http* self, const char* name, int name_size)
-{
-	auto pos = (HttpHeader*)self->headers.start;
-	auto end = (HttpHeader*)self->headers.position;
-	for (; pos < end; pos++)
-	{
-		if (str_strncasecmp(&pos->name, name, name_size))
-			return pos;
-	}
-	return NULL;
-}
-
-hot bool
-http_read(Http* self, Tcp* tcp)
-{
-	// read header
-	auto eof = http_process(self, tcp);
-
-	// todo: validate header
-	return eof;
-}
-
 hot void
-http_read_content(Http* self, Tcp* tcp, Buf* content)
+http_read_content(Http* self, Readahead* readahead, Buf* content)
 {
 	// read content
 	auto content_len = http_find(self, "content-length", 14);
@@ -289,15 +240,53 @@ http_read_content(Http* self, Tcp* tcp, Buf* content)
 		int left = len - buf_size(content);
 		if (left == 0)
 			break;
-		int to_read = self->readahead.readahead;
+		int to_read = readahead->readahead;
 		if (left < to_read)
 			to_read = left;
 
 		uint8_t* pos = NULL;
-		int size = readahead_read(&self->readahead, tcp, to_read, &pos);
+		int size = readahead_read(readahead, to_read, &pos);
 		if (unlikely(size == 0))
 			error("http: unexpected eof");
 		buf_write(content, pos, size);
 	}
 	*content->position = '\0';
+}
+
+hot void
+http_write_request(Http* self, char* fmt, ...)
+{
+	auto raw = &self->raw;
+	va_list args;
+	va_start(args, fmt);
+	buf_vprintf(raw, fmt, args);
+	va_end(args);
+	buf_write(raw, " HTTP/1.1\r\n", 13);
+}
+
+hot void
+http_write_reply(Http* self, int code, char* msg)
+{
+	auto raw = &self->raw;
+	buf_reset(raw);
+	buf_printf(raw, "HTTP/1.1 %d %s\r\n", code, msg);
+}
+
+hot void
+http_write(Http* self, char* name, char* fmt, ...)
+{
+	auto raw = &self->raw;
+	buf_write(raw, name, strlen(name));
+	buf_write(raw, ": ", 2);
+	va_list args;
+	va_start(args, fmt);
+	buf_vprintf(raw, fmt, args);
+	va_end(args);
+	buf_write(raw, "\r\n", 2);
+}
+
+hot void
+http_write_end(Http* self)
+{
+	buf_write(&self->raw, "\r\n", 2);
 }

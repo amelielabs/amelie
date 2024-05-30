@@ -23,6 +23,9 @@ client_create(void)
 	self->coroutine_id = UINT64_MAX;
 	self->host         = NULL;
 	self->arg          = NULL;
+	http_init(&self->request);
+	http_init(&self->reply);
+	readahead_init(&self->readahead, &self->tcp, 16 * 1024);
 	uri_init(&self->uri);
 	tcp_init(&self->tcp);
 	list_init(&self->link);
@@ -32,6 +35,9 @@ client_create(void)
 void
 client_free(Client* self)
 {
+	http_free(&self->request);
+	http_free(&self->reply);
+	readahead_free(&self->readahead);
 	client_close(self);
 	if (self->tls_context)
 		tls_context_free(self->tls_context);
@@ -147,4 +153,7 @@ client_close(Client* self)
 	}
 	self->host = NULL;
 	tcp_close(&self->tcp);
+	http_reset(&self->request);
+	http_reset(&self->reply);
+	readahead_reset(&self->readahead);
 }
