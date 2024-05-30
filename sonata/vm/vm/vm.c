@@ -31,7 +31,7 @@ vm_init(Vm*          self,
         Uuid*        shard,
         Executor*    executor,
         Plan*        plan,
-        Body*        body,
+        Buf*         body,
         FunctionMgr* function_mgr)
 {
 	self->code         = NULL;

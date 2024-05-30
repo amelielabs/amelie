@@ -56,7 +56,7 @@ merge_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-merge_decode(ValueObj* obj, Body* body)
+merge_decode(ValueObj* obj, Buf* buf)
 {
 	auto self = (Merge*)obj;
 	MergeIterator it;
@@ -69,10 +69,10 @@ merge_decode(ValueObj* obj, Body* body)
 	{
 		auto row = merge_iterator_at(&it);
 		if (! first)
-			body_add_comma(body);
+			body_add_comma(buf);
 		else
 			first = false;
-		body_add(body, &row->value);
+		body_add(buf, &row->value);
 		merge_iterator_next(&it);
 	}
 }

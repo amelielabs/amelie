@@ -53,15 +53,15 @@ set_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-set_decode(ValueObj* obj, Body* body)
+set_decode(ValueObj* obj, Buf* buf)
 {
 	auto self = (Set*)obj;
 	int i = 0;
 	for (; i < self->list_count ; i++)
 	{
 		if (i > 0)
-			body_add_comma(body);
-		body_add(body, &set_at(self, i)->value);
+			body_add_comma(buf);
+		body_add(buf, &set_at(self, i)->value);
 	}
 }
 

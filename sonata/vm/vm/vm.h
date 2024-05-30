@@ -21,13 +21,13 @@ struct Vm
 	Plan*        plan;
 	Result*      cte;
 	Value*       result;
-	Body*        body;
+	Buf*         body;
 	Transaction* trx;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, Uuid*, Executor*, Plan*, Body*, FunctionMgr*);
+void vm_init(Vm*, Db*, Uuid*, Executor*, Plan*, Buf*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Transaction*, Code*, CodeData*, Buf*,
