@@ -40,14 +40,11 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->frontend = frontend;
 	self->lock     = NULL;
 	self->share    = share;
-	http_init(&self->request, HTTP_REQUEST, 32 * 1024);
-	reply_init(&self->reply);
-	body_init(&self->body);
 	explain_init(&self->explain);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
 	        &self->plan,
-	        &self->body,
+	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
 	plan_init(&self->plan, share->router, &frontend->trx_cache,
@@ -62,9 +59,6 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
-	http_free(&self->request);
-	reply_free(&self->reply);
-	body_free(&self->body);
 	so_free(self);
 }
 
@@ -106,7 +100,7 @@ session_explain(Session* self)
 	                   &self->plan,
 	                   false);
 	guard_buf(buf);
-	body_add_buf(&self->body, buf);
+	body_add_buf(&self->client->reply.content, buf);
 }
 
 hot static inline void
@@ -173,7 +167,7 @@ session_execute(Session* self)
 
 	// parse SQL query
 	Str text;
-	buf_str(&self->request.content, &text);
+	buf_str(&self->client->request.content, &text);
 	compiler_parse(compiler, &text);
 
 	if (! compiler->parser.stmt_list.list_count)
@@ -193,7 +187,7 @@ session_execute(Session* self)
 		if (buf)
 		{
 			guard_buf(buf);
-			body_add_buf(&self->body, buf);
+			body_add_buf(&self->client->reply.content, buf);
 		}
 		return;
 	}
@@ -203,26 +197,30 @@ session_execute(Session* self)
 	session_unlock(self);
 }
 
-void
+hot void
 session_main(Session* self)
 {
-	auto reply = &self->reply;
-	auto body  = &self->body;
-	auto tcp   = &self->client->tcp;
+	auto client    = self->client;
+	auto readahead = &client->readahead;
+	auto request   = &client->request;
+	auto reply     = &client->reply;
+	auto body      = &reply->content;
+
 	for (;;)
 	{
 		// read request
-		http_reset(&self->request);
-		auto eof = http_read(&self->request, tcp);
+		http_reset(request);
+		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
 			break;
-		http_read_content(&self->request, tcp, &self->request.content);
-		body_reset(body);
+		http_read_content(request, readahead, &request->content);
+		http_reset(reply);
 
 		// handle backup request
-		if (unlikely(str_compare_raw(&self->request.url, "/backup", 7)))
+		auto url = &request->options[HTTP_URL];
+		if (unlikely(str_compare_raw(url, "/backup", 7)))
 		{
-			backup(self->share->db, tcp);
+			backup(self->share->db, client);
 			break;
 		}
 
@@ -240,13 +238,19 @@ session_main(Session* self)
 			session_unlock(self);
 
 			auto error = &so_self()->error;
-			body_reset(body);
+			buf_reset(body);
 			body_error(body, error);
-			reply_create(reply, 400, "Bad Request", &body->buf);
+			http_write_reply(reply, 400, "Bad Request");
+			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
+			http_write(reply, "Content-Type", "application/json");
+			http_write_end(reply);
 		} else {
-			reply_create(reply, 200, "OK", &body->buf);
+			http_write_reply(reply, 200, "OK");
+			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
+			http_write(reply, "Content-Type", "application/json");
+			http_write_end(reply);
 		}
 
-		reply_write(reply, tcp);
+		tcp_write_pair(&client->tcp, &reply->raw, body);
 	}
 }
