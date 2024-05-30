@@ -28,7 +28,7 @@
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
-#include <sonata_streamer.h>
+#include <sonata_replication.h>
 
 void
 streamer_init(Streamer* self, Wal* wal)
