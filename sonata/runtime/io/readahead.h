@@ -10,16 +10,18 @@ typedef struct Readahead Readahead;
 
 struct Readahead
 {
-	int offset;
-	int readahead;
-	Buf buf;
+	int  offset;
+	int  readahead;
+	Tcp* tcp;
+	Buf  buf;
 };
 
 static inline void
-readahead_init(Readahead* self, int size)
+readahead_init(Readahead* self, Tcp* tcp, int size)
 {
 	self->offset    = 0;
 	self->readahead = size;
+	self->tcp       = tcp;
 	buf_init(&self->buf);
 }
 
@@ -37,7 +39,7 @@ readahead_reset(Readahead* self)
 }
 
 hot static inline int
-readahead_read(Readahead* self, Tcp* tcp, int size, uint8_t** pos)
+readahead_read(Readahead* self, int size, uint8_t** pos)
 {
 	for (;;)
 	{
@@ -52,7 +54,7 @@ readahead_read(Readahead* self, Tcp* tcp, int size, uint8_t** pos)
 		}
 		self->offset = 0;
 		buf_reset(&self->buf);
-		int rc = tcp_read(tcp, &self->buf, self->readahead);
+		int rc = tcp_read(self->tcp, &self->buf, self->readahead);
 		if (unlikely(rc == 0))
 			return 0;
 	}
