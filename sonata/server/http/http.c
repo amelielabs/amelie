@@ -257,11 +257,12 @@ hot void
 http_write_request(Http* self, char* fmt, ...)
 {
 	auto raw = &self->raw;
+	buf_reset(raw);
 	va_list args;
 	va_start(args, fmt);
 	buf_vprintf(raw, fmt, args);
 	va_end(args);
-	buf_write(raw, " HTTP/1.1\r\n", 13);
+	buf_write(raw, " HTTP/1.1\r\n", 11);
 }
 
 hot void

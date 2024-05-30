@@ -175,6 +175,7 @@ backup_send(Backup* self, Str* url)
 	auto buf = &reply->content;
 	for (uint64_t size = file.size; size > 0;)
 	{
+		buf_reset(buf);
 		uint64_t chunk = 256 * 1024;
 		if (size < chunk)
 			chunk = size;

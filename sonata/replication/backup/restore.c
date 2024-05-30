@@ -88,6 +88,7 @@ restore_start(Restore* self)
 
 	// read backup state
 	auto reply = &client->reply;
+	http_reset(reply);
 	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
@@ -136,6 +137,7 @@ restore_copy_file(Restore* self, Str* name)
 
 	// read response
 	auto reply = &client->reply;
+	http_reset(reply);
 	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
