@@ -30,6 +30,28 @@
 #include <sonata_backup.h>
 #include <sonata_streamer.h>
 
+void
+streamer_init(Streamer* self, Wal* wal)
+{
+	self->client      = NULL;
+	self->lsn         = 0;
+	self->lsn_last    = 0;
+	self->id          = NULL;
+	self->wal_slot    = NULL;
+	self->wal         = wal;
+	self->on_complete = NULL;
+	wal_cursor_init(&self->wal_cursor);
+	task_init(&self->task);
+}
+
+void
+streamer_free(Streamer* self)
+{
+	if (self->on_complete)
+		condition_free(self->on_complete);
+	task_free(&self->task);
+}
+
 static inline void
 streamer_collect(Streamer* self)
 {
@@ -45,28 +67,34 @@ streamer_collect(Streamer* self)
 static inline void
 streamer_write(Streamer* self)
 {
-	(void)self;
-	// write header + cursor data
-		// Sonata-Repl: uuid
-		// Sonata-Repl-Lsn: lsn  (self->lsn)
+	auto client = self->client;
+	auto content = &self->wal_cursor.buf;
+	auto reply = &client->reply;
+	http_write_reply(reply, 200, "OK");
+	http_write(reply, "Content-Length", "%d", buf_size(content));
+	http_write(reply, "Content-Type", "application/octet-stream");
+	http_write(reply, "Sonata-Repl", "%s", self->id_sz);
+	http_write(reply, "Sonata-Repl-Lsn", "%" PRIu64, self->lsn);
+	http_write_end(reply);
+	tcp_write_pair(&client->tcp, &reply->raw, content);
 }
 
 static inline bool
 streamer_read(Streamer* self)
 {
-	auto req = &self->http;
-	auto tcp = &self->client->tcp;
+	auto client    = self->client;
+	auto readahead = &client->readahead;
 
 	// process next request
-	http_reset(req);
-	auto eof = http_read(req, tcp);
+	auto request = &client->request;
+	auto eof = http_read(request, readahead, true);
 	if (eof)
 		return true;
-	http_read_content(req, tcp, &req->content);
+	http_read_content(request, readahead, &request->content);
 
-	// validate replication headers
-	auto repl_id  = http_find(req, "Sonata-Repl", 11);
-	auto repl_lsn = http_find(req, "Sonata-Repl-Lsn", 15);
+	// validate headers
+	auto repl_id  = http_find(request, "Sonata-Repl", 11);
+	auto repl_lsn = http_find(request, "Sonata-Repl-Lsn", 15);
 	if (unlikely(! (repl_id || repl_lsn)))
 		error("replica header fields are missing");
 
@@ -85,7 +113,6 @@ streamer_read(Streamer* self)
 
 	// update slot
 	self->lsn = self->lsn_last;
-
 	wal_slot_set(self->wal_slot, self->lsn);
 	return false;
 }
@@ -143,30 +170,6 @@ streamer_task_main(void* arg)
 }
 
 void
-streamer_init(Streamer* self, Wal* wal)
-{
-	self->client      = NULL;
-	self->lsn         = 0;
-	self->lsn_last    = 0;
-	self->id          = NULL;
-	self->wal_slot    = NULL;
-	self->wal         = wal;
-	self->on_complete = NULL;
-	http_init(&self->http, HTTP_REQUEST, 256);
-	wal_cursor_init(&self->wal_cursor);
-	task_init(&self->task);
-}
-
-void
-streamer_free(Streamer* self)
-{
-	if (self->on_complete)
-		condition_free(self->on_complete);
-	http_free(&self->http);
-	task_free(&self->task);
-}
-
-void
 streamer_start(Streamer* self, Client* client, WalSlot* slot, Uuid* id)
 {
 	self->client      = client;
@@ -176,6 +179,7 @@ streamer_start(Streamer* self, Client* client, WalSlot* slot, Uuid* id)
 	self->wal_slot    = slot;
 	self->on_complete = condition_create();
 
+	uuid_to_string(id, self->id_sz, sizeof(self->id_sz));
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 

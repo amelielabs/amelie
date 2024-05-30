@@ -12,9 +12,8 @@ struct Backup
 {
 	int64_t    checkpoint_snapshot;
 	WalSlot    wal_slot;
-	Buf        buf_state;
-	Buf        buf;
-	Tcp*       tcp;
+	Buf        state;
+	Client*    client;
 	Condition* on_complete;
 	Task       task;
 	Db*        db;
@@ -23,5 +22,5 @@ struct Backup
 void backup_init(Backup*, Db*);
 void backup_free(Backup*);
 void backup_prepare(Backup*);
-void backup_run(Backup*, Tcp*);
-void backup(Db*, Tcp*);
+void backup_run(Backup*, Client*);
+void backup(Db*, Client*);

@@ -11,10 +11,10 @@ typedef struct Streamer Streamer;
 struct Streamer
 {
 	Client*    client;
-	Http       http;
 	uint64_t   lsn;
 	uint64_t   lsn_last;
 	Uuid*      id;
+	char       id_sz[UUID_SZ];
 	WalSlot*   wal_slot;
 	WalCursor  wal_cursor;
 	Wal*       wal;

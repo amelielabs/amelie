@@ -36,7 +36,6 @@ struct Restore
 	int64_t  checkpoint;
 	uint8_t* files;
 	uint8_t* config;
-	Http     http;
 	Client*  client;
 	Buf      buf;
 	Buf      state_data;
@@ -49,7 +48,6 @@ restore_init(Restore* self)
 	self->checkpoint = 0;
 	self->files      = NULL;
 	self->config     = NULL;
-	http_init(&self->http, HTTP_REPLY, 256 * 1024);
 	buf_init(&self->state_data);
 	buf_init(&self->state);
 	buf_init(&self->buf);
@@ -60,7 +58,6 @@ restore_free(Restore* self)
 {
 	if (self->client)
 		client_free(self->client);
-	http_free(&self->http);
 	buf_free(&self->state_data);
 	buf_free(&self->state);
 	buf_free(&self->buf);
@@ -70,24 +67,31 @@ static void
 restore_connect(Restore* self, Str* uri)
 {
 	self->client = client_create();
-	client_set_uri(self->client, uri);
-	client_connect(self->client);
+	auto client = self->client;
+	client->readahead.readahead = 256 * 1024;
+	client_set_uri(client, uri);
+	client_connect(client);
 }
 
 static void
 restore_start(Restore* self)
 {
-	auto tcp = &self->client->tcp;
+	auto client    = self->client;
+	auto tcp       = &client->tcp;
+	auto readahead = &client->readahead;
 
 	// GET /backup
-	buf_printf(&self->buf, "GET /backup HTTP/1.1\r\n\r\n");
-	tcp_write_buf(tcp, &self->buf);
+	auto request = &client->request;
+	http_write_request(request, "GET /backup");
+	http_write_end(request);
+	tcp_write_buf(tcp, &request->raw);
 
 	// read backup state
-	auto eof = http_read(&self->http, tcp);
+	auto reply = &client->reply;
+	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
-	http_read_content(&self->http, tcp, &self->state);
+	http_read_content(reply, readahead, &self->state);
 
 	// parse state
 	Str text;
@@ -119,23 +123,25 @@ restore_start(Restore* self)
 static void
 restore_copy_file(Restore* self, Str* name)
 {
-	auto tcp  = &self->client->tcp;
-	auto http = &self->http;
+	auto client    = self->client;
+	auto tcp       = &client->tcp;
+	auto readahead = &client->readahead;
 
-	// GET /backup/<name>
-	buf_reset(&self->buf);	
-	buf_printf(&self->buf, "GET /backup/%.*s HTTP/1.1\r\n\r\n",
-	           str_size(name), str_of(name));
-	tcp_write_buf(tcp, &self->buf);
+	// GET /backup/<path>
+	auto request = &client->request;
+	http_write_request(request, "GET /backup/%.*s", str_size(name),
+	                   str_of(name));
+	http_write_end(request);
+	tcp_write_buf(tcp, &request->raw);
 
 	// read response
-	http_reset(http);
-	auto eof = http_read(http, tcp);
+	auto reply = &client->reply;
+	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
 
 	// read content header
-	auto content_len = http_find(http, "content-length", 14);
+	auto content_len = http_find(reply, "content-length", 14);
 	if (! content_len)
 		error("response content-length is missing");
 	int64_t len;
@@ -147,7 +153,8 @@ restore_copy_file(Restore* self, Str* name)
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
 	         str_size(name), str_of(name));
 
-	log("%.*s (%" PRIu64 " bytes)", str_size(name), str_of(name), len);
+	log("%.*s (%" PRIu64 " bytes)", str_size(name),
+	    str_of(name), len);
 
 	File file;
 	file_init(&file);
@@ -157,11 +164,11 @@ restore_copy_file(Restore* self, Str* name)
 	// read content into file
 	while (len > 0)
 	{
-		int to_read = http->readahead.readahead;
+		int to_read = readahead->readahead;
 		if (len < to_read)
 			to_read = len;
 		uint8_t* pos = NULL;
-		int size = readahead_read(&http->readahead, tcp, to_read, &pos);
+		int size = readahead_read(readahead, to_read, &pos);
 		if (size == 0)
 			error("unexpected eof");
 		file_write(&file, pos, size);
@@ -194,7 +201,8 @@ restore_write_config(Restore* self)
 
 	// create config file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/config.json", config_directory());
+	snprintf(path, sizeof(path), "%s/config.json",
+	         config_directory());
 
 	File file;
 	file_init(&file);
