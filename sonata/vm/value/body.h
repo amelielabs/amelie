@@ -6,67 +6,41 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Body Body;
-
-struct Body
-{
-	Buf buf;
-};
-
-static inline void
-body_init(Body* self)
-{
-	buf_init(&self->buf);
-}
-
-static inline void
-body_free(Body* self)
-{
-	buf_free(&self->buf);
-}
-
-static inline void
-body_reset(Body* self)
-{
-	buf_reset(&self->buf);
-}
-
 hot static inline void
-body_add(Body* self, Value* value)
+body_add(Buf* self, Value* value)
 {
-	auto buf = &self->buf;
 	switch (value->type) {
 	case VALUE_INT:
-		buf_printf(buf, "%" PRIi64, value->integer);
+		buf_printf(self, "%" PRIi64, value->integer);
 		break;
 	case VALUE_BOOL:
 		if (value->integer > 0)
-			buf_write(buf, "true", 4);
+			buf_write(self, "true", 4);
 		else
-			buf_write(buf, "false", 5);
+			buf_write(self, "false", 5);
 		break;
 	case VALUE_REAL:
-		buf_printf(buf, "%g", value->real);
+		buf_printf(self, "%g", value->real);
 		break;
 	case VALUE_STRING:
-		buf_write(buf, "\"", 1);
-		buf_printf(buf, "%.*s", str_size(&value->string), str_of(&value->string));
-		buf_write(buf, "\"", 1);
+		buf_write(self, "\"", 1);
+		buf_printf(self, "%.*s", str_size(&value->string), str_of(&value->string));
+		buf_write(self, "\"", 1);
 		break;
 	case VALUE_NULL:
-		buf_write(buf, "null", 4);
+		buf_write(self, "null", 4);
 		break;
 	case VALUE_DATA:
 	{
 		uint8_t* pos = value->data;
-		json_export_pretty(buf, &pos); 
+		json_export_pretty(self, &pos);
 		break;
 	}
 	case VALUE_SET:
 	case VALUE_MERGE:
-		buf_write(&self->buf, "[", 1);
+		buf_write(self, "[", 1);
 		value->obj->decode(value->obj, self);
-		buf_write(&self->buf, "]", 1);
+		buf_write(self, "]", 1);
 		break;
 	// VALUE_GROUP
 	default:
@@ -76,24 +50,24 @@ body_add(Body* self, Value* value)
 }
 
 hot static inline void
-body_add_buf(Body* self, Buf* buf)
+body_add_buf(Buf* self, Buf* buf)
 {
 	uint8_t* pos = buf->start;
-	json_export_pretty(&self->buf, &pos); 
+	json_export_pretty(self, &pos);
 }
 
 hot static inline void
-body_add_comma(Body* self)
+body_add_comma(Buf* self)
 {
-	buf_write(&self->buf, ", ", 2);
+	buf_write(self, ", ", 2);
 }
 
 static inline void
-body_error(Body* self, Error* error)
+body_error(Buf* self, Error* error)
 {
 	// {}
 	auto msg = msg_error(error);
 	guard_buf(msg);
 	uint8_t* pos = msg_of(msg)->data;
-	json_export(&self->buf, &pos); 
+	json_export(self, &pos);
 }

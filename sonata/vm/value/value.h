@@ -6,7 +6,6 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Body     Body;
 typedef struct ValueObj ValueObj;
 typedef struct Value    Value;
 
@@ -28,7 +27,7 @@ struct ValueObj
 {
 	void (*free)(ValueObj*);
 	void (*encode)(ValueObj*, Buf*);
-	void (*decode)(ValueObj*, Body*);
+	void (*decode)(ValueObj*, Buf*);
 };
 
 struct Value

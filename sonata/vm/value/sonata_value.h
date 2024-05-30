@@ -18,10 +18,8 @@
 #include "value/array.h"
 #include "value/update.h"
 #include "value/row.h"
+#include "value/body.h"
 
 // operations
 #include "value/op.h"
 #include "value/compare.h"
-
-// body
-#include "value/body.h"
