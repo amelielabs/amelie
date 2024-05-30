@@ -31,7 +31,7 @@
 #include <sonata_replication.h>
 
 void
-streamer_init(Streamer* self, Wal* wal)
+pusher_init(Pusher* self, Wal* wal)
 {
 	self->client      = NULL;
 	self->lsn         = 0;
@@ -45,7 +45,7 @@ streamer_init(Streamer* self, Wal* wal)
 }
 
 void
-streamer_free(Streamer* self)
+pusher_free(Pusher* self)
 {
 	if (self->on_complete)
 		condition_free(self->on_complete);
@@ -53,7 +53,7 @@ streamer_free(Streamer* self)
 }
 
 static inline void
-streamer_collect(Streamer* self)
+pusher_collect(Pusher* self)
 {
 	for (;;)
 	{
@@ -65,7 +65,7 @@ streamer_collect(Streamer* self)
 }
 
 static inline void
-streamer_write(Streamer* self)
+pusher_write(Pusher* self)
 {
 	auto client = self->client;
 	auto content = &self->wal_cursor.buf;
@@ -80,7 +80,7 @@ streamer_write(Streamer* self)
 }
 
 static inline bool
-streamer_read(Streamer* self)
+pusher_read(Pusher* self)
 {
 	auto client    = self->client;
 	auto readahead = &client->readahead;
@@ -118,9 +118,9 @@ streamer_read(Streamer* self)
 }
 
 static void
-streamer_main(void* arg)
+pusher_main(void* arg)
 {
-	Streamer* self = arg;
+	Pusher* self = arg;
 	auto tcp = &self->client->tcp;
 
 	Exception e;
@@ -132,9 +132,9 @@ streamer_main(void* arg)
 		for (;;)
 		{
 			// collect and send wal records, read next request
-			streamer_collect(self);
-			streamer_write(self);
-			if (streamer_read(self))
+			pusher_collect(self);
+			pusher_write(self);
+			if (pusher_read(self))
 				break;
 		}
 	}
@@ -152,10 +152,10 @@ streamer_main(void* arg)
 }
 
 static void
-streamer_task_main(void* arg)
+pusher_task_main(void* arg)
 {
-	Streamer* self = arg;
-	uint64_t id = coroutine_create(streamer_main, self);
+	Pusher* self = arg;
+	uint64_t id = coroutine_create(pusher_main, self);
 	for (;;)
 	{
 		auto buf = channel_read(&so_task->channel, -1);
@@ -170,7 +170,7 @@ streamer_task_main(void* arg)
 }
 
 void
-streamer_start(Streamer* self, Client* client, WalSlot* slot, Uuid* id)
+pusher_start(Pusher* self, Client* client, WalSlot* slot, Uuid* id)
 {
 	self->client      = client;
 	self->lsn         = slot->lsn;
@@ -180,11 +180,11 @@ streamer_start(Streamer* self, Client* client, WalSlot* slot, Uuid* id)
 	self->on_complete = condition_create();
 
 	uuid_to_string(id, self->id_sz, sizeof(self->id_sz));
-	task_create(&self->task, "streamer", streamer_task_main, self);
+	task_create(&self->task, "pusher", pusher_task_main, self);
 }
 
 void
-streamer_stop(Streamer* self)
+pusher_stop(Pusher* self)
 {
 	// sent stop
 	auto buf = msg_begin(RPC_STOP);

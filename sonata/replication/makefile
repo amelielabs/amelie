@@ -40,7 +40,7 @@ LIB            = libsonata-replication.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
-                 replication/streamer.o
+                 replication/pusher.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

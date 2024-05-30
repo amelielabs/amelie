@@ -6,9 +6,9 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Streamer Streamer;
+typedef struct Pusher Pusher;
 
-struct Streamer
+struct Pusher
 {
 	Client*    client;
 	uint64_t   lsn;
@@ -22,7 +22,7 @@ struct Streamer
 	Task       task;
 };
 
-void streamer_init(Streamer*, Wal*);
-void streamer_free(Streamer*);
-void streamer_start(Streamer*, Client*, WalSlot*, Uuid*);
-void streamer_stop(Streamer*);
+void pusher_init(Pusher*, Wal*);
+void pusher_free(Pusher*);
+void pusher_start(Pusher*, Client*, WalSlot*, Uuid*);
+void pusher_stop(Pusher*);
