@@ -12,7 +12,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/config \
                  -I../server \
-                 -I../server/auth \
+                 -I../server/user \
+                 -I../server/node \
                  -I../server/http \
                  -I../server/client \
                  -I../server/server \
@@ -40,6 +41,7 @@ OBJECTS        = \
                  parser/parse_expr.o \
                  parser/parse_system.o \
                  parser/parse_user.o \
+                 parser/parse_node.o \
                  parser/parse_schema.o \
                  parser/parse_table.o \
                  parser/parse_view.o \

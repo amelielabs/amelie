@@ -26,15 +26,3 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_parser.h>
-#include <sonata_semantic.h>
-#include <sonata_compiler.h>
-
-hot void
-emit_insert(Compiler* self, Ast* ast)
-{
-	auto insert = ast_insert_of(ast);
-	auto table = insert->target->table;
-
-	// CINSERT
-	op2(self, CINSERT, (intptr_t)table, insert->unique);
-}
