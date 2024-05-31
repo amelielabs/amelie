@@ -12,17 +12,15 @@ struct Pusher
 {
 	Client*    client;
 	uint64_t   lsn;
-	uint64_t   lsn_last;
-	Uuid*      id;
-	char       id_sz[UUID_SZ];
-	WalSlot*   wal_slot;
 	WalCursor  wal_cursor;
+	WalSlot*   wal_slot;
 	Wal*       wal;
+	Node*      node;
 	Condition* on_complete;
 	Task       task;
 };
 
-void pusher_init(Pusher*, Wal*);
+void pusher_init(Pusher*, Wal*, WalSlot*, Node*);
 void pusher_free(Pusher*);
-void pusher_start(Pusher*, Client*, WalSlot*, Uuid*);
+void pusher_start(Pusher*);
 void pusher_stop(Pusher*);
