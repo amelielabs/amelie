@@ -68,6 +68,13 @@ wal_cursor_close(WalCursor* self)
 		self->file = NULL;
 	}
 	buf_free(&self->buf);
+	wal_cursor_init(self);
+}
+
+bool
+wal_cursor_active(WalCursor* self)
+{
+	return self->file != NULL;
 }
 
 WalWrite*

@@ -327,3 +327,12 @@ wal_show(Wal* self, Buf* buf)
 
 	encode_map_end(buf);
 }
+
+bool
+wal_in_range(Wal* self, uint64_t lsn)
+{
+	int      list_count;
+	uint64_t list_min;
+	id_mgr_stats(&self->list, &list_count, &list_min);
+	return lsn >= list_min;
+}

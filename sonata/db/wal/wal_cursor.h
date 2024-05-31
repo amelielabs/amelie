@@ -19,6 +19,7 @@ struct WalCursor
 void wal_cursor_init(WalCursor*);
 void wal_cursor_open(WalCursor*, Wal*, uint64_t);
 void wal_cursor_close(WalCursor*);
+bool wal_cursor_active(WalCursor*);
 bool wal_cursor_next(WalCursor*);
 bool wal_cursor_collect(WalCursor*, int, uint64_t*);
 WalWrite*

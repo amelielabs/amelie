@@ -28,3 +28,4 @@ void wal_del(Wal*, WalSlot*);
 void wal_attach(Wal*, WalSlot*);
 void wal_detach(Wal*, WalSlot*);
 void wal_show(Wal*, Buf*);
+bool wal_in_range(Wal*, uint64_t);
