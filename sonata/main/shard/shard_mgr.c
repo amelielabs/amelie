@@ -10,7 +10,8 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_auth.h>
+#include <sonata_user.h>
+#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -25,6 +26,7 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_backup.h>
+#include <sonata_repl.h>
 #include <sonata_shard.h>
 
 void

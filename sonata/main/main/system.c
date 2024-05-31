@@ -10,7 +10,8 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_auth.h>
+#include <sonata_user.h>
+#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -28,6 +29,7 @@
 #include <sonata_semantic.h>
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
+#include <sonata_repl.h>
 #include <sonata_shard.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
@@ -70,6 +72,10 @@ system_create(void)
 	// db
 	db_init(&self->db);
 
+	// replication
+	node_mgr_init(&self->node_mgr);
+	repl_init(&self->repl, &self->db, &self->node_mgr);
+
 	// vm
 	function_mgr_init(&self->function_mgr);
 
@@ -86,6 +92,8 @@ system_create(void)
 void
 system_free(System* self)
 {
+	repl_free(&self->repl);
+	node_mgr_free(&self->node_mgr);
 	shard_mgr_free(&self->shard_mgr);
 	router_free(&self->router);
 	executor_free(&self->executor);
@@ -241,12 +249,23 @@ system_start(System* self, Str* options, bool bootstrap)
 	// synchronize caches
 	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
 
+	// open node manager and prepare replication
+	node_mgr_open(&self->node_mgr);
+	repl_open(&self->repl);
+
 	log("");
 	config_print(config());
 	log("");
 
 	// start server
 	server_start(&self->server, system_on_server_connect, self);
+
+	// start replication
+	if (var_int_of(&config()->repl))
+	{
+		var_int_set(&config()->repl, false);
+		repl_start(&self->repl);
+	}
 }
 
 void
@@ -254,6 +273,9 @@ system_stop(System* self)
 {
 	// stop server
 	server_stop(&self->server);
+
+	// stop replication
+	repl_stop(&self->repl);
 
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);

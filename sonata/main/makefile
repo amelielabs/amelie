@@ -12,7 +12,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/config \
                  -I../server \
-                 -I../server/auth \
+                 -I../server/user \
+                 -I../server/node \
                  -I../server/http \
                  -I../server/client \
                  -I../server/server \

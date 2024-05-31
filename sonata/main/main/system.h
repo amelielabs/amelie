@@ -13,9 +13,12 @@ struct System
 	Share       share;
 	// vm
 	FunctionMgr function_mgr;
+	// repl
+	Repl        repl;
+	NodeMgr     node_mgr;
 	// db
 	Db          db;
-	// cluster
+	// executor
 	Executor    executor;
 	Router      router;
 	ShardMgr    shard_mgr;
