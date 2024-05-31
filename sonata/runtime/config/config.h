@@ -38,6 +38,7 @@ struct Config
 	Var  psn;
 	Var  checkpoint;
 	Var  state_shards;
+	Var  nodes;
 	Var  users;
 	// testing
 	Var  test_bool;
