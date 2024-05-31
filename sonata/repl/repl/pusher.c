@@ -39,7 +39,7 @@ pusher_collect(Pusher* self)
 		if (wal_cursor_collect(&self->wal_cursor, 256 * 1024, &self->lsn))
 			break;
 		// todo: disconnect (timeout to ping or check error?)
-		wal_slot_wait(self->wal_slot);
+		wal_slot_wait(&self->wal_slot);
 	}
 }
 
@@ -52,7 +52,7 @@ pusher_write(Pusher* self, Buf* content)
 	auto id = &config()->uuid.string;
 	http_write_request(request, "POST /");
 	http_write(request, "Sonata-Id", "%.*s", str_size(id), str_of(id));
-	http_write(request, "Sonata-Lsn", "%" PRIu64, self->wal_slot->lsn);
+	http_write(request, "Sonata-Lsn", "%" PRIu64, self->wal_slot.lsn);
 	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
 	http_write(request, "Content-Type", "application/octet-stream");
 	http_write_end(request);
@@ -104,14 +104,14 @@ pusher_join(Pusher* self)
 	// get replica state
 	uint64_t lsn = pusher_read(self);
 
-	// update replication slot according to the replica state
+	// update wal slot according to the replica state
 
 	// ensure replica is not outdated
 	if (! wal_in_range(self->wal, lsn))
 		error("replica is outdated");
 	self->lsn = lsn;
-	wal_slot_set(self->wal_slot, lsn);
-	wal_attach(self->wal, self->wal_slot);
+	wal_slot_set(&self->wal_slot, lsn);
+	wal_attach(self->wal, &self->wal_slot);
 
 	// open cursor to the next record
 	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1);
@@ -129,7 +129,7 @@ pusher_next(Pusher* self)
 
 	// update replication slot according to the replica state
 	self->lsn = lsn;
-	wal_slot_set(self->wal_slot, lsn);
+	wal_slot_set(&self->wal_slot, lsn);
 }
 
 static void
@@ -154,14 +154,14 @@ pusher_process(Pusher* self)
 		if (leave(&e))
 		{ }
 
-		wal_detach(self->wal, self->wal_slot);
+		wal_detach(self->wal, &self->wal_slot);
 		wal_cursor_close(&self->wal_cursor);
 		client_close(self->client);
 
 		cancellation_point();
 
 		// reconnect
-		int reconnect_interval = 0;
+		auto reconnect_interval = var_int_of(&config()->repl_reconnect_ms);
 		log("reconnect in %d ms", reconnect_interval);
 		coroutine_sleep(reconnect_interval);
 	}
@@ -176,9 +176,6 @@ pusher_main(void* arg)
 	Exception e;
 	if (enter(&e))
 	{
-		// attach wal slot
-		wal_attach(self->wal, self->wal_slot);
-
 		// create client, set node uri
 		self->client = client_create();
 		client_set_uri(self->client, &self->node->config->uri);
@@ -217,17 +214,20 @@ pusher_task_main(void* arg)
 	}
 }
 
-void
-pusher_init(Pusher* self, Wal* wal, WalSlot* wal_slot, Node* node)
+Pusher*
+pusher_allocate(Wal* wal, Node* node)
 {
+	auto self = (Pusher*)so_malloc(sizeof(Pusher));
 	self->client      = NULL;
 	self->lsn         = 0;
 	self->wal         = wal;
-	self->wal_slot    = wal_slot;
 	self->node        = node;
 	self->on_complete = NULL;
+	wal_slot_init(&self->wal_slot);
 	wal_cursor_init(&self->wal_cursor);
 	task_init(&self->task);
+	list_init(&self->link);
+	return self;
 }
 
 void
@@ -236,11 +236,16 @@ pusher_free(Pusher* self)
 	if (self->on_complete)
 		condition_free(self->on_complete);
 	task_free(&self->task);
+	so_free(self);
 }
 
 void
 pusher_start(Pusher* self)
 {
+	// add slot
+	wal_slot_set(&self->wal_slot, 0);
+	wal_add(self->wal, &self->wal_slot);
+
 	self->on_complete = condition_create();
 	task_create(&self->task, "pusher", pusher_task_main, self);
 }
@@ -259,4 +264,7 @@ pusher_stop(Pusher* self)
 	coroutine_cancel_resume(so_self());
 
 	task_wait(&self->task);
+
+	// remove slot
+	wal_del(self->wal, &self->wal_slot);
 }
