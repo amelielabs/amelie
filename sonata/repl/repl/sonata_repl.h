@@ -8,10 +8,8 @@
 
 // pusher
 #include "repl/pusher.h"
-
-// replication slot
-#include "repl/slot.h"
-#include "repl/slot_mgr.h"
+#include "repl/pusher_mgr.h"
 
 // replication
+#include "repl/repl_role.h"
 #include "repl/repl.h"

@@ -33,10 +33,17 @@ struct Config
 	Var  wal_rotate_wm;
 	Var  wal_sync_on_rotate;
 	Var  wal_sync_on_write;
+	// replication
+	Var  repl;
+	Var  repl_role;
+	Var  repl_primary;
+	Var  repl_reconnect_ms;
 	// state
+	Var  read_only;
 	Var  lsn;
 	Var  psn;
 	Var  checkpoint;
+	// state persistent
 	Var  state_shards;
 	Var  nodes;
 	Var  users;

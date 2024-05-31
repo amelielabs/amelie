@@ -42,7 +42,6 @@ OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
                  node/node_mgr.o \
-                 repl/slot_mgr.o \
                  repl/pusher.o \
                  repl/repl.o
 $(LIB): clean $(OBJECTS)
