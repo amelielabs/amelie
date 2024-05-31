@@ -64,9 +64,7 @@ shard_config_write(ShardConfig* self, Buf* buf)
 
 	// id
 	encode_raw(buf, "id", 2);
-	char uuid[UUID_SZ];
-	uuid_to_string(&self->id, uuid, sizeof(uuid));
-	encode_raw(buf, uuid, sizeof(uuid) - 1);
+	encode_uuid(buf, &self->id);
 
 	encode_map_end(buf);
 }

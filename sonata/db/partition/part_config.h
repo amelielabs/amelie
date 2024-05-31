@@ -95,9 +95,7 @@ part_config_write(PartConfig* self, Buf* buf)
 
 	// shard
 	encode_raw(buf, "shard", 5);
-	char uuid[UUID_SZ];
-	uuid_to_string(&self->shard, uuid, sizeof(uuid));
-	encode_raw(buf, uuid, sizeof(uuid) - 1);
+	encode_uuid(buf, &self->shard);
 
 	// shard_min
 	encode_raw(buf, "shard_min", 9);

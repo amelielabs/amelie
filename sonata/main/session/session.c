@@ -145,7 +145,7 @@ session_execute_distributed(Session* self)
 	}
 	if (leave(&e))
 	{
-		plan_shutdown(plan);	
+		plan_shutdown(plan);
 		auto buf = msg_error(&so_self()->error);
 		plan_set_error(plan, buf);
 	}
