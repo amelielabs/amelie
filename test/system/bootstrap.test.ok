@@ -24,6 +24,11 @@ show all
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
+  "repl": false,
+  "repl_role": "primary",
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "read_only": false,
   "lsn": 0,
   "psn": 0,
   "checkpoint": 0
@@ -56,6 +61,11 @@ show all
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
+  "repl": false,
+  "repl_role": "primary",
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "read_only": false,
   "lsn": 0,
   "psn": 0,
   "checkpoint": 0
