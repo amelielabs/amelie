@@ -134,3 +134,27 @@ node_mgr_list(NodeMgr* self)
 	encode_array_end(buf);
 	return buf_end(buf);
 }
+
+Node*
+node_mgr_find(NodeMgr* self, Str* name)
+{
+	list_foreach(&self->list)
+	{
+		auto node = list_at(Node, link);
+		if (str_compare(&node->config->name, name))
+			return node;
+	}
+	return NULL;
+}
+
+Node*
+node_mgr_find_by_id(NodeMgr* self, Uuid* id)
+{
+	list_foreach(&self->list)
+	{
+		auto node = list_at(Node, link);
+		if (uuid_compare(&node->config->id, id))
+			return node;
+	}
+	return NULL;
+}
