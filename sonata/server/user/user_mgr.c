@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_auth.h>
+#include <sonata_user.h>
 
 void
 user_mgr_init(UserMgr* self)
