@@ -21,7 +21,7 @@ struct System
 	// executor
 	Executor    executor;
 	Router      router;
-	ShardMgr    shard_mgr;
+	Cluster     cluster;
 	FrontendMgr frontend_mgr;
 	// server
 	UserMgr     user_mgr;

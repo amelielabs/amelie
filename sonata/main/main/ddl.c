@@ -30,7 +30,7 @@
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_shard.h>
+#include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
 #include <sonata_main.h>
@@ -60,13 +60,14 @@ ddl_alter_schema(System* self, Transaction* trx, Stmt* stmt)
 }
 
 static inline void
-ddl_create_partition(TableConfig* table_config, Shard* shard, uint64_t min, uint64_t max)
+ddl_create_partition(TableConfig* table_config, Node* node,
+                     uint64_t min, uint64_t max)
 {
 	// create partition config
 	auto config = part_config_allocate();
 	auto psn = config_psn_next();
 	part_config_set_id(config, psn);
-	part_config_set_node(config, &shard->node->config->id);
+	part_config_set_node(config, &node->config->id);
 	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
 }
@@ -94,36 +95,36 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&config->name));
 
 	// create table partitions
-	auto shard_mgr = &self->shard_mgr;
+	auto cluster = &self->cluster;
 	if (config->reference)
 	{
 		// reference table require only one partition
-		auto shard = container_of(list_first(&shard_mgr->shards), Shard, link);
+		auto backend = container_of(list_first(&cluster->list), Backend, link);
 
-		ddl_create_partition(config, shard, 0, PARTITION_MAX);
+		ddl_create_partition(config, backend->node, 0, PARTITION_MAX);
 	} else
 	{
-		// create partition for each shard
+		// create partition for each node
 
-		// partition_max / shards_count
+		// partition_max / nodes_count
 		int range_max      = PARTITION_MAX;
-		int range_interval = range_max / shard_mgr->shards_count;
+		int range_interval = range_max / cluster->list_count;
 		int range_start    = 0;
 
-		list_foreach(&shard_mgr->shards)
+		list_foreach(&cluster->list)
 		{
-			auto shard = list_at(Shard, link);
+			auto backend = list_at(Backend, link);
 
 			// set partition range
 			int range_step;
-			if (list_is_last(&shard_mgr->shards, &shard->link))
+			if (list_is_last(&cluster->list, &backend->link))
 				range_step = range_max - range_start;
 			else
 				range_step = range_interval;
 			if ((range_start + range_step) > range_max)
 				range_step = range_max - range_start;
 
-			ddl_create_partition(config, shard,
+			ddl_create_partition(config, backend->node,
 			                     range_start,
 			                     range_start + range_step);
 
@@ -139,7 +140,7 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 	if (created)
 	{
 		auto table = table_mgr_find(&db->table_mgr, &config->schema, &config->name, true);
-		shard_mgr_set_partition_map(&self->shard_mgr, &table->part_mgr);
+		cluster_set_partition_map(cluster, &table->part_mgr);
 	}
 }
 

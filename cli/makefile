@@ -35,9 +35,9 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/cluster \
                  -I../sonata/cluster/backup \
                  -I../sonata/cluster/repl \
+                 -I../sonata/cluster/cluster \
                  -I../sonata/main \
                  -I../sonata/main/frontend \
-                 -I../sonata/main/shard \
                  -I../sonata/main/session \
                  -I../sonata/main/main \
                  -I.

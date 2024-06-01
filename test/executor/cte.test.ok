@@ -27,7 +27,7 @@ bytecode [coordinator]
 15                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -70,7 +70,7 @@ bytecode [coordinator]
 15                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -111,7 +111,7 @@ bytecode [coordinator]
 13                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -163,7 +163,7 @@ bytecode [coordinator]
 13                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -222,7 +222,7 @@ bytecode [coordinator]
 22                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -280,7 +280,7 @@ bytecode [coordinator]
 22                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -331,7 +331,7 @@ bytecode [coordinator]
 13                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -387,7 +387,7 @@ bytecode [coordinator]
 13                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -467,7 +467,7 @@ bytecode [coordinator]
 30                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -550,7 +550,7 @@ bytecode [coordinator]
 23                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -609,7 +609,7 @@ bytecode [coordinator]
 31                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -666,7 +666,7 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -734,7 +734,7 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -808,7 +808,7 @@ bytecode [coordinator]
 35                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -897,7 +897,7 @@ bytecode [coordinator]
 39                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -954,7 +954,7 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -1022,7 +1022,7 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0
@@ -1089,7 +1089,7 @@ bytecode [coordinator]
 29                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0                 set        0      0      0
  1             int_min        1      0      0

@@ -30,7 +30,7 @@
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_shard.h>
+#include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
 
@@ -55,7 +55,7 @@ explain_reset(Explain* self)
 Buf*
 explain(Explain*  self,
         Code*     coordinator,
-        Code*     shard,
+        Code*     node,
         CodeData* data,
         Plan*     plan,
         bool      profile)
@@ -68,11 +68,11 @@ explain(Explain*  self,
 	str_set_cstr(&str, "coordinator");
 	op_dump(coordinator, data, buf, &str);
 
-	// shard code
-	if (code_count(shard) > 0)
+	// node code
+	if (code_count(node) > 0)
 	{
-		str_set_cstr(&str, "shard");
-		op_dump(shard, data, buf, &str);
+		str_set_cstr(&str, "node");
+		op_dump(node, data, buf, &str);
 	}
 
 	// profiler stats

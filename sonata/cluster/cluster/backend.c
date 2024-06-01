@@ -25,12 +25,15 @@
 #include <sonata_aggr.h>
 #include <sonata_executor.h>
 #include <sonata_vm.h>
+#include <sonata_parser.h>
+#include <sonata_semantic.h>
+#include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_shard.h>
+#include <sonata_cluster.h>
 
 hot static void
-shard_execute(Shard* self, Trx* trx)
+backend_execute(Backend* self, Trx* trx)
 {
 	transaction_begin(&trx->trx);
 
@@ -72,14 +75,14 @@ shard_execute(Shard* self, Trx* trx)
 }
 
 hot static void
-shard_commit(Shard* self, Trx* last)
+backend_commit(Backend* self, Trx* last)
 {
 	// commit all prepared transaction till the last one
 	trx_list_commit(&self->prepared, last);
 }
 
 hot static void
-shard_abort(Shard* self, Trx* last)
+backend_abort(Backend* self, Trx* last)
 {
 	// abort all prepared transactions
 	unused(last);
@@ -87,9 +90,9 @@ shard_abort(Shard* self, Trx* last)
 }
 
 static void
-shard_recover(Shard* self)
+backend_recover(Backend* self)
 {
-	// restore partitions related to the current shard
+	// restore partitions related to the current backend
 	Exception e;
 	if (enter(&e)) {
 		recover(self->vm.db, &self->node->config->id);
@@ -107,9 +110,9 @@ shard_recover(Shard* self)
 }
 
 static void
-shard_rpc(Rpc* rpc, void* arg)
+backend_rpc(Rpc* rpc, void* arg)
 {
-	Shard* self = arg;
+	Backend* self = arg;
 	switch (rpc->id) {
 	case RPC_STOP:
 		unused(self);
@@ -121,9 +124,9 @@ shard_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-shard_main(void* arg)
+backend_main(void* arg)
 {
-	Shard* self = arg;
+	Backend* self = arg;
 
 	bool stop = false;
 	while (! stop)
@@ -134,31 +137,31 @@ shard_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			shard_execute(self, trx_of(buf));
+			backend_execute(self, trx_of(buf));
 			break;
 		case RPC_COMMIT:
-			shard_commit(self, trx_of(buf));
+			backend_commit(self, trx_of(buf));
 			break;
 		case RPC_ABORT:
-			shard_abort(self, trx_of(buf));
+			backend_abort(self, trx_of(buf));
 			break;
 		case RPC_RECOVER:
-			shard_recover(self);
+			backend_recover(self);
 			break;
 		default:
 		{
 			stop = msg->id == RPC_STOP;
-			rpc_execute(buf, shard_rpc, self);
+			rpc_execute(buf, backend_rpc, self);
 			break;
 		}
 		}
 	}
 }
 
-Shard*
-shard_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
+Backend*
+backend_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 {
-	auto self = (Shard*)so_malloc(sizeof(Shard));
+	auto self = (Backend*)so_malloc(sizeof(Backend));
 	self->order = 0;
 	self->node  = node;
 	trx_list_init(&self->prepared);
@@ -169,20 +172,20 @@ shard_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 }
 
 void
-shard_free(Shard* self)
+backend_free(Backend* self)
 {
 	vm_free(&self->vm);
 	so_free(self);
 }
 
 void
-shard_start(Shard* self)
+backend_start(Backend* self)
 {
-	task_create(&self->task, "shard", shard_main, self);
+	task_create(&self->task, "backend", backend_main, self);
 }
 
 void
-shard_stop(Shard* self)
+backend_stop(Backend* self)
 {
 	// send stop request
 	if (task_active(&self->task))

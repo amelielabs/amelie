@@ -30,7 +30,7 @@
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_shard.h>
+#include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
 #include <sonata_main.h>
@@ -65,7 +65,7 @@ system_create(void)
 
 	// cluster
 	frontend_mgr_init(&self->frontend_mgr);
-	shard_mgr_init(&self->shard_mgr, &self->db, &self->function_mgr);
+	cluster_init(&self->cluster, &self->db, &self->function_mgr);
 	router_init(&self->router);
 	executor_init(&self->executor, &self->db, &self->router);
 
@@ -83,7 +83,7 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->router       = &self->router;
-	share->shard_mgr    = &self->shard_mgr;
+	share->cluster      = &self->cluster;
 	share->function_mgr = &self->function_mgr;
 	share->db           = &self->db;
 	return self;
@@ -94,7 +94,7 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	node_mgr_free(&self->node_mgr);
-	shard_mgr_free(&self->shard_mgr);
+	cluster_free(&self->cluster);
 	router_free(&self->router);
 	executor_free(&self->executor);
 	db_free(&self->db);
@@ -127,13 +127,13 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 static void
 system_recover(System* self)
 {
-	// do parallel recover per shard
-	shard_mgr_recover(&self->shard_mgr);
+	// do parallel recover per backend
+	cluster_recover(&self->cluster);
 
 	// wait for completion
 	int complete = 0;
 	int errors   = 0;
-	while (complete < self->shard_mgr.shards_count)
+	while (complete < self->cluster.list_count)
 	{
 		auto buf = channel_read(&so_task->channel, -1);
 		auto msg = msg_of(buf);
@@ -238,9 +238,9 @@ system_start(System* self, Str* options, bool bootstrap)
 	if (bootstrap)
 		system_create_compute(self);
 
-	// prepare shards
-	shard_mgr_open(&self->shard_mgr, &self->node_mgr);
-	shard_mgr_set_router(&self->shard_mgr, &self->router);
+	// prepare cluster
+	cluster_open(&self->cluster, &self->node_mgr);
+	cluster_set_router(&self->cluster, &self->router);
 
 	// prepare executor
 	executor_create(&self->executor);
@@ -248,8 +248,8 @@ system_start(System* self, Str* options, bool bootstrap)
 	// create system object and objects from last snapshot
 	db_open(&self->db, &self->catalog_mgr);
 
-	// start shards
-	shard_mgr_start(&self->shard_mgr);
+	// start backend
+	cluster_start(&self->cluster);
 
 	// recover
 	system_recover(self);
@@ -258,7 +258,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	list_foreach(&self->db.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		shard_mgr_set_partition_map(&self->shard_mgr, &table->part_mgr);
+		cluster_set_partition_map(&self->cluster, &table->part_mgr);
 	}
 
 	// todo: start checkpoint worker
@@ -303,8 +303,8 @@ system_stop(System* self)
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
 
-	// stop shards
-	shard_mgr_stop(&self->shard_mgr);
+	// stop cluster
+	cluster_stop(&self->cluster);
 
 	// close db
 	db_close(&self->db);

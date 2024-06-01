@@ -12,7 +12,7 @@ struct Share
 {
 	Executor*    executor;
 	Router*      router;
-	ShardMgr*    shard_mgr;
+	Cluster*     cluster;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };

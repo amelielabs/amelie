@@ -13,7 +13,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0              insert        -      1      0      # public.test
  1                 ret        0      0      0
@@ -32,7 +32,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -60,7 +60,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -104,7 +104,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -171,7 +171,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -206,7 +206,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -262,7 +262,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0      cursor_prepare        0      -      0      # public.test
  1                 jmp       13      0      0
@@ -299,7 +299,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0              insert        -      1      0      # public.test
  1                 ret        0      0      0
@@ -320,7 +320,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -348,7 +348,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -392,7 +392,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -459,7 +459,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0             int_min        0      0      0
  1                push        0      0      0
@@ -497,7 +497,7 @@ bytecode [coordinator]
  4                 ret        0      0      0
 
 
-bytecode [shard]
+bytecode [node]
 --------
  0      cursor_prepare        0      -      0      # public.test
  1                 jmp       13      0      0

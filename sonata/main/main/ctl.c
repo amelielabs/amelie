@@ -30,7 +30,7 @@
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_shard.h>
+#include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
 #include <sonata_main.h>
@@ -185,7 +185,7 @@ ctl_checkpoint(System* self, Stmt* stmt)
 		frontend_mgr_unlock(&self->frontend_mgr);
 		return;
 	}
-	int workers = self->shard_mgr.shards_count;
+	int workers = self->cluster.list_count;
 	if (arg->workers)
 		workers = arg->workers->integer;
 
