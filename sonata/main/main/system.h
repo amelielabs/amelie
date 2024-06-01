@@ -15,7 +15,6 @@ struct System
 	FunctionMgr function_mgr;
 	// repl
 	Repl        repl;
-	NodeMgr     node_mgr;
 	// db
 	Db          db;
 	// executor

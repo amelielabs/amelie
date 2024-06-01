@@ -2,9 +2,9 @@ start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "1
 connect E0 S0 localhost:3485
 # test: drop table statement parsing
 drop
-{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "DROP <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
 drop 1
-{"code": 1, "msg": "DROP <USER|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "DROP <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
 drop table "name"
 {"code": 1, "msg": "DROP TABLE <name> expected"}
 drop table name junk

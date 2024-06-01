@@ -98,11 +98,13 @@ parse_node_drop(Stmt* self)
 void
 parse_node_alter(Stmt* self)
 {
-	// ALTER NODE id URI uri
+	// ALTER NODE [IF EXISTS] id URI uri
 	auto stmt = ast_node_alter_allocate();
 	self->ast = &stmt->ast;
-
 	stmt->config = node_config_allocate();
+
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
 
 	// id
 	auto id = stmt_if(self, KSTRING);

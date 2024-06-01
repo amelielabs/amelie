@@ -72,7 +72,7 @@ node_mgr_open(NodeMgr* self)
 	}
 }
 
-void
+Node*
 node_mgr_create(NodeMgr* self, NodeConfig* config, bool if_not_exists)
 {
 	auto node = node_mgr_find(self, &config->id);
@@ -84,12 +84,13 @@ node_mgr_create(NodeMgr* self, NodeConfig* config, bool if_not_exists)
 			uuid_to_string(&config->id, uuid, sizeof(uuid));
 			error("node '%s' already exists", uuid);
 		}
-		return;
+		return NULL;
 	}
 	node = node_allocate(config);
 	list_append(&self->list, &node->link);
 	self->list_count++;
 	node_mgr_save(self);
+	return node;
 }
 
 void

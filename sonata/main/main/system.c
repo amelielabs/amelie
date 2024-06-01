@@ -72,8 +72,7 @@ system_create(void)
 	db_init(&self->db);
 
 	// replication
-	node_mgr_init(&self->node_mgr);
-	repl_init(&self->repl, &self->db, &self->node_mgr);
+	repl_init(&self->repl, &self->db, &self->cluster.node_mgr);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -91,7 +90,6 @@ void
 system_free(System* self)
 {
 	repl_free(&self->repl);
-	node_mgr_free(&self->node_mgr);
 	cluster_free(&self->cluster);
 	executor_free(&self->executor);
 	db_free(&self->db);
@@ -189,30 +187,6 @@ system_configure(Str* options, bool bootstrap)
 		logger_close(logger);
 }
 
-static void
-system_create_compute(System* self)
-{
-	// create compute nodes
-	auto shards = var_int_of(&config()->shards);
-	while (shards-- > 0)
-	{
-		auto config = node_config_allocate();
-		guard(node_config_free, config);
-
-		// set type
-		node_config_set_type(config, NODE_COMPUTE);
-
-		// set node id
-		Uuid id;
-		uuid_generate(&id, global()->random);
-		node_config_set_id(config, &id);
-
-		node_mgr_create(&self->node_mgr, config, false);
-	}
-
-	control_save_config();
-}
-
 void
 system_start(System* self, Str* options, bool bootstrap)
 {
@@ -230,13 +204,8 @@ system_start(System* self, Str* options, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// open node manager and create compute nodes
-	node_mgr_open(&self->node_mgr);
-	if (bootstrap)
-		system_create_compute(self);
-
 	// prepare cluster
-	cluster_open(&self->cluster, &self->node_mgr);
+	cluster_open(&self->cluster, bootstrap);
 
 	// prepare executor
 	executor_create(&self->executor);

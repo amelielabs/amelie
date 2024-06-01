@@ -162,6 +162,67 @@ ctl_alter_user(System* self, Stmt* stmt)
 }
 
 static void
+ctl_create_node(System* self, Stmt* stmt)
+{
+	auto arg = ast_node_create_of(stmt->ast);
+
+	// get exclusive session lock
+	frontend_mgr_lock(&self->frontend_mgr);
+
+	Exception e;
+	if (enter(&e)) {
+		cluster_create(&self->cluster, arg->config, arg->if_not_exists);
+		control_save_config();
+	}
+
+	frontend_mgr_unlock(&self->frontend_mgr);
+	if (leave(&e))
+		rethrow();
+}
+
+static void
+ctl_drop_node(System* self, Stmt* stmt)
+{
+	auto arg = ast_node_drop_of(stmt->ast);
+
+	// get exclusive session lock
+	frontend_mgr_lock(&self->frontend_mgr);
+
+	Exception e;
+	if (enter(&e))
+	{
+		Uuid id;
+		uuid_from_string(&id, &arg->id->string);
+		cluster_drop(&self->cluster, &id, arg->if_exists);
+		control_save_config();
+	}
+
+	frontend_mgr_unlock(&self->frontend_mgr);
+	if (leave(&e))
+		rethrow();
+}
+
+static void
+ctl_alter_node(System* self, Stmt* stmt)
+{
+	auto arg = ast_node_alter_of(stmt->ast);
+
+	// get exclusive session lock
+	frontend_mgr_lock(&self->frontend_mgr);
+
+	Exception e;
+	if (enter(&e))
+	{
+		cluster_alter(&self->cluster, arg->config, arg->if_exists);
+		control_save_config();
+	}
+
+	frontend_mgr_unlock(&self->frontend_mgr);
+	if (leave(&e))
+		rethrow();
+}
+
+static void
 ctl_gc(System* self)
 {
 	checkpoint_mgr_gc(&self->db.checkpoint_mgr);
@@ -248,6 +309,15 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 		break;
 	case STMT_ALTER_USER:
 		ctl_alter_user(self, stmt);
+		break;
+	case STMT_CREATE_NODE:
+		ctl_create_node(self, stmt);
+		break;
+	case STMT_DROP_NODE:
+		ctl_drop_node(self, stmt);
+		break;
+	case STMT_ALTER_NODE:
+		ctl_alter_node(self, stmt);
 		break;
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self, stmt);

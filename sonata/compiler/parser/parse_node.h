@@ -27,6 +27,7 @@ struct AstNodeDrop
 struct AstNodeAlter
 {
 	Ast         ast;
+	bool        if_exists;
 	NodeConfig* config;
 };
 
@@ -73,7 +74,8 @@ ast_node_alter_allocate(void)
 {
 	AstNodeAlter* self;
 	self = ast_allocate(0, sizeof(AstNodeAlter));
-	self->config = NULL;
+	self->if_exists = false;
+	self->config    = NULL;
 	return self;
 }
 
