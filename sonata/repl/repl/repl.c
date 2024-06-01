@@ -83,7 +83,9 @@ repl_start(Repl* self)
 		if (str_empty(primary))
 			error("replication: primary node is not defined");
 
-		auto node = node_mgr_find(self->node_mgr, primary);
+		Uuid id;
+		uuid_from_string(&id, primary);
+		auto node = node_mgr_find(self->node_mgr, &id);
 		if (unlikely(! node))
 			error("replication: unknown primary node <%.*s>",
 			      str_size(primary), str_of(primary));
@@ -126,7 +128,10 @@ repl_promote(Repl* self, Str* role, Str* primary)
 	if (role_id == REPL_REPLICA && str_empty(primary))
 		error("%s", "replication: primary node is not specified");
 
-	auto node = node_mgr_find(self->node_mgr, primary);
+	Uuid id;
+	uuid_from_string(&id, primary);
+
+	auto node = node_mgr_find(self->node_mgr, &id);
 	if (unlikely(! node))
 		error("replication: unknown primary node <%.*s>",
 			  str_size(primary), str_of(primary));

@@ -14,7 +14,7 @@ struct Compiler
 	Rmap         map;
 	Code*        code;
 	Code         code_coordinator;
-	Code         code_shard;
+	Code         code_node;
 	CodeData     code_data;
 	bool         snapshot;
 	Stmt*        current;
@@ -48,7 +48,7 @@ compiler_switch_coordinator(Compiler* self)
 }
 
 static inline void
-compiler_switch_shard(Compiler* self)
+compiler_switch_node(Compiler* self)
 {
-	self->code = &self->code_shard;
+	self->code = &self->code_node;
 }

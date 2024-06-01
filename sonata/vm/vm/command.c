@@ -43,7 +43,7 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_mgr_match(&table->part_mgr, self->shard);
+	auto part  = part_mgr_match(&table->part_mgr, self->node);
 	auto index = part_find(part, &name_index, true);
 	auto def   = index_def(index);
 
@@ -166,7 +166,7 @@ ccursor_prepare(Vm* self, Op* op)
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
 	cursor->def   = table_def(table);
-	cursor->part  = part_mgr_match(&table->part_mgr, self->shard);
+	cursor->part  = part_mgr_match(&table->part_mgr, self->node);
 	cursor->it    = NULL;
 }
 
@@ -411,7 +411,7 @@ cinsert(Vm* self, Op* op)
 	
 	// find partition
 	auto table  = (Table*)op->a;
-	auto part   = part_mgr_match(&table->part_mgr, self->shard);
+	auto part   = part_mgr_match(&table->part_mgr, self->node);
 	auto unique = op->b;
 
 	// insert or replace
@@ -668,7 +668,7 @@ csend(Vm* self, Op* op)
 	auto table     = (Table*)op->c;
 	auto def       = table_def(table);
 
-	// redistribute rows between shards
+	// redistribute rows between nodes
 	ReqList list;
 	req_list_init(&list);
 	guard(req_list_free, &list);
@@ -686,7 +686,7 @@ csend(Vm* self, Op* op)
 		uint32_t offset = data - data_start;
 		auto hash = row_hash(def, &data);
 
-		// map to shard
+		// map to node
 		auto order = part_map_get(&table->part_mgr.map, hash);
 		auto req = map[order];
 		if (req == NULL)
@@ -714,7 +714,7 @@ csend_first(Vm* self, Op* op)
 	req_list_init(&list);
 	guard(req_list_free, &list);
 
-	// send code_shard to the first shard
+	// send to the first node
 	auto req = req_create(self->plan->req_cache);
 	req->order = 0;
 	req->op    = op->b;
@@ -735,7 +735,7 @@ csend_all(Vm* self, Op* op)
 	req_list_init(&list);
 	guard(req_list_free, &list);
 
-	// send code_shard to all shards
+	// send to all nodes
 	for (int i = 0; i < router->set_size; i++)
 	{
 		auto req = req_create(req_cache);

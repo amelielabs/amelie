@@ -65,7 +65,7 @@ executor_send(Executor* self, Plan* plan, int stmt, ReqList* list)
 	list_append(&self->list, &plan->link);
 	self->list_count++;
 
-	// send BEGIN to the related shards
+	// send BEGIN to the related nodes
 	plan_begin(plan);
 	spinlock_unlock(&self->lock);
 }
@@ -96,7 +96,7 @@ executor_abort(Executor* self)
 	plan_group_reset(&self->group);
 
 	// add plans to the list and collect a list of last
-	// completed transactions per shard
+	// completed transactions per node
 	list_foreach(&self->list)
 	{
 		auto plan = list_at(Plan, link);
@@ -110,7 +110,7 @@ executor_commit_start(Executor* self)
 	plan_group_reset(&self->group);
 
 	// collect completed plans and get a list of last
-	// completed transactions per shard
+	// completed transactions per node
 	list_foreach(&self->list)
 	{
 		auto plan = list_at(Plan, link);
@@ -125,7 +125,7 @@ executor_commit_start(Executor* self)
 hot void
 executor_commit_end(Executor* self, PlanState state)
 {
-	// for each shard, send last prepared Trx*
+	// for each node, send last prepared Trx*
 	if (state == PLAN_COMMIT)	
 		plan_group_commit(&self->group);
 	else
@@ -255,7 +255,7 @@ executor_commit(Executor* self, Plan* plan)
 		// wal write and group commit
 
 		// get a list of completed plans (one or more) and a list of
-		// last executed transactions per shard
+		// last executed transactions per node
 		executor_commit_start(self);
 
 		spinlock_unlock(&self->lock);

@@ -92,7 +92,7 @@ shard_recover(Shard* self)
 	// restore partitions related to the current shard
 	Exception e;
 	if (enter(&e)) {
-		recover(self->vm.db, &self->config->id);
+		recover(self->vm.db, &self->node->config->id);
 	}
 	Buf* buf;
 	if (leave(&e)) {
@@ -156,24 +156,22 @@ shard_main(void* arg)
 }
 
 Shard*
-shard_allocate(ShardConfig* config, Db* db, FunctionMgr* function_mgr)
+shard_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 {
-	Shard* self = so_malloc(sizeof(*self));
+	auto self = (Shard*)so_malloc(sizeof(Shard));
 	self->order = 0;
+	self->node  = node;
 	trx_list_init(&self->prepared);
 	task_init(&self->task);
-	guard(shard_free, self);
-	self->config = shard_config_copy(config);
-	vm_init(&self->vm, db, &self->config->id, NULL, NULL, NULL, function_mgr);
-	return unguard();
+	vm_init(&self->vm, db, &node->config->id, NULL, NULL, NULL, function_mgr);
+	list_init(&self->link);
+	return self;
 }
 
 void
 shard_free(Shard* self)
 {
 	vm_free(&self->vm);
-	if (self->config)
-		shard_config_free(self->config);
 	so_free(self);
 }
 

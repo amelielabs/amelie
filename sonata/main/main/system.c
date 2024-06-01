@@ -192,6 +192,30 @@ system_configure(Str* options, bool bootstrap)
 		logger_close(logger);
 }
 
+static void
+system_create_compute(System* self)
+{
+	// create compute nodes
+	auto shards = var_int_of(&config()->shards);
+	while (shards-- > 0)
+	{
+		auto config = node_config_allocate();
+		guard(node_config_free, config);
+
+		// set type
+		node_config_set_type(config, NODE_COMPUTE);
+
+		// set node id
+		Uuid id;
+		uuid_generate(&id, global()->random);
+		node_config_set_id(config, &id);
+
+		node_mgr_create(&self->node_mgr, config, false);
+	}
+
+	control_save_config();
+}
+
 void
 system_start(System* self, Str* options, bool bootstrap)
 {
@@ -203,19 +227,19 @@ system_start(System* self, Str* options, bool bootstrap)
 	log("sonata.");
 	log("");
 
+	// prepare builtin functions
+	func_setup(&self->function_mgr);
+
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// prepare builtin functions
-	func_setup(&self->function_mgr);
-	
+	// open node manager and create compute nodes
+	node_mgr_open(&self->node_mgr);
+	if (bootstrap)
+		system_create_compute(self);
+
 	// prepare shards
-	shard_mgr_open(&self->shard_mgr);
-	if (! self->shard_mgr.shards_count)
-	{
-		auto shards = var_int_of(&config()->shards);
-		shard_mgr_create(&self->shard_mgr, shards);
-	}
+	shard_mgr_open(&self->shard_mgr, &self->node_mgr);
 	shard_mgr_set_router(&self->shard_mgr, &self->router);
 
 	// prepare executor
@@ -249,8 +273,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	// synchronize caches
 	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
 
-	// open node manager and prepare replication
-	node_mgr_open(&self->node_mgr);
+	// prepare replication manager
 	repl_open(&self->repl);
 
 	log("");

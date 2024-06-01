@@ -29,7 +29,7 @@
 void
 vm_init(Vm*          self,
         Db*          db,
-        Uuid*        shard,
+        Uuid*        node,
         Executor*    executor,
         Plan*        plan,
         Buf*         body,
@@ -38,7 +38,7 @@ vm_init(Vm*          self,
 	self->code         = NULL;
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
-	self->shard        = shard;
+	self->node         = node;
 	self->executor     = executor;
 	self->plan         = plan;
 	self->cte          = NULL;

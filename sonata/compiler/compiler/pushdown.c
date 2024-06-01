@@ -203,7 +203,7 @@ pushdown(Compiler* self, Ast* ast)
 void
 pushdown_first(Compiler* self, Ast* ast)
 {
-	// emit select query as is and pushdown to the first shard
+	// emit select query as is and pushdown to the first node
 	int r = emit_select(self, ast);
 
 	// CRESULT (return set)

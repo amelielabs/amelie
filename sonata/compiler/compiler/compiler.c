@@ -39,9 +39,9 @@ compiler_init(Compiler*    self,
 	self->last         = NULL;
 	self->function_mgr = function_mgr;
 	self->db           = db;
-	self->code         = &self->code_shard;
+	self->code         = &self->code_node;
 	code_init(&self->code_coordinator);
-	code_init(&self->code_shard);
+	code_init(&self->code_node);
 	code_data_init(&self->code_data);
 	parser_init(&self->parser, db, &self->code_data);
 	rmap_init(&self->map);
@@ -52,7 +52,7 @@ compiler_free(Compiler* self)
 {
 	parser_free(&self->parser);
 	code_free(&self->code_coordinator);
-	code_free(&self->code_shard);
+	code_free(&self->code_node);
 	code_data_free(&self->code_data);
 	rmap_free(&self->map);
 }
@@ -60,12 +60,12 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->code     = &self->code_shard;
+	self->code     = &self->code_node;
 	self->snapshot = false;
 	self->current  = NULL;
 	self->last     = NULL;
 	code_reset(&self->code_coordinator);
-	code_reset(&self->code_shard);
+	code_reset(&self->code_node);
 	code_data_reset(&self->code_data);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
@@ -176,7 +176,7 @@ emit_stmt(Compiler* self)
 		// select (select from reference)
 		// select expr(select from reference)
 	
-		// select pushdown to the first shard
+		// select pushdown to the first node
 		pushdown_first(self, stmt->ast);
 		break;
 	}
@@ -304,7 +304,7 @@ emit_recv(Compiler* self)
 		}
 
 		// nested expression or nested reference table targets
-		// (first shard only, single result)
+		// (first node only, single result)
 
 		// CRECV_TO
 		r = op2(self, CRECV_TO, rpin(self), stmt->order);
@@ -366,9 +366,9 @@ compiler_emit(Compiler* self)
 	{
 		auto stmt = list_at(Stmt, link);
 
-		// generate shard code (pushdown)
-		auto stmt_start = code_count(&self->code_shard);
-		compiler_switch_shard(self);
+		// generate node code (pushdown)
+		auto stmt_start = code_count(&self->code_node);
+		compiler_switch_node(self);
 		self->current = stmt;
 		emit_stmt(self);
 

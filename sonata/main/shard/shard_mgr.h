@@ -10,7 +10,7 @@ typedef struct ShardMgr ShardMgr;
 
 struct ShardMgr
 {
-	Shard**      shards;
+	List         shards;
 	int          shards_count;
 	FunctionMgr* function_mgr;
 	Db*          db;
@@ -18,8 +18,7 @@ struct ShardMgr
 
 void shard_mgr_init(ShardMgr*, Db*, FunctionMgr*);
 void shard_mgr_free(ShardMgr*);
-void shard_mgr_open(ShardMgr*);
-void shard_mgr_create(ShardMgr*, int);
+void shard_mgr_open(ShardMgr*, NodeMgr*);
 void shard_mgr_set_router(ShardMgr*, Router*);
 void shard_mgr_set_partition_map(ShardMgr*, PartMgr*);
 void shard_mgr_start(ShardMgr*);

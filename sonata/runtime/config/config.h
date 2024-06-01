@@ -44,7 +44,6 @@ struct Config
 	Var  psn;
 	Var  checkpoint;
 	// state persistent
-	Var  state_shards;
 	Var  nodes;
 	Var  users;
 	// testing

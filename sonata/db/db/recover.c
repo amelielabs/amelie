@@ -57,7 +57,7 @@ recover_partition(Part* self, Table* table)
 }
 
 hot void
-recover(Db* self, Uuid* shard)
+recover(Db* self, Uuid* node)
 {
 	list_foreach(&self->table_mgr.mgr.list)
 	{
@@ -65,7 +65,7 @@ recover(Db* self, Uuid* shard)
 		list_foreach(&table->part_mgr.list)
 		{
 			auto part = list_at(Part, link);
-			if (! uuid_compare(&part->config->shard, shard))
+			if (! uuid_compare(&part->config->node, node))
 				continue;
 			recover_partition(part, table);
 		}

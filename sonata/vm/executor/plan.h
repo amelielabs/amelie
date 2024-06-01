@@ -132,7 +132,7 @@ plan_send(Plan* self, int stmt, ReqList* list)
 	// first send with snapshot
 	if (self->snapshot && self->state == PLAN_NONE)
 	{
-		// create transactions for all shards
+		// create transactions for all nodes
 		auto router = self->router;
 		for (int i = 0; i < router->set_size; i++)
 		{
@@ -154,7 +154,7 @@ plan_send(Plan* self, int stmt, ReqList* list)
 			dispatch_set(&self->dispatch, req->order, trx);
 		}
 
-		// set transaction per statement shard order and add request to the
+		// set transaction per statement node order and add request to the
 		// statement list
 		auto ref = dispatch_stmt_set(&self->dispatch, stmt, req->order, trx);
 		req_list_move(list, &ref->req_list, req);
@@ -204,7 +204,7 @@ plan_recv(Plan* self, int stmt)
 hot static inline void
 plan_begin(Plan* self)
 {
-	// send BEGIN(Trx*) to shards
+	// send BEGIN(Trx*) to nodes
 	auto router = self->router;
 	for (int i = 0; i < router->set_size; i++)
 	{

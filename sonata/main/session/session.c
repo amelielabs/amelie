@@ -97,7 +97,7 @@ session_explain(Session* self)
 	(void)self;
 	auto buf = explain(&self->explain,
 	                   &self->compiler.code_coordinator,
-	                   &self->compiler.code_shard,
+	                   &self->compiler.code_node,
 	                   &self->compiler.code_data,
 	                   &self->plan,
 	                   false);
@@ -122,7 +122,7 @@ session_execute_distributed(Session* self)
 	int last  = -1;
 	if (compiler->last)
 		last = compiler->last->order;
-	plan_create(plan, &compiler->code_shard, &compiler->code_data, stmts, last);
+	plan_create(plan, &compiler->code_node, &compiler->code_data, stmts, last);
 
 	// mark plan for distributed snapshot case
 	if (compiler->snapshot)

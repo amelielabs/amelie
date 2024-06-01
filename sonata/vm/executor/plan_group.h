@@ -51,7 +51,7 @@ plan_group_reset(PlanGroup* self)
 static inline void
 plan_group_add(PlanGroup* self, Plan* plan)
 {
-	// collect a list of last completed transactions per shard
+	// collect a list of last completed transactions per node
 	dispatch_resolve(&plan->dispatch, self->set);
 
 	list_append(&self->list, &plan->link_group);

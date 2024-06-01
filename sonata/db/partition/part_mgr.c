@@ -70,19 +70,18 @@ part_mgr_find(PartMgr* self, uint64_t id)
 }
 
 hot Part*
-part_mgr_match(PartMgr* self, Uuid* shard)
+part_mgr_match(PartMgr* self, Uuid* node)
 {
-	// get first part, if reference or find part by shard id
+	// get first part, if reference or find part by node id
 	if (self->reference)
 	{
 		auto first = list_first(&self->list);
 		return container_of(first, Part, link);
 	}
-
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		if (! uuid_compare(&part->config->shard, shard))
+		if (! uuid_compare(&part->config->node, node))
 			continue;
 		return part;
 	}

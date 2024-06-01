@@ -45,9 +45,9 @@ node_mgr_save(NodeMgr* self)
 
 	// update and save state
 	var_data_set_buf(&config()->nodes, buf);
-	buf_end(buf);
 
-	control_save_config();
+	buf_end(buf);
+	buf_free(buf);
 }
 
 void
@@ -75,12 +75,15 @@ node_mgr_open(NodeMgr* self)
 void
 node_mgr_create(NodeMgr* self, NodeConfig* config, bool if_not_exists)
 {
-	auto node = node_mgr_find(self, &config->name);
+	auto node = node_mgr_find(self, &config->id);
 	if (node)
 	{
 		if (! if_not_exists)
-			error("node '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+		{
+			char uuid[UUID_SZ];
+			uuid_to_string(&config->id, uuid, sizeof(uuid));
+			error("node '%s' already exists", uuid);
+		}
 		return;
 	}
 	node = node_allocate(config);
@@ -90,13 +93,17 @@ node_mgr_create(NodeMgr* self, NodeConfig* config, bool if_not_exists)
 }
 
 void
-node_mgr_drop(NodeMgr* self, Str* name, bool if_exists)
+node_mgr_drop(NodeMgr* self, Uuid* id, bool if_exists)
 {
-	auto node = node_mgr_find(self, name);
+	auto node = node_mgr_find(self, id);
 	if (! node)
 	{
 		if (! if_exists)
-			error("node '%.*s': not exists", str_size(name), str_of(name));
+		{
+			char uuid[UUID_SZ];
+			uuid_to_string(id, uuid, sizeof(uuid));
+			error("node '%s': not exists", uuid);
+		}
 		return;
 	}
 	list_unlink(&node->link);
@@ -119,19 +126,7 @@ node_mgr_list(NodeMgr* self)
 }
 
 Node*
-node_mgr_find(NodeMgr* self, Str* name)
-{
-	list_foreach(&self->list)
-	{
-		auto node = list_at(Node, link);
-		if (str_compare(&node->config->name, name))
-			return node;
-	}
-	return NULL;
-}
-
-Node*
-node_mgr_find_by_id(NodeMgr* self, Uuid* id)
+node_mgr_find(NodeMgr* self, Uuid* id)
 {
 	list_foreach(&self->list)
 	{

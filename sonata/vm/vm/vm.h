@@ -16,7 +16,7 @@ struct Vm
 	CodeData*    code_data;
 	Buf*         code_arg;
 	CursorMgr    cursor_mgr;
-	Uuid*        shard;
+	Uuid*        node;
 	Executor*    executor;
 	Plan*        plan;
 	Result*      cte;

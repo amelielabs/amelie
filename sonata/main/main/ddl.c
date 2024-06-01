@@ -66,7 +66,7 @@ ddl_create_partition(TableConfig* table_config, Shard* shard, uint64_t min, uint
 	auto config = part_config_allocate();
 	auto psn = config_psn_next();
 	part_config_set_id(config, psn);
-	part_config_set_shard(config, &shard->config->id);
+	part_config_set_node(config, &shard->node->config->id);
 	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
 }
@@ -98,7 +98,8 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 	if (config->reference)
 	{
 		// reference table require only one partition
-		auto shard = shard_mgr->shards[0];
+		auto shard = container_of(list_first(&shard_mgr->shards), Shard, link);
+
 		ddl_create_partition(config, shard, 0, PARTITION_MAX);
 	} else
 	{
@@ -108,16 +109,17 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		int range_max      = PARTITION_MAX;
 		int range_interval = range_max / shard_mgr->shards_count;
 		int range_start    = 0;
-		for (int i = 0; i < shard_mgr->shards_count; i++)
+
+		list_foreach(&shard_mgr->shards)
 		{
-			auto shard = shard_mgr->shards[i];
+			auto shard = list_at(Shard, link);
 
 			// set partition range
 			int range_step;
-			if ((i + 1) < shard_mgr->shards_count)
-				range_step = range_interval;
-			else
+			if (list_is_last(&shard_mgr->shards, &shard->link))
 				range_step = range_max - range_start;
+			else
+				range_step = range_interval;
 			if ((range_start + range_step) > range_max)
 				range_step = range_max - range_start;
 

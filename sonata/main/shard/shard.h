@@ -10,15 +10,16 @@ typedef struct Shard Shard;
 
 struct Shard
 {
-	int          order;
-	TrxList      prepared;
-	Vm           vm;
-	ShardConfig* config;
-	Task         task;
+	int     order;
+	TrxList prepared;
+	Vm      vm;
+	Node*   node;
+	Task    task;
+	List    link;
 };
 
 Shard*
-shard_allocate(ShardConfig*, Db*, FunctionMgr*);
+shard_allocate(Node*, Db*, FunctionMgr*);
 void shard_free(Shard*);
 void shard_start(Shard*);
 void shard_stop(Shard*);
