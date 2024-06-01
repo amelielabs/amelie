@@ -39,6 +39,7 @@ cluster_init(Cluster* self, Db* db, FunctionMgr* function_mgr)
 	self->function_mgr = function_mgr;
 	self->db           = db;
 	list_init(&self->list);
+	router_init(&self->router);
 }
 
 void
@@ -50,11 +51,13 @@ cluster_free(Cluster* self)
 		backend_stop(backend);
 		backend_free(backend);
 	}
+	router_free(&self->router);
 }
 
 void
 cluster_open(Cluster* self, NodeMgr* node_mgr)
 {
+	// prepare backends
 	list_foreach(&node_mgr->list)
 	{
 		auto node = list_at(Node, link);
@@ -65,16 +68,14 @@ cluster_open(Cluster* self, NodeMgr* node_mgr)
 		list_append(&self->list, &backend->link);
 		self->list_count++;
 	}
-}
 
-void
-cluster_set_router(Cluster* self, Router* router)
-{
-	router_create(router, self->list_count);
+	// prepare router
+	router_create(&self->router, self->list_count);
+
 	list_foreach(&self->list)
 	{
 		auto backend = list_at(Backend, link);
-		auto route = router_at(router, backend->order);
+		auto route = router_at(&self->router, backend->order);
 		route->order =  backend->order;
 		route->channel = &backend->task.channel;
 	}

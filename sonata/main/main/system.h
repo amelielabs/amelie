@@ -20,7 +20,6 @@ struct System
 	Db          db;
 	// executor
 	Executor    executor;
-	Router      router;
 	Cluster     cluster;
 	FrontendMgr frontend_mgr;
 	// server

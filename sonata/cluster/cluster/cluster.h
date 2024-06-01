@@ -12,6 +12,7 @@ struct Cluster
 {
 	List         list;
 	int          list_count;
+	Router       router;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
@@ -19,7 +20,6 @@ struct Cluster
 void cluster_init(Cluster*, Db*, FunctionMgr*);
 void cluster_free(Cluster*);
 void cluster_open(Cluster*, NodeMgr*);
-void cluster_set_router(Cluster*, Router*);
 void cluster_set_partition_map(Cluster*, PartMgr*);
 void cluster_start(Cluster*);
 void cluster_stop(Cluster*);

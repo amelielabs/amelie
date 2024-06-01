@@ -49,7 +49,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
-	plan_init(&self->plan, share->router, &frontend->trx_cache,
+	plan_init(&self->plan, &share->cluster->router, &frontend->trx_cache,
 	          &frontend->req_cache);
 	return self;
 }

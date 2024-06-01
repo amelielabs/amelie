@@ -66,8 +66,7 @@ system_create(void)
 	// cluster
 	frontend_mgr_init(&self->frontend_mgr);
 	cluster_init(&self->cluster, &self->db, &self->function_mgr);
-	router_init(&self->router);
-	executor_init(&self->executor, &self->db, &self->router);
+	executor_init(&self->executor, &self->db, &self->cluster.router);
 
 	// db
 	db_init(&self->db);
@@ -82,7 +81,6 @@ system_create(void)
 	// prepare shared context (shared between frontends)
 	auto share = &self->share;
 	share->executor     = &self->executor;
-	share->router       = &self->router;
 	share->cluster      = &self->cluster;
 	share->function_mgr = &self->function_mgr;
 	share->db           = &self->db;
@@ -95,7 +93,6 @@ system_free(System* self)
 	repl_free(&self->repl);
 	node_mgr_free(&self->node_mgr);
 	cluster_free(&self->cluster);
-	router_free(&self->router);
 	executor_free(&self->executor);
 	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
@@ -240,7 +237,6 @@ system_start(System* self, Str* options, bool bootstrap)
 
 	// prepare cluster
 	cluster_open(&self->cluster, &self->node_mgr);
-	cluster_set_router(&self->cluster, &self->router);
 
 	// prepare executor
 	executor_create(&self->executor);
