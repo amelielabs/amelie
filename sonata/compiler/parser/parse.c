@@ -38,11 +38,25 @@ parse_stmt_free(Stmt* stmt)
 			user_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_NODE:
+	{
+		auto ast = ast_node_create_of(stmt->ast);
+		if (ast->config)
+			node_config_free(ast->config);
+		break;
+	}
 	case STMT_ALTER_USER:
 	{
 		auto ast = ast_user_alter_of(stmt->ast);
 		if (ast->config)
 			user_config_free(ast->config);
+		break;
+	}
+	case STMT_ALTER_NODE:
+	{
+		auto ast = ast_node_alter_of(stmt->ast);
+		if (ast->config)
+			node_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_SCHEMA:
@@ -101,11 +115,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// CREATE USER | SCHEMA | TABLE | VIEW
+		// CREATE USER | NODE | SCHEMA | TABLE | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
 			parse_user_create(stmt);
+		} else
+		if (lex_if(lex, KNODE))
+		{
+			stmt->id = STMT_CREATE_NODE;
+			parse_node_create(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -122,18 +141,23 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_VIEW;
 			parse_view_create(stmt);
 		} else {
-			error("CREATE <USER|SCHEMA|TABLE|VIEW> expected");
+			error("CREATE <USER|NODE|SCHEMA|TABLE|VIEW> expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | SCHEMA | TABLE | VIEW
+		// DROP USER | NODE | SCHEMA | TABLE | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
 			parse_user_drop(stmt);
+		} else
+		if (lex_if(lex, KNODE))
+		{
+			stmt->id = STMT_DROP_NODE;
+			parse_node_drop(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -150,18 +174,23 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_VIEW;
 			parse_view_drop(stmt);
 		} else {
-			error("DROP <USER|SCHEMA|TABLE|VIEW> expected");
+			error("DROP <USER|NODE|SCHEMA|TABLE|VIEW> expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | VIEW
+		// ALTER USER | NODE | SCHEMA | TABLE | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
 			parse_user_alter(stmt);
+		} else
+		if (lex_if(lex, KNODE))
+		{
+			stmt->id = STMT_ALTER_NODE;
+			parse_node_alter(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -178,7 +207,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_ALTER_VIEW;
 			parse_view_alter(stmt);
 		} else {
-			error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
+			error("ALTER <USER|NODE|SCHEMA|TABLE|VIEW> expected");
 		}
 		break;
 	}
