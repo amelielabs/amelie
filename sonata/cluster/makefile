@@ -1,5 +1,5 @@
 #
-# sonata replication makefile
+# sonata cluster makefile
 #
 CC             = clang
 AR             = ar
@@ -37,7 +37,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Ibackup \
                  -Irepl
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-repl.a
+LIB            = libsonata-cluster.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \

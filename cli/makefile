@@ -32,9 +32,9 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/compiler/parser \
                  -I../sonata/compiler/semantic \
                  -I../sonata/compiler/compiler \
-                 -I../sonata/repl \
-                 -I../sonata/repl/backup \
-                 -I../sonata/repl/repl \
+                 -I../sonata/cluster \
+                 -I../sonata/cluster/backup \
+                 -I../sonata/cluster/repl \
                  -I../sonata/main \
                  -I../sonata/main/frontend \
                  -I../sonata/main/shard \
@@ -47,7 +47,7 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../sonata/db/libsonata-db.a \
                   ../sonata/vm/libsonata-vm.a \
                   ../sonata/compiler/libsonata-compiler.a \
-                  ../sonata/repl/libsonata-repl.a \
+                  ../sonata/cluster/libsonata-cluster.a \
                   ../sonata/main/libsonata-main.a \
                   -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto
 SRC            = sonata.c

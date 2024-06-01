@@ -4,7 +4,7 @@ all:
 	@(cd db;       make --no-print-directory)
 	@(cd vm;       make --no-print-directory)
 	@(cd compiler; make --no-print-directory)
-	@(cd repl;     make --no-print-directory)
+	@(cd cluster;  make --no-print-directory)
 	@(cd main;     make --no-print-directory)
 clean:
 	@(cd runtime;  make --no-print-directory clean)
@@ -12,5 +12,5 @@ clean:
 	@(cd db;       make --no-print-directory clean)
 	@(cd vm;       make --no-print-directory clean)
 	@(cd compiler; make --no-print-directory clean)
-	@(cd repl;     make --no-print-directory clean)
+	@(cd cluster;  make --no-print-directory clean)
 	@(cd main;     make --no-print-directory clean)
