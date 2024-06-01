@@ -54,6 +54,7 @@ static Keyword keywords_c[] =
 	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
 	{ KCASCADE,               "cascade",               7  },
+	{ KCOMPUTE,               "compute",               7  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -81,6 +82,7 @@ static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
+	{ KFOR,                   "for",                   3  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -213,6 +215,7 @@ static Keyword keywords_u[] =
 	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
+	{ KURI,                   "uri",                   3  },
 	{ 0,                       NULL,                   0  }
 };
 

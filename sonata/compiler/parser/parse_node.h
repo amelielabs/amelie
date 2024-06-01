@@ -21,7 +21,7 @@ struct AstNodeDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Ast* name;
+	Ast* id;
 };
 
 struct AstNodeAlter
@@ -58,7 +58,7 @@ ast_node_drop_allocate(void)
 	AstNodeDrop* self;
 	self = ast_allocate(0, sizeof(AstNodeDrop));
 	self->if_exists = false;
-	self->name      = NULL;
+	self->id        = NULL;
 	return self;
 }
 
