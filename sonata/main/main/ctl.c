@@ -43,9 +43,14 @@ ctl_show(System* self, Stmt* stmt)
 	if (str_compare_raw(name, "users", 5))
 		buf = user_mgr_list(&self->user_mgr);
 	else
+	if (str_compare_raw(name, "nodes", 5))
+		buf = cluster_list(&self->cluster);
+	else
+	if (str_compare_raw(name, "cluster", 7))
+		buf = cluster_list(&self->cluster);
+	else
 	if (str_compare_raw(name, "wal", 3))
-		buf = NULL;
-		//buf = wal_status(&self->db.wal);
+		buf = wal_show(&self->db.wal);
 	else
 	if (str_compare_raw(name, "schemas", 7))
 		buf = schema_mgr_list(&self->db.schema_mgr);
@@ -160,7 +165,6 @@ ctl_alter_user(System* self, Stmt* stmt)
 	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
 }
 
-#if 0
 static void
 ctl_create_node(System* self, Stmt* stmt)
 {
@@ -170,8 +174,27 @@ ctl_create_node(System* self, Stmt* stmt)
 	frontend_mgr_lock(&self->frontend_mgr);
 
 	Exception e;
-	if (enter(&e)) {
-		cluster_create(&self->cluster, arg->config, arg->if_not_exists);
+	if (enter(&e))
+	{
+		auto config = node_config_allocate();
+		guard(node_config_free, config);
+
+		// type
+		node_config_set_type(config, NODE_COMPUTE);
+
+		// id
+		Uuid id;
+		if (arg->id)
+			uuid_from_string(&id, &arg->id->string);
+		else
+			uuid_generate(&id, global()->random);
+		node_config_set_id(config, &id);
+
+		// uri
+		if (arg->uri)
+			node_config_set_uri(config, &arg->uri->string);
+
+		cluster_create(&self->cluster, config, arg->if_not_exists);
 		control_save_config();
 	}
 
@@ -206,22 +229,10 @@ static void
 ctl_alter_node(System* self, Stmt* stmt)
 {
 	auto arg = ast_node_alter_of(stmt->ast);
-
-	// get exclusive session lock
-	frontend_mgr_lock(&self->frontend_mgr);
-
-	Exception e;
-	if (enter(&e))
-	{
-		cluster_alter(&self->cluster, arg->config, arg->if_exists);
-		control_save_config();
-	}
-
-	frontend_mgr_unlock(&self->frontend_mgr);
-	if (leave(&e))
-		rethrow();
+	unused(arg);
+	unused(self);
+	error("unusupported");
 }
-#endif
 
 static void
 ctl_gc(System* self)
@@ -311,7 +322,6 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 	case STMT_ALTER_USER:
 		ctl_alter_user(self, stmt);
 		break;
-		/*
 	case STMT_CREATE_NODE:
 		ctl_create_node(self, stmt);
 		break;
@@ -321,7 +331,6 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 	case STMT_ALTER_NODE:
 		ctl_alter_node(self, stmt);
 		break;
-		*/
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self, stmt);
 		break;

@@ -126,9 +126,7 @@ static void
 node_main(void* arg)
 {
 	Node* self = arg;
-
-	bool stop = false;
-	while (! stop)
+	for (;;)
 	{
 		auto buf = channel_read(&so_task->channel, -1);
 		auto msg = msg_of(buf);
@@ -148,12 +146,12 @@ node_main(void* arg)
 			node_recover(self);
 			break;
 		default:
-		{
-			stop = msg->id == RPC_STOP;
 			rpc_execute(buf, node_rpc, self);
 			break;
 		}
-		}
+
+		if (msg->id == RPC_STOP)
+			break;
 	}
 }
 

@@ -141,7 +141,22 @@ func_users(Vm*       vm,
 	unused(argv);
 	function_validate_argc(func, argc);
 	Buf* buf;
-	rpc(global()->control->system, RPC_USER_SHOW, 1, &buf);
+	rpc(global()->control->system, RPC_SHOW_USERS, 1, &buf);
+	value_set_buf(result, buf);
+}
+
+static void
+func_nodes(Vm*       vm,
+           Function* func,
+           Value*    result,
+           int       argc,
+           Value**   argv)
+{
+	unused(vm);
+	unused(argv);
+	function_validate_argc(func, argc);
+	Buf* buf;
+	rpc(global()->control->system, RPC_SHOW_NODES, 1, &buf);
 	value_set_buf(result, buf);
 }
 
@@ -234,6 +249,7 @@ func_setup(FunctionMgr* mgr)
 		// system
 		{ "system", "config",     (FunctionMain)func_config,     0 },
 		{ "system", "users",      (FunctionMain)func_users,      0 },
+		{ "system", "nodes",      (FunctionMain)func_nodes,      0 },
 		{ "system", "schemas",    (FunctionMain)func_schemas,    0 },
 		{ "system", "functions",  (FunctionMain)func_functions,  0 },
 		{ "system", "tables",     (FunctionMain)func_tables,     0 },

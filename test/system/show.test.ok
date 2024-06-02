@@ -75,6 +75,10 @@ show functions
   "argc": 0
 }, {
   "schema": "system",
+  "name": "nodes",
+  "argc": 0
+}, {
+  "schema": "system",
   "name": "schemas",
   "argc": 0
 }, {
@@ -133,6 +137,10 @@ select system.functions()
   "argc": 0
 }, {
   "schema": "system",
+  "name": "nodes",
+  "argc": 0
+}, {
+  "schema": "system",
   "name": "schemas",
   "argc": 0
 }, {
@@ -164,6 +172,17 @@ select system.views()
 []
 # test: show wal
 show wal
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
 select system.wal()
 {"code": 1, "msg": "todo: "}
 # test: show all

@@ -72,7 +72,7 @@ cluster_save(Cluster* self)
 	buf_free(buf);
 }
 
-static void
+static Node*
 cluster_add(Cluster* self, NodeConfig* config)
 {
 	auto node = node_allocate(config, self->db, self->function_mgr);
@@ -80,6 +80,17 @@ cluster_add(Cluster* self, NodeConfig* config)
 	self->list_count++;
 
 	router_add(&self->router, &node->route);
+	return node;
+}
+
+static void
+cluster_del(Cluster* self, Node* node)
+{
+	list_unlink(&node->link);
+	self->list_count--;
+
+	router_del(&self->router, &node->route);
+	node_free(node);
 }
 
 static void
@@ -208,33 +219,43 @@ cluster_create(Cluster* self, NodeConfig* config, bool if_not_exists)
 		}
 		return;
 	}
-	cluster_add(self, config);
+	node = cluster_add(self, config);
 	cluster_save(self);
+
+	node_start(node);
 }
 
-#if 0
 void
 cluster_drop(Cluster* self, Uuid* id, bool if_exists)
 {
-	(void)self;
-	(void)id;
-	(void)if_exists;
-	// todo:
+	char uuid[UUID_SZ];
+	uuid_to_string(id, uuid, sizeof(uuid));
 
-	// todo: update router
+	auto node = cluster_find(self, id);
+	if (! node)
+	{
+		if (! if_exists)
+			error("node '%s': not exists", uuid);
+		return;
+	}
+	if (node->route.refs > 0)
+		error("node '%s': has dependencies", uuid);
+	node_stop(node);
 
+	cluster_del(self, node);
 	cluster_save(self);
 }
 
-void
-cluster_alter(Cluster* self, NodeConfig* config, bool if_exists)
+Buf*
+cluster_list(Cluster* self)
 {
-	(void)self;
-	(void)config;
-	(void)if_exists;
-
-	// todo:
-
-	cluster_save(self);
+	auto buf = buf_begin();
+	encode_array(buf);
+	list_foreach(&self->list)
+	{
+		auto node = list_at(Node, link);
+		node_config_write(node->config, buf);
+	}
+	encode_array_end(buf);
+	return buf_end(buf);
 }
-#endif

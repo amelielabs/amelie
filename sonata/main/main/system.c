@@ -286,10 +286,16 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = system_ctl(self, session, stmt);
 		break;
 	}
-	case RPC_USER_SHOW:
+	case RPC_SHOW_USERS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
 		*buf = user_mgr_list(&self->user_mgr);
+		break;
+	}
+	case RPC_SHOW_NODES:
+	{
+		Buf** buf = rpc_arg_ptr(rpc, 0);
+		*buf = cluster_list(&self->cluster);
 		break;
 	}
 	case RPC_BACKUP:
