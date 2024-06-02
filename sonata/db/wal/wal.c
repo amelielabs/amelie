@@ -275,8 +275,17 @@ wal_detach(Wal* self, WalSlot* slot)
 		condition_free(on_write);
 }
 
-void
-wal_show(Wal* self, Buf* buf)
+bool
+wal_in_range(Wal* self, uint64_t lsn)
+{
+	int      list_count;
+	uint64_t list_min;
+	id_mgr_stats(&self->list, &list_count, &list_min);
+	return lsn >= list_min;
+}
+
+Buf*
+wal_show(Wal* self)
 {
 	int      list_count;
 	uint64_t list_min;
@@ -287,6 +296,7 @@ wal_show(Wal* self, Buf* buf)
 	slots_count = wal_slots(self, &slots_min);
 
 	// map
+	auto buf = buf_begin();
 	encode_map(buf);
 
 	// active
@@ -326,13 +336,5 @@ wal_show(Wal* self, Buf* buf)
 	encode_integer(buf, slots_min);
 
 	encode_map_end(buf);
-}
-
-bool
-wal_in_range(Wal* self, uint64_t lsn)
-{
-	int      list_count;
-	uint64_t list_min;
-	id_mgr_stats(&self->list, &list_count, &list_min);
-	return lsn >= list_min;
+	return buf_end(buf);
 }
