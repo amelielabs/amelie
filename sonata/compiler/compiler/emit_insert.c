@@ -11,7 +11,6 @@
 #include <sonata_data.h>
 #include <sonata_config.h>
 #include <sonata_user.h>
-#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>

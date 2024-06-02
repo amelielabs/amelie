@@ -10,8 +10,7 @@ typedef struct NodeConfig NodeConfig;
 
 typedef enum
 {
-	NODE_COMPUTE,
-	NODE_REPL
+	NODE_COMPUTE
 } NodeType;
 
 struct NodeConfig

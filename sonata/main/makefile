@@ -13,7 +13,6 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/config \
                  -I../server \
                  -I../server/user \
-                 -I../server/node \
                  -I../server/http \
                  -I../server/client \
                  -I../server/server \

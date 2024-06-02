@@ -13,7 +13,6 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/config \
                  -I../server \
                  -I../server/user \
-                 -I../server/node \
                  -I../server/http \
                  -I../server/client \
                  -I../server/server \
@@ -42,9 +41,10 @@ LIB            = libsonata-cluster.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
-                 repl/pusher.o \
                  repl/repl.o \
-                 cluster/backend.o \
+                 cluster/node.o \
+                 cluster/cluster.o
+#                cluster/backend.o \
                  cluster/cluster.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

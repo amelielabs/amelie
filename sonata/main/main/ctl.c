@@ -11,7 +11,6 @@
 #include <sonata_data.h>
 #include <sonata_config.h>
 #include <sonata_user.h>
-#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -161,6 +160,7 @@ ctl_alter_user(System* self, Stmt* stmt)
 	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
 }
 
+#if 0
 static void
 ctl_create_node(System* self, Stmt* stmt)
 {
@@ -221,6 +221,7 @@ ctl_alter_node(System* self, Stmt* stmt)
 	if (leave(&e))
 		rethrow();
 }
+#endif
 
 static void
 ctl_gc(System* self)
@@ -310,6 +311,7 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 	case STMT_ALTER_USER:
 		ctl_alter_user(self, stmt);
 		break;
+		/*
 	case STMT_CREATE_NODE:
 		ctl_create_node(self, stmt);
 		break;
@@ -319,6 +321,7 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 	case STMT_ALTER_NODE:
 		ctl_alter_node(self, stmt);
 		break;
+		*/
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self, stmt);
 		break;

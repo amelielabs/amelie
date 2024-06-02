@@ -14,7 +14,6 @@ struct System
 	// vm
 	FunctionMgr function_mgr;
 	// repl
-	Repl        repl;
 	// db
 	Db          db;
 	// executor

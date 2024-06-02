@@ -11,7 +11,6 @@
 #include <sonata_data.h>
 #include <sonata_config.h>
 #include <sonata_user.h>
-#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -99,9 +98,9 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 	if (config->reference)
 	{
 		// reference table require only one partition
-		auto backend = container_of(list_first(&cluster->list), Backend, link);
+		auto node = container_of(list_first(&cluster->list), Node, link);
 
-		ddl_create_partition(config, backend->node, 0, PARTITION_MAX);
+		ddl_create_partition(config, node, 0, PARTITION_MAX);
 	} else
 	{
 		// create partition for each node
@@ -113,18 +112,18 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 
 		list_foreach(&cluster->list)
 		{
-			auto backend = list_at(Backend, link);
+			auto node = list_at(Node, link);
 
 			// set partition range
 			int range_step;
-			if (list_is_last(&cluster->list, &backend->link))
+			if (list_is_last(&cluster->list, &node->link))
 				range_step = range_max - range_start;
 			else
 				range_step = range_interval;
 			if ((range_start + range_step) > range_max)
 				range_step = range_max - range_start;
 
-			ddl_create_partition(config, backend->node,
+			ddl_create_partition(config, node,
 			                     range_start,
 			                     range_start + range_step);
 

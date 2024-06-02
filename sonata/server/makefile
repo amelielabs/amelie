@@ -13,7 +13,6 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/config \
                  -I. \
                  -Iuser \
-                 -Inode \
                  -Ihttp \
                  -Iclient \
                  -Iserver
@@ -21,7 +20,6 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-server.a
 OBJECTS        = \
                  user/user_mgr.o \
-                 node/node_mgr.o \
                  http/http.o \
                  http/uri.o \
                  client/client.o \

@@ -6,5 +6,9 @@
 // Real-Time SQL Database.
 //
 
-#include "cluster/backend.h"
+// node
+#include "cluster/node_config.h"
+#include "cluster/node.h"
+
+// cluster
 #include "cluster/cluster.h"

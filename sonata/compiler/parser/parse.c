@@ -11,7 +11,6 @@
 #include <sonata_data.h>
 #include <sonata_config.h>
 #include <sonata_user.h>
-#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -38,25 +37,11 @@ parse_stmt_free(Stmt* stmt)
 			user_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_NODE:
-	{
-		auto ast = ast_node_create_of(stmt->ast);
-		if (ast->config)
-			node_config_free(ast->config);
-		break;
-	}
 	case STMT_ALTER_USER:
 	{
 		auto ast = ast_user_alter_of(stmt->ast);
 		if (ast->config)
 			user_config_free(ast->config);
-		break;
-	}
-	case STMT_ALTER_NODE:
-	{
-		auto ast = ast_node_alter_of(stmt->ast);
-		if (ast->config)
-			node_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_SCHEMA:

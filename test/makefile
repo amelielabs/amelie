@@ -12,7 +12,6 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/runtime/config \
                  -I../sonata/server \
                  -I../sonata/server/user \
-                 -I../sonata/server/node \
                  -I../sonata/server/http \
                  -I../sonata/server/client \
                  -I../sonata/server/server \

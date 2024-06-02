@@ -11,7 +11,6 @@
 #include <sonata_data.h>
 #include <sonata_config.h>
 #include <sonata_user.h>
-#include <sonata_node.h>
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
@@ -33,7 +32,7 @@
 #include <sonata_cluster.h>
 
 hot static void
-backend_execute(Backend* self, Trx* trx)
+node_execute(Node* self, Trx* trx)
 {
 	transaction_begin(&trx->trx);
 
@@ -75,14 +74,14 @@ backend_execute(Backend* self, Trx* trx)
 }
 
 hot static void
-backend_commit(Backend* self, Trx* last)
+node_commit(Node* self, Trx* last)
 {
 	// commit all prepared transaction till the last one
 	trx_list_commit(&self->prepared, last);
 }
 
 hot static void
-backend_abort(Backend* self, Trx* last)
+node_abort(Node* self, Trx* last)
 {
 	// abort all prepared transactions
 	unused(last);
@@ -90,12 +89,12 @@ backend_abort(Backend* self, Trx* last)
 }
 
 static void
-backend_recover(Backend* self)
+node_recover(Node* self)
 {
-	// restore partitions related to the current backend
+	// restore partitions related to the current node
 	Exception e;
 	if (enter(&e)) {
-		recover(self->vm.db, &self->node->config->id);
+		recover(self->vm.db, &self->config->id);
 	}
 	Buf* buf;
 	if (leave(&e)) {
@@ -110,9 +109,9 @@ backend_recover(Backend* self)
 }
 
 static void
-backend_rpc(Rpc* rpc, void* arg)
+node_rpc(Rpc* rpc, void* arg)
 {
-	Backend* self = arg;
+	Node* self = arg;
 	switch (rpc->id) {
 	case RPC_STOP:
 		unused(self);
@@ -124,9 +123,9 @@ backend_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-backend_main(void* arg)
+node_main(void* arg)
 {
-	Backend* self = arg;
+	Node* self = arg;
 
 	bool stop = false;
 	while (! stop)
@@ -137,55 +136,60 @@ backend_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			backend_execute(self, trx_of(buf));
+			node_execute(self, trx_of(buf));
 			break;
 		case RPC_COMMIT:
-			backend_commit(self, trx_of(buf));
+			node_commit(self, trx_of(buf));
 			break;
 		case RPC_ABORT:
-			backend_abort(self, trx_of(buf));
+			node_abort(self, trx_of(buf));
 			break;
 		case RPC_RECOVER:
-			backend_recover(self);
+			node_recover(self);
 			break;
 		default:
 		{
 			stop = msg->id == RPC_STOP;
-			rpc_execute(buf, backend_rpc, self);
+			rpc_execute(buf, node_rpc, self);
 			break;
 		}
 		}
 	}
 }
 
-Backend*
-backend_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
+Node*
+node_allocate(NodeConfig* config, Db* db, FunctionMgr* function_mgr)
 {
-	auto self = (Backend*)so_malloc(sizeof(Backend));
-	self->order = 0;
-	self->node  = node;
+	auto self = (Node*)so_malloc(sizeof(Node));
+	self->order  = 0;
+	self->config = NULL;
 	trx_list_init(&self->prepared);
-	task_init(&self->task);
-	vm_init(&self->vm, db, &node->config->id, NULL, NULL, NULL, function_mgr);
 	list_init(&self->link);
-	return self;
+	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
+	task_init(&self->task);
+	guard(node_free, self);
+	self->config = node_config_copy(config);
+	self->vm.node = &self->config->id;
+	return unguard();
 }
 
 void
-backend_free(Backend* self)
+node_free(Node* self)
 {
 	vm_free(&self->vm);
+	if (self->config)
+		node_config_free(self->config);
 	so_free(self);
 }
 
 void
-backend_start(Backend* self)
+node_start(Node* self)
 {
-	task_create(&self->task, "backend", backend_main, self);
+	task_create(&self->task, "node", node_main, self);
 }
 
 void
-backend_stop(Backend* self)
+node_stop(Node* self)
 {
 	// send stop request
 	if (task_active(&self->task))
