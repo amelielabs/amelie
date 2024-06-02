@@ -138,7 +138,6 @@ cluster_open(Cluster* self, bool bootstrap)
 	{
 		auto node = list_at(Node, link);
 		auto route = router_at(&self->router, node->order);
-		route->order =  node->order;
 		route->channel = &node->task.channel;
 	}
 }
@@ -205,25 +204,28 @@ cluster_find(Cluster* self, Uuid* uuid)
 	return NULL;
 }
 
-#if 0
 void
 cluster_create(Cluster* self, NodeConfig* config, bool if_not_exists)
 {
-	/*
-	auto node = node_mgr_create(&self->node_mgr, config, if_not_exists);
-	if (! node)
+	auto node = cluster_find(self, &config->id);
+	if (node)
+	{
+		if (! if_not_exists)
+		{
+			char uuid[UUID_SZ];
+			uuid_to_string(&config->id, uuid, sizeof(uuid));
+			error("node '%s': already exists", uuid);
+		}
 		return;
-	auto node = node_allocate(node, self->db, self->function_mgr);
-	node->order = self->list_count;
-	list_append(&self->list, &node->link);
-	self->list_count++;
-	*/
-
-	// todo: update router
-
+	}
+	cluster_add(self, config);
 	cluster_save(self);
+
+	// todo: node order?
+	// todo: update router
 }
 
+#if 0
 void
 cluster_drop(Cluster* self, Uuid* id, bool if_exists)
 {

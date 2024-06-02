@@ -11,7 +11,6 @@ typedef struct Router Router;
 
 struct Route
 {
-	int      order;
 	Channel* channel;
 };
 
