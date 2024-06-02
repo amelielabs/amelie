@@ -20,7 +20,7 @@ struct Cluster
 void  cluster_init(Cluster*, Db*, FunctionMgr*);
 void  cluster_free(Cluster*);
 void  cluster_open(Cluster*, bool);
-void  cluster_set_partition_map(Cluster*, PartMgr*);
+void  cluster_map(Cluster*, PartMgr*);
 void  cluster_start(Cluster*);
 void  cluster_stop(Cluster*);
 void  cluster_recover(Cluster*);

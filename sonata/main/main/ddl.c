@@ -139,7 +139,7 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 	if (created)
 	{
 		auto table = table_mgr_find(&db->table_mgr, &config->schema, &config->name, true);
-		cluster_set_partition_map(cluster, &table->part_mgr);
+		cluster_map(cluster, &table->part_mgr);
 	}
 }
 

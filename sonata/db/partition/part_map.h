@@ -44,6 +44,17 @@ hot static inline void
 part_map_set(PartMap* self, int pos, Route* route)
 {
 	self->map[pos] = route;
+	router_ref(route);
+}
+
+hot static inline void
+part_map_unset(PartMap* self, int pos)
+{
+	auto route = self->map[pos];
+	if (! route)
+		return;
+	self->map[pos] = NULL;
+	router_unref(route);
 }
 
 hot static inline Route*
@@ -51,4 +62,11 @@ part_map_get(PartMap* self, uint32_t hash)
 {
 	int partition = hash % PARTITION_MAX;
 	return self->map[partition];
+}
+
+static inline void
+part_map_unmap(PartMap* self)
+{
+	for (int i = 0; i < self->map_size; i++)
+		part_map_unset(self, i);
 }

@@ -219,7 +219,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	list_foreach(&self->db.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		cluster_set_partition_map(&self->cluster, &table->part_mgr);
+		cluster_map(&self->cluster, &table->part_mgr);
 	}
 
 	// todo: start checkpoint worker

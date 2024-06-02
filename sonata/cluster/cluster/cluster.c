@@ -133,7 +133,7 @@ cluster_open(Cluster* self, bool bootstrap)
 }
 
 void
-cluster_set_partition_map(Cluster* self, PartMgr* part_mgr)
+cluster_map(Cluster* self, PartMgr* part_mgr)
 {
 	// create partition map and set each partition range to the node order
 	auto map = &part_mgr->map;

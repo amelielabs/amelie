@@ -27,6 +27,10 @@ part_mgr_init(PartMgr* self)
 void
 part_mgr_free(PartMgr* self)
 {
+	// unref routes
+	part_map_unmap(&self->map);
+	part_map_free(&self->map);
+
 	list_foreach_safe(&self->list)
 	{
 		auto part = list_at(Part, link);
@@ -34,7 +38,6 @@ part_mgr_free(PartMgr* self)
 	}
 	self->list_count = 0;
 	list_init(&self->list);
-	part_map_free(&self->map);
 }
 
 void
