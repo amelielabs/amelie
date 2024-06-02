@@ -20,6 +20,7 @@ typedef enum
 struct Plan
 {
 	PlanState  state;
+	TrxSet     set;
 	Dispatch   dispatch;
 	bool       snapshot;
 	Code*      code;
@@ -48,7 +49,8 @@ plan_init(Plan*     self, Router* router,
 	self->req_cache = req_cache;
 	self->trx_cache = trx_cache;
 	self->router    = router;
-	dispatch_init(&self->dispatch, router);
+	trx_set_init(&self->set);
+	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
 	list_init(&self->link_group);
 	list_init(&self->link);
@@ -59,6 +61,7 @@ plan_free(Plan* self)
 {
 	dispatch_reset(&self->dispatch, self->req_cache);
 	dispatch_free(&self->dispatch);
+	trx_set_free(&self->set);
 	result_free(&self->cte);
 	if (self->error)
 		buf_free(self->error);
@@ -70,6 +73,7 @@ static inline void
 plan_reset(Plan* self)
 {
 	dispatch_reset(&self->dispatch, self->req_cache);
+	trx_set_reset(&self->set);
 	result_reset(&self->cte);
 	if (self->error)
 	{
@@ -85,10 +89,12 @@ plan_create(Plan* self, Code* code, CodeData* code_data,
             int   stmt_count,
             int   stmt_last)
 {
+	auto set_size = self->router->list_count;
 	self->code = code;
 	self->code_data = code_data;
+	trx_set_create(&self->set, set_size);
+	dispatch_create(&self->dispatch, set_size, stmt_count, stmt_last);
 	result_create(&self->cte, stmt_count);
-	dispatch_create(&self->dispatch, stmt_count, stmt_last);
 	if (! self->on_commit)
 		self->on_commit = condition_create();
 }
@@ -115,10 +121,10 @@ plan_set_error(Plan* self, Buf* buf)
 static inline void
 plan_shutdown(Plan* self)
 {
-	auto router = self->router;
-	for (int i = 0; i < router->set_size; i++)
+	auto set = &self->set;
+	for (int i = 0; i < set->set_size; i++)
 	{
-		auto trx = dispatch_get(&self->dispatch, i);
+		auto trx = trx_set_get(set, i);
 		if (trx)
 			req_queue_shutdown(&trx->queue);
 	}
@@ -127,36 +133,39 @@ plan_shutdown(Plan* self)
 hot static inline void
 plan_send(Plan* self, int stmt, ReqList* list)
 {
-	bool is_last = (stmt == self->dispatch.stmt_last);
+	auto set = &self->set;
+	auto dispatch = &self->dispatch;
 
 	// first send with snapshot
 	if (self->snapshot && self->state == PLAN_NONE)
 	{
 		// create transactions for all nodes
-		auto router = self->router;
-		for (int i = 0; i < router->set_size; i++)
+		list_foreach(&self->router->list)
 		{
+			auto route = list_at(Route, link);
 			auto trx = trx_create(self->trx_cache);
-			trx_set_code(trx, self->code, self->code_data, &self->cte);
-			dispatch_set(&self->dispatch, i, trx);
+			trx_set(trx, route, self->code, self->code_data, &self->cte);
+			trx_set_set(set, route->order, trx);
 		}
 	}
 
 	// process request list
+	bool is_last = (stmt == dispatch->stmt_last);
 	list_foreach_safe(&list->list)
 	{
-		auto req = list_at(Req, link);
-		auto trx = dispatch_get(&self->dispatch, req->order);
+		auto req   = list_at(Req, link);
+		auto route = req->route;
+		auto trx   = trx_set_get(set, route->order);
 		if (trx == NULL)
 		{
 			trx = trx_create(self->trx_cache);
-			trx_set_code(trx, self->code, self->code_data, &self->cte);
-			dispatch_set(&self->dispatch, req->order, trx);
+			trx_set(trx, route, self->code, self->code_data, &self->cte);
+			trx_set_set(set, route->order, trx);
 		}
 
 		// set transaction per statement node order and add request to the
 		// statement list
-		auto ref = dispatch_stmt_set(&self->dispatch, stmt, req->order, trx);
+		auto ref = dispatch_trx_set(dispatch, stmt, route->order, trx);
 		req_list_move(list, &ref->req_list, req);
 
 		// add request to the transaction queue for execution
@@ -175,11 +184,13 @@ plan_send(Plan* self, int stmt, ReqList* list)
 hot static inline void
 plan_recv(Plan* self, int stmt)
 {
-	Buf* error  = NULL;
-	auto router = self->router;
-	for (int i = 0; i < router->set_size; i++)
+	auto set = &self->set;
+	auto dispatch = &self->dispatch;
+
+	Buf* error = NULL;
+	for (int i = 0; i < set->set_size; i++)
 	{
-		auto trx = dispatch_stmt_get(&self->dispatch, stmt, i);
+		auto trx = dispatch_trx(dispatch, stmt, i);
 		if (trx == NULL)
 			continue;
 		auto ptr = trx_recv(trx);
@@ -191,6 +202,7 @@ plan_recv(Plan* self, int stmt)
 				buf_free(ptr);
 		}
 	}
+
 	if (unlikely(error))
 	{
 		// force to complete active transactions
@@ -198,23 +210,5 @@ plan_recv(Plan* self, int stmt)
 
 		guard_buf(error);
 		msg_error_rethrow(error);
-	}
-}
-
-hot static inline void
-plan_begin(Plan* self)
-{
-	// send BEGIN(Trx*) to nodes
-	auto router = self->router;
-	for (int i = 0; i < router->set_size; i++)
-	{
-		auto trx = dispatch_get(&self->dispatch, i);
-		if (trx == NULL)
-			continue;
-		auto route = router_at(router, i);
-		auto buf = msg_begin(RPC_BEGIN);
-		buf_write(buf, &trx, sizeof(void**));
-		msg_end(buf);
-		channel_write(route->channel, buf);
 	}
 }

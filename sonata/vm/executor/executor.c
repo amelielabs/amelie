@@ -31,7 +31,7 @@ executor_init(Executor* self, Db* db, Router* router)
 	self->router     = router;
 	self->list_count = 0;
 	list_init(&self->list);
-	plan_group_init(&self->group, router);
+	plan_group_init(&self->group);
 	spinlock_init(&self->lock);
 }
 
@@ -40,12 +40,6 @@ executor_free(Executor* self)
 {
 	plan_group_free(&self->group);
 	spinlock_free(&self->lock);
-}
-
-void
-executor_create(Executor* self)
-{
-	plan_group_create(&self->group);
 }
 
 hot void
@@ -65,7 +59,7 @@ executor_send(Executor* self, Plan* plan, int stmt, ReqList* list)
 	self->list_count++;
 
 	// send BEGIN to the related nodes
-	plan_begin(plan);
+	trx_set_begin(&plan->set);
 	spinlock_unlock(&self->lock);
 }
 
@@ -93,6 +87,7 @@ executor_abort(Executor* self)
 
 	// abort all active plans
 	plan_group_reset(&self->group);
+	plan_group_create(&self->group, self->router->list_count);
 
 	// add plans to the list and collect a list of last
 	// completed transactions per node
@@ -107,6 +102,7 @@ static inline void
 executor_commit_start(Executor* self)
 {
 	plan_group_reset(&self->group);
+	plan_group_create(&self->group, self->router->list_count);
 
 	// collect completed plans and get a list of last
 	// completed transactions per node
@@ -126,9 +122,9 @@ executor_commit_end(Executor* self, PlanState state)
 {
 	// for each node, send last prepared Trx*
 	if (state == PLAN_COMMIT)	
-		plan_group_commit(&self->group);
+		trx_set_commit(&self->group.set);
 	else
-		plan_group_abort(&self->group);
+		trx_set_abort(&self->group.set);
 
 	// finilize plans
 	spinlock_lock(&self->lock);
@@ -180,10 +176,10 @@ executor_wal_write(Executor* self)
 		wal_batch_reset(wal_batch);
 		wal_batch_begin(wal_batch, lsn);
 
-		auto router = self->router;
-		for (int i = 0; i < router->set_size; i++)
+		auto set = &plan->set;
+		for (int i = 0; i < set->set_size; i++)
 		{
-			auto trx = dispatch_get(&plan->dispatch, i);
+			auto trx = trx_set_get(set, i);
 			if (trx == NULL)
 				continue;
 			wal_batch_add(wal_batch, &trx->trx.log.log_set);

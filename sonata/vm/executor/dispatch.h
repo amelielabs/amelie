@@ -17,57 +17,41 @@ struct DispatchStmt
 
 struct Dispatch
 {
-	Trx**   set;
-	int     set_size;
-	int     stmt_count;
-	int     stmt_last;
-	Buf     buf;
-	Router* router;
+	int stmt_size;
+	int stmt_count;
+	int stmt_last;
+	Buf stmt;
 };
 
-static inline void
-dispatch_set(Dispatch* self, int order, Trx* trx)
+always_inline static inline DispatchStmt*
+dispatch_stmt(Dispatch* self, int stmt)
 {
-	self->set[order] = trx;
+	auto offset = stmt * self->stmt_size;
+	return (DispatchStmt*)(self->stmt.start + offset);
 }
 
-static inline Trx*
-dispatch_get(Dispatch* self, int order)
+always_inline static inline Trx*
+dispatch_trx(Dispatch* self, int stmt, int order)
 {
-	return self->set[order];
+	auto ref = dispatch_stmt(self, stmt);
+	return ref->set[order];
 }
 
-static inline DispatchStmt*
-dispatch_stmt_at(Dispatch* self, int stmt)
+always_inline static inline DispatchStmt*
+dispatch_trx_set(Dispatch* self, int stmt, int order, Trx* trx)
 {
-	int offset = self->set_size + stmt * (sizeof(DispatchStmt) + self->set_size);
-	return (DispatchStmt*)(self->buf.start + offset);
-}
-
-static inline DispatchStmt*
-dispatch_stmt_set(Dispatch* self, int stmt, int order, Trx* trx)
-{
-	auto ref = dispatch_stmt_at(self, stmt);
+	auto ref = dispatch_stmt(self, stmt);
 	ref->set[order] = trx;
 	return ref;
 }
 
-static inline Trx*
-dispatch_stmt_get(Dispatch* self, int stmt, int order)
-{
-	auto ref = dispatch_stmt_at(self, stmt);
-	return ref->set[order];
-}
-
 static inline void
-dispatch_init(Dispatch* self, Router* router)
+dispatch_init(Dispatch* self)
 {
-	self->set        = NULL;
-	self->set_size   = 0;
 	self->stmt_count = 0;
+	self->stmt_size  = 0;
 	self->stmt_last  = -1;
-	self->router     = router;
-	buf_init(&self->buf);
+	buf_init(&self->stmt);
 }
 
 static inline void
@@ -75,49 +59,36 @@ dispatch_reset(Dispatch* self, ReqCache* cache)
 {
 	for (int i = 0; i < self->stmt_count; i++)
 	{
-		auto stmt = dispatch_stmt_at(self, i);
+		auto stmt = dispatch_stmt(self, i);
 		req_cache_push_list(cache, &stmt->req_list);
 	}
-	self->set        = NULL;
-	self->set_size   = 0;
 	self->stmt_count = 0;
+	self->stmt_size  = 0;
 	self->stmt_last  = -1;
-	buf_reset(&self->buf);
+	buf_reset(&self->stmt);
 }
 
 static inline void
 dispatch_free(Dispatch* self)
 {
-	buf_free(&self->buf);
+	buf_free(&self->stmt);
 }
 
 static inline void
-dispatch_create(Dispatch* self, int stmt_count, int stmt_last)
+dispatch_create(Dispatch* self, int set_size, int stmt_count, int stmt_last)
 {
-	int size_set = sizeof(Trx*) * self->router->set_size;
-	int size = size_set + stmt_count * (sizeof(DispatchStmt) + size_set);
-	buf_reserve(&self->buf, size);
-	memset(self->buf.start, 0, size);
-
-	self->set        = (Trx**)self->buf.start;
-	self->set_size   = size_set;
 	self->stmt_count = stmt_count;
+	self->stmt_size  = set_size * sizeof(Trx*) + sizeof(DispatchStmt);
 	self->stmt_last  = stmt_last;
+	buf_reset(&self->stmt);
+
+	int size = stmt_count * self->stmt_size;
+	buf_reserve(&self->stmt, size);
+	memset(self->stmt.start, 0, size);
+
 	for (int i = 0; i < stmt_count; i++)
 	{
-		auto stmt = dispatch_stmt_at(self, i);
+		auto stmt = dispatch_stmt(self, i);
 		req_list_init(&stmt->req_list);
-	}
-}
-
-hot static inline void
-dispatch_resolve(Dispatch* self, Trx** set)
-{
-	auto router = self->router;
-	for (int i = 0; i < router->set_size; i++)
-	{
-		if (self->set[i] == NULL)
-			continue;
-		set[i] = self->set[i];
 	}
 }

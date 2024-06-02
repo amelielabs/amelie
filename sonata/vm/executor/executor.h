@@ -20,7 +20,6 @@ struct Executor
 
 void executor_init(Executor*, Db*, Router*);
 void executor_free(Executor*);
-void executor_create(Executor*);
 void executor_send(Executor*, Plan*, int, ReqList*);
 void executor_recv(Executor*, Plan*, int);
 void executor_complete(Executor*, Plan*);

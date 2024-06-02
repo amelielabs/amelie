@@ -608,7 +608,7 @@ cmerge_recv(Vm* self, Op* op)
 	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
 
 	// add requests results to the merge
-	auto stmt = dispatch_stmt_at(&self->plan->dispatch, op->d);
+	auto stmt = dispatch_stmt(&self->plan->dispatch, op->d);
 	list_foreach(&stmt->req_list.list)
 	{
 		auto req = list_at(Req, link);
@@ -628,7 +628,7 @@ hot void
 cgroup_merge_recv(Vm* self, Op* op)
 {
 	// [group, stmt]
-	auto stmt = dispatch_stmt_at(&self->plan->dispatch, op->b);
+	auto stmt = dispatch_stmt(&self->plan->dispatch, op->b);
 	if (unlikely(! stmt->req_list.list_count))
 		error("unexpected group list return");
 	
@@ -661,11 +661,10 @@ hot void
 csend(Vm* self, Op* op)
 {
 	// [stmt, start, table, offset]
-	auto req_cache = self->plan->req_cache;
-	auto router    = self->executor->router;
-	auto start     = op->b;
-	auto table     = (Table*)op->c;
-	auto def       = table_def(table);
+	auto plan  = self->plan;
+	auto start = op->b;
+	auto table = (Table*)op->c;
+	auto def   = table_def(table);
 
 	// redistribute rows between nodes
 	ReqList list;
@@ -675,7 +674,7 @@ csend(Vm* self, Op* op)
 	auto data_start = code_data_at(self->code_data, 0);
 	auto data       = code_data_at(self->code_data, op->d);
 
-	Req* map[router->set_size];
+	Req* map[plan->set.set_size];
 	memset(map, 0, sizeof(map));
 
 	data_read_array(&data);
@@ -686,15 +685,15 @@ csend(Vm* self, Op* op)
 		auto hash = row_hash(def, &data);
 
 		// map to node
-		auto order = part_map_get(&table->part_mgr.map, hash);
-		auto req = map[order];
+		auto route = part_map_get(&table->part_mgr.map, hash);
+		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(req_cache);
+			req = req_create(plan->req_cache);
 			req->op    = start;
-			req->order = order;
+			req->route = route;
 			req_list_add(&list, req);
-			map[order] = req;
+			map[route->order] = req;
 		}
 
 		// write u32 offset to req->arg
@@ -714,8 +713,9 @@ csend_first(Vm* self, Op* op)
 	guard(req_list_free, &list);
 
 	// send to the first node
-	auto req = req_create(self->plan->req_cache);
-	req->order = 0;
+	auto plan = self->plan;
+	auto req = req_create(plan->req_cache);
+	req->route = router_first(plan->router);
 	req->op    = op->b;
 	req_list_add(&list, req);
 
@@ -727,18 +727,17 @@ hot void
 csend_all(Vm* self, Op* op)
 {
 	// [stmt, start]
-	auto req_cache = self->plan->req_cache;
-	auto router = self->executor->router;
-
 	ReqList list;
 	req_list_init(&list);
 	guard(req_list_free, &list);
 
 	// send to all nodes
-	for (int i = 0; i < router->set_size; i++)
+	auto plan = self->plan;
+	list_foreach(&plan->router->list)
 	{
-		auto req = req_create(req_cache);
-		req->order = i;
+		auto route = list_at(Route, link);
+		auto req = req_create(plan->req_cache);
+		req->route = route;
 		req->op    = op->b;
 		req_list_add(&list, req);
 	}
@@ -760,7 +759,7 @@ crecv_to(Vm* self, Op* op)
 	// [result, stmt]
 	executor_recv(self->executor, self->plan, op->b);
 
-	auto stmt = dispatch_stmt_at(&self->plan->dispatch, op->b);
+	auto stmt = dispatch_stmt(&self->plan->dispatch, op->b);
 	auto req  = container_of(list_first(&stmt->req_list.list), Req, link);
 	*reg_at(&self->r, op->a) = req->result;
 	req->result.type = VALUE_NONE;

@@ -10,12 +10,12 @@ typedef struct Req Req;
 
 struct Req
 {
-	int   op;
-	int   order;
-	Buf   arg;
-	Value result;
-	List  link_queue;
-	List  link;
+	int    op;
+	Route* route;
+	Buf    arg;
+	Value  result;
+	List   link_queue;
+	List   link;
 };
 
 static inline Req*
@@ -23,7 +23,7 @@ req_allocate(void)
 {
 	auto self = (Req*)so_malloc(sizeof(Req));
 	self->op    = 0;
-	self->order = 0;
+	self->route = NULL;
 	buf_init(&self->arg);
 	value_init(&self->result);
 	list_init(&self->link_queue);
@@ -43,7 +43,7 @@ static inline void
 req_reset(Req* self)
 {
 	self->op    = 0;
-	self->order = 0;
+	self->route = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 	list_init(&self->link_queue);
