@@ -161,8 +161,8 @@ Node*
 node_allocate(NodeConfig* config, Db* db, FunctionMgr* function_mgr)
 {
 	auto self = (Node*)so_malloc(sizeof(Node));
-	self->order  = 0;
 	self->config = NULL;
+	route_init(&self->route, &self->task.channel);
 	trx_list_init(&self->prepared);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);

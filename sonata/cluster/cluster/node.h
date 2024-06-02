@@ -10,7 +10,7 @@ typedef struct Node Node;
 
 struct Node
 {
-	int         order;
+	Route       route;
 	TrxList     prepared;
 	Vm          vm;
 	NodeConfig* config;

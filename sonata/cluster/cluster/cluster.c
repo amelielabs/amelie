@@ -50,7 +50,6 @@ cluster_free(Cluster* self)
 		node_stop(node);
 		node_free(node);
 	}
-	router_free(&self->router);
 }
 
 static inline void
@@ -77,9 +76,10 @@ static void
 cluster_add(Cluster* self, NodeConfig* config)
 {
 	auto node = node_allocate(config, self->db, self->function_mgr);
-	node->order = self->list_count;
 	list_append(&self->list, &node->link);
 	self->list_count++;
+
+	router_add(&self->router, &node->route);
 }
 
 static void
@@ -111,34 +111,24 @@ void
 cluster_open(Cluster* self, bool bootstrap)
 {
 	// precreate or restore nodes
-	if (! bootstrap)
-	{
-		auto nodes = &config()->nodes;
-		if (! var_data_is_set(nodes))
-			return;
-		auto pos = var_data_of(nodes);
-		if (data_is_null(pos))
-			return;
-		data_read_array(&pos);
-		while (! data_read_array_end(&pos))
-		{
-			auto config = node_config_read(&pos);
-			guard(node_config_free, config);
-			cluster_add(self, config);
-		}
-	} else
+	if (bootstrap)
 	{
 		cluster_bootstrap(self);
+		return;
 	}
 
-	// prepare router
-	router_create(&self->router, self->list_count);
-
-	list_foreach(&self->list)
+	auto nodes = &config()->nodes;
+	if (! var_data_is_set(nodes))
+		return;
+	auto pos = var_data_of(nodes);
+	if (data_is_null(pos))
+		return;
+	data_read_array(&pos);
+	while (! data_read_array_end(&pos))
 	{
-		auto node = list_at(Node, link);
-		auto route = router_at(&self->router, node->order);
-		route->channel = &node->task.channel;
+		auto config = node_config_read(&pos);
+		guard(node_config_free, config);
+		cluster_add(self, config);
 	}
 }
 
@@ -156,7 +146,7 @@ cluster_set_partition_map(Cluster* self, PartMgr* part_mgr)
 			error("partition node cannot be found");
 		int i = part->config->min;
 		for (; i < part->config->max; i++)
-			part_map_set(map, i, node->order);
+			part_map_set(map, i, &node->route);
 	}
 }
 
@@ -220,9 +210,6 @@ cluster_create(Cluster* self, NodeConfig* config, bool if_not_exists)
 	}
 	cluster_add(self, config);
 	cluster_save(self);
-
-	// todo: node order?
-	// todo: update router
 }
 
 #if 0

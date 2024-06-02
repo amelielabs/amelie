@@ -206,9 +206,6 @@ system_start(System* self, Str* options, bool bootstrap)
 	// prepare cluster
 	cluster_open(&self->cluster, bootstrap);
 
-	// prepare executor
-	executor_create(&self->executor);
-
 	// create system object and objects from last snapshot
 	db_open(&self->db, &self->catalog_mgr);
 

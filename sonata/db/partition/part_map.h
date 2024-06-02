@@ -12,8 +12,8 @@ typedef struct PartMap PartMap;
 
 struct PartMap
 {
-	int* map;
-	int  map_size;
+	Route** map;
+	int     map_size;
 };
 
 static inline void
@@ -34,19 +34,19 @@ static inline void
 part_map_create(PartMap* self)
 {
 	assert(! self->map);
-	int size = sizeof(int) * PARTITION_MAX;
+	int size = sizeof(Route*) * PARTITION_MAX;
 	self->map      = so_malloc(size);
 	self->map_size = PARTITION_MAX;
 	memset(self->map, 0, size);
 }
 
 hot static inline void
-part_map_set(PartMap* self, int pos, int order)
+part_map_set(PartMap* self, int pos, Route* route)
 {
-	self->map[pos] = order;
+	self->map[pos] = route;
 }
 
-hot static inline int
+hot static inline Route*
 part_map_get(PartMap* self, uint32_t hash)
 {
 	int partition = hash % PARTITION_MAX;
