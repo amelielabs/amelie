@@ -8,15 +8,12 @@
 
 typedef struct AstNodeCreate AstNodeCreate;
 typedef struct AstNodeDrop   AstNodeDrop;
-typedef struct AstNodeAlter  AstNodeAlter;
 
 struct AstNodeCreate
 {
 	Ast  ast;
 	bool if_not_exists;
 	Ast* id;
-	Ast* uri;
-	Ast* type;
 };
 
 struct AstNodeDrop
@@ -24,14 +21,6 @@ struct AstNodeDrop
 	Ast  ast;
 	bool if_exists;
 	Ast* id;
-};
-
-struct AstNodeAlter
-{
-	Ast  ast;
-	bool if_exists;
-	Ast* id;
-	Ast* uri;
 };
 
 static inline AstNodeCreate*
@@ -47,8 +36,6 @@ ast_node_create_allocate(void)
 	self = ast_allocate(0, sizeof(AstNodeCreate));
 	self->if_not_exists = false;
 	self->id            = NULL;
-	self->uri           = NULL;
-	self->type          = NULL;
 	return self;
 }
 
@@ -68,23 +55,5 @@ ast_node_drop_allocate(void)
 	return self;
 }
 
-static inline AstNodeAlter*
-ast_node_alter_of(Ast* ast)
-{
-	return (AstNodeAlter*)ast;
-}
-
-static inline AstNodeAlter*
-ast_node_alter_allocate(void)
-{
-	AstNodeAlter* self;
-	self = ast_allocate(0, sizeof(AstNodeAlter));
-	self->if_exists = false;
-	self->id        = NULL;
-	self->uri       = NULL;
-	return self;
-}
-
 void parse_node_create(Stmt*);
 void parse_node_drop(Stmt*);
-void parse_node_alter(Stmt*);

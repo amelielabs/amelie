@@ -179,9 +179,6 @@ ctl_create_node(System* self, Stmt* stmt)
 		auto config = node_config_allocate();
 		guard(node_config_free, config);
 
-		// type
-		node_config_set_type(config, NODE_COMPUTE);
-
 		// id
 		Uuid id;
 		if (arg->id)
@@ -189,10 +186,6 @@ ctl_create_node(System* self, Stmt* stmt)
 		else
 			uuid_generate(&id, global()->random);
 		node_config_set_id(config, &id);
-
-		// uri
-		if (arg->uri)
-			node_config_set_uri(config, &arg->uri->string);
 
 		cluster_create(&self->cluster, config, arg->if_not_exists);
 		control_save_config();
@@ -223,15 +216,6 @@ ctl_drop_node(System* self, Stmt* stmt)
 	frontend_mgr_unlock(&self->frontend_mgr);
 	if (leave(&e))
 		rethrow();
-}
-
-static void
-ctl_alter_node(System* self, Stmt* stmt)
-{
-	auto arg = ast_node_alter_of(stmt->ast);
-	unused(arg);
-	unused(self);
-	error("unusupported");
 }
 
 static void
@@ -327,9 +311,6 @@ system_ctl(System* self, Session* session, Stmt* stmt)
 		break;
 	case STMT_DROP_NODE:
 		ctl_drop_node(self, stmt);
-		break;
-	case STMT_ALTER_NODE:
-		ctl_alter_node(self, stmt);
 		break;
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self, stmt);

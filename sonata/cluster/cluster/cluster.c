@@ -103,9 +103,6 @@ cluster_bootstrap(Cluster* self)
 		auto config = node_config_allocate();
 		guard(node_config_free, config);
 
-		// set type
-		node_config_set_type(config, NODE_COMPUTE);
-
 		// set node id
 		Uuid id;
 		uuid_generate(&id, global()->random);

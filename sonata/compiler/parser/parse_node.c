@@ -29,7 +29,7 @@
 void
 parse_node_create(Stmt* self)
 {
-	// CREATE NODE [IF NOT EXISTS] [id] [URI uri] [FOR COMPUTE|REPL]
+	// CREATE NODE [IF NOT EXISTS] [id] FOR COMPUTE
 	auto stmt = ast_node_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -39,28 +39,11 @@ parse_node_create(Stmt* self)
 	// id
 	stmt->id = stmt_if(self, KSTRING);
 
-	// URI uri
-	if (stmt_if(self, KURI))
-	{
-		stmt->uri = stmt_if(self, KSTRING);
-		if (! stmt->uri)
-			error("CREATE NODE URI <string> expected");
-	}
-
-	// [FOR COMPUTE|REPL]
-	if (stmt_if(self, KFOR))
-	{
-		stmt->type = stmt_next(self);
-		switch (stmt->type->id) {
-		case KCOMPUTE:
-		case KREPL:
-		case KREPLICATION:
-			break;
-		default:
-			error("CREATE NODE FOR <COMPUTE | REPLICATION> expected");
-			break;
-		}
-	}
+	// FOR COMPUTE
+	if (! stmt_if(self, KFOR))
+		error("CREATE NODE <FOR> expected");
+	if (! stmt_if(self, KCOMPUTE))
+		error("CREATE NODE FOR <COMPUTE> expected");
 }
 
 void
@@ -77,27 +60,4 @@ parse_node_drop(Stmt* self)
 	stmt->id = stmt_if(self, KSTRING);
 	if (! stmt->id)
 		error("DROP NODE <id> expected");
-}
-
-void
-parse_node_alter(Stmt* self)
-{
-	// ALTER NODE [IF EXISTS] id URI uri
-	auto stmt = ast_node_alter_allocate();
-	self->ast = &stmt->ast;
-
-	// if exists
-	stmt->if_exists = parse_if_exists(self);
-
-	// id
-	stmt->id = stmt_if(self, KSTRING);
-	if (! stmt->id)
-		error("ALTER NODE <id> expected");
-
-	// URI uri
-	if (! stmt_if(self, KURI))
-		error("ALTER NODE <URI> expected");
-	stmt->uri = stmt_if(self, KSTRING);
-	if (! stmt->uri)
-		error("ALTER NODE URI <string> expected");
 }

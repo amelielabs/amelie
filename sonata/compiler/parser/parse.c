@@ -166,16 +166,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KALTER:
 	{
-		// ALTER USER | NODE | SCHEMA | TABLE | VIEW
+		// ALTER USER | SCHEMA | TABLE | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
 			parse_user_alter(stmt);
-		} else
-		if (lex_if(lex, KNODE))
-		{
-			stmt->id = STMT_ALTER_NODE;
-			parse_node_alter(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -192,7 +187,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_ALTER_VIEW;
 			parse_view_alter(stmt);
 		} else {
-			error("ALTER <USER|NODE|SCHEMA|TABLE|VIEW> expected");
+			error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
 		}
 		break;
 	}
