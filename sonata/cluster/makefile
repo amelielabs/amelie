@@ -41,10 +41,9 @@ LIB            = libsonata-cluster.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
+                 repl/pusher.o \
                  repl/repl.o \
                  cluster/node.o \
-                 cluster/cluster.o
-#                cluster/backend.o \
                  cluster/cluster.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
