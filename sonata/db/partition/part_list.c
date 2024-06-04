@@ -16,7 +16,7 @@
 #include <sonata_partition.h>
 
 void
-part_mgr_init(PartMgr* self)
+part_list_init(PartList* self)
 {
 	self->reference  = false;
 	self->list_count = 0;
@@ -25,7 +25,7 @@ part_mgr_init(PartMgr* self)
 }
 
 void
-part_mgr_free(PartMgr* self)
+part_list_free(PartList* self)
 {
 	// unref routes
 	part_map_unmap(&self->map);
@@ -41,7 +41,9 @@ part_mgr_free(PartMgr* self)
 }
 
 void
-part_mgr_open(PartMgr* self, bool reference, List* parts, List* indexes)
+part_list_create(PartList* self, bool reference,
+                 List*     parts,
+                 List*     indexes)
 {
 	self->reference = reference;
 
@@ -61,7 +63,7 @@ part_mgr_open(PartMgr* self, bool reference, List* parts, List* indexes)
 }
 
 hot Part*
-part_mgr_find(PartMgr* self, uint64_t id)
+part_list_find(PartList* self, uint64_t id)
 {
 	list_foreach(&self->list)
 	{
@@ -73,7 +75,7 @@ part_mgr_find(PartMgr* self, uint64_t id)
 }
 
 hot Part*
-part_mgr_match(PartMgr* self, Uuid* node)
+part_list_match(PartList* self, Uuid* node)
 {
 	// get first part, if reference or find part by node id
 	if (self->reference)

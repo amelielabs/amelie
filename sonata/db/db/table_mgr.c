@@ -194,7 +194,7 @@ table_mgr_find_partition(TableMgr* self, uint64_t id)
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		auto part  = part_mgr_find(&table->part_mgr, id);
+		auto part  = part_list_find(&table->part_list, id);
 		if (part)
 			return part;
 	}

@@ -11,7 +11,7 @@ typedef struct Table Table;
 struct Table
 {
 	Handle       handle;
-	PartMgr      part_mgr;
+	PartList     part_list;
 	Serial       serial;
 	TableConfig* config;
 };
@@ -19,7 +19,7 @@ struct Table
 static inline void
 table_free(Table* self)
 {
-	part_mgr_free(&self->part_mgr);
+	part_list_free(&self->part_list);
 	if (self->config)
 		table_config_free(self->config);
 	so_free(self);
@@ -30,7 +30,7 @@ table_allocate(TableConfig* config)
 {
 	Table* self = so_malloc(sizeof(Table));
 	self->config = NULL;
-	part_mgr_init(&self->part_mgr);
+	part_list_init(&self->part_list);
 	serial_init(&self->serial);
 	guard(table_free, self);
 	self->config = table_config_copy(config);
@@ -45,9 +45,9 @@ table_allocate(TableConfig* config)
 static inline void
 table_open(Table* self)
 {
-	part_mgr_open(&self->part_mgr, self->config->reference,
-	              &self->config->partitions,
-	              &self->config->indexes);
+	part_list_create(&self->part_list, self->config->reference,
+	                 &self->config->partitions,
+	                 &self->config->indexes);
 }
 
 static inline Table*

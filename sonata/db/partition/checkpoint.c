@@ -78,9 +78,9 @@ checkpoint_add_partition(Checkpoint* self, Part* part)
 }
 
 void
-checkpoint_add(Checkpoint* self, PartMgr* part_mgr)
+checkpoint_add(Checkpoint* self, PartList* part_list)
 {
-	list_foreach(&part_mgr->list)
+	list_foreach(&part_list->list)
 	{
 		auto part = list_at(Part, link);
 		checkpoint_add_partition(self, part);

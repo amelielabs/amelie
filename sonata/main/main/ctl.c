@@ -259,7 +259,7 @@ ctl_checkpoint(System* self, Stmt* stmt)
 		list_foreach(&self->db.table_mgr.mgr.list)
 		{
 			auto table = table_of(list_at(Handle, link));
-			checkpoint_add(&cp, &table->part_mgr);
+			checkpoint_add(&cp, &table->part_list);
 		}
 
 		// run workers and create snapshots

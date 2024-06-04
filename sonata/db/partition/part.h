@@ -12,6 +12,7 @@ struct Part
 {
 	List        indexes;
 	int         indexes_count;
+	Route*      route;
 	PartConfig* config;
 	List        link_cp;
 	List        link;

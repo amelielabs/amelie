@@ -29,6 +29,6 @@ struct Checkpoint
 void checkpoint_init(Checkpoint*);
 void checkpoint_free(Checkpoint*);
 void checkpoint_begin(Checkpoint*, CatalogMgr*, uint64_t, int);
-void checkpoint_add(Checkpoint*, PartMgr*);
+void checkpoint_add(Checkpoint*, PartList*);
 void checkpoint_run(Checkpoint*);
 void checkpoint_wait(Checkpoint*, CheckpointMgr*);

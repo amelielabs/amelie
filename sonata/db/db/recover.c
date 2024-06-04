@@ -62,7 +62,7 @@ recover(Db* self, Uuid* node)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		list_foreach(&table->part_mgr.list)
+		list_foreach(&table->part_list.list)
 		{
 			auto part = list_at(Part, link);
 			if (! uuid_compare(&part->config->node, node))

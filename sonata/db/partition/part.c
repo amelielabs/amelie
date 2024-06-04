@@ -19,6 +19,7 @@ Part*
 part_allocate(PartConfig* config)
 {
 	auto self = (Part*)so_malloc(sizeof(Part));
+	self->route         = NULL;
 	self->config        = NULL;
 	self->indexes_count = 0;
 	list_init(&self->indexes);

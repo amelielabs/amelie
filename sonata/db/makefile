@@ -27,7 +27,7 @@ OBJECTS        = \
                  index/ttree.o \
                  index/tree.o \
                  partition/part.o \
-                 partition/part_mgr.o \
+                 partition/part_list.o \
                  partition/snapshot.o \
                  partition/snapshot_cursor.o \
                  partition/checkpoint_mgr.o \

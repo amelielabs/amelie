@@ -42,7 +42,7 @@ ccursor_open(Vm* self, Op* op)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_mgr_match(&table->part_mgr, self->node);
+	auto part  = part_list_match(&table->part_list, self->node);
 	auto index = part_find(part, &name_index, true);
 	auto def   = index_def(index);
 
@@ -165,7 +165,7 @@ ccursor_prepare(Vm* self, Op* op)
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
 	cursor->def   = table_def(table);
-	cursor->part  = part_mgr_match(&table->part_mgr, self->node);
+	cursor->part  = part_list_match(&table->part_list, self->node);
 	cursor->it    = NULL;
 }
 
@@ -410,7 +410,7 @@ cinsert(Vm* self, Op* op)
 	
 	// find partition
 	auto table  = (Table*)op->a;
-	auto part   = part_mgr_match(&table->part_mgr, self->node);
+	auto part   = part_list_match(&table->part_list, self->node);
 	auto unique = op->b;
 
 	// insert or replace
@@ -685,7 +685,7 @@ csend(Vm* self, Op* op)
 		auto hash = row_hash(def, &data);
 
 		// map to node
-		auto route = part_map_get(&table->part_mgr.map, hash);
+		auto route = part_map_get(&table->part_list.map, hash);
 		auto req = map[route->order];
 		if (req == NULL)
 		{
