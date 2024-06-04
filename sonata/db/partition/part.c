@@ -25,6 +25,7 @@ part_allocate(PartConfig* config)
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
+	hashtable_node_init(&self->link_ht);
 	guard(part_free, self);
 	self->config = part_config_copy(config);
 	unguard();

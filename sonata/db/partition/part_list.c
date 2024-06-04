@@ -16,10 +16,11 @@
 #include <sonata_partition.h>
 
 void
-part_list_init(PartList* self)
+part_list_init(PartList* self, PartMgr* mgr)
 {
 	self->reference  = false;
 	self->list_count = 0;
+	self->mgr        = mgr;
 	list_init(&self->list);
 	part_map_init(&self->map);
 }
@@ -34,6 +35,8 @@ part_list_free(PartList* self)
 	list_foreach_safe(&self->list)
 	{
 		auto part = list_at(Part, link);
+		// unregister partition
+		part_mgr_del(self->mgr, part);
 		part_free(part);
 	}
 	self->list_count = 0;
@@ -59,19 +62,10 @@ part_list_create(PartList* self, bool reference,
 
 		// prepare indexes
 		part_open(part, indexes);
-	}
-}
 
-hot Part*
-part_list_find(PartList* self, uint64_t id)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->config->id == (int64_t)id)
-			return part;
+		// register partition
+		part_mgr_add(self->mgr, part);
 	}
-	return NULL;
 }
 
 hot Part*

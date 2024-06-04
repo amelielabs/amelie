@@ -26,11 +26,11 @@ table_free(Table* self)
 }
 
 static inline Table*
-table_allocate(TableConfig* config)
+table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
 	Table* self = so_malloc(sizeof(Table));
 	self->config = NULL;
-	part_list_init(&self->part_list);
+	part_list_init(&self->part_list, part_mgr);
 	serial_init(&self->serial);
 	guard(table_free, self);
 	self->config = table_config_copy(config);

@@ -10,12 +10,13 @@ typedef struct Part Part;
 
 struct Part
 {
-	List        indexes;
-	int         indexes_count;
-	Route*      route;
-	PartConfig* config;
-	List        link_cp;
-	List        link;
+	List          indexes;
+	int           indexes_count;
+	Route*        route;
+	PartConfig*   config;
+	List          link_cp;
+	List          link;
+	HashtableNode link_ht;
 };
 
 Part*

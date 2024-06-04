@@ -21,12 +21,14 @@ void
 table_mgr_init(TableMgr* self)
 {
 	handle_mgr_init(&self->mgr);
+	part_mgr_init(&self->part_mgr);
 }
 
 void
 table_mgr_free(TableMgr* self)
 {
 	handle_mgr_free(&self->mgr);
+	part_mgr_free(&self->part_mgr);
 }
 
 bool
@@ -46,7 +48,7 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config);
+	auto table = table_allocate(config, &self->part_mgr);
 	guard(table_free, table);
 
 	// save create table operation
@@ -191,12 +193,5 @@ table_mgr_list(TableMgr* self)
 Part*
 table_mgr_find_partition(TableMgr* self, uint64_t id)
 {
-	list_foreach(&self->mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		auto part  = part_list_find(&table->part_list, id);
-		if (part)
-			return part;
-	}
-	return NULL;
+	return part_mgr_find(&self->part_mgr, id);
 }

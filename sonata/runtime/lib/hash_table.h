@@ -43,6 +43,7 @@ static inline void
 hashtable_free(Hashtable* self)
 {
 	buf_free(&self->buf);
+	buf_init(&self->buf);
 }
 
 static inline void
@@ -54,6 +55,12 @@ hashtable_create(Hashtable* self, int to_allocate)
 	buf_advance(&self->buf, size);
 	self->count = 0;
 	self->size  = to_allocate;
+}
+
+static inline bool
+hashtable_created(Hashtable* self)
+{
+	return self->size > 0;
 }
 
 hot static inline void
