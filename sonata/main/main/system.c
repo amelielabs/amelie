@@ -119,31 +119,6 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 }
 
 static void
-system_recover(System* self)
-{
-	// do parallel recover per backend
-	cluster_recover(&self->cluster);
-
-	// wait for completion
-	int complete = 0;
-	int errors   = 0;
-	while (complete < self->cluster.list_count)
-	{
-		auto buf = channel_read(&so_task->channel, -1);
-		auto msg = msg_of(buf);
-		guard(buf_free, buf);
-		complete++;
-		if (msg->id == MSG_ERROR)
-			errors++;
-	}
-	if (errors > 0)
-		error("recovery: failed");
-
-	// replay wals
-	recover_wal(&self->db);
-}
-
-static void
 system_configure(Str* options, bool bootstrap)
 {
 	auto config = config();
@@ -212,8 +187,8 @@ system_start(System* self, Str* options, bool bootstrap)
 	// start backend
 	cluster_start(&self->cluster);
 
-	// recover
-	system_recover(self);
+	// do parallel recover of snapshots and wal
+	cluster_recover(&self->cluster);
 
 	// set tables partition mapping
 	list_foreach(&self->db.table_mgr.mgr.list)

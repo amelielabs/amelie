@@ -141,24 +141,6 @@ cluster_open(Cluster* self, bool bootstrap)
 }
 
 void
-cluster_map(Cluster* self, PartMgr* part_mgr)
-{
-	// create partition map and set each partition range to the node order
-	auto map = &part_mgr->map;
-	part_map_create(map);
-	list_foreach(&part_mgr->list)
-	{
-		auto part  = list_at(Part, link);
-		auto node = cluster_find(self, &part->config->node);
-		if (! node)
-			error("partition node cannot be found");
-		int i = part->config->min;
-		for (; i < part->config->max; i++)
-			part_map_set(map, i, &node->route);
-	}
-}
-
-void
 cluster_start(Cluster* self)
 {
 	list_foreach(&self->list)
@@ -175,18 +157,6 @@ cluster_stop(Cluster* self)
 	{
 		auto node = list_at(Node, link);
 		node_stop(node);
-	}
-}
-
-void
-cluster_recover(Cluster* self)
-{
-	list_foreach(&self->list)
-	{
-		auto node = list_at(Node, link);
-		auto buf = msg_begin(RPC_RECOVER);
-		msg_end(buf);
-		channel_write(&node->task.channel, buf);
 	}
 }
 
@@ -241,6 +211,24 @@ cluster_drop(Cluster* self, Uuid* id, bool if_exists)
 
 	cluster_del(self, node);
 	cluster_save(self);
+}
+
+void
+cluster_map(Cluster* self, PartMgr* part_mgr)
+{
+	// create partition map and set each partition range to the node order
+	auto map = &part_mgr->map;
+	part_map_create(map);
+	list_foreach(&part_mgr->list)
+	{
+		auto part  = list_at(Part, link);
+		auto node = cluster_find(self, &part->config->node);
+		if (! node)
+			error("partition node cannot be found");
+		int i = part->config->min;
+		for (; i < part->config->max; i++)
+			part_map_set(map, i, &node->route);
+	}
 }
 
 Buf*
