@@ -82,6 +82,8 @@ plan_reset(Plan* self)
 	}
 	self->state    = PLAN_NONE;
 	self->snapshot = false;
+	list_init(&self->link_group);
+	list_init(&self->link);
 }
 
 static inline void

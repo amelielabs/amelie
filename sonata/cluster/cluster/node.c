@@ -83,9 +83,8 @@ node_commit(Node* self, Trx* last)
 hot static void
 node_abort(Node* self, Trx* last)
 {
-	// abort all prepared transactions
-	unused(last);
-	trx_list_abort(&self->prepared);
+	// abort all prepared transactions starting from the last one
+	trx_list_abort(&self->prepared, last);
 }
 
 static void

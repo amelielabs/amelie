@@ -70,15 +70,17 @@ trx_list_commit(TrxList* self, Trx* last)
 }
 
 static inline void
-trx_list_abort(TrxList* self)
+trx_list_abort(TrxList* self, Trx* last)
 {
-	// abort all transactions in the list in reverse
-	list_foreach_reverse_safe(&self->list)
+	// abort transactions in the list in reverse
+	list_foreach_reverse_safe_from(&self->list, &last->link)
 	{
 		auto trx = list_at(Trx, link);
 		transaction_abort(&trx->trx);
+
+		list_unlink(&trx->link);
+		self->list_count--;
+
 		trx_cache_push(trx->cache, trx);
 	}
-	self->list_count = 0;
-	list_init(&self->list);
 }
