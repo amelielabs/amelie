@@ -32,28 +32,31 @@
 #include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
-#include <sonata_main.h>
 
 static void
-ddl_create_schema(System* self, Transaction* trx, Stmt* stmt)
+ddl_create_schema(Session* self, Transaction* trx)
 {
-	auto arg = ast_schema_create_of(stmt->ast);
-	schema_mgr_create(&self->db.schema_mgr, trx, arg->config, arg->if_not_exists);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_schema_create_of(stmt->ast);
+	schema_mgr_create(&self->share->db->schema_mgr, trx, arg->config,
+	                  arg->if_not_exists);
 }
 
 static void
-ddl_drop_schema(System* self, Transaction* trx, Stmt* stmt)
+ddl_drop_schema(Session* self, Transaction* trx)
 {
-	auto arg = ast_schema_drop_of(stmt->ast);
-	cascade_schema_drop(&self->db, trx, &arg->name->string, arg->cascade,
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_schema_drop_of(stmt->ast);
+	cascade_schema_drop(self->share->db, trx, &arg->name->string, arg->cascade,
 	                    arg->if_exists);
 }
 
 static void
-ddl_alter_schema(System* self, Transaction* trx, Stmt* stmt)
+ddl_alter_schema(Session* self, Transaction* trx)
 {
-	auto arg = ast_schema_alter_of(stmt->ast);
-	cascade_schema_rename(&self->db, trx, &arg->name->string,
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_schema_alter_of(stmt->ast);
+	cascade_schema_rename(self->share->db, trx, &arg->name->string,
 	                      &arg->name_new->string,
 	                       arg->if_exists);
 }
@@ -72,11 +75,12 @@ ddl_create_partition(TableConfig* table_config, Node* node,
 }
 
 static void
-ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
+ddl_create_table(Session* self, Transaction* trx)
 {
+	auto stmt   = compiler_stmt(&self->compiler);
 	auto arg    = ast_table_create_of(stmt->ast);
 	auto config = arg->config;
-	auto db     = &self->db;
+	auto db     = self->share->db;
 
 	// ensure schema exists and not system
 	auto schema = schema_mgr_find(&db->schema_mgr, &config->schema, true);
@@ -94,12 +98,11 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&config->name));
 
 	// create table partitions
-	auto cluster = &self->cluster;
+	auto cluster = self->share->cluster;
 	if (config->reference)
 	{
 		// reference table require only one partition
 		auto node = container_of(list_first(&cluster->list), Node, link);
-
 		ddl_create_partition(config, node, 0, PARTITION_MAX);
 	} else
 	{
@@ -144,44 +147,47 @@ ddl_create_table(System* self, Transaction* trx, Stmt* stmt)
 }
 
 static void
-ddl_drop_table(System* self, Transaction* trx, Stmt* stmt)
+ddl_drop_table(Session* self, Transaction* trx)
 {
-	auto arg = ast_table_drop_of(stmt->ast);
-	cascade_table_drop(&self->db, trx, &arg->schema, &arg->name,
-	                    arg->if_exists);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_drop_of(stmt->ast);
+	cascade_table_drop(self->share->db, trx, &arg->schema, &arg->name,
+	                   arg->if_exists);
 }
 
 static void
-ddl_alter_table_set_serial(System* self, Stmt* stmt)
+ddl_alter_table_set_serial(Session* self)
 {
-	auto arg = ast_table_alter_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
 
 	// SET SERIAL
-	auto table = table_mgr_find(&self->db.table_mgr, &arg->schema,
+	auto table = table_mgr_find(&self->share->db->table_mgr, &arg->schema,
 	                            &arg->name,
 	                            !arg->if_exists);
 	if (! table)
 		return;
-
 	serial_set(&table->serial, arg->serial->integer);
 }
 
 static void
-ddl_alter_table_rename(System* self, Transaction* trx, Stmt* stmt)
+ddl_alter_table_rename(Session* self, Transaction* trx)
 {
-	auto arg = ast_table_alter_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
+	auto db   = self->share->db;
 
 	// RENAME TO
 
 	// ensure schema exists
-	auto schema = schema_mgr_find(&self->db.schema_mgr, &arg->schema_new, true);
+	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
 	if (! schema->config->create)
 		error("system schema <%.*s> cannot be used to create objects",
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
 	// ensure view with the same name does not exists
-	auto view = view_mgr_find(&self->db.view_mgr, &arg->schema_new,
+	auto view = view_mgr_find(&db->view_mgr, &arg->schema_new,
 	                          &arg->name_new, false);
 	if (unlikely(view))
 		error("view <%.*s> with the same name exists",
@@ -189,37 +195,40 @@ ddl_alter_table_rename(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&arg->name_new));
 
 	// rename table
-	table_mgr_rename(&self->db.table_mgr, trx, &arg->schema, &arg->name,
+	table_mgr_rename(&db->table_mgr, trx, &arg->schema, &arg->name,
 	                 &arg->schema_new, &arg->name_new,
 	                  arg->if_exists);
 }
 
 static void
-ddl_alter_table(System* self, Transaction* trx, Stmt* stmt)
+ddl_alter_table(Session* self, Transaction* trx)
 {
-	auto arg = ast_table_alter_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
 	if (arg->serial)
 	{
-		ddl_alter_table_set_serial(self, stmt);
+		ddl_alter_table_set_serial(self);
 		return;
 	}
-	ddl_alter_table_rename(self, trx, stmt);
+	ddl_alter_table_rename(self, trx);
 }
 
 static void
-ddl_create_view(System* self, Transaction* trx, Stmt* stmt)
+ddl_create_view(Session* self, Transaction* trx)
 {
-	auto arg = ast_view_create_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_view_create_of(stmt->ast);
+	auto db   = self->share->db;
 
 	// ensure schema exists
-	auto schema = schema_mgr_find(&self->db.schema_mgr, &arg->config->schema, true);
+	auto schema = schema_mgr_find(&db->schema_mgr, &arg->config->schema, true);
 	if (! schema->config->create)
 		error("system schema <%.*s> cannot be used to create objects",
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
 	// ensure table with the same name does not exists
-	auto table = table_mgr_find(&self->db.table_mgr, &arg->config->schema,
+	auto table = table_mgr_find(&db->table_mgr, &arg->config->schema,
 	                            &arg->config->name, false);
 	if (unlikely(table))
 		error("table <%.*s> with the same name exists",
@@ -227,32 +236,35 @@ ddl_create_view(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&arg->config->name));
 
 	// create view
-	view_mgr_create(&self->db.view_mgr, trx, arg->config,
+	view_mgr_create(&db->view_mgr, trx, arg->config,
 	                 arg->if_not_exists);
 }
 
 static void
-ddl_drop_view(System* self, Transaction* trx, Stmt* stmt)
+ddl_drop_view(Session* self, Transaction* trx)
 {
-	auto arg = ast_view_drop_of(stmt->ast);
-	view_mgr_drop(&self->db.view_mgr, trx, &arg->schema, &arg->name,
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_view_drop_of(stmt->ast);
+	view_mgr_drop(&self->share->db->view_mgr, trx, &arg->schema, &arg->name,
 	              arg->if_exists);
 }
 
 static void
-ddl_alter_view(System* self, Transaction* trx, Stmt* stmt)
+ddl_alter_view(Session* self, Transaction* trx)
 {
-	auto arg = ast_view_alter_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_view_alter_of(stmt->ast);
+	auto db   = self->share->db;
 
 	// ensure schema exists
-	auto schema = schema_mgr_find(&self->db.schema_mgr, &arg->schema_new, true);
+	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
 	if (! schema->config->create)
 		error("system schema <%.*s> cannot be used to create objects",
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
 	// ensure table with the same name does not exists
-	auto table = table_mgr_find(&self->db.table_mgr, &arg->schema_new,
+	auto table = table_mgr_find(&db->table_mgr, &arg->schema_new,
 	                            &arg->name_new, false);
 	if (unlikely(table))
 		error("table <%.*s> with the same name exists",
@@ -260,18 +272,16 @@ ddl_alter_view(System* self, Transaction* trx, Stmt* stmt)
 		      str_of(&arg->name_new));
 
 	// rename view
-	view_mgr_rename(&self->db.view_mgr, trx, &arg->schema, &arg->name,
+	view_mgr_rename(&db->view_mgr, trx, &arg->schema, &arg->name,
 	                &arg->schema_new, &arg->name_new,
 	                 arg->if_exists);
 }
 
 void
-system_ddl(System* self, Session* session, Stmt* stmt)
+session_execute_ddl(Session* self)
 {
-	(void)session;
-
-	// get exclusive session lock
-	frontend_mgr_lock(&self->frontend_mgr);
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
 
 	Transaction trx;
 	transaction_init(&trx);
@@ -285,33 +295,34 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 		// begin
 		transaction_begin(&trx);
 
+		auto stmt = compiler_stmt(&self->compiler);
 		switch (stmt->id) {
 		case STMT_CREATE_SCHEMA:
-			ddl_create_schema(self, &trx, stmt);
+			ddl_create_schema(self, &trx);
 			break;
 		case STMT_DROP_SCHEMA:
-			ddl_drop_schema(self, &trx, stmt);
+			ddl_drop_schema(self, &trx);
 			break;
 		case STMT_ALTER_SCHEMA:
-			ddl_alter_schema(self, &trx, stmt);
+			ddl_alter_schema(self, &trx);
 			break;
 		case STMT_CREATE_TABLE:
-			ddl_create_table(self, &trx, stmt);
+			ddl_create_table(self, &trx);
 			break;
 		case STMT_DROP_TABLE:
-			ddl_drop_table(self, &trx, stmt);
+			ddl_drop_table(self, &trx);
 			break;
 		case STMT_ALTER_TABLE:
-			ddl_alter_table(self, &trx, stmt);
+			ddl_alter_table(self, &trx);
 			break;
 		case STMT_CREATE_VIEW:
-			ddl_create_view(self, &trx, stmt);
+			ddl_create_view(self, &trx);
 			break;
 		case STMT_DROP_VIEW:
-			ddl_drop_view(self, &trx, stmt);
+			ddl_drop_view(self, &trx);
 			break;
 		case STMT_ALTER_VIEW:
-			ddl_alter_view(self, &trx, stmt);
+			ddl_alter_view(self, &trx);
 			break;
 		default:
 			assert(0);
@@ -326,7 +337,7 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 			{
 				wal_batch_begin(&wal_batch, lsn);
 				wal_batch_add(&wal_batch, &trx.log.log_set);
-				wal_write(&self->db.wal, &wal_batch);
+				wal_write(&self->share->db->wal, &wal_batch);
 			}
 			config_lsn_set(lsn);
 		}
@@ -337,14 +348,8 @@ system_ddl(System* self, Session* session, Stmt* stmt)
 		wal_batch_free(&wal_batch);
 	}
 
-	// unlock sessions
-	frontend_mgr_unlock(&self->frontend_mgr);
-
 	if (leave(&e))
 	{
-		// rpc by unlock changes code
-		so_self()->error.code = ERROR;
-
 		transaction_abort(&trx);
 		transaction_free(&trx);
 

@@ -46,9 +46,9 @@ OBJECTS        = \
                  frontend/frontend.o \
                  session/explain.o \
                  session/session.o \
+                 session/utility.o \
+                 session/ddl.o \
                  main/system.o \
-                 main/ctl.o \
-                 main/ddl.o \
                  main/main.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

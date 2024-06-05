@@ -32,37 +32,38 @@
 #include <sonata_cluster.h>
 #include <sonata_frontend.h>
 #include <sonata_session.h>
-#include <sonata_main.h>
 
 static Buf*
-ctl_show(System* self, Stmt* stmt)
+ctl_show(Session* self)
 {
-	auto arg  = ast_show_of(stmt->ast);
-	auto name = &arg->expr->string;
-	Buf* buf  = NULL;
+	auto stmt  = compiler_stmt(&self->compiler);
+	auto arg   = ast_show_of(stmt->ast);
+	auto name  = &arg->expr->string;
+	auto share = self->share;
+	Buf* buf   = NULL;
 	if (str_compare_raw(name, "users", 5))
-		buf = user_mgr_list(&self->user_mgr);
+		buf = user_mgr_list(share->user_mgr);
 	else
 	if (str_compare_raw(name, "nodes", 5))
-		buf = cluster_list(&self->cluster);
+		buf = cluster_list(share->cluster);
 	else
 	if (str_compare_raw(name, "cluster", 7))
-		buf = cluster_list(&self->cluster);
+		buf = cluster_list(share->cluster);
 	else
 	if (str_compare_raw(name, "wal", 3))
-		buf = wal_show(&self->db.wal);
+		buf = wal_show(&share->db->wal);
 	else
 	if (str_compare_raw(name, "schemas", 7))
-		buf = schema_mgr_list(&self->db.schema_mgr);
+		buf = schema_mgr_list(&share->db->schema_mgr);
 	else
 	if (str_compare_raw(name, "functions", 9))
-		buf = function_mgr_list(&self->function_mgr);
+		buf = function_mgr_list(share->function_mgr);
 	else
 	if (str_compare_raw(name, "tables", 6))
-		buf = table_mgr_list(&self->db.table_mgr);
+		buf = table_mgr_list(&share->db->table_mgr);
 	else
 	if (str_compare_raw(name, "views", 5))
-		buf = view_mgr_list(&self->db.view_mgr);
+		buf = view_mgr_list(&share->db->view_mgr);
 	else
 	if (str_compare_raw(name, "all", 3))
 		buf = config_list(global()->config);
@@ -82,11 +83,10 @@ ctl_show(System* self, Stmt* stmt)
 }
 
 static void
-ctl_set(Session* self, Stmt* stmt)
+ctl_set(Session* self)
 {
-	unused(self);
-
-	auto arg = ast_set_of(stmt->ast);
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_set_of(stmt->ast);
 	auto name = &arg->name->string;
 
 	// find variable
@@ -99,6 +99,10 @@ ctl_set(Session* self, Stmt* stmt)
 	if (unlikely(! var_is(var, VAR_R)))
 		error("SET '%.*s': variable is read-only", str_size(name),
 		      str_of(name));
+
+	// upgrade to exclusive lock, if var requires config update
+	if (! var_is(var, VAR_E))
+		session_lock(self, SESSION_LOCK_EXCLUSIVE);
 
 	// set value
 	auto value = arg->value;
@@ -142,40 +146,58 @@ ctl_set(Session* self, Stmt* stmt)
 }
 
 static void
-ctl_create_user(System* self, Stmt* stmt)
+ctl_user(Session* self)
 {
-	auto arg = ast_user_create_of(stmt->ast);
-	user_mgr_create(&self->user_mgr, arg->config, arg->if_not_exists);
-	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
-}
+	auto user_mgr = self->share->user_mgr;
 
-static void
-ctl_drop_user(System* self, Stmt* stmt)
-{
-	auto arg = ast_user_drop_of(stmt->ast);
-	user_mgr_drop(&self->user_mgr, &arg->name->string, arg->if_exists);
-	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
-}
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
 
-static void
-ctl_alter_user(System* self, Stmt* stmt)
-{
-	auto arg = ast_user_alter_of(stmt->ast);
-	user_mgr_alter(&self->user_mgr, arg->config);
-	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
-}
-
-static void
-ctl_create_node(System* self, Stmt* stmt)
-{
-	auto arg = ast_node_create_of(stmt->ast);
-
-	// get exclusive session lock
-	frontend_mgr_lock(&self->frontend_mgr);
-
-	Exception e;
-	if (enter(&e))
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_CREATE_USER:
 	{
+		auto arg = ast_user_create_of(stmt->ast);
+		user_mgr_create(user_mgr, arg->config, arg->if_not_exists);
+		break;
+	}
+	case STMT_DROP_USER:
+	{
+		auto arg = ast_user_drop_of(stmt->ast);
+		user_mgr_drop(user_mgr, &arg->name->string, arg->if_exists);
+		break;
+	}
+	case STMT_ALTER_USER:
+	{
+		auto arg = ast_user_alter_of(stmt->ast);
+		user_mgr_alter(user_mgr, arg->config);
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+
+	// downgrade back to shared lock to avoid deadlocking
+	session_lock(self, SESSION_LOCK);
+
+	// sync frontends user caches
+	frontend_mgr_sync(self->share->frontend_mgr, &user_mgr->cache);
+}
+
+static void
+ctl_node(Session* self)
+{
+	auto cluster = self->share->cluster;
+
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_CREATE_NODE:
+	{
+		auto arg = ast_node_create_of(stmt->ast);
 		auto config = node_config_allocate();
 		guard(node_config_free, config);
 
@@ -187,62 +209,50 @@ ctl_create_node(System* self, Stmt* stmt)
 			uuid_generate(&id, global()->random);
 		node_config_set_id(config, &id);
 
-		cluster_create(&self->cluster, config, arg->if_not_exists);
-		control_save_config();
+		cluster_create(cluster, config, arg->if_not_exists);
+		break;
 	}
-
-	frontend_mgr_unlock(&self->frontend_mgr);
-	if (leave(&e))
-		rethrow();
-}
-
-static void
-ctl_drop_node(System* self, Stmt* stmt)
-{
-	auto arg = ast_node_drop_of(stmt->ast);
-
-	// get exclusive session lock
-	frontend_mgr_lock(&self->frontend_mgr);
-
-	Exception e;
-	if (enter(&e))
+	case STMT_DROP_NODE:
 	{
+		auto arg = ast_node_drop_of(stmt->ast);
 		Uuid id;
 		uuid_from_string(&id, &arg->id->string);
-		cluster_drop(&self->cluster, &id, arg->if_exists);
-		control_save_config();
+		cluster_drop(cluster, &id, arg->if_exists);
+		break;
+	}
+	default:
+		abort();
+		break;
 	}
 
-	frontend_mgr_unlock(&self->frontend_mgr);
-	if (leave(&e))
-		rethrow();
+	control_save_config();
 }
 
 static void
-ctl_gc(System* self)
+ctl_gc(Session* self)
 {
-	checkpoint_mgr_gc(&self->db.checkpoint_mgr);
-
-	wal_gc(&self->db.wal, config_checkpoint());
+	auto share = self->share;
+	checkpoint_mgr_gc(&share->db->checkpoint_mgr);
+	wal_gc(&share->db->wal, config_checkpoint());
 }
 
 static void
-ctl_checkpoint(System* self, Stmt* stmt)
+ctl_checkpoint(Session* self)
 {
-	auto arg = ast_checkpoint_of(stmt->ast);
+	auto stmt  = compiler_stmt(&self->compiler);
+	auto arg   = ast_checkpoint_of(stmt->ast);
+	auto share = self->share;
 
-	// get an exclusive session lock
-	frontend_mgr_lock(&self->frontend_mgr);
-	bool locked = true;
+	// todo: concurrent checkpoint lock required
+
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
 
 	// prepare checkpoint
 	uint64_t lsn = config_lsn();
 	if (lsn == config_checkpoint())
-	{
-		frontend_mgr_unlock(&self->frontend_mgr);
 		return;
-	}
-	int workers = self->cluster.list_count;
+	int workers = share->cluster->list_count;
 	if (arg->workers)
 		workers = arg->workers->integer;
 
@@ -253,10 +263,11 @@ ctl_checkpoint(System* self, Stmt* stmt)
 	if (enter(&e))
 	{
 		// prepare checkpoint
-		checkpoint_begin(&cp, &self->catalog_mgr, lsn, workers);
+		checkpoint_begin(&cp, share->catalog_mgr, lsn, workers);
 
 		// prepare partitions
-		list_foreach(&self->db.table_mgr.mgr.list)
+		auto db = share->db;
+		list_foreach(&db->table_mgr.mgr.list)
 		{
 			auto table = table_of(list_at(Handle, link));
 			checkpoint_add(&cp, &table->part_list);
@@ -266,58 +277,52 @@ ctl_checkpoint(System* self, Stmt* stmt)
 		checkpoint_run(&cp);
 
 		// unlock frontends
-		frontend_mgr_unlock(&self->frontend_mgr);
-		locked = false;
+		session_unlock(self);
 
 		// wait for completion
-		checkpoint_wait(&cp, &self->db.checkpoint_mgr);
+		checkpoint_wait(&cp, &db->checkpoint_mgr);
 	}
-
-	if (locked)
-		frontend_mgr_unlock(&self->frontend_mgr);
 
 	checkpoint_free(&cp);
 	if (leave(&e))
-	{
-		// rpc by unlock changes code
-		so_self()->error.code = ERROR;
 		rethrow();
-	}
 
 	// run system cleanup
 	ctl_gc(self);
 }
 
-Buf*
-system_ctl(System* self, Session* session, Stmt* stmt)
+void
+session_execute_utility(Session* self)
 {
+	Buf* buf  = NULL;
+	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
 	case STMT_SHOW:
-		return ctl_show(self, stmt);
+		buf = ctl_show(self);
+		break;
 	case STMT_SET:
-		ctl_set(session, stmt);
+		ctl_set(self);
 		break;
 	case STMT_CREATE_USER:
-		ctl_create_user(self, stmt);
-		break;
 	case STMT_DROP_USER:
-		ctl_drop_user(self, stmt);
-		break;
 	case STMT_ALTER_USER:
-		ctl_alter_user(self, stmt);
+		ctl_user(self);
 		break;
 	case STMT_CREATE_NODE:
-		ctl_create_node(self, stmt);
-		break;
 	case STMT_DROP_NODE:
-		ctl_drop_node(self, stmt);
+		ctl_node(self);
 		break;
 	case STMT_CHECKPOINT:
-		ctl_checkpoint(self, stmt);
+		ctl_checkpoint(self);
 		break;
 	default:
-		system_ddl(self, session, stmt);
+		session_execute_ddl(self);
 		break;
 	}
-	return NULL;
+
+	if (buf)
+	{
+		guard_buf(buf);
+		body_add_buf(&self->client->reply.content, buf);
+	}
 }

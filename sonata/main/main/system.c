@@ -80,7 +80,10 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->cluster      = &self->cluster;
+	share->frontend_mgr = &self->frontend_mgr;
 	share->function_mgr = &self->function_mgr;
+	share->user_mgr     = &self->user_mgr;
+	share->catalog_mgr  = &self->catalog_mgr;
 	share->db           = &self->db;
 	return self;
 }
@@ -280,18 +283,28 @@ system_stop(System* self)
 }
 
 static void
+system_lock(System* self)
+{
+	frontend_mgr_lock(&self->frontend_mgr);
+}
+
+static void
+system_unlock(System* self)
+{
+	frontend_mgr_unlock(&self->frontend_mgr);
+}
+
+static void
 system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
 	switch (rpc->id) {
-	case RPC_CTL:
-	{
-		Session* session = rpc_arg_ptr(rpc, 0);
-		Stmt* stmt = rpc_arg_ptr(rpc, 1);
-		Buf** buf = rpc_arg_ptr(rpc, 2);
-		*buf = system_ctl(self, session, stmt);
+	case RPC_LOCK:
+		system_lock(self);
 		break;
-	}
+	case RPC_UNLOCK:
+		system_unlock(self);
+		break;
 	case RPC_SHOW_USERS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);

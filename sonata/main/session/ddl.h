@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void system_ddl(System*, Session*, Stmt*);
+void session_execute_ddl(Session*);

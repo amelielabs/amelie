@@ -22,6 +22,18 @@ struct Global
 
 // control
 static inline void
+control_lock(void)
+{
+	rpc(global()->control->system, RPC_LOCK, 0);
+}
+
+static inline void
+control_unlock(void)
+{
+	rpc(global()->control->system, RPC_UNLOCK, 0);
+}
+
+static inline void
 control_save_config(void)
 {
 	global()->control->save_config(global()->control->arg);
