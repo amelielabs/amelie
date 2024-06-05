@@ -161,6 +161,37 @@ system_configure(Str* options, bool bootstrap)
 		logger_close(logger);
 }
 
+static void
+system_recover(System* self)
+{
+	// ask each node to recover partitions
+	list_foreach(&self->cluster.list)
+	{
+		auto node = list_at(Node, link);
+		auto buf = msg_begin(RPC_RECOVER);
+		msg_end(buf);
+		channel_write(&node->task.channel, buf);
+	}
+
+	// wait for completion
+	int complete = 0;
+	int errors   = 0;
+	while (complete < self->cluster.list_count)
+	{
+		auto buf = channel_read(&so_task->channel, -1);
+		auto msg = msg_of(buf);
+		guard(buf_free, buf);
+		complete++;
+		if (msg->id == MSG_ERROR)
+			errors++;
+	}
+	if (errors > 0)
+		error("recovery: failed");
+
+	// replay wals
+	recover_wal(&self->db);
+}
+
 void
 system_start(System* self, Str* options, bool bootstrap)
 {
@@ -188,7 +219,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	cluster_start(&self->cluster);
 
 	// do parallel recover of snapshots and wal
-	cluster_recover(&self->cluster);
+	system_recover(self);
 
 	// set tables partition mapping
 	list_foreach(&self->db.table_mgr.mgr.list)

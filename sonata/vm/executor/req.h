@@ -11,9 +11,9 @@ typedef struct Req Req;
 struct Req
 {
 	int    op;
-	Route* route;
 	Buf    arg;
 	Value  result;
+	Route* route;
 	List   link_queue;
 	List   link;
 };

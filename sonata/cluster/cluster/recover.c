@@ -31,33 +31,3 @@
 #include <sonata_repl.h>
 #include <sonata_cluster.h>
 
-void
-cluster_recover(Cluster* self)
-{
-	// recover partitions in parallel
-	list_foreach(&self->list)
-	{
-		auto node = list_at(Node, link);
-		auto buf = msg_begin(RPC_RECOVER);
-		msg_end(buf);
-		channel_write(&node->task.channel, buf);
-	}
-
-	// wait for completion
-	int complete = 0;
-	int errors   = 0;
-	while (complete < self->list_count)
-	{
-		auto buf = channel_read(&so_task->channel, -1);
-		auto msg = msg_of(buf);
-		guard(buf_free, buf);
-		complete++;
-		if (msg->id == MSG_ERROR)
-			errors++;
-	}
-	if (errors > 0)
-		error("recovery: failed");
-
-	// replay wals
-	recover_wal(self->db);
-}
