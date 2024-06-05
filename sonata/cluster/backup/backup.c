@@ -122,24 +122,35 @@ backup_prepare_state(Backup* self)
 	encode_map_end(buf);
 }
 
-void
+static void
 backup_prepare(Backup* self)
 {
 	auto db = self->db;
 
-	// create backup state
-	backup_prepare_state(self);
+	// take exclusive lock
+	control_lock();
 
-	// create new wal
-	wal_rotate(&db->wal, 0);
+	Exception e;
+	if (enter(&e))
+	{
+		// create backup state
+		backup_prepare_state(self);
 
-	// create wal slot
-	wal_slot_set(&self->wal_slot, 0);
-	wal_add(&db->wal, &self->wal_slot);
+		// create new wal
+		wal_rotate(&db->wal, 0);
 
-	// add checkpoint snapshot
-	id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);
-	self->checkpoint_snapshot = 0;
+		// create wal slot
+		wal_slot_set(&self->wal_slot, 0);
+		wal_add(&db->wal, &self->wal_slot);
+
+		// add checkpoint snapshot
+		id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);
+		self->checkpoint_snapshot = 0;
+	}
+
+	control_unlock();
+	if (leave(&e))
+	{ }
 }
 
 static void
@@ -195,12 +206,12 @@ backup_main(void* arg)
 	Exception e;
 	if (enter(&e))
 	{
+		// create backup state
+		backup_prepare(self);
+
 		auto client = self->client;
 		auto tcp = &client->tcp;
 		tcp_attach(tcp);
-
-		// create backup state
-		rpc(global()->control->system, RPC_BACKUP, 1, self);
 
 		// send backup state
 		auto reply = &client->reply;

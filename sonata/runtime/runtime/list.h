@@ -103,4 +103,9 @@ list_pop(List* self)
 	     _i != list && (_i_copy = _i->prev); \
 	     _i = _i_copy)
 
+#define list_foreach_reverse_safe_from(list, link) \
+	for (typeof(list) _i_copy, _i = (link); \
+	     _i != list && (_i_copy = _i->prev); \
+	     _i = _i_copy)
+
 #define list_at(type, link) container_of(_i, type, link)

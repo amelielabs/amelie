@@ -21,6 +21,5 @@ struct Backup
 
 void backup_init(Backup*, Db*);
 void backup_free(Backup*);
-void backup_prepare(Backup*);
 void backup_run(Backup*, Client*);
 void backup(Db*, Client*);
