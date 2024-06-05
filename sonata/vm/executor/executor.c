@@ -174,7 +174,7 @@ executor_wal_write(Executor* self)
 		uint64_t lsn = config_lsn() + 1;
 
 		wal_batch_reset(wal_batch);
-		wal_batch_begin(wal_batch, lsn);
+		wal_batch_begin(wal_batch, lsn, 0);
 
 		auto set = &plan->set;
 		for (int i = 0; i < set->set_size; i++)

@@ -335,7 +335,7 @@ session_execute_ddl(Session* self)
 			uint64_t lsn = config_lsn() + 1;
 			if (var_int_of(&config()->wal))
 			{
-				wal_batch_begin(&wal_batch, lsn);
+				wal_batch_begin(&wal_batch, lsn, WAL_UTILITY);
 				wal_batch_add(&wal_batch, &trx.log.log_set);
 				wal_write(&self->share->db->wal, &wal_batch);
 			}

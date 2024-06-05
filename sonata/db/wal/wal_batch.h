@@ -9,6 +9,11 @@
 typedef struct WalWrite WalWrite;
 typedef struct WalBatch WalBatch;
 
+enum
+{
+	WAL_UTILITY = 1
+};
+
 struct WalWrite
 {
 	uint32_t crc;
@@ -16,6 +21,7 @@ struct WalWrite
 	uint32_t size;
 	uint32_t count;
 	uint32_t offset;
+	uint8_t  flags;
 } packed;
 
 struct WalBatch
@@ -51,11 +57,12 @@ wal_batch_reset(WalBatch* self)
 }
 
 static inline void
-wal_batch_begin(WalBatch* self, uint64_t lsn)
+wal_batch_begin(WalBatch* self, uint64_t lsn, int flags)
 {
 	auto header = &self->header;
-	header->lsn  = lsn;
-	header->size = sizeof(self->header);
+	header->lsn   = lsn;
+	header->size  = sizeof(self->header);
+	header->flags = flags;
 	iov_add(&self->iov, header, sizeof(self->header));
 }
 
