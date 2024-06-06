@@ -30,7 +30,6 @@ executor_init(Executor* self, Db* db, Router* router)
 	self->db         = db;
 	self->router     = router;
 	self->list_count = 0;
-	self->wal_write  = true;
 	list_init(&self->list);
 	plan_group_init(&self->group);
 	spinlock_init(&self->lock);
@@ -41,12 +40,6 @@ executor_free(Executor* self)
 {
 	plan_group_free(&self->group);
 	spinlock_free(&self->lock);
-}
-
-void
-executor_enable_wal(Executor* self, bool enabled)
-{
-	self->wal_write = enabled;
 }
 
 hot void
@@ -170,19 +163,11 @@ executor_wal_write(Executor* self)
 	list_foreach(&self->group.list)
 	{
 		auto plan = list_at(Plan, link_group);
-		if (! self->wal_write)
-		{
-			config_lsn_next();
-			continue;
-		}
-
-		// get next lsn
-		uint64_t lsn = config_lsn() + 1;
-
-		wal_batch_reset(wal_batch);
-		wal_batch_begin(wal_batch, lsn, 0);
-
 		auto set = &plan->set;
+
+		// wal write (disabled during recovery)
+		wal_batch_reset(wal_batch);
+		wal_batch_begin(wal_batch, 0);
 		for (int i = 0; i < set->set_size; i++)
 		{
 			auto trx = trx_set_get(set, i);
@@ -190,17 +175,8 @@ executor_wal_write(Executor* self)
 				continue;
 			wal_batch_add(wal_batch, &trx->trx.log.log_set);
 		}
-
-		// wal write
 		if (wal_batch->header.count > 0)
-		{
-			auto rotate_ready = wal_write(wal, wal_batch);
-			if (rotate_ready)
-				wal_rotate(wal, 0);
-		}
-
-		// update lsn globally
-		config_lsn_set(lsn);
+			wal_write(wal, wal_batch);
 	}
 }
 

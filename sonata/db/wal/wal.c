@@ -19,6 +19,7 @@
 void
 wal_init(Wal* self)
 {
+	self->enabled = true;
 	self->current = NULL;
 	self->slots_count = 0;
 	mutex_init(&self->lock);
@@ -46,16 +47,9 @@ wal_rotate_ready(Wal* self, uint64_t wm)
 	return !self->current || self->current->file.size >= wm;
 }
 
-void
-wal_rotate(Wal* self, uint64_t wm)
+static void
+wal_swap(Wal* self)
 {
-	mutex_lock(&self->lock);
-	if (! wal_rotate_ready(self, wm))
-	{
-		mutex_unlock(&self->lock);
-		return;
-	}
-
 	uint64_t next_lsn = config_lsn() + 1;
 
 	// create new wal file
@@ -73,16 +67,13 @@ wal_rotate(Wal* self, uint64_t wm)
 			wal_file_close(file);
 			wal_file_free(file);
 		}
-		mutex_unlock(&self->lock);
 		rethrow();
 	}
 
 	// add to the list and set as current
 	auto file_prev = self->current;
 	self->current = file;
-
 	id_mgr_add(&self->list, next_lsn);
-	mutex_unlock(&self->lock);
 
 	// sync and close prev file
 	if (file_prev)
@@ -91,6 +82,14 @@ wal_rotate(Wal* self, uint64_t wm)
 		wal_file_close(file_prev);
 		wal_file_free(file_prev);
 	}
+}
+
+void
+wal_rotate(Wal* self)
+{
+	mutex_lock(&self->lock);
+	guard(mutex_unlock, &self->lock);
+	wal_swap(self);
 }
 
 static int
@@ -197,18 +196,40 @@ wal_open(Wal* self)
 		file_seek_to_end(&self->current->file);
 	} else
 	{
-		wal_rotate(self, 0);
+		wal_rotate(self);
 	}
 }
 
-hot bool
+void
+wal_enable(Wal* self, bool enabled)
+{
+	mutex_lock(&self->lock);
+	self->enabled = enabled;
+	mutex_unlock(&self->lock);
+}
+
+hot void
 wal_write(Wal* self, WalBatch* batch)
 {
 	mutex_lock(&self->lock);
 	guard(mutex_unlock, &self->lock);
 
+	if (! self->enabled)
+	{
+		config_lsn_next();
+		return;
+	}
+
+	uint64_t next_lsn = config_lsn() + 1;
+	batch->header.lsn = next_lsn;
+	// todo: crc
+
+	// create new wal file if needed
+	if (wal_rotate_ready(self, var_int_of(&config()->wal_rotate_wm)))
+		wal_swap(self);
+
 	// write wal file
-	// todo: truncate on error
+		// todo: truncate on error
 
 	// [header][rows meta][rows]
 	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);
@@ -219,16 +240,15 @@ wal_write(Wal* self, WalBatch* batch)
 		               log_set->iov.iov_count);
 	}
 
+	// update lsn globally
+	config_lsn_set(next_lsn);
+
 	// notify pending slots
 	list_foreach(&self->slots)
 	{
 		auto slot = list_at(WalSlot, link);
 		wal_slot_signal(slot, batch->header.lsn);
 	}
-
-	// return true if wal is ready to be rotated
-	auto wm = var_int_of(&config()->wal_rotate_wm);
-	return wal_rotate_ready(self, wm);
 }
 
 void

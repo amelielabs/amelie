@@ -11,6 +11,7 @@ typedef struct Wal Wal;
 struct Wal
 {
 	Mutex    lock;
+	bool     enabled;
 	IdMgr    list;
 	List     slots;
 	int      slots_count;
@@ -20,9 +21,10 @@ struct Wal
 void wal_init(Wal*);
 void wal_free(Wal*);
 void wal_open(Wal*);
-void wal_rotate(Wal*, uint64_t);
+void wal_rotate(Wal*);
 void wal_gc(Wal*, uint64_t);
-bool wal_write(Wal*, WalBatch*);
+void wal_enable(Wal*, bool);
+void wal_write(Wal*, WalBatch*);
 void wal_add(Wal*, WalSlot*);
 void wal_del(Wal*, WalSlot*);
 void wal_attach(Wal*, WalSlot*);

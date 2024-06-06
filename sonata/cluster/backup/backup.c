@@ -137,7 +137,7 @@ backup_prepare(Backup* self)
 		backup_prepare_state(self);
 
 		// create new wal
-		wal_rotate(&db->wal, 0);
+		wal_rotate(&db->wal);
 
 		// create wal slot
 		wal_slot_set(&self->wal_slot, 0);

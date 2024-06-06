@@ -57,10 +57,11 @@ wal_batch_reset(WalBatch* self)
 }
 
 static inline void
-wal_batch_begin(WalBatch* self, uint64_t lsn, int flags)
+wal_batch_begin(WalBatch* self, int flags)
 {
 	auto header = &self->header;
-	header->lsn   = lsn;
+	header->crc   = 0;
+	header->lsn   = 0;
 	header->size  = sizeof(self->header);
 	header->flags = flags;
 	iov_add(&self->iov, header, sizeof(self->header));
