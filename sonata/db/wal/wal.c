@@ -19,7 +19,6 @@
 void
 wal_init(Wal* self)
 {
-	self->enabled = true;
 	self->current = NULL;
 	self->slots_count = 0;
 	mutex_init(&self->lock);
@@ -200,21 +199,13 @@ wal_open(Wal* self)
 	}
 }
 
-void
-wal_enable(Wal* self, bool enabled)
-{
-	mutex_lock(&self->lock);
-	self->enabled = enabled;
-	mutex_unlock(&self->lock);
-}
-
 hot void
 wal_write(Wal* self, WalBatch* batch)
 {
 	mutex_lock(&self->lock);
 	guard(mutex_unlock, &self->lock);
 
-	if (! self->enabled)
+	if (! var_int_of(&config()->wal))
 	{
 		config_lsn_next();
 		return;

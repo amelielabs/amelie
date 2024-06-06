@@ -206,8 +206,6 @@ recover_log(Db* self, WalWrite* write)
 		for (auto i = write->count; i > 0; i--)
 			recover_cmd(self, &trx, &meta, &data);
 
-		// todo: wal write
-
 		// commit
 		transaction_commit(&trx);
 

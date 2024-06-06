@@ -191,13 +191,8 @@ system_recover(System* self)
 	if (errors > 0)
 		error("recovery: failed");
 
-	// disable wal write during wal replay
-	wal_enable(&self->db.wal, false);
-
 	// replay wals
 	recover_wal(&self->db);
-
-	wal_enable(&self->db.wal, var_int_of(&config()->wal));
 }
 
 void
