@@ -30,6 +30,7 @@ executor_init(Executor* self, Db* db, Router* router)
 	self->db         = db;
 	self->router     = router;
 	self->list_count = 0;
+	self->wal_write  = true;
 	list_init(&self->list);
 	plan_group_init(&self->group);
 	spinlock_init(&self->lock);
@@ -40,6 +41,12 @@ executor_free(Executor* self)
 {
 	plan_group_free(&self->group);
 	spinlock_free(&self->lock);
+}
+
+void
+executor_enable_wal(Executor* self, bool enabled)
+{
+	self->wal_write = enabled;
 }
 
 hot void
@@ -158,13 +165,12 @@ hot void
 executor_wal_write(Executor* self)
 {
 	auto wal = &self->db->wal;
-	auto wal_enabled = var_int_of(&config()->wal);
 	auto wal_batch = &self->group.wal_batch;
 
 	list_foreach(&self->group.list)
 	{
 		auto plan = list_at(Plan, link_group);
-		if (! wal_enabled)
+		if (! self->wal_write)
 		{
 			config_lsn_next();
 			continue;

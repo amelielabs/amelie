@@ -192,7 +192,12 @@ system_recover(System* self)
 		error("recovery: failed");
 
 	// replay wals
+	auto executor = &self->executor;
+	executor_enable_wal(executor, false);
+
 	recover_wal(&self->db);
+
+	executor_enable_wal(executor, var_int_of(&config()->wal));
 }
 
 void

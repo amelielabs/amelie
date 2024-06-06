@@ -29,5 +29,4 @@
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 #include <sonata_repl.h>
-#include <sonata_cluster.h>
 
