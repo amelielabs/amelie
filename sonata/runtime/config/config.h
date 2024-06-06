@@ -35,7 +35,6 @@ struct Config
 	Var  wal_sync_on_write;
 	// replication
 	Var  repl;
-	Var  repl_role;
 	Var  repl_primary;
 	Var  repl_reconnect_ms;
 	// state
@@ -45,6 +44,7 @@ struct Config
 	Var  checkpoint;
 	// state persistent
 	Var  nodes;
+	Var  replicas;
 	Var  users;
 	// testing
 	Var  test_bool;

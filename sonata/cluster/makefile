@@ -41,6 +41,8 @@ LIB            = libsonata-cluster.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \
+                 repl/streamer.o \
+                 repl/replica_mgr.o \
                  repl/repl.o \
                  cluster/node.o \
                  cluster/cluster.o

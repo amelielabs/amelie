@@ -99,7 +99,6 @@ config_prepare(Config* self)
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                &self->wal_sync_on_write,       NULL,        false            },
 		// replication
 		{ "repl",                    VAR_BOOL,   VAR_C,                &self->repl,                    0,           false            },
-		{ "repl_role",               VAR_STRING, VAR_C,                &self->repl_role,               "primary",   0                },
 		{ "repl_primary",            VAR_STRING, VAR_C,                &self->repl_primary,            NULL,        0                },
 		{ "repl_reconnect_ms",       VAR_INT,    VAR_C|VAR_R,          &self->repl_reconnect_ms,       NULL,        3000             },
 		// state
@@ -109,6 +108,7 @@ config_prepare(Config* self)
 		{ "checkpoint",              VAR_INT,    VAR_E,                &self->checkpoint,              NULL,        0                },
 		// state persistent
 		{ "nodes",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->nodes,                   NULL,        0                },
+		{ "replicas",                VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->replicas,                NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->users,                   NULL,        0                },
 		// testing
 		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,    &self->test_bool,               NULL,        false            },
