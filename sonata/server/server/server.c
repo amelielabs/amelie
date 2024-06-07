@@ -134,6 +134,9 @@ server_listen_add(Server* self, ServerConfig* config)
 static void
 server_listen(Server* self)
 {
+	if (! self->config_count)
+		error("server: <listen> is not defined");
+
 	// prepare listen objects according to the config
 	list_foreach(&self->config)
 	{
@@ -197,10 +200,12 @@ server_free(Server* self)
 }
 
 void
-server_start(Server* self, ServerEvent on_connect, void* arg)
+server_start(Server*     self,
+             ServerEvent on_connect,
+             void*       on_connect_arg)
 {
 	self->on_connect     = on_connect;
-	self->on_connect_arg = arg;
+	self->on_connect_arg = on_connect_arg;
 
 	// listen for incoming clients
 	server_listen_configure(self);

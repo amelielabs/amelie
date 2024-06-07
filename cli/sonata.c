@@ -16,7 +16,7 @@ client_on_write(char* ptr, size_t len, size_t nmemb, void* arg)
 }
 
 static int
-client(int argc, char** argv)
+client(char* url)
 {
 	CURL* curl = curl_easy_init();
 	if (curl == NULL)
@@ -25,7 +25,7 @@ client(int argc, char** argv)
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 0);
 
 	CURLcode code;
-	code = curl_easy_setopt(curl, CURLOPT_URL, "localhost:3485");
+	code = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if (code != CURLE_OK)
 	{
 		curl_easy_cleanup(curl);
@@ -79,16 +79,22 @@ client(int argc, char** argv)
 static int
 server(int argc, char** argv)
 {
+	if (argc != 3)
+	{
+		printf("usage: sonata server <path>\n");
+		return EXIT_FAILURE;
+	}
+
 	Main main;
 	main_init(&main);
 
 	Str directory;
 	str_init(&directory);
-	str_set_cstr(&directory, "./t");
+	str_set_cstr(&directory, argv[2]);
 
 	Str config;
 	str_init(&config);
-	char options[] = "{ \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"frontends\": 3, \"shards\": 6 }";
+	char options[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
 	str_set_cstr(&config, options);
 
 	int rc = main_start(&main, &directory, &config, NULL);
@@ -99,7 +105,7 @@ server(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	client(argc, argv);
+	client("localhost:3485");
 
 	main_stop(&main);
 	main_free(&main);
@@ -109,16 +115,22 @@ server(int argc, char** argv)
 static int
 server_backup(int argc, char** argv)
 {
+	if (argc != 3)
+	{
+		printf("usage: sonata backup <path>\n");
+		return EXIT_FAILURE;
+	}
+
 	Main main;
 	main_init(&main);
 
 	Str directory;
 	str_init(&directory);
-	str_set_cstr(&directory, "./t");
+	str_set_cstr(&directory, argv[2]);
 
 	Str config;
 	str_init(&config);
-	char options[] = "{ \"log_to_stdout\": true, \"listen\": [{ \"host\": \"*\", \"port\": 3485 }], \"frontends\": 3, \"shards\": 6 }";
+	char options[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
 	str_set_cstr(&config, options);
 
 	Str backup;
@@ -132,8 +144,6 @@ server_backup(int argc, char** argv)
 		main_free(&main);
 		return EXIT_FAILURE;
 	}
-
-	/*client(argc, argv);*/
 
 	main_stop(&main);
 	main_free(&main);
@@ -149,5 +159,8 @@ main(int argc, char* argv[])
 	if (argc >= 2 && !strcmp(argv[1], "backup"))
 		return server_backup(argc, argv);
 
-	return client(argc, argv);
+	char* url = "localhost:3485";
+	if (argc >= 2)
+		url = argv[1];
+	return client(url);
 }

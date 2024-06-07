@@ -42,6 +42,26 @@ typedef struct
 	Main* self;
 } MainArgs;
 
+static void
+main_prepare_listen(void)
+{
+	auto listen = &config()->listen;
+
+	Str listen_default;
+	str_set_cstr(&listen_default, "[{\"host\": \"*\", \"port\": 3485}]");
+
+	Buf data;
+	buf_init(&data);
+	guard_buf(&data);
+
+	Json json;
+	json_init(&json);
+	guard(json_free, &json);
+	json_parse(&json, &listen_default, &data);
+
+	var_data_set_buf(listen, &data);
+}
+
 static bool
 main_prepare(Main* self, MainArgs* args)
 {
@@ -59,6 +79,9 @@ main_prepare(Main* self, MainArgs* args)
 
 	// prepare default configuration
 	config_prepare(config);
+
+	// set default server listen
+	main_prepare_listen();
 
 	// set directory
 	char path[PATH_MAX];
