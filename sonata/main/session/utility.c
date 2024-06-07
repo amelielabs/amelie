@@ -44,6 +44,9 @@ ctl_show(Session* self)
 	if (str_compare_raw(name, "users", 5))
 		buf = user_mgr_list(share->user_mgr);
 	else
+	if (str_compare_raw(name, "replicas", 8))
+		buf = replica_mgr_list(&share->repl->replica_mgr);
+	else
 	if (str_compare_raw(name, "nodes", 5))
 		buf = cluster_list(share->cluster);
 	else
@@ -186,6 +189,48 @@ ctl_user(Session* self)
 }
 
 static void
+ctl_replica(Session* self)
+{
+	auto replica_mgr = &self->share->repl->replica_mgr;
+
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_CREATE_REPLICA:
+	{
+		auto arg = ast_replica_create_of(stmt->ast);
+		auto config = replica_config_allocate();
+		guard(node_config_free, config);
+
+		// id
+		Uuid id;
+		uuid_from_string(&id, &arg->id->string);
+		replica_config_set_id(config, &id);
+
+		// uri
+		replica_config_set_uri(config, &arg->uri->string);
+		replica_mgr_create(replica_mgr, config, arg->if_not_exists);
+		break;
+	}
+	case STMT_DROP_REPLICA:
+	{
+		auto arg = ast_replica_drop_of(stmt->ast);
+		Uuid id;
+		uuid_from_string(&id, &arg->id->string);
+		replica_mgr_drop(replica_mgr, &id, arg->if_exists);
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+
+	control_save_config();
+}
+
+static void
 ctl_node(Session* self)
 {
 	auto cluster = self->share->cluster;
@@ -307,6 +352,10 @@ session_execute_utility(Session* self)
 	case STMT_DROP_USER:
 	case STMT_ALTER_USER:
 		ctl_user(self);
+		break;
+	case STMT_CREATE_REPLICA:
+	case STMT_DROP_REPLICA:
+		ctl_replica(self);
 		break;
 	case STMT_CREATE_NODE:
 	case STMT_DROP_NODE:

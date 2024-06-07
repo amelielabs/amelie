@@ -75,6 +75,10 @@ show functions
   "argc": 0
 }, {
   "schema": "system",
+  "name": "replicas",
+  "argc": 0
+}, {
+  "schema": "system",
   "name": "nodes",
   "argc": 0
 }, {
@@ -134,6 +138,10 @@ select system.functions()
 }, {
   "schema": "system",
   "name": "users",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "replicas",
   "argc": 0
 }, {
   "schema": "system",

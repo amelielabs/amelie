@@ -137,7 +137,8 @@ replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 	wal_add(&self->db->wal, &replica->wal_slot);
 
 	// start streamer
-	replica_start(replica);
+	if (var_int_of(&config()->repl))
+		replica_start(replica);
 }
 
 void
@@ -158,7 +159,9 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 	self->list_count--;
 	replica_mgr_save(self);
 
-	replica_stop(replica);
+	// stop streamer
+	if (var_int_of(&config()->repl))
+		replica_stop(replica);
 
 	// unregister wal slot
 	wal_del(&self->db->wal, &replica->wal_slot);

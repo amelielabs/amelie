@@ -14,15 +14,16 @@ struct System
 	// vm
 	FunctionMgr function_mgr;
 	// repl
-	// db
-	Db          db;
+	Repl        repl;
 	// executor
 	Executor    executor;
 	Cluster     cluster;
 	FrontendMgr frontend_mgr;
+	// db
+	Db          db;
 	// server
-	UserMgr     user_mgr;
 	Server      server;
+	UserMgr     user_mgr;
 	// config state
 	CatalogMgr  catalog_mgr;
 	Control     control;

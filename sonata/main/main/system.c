@@ -71,7 +71,7 @@ system_create(void)
 	db_init(&self->db);
 
 	// replication
-	//repl_init(&self->repl, &self->db, &self->cluster.node_mgr);
+	repl_init(&self->repl, &self->db);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -79,6 +79,7 @@ system_create(void)
 	// prepare shared context (shared between frontends)
 	auto share = &self->share;
 	share->executor     = &self->executor;
+	share->repl         = &self->repl;
 	share->cluster      = &self->cluster;
 	share->frontend_mgr = &self->frontend_mgr;
 	share->function_mgr = &self->function_mgr;
@@ -91,7 +92,7 @@ system_create(void)
 void
 system_free(System* self)
 {
-	//repl_free(&self->repl);
+	repl_free(&self->repl);
 	cluster_free(&self->cluster);
 	executor_free(&self->executor);
 	db_free(&self->db);
@@ -244,7 +245,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
-	// repl_open(&self->repl);
+	repl_open(&self->repl);
 
 	log("");
 	config_print(config());
@@ -253,14 +254,12 @@ system_start(System* self, Str* options, bool bootstrap)
 	// start server
 	server_start(&self->server, system_on_server_connect, self);
 
-#if 0
 	// start replication
 	if (var_int_of(&config()->repl))
 	{
 		var_int_set(&config()->repl, false);
 		repl_start(&self->repl);
 	}
-#endif
 }
 
 void
@@ -270,7 +269,7 @@ system_stop(System* self)
 	server_stop(&self->server);
 
 	// stop replication
-	//repl_stop(&self->repl);
+	repl_stop(&self->repl);
 
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
@@ -309,6 +308,12 @@ system_rpc(Rpc* rpc, void* arg)
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
 		*buf = user_mgr_list(&self->user_mgr);
+		break;
+	}
+	case RPC_SHOW_REPLICAS:
+	{
+		Buf** buf = rpc_arg_ptr(rpc, 0);
+		*buf = replica_mgr_list(&self->repl.replica_mgr);
 		break;
 	}
 	case RPC_SHOW_NODES:

@@ -2,13 +2,13 @@ start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "1
 connect E0 S0 localhost:3485
 # test: create table statement parsing
 create
-{"code": 1, "msg": "CREATE <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected"}
 create junk
-{"code": 1, "msg": "CREATE <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected"}
 create unique
-{"code": 1, "msg": "CREATE <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected"}
 create unique table
-{"code": 1, "msg": "CREATE <USER|NODE|SCHEMA|TABLE|VIEW> expected"}
+{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected"}
 create table
 {"code": 1, "msg": "CREATE TABLE <name> expected"}
 create table "junk_name"
