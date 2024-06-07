@@ -19,7 +19,7 @@ struct Timer
 	int           interval;
 	TimerFunction function;
 	void*         function_arg;
-	void*         clock;
+	void*         mgr;
 };
 
 struct TimerMgr
@@ -93,7 +93,7 @@ timer_init(Timer* self, TimerFunction function, void* arg,
 	self->interval     = interval;
 	self->function     = function;
 	self->function_arg = arg;
-	self->clock        = NULL;
+	self->mgr          = NULL;
 }
 
 static inline int
@@ -108,7 +108,7 @@ timer_stop(Timer* self)
 {
 	if (! self->active)
 		return;
-	timer_mgr_remove(self->clock, self);
+	timer_mgr_remove(self->mgr, self);
 }
 
 static inline void

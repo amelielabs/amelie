@@ -98,7 +98,7 @@ timer_mgr_add(TimerMgr* self, Timer* timer)
 	int count = self->timers_count + 1;
 	if (self->timers == NULL || count >= self->timers_max)
 	{
-		int   timers_max = self->timers_max*  2;
+		int   timers_max = self->timers_max * 2;
 		void* timers = so_realloc_nothrow(self->timers, timers_max * sizeof(Timer*));
 		if (unlikely(timers == NULL))
 			return -1;
@@ -110,7 +110,7 @@ timer_mgr_add(TimerMgr* self, Timer* timer)
 	timer->seq     = self->timers_seq++;
 	timer->timeout = self->time_ms + timer->interval;
 	timer->active  = true;
-	timer->clock   = clock;
+	timer->mgr     = self;
 	qsort(self->timers, count, sizeof(Timer*), timer_mgr_cmp);
 	self->timers_count = count;
 	return 0;
