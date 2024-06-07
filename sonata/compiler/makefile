@@ -41,6 +41,7 @@ OBJECTS        = \
                  parser/parse_system.o \
                  parser/parse_user.o \
                  parser/parse_replica.o \
+                 parser/parse_repl.o \
                  parser/parse_node.o \
                  parser/parse_schema.o \
                  parser/parse_table.o \

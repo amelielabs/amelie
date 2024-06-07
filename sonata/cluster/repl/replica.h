@@ -17,11 +17,12 @@ struct Replica
 };
 
 static inline void
-replica_free(Replica* replica)
+replica_free(Replica* self)
 {
-	if (replica->config)
-		replica_config_free(replica->config);
-	so_free(replica);
+	if (self->config)
+		replica_config_free(self->config);
+	streamer_free(&self->streamer);
+	so_free(self);
 }
 
 static inline Replica*

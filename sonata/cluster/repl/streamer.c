@@ -233,7 +233,6 @@ streamer_free(Streamer* self)
 	if (self->on_complete)
 		condition_free(self->on_complete);
 	task_free(&self->task);
-	so_free(self);
 }
 
 void

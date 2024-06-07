@@ -55,8 +55,8 @@ static inline void
 parse_show(Stmt* self)
 {
 	// SHOW name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
+	auto name = stmt_next_shadow(self);
+	if (name->id != KNAME)
 		error("SHOW <name> expected");
 	auto stmt = ast_show_allocate(name);
 	self->ast = &stmt->ast;
@@ -66,8 +66,8 @@ static inline void
 parse_set(Stmt* self)
 {
 	// SET name TO INT|STRING
-	auto name = stmt_if(self, KNAME);
-	if (! name)
+	auto name = stmt_next_shadow(self);
+	if (name->id != KNAME)
 		error("SET <name> expected");
 	// TO
 	if (! stmt_if(self, KTO))

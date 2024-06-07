@@ -161,6 +161,21 @@ func_replicas(Vm*       vm,
 }
 
 static void
+func_repl(Vm*       vm,
+          Function* func,
+          Value*    result,
+          int       argc,
+          Value**   argv)
+{
+	unused(vm);
+	unused(argv);
+	function_validate_argc(func, argc);
+	Buf* buf;
+	rpc(global()->control->system, RPC_SHOW_REPL, 1, &buf);
+	value_set_buf(result, buf);
+}
+
+static void
 func_nodes(Vm*       vm,
            Function* func,
            Value*    result,
@@ -254,24 +269,26 @@ func_setup(FunctionMgr* mgr)
 	} def[] =
 	{
 		// public
-		{ "public", "has",        (FunctionMain)func_has,        2 },
-		{ "public", "set",        (FunctionMain)func_set,        3 },
-		{ "public", "unset",      (FunctionMain)func_unset,      2 },
-		{ "public", "sizeof",     (FunctionMain)func_sizeof,     1 },
-		{ "public", "string",     (FunctionMain)func_string,     1 },
-		{ "public", "json",       (FunctionMain)func_json,       1 },
-		{ "public", "error",      (FunctionMain)func_error,      1 },
+		{ "public", "has",         (FunctionMain)func_has,        2 },
+		{ "public", "set",         (FunctionMain)func_set,        3 },
+		{ "public", "unset",       (FunctionMain)func_unset,      2 },
+		{ "public", "sizeof",      (FunctionMain)func_sizeof,     1 },
+		{ "public", "string",      (FunctionMain)func_string,     1 },
+		{ "public", "json",        (FunctionMain)func_json,       1 },
+		{ "public", "error",       (FunctionMain)func_error,      1 },
 		// system
-		{ "system", "config",     (FunctionMain)func_config,     0 },
-		{ "system", "users",      (FunctionMain)func_users,      0 },
-		{ "system", "replicas",   (FunctionMain)func_replicas,   0 },
-		{ "system", "nodes",      (FunctionMain)func_nodes,      0 },
-		{ "system", "schemas",    (FunctionMain)func_schemas,    0 },
-		{ "system", "functions",  (FunctionMain)func_functions,  0 },
-		{ "system", "tables",     (FunctionMain)func_tables,     0 },
-		{ "system", "views",      (FunctionMain)func_views,      0 },
-		{ "system", "wal",        (FunctionMain)func_wal,        0 },
-		{  NULL,     NULL,         NULL,                         0 }
+		{ "system", "config",      (FunctionMain)func_config,     0 },
+		{ "system", "users",       (FunctionMain)func_users,      0 },
+		{ "system", "replicas",    (FunctionMain)func_replicas,   0 },
+		{ "system", "repl",        (FunctionMain)func_repl,       0 },
+		{ "system", "replication", (FunctionMain)func_repl,       0 },
+		{ "system", "nodes",       (FunctionMain)func_nodes,      0 },
+		{ "system", "schemas",     (FunctionMain)func_schemas,    0 },
+		{ "system", "functions",   (FunctionMain)func_functions,  0 },
+		{ "system", "tables",      (FunctionMain)func_tables,     0 },
+		{ "system", "views",       (FunctionMain)func_views,      0 },
+		{ "system", "wal",         (FunctionMain)func_wal,        0 },
+		{  NULL,     NULL,          NULL,                         0 }
 	};
 	for (int i = 0; def[i].name; i++)
 	{

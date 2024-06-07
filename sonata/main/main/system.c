@@ -316,6 +316,12 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = replica_mgr_list(&self->repl.replica_mgr);
 		break;
 	}
+	case RPC_SHOW_REPL:
+	{
+		Buf** buf = rpc_arg_ptr(rpc, 0);
+		*buf = repl_show(&self->repl);
+		break;
+	}
 	case RPC_SHOW_NODES:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);

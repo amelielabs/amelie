@@ -129,3 +129,29 @@ repl_promote(Repl* self, Str* primary_id)
 
 	log("replication: switch to primary");
 }
+
+Buf*
+repl_show(Repl* self)
+{
+	// map
+	auto buf = buf_begin();
+	encode_map(buf);
+
+	// active
+	encode_raw(buf, "active", 6);
+	encode_bool(buf, var_int_of(&config()->repl));
+
+	// role
+	encode_raw(buf, "role", 4);
+	encode_cstr(buf, repl_role_of(self->role));
+
+	// primary
+	encode_raw(buf, "primary", 7);
+	if (str_empty(&config()->repl_primary.string))
+		encode_null(buf);
+	else
+		encode_string(buf, &config()->repl_primary.string);
+
+	encode_map_end(buf);
+	return buf_end(buf);
+}

@@ -53,6 +53,10 @@ ctl_show(Session* self)
 	if (str_compare_raw(name, "cluster", 7))
 		buf = cluster_list(share->cluster);
 	else
+	if (str_compare_raw(name, "repl", 4) ||
+	    str_compare_raw(name, "replication", 11))
+		buf = repl_show(share->repl);
+	else
 	if (str_compare_raw(name, "wal", 3))
 		buf = wal_show(&share->db->wal);
 	else
@@ -274,6 +278,43 @@ ctl_node(Session* self)
 }
 
 static void
+ctl_repl(Session* self)
+{
+	auto repl = self->share->repl;
+
+	// upgrade to exclusive lock
+	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_START_REPL:
+	case STMT_STOP_REPL:
+	{
+		auto arg = ast_repl_ctl_of(stmt->ast);
+		if (arg->start)
+			repl_start(repl);
+		else
+			repl_stop(repl);
+		break;
+	}
+	case STMT_PROMOTE:
+	{
+		auto arg = ast_repl_promote_of(stmt->ast);
+		Str* primary_id = NULL;
+		if (arg->id)
+			primary_id = &arg->id->string;
+		repl_promote(repl, primary_id);
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+
+	control_save_config();
+}
+
+static void
 ctl_gc(Session* self)
 {
 	auto share = self->share;
@@ -361,9 +402,15 @@ session_execute_utility(Session* self)
 	case STMT_DROP_NODE:
 		ctl_node(self);
 		break;
+	case STMT_START_REPL:
+	case STMT_STOP_REPL:
+	case STMT_PROMOTE:
+		ctl_repl(self);
+		break;
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self);
 		break;
+
 	default:
 		session_execute_ddl(self);
 		break;

@@ -26,3 +26,4 @@ void repl_open(Repl*);
 void repl_start(Repl*);
 void repl_stop(Repl*);
 void repl_promote(Repl*, Str*);
+Buf* repl_show(Repl*);

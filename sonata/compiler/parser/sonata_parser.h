@@ -30,6 +30,7 @@
 #include "parser/parse_config.h"
 #include "parser/parse_user.h"
 #include "parser/parse_replica.h"
+#include "parser/parse_repl.h"
 #include "parser/parse_node.h"
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"

@@ -92,6 +92,38 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_set(stmt);
 		break;
 
+	case KPROMOTE:
+		// PROMOTE id | RESET
+		stmt->id = STMT_PROMOTE;
+		parse_repl_promote(stmt);
+		break;
+
+	case KSTART:
+		// START REPL
+		if (lex_if(lex, KREPL) ||
+		    lex_if(lex, KREPLICATION))
+		{
+			stmt->id = STMT_START_REPL;
+			parse_repl_start(stmt);
+		} else
+		{
+			error("START <REPL> expected");
+		}
+		break;
+
+	case KSTOP:
+		// STOP REPL
+		if (lex_if(lex, KREPL) ||
+		    lex_if(lex, KREPLICATION))
+		{
+			stmt->id = STMT_STOP_REPL;
+			parse_repl_stop(stmt);
+		} else
+		{
+			error("STOP <REPL> expected");
+		}
+		break;
+
 	case KCHECKPOINT:
 		// CHECKPOINT
 		stmt->id = STMT_CHECKPOINT;

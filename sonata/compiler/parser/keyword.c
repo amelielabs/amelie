@@ -73,7 +73,6 @@ static Keyword keywords_e[] =
 {
 	{ KEXPLAIN,               "explain",               7  },
 	{ KEXISTS,                "exists",                6  },
-	{ KEXEC,                  "exec",                  4  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -181,6 +180,7 @@ static Keyword keywords_r[] =
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
 	{ KREFERENCE,             "reference",             9  },
+	{ KRESET,                 "reset",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 

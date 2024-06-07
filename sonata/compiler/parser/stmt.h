@@ -14,6 +14,9 @@ typedef enum
 	STMT_UNDEF,
 	STMT_SHOW,
 	STMT_SET,
+	STMT_START_REPL,
+	STMT_STOP_REPL,
+	STMT_PROMOTE,
 	STMT_CHECKPOINT,
 	STMT_CREATE_USER,
 	STMT_CREATE_REPLICA,
@@ -112,6 +115,9 @@ stmt_is_utility(Stmt* self)
 	switch (self->id) {
 	case STMT_SHOW:
 	case STMT_SET:
+	case STMT_START_REPL:
+	case STMT_STOP_REPL:
+	case STMT_PROMOTE:
 	case STMT_CHECKPOINT:
 	case STMT_CREATE_USER:
 	case STMT_CREATE_REPLICA:
