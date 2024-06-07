@@ -25,6 +25,7 @@ struct Config
 	Var  tls_cert;
 	Var  tls_key;
 	Var  listen;
+	Var  listen_uri;
 	// cluster
 	Var  frontends;
 	Var  shards;

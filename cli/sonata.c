@@ -105,7 +105,7 @@ server(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	client("localhost:3485");
+	client(str_of(&main.config.listen_uri.string));
 
 	main_stop(&main);
 	main_free(&main);
@@ -115,9 +115,9 @@ server(int argc, char** argv)
 static int
 server_backup(int argc, char** argv)
 {
-	if (argc != 3)
+	if (argc != 4)
 	{
-		printf("usage: sonata backup <path>\n");
+		printf("usage: sonata backup <path> <uri>\n");
 		return EXIT_FAILURE;
 	}
 
@@ -135,7 +135,7 @@ server_backup(int argc, char** argv)
 
 	Str backup;
 	str_init(&backup);
-	str_set_cstr(&backup, "127.0.0.1:3485");
+	str_set_cstr(&backup, argv[3]);
 
 	int rc = main_start(&main, &directory, &config, &backup);
 	if (rc == -1)

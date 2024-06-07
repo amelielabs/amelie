@@ -154,6 +154,21 @@ server_listen(Server* self)
 }
 
 static void
+server_listen_set_uri(Server* self)
+{
+	// set listen_uri for cli
+	auto listen_uri = &config()->listen_uri;
+	auto first = container_of(self->config.next, ServerConfig, link);
+	char uri[128];
+	if (str_compare_raw(&first->host, "*", 1))
+		snprintf(uri, sizeof(uri), "localhost:%d", (int)first->port);
+	else
+		snprintf(uri, sizeof(uri), "%.*s:%d", str_size(&first->host),
+		         str_of(&first->host), (int)first->port);
+	var_string_set_raw(listen_uri, uri, strlen(uri));
+}
+
+static void
 server_listen_configure(Server* self)
 {
 	// listen is not defined or null
@@ -210,6 +225,7 @@ server_start(Server*     self,
 	// listen for incoming clients
 	server_listen_configure(self);
 	server_listen(self);
+	server_listen_set_uri(self);
 }
 
 void

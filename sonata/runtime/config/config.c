@@ -89,6 +89,7 @@ config_prepare(Config* self)
 		{ "tls_key",                 VAR_STRING, VAR_C,                &self->tls_key,                 NULL,        0                },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                &self->tls_ca,                  NULL,        0                },
 		{ "listen",                  VAR_DATA,   VAR_C,                &self->listen,                  NULL,        0                },
+		{ "listen_uri",              VAR_STRING, VAR_E|VAR_H,          &self->listen_uri,              NULL,        0                },
 		// cluster
 		{ "frontends",               VAR_INT,    VAR_C,                &self->frontends,               NULL,        1                },
 		{ "shards",                  VAR_INT,    VAR_C,                &self->shards,                  NULL,        1                },
