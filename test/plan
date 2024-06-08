@@ -68,3 +68,8 @@ group executor
 test cte_expr
 test cte
 test abort
+
+# backup
+directory backup
+group backup
+test backup

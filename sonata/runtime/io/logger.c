@@ -24,7 +24,7 @@ void
 logger_init(Logger* self)
 {
 	self->enable    = true;
-	self->to_stdout = true;
+	self->to_stdout = false;
 	self->fd        = -1;
 }
 

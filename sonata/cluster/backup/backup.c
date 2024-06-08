@@ -200,7 +200,10 @@ backup_send(Backup* self, Str* url)
 static void
 backup_main(void* arg)
 {
-	Backup* self = arg;
+	Backup* self   = arg;
+	auto    client = self->client;
+	auto    tcp    = &client->tcp;
+
 	log("begin");
 
 	Exception e;
@@ -208,9 +211,6 @@ backup_main(void* arg)
 	{
 		// create backup state
 		backup_prepare(self);
-
-		auto client = self->client;
-		auto tcp = &client->tcp;
 		tcp_attach(tcp);
 
 		// send backup state
@@ -237,6 +237,7 @@ backup_main(void* arg)
 		}
 	}
 
+	tcp_detach(tcp);
 	if (leave(&e))
 	{ }
 

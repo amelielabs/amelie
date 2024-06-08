@@ -1,0 +1,145 @@
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+connect E0 S0 localhost:3480
+# test: backup empty
+backup E1 127.0.0.1:3480
+stop E1
+disconnect S0
+stop E0
+# test: restore empty
+start E1
+connect E1 S0 localhost:3480
+show uuid
+"00000000-0000-0000-0000-000000000000"
+select system.nodes()::sizeof
+3
+disconnect S0
+stop E1
+# test: backup wal
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+connect E0 S0 localhost:3480
+create table test (id int primary key)
+insert into test 1,2,3
+show lsn
+2
+backup E2 127.0.0.1:3480
+stop E2
+disconnect S0
+stop E0
+# test: restore wal
+start E2
+connect E2 S0 localhost:3480
+show uuid
+"00000000-0000-0000-0000-000000000000"
+select * from test
+[[3], [2], [1]]
+show lsn
+2
+disconnect S0
+stop E2
+# test: backup wal #2
+start E0 "wal_rotate_wm": 0
+connect E0 S0 localhost:3480
+show lsn
+2
+show wal
+{
+  "active": true,
+  "rotate_wm": 0,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 2,
+  "lsn_min": 1,
+  "files": 2,
+  "slots": 0,
+  "slots_min": -1
+}
+insert into test 4
+show wal
+{
+  "active": true,
+  "rotate_wm": 0,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 3,
+  "lsn_min": 1,
+  "files": 3,
+  "slots": 0,
+  "slots_min": -1
+}
+backup E3 127.0.0.1:3480
+stop E3
+disconnect S0
+stop E0
+# test: restore wal #2
+start E3
+connect E3 S0 localhost:3480
+show uuid
+"00000000-0000-0000-0000-000000000000"
+select * from test
+[[3], [4], [2], [1]]
+show lsn
+3
+show wal
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 3,
+  "lsn_min": 1,
+  "files": 2,
+  "slots": 0,
+  "slots_min": -1
+}
+disconnect S0
+stop E3
+# test: backup checkpoint
+start E0
+connect E0 S0 localhost:3480
+show lsn
+3
+show checkpoint
+0
+checkpoint
+show lsn
+3
+show checkpoint
+3
+backup E4 127.0.0.1:3480
+stop E4
+disconnect S0
+stop E0
+# test: restore checkpoint
+start E4
+connect E4 S0 localhost:3480
+show lsn
+3
+show checkpoint
+3
+select * from test
+[[3], [4], [2], [1]]
+disconnect S0
+stop E4
+# test: backup checkpoint with wal
+start E0
+connect E0 S0 localhost:3480
+insert into test 5,6,7
+show lsn
+4
+show checkpoint
+3
+backup E5 127.0.0.1:3480
+stop E5
+disconnect S0
+stop E0
+# test: restore checkpoint and wal
+start E5
+connect E5 S0 localhost:3480
+show lsn
+4
+show checkpoint
+3
+select * from test
+[[3], [4], [5], [2], [6], [7], [1]]
+disconnect S0
+stop E5

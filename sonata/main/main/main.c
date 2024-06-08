@@ -95,7 +95,6 @@ main_prepare(Main* self, MainArgs* args)
 	// prepare default logger settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
-	logger_set_to_stdout(logger, true);
 	snprintf(path, sizeof(path), "%s/log", config_directory());
 	logger_open(logger, path);
 	return bootstrap;
@@ -147,7 +146,7 @@ main_runner(void* arg)
 	// stop resolver
 	resolver_stop(&self->resolver);
 
-	thread_status_set(&self->task.thread_status, 0);
+	thread_status_set(&self->task.thread_status, !e.triggered);
 }
 
 void

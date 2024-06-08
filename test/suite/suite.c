@@ -300,21 +300,11 @@ error:
 }
 
 static int
-test_suite_start(TestSuite* self, char* arg)
+test_suite_create(TestSuite* self, char* name, char* uri, char* config)
 {
-	char* name = test_suite_arg(&arg);
-	char* config = arg;
-
-	if (name == NULL)
-	{
-		test_error(self, "line %d: start <name> expected",
-		           self->current_line);
-		return -1;
-	}
-
 	auto env = test_env_find(self, name);
 	if (env) {
-		test_error(self, "line %d: start: name redefined",
+		test_error(self, "line %d: env name redefined",
 		           self->current_line);
 		return -1;
 	}
@@ -352,7 +342,16 @@ test_suite_start(TestSuite* self, char* arg)
 	str_init(&options);
 	str_set_cstr(&options, prefmt_config);
 
-	int rc = main_start(&env->main, &directory, &options, NULL);
+	Str* backup = NULL;
+	Str  backup_;
+	str_init(&backup_);
+	if (uri)
+	{
+		str_set_cstr(&backup_, uri);
+		backup = &backup_;
+	}
+
+	int rc = main_start(&env->main, &directory, &options, backup);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
@@ -361,6 +360,46 @@ test_suite_start(TestSuite* self, char* arg)
 	}
 
 	return 0;
+}
+
+static int
+test_suite_start(TestSuite* self, char* arg)
+{
+	char* name = test_suite_arg(&arg);
+	char* config = arg;
+
+	if (name == NULL)
+	{
+		test_error(self, "line %d: start <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
+	return test_suite_create(self, name, NULL, config);
+}
+
+static int
+test_suite_backup(TestSuite* self, char* arg)
+{
+	char* name = test_suite_arg(&arg);
+	char* uri = test_suite_arg(&arg);
+	char* config = arg;
+
+	if (name == NULL)
+	{
+		test_error(self, "line %d: backup <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
+	if (uri == NULL)
+	{
+		test_error(self, "line %d: backup name <uri> expected",
+		           self->current_line);
+		return -1;
+	}
+
+	return test_suite_create(self, name, uri, config);
 }
 
 static int
@@ -694,6 +733,14 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 		// stop
 		if (strncmp(query, "stop", 4) == 0) {
 			rc = test_suite_stop(self, query + 4);
+			if (rc == -1)
+				return -1;
+			continue;
+		}
+
+		// backup
+		if (strncmp(query, "backup", 6) == 0) {
+			rc = test_suite_backup(self, query + 6);
 			if (rc == -1)
 				return -1;
 			continue;
