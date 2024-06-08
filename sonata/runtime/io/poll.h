@@ -14,19 +14,31 @@ poll_on_read_event(Fd* fd)
 }
 
 static inline void
+poll_read_start(Fd* fd, Event* on_read)
+{
+	auto poller = &so_task->poller;
+	auto rc = poller_read(poller, fd, poll_on_read_event, on_read);
+	if (unlikely(rc == -1))
+		error_system();
+}
+
+static inline void
+poll_read_stop(Fd* fd)
+{
+	auto poller = &so_task->poller;
+	poller_read(poller, fd, NULL, NULL);
+}
+
+hot static inline void
 poll_read(Fd* fd, int time_ms)
 {
 	cancellation_point();
 
-	auto poller = &so_task->poller;
 	Event on_read;
 	event_init(&on_read);
-	int rc;
-	rc = poller_read(poller, fd, poll_on_read_event, &on_read);
-	if (unlikely(rc == -1))
-		error_system();
+	poll_read_start(fd, &on_read);
 	event_wait(&on_read, time_ms);
-	poller_read(poller, fd, NULL, NULL);
+	poll_read_stop(fd);
 
 	cancellation_point();
 }

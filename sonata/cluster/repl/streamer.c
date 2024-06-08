@@ -30,16 +30,39 @@
 #include <sonata_backup.h>
 #include <sonata_repl.h>
 
-static inline void
+static inline bool
 streamer_collect(Streamer* self)
 {
 	for (;;)
 	{
 		if (wal_cursor_collect(&self->wal_cursor, 256 * 1024, &self->lsn))
 			break;
-		// todo: disconnect (timeout to ping or check error?)
-		wal_slot_wait(self->wal_slot);
+
+		// wait for new wal write, client disconnect or cancel
+		Event on_event;
+		event_init(&on_event);
+		Event on_disconnect;
+		event_init(&on_disconnect);
+		event_set_parent(&on_disconnect, &on_event);
+		event_set_parent(&self->wal_slot->on_write->event, &on_event);
+
+		Exception e;
+		if (enter(&e))
+		{
+			poll_read_start(&self->client->tcp.fd, &on_disconnect);
+			event_wait(&on_event, -1);
+		}
+
+		event_set_parent(&self->wal_slot->on_write->event, NULL);
+		poll_read_stop(&self->client->tcp.fd);
+
+		if (leave(&e))
+			rethrow();
+
+		if (on_disconnect.signal)
+			return false;
 	}
+	return true;
 }
 
 static inline void
@@ -144,8 +167,9 @@ streamer_process(Streamer* self)
 			streamer_join(self);
 			for (;;)
 			{
-				// collect and send wal records, read state update
-				streamer_collect(self);
+				// collect and send wal records, read replica reply
+				if (! streamer_collect(self))
+					break;
 				streamer_write(self, &self->wal_cursor.buf);
 				streamer_next(self);
 			}
