@@ -70,9 +70,15 @@ primary_read(Primary* self)
 void
 primary_main(Primary* self)
 {
+	auto request = &self->client->request;
 	log("primary connected.");
 
-	auto request = &self->client->request;
+	// join
+	self->replay(self, &request->content);
+
+	// send current state
+	primary_write(self);
+
 	for (;;)
 	{
 		// read next write

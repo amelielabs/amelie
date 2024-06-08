@@ -107,7 +107,7 @@ streamer_join(Streamer* self)
 	// update wal slot according to the replica state
 
 	// ensure replica is not outdated
-	if (! wal_in_range(self->wal, lsn))
+	if (lsn > 0 && !wal_in_range(self->wal, lsn))
 		error("replica is outdated");
 	self->lsn = lsn;
 	wal_slot_set(self->wal_slot, lsn);
@@ -192,8 +192,15 @@ streamer_main(void* arg)
 		self->client = NULL;
 	}
 
-	condition_signal(self->on_complete);
 	log("stop");
+}
+
+static void
+streamer_shutdown(Rpc* rpc, void* arg)
+{
+	unused(rpc);
+	uint64_t* id = arg;
+	coroutine_kill(*id);
 }
 
 static void
@@ -204,13 +211,9 @@ streamer_task_main(void* arg)
 	for (;;)
 	{
 		auto buf = channel_read(&so_task->channel, -1);
-		auto msg = msg_of(buf);
 		guard(buf_free, buf);
-		if (msg->id == RPC_STOP)
-		{
-			coroutine_kill(id);
-			break;
-		}
+		rpc_execute(buf, streamer_shutdown, &id);
+		break;
 	}
 }
 
@@ -223,7 +226,6 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 	self->wal_slot      = wal_slot;
 	self->replica_id[0] = 0;
 	self->replica_uri   = NULL;
-	self->on_complete   = NULL;
 	wal_cursor_init(&self->wal_cursor);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -232,8 +234,6 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 void
 streamer_free(Streamer* self)
 {
-	if (self->on_complete)
-		condition_free(self->on_complete);
 	task_free(&self->task);
 }
 
@@ -242,22 +242,12 @@ streamer_start(Streamer* self, Uuid* id, Str* uri)
 {
 	uuid_to_string(id, self->replica_id, sizeof(self->replica_id));
 	self->replica_uri = uri;
-	self->on_complete = condition_create();
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 
 void
 streamer_stop(Streamer* self)
 {
-	// sent stop
-	auto buf = msg_begin(RPC_STOP);
-	msg_end(buf);
-	channel_write(&self->task.channel, buf);
-
-	// wait for completion
-	coroutine_cancel_pause(so_self());
-	condition_wait(self->on_complete, -1);
-	coroutine_cancel_resume(so_self());
-
+	rpc(&self->task.channel, RPC_STOP, 0);
 	task_wait(&self->task);
 }

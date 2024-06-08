@@ -99,7 +99,7 @@ void
 repl_promote(Repl* self, Str* primary_id)
 {
 	if (! var_int_of(&config()->repl))
-		log("replication: is disabled");
+		error("replication: is disabled");
 
 	// become replica
 	if (primary_id)

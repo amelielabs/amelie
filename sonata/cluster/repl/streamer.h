@@ -17,7 +17,6 @@ struct Streamer
 	Wal*       wal;
 	Str*       replica_uri;
 	char       replica_id[UUID_SZ];
-	Condition* on_complete;
 	Task       task;
 	List       link;
 };

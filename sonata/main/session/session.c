@@ -235,7 +235,7 @@ session_primary_on_write(Primary* self, Buf* data)
 	while (pos < end)
 	{
 		auto write = (WalWrite*)pos;
-		session_replay(session, write);
+		replay(session, write);
 		pos += write->size;
 	}
 }

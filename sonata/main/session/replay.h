@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void session_replay(Session*, WalWrite*);
+void replay(Session*, WalWrite*);

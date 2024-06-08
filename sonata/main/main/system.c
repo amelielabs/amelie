@@ -68,7 +68,7 @@ system_create(void)
 	executor_init(&self->executor, &self->db, &self->cluster.router);
 
 	// db
-	db_init(&self->db);
+	db_init(&self->db, (PartMapper)cluster_map, &self->cluster);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -224,13 +224,6 @@ system_start(System* self, Str* options, bool bootstrap)
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
-
-	// set tables partition mapping
-	list_foreach(&self->db.table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		cluster_map(&self->cluster, &table->part_list);
-	}
 
 	// todo: start checkpoint worker
 

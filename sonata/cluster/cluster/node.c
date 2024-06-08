@@ -32,6 +32,28 @@
 #include <sonata_cluster.h>
 
 hot static void
+node_execute_write(Node* self, Trx* trx, Req* req)
+{
+	auto pos = req->arg.start;
+	while (pos < req->arg.position)
+	{
+		// [meta offset, data offset]
+
+		// meta_offset
+		int64_t meta_offset;
+		data_read_integer(&pos, &meta_offset);
+
+		// data_offset
+		int64_t data_offset;
+		data_read_integer(&pos, &data_offset);
+
+		uint8_t* meta = req->arg_start + meta_offset;
+		uint8_t* data = req->arg_start + data_offset;
+		recover_cmd(self->vm.db, &trx->trx, &meta, &data);
+	}
+}
+
+hot static void
 node_execute(Node* self, Trx* trx)
 {
 	transaction_begin(&trx->trx);
@@ -47,12 +69,18 @@ node_execute(Node* self, Trx* trx)
 		Exception e;
 		if (enter(&e))
 		{
-			vm_reset(&self->vm);
-			vm_run(&self->vm, &trx->trx, trx->code, trx->code_data,
-			       &req->arg,
-			        trx->cte,
-			       &req->result,
-			        req->op);
+			if (req->arg_start)
+			{
+				node_execute_write(self, trx, req);
+			} else
+			{
+				vm_reset(&self->vm);
+				vm_run(&self->vm, &trx->trx, trx->code, trx->code_data,
+				       &req->arg,
+				        trx->cte,
+				       &req->result,
+				        req->op);
+			}
 		}
 
 		// respond with OK or ERROR
