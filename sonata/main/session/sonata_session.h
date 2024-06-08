@@ -11,3 +11,4 @@
 #include "session/session.h"
 #include "session/utility.h"
 #include "session/ddl.h"
+#include "session/replay.h"

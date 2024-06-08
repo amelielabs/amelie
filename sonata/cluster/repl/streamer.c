@@ -49,12 +49,14 @@ streamer_write(Streamer* self, Buf* content)
 	auto client = self->client;
 	auto request = &client->request;
 	auto id = &config()->uuid.string;
-	http_write_request(request, "POST /");
-	http_write(request, "Sonata-Id", "%.*s", str_size(id), str_of(id));
-	http_write(request, "Sonata-Lsn", "%" PRIu64, self->wal_slot->lsn);
+	http_write_request(request, "POST /repl");
 	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
 	http_write(request, "Content-Type", "application/octet-stream");
+	http_write(request, "Sonata-Id", "%.*s", str_size(id), str_of(id));
+	if (content)
+		http_write(request, "Sonata-Lsn", "%" PRIu64, self->wal_slot->lsn);
 	http_write_end(request);
+
 	if (content)
 		tcp_write_pair(&client->tcp, &request->raw, content);
 	else

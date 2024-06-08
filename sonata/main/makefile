@@ -48,6 +48,7 @@ OBJECTS        = \
                  session/session.o \
                  session/utility.o \
                  session/ddl.o \
+                 session/replay.o \
                  main/system.o \
                  main/main.o
 $(LIB): clean $(OBJECTS)

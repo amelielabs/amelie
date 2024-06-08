@@ -214,6 +214,40 @@ session_execute(Session* self)
 	session_unlock(self);
 }
 
+hot static void
+session_primary_on_write(Primary* self, Buf* data)
+{
+	Session* session = self->replay_arg;
+
+	// take shared lock
+	session_lock(session, SESSION_LOCK);
+	guard(session_unlock, session);
+
+	// validate request fields and check current replication state
+
+	// first join request has no data
+	if (! primary_next(self))
+		return;
+
+	// replay writes
+	auto pos = data->start;
+	auto end = data->position;
+	while (pos < end)
+	{
+		auto write = (WalWrite*)pos;
+		session_replay(session, write);
+		pos += write->size;
+	}
+}
+
+hot static void
+session_primary(Session* self)
+{
+	Primary primary;
+	primary_init(&primary, self->client, session_primary_on_write, self);
+	primary_main(&primary);
+}
+
 hot void
 session_main(Session* self)
 {
@@ -233,11 +267,18 @@ session_main(Session* self)
 		http_read_content(request, readahead, &request->content);
 		http_reset(reply);
 
-		// handle backup request
+		// handle backup
 		auto url = &request->options[HTTP_URL];
 		if (unlikely(str_compare_raw(url, "/backup", 7)))
 		{
 			backup(self->share->db, client);
+			break;
+		}
+
+		// handle primary connection
+		if (unlikely(str_compare_raw(url, "/repl", 5)))
+		{
+			session_primary(self);
 			break;
 		}
 

@@ -14,5 +14,8 @@
 #include "repl/replica.h"
 #include "repl/replica_mgr.h"
 
+// primary
+#include "repl/primary.h"
+
 // replication
 #include "repl/repl.h"
