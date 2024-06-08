@@ -83,7 +83,10 @@ wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 
 	// check for eof
 	if (wal_file_eof(self, offset, size))
+	{
+		buf_truncate(buf, size_header);
 		return false;
+	}
 
 	// read body
 	uint32_t size_data;
