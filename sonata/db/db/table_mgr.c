@@ -18,10 +18,10 @@
 #include <sonata_db.h>
 
 void
-table_mgr_init(TableMgr* self)
+table_mgr_init(TableMgr* self, PartMapper mapper, void* mapper_arg)
 {
 	handle_mgr_init(&self->mgr);
-	part_mgr_init(&self->part_mgr);
+	part_mgr_init(&self->part_mgr, mapper, mapper_arg);
 }
 
 void

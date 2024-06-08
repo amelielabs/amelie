@@ -24,6 +24,6 @@ void  cluster_start(Cluster*);
 void  cluster_stop(Cluster*);
 void  cluster_create(Cluster*, NodeConfig*, bool);
 void  cluster_drop(Cluster*, Uuid*, bool);
-void  cluster_map(Cluster*, PartList*);
+void  cluster_map(Cluster*, PartMap*, Part*);
 Buf*  cluster_list(Cluster*);
 Node* cluster_find(Cluster*, Uuid*);

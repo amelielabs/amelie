@@ -50,6 +50,9 @@ part_list_create(PartList* self, bool reference,
 {
 	self->reference = reference;
 
+	// prepare partition mapping
+	part_map_create(&self->map);
+
 	list_foreach(parts)
 	{
 		auto config = list_at(PartConfig, link);
@@ -63,8 +66,8 @@ part_list_create(PartList* self, bool reference,
 		// prepare indexes
 		part_open(part, indexes);
 
-		// register partition
-		part_mgr_add(self->mgr, part);
+		// register and map partition
+		part_mgr_add(self->mgr, &self->map, part);
 	}
 }
 

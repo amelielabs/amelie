@@ -72,7 +72,7 @@ recover(Db* self, Uuid* node)
 	}
 }
 
-hot static void
+hot void
 recover_cmd(Db* self, Transaction* trx, uint8_t** meta, uint8_t** data)
 {
 	// [dml, partition]

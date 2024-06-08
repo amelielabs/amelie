@@ -135,15 +135,7 @@ ddl_create_table(Session* self, Transaction* trx)
 	}
 
 	// create table
-	bool created;
-	created = table_mgr_create(&db->table_mgr, trx, config, arg->if_not_exists);
-
-	// set partition map
-	if (created)
-	{
-		auto table = table_mgr_find(&db->table_mgr, &config->schema, &config->name, true);
-		cluster_map(cluster, &table->part_list);
-	}
+	table_mgr_create(&db->table_mgr, trx, config, arg->if_not_exists);
 }
 
 static void

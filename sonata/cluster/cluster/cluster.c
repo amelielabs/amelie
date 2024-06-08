@@ -214,22 +214,16 @@ cluster_drop(Cluster* self, Uuid* id, bool if_exists)
 }
 
 void
-cluster_map(Cluster* self, PartList* part_list)
+cluster_map(Cluster* self, PartMap* map, Part* part)
 {
-	// create partition map and set each partition range to the node order
-	auto map = &part_list->map;
-	part_map_create(map);
-	list_foreach(&part_list->list)
-	{
-		auto part = list_at(Part, link);
-		auto node = cluster_find(self, &part->config->node);
-		if (! node)
-			error("partition node cannot be found");
-		part->route = &node->route;
-		int i = part->config->min;
-		for (; i < part->config->max; i++)
-			part_map_set(map, i, &node->route);
-	}
+	// map partition range to the node order
+	auto node = cluster_find(self, &part->config->node);
+	if (! node)
+		error("partition node cannot be found");
+	part->route = &node->route;
+	int i = part->config->min;
+	for (; i < part->config->max; i++)
+		part_map_set(map, i, &node->route);
 }
 
 Buf*

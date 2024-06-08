@@ -17,7 +17,7 @@ struct Db
 	Wal           wal;
 };
 
-void db_init(Db*);
+void db_init(Db*, PartMapper, void*);
 void db_free(Db*);
 void db_open(Db*, CatalogMgr*);
 void db_close(Db*);

@@ -18,9 +18,9 @@
 #include <sonata_db.h>
 
 void
-db_init(Db* self)
+db_init(Db* self, PartMapper mapper, void* mapper_arg)
 {
-	table_mgr_init(&self->table_mgr);
+	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
 	checkpoint_mgr_init(&self->checkpoint_mgr);
