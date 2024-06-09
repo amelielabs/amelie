@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3, "repl_reconnect_ms": 10
 connect E0 S0 localhost:3480
 # test: primary by default
 show repl
@@ -23,7 +23,7 @@ show repl
 }
 # test: start replica
 start repl
-# test: switch to replica (promote)
+# test: promote
 promote "00000000-0000-0000-0000-000000000000"
 show repl
 {
@@ -33,6 +33,101 @@ show repl
 }
 show read_only
 true
+# test: create replica
+switch S0
+show replicas
+[]
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481"
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "127.0.0.1:3481",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}]
+# test: start primary
+start repl
+# test: wait for primary connect
+watch system.replicas()[0].connected = true
+# test: write
+create table test (id int primary key)
+insert into test 1,2,3
+show lsn
+2
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+# test: stop replica
+disconnect S1
+close E1
+# test: write (replica off)
+insert into test 4
+insert into test 5
+insert into test 6
+show lsn
+5
+# test: replica lag
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "127.0.0.1:3481",
+  "connected": false,
+  "lsn": 2,
+  "lag": 3
+}]
+# test: replica disconnected
+switch S0
+watch system.replicas()[0].connected = false
+# test: restart replica
+open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
+connect E1 S1 localhost:3481
+# test: wait for primary reconnect
+switch S0
+watch system.replicas()[0].connected = true
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "127.0.0.1:3481",
+  "connected": true,
+  "lsn": 5,
+  "lag": 0
+}]
+# test: restart primary
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3, "repl_reconnect_ms": 10
+connect E0 S0 localhost:3480
+# test: wait for primary reconnect
+switch S0
+watch system.replicas()[0].connected = true
+# test: write
+insert into test 7
+insert into test 8
+insert into test 9
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "127.0.0.1:3481",
+  "connected": true,
+  "lsn": 8,
+  "lag": 0
+}]
+# test: replica read
+switch S1
+select * from test
+[[3], [4], [5], [8], [9], [2], [6], [7], [1]]
+show repl
+{
+  "active": true,
+  "role": "replica",
+  "primary": "00000000-0000-0000-0000-000000000000"
+}
+show lsn
+8
 disconnect S1
 close E1
 disconnect S0
