@@ -1,6 +1,6 @@
 #
 
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 
 # test: select distinct star from table empty
@@ -215,4 +215,4 @@ explain select distinct on (*) * from [0,1,2,3,4,2,3,4]
 select distinct on (*) * from [0,1,2,3,4,2,3,4]
 
 disconnect S0
-stop E0
+close E0

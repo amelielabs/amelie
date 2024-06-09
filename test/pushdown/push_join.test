@@ -1,6 +1,6 @@
 #
 
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 
 create table ref (id int primary key, data int default 0) reference
@@ -57,4 +57,4 @@ drop table ref
 drop table test
 
 disconnect S0
-stop E0
+close E0

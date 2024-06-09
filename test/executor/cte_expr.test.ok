@@ -1,4 +1,4 @@
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 # test: cte parsing
 with
@@ -720,4 +720,4 @@ select * from (select * from system.config())
   "port": 3485
 }], 1, 3, true, 104857600, false, false, false, "", 3000, false, 0, 0, 0]
 disconnect S0
-stop E0
+close E0

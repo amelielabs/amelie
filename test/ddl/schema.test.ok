@@ -1,4 +1,4 @@
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 # test: ensure public schema exists
 show schemas
@@ -222,4 +222,4 @@ select system.schemas()
 alter schema public rename _public
 {"code": 1, "msg": "schema 'public': system schema cannot be altered"}
 disconnect S0
-stop E0
+close E0

@@ -1,4 +1,4 @@
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 # test: alter table statement parsing
 alter
@@ -99,4 +99,4 @@ alter table if exists test set serial to 0
 alter table test set serial to 0
 {"code": 1, "msg": "table 'test': not exists"}
 disconnect S0
-stop E0
+close E0

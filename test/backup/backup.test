@@ -1,27 +1,27 @@
 #
 
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
 connect E0 S0 localhost:3480
 
 # test: backup empty
 backup E1 127.0.0.1:3480
-stop E1
+close E1
 
 disconnect S0
-stop E0
+close E0
 
 # test: restore empty
-start E1
+open E1
 connect E1 S0 localhost:3480
 
 show uuid
 select system.nodes()::sizeof
 
 disconnect S0
-stop E1
+close E1
 
 # test: backup wal
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
 connect E0 S0 localhost:3480
 
 create table test (id int primary key)
@@ -29,22 +29,22 @@ insert into test 1,2,3
 show lsn
 
 backup E2 127.0.0.1:3480
-stop E2
+close E2
 
 disconnect S0
-stop E0
+close E0
 
 # test: restore wal
-start E2
+open E2
 connect E2 S0 localhost:3480
 show uuid
 select * from test
 show lsn
 disconnect S0
-stop E2
+close E2
 
 # test: backup wal #2
-start E0 "wal_rotate_wm": 0
+open E0 "wal_rotate_wm": 0
 connect E0 S0 localhost:3480
 
 show lsn
@@ -54,23 +54,23 @@ insert into test 4
 show wal
 
 backup E3 127.0.0.1:3480
-stop E3
+close E3
 
 disconnect S0
-stop E0
+close E0
 
 # test: restore wal #2
-start E3
+open E3
 connect E3 S0 localhost:3480
 show uuid
 select * from test
 show lsn
 show wal
 disconnect S0
-stop E3
+close E3
 
 # test: backup checkpoint
-start E0
+open E0
 connect E0 S0 localhost:3480
 
 show lsn
@@ -80,13 +80,13 @@ show lsn
 show checkpoint
 
 backup E4 127.0.0.1:3480
-stop E4
+close E4
 
 disconnect S0
-stop E0
+close E0
 
 # test: restore checkpoint
-start E4
+open E4
 connect E4 S0 localhost:3480
 
 show lsn
@@ -94,10 +94,10 @@ show checkpoint
 select * from test
 
 disconnect S0
-stop E4
+close E4
 
 # test: backup checkpoint with wal
-start E0
+open E0
 connect E0 S0 localhost:3480
 
 insert into test 5,6,7
@@ -105,13 +105,13 @@ show lsn
 show checkpoint
 
 backup E5 127.0.0.1:3480
-stop E5
+close E5
 
 disconnect S0
-stop E0
+close E0
 
 # test: restore checkpoint and wal
-start E5
+open E5
 connect E5 S0 localhost:3480
 
 show lsn
@@ -119,4 +119,4 @@ show checkpoint
 select * from test
 
 disconnect S0
-stop E5
+close E5

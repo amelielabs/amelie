@@ -1,6 +1,6 @@
 #
 
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 
 # test: select from table order by
@@ -228,4 +228,4 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * des
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset -1
 
 disconnect S0
-stop E0
+close E0

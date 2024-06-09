@@ -1,5 +1,5 @@
 
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
 # test: json cases
@@ -37,4 +37,4 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::json
 
 disconnect S0
-stop E0
+close E0

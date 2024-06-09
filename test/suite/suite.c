@@ -363,14 +363,14 @@ test_suite_create(TestSuite* self, char* name, char* uri, char* config)
 }
 
 static int
-test_suite_start(TestSuite* self, char* arg)
+test_suite_open(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
 	char* config = arg;
 
 	if (name == NULL)
 	{
-		test_error(self, "line %d: start <name> expected",
+		test_error(self, "line %d: open <name> expected",
 		           self->current_line);
 		return -1;
 	}
@@ -403,24 +403,24 @@ test_suite_backup(TestSuite* self, char* arg)
 }
 
 static int
-test_suite_stop(TestSuite* self, char* arg)
+test_suite_close(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
 	if (name == NULL)
 	{
-		test_error(self, "line %d: stop <name> expected",
+		test_error(self, "line %d: close <name> expected",
 		           self->current_line);
 		return -1;
 	}
 
 	auto env = test_env_find(self, name);
 	if (! env) {
-		test_error(self, "line %d: stop: env name not found",
+		test_error(self, "line %d: close: env name not found",
 		           self->current_line);
 		return -1;
 	}
 	if (env->sessions) {
-		test_error(self, "line %d: stop: has active sessions",
+		test_error(self, "line %d: close: has active sessions",
 		           self->current_line);
 		return -1;
 	}
@@ -722,17 +722,17 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 			continue;
 		}
 
-		// start
-		if (strncmp(query, "start", 5) == 0) {
-			rc = test_suite_start(self, query + 5);
+		// open
+		if (strncmp(query, "open", 4) == 0) {
+			rc = test_suite_open(self, query + 4);
 			if (rc == -1)
 				return -1;
 			continue;
 		}
 
-		// stop
-		if (strncmp(query, "stop", 4) == 0) {
-			rc = test_suite_stop(self, query + 4);
+		// close
+		if (strncmp(query, "close", 5) == 0) {
+			rc = test_suite_close(self, query + 5);
 			if (rc == -1)
 				return -1;
 			continue;

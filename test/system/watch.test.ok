@@ -1,4 +1,4 @@
-start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 # test: watch parsing
 watch
@@ -47,4 +47,4 @@ create table test (id int primary key serial)
 watch select * from test
 {"code": 1, "msg": "WATCH: sub queries are not supported"}
 disconnect S0
-stop E0
+close E0
