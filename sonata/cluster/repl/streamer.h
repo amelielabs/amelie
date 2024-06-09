@@ -11,6 +11,7 @@ typedef struct Streamer Streamer;
 struct Streamer
 {
 	Client*    client;
+	atomic_u32 connected;
 	uint64_t   lsn;
 	WalCursor  wal_cursor;
 	WalSlot*   wal_slot;

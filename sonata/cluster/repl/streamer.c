@@ -119,8 +119,10 @@ streamer_read(Streamer* self)
 }
 
 static void
-streamer_join(Streamer* self)
+streamer_connect(Streamer* self)
 {
+	client_connect(self->client);
+
 	// POST / with empty content and current slot lsn
 	streamer_write(self, NULL);
 
@@ -138,6 +140,19 @@ streamer_join(Streamer* self)
 
 	// open cursor to the next record
 	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1);
+
+	// update streamer status
+	atomic_u32_set(&self->connected, true);
+}
+
+static void
+streamer_close(Streamer* self)
+{
+	atomic_u32_set(&self->connected, false);
+
+	wal_detach(self->wal, self->wal_slot);
+	wal_cursor_close(&self->wal_cursor);
+	client_close(self->client);
 }
 
 static inline void
@@ -163,8 +178,7 @@ streamer_process(Streamer* self)
 		Exception e;
 		if (enter(&e))
 		{
-			client_connect(self->client);
-			streamer_join(self);
+			streamer_connect(self);
 			for (;;)
 			{
 				// collect and send wal records, read replica reply
@@ -178,10 +192,7 @@ streamer_process(Streamer* self)
 		if (leave(&e))
 		{ }
 
-		wal_detach(self->wal, self->wal_slot);
-		wal_cursor_close(&self->wal_cursor);
-		client_close(self->client);
-
+		streamer_close(self);
 		cancellation_point();
 
 		// reconnect
@@ -245,6 +256,7 @@ void
 streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 {
 	self->client        = NULL;
+	self->connected     = false;
 	self->lsn           = 0;
 	self->wal           = wal;
 	self->wal_slot      = wal_slot;

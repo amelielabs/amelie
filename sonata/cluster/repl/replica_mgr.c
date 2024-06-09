@@ -176,7 +176,7 @@ replica_mgr_list(ReplicaMgr* self)
 	list_foreach(&self->list)
 	{
 		auto replica = list_at(Replica, link);
-		replica_config_write(replica->config, buf);
+		replica_status(replica, buf);
 	}
 	encode_array_end(buf);
 	return buf_end(buf);
