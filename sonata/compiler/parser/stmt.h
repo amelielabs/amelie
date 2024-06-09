@@ -37,7 +37,8 @@ typedef enum
 	STMT_INSERT,
 	STMT_UPDATE,
 	STMT_DELETE,
-	STMT_SELECT
+	STMT_SELECT,
+	STMT_WATCH
 } StmtId;
 
 struct Stmt

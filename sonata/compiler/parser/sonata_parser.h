@@ -44,4 +44,5 @@
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
+#include "parser/parse_watch.h"
 #include "parser/parse.h"

@@ -258,6 +258,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 
+	case KWATCH:
+		// WATCH expr
+		stmt->id = STMT_WATCH;
+		parse_watch(stmt);
+		break;
+
 	default:
 	{
 		if (ast->id == KNAME)

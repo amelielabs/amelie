@@ -1,0 +1,29 @@
+start E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: watch parsing
+watch
+{"code": 1, "msg": "bad expression"}
+# test: watch
+show lsn
+0
+explain watch system.config().lsn = 0
+"
+bytecode [coordinator]
+--------
+ 0                call        0      -      0      # system.config()
+ 1              string        1      0      0      # lsn
+ 2                 idx        2      0      1
+ 3                 int        0      0      0
+ 4                 equ        1      2      0
+ 5                 jtr        8      1      0
+ 6               sleep     1000      0      0
+ 7                 jmp        0      0      0
+ 8                 nop        0      0      0
+ 9                bool        0      1      0
+10             cte_set        0      0      0
+11                 ret        0      0      0
+
+"
+watch system.config().lsn = 0
+disconnect S0
+stop E0

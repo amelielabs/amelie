@@ -12,6 +12,7 @@ test bootstrap
 test set
 test show
 test user
+test watch
 
 # ddl
 directory ddl

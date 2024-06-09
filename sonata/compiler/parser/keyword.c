@@ -230,7 +230,7 @@ static Keyword keywords_w[] =
 {
 	{ KWHERE,                 "where",                 5  },
 	{ KWITH,                  "with",                  4  },
-	{ KWAIT,                  "wait",                  4  },
+	{ KWATCH,                 "watch",                 5  },
 	{ KWORKERS,               "workers",               7  },
 	{ 0,                       NULL,                   0  }
 };

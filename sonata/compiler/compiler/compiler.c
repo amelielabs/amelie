@@ -180,6 +180,14 @@ emit_stmt(Compiler* self)
 		break;
 	}
 
+	case STMT_WATCH:
+	{
+		// do nothing (coordinator only)
+		if (! target_list_expr(&stmt->target_list))
+			error("WATCH: sub queries are not supported");
+		return;
+	}
+
 	default:
 		abort();
 		break;
@@ -241,6 +249,10 @@ emit_send(Compiler* self, int start)
 		op2(self, CSEND_FIRST, stmt->order, start);
 		break;
 	}
+
+	case STMT_WATCH:
+		// no targets
+		break;
 
 	default:
 		abort();
@@ -309,6 +321,11 @@ emit_recv(Compiler* self)
 		r = op2(self, CRECV_TO, rpin(self), stmt->order);
 		break;
 	}
+
+	case STMT_WATCH:
+		// no targets (coordinator only)
+		r = emit_watch(self, stmt->ast);
+		break;
 
 	default:
 		abort();

@@ -51,6 +51,7 @@ OBJECTS        = \
                  parser/parse_delete.o \
                  parser/parse_from.o \
                  parser/parse_select.o \
+                 parser/parse_watch.o \
                  parser/parse.o \
                  parser/parser.o \
                  semantic/plan.o \
@@ -62,6 +63,7 @@ OBJECTS        = \
                  compiler/emit_delete.o \
                  compiler/emit_upsert.o \
                  compiler/emit_select.o \
+                 compiler/emit_watch.o \
                  compiler/pushdown.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
