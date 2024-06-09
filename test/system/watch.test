@@ -11,5 +11,12 @@ show lsn
 explain watch system.config().lsn = 0
 watch system.config().lsn = 0
 
+# test: watch subquery
+explain watch (select 123) = 123
+watch (select 123) = 123
+
+create table test (id int primary key serial)
+watch select * from test
+
 disconnect S0
 stop E0
