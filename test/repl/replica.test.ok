@@ -1,0 +1,85 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+connect E0 S0 localhost:3480
+# test: create replica statement parsing
+create replica
+{"code": 1, "msg": "CREATE REPLICA <id> expected"}
+create replica 123
+{"code": 1, "msg": "CREATE REPLICA <id> expected"}
+create replica "00000000-0000-0000-0000-000000000000"
+{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
+create replica "00000000-0000-0000-0000-000000000000" 1
+{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
+create replica "00000000-0000-0000-0000-000000000000"
+{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
+# test: create replica
+create replica "00000000-0000-0000-0000-000000000000" "localhost"
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}]
+# test: create replica if not exists
+create replica if not exists "00000000-0000-0000-0000-000000000000" "localhost"
+select * from system.replicas()
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}]
+# test: drop replica statement parsing
+drop replica
+{"code": 1, "msg": "DROP REPLICA <id> expected"}
+drop replica 123
+{"code": 1, "msg": "DROP REPLICA <id> expected"}
+drop replica "123"
+{"code": 1, "msg": "failed to parse uuid"}
+# test: drop replica
+drop replica "00000000-0000-0000-0000-000000000000"
+show replicas
+[]
+# test: drop replica if exists
+drop replica if exists "00000000-0000-0000-0000-000000000000"
+drop replica "00000000-0000-0000-0000-000000000000"
+{"code": 1, "msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
+# test: recover
+create replica "00000000-0000-0000-0000-000000000000" "localhost"
+create replica "00000000-0000-0000-0000-000000000001" "localhost"
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}, {
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}]
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+connect E0 S0 localhost:3480
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}, {
+  "id": "00000000-0000-0000-0000-000000000001",
+  "uri": "localhost",
+  "connected": false,
+  "lsn": 0,
+  "lag": 0
+}]
+disconnect S0
+close E0

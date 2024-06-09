@@ -45,8 +45,6 @@ typedef struct
 static void
 main_prepare_listen(void)
 {
-	auto listen = &config()->listen;
-
 	Str listen_default;
 	str_set_cstr(&listen_default, "[{\"host\": \"*\", \"port\": 3485}]");
 
@@ -59,7 +57,7 @@ main_prepare_listen(void)
 	guard(json_free, &json);
 	json_parse(&json, &listen_default, &data);
 
-	var_data_set_buf(listen, &data);
+	var_data_set_buf(&config()->listen, &data);
 }
 
 static bool

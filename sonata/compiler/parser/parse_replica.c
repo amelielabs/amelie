@@ -43,7 +43,7 @@ parse_replica_create(Stmt* self)
 
 	// uri
 	stmt->uri = stmt_if(self, KSTRING);
-	if (! stmt->id)
+	if (! stmt->uri)
 		error("CREATE REPLICA id <uri> expected");
 }
 

@@ -1,0 +1,56 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
+connect E0 S0 localhost:3480
+
+# test: primary by default
+show repl
+
+# test: backup replica
+backup E1 127.0.0.1:3480
+close E1
+
+open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
+connect E1 S1 localhost:3481
+switch S1
+
+show uuid
+show repl
+
+# test: start replica
+start repl
+
+# test: switch to replica (promote)
+promote "00000000-0000-0000-0000-000000000000"
+show repl
+show read_only
+
+# start replication
+# connect wait
+
+# insert
+# stream wait
+#
+# select replica
+# replica stop
+
+# insert
+# stream wait
+
+# replica start
+# connect wait
+# stream wait
+
+disconnect S1
+close E1
+
+
+# primary restart
+# replica restart
+
+
+# failover
+
+
+disconnect S0
+close E0

@@ -206,7 +206,7 @@ ctl_replica(Session* self)
 	{
 		auto arg = ast_replica_create_of(stmt->ast);
 		auto config = replica_config_allocate();
-		guard(node_config_free, config);
+		guard(replica_config_free, config);
 
 		// id
 		Uuid id;
