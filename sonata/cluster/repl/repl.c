@@ -53,6 +53,13 @@ repl_free(Repl* self)
 	replica_mgr_free(&self->replica_mgr);
 }
 
+static void
+repl_validate_primary(Str* primary_id)
+{
+	if (str_compare(primary_id, &config()->uuid.string))
+		error("repl: primary id cannot match this server id");
+}
+
 void
 repl_open(Repl* self)
 {
@@ -60,8 +67,12 @@ repl_open(Repl* self)
 	replica_mgr_open(&self->replica_mgr);
 
 	// current server is replica
-	if (! str_empty(&config()->repl_primary.string))
+	auto primary_id = &config()->repl_primary.string;
+	if (! str_empty(primary_id))
 	{
+		// validate id
+		repl_validate_primary(primary_id);
+
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
@@ -104,6 +115,8 @@ repl_promote(Repl* self, Str* primary_id)
 	// switch to replica
 	if (primary_id)
 	{
+		// validate id
+		repl_validate_primary(primary_id);
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
