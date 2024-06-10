@@ -128,6 +128,56 @@ show repl
 }
 show lsn
 8
+# test: failover (promote replica to primary)
+show repl
+{
+  "active": true,
+  "role": "replica",
+  "primary": "00000000-0000-0000-0000-000000000000"
+}
+promote reset
+show repl
+{
+  "active": true,
+  "role": "primary",
+  "primary": null
+}
+# test: drop replica
+switch S0
+drop replica "00000000-0000-0000-0000-000000000001"
+show replicas
+[]
+# test: promote new primary
+switch S0
+promote "00000000-0000-0000-0000-000000000001"
+show repl
+{
+  "active": true,
+  "role": "replica",
+  "primary": "00000000-0000-0000-0000-000000000001"
+}
+# test: create replica
+switch S1
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1:3480"
+# test: wait for primary connect
+watch system.replicas()[0].connected = true
+watch system.replicas()[0].lsn = system.config().lsn
+# test: write
+insert into test 10
+insert into test 11
+insert into test 12
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show replicas
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "uri": "127.0.0.1:3480",
+  "connected": true,
+  "lsn": 11,
+  "lag": 0
+}]
+select * from test
+[[3], [4], [5], [8], [9], [2], [6], [7], [10], [11], [1], [12]]
 disconnect S1
 close E1
 disconnect S0

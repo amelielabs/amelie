@@ -101,7 +101,7 @@ repl_promote(Repl* self, Str* primary_id)
 	if (! var_int_of(&config()->repl))
 		error("replication: is disabled");
 
-	// become replica
+	// switch to replica
 	if (primary_id)
 	{
 		self->role = REPL_REPLICA;
@@ -117,7 +117,7 @@ repl_promote(Repl* self, Str* primary_id)
 		return;
 	}
 
-	// become primary
+	// switch to primary
 
 	// set to read-write
 	var_int_set(&config()->read_only, false);
@@ -127,6 +127,7 @@ repl_promote(Repl* self, Str* primary_id)
 	str_init(&empty);
 	var_string_set(&config()->repl_primary, &empty);
 
+	self->role = REPL_PRIMARY;
 	log("replication: switch to primary");
 }
 
