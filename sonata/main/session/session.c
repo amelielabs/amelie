@@ -243,6 +243,10 @@ session_primary_on_write(Primary* self, Buf* data)
 hot static void
 session_primary(Session* self)
 {
+	// switch plan to replication state to write wal
+	// while in read-only mode
+	plan_set_repl(&self->plan);
+
 	Primary primary;
 	primary_init(&primary, self->client, session_primary_on_write, self);
 	primary_main(&primary);

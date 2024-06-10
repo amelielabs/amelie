@@ -119,8 +119,25 @@ show replicas
   "lsn": 8,
   "lag": 0
 }]
-# test: replica read
+# test: ensure replica is read-only
 switch S1
+show read_only
+true
+show lsn
+8
+insert into test 10
+{"code": 1, "msg": "system is in read-only mode"}
+show lsn
+8
+show psn
+3
+create table test2 (id int primary key)
+{"code": 1, "msg": "system is in read-only mode"}
+show lsn
+8
+show psn
+3
+# test: replica read
 select * from test
 [[3], [4], [5], [8], [9], [2], [6], [7], [1]]
 show repl

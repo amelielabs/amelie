@@ -100,9 +100,20 @@ insert into test 9
 watch system.replicas()[0].lsn = system.config().lsn
 show replicas
 
-# test: replica read
+# test: ensure replica is read-only
 switch S1
 
+show read_only
+show lsn
+insert into test 10
+show lsn
+
+show psn
+create table test2 (id int primary key)
+show lsn
+show psn
+
+# test: replica read
 select * from test
 show repl
 show lsn

@@ -23,6 +23,7 @@ struct Plan
 	TrxSet     set;
 	Dispatch   dispatch;
 	bool       snapshot;
+	bool       repl;
 	Code*      code;
 	CodeData*  code_data;
 	Result     cte;
@@ -40,15 +41,16 @@ plan_init(Plan*     self, Router* router,
           TrxCache* trx_cache,
           ReqCache* req_cache)
 {
-	self->state     = PLAN_NONE;
-	self->snapshot  = false;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->error     = NULL;
-	self->on_commit = NULL;
-	self->req_cache = req_cache;
-	self->trx_cache = trx_cache;
-	self->router    = router;
+	self->state       = PLAN_NONE;
+	self->snapshot    = false;
+	self->repl        = false;
+	self->code        = NULL;
+	self->code_data   = NULL;
+	self->error       = NULL;
+	self->on_commit   = NULL;
+	self->req_cache   = req_cache;
+	self->trx_cache   = trx_cache;
+	self->router      = router;
 	trx_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
@@ -111,6 +113,12 @@ static inline void
 plan_set_snapshot(Plan* self)
 {
 	self->snapshot = true;
+}
+
+static inline void
+plan_set_repl(Plan* self)
+{
+	self->repl = true;
 }
 
 static inline void

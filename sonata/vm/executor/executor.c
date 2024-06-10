@@ -176,7 +176,13 @@ executor_wal_write(Executor* self)
 			wal_batch_add(wal_batch, &trx->trx.log.log_set);
 		}
 		if (wal_batch->header.count > 0)
+		{
+			// unless plan is used for replication writer, respect system
+			// read-only state
+			if (!plan->repl && var_int_of(&config()->read_only))
+				error("system is in read-only mode");
 			wal_write(wal, wal_batch);
+		}
 	}
 }
 
