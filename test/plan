@@ -80,3 +80,4 @@ directory repl
 group repl
 test replica
 test repl
+test streaming
