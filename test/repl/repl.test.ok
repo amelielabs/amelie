@@ -23,6 +23,9 @@ show repl
 }
 # test: start replica
 start repl
+# test: promote (using self id)
+promote "00000000-0000-0000-0000-000000000001"
+{"code": 1, "msg": "repl: primary id cannot match this server id"}
 # test: promote
 promote "00000000-0000-0000-0000-000000000000"
 show repl

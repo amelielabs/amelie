@@ -20,6 +20,9 @@ show repl
 # test: start replica
 start repl
 
+# test: promote (using self id)
+promote "00000000-0000-0000-0000-000000000001"
+
 # test: promote
 promote "00000000-0000-0000-0000-000000000000"
 show repl
