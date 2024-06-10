@@ -70,6 +70,11 @@ test cte_expr
 test cte
 test abort
 
+# cluster
+directory cluster
+group cluster
+test node
+
 # backup
 directory backup
 group backup

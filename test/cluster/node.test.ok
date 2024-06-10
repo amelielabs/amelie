@@ -1,0 +1,305 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 0
+connect E0 S0 localhost:3480
+# test: bootstrap (no nodes)
+show nodes
+[]
+# test: ddl (without nodes)
+create table test (id int primary key)
+{"code": 1, "msg": "system has no nodes"}
+create table test (id int primary key) reference
+{"code": 1, "msg": "system has no nodes"}
+select * from test
+{"code": 1, "msg": "<test> table or view is not found"}
+select * from [1,2,3]
+[1, 2, 3]
+# test: create node statement parsing
+create node
+{"code": 1, "msg": "CREATE NODE <FOR> expected"}
+create node 1
+{"code": 1, "msg": "CREATE NODE <FOR> expected"}
+create node for
+{"code": 1, "msg": "CREATE NODE FOR <COMPUTE> expected"}
+create node for 1
+{"code": 1, "msg": "CREATE NODE FOR <COMPUTE> expected"}
+# test: create node id
+create node "" for compute
+{"code": 1, "msg": "failed to parse uuid"}
+create node "00000000-0000-0000-0000-000000000000" for compute
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}]
+# test: create node already exists
+create node "00000000-0000-0000-0000-000000000000" for compute
+{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
+# test: create node if not exists
+create node if "00000000-0000-0000-0000-000000000000" for compute
+{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+create node if
+{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+create node if not
+{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+create node if not exists
+{"code": 1, "msg": "CREATE NODE <FOR> expected"}
+create node if not exists "00000000-0000-0000-0000-000000000000" for compute
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}]
+# test: ddl/dml (with one node)
+create table test1 (id int primary key)
+create table test2 (id int primary key) reference
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "reference": false,
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "primary": true,
+    "def": {
+      "column": [{
+        "name": "id",
+        "type": 2,
+        "constraint": {
+          "not_null": true,
+          "generated": 0,
+          "default": null
+        }
+      }],
+      "key": [{
+        "column": 0,
+        "type": 2,
+        "path": "",
+        "asc": false
+      }],
+      "key_unique": false,
+      "key_exclude": 0,
+      "reserved": 0
+    }
+  }],
+  "partitions": [{
+    "id": 1,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test2",
+  "reference": true,
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "primary": true,
+    "def": {
+      "column": [{
+        "name": "id",
+        "type": 2,
+        "constraint": {
+          "not_null": true,
+          "generated": 0,
+          "default": null
+        }
+      }],
+      "key": [{
+        "column": 0,
+        "type": 2,
+        "path": "",
+        "asc": false
+      }],
+      "key_unique": false,
+      "key_exclude": 0,
+      "reserved": 0
+    }
+  }],
+  "partitions": [{
+    "id": 2,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}]
+insert into test1 values (1), (2), (3); insert into test2 4,5,6
+select * from test1
+[[1], [2], [3]]
+select * from test2
+[[4], [5], [6]]
+# test: restart
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 0
+connect E0 S0 localhost:3480
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}]
+select * from test1
+[[1], [2], [3]]
+select * from test2
+[[4], [5], [6]]
+# test: drop node statement parsing
+drop node
+{"code": 1, "msg": "DROP NODE <id> expected"}
+drop node 1
+{"code": 1, "msg": "DROP NODE <id> expected"}
+drop node ""
+{"code": 1, "msg": "failed to parse uuid"}
+# test: drop node if exists
+drop node "00000000-0000-0000-0000-000000000001"
+{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
+drop node if exists "00000000-0000-0000-0000-000000000001"
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}]
+# test: drop node with dependency
+drop node "00000000-0000-0000-0000-000000000000"
+{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
+# test: drop node without dependency
+create node "00000000-0000-0000-0000-000000000001" for compute
+create node "00000000-0000-0000-0000-000000000002" for compute
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}, {
+  "id": "00000000-0000-0000-0000-000000000001"
+}, {
+  "id": "00000000-0000-0000-0000-000000000002"
+}]
+drop node "00000000-0000-0000-0000-000000000001"
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}, {
+  "id": "00000000-0000-0000-0000-000000000002"
+}]
+drop node "00000000-0000-0000-0000-000000000001"
+{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
+drop node if exists "00000000-0000-0000-0000-000000000001"
+# test: ddl (two nodes partitioning)
+create table test3 (id int primary key)
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "reference": false,
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "primary": true,
+    "def": {
+      "column": [{
+        "name": "id",
+        "type": 2,
+        "constraint": {
+          "not_null": true,
+          "generated": 0,
+          "default": null
+        }
+      }],
+      "key": [{
+        "column": 0,
+        "type": 2,
+        "path": "",
+        "asc": false
+      }],
+      "key_unique": false,
+      "key_exclude": 0,
+      "reserved": 0
+    }
+  }],
+  "partitions": [{
+    "id": 1,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test2",
+  "reference": true,
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "primary": true,
+    "def": {
+      "column": [{
+        "name": "id",
+        "type": 2,
+        "constraint": {
+          "not_null": true,
+          "generated": 0,
+          "default": null
+        }
+      }],
+      "key": [{
+        "column": 0,
+        "type": 2,
+        "path": "",
+        "asc": false
+      }],
+      "key_unique": false,
+      "key_exclude": 0,
+      "reserved": 0
+    }
+  }],
+  "partitions": [{
+    "id": 2,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test3",
+  "reference": false,
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "primary": true,
+    "def": {
+      "column": [{
+        "name": "id",
+        "type": 2,
+        "constraint": {
+          "not_null": true,
+          "generated": 0,
+          "default": null
+        }
+      }],
+      "key": [{
+        "column": 0,
+        "type": 2,
+        "path": "",
+        "asc": false
+      }],
+      "key_unique": false,
+      "key_exclude": 0,
+      "reserved": 0
+    }
+  }],
+  "partitions": [{
+    "id": 3,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 4048
+  }, {
+    "id": 4,
+    "node": "00000000-0000-0000-0000-000000000002",
+    "min": 4048,
+    "max": 8096
+  }]
+}]
+# test: drop node (after table drop)
+drop node "00000000-0000-0000-0000-000000000002"
+{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
+drop table test3
+drop node "00000000-0000-0000-0000-000000000002"
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}]
+disconnect S0
+close E0

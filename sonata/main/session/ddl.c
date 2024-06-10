@@ -99,6 +99,9 @@ ddl_create_table(Session* self, Transaction* trx)
 
 	// create table partitions
 	auto cluster = self->share->cluster;
+	if (! cluster->list_count)
+		error("system has no nodes");
+
 	if (config->reference)
 	{
 		// reference table require only one partition
