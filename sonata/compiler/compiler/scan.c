@@ -43,7 +43,7 @@ typedef struct
 } Scan;
 
 static inline void
-scan_generate_key(Scan* self, Target* target)
+scan_key(Scan* self, Target* target)
 {
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
@@ -74,7 +74,7 @@ scan_generate_key(Scan* self, Target* target)
 }
 
 static inline void
-scan_generate_stop(Scan* self, Target* target, int _eof)
+scan_stop(Scan* self, Target* target, int _eof)
 {
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
@@ -97,10 +97,10 @@ scan_generate_stop(Scan* self, Target* target, int _eof)
 }
 
 static inline void
-scan_generate_target(Scan*, Target*);
+scan_target(Scan*, Target*);
 
 static inline void
-scan_generate_target_table(Scan* self, Target* target)
+scan_target_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
@@ -111,7 +111,7 @@ scan_generate_target_table(Scan* self, Target* target)
 	auto plan = ast_plan_of(target->plan);
 
 	// push cursor keys
-	scan_generate_key(self, target);
+	scan_key(self, target);
 
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
@@ -139,12 +139,12 @@ scan_generate_target_table(Scan* self, Target* target)
 	code_at(cp->code, _open)->c = _where;
 
 	// generate scan stop conditions for <, <=
-	scan_generate_stop(self, target, _where_eof);
+	scan_stop(self, target, _where_eof);
 
 	if (target->next_join)
 	{
 		// recursive to inner target
-		scan_generate_target(self, target->next_join);
+		scan_target(self, target->next_join);
 	} else
 	{
 		// generate inner target condition
@@ -201,7 +201,7 @@ scan_generate_target_table(Scan* self, Target* target)
 }
 
 static inline void
-scan_generate_target_expr(Scan* self, Target* target)
+scan_target_expr(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 
@@ -239,7 +239,7 @@ scan_generate_target_expr(Scan* self, Target* target)
 
 	if (target->next_join)
 	{
-		scan_generate_target(self, target->next_join);
+		scan_target(self, target->next_join);
 	} else
 	{
 		// where expr
@@ -286,40 +286,12 @@ scan_generate_target_expr(Scan* self, Target* target)
 }
 
 static inline void
-scan_generate_target(Scan* self, Target* target)
+scan_target(Scan* self, Target* target)
 {
 	if (target->table)
-		scan_generate_target_table(self, target);
+		scan_target_table(self, target);
 	else
-		scan_generate_target_expr(self, target);
-}
-
-static inline void
-scan_generate(Scan* self)
-{
-	auto cp = self->compiler;
-
-	// offset
-	if (self->expr_offset)
-	{
-		int roffset;
-		roffset = emit_expr(cp, self->target, self->expr_offset);
-		self->coffset = op_pos(cp);
-		op3(cp, CCNTR_INIT, self->target->id, 1, roffset);
-		runpin(cp, roffset);
-	}
-
-	// limit
-	if (self->expr_limit)
-	{
-		int rlimit;
-		rlimit = emit_expr(cp, self->target, self->expr_limit);
-		self->climit = op_pos(cp);
-		op3(cp, CCNTR_INIT, self->target->id, 0, rlimit);
-		runpin(cp, rlimit);
-	}
-
-	scan_generate_target(self, self->target);
+		scan_target_expr(self, target);
 }
 
 void
@@ -345,6 +317,25 @@ scan(Compiler*    compiler,
 		.compiler     = compiler
 	};
 
-	// generate scan
-	scan_generate(&self);
+	// offset
+	if (expr_offset)
+	{
+		int roffset;
+		roffset = emit_expr(compiler, target, expr_offset);
+		self.coffset = op_pos(compiler);
+		op3(compiler, CCNTR_INIT, target->id, 1, roffset);
+		runpin(compiler, roffset);
+	}
+
+	// limit
+	if (expr_limit)
+	{
+		int rlimit;
+		rlimit = emit_expr(compiler, target, expr_limit);
+		self.climit = op_pos(compiler);
+		op3(compiler, CCNTR_INIT, target->id, 0, rlimit);
+		runpin(compiler, rlimit);
+	}
+
+	scan_target(&self, target);
 }
