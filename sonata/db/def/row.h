@@ -10,10 +10,10 @@ typedef struct Row Row;
 
 struct Row
 {
-	uint8_t size_factor: 2;
-	uint8_t is_secondary: 1;
-	uint8_t flags: 5;
-	uint8_t data[];
+	uint8_t  size_factor: 2;
+	uint8_t  is_secondary: 1;
+	uint8_t  flags: 5;
+	uint32_t hash;
 	// reserved[]
 	// size
 	// data_index[]
@@ -23,19 +23,19 @@ struct Row
 always_inline hot static inline uint8_t*
 row_data_1(Row* self, Def* def)
 {
-	return self->data + def->reserved;
+	return (uint8_t*)self + sizeof(Row) + def->reserved;
 }
 
 always_inline hot static inline uint16_t*
 row_data_2(Row* self, Def* def)
 {
-	return (uint16_t*)(self->data + def->reserved);
+	return (uint16_t*)(row_data_1(self, def));
 }
 
 always_inline hot static inline uint32_t*
 row_data_4(Row* self, Def* def)
 {
-	return (uint32_t*)(self->data + def->reserved);
+	return (uint32_t*)(row_data_1(self, def));
 }
 
 always_inline hot static inline int
@@ -92,7 +92,7 @@ row_size_factor_of(Def* def, int data_size)
 always_inline hot static inline void*
 row_reserved(Row* self)
 {
-	return self->data;
+	return (uint8_t*)self + sizeof(Row);
 }
 
 always_inline hot static inline Row*
@@ -147,6 +147,7 @@ row_allocate(Def* def, int data_size)
 	Row* self = so_malloc(size);
 	self->size_factor = size_factor;
 	self->is_secondary = false;
+	self->hash         = 0;
 	self->flags        = 0;
 
 	// set data size

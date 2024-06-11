@@ -17,3 +17,10 @@
 
 #include "index/tree.h"
 #include "index/tree_iterator.h"
+
+// hash
+#include "index/ht.h"
+#include "index/htt.h"
+#include "index/htt_iterator.h"
+#include "index/hash.h"
+#include "index/hash_iterator.h"

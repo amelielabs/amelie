@@ -26,6 +26,7 @@ OBJECTS        = \
                  transaction/commit.o \
                  index/ttree.o \
                  index/tree.o \
+                 index/hash.o \
                  partition/part.o \
                  partition/part_list.o \
                  partition/snapshot.o \

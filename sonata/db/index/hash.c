@@ -15,7 +15,7 @@
 #include <sonata_index.h>
 
 static void
-tree_commit(LogOp* op)
+hash_commit(LogOp* op)
 {
 	// free row or add row to the free list
 	if (op->row.prev)
@@ -23,31 +23,31 @@ tree_commit(LogOp* op)
 }
 
 static void
-tree_set_abort(LogOp* op)
+hash_set_abort(LogOp* op)
 {
-	auto self = (Tree*)op->arg;
+	auto self = (Hash*)op->arg;
 	// replace back or remove
 	if (op->row.prev)
-		ttree_set(&self->tree, op->row.prev);
+		htt_set(&self->ht, op->row.prev);
 	else
-		ttree_unset(&self->tree, op->row.row);
+		htt_delete(&self->ht, op->row.row);
 	row_free(op->row.row);
 }
 
 hot static bool
-tree_set(Index* arg, Transaction* trx, Row* row)
+hash_set(Index* arg, Transaction* trx, Row* row)
 {
-	auto self = tree_of(arg);
+	auto self = hash_of(arg);
 
 	// reserve log
 	log_reserve(&trx->log);
 
-	auto prev = ttree_set(&self->tree, row);
+	auto prev = htt_set(&self->ht, row);
 
 	// update transaction log
 	log_row(&trx->log, LOG_REPLACE,
-	        tree_commit,
-	        tree_set_abort,
+	        hash_commit,
+	        hash_set_abort,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -59,21 +59,21 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 }
 
 hot static void
-tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
+hash_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 {
-	auto self = tree_of(arg);
+	auto self = hash_of(arg);
 
 	// reserve log
 	log_reserve(&trx->log);
 
 	// replace
-	auto tree_it = tree_iterator_of(it);
-	auto prev = ttree_iterator_replace(&tree_it->iterator, row);
+	auto hash_it = hash_iterator_of(it);
+	auto prev = htt_iterator_replace(&hash_it->iterator, row);
 
 	// update transaction log
 	log_row(&trx->log, LOG_REPLACE,
-	        tree_commit,
-	        tree_set_abort,
+	        hash_commit,
+	        hash_set_abort,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -82,29 +82,29 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 }
 
 static void
-tree_delete_abort(LogOp* op)
+hash_delete_abort(LogOp* op)
 {
-	auto self = (Tree*)op->arg;
+	auto self = (Hash*)op->arg;
 	// prev always exists
-	ttree_set(&self->tree, op->row.prev);
+	htt_set(&self->ht, op->row.prev);
 }
 
 hot static void
-tree_delete(Index* arg, Transaction* trx, Iterator* it)
+hash_delete(Index* arg, Transaction* trx, Iterator* it)
 {
-	auto self = tree_of(arg);
+	auto self = hash_of(arg);
 
 	// reserve log
 	log_reserve(&trx->log);
 
 	// delete by using current position
-	auto tree_it = tree_iterator_of(it);
-	auto prev = ttree_iterator_delete(&tree_it->iterator);
+	auto hash_it = hash_iterator_of(it);
+	auto prev = htt_iterator_delete(&hash_it->iterator);
 
 	// update transaction log
 	log_row(&trx->log, LOG_DELETE,
-	        tree_commit,
-	        tree_delete_abort,
+	        hash_commit,
+	        hash_delete_abort,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -113,15 +113,15 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 }
 
 hot static void
-tree_delete_by(Index* arg, Transaction* trx, Row* key)
+hash_delete_by(Index* arg, Transaction* trx, Row* key)
 {
-	auto self = tree_of(arg);
+	auto self = hash_of(arg);
 
 	// reserve log
 	log_reserve(&trx->log);
 
 	// delete by key
-	auto prev = ttree_unset(&self->tree, key);
+	auto prev = htt_delete(&self->ht, key);
 	if (! prev)
 	{
 		// does not exists
@@ -130,8 +130,8 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 
 	// update transaction log
 	log_row(&trx->log, LOG_DELETE,
-	        tree_commit,
-	        tree_delete_abort,
+	        hash_commit,
+	        hash_delete_abort,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -140,28 +140,28 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 }
 
 hot static void
-tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
+hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 {
-	auto self = tree_of(arg);
+	auto self = hash_of(arg);
 
 	// reserve log
 	log_reserve(&trx->log);
 
 	// insert or return iterator on existing position
-	TtreePos pos;
-	auto prev = ttree_set_or_get(&self->tree, row, &pos);
+	uint64_t pos = 0;	
+	auto prev = htt_get_or_set(&self->ht, row, &pos);
 	if (prev)
 	{
-		*it = tree_iterator_allocate(self);
-		auto tree_it = tree_iterator_of(*it);
-		ttree_iterator_open_at(&tree_it->iterator, &self->tree, &pos);
+		*it = hash_iterator_allocate(self);
+		auto hash_it = hash_iterator_of(*it);
+		htt_iterator_open_at(&hash_it->iterator, &self->ht, pos);
 		return;
 	}
 
 	// update transaction log
 	log_row(&trx->log, LOG_REPLACE,
-	        tree_commit,
-	        tree_set_abort,
+	        hash_commit,
+	        hash_set_abort,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -172,46 +172,50 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 }
 
 hot static void
-tree_ingest(Index* arg, Row* row)
+hash_ingest(Index* arg, Row* row)
 {
-	auto self = tree_of(arg);
-	auto prev = ttree_set(&self->tree, row);
+	auto self = hash_of(arg);
+	auto prev = htt_set(&self->ht, row);
 	assert(! prev);
 }
 
 hot static Iterator*
-tree_open(Index* arg, Row* key, bool start)
+hash_open(Index* arg, Row* key, bool start)
 {
-	auto self = tree_of(arg);
-	auto it = tree_iterator_allocate(self);
+	auto self = hash_of(arg);
+	auto it = hash_iterator_allocate(self);
 	if (start)
-		tree_iterator_open(it, key);
+		hash_iterator_open(it, key);
 	return it;
 }
 
 static void
-tree_free(Index* arg)
+hash_free(Index* arg)
 {
-	auto self = tree_of(arg);
-	ttree_free(&self->tree);
+	auto self = hash_of(arg);
+	htt_free(&self->ht);
 	so_free(self);
 }
 
 Index*
-tree_allocate(IndexConfig* config, uint64_t partition)
+hash_allocate(IndexConfig* config, uint64_t partition)
 {
-	Tree* self = so_malloc(sizeof(*self));
+	Hash* self = so_malloc(sizeof(*self));
 	index_init(&self->index, config, partition);
-	ttree_init(&self->tree, 512, 256, &config->def);
+	htt_init(&self->ht);
+	guard(hash_free, self);
 
 	auto iface = &self->index.iface;
-	iface->set       = tree_set;
-	iface->update    = tree_update;
-	iface->delete    = tree_delete;
-	iface->delete_by = tree_delete_by;
-	iface->upsert    = tree_upsert;
-	iface->ingest    = tree_ingest;
-	iface->open      = tree_open;
-	iface->free      = tree_free;
+	iface->set       = hash_set;
+	iface->update    = hash_update;
+	iface->delete    = hash_delete;
+	iface->delete_by = hash_delete_by;
+	iface->upsert    = hash_upsert;
+	iface->ingest    = hash_ingest;
+	iface->open      = hash_open;
+	iface->free      = hash_free;
+
+	htt_create(&self->ht, &config->def);
+	unguard();
 	return &self->index;
 }
