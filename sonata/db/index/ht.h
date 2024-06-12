@@ -168,7 +168,6 @@ ht_next(Ht* self, uint64_t* at)
 		auto ref = self->table[pos];
 		if (!ref || ref == &self->deleted)
 			continue;
-
 		// set to next
 		*at = pos;
 		return ref;

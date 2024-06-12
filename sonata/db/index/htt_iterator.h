@@ -110,16 +110,24 @@ htt_iterator_next(HttIterator* self)
 static inline Row*
 htt_iterator_replace(HttIterator* self, Row* row)
 {
-	assert(self->current);
+	auto current = self->current;
+	assert(current);
 	self->current = row;
-	return htt_replace_by(self->ht, self->current_ht, self->pos, row);
+	auto table = self->current_ht->table;
+	table[self->pos] = row;
+	return current;
 }
 
 static inline Row*
 htt_iterator_delete(HttIterator* self)
 {
 	// keeping current as is
-	return htt_delete_by(self->ht, self->current_ht, self->pos);
+	auto current = self->current;
+	auto current_ht = self->current_ht;
+	auto table = current_ht->table;
+	table[self->pos] = &current_ht->deleted;
+	current_ht->count--;
+	return current;
 }
 
 static inline void
