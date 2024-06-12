@@ -73,9 +73,14 @@ table_find_index(Table* self, Str* name, bool error_if_not_exists)
 	return NULL;
 }
 
+static inline IndexConfig*
+table_primary(Table* self)
+{
+	return container_of(self->config->indexes.next, IndexConfig, link);
+}
+
 static inline Def*
 table_def(Table* self)
 {
-	auto primary = container_of(self->config->indexes.next, IndexConfig, link);
-	return &primary->def;
+	return &table_primary(self)->def;
 }

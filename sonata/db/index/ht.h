@@ -87,7 +87,7 @@ ht_set(Ht* self, Row* row)
 			self->count++;
 			return NULL;
 		}
-		if (ref->hash == row->hash && compare(self->def, ref, row))
+		if (ref->hash == row->hash && !compare(self->def, ref, row))
 		{
 			self->table[pos] = row;
 			return ref;
@@ -112,7 +112,7 @@ ht_delete(Ht* self, Row* key)
 			break;
 		if (ref != &self->deleted)
 		{
-			if (ref->hash == key->hash && compare(self->def, ref, key))
+			if (ref->hash == key->hash && !compare(self->def, ref, key))
 			{
 				table[pos] = &self->deleted;
 				self->count--;
@@ -145,7 +145,7 @@ ht_get(Ht* self, Row* key, uint64_t* at)
 			*at = pos;
 		} else
 		{
-			if (ref->hash == key->hash && compare(self->def, ref, key))
+			if (ref->hash == key->hash && !compare(self->def, ref, key))
 			{
 				*at = pos;
 				return ref;

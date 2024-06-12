@@ -104,11 +104,14 @@ scan_target_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
+	auto table = target->table;
+	auto index = table_primary(table);
 
 	// prepare scan plan using where expression per target
 	if (! target->plan)
 		target->plan = &plan(target_list, target, self->expr_where)->ast;
 	auto plan = ast_plan_of(target->plan);
+	auto point_lookup = (plan->type == SCAN_LOOKUP);
 
 	// push cursor keys
 	scan_key(self, target);
@@ -118,13 +121,13 @@ scan_target_table(Scan* self, Target* target)
 	Str index_name;
 	str_init(&index_name);
 	str_set_cstr(&index_name, "primary");
-	encode_string(&cp->code_data.data, &target->table->config->schema);
-	encode_string(&cp->code_data.data, &target->table->config->name);
+	encode_string(&cp->code_data.data, &table->config->schema);
+	encode_string(&cp->code_data.data, &table->config->name);
 	encode_string(&cp->code_data.data, &index_name);
 
 	// cursor_open
 	int _open = op_pos(cp);
-	op3(cp, CCURSOR_OPEN, target->id, name_offset, 0 /* _where */);
+	op4(cp, CCURSOR_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -138,8 +141,9 @@ scan_target_table(Scan* self, Target* target)
 	int _where = op_pos(cp);
 	code_at(cp->code, _open)->c = _where;
 
-	// generate scan stop conditions for <, <=
-	scan_stop(self, target, _where_eof);
+	// generate scan stop conditions for <, <= for tree index
+	if (index->type == INDEX_TREE)
+		scan_stop(self, target, _where_eof);
 
 	if (target->next_join)
 	{
@@ -177,7 +181,7 @@ scan_target_table(Scan* self, Target* target)
 		if (self->expr_where)
 		{
 			// point lookup
-			if (plan->type == SCAN_LOOKUP)
+			if (point_lookup)
 				code_at(cp->code, _where_jntr)->a = _where_eof;
 			else
 				code_at(cp->code, _where_jntr)->a = _next;
@@ -189,7 +193,7 @@ scan_target_table(Scan* self, Target* target)
 	// cursor_next
 
 	// do not iterate further for point-lookups on unique index
-	if (plan->type == SCAN_LOOKUP && table_def(target->table)->key_unique)
+	if (point_lookup && index->def.key_unique)
 		op1(cp, CJMP, _where_eof);
 	else
 		op2(cp, CCURSOR_NEXT, target->id, _where);

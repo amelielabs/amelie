@@ -28,7 +28,7 @@
 hot Op*
 ccursor_open(Vm* self, Op* op)
 {
-	// [target_id, name_offset, _where]
+	// [target_id, name_offset, _where, point_lookup]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
@@ -47,7 +47,8 @@ ccursor_open(Vm* self, Op* op)
 	auto def   = index_def(index);
 
 	// create cursor key
-	auto key = value_row_key(def, &self->stack);
+	auto hash = index->config->type == INDEX_HASH;
+	auto key = value_row_key(def, hash, &self->stack);
 	guard(row_free, key);
 	stack_popn(&self->stack, def->key_count);
 
@@ -56,7 +57,11 @@ ccursor_open(Vm* self, Op* op)
 	cursor->table = table;
 	cursor->def   = def;
 	cursor->part  = part;
-	cursor->it    = index_open(index, key, true);
+
+	// in case of hash index, use key only for point-lookup
+	auto key_ref =
+		hash && !op->d ? NULL : key;
+	cursor->it = index_open(index, key_ref, true);
 
 	// jmp if has data
 	if (iterator_has(cursor->it))

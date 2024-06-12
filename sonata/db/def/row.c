@@ -13,11 +13,12 @@
 #include <sonata_def.h>
 
 hot Row*
-row_create(Def* def, uint8_t** pos)
+row_create(Def* def, bool create_hash, uint8_t** pos)
 {
 	// validate columns and indexate key
 	uint32_t index[def->key_count];
 	uint32_t index_size[def->key_count];
+	uint32_t hash = 0;
 
 	// []
 	uint8_t* data = *pos;	
@@ -59,6 +60,10 @@ row_create(Def* def, uint8_t** pos)
 			uint8_t* pos_key_end = pos_key;
 			data_skip(&pos_key_end);
 			index_size[key->order] = pos_key_end - pos_key;
+
+			// hash key
+			if (create_hash)
+				hash = hash_murmur3_32(pos_key, pos_key_end - pos_key, hash);
 		}
 
 		data_skip(pos);
@@ -73,6 +78,7 @@ row_create(Def* def, uint8_t** pos)
 	for (int i = 0; i < def->key_count; i++)
 		row_key_set_index(self, def, i, index[i]);
 	memcpy(row_data(self, def), data, data_size);
+	self->hash = hash;
 	return self;
 }
 

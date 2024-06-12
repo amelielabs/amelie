@@ -51,7 +51,14 @@ part_open(Part* self, List* indexes)
 	list_foreach(indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		auto index  = tree_allocate(config, self->config->id);
+		Index* index;
+		if (config->type == INDEX_TREE)
+			index = tree_allocate(config, self->config->id);
+		else
+		if (config->type == INDEX_HASH)
+			index = hash_allocate(config, self->config->id);
+		else
+			error("unrecognized index type");
 		list_append(&self->indexes, &index->link);
 		self->indexes_count++;
 	}
@@ -61,9 +68,10 @@ hot void
 part_ingest(Part* self, uint8_t** pos)
 {
 	auto primary = part_primary(self);
+	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, pos);
+	auto row = row_create(&primary->config->def, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -80,9 +88,10 @@ part_set(Part*        self,
          uint8_t**    pos)
 {
 	auto primary = part_primary(self);
+	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, pos);
+	auto row = row_create(&primary->config->def, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -100,11 +109,12 @@ part_update(Part*        self,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
+	auto hash = primary->config->type == INDEX_HASH;
 
 	// todo: primary iterator only
 
 	// allocate row
-	auto row = row_create(&primary->config->def, pos);
+	auto row = row_create(&primary->config->def, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -130,9 +140,10 @@ part_delete_by(Part*        self,
                uint8_t**    pos)
 {
 	auto primary = part_primary(self);
+	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto key = row_create(&primary->config->def, pos);
+	auto key = row_create(&primary->config->def, hash, pos);
 	guard(row_free, key);
 
 	// delete from primary index by key
@@ -146,9 +157,10 @@ part_upsert(Part*        self,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
+	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, pos);
+	auto row = row_create(&primary->config->def, hash, pos);
 	guard(row_free, row);
 
 	// do insert or return iterator

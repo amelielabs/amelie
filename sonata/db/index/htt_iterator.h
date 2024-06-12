@@ -24,9 +24,26 @@ htt_iterator_open(HttIterator* self, Htt* ht, Row* key)
 	self->pos        = 0;
 	self->ht         = ht;
 
-	// todo: key support
-	(void)key;
+	// point-lookup
+	if (key)
+	{
+		self->current_ht = ht->current;
+		self->current = ht_get(ht->current, key, &self->pos);
+		if (self->current)
+			return true;
 
+		if (ht->rehashing)
+		{
+			self->current_ht = ht->prev;
+			self->current = ht_get(ht->prev, key, &self->pos);
+			if (self->current)
+				return true;
+		}
+
+		return false;
+	}
+
+	// full scan
 	if (ht->rehashing)
 	{
 		self->current_ht = self->ht->current;

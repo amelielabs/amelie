@@ -65,6 +65,7 @@ show tables
         "constraint": {
           "not_null": true,
           "generated": 0,
+          "modulo": 9223372036854775807,
           "default": null
         }
       }],
@@ -100,6 +101,7 @@ show tables
         "constraint": {
           "not_null": true,
           "generated": 0,
+          "modulo": 9223372036854775807,
           "default": null
         }
       }],
@@ -196,6 +198,7 @@ show tables
         "constraint": {
           "not_null": true,
           "generated": 0,
+          "modulo": 9223372036854775807,
           "default": null
         }
       }],
@@ -231,6 +234,7 @@ show tables
         "constraint": {
           "not_null": true,
           "generated": 0,
+          "modulo": 9223372036854775807,
           "default": null
         }
       }],
@@ -266,6 +270,7 @@ show tables
         "constraint": {
           "not_null": true,
           "generated": 0,
+          "modulo": 9223372036854775807,
           "default": null
         }
       }],

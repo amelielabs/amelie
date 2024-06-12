@@ -7,7 +7,7 @@
 //
 
 hot static inline Row*
-value_row_key(Def* self, Stack* stack)
+value_row_key(Def* self, bool create_hash, Stack* stack)
 {
 	// calculate row size and validate columns
 	int size = data_size_array() + data_size_array_end();
@@ -45,10 +45,13 @@ value_row_key(Def* self, Stack* stack)
 	{
 		auto ref = stack_at(stack, self->key_count - key->order);
 		row_key_set_index(row, self, key->order, pos - start);
+		auto start_key = pos;
 		if (key->type == TYPE_STRING)
 			data_write_string(&pos, &ref->string);
 		else
 			data_write_integer(&pos, ref->integer);
+		if (create_hash)
+			row->hash = hash_murmur3_32(start_key, pos - start_key, row->hash);
 	}
 	data_write_array_end(&pos);
 	return row;
