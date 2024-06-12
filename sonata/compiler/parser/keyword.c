@@ -181,6 +181,7 @@ static Keyword keywords_r[] =
 	{ KREPLICATION,           "replication",           11 },
 	{ KREFERENCE,             "reference",             9  },
 	{ KRESET,                 "reset",                 5  },
+	{ KRANDOM,                "random",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

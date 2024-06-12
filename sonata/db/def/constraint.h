@@ -11,13 +11,15 @@ typedef struct Constraint Constraint;
 enum
 {
 	GENERATED_NONE,
-	GENERATED_SERIAL
+	GENERATED_SERIAL,
+	GENERATED_RANDOM
 };
 
 struct Constraint
 {
 	bool    not_null;
 	int64_t generated;
+	int64_t modulo;
 	Buf     value;
 };
 
@@ -26,6 +28,7 @@ constraint_init(Constraint* self)
 {
 	self->not_null  = false;
 	self->generated = GENERATED_NONE;
+	self->modulo    = INT64_MAX;
 	buf_init(&self->value);
 }
 
@@ -48,6 +51,12 @@ constraint_set_generated(Constraint* self, int value)
 }
 
 static inline void
+constraint_set_modulo(Constraint* self, int64_t value)
+{
+	self->modulo = value;
+}
+
+static inline void
 constraint_set_default(Constraint* self, Buf* buf)
 {
 	buf_reset(&self->value);
@@ -59,6 +68,7 @@ constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
 	constraint_set_generated(copy, self->generated);
+	constraint_set_modulo(copy, self->modulo);
 	constraint_set_default(copy, &self->value);
 }
 
@@ -69,6 +79,7 @@ constraint_read(Constraint* self, uint8_t** pos)
 	{
 		{ DECODE_BOOL, "not_null",  &self->not_null  },
 		{ DECODE_INT,  "generated", &self->generated },
+		{ DECODE_INT,  "modulo",    &self->modulo    },
 		{ DECODE_DATA, "default",   &self->value     },
 		{ 0,            NULL,       NULL             },
 	};
@@ -87,6 +98,10 @@ constraint_write(Constraint* self, Buf* buf)
 	// generated
 	encode_raw(buf, "generated", 9);
 	encode_integer(buf, self->generated);
+
+	// modulo
+	encode_raw(buf, "modulo", 6);
+	encode_integer(buf, self->modulo);
 
 	// default
 	encode_raw(buf, "default", 7);

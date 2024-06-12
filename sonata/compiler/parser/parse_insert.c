@@ -87,6 +87,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			{
 				encode_integer(data, serial);
 			} else
+			if (cons->generated == GENERATED_RANDOM)
+			{
+				auto value = random_generate(global()->random) % cons->modulo;
+				encode_integer(data, value);
+			} else
 			{
 				// use DEFAULT (NULL by default)
 				buf_write(data, cons->value.start, buf_size(&cons->value));
@@ -282,6 +287,11 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			if (cons->generated == GENERATED_SERIAL)
 			{
 				encode_integer(data, serial);
+			} else
+			if (cons->generated == GENERATED_RANDOM)
+			{
+				auto value = random_generate(global()->random) % cons->modulo;
+				encode_integer(data, value);
 			} else
 			{
 				// ensure NOT NULL constraint (for DEFAULT value)

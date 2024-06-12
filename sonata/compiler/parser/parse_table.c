@@ -235,7 +235,28 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 		case KSERIAL:
 		{
 			constraint_set_generated(cons, GENERATED_SERIAL);
-			constraint_set_not_null(&column->constraint, true);
+			break;
+		}
+
+		// RANDOM
+		case KRANDOM:
+		{
+			constraint_set_generated(cons, GENERATED_RANDOM);
+			// [(modulo)]
+			if (stmt_if(self, '('))
+			{
+				// int
+				auto value = stmt_if(self, KINT);
+				if (! value)
+					error("RANDOM (<integer> expected");
+				// )
+				if (! stmt_if(self, ')'))
+					error("RANDOM (<)> expected");
+
+				if (value->integer == 0)
+					error("RANDOM modulo value cannot be zero");
+				constraint_set_modulo(cons, value->integer);
+			}
 			break;
 		}
 
@@ -246,7 +267,6 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 			if (stmt_if(self, KSERIAL))
 			{
 				constraint_set_generated(cons, GENERATED_SERIAL);
-				constraint_set_not_null(&column->constraint, true);
 			} else
 			{
 				error("unsupported GENERATED expression");
@@ -333,7 +353,7 @@ parse_def(Stmt* self, Def* def)
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
-		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | GENERATED
+		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED
 		parse_constraint(self, def, column);
 
 		// ,
@@ -352,7 +372,7 @@ last:
 }
 
 static void
-parse_with(Stmt* self, AstTableCreate* stmt)
+parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 {
 	// [WITH]
 	if (! stmt_if(self, KWITH))
@@ -369,30 +389,31 @@ parse_with(Stmt* self, AstTableCreate* stmt)
 		if (! key)
 			error("WITH (<name> expected");
 
-#if 0
-		if (str_compare_raw(&key->string, "uuid", 4))
+		unused(stmt);
+		if (str_compare_raw(&key->string, "type", 4))
 		{
 			// =
 			if (! stmt_if(self, '='))
-				error("WITH (uuid <=> expected");
+				error("WITH (type <=> expected");
 
 			// string
 			auto value = stmt_if(self, KSTRING);
 			if (! value)
-				error("WITH (uuid = <string>) expected");
+				error("WITH (type = <string>) expected");
 
-			Uuid uuid;
-			uuid_from_string(&uuid, &value->string);
-			table_config_set_id(stmt->config, &uuid);
+			// tree | hash
+			if (str_compare_cstr(&value->string, "tree"))
+				index_config_set_type(index_config, INDEX_TREE);
+			else
+			if (str_compare_cstr(&value->string, "hash"))
+				index_config_set_type(index_config, INDEX_HASH);
+			else
+				error("WITH: unknown primary index type");
 
 		} else {
+			error("<%.*s> unrecognized parameter",
+			      str_size(&key->string), str_of(&key->string));
 		}
-#endif
-		(void)stmt;
-
-		// todo:
-		error("<%.*s> unrecognized parameter",
-		      str_size(&key->string), str_of(&key->string));
 
 		// ,
 		if (stmt_if(self, ','))
@@ -415,7 +436,8 @@ parse_validate_constraints(Def* def)
 		if (cons->generated == GENERATED_NONE)
 			continue;
 
-		if (cons->generated == GENERATED_SERIAL)
+		if (cons->generated == GENERATED_SERIAL ||
+		    cons->generated == GENERATED_RANDOM)
 		{
 			if (column->type != TYPE_INT)
 				error("GENERATED SERIAL column <%.*s> must be integer",
@@ -472,7 +494,7 @@ parse_table_create(Stmt* self)
 		table_config_set_reference(stmt->config, true);
 
 	// [WITH]
-	parse_with(self, stmt);
+	parse_with(self, stmt, index_config);
 }
 
 void
