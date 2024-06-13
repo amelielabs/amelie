@@ -36,8 +36,7 @@ show views
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 select * from system.views()
@@ -49,8 +48,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 # test: create view if not exists
@@ -76,8 +74,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 drop view test
@@ -132,8 +129,7 @@ select * from system.views()
     }],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 select id from test_view
@@ -233,8 +229,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 # test: alter rename view exists
@@ -264,8 +259,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 create schema test
@@ -279,8 +273,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 disconnect S0

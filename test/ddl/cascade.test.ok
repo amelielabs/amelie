@@ -18,8 +18,7 @@ select * from system.views()
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 # test: drop schema cascade

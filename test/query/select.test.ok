@@ -184,7 +184,7 @@ select ** from system.config()
 # test: select from function #2
 create table test (id int primary key serial)
 select ** from system.tables()[0].indexes[0].def
-["column", "key", "key_unique", "key_exclude", "reserved"]
+["column", "key", "key_unique", "key_exclude"]
 drop table test
 # test: select from expr alias
 select * from [1, 2, 3] list
@@ -381,8 +381,7 @@ select * from test
     "column": [],
     "key": [],
     "key_unique": false,
-    "key_exclude": 0,
-    "reserved": 0
+    "key_exclude": 0
   }
 }]
 select (select ** from test.*) from test

@@ -44,7 +44,7 @@ value_row_key(Def* self, bool create_hash, Stack* stack)
 	for (; key; key = key->next)
 	{
 		auto ref = stack_at(stack, self->key_count - key->order);
-		row_key_set_index(row, self, key->order, pos - start);
+		row_key_set_index(row, key->order, pos - start);
 		if (key->type == TYPE_STRING)
 		{
 			data_write_string(&pos, &ref->string);

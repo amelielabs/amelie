@@ -14,63 +14,62 @@ struct Row
 	uint8_t  is_secondary: 1;
 	uint8_t  flags: 5;
 	uint32_t hash;
-	// reserved[]
 	// size
 	// data_index[]
 	// data[]
 } packed;
 
 always_inline hot static inline uint8_t*
-row_data_1(Row* self, Def* def)
+row_data_1(Row* self)
 {
-	return (uint8_t*)self + sizeof(Row) + def->reserved;
+	return (uint8_t*)self + sizeof(Row);
 }
 
 always_inline hot static inline uint16_t*
-row_data_2(Row* self, Def* def)
+row_data_2(Row* self)
 {
-	return (uint16_t*)(row_data_1(self, def));
+	return (uint16_t*)(row_data_1(self));
 }
 
 always_inline hot static inline uint32_t*
-row_data_4(Row* self, Def* def)
+row_data_4(Row* self)
 {
-	return (uint32_t*)(row_data_1(self, def));
+	return (uint32_t*)(row_data_1(self));
 }
 
 always_inline hot static inline int
-row_data_size(Row* self, Def* def)
+row_data_size(Row* self)
 {
 	if (self->size_factor == 0)
-		return row_data_1(self, def)[0];
+		return row_data_1(self)[0];
 	if (self->size_factor == 1)
-		return row_data_2(self, def)[0];
-	return row_data_4(self, def)[0];
+		return row_data_2(self)[0];
+	return row_data_4(self)[0];
 }
 
 always_inline hot static inline void
-row_set_data_size(Row* self, Def* def, int data_size)
+row_set_data_size(Row* self, int data_size)
 {
 	if (self->size_factor == 0)
-		row_data_1(self, def)[0] = data_size;
+		row_data_1(self)[0] = data_size;
 	else
 	if (self->size_factor == 1)
-		row_data_2(self, def)[0] = data_size;
+		row_data_2(self)[0] = data_size;
 	else
-		row_data_4(self, def)[0] = data_size;
+		row_data_4(self)[0] = data_size;
 }
 
 always_inline hot static inline int
 row_size_meta(Def* def, int size_factor)
 {
-	// reserved + data size + index size
-	return sizeof(Row) + def->reserved + (1 + size_factor) * (1 + def->key_count);
+	// data size + index size
+	return sizeof(Row) + (1 + size_factor) * (1 + def->key_count);
 }
 
 always_inline hot static inline int
 row_size(Row* self, Def* def)
 {
-	return row_size_meta(def, self->size_factor) + row_data_size(self, def);
+	return row_size_meta(def, self->size_factor) + row_data_size(self);
 }
 
 always_inline hot static inline int
@@ -89,19 +88,6 @@ row_size_factor_of(Def* def, int data_size)
 	return size_factor;
 }
 
-always_inline hot static inline void*
-row_reserved(Row* self)
-{
-	return (uint8_t*)self + sizeof(Row);
-}
-
-always_inline hot static inline Row*
-row_reserved_row(void* reserved)
-{
-	// flags
-	return (Row*)((uint8_t*)reserved - sizeof(uint8_t));
-}
-
 always_inline hot static inline uint8_t*
 row_data(Row* self, Def* def)
 {
@@ -114,25 +100,25 @@ row_key(Row* self, Def* def, int pos)
 	assert(pos < def->key_count);
 	uint32_t offset;
 	if (self->size_factor == 0)
-		offset = row_data_1(self, def)[1 + pos];
+		offset = row_data_1(self)[1 + pos];
 	else
 	if (self->size_factor == 1)
-		offset = row_data_2(self, def)[1 + pos];
+		offset = row_data_2(self)[1 + pos];
 	else
-		offset = row_data_4(self, def)[1 + pos];
+		offset = row_data_4(self)[1 + pos];
 	return row_data(self, def) + offset;
 }
 
 always_inline hot static inline void
-row_key_set_index(Row* self, Def* def, int order, uint32_t offset)
+row_key_set_index(Row* self, int order, uint32_t offset)
 {
 	if (self->size_factor == 0)
-		row_data_1(self, def)[1 + order] = offset;
+		row_data_1(self)[1 + order] = offset;
 	else
 	if (self->size_factor == 1)
-		row_data_2(self, def)[1 + order] = offset;
+		row_data_2(self)[1 + order] = offset;
 	else
-		row_data_4(self, def)[1 + order] = offset;
+		row_data_4(self)[1 + order] = offset;
 }
 
 hot static inline Row*
@@ -151,7 +137,7 @@ row_allocate(Def* def, int data_size)
 	self->flags        = 0;
 
 	// set data size
-	row_set_data_size(self, def, data_size);
+	row_set_data_size(self, data_size);
 	return self;
 }
 

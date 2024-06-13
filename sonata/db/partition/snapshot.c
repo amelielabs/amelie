@@ -87,7 +87,7 @@ hot static inline void
 snapshot_add(Snapshot* self, Def* def, Row* row)
 {
 	uint8_t* data = row_data(row, def);
-	int      data_size = row_data_size(row, def);
+	int      data_size = row_data_size(row);
 
 	// MSG_SNAPSHOT_ROW
 	auto msg = (Msg*)self->data.position;

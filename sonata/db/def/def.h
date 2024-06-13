@@ -21,8 +21,6 @@ struct Def
 	int      key_count;
 	int      key_exclude;
 	bool     key_unique;
-	// row
-	int      reserved;
 };
 
 static inline Column*
@@ -44,7 +42,6 @@ def_init(Def* self)
 	self->key_count    = 0;
 	self->key_exclude  = 0;
 	self->key_unique   = false;
-	self->reserved     = 0;
 }
 
 static inline void
@@ -67,12 +64,6 @@ def_free(Def* self)
 		key_free(key);
 		key = next;
 	}
-}
-
-static inline void
-def_set_reserved(Def* self, int size)
-{
-	self->reserved = size;
 }
 
 static inline void
@@ -170,13 +161,12 @@ def_copy(Def* self, Def* src)
 	}
 	self->key_exclude = src->key_exclude;
 	self->key_unique  = src->key_unique;
-	self->reserved    = src->reserved;
 }
 
 static inline void
 def_read(Def* self, uint8_t** pos)
 {
-	// { column:[], key[], key_unique, key_exclude, reserved }
+	// { column:[], key[], key_unique, key_exclude }
 	uint8_t* pos_column = NULL;
 	uint8_t* pos_key = NULL;
 	Decode map[] =
@@ -185,7 +175,6 @@ def_read(Def* self, uint8_t** pos)
 		{ DECODE_ARRAY, "key",         &pos_key           },
 		{ DECODE_BOOL,  "key_unique",  &self->key_unique  },
 		{ DECODE_INT,   "key_exclude", &self->key_exclude },
-		{ DECODE_INT,   "reserved",    &self->reserved    },
 		{ 0,             NULL,         NULL               },
 	};
 	decode_map(map, pos);
@@ -210,7 +199,7 @@ def_read(Def* self, uint8_t** pos)
 static inline void
 def_write(Def* self, Buf* buf)
 {
-	// { column:[], key:[], key_unique, key_exclude, reserved }
+	// { column:[], key:[], key_unique, key_exclude }
 	encode_map(buf);
 
 	// column
@@ -236,10 +225,6 @@ def_write(Def* self, Buf* buf)
 	// key_exclude
 	encode_raw(buf, "key_exclude", 11);
 	encode_integer(buf, self->key_exclude);
-
-	// reserved
-	encode_raw(buf, "reserved", 8);
-	encode_integer(buf, self->reserved);
 
 	encode_map_end(buf);
 }

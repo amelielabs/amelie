@@ -483,7 +483,6 @@ parse_table_create(Stmt* self)
 	index_config_set_name(index_config, &index_name);
 	index_config_set_type(index_config, INDEX_TREE);
 	index_config_set_primary(index_config, true);
-	def_set_reserved(def, 0);
 
 	// (columns)
 	parse_def(self, def);

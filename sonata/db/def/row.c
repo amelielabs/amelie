@@ -76,7 +76,7 @@ row_create(Def* def, bool create_hash, uint8_t** pos)
 	uint32_t data_size = *pos - data;
 	auto self = row_allocate(def, data_size);
 	for (int i = 0; i < def->key_count; i++)
-		row_key_set_index(self, def, i, index[i]);
+		row_key_set_index(self, i, index[i]);
 	memcpy(row_data(self, def), data, data_size);
 	self->hash = hash;
 	return self;

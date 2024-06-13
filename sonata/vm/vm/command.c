@@ -279,7 +279,7 @@ ccursor_read(Vm* self, Op* op)
 		auto current = iterator_at(cursor->it);
 		auto def = cursor->def;
 		assert(current != NULL);
-		value_set_data(a, row_data(current, def), row_data_size(current, def), NULL);
+		value_set_data(a, row_data(current, def), row_data_size(current), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
