@@ -80,26 +80,8 @@ executor_complete(Executor* self, Plan* plan)
 	spinlock_unlock(&self->lock);
 }
 
-static void
-executor_abort(Executor* self)
-{
-	// executed under the lock
-
-	// abort all active plans
-	plan_group_reset(&self->group);
-	plan_group_create(&self->group, self->router->list_count);
-
-	// add plans to the list and collect a list of last
-	// completed transactions per node
-	list_foreach(&self->list)
-	{
-		auto plan = list_at(Plan, link);
-		plan_group_add(&self->group, plan);
-	}
-}
-
-static inline void
-executor_commit_start(Executor* self)
+hot static void
+executor_begin(Executor* self)
 {
 	plan_group_reset(&self->group);
 	plan_group_create(&self->group, self->router->list_count);
@@ -117,18 +99,32 @@ executor_commit_start(Executor* self)
 	}
 }
 
-hot void
-executor_commit_end(Executor* self, PlanState state)
+hot static void
+executor_end(Executor* self, PlanState state)
 {
 	// for each node, send last prepared Trx*
 	if (state == PLAN_COMMIT)	
+	{
+		// commit
 		trx_set_commit(&self->group.set);
-	else
+	} else
+	{
+		// abort all currently active plans
+		plan_group_reset(&self->group);
+		plan_group_create(&self->group, self->router->list_count);
+
+		// add plans to the list and collect a list of last
+		// completed transactions per node
+		list_foreach(&self->list)
+		{
+			auto plan = list_at(Plan, link);
+			plan_group_add(&self->group, plan);
+		}
+
 		trx_set_abort(&self->group.set);
+	}
 
 	// finilize plans
-	spinlock_lock(&self->lock);
-
 	list_foreach(&self->group.list)
 	{
 		auto plan = list_at(Plan, link_group);
@@ -150,8 +146,14 @@ executor_commit_end(Executor* self, PlanState state)
 		auto leader = container_of(self->list.next, Plan, link);
 		condition_signal(leader->on_commit);
 	}
+}
 
-	spinlock_unlock(&self->lock);
+hot static void
+executor_end_lock(Executor* self, PlanState state)
+{
+	spinlock_lock(&self->lock);
+	guard(spinlock_unlock, &self->lock);
+	executor_end(self, state);
 }
 
 hot void
@@ -192,21 +194,19 @@ executor_commit(Executor* self, Plan* plan)
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
+		guard(spinlock_unlock, &self->lock);
 
 		switch (plan->state) {
 		case PLAN_NONE:
 			// non-distributed plan executed on coordinator
-			spinlock_unlock(&self->lock);
 			if (plan->error)
 				msg_error_rethrow(plan->error);
 			return;
 		case PLAN_COMMIT:
 			// commited by leader
-			spinlock_unlock(&self->lock);
 			return;
 		case PLAN_ABORT:
 			// aborted by leader
-			spinlock_unlock(&self->lock);
 			error("transaction conflict, abort");
 			break;
 		case PLAN_COMPLETE:
@@ -219,19 +219,18 @@ executor_commit(Executor* self, Plan* plan)
 		// if current plan is commit leader (first plan in the list)
 		if (! list_is_first(&self->list, &plan->link))
 		{
-			// wait for leader
+			// wait to become leader or wakeup by leader
+			unguard();
 			spinlock_unlock(&self->lock);
+
 			condition_wait(plan->on_commit, -1);
 			continue;
 		}
 
-		// leader
+		// leader error
 		if (plan->error)
 		{
-			executor_abort(self);
-			spinlock_unlock(&self->lock);
-
-			executor_commit_end(self, PLAN_ABORT);
+			executor_end(self, PLAN_ABORT);
 			msg_error_rethrow(plan->error);
 		}
 
@@ -239,8 +238,9 @@ executor_commit(Executor* self, Plan* plan)
 
 		// get a list of completed plans (one or more) and a list of
 		// last executed transactions per node
-		executor_commit_start(self);
+		executor_begin(self);
 
+		unguard();
 		spinlock_unlock(&self->lock);
 
 		// wal write
@@ -251,16 +251,13 @@ executor_commit(Executor* self, Plan* plan)
 		}
 		if (leave(&e))
 		{
-			spinlock_lock(&self->lock);
-			executor_abort(self);
-			spinlock_unlock(&self->lock);
-
-			executor_commit_end(self, PLAN_ABORT);
+			// ABORT
+			executor_end_lock(self, PLAN_ABORT);
 			rethrow();
 		}
 
 		// COMMIT
-		executor_commit_end(self, PLAN_COMMIT);
+		executor_end_lock(self, PLAN_COMMIT);
 		break;
 	}
 }
