@@ -125,7 +125,7 @@ htt_iterator_delete(HttIterator* self)
 	auto current = self->current;
 	auto current_ht = self->current_ht;
 	auto table = current_ht->table;
-	table[self->pos] = &current_ht->deleted;
+	table[self->pos] = HT_DELETED;
 	current_ht->count--;
 	return current;
 }

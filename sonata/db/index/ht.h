@@ -8,13 +8,14 @@
 
 typedef struct Ht Ht;
 
+#define HT_DELETED (void*)0xffffffff
+
 struct Ht
 {
 	Row**    table;
 	uint64_t count;
 	uint64_t size;
 	Def*     def;
-	Row      deleted;
 };
 
 static inline void
@@ -24,7 +25,6 @@ ht_init(Ht* self)
 	self->count = 0;
 	self->size  = 0;
 	self->def   = NULL;
-	memset(&self->deleted, 0, sizeof(self->deleted));
 }
 
 static inline void
@@ -36,7 +36,7 @@ ht_free_rows(Ht* self)
 	for (uint64_t pos = 0; pos < self->size; pos++)
 	{
 		auto row = table[pos];
-		if (!row || row == &self->deleted)
+		if (!row || row == HT_DELETED)
 			continue;
 		row_free(row);
 	}
@@ -81,7 +81,7 @@ ht_set(Ht* self, Row* row)
 	do
 	{
 		auto ref = table[pos];
-		if (!ref || ref == &self->deleted)
+		if (!ref || ref == HT_DELETED)
 		{
 			table[pos] = row;
 			self->count++;
@@ -110,11 +110,11 @@ ht_delete(Ht* self, Row* key)
 		auto ref = table[pos];
 		if (! ref)
 			break;
-		if (ref != &self->deleted)
+		if (ref != HT_DELETED)
 		{
 			if (ref->hash == key->hash && !compare(self->def, ref, key))
 			{
-				table[pos] = &self->deleted;
+				table[pos] = HT_DELETED;
 				self->count--;
 				return ref;
 			}
@@ -140,7 +140,7 @@ ht_get(Ht* self, Row* key, uint64_t* at)
 			return NULL;
 		}
 
-		if (ref == &self->deleted)
+		if (ref == HT_DELETED)
 		{
 			*at = pos;
 		} else
@@ -166,7 +166,7 @@ ht_next(Ht* self, uint64_t* at)
 	for (; pos < self->size; pos++)
 	{
 		auto ref = self->table[pos];
-		if (!ref || ref == &self->deleted)
+		if (!ref || ref == HT_DELETED)
 			continue;
 		// set to next
 		*at = pos;

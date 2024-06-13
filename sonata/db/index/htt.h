@@ -66,7 +66,7 @@ htt_rehash(Htt* self)
 	while (self->rehashing_pos < prev->size)
 	{
 		auto row = prev->table[self->rehashing_pos];
-		if (!row || row == &prev->deleted)
+		if (!row || row == HT_DELETED)
 		{
 			self->rehashing_pos++;
 			continue;
