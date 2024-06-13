@@ -139,7 +139,7 @@ show psn
 3
 # test: replica read
 select * from test
-[[3], [4], [5], [8], [9], [2], [6], [7], [1]]
+[[1], [6], [7], [8], [2], [9], [3], [4], [5]]
 show repl
 {
   "active": true,
@@ -197,7 +197,7 @@ show replicas
   "lag": 0
 }]
 select * from test
-[[3], [4], [5], [8], [9], [2], [6], [7], [10], [11], [1], [12]]
+[[1], [6], [7], [8], [2], [9], [10], [12], [3], [4], [5], [11]]
 disconnect S1
 close E1
 disconnect S0

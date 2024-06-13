@@ -95,6 +95,7 @@ vm_run(Vm*          self,
 		&&cjmp,
 		&&cjtr,
 		&&cjntr,
+		&&csend_hash,
 		&&csend,
 		&&csend_first,
 		&&csend_all,
@@ -215,6 +216,10 @@ cjntr:
 		op = code_at(code, op->a);
 		op_jmp;
 	}
+	op_next;
+
+csend_hash:
+	csend_hash(self, op);
 	op_next;
 
 csend:

@@ -46,7 +46,7 @@ explain delete from test where id = 3
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
@@ -57,7 +57,7 @@ bytecode [node]
 --------
  0                 int        0      3      0
  1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
+ 2         cursor_open        0      0      4      # public.test (primary), lookup
  3                 jmp       10      0      0
  4          cursor_idx        0      0      0
  5                 int        1      3      0

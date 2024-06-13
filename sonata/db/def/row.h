@@ -161,7 +161,7 @@ row_free(Row* self)
 	so_free(self);
 }
 
-Row* row_create(Def*, bool, uint8_t**);
-
 uint32_t
 row_hash(Def*, uint8_t**);
+
+Row* row_create(Def*, bool, uint8_t**);

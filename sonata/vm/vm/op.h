@@ -18,6 +18,7 @@ enum
 	CJNTR,
 
 	// result
+	CSEND_HASH,
 	CSEND,
 	CSEND_FIRST,
 	CSEND_ALL,

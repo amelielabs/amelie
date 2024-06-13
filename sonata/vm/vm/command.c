@@ -663,6 +663,29 @@ cgroup_merge_recv(Vm* self, Op* op)
 }
 
 hot void
+csend_hash(Vm* self, Op* op)
+{
+	// [stmt, start, table, hash]
+	auto plan  = self->plan;
+	auto start = op->b;
+	auto table = (Table*)op->c;
+
+	ReqList list;
+	req_list_init(&list);
+	guard(req_list_free, &list);
+
+	// shard by precomputed key hash
+	auto route = part_map_get(&table->part_list.map, op->d);
+	auto req = req_create(plan->req_cache);
+	req->op    = start;
+	req->route = route;
+	req_list_add(&list, req);
+
+	executor_send(self->executor, plan, op->a, &list);
+	unguard();
+}
+
+hot void
 csend(Vm* self, Op* op)
 {
 	// [stmt, start, table, offset]

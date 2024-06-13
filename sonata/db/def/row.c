@@ -63,7 +63,7 @@ row_create(Def* def, bool create_hash, uint8_t** pos)
 
 			// hash key
 			if (create_hash)
-				hash = hash_murmur3_32(pos_key, pos_key_end - pos_key, hash);
+				hash = key_hash(hash, pos_key);
 		}
 
 		data_skip(pos);
@@ -139,9 +139,7 @@ row_hash(Def* def, uint8_t** pos)
 			}
 
 			// hash key
-			uint8_t* pos_key_end = pos_key;
-			data_skip(&pos_key_end);
-			hash = hash_murmur3_32(pos_key, pos_key_end - pos_key, hash);
+			hash = key_hash(hash, pos_key);
 		}
 
 		data_skip(pos);

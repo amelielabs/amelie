@@ -35,6 +35,7 @@ OpDesc ops[] =
 	{ CJNTR,              "jntr"              },
 
 	// result
+	{ CSEND_HASH,         "send_hash"         },
 	{ CSEND,              "send"              },
 	{ CSEND_FIRST,        "send_first"        },
 	{ CSEND_ALL,          "send_all"          },
@@ -201,6 +202,7 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			op_write(output, op, pos, true, true, true, "%g", real);
 			break;
 		}
+		case CSEND_HASH:
 		case CSEND:
 		{
 			auto table = (Table*)op->c;
@@ -233,13 +235,14 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			data_read_string(&ref, &table);
 			data_read_string(&ref, &index);
 			op_write(output, op, pos, true, true, true,
-			         "%.*s.%.*s (%.*s)",
+			         "%.*s.%.*s (%.*s)%s",
 			         str_size(&schema),
 			         str_of(&schema),
 			         str_size(&table),
 			         str_of(&table),
 			         str_size(&index),
-			         str_of(&index));
+			         str_of(&index),
+			         op->d ? ", lookup": "");
 			break;
 		}
 		case CCURSOR_PREPARE:

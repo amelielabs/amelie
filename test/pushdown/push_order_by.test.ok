@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 create table test (id int primary key serial)
 insert into test generate 20
 select * from test
-[[0], [3], [4], [5], [8], [9], [13], [16], [18], [2], [6], [7], [10], [11], [19], [1], [12], [14], [15], [17]]
+[[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 explain select * from test order by id
 "
 bytecode [coordinator]

@@ -200,7 +200,7 @@ emit_stmt(Compiler* self)
 static inline void
 emit_send(Compiler* self, int start)
 {
-	Table* table = NULL;
+	Target* target = NULL;
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
@@ -212,15 +212,13 @@ emit_send(Compiler* self, int start)
 		break;
 	}
 	case STMT_UPDATE:
-		table = ast_update_of(stmt->ast)->table;
+		target = ast_update_of(stmt->ast)->target;
 		break;
 	case STMT_DELETE:
-		table = ast_delete_of(stmt->ast)->table;
+		target = ast_delete_of(stmt->ast)->target;
 		break;
 	case STMT_SELECT:
 	{
-		// todo: point lookup
-
 		// no targets or all targets are expressions
 		if (target_list_expr(&stmt->target_list))
 			break;
@@ -229,7 +227,7 @@ emit_send(Compiler* self, int start)
 		auto select = ast_select_of(stmt->ast);
 		if (select->target && select->target->table)
 		{
-			table = select->target->table;
+			target = select->target;
 			break;
 		}
 
@@ -239,7 +237,7 @@ emit_send(Compiler* self, int start)
 			// select from (select from table)
 			auto from_expr = select->target->expr;
 			auto from_select = ast_select_of(from_expr);
-			table = from_select->target->table;
+			target = from_select->target;
 			break;
 		}
 
@@ -259,14 +257,35 @@ emit_send(Compiler* self, int start)
 		break;
 	}
 
-	if (! table)
+	// table target
+	if (! target)
 		return;
 
-	// CSEND_FIRST or CSEND_ALL
+	auto table = target->table;
 	if (table->config->reference)
+	{
+		// send to first node
+
+		// CSEND_FIRST
 		op2(self, CSEND_FIRST, stmt->order, start);
-	else
-		op2(self, CSEND_ALL, stmt->order, start);
+	} else
+	{
+		// point-lookup or range scan
+		if (ast_plan_of(target->plan)->type == SCAN_LOOKUP)
+		{
+			// send to one node (shard by lookup key hash)
+			uint32_t hash = target_lookup_hash(target);
+
+			// CSEND_HASH
+			op4(self, CSEND_HASH, stmt->order, start, (intptr_t)table, hash);
+		} else
+		{
+			// send to all nodes
+
+			// CSEND_ALL
+			op2(self, CSEND_ALL, stmt->order, start);
+		}
+	}
 }
 
 static inline void

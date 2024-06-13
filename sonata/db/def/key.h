@@ -139,3 +139,35 @@ key_find(Column* column, Key* key, uint8_t** pos)
 		      str_size(&key->path),
 		      str_of(&key->path));
 }
+
+hot static inline uint32_t
+key_hash_integer(uint32_t hash, int64_t value)
+{
+	return hash_murmur3_32((uint8_t*)&value, sizeof(value), hash);
+}
+
+hot static inline uint32_t
+key_hash_string(uint32_t hash, Str* string)
+{
+	return hash_murmur3_32(str_u8(string), str_size(string), hash);
+}
+
+hot static inline uint32_t
+key_hash(uint32_t hash, uint8_t* pos)
+{
+	if (data_is_integer(pos))
+	{
+		int64_t value;
+		data_read_integer(&pos, &value);
+		hash = key_hash_integer(hash, value);
+	} else
+	if (data_is_string(pos))
+	{
+		Str value;
+		data_read_string(&pos, &value);
+		hash = key_hash_string(hash, &value);
+	} else {
+		abort();
+	}
+	return hash;
+}

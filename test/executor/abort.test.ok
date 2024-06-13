@@ -9,17 +9,17 @@ select * from test
 # test: insert abort by error #2
 insert into test (id) values (0), (1), (2), (3)
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
 {"code": 1, "msg": "unique key constraint violation"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
 {"code": 1, "msg": "unique key constraint violation"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace abort
 explain replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
 "
@@ -46,7 +46,7 @@ bytecode [node]
 replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: delete abort
 explain delete from test; select error("abort")
 "
@@ -79,7 +79,7 @@ bytecode [node]
 delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: update abort
 explain update test set data = id; select error("abort")
 "
@@ -120,7 +120,7 @@ bytecode [node]
 update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 "
@@ -159,7 +159,7 @@ bytecode [node]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
 # test: reference insert abort by error
 create table test (id int primary key, data int default 0) reference
@@ -328,17 +328,17 @@ create table ref (id int primary key, data int default 0) reference
 insert into ref values (0, 8), (1, 8), (2, 8);
 # test: insert a select a
 insert into a (id) values (0), (1), (2), (3); select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace a select a abort (by coordinator)
 replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace a select a abort (by shard)
 replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort") from a
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace a select abort select a
 explain replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
 "
@@ -382,7 +382,7 @@ bytecode [node]
 replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace a insert b
 explain replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
 "
@@ -409,9 +409,9 @@ bytecode [node]
 "
 replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
 select * from a
-[[0, 2], [3, 0], [2, 3], [1, 2]]
+[[0, 2], [1, 2], [2, 3], [3, 0]]
 select * from b
-[[20, 0], [30, 0], [10, 0]]
+[[30, 0], [10, 0], [20, 0]]
 # test: update a update b abort
 update a set data = 0
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
@@ -507,9 +507,9 @@ bytecode [node]
 update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
-[[20, 0], [30, 0], [10, 0]]
+[[30, 0], [10, 0], [20, 0]]
 # test: delete a join ref update b abort
 explain delete from a, ref where a.id = ref.id; update b set data = data * 2; select error("abort")
 "
@@ -574,9 +574,9 @@ bytecode [node]
 delete from a, ref where a.id = ref.id; update b set data = data * 2; select * from a; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
-[[20, 0], [30, 0], [10, 0]]
+[[30, 0], [10, 0], [20, 0]]
 # test: upsert a update b abort
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 "
@@ -654,9 +654,9 @@ bytecode [node]
 insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
-[[0, 0], [3, 0], [2, 0], [1, 0]]
+[[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
-[[20, 0], [30, 0], [10, 0]]
+[[30, 0], [10, 0], [20, 0]]
 drop table a
 drop table b
 drop table ref

@@ -307,7 +307,7 @@ bytecode [node]
 "
 insert into test (id) values (1), (2), (3)
 select * from test
-[[3, 0], [2, 0], [1, 0]]
+[[1, 0], [2, 0], [3, 0]]
 # test: table delete
 explain delete from test
 "
@@ -481,7 +481,7 @@ bytecode [node]
 "
 update test set data = id
 select * from test
-[[3, 3], [2, 2], [1, 1]]
+[[1, 1], [2, 2], [3, 3]]
 # test: table update join self
 explain update test join test e on (test.id = e.id) set data = e.id * 2
 {"code": 1, "msg": "DML JOIN using the same table are not supported"}
@@ -519,7 +519,7 @@ bytecode [node]
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 select * from test
-[[3, 4], [2, 3], [1, 2]]
+[[1, 2], [2, 3], [3, 4]]
 drop table test
 disconnect S0
 close E0

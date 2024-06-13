@@ -23,3 +23,20 @@ analyze_stmts(Parser* parser, int* count)
 	}
 	return last;
 }
+
+static inline uint32_t
+target_lookup_hash(Target* target)
+{
+	uint32_t hash = 0;
+	auto     key  = table_def(target->table)->key;
+	for (; key; key = key->next)
+	{
+		auto ref = &ast_plan_of(target->plan)->keys[key->order];
+		assert(ref->start);
+		if (key->type == TYPE_STRING)
+			hash = key_hash_string(hash, &ref->start->string);
+		else
+			hash = key_hash_integer(hash, ref->start->integer);
+	}
+	return hash;
+}

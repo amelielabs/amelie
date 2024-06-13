@@ -688,7 +688,7 @@ explain select * from test where id > 1 and id = 2
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -703,7 +703,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      2      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       21      0      0
  5          cursor_idx        2      0      0
  6                 int        3      1      0
@@ -959,7 +959,7 @@ explain select * from test where id < 1 and id = 2
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -974,7 +974,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      2      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       25      0      0
  5          cursor_idx        1      0      0
  6                 int        2      1      0
@@ -1105,7 +1105,7 @@ explain select * from test where id > 1 and id < 1 and id = 1
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1120,7 +1120,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      1      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       34      0      0
  5          cursor_idx        1      0      0
  6                 int        2      1      0
@@ -1221,7 +1221,7 @@ explain select * from test where id = 1
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1236,7 +1236,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      1      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       12      0      0
  5          cursor_idx        1      0      0
  6                 int        2      1      0
@@ -1301,7 +1301,7 @@ explain select * from test where id = 1 and id > 0
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1316,7 +1316,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      1      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       21      0      0
  5          cursor_idx        2      0      0
  6                 int        3      1      0
@@ -1346,7 +1346,7 @@ explain select * from test where id = 1 and id > 0 and id < 10
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1361,7 +1361,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      1      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       34      0      0
  5          cursor_idx        1      0      0
  6                 int        2     10      0
@@ -1404,7 +1404,7 @@ explain select * from test where id = 1 and id = 2
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1419,7 +1419,7 @@ bytecode [node]
  0                 set        0      0      0
  1                 int        1      1      0
  2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
+ 3         cursor_open        0      0      5      # public.test (primary), lookup
  4                 jmp       21      0      0
  5          cursor_idx        2      0      0
  6                 int        3      1      0
@@ -1747,7 +1747,7 @@ explain select * from test where a > 1 and b = 10 and a = 20
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1764,7 +1764,7 @@ bytecode [node]
  2                push        1      0      0
  3                 int        1     10      0
  4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
+ 5         cursor_open        0      0      7      # public.test (primary), lookup
  6                 jmp       32      0      0
  7          cursor_idx        2      0      0
  8                 int        3      1      0
@@ -1803,7 +1803,7 @@ explain select * from test where a = 1 and b = 10
 "
 bytecode [coordinator]
 --------
- 0            send_all        0      0      0
+ 0           send_hash        0      0      -      # public.test
  1                recv        0      0      0
  2                bool        0      0      0
  3                push        0      0      0
@@ -1820,7 +1820,7 @@ bytecode [node]
  2                push        1      0      0
  3                 int        1     10      0
  4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
+ 5         cursor_open        0      0      7      # public.test (primary), lookup
  6                 jmp       23      0      0
  7          cursor_idx        2      0      0
  8                 int        3      1      0

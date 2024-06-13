@@ -31,7 +31,7 @@ connect E2 S0 localhost:3480
 show uuid
 "00000000-0000-0000-0000-000000000000"
 select * from test
-[[3], [2], [1]]
+[[1], [2], [3]]
 show lsn
 2
 disconnect S0
@@ -76,7 +76,7 @@ connect E3 S0 localhost:3480
 show uuid
 "00000000-0000-0000-0000-000000000000"
 select * from test
-[[3], [4], [2], [1]]
+[[1], [2], [3], [4]]
 show lsn
 3
 show wal
@@ -117,7 +117,7 @@ show lsn
 show checkpoint
 3
 select * from test
-[[3], [4], [2], [1]]
+[[1], [2], [3], [4]]
 disconnect S0
 close E4
 # test: backup checkpoint with wal
@@ -140,6 +140,6 @@ show lsn
 show checkpoint
 3
 select * from test
-[[3], [4], [5], [2], [6], [7], [1]]
+[[1], [6], [7], [2], [3], [4], [5]]
 disconnect S0
 close E5
