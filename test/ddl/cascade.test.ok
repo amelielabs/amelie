@@ -17,8 +17,7 @@ select * from system.views()
   "def": {
     "column": [],
     "key": [],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 # test: drop schema cascade

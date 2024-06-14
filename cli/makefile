@@ -3,7 +3,7 @@
 # 
 CC             = clang
 RM             = rm
-CFLAGS         = -Wall -pthread -O2 -g
+CFLAGS         = -Wall -pthread -O0 -g
 CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/runtime/runtime \
                  -I../sonata/runtime/io \

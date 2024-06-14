@@ -88,8 +88,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -135,8 +134,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -182,8 +180,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -220,8 +217,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -267,8 +263,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -305,8 +300,7 @@ select indexes[0] from system.tables() where name = "test"
       "path": "",
       "asc": false
     }],
-    "key_unique": false,
-    "key_exclude": 0
+    "key_unique": false
   }
 }]
 drop table test
@@ -476,8 +470,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint default with key
@@ -509,8 +502,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint not null forced for keys
@@ -542,8 +534,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint not null forced for keys #2
@@ -575,8 +566,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": true
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint not null
@@ -610,8 +600,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -648,8 +637,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -692,8 +680,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint generated serial key
@@ -716,8 +703,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint generated serial key #2
@@ -740,8 +726,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": true
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: constraint generated serial key type
@@ -776,8 +761,7 @@ select indexes[0].def from system.tables()
     "path": "",
     "asc": false
   }],
-  "key_unique": false,
-  "key_exclude": 0
+  "key_unique": false
 }]
 drop table test
 # test: with parsing

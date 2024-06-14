@@ -19,8 +19,9 @@ struct Def
 	Key*     key;
 	Key*     key_tail;
 	int      key_count;
-	int      key_exclude;
 	bool     key_unique;
+	// secondary
+	Def*     primary;
 };
 
 static inline Column*
@@ -40,8 +41,8 @@ def_init(Def* self)
 	self->key          = NULL;
 	self->key_tail     = NULL;
 	self->key_count    = 0;
-	self->key_exclude  = 0;
 	self->key_unique   = false;
+	self->primary      = NULL;
 }
 
 static inline void
@@ -159,23 +160,21 @@ def_copy(Def* self, Def* src)
 		auto copy = key_copy(key);
 		def_add_key(self, copy);
 	}
-	self->key_exclude = src->key_exclude;
-	self->key_unique  = src->key_unique;
+	self->key_unique = src->key_unique;
 }
 
 static inline void
 def_read(Def* self, uint8_t** pos)
 {
-	// { column:[], key[], key_unique, key_exclude }
+	// { column:[], key[], key_unique }
 	uint8_t* pos_column = NULL;
 	uint8_t* pos_key = NULL;
 	Decode map[] =
 	{
-		{ DECODE_ARRAY, "column",      &pos_column        },
-		{ DECODE_ARRAY, "key",         &pos_key           },
-		{ DECODE_BOOL,  "key_unique",  &self->key_unique  },
-		{ DECODE_INT,   "key_exclude", &self->key_exclude },
-		{ 0,             NULL,         NULL               },
+		{ DECODE_ARRAY, "column",     &pos_column        },
+		{ DECODE_ARRAY, "key",        &pos_key           },
+		{ DECODE_BOOL,  "key_unique", &self->key_unique  },
+		{ 0,             NULL,        NULL               },
 	};
 	decode_map(map, pos);
 
@@ -199,7 +198,7 @@ def_read(Def* self, uint8_t** pos)
 static inline void
 def_write(Def* self, Buf* buf)
 {
-	// { column:[], key:[], key_unique, key_exclude }
+	// { column:[], key:[], key_unique }
 	encode_map(buf);
 
 	// column
@@ -221,10 +220,6 @@ def_write(Def* self, Buf* buf)
 	// key_unique
 	encode_raw(buf, "key_unique", 10);
 	encode_bool(buf, self->key_unique);
-
-	// key_exclude
-	encode_raw(buf, "key_exclude", 11);
-	encode_integer(buf, self->key_exclude);
 
 	encode_map_end(buf);
 }
