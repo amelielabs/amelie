@@ -17,7 +17,6 @@ row_create(Def* def, bool create_hash, uint8_t** pos)
 {
 	// validate columns and indexate key
 	uint32_t index[def->key_count];
-	uint32_t index_size[def->key_count];
 	uint32_t hash = 0;
 
 	// []
@@ -59,7 +58,6 @@ row_create(Def* def, bool create_hash, uint8_t** pos)
 			index[key->order] = pos_key - data;
 			uint8_t* pos_key_end = pos_key;
 			data_skip(&pos_key_end);
-			index_size[key->order] = pos_key_end - pos_key;
 
 			// hash key
 			if (create_hash)
@@ -78,6 +76,51 @@ row_create(Def* def, bool create_hash, uint8_t** pos)
 	for (int i = 0; i < def->key_count; i++)
 		row_key_set(self, i, index[i]);
 	memcpy(row_data(self, def), data, data_size);
+	self->hash = hash;
+	return self;
+}
+
+hot Row*
+row_create_secondary(Def* def, bool create_hash, Row* row_primary)
+{
+	// secondary index has same columns as primary, but different keys
+	assert(def->primary);
+
+	uint32_t index[def->key_count];
+	uint32_t hash = 0;
+	uint8_t* data = row_data(row_primary, def->primary);
+	uint8_t* pos  = pos;
+	data_read_array(&pos);
+
+	// indexate keys per column
+	auto column = def->column;
+	for (; column; column = column->next)
+	{
+		auto key = column->key;
+		for (; key; key = key->next_column)
+		{
+			// find key path and validate data type
+			uint8_t* pos_key = pos;
+			key_find(column, key, &pos_key);
+
+			// set key index
+			index[key->order] = pos_key - data;
+			uint8_t* pos_key_end = pos_key;
+			data_skip(&pos_key_end);
+
+			// hash key
+			if (create_hash)
+				hash = key_hash(hash, pos_key);
+		}
+
+		data_skip(&pos);
+	}
+
+	// create secondary row
+	auto self = row_allocate(def, sizeof(Row*));
+	for (int i = 0; i < def->key_count; i++)
+		row_key_set(self, i, index[i]);
+	memcpy(row_data(self, def), &row_primary, sizeof(Row**));
 	self->hash = hash;
 	return self;
 }

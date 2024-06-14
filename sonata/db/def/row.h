@@ -141,6 +141,7 @@ row_free(Row* self)
 }
 
 Row* row_create(Def*, bool, uint8_t**);
+Row* row_create_secondary(Def*, bool, Row*);
 
 uint32_t
 row_hash(Def*, uint8_t**);
