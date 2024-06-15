@@ -28,9 +28,9 @@ static inline uint32_t
 target_lookup_hash(Target* target)
 {
 	uint32_t hash = 0;
-	auto     key  = table_def(target->table)->key;
-	for (; key; key = key->next)
+	list_foreach(&table_keys(target->table)->list)
 	{
+		auto key = list_at(Key, link);
 		auto ref = &ast_plan_of(target->plan)->keys[key->order];
 		assert(ref->start);
 		if (key->type == TYPE_STRING)

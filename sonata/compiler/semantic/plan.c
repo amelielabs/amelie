@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -45,7 +45,7 @@ plan_compare_ast(Ast* a, Ast* b)
 static inline bool
 plan_compare(Target* target, Ast* ast, Key* key)
 {
-	auto column = def_column_of(table_def(target->table), key->column);
+	auto column = key->column;
 
 	// column
 	if (ast->id == KNAME)
@@ -146,10 +146,12 @@ plan_key_is(TargetList* target_list, Target* target, Key* key,
 hot static inline Key*
 plan_key_find(TargetList* target_list, Target* target, Ast* path, Ast* value)
 {
-	auto def = table_def(target->table);
-	for (auto key = def->key; key; key = key->next)
+	list_foreach(&table_keys(target->table)->list)
+	{
+		auto key = list_at(Key, link);
 		if (plan_key_is(target_list, target, key, path, value))
 			return key;
+	}
 	return NULL;
 }
 
@@ -164,7 +166,8 @@ plan_op(TargetList* target_list, Target* target,
 	if (! key)
 		return NULL;
 
-	auto plan     = ast_plan_allocate(table_def(target->table), SCAN);
+	auto keys     = table_keys(target->table);
+	auto plan     = ast_plan_allocate(keys, SCAN);
 	auto plan_key = &plan->keys[key->order];
 	switch (op->id) {
 		break;
@@ -176,8 +179,7 @@ plan_op(TargetList* target_list, Target* target,
 		plan_key->start    = value;
 		if (op->id == '=')
 		{
-			auto def = table_def(target->table);
-			if (def->key_count == 1)
+			if (keys->list_count == 1)
 				plan->type = SCAN_LOOKUP;
 		}
 		break;
@@ -292,17 +294,18 @@ hot static inline AstPlan*
 plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
 {
 	// merge r keys into l
+	auto keys = table_keys(target->table);
 	int matched_eq = 0;
-	auto def = table_def(target->table);
-	for (auto key = def->key; key; key = key->next)
+	list_foreach(&keys->list)
 	{
+		auto key = list_at(Key, link);
 		if (plan_and_merge_start(key, l, r))
 			matched_eq++;
 		plan_and_merge_stop(key, l, r);
 	}
 
 	// SCAN_LOOKUP
-	if (matched_eq == def->key_count)
+	if (matched_eq == keys->list_count)
 		l->type = SCAN_LOOKUP;
 
 	return l;
@@ -311,9 +314,9 @@ plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
 hot AstPlan*
 plan(TargetList* target_list, Target* target, Ast* expr)
 {
-	auto def = table_def(target->table);
+	auto keys = table_keys(target->table);
 	if (expr == NULL)
-		return ast_plan_allocate(def, SCAN);
+		return ast_plan_allocate(keys, SCAN);
 
 	switch (expr->id) {
 	case KAND:
@@ -348,5 +351,5 @@ plan(TargetList* target_list, Target* target, Ast* expr)
 		break;
 	}
 
-	return ast_plan_allocate(def, SCAN);
+	return ast_plan_allocate(keys, SCAN);
 }

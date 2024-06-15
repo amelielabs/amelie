@@ -47,7 +47,7 @@ struct Stmt
 	Ast*       ast;
 	int        order;
 	Ast*       name;
-	Def        def;
+	Columns    columns;
 	TargetList target_list;
 	StmtList*  stmt_list;
 	CodeData*  data;
@@ -77,7 +77,7 @@ stmt_allocate(Db* db, Lex* lex, CodeData* data, Json* json,
 	self->json      = json;
 	self->lex       = lex;
 	self->db        = db;
-	def_init(&self->def);
+	columns_init(&self->columns);
 	target_list_init(&self->target_list);
 	list_init(&self->link);
 	return self;

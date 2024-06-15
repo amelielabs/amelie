@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -346,23 +346,23 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	Str  name;
 	bool compound = str_split_or_set(&ref, &name, '.');
 
-	// get target schema definition
-	Def* def = NULL;
+	// get target columns
+	Columns* columns = NULL;
 	if (target->cte)
-		def = &target->cte->def;
+		columns = &target->cte->columns;
 	else
 	if (target->view)
-		def = view_def(target->view);
+		columns = view_columns(target->view);
 	else
 	if (target->table)
-		def = table_def(target->table);
+		columns = table_columns(target->table);
 
 	// find column in the target key
 	int column_order = -1;
-	if (def)
+	if (columns)
 	{
 		// find column
-		auto column = def_find_column(def, &name);
+		auto column = columns_find(columns, &name);
 		if (column)
 			column_order = column->order;
 	} else

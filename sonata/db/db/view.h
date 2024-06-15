@@ -43,8 +43,8 @@ view_of(Handle* handle)
 	return (View*)handle;
 }
 
-static inline Def*
-view_def(View* self)
+static inline Columns*
+view_columns(View* self)
 {
-	return &self->config->def;
+	return &self->config->columns;
 }

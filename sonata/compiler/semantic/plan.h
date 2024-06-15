@@ -44,15 +44,15 @@ ast_plan_of(Ast* ast)
 }
 
 static inline AstPlan*
-ast_plan_allocate(Def* def, int type)
+ast_plan_allocate(Keys* keys, int type)
 {
 	AstPlan* self;
 	self = ast_allocate(0, sizeof(AstPlan));
 	self->type = type;
-	self->keys = (AstPlanKey*)palloc(sizeof(AstPlanKey) * def->key_count);
-	auto key = def->key;
-	for (; key; key = key->next)
+	self->keys = (AstPlanKey*)palloc(sizeof(AstPlanKey) * keys->list_count);
+	list_foreach(&keys->list)
 	{
+		auto key = list_at(Key, link);
 		auto ref = &self->keys[key->order];
 		ref->key      = key;
 		ref->start_op = NULL;

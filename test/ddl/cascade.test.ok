@@ -14,11 +14,7 @@ select * from system.views()
   "schema": "test",
   "name": "test_view",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 # test: drop schema cascade
 drop schema test cascade

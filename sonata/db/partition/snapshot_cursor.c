@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>

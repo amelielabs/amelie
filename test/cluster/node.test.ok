@@ -54,29 +54,27 @@ show tables
   "schema": "public",
   "name": "test1",
   "reference": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
   "indexes": [{
     "name": "primary",
     "type": 2,
+    "unique": false,
     "primary": true,
-    "def": {
-      "column": [{
-        "name": "id",
-        "type": 2,
-        "constraint": {
-          "not_null": true,
-          "generated": 0,
-          "modulo": 9223372036854775807,
-          "default": null
-        }
-      }],
-      "key": [{
-        "column": 0,
-        "type": 2,
-        "path": "",
-        "asc": false
-      }],
-      "key_unique": false
-    }
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }]
   }],
   "partitions": [{
     "id": 1,
@@ -88,29 +86,27 @@ show tables
   "schema": "public",
   "name": "test2",
   "reference": true,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
   "indexes": [{
     "name": "primary",
     "type": 2,
+    "unique": false,
     "primary": true,
-    "def": {
-      "column": [{
-        "name": "id",
-        "type": 2,
-        "constraint": {
-          "not_null": true,
-          "generated": 0,
-          "modulo": 9223372036854775807,
-          "default": null
-        }
-      }],
-      "key": [{
-        "column": 0,
-        "type": 2,
-        "path": "",
-        "asc": false
-      }],
-      "key_unique": false
-    }
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }]
   }],
   "partitions": [{
     "id": 2,
@@ -183,29 +179,27 @@ show tables
   "schema": "public",
   "name": "test1",
   "reference": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
   "indexes": [{
     "name": "primary",
     "type": 2,
+    "unique": false,
     "primary": true,
-    "def": {
-      "column": [{
-        "name": "id",
-        "type": 2,
-        "constraint": {
-          "not_null": true,
-          "generated": 0,
-          "modulo": 9223372036854775807,
-          "default": null
-        }
-      }],
-      "key": [{
-        "column": 0,
-        "type": 2,
-        "path": "",
-        "asc": false
-      }],
-      "key_unique": false
-    }
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }]
   }],
   "partitions": [{
     "id": 1,
@@ -217,29 +211,27 @@ show tables
   "schema": "public",
   "name": "test2",
   "reference": true,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
   "indexes": [{
     "name": "primary",
     "type": 2,
+    "unique": false,
     "primary": true,
-    "def": {
-      "column": [{
-        "name": "id",
-        "type": 2,
-        "constraint": {
-          "not_null": true,
-          "generated": 0,
-          "modulo": 9223372036854775807,
-          "default": null
-        }
-      }],
-      "key": [{
-        "column": 0,
-        "type": 2,
-        "path": "",
-        "asc": false
-      }],
-      "key_unique": false
-    }
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }]
   }],
   "partitions": [{
     "id": 2,
@@ -251,29 +243,27 @@ show tables
   "schema": "public",
   "name": "test3",
   "reference": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
   "indexes": [{
     "name": "primary",
     "type": 2,
+    "unique": false,
     "primary": true,
-    "def": {
-      "column": [{
-        "name": "id",
-        "type": 2,
-        "constraint": {
-          "not_null": true,
-          "generated": 0,
-          "modulo": 9223372036854775807,
-          "default": null
-        }
-      }],
-      "key": [{
-        "column": 0,
-        "type": 2,
-        "path": "",
-        "asc": false
-      }],
-      "key_unique": false
-    }
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": "",
+      "asc": false
+    }]
   }],
   "partitions": [{
     "id": 3,

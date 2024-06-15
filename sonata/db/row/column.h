@@ -15,20 +15,18 @@ struct Column
 	int        order;
 	int64_t    type;
 	Constraint constraint;
-	Key*       key;
-	Key*       key_tail;
-	Column*    next;
+	bool       key;
+	List       link;
 };
 
 static inline Column*
 column_allocate(void)
 {
 	Column* self = so_malloc(sizeof(Column));
-	self->order    = 0;
-	self->type     = -1;
-	self->key      = NULL;
-	self->key_tail = NULL;
-	self->next     = NULL;
+	self->order = 0;
+	self->key   = false; 
+	self->type  = -1;
+	list_init(&self->link);
 	str_init(&self->name);
 	constraint_init(&self->constraint);
 	return self;

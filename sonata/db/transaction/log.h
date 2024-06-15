@@ -119,7 +119,7 @@ log_row(Log*      self,
         void*     arg,
         bool      persistent,
         uint64_t  partition,
-        Def*      def,
+        Keys*     keys,
         Row*      row,
         Row*      prev)
 {
@@ -139,7 +139,7 @@ log_row(Log*      self,
 		return;
 
 	// [cmd, partition, row]
-	log_set_add(&self->log_set, cmd, partition, def, row);
+	log_set_add(&self->log_set, cmd, partition, keys, row);
 }
 
 static inline void

@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -82,7 +82,7 @@ parse_primary_key(Stmt* self)
 }
 
 static Column*
-parse_primary_key_column(Stmt* self, Def* def, Str* path)
+parse_key_column(Stmt* self, Columns* columns, Str* path)
 {
 	Column* column = NULL;
 
@@ -110,7 +110,7 @@ parse_primary_key_column(Stmt* self, Def* def, Str* path)
 	}
 
 	// find column
-	column = def_find_column(def, &name);
+	column = columns_find(columns, &name);
 	if (! column)
 		error("<%.*s> column does not exists", str_size(&name),
 		      str_of(&name));
@@ -119,7 +119,7 @@ parse_primary_key_column(Stmt* self, Def* def, Str* path)
 }
 
 static void
-parse_primary_key_def(Stmt* self, Def* def)
+parse_key(Stmt* self, Columns* columns, Keys* keys)
 {
 	// (
 	if (! stmt_if(self, '('))
@@ -132,7 +132,7 @@ parse_primary_key_def(Stmt* self, Def* def)
 
 		// (column, ...)
 		// (column.path type, ...)
-		auto column = parse_primary_key_column(self, def, &path);
+		auto column = parse_key_column(self, columns, &path);
 		if (column == NULL)
 			error("PRIMARY KEY (<name> expected");
 
@@ -161,11 +161,11 @@ parse_primary_key_def(Stmt* self, Def* def)
 
 		// create key
 		auto key = key_allocate();
-		key_set_column(key, column->order);
+		key_set_ref(key, column->order);
 		key_set_type(key, type);
 		key_set_path(key, &path);
 		key_set_asc(key, asc);
-		def_add_key(def, key);
+		keys_add(keys, key);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -178,7 +178,7 @@ parse_primary_key_def(Stmt* self, Def* def)
 }
 
 static void
-parse_constraint(Stmt* self, Def* def, Column* column)
+parse_constraint(Stmt* self, Keys* keys, Column* column)
 {
 	// constraint
 	auto cons = &column->constraint;
@@ -293,9 +293,9 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 
 			// create key
 			auto key = key_allocate();
-			key_set_column(key, column->order);
+			key_set_ref(key, column->order);
 			key_set_type(key, column->type);
-			def_add_key(def, key);
+			keys_add(keys, key);
 
 			primary_key = true;
 			break;
@@ -314,7 +314,7 @@ parse_constraint(Stmt* self, Def* def, Column* column)
 }
 
 static void
-parse_def(Stmt* self, Def* def)
+parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
 	// (name type [not null | default | serial | generated | primary key], ...,
 	//  primary key())
@@ -329,7 +329,7 @@ parse_def(Stmt* self, Def* def)
 		if (parse_primary_key(self))
 		{
 			// (columns)
-			parse_primary_key_def(self, def);
+			parse_key(self, columns, keys);
 			goto last;
 		}
 
@@ -339,14 +339,14 @@ parse_def(Stmt* self, Def* def)
 			error("(<name> expected");
 
 		// ensure column does not exists
-		auto column = def_find_column(def, &name->string);
+		auto column = columns_find(columns, &name->string);
 		if (column)
 			error("<%.*s> column redefined", str_size(&name->string),
 			      str_of(&name->string));
 
 		// create column
 		column = column_allocate();
-		def_add_column(def, column);
+		columns_add(columns, column);
 		column_set_name(column, &name->string);
 
 		// type
@@ -354,7 +354,7 @@ parse_def(Stmt* self, Def* def)
 		column_set_type(column, type);
 
 		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED
-		parse_constraint(self, def, column);
+		parse_constraint(self, keys, column);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -367,7 +367,7 @@ last:
 		error("CREATE TABLE name (name type <,)> expected");
 	}
 
-	if (def->key_count == 0)
+	if (keys->list_count == 0)
 		error("primary key is not defined");
 }
 
@@ -426,12 +426,12 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 }
 
 static inline void
-parse_validate_constraints(Def* def)
+parse_validate_constraints(Columns* columns)
 {
 	// validate constraints
-	auto column = def->column;
-	for (; column; column = column->next)
+	list_foreach(&columns->list)
 	{
+		auto column = list_at(Column, link);
 		auto cons = &column->constraint;
 		if (cons->generated == GENERATED_NONE)
 			continue;
@@ -474,8 +474,7 @@ parse_table_create(Stmt* self)
 	table_config_set_name(stmt->config, &name);
 
 	// create primary index config
-	auto index_config = index_config_allocate();
-	auto def = &index_config->def;
+	auto index_config = index_config_allocate(&stmt->config->columns);
 	table_config_add_index(stmt->config, index_config);
 
 	Str index_name;
@@ -485,8 +484,8 @@ parse_table_create(Stmt* self)
 	index_config_set_primary(index_config, true);
 
 	// (columns)
-	parse_def(self, def);
-	parse_validate_constraints(def);
+	parse_columns(self, &stmt->config->columns, &index_config->keys);
+	parse_validate_constraints(&stmt->config->columns);
 
 	// [REFERENCE]
 	if (stmt_if(self, KREFERENCE))

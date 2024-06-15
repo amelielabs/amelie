@@ -61,35 +61,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "id2",
-      "type": 2,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column bool/boolean
@@ -98,44 +77,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "a",
-      "type": 3,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "b",
-      "type": 3,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column string/text
@@ -144,44 +93,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "a",
-      "type": 5,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "b",
-      "type": 5,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column real
@@ -190,35 +109,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "a",
-      "type": 4,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column map/object
@@ -227,44 +125,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "a",
-      "type": 0,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "b",
-      "type": 0,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column array
@@ -273,35 +141,14 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
+  "unique": false,
   "primary": true,
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": 2,
-      "constraint": {
-        "not_null": true,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }, {
-      "name": "a",
-      "type": 1,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [{
-      "column": 0,
-      "type": 2,
-      "path": "",
-      "asc": false
-    }],
-    "key_unique": false
-  }
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
 }]
 drop table test
 # test: column redefined
@@ -335,14 +182,14 @@ create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
 {"code": 1, "msg": "table 'test': already exists"}
 create table if not exists test(id int primary key, primary key(id))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "",
   "asc": true
 }, {
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "",
   "asc": true
@@ -353,18 +200,18 @@ create table test(id int primary key primary key)
 {"code": 1, "msg": "PRIMARY KEY defined twice"}
 # test: primary key asc/desc
 create table test(id int, id2 int, primary key(id asc))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "",
   "asc": true
 }]]
 drop table test
 create table test(id int, primary key(id desc))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "",
   "asc": false
@@ -382,9 +229,9 @@ create table test(data map, primary key(data.id))
 create table test(data map, primary key(data.id map))
 {"code": 1, "msg": "<data> column key can be string or int"}
 create table test(data map, primary key(data.id integer))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "id",
   "asc": true
@@ -443,35 +290,13 @@ select *.name, *.reference from system.tables()
 drop table test
 # test: constraint default
 create table test (id int primary key, data int default 1)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": false,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": 1
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: constraint default with key
 create table test (id int default 1 primary key)
@@ -484,124 +309,45 @@ create table test (id int primary key, data int default 1 + 1)
 {"code": 1, "msg": "only consts allowed as DEFAULT expression"}
 # test: constraint not null with key
 create table test (id int not null primary key)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": false,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": false,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": true
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": true
+}]]
 drop table test
 # test: constraint not null
 create table test (id int primary key, data int not)
 {"code": 1, "msg": "NOT <NULL> expected"}
 create table test (id int primary key, data int not null)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 insert into test values(1, 1)
 insert into test values(2, null)
 {"code": 1, "msg": "column <data> value cannot be NULL"}
@@ -610,35 +356,13 @@ insert into test values(null, null)
 drop table test
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": 123
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 insert into test values(1, 1)
 insert into test values(2, null)
 {"code": 1, "msg": "column <data> value cannot be NULL"}
@@ -653,116 +377,46 @@ create table test (id int primary key, data int generated 123)
 {"code": 1, "msg": "unsupported GENERATED expression"}
 # test: constraint generated serial
 create table test (id int primary key, data int generated serial)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": false,
-      "generated": 1,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: constraint generated serial key
 create table test (id int generated serial primary key)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 1,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: constraint generated serial key #2
 create table test (id int generated serial, primary key(id))
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 1,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": true
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": true
+}]]
 drop table test
 # test: constraint generated serial key type
 create table test (id string generated serial primary key)
 {"code": 1, "msg": "GENERATED SERIAL column <id> must be integer"}
 # test: constraint generated serial multiple columns
 create table test (id int generated serial primary key, data int generated serial)
-select indexes[0].def from system.tables()
-[{
-  "column": [{
-    "name": "id",
-    "type": 2,
-    "constraint": {
-      "not_null": true,
-      "generated": 1,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": 2,
-    "constraint": {
-      "not_null": false,
-      "generated": 1,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "key": [{
-    "column": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }],
-  "key_unique": false
-}]
+select indexes[0].keys from system.tables()
+[[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]]
 drop table test
 # test: with parsing
 create table test (id int primary key) with

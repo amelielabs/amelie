@@ -20,26 +20,26 @@ struct Row
 } packed;
 
 always_inline hot static inline int
-row_data_size_meta(Def* def, int size_factor)
+row_data_size_meta(Keys* keys, int size_factor)
 {
 	// data size + index size
-	return sizeof(Row) + (1 + size_factor) * (1 + def->key_count);
+	return sizeof(Row) + (1 + size_factor) * (1 + keys->list_count);
 }
 
 always_inline hot static inline uint8_t*
-row_data(Row* self, Def* def)
+row_data(Row* self, Keys* keys)
 {
-	return (uint8_t*)self + row_data_size_meta(def, self->size_factor);
+	return (uint8_t*)self + row_data_size_meta(keys, self->size_factor);
 }
 
 always_inline hot static inline Row*
-row_of(Row* self, Def* def)
+row_of(Row* self, Keys* keys)
 {
-	// primary row (has no primary def pointer)
-	if (! def->primary)
+	// primary row (has no primary keys pointer)
+	if (! keys->primary)
 		return self;
 	// secondary row
-	return *(Row**)row_data(self, def);
+	return *(Row**)row_data(self, keys);
 }
 
 always_inline hot static inline uint8_t*
@@ -61,10 +61,10 @@ row_data_4(Row* self)
 }
 
 always_inline hot static inline int
-row_data_size(Row* self, Def* def)
+row_data_size(Row* self, Keys* keys)
 {
 	// resolve primary row
-	self = row_of(self, def);
+	self = row_of(self, keys);
 	if (self->size_factor == 0)
 		return row_data_1(self)[0];
 	if (self->size_factor == 1)
@@ -73,9 +73,9 @@ row_data_size(Row* self, Def* def)
 }
 
 always_inline hot static inline uint8_t*
-row_key(Row* self, Def* def, int pos)
+row_key(Row* self, Keys* keys, int pos)
 {
-	assert(pos < def->key_count);
+	assert(pos < keys->list_count);
 	uint32_t offset;
 	if (self->size_factor == 0)
 		offset = row_data_1(self)[1 + pos];
@@ -85,8 +85,8 @@ row_key(Row* self, Def* def, int pos)
 	else
 		offset = row_data_4(self)[1 + pos];
 	// apply key offset to the primary row
-	self = row_of(self, def);
-	return row_data(self, def) + offset;
+	self = row_of(self, keys);
+	return row_data(self, keys) + offset;
 }
 
 always_inline hot static inline void
@@ -102,22 +102,22 @@ row_key_set(Row* self, int order, uint32_t offset)
 }
 
 hot static inline Row*
-row_allocate(Def* def, int data_size)
+row_allocate(Keys* keys, int data_size)
 {
 	// calculate size factor
 	int size_factor;
 	if ((sizeof(Row) +
-	    (sizeof(uint8_t) * (1 + def->key_count)) + data_size) <= UINT8_MAX)
+	    (sizeof(uint8_t) * (1 + keys->list_count)) + data_size) <= UINT8_MAX)
 		size_factor = 0;
 	else
 	if ((sizeof(Row) +
-	    (sizeof(uint16_t) * (1 + def->key_count)) + data_size) <= UINT16_MAX)
+	    (sizeof(uint16_t) * (1 + keys->list_count)) + data_size) <= UINT16_MAX)
 		size_factor = 1;
 	else
 		size_factor = 3;
 
 	// allocate row
-	int size = row_data_size_meta(def, size_factor) + data_size;
+	int size = row_data_size_meta(keys, size_factor) + data_size;
 	Row* self = so_malloc(size);
 	self->size_factor = size_factor;
 	self->hash        = 0;
@@ -140,8 +140,8 @@ row_free(Row* self)
 	so_free(self);
 }
 
-Row* row_create(Def*, bool, uint8_t**);
-Row* row_create_secondary(Def*, bool, Row*);
+Row* row_create(Keys*, bool, uint8_t**);
+Row* row_create_secondary(Keys*, bool, Row*);
 
 uint32_t
-row_hash(Def*, uint8_t**);
+row_hash(Keys*, uint8_t**);

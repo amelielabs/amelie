@@ -17,7 +17,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../server/client \
                  -I../server/server \
                  -I../db \
-                 -I../db/def \
+                 -I../db/row \
                  -I../db/transaction \
                  -I../db/index \
                  -I../db/partition \

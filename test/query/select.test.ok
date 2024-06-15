@@ -183,8 +183,13 @@ select ** from system.config()
 ["version", "uuid", "directory", "log_enable", "log_to_file", "log_to_stdout", "log_connections", "log_query", "tls_cert", "tls_key", "tls_ca", "listen", "frontends", "shards", "wal", "wal_rotate_wm", "wal_sync_on_rotate", "wal_sync_on_write", "repl", "repl_primary", "repl_reconnect_ms", "read_only", "lsn", "psn", "checkpoint"]
 # test: select from function #2
 create table test (id int primary key serial)
-select ** from system.tables()[0].indexes[0].def
-["column", "key", "key_unique"]
+select * from system.tables()[0].indexes[0].keys
+[{
+  "ref": 0,
+  "type": 2,
+  "path": "",
+  "asc": false
+}]
 drop table test
 # test: select from expr alias
 select * from [1, 2, 3] list
@@ -377,14 +382,10 @@ select * from test
   "schema": "public",
   "name": "test",
   "query": "select * from system.views()",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 select (select ** from test.*) from test
-[["schema", "name", "query", "def"]]
+[["schema", "name", "query", "columns"]]
 explain select (select ** from test.*) from test
 "
 bytecode [coordinator]

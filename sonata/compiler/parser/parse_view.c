@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -41,14 +41,14 @@ parse_view_args(Stmt* self, AstViewCreate* stmt)
 			error("CREATE VIEW (<name> expected");
 
 		// ensure arg does not exists
-		auto arg = def_find_column(&stmt->config->def, &name->string);
+		auto arg = columns_find(&stmt->config->columns, &name->string);
 		if (arg)
 			error("<%.*s> view argument redefined", str_size(&name->string),
 			      str_of(&name->string));
 
 		// add argument
 		arg = column_allocate();
-		def_add_column(&stmt->config->def, arg);
+		columns_add(&stmt->config->columns, arg);
 		column_set_name(arg, &name->string);
 		encode_null(&arg->constraint.value);
 
@@ -99,8 +99,8 @@ parse_view_create(Stmt* self)
 
 	// ensure column count match
 	auto select = parse_select(self);
-	if (stmt->config->def.column_count > 0)
-		if (select->expr_count != stmt->config->def.column_count)
+	if (stmt->config->columns.list_count > 0)
+		if (select->expr_count != stmt->config->columns.list_count)
 			error("number of view columns does not match select");
 
 	Str query;

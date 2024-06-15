@@ -54,14 +54,14 @@ select * from test.test
 drop table test.test
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "",
   "asc": true
 }, {
-  "column": 1,
+  "ref": 1,
   "type": 2,
   "path": "",
   "asc": true
@@ -76,9 +76,9 @@ select * from test
 drop table test
 # test: insert nested key
 create table test (obj object, primary key (obj.id int))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "id",
   "asc": true
@@ -95,9 +95,9 @@ select obj.id from test
 drop table test
 # test: insert nested key #2
 create table test (obj object, primary key (obj.data.id int))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "data.id",
   "asc": true
@@ -122,14 +122,14 @@ select * from test
 drop table test
 # test: insert nested key compound
 create table test (obj object, primary key (obj.data.id int, obj.id int))
-select indexes[0].def.key from system.tables() where name = "test"
+select indexes[0].keys from system.tables() where name = "test"
 [[{
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "data.id",
   "asc": true
 }, {
-  "column": 0,
+  "ref": 0,
   "type": 2,
   "path": "id",
   "asc": true

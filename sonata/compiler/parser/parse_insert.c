@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -49,7 +49,7 @@ parse_value(Stmt* self)
 hot static void
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
-	auto def = table_def(stmt->target->table);
+	auto columns = table_columns(stmt->target->table);
 
 	// (
 	if (! stmt_if(self, '('))
@@ -63,9 +63,9 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	encode_array(data);
 
 	// value, ...
-	auto column = def->column;
-	for (; column; column = column->next)
+	list_foreach(&columns->list)
 	{
+		auto column = list_at(Column, link);
 		auto offset = code_data_offset(self->data);
 		if (list && list->column->order == column->order)
 		{
@@ -118,7 +118,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 hot static inline void
 parse_row(Stmt* self, AstInsert* stmt)
 {
-	auto def = table_def(stmt->target->table);
+	auto columns = table_columns(stmt->target->table);
 
 	// (
 	if (! stmt_if(self, '('))
@@ -129,9 +129,10 @@ parse_row(Stmt* self, AstInsert* stmt)
 	encode_array(data);
 
 	// value, ...
-	auto column = def->column;
-	for (; column; column = column->next)
+	list_foreach(&columns->list)
 	{
+		auto column = list_at(Column, link);
+
 		// parse and encode json value
 		auto offset = code_data_offset(self->data);
 		parse_value(self);
@@ -147,7 +148,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 		// ,
 		if (stmt_if(self, ','))
 		{
-			if (! column->next)
+			if (list_is_last(&columns->list, &column->link))
 				error("row has incorrect number of columns");
 			continue;
 		}
@@ -181,8 +182,8 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 	}
 
 	// one column case
-	auto def = table_def(stmt->target->table);
-	if (unlikely(list || def->column_count > 1))
+	auto columns = table_columns(stmt->target->table);
+	if (unlikely(list || columns->list_count > 1))
 		error("INSERT INTO <VALUES> expected");
 
 	// no constraints applied
@@ -208,7 +209,7 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 hot static inline Ast*
 parse_column_list(Stmt* self, AstInsert* stmt)
 {
-	auto def = table_def(stmt->target->table);
+	auto columns = table_columns(stmt->target->table);
 
 	// empty column list ()
 	if (unlikely(stmt_if(self, ')')))
@@ -224,7 +225,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 			error("INSERT INTO name (<column name> expected");
 
 		// find column and validate order
-		auto column = def_find_column(def, &name->string);
+		auto column = columns_find(columns, &name->string);
 		if (! column)
 			error("<%.*s> column does not exists", str_size(&name->string),
 			      str_of(&name->string));
@@ -269,7 +270,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		error("GENERATE <count> expected");
 
 	auto data = &self->data->data;
-	auto def = table_def(stmt->target->table);
+	auto columns = table_columns(stmt->target->table);
 	for (uint64_t i = 0; i < count->integer; i++)
 	{
 		// set next serial value
@@ -279,9 +280,9 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		encode_array(data);
 
 		// value, ...
-		auto column = def->column;
-		for (; column; column = column->next)
+		list_foreach(&columns->list)
 		{
+			auto column = list_at(Column, link);
 			// GENERATED
 			auto cons = &column->constraint;
 			if (cons->generated == GENERATED_SERIAL)

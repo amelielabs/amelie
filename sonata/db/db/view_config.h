@@ -10,10 +10,10 @@ typedef struct ViewConfig ViewConfig;
 
 struct ViewConfig
 {
-	Str schema;
-	Str name;
-	Str query;
-	Def def;
+	Str     schema;
+	Str     name;
+	Str     query;
+	Columns columns;
 };
 
 static inline ViewConfig*
@@ -24,7 +24,7 @@ view_config_allocate(void)
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_init(&self->query);
-	def_init(&self->def);
+	columns_init(&self->columns);
 	return self;
 }
 
@@ -34,7 +34,7 @@ view_config_free(ViewConfig* self)
 	str_free(&self->schema);
 	str_free(&self->name);
 	str_free(&self->query);
-	def_free(&self->def);
+	columns_free(&self->columns);
 	so_free(self);
 }
 
@@ -66,7 +66,7 @@ view_config_copy(ViewConfig* self)
 	view_config_set_schema(copy, &self->schema);
 	view_config_set_name(copy, &self->name);
 	view_config_set_query(copy, &self->query);
-	def_copy(&copy->def, &self->def);
+	columns_copy(&copy->columns, &self->columns);
 	return unguard();
 }
 
@@ -76,17 +76,17 @@ view_config_read(uint8_t** pos)
 	auto self = view_config_allocate();
 	guard(view_config_free, self);
 
-	uint8_t* def = NULL;
+	uint8_t* columns = NULL;
 	Decode map[] =
 	{
-		{ DECODE_STRING, "schema", &self->schema },
-		{ DECODE_STRING, "name",   &self->name   },
-		{ DECODE_STRING, "query",  &self->query  },
-		{ DECODE_MAP,    "def",    &def          },
-		{ 0,             NULL,     NULL          },
+		{ DECODE_STRING, "schema",  &self->schema },
+		{ DECODE_STRING, "name",    &self->name   },
+		{ DECODE_STRING, "query",   &self->query  },
+		{ DECODE_MAP,    "columns", &columns      },
+		{ 0,             NULL,       NULL         },
 	};
 	decode_map(map, pos);
-	def_read(&self->def, &def);
+	columns_read(&self->columns, &columns);
 	return unguard();
 }
 
@@ -108,9 +108,9 @@ view_config_write(ViewConfig* self, Buf* buf)
 	encode_raw(buf, "query", 5);
 	encode_string(buf, &self->query);
 
-	// def
-	encode_raw(buf, "def", 3);
-	def_write(&self->def, buf);
+	// columns
+	encode_raw(buf, "columns", 7);
+	columns_write(&self->columns, buf);
 
 	encode_map_end(buf);
 }

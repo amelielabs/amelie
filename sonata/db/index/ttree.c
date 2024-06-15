@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 
@@ -18,13 +18,13 @@ void
 ttree_init(Ttree* self,
            int    size_page,
            int    size_split,
-           Def*   def)
+           Keys*  keys)
 {
 	self->count       = 0;
 	self->count_pages = 0;
 	self->size_page   = size_page;
 	self->size_split  = size_split;
-	self->def         = def;
+	self->keys        = keys;
 	rbtree_init(&self->tree);
 }
 
@@ -55,7 +55,7 @@ ttree_page_free(TtreePage* self)
 always_inline static inline int
 ttree_compare(Ttree* self, TtreePage* page, Row* key)
 {
-	return compare(self->def, page->rows[0], key);
+	return compare(self->keys, page->rows[0], key);
 }
 
 rbtree_free(tree_truncate, ttree_page_free(ttree_page_of(n)));
@@ -102,13 +102,13 @@ ttree_search(Ttree* self, TtreePage* page, Row* key, bool* match)
 	int mid = 0;
 	int max = page->rows_count - 1;
 
-	if (compare(self->def, page->rows[max], key) < 0)
+	if (compare(self->keys, page->rows[max], key) < 0)
 		return max + 1;
 
 	while (max >= min)
 	{
 		mid = min + ((max - min) >> 1);
-		int rc = compare(self->def, page->rows[mid], key);
+		int rc = compare(self->keys, page->rows[mid], key);
 		if (rc < 0) {
 			min = mid + 1;
 		} else

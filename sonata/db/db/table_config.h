@@ -10,13 +10,14 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str  schema;
-	Str  name;
-	bool reference;
-	List indexes;
-	int  indexes_count;
-	List partitions;
-	int  partitions_count;
+	Str     schema;
+	Str     name;
+	bool    reference;
+	Columns columns;
+	List    indexes;
+	int     indexes_count;
+	List    partitions;
+	int     partitions_count;
 };
 
 static inline TableConfig*
@@ -29,6 +30,7 @@ table_config_allocate(void)
 	self->partitions_count = 0;
 	str_init(&self->schema);
 	str_init(&self->name);
+	columns_init(&self->columns);
 	list_init(&self->indexes);
 	list_init(&self->partitions);
 	return self;
@@ -52,6 +54,7 @@ table_config_free(TableConfig* self)
 		part_config_free(config);
 	}
 
+	columns_free(&self->columns);
 	so_free(self);
 }
 
@@ -97,12 +100,20 @@ table_config_copy(TableConfig* self)
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_reference(copy, self->reference);
+	columns_copy(&copy->columns, &self->columns);
+
+	Keys* primary_keys = NULL;
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		auto config_copy = index_config_copy(config);
+		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_add_index(copy, config_copy);
+
+		keys_set_primary(&config_copy->keys, primary_keys);
+		if (primary_keys == NULL)
+			primary_keys = &config_copy->keys;
 	}
+
 	list_foreach(&self->partitions)
 	{
 		auto config = list_at(PartConfig, link);
@@ -118,12 +129,14 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	guard(table_config_free, self);
 
+	uint8_t* pos_columns    = NULL;
 	uint8_t* pos_indexes    = NULL;
 	uint8_t* pos_partitions = NULL;
 	Decode map[] =
 	{
 		{ DECODE_STRING, "schema",     &self->schema    },
 		{ DECODE_STRING, "name",       &self->name      },
+		{ DECODE_ARRAY,  "columns",    &pos_columns     },
 		{ DECODE_BOOL,   "reference",  &self->reference },
 		{ DECODE_ARRAY,  "indexes",    &pos_indexes     },
 		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
@@ -131,11 +144,14 @@ table_config_read(uint8_t** pos)
 	};
 	decode_map(map, pos);
 
+	// columns
+	columns_read(&self->columns, &pos_columns);
+
 	// indexes
 	data_read_array(&pos_indexes);
 	while (! data_read_array_end(&pos_indexes))
 	{
-		auto config = index_config_read(&pos_indexes);
+		auto config = index_config_read(&self->columns, &pos_indexes);
 		table_config_add_index(self, config);
 	}
 
@@ -167,6 +183,10 @@ table_config_write(TableConfig* self, Buf* buf)
 	// reference
 	encode_raw(buf, "reference", 9);
 	encode_bool(buf, self->reference);
+
+	// columns
+	encode_raw(buf, "columns", 7);
+	columns_write(&self->columns, buf);
 
 	// indexes
 	encode_raw(buf, "indexes", 7);

@@ -79,8 +79,14 @@ table_primary(Table* self)
 	return container_of(self->config->indexes.next, IndexConfig, link);
 }
 
-static inline Def*
-table_def(Table* self)
+static inline Columns*
+table_columns(Table* self)
 {
-	return &table_primary(self)->def;
+	return &self->config->columns;
+}
+
+static inline Keys*
+table_keys(Table* self)
+{
+	return &table_primary(self)->keys;
 }

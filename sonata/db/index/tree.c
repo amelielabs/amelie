@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 
@@ -51,7 +51,7 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->def,
+	        &self->index.config->keys,
 	        row, prev);
 
 	// is replace
@@ -77,7 +77,7 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->def,
+	        &self->index.config->keys,
 	        row, prev);
 }
 
@@ -108,7 +108,7 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->def,
+	        &self->index.config->keys,
 	        prev, prev);
 }
 
@@ -135,7 +135,7 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->def,
+	        &self->index.config->keys,
 	        key, prev);
 }
 
@@ -165,7 +165,7 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->def,
+	        &self->index.config->keys,
 	        row, NULL);
 
 	*it = NULL;
@@ -202,7 +202,7 @@ tree_allocate(IndexConfig* config, uint64_t partition)
 {
 	Tree* self = so_malloc(sizeof(*self));
 	index_init(&self->index, config, partition);
-	ttree_init(&self->tree, 512, 256, &config->def);
+	ttree_init(&self->tree, 512, 256, &config->keys);
 
 	auto iface = &self->index.iface;
 	iface->set       = tree_set;

@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -84,10 +84,10 @@ snapshot_end(Snapshot* self)
 }
 
 hot static inline void
-snapshot_add(Snapshot* self, Def* def, Row* row)
+snapshot_add(Snapshot* self, Keys* keys, Row* row)
 {
-	uint8_t* data = row_data(row, def);
-	int      data_size = row_data_size(row, def);
+	uint8_t* data = row_data(row, keys);
+	int      data_size = row_data_size(row, keys);
 
 	// MSG_SNAPSHOT_ROW
 	auto msg = (Msg*)self->data.position;
@@ -113,8 +113,8 @@ snapshot_flush(Snapshot* self)
 hot static void
 snapshot_main(Snapshot* self, Index* index)
 {
-	auto def = index_def(index);
-	auto it = index_open(index, NULL, true);
+	auto keys = index_keys(index);
+	auto it   = index_open(index, NULL, true);
 	guard(iterator_close, it);
 	
 	for (;;)
@@ -122,7 +122,7 @@ snapshot_main(Snapshot* self, Index* index)
 		auto row = iterator_at(it);
 		if (unlikely(! row))
 			break;
-		snapshot_add(self, def, row);
+		snapshot_add(self, keys, row);
 		if (self->count == self->count_batch)
 			snapshot_flush(self);
 		iterator_next(it);

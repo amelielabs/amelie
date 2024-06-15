@@ -25,7 +25,7 @@ struct Cursor
 	int           type;
 	// partition
 	Table*        table;
-	Def*          def;
+	Keys*         keys;
 	Part*         part;
 	Iterator*     it;
 	// ref
@@ -59,7 +59,7 @@ cursor_init(Cursor* self)
 {
 	self->type      = CURSOR_NONE;
 	self->table     = NULL;
-	self->def       = NULL;
+	self->keys      = NULL;
 	self->part      = NULL;
 	self->it        = NULL;
 	self->ref_pos   = 0;
@@ -82,7 +82,7 @@ cursor_reset(Cursor* self)
 {
 	self->type      = CURSOR_NONE;
 	self->table     = NULL;
-	self->def       = NULL;
+	self->keys      = NULL;
 	self->part      = NULL;
 	self->ref_pos   = 0;
 	self->ref_count = 0;

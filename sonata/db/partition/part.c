@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 #include <sonata_data.h>
 #include <sonata_config.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -71,7 +71,7 @@ part_ingest(Part* self, uint8_t** pos)
 	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, hash, pos);
+	auto row = row_create(&primary->config->keys, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -91,7 +91,7 @@ part_set(Part*        self,
 	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, hash, pos);
+	auto row = row_create(&primary->config->keys, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -114,7 +114,7 @@ part_update(Part*        self,
 	// todo: primary iterator only
 
 	// allocate row
-	auto row = row_create(&primary->config->def, hash, pos);
+	auto row = row_create(&primary->config->keys, hash, pos);
 	guard(row_free, row);
 
 	// update primary index
@@ -143,7 +143,7 @@ part_delete_by(Part*        self,
 	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto key = row_create(&primary->config->def, hash, pos);
+	auto key = row_create(&primary->config->keys, hash, pos);
 	guard(row_free, key);
 
 	// delete from primary index by key
@@ -160,7 +160,7 @@ part_upsert(Part*        self,
 	auto hash = primary->config->type == INDEX_HASH;
 
 	// allocate row
-	auto row = row_create(&primary->config->def, hash, pos);
+	auto row = row_create(&primary->config->keys, hash, pos);
 	guard(row_free, row);
 
 	// do insert or return iterator

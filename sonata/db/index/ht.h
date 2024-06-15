@@ -15,7 +15,7 @@ struct Ht
 	Row**    table;
 	uint64_t count;
 	uint64_t size;
-	Def*     def;
+	Keys*    keys;
 };
 
 static inline void
@@ -24,7 +24,7 @@ ht_init(Ht* self)
 	self->table = NULL;
 	self->count = 0;
 	self->size  = 0;
-	self->def   = NULL;
+	self->keys  = NULL;
 }
 
 static inline void
@@ -53,7 +53,7 @@ ht_free(Ht* self)
 	self->table = NULL;
 	self->count = 0;
 	self->size  = 0;
-	self->def   = NULL;
+	self->keys  = NULL;
 }
 
 static inline bool
@@ -63,10 +63,10 @@ ht_is_full(Ht* self)
 }
 
 static inline void
-ht_create(Ht* self, Def* def, size_t size)
+ht_create(Ht* self, Keys* keys, size_t size)
 {
 	size_t allocated = sizeof(Row*) * size;
-	self->def   = def;
+	self->keys  = keys;
 	self->size  = size;
 	self->table = so_malloc(allocated);
 	memset(self->table, 0, allocated);
@@ -87,7 +87,7 @@ ht_set(Ht* self, Row* row)
 			self->count++;
 			return NULL;
 		}
-		if (ref->hash == row->hash && !compare(self->def, ref, row))
+		if (ref->hash == row->hash && !compare(self->keys, ref, row))
 		{
 			self->table[pos] = row;
 			return ref;
@@ -112,7 +112,7 @@ ht_delete(Ht* self, Row* key)
 			break;
 		if (ref != HT_DELETED)
 		{
-			if (ref->hash == key->hash && !compare(self->def, ref, key))
+			if (ref->hash == key->hash && !compare(self->keys, ref, key))
 			{
 				table[pos] = HT_DELETED;
 				self->count--;
@@ -145,7 +145,7 @@ ht_get(Ht* self, Row* key, uint64_t* at)
 			*at = pos;
 		} else
 		{
-			if (ref->hash == key->hash && !compare(self->def, ref, key))
+			if (ref->hash == key->hash && !compare(self->keys, ref, key))
 			{
 				*at = pos;
 				return ref;

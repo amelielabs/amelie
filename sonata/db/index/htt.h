@@ -15,7 +15,7 @@ struct Htt
 	Ht       a, b;
 	bool     rehashing;
 	uint64_t rehashing_pos;
-	Def*     def;
+	Keys*    keys;
 };
 
 static inline void
@@ -25,7 +25,7 @@ htt_init(Htt* self)
 	self->prev          = NULL;
 	self->rehashing     = false;
 	self->rehashing_pos = 0;
-	self->def           = NULL;
+	self->keys          = NULL;
 	ht_init(&self->a);
 	ht_init(&self->b);
 }
@@ -38,11 +38,11 @@ htt_free(Htt* self)
 }
 
 static inline void
-htt_create(Htt* self, Def* def)
+htt_create(Htt* self, Keys* keys)
 {
-	self->def = def;
+	self->keys = keys;
 	self->current = &self->a;
-	ht_create(self->current, def, 256);
+	ht_create(self->current, keys, 256);
 }
 
 static inline void
@@ -52,7 +52,7 @@ htt_rehash_start(Htt* self)
 	auto current = prev == &self->a ? &self->b : &self->a;
 
 	// create new hash table and set as current
-	ht_create(current, self->def, prev->size * 2);
+	ht_create(current, self->keys, prev->size * 2);
 	self->current       = current;
 	self->prev          = prev;
 	self->rehashing     = true;

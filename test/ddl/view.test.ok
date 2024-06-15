@@ -32,22 +32,14 @@ show views
   "schema": "public",
   "name": "test",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 select * from system.views()
 [{
   "schema": "public",
   "name": "test",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 # test: create view if not exists
 create view test as select 1
@@ -68,11 +60,7 @@ select * from system.views()
   "schema": "test",
   "name": "test",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 drop view test
 {"code": 1, "msg": "view 'test': not exists"}
@@ -113,20 +101,16 @@ select * from system.views()
   "schema": "public",
   "name": "test_view",
   "query": "select * from test",
-  "def": {
-    "column": [{
-      "name": "id",
-      "type": -1,
-      "constraint": {
-        "not_null": false,
-        "generated": 0,
-        "modulo": 9223372036854775807,
-        "default": null
-      }
-    }],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": [{
+    "name": "id",
+    "type": -1,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }]
 }]
 select id from test_view
 [1, 2, 3]
@@ -221,11 +205,7 @@ select * from system.views()
   "schema": "public",
   "name": "abc",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 # test: alter rename view exists
 create view test as select 1
@@ -250,11 +230,7 @@ select * from system.views()
   "schema": "public",
   "name": "test",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 create schema test
 alter view public.test rename to test.test
@@ -263,11 +239,7 @@ select * from system.views()
   "schema": "test",
   "name": "test",
   "query": "select 1",
-  "def": {
-    "column": [],
-    "key": [],
-    "key_unique": false
-  }
+  "columns": []
 }]
 disconnect S0
 close E0

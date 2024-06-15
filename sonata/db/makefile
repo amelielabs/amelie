@@ -12,7 +12,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/data \
                  -I../runtime/config \
                  -I. \
-                 -Idef \
+                 -Irow \
                  -Itransaction \
                  -Iindex \
                  -Ipartition \
@@ -21,7 +21,7 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-db.a
 OBJECTS        = \
-                 def/row.o \
+                 row/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
                  index/ttree.o \

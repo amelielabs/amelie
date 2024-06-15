@@ -70,7 +70,7 @@ select ** from system.config()
 
 # test: select from function #2
 create table test (id int primary key serial)
-select ** from system.tables()[0].indexes[0].def
+select * from system.tables()[0].indexes[0].keys
 drop table test
 
 # test: select from expr alias

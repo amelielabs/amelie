@@ -86,8 +86,8 @@ index_open(Index* self, Row* key, bool start)
 	return self->iface.open(self, key, start);
 }
 
-static inline Def*
-index_def(Index* self)
+static inline Keys*
+index_keys(Index* self)
 {
-	return &self->config->def;
+	return &self->config->keys;
 }

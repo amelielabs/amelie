@@ -11,24 +11,24 @@ typedef struct Key Key;
 struct Key
 {
 	int     order;
-	int64_t column;
+	Column* column;
+	int64_t ref;
 	int64_t type;
 	Str     path;
 	bool    asc;
-	Key*    next_column;
-	Key*    next;
+	List    link;
 };
 
 static inline Key*
 key_allocate(void)
 {
 	Key* self = so_malloc(sizeof(Key));
-	self->order       = -1;
-	self->column      = -1;
-	self->type        = -1;
-	self->asc         = false;
-	self->next_column = NULL;
-	self->next        = NULL;
+	self->order  = -1;
+	self->column = NULL;
+	self->ref    = -1;
+	self->type   = -1;
+	self->asc    = false;
+	list_init(&self->link);
 	str_init(&self->path);
 	return self;
 }
@@ -41,9 +41,9 @@ key_free(Key* self)
 }
 
 static inline void
-key_set_column(Key* self, int column)
+key_set_ref(Key* self, int ref)
 {
-	self->column = column;
+	self->ref = ref;
 }
 
 static inline void
@@ -69,7 +69,7 @@ key_copy(Key* self)
 {
 	auto copy = key_allocate();
 	guard(key_free, copy);
-	key_set_column(copy, self->column);
+	key_set_ref(copy, self->ref);
 	key_set_type(copy, self->type);
 	key_set_path(copy, &self->path);
 	key_set_asc(copy, self->asc);
@@ -83,11 +83,11 @@ key_read(uint8_t** pos)
 	guard(key_free, self);
 	Decode map[] =
 	{
-		{ DECODE_INT,    "column", &self->column },
-		{ DECODE_INT,    "type",   &self->type   },
-		{ DECODE_STRING, "path",   &self->path   },
-		{ DECODE_BOOL,   "asc",    &self->asc    },
-		{ 0,              NULL,    NULL          },
+		{ DECODE_INT,    "ref",  &self->ref  },
+		{ DECODE_INT,    "type", &self->type },
+		{ DECODE_STRING, "path", &self->path },
+		{ DECODE_BOOL,   "asc",  &self->asc  },
+		{ 0,              NULL,  NULL        },
 	};
 	decode_map(map, pos);
 	return unguard();
@@ -98,9 +98,9 @@ key_write(Key* self, Buf* buf)
 {
 	encode_map(buf);
 
-	// column
-	encode_raw(buf, "column", 6);
-	encode_integer(buf, self->column);
+	// ref
+	encode_raw(buf, "ref", 3);
+	encode_integer(buf, self->ref);
 
 	// type
 	encode_raw(buf, "type", 4);
@@ -118,26 +118,26 @@ key_write(Key* self, Buf* buf)
 }
 
 static inline void
-key_find(Column* column, Key* key, uint8_t** pos)
+key_find(Key* self, uint8_t** pos)
 {
 	// find by path
-	if (str_empty(&key->path))
+	if (str_empty(&self->path))
 		return;
 
-	if (! map_find_path(pos, &key->path))
+	if (! map_find_path(pos, &self->path))
 		error("column %.*s: key path <%.*s> is not found",
-		      str_size(&column->name),
-		      str_of(&column->name),
-		      str_size(&key->path),
-		      str_of(&key->path));
+		      str_size(&self->column->name),
+		      str_of(&self->column->name),
+		      str_size(&self->path),
+		      str_of(&self->path));
 
 	// validate data type
-	if (! type_validate(key->type, *pos))
+	if (! type_validate(self->type, *pos))
 		error("column %.*s: key path <%.*s> does not match data type",
-		      str_size(&column->name),
-		      str_of(&column->name),
-		      str_size(&key->path),
-		      str_of(&key->path));
+		      str_size(&self->column->name),
+		      str_of(&self->column->name),
+		      str_size(&self->path),
+		      str_of(&self->path));
 }
 
 hot static inline uint32_t

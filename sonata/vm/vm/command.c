@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -44,18 +44,18 @@ ccursor_open(Vm* self, Op* op)
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
 	auto part  = part_list_match(&table->part_list, self->node);
 	auto index = part_find(part, &name_index, true);
-	auto def   = index_def(index);
+	auto keys  = index_keys(index);
 
 	// create cursor key
 	auto hash = index->config->type == INDEX_HASH;
-	auto key = value_row_key(def, hash, &self->stack);
+	auto key = value_row_key(keys, hash, &self->stack);
 	guard(row_free, key);
-	stack_popn(&self->stack, def->key_count);
+	stack_popn(&self->stack, keys->list_count);
 
 	// open cursor
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
-	cursor->def   = def;
+	cursor->keys  = keys;
 	cursor->part  = part;
 
 	// in case of hash index, use key only for point-lookup
@@ -169,7 +169,7 @@ ccursor_prepare(Vm* self, Op* op)
 	// prepare cursor
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
-	cursor->def   = table_def(table);
+	cursor->keys  = table_keys(table);
 	cursor->part  = part_list_match(&table->part_list, self->node);
 	cursor->it    = NULL;
 }
@@ -277,9 +277,9 @@ ccursor_read(Vm* self, Op* op)
 		if (unlikely(! iterator_has(cursor->it)))
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
-		auto def = cursor->def;
+		auto keys = cursor->keys;
 		assert(current != NULL);
-		value_set_data(a, row_data(current, def), row_data_size(current, def), NULL);
+		value_set_data(a, row_data(current, keys), row_data_size(current, keys), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
@@ -327,7 +327,7 @@ ccursor_idx(Vm* self, Op* op)
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		data     = row_data(current, cursor->def);
+		data     = row_data(current, cursor->keys);
 		data_buf = NULL;
 		break;
 	}
@@ -692,7 +692,7 @@ csend(Vm* self, Op* op)
 	auto plan  = self->plan;
 	auto start = op->b;
 	auto table = (Table*)op->c;
-	auto def   = table_def(table);
+	auto keys  = table_keys(table);
 
 	// redistribute rows between nodes
 	ReqList list;
@@ -710,7 +710,7 @@ csend(Vm* self, Op* op)
 	{
 		// hash row keys
 		uint32_t offset = data - data_start;
-		auto hash = row_hash(def, &data);
+		auto hash = row_hash(keys, &data);
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, hash);

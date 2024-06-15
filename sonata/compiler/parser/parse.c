@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -68,7 +68,7 @@ parse_stmt_free(Stmt* stmt)
 	default:
 		break;
 	}
-	def_free(&stmt->def);
+	columns_free(&stmt->columns);
 }
 
 hot static inline void
@@ -291,14 +291,14 @@ parse_cte_args(Parser* self, Stmt* cte)
 			error("WITH name (<name> expected");
 
 		// ensure arg does not exists
-		auto arg = def_find_column(&cte->def, &name->string);
+		auto arg = columns_find(&cte->columns, &name->string);
 		if (arg)
 			error("<%.*s> view argument redefined", str_size(&name->string),
 			      str_of(&name->string));
 
 		// add argument
 		arg = column_allocate();
-		def_add_column(&cte->def, arg);
+		columns_add(&cte->columns, arg);
 		column_set_name(arg, &name->string);
 
 		// ,

@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -36,6 +36,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
+	auto columns = table_columns(target->table);
 	auto op = expr;
 	for (; op; op = op->next)
 	{
@@ -43,12 +44,11 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		str_set_str(&path, &op->l->string);
 
 		// update column in a row
-		auto def = table_def(target->table);
 		Column* column = NULL;
 		switch (op->l->id) {
 		case KNAME:
 		{
-			column = def_find_column(def, &path);
+			column = columns_find(columns, &path);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&path),
 				      str_of(&path));
@@ -60,7 +60,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			Str name;
 			str_split_or_set(&path, &name, '.');
 
-			column = def_find_column(def, &name);
+			column = columns_find(columns, &name);
 			if (! column)
 				error("<%.*s> column does not exists", str_size(&name),
 				      str_of(&name));
@@ -75,24 +75,32 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		}
 
 		// ensure we are not updating a key
-		auto key = column->key;
-		for (; key; key = key->next_column)
+		if (column->key)
 		{
-			if (str_empty(&key->path)) {
-				error("<%.*s> key columns cannot be updated", str_size(&column->name),
-				      str_of(&column->name));
-			} else
+			list_foreach(&target->table->config->indexes)
 			{
-				// path is equal or a prefix of the key path
-				if (str_empty(&path) || str_compare_prefix(&key->path, &path))
-					error("<%.*s> column nested key <%.*s> cannot be updated",
-					      str_size(&column->name), str_of(&column->name),
-					      str_size(&key->path),
-					      str_of(&key->path));
+				auto index = list_at(IndexConfig, link);
+				list_foreach(&index->keys.list)
+				{
+					auto key = list_at(Key, link);
+					if (key->column != column)
+						continue;
+
+					if (str_empty(&key->path)) {
+						error("<%.*s> key columns cannot be updated", str_size(&column->name),
+						      str_of(&column->name));
+					} else
+					{
+						// path is equal or a prefix of the key path
+						if (str_empty(&path) || str_compare_prefix(&key->path, &path))
+							error("<%.*s> column nested key <%.*s> cannot be updated",
+							      str_size(&column->name), str_of(&column->name),
+							      str_size(&key->path),
+							      str_of(&key->path));
+					}
+				}
 			}
 		}
-
-		// todo: check secondary keys
 
 		// path
 		int rexpr;

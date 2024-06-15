@@ -14,7 +14,7 @@
 #include <sonata_http.h>
 #include <sonata_client.h>
 #include <sonata_server.h>
-#include <sonata_def.h>
+#include <sonata_row.h>
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 #include <sonata_partition.h>
@@ -48,9 +48,9 @@ scan_key(Scan* self, Target* target)
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
 
-	auto key = table_def(target->table)->key;
-	for (; key; key = key->next)
+	list_foreach(&table_keys(target->table)->list)
 	{
+		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
 
 		// use value from >, >=, = expression as a key
@@ -79,9 +79,9 @@ scan_stop(Scan* self, Target* target, int _eof)
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
 
-	auto key = table_def(target->table)->key;
-	for (; key; key = key->next)
+	list_foreach(&table_keys(target->table)->list)
 	{
+		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
 		if (! ref->stop)
 			continue;
@@ -193,7 +193,7 @@ scan_target_table(Scan* self, Target* target)
 	// cursor_next
 
 	// do not iterate further for point-lookups on unique index
-	if (point_lookup && index->def.key_unique)
+	if (point_lookup && index->unique)
 		op1(cp, CJMP, _where_eof);
 	else
 		op2(cp, CCURSOR_NEXT, target->id, _where);

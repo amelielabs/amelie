@@ -25,7 +25,7 @@ struct TtreePos
 
 struct Ttree
 {
-	Def*     def;
+	Keys*    keys;
 	Rbtree   tree;
 	int      size_page;
 	int      size_split;
@@ -33,7 +33,7 @@ struct Ttree
 	uint64_t count;
 };
 
-void ttree_init(Ttree*, int, int, Def*);
+void ttree_init(Ttree*, int, int, Keys*);
 void ttree_free(Ttree*);
 Row* ttree_set(Ttree*, Row*);
 Row* ttree_set_or_get(Ttree*, Row*, TtreePos*);
