@@ -92,6 +92,13 @@ table_config_add_index(TableConfig* self, IndexConfig* config)
 	self->indexes_count++;
 }
 
+static inline void
+table_config_del_index(TableConfig* self, IndexConfig* config)
+{
+	list_unlink(&config->link);
+	self->indexes_count--;
+}
+
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {

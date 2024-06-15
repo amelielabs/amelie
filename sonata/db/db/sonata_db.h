@@ -18,6 +18,9 @@
 #include "db/table_op.h"
 #include "db/table_mgr.h"
 
+// index
+#include "db/table_index.h"
+
 // view
 #include "db/view_config.h"
 #include "db/view.h"

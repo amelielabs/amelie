@@ -209,6 +209,24 @@ ddl_alter_table(Session* self, Transaction* trx)
 }
 
 static void
+ddl_create_index(Session* self, Transaction* trx)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_index_create_of(stmt->ast);
+	auto db   = self->share->db;
+
+	// find table
+	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
+	                            &arg->table_name,
+	                            true);
+	auto created = table_index_create(table, trx, arg->config, arg->if_not_exists);
+	if (! created)
+		return;
+
+	// todo: indexate
+}
+
+static void
 ddl_create_view(Session* self, Transaction* trx)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -313,6 +331,12 @@ session_execute_ddl(Session* self)
 			break;
 		case STMT_ALTER_TABLE:
 			ddl_alter_table(self, &trx);
+			break;
+		case STMT_CREATE_INDEX:
+			ddl_create_index(self, &trx);
+			break;
+		case STMT_DROP_INDEX:
+		case STMT_ALTER_INDEX:
 			break;
 		case STMT_CREATE_VIEW:
 			ddl_create_view(self, &trx);

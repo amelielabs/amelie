@@ -74,3 +74,79 @@ table_op_rename_read(uint8_t** pos, Str* schema, Str* name,
 	data_read_string(pos, name_new);
 	data_read_array_end(pos);
 }
+
+static inline Buf*
+table_op_create_index(Str* schema, Str* name, IndexConfig* config)
+{
+	// [schema, name, config]
+	auto buf = buf_begin();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	index_config_write(config, buf);
+	encode_array_end(buf);
+	return buf_end(buf);
+}
+
+static inline Buf*
+table_op_drop_index(Str* schema, Str* name, Str* index)
+{
+	// [schema, name, index_name]
+	auto buf = buf_begin();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	encode_string(buf, index);
+	encode_array_end(buf);
+	return buf_end(buf);
+}
+
+static inline Buf*
+table_op_rename_index(Str* schema, Str* name, Str* index, Str* index_new)
+{
+	// [schema, name, index_name, index_name_new]
+	auto buf = buf_begin();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	encode_string(buf, index);
+	encode_string(buf, index_new);
+	encode_array_end(buf);
+	return buf_end(buf);
+}
+
+static inline IndexConfig*
+table_op_create_index_read(uint8_t** pos, Columns* columns, Str* schema, Str* name)
+{
+	data_read_array(pos);
+	data_read_string(pos, schema);
+	data_read_string(pos, name);
+	auto config = index_config_read(columns, pos);
+	guard(index_config_free, config);
+	data_read_array_end(pos);
+	unguard();
+	return config;
+}
+
+static inline void
+table_op_drop_index_read(uint8_t **pos, Str* schema, Str* name, Str* index)
+{
+	data_read_array(pos);
+	data_read_string(pos, schema);
+	data_read_string(pos, name);
+	data_read_string(pos, index);
+	data_read_array_end(pos);
+}
+
+static inline void
+table_op_rename_index_read(uint8_t **pos, Str* schema, Str* name,
+                           Str* index,
+                           Str* index_new)
+{
+	data_read_array(pos);
+	data_read_string(pos, schema);
+	data_read_string(pos, name);
+	data_read_string(pos, index);
+	data_read_string(pos, index_new);
+	data_read_array_end(pos);
+}

@@ -45,23 +45,42 @@ part_free(Part* self)
 }
 
 void
-part_open(Part* self, List* indexes)
+part_create_index(Part* self, IndexConfig* config)
 {
-	// recreate indexes
-	list_foreach(indexes)
+	Index* index;
+	if (config->type == INDEX_TREE)
+		index = tree_allocate(config, self->config->id);
+	else
+	if (config->type == INDEX_HASH)
+		index = hash_allocate(config, self->config->id);
+	else
+		error("unrecognized index type");
+	list_append(&self->indexes, &index->link);
+	self->indexes_count++;
+}
+
+void
+part_drop_index(Part* self, IndexConfig* config)
+{
+	auto index = part_find(self, &config->name, true);
+	list_unlink(&index->link);
+	self->indexes_count--;
+	index_free(index);
+}
+
+Index*
+part_find(Part* self, Str* name, bool error_if_not_exists)
+{
+	list_foreach(&self->indexes)
 	{
-		auto config = list_at(IndexConfig, link);
-		Index* index;
-		if (config->type == INDEX_TREE)
-			index = tree_allocate(config, self->config->id);
-		else
-		if (config->type == INDEX_HASH)
-			index = hash_allocate(config, self->config->id);
-		else
-			error("unrecognized index type");
-		list_append(&self->indexes, &index->link);
-		self->indexes_count++;
+		auto index = list_at(Index, link);
+		if (str_compare(&index->config->name, name))
+			return index;
 	}
+	if (error_if_not_exists)
+		error("index '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return NULL;
 }
 
 hot void
@@ -167,19 +186,4 @@ part_upsert(Part*        self,
 	index_upsert(primary, trx, it, row);
 	if (*it == NULL)
 		unguard();
-}
-
-Index*
-part_find(Part* self, Str* name, bool error_if_not_exists)
-{
-	list_foreach(&self->indexes)
-	{
-		auto index = list_at(Index, link);
-		if (str_compare(&index->config->name, name))
-			return index;
-	}
-	if (error_if_not_exists)
-		error("index '%.*s': not exists", str_size(name),
-		       str_of(name));
-	return NULL;
 }

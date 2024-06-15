@@ -63,11 +63,15 @@ part_list_create(PartList* self, bool reference,
 		list_append(&self->list, &part->link);
 		self->list_count++;
 
-		// prepare indexes
-		part_open(part, indexes);
-
 		// register and map partition
 		part_mgr_add(self->mgr, &self->map, part);
+	}
+
+	// recreate indexes
+	list_foreach(indexes)
+	{
+		auto config = list_at(IndexConfig, link);
+		part_list_create_index(self, config);
 	}
 }
 
@@ -88,4 +92,24 @@ part_list_match(PartList* self, Uuid* node)
 		return part;
 	}
 	return NULL;
+}
+
+void
+part_list_create_index(PartList* self, IndexConfig* config)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_create_index(part, config);
+	}
+}
+
+void
+part_list_drop_index(PartList* self, IndexConfig* config)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_drop_index(part, config);
+	}
 }

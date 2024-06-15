@@ -37,6 +37,7 @@ OBJECTS        = \
                  wal/wal_cursor.o \
                  db/schema_mgr.o \
                  db/table_mgr.o \
+                 db/table_index.o \
                  db/view_mgr.o \
                  db/db.o \
                  db/db_catalog.o \
