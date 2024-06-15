@@ -112,7 +112,7 @@ parse_key(Stmt* self, Keys* keys)
 {
 	// (
 	if (! stmt_if(self, '('))
-		error("PRIMARY KEY <(> expected");
+		error("KEY <(> expected");
 
 	for (;;)
 	{
@@ -123,7 +123,7 @@ parse_key(Stmt* self, Keys* keys)
 		// (column.path type, ...)
 		auto column = parse_key_column(self, keys->columns, &path);
 		if (column == NULL)
-			error("PRIMARY KEY (<name> expected");
+			error("KEY (<name> expected");
 
 		// [type]
 		int type;
@@ -163,7 +163,7 @@ parse_key(Stmt* self, Keys* keys)
 
 	// )
 	if (! stmt_if(self, ')'))
-		error("PRIMARY KEY (<)> expected");
+		error("KEY (<)> expected");
 }
 
 static bool
