@@ -26,7 +26,7 @@
 #include <sonata_vm.h>
 #include <sonata_parser.h>
 
-static int
+int
 parse_type(Stmt* self, Column* column, Str* path)
 {
 	auto ast = stmt_next(self);
@@ -70,17 +70,6 @@ parse_type(Stmt* self, Column* column, Str* path)
 	return type;
 }
 
-static bool
-parse_primary_key(Stmt* self)
-{
-	// PRIMARY KEY
-	if (! stmt_if(self, KPRIMARY))
-		return false;
-	if (! stmt_if(self, KKEY))
-		error("PRIMARY <KEY> expected");
-	return true;
-}
-
 static Column*
 parse_key_column(Stmt* self, Columns* columns, Str* path)
 {
@@ -118,8 +107,8 @@ parse_key_column(Stmt* self, Columns* columns, Str* path)
 	return column;
 }
 
-static void
-parse_key(Stmt* self, Columns* columns, Keys* keys)
+void
+parse_key(Stmt* self, Keys* keys)
 {
 	// (
 	if (! stmt_if(self, '('))
@@ -132,7 +121,7 @@ parse_key(Stmt* self, Columns* columns, Keys* keys)
 
 		// (column, ...)
 		// (column.path type, ...)
-		auto column = parse_key_column(self, columns, &path);
+		auto column = parse_key_column(self, keys->columns, &path);
 		if (column == NULL)
 			error("PRIMARY KEY (<name> expected");
 
@@ -175,6 +164,17 @@ parse_key(Stmt* self, Columns* columns, Keys* keys)
 	// )
 	if (! stmt_if(self, ')'))
 		error("PRIMARY KEY (<)> expected");
+}
+
+static bool
+parse_primary_key(Stmt* self)
+{
+	// PRIMARY KEY
+	if (! stmt_if(self, KPRIMARY))
+		return false;
+	if (! stmt_if(self, KKEY))
+		error("PRIMARY <KEY> expected");
+	return true;
 }
 
 static void
@@ -329,7 +329,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (parse_primary_key(self))
 		{
 			// (columns)
-			parse_key(self, columns, keys);
+			parse_key(self, keys);
 			goto last;
 		}
 
