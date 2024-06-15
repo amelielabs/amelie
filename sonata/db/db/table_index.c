@@ -173,11 +173,11 @@ table_index_rename(Table*       self,
 
 	// ensure new index not exists
 	if (table_find_index(self, name_new, false))
-			error("table '%.*s' index '%.*s': already exists",
-			      str_size(&self->config->name),
-			      str_of(&self->config->name),
-			      str_size(name_new),
-			      str_of(name_new));
+		error("table '%.*s' index '%.*s': already exists",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name_new),
+		      str_of(name_new));
 
 	// save rename index operation
 	auto op = table_op_rename_index(&self->config->schema, &self->config->name,
