@@ -211,9 +211,10 @@ ddl_alter_table(Session* self, Transaction* trx)
 static void
 ddl_create_index(Session* self, Transaction* trx)
 {
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_index_create_of(stmt->ast);
-	auto db   = self->share->db;
+	auto stmt    = compiler_stmt(&self->compiler);
+	auto arg     = ast_index_create_of(stmt->ast);
+	auto db      = self->share->db;
+	auto cluster = self->share->cluster;
 
 	// find table
 	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
@@ -223,7 +224,13 @@ ddl_create_index(Session* self, Transaction* trx)
 	if (! created)
 		return;
 
-	// todo: indexate
+	auto index = table_find_index(table, &arg->config->name, true);
+
+	// do parallel indexation per node
+	Indexate indexate;
+	indexate_init(&indexate, cluster, table, index);
+	guard(indexate_free, &indexate);
+	indexate_run(&indexate);
 }
 
 static void

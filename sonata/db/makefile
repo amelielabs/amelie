@@ -24,6 +24,7 @@ OBJECTS        = \
                  row/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
+                 index/indexate.o \
                  index/ttree.o \
                  index/tree.o \
                  index/hash.o \

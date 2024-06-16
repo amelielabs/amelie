@@ -12,3 +12,4 @@
 
 // cluster
 #include "cluster/cluster.h"
+#include "cluster/indexate.h"

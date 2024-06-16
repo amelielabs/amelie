@@ -10,6 +10,7 @@
 #include "index/iterator.h"
 #include "index/index_config.h"
 #include "index/index.h"
+#include "index/indexate.h"
 
 // tree
 #include "index/ttree.h"

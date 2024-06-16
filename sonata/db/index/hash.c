@@ -176,7 +176,8 @@ hash_ingest(Index* arg, Row* row)
 {
 	auto self = hash_of(arg);
 	auto prev = htt_set(&self->ht, row);
-	assert(! prev);
+	if (prev)
+		error("unique constraint violation");
 }
 
 hot static Iterator*

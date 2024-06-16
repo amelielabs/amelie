@@ -113,3 +113,14 @@ part_list_drop_index(PartList* self, IndexConfig* config)
 		part_drop_index(part, config);
 	}
 }
+
+void
+part_list_indexate(PartList* self, IndexConfig* config, Uuid* node)
+{
+	auto part = part_list_match(self, node);
+	if (! part)
+		return;
+	auto primary = part_primary(part);
+	auto index = part_find(part, &config->name, true);
+	indexate(index, primary);
+}

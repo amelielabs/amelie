@@ -87,17 +87,30 @@ hot void
 part_ingest(Part* self, uint8_t** pos)
 {
 	auto primary = part_primary(self);
-	auto hash = primary->config->type == INDEX_HASH;
+	auto create_hash = primary->config->type == INDEX_HASH;
 
-	// allocate row
-	auto row = row_create(&primary->config->keys, hash, pos);
-	guard(row_free, row);
+	// allocate primary row
+	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	guard(row_free, row_primary);
 
 	// update primary index
-	index_ingest(primary, row);
+	index_ingest(primary, row_primary);
 	unguard();
 
-	// todo: secondary indexes
+	// secondary indexes
+	list_foreach_after(&self->indexes, &primary->link)
+	{
+		auto index = list_at(Index, link);
+		create_hash = (index->config->type == INDEX_HASH);
+
+		// allocate secondary row
+		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		guard(row_free, row);
+
+		// update index
+		index_ingest(index, row);
+		unguard();
+	}
 }
 
 hot void

@@ -169,6 +169,12 @@ node_main(void* arg)
 		case RPC_ABORT:
 			node_abort(self, trx_of(buf));
 			break;
+		case RPC_INDEXATE:
+		{
+			auto indexate = *(Indexate**)msg->data;
+			indexate_execute(indexate, &self->config->id);
+			break;
+		}
 		case RPC_RECOVER:
 			node_recover(self);
 			break;

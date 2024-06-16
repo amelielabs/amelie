@@ -176,7 +176,8 @@ tree_ingest(Index* arg, Row* row)
 {
 	auto self = tree_of(arg);
 	auto prev = ttree_set(&self->tree, row);
-	assert(! prev);
+	if (prev)
+		error("unique constraint violation");
 }
 
 hot static Iterator*

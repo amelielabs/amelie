@@ -24,3 +24,4 @@ Part* part_list_match(PartList*, Uuid*);
 
 void  part_list_create_index(PartList*, IndexConfig*);
 void  part_list_drop_index(PartList*, IndexConfig*);
+void  part_list_indexate(PartList*, IndexConfig*, Uuid*);
