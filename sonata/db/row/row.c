@@ -61,8 +61,6 @@ row_create(Keys* keys, bool create_hash, uint8_t** pos)
 
 				// set key index
 				index[key->order] = pos_key - data;
-				uint8_t* pos_key_end = pos_key;
-				data_skip(&pos_key_end);
 
 				// hash key
 				if (create_hash)
@@ -95,7 +93,7 @@ row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
 	uint32_t index[keys->list_count];
 	uint32_t hash = 0;
 	uint8_t* data = row_data(row_primary, keys->primary);
-	uint8_t* pos  = pos;
+	uint8_t* pos  = data;
 	data_read_array(&pos);
 
 	// indexate primary row data using secondary keys
@@ -116,8 +114,6 @@ row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
 
 				// set key index
 				index[key->order] = pos_key - data;
-				uint8_t* pos_key_end = pos_key;
-				data_skip(&pos_key_end);
 
 				// hash key
 				if (create_hash)
@@ -134,6 +130,7 @@ row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
 		row_key_set(self, i, index[i]);
 	memcpy(row_data(self, keys), &row_primary, sizeof(Row**));
 	self->hash = hash;
+	self->ref  = true;
 	return self;
 }
 

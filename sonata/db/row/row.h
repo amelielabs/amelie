@@ -11,7 +11,8 @@ typedef struct Row Row;
 struct Row
 {
 	uint8_t  size_factor: 2;
-	uint8_t  unused: 6;
+	uint8_t  ref: 1;
+	uint8_t  unused: 5;
 	uint32_t hash;
 	uint8_t  size[];
 	// size
@@ -27,19 +28,20 @@ row_data_size_meta(Keys* keys, int size_factor)
 }
 
 always_inline hot static inline uint8_t*
-row_data(Row* self, Keys* keys)
+row_data_of(Row* self, Keys* keys)
 {
 	return (uint8_t*)self + row_data_size_meta(keys, self->size_factor);
 }
 
-always_inline hot static inline Row*
-row_of(Row* self, Keys* keys)
+always_inline hot static inline uint8_t*
+row_data(Row* self, Keys* keys)
 {
-	// primary row (has no primary keys pointer)
-	if (! keys->primary)
-		return self;
-	// secondary row
-	return *(Row**)row_data(self, keys);
+	// primary row
+	if (! self->ref)
+		return row_data_of(self, keys);
+
+	// secondary row (primary row reference)
+	return row_data_of(*(Row**)row_data_of(self, keys), keys->primary);
 }
 
 always_inline hot static inline uint8_t*
@@ -63,8 +65,9 @@ row_data_4(Row* self)
 always_inline hot static inline int
 row_data_size(Row* self, Keys* keys)
 {
-	// resolve primary row
-	self = row_of(self, keys);
+	// secondary row (primary row reference)
+	if (self->ref)
+		self = *(Row**)row_data_of(self, keys);
 	if (self->size_factor == 0)
 		return row_data_1(self)[0];
 	if (self->size_factor == 1)
@@ -84,8 +87,6 @@ row_key(Row* self, Keys* keys, int pos)
 		offset = row_data_2(self)[1 + pos];
 	else
 		offset = row_data_4(self)[1 + pos];
-	// apply key offset to the primary row
-	self = row_of(self, keys);
 	return row_data(self, keys) + offset;
 }
 
@@ -120,6 +121,7 @@ row_allocate(Keys* keys, int data_size)
 	int size = row_data_size_meta(keys, size_factor) + data_size;
 	Row* self = so_malloc(size);
 	self->size_factor = size_factor;
+	self->ref         = false;
 	self->hash        = 0;
 	self->unused      = 0;
 

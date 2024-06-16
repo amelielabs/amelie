@@ -79,6 +79,20 @@ keys_copy(Keys* self, Keys* src)
 }
 
 static inline void
+keys_copy_distinct(Keys* self, Keys* primary)
+{
+	// add keys which are not already present
+	list_foreach_safe(&primary->list)
+	{
+		auto key = list_at(Key, link);
+		if (keys_find(self, &key->column->name))
+			continue;
+		auto copy = key_copy(list_at(Key, link));
+		keys_add(self, copy);
+	}
+}
+
+static inline void
 keys_read(Keys* self, uint8_t** pos)
 {
 	// []

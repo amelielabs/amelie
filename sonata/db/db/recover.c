@@ -97,7 +97,7 @@ recover_cmd(Db* self, Transaction* trx, uint8_t** meta, uint8_t** data)
 
 		// replay write
 		if (type == LOG_REPLACE)
-			part_set(part, trx, false, data);
+			part_insert(part, trx, true, data);
 		else
 			part_delete_by(part, trx, data);
 		return;

@@ -46,10 +46,10 @@ table_index_create_abort(LogOp* op)
 }
 
 bool
-table_mgr_create_index(Table*       self,
-                       Transaction* trx,
-                       IndexConfig* config,
-                       bool         if_not_exists)
+table_index_create(Table*       self,
+                   Transaction* trx,
+                   IndexConfig* config,
+                   bool         if_not_exists)
 {
 	auto index = table_find_index(self, &config->name, false);
 	if (index)
@@ -65,6 +65,7 @@ table_mgr_create_index(Table*       self,
 
 	// save index config copy to table config
 	index = index_config_copy(config, &self->config->columns);
+	keys_set_primary(&index->keys, table_keys(self));
 	table_config_add_index(self->config, index);
 
 	// save create index operation

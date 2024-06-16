@@ -31,7 +31,7 @@ part_find(Part*, Str*, bool);
 
 // dml
 void part_ingest(Part*, uint8_t**);
-void part_set(Part*, Transaction*, bool, uint8_t**);
+void part_insert(Part*, Transaction*, bool, uint8_t**);
 void part_update(Part*, Transaction*, Iterator*, uint8_t**);
 void part_delete(Part*, Transaction*, Iterator*);
 void part_delete_by(Part*, Transaction*, uint8_t**);
