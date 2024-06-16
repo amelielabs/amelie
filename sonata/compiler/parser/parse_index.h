@@ -93,6 +93,6 @@ ast_index_alter_allocate(void)
 	return self;
 }
 
-void parse_index_create(Stmt*);
+void parse_index_create(Stmt*, bool);
 void parse_index_drop(Stmt*);
 void parse_index_alter(Stmt*);

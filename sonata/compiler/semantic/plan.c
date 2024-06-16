@@ -146,7 +146,7 @@ plan_key_is(TargetList* target_list, Target* target, Key* key,
 hot static inline Key*
 plan_key_find(TargetList* target_list, Target* target, Ast* path, Ast* value)
 {
-	list_foreach(&table_keys(target->table)->list)
+	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		if (plan_key_is(target_list, target, key, path, value))
@@ -166,7 +166,7 @@ plan_op(TargetList* target_list, Target* target,
 	if (! key)
 		return NULL;
 
-	auto keys     = table_keys(target->table);
+	auto keys     = &target->index->keys;
 	auto plan     = ast_plan_allocate(keys, SCAN);
 	auto plan_key = &plan->keys[key->order];
 	switch (op->id) {
@@ -294,8 +294,8 @@ hot static inline AstPlan*
 plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
 {
 	// merge r keys into l
-	auto keys = table_keys(target->table);
 	int matched_eq = 0;
+	auto keys = &target->index->keys;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
@@ -314,7 +314,7 @@ plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
 hot AstPlan*
 plan(TargetList* target_list, Target* target, Ast* expr)
 {
-	auto keys = table_keys(target->table);
+	auto keys = &target->index->keys;
 	if (expr == NULL)
 		return ast_plan_allocate(keys, SCAN);
 

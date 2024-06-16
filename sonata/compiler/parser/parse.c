@@ -132,7 +132,17 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | VIEW
+		// [UNIQUE]
+		bool unique = stmt_if(stmt, KUNIQUE);
+		if (unique)
+		{
+			auto next = stmt_if(stmt, KINDEX);
+			if (! next)
+				error("CREATE UNIQUE <INDEX> expected");
+			stmt_push(stmt, next);
+		}
+
+		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -158,19 +168,24 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_TABLE;
 			parse_table_create(stmt);
 		} else
+		if (lex_if(lex, KINDEX))
+		{
+			stmt->id = STMT_CREATE_INDEX;
+			parse_index_create(stmt, unique);
+		} else
 		if (lex_if(lex, KVIEW))
 		{
 			stmt->id = STMT_CREATE_VIEW;
 			parse_view_create(stmt);
 		} else {
-			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected");
+			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | VIEW
+		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX| VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -196,19 +211,24 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_TABLE;
 			parse_table_drop(stmt);
 		} else
+		if (lex_if(lex, KINDEX))
+		{
+			stmt->id = STMT_DROP_INDEX;
+			parse_index_drop(stmt);
+		} else
 		if (lex_if(lex, KVIEW))
 		{
 			stmt->id = STMT_DROP_VIEW;
 			parse_view_drop(stmt);
 		} else {
-			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|VIEW> expected");
+			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | VIEW
+		// ALTER USER | SCHEMA | TABLE | INDEX | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
@@ -224,12 +244,17 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_ALTER_TABLE;
 			parse_table_alter(stmt);
 		} else
+		if (lex_if(lex, KINDEX))
+		{
+			stmt->id = STMT_ALTER_INDEX;
+			parse_index_alter(stmt);
+		} else
 		if (lex_if(lex, KVIEW))
 		{
 			stmt->id = STMT_ALTER_VIEW;
 			parse_view_alter(stmt);
 		} else {
-			error("ALTER <USER|SCHEMA|TABLE|VIEW> expected");
+			error("ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
@@ -237,7 +262,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KINSERT:
 	case KREPLACE:
 		stmt->id = STMT_INSERT;
-		parse_insert(stmt, ast->id == KINSERT);
+		parse_insert(stmt, ast->id == KREPLACE);
 		break;
 
 	case KUPDATE:

@@ -113,7 +113,7 @@ parse_from_add(From* self)
 	Table* table = NULL;
 	View*  view  = NULL;
 
-	// FROM <expr> [alias]
+	// FROM <expr> [alias] [USE INDEX (name)]
 	auto expr = parse_from_analyze(self, &cte, &table, &view);
 	auto target_list = &self->stmt->target_list;
 
@@ -159,6 +159,27 @@ parse_from_add(From* self)
 
 	// set view
 	target->view  = view;
+
+	// [USE INDEX (name)]
+	if (stmt_if(stmt, KUSE))
+	{
+		if (! stmt_if(stmt, KINDEX))
+			error("USE <INDEX> expected");
+		if (! stmt_if(stmt, '('))
+			error("USE INDEX <(> expected");
+		auto name = stmt_next_shadow(stmt);
+		if (name->id != KNAME)
+			error("USE INDEX (<index name> expected");
+		if (! stmt_if(stmt, ')'))
+			error("USE INDEX (<)> expected");
+		if (! table)
+			error("USE INDEX required table table");
+		target->index = table_find_index(table, &name->string, true);
+	}
+
+	if (target->table && !target->index)
+		target->index = table_primary(target->table);
+
 	return target;
 }
 

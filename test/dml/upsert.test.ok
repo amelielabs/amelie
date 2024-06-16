@@ -29,7 +29,7 @@ insert into test values(1, 0) on conflict do update set path =
 # test: on conflict do replace
 insert into test values(1, 0)
 insert into test values(1, 0)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 insert into test values(1, null) on conflict do replace
 insert into test values(1, null) on conflict do replace
 select * from test

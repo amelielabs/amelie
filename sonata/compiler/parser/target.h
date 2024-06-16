@@ -11,29 +11,30 @@ typedef struct Stmt   Stmt;
 
 struct Target
 {
-	int      id;
-	int      level;
-	int      level_seq;
-	Str      name;
+	int          id;
+	int          level;
+	int          level_seq;
+	Str          name;
 	// group by
-	AstList  group_by;
-	Target*  group_by_target;
-	Target*  group_main;
-	Target*  group_redirect;
+	AstList      group_by;
+	Target*      group_by_target;
+	Target*      group_main;
+	Target*      group_redirect;
 	// expression target
-	Stmt*    cte;
-	View*    view;
-	Ast*     expr;
-	Ast*     expr_on;
-	int      rexpr;
+	Stmt*        cte;
+	View*        view;
+	Ast*         expr;
+	Ast*         expr_on;
+	int          rexpr;
 	// target
-	AstList* labels;
-	Ast*     plan;
-	Table*   table;
+	AstList*     labels;
+	Ast*         plan;
+	Table*       table;
+	IndexConfig* index;
 	// link
-	Target*  outer;
-	Target*  next_join;
-	Target*  next;
+	Target*      outer;
+	Target*      next_join;
+	Target*      next;
 };
 
 static inline void
@@ -53,6 +54,7 @@ target_init(Target* self, Table* table)
 	self->labels          = NULL;
 	self->plan            = NULL;
 	self->table           = table;
+	self->index           = NULL;
 	self->outer           = NULL;
 	self->next_join       = NULL;
 	self->next            = NULL;

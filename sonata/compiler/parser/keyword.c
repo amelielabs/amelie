@@ -213,6 +213,7 @@ static Keyword keywords_u[] =
 {
 	{ KUPDATE,                "update",                6  },
 	{ KUNSET,                 "unset",                 5  },
+	{ KUSE,                   "use",                   3  },
 	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },

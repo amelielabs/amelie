@@ -80,9 +80,9 @@ parse_with(Stmt* self, IndexConfig* index_config)
 }
 
 void
-parse_index_create(Stmt* self)
+parse_index_create(Stmt* self, bool unique)
 {
-	// CREATE INDEX [IF NOT EXISTS] name ON table_name (keys)
+	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] name ON table_name (keys)
 	// [WITH (...)]
 	auto stmt = ast_index_create_allocate();
 	self->ast = &stmt->ast;
@@ -100,25 +100,28 @@ parse_index_create(Stmt* self)
 		error("CREATE INDEX name <ON> expected");
 
 	// [schema.table_name]
-	Str table_schema;
-	Str table_name;
-	if (! parse_target(self, &table_schema, &table_name))
+	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
 		error("CREATE INDEX name ON <name> expected");
 
 	// find table
-	auto table = table_mgr_find(&self->db->table_mgr, &table_schema,
-	                            &table_name, true);
+	auto table = table_mgr_find(&self->db->table_mgr, &stmt->table_schema,
+	                            &stmt->table_name, true);
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
 	stmt->config = config;
 	index_config_set_name(config, &name->string);
+	index_config_set_unique(config, unique);
 	index_config_set_primary(config, false);
 	index_config_set_type(config, INDEX_TREE);
 	keys_set_primary(&config->keys, table_keys(table));
 
 	// (keys)
 	parse_key(self, &config->keys);
+
+	// copy primary keys, which are not already present (non unique support)
+	if (! config->unique)
+		keys_copy_distinct(&config->keys, table_keys(table));
 
 	// [WITH (options)]
 	parse_with(self, stmt->config);

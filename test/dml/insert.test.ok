@@ -37,7 +37,7 @@ select * from test
 insert into test values (123)
 # test: primary unique key constraint violation
 insert into test values (123)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 # test: replace
 replace into test values (123)
 # test: insert schema
@@ -285,7 +285,7 @@ insert into test (data) values (1)
 select * from test
 [[123, 1]]
 insert into test (data) values (1)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 drop table test
 # test: insert list default key #2
 create table test (id int default 123 primary key)
@@ -293,7 +293,7 @@ insert into test () values ()
 select * from test
 [[123]]
 insert into test () values ()
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 drop table test
 # test: insert serial
 create table test (id int generated serial primary key)
@@ -349,7 +349,7 @@ drop table test
 # test: insert insert error
 create table test (id int primary key)
 insert into test 1,2,3,1
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 drop table test

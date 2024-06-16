@@ -3,7 +3,7 @@ connect E0 S0 localhost:3485
 # test: insert abort by error
 create table test (id int primary key, data int default 0)
 insert into test (id) values (0), (1), (2), (3), (1)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: insert abort by error #2
@@ -12,12 +12,12 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: replace abort
@@ -39,7 +39,7 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      0      0      # public.test
+ 0              insert        -      1      0      # public.test
  1                 ret        0      0      0
 
 "
@@ -164,7 +164,7 @@ drop table test
 # test: reference insert abort by error
 create table test (id int primary key, data int default 0) reference
 insert into test (id) values (0), (1), (2), (3), (1)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: reference insert abort by error #2
@@ -173,12 +173,12 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: reference insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: reference insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
-{"code": 1, "msg": "unique key constraint violation"}
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: reference replace abort
@@ -200,7 +200,7 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      0      0      # public.test
+ 0              insert        -      1      0      # public.test
  1                 ret        0      0      0
 
 "
@@ -364,7 +364,7 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      0      0      # public.a
+ 0              insert        -      1      0      # public.a
  1                 ret        0      0      0
  2                 set        0      0      0
  3             int_min        1      0      0
@@ -401,9 +401,9 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      0      0      # public.a
+ 0              insert        -      1      0      # public.a
  1                 ret        0      0      0
- 2              insert        -      1      0      # public.b
+ 2              insert        -      0      0      # public.b
  3                 ret        0      0      0
 
 "

@@ -411,12 +411,12 @@ ccall(Vm* self, Op* op)
 hot void
 cinsert(Vm* self, Op* op)
 {
-	// [table_ptr, unique]
+	// [table_ptr, replace]
 	
 	// find partition
-	auto table  = (Table*)op->a;
-	auto part   = part_list_match(&table->part_list, self->node);
-	auto unique = op->b;
+	auto table   = (Table*)op->a;
+	auto part    = part_list_match(&table->part_list, self->node);
+	auto replace = op->b;
 
 	// insert or replace
 	auto list       = buf_u32(self->code_arg);
@@ -426,7 +426,7 @@ cinsert(Vm* self, Op* op)
 		uint8_t* pos = code_data_at(self->code_data, list[i]);
 		if (unlikely(! data_is_array(pos)))
 			error("INSERT/REPLACE: array expected");
-		part_set(part, self->trx, unique, &pos);
+		part_insert(part, self->trx, replace, &pos);
 	}
 }
 

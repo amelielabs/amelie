@@ -28,7 +28,7 @@ static inline uint32_t
 target_lookup_hash(Target* target)
 {
 	uint32_t hash = 0;
-	list_foreach(&table_keys(target->table)->list)
+	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &ast_plan_of(target->plan)->keys[key->order];

@@ -48,7 +48,7 @@ scan_key(Scan* self, Target* target)
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
 
-	list_foreach(&table_keys(target->table)->list)
+	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
@@ -79,7 +79,7 @@ scan_stop(Scan* self, Target* target, int _eof)
 	auto cp   = self->compiler;
 	auto plan = ast_plan_of(target->plan);
 
-	list_foreach(&table_keys(target->table)->list)
+	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
@@ -105,7 +105,7 @@ scan_target_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
 	auto table = target->table;
-	auto index = table_primary(table);
+	auto index = target->index;
 
 	// prepare scan plan using where expression per target
 	if (! target->plan)
@@ -118,12 +118,9 @@ scan_target_table(Scan* self, Target* target)
 
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
-	Str index_name;
-	str_init(&index_name);
-	str_set_cstr(&index_name, "primary");
 	encode_string(&cp->code_data.data, &table->config->schema);
 	encode_string(&cp->code_data.data, &table->config->name);
-	encode_string(&cp->code_data.data, &index_name);
+	encode_string(&cp->code_data.data, &index->name);
 
 	// cursor_open
 	int _open = op_pos(cp);

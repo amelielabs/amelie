@@ -332,7 +332,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KREPLACE:
-		stmt->unique = false;
+		stmt->replace = true;
 		break;
 	case KNOTHING:
 		stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
@@ -357,7 +357,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 }
 
 hot void
-parse_insert(Stmt* self, bool unique)
+parse_insert(Stmt* self, bool replace)
 {
 	// [INSERT|REPLACE] INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
@@ -365,8 +365,8 @@ parse_insert(Stmt* self, bool unique)
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 
-	// insert
-	stmt->unique = unique;
+	// replace
+	stmt->replace = replace;
 
 	// INTO
 	if (! stmt_if(self, KINTO))

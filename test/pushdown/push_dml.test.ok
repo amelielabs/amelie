@@ -15,7 +15,7 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      1      0      # public.test
+ 0              insert        -      0      0      # public.test
  1                 ret        0      0      0
 
 "
@@ -301,7 +301,7 @@ bytecode [coordinator]
 
 bytecode [node]
 --------
- 0              insert        -      1      0      # public.test
+ 0              insert        -      0      0      # public.test
  1                 ret        0      0      0
 
 "
