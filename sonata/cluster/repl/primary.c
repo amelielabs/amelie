@@ -32,6 +32,7 @@
 
 void
 primary_init(Primary*      self,
+             Recover*      recover,
              Client*       client,
              PrimaryReplay replay,
              void*         replay_arg)
@@ -39,6 +40,7 @@ primary_init(Primary*      self,
 	self->client     = client;
 	self->replay     = replay;
 	self->replay_arg = replay_arg;
+	self->recover    = recover;
 }
 
 static inline void

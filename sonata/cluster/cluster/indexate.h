@@ -87,3 +87,14 @@ indexate_execute(Indexate* self, Uuid* node)
 	log("complete");
 	channel_write(&self->channel, buf);
 }
+
+static inline void
+indexate_runner(Recover* self, Table* table, IndexConfig* index)
+{
+	// do parallel indexation per node
+	Cluster* cluster = self->indexate_arg;
+	Indexate indexate;
+	indexate_init(&indexate, cluster, table, index);
+	guard(indexate_free, &indexate);
+	indexate_run(&indexate);
+}

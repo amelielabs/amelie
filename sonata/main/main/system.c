@@ -193,7 +193,10 @@ system_recover(System* self)
 		error("recovery: failed");
 
 	// replay wals
-	recover_wal(&self->db);
+	Recover recover;
+	recover_init(&recover, &self->db, indexate_runner, &self->cluster);
+	guard(recover_free, &recover);
+	recover_wal(&recover);
 }
 
 void

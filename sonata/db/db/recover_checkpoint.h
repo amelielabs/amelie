@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void replay(Session*, WalWrite*);
+void recover_checkpoint(Db*, Uuid*);

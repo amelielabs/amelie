@@ -115,17 +115,16 @@ table_op_rename_index(Str* schema, Str* name, Str* index, Str* index_new)
 	return buf_end(buf);
 }
 
-static inline IndexConfig*
-table_op_create_index_read(uint8_t** pos, Columns* columns, Str* schema, Str* name)
+static inline uint8_t*
+table_op_create_index_read(uint8_t** pos, Str* schema, Str* name)
 {
 	data_read_array(pos);
 	data_read_string(pos, schema);
 	data_read_string(pos, name);
-	auto config = index_config_read(columns, pos);
-	guard(index_config_free, config);
+	auto config_pos = *pos;
+	data_skip(pos);
 	data_read_array_end(pos);
-	unguard();
-	return config;
+	return config_pos;
 }
 
 static inline void

@@ -214,44 +214,6 @@ session_execute(Session* self)
 	session_unlock(self);
 }
 
-hot static void
-session_primary_on_write(Primary* self, Buf* data)
-{
-	Session* session = self->replay_arg;
-
-	// take shared lock
-	session_lock(session, SESSION_LOCK);
-	guard(session_unlock, session);
-
-	// validate request fields and check current replication state
-
-	// first join request has no data
-	if (! primary_next(self))
-		return;
-
-	// replay writes
-	auto pos = data->start;
-	auto end = data->position;
-	while (pos < end)
-	{
-		auto write = (WalWrite*)pos;
-		replay(session, write);
-		pos += write->size;
-	}
-}
-
-hot static void
-session_primary(Session* self)
-{
-	// switch plan to replication state to write wal
-	// while in read-only mode
-	plan_set_repl(&self->plan);
-
-	Primary primary;
-	primary_init(&primary, self->client, session_primary_on_write, self);
-	primary_main(&primary);
-}
-
 hot void
 session_main(Session* self)
 {

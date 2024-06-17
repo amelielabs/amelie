@@ -42,6 +42,7 @@ OBJECTS        = \
                  db/view_mgr.o \
                  db/db.o \
                  db/db_catalog.o \
+                 db/recover_checkpoint.o \
                  db/recover.o \
                  db/cascade.o
 $(LIB): clean $(OBJECTS)

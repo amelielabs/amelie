@@ -34,52 +34,7 @@
 #include <sonata_session.h>
 
 static void
-replay_ddl(Session* self, WalWrite* write)
-{
-	auto db = self->share->db;
-
-	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
-
-	Transaction trx;
-	transaction_init(&trx);
-	transaction_begin(&trx);
-
-	WalBatch wal_batch;
-	wal_batch_init(&wal_batch);
-
-	Exception e;
-	if (enter(&e))
-	{
-		// read and executor ddl commands
-		auto meta = (uint8_t*)write + sizeof(*write);
-		auto data = meta + write->offset;
-		for (auto i = write->count; i > 0; i--)
-			recover_cmd(db, &trx, &meta, &data);
-
-		// wal write
-		wal_batch_begin(&wal_batch, WAL_UTILITY);
-		wal_batch_add(&wal_batch, &trx.log.log_set);
-		wal_write(&db->wal, &wal_batch);
-
-		// commit
-		transaction_commit(&trx);
-		transaction_free(&trx);
-		wal_batch_free(&wal_batch);
-	}
-
-	if (leave(&e))
-	{
-		transaction_abort(&trx);
-		transaction_free(&trx);
-
-		wal_batch_free(&wal_batch);
-		rethrow();
-	}
-}
-
-static void
-replay_dml_read(Session* self, WalWrite* write, ReqList* req_list)
+replay_read(Session* self, WalWrite* write, ReqList* req_list)
 {
 	auto router = &self->share->cluster->router;
 
@@ -128,7 +83,7 @@ replay_dml_read(Session* self, WalWrite* write, ReqList* req_list)
 }
 
 static void
-replay_dml(Session* self, WalWrite* write)
+replay(Session* self, WalWrite* write)
 {
 	auto executor = self->share->executor;
 	auto plan = &self->plan;
@@ -142,7 +97,7 @@ replay_dml(Session* self, WalWrite* write)
 	Exception e;
 	if (enter(&e))
 	{
-		replay_dml_read(self, write, &req_list);
+		replay_read(self, write, &req_list);
 
 		executor_send(executor, plan, 0, &req_list);
 		executor_recv(executor, plan, 0);
@@ -158,13 +113,57 @@ replay_dml(Session* self, WalWrite* write)
 	executor_commit(executor, plan);
 }
 
-void
-replay(Session* self, WalWrite* write)
+hot static void
+on_write(Primary* self, Buf* data)
 {
-	if ((write->flags & WAL_UTILITY) > 0)
-	{
-		replay_ddl(self, write);
+	Session* session = self->replay_arg;
+
+	// take shared lock
+	session_lock(session, SESSION_LOCK);
+	guard(session_unlock, session);
+
+	// validate request fields and check current replication state
+
+	// first join request has no data
+	if (! primary_next(self))
 		return;
+
+	// replay writes
+	auto pos = data->start;
+	auto end = data->position;
+	while (pos < end)
+	{
+		auto write = (WalWrite*)pos;
+		if ((write->flags & WAL_UTILITY) > 0)
+		{
+			// upgrade to exclusive lock
+			session_lock(session, SESSION_LOCK_EXCLUSIVE);
+
+			// read and execute ddl command
+			recover_next_write(self->recover, write, true, WAL_UTILITY);	
+		} else
+		{
+			// execute dml commands
+			replay(session, write);
+		}
+		pos += write->size;
 	}
-	replay_dml(self, write);
+}
+
+hot void
+session_primary(Session* self)
+{
+	auto share = self->share;
+
+	// switch plan to replication state to write wal
+	// while in read-only mode
+	plan_set_repl(&self->plan);
+
+	Recover recover;
+	recover_init(&recover, share->db, indexate_runner, share->cluster);
+	guard(recover_free, &recover);
+
+	Primary primary;
+	primary_init(&primary, &recover, self->client, on_write, self);
+	primary_main(&primary);
 }

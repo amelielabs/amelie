@@ -34,8 +34,9 @@
 hot static void
 node_execute_write(Node* self, Trx* trx, Req* req)
 {
-	auto pos = req->arg.start;
-	while (pos < req->arg.position)
+	// execute DML operations
+	auto db = self->vm.db;
+	for (auto pos = req->arg.start; pos < req->arg.position;)
 	{
 		// [meta offset, data offset]
 
@@ -49,7 +50,25 @@ node_execute_write(Node* self, Trx* trx, Req* req)
 
 		uint8_t* meta = req->arg_start + meta_offset;
 		uint8_t* data = req->arg_start + data_offset;
-		recover_cmd(self->vm.db, &trx->trx, &meta, &data);
+
+		// type
+		int64_t type;
+		data_read_integer(&meta, &type);
+
+		// partition
+		int64_t partition_id;
+		data_read_integer(&meta, &partition_id);
+		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
+		if (! part)
+			error("failed to find partition %" PRIu64, partition_id);
+
+		// todo: serial recover
+
+		// replay write
+		if (type == LOG_REPLACE)
+			part_insert(part, &trx->trx, true, &data);
+		else
+			part_delete_by(part, &trx->trx, &data);
 	}
 }
 
@@ -118,10 +137,11 @@ node_abort(Node* self, Trx* last)
 static void
 node_recover(Node* self)
 {
-	// restore partitions related to the current node
+	// restore last checkpoint partitions related to the current node
 	Exception e;
-	if (enter(&e)) {
-		recover(self->vm.db, &self->config->id);
+	if (enter(&e))
+	{
+		recover_checkpoint(self->vm.db, &self->config->id);
 	}
 	Buf* buf;
 	if (leave(&e)) {
