@@ -411,7 +411,7 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 				error("WITH: unknown primary index type");
 
 		} else {
-			error("<%.*s> unrecognized parameter",
+			error("WITH: <%.*s> unrecognized parameter",
 			      str_size(&key->string), str_of(&key->string));
 		}
 
@@ -481,6 +481,7 @@ parse_table_create(Stmt* self)
 	str_set_cstr(&index_name, "primary");
 	index_config_set_name(index_config, &index_name);
 	index_config_set_type(index_config, INDEX_TREE);
+	index_config_set_unique(index_config, true);
 	index_config_set_primary(index_config, true);
 
 	// (columns)

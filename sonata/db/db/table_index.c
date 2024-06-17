@@ -54,7 +54,7 @@ table_index_create(Table*       self,
 	auto index = table_find_index(self, &config->name, false);
 	if (index)
 	{
-		if (if_not_exists)
+		if (! if_not_exists)
 			error("table '%.*s' index '%.*s': already exists",
 			      str_size(&self->config->name),
 			      str_of(&self->config->name),

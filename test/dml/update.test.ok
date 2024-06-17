@@ -398,7 +398,7 @@ bytecode [node]
 16              assign        0      3      1
 17                push        0      0      0
 18              update        0      0      0
-19         cursor_next        0      4      0
+19                 jmp        3      0      0
 20        cursor_close        0      0      0
 21                 ret        0      0      0
 

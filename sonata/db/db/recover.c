@@ -147,7 +147,13 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	}
 	case LOG_INDEX_RENAME:
 	{
-		// todo:
+		Str table_schema;
+		Str table_name;
+		Str name;
+		Str name_new;
+		table_op_rename_index_read(data, &table_schema, &table_name, &name, &name_new);
+		auto table = table_mgr_find(&db->table_mgr, &table_schema, &table_name, true);
+		table_index_rename(table, trx, &name, &name_new, false);
 		break;
 	}
 	case LOG_VIEW_CREATE:

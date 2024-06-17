@@ -65,7 +65,7 @@ parse_with(Stmt* self, IndexConfig* index_config)
 				error("WITH: unknown primary index type");
 
 		} else {
-			error("<%.*s> unrecognized parameter",
+			error("WITH: <%.*s> unrecognized parameter",
 			      str_size(&key->string), str_of(&key->string));
 		}
 

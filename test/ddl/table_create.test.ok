@@ -61,7 +61,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -77,7 +77,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -93,7 +93,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -109,7 +109,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -125,7 +125,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -141,7 +141,7 @@ select indexes[0] from system.tables() where name = "test"
 [{
   "name": "primary",
   "type": 2,
-  "unique": false,
+  "unique": true,
   "primary": true,
   "keys": [{
     "ref": 0,
@@ -426,13 +426,13 @@ create table test (id int primary key) with (
 create table test (id int primary key) with (,
 {"code": 1, "msg": "WITH (<name> expected"}
 create table test (id int primary key) with (abc
-{"code": 1, "msg": "<abc> unrecognized parameter"}
+{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = 10)
-{"code": 1, "msg": "<abc> unrecognized parameter"}
+{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = "")
-{"code": 1, "msg": "<abc> unrecognized parameter"}
+{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-{"code": 1, "msg": "<uuid> unrecognized parameter"}
+{"code": 1, "msg": "WITH: <uuid> unrecognized parameter"}
 disconnect S0
 close E0

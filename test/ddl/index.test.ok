@@ -1,0 +1,489 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+create table test (id int primary key, a int, b int)
+# test: create index parsing
+create index
+{"code": 1, "msg": "CREATE INDEX <name> expected"}
+create unique
+{"code": 1, "msg": "CREATE UNIQUE <INDEX> expected"}
+create unique table
+{"code": 1, "msg": "CREATE UNIQUE <INDEX> expected"}
+create unique index
+{"code": 1, "msg": "CREATE INDEX <name> expected"}
+create index 1
+{"code": 1, "msg": "CREATE INDEX <name> expected"}
+create index i
+{"code": 1, "msg": "CREATE INDEX name <ON> expected"}
+create index i 1
+{"code": 1, "msg": "CREATE INDEX name <ON> expected"}
+create index i on
+{"code": 1, "msg": "CREATE INDEX name ON <name> expected"}
+create index i on test
+{"code": 1, "msg": "KEY <(> expected"}
+create index i on test 1
+{"code": 1, "msg": "KEY <(> expected"}
+create index i on test (
+{"code": 1, "msg": "KEY (<name> expected"}
+create index i on test ()
+{"code": 1, "msg": "KEY (<name> expected"}
+# test: create index
+create index i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+# test: create index if not exists
+create index i on test (a)
+{"code": 1, "msg": "table 'test' index 'i': already exists"}
+create index if not exists i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+# test: create index (compound key)
+create index i on test (b, a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 2,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+# test: create index (key reuse)
+create index i on test (a, a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+# test: create index (unique)
+create unique index i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }]
+}]
+drop index i on test
+# test: create index with parsing
+create index i on test (a) 1
+{"code": 1, "msg": "unknown command"}
+create index i on test (a) with
+{"code": 1, "msg": "WITH <(> expected"}
+create index i on test (a) with 1
+{"code": 1, "msg": "WITH <(> expected"}
+create index i on test (a) with (
+{"code": 1, "msg": "WITH (<name> expected"}
+create index i on test (a) with (name
+{"code": 1, "msg": "WITH: <name> unrecognized parameter"}
+create index i on test (a) with (name =
+{"code": 1, "msg": "WITH: <name> unrecognized parameter"}
+create index i on test (a) with (name = 1
+{"code": 1, "msg": "WITH: <name> unrecognized parameter"}
+create index i on test (a) with (type = 1
+{"code": 1, "msg": "WITH (type = <string>) expected"}
+create index i on test (a) with (type = 'type'
+{"code": 1, "msg": "WITH: unknown primary index type"}
+create index i on test (a) with (type = 'tree',
+{"code": 1, "msg": "WITH (<name> expected"}
+create index i on test (a) with (, type = 'tree'
+{"code": 1, "msg": "WITH (<name> expected"}
+# test: create index with
+create index i on test (a) with (type = 'hash')
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 1,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+create index i on test (a) with (type = 'tree')
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+create index i on test (a) with (type = 'unknown')
+{"code": 1, "msg": "WITH: unknown primary index type"}
+# test: create index (reference)
+drop table test
+create table test (id int primary key, a int, b int) reference
+create index i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on test
+# test: drop index parsing
+drop index
+{"code": 1, "msg": "DROP INDEX <name> expected"}
+drop index 1
+{"code": 1, "msg": "DROP INDEX <name> expected"}
+drop index '1'
+{"code": 1, "msg": "DROP INDEX <name> expected"}
+drop index i
+{"code": 1, "msg": "DROP INDEX name <ON> expected"}
+drop index i 1
+{"code": 1, "msg": "DROP INDEX name <ON> expected"}
+drop index i on
+{"code": 1, "msg": "DROP INDEX name ON <name> expected"}
+drop index i on 1
+{"code": 1, "msg": "DROP INDEX name ON <name> expected"}
+drop index i on test
+{"code": 1, "msg": "table 'test' index 'i': not exists"}
+drop index i on schema.test
+{"code": 1, "msg": "table 'test': not exists"}
+drop index i on public.test
+{"code": 1, "msg": "table 'test' index 'i': not exists"}
+# test: drop index
+create index i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+drop index i on public.test
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+# test: drop index if exists
+drop index i on public.test
+{"code": 1, "msg": "table 'test' index 'i': not exists"}
+drop index if exists i on public.test
+# test: alter index parsing
+alter
+{"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected"}
+alter index
+{"code": 1, "msg": "ALTER INDEX <name> expected"}
+alter index 1
+{"code": 1, "msg": "ALTER INDEX <name> expected"}
+alter index if
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter index if not
+{"code": 1, "msg": "IF <EXISTS> expected"}
+alter index if exists
+{"code": 1, "msg": "ALTER INDEX <name> expected"}
+alter index i
+{"code": 1, "msg": "ALTER INDEX name <ON> expected"}
+alter index i 1
+{"code": 1, "msg": "ALTER INDEX name <ON> expected"}
+alter index i on
+{"code": 1, "msg": "ALTER INDEX name ON <name> expected"}
+alter index i on test
+{"code": 1, "msg": "ALTER INDEX name ON name <RENAME> expected"}
+alter index i on test 1
+{"code": 1, "msg": "ALTER INDEX name ON name <RENAME> expected"}
+alter index i on test rename
+{"code": 1, "msg": "ALTER INDEX name ON name RENAME <TO> expected"}
+alter index i on test rename 1
+{"code": 1, "msg": "ALTER INDEX name ON name RENAME <TO> expected"}
+alter index i on test rename to
+{"code": 1, "msg": "ALTER INDEX name ON name RENAME TO <name> expected"}
+alter index i on test rename to 1
+{"code": 1, "msg": "ALTER INDEX name ON name RENAME TO <name> expected"}
+alter index i on test rename to
+{"code": 1, "msg": "ALTER INDEX name ON name RENAME TO <name> expected"}
+# test: alter index rename
+create index i on test (a)
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+alter index i on test rename to j
+select system.tables()[0].indexes
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": false,
+  "primary": false,
+  "keys": [{
+    "ref": 1,
+    "type": 2,
+    "path": "",
+    "asc": true
+  }, {
+    "ref": 0,
+    "type": 2,
+    "path": "",
+    "asc": false
+  }]
+}]
+# test: alter index rename if exists
+alter index k on test rename to z
+{"code": 1, "msg": "table 'test' index 'k': not exists"}
+alter index if exists k on test rename to z
+# test: alter index rename (conflict)
+alter index j on test rename to j
+{"code": 1, "msg": "table 'test' index 'j': already exists"}
+disconnect S0
+close E0

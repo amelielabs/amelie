@@ -720,7 +720,7 @@ bytecode [node]
 17                jntr        4      1      0
 18         cursor_read        1      0      0
 19             set_add        0      1      0
-20         cursor_next        0      5      0
+20                 jmp        4      0      0
 21        cursor_close        0      0      0
 22              result        0      0      0
 23                 ret        0      0      0
@@ -995,7 +995,7 @@ bytecode [node]
 21                jntr        4      1      0
 22         cursor_read        1      0      0
 23             set_add        0      1      0
-24         cursor_next        0      5      0
+24                 jmp        4      0      0
 25        cursor_close        0      0      0
 26              result        0      0      0
 27                 ret        0      0      0
@@ -1150,7 +1150,7 @@ bytecode [node]
 30                jntr        4      1      0
 31         cursor_read        1      0      0
 32             set_add        0      1      0
-33         cursor_next        0      5      0
+33                 jmp        4      0      0
 34        cursor_close        0      0      0
 35              result        0      0      0
 36                 ret        0      0      0
@@ -1244,7 +1244,7 @@ bytecode [node]
  8                jntr        4      3      0
  9         cursor_read        1      0      0
 10             set_add        0      1      0
-11         cursor_next        0      5      0
+11                 jmp        4      0      0
 12        cursor_close        0      0      0
 13              result        0      0      0
 14                 ret        0      0      0
@@ -1333,7 +1333,7 @@ bytecode [node]
 17                jntr        4      1      0
 18         cursor_read        1      0      0
 19             set_add        0      1      0
-20         cursor_next        0      5      0
+20                 jmp        4      0      0
 21        cursor_close        0      0      0
 22              result        0      0      0
 23                 ret        0      0      0
@@ -1391,7 +1391,7 @@ bytecode [node]
 30                jntr        4      1      0
 31         cursor_read        1      0      0
 32             set_add        0      1      0
-33         cursor_next        0      5      0
+33                 jmp        4      0      0
 34        cursor_close        0      0      0
 35              result        0      0      0
 36                 ret        0      0      0
@@ -1436,7 +1436,7 @@ bytecode [node]
 17                jntr        4      1      0
 18         cursor_read        1      0      0
 19             set_add        0      1      0
-20         cursor_next        0      5      0
+20                 jmp        4      0      0
 21        cursor_close        0      0      0
 22              result        0      0      0
 23                 ret        0      0      0
@@ -1790,7 +1790,7 @@ bytecode [node]
 28                jntr        6      1      0
 29         cursor_read        1      0      0
 30             set_add        0      1      0
-31         cursor_next        0      7      0
+31                 jmp        6      0      0
 32        cursor_close        0      0      0
 33              result        0      0      0
 34                 ret        0      0      0
@@ -1837,7 +1837,7 @@ bytecode [node]
 19                jntr        6      1      0
 20         cursor_read        1      0      0
 21             set_add        0      1      0
-22         cursor_next        0      7      0
+22                 jmp        6      0      0
 23        cursor_close        0      0      0
 24              result        0      0      0
 25                 ret        0      0      0

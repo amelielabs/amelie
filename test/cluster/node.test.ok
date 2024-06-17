@@ -67,7 +67,7 @@ show tables
   "indexes": [{
     "name": "primary",
     "type": 2,
-    "unique": false,
+    "unique": true,
     "primary": true,
     "keys": [{
       "ref": 0,
@@ -99,7 +99,7 @@ show tables
   "indexes": [{
     "name": "primary",
     "type": 2,
-    "unique": false,
+    "unique": true,
     "primary": true,
     "keys": [{
       "ref": 0,
@@ -192,7 +192,7 @@ show tables
   "indexes": [{
     "name": "primary",
     "type": 2,
-    "unique": false,
+    "unique": true,
     "primary": true,
     "keys": [{
       "ref": 0,
@@ -224,7 +224,7 @@ show tables
   "indexes": [{
     "name": "primary",
     "type": 2,
-    "unique": false,
+    "unique": true,
     "primary": true,
     "keys": [{
       "ref": 0,
@@ -256,7 +256,7 @@ show tables
   "indexes": [{
     "name": "primary",
     "type": 2,
-    "unique": false,
+    "unique": true,
     "primary": true,
     "keys": [{
       "ref": 0,

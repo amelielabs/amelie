@@ -58,6 +58,13 @@ parse_stmt_free(Stmt* stmt)
 			table_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_INDEX:
+	{
+		auto ast = ast_index_create_of(stmt->ast);
+		if (ast->config)
+			index_config_free(ast->config);
+		break;
+	}
 	case STMT_CREATE_VIEW:
 	{
 		auto ast = ast_view_create_of(stmt->ast);
