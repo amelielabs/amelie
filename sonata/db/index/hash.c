@@ -171,13 +171,12 @@ hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	*it = NULL;
 }
 
-hot static void
+hot static Row*
 hash_ingest(Index* arg, Row* row)
 {
 	auto self = hash_of(arg);
-	auto prev = htt_set(&self->ht, row);
-	if (prev)
-		error("unique constraint violation");
+	uint64_t pos = 0;
+	return htt_get_or_set(&self->ht, row, &pos);
 }
 
 hot static Iterator*

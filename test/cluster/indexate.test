@@ -1,19 +1,9 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3, "repl_reconnect_ms": 10
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 5
 connect E0 S0 localhost:3480
-# test: create replica
-backup E1 127.0.0.1:3480
-close E1
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
-connect E1 S1 localhost:3481
-switch S1
-start repl
-promote "00000000-0000-0000-0000-000000000000"
-switch S0
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481"
-start repl
-# test: wait for primary connect
-watch system.replicas()[0].connected = true
-# test: write
+
+# test: indexate (5 nodes)
 create table test (id int primary key)
 insert into test 1
 insert into test 2
@@ -10014,45 +10004,36 @@ insert into test 9996
 insert into test 9997
 insert into test 9998
 insert into test 9999
-# test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
-show repl
-{
-  "active": true,
-  "role": "primary",
-  "primary": null
-}
-# test: validate
-show lsn
-10000
-select count(*) from test
-[9999]
-switch S1
-show lsn
-10000
-select count(*) from test
-[9999]
-# test: ddl (create index)
-switch S0
+
 create index i on test (id)
+
+# test: validate
 select count(*) from test
-[9999]
-select count(*) from test use index(i)
-[9999]
-# test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
-show repl
-{
-  "active": true,
-  "role": "primary",
-  "primary": null
-}
-switch S1
-select count(*) from test
-[9999]
-select count(*) from test use index(i)
-[9999]
-disconnect S1
-close E1
+select count(*) from test use index (primary)
+select count(*) from test use index (i)
+
+drop table test
+
+# test: indexate (unique conflict)
+create table test (id int primary key, data int) reference
+insert into test values (1, 1)
+insert into test values (2, 2)
+insert into test values (3, 3)
+insert into test values (4, 4)
+insert into test values (5, 5)
+insert into test values (6, 6)
+insert into test values (7, 7)
+insert into test values (8, 8)
+insert into test values (9, 9)
+insert into test values (10, 10)
+
+create index i on test (data) # ok
+
+insert into test values (11, 10) # secondary conflict
+create unique index j on test (data)
+
+insert into test values (12, 10)
+drop table test
+
 disconnect S0
 close E0

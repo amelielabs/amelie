@@ -171,13 +171,12 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	*it = NULL;
 }
 
-hot static void
+hot static Row*
 tree_ingest(Index* arg, Row* row)
 {
 	auto self = tree_of(arg);
-	auto prev = ttree_set(&self->tree, row);
-	if (prev)
-		error("unique constraint violation");
+	TtreePos pos;
+	return ttree_set_or_get(&self->tree, row, &pos);
 }
 
 hot static Iterator*

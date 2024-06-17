@@ -41,8 +41,16 @@ drop index i on test
 
 # test: create index (unique)
 create unique index i on test (a)
+
+# test: create index (unique reference)
+drop table test
+create table test (id int primary key, a int, b int) reference
+create unique index i on test (a)
 select system.tables()[0].indexes
 drop index i on test
+
+drop table test
+create table test (id int primary key, a int, b int)
 
 # test: create index with parsing
 create index i on test (a) 1

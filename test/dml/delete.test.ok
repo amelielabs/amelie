@@ -183,5 +183,22 @@ insert into test values (2, 0)
 select * from test
 [[0, 3], [1, 2], [2, 0]]
 drop table test
+# test: delete secondary index
+create table test (id int primary key, data int)
+create index i on test (data)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+delete from test where id = 1
+select * from test
+[[0, 2], [2, 0]]
+select * from test use index (i)
+[[2, 0], [0, 2]]
+delete from test
+select * from test
+[]
+select * from test use index (i)
+[]
+drop table test
 disconnect S0
 close E0

@@ -389,5 +389,137 @@ insert into test generate 10
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
 drop table test
+# test: insert secondary index
+create table test (id int primary key, data int)
+create index i on test (data)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+explain select * from test
+"
+bytecode [coordinator]
+--------
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4          merge_recv        0     -1     -1
+ 5             cte_set        0      0      0
+ 6                body        0      0      0
+ 7                 ret        0      0      0
+
+
+bytecode [node]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp        8      0      0
+ 5         cursor_read        1      0      0
+ 6             set_add        0      1      0
+ 7         cursor_next        0      5      0
+ 8        cursor_close        0      0      0
+ 9              result        0      0      0
+10                 ret        0      0      0
+
+"
+select * from test
+[[0, 2], [1, 1], [2, 0]]
+explain select * from test use index (i)
+"
+bytecode [coordinator]
+--------
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4          merge_recv        0     -1     -1
+ 5             cte_set        0      0      0
+ 6                body        0      0      0
+ 7                 ret        0      0      0
+
+
+bytecode [node]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3             int_min        1      0      0
+ 4                push        1      0      0
+ 5         cursor_open        0      0      7      # public.test (i)
+ 6                 jmp       10      0      0
+ 7         cursor_read        1      0      0
+ 8             set_add        0      1      0
+ 9         cursor_next        0      7      0
+10        cursor_close        0      0      0
+11              result        0      0      0
+12                 ret        0      0      0
+
+"
+select * from test use index (i)
+[[2, 0], [1, 1], [0, 2]]
+drop index i on test
+# test: insert secondary index unique (non reference)
+create unique index i on test (data)
+{"code": 1, "msg": "CREATE UNIQUE INDEX can be created only on reference tables"}
+# test: insert secondary index (unique)
+drop table test
+create table test (id int primary key, data int) reference
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+create unique index i on test (data)
+select * from test
+[[0, 2], [1, 1], [2, 0]]
+select * from test use index (i)
+[[2, 0], [1, 1], [0, 2]]
+insert into test values (3, 0)
+{"code": 1, "msg": "index 'i': unique key constraint violation"}
+insert into test values (3, -1)
+select * from test use index (i)
+[[3, -1], [2, 0], [1, 1], [0, 2]]
+# test: insert secondary index #2
+drop index i on test
+create unique index a on test (id)
+create unique index b on test (data)
+select * from test
+[[0, 2], [1, 1], [2, 0], [3, -1]]
+select * from test use index (primary)
+[[0, 2], [1, 1], [2, 0], [3, -1]]
+select * from test use index (a)
+[[0, 2], [1, 1], [2, 0], [3, -1]]
+select * from test use index (b)
+[[3, -1], [2, 0], [1, 1], [0, 2]]
+drop table test
+# test: insert secondary index (object)
+create table test (obj object, primary key (obj.id int))
+create index i on test (obj.data int)
+insert into test {"id": 0, "data": 2}
+insert into test {"id": 1, "data": 1}
+insert into test {"id": 2, "data": 0}
+select * from test
+[[{
+  "id": 0,
+  "data": 2
+}], [{
+  "id": 1,
+  "data": 1
+}], [{
+  "id": 2,
+  "data": 0
+}]]
+select * from test use index (i)
+[[{
+  "id": 2,
+  "data": 0
+}], [{
+  "id": 1,
+  "data": 1
+}], [{
+  "id": 0,
+  "data": 2
+}]]
+drop table test
 disconnect S0
 close E0

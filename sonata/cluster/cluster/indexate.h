@@ -36,10 +36,27 @@ indexate_free(Indexate* self)
 }
 
 static inline void
-indexate_run(Indexate* self)
+indexate_run_first(Indexate* self)
 {
-	channel_attach(&self->channel);
+	// ask first node to indexate related partition
+	auto route = router_first(&self->cluster->router);
+	auto buf = msg_begin(RPC_INDEXATE);
+	buf_write(buf, &self, sizeof(Indexate**));
+	msg_end(buf);
+	channel_write(route->channel, buf);
 
+	// wait for completion
+	buf = channel_read(&self->channel, -1);
+	auto msg = msg_of(buf);
+	guard(buf_free, buf);
+
+	if (msg->id == MSG_ERROR)
+		error("failed to create index");
+}
+
+static inline void
+indexate_run_all(Indexate* self)
+{
 	// ask each node to indexate related partition
 	list_foreach(&self->cluster->list)
 	{
@@ -64,6 +81,18 @@ indexate_run(Indexate* self)
 	}
 	if (errors > 0)
 		error("failed to create index");
+}
+
+static inline void
+indexate_run(Indexate* self)
+{
+	channel_attach(&self->channel);
+
+	// run on first node (for reference table) or use whole cluster
+	if (self->table->config->reference)
+		indexate_run_first(self);
+	else
+		indexate_run_all(self);
 }
 
 static inline void

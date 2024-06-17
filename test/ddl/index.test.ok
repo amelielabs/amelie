@@ -167,6 +167,11 @@ select system.tables()[0].indexes
 drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
+{"code": 1, "msg": "CREATE UNIQUE INDEX can be created only on reference tables"}
+# test: create index (unique reference)
+drop table test
+create table test (id int primary key, a int, b int) reference
+create unique index i on test (a)
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -192,6 +197,8 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+drop table test
+create table test (id int primary key, a int, b int)
 # test: create index with parsing
 create index i on test (a) 1
 {"code": 1, "msg": "unknown command"}
@@ -481,7 +488,7 @@ select system.tables()[0].indexes
 # test: alter index rename if exists
 alter index k on test rename to z
 {"code": 1, "msg": "table 'test' index 'k': not exists"}
-alter index if exists k on test rename to z
+alter index if exists k on public.test rename to z
 # test: alter index rename (conflict)
 alter index j on test rename to j
 {"code": 1, "msg": "table 'test' index 'j': already exists"}

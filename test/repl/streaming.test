@@ -10033,6 +10033,20 @@ switch S1
 show lsn
 select count(*) from test
 
+# test: ddl (create index)
+switch S0
+create index i on test (id)
+select count(*) from test
+select count(*) from test use index(i)
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(*) from test
+select count(*) from test use index(i)
+
 disconnect S1
 close E1
 

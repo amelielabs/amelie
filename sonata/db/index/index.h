@@ -16,7 +16,7 @@ struct IndexIf
 	void      (*delete)(Index*, Transaction*, Iterator*);
 	void      (*delete_by)(Index*, Transaction*, Row*);
 	void      (*upsert)(Index*, Transaction*, Iterator**, Row*);
-	void      (*ingest)(Index*, Row*);
+	Row*      (*ingest)(Index*, Row*);
 	Iterator* (*open)(Index*, Row*, bool);
 	void      (*free)(Index*);
 };
@@ -74,10 +74,10 @@ index_upsert(Index* self, Transaction* trx, Iterator** it, Row* row)
 	self->iface.upsert(self, trx, it, row);
 }
 
-static inline void
+static inline bool
 index_ingest(Index* self, Row* row)
 {
-	self->iface.ingest(self, row);
+	return self->iface.ingest(self, row);
 }
 
 static inline Iterator*

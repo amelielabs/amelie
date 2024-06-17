@@ -471,5 +471,75 @@ update test set data = data + 1
 select * from test
 [[0, 3], [1, 2], [2, null]]
 drop table test
+# test: update secondary index
+create table test (id int primary key, data int, value int)
+create index i on test (data)
+insert into test values (0, 2, 0)
+insert into test values (1, 1, 0)
+insert into test values (2, 0, 0)
+select * from test
+[[0, 2, 0], [1, 1, 0], [2, 0, 0]]
+select * from test use index (i)
+[[2, 0, 0], [1, 1, 0], [0, 2, 0]]
+update test set value = data
+select * from test
+[[0, 2, 2], [1, 1, 1], [2, 0, 0]]
+select * from test use index (i)
+[[2, 0, 0], [1, 1, 1], [0, 2, 2]]
+# test: update secondary index (key)
+update test set data = id
+{"code": 1, "msg": "<data> key columns cannot be updated"}
+drop table test
+# test: update secondary index (object)
+create table test (obj object, primary key (obj.id int))
+create index i on test (obj.data int)
+insert into test {"id": 0, "data": 2}
+insert into test {"id": 1, "data": 1}
+insert into test {"id": 2, "data": 0}
+update test set obj.value = obj.data
+select * from test
+[[{
+  "id": 0,
+  "data": 2,
+  "value": 2
+}], [{
+  "id": 1,
+  "data": 1,
+  "value": 1
+}], [{
+  "id": 2,
+  "data": 0,
+  "value": 0
+}]]
+select * from test use index (i)
+[[{
+  "id": 2,
+  "data": 0,
+  "value": 0
+}], [{
+  "id": 1,
+  "data": 1,
+  "value": 1
+}], [{
+  "id": 0,
+  "data": 2,
+  "value": 2
+}]]
+create index j on test (obj.value int)
+select * from test use index (j)
+[[{
+  "id": 2,
+  "data": 0,
+  "value": 0
+}], [{
+  "id": 1,
+  "data": 1,
+  "value": 1
+}], [{
+  "id": 0,
+  "data": 2,
+  "value": 2
+}]]
+drop table test
 disconnect S0
 close E0

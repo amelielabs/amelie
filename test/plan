@@ -45,6 +45,7 @@ test scan
 test subselect
 test order_by
 test label
+test secondary_index
 
 # pushdown
 directory pushdown
@@ -75,6 +76,7 @@ test abort
 directory cluster
 group cluster
 test node
+test indexate
 
 # backup
 directory backup

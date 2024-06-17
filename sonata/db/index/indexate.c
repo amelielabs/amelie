@@ -24,13 +24,13 @@ indexate(Index* self, Index* primary)
 	while (iterator_has(it))
 	{
 		auto row_primary = iterator_at(it);
-
 		auto row = row_create_secondary(&self->config->keys, create_hash, row_primary);
-		guard(row_free, row);
-
-		index_ingest(self, row);
-		unguard();
-
+		auto prev = index_ingest(self, row);
+		if (unlikely(prev))
+		{
+			row_free(row);
+			error("index unique constraint violation");
+		}
 		iterator_next(it);
 	}
 }

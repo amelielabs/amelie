@@ -193,5 +193,43 @@ update test set data = data + 1
 select * from test
 drop table test
 
+# test: update secondary index
+create table test (id int primary key, data int, value int)
+create index i on test (data)
+
+insert into test values (0, 2, 0)
+insert into test values (1, 1, 0)
+insert into test values (2, 0, 0)
+
+select * from test
+select * from test use index (i)
+
+update test set value = data
+
+select * from test
+select * from test use index (i)
+
+# test: update secondary index (key)
+update test set data = id
+drop table test
+
+# test: update secondary index (object)
+create table test (obj object, primary key (obj.id int))
+create index i on test (obj.data int)
+
+insert into test {"id": 0, "data": 2}
+insert into test {"id": 1, "data": 1}
+insert into test {"id": 2, "data": 0}
+
+update test set obj.value = obj.data
+
+select * from test
+select * from test use index (i)
+
+create index j on test (obj.value int)
+select * from test use index (j)
+
+drop table test
+
 disconnect S0
 close E0

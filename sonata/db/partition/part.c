@@ -189,6 +189,10 @@ part_update(Part*        self,
 		auto index_it = index_open(index, row, true);
 		guard(iterator_close, index_it);
 		index_update(index, trx, index_it, row);
+
+		unguard();
+		unguard();
+		iterator_close(index_it);
 	}
 }
 
@@ -244,7 +248,7 @@ part_delete_by(Part*        self,
 		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
 		guard(row_free, row);
 
-		// update index
+		// delete by key
 		index_delete_by(index, trx, row);
 	}
 }

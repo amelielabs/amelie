@@ -107,6 +107,10 @@ parse_index_create(Stmt* self, bool unique)
 	auto table = table_mgr_find(&self->db->table_mgr, &stmt->table_schema,
 	                            &stmt->table_name, true);
 
+	// ensure table is reference for unique index
+	if (unique && !table->config->reference)
+		error("CREATE UNIQUE INDEX can be created only on reference tables");
+
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
 	stmt->config = config;
