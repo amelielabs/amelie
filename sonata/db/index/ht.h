@@ -62,6 +62,18 @@ ht_is_full(Ht* self)
 	return self->count > self->size / 2;
 }
 
+hot static inline uint32_t
+ht_hash(Ht* self, Row* row)
+{
+	uint32_t hash = 0;
+	list_foreach(&self->keys->list)
+	{
+		auto key = list_at(Key, link);
+		hash = key_hash(hash, row_key(row, self->keys, key->order));
+	}
+	return hash;
+}
+
 static inline void
 ht_create(Ht* self, Keys* keys, size_t size)
 {
@@ -76,7 +88,7 @@ hot static inline Row*
 ht_set(Ht* self, Row* row)
 {
 	auto     table = self->table;
-	uint64_t start = row->hash % self->size;
+	uint64_t start = ht_hash(self, row) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -87,7 +99,7 @@ ht_set(Ht* self, Row* row)
 			self->count++;
 			return NULL;
 		}
-		if (ref->hash == row->hash && !compare(self->keys, ref, row))
+		if (! compare(self->keys, ref, row))
 		{
 			self->table[pos] = row;
 			return ref;
@@ -103,7 +115,7 @@ hot static inline Row*
 ht_delete(Ht* self, Row* key)
 {
 	auto     table = self->table;
-	uint64_t start = key->hash % self->size;
+	uint64_t start = ht_hash(self, key) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -112,7 +124,7 @@ ht_delete(Ht* self, Row* key)
 			break;
 		if (ref != HT_DELETED)
 		{
-			if (ref->hash == key->hash && !compare(self->keys, ref, key))
+			if (! compare(self->keys, ref, key))
 			{
 				table[pos] = HT_DELETED;
 				self->count--;
@@ -129,7 +141,7 @@ hot static inline Row*
 ht_get(Ht* self, Row* key, uint64_t* at)
 {
 	auto     table = self->table;
-	uint64_t start = key->hash % self->size;
+	uint64_t start = ht_hash(self, key) % self->size;
 	uint64_t pos   = start;
 	do
 	{
@@ -145,7 +157,7 @@ ht_get(Ht* self, Row* key, uint64_t* at)
 			*at = pos;
 		} else
 		{
-			if (ref->hash == key->hash && !compare(self->keys, ref, key))
+			if (! compare(self->keys, ref, key))
 			{
 				*at = pos;
 				return ref;

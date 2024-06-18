@@ -7,7 +7,7 @@
 //
 
 hot static inline Row*
-value_row_key(Keys* self, bool create_hash, Stack* stack)
+value_row_key(Keys* self, Stack* stack)
 {
 	// calculate row size and validate columns
 	int size = data_size_array() + data_size_array_end();
@@ -45,16 +45,9 @@ value_row_key(Keys* self, bool create_hash, Stack* stack)
 		auto ref = stack_at(stack, self->list_count - key->order);
 		row_key_set(row, key->order, pos - start);
 		if (key->type == TYPE_STRING)
-		{
 			data_write_string(&pos, &ref->string);
-			if (create_hash)
-				row->hash = key_hash_string(row->hash, &ref->string);
-		} else
-		{
+		else
 			data_write_integer(&pos, ref->integer);
-			if (create_hash)
-				row->hash = key_hash_integer(row->hash, ref->integer);
-		}
 	}
 	data_write_array_end(&pos);
 	return row;

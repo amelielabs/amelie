@@ -47,8 +47,7 @@ ccursor_open(Vm* self, Op* op)
 	auto keys  = index_keys(index);
 
 	// create cursor key
-	auto hash = index->config->type == INDEX_HASH;
-	auto key = value_row_key(keys, hash, &self->stack);
+	auto key = value_row_key(keys, &self->stack);
 	guard(row_free, key);
 	stack_popn(&self->stack, keys->list_count);
 
@@ -59,8 +58,9 @@ ccursor_open(Vm* self, Op* op)
 	cursor->part  = part;
 
 	// in case of hash index, use key only for point-lookup
-	auto key_ref =
-		hash && !op->d ? NULL : key;
+	auto key_ref = key;
+	if (index->config->type == INDEX_HASH && !op->d)
+		key_ref = NULL;
 	cursor->it = index_open(index, key_ref, true);
 
 	// jmp if has data

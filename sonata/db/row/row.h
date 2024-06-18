@@ -13,7 +13,6 @@ struct Row
 	uint8_t  size_factor: 2;
 	uint8_t  ref: 1;
 	uint8_t  unused: 5;
-	uint32_t hash;
 	uint8_t  size[];
 	// size
 	// data_index[]
@@ -122,7 +121,6 @@ row_allocate(Keys* keys, int data_size)
 	Row* self = so_malloc(size);
 	self->size_factor = size_factor;
 	self->ref         = false;
-	self->hash        = 0;
 	self->unused      = 0;
 
 	// set data size
@@ -142,8 +140,8 @@ row_free(Row* self)
 	so_free(self);
 }
 
-Row* row_create(Keys*, bool, uint8_t**);
-Row* row_create_secondary(Keys*, bool, Row*);
+Row* row_create(Keys*, uint8_t**);
+Row* row_create_secondary(Keys*, Row*);
 
 uint32_t
 row_hash(Keys*, uint8_t**);

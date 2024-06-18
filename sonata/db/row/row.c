@@ -13,11 +13,10 @@
 #include <sonata_row.h>
 
 hot Row*
-row_create(Keys* keys, bool create_hash, uint8_t** pos)
+row_create(Keys* keys, uint8_t** pos)
 {
 	// validate columns and indexate key
 	uint32_t index[keys->list_count];
-	uint32_t hash = 0;
 
 	// []
 	uint8_t* data = *pos;	
@@ -61,10 +60,6 @@ row_create(Keys* keys, bool create_hash, uint8_t** pos)
 
 				// set key index
 				index[key->order] = pos_key - data;
-
-				// hash key
-				if (create_hash)
-					hash = key_hash(hash, pos_key);
 			}
 		}
 
@@ -80,18 +75,16 @@ row_create(Keys* keys, bool create_hash, uint8_t** pos)
 	for (int i = 0; i < keys->list_count; i++)
 		row_key_set(self, i, index[i]);
 	memcpy(row_data(self, keys), data, data_size);
-	self->hash = hash;
 	return self;
 }
 
 hot Row*
-row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
+row_create_secondary(Keys* keys, Row* row_primary)
 {
 	// secondary index has shared columns, but different keys
 	assert(keys->primary);
 
 	uint32_t index[keys->list_count];
-	uint32_t hash = 0;
 	uint8_t* data = row_data(row_primary, keys->primary);
 	uint8_t* pos  = data;
 	data_read_array(&pos);
@@ -114,10 +107,6 @@ row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
 
 				// set key index
 				index[key->order] = pos_key - data;
-
-				// hash key
-				if (create_hash)
-					hash = key_hash(hash, pos_key);
 			}
 		}
 
@@ -129,8 +118,7 @@ row_create_secondary(Keys* keys, bool create_hash, Row* row_primary)
 	for (int i = 0; i < keys->list_count; i++)
 		row_key_set(self, i, index[i]);
 	memcpy(row_data(self, keys), &row_primary, sizeof(Row**));
-	self->hash = hash;
-	self->ref  = true;
+	self->ref = true;
 	return self;
 }
 

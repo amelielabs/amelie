@@ -87,10 +87,9 @@ hot void
 part_ingest(Part* self, uint8_t** pos)
 {
 	auto primary = part_primary(self);
-	auto create_hash = primary->config->type == INDEX_HASH;
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	auto row_primary = row_create(&primary->config->keys, pos);
 	guard(row_free, row_primary);
 
 	// update primary index
@@ -101,10 +100,9 @@ part_ingest(Part* self, uint8_t** pos)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys, row_primary);
 		guard(row_free, row);
 
 		// update index
@@ -120,10 +118,9 @@ part_insert(Part*        self,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
-	auto create_hash = primary->config->type == INDEX_HASH;
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	auto row_primary = row_create(&primary->config->keys, pos);
 	guard(row_free, row_primary);
 
 	// update primary index
@@ -139,10 +136,9 @@ part_insert(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys,row_primary);
 		guard(row_free, row);
 
 		// update index
@@ -163,12 +159,11 @@ part_update(Part*        self,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
-	auto create_hash = primary->config->type == INDEX_HASH;
 
 	// todo: primary iterator only
 
 	// allocate row
-	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	auto row_primary = row_create(&primary->config->keys, pos);
 	guard(row_free, row_primary);
 
 	// update primary index
@@ -179,10 +174,9 @@ part_update(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys, row_primary);
 		guard(row_free, row);
 
 		// find and replace existing secondary row (keys are not updated)
@@ -212,10 +206,9 @@ part_delete(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		auto create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys, row_primary);
 		guard(row_free, row);
 
 		// delete by key
@@ -229,10 +222,9 @@ part_delete_by(Part*        self,
                uint8_t**    pos)
 {
 	auto primary = part_primary(self);
-	auto create_hash = primary->config->type == INDEX_HASH;
 
 	// allocate primary row (free after use)
-	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	auto row_primary = row_create(&primary->config->keys, pos);
 	guard(row_free, row_primary);
 
 	// update primary index
@@ -242,10 +234,9 @@ part_delete_by(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row (free after use)
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys, row_primary);
 		guard(row_free, row);
 
 		// delete by key
@@ -260,10 +251,9 @@ part_upsert(Part*        self,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
-	auto create_hash = primary->config->type == INDEX_HASH;
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, create_hash, pos);
+	auto row_primary = row_create(&primary->config->keys, pos);
 	guard(row_free, row_primary);
 
 	// do insert or return iterator
@@ -280,10 +270,9 @@ part_upsert(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		create_hash = (index->config->type == INDEX_HASH);
 
 		// allocate secondary row (free after use)
-		auto row = row_create_secondary(&index->config->keys, create_hash, row_primary);
+		auto row = row_create_secondary(&index->config->keys, row_primary);
 		guard(row_free, row);
 
 		// update index
