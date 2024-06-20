@@ -10,7 +10,6 @@
 #include "index/iterator.h"
 #include "index/index_config.h"
 #include "index/index.h"
-#include "index/indexate.h"
 
 // tree
 #include "index/ttree.h"
@@ -24,3 +23,6 @@
 #include "index/htt_iterator.h"
 #include "index/hash.h"
 #include "index/hash_iterator.h"
+
+// indexate
+#include "index/indexate.h"

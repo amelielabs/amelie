@@ -21,14 +21,10 @@ indexate(Index* self, Index* primary)
 	guard(iterator_close, it);
 	while (iterator_has(it))
 	{
-		auto row_primary = iterator_at(it);
-		auto row = row_create_secondary(&self->config->keys, row_primary);
+		auto row = iterator_at(it);
 		auto prev = index_ingest(self, row);
 		if (unlikely(prev))
-		{
-			row_free(row);
 			error("index unique constraint violation");
-		}
 		iterator_next(it);
 	}
 }

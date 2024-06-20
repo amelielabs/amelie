@@ -28,8 +28,8 @@ key_allocate(void)
 	self->ref    = -1;
 	self->type   = -1;
 	self->asc    = false;
-	list_init(&self->link);
 	str_init(&self->path);
+	list_init(&self->link);
 	return self;
 }
 

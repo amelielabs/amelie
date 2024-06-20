@@ -6,8 +6,8 @@
 // Real-Time SQL Database.
 //
 
-hot static inline Row*
-value_row_key(Keys* self, Stack* stack)
+hot static inline void
+value_row_key(Keys* self, RowKey* row, Stack* stack)
 {
 	// calculate row size and validate columns
 	int size = data_size_array() + data_size_array_end();
@@ -15,7 +15,6 @@ value_row_key(Keys* self, Stack* stack)
 	{
 		auto key = list_at(Key, link);
 		auto ref = stack_at(stack, self->list_count - key->order);
-
 		if (key->type == TYPE_STRING)
 		{
 			if (unlikely(ref->type != VALUE_STRING))
@@ -33,22 +32,22 @@ value_row_key(Keys* self, Stack* stack)
 		}
 	}
 
-	auto row = row_allocate(self, size);
+	row->row = row_allocate(size);
 
 	// copy keys and indexate
-	uint8_t* start = row_data(row, self);
+	uint8_t* start = row_data(row->row);
 	uint8_t* pos = start;
 	data_write_array(&pos);
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = stack_at(stack, self->list_count - key->order);
-		row_key_set(row, key->order, pos - start);
+		row->key[key->order] = pos - start;
 		if (key->type == TYPE_STRING)
 			data_write_string(&pos, &ref->string);
 		else
 			data_write_integer(&pos, ref->integer);
+
 	}
 	data_write_array_end(&pos);
-	return row;
 }

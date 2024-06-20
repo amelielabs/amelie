@@ -65,14 +65,14 @@ htt_rehash(Htt* self)
 	auto prev = self->prev;
 	while (self->rehashing_pos < prev->size)
 	{
-		auto row = prev->table[self->rehashing_pos];
-		if (!row || row == HT_DELETED)
+		auto key = ht_at(prev, self->rehashing_pos);
+		if (!key->row || key->row == HT_DELETED)
 		{
 			self->rehashing_pos++;
 			continue;
 		}
-		ht_set(self->current, row);
-		prev->table[self->rehashing_pos] = NULL;
+		ht_set(self->current, key);
+		key->row = NULL;
 		prev->count--;
 
 		self->rehashing_pos++;
@@ -89,18 +89,23 @@ htt_rehash(Htt* self)
 hot static inline Row*
 htt_set(Htt* self, Row* row)
 {
+	uint8_t  key_data[self->keys->key_size];
+	auto     key  = (RowKey*)key_data;
+	uint32_t hash = 0;
+	row_key_create_and_hash(key, row, self->keys, &hash);
+
 	Row* result = NULL;
 	if (self->rehashing)
 	{
 		// return previous row
-		result = ht_set(self->current, row);
+		result = ht_set(self->current, key);
 		if (! result)
-			result = ht_delete(self->prev, row);
+			result = ht_delete(self->prev, key);
 
 		htt_rehash(self);
 	} else
 	{
-		result = ht_set(self->current, row);
+		result = ht_set(self->current, key);
 		if (ht_is_full(self->current))
 		{
 			htt_rehash_start(self);
@@ -113,22 +118,28 @@ htt_set(Htt* self, Row* row)
 hot static inline Row*
 htt_get_or_set(Htt* self, Row* row, uint64_t* ht_pos)
 {
+	uint8_t  key_data[self->keys->key_size];
+	auto     key  = (RowKey*)key_data;
+	uint32_t hash = 0;
+	row_key_create_and_hash(key, row, self->keys, &hash);
+
 	Row* result = NULL;
 	if (self->rehashing)
 	{
 		// get from current and previous tables
 		uint64_t current_pos = 0;
-		result = ht_get(self->current, row, &current_pos);
+		result = ht_get(self->current, key, &current_pos);
 		if (! result)
 		{
 			uint64_t prev_pos = 0;
-			result = ht_get(self->prev, row, &prev_pos);
+			result = ht_get(self->prev, key, &prev_pos);
 			if (result)
 			{
 				// move to current
-				self->prev->table[prev_pos] = NULL;
+				auto prev = ht_at(self->prev, prev_pos);
+				ht_copy(self->current, ht_at(self->current, current_pos), prev);
+				prev->row = NULL;
 				self->prev->count--;
-				self->current->table[current_pos] = result;
 				self->current->count++;
 			}
 		}
@@ -136,7 +147,7 @@ htt_get_or_set(Htt* self, Row* row, uint64_t* ht_pos)
 		// set to current, if not exists
 		if (! result)
 		{
-			self->current->table[current_pos] = row;
+			ht_copy(self->current, ht_at(self->current, current_pos), key);
 			self->current->count++;
 		}
 		*ht_pos = current_pos;
@@ -146,12 +157,12 @@ htt_get_or_set(Htt* self, Row* row, uint64_t* ht_pos)
 	{
 		// get from current table
 		uint64_t current_pos = 0;
-		result = ht_get(self->current, row, &current_pos);
+		result = ht_get(self->current, key, &current_pos);
 
 		// set to current, if not exists
 		if (! result)
 		{
-			self->current->table[current_pos] = row;
+			ht_copy(self->current, ht_at(self->current, current_pos), key);
 			self->current->count++;
 		}
 		*ht_pos = current_pos;
@@ -166,8 +177,13 @@ htt_get_or_set(Htt* self, Row* row, uint64_t* ht_pos)
 }
 
 hot static inline Row*
-htt_delete(Htt* self, Row* key)
+htt_delete(Htt* self, Row* row)
 {
+	uint8_t  key_data[self->keys->key_size];
+	auto     key  = (RowKey*)key_data;
+	uint32_t hash = 0;
+	row_key_create_and_hash(key, row, self->keys, &hash);
+
 	Row* result = NULL;
 	if (self->rehashing)
 	{

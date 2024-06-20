@@ -89,23 +89,17 @@ part_ingest(Part* self, uint8_t** pos)
 	auto primary = part_primary(self);
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, pos);
-	guard(row_free, row_primary);
+	auto row = row_create(primary->config->keys.columns, pos);
+	guard(row_free, row);
 
 	// update primary index
-	index_ingest(primary, row_primary);
+	index_ingest(primary, row);
 	unguard();
 
 	// secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-
-		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, row_primary);
-		guard(row_free, row);
-
-		// update index
 		index_ingest(index, row);
 		unguard();
 	}
@@ -120,11 +114,11 @@ part_insert(Part*        self,
 	auto primary = part_primary(self);
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, pos);
-	guard(row_free, row_primary);
+	auto row = row_create(primary->config->keys.columns, pos);
+	guard(row_free, row);
 
 	// update primary index
-	auto prev = index_set(primary, trx, row_primary);
+	auto prev = index_set(primary, trx, row);
 	unguard();
 
 	if (unlikely(prev && !replace))
@@ -137,14 +131,8 @@ part_insert(Part*        self,
 	{
 		auto index = list_at(Index, link);
 
-		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys,row_primary);
-		guard(row_free, row);
-
 		// update index
 		auto prev = index_set(index, trx, row);
-		unguard();
-
 		if (unlikely(prev && index->config->unique && !replace))
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&index->config->name),
@@ -163,11 +151,11 @@ part_update(Part*        self,
 	// todo: primary iterator only
 
 	// allocate row
-	auto row_primary = row_create(&primary->config->keys, pos);
-	guard(row_free, row_primary);
+	auto row = row_create(primary->config->keys.columns, pos);
+	guard(row_free, row);
 
 	// update primary index
-	index_update(primary, trx, it, row_primary);
+	index_update(primary, trx, it, row);
 	unguard();
 
 	// secondary indexes
@@ -175,18 +163,10 @@ part_update(Part*        self,
 	{
 		auto index = list_at(Index, link);
 
-		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, row_primary);
-		guard(row_free, row);
-
 		// find and replace existing secondary row (keys are not updated)
-		auto index_it = index_open(index, row, true);
+		auto index_it = index_open_by(index, row, true);
 		guard(iterator_close, index_it);
 		index_update(index, trx, index_it, row);
-
-		unguard();
-		unguard();
-		iterator_close(index_it);
 	}
 }
 
@@ -196,7 +176,7 @@ part_delete(Part*        self,
             Iterator*    it)
 {
 	// todo: primary iterator only
-	auto row_primary = iterator_at(it);
+	auto row = iterator_at(it);
 
 	// update primary index
 	auto primary = part_primary(self);
@@ -206,10 +186,6 @@ part_delete(Part*        self,
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-
-		// allocate secondary row
-		auto row = row_create_secondary(&index->config->keys, row_primary);
-		guard(row_free, row);
 
 		// delete by key
 		index_delete_by(index, trx, row);
@@ -224,20 +200,16 @@ part_delete_by(Part*        self,
 	auto primary = part_primary(self);
 
 	// allocate primary row (free after use)
-	auto row_primary = row_create(&primary->config->keys, pos);
-	guard(row_free, row_primary);
+	auto row = row_create(primary->config->keys.columns, pos);
+	guard(row_free, row);
 
 	// update primary index
-	index_delete_by(primary, trx, row_primary);
+	index_delete_by(primary, trx, row);
 
 	// secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-
-		// allocate secondary row (free after use)
-		auto row = row_create_secondary(&index->config->keys, row_primary);
-		guard(row_free, row);
 
 		// delete by key
 		index_delete_by(index, trx, row);
@@ -253,11 +225,11 @@ part_upsert(Part*        self,
 	auto primary = part_primary(self);
 
 	// allocate primary row
-	auto row_primary = row_create(&primary->config->keys, pos);
-	guard(row_free, row_primary);
+	auto row = row_create(primary->config->keys.columns, pos);
+	guard(row_free, row);
 
 	// do insert or return iterator
-	index_upsert(primary, trx, it, row_primary);
+	index_upsert(primary, trx, it, row);
 
 	// row exists (free primary row)
 	if (*it)
@@ -271,14 +243,8 @@ part_upsert(Part*        self,
 	{
 		auto index = list_at(Index, link);
 
-		// allocate secondary row (free after use)
-		auto row = row_create_secondary(&index->config->keys, row_primary);
-		guard(row_free, row);
-
 		// update index
 		auto prev = index_set(index, trx, row);
-		unguard();
-
 		if (unlikely(prev && index->config->unique))
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&index->config->name),

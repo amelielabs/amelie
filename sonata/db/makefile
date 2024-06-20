@@ -24,10 +24,10 @@ OBJECTS        = \
                  row/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
-                 index/indexate.o \
                  index/ttree.o \
                  index/tree.o \
                  index/hash.o \
+                 index/indexate.o \
                  partition/part.o \
                  partition/part_list.o \
                  partition/snapshot.o \

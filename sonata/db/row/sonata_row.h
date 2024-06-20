@@ -18,7 +18,7 @@
 
 // row
 #include "row/row.h"
-#include "row/compare.h"
+#include "row/row_key.h"
 
 // serial
 #include "row/serial.h"

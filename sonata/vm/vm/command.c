@@ -47,8 +47,10 @@ ccursor_open(Vm* self, Op* op)
 	auto keys  = index_keys(index);
 
 	// create cursor key
-	auto key = value_row_key(keys, &self->stack);
-	guard(row_free, key);
+	uint8_t key_data[keys->key_size];
+	auto    key = (RowKey*)key_data;
+	value_row_key(keys, key, &self->stack);
+	guard(row_free, key->row);
 	stack_popn(&self->stack, keys->list_count);
 
 	// open cursor
@@ -277,9 +279,8 @@ ccursor_read(Vm* self, Op* op)
 		if (unlikely(! iterator_has(cursor->it)))
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
-		auto keys = cursor->keys;
 		assert(current != NULL);
-		value_set_data(a, row_data(current, keys), row_data_size(current, keys), NULL);
+		value_set_data(a, row_data(current), row_size(current), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
@@ -327,7 +328,7 @@ ccursor_idx(Vm* self, Op* op)
 			error("*: not in active aggregation");
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		data     = row_data(current, cursor->keys);
+		data     = row_data(current);
 		data_buf = NULL;
 		break;
 	}
@@ -710,7 +711,8 @@ csend(Vm* self, Op* op)
 	{
 		// hash row keys
 		uint32_t offset = data - data_start;
-		auto hash = row_hash(keys, &data);
+		uint32_t hash = 0;
+		row_create_hash(keys, &hash, &data);
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, hash);

@@ -118,7 +118,6 @@ parse_index_create(Stmt* self, bool unique)
 	index_config_set_unique(config, unique);
 	index_config_set_primary(config, false);
 	index_config_set_type(config, INDEX_TREE);
-	keys_set_primary(&config->keys, table_keys(table));
 
 	// (keys)
 	parse_key(self, &config->keys);

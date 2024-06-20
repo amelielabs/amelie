@@ -84,10 +84,10 @@ snapshot_end(Snapshot* self)
 }
 
 hot static inline void
-snapshot_add(Snapshot* self, Keys* keys, Row* row)
+snapshot_add(Snapshot* self, Row* row)
 {
-	uint8_t* data = row_data(row, keys);
-	int      data_size = row_data_size(row, keys);
+	uint8_t* data = row_data(row);
+	int      data_size = row_size(row);
 
 	// MSG_SNAPSHOT_ROW
 	auto msg = (Msg*)self->data.position;
@@ -113,8 +113,7 @@ snapshot_flush(Snapshot* self)
 hot static void
 snapshot_main(Snapshot* self, Index* index)
 {
-	auto keys = index_keys(index);
-	auto it   = index_open(index, NULL, true);
+	auto it = index_open(index, NULL, true);
 	guard(iterator_close, it);
 	
 	for (;;)
@@ -122,7 +121,7 @@ snapshot_main(Snapshot* self, Index* index)
 		auto row = iterator_at(it);
 		if (unlikely(! row))
 			break;
-		snapshot_add(self, keys, row);
+		snapshot_add(self, row);
 		if (self->count == self->count_batch)
 			snapshot_flush(self);
 		iterator_next(it);

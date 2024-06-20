@@ -20,7 +20,7 @@ struct TtreeIterator
 static inline bool
 ttree_iterator_open(TtreeIterator* self,
                     Ttree*         ttree,
-                    Row*           key)
+                    RowKey*        key)
 {
 	self->current      = NULL;
 	self->page         = NULL;
@@ -34,13 +34,13 @@ ttree_iterator_open(TtreeIterator* self,
 	bool match = ttree_seek(ttree, key, &pos);
 	self->page = pos.page;
 	self->page_pos = pos.page_pos;
-	if (self->page_pos >= self->page->rows_count)
+	if (self->page_pos >= self->page->keys_count)
 	{
 		self->page     = NULL;
 		self->page_pos = 0;
 		return false;
 	}
-	self->current = self->page->rows[self->page_pos];
+	self->current = ttree_at(ttree, self->page, self->page_pos)->row;
 	return match;
 }
 
@@ -53,7 +53,7 @@ ttree_iterator_open_at(TtreeIterator* self,
 	self->page     = pos->page;
 	self->page_pos = pos->page_pos;
 	self->ttree    = ttree;
-	self->current = self->page->rows[self->page_pos];
+	self->current  = ttree_at(ttree, self->page, self->page_pos)->row;
 }
 
 static inline bool
@@ -82,16 +82,17 @@ ttree_iterator_next(TtreeIterator* self)
 
 		// update current row pointer
 		if (self->page)
-			self->current = self->page->rows[self->page_pos];
+			self->current = ttree_at(self->ttree, self->page, self->page_pos)->row;
 		else
 			self->current = NULL;
 		return;
 	}
 
 	self->current = NULL;
-	if (likely((self->page_pos + 1) < self->page->rows_count))
+	if (likely((self->page_pos + 1) < self->page->keys_count))
 	{
-		self->current = self->page->rows[++self->page_pos];
+		self->page_pos++;
+		self->current = ttree_at(self->ttree, self->page, self->page_pos)->row;
 		return;
 	}
 
@@ -103,17 +104,21 @@ ttree_iterator_next(TtreeIterator* self)
 	if (unlikely(next == NULL))
 		return;
 
-	self->page = container_of(next, TtreePage, node);
-	self->current = self->page->rows[0];
+	self->page    = container_of(next, TtreePage, node);
+	self->current = ttree_at(self->ttree, self->page, 0)->row;
 }
 
 static inline Row*
 ttree_iterator_replace(TtreeIterator* self, Row* row)
 {
 	assert(self->current);
-	auto prev = self->current;
+	TtreePos pos =
+	{
+		.page     = self->page,
+		.page_pos = self->page_pos
+	};
+	auto prev = ttree_replace(self->ttree, &pos, row);
 	self->current = row;
-	self->page->rows[self->page_pos] = row;
 	return prev;
 }
 
@@ -128,12 +133,6 @@ ttree_iterator_delete(TtreeIterator* self)
 	auto prev = ttree_unset_by(self->ttree, &pos);
 	self->page     = pos.page;
 	self->page_pos = pos.page_pos;
-	/*
-	if (self->page)
-		self->current = self->page->rows[self->page_pos];
-	else
-		self->current = NULL;
-		*/
 	// keeping current row still pointing to the deleted row
 	assert(! self->repositioned);
 	self->repositioned = true;
@@ -166,7 +165,6 @@ ttree_iterator_init(TtreeIterator* self)
 	self->ttree        = NULL;
 }
 
-#if 0
 static inline void
 ttree_iterator_sync(TtreeIterator* self,
                     TtreePage*     page,
@@ -180,17 +178,17 @@ ttree_iterator_sync(TtreeIterator* self,
 	if (self->page_pos == pos)
 	{
 		// update current page row pointer on replace
-		self->current = self->page->rows[self->page_pos];
+		self->current = ttree_at(self->ttree, self->page, self->page_pos)->row;
 		return;
 	}
 
 	// insert
 	if (page_split)
 	{
-		if (self->page_pos >= page->rows_count)
+		if (self->page_pos >= page->keys_count)
 		{
 			self->page = page_split;
-			self->page_pos = self->page_pos - page->rows_count;
+			self->page_pos = self->page_pos - page->keys_count;
 		}
 	}
 
@@ -198,6 +196,5 @@ ttree_iterator_sync(TtreeIterator* self,
 	if (pos <= self->page_pos)
 		self->page_pos++;
 
-	self->current = self->page->rows[self->page_pos];
+	self->current = ttree_at(self->ttree, self->page, self->page_pos)->row;
 }
-#endif

@@ -17,7 +17,7 @@ struct HttIterator
 };
 
 static inline bool
-htt_iterator_open(HttIterator* self, Htt* ht, Row* key)
+htt_iterator_open(HttIterator* self, Htt* ht, RowKey* key)
 {
 	self->current    = NULL;
 	self->current_ht = NULL;
@@ -67,7 +67,7 @@ htt_iterator_open(HttIterator* self, Htt* ht, Row* key)
 static inline void
 htt_iterator_open_at(HttIterator* self, Htt* ht, uint64_t pos)
 {
-	self->current    = ht->current->table[pos];
+	self->current    = ht_at(ht->current, pos)->row;
 	self->current_ht = ht->current;
 	self->pos        = pos;
 	self->ht         = ht;
@@ -110,11 +110,15 @@ htt_iterator_next(HttIterator* self)
 static inline Row*
 htt_iterator_replace(HttIterator* self, Row* row)
 {
+	uint8_t  key_data[self->ht->keys->key_size];
+	auto     key  = (RowKey*)key_data;
+	uint32_t hash = 0;
+	row_key_create_and_hash(key, row, self->ht->keys, &hash);
+
 	auto current = self->current;
 	assert(current);
 	self->current = row;
-	auto table = self->current_ht->table;
-	table[self->pos] = row;
+	ht_copy(self->current_ht, ht_at(self->current_ht, self->pos), key);
 	return current;
 }
 
@@ -124,8 +128,7 @@ htt_iterator_delete(HttIterator* self)
 	// keeping current as is
 	auto current = self->current;
 	auto current_ht = self->current_ht;
-	auto table = current_ht->table;
-	table[self->pos] = HT_DELETED;
+	ht_at(self->current_ht, self->pos)->row = HT_DELETED;
 	current_ht->count--;
 	return current;
 }

@@ -22,7 +22,7 @@ tree_iterator_of(Iterator* self)
 }
 
 static inline bool
-tree_iterator_open(Iterator* arg, Row* key)
+tree_iterator_open(Iterator* arg, RowKey* key)
 {
 	auto self = tree_iterator_of(arg);
 	auto tree = self->tree;

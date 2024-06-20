@@ -18,7 +18,8 @@ static void
 hash_commit(LogOp* op)
 {
 	// free row or add row to the free list
-	if (op->row.prev)
+	auto self = (Hash*)op->arg;
+	if (self->ht.keys->primary && op->row.prev)
 		row_free(op->row.prev);
 }
 
@@ -31,7 +32,8 @@ hash_set_abort(LogOp* op)
 		htt_set(&self->ht, op->row.prev);
 	else
 		htt_delete(&self->ht, op->row.row);
-	row_free(op->row.row);
+	if (self->ht.keys->primary)
+		row_free(op->row.row);
 }
 
 hot static bool
@@ -51,7 +53,6 @@ hash_set(Index* arg, Transaction* trx, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, prev);
 
 	// is replace
@@ -77,7 +78,6 @@ hash_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, prev);
 }
 
@@ -108,7 +108,6 @@ hash_delete(Index* arg, Transaction* trx, Iterator* it)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        prev, prev);
 }
 
@@ -135,7 +134,6 @@ hash_delete_by(Index* arg, Transaction* trx, Row* key)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        key, prev);
 }
 
@@ -165,7 +163,6 @@ hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, NULL);
 
 	*it = NULL;
@@ -180,7 +177,7 @@ hash_ingest(Index* arg, Row* row)
 }
 
 hot static Iterator*
-hash_open(Index* arg, Row* key, bool start)
+hash_open(Index* arg, RowKey* key, bool start)
 {
 	auto self = hash_of(arg);
 	auto it = hash_iterator_allocate(self);

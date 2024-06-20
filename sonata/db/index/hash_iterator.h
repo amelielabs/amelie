@@ -22,7 +22,7 @@ hash_iterator_of(Iterator* self)
 }
 
 static inline bool
-hash_iterator_open(Iterator* arg, Row* key)
+hash_iterator_open(Iterator* arg, RowKey* key)
 {
 	auto self = hash_iterator_of(arg);
 	auto hash = self->hash;

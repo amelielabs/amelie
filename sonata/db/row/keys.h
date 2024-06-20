@@ -12,7 +12,8 @@ struct Keys
 {
 	List     list;	
 	int      list_count;
-	Keys*    primary;
+	int      key_size;
+	bool     primary;
 	Columns* columns;
 };
 
@@ -20,7 +21,8 @@ static inline void
 keys_init(Keys* self, Columns* columns)
 {
 	self->list_count = 0;
-	self->primary    = NULL;
+	self->key_size   = 0;
+	self->primary    = false;
 	self->columns    = columns;
 	list_init(&self->list);
 }
@@ -36,9 +38,10 @@ keys_free(Keys* self)
 }
 
 static inline void
-keys_set_primary(Keys* self, Keys* primary)
+keys_set(Keys* self, bool primary, int key_size)
 {
-	self->primary = primary;
+	self->primary  = primary;
+	self->key_size = key_size;
 }
 
 static inline void

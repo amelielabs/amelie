@@ -18,7 +18,8 @@ static void
 tree_commit(LogOp* op)
 {
 	// free row or add row to the free list
-	if (op->row.prev)
+	auto self = (Tree*)op->arg;
+	if (self->tree.keys->primary && op->row.prev)
 		row_free(op->row.prev);
 }
 
@@ -31,7 +32,8 @@ tree_set_abort(LogOp* op)
 		ttree_set(&self->tree, op->row.prev);
 	else
 		ttree_unset(&self->tree, op->row.row);
-	row_free(op->row.row);
+	if (self->tree.keys->primary)
+		row_free(op->row.row);
 }
 
 hot static bool
@@ -51,7 +53,6 @@ tree_set(Index* arg, Transaction* trx, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, prev);
 
 	// is replace
@@ -77,7 +78,6 @@ tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, prev);
 }
 
@@ -108,7 +108,6 @@ tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        prev, prev);
 }
 
@@ -135,7 +134,6 @@ tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        key, prev);
 }
 
@@ -165,7 +163,6 @@ tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
-	        &self->index.config->keys,
 	        row, NULL);
 
 	*it = NULL;
@@ -180,7 +177,7 @@ tree_ingest(Index* arg, Row* row)
 }
 
 hot static Iterator*
-tree_open(Index* arg, Row* key, bool start)
+tree_open(Index* arg, RowKey* key, bool start)
 {
 	auto self = tree_of(arg);
 	auto it = tree_iterator_allocate(self);

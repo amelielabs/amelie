@@ -29,36 +29,47 @@ ttree_init(Ttree* self,
 }
 
 always_inline static inline TtreePage*
-ttree_page_of(RbtreeNode* node)
+ttree_of(RbtreeNode* node)
 {
 	return container_of(node, TtreePage, node);
 }
 
+always_inline static inline void
+ttree_move(Ttree*     self,
+           TtreePage* dst,
+           int        dst_pos,
+           TtreePage* src,
+           int        src_pos, int count)
+{
+	memmove(ttree_at(self, dst, dst_pos), ttree_at(self, src, src_pos),
+	        count * self->keys->key_size);
+}
+
 static TtreePage*
-ttree_page_allocate(Ttree* self)
+ttree_allocate(Ttree* self)
 {
 	TtreePage* page;
-	page = so_malloc(sizeof(TtreePage) + self->size_page * sizeof(Row*));
-	page->rows_count = 0;
+	page = so_malloc(sizeof(TtreePage) + self->size_page * row_key_size(self->keys));
+	page->keys_count = 0;
 	rbtree_init_node(&page->node);
 	return page;
 }
 
 static inline void
-ttree_page_free(TtreePage* self)
+ttree_free_page(Ttree* self, TtreePage* page)
 {
-	for (int i = 0; i < self->rows_count; i++)
-		row_free(self->rows[i]);
-	so_free(self);
+	if (self->keys->primary)
+	{
+		for (int i = 0; i < page->keys_count; i++)
+		{
+			auto key = ttree_at(self, page, i);
+			row_free(key->row);
+		}
+	}
+	so_free(page);
 }
 
-always_inline static inline int
-ttree_compare(Ttree* self, TtreePage* page, Row* key)
-{
-	return compare(self->keys, page->rows[0], key);
-}
-
-rbtree_free(tree_truncate, ttree_page_free(ttree_page_of(n)));
+rbtree_free(tree_truncate, ttree_free_page(arg, ttree_of(n)));
 
 void
 ttree_free(Ttree* self)
@@ -66,20 +77,26 @@ ttree_free(Ttree* self)
 	self->count       = 0;
 	self->count_pages = 0;
 	if (self->tree.root)
-		tree_truncate(self->tree.root, NULL);
+		tree_truncate(self->tree.root, self);
 	rbtree_init(&self->tree);
 }
 
+always_inline static inline int
+ttree_compare(Ttree* self, TtreePage* page, RowKey* key)
+{
+	return compare(self->keys, ttree_at(self, page, 0), key);
+}
+
 hot static inline
-rbtree_get(ttree_find, ttree_compare(arg, ttree_page_of(n), key))
+rbtree_get(ttree_find, ttree_compare(arg, ttree_of(n), key))
 
 hot static inline TtreePage*
-ttree_search_page(Ttree* self, Row* key)
+ttree_search_page(Ttree* self, RowKey* key)
 {
 	if (self->count_pages == 1)
 	{
 		auto first = rbtree_min(&self->tree);
-		return ttree_page_of(first);
+		return ttree_of(first);
 	}
 
 	// page[n].min <= key && key < page[n + 1].min
@@ -92,23 +109,22 @@ ttree_search_page(Ttree* self, Row* key)
 		if (prev)
 			part_ptr = prev;
 	}
-	return ttree_page_of(part_ptr);
+	return ttree_of(part_ptr);
 }
 
 hot static inline int
-ttree_search(Ttree* self, TtreePage* page, Row* key, bool* match)
+ttree_search(Ttree* self, TtreePage* page, RowKey* key, bool* match)
 {
 	int min = 0;
 	int mid = 0;
-	int max = page->rows_count - 1;
-
-	if (compare(self->keys, page->rows[max], key) < 0)
+	int max = page->keys_count - 1;
+	if (compare(self->keys, ttree_at(self, page, max), key) < 0)
 		return max + 1;
 
 	while (max >= min)
 	{
 		mid = min + ((max - min) >> 1);
-		int rc = compare(self->keys, page->rows[mid], key);
+		int rc = compare(self->keys, ttree_at(self, page, mid), key);
 		if (rc < 0) {
 			min = mid + 1;
 		} else
@@ -128,10 +144,10 @@ ttree_insert(Ttree*      self,
              TtreePage*  page,
              TtreePage** page_split,
              TtreePos*   page_pos,
-             Row*        row)
+             RowKey*     key)
 {
 	bool match = false;
-	int pos = ttree_search(self, page, row, &match);
+	int pos = ttree_search(self, page, key, &match);
 	if (match)
 	{
 		// return position
@@ -146,26 +162,25 @@ ttree_insert(Ttree*      self,
 	TtreePage* ref = page;
 	TtreePage* l   = page;
 	TtreePage* r   = NULL;
-	if (unlikely(page->rows_count == self->size_page))
+	if (unlikely(page->keys_count == self->size_page))
 	{
-		r = ttree_page_allocate(self);
-		l->rows_count = self->size_split;
-		r->rows_count = self->size_page - self->size_split;
-		memmove(&r->rows[0], &l->rows[self->size_split],
-		        sizeof(Row*) * r->rows_count);
-		if (pos >= l->rows_count)
+		r = ttree_allocate(self);
+		l->keys_count = self->size_split;
+		r->keys_count = self->size_page - self->size_split;
+		ttree_move(self, r, 0, l, self->size_split, r->keys_count);
+		if (pos >= l->keys_count)
 		{
 			ref = r;
-			pos = pos - l->rows_count;
+			pos = pos - l->keys_count;
 		}
 	}
 
 	// insert
-	int size = (ref->rows_count - pos) * sizeof(Row*);
+	int size = ref->keys_count - pos;
 	if (size > 0)
-		memmove(&ref->rows[pos + 1], &ref->rows[pos], size);
-	ref->rows[pos] = row;
-	ref->rows_count++;
+		ttree_move(self, ref, pos + 1, ref, pos, size);
+	ttree_copy(self, ref, pos, key);
+	ref->keys_count++;
 	self->count++;
 
 	*page_split = r;
@@ -175,12 +190,17 @@ ttree_insert(Ttree*      self,
 hot Row*
 ttree_set(Ttree* self, Row* row)
 {
+	auto    key_size = self->keys->key_size;
+	uint8_t key_data[key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, self->keys);
+
 	// create root page
 	if (self->count_pages == 0)
 	{
-		auto page = ttree_page_allocate(self);
-		page->rows[0] = row;
-		page->rows_count++;
+		auto page = ttree_allocate(self);
+		ttree_copy(self, page, 0, key);
+		page->keys_count++;
 		rbtree_set(&self->tree, NULL, 0, &page->node);
 		self->count_pages++;
 		self->count++;
@@ -188,17 +208,17 @@ ttree_set(Ttree* self, Row* row)
 	}
 
 	// search page
-	auto page = ttree_search_page(self, row);
+	auto page = ttree_search_page(self, key);
 
 	// insert into page
 	TtreePage* page_split = NULL;
 	TtreePos   pos;
-	auto exists = ttree_insert(self, page, &page_split, &pos, row);
+	auto exists = ttree_insert(self, page, &page_split, &pos, key);
 	if (exists)
 	{
 		// replace
-		auto prev = pos.page->rows[pos.page_pos];
-		pos.page->rows[pos.page_pos] = row;
+		auto prev = ttree_at(self, page, pos.page_pos)->row;
+		ttree_copy(self, page, pos.page_pos, key);
 		return prev;
 	}
 
@@ -214,12 +234,17 @@ ttree_set(Ttree* self, Row* row)
 hot Row*
 ttree_set_or_get(Ttree* self, Row* row, TtreePos* pos)
 {
+	auto    key_size = self->keys->key_size;
+	uint8_t key_data[key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, self->keys);
+
 	// create root page
 	if (self->count_pages == 0)
 	{
-		auto page = ttree_page_allocate(self);
-		page->rows[0] = row;
-		page->rows_count++;
+		auto page = ttree_allocate(self);
+		ttree_copy(self, page, 0, key);
+		page->keys_count++;
 		rbtree_set(&self->tree, NULL, 0, &page->node);
 		self->count_pages++;
 		self->count++;
@@ -227,13 +252,13 @@ ttree_set_or_get(Ttree* self, Row* row, TtreePos* pos)
 	}
 
 	// search page
-	auto page = ttree_search_page(self, row);
+	auto page = ttree_search_page(self, key);
 
 	// insert into page
 	TtreePage* page_split = NULL;
-	auto exists = ttree_insert(self, page, &page_split, pos, row);
+	auto exists = ttree_insert(self, page, &page_split, pos, key);
 	if (exists)
-		return pos->page->rows[pos->page_pos];
+		return ttree_at(self, page, pos->page_pos)->row;
 
 	// update split page
 	if (page_split)
@@ -241,7 +266,6 @@ ttree_set_or_get(Ttree* self, Row* row, TtreePos* pos)
 		rbtree_set(&self->tree, &page->node, -1, &page_split->node);
 		self->count_pages++;
 	}
-
 	return NULL;
 }
 
@@ -250,7 +274,7 @@ ttree_unset_by_next(Ttree* self, TtreePos* pos)
 {
 	auto next = rbtree_next(&self->tree, &pos->page->node);
 	if (next)
-		pos->page = ttree_page_of(next);
+		pos->page = ttree_of(next);
 	else
 		pos->page = NULL;
 	pos->page_pos = 0;
@@ -261,29 +285,26 @@ ttree_unset_by(Ttree* self, TtreePos* pos)
 {
 	// remove row from the page
 	auto page = pos->page;
-	auto prev = page->rows[pos->page_pos];
-	page->rows[pos->page_pos] = NULL;
-	page->rows_count--;
+	auto prev = ttree_at(self, page, pos->page_pos)->row;
+	page->keys_count--;
 	self->count--;
 
 	// remove page, if it becomes empty
-	if (page->rows_count == 0)
+	if (page->keys_count == 0)
 	{
 		// update position to the next page, if any
 		ttree_unset_by_next(self, pos);
 		rbtree_remove(&self->tree, &page->node);
 		self->count_pages--;
-		ttree_page_free(page);
+		ttree_free_page(self, page);
 		return prev;
 	}
 
 	// not the last position
-	int size = (page->rows_count - pos->page_pos) * sizeof(Row*);
+	int size = page->keys_count - pos->page_pos;
 	if (size > 0)
 	{
-		memmove(&page->rows[pos->page_pos],
-		        &page->rows[pos->page_pos + 1],
-		        size);
+		ttree_move(self, page, pos->page_pos, page, pos->page_pos + 1, size);
 		return prev;
 	}
 
@@ -296,18 +317,35 @@ Row*
 ttree_unset(Ttree* self, Row* row)
 {
 	assert(self->count_pages > 0);
+	auto    key_size = self->keys->key_size;
+	uint8_t key_data[key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, self->keys);
 
 	// search page
 	TtreePos pos;
-	pos.page = ttree_search_page(self, row);
+	pos.page = ttree_search_page(self, key);
 
 	// remove existing key from a page
 	bool match = false;
-	pos.page_pos = ttree_search(self, pos.page, row, &match);
+	pos.page_pos = ttree_search(self, pos.page, key, &match);
 	if (! match)
 		return NULL;
 
 	return ttree_unset_by(self, &pos);
+}
+
+Row*
+ttree_replace(Ttree* self, TtreePos* pos, Row* row)
+{
+	auto    key_size = self->keys->key_size;
+	uint8_t key_data[key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, self->keys);
+
+	auto prev = ttree_at(self, pos->page, pos->page_pos)->row;
+	ttree_copy(self, pos->page, pos->page_pos, key);
+	return prev;
 }
 
 #if 0
@@ -336,7 +374,7 @@ ttree_unset(Ttree* self, Row* row)
 	{
 		rbtree_remove(&self->tree, &page->node);
 		self->count_pages--;
-		ttree_page_free(page);
+		ttree_free_page(page);
 	} else
 	{
 		int size = (page->rows_count - pos) * sizeof(Row*);
@@ -349,7 +387,7 @@ ttree_unset(Ttree* self, Row* row)
 #endif
 
 hot bool
-ttree_seek(Ttree* self, Row* key, TtreePos* pos)
+ttree_seek(Ttree* self, RowKey* key, TtreePos* pos)
 {
 	if (self->count_pages == 0)
 		return false;
@@ -357,7 +395,7 @@ ttree_seek(Ttree* self, Row* key, TtreePos* pos)
 	if (key == NULL)
 	{
 		auto first = rbtree_min(&self->tree);
-		pos->page = ttree_page_of(first);
+		pos->page = ttree_of(first);
 		pos->page_pos = 0;
 		return false;
 	}
