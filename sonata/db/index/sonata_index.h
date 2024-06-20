@@ -18,11 +18,11 @@
 #include "index/index_tree_iterator.h"
 
 // hash
-#include "index/ht.h"
-#include "index/htt.h"
-#include "index/htt_iterator.h"
+#include "index/hash_store.h"
 #include "index/hash.h"
 #include "index/hash_iterator.h"
+#include "index/index_hash.h"
+#include "index/index_hash_iterator.h"
 
 // indexate
 #include "index/indexate.h"

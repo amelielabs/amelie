@@ -12,7 +12,7 @@ struct IndexTreeIterator
 {
 	Iterator     it;
 	TreeIterator iterator;
-	IndexTree*   tree;
+	IndexTree*   index;
 };
 
 always_inline static inline IndexTreeIterator*
@@ -24,9 +24,9 @@ index_tree_iterator_of(Iterator* self)
 static inline bool
 index_tree_iterator_open(Iterator* arg, RowKey* key)
 {
-	auto self = index_tree_iterator_of(arg);
-	auto tree = self->tree;
-	return tree_iterator_open(&self->iterator, &tree->tree, key);
+	auto self  = index_tree_iterator_of(arg);
+	auto index = self->index;
+	return tree_iterator_open(&self->iterator, &index->tree, key);
 }
 
 static inline bool
@@ -59,14 +59,14 @@ index_tree_iterator_close(Iterator* arg)
 }
 
 static inline Iterator*
-index_tree_iterator_allocate(IndexTree* tree)
+index_tree_iterator_allocate(IndexTree* index)
 {
 	IndexTreeIterator* self = so_malloc(sizeof(*self));
 	self->it.has   = index_tree_iterator_has;
 	self->it.at    = index_tree_iterator_at;
 	self->it.next  = index_tree_iterator_next;
 	self->it.close = index_tree_iterator_close;
-	self->tree     = tree;
+	self->index    = index;
 	tree_iterator_init(&self->iterator);
 	return &self->it;
 }

@@ -49,10 +49,10 @@ part_create_index(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
-		index = tree_allocate(config, self->config->id);
+		index = index_tree_allocate(config, self->config->id);
 	else
 	if (config->type == INDEX_HASH)
-		index = hash_allocate(config, self->config->id);
+		index = index_hash_allocate(config, self->config->id);
 	else
 		error("unrecognized index type");
 	list_append(&self->indexes, &index->link);

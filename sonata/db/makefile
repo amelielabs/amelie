@@ -24,9 +24,9 @@ OBJECTS        = \
                  row/row.o \
                  transaction/handle_mgr.o \
                  transaction/commit.o \
-                 index/ttree.o \
                  index/tree.o \
-                 index/hash.o \
+                 index/index_tree.o \
+                 index/index_hash.o \
                  index/indexate.o \
                  partition/part.o \
                  partition/part_list.o \

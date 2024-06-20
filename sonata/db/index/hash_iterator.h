@@ -10,63 +10,149 @@ typedef struct HashIterator HashIterator;
 
 struct HashIterator
 {
-	Iterator    it;
-	HttIterator iterator;
-	Hash*       hash;
+	Row*       current;
+	HashStore* current_store;
+	uint64_t   pos;
+	Hash*      hash;
 };
 
-always_inline static inline HashIterator*
-hash_iterator_of(Iterator* self)
+static inline bool
+hash_iterator_open(HashIterator* self, Hash* hash, RowKey* key)
 {
-	return (HashIterator*)self;
+	self->current       = NULL;
+	self->current_store = NULL;
+	self->pos           = 0;
+	self->hash          = hash;
+
+	// point-lookup
+	if (key)
+	{
+		self->current_store = hash->current;
+		self->current = hash_store_get(hash->current, key, &self->pos);
+		if (self->current)
+			return true;
+
+		if (hash->rehashing)
+		{
+			self->current_store = hash->prev;
+			self->current = hash_store_get(hash->prev, key, &self->pos);
+			if (self->current)
+				return true;
+		}
+
+		return false;
+	}
+
+	// full scan
+	if (hash->rehashing)
+	{
+		self->current_store = self->hash->current;
+		self->current = hash_store_next(self->current_store, &self->pos);
+		if (! self->current)
+		{
+			self->pos        = 0;
+			self->current_store = self->hash->prev;
+			self->current    = hash_store_next(self->current_store, &self->pos);
+		}
+	} else
+	{
+		if (hash->current->count == 0)
+			return false;
+		self->current_store = self->hash->current;
+		self->current = hash_store_next(self->current_store, &self->pos);
+	}
+	return false;
+}
+
+static inline void
+hash_iterator_open_at(HashIterator* self, Hash* hash, uint64_t pos)
+{
+	self->current       = hash_store_at(hash->current, pos)->row;
+	self->current_store = hash->current;
+	self->pos           = pos;
+	self->hash          = hash;
 }
 
 static inline bool
-hash_iterator_open(Iterator* arg, RowKey* key)
+hash_iterator_has(HashIterator* self)
 {
-	auto self = hash_iterator_of(arg);
-	auto hash = self->hash;
-	return htt_iterator_open(&self->iterator, &hash->ht, key);
-}
-
-static inline bool
-hash_iterator_has(Iterator* arg)
-{
-	auto self = hash_iterator_of(arg);
-	return htt_iterator_has(&self->iterator);
+	return self->current != NULL;
 }
 
 static inline Row*
-hash_iterator_at(Iterator* arg)
+hash_iterator_at(HashIterator* self)
 {
-	auto self = hash_iterator_of(arg);
-	return htt_iterator_at(&self->iterator);
+	return self->current;
 }
 
 static inline void
-hash_iterator_next(Iterator* arg)
+hash_iterator_next(HashIterator* self)
 {
-	auto self = hash_iterator_of(arg);
-	htt_iterator_next(&self->iterator);
+	if (self->current == NULL)
+		return;
+	auto hash = self->hash;
+
+	self->pos++;
+	self->current = hash_store_next(self->current_store, &self->pos);
+	if (self->current)
+		return;
+
+	if (! hash->rehashing)
+		return;
+
+	if (self->current_store == hash->prev)
+		return;
+	self->pos           = 0;
+	self->current_store = hash->prev;
+	self->current       = hash_store_next(self->current_store, &self->pos);
+}
+
+static inline Row*
+hash_iterator_replace(HashIterator* self, Row* row)
+{
+	uint8_t  key_data[self->hash->keys->key_size];
+	auto     key  = (RowKey*)key_data;
+	uint32_t hash = 0;
+	row_key_create_and_hash(key, row, self->hash->keys, &hash);
+
+	auto current = self->current;
+	assert(current);
+	self->current = row;
+	hash_store_copy(self->current_store, hash_store_at(self->current_store, self->pos), key);
+	return current;
+}
+
+static inline Row*
+hash_iterator_delete(HashIterator* self)
+{
+	// keeping current as is
+	auto current = self->current;
+	auto current_store = self->current_store;
+	hash_store_at(self->current_store, self->pos)->row = HT_DELETED;
+	current_store->count--;
+	return current;
 }
 
 static inline void
-hash_iterator_close(Iterator* arg)
+hash_iterator_reset(HashIterator* self)
 {
-	auto self = hash_iterator_of(arg);
-	htt_iterator_close(&self->iterator);
-	so_free(arg);
+	self->current       = NULL;
+	self->current_store = NULL;
+	self->pos           = 0;
+	self->hash          = NULL;
 }
 
-static inline Iterator*
-hash_iterator_allocate(Hash* hash)
+static inline void
+hash_iterator_close(HashIterator* self)
 {
-	HashIterator* self = so_malloc(sizeof(*self));
-	self->it.has   = hash_iterator_has;
-	self->it.at    = hash_iterator_at;
-	self->it.next  = hash_iterator_next;
-	self->it.close = hash_iterator_close;
-	self->hash = hash;
-	htt_iterator_init(&self->iterator);
-	return &self->it;
+	hash_iterator_reset(self);
+}
+
+static inline void
+hash_iterator_init(HashIterator* self)
+{
+	self->current       = NULL;
+	self->current_store = NULL;
+	self->pos           = 0;
+	self->hash          = NULL;
 }

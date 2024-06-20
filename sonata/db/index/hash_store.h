@@ -6,48 +6,48 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Ht Ht;
+typedef struct HashStore HashStore;
 
 #define HT_DELETED (void*)0xffffffff
 
-struct Ht
+struct HashStore
 {
-	RowKey*  table;
+	RowKey*  store;
 	uint64_t count;
 	uint64_t size;
 	Keys*    keys;
 };
 
 always_inline hot static inline RowKey*
-ht_at(Ht* self, int pos)
+hash_store_at(HashStore* self, int pos)
 {
-	uint8_t* ptr = (uint8_t*)self->table + pos * self->keys->key_size;
+	auto ptr = (uint8_t*)self->store + pos * self->keys->key_size;
 	return (RowKey*)ptr;
 }
 
 always_inline hot static inline void
-ht_copy(Ht* self, RowKey* dst, RowKey* src)
+hash_store_copy(HashStore* self, RowKey* dst, RowKey* src)
 {
 	memcpy(dst, src, self->keys->key_size);
 }
 
 static inline void
-ht_init(Ht* self)
+hash_store_init(HashStore* self)
 {
-	self->table = NULL;
+	self->store = NULL;
 	self->count = 0;
 	self->size  = 0;
 	self->keys  = NULL;
 }
 
 static inline void
-ht_free_rows(Ht* self)
+hash_store_free_rows(HashStore* self)
 {
 	if (self->count == 0)
 		return;
 	for (uint64_t pos = 0; pos < self->size; pos++)
 	{
-		auto key = ht_at(self, pos);
+		auto key = hash_store_at(self, pos);
 		if (!key->row || key->row == HT_DELETED)
 			continue;
 		row_free(key->row);
@@ -55,38 +55,38 @@ ht_free_rows(Ht* self)
 }
 
 static inline void
-ht_free(Ht* self)
+hash_store_free(HashStore* self)
 {
-	if (self->table)
+	if (self->store)
 	{
 		if (self->keys->primary)
-			ht_free_rows(self);
-		so_free(self->table);
+			hash_store_free_rows(self);
+		so_free(self->store);
 	}
-	self->table = NULL;
+	self->store = NULL;
 	self->count = 0;
 	self->size  = 0;
 	self->keys  = NULL;
 }
 
 static inline bool
-ht_is_full(Ht* self)
+hash_store_is_full(HashStore* self)
 {
 	return self->count > self->size / 2;
 }
 
 static inline void
-ht_create(Ht* self, Keys* keys, size_t size)
+hash_store_create(HashStore* self, Keys* keys, size_t size)
 {
 	size_t allocated = keys->key_size * size;
 	self->keys  = keys;
 	self->size  = size;
-	self->table = so_malloc(allocated);
-	memset(self->table, 0, allocated);
+	self->store = so_malloc(allocated);
+	memset(self->store, 0, allocated);
 }
 
 hot static inline uint32_t
-ht_hash(Ht* self, RowKey* row)
+hash_store_hash(HashStore* self, RowKey* row)
 {
 	uint32_t hash = 0;
 	list_foreach(&self->keys->list)
@@ -98,23 +98,23 @@ ht_hash(Ht* self, RowKey* row)
 }
 
 hot static inline Row*
-ht_set(Ht* self, RowKey* key)
+hash_store_set(HashStore* self, RowKey* key)
 {
-	uint64_t start = ht_hash(self, key) % self->size;
+	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = ht_at(self, pos);
+		auto ref = hash_store_at(self, pos);
 		if (!ref->row || ref->row == HT_DELETED)
 		{
-			ht_copy(self, ref, key);
+			hash_store_copy(self, ref, key);
 			self->count++;
 			return NULL;
 		}
 		if (! compare(self->keys, ref, key))
 		{
 			auto prev = ref->row;
-			ht_copy(self, ref, key);
+			hash_store_copy(self, ref, key);
 			return prev;
 		}
 		pos = (pos + 1) % self->size;
@@ -125,13 +125,13 @@ ht_set(Ht* self, RowKey* key)
 }
 
 hot static inline Row*
-ht_delete(Ht* self, RowKey* key)
+hash_store_delete(HashStore* self, RowKey* key)
 {
-	uint64_t start = ht_hash(self, key) % self->size;
+	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = ht_at(self, pos);
+		auto ref = hash_store_at(self, pos);
 		if (! ref->row)
 			break;
 		if (ref->row != HT_DELETED)
@@ -151,13 +151,13 @@ ht_delete(Ht* self, RowKey* key)
 }
 
 hot static inline Row*
-ht_get(Ht* self, RowKey* key, uint64_t* at)
+hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
 {
-	uint64_t start = ht_hash(self, key) % self->size;
+	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = ht_at(self, pos);
+		auto ref = hash_store_at(self, pos);
 		if (! ref->row)
 		{
 			*at = pos;
@@ -182,12 +182,12 @@ ht_get(Ht* self, RowKey* key, uint64_t* at)
 }
 
 hot static inline Row*
-ht_next(Ht* self, uint64_t* at)
+hash_store_next(HashStore* self, uint64_t* at)
 {
 	uint64_t pos = *at;
 	for (; pos < self->size; pos++)
 	{
-		auto ref = ht_at(self, pos);
+		auto ref = hash_store_at(self, pos);
 		if (!ref->row || ref->row == HT_DELETED)
 			continue;
 		// set to next
