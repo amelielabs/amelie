@@ -12,10 +12,10 @@
 #include "index/index.h"
 
 // tree
-#include "index/ttree.h"
-#include "index/ttree_iterator.h"
 #include "index/tree.h"
 #include "index/tree_iterator.h"
+#include "index/index_tree.h"
+#include "index/index_tree_iterator.h"
 
 // hash
 #include "index/ht.h"

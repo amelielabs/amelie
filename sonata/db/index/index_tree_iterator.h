@@ -1,0 +1,72 @@
+#pragma once
+
+//
+// sonata.
+//
+// Real-Time SQL Database.
+//
+
+typedef struct IndexTreeIterator IndexTreeIterator;
+
+struct IndexTreeIterator
+{
+	Iterator     it;
+	TreeIterator iterator;
+	IndexTree*   tree;
+};
+
+always_inline static inline IndexTreeIterator*
+index_tree_iterator_of(Iterator* self)
+{
+	return (IndexTreeIterator*)self;
+}
+
+static inline bool
+index_tree_iterator_open(Iterator* arg, RowKey* key)
+{
+	auto self = index_tree_iterator_of(arg);
+	auto tree = self->tree;
+	return tree_iterator_open(&self->iterator, &tree->tree, key);
+}
+
+static inline bool
+index_tree_iterator_has(Iterator* arg)
+{
+	auto self = index_tree_iterator_of(arg);
+	return tree_iterator_has(&self->iterator);
+}
+
+static inline Row*
+index_tree_iterator_at(Iterator* arg)
+{
+	auto self = index_tree_iterator_of(arg);
+	return tree_iterator_at(&self->iterator);
+}
+
+static inline void
+index_tree_iterator_next(Iterator* arg)
+{
+	auto self = index_tree_iterator_of(arg);
+	tree_iterator_next(&self->iterator);
+}
+
+static inline void
+index_tree_iterator_close(Iterator* arg)
+{
+	auto self = index_tree_iterator_of(arg);
+	tree_iterator_close(&self->iterator);
+	so_free(arg);
+}
+
+static inline Iterator*
+index_tree_iterator_allocate(IndexTree* tree)
+{
+	IndexTreeIterator* self = so_malloc(sizeof(*self));
+	self->it.has   = index_tree_iterator_has;
+	self->it.at    = index_tree_iterator_at;
+	self->it.next  = index_tree_iterator_next;
+	self->it.close = index_tree_iterator_close;
+	self->tree     = tree;
+	tree_iterator_init(&self->iterator);
+	return &self->it;
+}
