@@ -11,14 +11,6 @@ typedef struct Log   Log;
 
 typedef enum
 {
-	LOG_WRITE,
-	LOG_CREATE,
-	LOG_DROP,
-	LOG_ALTER
-} LogType;
-
-typedef enum
-{
 	// dml (row)
 	LOG_REPLACE,
 	LOG_DELETE,
@@ -42,7 +34,6 @@ typedef void (*LogAbort)(LogOp*);
 
 struct LogOp
 {
-	LogType   type;
 	LogCmd    cmd;
 	LogCommit commit;
 	LogAbort  abort;
@@ -128,7 +119,6 @@ log_row(Log*      self,
 	buf_reserve(&self->op, sizeof(LogOp));
 
 	auto op = (LogOp*)self->op.position;
-	op->type     = LOG_WRITE;
 	op->cmd      = cmd;
 	op->commit   = commit;
 	op->abort    = abort;
@@ -146,7 +136,6 @@ log_row(Log*      self,
 
 static inline void
 log_handle(Log*      self,
-           LogType   type,
            LogCmd    cmd,
            LogCommit commit,
            LogAbort  abort,
@@ -156,7 +145,6 @@ log_handle(Log*      self,
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->type          = type;
 	op->cmd           = cmd;
 	op->commit        = commit;
 	op->abort         = abort;

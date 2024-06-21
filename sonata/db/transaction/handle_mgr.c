@@ -90,7 +90,7 @@ handle_mgr_create(HandleMgr*   self,
 	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_CREATE, cmd,
+	log_handle(&trx->log, cmd,
 	           handle_mgr_create_commit,
 	           handle_mgr_create_abort, self,
 	           handle, data);
@@ -125,7 +125,7 @@ handle_mgr_drop(HandleMgr*   self,
 	handle_mgr_delete(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_DROP, cmd,
+	log_handle(&trx->log, cmd,
 	           handle_mgr_drop_commit,
 	           handle_mgr_drop_abort, self,
 	           handle, data);
@@ -143,7 +143,7 @@ handle_mgr_alter(HandleMgr*   self,
 	unused(self);
 
 	// update transaction log
-	log_handle(&trx->log, LOG_ALTER, cmd,
+	log_handle(&trx->log, cmd,
 	           handle_mgr_create_commit,
 	           abort,
 	           abort_arg,

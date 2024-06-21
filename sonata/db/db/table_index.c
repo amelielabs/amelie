@@ -75,7 +75,7 @@ table_index_create(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_ALTER, LOG_INDEX_CREATE,
+	log_handle(&trx->log, LOG_INDEX_CREATE,
 	           table_index_create_commit,
 	           table_index_create_abort,
 	           index,
@@ -125,7 +125,7 @@ table_index_drop(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_ALTER, LOG_INDEX_DROP,
+	log_handle(&trx->log, LOG_INDEX_DROP,
 	           table_index_drop_commit,
 	           table_index_drop_abort,
 	           index,
@@ -187,7 +187,7 @@ table_index_rename(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_ALTER, LOG_INDEX_RENAME,
+	log_handle(&trx->log, LOG_INDEX_RENAME,
 	           table_index_rename_commit,
 	           table_index_rename_abort,
 	           index,
