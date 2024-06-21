@@ -44,7 +44,7 @@ transaction_commit(Transaction* self)
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);
-		op->commit(op);
+		op->iface->commit(op);
 	}
 
 	transaction_end(self, false);
@@ -60,7 +60,7 @@ transaction_abort(Transaction* self)
 	for (; pos >= 0; pos--)
 	{
 		auto op = log_of(&self->log, pos);
-		op->abort(op);
+		op->iface->abort(op);
 	}
 
 	transaction_end(self, true);

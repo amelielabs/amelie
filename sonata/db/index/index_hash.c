@@ -15,26 +15,32 @@
 #include <sonata_index.h>
 
 static void
-index_hash_commit(LogOp* op)
+log_if_commit(LogOp* op)
 {
 	// free row or add row to the free list
-	auto self = (IndexHash*)op->arg;
+	auto self = (IndexHash*)op->iface_arg;
 	if (self->hash.keys->primary && op->row.prev)
 		row_free(op->row.prev);
 }
 
 static void
-index_hash_set_abort(LogOp* op)
+log_if_abort(LogOp* op)
 {
-	auto self = (IndexHash*)op->arg;
+	auto self = (IndexHash*)op->iface_arg;
 	// replace back or remove
 	if (op->row.prev)
 		hash_set(&self->hash, op->row.prev);
 	else
 		hash_delete(&self->hash, op->row.row);
-	if (self->hash.keys->primary)
+	if (op->cmd != LOG_DELETE && self->hash.keys->primary)
 		row_free(op->row.row);
 }
+
+static LogIf log_if =
+{
+	.commit = log_if_commit,
+	.abort  = log_if_abort
+};
 
 hot static bool
 index_hash_set(Index* arg, Transaction* trx, Row* row)
@@ -47,9 +53,7 @@ index_hash_set(Index* arg, Transaction* trx, Row* row)
 	auto prev = hash_set(&self->hash, row);
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_hash_commit,
-	        index_hash_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -72,21 +76,11 @@ index_hash_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	auto prev = hash_iterator_replace(&hash_it->iterator, row);
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_hash_commit,
-	        index_hash_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
 	        row, prev);
-}
-
-static void
-index_hash_delete_abort(LogOp* op)
-{
-	auto self = (IndexHash*)op->arg;
-	// prev always exists
-	hash_set(&self->hash, op->row.prev);
 }
 
 hot static void
@@ -102,9 +96,7 @@ index_hash_delete(Index* arg, Transaction* trx, Iterator* it)
 	auto prev = hash_iterator_delete(&hash_it->iterator);
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE,
-	        index_hash_commit,
-	        index_hash_delete_abort,
+	log_row(&trx->log, LOG_DELETE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -128,9 +120,7 @@ index_hash_delete_by(Index* arg, Transaction* trx, Row* key)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE,
-	        index_hash_commit,
-	        index_hash_delete_abort,
+	log_row(&trx->log, LOG_DELETE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -157,9 +147,7 @@ index_hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_hash_commit,
-	        index_hash_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,

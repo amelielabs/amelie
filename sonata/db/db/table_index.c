@@ -31,19 +31,25 @@ table_index_delete(Table* table, IndexConfig* index)
 }
 
 static void
-table_index_create_commit(LogOp* op)
+create_if_commit(LogOp* op)
 {
 	buf_free(op->handle.data);
 }
 
 static void
-table_index_create_abort(LogOp* op)
+create_if_abort(LogOp* op)
 {
 	auto table = table_of(op->handle.handle);
-	IndexConfig* index = op->arg;
+	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 	buf_free(op->handle.data);
 }
+
+static LogIf create_if =
+{
+	.commit = create_if_commit,
+	.abort  = create_if_abort
+};
 
 bool
 table_index_create(Table*       self,
@@ -75,9 +81,7 @@ table_index_create(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_CREATE,
-	           table_index_create_commit,
-	           table_index_create_abort,
+	log_handle(&trx->log, LOG_INDEX_CREATE, &create_if,
 	           index,
 	           &self->handle, op);
 	unguard();
@@ -88,19 +92,25 @@ table_index_create(Table*       self,
 }
 
 static void
-table_index_drop_commit(LogOp* op)
+drop_if_commit(LogOp* op)
 {
 	auto table = table_of(op->handle.handle);
-	IndexConfig* index = op->arg;
+	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
 	buf_free(op->handle.data);
 }
 
 static void
-table_index_drop_abort(LogOp* op)
+drop_if_abort(LogOp* op)
 {
 	buf_free(op->handle.data);
 }
+
+static LogIf drop_if =
+{
+	.commit = drop_if_commit,
+	.abort  = drop_if_abort
+};
 
 void
 table_index_drop(Table*       self,
@@ -125,24 +135,22 @@ table_index_drop(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_DROP,
-	           table_index_drop_commit,
-	           table_index_drop_abort,
+	log_handle(&trx->log, LOG_INDEX_DROP, &drop_if,
 	           index,
 	           &self->handle, op);
 	unguard();
 }
 
 static void
-table_index_rename_commit(LogOp* op)
+rename_if_commit(LogOp* op)
 {
 	buf_free(op->handle.data);
 }
 
 static void
-table_index_rename_abort(LogOp* op)
+rename_if_abort(LogOp* op)
 {
-	IndexConfig* index = op->arg;
+	IndexConfig* index = op->iface_arg;
 	uint8_t* pos = op->handle.data->start;
 	Str schema;
 	Str name;
@@ -152,6 +160,12 @@ table_index_rename_abort(LogOp* op)
 	index_config_set_name(index, &index_name);
 	buf_free(op->handle.data);
 }
+
+static LogIf rename_if =
+{
+	.commit = rename_if_commit,
+	.abort  = rename_if_abort
+};
 
 void
 table_index_rename(Table*       self,
@@ -187,9 +201,7 @@ table_index_rename(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_RENAME,
-	           table_index_rename_commit,
-	           table_index_rename_abort,
+	log_handle(&trx->log, LOG_INDEX_RENAME, &rename_if,
 	           index,
 	           &self->handle, op);
 	unguard();

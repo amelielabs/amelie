@@ -63,19 +63,25 @@ handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 }
 
 static void
-handle_mgr_create_commit(LogOp* op)
+create_if_commit(LogOp* op)
 {
 	buf_free(op->handle.data);
 }
 
 static void
-handle_mgr_create_abort(LogOp* op)
+create_if_abort(LogOp* op)
 {
-	HandleMgr* self = op->arg;
+	HandleMgr* self = op->iface_arg;
 	handle_mgr_delete(self, op->handle.handle);
 	handle_free(op->handle.handle);
 	buf_free(op->handle.data);
 }
+
+static LogIf create_if =
+{
+	.commit = create_if_commit,
+	.abort  = create_if_abort
+};
 
 void
 handle_mgr_create(HandleMgr*   self,
@@ -90,14 +96,11 @@ handle_mgr_create(HandleMgr*   self,
 	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, cmd,
-	           handle_mgr_create_commit,
-	           handle_mgr_create_abort, self,
-	           handle, data);
+	log_handle(&trx->log, cmd, &create_if, self, handle, data);
 }
 
 static void
-handle_mgr_drop_commit(LogOp* op)
+drop_if_commit(LogOp* op)
 {
 	Handle* handle = op->handle.handle;
 	handle_free(handle);
@@ -105,12 +108,18 @@ handle_mgr_drop_commit(LogOp* op)
 }
 
 static void
-handle_mgr_drop_abort(LogOp* op)
+drop_if_abort(LogOp* op)
 {
-	HandleMgr* self = op->arg;
+	HandleMgr* self = op->iface_arg;
 	handle_mgr_set(self, op->handle.handle);
 	buf_free(op->handle.data);
 }
+
+static LogIf drop_if =
+{
+	.commit = drop_if_commit,
+	.abort  = drop_if_abort
+};
 
 void
 handle_mgr_drop(HandleMgr*   self,
@@ -125,8 +134,5 @@ handle_mgr_drop(HandleMgr*   self,
 	handle_mgr_delete(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, cmd,
-	           handle_mgr_drop_commit,
-	           handle_mgr_drop_abort, self,
-	           handle, data);
+	log_handle(&trx->log, cmd, &drop_if, self, handle, data);
 }

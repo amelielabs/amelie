@@ -21,26 +21,31 @@ index_tree_of(Index* self)
 }
 
 static void
-index_tree_commit(LogOp* op)
+log_if_commit(LogOp* op)
 {
-	// free row or add row to the free list
-	auto self = (IndexTree*)op->arg;
+	auto self = (IndexTree*)op->iface_arg;
 	if (self->tree.keys->primary && op->row.prev)
 		row_free(op->row.prev);
 }
 
 static void
-index_tree_set_abort(LogOp* op)
+log_if_abort(LogOp* op)
 {
-	auto self = (IndexTree*)op->arg;
+	auto self = (IndexTree*)op->iface_arg;
 	// replace back or remove
 	if (op->row.prev)
 		tree_set(&self->tree, op->row.prev);
 	else
 		tree_unset(&self->tree, op->row.row);
-	if (self->tree.keys->primary)
+	if (op->cmd != LOG_DELETE && self->tree.keys->primary)
 		row_free(op->row.row);
 }
+
+static LogIf log_if =
+{
+	.commit = log_if_commit,
+	.abort  = log_if_abort
+};
 
 hot static bool
 index_tree_set(Index* arg, Transaction* trx, Row* row)
@@ -53,9 +58,7 @@ index_tree_set(Index* arg, Transaction* trx, Row* row)
 	auto prev = tree_set(&self->tree, row);
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_tree_commit,
-	        index_tree_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -78,21 +81,11 @@ index_tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	auto prev = tree_iterator_replace(&tree_it->iterator, row);
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_tree_commit,
-	        index_tree_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
 	        row, prev);
-}
-
-static void
-index_tree_delete_abort(LogOp* op)
-{
-	auto self = (IndexTree*)op->arg;
-	// prev always exists
-	tree_set(&self->tree, op->row.prev);
 }
 
 hot static void
@@ -108,9 +101,7 @@ index_tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	auto prev = tree_iterator_delete(&tree_it->iterator);
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE,
-	        index_tree_commit,
-	        index_tree_delete_abort,
+	log_row(&trx->log, LOG_DELETE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -134,9 +125,7 @@ index_tree_delete_by(Index* arg, Transaction* trx, Row* key)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_DELETE,
-	        index_tree_commit,
-	        index_tree_delete_abort,
+	log_row(&trx->log, LOG_DELETE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,
@@ -163,9 +152,7 @@ index_tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 	}
 
 	// update transaction log
-	log_row(&trx->log, LOG_REPLACE,
-	        index_tree_commit,
-	        index_tree_set_abort,
+	log_row(&trx->log, LOG_REPLACE, &log_if,
 	        self,
 	        self->index.config->primary,
 	        arg->partition,

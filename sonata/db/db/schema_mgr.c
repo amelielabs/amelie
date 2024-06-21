@@ -90,13 +90,13 @@ schema_mgr_drop(SchemaMgr*   self,
 }
 
 static void
-schema_mgr_rename_commit(LogOp* op)
+rename_if_commit(LogOp* op)
 {
 	buf_free(op->handle.data);
 }
 
 static void
-schema_mgr_rename_abort(LogOp* op)
+rename_if_abort(LogOp* op)
 {
 	auto self = schema_of(op->handle.handle);
 	// set previous name
@@ -107,6 +107,12 @@ schema_mgr_rename_abort(LogOp* op)
 	schema_config_set_name(self->config, &name);
 	buf_free(op->handle.data);
 }
+
+static LogIf rename_if =
+{
+	.commit = rename_if_commit,
+	.abort  = rename_if_abort
+};
 
 void
 schema_mgr_rename(SchemaMgr*   self,
@@ -138,9 +144,7 @@ schema_mgr_rename(SchemaMgr*   self,
 	guard_buf(op);
 
 	// update schema
-	log_handle(&trx->log, LOG_SCHEMA_RENAME,
-	           schema_mgr_rename_commit,
-	           schema_mgr_rename_abort,
+	log_handle(&trx->log, LOG_SCHEMA_RENAME, &rename_if,
 	           NULL,
 	           &schema->handle, op);
 	unguard();

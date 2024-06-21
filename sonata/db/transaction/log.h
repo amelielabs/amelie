@@ -6,6 +6,7 @@
 // Real-Time SQL Database.
 //
 
+typedef struct LogIf LogIf;
 typedef struct LogOp LogOp;
 typedef struct Log   Log;
 
@@ -29,15 +30,17 @@ typedef enum
 	LOG_VIEW_RENAME
 } LogCmd;
 
-typedef void (*LogCommit)(LogOp*);
-typedef void (*LogAbort)(LogOp*);
+struct LogIf
+{
+	void (*commit)(LogOp*);
+	void (*abort)(LogOp*);
+};
 
 struct LogOp
 {
-	LogCmd    cmd;
-	LogCommit commit;
-	LogAbort  abort;
-	void*     arg;
+	LogCmd cmd;
+	LogIf* iface;
+	void*  iface_arg;
 	union
 	{
 		struct
@@ -103,25 +106,23 @@ log_reserve(Log* self)
 }
 
 hot static inline void
-log_row(Log*      self,
-        LogCmd    cmd,
-        LogCommit commit,
-        LogAbort  abort,
-        void*     arg,
-        bool      persistent,
-        uint64_t  partition,
-        Row*      row,
-        Row*      prev)
+log_row(Log*     self,
+        LogCmd   cmd,
+        LogIf*   iface,
+        void*    iface_arg,
+        bool     persistent,
+        uint64_t partition,
+        Row*     row,
+        Row*     prev)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 
 	auto op = (LogOp*)self->op.position;
-	op->cmd      = cmd;
-	op->commit   = commit;
-	op->abort    = abort;
-	op->arg      = arg;
-	op->row.row  = row;
-	op->row.prev = prev;
+	op->cmd       = cmd;
+	op->iface     = iface;
+	op->iface_arg = iface_arg;
+	op->row.row   = row;
+	op->row.prev  = prev;
 	buf_advance(&self->op, sizeof(LogOp));
 	self->count++;
 	if (! persistent)
@@ -132,20 +133,18 @@ log_row(Log*      self,
 }
 
 static inline void
-log_handle(Log*      self,
-           LogCmd    cmd,
-           LogCommit commit,
-           LogAbort  abort,
-           void*     arg,
-           void*     handle,
-           Buf*      data)
+log_handle(Log*   self,
+           LogCmd cmd,
+           LogIf* iface,
+           void*  iface_arg,
+           void*  handle,
+           Buf*   data)
 {
 	buf_reserve(&self->op, sizeof(LogOp));
 	auto op = (LogOp*)self->op.position;
-	op->cmd           = cmd;
-	op->commit        = commit;
-	op->abort         = abort;
-	op->arg           = arg;
+	op->cmd       = cmd;
+	op->iface     = iface;
+	op->iface_arg = iface_arg;
 	op->handle.handle = handle;
 	op->handle.data   = data;
 	buf_advance(&self->op, sizeof(LogOp));
