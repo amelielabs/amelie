@@ -130,22 +130,3 @@ handle_mgr_drop(HandleMgr*   self,
 	           handle_mgr_drop_abort, self,
 	           handle, data);
 }
-
-void
-handle_mgr_alter(HandleMgr*   self,
-                 Transaction* trx,
-                 LogCmd       cmd,
-                 Handle*      handle,
-                 Buf*         data,
-                 LogAbort     abort,
-                 void*        abort_arg)
-{
-	unused(self);
-
-	// update transaction log
-	log_handle(&trx->log, cmd,
-	           handle_mgr_create_commit,
-	           abort,
-	           abort_arg,
-	           handle, data);
-}

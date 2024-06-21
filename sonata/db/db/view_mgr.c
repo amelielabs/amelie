@@ -86,6 +86,12 @@ view_mgr_drop(ViewMgr*     self,
 }
 
 static void
+view_mgr_rename_commit(LogOp* op)
+{
+	buf_free(op->handle.data);
+}
+
+static void
 view_mgr_rename_abort(LogOp* op)
 {
 	auto self = view_of(op->handle.handle);
@@ -128,8 +134,11 @@ view_mgr_rename(ViewMgr*     self,
 	guard_buf(op);
 
 	// update view
-	handle_mgr_alter(&self->mgr, trx, LOG_VIEW_RENAME, &view->handle, op,
-	                 view_mgr_rename_abort, NULL);
+	log_handle(&trx->log, LOG_VIEW_RENAME,
+	           view_mgr_rename_commit,
+	           view_mgr_rename_abort,
+	           NULL,
+	           &view->handle, op);
 	unguard();
 
 	// set new view name

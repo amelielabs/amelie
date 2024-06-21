@@ -90,6 +90,12 @@ schema_mgr_drop(SchemaMgr*   self,
 }
 
 static void
+schema_mgr_rename_commit(LogOp* op)
+{
+	buf_free(op->handle.data);
+}
+
+static void
 schema_mgr_rename_abort(LogOp* op)
 {
 	auto self = schema_of(op->handle.handle);
@@ -131,9 +137,12 @@ schema_mgr_rename(SchemaMgr*   self,
 	auto op = schema_op_rename(name, name_new);
 	guard_buf(op);
 
-	// update schemas
-	handle_mgr_alter(&self->mgr, trx, LOG_SCHEMA_RENAME, &schema->handle, op,
-	                 schema_mgr_rename_abort, NULL);
+	// update schema
+	log_handle(&trx->log, LOG_SCHEMA_RENAME,
+	           schema_mgr_rename_commit,
+	           schema_mgr_rename_abort,
+	           NULL,
+	           &schema->handle, op);
 	unguard();
 
 	// set new name

@@ -94,6 +94,12 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 }
 
 static void
+table_mgr_rename_commit(LogOp* op)
+{
+	buf_free(op->handle.data);
+}
+
+static void
 table_mgr_rename_abort(LogOp* op)
 {
 	auto self = table_of(op->handle.handle);
@@ -136,8 +142,11 @@ table_mgr_rename(TableMgr*    self,
 	guard_buf(op);
 
 	// update table
-	handle_mgr_alter(&self->mgr, trx, LOG_TABLE_RENAME, &table->handle, op,
-	                 table_mgr_rename_abort, NULL);
+	log_handle(&trx->log, LOG_TABLE_RENAME,
+	           table_mgr_rename_commit,
+	           table_mgr_rename_abort,
+	           NULL,
+	           &table->handle, op);
 	unguard();
 
 	// set new table name
