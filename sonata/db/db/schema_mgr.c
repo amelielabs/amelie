@@ -90,22 +90,23 @@ schema_mgr_drop(SchemaMgr*   self,
 }
 
 static void
-rename_if_commit(LogOp* op)
+rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(op->handle.data);
+	buf_free(log_handle_of(self, op)->data);
 }
 
 static void
-rename_if_abort(LogOp* op)
+rename_if_abort(Log* self, LogOp* op)
 {
-	auto self = schema_of(op->handle.handle);
+	auto handle = log_handle_of(self, op);
+	auto mgr = schema_of(handle->handle);
 	// set previous name
-	uint8_t* pos = op->handle.data->start;
+	uint8_t* pos = handle->data->start;
 	Str name;
 	Str name_new;
 	schema_op_rename_read(&pos, &name, &name_new);
-	schema_config_set_name(self->config, &name);
-	buf_free(op->handle.data);
+	schema_config_set_name(mgr->config, &name);
+	buf_free(handle->data);
 }
 
 static LogIf rename_if =

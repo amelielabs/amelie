@@ -116,11 +116,9 @@ snapshot_main(Snapshot* self, Index* index)
 	auto it = index_open(index, NULL, true);
 	guard(iterator_close, it);
 	
-	for (;;)
+	while (iterator_has(it))
 	{
 		auto row = iterator_at(it);
-		if (unlikely(! row))
-			break;
 		snapshot_add(self, row);
 		if (self->count == self->count_batch)
 			snapshot_flush(self);

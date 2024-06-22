@@ -16,7 +16,7 @@ struct IndexIf
 	void      (*delete)(Index*, Transaction*, Iterator*);
 	void      (*delete_by)(Index*, Transaction*, Row*);
 	void      (*upsert)(Index*, Transaction*, Iterator**, Row*);
-	Row*      (*ingest)(Index*, Row*);
+	bool      (*ingest)(Index*, Row*);
 	Iterator* (*open)(Index*, RowKey*, bool);
 	void      (*free)(Index*);
 };

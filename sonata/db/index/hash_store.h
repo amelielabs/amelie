@@ -97,8 +97,8 @@ hash_store_hash(HashStore* self, RowKey* row)
 	return hash;
 }
 
-hot static inline Row*
-hash_store_set(HashStore* self, RowKey* key)
+hot static inline bool
+hash_store_set(HashStore* self, RowKey* key, RowKey* prev)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
@@ -109,23 +109,24 @@ hash_store_set(HashStore* self, RowKey* key)
 		{
 			hash_store_copy(self, ref, key);
 			self->count++;
-			return NULL;
+			return false;
 		}
 		if (! compare(self->keys, ref, key))
 		{
-			auto prev = ref->row;
+			if (prev)
+				hash_store_copy(self, prev, ref);
 			hash_store_copy(self, ref, key);
-			return prev;
+			return true;
 		}
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
 	error("hashtable overflow");
-	return NULL;
+	return false;
 }
 
-hot static inline Row*
-hash_store_delete(HashStore* self, RowKey* key)
+hot static inline bool
+hash_store_delete(HashStore* self, RowKey* key, RowKey* prev)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
@@ -138,19 +139,19 @@ hash_store_delete(HashStore* self, RowKey* key)
 		{
 			if (! compare(self->keys, ref, key))
 			{
-				auto prev = ref->row;
+				hash_store_copy(self, prev, ref);
 				ref->row = HT_DELETED;
 				self->count--;
-				return prev;
+				return true;
 			}
 		}
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
-	return NULL;
+	return false;
 }
 
-hot static inline Row*
+hot static inline RowKey*
 hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
@@ -171,7 +172,7 @@ hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
 			if (! compare(self->keys, ref, key))
 			{
 				*at = pos;
-				return ref->row;
+				return ref;
 			}
 		}
 		pos = (pos + 1) % self->size;
@@ -181,7 +182,7 @@ hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
 	return NULL;
 }
 
-hot static inline Row*
+hot static inline RowKey*
 hash_store_next(HashStore* self, uint64_t* at)
 {
 	uint64_t pos = *at;
@@ -192,7 +193,7 @@ hash_store_next(HashStore* self, uint64_t* at)
 			continue;
 		// set to next
 		*at = pos;
-		return ref->row;
+		return ref;
 	}
 	*at = UINT64_MAX;
 	return NULL;

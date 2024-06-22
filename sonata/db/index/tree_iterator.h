@@ -10,7 +10,7 @@ typedef struct TreeIterator TreeIterator;
 
 struct TreeIterator
 {
-	Row*      current;
+	RowKey*   current;
 	TreePage* page;
 	int       page_pos;
 	bool      repositioned;
@@ -18,9 +18,7 @@ struct TreeIterator
 };
 
 static inline bool
-tree_iterator_open(TreeIterator* self,
-                   Tree*         tree,
-                   RowKey*       key)
+tree_iterator_open(TreeIterator* self, Tree* tree, RowKey* key)
 {
 	self->current      = NULL;
 	self->page         = NULL;
@@ -40,20 +38,18 @@ tree_iterator_open(TreeIterator* self,
 		self->page_pos = 0;
 		return false;
 	}
-	self->current = tree_at(tree, self->page, self->page_pos)->row;
+	self->current = tree_at(tree, self->page, self->page_pos);
 	return match;
 }
 
 static inline void
-tree_iterator_open_at(TreeIterator* self,
-                      Tree*         tree,
-                      TreePos*      pos)
+tree_iterator_open_at(TreeIterator* self, Tree* tree, TreePos* pos)
 {
 	self->current  = NULL;
 	self->page     = pos->page;
 	self->page_pos = pos->page_pos;
-	self->tree    = tree;
-	self->current  = tree_at(tree, self->page, self->page_pos)->row;
+	self->tree     = tree;
+	self->current  = tree_at(tree, self->page, self->page_pos);
 }
 
 static inline bool
@@ -62,7 +58,7 @@ tree_iterator_has(TreeIterator* self)
 	return self->current != NULL;
 }
 
-static inline Row*
+static inline RowKey*
 tree_iterator_at(TreeIterator* self)
 {
 	return self->current;
@@ -82,7 +78,7 @@ tree_iterator_next(TreeIterator* self)
 
 		// update current row pointer
 		if (self->page)
-			self->current = tree_at(self->tree, self->page, self->page_pos)->row;
+			self->current = tree_at(self->tree, self->page, self->page_pos);
 		else
 			self->current = NULL;
 		return;
@@ -92,7 +88,7 @@ tree_iterator_next(TreeIterator* self)
 	if (likely((self->page_pos + 1) < self->page->keys_count))
 	{
 		self->page_pos++;
-		self->current = tree_at(self->tree, self->page, self->page_pos)->row;
+		self->current = tree_at(self->tree, self->page, self->page_pos);
 		return;
 	}
 
@@ -105,11 +101,11 @@ tree_iterator_next(TreeIterator* self)
 		return;
 
 	self->page    = container_of(next, TreePage, node);
-	self->current = tree_at(self->tree, self->page, 0)->row;
+	self->current = tree_at(self->tree, self->page, 0);
 }
 
-static inline Row*
-tree_iterator_replace(TreeIterator* self, Row* row)
+static inline void
+tree_iterator_replace(TreeIterator* self, RowKey* key, RowKey* prev)
 {
 	assert(self->current);
 	TreePos pos =
@@ -117,26 +113,28 @@ tree_iterator_replace(TreeIterator* self, Row* row)
 		.page     = self->page,
 		.page_pos = self->page_pos
 	};
-	auto prev = tree_replace(self->tree, &pos, row);
-	self->current = row;
-	return prev;
+	tree_copy_from(self->tree, pos.page, pos.page_pos, prev);
+	tree_copy(self->tree, pos.page, pos.page_pos, key);
+	self->current = key;
 }
 
-static inline Row*
-tree_iterator_delete(TreeIterator* self)
+static inline void
+tree_iterator_delete(TreeIterator* self, RowKey* prev)
 {
 	TreePos pos =
 	{
 		.page     = self->page,
 		.page_pos = self->page_pos
 	};
-	auto prev = tree_unset_by(self->tree, &pos);
+	tree_copy_from(self->tree, pos.page, pos.page_pos, prev);
+	tree_unset_by(self->tree, &pos);
 	self->page     = pos.page;
 	self->page_pos = pos.page_pos;
-	// keeping current row still pointing to the deleted row
 	assert(! self->repositioned);
 	self->repositioned = true;
-	return prev;
+
+	// keeping current row still pointing to the deleted row
+	self->current  = prev;
 }
 
 static inline void
@@ -163,38 +161,4 @@ tree_iterator_init(TreeIterator* self)
 	self->page_pos     = 0;
 	self->repositioned = false;
 	self->tree         = NULL;
-}
-
-static inline void
-tree_iterator_sync(TreeIterator* self,
-                   TreePage*     page,
-                   TreePage*     page_split,
-                   int           pos)
-{
-	if (self->page != page || !self->current)
-		return;
-
-	// replace
-	if (self->page_pos == pos)
-	{
-		// update current page row pointer on replace
-		self->current = tree_at(self->tree, self->page, self->page_pos)->row;
-		return;
-	}
-
-	// insert
-	if (page_split)
-	{
-		if (self->page_pos >= page->keys_count)
-		{
-			self->page = page_split;
-			self->page_pos = self->page_pos - page->keys_count;
-		}
-	}
-
-	// move position, if key was inserted before it
-	if (pos <= self->page_pos)
-		self->page_pos++;
-
-	self->current = tree_at(self->tree, self->page, self->page_pos)->row;
 }

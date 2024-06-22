@@ -35,11 +35,10 @@ struct Tree
 
 void tree_init(Tree*, int, int, Keys*);
 void tree_free(Tree*);
-Row* tree_set(Tree*, Row*);
-Row* tree_set_or_get(Tree*, Row*, TreePos*);
-Row* tree_unset(Tree*, Row*);
-Row* tree_unset_by(Tree*, TreePos*);
-Row* tree_replace(Tree*, TreePos*, Row*);
+bool tree_set(Tree*, RowKey*, RowKey*);
+bool tree_set_or_get(Tree*, RowKey*, TreePos*);
+bool tree_unset(Tree*, RowKey*, RowKey*);
+void tree_unset_by(Tree*, TreePos*);
 bool tree_seek(Tree*, RowKey*, TreePos*);
 
 always_inline hot static inline RowKey*
@@ -53,4 +52,10 @@ always_inline static inline void
 tree_copy(Tree* self, TreePage* page, int pos, RowKey* key)
 {
 	memcpy(tree_at(self, page, pos), key, self->keys->key_size);
+}
+
+always_inline static inline void
+tree_copy_from(Tree* self, TreePage* page, int pos, RowKey* key)
+{
+	memcpy(key, tree_at(self, page, pos), self->keys->key_size);
 }

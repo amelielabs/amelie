@@ -94,24 +94,25 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 }
 
 static void
-rename_if_commit(LogOp* op)
+rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(op->handle.data);
+	buf_free(log_handle_of(self, op)->data);
 }
 
 static void
-rename_if_abort(LogOp* op)
+rename_if_abort(Log* self, LogOp* op)
 {
-	auto self = table_of(op->handle.handle);
-	uint8_t* pos = op->handle.data->start;
+	auto handle = log_handle_of(self, op);
+	auto mgr = table_of(handle->handle);
+	uint8_t* pos = handle->data->start;
 	Str schema;
 	Str name;
 	Str schema_new;
 	Str name_new;
 	table_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
-	table_config_set_schema(self->config, &schema);
-	table_config_set_name(self->config, &name);
-	buf_free(op->handle.data);
+	table_config_set_schema(mgr->config, &schema);
+	table_config_set_name(mgr->config, &name);
+	buf_free(handle->data);
 }
 
 static LogIf rename_if =

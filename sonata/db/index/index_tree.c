@@ -20,25 +20,30 @@ index_tree_of(Index* self)
 	return (IndexTree*)self;
 }
 
-static void
-log_if_commit(LogOp* op)
+hot static void
+log_if_commit(Log* self, LogOp* op)
 {
-	auto self = (IndexTree*)op->iface_arg;
-	if (self->tree.keys->primary && op->row.prev)
-		row_free(op->row.prev);
+	auto index = (IndexTree*)op->iface_arg;
+	if (! index->tree.keys->primary)
+		return;
+	RowKey* prev;
+	log_row_of(self, op, &prev);
+	if (prev->row)
+		row_free(prev->row);
 }
 
 static void
-log_if_abort(LogOp* op)
+log_if_abort(Log* self, LogOp* op)
 {
-	auto self = (IndexTree*)op->iface_arg;
-	// replace back or remove
-	if (op->row.prev)
-		tree_set(&self->tree, op->row.prev);
+	auto index = (IndexTree*)op->iface_arg;
+	RowKey* prev;
+	auto key = log_row_of(self, op, &prev);
+	if (prev->row)
+		tree_set(&index->tree, prev, NULL);
 	else
-		tree_unset(&self->tree, op->row.row);
-	if (op->cmd != LOG_DELETE && self->tree.keys->primary)
-		row_free(op->row.row);
+		tree_unset(&index->tree, key, NULL);
+	if (op->cmd != LOG_DELETE && index->tree.keys->primary)
+		row_free(key->row);
 }
 
 static LogIf log_if =
@@ -51,122 +56,134 @@ hot static bool
 index_tree_set(Index* arg, Transaction* trx, Row* row)
 {
 	auto self = index_tree_of(arg);
+	auto keys = self->tree.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
-	auto prev = tree_set(&self->tree, row);
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, prev);
+	// update tree
+	auto exists = tree_set(&self->tree, key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 
-	// is replace
-	return prev != NULL;
+	return exists;
 }
 
 hot static void
 index_tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 {
 	auto self = index_tree_of(arg);
+	auto keys = self->tree.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
 	// replace
 	auto tree_it = index_tree_iterator_of(it);
-	auto prev = tree_iterator_replace(&tree_it->iterator, row);
-
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, prev);
+	tree_iterator_replace(&tree_it->iterator, key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
 index_tree_delete(Index* arg, Transaction* trx, Iterator* it)
 {
 	auto self = index_tree_of(arg);
+	auto keys = self->tree.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
 
 	// delete by using current position
 	auto tree_it = index_tree_iterator_of(it);
-	auto prev = tree_iterator_delete(&tree_it->iterator);
+	memcpy(key, tree_it->iterator.current, keys->key_size);
 
-	// update transaction log
-	log_row(&trx->log, LOG_DELETE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        prev, prev);
+	tree_iterator_delete(&tree_it->iterator, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
-index_tree_delete_by(Index* arg, Transaction* trx, Row* key)
+index_tree_delete_by(Index* arg, Transaction* trx, Row* row)
 {
 	auto self = index_tree_of(arg);
+	auto keys = self->tree.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
 	// delete by key
-	auto prev = tree_unset(&self->tree, key);
-	if (! prev)
+	if (! tree_unset(&self->tree, key, prev))
 	{
 		// does not exists
+		log_truncate(&trx->log);
 		return;
 	}
 
-	// update transaction log
-	log_row(&trx->log, LOG_DELETE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
 index_tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 {
 	auto self = index_tree_of(arg);
+	auto keys = self->tree.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
+
+	// prepare key
+	auto key = log_row_of(&trx->log, op, NULL);
+	row_key_create(key, row, keys);
 
 	// insert or return iterator on existing position
 	TreePos pos;
-	auto prev = tree_set_or_get(&self->tree, row, &pos);
-	if (prev)
+	if (tree_set_or_get(&self->tree, key, &pos))
 	{
 		*it = index_tree_iterator_allocate(self);
 		auto tree_it = index_tree_iterator_of(*it);
 		tree_iterator_open_at(&tree_it->iterator, &self->tree, &pos);
+		log_truncate(&trx->log);
 		return;
 	}
 
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, NULL);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 
 	*it = NULL;
 }
 
-hot static Row*
+hot static bool
 index_tree_ingest(Index* arg, Row* row)
 {
-	auto self = index_tree_of(arg);
+	auto    self = index_tree_of(arg);
+	auto    keys = self->tree.keys;
+	uint8_t key_data[keys->key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, keys);
+
 	TreePos pos;
-	return tree_set_or_get(&self->tree, row, &pos);
+	return tree_set_or_get(&self->tree, key, &pos);
 }
 
 hot static Iterator*

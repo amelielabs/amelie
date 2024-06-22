@@ -6,9 +6,11 @@
 // Real-Time SQL Database.
 //
 
-typedef struct LogIf LogIf;
-typedef struct LogOp LogOp;
-typedef struct Log   Log;
+typedef struct LogIf     LogIf;
+typedef struct LogOp     LogOp;
+typedef struct LogRow    LogRow;
+typedef struct LogHandle LogHandle;
+typedef struct Log       Log;
 
 typedef enum
 {
@@ -32,8 +34,8 @@ typedef enum
 
 struct LogIf
 {
-	void (*commit)(LogOp*);
-	void (*abort)(LogOp*);
+	void (*commit)(Log*, LogOp*);
+	void (*abort)(Log*, LogOp*);
 };
 
 struct LogOp
@@ -41,35 +43,57 @@ struct LogOp
 	LogCmd cmd;
 	LogIf* iface;
 	void*  iface_arg;
-	union
-	{
-		struct
-		{
-			Row* row;
-			Row* prev;
-		} row;
-		struct
-		{
-			void* handle;
-			Buf*  data;
-		} handle;
-	};
+	int    pos;
+};
+
+struct LogRow
+{
+	Keys*  keys;
+	RowKey rows[];
+};
+
+struct LogHandle
+{
+	void* handle;
+	Buf*  data;
 };
 
 struct Log
 {
 	Buf    op;
+	Buf    data;
 	int    count;
 	int    count_handle;
 	LogSet log_set;
 	List   link;
 };
 
-static inline LogOp*
+always_inline static inline LogOp*
 log_of(Log* self, int pos)
 {
-	auto op = (LogOp*)self->op.start;
-	return &op[pos];
+	return &((LogOp*)self->op.start)[pos];
+}
+
+always_inline static inline void*
+log_data_of(Log* self, LogOp* op)
+{
+	return self->data.start + op->pos;
+}
+
+always_inline static inline RowKey*
+log_row_of(Log* self, LogOp* op,  RowKey** b)
+{
+	auto row = (LogRow*)log_data_of(self, op);
+	auto a = &row->rows[0];
+	if (b)
+		*b = (RowKey*)((uint8_t*)a + row->keys->key_size);
+	return a;
+}
+
+always_inline static inline LogHandle*
+log_handle_of(Log* self, LogOp* op)
+{
+	return log_data_of(self, op);
 }
 
 static inline void
@@ -78,6 +102,7 @@ log_init(Log* self)
 	self->count        = 0;
 	self->count_handle = 0;
 	buf_init(&self->op);
+	buf_init(&self->data);
 	log_set_init(&self->log_set);
 	list_init(&self->link);
 }
@@ -86,6 +111,7 @@ static inline void
 log_free(Log* self)
 {
 	buf_free(&self->op);
+	buf_free(&self->data);
 	log_set_free(&self->log_set);
 }
 
@@ -95,41 +121,49 @@ log_reset(Log* self)
 	self->count        = 0;
 	self->count_handle = 0;
 	buf_reset(&self->op);
+	buf_reset(&self->data);
 	log_set_reset(&self->log_set);
 	list_init(&self->link);
 }
 
 static inline void
-log_reserve(Log* self)
+log_truncate(Log* self)
 {
-	buf_reserve(&self->op, sizeof(LogOp));
+	self->count--;
+	auto op = log_of(self, self->count);
+	buf_truncate(&self->op, sizeof(LogOp));
+	buf_truncate(&self->data, buf_size(&self->data) - op->pos);
 }
 
-hot static inline void
-log_row(Log*     self,
-        LogCmd   cmd,
-        LogIf*   iface,
-        void*    iface_arg,
-        bool     persistent,
-        uint64_t partition,
-        Row*     row,
-        Row*     prev)
+hot static inline LogOp*
+log_row(Log*   self,
+        LogCmd cmd,
+        LogIf* iface,
+        void*  iface_arg,
+        Keys*  keys)
 {
-	buf_reserve(&self->op, sizeof(LogOp));
-
-	auto op = (LogOp*)self->op.position;
+	// op
+	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
 	op->cmd       = cmd;
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->row.row   = row;
-	op->row.prev  = prev;
-	buf_advance(&self->op, sizeof(LogOp));
+	op->pos       = buf_size(&self->data);
 	self->count++;
-	if (! persistent)
-		return;
 
+	// row data
+	int size = 2 * keys->key_size;
+	LogRow* row = buf_claim(&self->data, sizeof(LogRow) + size);
+	row->keys = keys;
+	memset(&row->rows[0], 0, size);
+	return op;
+}
+
+hot static inline void
+log_persist(Log* self, LogOp* op, uint64_t partition)
+{
 	// [cmd, partition, row]
-	log_set_add(&self->log_set, cmd, partition, row);
+	auto key = log_row_of(self, op, NULL);
+	log_set_add(&self->log_set, op->cmd, partition, key->row);
 }
 
 static inline void
@@ -140,16 +174,19 @@ log_handle(Log*   self,
            void*  handle,
            Buf*   data)
 {
-	buf_reserve(&self->op, sizeof(LogOp));
-	auto op = (LogOp*)self->op.position;
+	// op
+	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
 	op->cmd       = cmd;
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
-	op->handle.handle = handle;
-	op->handle.data   = data;
-	buf_advance(&self->op, sizeof(LogOp));
+	op->pos       = buf_size(&self->data);
 	self->count++;
 	self->count_handle++;
+
+	// handle data
+	LogHandle* ref = buf_claim(&self->data, sizeof(LogHandle));
+	ref->handle = handle;
+	ref->data   = data;
 
 	// [cmd, data]
 	log_set_add_op(&self->log_set, cmd, data);

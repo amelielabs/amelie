@@ -40,7 +40,7 @@ static inline Row*
 index_tree_iterator_at(Iterator* arg)
 {
 	auto self = index_tree_iterator_of(arg);
-	return tree_iterator_at(&self->iterator);
+	return tree_iterator_at(&self->iterator)->row;
 }
 
 static inline void

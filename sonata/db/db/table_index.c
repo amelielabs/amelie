@@ -31,18 +31,19 @@ table_index_delete(Table* table, IndexConfig* index)
 }
 
 static void
-create_if_commit(LogOp* op)
+create_if_commit(Log* self, LogOp* op)
 {
-	buf_free(op->handle.data);
+	buf_free(log_handle_of(self, op)->data);
 }
 
 static void
-create_if_abort(LogOp* op)
+create_if_abort(Log* self, LogOp* op)
 {
-	auto table = table_of(op->handle.handle);
+	auto handle = log_handle_of(self, op);
+	auto table = table_of(handle->handle);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(op->handle.data);
+	buf_free(handle->data);
 }
 
 static LogIf create_if =
@@ -92,18 +93,19 @@ table_index_create(Table*       self,
 }
 
 static void
-drop_if_commit(LogOp* op)
+drop_if_commit(Log* self, LogOp* op)
 {
-	auto table = table_of(op->handle.handle);
+	auto handle = log_handle_of(self, op);
+	auto table = table_of(handle->handle);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(op->handle.data);
+	buf_free(handle->data);
 }
 
 static void
-drop_if_abort(LogOp* op)
+drop_if_abort(Log* self, LogOp* op)
 {
-	buf_free(op->handle.data);
+	buf_free(log_handle_of(self, op)->data);
 }
 
 static LogIf drop_if =
@@ -142,23 +144,24 @@ table_index_drop(Table*       self,
 }
 
 static void
-rename_if_commit(LogOp* op)
+rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(op->handle.data);
+	buf_free(log_handle_of(self, op)->data);
 }
 
 static void
-rename_if_abort(LogOp* op)
+rename_if_abort(Log* self, LogOp* op)
 {
 	IndexConfig* index = op->iface_arg;
-	uint8_t* pos = op->handle.data->start;
+	auto handle = log_handle_of(self, op);
+	uint8_t* pos = handle->data->start;
 	Str schema;
 	Str name;
 	Str index_name;
 	Str index_name_new;
 	table_op_rename_index_read(&pos, &schema, &name, &index_name, &index_name_new);
 	index_config_set_name(index, &index_name);
-	buf_free(op->handle.data);
+	buf_free(handle->data);
 }
 
 static LogIf rename_if =

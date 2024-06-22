@@ -187,24 +187,21 @@ tree_insert(Tree*      self,
 	return false;
 }
 
-hot Row*
-tree_set(Tree* self, Row* row)
+hot bool
+tree_set(Tree* self, RowKey* key, RowKey* prev)
 {
-	auto    key_size = self->keys->key_size;
-	uint8_t key_data[key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, self->keys);
-
 	// create root page
 	if (self->count_pages == 0)
 	{
 		auto page = tree_allocate(self);
 		tree_copy(self, page, 0, key);
+		if (prev)
+			prev->row = NULL;
 		page->keys_count++;
 		rbtree_set(&self->tree, NULL, 0, &page->node);
 		self->count_pages++;
 		self->count++;
-		return NULL;
+		return false;
 	}
 
 	// search page
@@ -217,10 +214,13 @@ tree_set(Tree* self, Row* row)
 	if (exists)
 	{
 		// replace
-		auto prev = tree_at(self, page, pos.page_pos)->row;
+		if (prev)
+			tree_copy_from(self, page, pos.page_pos, prev);
 		tree_copy(self, page, pos.page_pos, key);
-		return prev;
+		return true;
 	}
+	if (prev)
+		prev->row = NULL;
 
 	// update split page
 	if (page_split)
@@ -228,17 +228,12 @@ tree_set(Tree* self, Row* row)
 		rbtree_set(&self->tree, &page->node, -1, &page_split->node);
 		self->count_pages++;
 	}
-	return NULL;
+	return false;
 }
 
-hot Row*
-tree_set_or_get(Tree* self, Row* row, TreePos* pos)
+hot bool
+tree_set_or_get(Tree* self, RowKey* key, TreePos* pos)
 {
-	auto    key_size = self->keys->key_size;
-	uint8_t key_data[key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, self->keys);
-
 	// create root page
 	if (self->count_pages == 0)
 	{
@@ -248,7 +243,7 @@ tree_set_or_get(Tree* self, Row* row, TreePos* pos)
 		rbtree_set(&self->tree, NULL, 0, &page->node);
 		self->count_pages++;
 		self->count++;
-		return NULL;
+		return false;
 	}
 
 	// search page
@@ -258,7 +253,7 @@ tree_set_or_get(Tree* self, Row* row, TreePos* pos)
 	TreePage* page_split = NULL;
 	auto exists = tree_insert(self, page, &page_split, pos, key);
 	if (exists)
-		return tree_at(self, page, pos->page_pos)->row;
+		return true;
 
 	// update split page
 	if (page_split)
@@ -266,7 +261,7 @@ tree_set_or_get(Tree* self, Row* row, TreePos* pos)
 		rbtree_set(&self->tree, &page->node, -1, &page_split->node);
 		self->count_pages++;
 	}
-	return NULL;
+	return false;
 }
 
 static inline void
@@ -280,12 +275,12 @@ tree_unset_by_next(Tree* self, TreePos* pos)
 	pos->page_pos = 0;
 }
 
-Row*
+void
 tree_unset_by(Tree* self, TreePos* pos)
 {
 	// remove row from the page
 	auto page = pos->page;
-	auto prev = tree_at(self, page, pos->page_pos)->row;
+	tree_at(self, page, pos->page_pos)->row = NULL;
 	page->keys_count--;
 	self->count--;
 
@@ -297,7 +292,7 @@ tree_unset_by(Tree* self, TreePos* pos)
 		rbtree_remove(&self->tree, &page->node);
 		self->count_pages--;
 		tree_free_page(self, page);
-		return prev;
+		return;
 	}
 
 	// not the last position
@@ -305,23 +300,16 @@ tree_unset_by(Tree* self, TreePos* pos)
 	if (size > 0)
 	{
 		tree_move(self, page, pos->page_pos, page, pos->page_pos + 1, size);
-		return prev;
+		return;
 	}
 
 	// update position to the next page, if any
 	tree_unset_by_next(self, pos);
-	return prev;
 }
 
-Row*
-tree_unset(Tree* self, Row* row)
+bool
+tree_unset(Tree* self, RowKey* key, RowKey* prev)
 {
-	assert(self->count_pages > 0);
-	auto    key_size = self->keys->key_size;
-	uint8_t key_data[key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, self->keys);
-
 	// search page
 	TreePos pos;
 	pos.page = tree_search_page(self, key);
@@ -330,61 +318,13 @@ tree_unset(Tree* self, Row* row)
 	bool match = false;
 	pos.page_pos = tree_search(self, pos.page, key, &match);
 	if (! match)
-		return NULL;
+		return false;
 
-	return tree_unset_by(self, &pos);
+	if (prev)
+		tree_copy_from(self, pos.page, pos.page_pos, prev);
+	tree_unset_by(self, &pos);
+	return true;
 }
-
-Row*
-tree_replace(Tree* self, TreePos* pos, Row* row)
-{
-	auto    key_size = self->keys->key_size;
-	uint8_t key_data[key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, self->keys);
-
-	auto prev = tree_at(self, pos->page, pos->page_pos)->row;
-	tree_copy(self, pos->page, pos->page_pos, key);
-	return prev;
-}
-
-#if 0
-Row*
-tree_unset(Tree* self, Row* row)
-{
-	assert(self->count_pages > 0);
-
-	// search page
-	auto page = tree_search_page(self, row);
-
-	// remove existing key from a page
-	bool match = false;
-	int pos = tree_search(self, page, row, &match);
-	if (! match)
-		return NULL;
-
-	// remove row from the page
-	auto prev = page->rows[pos];
-	page->rows[pos] = NULL;
-	page->rows_count--;
-	self->count--;
-
-	// remove page, if it becomes empty
-	if (page->rows_count == 0)
-	{
-		rbtree_remove(&self->tree, &page->node);
-		self->count_pages--;
-		tree_free_page(page);
-	} else
-	{
-		int size = (page->rows_count - pos) * sizeof(Row*);
-		if (size > 0)
-			memmove(&page->rows[pos], &page->rows[pos + 1], size);
-	}
-
-	return prev;
-}
-#endif
 
 hot bool
 tree_seek(Tree* self, RowKey* key, TreePos* pos)

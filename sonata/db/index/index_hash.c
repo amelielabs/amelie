@@ -14,26 +14,30 @@
 #include <sonata_transaction.h>
 #include <sonata_index.h>
 
-static void
-log_if_commit(LogOp* op)
+hot static void
+log_if_commit(Log* self, LogOp* op)
 {
-	// free row or add row to the free list
-	auto self = (IndexHash*)op->iface_arg;
-	if (self->hash.keys->primary && op->row.prev)
-		row_free(op->row.prev);
+	auto index = (IndexHash*)op->iface_arg;
+	if (! index->hash.keys->primary)
+		return;
+	RowKey* prev;
+	log_row_of(self, op, &prev);
+	if (prev->row)
+		row_free(prev->row);
 }
 
 static void
-log_if_abort(LogOp* op)
+log_if_abort(Log* self, LogOp* op)
 {
-	auto self = (IndexHash*)op->iface_arg;
-	// replace back or remove
-	if (op->row.prev)
-		hash_set(&self->hash, op->row.prev);
+	auto index = (IndexHash*)op->iface_arg;
+	RowKey* prev;
+	auto key = log_row_of(self, op, &prev);
+	if (prev->row)
+		hash_set(&index->hash, prev, NULL);
 	else
-		hash_delete(&self->hash, op->row.row);
-	if (op->cmd != LOG_DELETE && self->hash.keys->primary)
-		row_free(op->row.row);
+		hash_delete(&index->hash, key, NULL);
+	if (op->cmd != LOG_DELETE && index->hash.keys->primary)
+		row_free(key->row);
 }
 
 static LogIf log_if =
@@ -46,122 +50,133 @@ hot static bool
 index_hash_set(Index* arg, Transaction* trx, Row* row)
 {
 	auto self = index_hash_of(arg);
+	auto keys = self->hash.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
-	auto prev = hash_set(&self->hash, row);
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, prev);
+	// update tree
+	auto exists = hash_set(&self->hash, key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 
-	// is replace
-	return prev != NULL;
+	return exists;
 }
 
 hot static void
 index_hash_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 {
 	auto self = index_hash_of(arg);
+	auto keys = self->hash.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
 	// replace
 	auto hash_it = index_hash_iterator_of(it);
-	auto prev = hash_iterator_replace(&hash_it->iterator, row);
-
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, prev);
+	hash_iterator_replace(&hash_it->iterator, key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
 index_hash_delete(Index* arg, Transaction* trx, Iterator* it)
 {
 	auto self = index_hash_of(arg);
+	auto keys = self->hash.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
 
 	// delete by using current position
 	auto hash_it = index_hash_iterator_of(it);
-	auto prev = hash_iterator_delete(&hash_it->iterator);
+	memcpy(key, hash_it->iterator.current, keys->key_size);
 
-	// update transaction log
-	log_row(&trx->log, LOG_DELETE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        prev, prev);
+	hash_iterator_delete(&hash_it->iterator, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
-index_hash_delete_by(Index* arg, Transaction* trx, Row* key)
+index_hash_delete_by(Index* arg, Transaction* trx, Row* row)
 {
 	auto self = index_hash_of(arg);
+	auto keys = self->hash.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
+
+	// prepare key
+	RowKey* prev;
+	auto key = log_row_of(&trx->log, op, &prev);
+	row_key_create(key, row, keys);
 
 	// delete by key
-	auto prev = hash_delete(&self->hash, key);
-	if (! prev)
+	if (! hash_delete(&self->hash, key, prev))
 	{
 		// does not exists
+		log_truncate(&trx->log);
 		return;
 	}
 
-	// update transaction log
-	log_row(&trx->log, LOG_DELETE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        key, prev);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 }
 
 hot static void
 index_hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 {
 	auto self = index_hash_of(arg);
+	auto keys = self->hash.keys;
 
-	// reserve log
-	log_reserve(&trx->log);
+	// add log record
+	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
+
+	// prepare key
+	auto key = log_row_of(&trx->log, op, NULL);
+	row_key_create(key, row, keys);
 
 	// insert or return iterator on existing position
 	uint64_t pos = 0;	
-	auto prev = hash_get_or_set(&self->hash, row, &pos);
-	if (prev)
+	if (hash_get_or_set(&self->hash, key, &pos))
 	{
 		*it = index_hash_iterator_allocate(self);
 		auto hash_it = index_hash_iterator_of(*it);
 		hash_iterator_open_at(&hash_it->iterator, &self->hash, pos);
+		log_truncate(&trx->log);
 		return;
 	}
 
-	// update transaction log
-	log_row(&trx->log, LOG_REPLACE, &log_if,
-	        self,
-	        self->index.config->primary,
-	        arg->partition,
-	        row, NULL);
+	if (self->index.config->primary)
+		log_persist(&trx->log, op, arg->partition);
 
 	*it = NULL;
 }
 
-hot static Row*
+hot static bool
 index_hash_ingest(Index* arg, Row* row)
 {
-	auto self = index_hash_of(arg);
+	auto    self = index_hash_of(arg);
+	auto    keys = self->hash.keys;
+	uint8_t key_data[keys->key_size];
+	auto    key = (RowKey*)key_data;
+	row_key_create(key, row, keys);
 	uint64_t pos = 0;
-	return hash_get_or_set(&self->hash, row, &pos);
+	return hash_get_or_set(&self->hash, key, &pos);
 }
 
 hot static Iterator*

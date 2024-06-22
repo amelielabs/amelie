@@ -10,7 +10,7 @@ typedef struct HashIterator HashIterator;
 
 struct HashIterator
 {
-	Row*       current;
+	RowKey*    current;
 	HashStore* current_store;
 	uint64_t   pos;
 	Hash*      hash;
@@ -67,7 +67,7 @@ hash_iterator_open(HashIterator* self, Hash* hash, RowKey* key)
 static inline void
 hash_iterator_open_at(HashIterator* self, Hash* hash, uint64_t pos)
 {
-	self->current       = hash_store_at(hash->current, pos)->row;
+	self->current       = hash_store_at(hash->current, pos);
 	self->current_store = hash->current;
 	self->pos           = pos;
 	self->hash          = hash;
@@ -79,7 +79,7 @@ hash_iterator_has(HashIterator* self)
 	return self->current != NULL;
 }
 
-static inline Row*
+static inline RowKey*
 hash_iterator_at(HashIterator* self)
 {
 	return self->current;
@@ -107,30 +107,27 @@ hash_iterator_next(HashIterator* self)
 	self->current       = hash_store_next(self->current_store, &self->pos);
 }
 
-static inline Row*
-hash_iterator_replace(HashIterator* self, Row* row)
+static inline void
+hash_iterator_replace(HashIterator* self, RowKey* key, RowKey* prev)
 {
-	uint8_t  key_data[self->hash->keys->key_size];
-	auto     key  = (RowKey*)key_data;
-	uint32_t hash = 0;
-	row_key_create_and_hash(key, row, self->hash->keys, &hash);
-
-	auto current = self->current;
-	assert(current);
-	self->current = row;
-	hash_store_copy(self->current_store, hash_store_at(self->current_store, self->pos), key);
-	return current;
+	auto current_store = self->current_store;
+	self->current = key;
+	auto ref = hash_store_at(current_store, self->pos);
+	hash_store_copy(current_store, prev, ref);
+	hash_store_copy(current_store, ref, key);
 }
 
-static inline Row*
-hash_iterator_delete(HashIterator* self)
+static inline void
+hash_iterator_delete(HashIterator* self, RowKey* prev)
 {
-	// keeping current as is
-	auto current = self->current;
 	auto current_store = self->current_store;
-	hash_store_at(self->current_store, self->pos)->row = HT_DELETED;
+	auto ref = hash_store_at(current_store, self->pos);
+	hash_store_copy(current_store, prev, ref);
+	ref->row = HT_DELETED;
 	current_store->count--;
-	return current;
+
+	// keeping current as is
+	self->current = prev;
 }
 
 static inline void

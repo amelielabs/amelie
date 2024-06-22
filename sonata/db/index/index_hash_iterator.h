@@ -40,7 +40,7 @@ static inline Row*
 index_hash_iterator_at(Iterator* arg)
 {
 	auto self = index_hash_iterator_of(arg);
-	return hash_iterator_at(&self->iterator);
+	return hash_iterator_at(&self->iterator)->row;
 }
 
 static inline void

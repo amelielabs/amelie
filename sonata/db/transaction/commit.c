@@ -44,7 +44,7 @@ transaction_commit(Transaction* self)
 	for (int pos = 0; pos < log->count; pos++)
 	{
 		auto op = log_of(log, pos);
-		op->iface->commit(op);
+		op->iface->commit(log, op);
 	}
 
 	transaction_end(self, false);
@@ -56,11 +56,11 @@ transaction_abort(Transaction* self)
 	if (unlikely(! transaction_active(self)))
 		error("transaction is not active");
 
-	int pos = self->log.count - 1;
-	for (; pos >= 0; pos--)
+	auto log = &self->log;
+	for (int pos = self->log.count - 1; pos >= 0; pos--)
 	{
-		auto op = log_of(&self->log, pos);
-		op->iface->abort(op);
+		auto op = log_of(log, pos);
+		op->iface->abort(log, op);
 	}
 
 	transaction_end(self, true);
