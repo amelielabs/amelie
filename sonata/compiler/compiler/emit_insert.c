@@ -35,5 +35,5 @@ emit_insert(Compiler* self, Ast* ast)
 	auto table = insert->target->table;
 
 	// CINSERT
-	op2(self, CINSERT, (intptr_t)table, insert->replace);
+	op1(self, CINSERT, (intptr_t)table);
 }

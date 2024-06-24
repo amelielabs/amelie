@@ -174,7 +174,6 @@ static Keyword keywords_q[] =
 static Keyword keywords_r[] =
 {
 	{ KTREAL,                 "real",                  4  },
-	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPLICA,               "replica",               7  },
 	{ KREPL,                  "repl",                  4  },

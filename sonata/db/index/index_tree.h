@@ -14,5 +14,4 @@ struct IndexTree
 	Tree  tree;
 };
 
-Index*
-index_tree_allocate(IndexConfig*, uint64_t);
+Index* index_tree_allocate(IndexConfig*);

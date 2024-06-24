@@ -20,5 +20,4 @@ index_hash_of(Index* self)
 	return (IndexHash*)self;
 }
 
-Index*
-index_hash_allocate(IndexConfig*, uint64_t);
+Index* index_hash_allocate(IndexConfig*);

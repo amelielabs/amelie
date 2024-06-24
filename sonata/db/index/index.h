@@ -11,30 +11,28 @@ typedef struct Index   Index;
 
 struct IndexIf
 {
-	bool      (*set)(Index*, Transaction*, Row*);
-	void      (*update)(Index*, Transaction*, Iterator*, Row*);
-	void      (*delete)(Index*, Transaction*, Iterator*);
-	void      (*delete_by)(Index*, Transaction*, Row*);
-	void      (*upsert)(Index*, Transaction*, Iterator**, Row*);
-	bool      (*ingest)(Index*, Row*);
-	Iterator* (*open)(Index*, Ref*, bool);
+	bool      (*set)(Index*, Ref*, Ref*);
+	void      (*update)(Index*, Ref*, Ref*, Iterator*);
+	void      (*delete)(Index*, Ref*, Ref*, Iterator*);
+	bool      (*delete_by)(Index*, Ref*, Ref*);
+	bool      (*upsert)(Index*, Ref*, Iterator**);
+	bool      (*ingest)(Index*, Ref*);
+	Iterator* (*iterator)(Index*);
 	void      (*free)(Index*);
 };
 
 struct Index
 {
 	IndexIf      iface;
-	uint64_t     partition;
 	IndexConfig* config;
 	List         link;
 };
 
 static inline void
-index_init(Index* self, IndexConfig* config, uint64_t partition)
+index_init(Index* self, IndexConfig* config)
 {
 	memset(&self->iface, 0, sizeof(*self));
-	self->partition = partition;
-	self->config    = config;
+	self->config = config;
 	list_init(&self->link);
 }
 
@@ -45,55 +43,45 @@ index_free(Index* self)
 }
 
 static inline bool
-index_set(Index* self, Transaction* trx, Row* row)
+index_set(Index* self, Ref* key, Ref* prev)
 {
-	return self->iface.set(self, trx, row);
+	return self->iface.set(self, key, prev);
 }
 
 static inline void
-index_update(Index* self, Transaction* trx, Iterator* it, Row* row)
+index_update(Index* self, Ref* key, Ref* prev, Iterator* it)
 {
-	self->iface.update(self, trx, it, row);
+	self->iface.update(self, key, prev, it);
 }
 
 static inline void
-index_delete(Index* self, Transaction* trx, Iterator* it)
+index_delete(Index* self, Ref* key, Ref* prev, Iterator* it)
 {
-	self->iface.delete(self, trx, it);
-}
-
-static inline void
-index_delete_by(Index* self, Transaction* trx, Row* key)
-{
-	self->iface.delete_by(self, trx, key);
-}
-
-static inline void
-index_upsert(Index* self, Transaction* trx, Iterator** it, Row* row)
-{
-	self->iface.upsert(self, trx, it, row);
+	self->iface.delete(self, key, prev, it);
 }
 
 static inline bool
-index_ingest(Index* self, Row* row)
+index_delete_by(Index* self, Ref* key, Ref* prev)
 {
-	return self->iface.ingest(self, row);
+	return self->iface.delete_by(self, key, prev);
+}
+
+static inline void
+index_upsert(Index* self, Ref* key, Iterator** it)
+{
+	self->iface.upsert(self, key, it);
+}
+
+static inline bool
+index_ingest(Index* self, Ref* key)
+{
+	return self->iface.ingest(self, key);
 }
 
 static inline Iterator*
-index_open(Index* self, Ref* key, bool start)
+index_iterator(Index* self)
 {
-	return self->iface.open(self, key, start);
-}
-
-static inline Iterator*
-index_open_by(Index* self, Row* row, bool start)
-{
-	auto    keys = &self->config->keys;
-	uint8_t key_data[keys->key_size];
-	auto    key = (Ref*)key_data;
-	ref_create(key, row, keys);
-	return self->iface.open(self, key, start);
+	return self->iface.iterator(self);
 }
 
 static inline Keys*

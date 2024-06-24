@@ -13,9 +13,9 @@ insert into test values(1, 0) on conflict
 insert into test values(1, 0) on conflict 123
 {"code": 1, "msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <REPLACE | NOTHING | UPDATE> expected"}
+{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do 123
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <REPLACE | NOTHING | UPDATE> expected"}
+{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do update
 {"code": 1, "msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
@@ -26,14 +26,6 @@ insert into test values(1, 0) on conflict do update set path
 {"code": 1, "msg": "UPDATE name SET path <=> expected"}
 insert into test values(1, 0) on conflict do update set path =
 {"code": 1, "msg": "bad expression"}
-# test: on conflict do replace
-insert into test values(1, 0)
-insert into test values(1, 0)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
-insert into test values(1, null) on conflict do replace
-insert into test values(1, null) on conflict do replace
-select * from test
-[[1, null]]
 drop table test
 # test: on conflict do nothing
 create table test (id int primary key, data int)
@@ -336,6 +328,10 @@ select * from test
 }]]
 select * from test use index (i)
 [[{
+  "id": 2,
+  "data": 0,
+  "value": 2
+}], [{
   "id": 3,
   "data": 0
 }], [{

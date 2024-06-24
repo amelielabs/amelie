@@ -88,7 +88,8 @@ keys_copy_distinct(Keys* self, Keys* primary)
 	list_foreach_safe(&primary->list)
 	{
 		auto key = list_at(Key, link);
-		if (keys_find(self, &key->column->name))
+		auto key_primary = keys_find(self, &key->column->name);
+		if (key_primary && key_compare(key, key_primary))
 			continue;
 		auto copy = key_copy(list_at(Key, link));
 		keys_add(self, copy);

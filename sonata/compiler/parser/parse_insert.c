@@ -328,12 +328,9 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	if (! stmt_if(self, KDO))
 		error("INSERT VALUES ON CONFLICT <DO> expected");
 
-	// REPLACE | NOTHING | UPDATE
+	// NOTHING | UPDATE
 	auto op = stmt_next(self);
 	switch (op->id) {
-	case KREPLACE:
-		stmt->replace = true;
-		break;
 	case KNOTHING:
 		stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
 		break;
@@ -350,23 +347,19 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		break;
 	}
 	default:
-		error("INSERT VALUES ON CONFLICT DO "
-		      "<REPLACE | NOTHING | UPDATE> expected");
+		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected");
 		break;
 	}
 }
 
 hot void
-parse_insert(Stmt* self, bool replace)
+parse_insert(Stmt* self)
 {
-	// [INSERT|REPLACE] INTO name [(column_list)]
+	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
-	// [ON CONFLICT DO REPLACE | NOTHING | UPDATE]
+	// [ON CONFLICT DO NOTHING | UPDATE]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
-
-	// replace
-	stmt->replace = replace;
 
 	// INTO
 	if (! stmt_if(self, KINTO))

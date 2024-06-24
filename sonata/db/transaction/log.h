@@ -135,12 +135,14 @@ log_truncate(Log* self)
 	buf_truncate(&self->data, buf_size(&self->data) - op->pos);
 }
 
-hot static inline LogOp*
+hot static inline void
 log_row(Log*   self,
         LogCmd cmd,
         LogIf* iface,
         void*  iface_arg,
-        Keys*  keys)
+        Keys*  keys,
+        Ref**  key,
+        Ref**  prev)
 {
 	// op
 	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
@@ -155,12 +157,13 @@ log_row(Log*   self,
 	LogRow* row = buf_claim(&self->data, sizeof(LogRow) + size);
 	row->keys = keys;
 	memset(&row->rows[0], 0, size);
-	return op;
+	*key = log_row_of(self, op, prev);
 }
 
 hot static inline void
-log_persist(Log* self, LogOp* op, uint64_t partition)
+log_persist(Log* self, uint64_t partition)
 {
+	auto op = log_of(self, self->count - 1);
 	// [cmd, partition, row]
 	auto key = log_row_of(self, op, NULL);
 	log_set_add(&self->log_set, op->cmd, partition, key->row);

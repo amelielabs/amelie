@@ -62,6 +62,7 @@ static inline Iterator*
 index_hash_iterator_allocate(IndexHash* index)
 {
 	IndexHashIterator* self = so_malloc(sizeof(*self));
+	self->it.open  = index_hash_iterator_open;
 	self->it.has   = index_hash_iterator_has;
 	self->it.at    = index_hash_iterator_at;
 	self->it.next  = index_hash_iterator_next;

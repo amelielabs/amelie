@@ -38,8 +38,6 @@ insert into test values (123)
 # test: primary unique key constraint violation
 insert into test values (123)
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
-# test: replace
-replace into test values (123)
 # test: insert schema
 drop table test
 create schema test

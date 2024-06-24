@@ -20,33 +20,6 @@ insert into test (id) values (4), (5), (1), (6); select error("abort")
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: replace abort
-explain replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
-"
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2                null        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     18      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0              insert        -      1      0      # public.test
- 1                 ret        0      0      0
-
-"
-replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
-{"code": 1, "msg": "abort"}
-select * from test
-[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: delete abort
 explain delete from test; select error("abort")
 "
@@ -181,33 +154,6 @@ insert into test (id) values (4), (5), (1), (6); select error("abort")
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference replace abort
-explain replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
-"
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2                null        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     18      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0              insert        -      1      0      # public.test
- 1                 ret        0      0      0
-
-"
-replace into test values (0, 1), (1, 1), (2, 1), (3, 1); select error("abort")
-{"code": 1, "msg": "abort"}
-select * from test
-[[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: reference delete abort
 explain delete from test; select error("abort")
 "
@@ -329,87 +275,27 @@ insert into ref values (0, 8), (1, 8), (2, 8);
 # test: insert a select a
 insert into a (id) values (0), (1), (2), (3); select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: replace a select a abort (by coordinator)
-replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort")
-{"code": 1, "msg": "abort"}
-select * from a
-[[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: replace a select a abort (by shard)
-replace into a values (0, 1), (1, 1), (2, 1); select * from a; select error("abort") from a
-{"code": 1, "msg": "abort"}
-select * from a
-[[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: replace a select abort select a
-explain replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
+# test: insert b
+explain insert into b (id) values (10), (20), (30)
 "
 bytecode [coordinator]
 --------
- 0                send        0      0      -      # public.a
+ 0                send        0      0      -      # public.b
  1                recv        0      0      0
  2                null        0      0      0
  3             cte_set        0      0      0
- 4              string        0     30      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8            send_all        2      2      0
- 9                recv        2      0      0
-10                bool        0      0      0
-11                push        0      0      0
-12          merge_recv        0     -1     -1
-13             cte_set        2      0      0
-14                body        2      0      0
-15                 ret        0      0      0
+ 4                 ret        0      0      0
 
 
 bytecode [node]
 --------
- 0              insert        -      1      0      # public.a
+ 0              insert        -      0      0      # public.b
  1                 ret        0      0      0
- 2                 set        0      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0     40      7      # public.a (primary)
- 6                 jmp       10      0      0
- 7         cursor_read        1      0      0
- 8             set_add        0      1      0
- 9         cursor_next        0      7      0
-10        cursor_close        0      0      0
-11              result        0      0      0
-12                 ret        0      0      0
 
 "
-replace into a values (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1); select error("abort"); select * from a
-{"code": 1, "msg": "abort"}
+insert into b (id) values (10), (20), (30)
 select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: replace a insert b
-explain replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
-"
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.a
- 1                send        1      2      -      # public.b
- 2                recv        0      0      0
- 3                null        0      0      0
- 4             cte_set        0      0      0
- 5                recv        1      0      0
- 6                null        0      0      0
- 7             cte_set        1      0      0
- 8                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0              insert        -      1      0      # public.a
- 1                 ret        0      0      0
- 2              insert        -      0      0      # public.b
- 3                 ret        0      0      0
-
-"
-replace into a values (0, 2), (1, 2), (2, 3); insert into b (id) values (10), (20), (30)
-select * from a
-[[0, 2], [1, 2], [2, 3], [3, 0]]
 select * from b
 [[30, 0], [10, 0], [20, 0]]
 # test: update a update b abort

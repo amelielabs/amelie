@@ -267,9 +267,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 	}
 
 	case KINSERT:
-	case KREPLACE:
 		stmt->id = STMT_INSERT;
-		parse_insert(stmt, ast->id == KREPLACE);
+		parse_insert(stmt);
 		break;
 
 	case KUPDATE:

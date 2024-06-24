@@ -88,9 +88,8 @@ insert  into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 alter table test set serial to 0
-replace into test () values ()
-replace into test () values ()
-replace into test () values ()
+insert into test () values ()
+{"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test

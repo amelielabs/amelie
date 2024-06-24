@@ -100,7 +100,7 @@ part_list_create_index(PartList* self, IndexConfig* config)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		part_create_index(part, config);
+		part_index_create(part, config);
 	}
 }
 
@@ -110,7 +110,7 @@ part_list_drop_index(PartList* self, IndexConfig* config)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		part_drop_index(part, config);
+		part_index_drop(part, config);
 	}
 }
 

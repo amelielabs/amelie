@@ -17,12 +17,18 @@
 hot void
 indexate(Index* self, Index* primary)
 {
-	auto it = index_open(primary, NULL, true);
+	auto    keys = index_keys(self);
+	uint8_t key_data[keys->key_size];
+	auto    key = (Ref*)key_data;
+
+	auto it = index_iterator(primary);
 	guard(iterator_close, it);
+	iterator_open(it, NULL);
 	while (iterator_has(it))
 	{
 		auto row = iterator_at(it);
-		auto prev = index_ingest(self, row);
+		ref_create(key, row, keys);
+		auto prev = index_ingest(self, key);
 		if (unlikely(prev))
 			error("index unique constraint violation");
 		iterator_next(it);

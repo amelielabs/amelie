@@ -29,6 +29,7 @@ OBJECTS        = \
                  index/index_hash.o \
                  index/indexate.o \
                  partition/part.o \
+                 partition/part_op.o \
                  partition/part_list.o \
                  partition/snapshot.o \
                  partition/snapshot_cursor.o \

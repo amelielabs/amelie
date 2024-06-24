@@ -76,6 +76,14 @@ key_copy(Key* self)
 	return unguard();
 }
 
+static inline bool
+key_compare(Key* self, Key* with)
+{
+	if (self->ref != with->ref)
+		return false;
+	return str_compare(&self->path, &with->path);
+}
+
 static inline Key*
 key_read(uint8_t** pos)
 {

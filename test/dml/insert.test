@@ -31,9 +31,6 @@ insert into test values (123)
 # test: primary unique key constraint violation
 insert into test values (123)
 
-# test: replace
-replace into test values (123)
-
 # test: insert schema
 drop table test
 

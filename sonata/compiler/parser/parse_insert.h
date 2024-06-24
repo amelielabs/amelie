@@ -18,7 +18,6 @@ enum
 struct AstInsert
 {
 	Ast     ast;
-	bool    replace;
 	Target* target;
 	int     rows;
 	int     on_conflict;
@@ -37,7 +36,6 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
-	self->replace      = false;
 	self->target       = NULL;
 	self->rows         = 0;
 	self->on_conflict  = ON_CONFLICT_NONE;
@@ -46,4 +44,4 @@ ast_insert_allocate(void)
 	return self;
 }
 
-void parse_insert(Stmt*, bool);
+void parse_insert(Stmt*);

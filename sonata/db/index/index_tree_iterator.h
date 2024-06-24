@@ -62,6 +62,7 @@ static inline Iterator*
 index_tree_iterator_allocate(IndexTree* index)
 {
 	IndexTreeIterator* self = so_malloc(sizeof(*self));
+	self->it.open  = index_tree_iterator_open;
 	self->it.has   = index_tree_iterator_has;
 	self->it.at    = index_tree_iterator_at;
 	self->it.next  = index_tree_iterator_next;

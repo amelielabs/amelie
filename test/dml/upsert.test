@@ -5,7 +5,6 @@ connect E0 S0 localhost:3485
 
 # test: on conflict parsing
 create table test (id int primary key, data int)
-
 insert into test values(1, 0) 123
 insert into test values(1, 0) ON
 insert into test values(1, 0) ON 123
@@ -18,13 +17,6 @@ insert into test values(1, 0) on conflict do update set
 insert into test values(1, 0) on conflict do update set 123
 insert into test values(1, 0) on conflict do update set path
 insert into test values(1, 0) on conflict do update set path =
-
-# test: on conflict do replace
-insert into test values(1, 0)
-insert into test values(1, 0)
-insert into test values(1, null) on conflict do replace
-insert into test values(1, null) on conflict do replace
-select * from test
 drop table test
 
 # test: on conflict do nothing

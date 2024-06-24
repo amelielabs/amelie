@@ -70,9 +70,7 @@ insert  into test () values ()
 insert  into test () values ()
 select * from test
 alter table test set serial to 0
-replace into test () values ()
-replace into test () values ()
-replace into test () values ()
+insert into test () values ()
 select * from test
 drop table test
 
