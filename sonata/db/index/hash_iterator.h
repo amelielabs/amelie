@@ -10,14 +10,14 @@ typedef struct HashIterator HashIterator;
 
 struct HashIterator
 {
-	RowKey*    current;
+	Ref*       current;
 	HashStore* current_store;
 	uint64_t   pos;
 	Hash*      hash;
 };
 
 static inline bool
-hash_iterator_open(HashIterator* self, Hash* hash, RowKey* key)
+hash_iterator_open(HashIterator* self, Hash* hash, Ref* key)
 {
 	self->current       = NULL;
 	self->current_store = NULL;
@@ -79,7 +79,7 @@ hash_iterator_has(HashIterator* self)
 	return self->current != NULL;
 }
 
-static inline RowKey*
+static inline Ref*
 hash_iterator_at(HashIterator* self)
 {
 	return self->current;
@@ -108,7 +108,7 @@ hash_iterator_next(HashIterator* self)
 }
 
 static inline void
-hash_iterator_replace(HashIterator* self, RowKey* key, RowKey* prev)
+hash_iterator_replace(HashIterator* self, Ref* key, Ref* prev)
 {
 	auto current_store = self->current_store;
 	self->current = key;
@@ -118,7 +118,7 @@ hash_iterator_replace(HashIterator* self, RowKey* key, RowKey* prev)
 }
 
 static inline void
-hash_iterator_delete(HashIterator* self, RowKey* prev)
+hash_iterator_delete(HashIterator* self, Ref* prev)
 {
 	auto current_store = self->current_store;
 	auto ref = hash_store_at(current_store, self->pos);

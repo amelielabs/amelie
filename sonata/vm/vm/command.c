@@ -48,8 +48,8 @@ ccursor_open(Vm* self, Op* op)
 
 	// create cursor key
 	uint8_t key_data[keys->key_size];
-	auto    key = (RowKey*)key_data;
-	value_row_key(keys, key, &self->stack);
+	auto    key = (Ref*)key_data;
+	value_ref(keys, key, &self->stack);
 	guard(row_free, key->row);
 	stack_popn(&self->stack, keys->list_count);
 

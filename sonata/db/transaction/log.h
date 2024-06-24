@@ -48,8 +48,8 @@ struct LogOp
 
 struct LogRow
 {
-	Keys*  keys;
-	RowKey rows[];
+	Keys* keys;
+	Ref   rows[];
 };
 
 struct LogHandle
@@ -80,13 +80,13 @@ log_data_of(Log* self, LogOp* op)
 	return self->data.start + op->pos;
 }
 
-always_inline static inline RowKey*
-log_row_of(Log* self, LogOp* op,  RowKey** b)
+always_inline static inline Ref*
+log_row_of(Log* self, LogOp* op,  Ref** b)
 {
 	auto row = (LogRow*)log_data_of(self, op);
 	auto a = &row->rows[0];
 	if (b)
-		*b = (RowKey*)((uint8_t*)a + row->keys->key_size);
+		*b = (Ref*)((uint8_t*)a + row->keys->key_size);
 	return a;
 }
 

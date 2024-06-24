@@ -10,7 +10,7 @@ typedef struct TreeIterator TreeIterator;
 
 struct TreeIterator
 {
-	RowKey*   current;
+	Ref*      current;
 	TreePage* page;
 	int       page_pos;
 	bool      repositioned;
@@ -18,7 +18,7 @@ struct TreeIterator
 };
 
 static inline bool
-tree_iterator_open(TreeIterator* self, Tree* tree, RowKey* key)
+tree_iterator_open(TreeIterator* self, Tree* tree, Ref* key)
 {
 	self->current      = NULL;
 	self->page         = NULL;
@@ -58,7 +58,7 @@ tree_iterator_has(TreeIterator* self)
 	return self->current != NULL;
 }
 
-static inline RowKey*
+static inline Ref*
 tree_iterator_at(TreeIterator* self)
 {
 	return self->current;
@@ -105,7 +105,7 @@ tree_iterator_next(TreeIterator* self)
 }
 
 static inline void
-tree_iterator_replace(TreeIterator* self, RowKey* key, RowKey* prev)
+tree_iterator_replace(TreeIterator* self, Ref* key, Ref* prev)
 {
 	assert(self->current);
 	TreePos pos =
@@ -119,7 +119,7 @@ tree_iterator_replace(TreeIterator* self, RowKey* key, RowKey* prev)
 }
 
 static inline void
-tree_iterator_delete(TreeIterator* self, RowKey* prev)
+tree_iterator_delete(TreeIterator* self, Ref* prev)
 {
 	TreePos pos =
 	{

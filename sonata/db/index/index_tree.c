@@ -26,7 +26,7 @@ log_if_commit(Log* self, LogOp* op)
 	auto index = (IndexTree*)op->iface_arg;
 	if (! index->tree.keys->primary)
 		return;
-	RowKey* prev;
+	Ref* prev;
 	log_row_of(self, op, &prev);
 	if (prev->row)
 		row_free(prev->row);
@@ -36,7 +36,7 @@ static void
 log_if_abort(Log* self, LogOp* op)
 {
 	auto index = (IndexTree*)op->iface_arg;
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(self, op, &prev);
 	if (prev->row)
 		tree_set(&index->tree, prev, NULL);
@@ -62,9 +62,9 @@ index_tree_set(Index* arg, Transaction* trx, Row* row)
 	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// update tree
 	auto exists = tree_set(&self->tree, key, prev);
@@ -84,9 +84,9 @@ index_tree_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// replace
 	auto tree_it = index_tree_iterator_of(it);
@@ -105,7 +105,7 @@ index_tree_delete(Index* arg, Transaction* trx, Iterator* it)
 	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
 
 	// delete by using current position
@@ -127,9 +127,9 @@ index_tree_delete_by(Index* arg, Transaction* trx, Row* row)
 	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// delete by key
 	if (! tree_unset(&self->tree, key, prev))
@@ -154,7 +154,7 @@ index_tree_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 
 	// prepare key
 	auto key = log_row_of(&trx->log, op, NULL);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// insert or return iterator on existing position
 	TreePos pos;
@@ -179,15 +179,15 @@ index_tree_ingest(Index* arg, Row* row)
 	auto    self = index_tree_of(arg);
 	auto    keys = self->tree.keys;
 	uint8_t key_data[keys->key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, keys);
+	auto    key  = (Ref*)key_data;
+	ref_create(key, row, keys);
 
 	TreePos pos;
 	return tree_set_or_get(&self->tree, key, &pos);
 }
 
 hot static Iterator*
-index_tree_open(Index* arg, RowKey* key, bool start)
+index_tree_open(Index* arg, Ref* key, bool start)
 {
 	auto self = index_tree_of(arg);
 	auto it = index_tree_iterator_allocate(self);

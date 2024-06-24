@@ -17,7 +17,7 @@ struct IndexIf
 	void      (*delete_by)(Index*, Transaction*, Row*);
 	void      (*upsert)(Index*, Transaction*, Iterator**, Row*);
 	bool      (*ingest)(Index*, Row*);
-	Iterator* (*open)(Index*, RowKey*, bool);
+	Iterator* (*open)(Index*, Ref*, bool);
 	void      (*free)(Index*);
 };
 
@@ -81,7 +81,7 @@ index_ingest(Index* self, Row* row)
 }
 
 static inline Iterator*
-index_open(Index* self, RowKey* key, bool start)
+index_open(Index* self, Ref* key, bool start)
 {
 	return self->iface.open(self, key, start);
 }
@@ -89,10 +89,10 @@ index_open(Index* self, RowKey* key, bool start)
 static inline Iterator*
 index_open_by(Index* self, Row* row, bool start)
 {
-	auto keys = &self->config->keys;
+	auto    keys = &self->config->keys;
 	uint8_t key_data[keys->key_size];
-	auto    key  = (RowKey*)key_data;
-	row_key_create(key, row, keys);
+	auto    key = (Ref*)key_data;
+	ref_create(key, row, keys);
 	return self->iface.open(self, key, start);
 }
 

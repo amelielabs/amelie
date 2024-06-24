@@ -7,7 +7,7 @@
 //
 
 hot static inline void
-value_row_key(Keys* self, RowKey* row, Stack* stack)
+value_ref(Keys* self, Ref* row, Stack* stack)
 {
 	// calculate row size and validate columns
 	int size = data_size_array() + data_size_array_end();

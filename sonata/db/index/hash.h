@@ -87,7 +87,7 @@ hash_rehash(Hash* self)
 }
 
 hot static inline bool
-hash_set(Hash* self, RowKey* key, RowKey* prev)
+hash_set(Hash* self, Ref* key, Ref* prev)
 {
 	bool exists = false;
 	if (self->rehashing)
@@ -109,7 +109,7 @@ hash_set(Hash* self, RowKey* key, RowKey* prev)
 }
 
 hot static inline bool
-hash_get_or_set(Hash* self, RowKey* key, uint64_t* pos)
+hash_get_or_set(Hash* self, Ref* key, uint64_t* pos)
 {
 	bool exists = false;
 	if (self->rehashing)
@@ -171,7 +171,7 @@ hash_get_or_set(Hash* self, RowKey* key, uint64_t* pos)
 }
 
 hot static inline bool
-hash_delete(Hash* self, RowKey* key, RowKey* prev)
+hash_delete(Hash* self, Ref* key, Ref* prev)
 {
 	bool exists = false;
 	if (self->rehashing)

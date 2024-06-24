@@ -20,7 +20,7 @@ log_if_commit(Log* self, LogOp* op)
 	auto index = (IndexHash*)op->iface_arg;
 	if (! index->hash.keys->primary)
 		return;
-	RowKey* prev;
+	Ref* prev;
 	log_row_of(self, op, &prev);
 	if (prev->row)
 		row_free(prev->row);
@@ -30,7 +30,7 @@ static void
 log_if_abort(Log* self, LogOp* op)
 {
 	auto index = (IndexHash*)op->iface_arg;
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(self, op, &prev);
 	if (prev->row)
 		hash_set(&index->hash, prev, NULL);
@@ -56,9 +56,9 @@ index_hash_set(Index* arg, Transaction* trx, Row* row)
 	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// update tree
 	auto exists = hash_set(&self->hash, key, prev);
@@ -78,9 +78,9 @@ index_hash_update(Index* arg, Transaction* trx, Iterator* it, Row* row)
 	auto op = log_row(&trx->log, LOG_REPLACE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// replace
 	auto hash_it = index_hash_iterator_of(it);
@@ -99,7 +99,7 @@ index_hash_delete(Index* arg, Transaction* trx, Iterator* it)
 	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
 
 	// delete by using current position
@@ -121,9 +121,9 @@ index_hash_delete_by(Index* arg, Transaction* trx, Row* row)
 	auto op = log_row(&trx->log, LOG_DELETE, &log_if, self, keys);
 
 	// prepare key
-	RowKey* prev;
+	Ref* prev;
 	auto key = log_row_of(&trx->log, op, &prev);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// delete by key
 	if (! hash_delete(&self->hash, key, prev))
@@ -148,7 +148,7 @@ index_hash_upsert(Index* arg, Transaction* trx, Iterator** it, Row* row)
 
 	// prepare key
 	auto key = log_row_of(&trx->log, op, NULL);
-	row_key_create(key, row, keys);
+	ref_create(key, row, keys);
 
 	// insert or return iterator on existing position
 	uint64_t pos = 0;	
@@ -173,14 +173,14 @@ index_hash_ingest(Index* arg, Row* row)
 	auto    self = index_hash_of(arg);
 	auto    keys = self->hash.keys;
 	uint8_t key_data[keys->key_size];
-	auto    key = (RowKey*)key_data;
-	row_key_create(key, row, keys);
+	auto    key  = (Ref*)key_data;
+	ref_create(key, row, keys);
 	uint64_t pos = 0;
 	return hash_get_or_set(&self->hash, key, &pos);
 }
 
 hot static Iterator*
-index_hash_open(Index* arg, RowKey* key, bool start)
+index_hash_open(Index* arg, Ref* key, bool start)
 {
 	auto self = index_hash_of(arg);
 	auto it = index_hash_iterator_allocate(self);

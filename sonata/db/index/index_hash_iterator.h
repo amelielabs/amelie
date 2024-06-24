@@ -22,7 +22,7 @@ index_hash_iterator_of(Iterator* self)
 }
 
 static inline bool
-index_hash_iterator_open(Iterator* arg, RowKey* key)
+index_hash_iterator_open(Iterator* arg, Ref* key)
 {
 	auto self  = index_hash_iterator_of(arg);
 	auto index = self->index;

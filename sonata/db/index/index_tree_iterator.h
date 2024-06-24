@@ -22,7 +22,7 @@ index_tree_iterator_of(Iterator* self)
 }
 
 static inline bool
-index_tree_iterator_open(Iterator* arg, RowKey* key)
+index_tree_iterator_open(Iterator* arg, Ref* key)
 {
 	auto self  = index_tree_iterator_of(arg);
 	auto index = self->index;

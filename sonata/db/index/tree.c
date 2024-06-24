@@ -49,7 +49,7 @@ static TreePage*
 tree_allocate(Tree* self)
 {
 	TreePage* page;
-	page = so_malloc(sizeof(TreePage) + self->size_page * row_key_size(self->keys));
+	page = so_malloc(sizeof(TreePage) + self->size_page * ref_size(self->keys));
 	page->keys_count = 0;
 	rbtree_init_node(&page->node);
 	return page;
@@ -82,7 +82,7 @@ tree_free(Tree* self)
 }
 
 always_inline static inline int
-tree_compare(Tree* self, TreePage* page, RowKey* key)
+tree_compare(Tree* self, TreePage* page, Ref* key)
 {
 	return compare(self->keys, tree_at(self, page, 0), key);
 }
@@ -91,7 +91,7 @@ hot static inline
 rbtree_get(tree_find, tree_compare(arg, tree_of(n), key))
 
 hot static inline TreePage*
-tree_search_page(Tree* self, RowKey* key)
+tree_search_page(Tree* self, Ref* key)
 {
 	if (self->count_pages == 1)
 	{
@@ -113,7 +113,7 @@ tree_search_page(Tree* self, RowKey* key)
 }
 
 hot static inline int
-tree_search(Tree* self, TreePage* page, RowKey* key, bool* match)
+tree_search(Tree* self, TreePage* page, Ref* key, bool* match)
 {
 	int min = 0;
 	int mid = 0;
@@ -144,7 +144,7 @@ tree_insert(Tree*      self,
             TreePage*  page,
             TreePage** page_split,
             TreePos*   page_pos,
-            RowKey*    key)
+            Ref*       key)
 {
 	bool match = false;
 	int pos = tree_search(self, page, key, &match);
@@ -188,7 +188,7 @@ tree_insert(Tree*      self,
 }
 
 hot bool
-tree_set(Tree* self, RowKey* key, RowKey* prev)
+tree_set(Tree* self, Ref* key, Ref* prev)
 {
 	// create root page
 	if (self->count_pages == 0)
@@ -232,7 +232,7 @@ tree_set(Tree* self, RowKey* key, RowKey* prev)
 }
 
 hot bool
-tree_set_or_get(Tree* self, RowKey* key, TreePos* pos)
+tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 {
 	// create root page
 	if (self->count_pages == 0)
@@ -308,7 +308,7 @@ tree_unset_by(Tree* self, TreePos* pos)
 }
 
 bool
-tree_unset(Tree* self, RowKey* key, RowKey* prev)
+tree_unset(Tree* self, Ref* key, Ref* prev)
 {
 	// search page
 	TreePos pos;
@@ -327,7 +327,7 @@ tree_unset(Tree* self, RowKey* key, RowKey* prev)
 }
 
 hot bool
-tree_seek(Tree* self, RowKey* key, TreePos* pos)
+tree_seek(Tree* self, Ref* key, TreePos* pos)
 {
 	if (self->count_pages == 0)
 		return false;

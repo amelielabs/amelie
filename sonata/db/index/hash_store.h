@@ -12,21 +12,21 @@ typedef struct HashStore HashStore;
 
 struct HashStore
 {
-	RowKey*  store;
+	Ref*     store;
 	uint64_t count;
 	uint64_t size;
 	Keys*    keys;
 };
 
-always_inline hot static inline RowKey*
+always_inline hot static inline Ref*
 hash_store_at(HashStore* self, int pos)
 {
 	auto ptr = (uint8_t*)self->store + pos * self->keys->key_size;
-	return (RowKey*)ptr;
+	return (Ref*)ptr;
 }
 
 always_inline hot static inline void
-hash_store_copy(HashStore* self, RowKey* dst, RowKey* src)
+hash_store_copy(HashStore* self, Ref* dst, Ref* src)
 {
 	memcpy(dst, src, self->keys->key_size);
 }
@@ -86,19 +86,19 @@ hash_store_create(HashStore* self, Keys* keys, size_t size)
 }
 
 hot static inline uint32_t
-hash_store_hash(HashStore* self, RowKey* row)
+hash_store_hash(HashStore* self, Ref* row)
 {
 	uint32_t hash = 0;
 	list_foreach(&self->keys->list)
 	{
 		auto key = list_at(Key, link);
-		hash = key_hash(hash, row_key(row, key->order));
+		hash = key_hash(hash, ref_key(row, key->order));
 	}
 	return hash;
 }
 
 hot static inline bool
-hash_store_set(HashStore* self, RowKey* key, RowKey* prev)
+hash_store_set(HashStore* self, Ref* key, Ref* prev)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
@@ -126,7 +126,7 @@ hash_store_set(HashStore* self, RowKey* key, RowKey* prev)
 }
 
 hot static inline bool
-hash_store_delete(HashStore* self, RowKey* key, RowKey* prev)
+hash_store_delete(HashStore* self, Ref* key, Ref* prev)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
@@ -151,8 +151,8 @@ hash_store_delete(HashStore* self, RowKey* key, RowKey* prev)
 	return false;
 }
 
-hot static inline RowKey*
-hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
+hot static inline Ref*
+hash_store_get(HashStore* self, Ref* key, uint64_t* at)
 {
 	uint64_t start = hash_store_hash(self, key) % self->size;
 	uint64_t pos   = start;
@@ -182,7 +182,7 @@ hash_store_get(HashStore* self, RowKey* key, uint64_t* at)
 	return NULL;
 }
 
-hot static inline RowKey*
+hot static inline Ref*
 hash_store_next(HashStore* self, uint64_t* at)
 {
 	uint64_t pos = *at;

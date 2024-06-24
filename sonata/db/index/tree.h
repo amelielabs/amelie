@@ -35,27 +35,27 @@ struct Tree
 
 void tree_init(Tree*, int, int, Keys*);
 void tree_free(Tree*);
-bool tree_set(Tree*, RowKey*, RowKey*);
-bool tree_set_or_get(Tree*, RowKey*, TreePos*);
-bool tree_unset(Tree*, RowKey*, RowKey*);
+bool tree_set(Tree*, Ref*, Ref*);
+bool tree_set_or_get(Tree*, Ref*, TreePos*);
+bool tree_unset(Tree*, Ref*, Ref*);
 void tree_unset_by(Tree*, TreePos*);
-bool tree_seek(Tree*, RowKey*, TreePos*);
+bool tree_seek(Tree*, Ref*, TreePos*);
 
-always_inline hot static inline RowKey*
+always_inline hot static inline Ref*
 tree_at(Tree* self, TreePage* page, int pos)
 {
 	auto ptr = (uint8_t*)page + sizeof(TreePage) + (self->keys->key_size * pos);
-	return (RowKey*)ptr;
+	return (Ref*)ptr;
 }
 
 always_inline static inline void
-tree_copy(Tree* self, TreePage* page, int pos, RowKey* key)
+tree_copy(Tree* self, TreePage* page, int pos, Ref* key)
 {
 	memcpy(tree_at(self, page, pos), key, self->keys->key_size);
 }
 
 always_inline static inline void
-tree_copy_from(Tree* self, TreePage* page, int pos, RowKey* key)
+tree_copy_from(Tree* self, TreePage* page, int pos, Ref* key)
 {
 	memcpy(key, tree_at(self, page, pos), self->keys->key_size);
 }
