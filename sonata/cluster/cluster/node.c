@@ -135,27 +135,6 @@ node_abort(Node* self, Trx* last)
 }
 
 static void
-node_recover(Node* self)
-{
-	// restore last checkpoint partitions related to the current node
-	Exception e;
-	if (enter(&e))
-	{
-		recover_checkpoint(self->vm.db, &self->config->id);
-	}
-	Buf* buf;
-	if (leave(&e)) {
-		buf = msg_error(&so_self()->error);
-	} else {
-		buf = msg_begin(MSG_OK);
-		msg_end(buf);
-	}
-
-	// notify system
-	channel_write(global()->control->system, buf);
-}
-
-static void
 node_rpc(Rpc* rpc, void* arg)
 {
 	Node* self = arg;
@@ -189,15 +168,12 @@ node_main(void* arg)
 		case RPC_ABORT:
 			node_abort(self, trx_of(buf));
 			break;
-		case RPC_INDEXATE:
+		case RPC_BUILD:
 		{
-			auto indexate = *(Indexate**)msg->data;
-			indexate_execute(indexate, &self->config->id);
+			auto build = *(Build**)msg->data;
+			build_execute(build, &self->config->id);
 			break;
 		}
-		case RPC_RECOVER:
-			node_recover(self);
-			break;
 		default:
 			rpc_execute(buf, node_rpc, self);
 			break;

@@ -227,10 +227,10 @@ ddl_create_index(Session* self, Transaction* trx)
 	auto index = table_find_index(table, &arg->config->name, true);
 
 	// do parallel indexation per node
-	Indexate indexate;
-	indexate_init(&indexate, cluster, table, index);
-	guard(indexate_free, &indexate);
-	indexate_run(&indexate);
+	Build build;
+	build_init(&build, BUILD_INDEX, cluster, table, NULL, index);
+	guard(build_free, &build);
+	build_run(&build);
 }
 
 static void

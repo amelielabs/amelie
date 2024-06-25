@@ -168,33 +168,15 @@ system_configure(Str* options, bool bootstrap)
 static void
 system_recover(System* self)
 {
-	// ask each node to recover partitions
-	list_foreach(&self->cluster.list)
-	{
-		auto node = list_at(Node, link);
-		auto buf = msg_begin(RPC_RECOVER);
-		msg_end(buf);
-		channel_write(&node->task.channel, buf);
-	}
-
-	// wait for completion
-	int complete = 0;
-	int errors   = 0;
-	while (complete < self->cluster.list_count)
-	{
-		auto buf = channel_read(&so_task->channel, -1);
-		auto msg = msg_of(buf);
-		guard(buf_free, buf);
-		complete++;
-		if (msg->id == MSG_ERROR)
-			errors++;
-	}
-	if (errors > 0)
-		error("recovery: failed");
+	// ask each node to recover partitions in parallel
+	Build build;
+	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL);
+	guard(build_free, &build);
+	build_run(&build);
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, indexate_runner, &self->cluster);
+	recover_init(&recover, &self->db, build_runner, &self->cluster);
 	guard(recover_free, &recover);
 	recover_wal(&recover);
 }
