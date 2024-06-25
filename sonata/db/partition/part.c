@@ -68,6 +68,47 @@ part_index_drop(Part* self, IndexConfig* config)
 	index_free(index);
 }
 
+hot void
+part_index_build(Part* self, IndexConfig* config)
+{
+	// build secondary index by iterating and indexating primary keys
+	auto    index = part_find(self, &config->name, true);
+	assert(index);
+
+	auto    keys = index_keys(index);
+	uint8_t key_data[keys->key_size];
+	auto    key = (Ref*)key_data;
+
+	auto it = index_iterator(part_primary(self));
+	guard(iterator_close, it);
+	iterator_open(it, NULL);
+	while (iterator_has(it))
+	{
+		auto row = iterator_at(it);
+		ref_create(key, row, keys);
+		auto prev = index_ingest(index, key);
+		if (unlikely(prev))
+			error("index unique constraint violation");
+		iterator_next(it);
+	}
+}
+
+hot void
+part_build(Part* self, Part* part)
+{
+	// build partition based on the other partition
+	auto it = index_iterator(part_primary(part));
+	guard(iterator_close, it);
+	iterator_open(it, NULL);
+	while (iterator_has(it))
+	{
+		auto row = iterator_at(it);
+		uint8_t* pos = row_data(row);
+		part_ingest(self, &pos);
+		iterator_next(it);
+	}
+}
+
 Index*
 part_find(Part* self, Str* name, bool error_if_not_exists)
 {

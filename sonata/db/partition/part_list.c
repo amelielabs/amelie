@@ -71,7 +71,27 @@ part_list_create(PartList* self, bool reference,
 	list_foreach(indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		part_list_create_index(self, config);
+		part_list_index_create(self, config);
+	}
+}
+
+void
+part_list_index_create(PartList* self, IndexConfig* config)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_index_create(part, config);
+	}
+}
+
+void
+part_list_index_drop(PartList* self, IndexConfig* config)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_index_drop(part, config);
 	}
 }
 
@@ -92,46 +112,4 @@ part_list_match(PartList* self, Uuid* node)
 		return part;
 	}
 	return NULL;
-}
-
-void
-part_list_create_index(PartList* self, IndexConfig* config)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_create(part, config);
-	}
-}
-
-void
-part_list_drop_index(PartList* self, IndexConfig* config)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_drop(part, config);
-	}
-}
-
-void
-part_list_indexate(PartList* self, IndexConfig* config, Uuid* node)
-{
-	auto part = part_list_match(self, node);
-	if (! part)
-		return;
-	auto primary = part_primary(part);
-	auto index = part_find(part, &config->name, true);
-	indexate(index, primary);
-}
-
-void
-part_list_build(PartList* self, PartList* source, Uuid* node)
-{
-	auto part = part_list_match(self, node);
-	if (! part)
-		return;
-	(void)self;
-	(void)source;
-	// todo
 }

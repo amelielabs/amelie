@@ -127,14 +127,25 @@ build_execute(Build* self, Uuid* node)
 			recover_checkpoint(self->cluster->db, node);
 			break;
 		case BUILD_INDEX:
-			// create new index content for current node
-			part_list_indexate(&self->table->part_list, self->index, node);
+		{
+			auto part = part_list_match(&self->table->part_list, node);
+			if (! part)
+				break;
+			// build new index content for current node
+			part_index_build(part, self->index);
 			break;
+		}
 		case BUILD_TABLE:
-			part_list_build(&self->table->part_list,
-			                &self->table_dest->part_list,
-			                 node);
+		{
+			auto part = part_list_match(&self->table->part_list, node);
+			if (! part)
+				break;
+			auto part_dest = part_list_match(&self->table_dest->part_list, node);
+			assert(part_dest);
+			// build partition based on the other one
+			part_build(part_dest, part);
 			break;
+		}
 		case BUILD_NONE:
 			break;
 		}

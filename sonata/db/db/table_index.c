@@ -21,7 +21,7 @@ static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index from partitions
-	part_list_drop_index(&table->part_list, index);
+	part_list_index_drop(&table->part_list, index);
 
 	// remove index from table config
 	table_config_del_index(table->config, index);
@@ -88,7 +88,7 @@ table_index_create(Table*       self,
 	unguard();
 
 	// create index for each partition
-	part_list_create_index(&self->part_list, index);
+	part_list_index_create(&self->part_list, index);
 	return true;
 }
 

@@ -27,7 +27,6 @@ OBJECTS        = \
                  index/tree.o \
                  index/index_tree.o \
                  index/index_hash.o \
-                 index/indexate.o \
                  partition/part.o \
                  partition/part_op.o \
                  partition/part_list.o \
