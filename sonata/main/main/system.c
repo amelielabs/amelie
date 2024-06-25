@@ -176,7 +176,7 @@ system_recover(System* self)
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, build_runner, &self->cluster);
+	recover_init(&recover, &self->db, &build_if, &self->cluster);
 	guard(recover_free, &recover);
 	recover_wal(&recover);
 }

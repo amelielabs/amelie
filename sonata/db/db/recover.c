@@ -18,13 +18,13 @@
 #include <sonata_db.h>
 
 void
-recover_init(Recover*        self, Db* db,
-             RecoverIndexate indexate,
-             void*           indexate_arg)
+recover_init(Recover*   self, Db* db,
+             RecoverIf* iface,
+             void*      iface_arg)
 {
-	self->indexate     = indexate;
-	self->indexate_arg = indexate_arg;
-	self->db           = db;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
+	self->db        = db;
 	transaction_init(&self->trx);
 	wal_batch_init(&self->batch);
 }
@@ -132,7 +132,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 
 		// indexate
 		auto index = table_find_index(table, &config->name, true);
-		self->indexate(self, table, index);
+		self->iface->indexate(self, table, index);
 		break;
 	}
 	case LOG_INDEX_DROP:

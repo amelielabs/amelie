@@ -160,7 +160,7 @@ session_primary(Session* self)
 	plan_set_repl(&self->plan);
 
 	Recover recover;
-	recover_init(&recover, share->db, build_runner, share->cluster);
+	recover_init(&recover, share->db, &build_if, share->cluster);
 	guard(recover_free, &recover);
 
 	Primary primary;

@@ -124,3 +124,14 @@ part_list_indexate(PartList* self, IndexConfig* config, Uuid* node)
 	auto index = part_find(part, &config->name, true);
 	indexate(index, primary);
 }
+
+void
+part_list_build(PartList* self, PartList* source, Uuid* node)
+{
+	auto part = part_list_match(self, node);
+	if (! part)
+		return;
+	(void)self;
+	(void)source;
+	// todo
+}

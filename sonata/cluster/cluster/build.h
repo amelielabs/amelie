@@ -131,6 +131,9 @@ build_execute(Build* self, Uuid* node)
 			part_list_indexate(&self->table->part_list, self->index, node);
 			break;
 		case BUILD_TABLE:
+			part_list_build(&self->table->part_list,
+			                &self->table_dest->part_list,
+			                 node);
 			break;
 		case BUILD_NONE:
 			break;
@@ -146,14 +149,4 @@ build_execute(Build* self, Uuid* node)
 	channel_write(&self->channel, buf);
 }
 
-static inline void
-build_runner(Recover* self, Table* table, IndexConfig* index)
-{
-	// do parallel indexation per node
-	Cluster* cluster = self->indexate_arg;
-
-	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, NULL, index);
-	guard(build_free, &build);
-	build_run(&build);
-}
+extern RecoverIf build_if;

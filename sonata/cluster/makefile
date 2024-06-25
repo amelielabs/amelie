@@ -46,7 +46,8 @@ OBJECTS        = \
                  repl/primary.o \
                  repl/repl.o \
                  cluster/node.o \
-                 cluster/cluster.o
+                 cluster/cluster.o \
+                 cluster/build.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
