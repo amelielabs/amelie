@@ -25,15 +25,27 @@ struct AstTableDrop
 	Str  name;
 };
 
+enum
+{
+	TABLE_ALTER_RENAME,
+	TABLE_ALTER_SET_SERIAL,
+	TABLE_ALTER_COLUMN_ADD,
+	TABLE_ALTER_COLUMN_DROP,
+	TABLE_ALTER_COLUMN_RENAME
+};
+
 struct AstTableAlter
 {
-	Ast  ast;
-	bool if_exists;
-	Str  schema;
-	Str  schema_new;
-	Str  name;
-	Str  name_new;
-	Ast* serial;
+	Ast     ast;
+	bool    if_exists;
+	int     type;
+	Str     schema;
+	Str     schema_new;
+	Str     name;
+	Str     name_new;
+	Str     column_name;
+	Column* column;
+	Ast*    serial;
 };
 
 static inline AstTableCreate*
@@ -81,11 +93,14 @@ ast_table_alter_allocate(void)
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
 	self->if_exists = false;
+	self->type      = 0;
+	self->column    = NULL;
 	self->serial    = NULL;
 	str_init(&self->schema);
 	str_init(&self->schema_new);
 	str_init(&self->name);
 	str_init(&self->name_new);
+	str_init(&self->column_name);
 	return self;
 }
 

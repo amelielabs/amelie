@@ -62,6 +62,13 @@ handle_mgr_get(HandleMgr* self, Str* schema, Str* name)
 	return NULL;
 }
 
+void
+handle_mgr_replace(HandleMgr* self, Handle* prev, Handle* handle)
+{
+	handle_mgr_delete(self, prev);
+	handle_mgr_set(self, handle);
+}
+
 static void
 create_if_commit(Log* self, LogOp* op)
 {

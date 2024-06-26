@@ -61,8 +61,11 @@ table_mgr_create(TableMgr*    self,
 	unguard();
 	unguard();
 
-	// prepare partition manager
+	// prepare partitions
 	table_open(table);
+
+	// map partition
+	part_list_map(&table->part_list);
 	return true;
 }
 
@@ -103,15 +106,15 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	auto handle = log_handle_of(self, op);
-	auto mgr = table_of(handle->handle);
+	auto table = table_of(handle->handle);
 	uint8_t* pos = handle->data->start;
 	Str schema;
 	Str name;
 	Str schema_new;
 	Str name_new;
 	table_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
-	table_config_set_schema(mgr->config, &schema);
-	table_config_set_name(mgr->config, &name);
+	table_config_set_schema(table->config, &schema);
+	table_config_set_name(table->config, &name);
 	buf_free(handle->data);
 }
 
@@ -160,6 +163,87 @@ table_mgr_rename(TableMgr*    self,
 
 	if (! str_compare(&table->config->name, name_new))
 		table_config_set_name(table->config, name_new);
+}
+
+static void
+column_if_commit(Log* self, LogOp* op)
+{
+	TableMgr* mgr = op->iface_arg;
+	// swap former table with a new one
+	auto handle = log_handle_of(self, op);
+	auto table  = table_of(handle->handle);
+	auto prev   = table_mgr_find(mgr, &table->config->schema,
+	                             &table->config->name,
+	                              true);
+	handle_mgr_replace(&mgr->mgr, &prev->handle, &table->handle);
+
+	// free previous table and unmap partitions
+	table_free(prev);
+
+	// remap new table partitions (partitions has same ids)
+	part_list_map(&table->part_list);
+
+	buf_free(handle->data);
+}
+
+static void
+column_if_abort(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	auto table = table_of(handle->handle);
+	table_free(table);
+	buf_free(handle->data);
+}
+
+static LogIf column_if =
+{
+	.commit = column_if_commit,
+	.abort  = column_if_abort
+};
+
+Table*
+table_mgr_column_add(TableMgr*    self,
+                     Transaction* trx,
+                     Str*         schema,
+                     Str*         name,
+                     Column*      column,
+                     bool         if_not_exists)
+{
+	auto table = table_mgr_find(self, schema, name, true);
+
+	auto ref = columns_find(&table->config->columns, &column->name);
+	if (ref)
+	{
+		if (! if_not_exists)
+			error("table '%.*s': column '%.*s' already exists", str_size(name),
+			      str_of(name),
+			      str_size(&ref->name),
+			      str_of(&ref->name));
+		return NULL;
+	}
+
+	// allocate new table
+	auto table_new = table_allocate(table->config, &self->part_mgr);
+	guard(table_free, table_new);
+
+	// add new column
+	auto column_new = column_copy(column);
+	guard(column_free, column_new);
+	columns_add(&table_new->config->columns, column_new);
+	unguard();
+
+	// save rename table operation
+	auto op = table_op_column_add(schema, name, column);
+	guard_buf(op);
+
+	// update log (old table is still present)
+	log_handle(&trx->log, LOG_TABLE_COLUMN_ADD, &column_if, self,
+	           &table_new->handle, op);
+	unguard();
+	unguard();
+
+	table_open(table_new);
+	return table_new;
 }
 
 void

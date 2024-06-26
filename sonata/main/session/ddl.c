@@ -196,16 +196,51 @@ ddl_alter_table_rename(Session* self, Transaction* trx)
 }
 
 static void
+ddl_alter_table_column_add(Session* self, Transaction* trx)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
+
+	// COLUMN ADD name type [constraint]
+	auto table_mgr = &self->share->db->table_mgr;
+	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
+	                            !arg->if_exists);
+	if (! table)
+		return;
+
+	auto table_new = table_mgr_column_add(table_mgr, trx, &arg->schema, &arg->name,
+	                                      arg->column, false);
+	if (! table_new)
+		return;
+
+	// rebuild new table with new column in parallel per node
+	Build build;
+	build_init(&build, BUILD_COLUMN_ADD, self->share->cluster,
+	            table,
+	            table_new, arg->column, NULL);
+	guard(build_free, &build);
+	build_run(&build);
+}
+
+static void
 ddl_alter_table(Session* self, Transaction* trx)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
-	if (arg->serial)
-	{
+
+	switch (arg->type) {
+	case TABLE_ALTER_RENAME:
+		ddl_alter_table_rename(self, trx);
+		break;
+	case TABLE_ALTER_SET_SERIAL:
 		ddl_alter_table_set_serial(self);
-		return;
+		break;
+	case TABLE_ALTER_COLUMN_ADD:
+		ddl_alter_table_column_add(self, trx);
+		break;
+	case TABLE_ALTER_COLUMN_DROP:
+		break;
 	}
-	ddl_alter_table_rename(self, trx);
 }
 
 static void
@@ -228,7 +263,7 @@ ddl_create_index(Session* self, Transaction* trx)
 
 	// do parallel indexation per node
 	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, index);
+	build_init(&build, BUILD_INDEX, cluster, table, NULL, NULL, index);
 	guard(build_free, &build);
 	build_run(&build);
 }

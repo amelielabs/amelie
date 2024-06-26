@@ -120,6 +120,23 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                 &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_TABLE_COLUMN_ADD:
+	{
+		Str schema;
+		Str name;
+		auto column = table_op_column_add_read(data, &schema, &name);
+		guard(column_free, column);
+		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
+		auto table_new = table_mgr_column_add(&db->table_mgr, trx, &schema, &name,
+		                                      column, true);
+		// build new table with new column
+		self->iface->build_column_add(self, table, table_new, column);
+		break;
+	}
+	case LOG_TABLE_COLUMN_DROP:
+	{
+		break;
+	}
 	case LOG_INDEX_CREATE:
 	{
 		Str schema;
@@ -129,10 +146,9 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto config = index_config_read(table_columns(table), &config_pos);
 		guard(index_config_free, config);
 		table_index_create(table, trx, config, false);
-
-		// indexate
+		// build index
 		auto index = table_find_index(table, &config->name, true);
-		self->iface->indexate(self, table, index);
+		self->iface->build_index(self, table, index);
 		break;
 	}
 	case LOG_INDEX_DROP:

@@ -54,6 +54,7 @@ static Keyword keywords_c[] =
 	{ KCHECKPOINT,            "checkpoint",            10 },
 	{ KCASCADE,               "cascade",               7  },
 	{ KCOMPUTE,               "compute",               7  },
+	{ KCOLUMN ,               "column",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

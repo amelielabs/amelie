@@ -44,7 +44,8 @@ part_list_free(PartList* self)
 }
 
 void
-part_list_create(PartList* self, bool reference,
+part_list_create(PartList* self,
+                 bool      reference,
                  List*     parts,
                  List*     indexes)
 {
@@ -64,7 +65,7 @@ part_list_create(PartList* self, bool reference,
 		self->list_count++;
 
 		// register and map partition
-		part_mgr_add(self->mgr, &self->map, part);
+		/*part_mgr_add(self->mgr, &self->map, part);*/
 	}
 
 	// recreate indexes
@@ -72,6 +73,17 @@ part_list_create(PartList* self, bool reference,
 	{
 		auto config = list_at(IndexConfig, link);
 		part_list_index_create(self, config);
+	}
+}
+
+void
+part_list_map(PartList* self)
+{
+	// register and map partitions
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_mgr_add(self->mgr, &self->map, part);
 	}
 }
 

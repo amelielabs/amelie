@@ -20,6 +20,7 @@ bool   table_mgr_create(TableMgr*, Transaction*, TableConfig*, bool);
 void   table_mgr_drop(TableMgr*, Transaction*, Str*, Str*, bool);
 void   table_mgr_drop_of(TableMgr*, Transaction*, Table*);
 void   table_mgr_rename(TableMgr*, Transaction*, Str*, Str*, Str*, Str*, bool);
+Table* table_mgr_column_add(TableMgr*, Transaction*, Str*, Str*, Column*, bool);
 void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
 Buf*   table_mgr_list(TableMgr*);

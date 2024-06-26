@@ -283,6 +283,9 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			if (primary_key)
 				error("PRIMARY KEY defined twice");
 
+			if (! keys)
+				error("PRIMARY KEY clause is not supported in this command");
+
 			// force not_null constraint for keys
 			constraint_set_not_null(&column->constraint, true);
 
@@ -333,27 +336,28 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			goto last;
 		}
 
+		// name type [constraint]
+
 		// name
 		auto name = stmt_if(self, KNAME);
 		if (! name)
 			error("(<name> expected");
 
 		// ensure column does not exists
-		auto column = columns_find(columns, &name->string);
-		if (column)
+		if (columns_find(keys->columns, &name->string))
 			error("<%.*s> column redefined", str_size(&name->string),
 			      str_of(&name->string));
 
 		// create column
-		column = column_allocate();
-		columns_add(columns, column);
+		auto column = column_allocate();
 		column_set_name(column, &name->string);
+		columns_add(columns, column);
 
 		// type
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
-		// PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED
+		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED]
 		parse_constraint(self, keys, column);
 
 		// ,
@@ -514,8 +518,11 @@ parse_table_drop(Stmt* self)
 void
 parse_table_alter(Stmt* self)
 {
-	// ALTER TABLE [IF EXISTS] [schema.]name RENAME [schema.]name
+	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
+	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN ADD name type [constraint]
+	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN DROP name
+	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN RENAME name TO name
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -525,6 +532,55 @@ parse_table_alter(Stmt* self)
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
 		error("ALTER TABLE <name> expected");
+
+	// [ADD COLUMN]
+	if (stmt_if(self, KADD))
+	{
+		if (! stmt_if(self, KCOLUMN))
+			error("ALTER TABLE name ADD <COLUMN> expected");
+
+		// name type [constraint]
+
+		// name
+		auto name = stmt_if(self, KNAME);
+		if (! name)
+			error("(<name> expected");
+
+		// create column
+		stmt->column = column_allocate();
+		auto column = stmt->column;
+		column_set_name(column, &name->string);
+
+		// type
+		int type = parse_type(self, column, NULL);
+		column_set_type(column, type);
+
+		// [NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED]
+		parse_constraint(self, NULL, column);
+
+		// validate column
+		auto cons = &stmt->column->constraint;
+		if (cons->not_null && data_is_null(cons->value.start))
+			error("ALTER TABLE ADD NOT NULL requires DEFAULT value");
+
+		stmt->type = TABLE_ALTER_COLUMN_ADD;
+		return;
+	}
+
+	// [DROP COLUMN]
+	if (stmt_if(self, KDROP))
+	{
+		if (! stmt_if(self, KCOLUMN))
+			error("ALTER TABLE name DROP <COLUMN> expected");
+
+		// name
+		auto name = stmt_if(self, KNAME);
+		if (! name)
+			error("ALTER TABLE name DROP COLUMN <name> expected");
+		str_set_str(&stmt->column_name, &name->string);
+		stmt->type = TABLE_ALTER_COLUMN_DROP;
+		return;
+	}
 
 	// [SET]
 	if (stmt_if(self, KSET))
@@ -542,6 +598,7 @@ parse_table_alter(Stmt* self)
 		if (! stmt->serial)
 			error("ALTER TABLE SET SERIAL TO <integer> expected");
 
+		stmt->type = TABLE_ALTER_SET_SERIAL;
 		return;
 	}
 
@@ -549,10 +606,33 @@ parse_table_alter(Stmt* self)
 	if (! stmt_if(self, KRENAME))
 		error("ALTER TABLE <RENAME> expected");
 
+	// [COLUMN name TO  name]
+	if (stmt_if(self, KCOLUMN))
+	{
+		stmt->type = TABLE_ALTER_COLUMN_RENAME;
+
+		// name
+		auto name = stmt_if(self, KNAME);
+		if (! name)
+			error("ALTER TABLE name RENAME COLUMN <name> expected");
+		str_set_str(&stmt->column_name, &name->string);
+
+		// [TO]
+		stmt_if(self, KTO);
+
+		// name
+		name = stmt_if(self, KNAME);
+		if (! name)
+			error("ALTER TABLE name RENAME COLUMN name TO <name> expected");
+		str_set_str(&stmt->name_new, &name->string);
+		return;
+	}
+
 	// [TO]
 	stmt_if(self, KTO);
 
 	// name
 	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
 		error("ALTER TABLE RENAME <name> expected");
+	stmt->type = TABLE_ALTER_RENAME;
 }

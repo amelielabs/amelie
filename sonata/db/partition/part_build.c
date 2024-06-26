@@ -46,7 +46,7 @@ part_build_column_add(PartBuild* self, Iterator* it)
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row with a new column data
-		auto row = row_alter_add(origin, self->column_data);
+		auto row = row_alter_add(origin, &self->column->constraint.value);
 		guard(row_free, row);
 
 		uint8_t key_data[keys->key_size];
@@ -73,7 +73,7 @@ part_build_column_drop(PartBuild* self, Iterator* it)
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row without a column
-		auto row = row_alter_drop(origin, self->column_order);
+		auto row = row_alter_drop(origin, self->column->order);
 		guard(row_free, row);
 
 		uint8_t key_data[keys->key_size];
@@ -92,18 +92,23 @@ part_build_column_drop(PartBuild* self, Iterator* it)
 void
 part_build(PartBuild* self)
 {
+	auto id = self->part->config->id;
 	auto it = index_iterator(part_primary(self->part));
 	guard(iterator_close, it);
 	iterator_open(it, NULL);
 	switch (self->type) {
 	case PART_BUILD_INDEX:
+		log("build %" PRIu64 ": create index", id);
 		part_build_index(self, it);
 		break;
 	case PART_BUILD_COLUMN_ADD:
+		log("build %" PRIu64 ": add column", id);
 		part_build_column_add(self, it);
 		break;
 	case PART_BUILD_COLUMN_DROP:
+		log("build %" PRIu64 ": drop column", id);
 		part_build_column_drop(self, it);
 		break;
 	}
+	log("build %" PRIu64 ": complete", id);
 }

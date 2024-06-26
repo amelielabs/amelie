@@ -168,9 +168,9 @@ system_configure(Str* options, bool bootstrap)
 static void
 system_recover(System* self)
 {
-	// ask each node to recover partitions in parallel
+	// ask each node to recover last checkpoint partitions in parallel
 	Build build;
-	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL);
+	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL, NULL);
 	guard(build_free, &build);
 	build_run(&build);
 
