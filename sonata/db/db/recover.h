@@ -12,7 +12,6 @@ typedef struct Recover   Recover;
 struct RecoverIf
 {
 	void (*indexate)(Recover*, Table*, IndexConfig*);
-	void (*build)(Recover*, Table*, Table*);
 };
 
 struct Recover

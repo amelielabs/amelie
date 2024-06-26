@@ -228,7 +228,7 @@ ddl_create_index(Session* self, Transaction* trx)
 
 	// do parallel indexation per node
 	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, NULL, index);
+	build_init(&build, BUILD_INDEX, cluster, table, index);
 	guard(build_free, &build);
 	build_run(&build);
 }

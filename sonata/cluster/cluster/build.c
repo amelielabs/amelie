@@ -37,24 +37,12 @@ build_index(Recover* self, Table* table, IndexConfig* index)
 	// do parallel indexation per node
 	Cluster* cluster = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, NULL, index);
-	guard(build_free, &build);
-	build_run(&build);
-}
-
-static void
-build_table(Recover* self, Table* table, Table* table_dest)
-{
-	// do parallel table rebuild per node
-	Cluster* cluster = self->iface_arg;
-	Build build;
-	build_init(&build, BUILD_TABLE, cluster, table, table_dest, NULL);
+	build_init(&build, BUILD_INDEX, cluster, table, index);
 	guard(build_free, &build);
 	build_run(&build);
 }
 
 RecoverIf build_if =
 {
-	.indexate = build_index,
-	.build    = build_table
+	.indexate = build_index
 };

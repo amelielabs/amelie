@@ -12,7 +12,8 @@ typedef enum
 {
 	BUILD_NONE,
 	BUILD_RECOVER,
-	BUILD_TABLE,
+	BUILD_COLUMN_ADD,
+	BUILD_COLUMN_DROP,
 	BUILD_INDEX
 } BuildType;
 
@@ -20,7 +21,6 @@ struct Build
 {
 	BuildType    type;
 	Table*       table;
-	Table*       table_dest;
 	IndexConfig* index;
 	Cluster*     cluster;
 	Channel      channel;
@@ -31,14 +31,12 @@ build_init(Build*       self,
            BuildType    type,
            Cluster*     cluster,
            Table*       table,
-           Table*       table_dest,
            IndexConfig* index)
 {
-	self->type       = type;
-	self->table      = table;
-	self->table_dest = table_dest;
-	self->index      = index;
-	self->cluster    = cluster;
+	self->type    = type;
+	self->table   = table;
+	self->index   = index;
+	self->cluster = cluster;
 	channel_init(&self->channel);
 }
 
@@ -132,18 +130,17 @@ build_execute(Build* self, Uuid* node)
 			if (! part)
 				break;
 			// build new index content for current node
-			part_index_build(part, self->index);
+			PartBuild pb;
+			part_build_init(&pb, PART_BUILD_INDEX, part, NULL, 0, NULL, self->index);
+			part_build(&pb);
 			break;
 		}
-		case BUILD_TABLE:
+		case BUILD_COLUMN_ADD:
 		{
-			auto part = part_list_match(&self->table->part_list, node);
-			if (! part)
-				break;
-			auto part_dest = part_list_match(&self->table_dest->part_list, node);
-			assert(part_dest);
-			// build partition based on the other one
-			part_build(part_dest, part);
+			break;
+		}
+		case BUILD_COLUMN_DROP:
+		{
 			break;
 		}
 		case BUILD_NONE:

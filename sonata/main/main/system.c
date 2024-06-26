@@ -170,7 +170,7 @@ system_recover(System* self)
 {
 	// ask each node to recover partitions in parallel
 	Build build;
-	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL);
+	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL);
 	guard(build_free, &build);
 	build_run(&build);
 

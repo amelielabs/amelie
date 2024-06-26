@@ -266,6 +266,22 @@ part_upsert(Part*        self,
 }
 
 hot void
+part_ingest_secondary(Part* self, Row* row)
+{
+	// update secondary indexes
+	auto primary = part_primary(self);
+	list_foreach_after(&self->indexes, &primary->link)
+	{
+		auto    index = list_at(Index, link);
+		auto    keys = index_keys(index);
+		uint8_t key_data[keys->key_size];
+		auto    key = (Ref*)key_data;
+		ref_create(key, row, keys);
+		index_ingest(index, key);
+	}
+}
+
+hot void
 part_ingest(Part* self, uint8_t** pos)
 {
 	auto primary = part_primary(self);
@@ -273,6 +289,29 @@ part_ingest(Part* self, uint8_t** pos)
 
 	// allocate row
 	auto row = row_create(keys->columns, pos);
+	guard(row_free, row);
+
+	uint8_t key_data[keys->key_size];
+	auto    key = (Ref*)key_data;
+	ref_create(key, row, keys);
+
+	// update primary index
+	index_ingest(primary, key);
+	unguard();
+
+	// secondary indexes
+	part_ingest_secondary(self, row);
+}
+
+/*
+void
+part_ingest_alter_add(Part* self, Row* origin, Buf* data)
+{
+	auto primary = part_primary(self);
+	auto keys = index_keys(primary);
+
+	// allocate row based on original row with a new column data
+	auto row = row_alter_add(origin, data);
 	guard(row_free, row);
 
 	uint8_t key_data[keys->key_size];
@@ -294,3 +333,4 @@ part_ingest(Part* self, uint8_t** pos)
 		index_ingest(index, key);
 	}
 }
+*/

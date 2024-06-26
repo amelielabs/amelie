@@ -69,3 +69,6 @@ row_free(Row* self)
 
 Row* row_create(Columns*, uint8_t**);
 void row_create_hash(Keys*, uint32_t*, uint8_t**);
+
+Row* row_alter_add(Row*, Buf*);
+Row* row_alter_drop(Row*, int);
