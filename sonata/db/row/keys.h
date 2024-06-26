@@ -59,6 +59,19 @@ keys_add(Keys* self, Key* key)
 	key->column->key = true;
 }
 
+static inline void
+keys_update(Keys* self)
+{
+	int order = 0;
+	list_foreach_safe(&self->list)
+	{
+		auto key = list_at(Key, link);
+		key->order = order;
+		key->ref = key->column->order;
+		order++;
+	}
+}
+
 hot static inline Key*
 keys_find(Keys* self, Str* name)
 {

@@ -56,6 +56,19 @@ table_op_column_add(Str* schema, Str* name, Column* column)
 	return buf_end(buf);
 }
 
+static inline Buf*
+table_op_column_drop(Str* schema, Str* name, Str* name_column)
+{
+	// [schema, name, column]
+	auto buf = buf_begin();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	encode_string(buf, name_column);
+	encode_array_end(buf);
+	return buf_end(buf);
+}
+
 static inline TableConfig*
 table_op_create_read(uint8_t** pos)
 {
@@ -99,6 +112,16 @@ table_op_column_add_read(uint8_t** pos, Str* schema, Str* name)
 	data_read_array_end(pos);
 	unguard();
 	return config;
+}
+
+static inline void
+table_op_column_drop_read(uint8_t** pos, Str* schema, Str* name, Str* name_column)
+{
+	data_read_array(pos);
+	data_read_string(pos, schema);
+	data_read_string(pos, name);
+	data_read_string(pos, name_column);
+	data_read_array_end(pos);
 }
 
 static inline Buf*

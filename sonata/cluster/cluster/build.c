@@ -206,8 +206,20 @@ build_if_column_add(Recover* self, Table* table, Table* table_new, Column* colum
 	build_run(&build);
 }
 
+static void
+build_if_column_drop(Recover* self, Table* table, Table* table_new, Column* column)
+{
+	// rebuild new table without column in parallel per node
+	Cluster* cluster = self->iface_arg;
+	Build build;
+	build_init(&build, BUILD_COLUMN_DROP, cluster, table, table_new, column, NULL);
+	guard(build_free, &build);
+	build_run(&build);
+}
+
 RecoverIf build_if =
 {
-	.build_index      = build_if_index,
-	.build_column_add = build_if_column_add
+	.build_index       = build_if_index,
+	.build_column_add  = build_if_column_add,
+	.build_column_drop = build_if_column_drop
 };

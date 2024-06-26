@@ -63,9 +63,6 @@ part_list_create(PartList* self,
 		auto part = part_allocate(config);
 		list_append(&self->list, &part->link);
 		self->list_count++;
-
-		// register and map partition
-		/*part_mgr_add(self->mgr, &self->map, part);*/
 	}
 
 	// recreate indexes

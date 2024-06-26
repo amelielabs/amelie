@@ -223,6 +223,37 @@ ddl_alter_table_column_add(Session* self, Transaction* trx)
 }
 
 static void
+ddl_alter_table_column_drop(Session* self, Transaction* trx)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
+
+	// COLUMN DROP name
+	auto table_mgr = &self->share->db->table_mgr;
+	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
+	                            !arg->if_exists);
+	if (! table)
+		return;
+
+	auto table_new = table_mgr_column_drop(table_mgr, trx, &arg->schema, &arg->name,
+	                                       &arg->column_name, false);
+	if (! table_new)
+		return;
+
+	auto column = columns_find(&table->config->columns, &arg->column_name);
+	assert(column);
+
+	// rebuild new table with new column in parallel per node
+	Build build;
+	build_init(&build, BUILD_COLUMN_DROP, self->share->cluster,
+	            table,
+	            table_new, column, NULL);
+	guard(build_free, &build);
+	build_run(&build);
+}
+
+
+static void
 ddl_alter_table(Session* self, Transaction* trx)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -239,6 +270,7 @@ ddl_alter_table(Session* self, Transaction* trx)
 		ddl_alter_table_column_add(self, trx);
 		break;
 	case TABLE_ALTER_COLUMN_DROP:
+		ddl_alter_table_column_drop(self, trx);
 		break;
 	}
 }

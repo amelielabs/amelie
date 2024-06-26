@@ -135,6 +135,17 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	}
 	case LOG_TABLE_COLUMN_DROP:
 	{
+		Str schema;
+		Str name;
+		Str name_column;
+		table_op_column_drop_read(data, &schema, &name, &name_column);
+		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
+		auto table_new = table_mgr_column_drop(&db->table_mgr, trx, &schema, &name,
+		                                       &name_column, true);
+		auto column = columns_find(&table->config->columns, &name_column);
+		assert(column);
+		// build new table without column
+		self->iface->build_column_drop(self, table, table_new, column);
 		break;
 	}
 	case LOG_INDEX_CREATE:

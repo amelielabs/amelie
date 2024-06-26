@@ -54,6 +54,29 @@ columns_add(Columns* self, Column* column)
 	self->index[self->list_count - 1] = column;
 }
 
+static inline void
+columns_del(Columns* self, int at)
+{
+	assert(self->list_count > 1);
+	Column** index;
+	index = so_realloc(self->index, sizeof(Column*) * (self->list_count - 1));
+	int order = 0;
+	list_foreach_safe(&self->list)
+	{
+		auto column = list_at(Column, link);
+		if (column->order == at)
+		{
+			list_unlink(&column->link);
+			self->list_count--;
+			column_free(column);
+			continue;
+		}
+		column->order = order;
+		index[order] = column;
+	}
+	self->index = index;
+}
+
 hot static inline Column*
 columns_find(Columns* self, Str* name)
 {

@@ -578,6 +578,7 @@ parse_table_alter(Stmt* self)
 		if (! name)
 			error("ALTER TABLE name DROP COLUMN <name> expected");
 		str_set_str(&stmt->column_name, &name->string);
+
 		stmt->type = TABLE_ALTER_COLUMN_DROP;
 		return;
 	}

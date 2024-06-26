@@ -13,7 +13,7 @@ struct RecoverIf
 {
 	void (*build_index)(Recover*, Table*, IndexConfig*);
 	void (*build_column_add)(Recover*, Table*, Table*, Column*);
-	void (*build_column_drop)(Recover*, Table*, Table*, int);
+	void (*build_column_drop)(Recover*, Table*, Table*, Column*);
 };
 
 struct Recover

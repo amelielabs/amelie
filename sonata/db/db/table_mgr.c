@@ -232,12 +232,66 @@ table_mgr_column_add(TableMgr*    self,
 	columns_add(&table_new->config->columns, column_new);
 	unguard();
 
-	// save rename table operation
+	// save operation
 	auto op = table_op_column_add(schema, name, column);
 	guard_buf(op);
 
 	// update log (old table is still present)
 	log_handle(&trx->log, LOG_TABLE_COLUMN_ADD, &column_if, self,
+	           &table_new->handle, op);
+	unguard();
+	unguard();
+
+	table_open(table_new);
+	return table_new;
+}
+
+Table*
+table_mgr_column_drop(TableMgr*    self,
+                      Transaction* trx,
+                      Str*         schema,
+                      Str*         name,
+                      Str*         name_column,
+                      bool         if_exists)
+{
+	auto table = table_mgr_find(self, schema, name, true);
+
+	auto ref = columns_find(&table->config->columns, name_column);
+	if (! ref)
+	{
+		if (! if_exists)
+			error("table '%.*s': column '%.*s' not exists", str_size(name),
+			      str_of(name),
+			      str_size(name_column),
+			      str_of(name_column));
+		return NULL;
+	}
+
+	// ensure column currently not used as a key
+	if (ref->key)
+		error("table '%.*s': column '%.*s' is a key", str_size(name),
+		      str_of(name),
+		      str_size(name_column),
+		      str_of(name_column));
+
+	// allocate new table
+	auto table_new = table_allocate(table->config, &self->part_mgr);
+	guard(table_free, table_new);
+
+	// delete and reorder columns and update keys
+	columns_del(&table_new->config->columns, ref->order);
+	list_foreach(&table_new->config->indexes)
+	{
+		auto config = list_at(IndexConfig, link);
+		keys_update(&config->keys);
+	}
+
+	// save operation
+	auto op = table_op_column_drop(schema, name, name_column);
+	guard_buf(op);
+
+	// update log (old table is still present)
+	log_handle(&trx->log, LOG_TABLE_COLUMN_DROP, &column_if, self,
 	           &table_new->handle, op);
 	unguard();
 	unguard();
