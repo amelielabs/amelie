@@ -78,6 +78,42 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 
+# test: rename column parsing
+alter table rename
+alter table test rename
+alter table test rename column
+alter table test rename column 1
+alter table test rename column data
+alter table test rename column data
+alter table test rename column data to
+alter table test rename column data to 1
+
+# test: rename column
+create table test (id int primary key serial, data int default 0)
+select columns from system.tables()
+alter table test rename column data to data2
+select columns from system.tables()
+select data2 from test
+drop table test
+
+# test: rename column #2
+create table test (id int primary key)
+insert into test 1,2,3
+select columns from system.tables()
+alter table test rename column id to id2
+select columns from system.tables()
+select * from test
+select id2 from test
+drop table test
+
+# test: rename column (already exists)
+create table test (id int primary key serial, data int default 0)
+select columns from system.tables()
+alter table test rename column data to data
+select columns from system.tables()
+drop table test
+
+
 # test: add column parsing
 create table test (id int primary key)
 alter table

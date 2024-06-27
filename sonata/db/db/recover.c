@@ -120,6 +120,18 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                 &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_TABLE_COLUMN_RENAME:
+	{
+		Str schema;
+		Str name;
+		Str name_column;
+		Str name_column_new;
+		table_op_column_rename_read(data, &schema, &name, &name_column, &name_column_new);
+		table_mgr_column_rename(&db->table_mgr, trx, &schema, &name,
+		                        &name_column,
+		                        &name_column_new, true);
+		break;
+	}
 	case LOG_TABLE_COLUMN_ADD:
 	{
 		Str schema;

@@ -196,6 +196,21 @@ ddl_alter_table_rename(Session* self, Transaction* trx)
 }
 
 static void
+ddl_alter_table_column_rename(Session* self, Transaction* trx)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
+	auto db   = self->share->db;
+
+	// RENAME COLUMN TO
+
+	// rename table
+	table_mgr_column_rename(&db->table_mgr, trx, &arg->schema, &arg->name,
+	                        &arg->column_name, &arg->name_new,
+	                         arg->if_exists);
+}
+
+static void
 ddl_alter_table_column_add(Session* self, Transaction* trx)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -265,6 +280,9 @@ ddl_alter_table(Session* self, Transaction* trx)
 		break;
 	case TABLE_ALTER_SET_SERIAL:
 		ddl_alter_table_set_serial(self);
+		break;
+	case TABLE_ALTER_COLUMN_RENAME:
+		ddl_alter_table_column_rename(self, trx);
 		break;
 	case TABLE_ALTER_COLUMN_ADD:
 		ddl_alter_table_column_add(self, trx);

@@ -97,6 +97,145 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 {"code": 1, "msg": "table 'test': not exists"}
+# test: rename column parsing
+alter table rename
+{"code": 1, "msg": "ALTER TABLE <name> expected"}
+alter table test rename
+{"code": 1, "msg": "ALTER TABLE RENAME <name> expected"}
+alter table test rename column
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+alter table test rename column 1
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+alter table test rename column data
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data to
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data to 1
+{"code": 1, "msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+# test: rename column
+create table test (id int primary key serial, data int default 0)
+select columns from system.tables()
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 1,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": 0
+  }
+}]]
+alter table test rename column data to data2
+select columns from system.tables()
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 1,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "data2",
+  "type": 2,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": 0
+  }
+}]]
+select data2 from test
+[]
+drop table test
+# test: rename column #2
+create table test (id int primary key)
+insert into test 1,2,3
+select columns from system.tables()
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+alter table test rename column id to id2
+select columns from system.tables()
+[[{
+  "name": "id2",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+select * from test
+[[1], [2], [3]]
+select id2 from test
+[1, 2, 3]
+drop table test
+# test: rename column (already exists)
+create table test (id int primary key serial, data int default 0)
+select columns from system.tables()
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 1,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": 0
+  }
+}]]
+alter table test rename column data to data
+{"code": 1, "msg": "table 'test': column 'data' already exists"}
+select columns from system.tables()
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 1,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": 0
+  }
+}]]
+drop table test
 # test: add column parsing
 create table test (id int primary key)
 alter table

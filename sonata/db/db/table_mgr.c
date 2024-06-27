@@ -166,6 +166,87 @@ table_mgr_rename(TableMgr*    self,
 }
 
 static void
+rename_column_if_commit(Log* self, LogOp* op)
+{
+	buf_free(log_handle_of(self, op)->data);
+}
+
+static void
+rename_column_if_abort(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	Column* column = op->iface_arg;
+	uint8_t* pos = handle->data->start;
+	Str schema;
+	Str name;
+	Str name_column;
+	Str name_column_new;
+	table_op_column_rename_read(&pos, &schema, &name, &name_column,
+	                            &name_column_new);
+	column_set_name(column, &name_column);
+	buf_free(handle->data);
+}
+
+static LogIf rename_column_if =
+{
+	.commit = rename_column_if_commit,
+	.abort  = rename_column_if_abort
+};
+
+void
+table_mgr_column_rename(TableMgr*    self,
+                        Transaction* trx,
+                        Str*         schema,
+                        Str*         name,
+                        Str*         name_column,
+                        Str*         name_column_new,
+                        bool         if_exists)
+{
+	// find table
+	auto table = table_mgr_find(self, schema, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
+
+	// find column
+	auto column = columns_find(&table->config->columns, name_column);
+	if (! column)
+	{
+		error("table '%.*s': column '%.*s' not exists", str_size(name),
+		      str_of(name),
+		      str_size(name_column),
+		      str_of(name_column));
+	}
+
+	// ensure new column does not exists
+	auto ref = columns_find(&table->config->columns, name_column_new);
+	if (ref)
+	{
+		error("table '%.*s': column '%.*s' already exists", str_size(name),
+		      str_of(name),
+		      str_size(name_column_new),
+		      str_of(name_column_new));
+	}
+
+	// save rename table operation
+	auto op = table_op_column_rename(schema, name, name_column, name_column_new);
+	guard_buf(op);
+
+	// update table
+	log_handle(&trx->log, LOG_TABLE_COLUMN_RENAME, &rename_column_if,
+	           column,
+	           &table->handle, op);
+	unguard();
+
+	// set column name
+	column_set_name(column, name_column_new);
+}
+
+static void
 column_if_commit(Log* self, LogOp* op)
 {
 	TableMgr* mgr = op->iface_arg;

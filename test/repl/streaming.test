@@ -10073,6 +10073,18 @@ switch S1
 select count(data) from test
 select count(id) from test
 
+# test: ddl (rename column)
+switch S0
+alter table test rename column id to id2
+select count(id2) from test
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(id2) from test
+
 disconnect S1
 close E1
 

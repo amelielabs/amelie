@@ -43,6 +43,7 @@ column_free(Column* self)
 static inline void
 column_set_name(Column* self, Str* name)
 {
+	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 

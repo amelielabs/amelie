@@ -44,6 +44,22 @@ table_op_rename(Str* schema, Str* name, Str* schema_new, Str* name_new)
 }
 
 static inline Buf*
+table_op_column_rename(Str* schema, Str* name,
+                       Str* name_column,
+                       Str* name_column_new)
+{
+	// [schema, name, column]
+	auto buf = buf_begin();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	encode_string(buf, name_column);
+	encode_string(buf, name_column_new);
+	encode_array_end(buf);
+	return buf_end(buf);
+}
+
+static inline Buf*
 table_op_column_add(Str* schema, Str* name, Column* column)
 {
 	// [schema, name, column]
@@ -98,6 +114,19 @@ table_op_rename_read(uint8_t** pos, Str* schema, Str* name,
 	data_read_string(pos, name);
 	data_read_string(pos, schema_new);
 	data_read_string(pos, name_new);
+	data_read_array_end(pos);
+}
+
+static inline void
+table_op_column_rename_read(uint8_t** pos, Str* schema, Str* name,
+                            Str* name_column,
+                            Str* name_column_new)
+{
+	data_read_array(pos);
+	data_read_string(pos, schema);
+	data_read_string(pos, name);
+	data_read_string(pos, name_column);
+	data_read_string(pos, name_column_new);
 	data_read_array_end(pos);
 }
 

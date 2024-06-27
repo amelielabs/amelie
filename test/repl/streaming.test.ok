@@ -10088,6 +10088,22 @@ select count(data) from test
 {"code": 1, "msg": "current cursor object type is not a map"}
 select count(id) from test
 [9999]
+# test: ddl (rename column)
+switch S0
+alter table test rename column id to id2
+select count(id2) from test
+[9999]
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+{
+  "active": true,
+  "role": "primary",
+  "primary": null
+}
+switch S1
+select count(id2) from test
+[9999]
 disconnect S1
 close E1
 disconnect S0
