@@ -64,10 +64,10 @@ alter table test set serial =
 alter table test set serial to
 alter table test set serial to "123"
 alter table test set serial to 0
-insert  into test () values ()
-insert  into test () values ()
-insert  into test () values ()
-insert  into test () values ()
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
 select * from test
 alter table test set serial to 0
 insert into test () values ()
@@ -77,6 +77,176 @@ drop table test
 # test: set serial if exists
 alter table if exists test set serial to 0
 alter table test set serial to 0
+
+# test: add column parsing
+create table test (id int primary key)
+alter table
+alter table test
+alter table test add
+alter table test add 1
+alter table test add column
+drop table test
+
+# test: add column already exists
+create table test (id int primary key, data int)
+alter table test add column data int
+drop table test
+
+# test: add column primary key
+create table test (id int primary key)
+alter table test add column data int primary key
+drop table test
+
+# test: add column (empty table)
+create table test (id int primary key)
+select columns from system.tables()
+alter table test add column data int
+select columns from system.tables()
+insert into test values (1,1), (2,2), (3,3)
+select data from test
+drop table test
+
+# test: add column (null by default)
+create table test (id int primary key)
+insert into test 1,2,3
+alter table test add column data int
+select columns from system.tables()
+select data from test
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+drop table test
+
+# test: add column (not null without default)
+create table test (id int primary key)
+insert into test 1,2,3
+alter table test add column data int not null
+select columns from system.tables()
+drop table test
+
+# test: add column (default)
+create table test (id int primary key)
+insert into test 1,2,3
+alter table test add column data int default 123
+select columns from system.tables()
+select data from test
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+drop table test
+
+# test: add column (default not null)
+create table test (id int primary key)
+insert into test 1,2,3
+alter table test add column data int not null default 123
+select columns from system.tables()
+select data from test
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+drop table test
+
+# test: add column (serial)
+create table test (id int primary key)
+insert into test 1,2,3
+alter table test add column data int serial
+select columns from system.tables()
+select data from test
+insert into test (id) values (4), (5), (6)
+select data from test
+drop table test
+
+# test: drop column parsing
+create table test (id int primary key)
+alter table
+alter table test
+alter table test drop
+alter table test drop column
+alter table test drop column 1
+drop table test
+
+# test: drop column (not exists)
+create table test (id int primary key)
+alter table test drop column data
+drop table test
+
+# test: drop column (primary key)
+create table test (id int primary key)
+alter table test drop column id
+drop table test
+
+# test: drop column (secondary key)
+create table test (id int primary key, data int)
+create index i on test (data)
+alter table test drop column data
+drop table test
+
+# test: drop column (empty)
+create table test (id int primary key, a int)
+select columns from system.tables()
+alter table test drop column a
+select columns from system.tables()
+drop table test
+
+# test: drop column (empty, reorder)
+create table test (id int primary key, a int, b int)
+select columns from system.tables()
+alter table test drop column a
+select columns from system.tables()
+drop table test
+
+# test: drop column
+create table test (id int primary key, a text, b int)
+select columns from system.tables()
+
+insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
+select * from test
+select a from test
+select b from test
+
+alter table test drop column a
+select columns from system.tables()
+
+select * from test
+select a from test
+select b from test
+
+select columns from system.tables()
+alter table test drop column b
+select columns from system.tables()
+
+select * from test
+select id from test
+select a from test
+select b from test
+
+drop table test
+
+# test: drop column (key order)
+create table test (a text, b int, id int primary key)
+select columns from system.tables()
+
+insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3)
+select * from test
+select id from test
+select a from test
+select b from test
+
+alter table test drop column a
+select columns from system.tables()
+
+select * from test
+select id from test
+select a from test
+select b from test
+
+select columns from system.tables()
+alter table test drop column b
+select columns from system.tables()
+
+select * from test
+select id from test
+select a from test
+select b from test
+
+drop table test
 
 disconnect S0
 close E0

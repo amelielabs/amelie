@@ -10052,6 +10052,42 @@ select count(*) from test
 [9999]
 select count(*) from test use index(i)
 [9999]
+# test: ddl (add column)
+switch S0
+alter table test add column data int default 1
+select count(data) from test
+[9999]
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+{
+  "active": true,
+  "role": "primary",
+  "primary": null
+}
+switch S1
+select count(data) from test
+[9999]
+# test: ddl (drop column)
+switch S0
+alter table test drop column data
+select count(data) from test
+{"code": 1, "msg": "current cursor object type is not a map"}
+select count(id) from test
+[9999]
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+{
+  "active": true,
+  "role": "primary",
+  "primary": null
+}
+switch S1
+select count(data) from test
+{"code": 1, "msg": "current cursor object type is not a map"}
+select count(id) from test
+[9999]
 disconnect S1
 close E1
 disconnect S0

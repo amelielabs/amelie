@@ -73,6 +73,7 @@ columns_del(Columns* self, int at)
 		}
 		column->order = order;
 		index[order] = column;
+		order++;
 	}
 	self->index = index;
 }

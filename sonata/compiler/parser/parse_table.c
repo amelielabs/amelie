@@ -605,7 +605,7 @@ parse_table_alter(Stmt* self)
 
 	// RENAME
 	if (! stmt_if(self, KRENAME))
-		error("ALTER TABLE <RENAME> expected");
+		error("ALTER TABLE <RENAME | ADD | DROP> expected");
 
 	// [COLUMN name TO  name]
 	if (stmt_if(self, KCOLUMN))

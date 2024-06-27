@@ -10047,6 +10047,32 @@ switch S1
 select count(*) from test
 select count(*) from test use index(i)
 
+# test: ddl (add column)
+switch S0
+alter table test add column data int default 1
+select count(data) from test
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(data) from test
+
+# test: ddl (drop column)
+switch S0
+alter table test drop column data
+select count(data) from test
+select count(id) from test
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(data) from test
+select count(id) from test
+
 disconnect S1
 close E1
 
