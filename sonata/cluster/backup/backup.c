@@ -25,7 +25,7 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_parser.h>
-#include <sonata_semantic.h>
+#include <sonata_planner.h>
 #include <sonata_compiler.h>
 #include <sonata_backup.h>
 

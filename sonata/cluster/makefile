@@ -30,7 +30,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../vm/vm \
                  -I../compiler \
                  -I../compiler/parser \
-                 -I../compiler/semantic \
+                 -I../compiler/planner \
                  -I../compiler/compiler \
                  -I. \
                  -Ibackup \

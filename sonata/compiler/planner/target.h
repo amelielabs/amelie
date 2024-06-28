@@ -31,7 +31,7 @@ target_lookup_hash(Target* target)
 	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &ast_plan_of(target->plan)->keys[key->order];
+		auto ref = &ast_path_of(target->path)->keys[key->order];
 		assert(ref->start);
 		if (key->type == TYPE_STRING)
 			hash = key_hash_string(hash, &ref->start->string);

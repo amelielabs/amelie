@@ -25,10 +25,34 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_parser.h>
-#include <sonata_semantic.h>
+#include <sonata_planner.h>
+
+static inline AstPath*
+ast_path_allocate(Keys* keys, int type)
+{
+	AstPath* self;
+	self = ast_allocate(0, sizeof(AstPath));
+	self->type       = type;
+	self->match      = 0;
+	self->match_stop = 0;
+	self->keys       = (AstPathKey*)palloc(sizeof(AstPathKey) * keys->list_count);
+	list_foreach(&keys->list)
+	{
+		auto key = list_at(Key, link);
+		auto ref = &self->keys[key->order];
+		ref->key      = key;
+		ref->start_op = NULL;
+		ref->start    = NULL;
+		ref->stop_op  = NULL;
+		ref->stop     = NULL;
+	}
+	self->list = NULL;
+	self->next = NULL;
+	return self;
+}
 
 hot static inline int
-plan_compare_ast(Ast* a, Ast* b)
+path_compare_ast(Ast* a, Ast* b)
 {
 	if (a->id == KINT)
 	{
@@ -43,7 +67,7 @@ plan_compare_ast(Ast* a, Ast* b)
 }
 
 static inline bool
-plan_compare(Target* target, Ast* ast, Key* key)
+path_compare(Path* self, Ast* ast, Key* key)
 {
 	auto column = key->column;
 
@@ -66,7 +90,7 @@ plan_compare(Target* target, Ast* ast, Key* key)
 	str_split_or_set(&ast->string, &name, '.');
 
 	// [target.]
-	if (target_compare(target, &name))
+	if (target_compare(self->target, &name))
 	{
 		str_advance(&path, str_size(&name) + 1);
 
@@ -94,11 +118,10 @@ plan_compare(Target* target, Ast* ast, Key* key)
 }
 
 static inline bool
-plan_key_is(TargetList* target_list, Target* target, Key* key,
-            Ast* path, Ast* value)
+path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 {
 	// compare path with column key
-	if (! plan_compare(target, path, key))
+	if (! path_compare(self, path, key))
 		return false;
 
 	// validate value to key type
@@ -116,12 +139,13 @@ plan_key_is(TargetList* target_list, Target* target, Key* key,
 	// join: name = name
 
 	// do not match keys for outer targets
+	auto target = self->target;
 	if (value->id == KNAME_COMPOUND)
 	{
 		Str name;
 		str_split_or_set(&path->string, &name, '.');
 
-		auto join = target_list_match(target_list, &name);
+		auto join = target_list_match(self->target_list, &name);
 		if (join)
 		{
 			if (join == target)
@@ -144,43 +168,39 @@ plan_key_is(TargetList* target_list, Target* target, Key* key,
 }
 
 hot static inline Key*
-plan_key_find(TargetList* target_list, Target* target, Ast* path, Ast* value)
+path_key_find(Path* self, Ast* path, Ast* value)
 {
-	list_foreach(&target->index->keys.list)
+	list_foreach(&self->keys->list)
 	{
 		auto key = list_at(Key, link);
-		if (plan_key_is(target_list, target, key, path, value))
+		if (path_key_is(self, key, path, value))
 			return key;
 	}
 	return NULL;
 }
 
-hot static inline AstPlan*
-plan_op(TargetList* target_list, Target* target,
-        Ast* op,
-        Ast* path,
-        Ast* value)
+hot static inline AstPath*
+path_op(Path* self, Ast* op, Ast* path, Ast* value)
 {
 	// find matching key
-	auto key = plan_key_find(target_list, target, path, value);
+	auto key = path_key_find(self, path, value);
 	if (! key)
 		return NULL;
 
-	auto keys     = &target->index->keys;
-	auto plan     = ast_plan_allocate(keys, SCAN);
-	auto plan_key = &plan->keys[key->order];
+	auto ast     = ast_path_allocate(self->keys, PATH_SCAN);
+	auto ast_key = &ast->keys[key->order];
 	switch (op->id) {
 		break;
 	case '>':
 	case KGTE:
 	case '=':
 	{
-		plan_key->start_op = op;
-		plan_key->start    = value;
+		ast_key->start_op = op;
+		ast_key->start    = value;
 		if (op->id == '=')
 		{
-			if (keys->list_count == 1)
-				plan->type = SCAN_LOOKUP;
+			if (self->keys->list_count == 1)
+				ast->type = PATH_LOOKUP;
 		}
 		break;
 	}
@@ -190,17 +210,17 @@ plan_op(TargetList* target_list, Target* target,
 		// stop condition works only on the outer key
 		if (key->order > 0)
 			break;
-		plan_key->stop_op = op;
-		plan_key->stop    = value;
+		ast_key->stop_op = op;
+		ast_key->stop    = value;
 		break;
 	}
 	}
 
-	return plan;
+	return ast;
 }
 
 hot static inline bool
-plan_op_of(Ast* expr, Ast** path, Ast** value)
+path_op_of(Ast* expr, Ast** path, Ast** value)
 {
 	//
 	// name = expr
@@ -228,7 +248,7 @@ plan_op_of(Ast* expr, Ast** path, Ast** value)
 }
 
 hot static inline bool
-plan_and_merge_start(Key* key, AstPlan* l, AstPlan *r)
+path_merge_start(Key* key, AstPath* l, AstPath *r)
 {
 	auto ref_l = &l->keys[key->order];
 	auto ref_r = &r->keys[key->order];
@@ -248,7 +268,7 @@ plan_and_merge_start(Key* key, AstPlan* l, AstPlan *r)
 			} else
 			{
 				// update key if it is > then the previous one
-				if (plan_compare_ast(ref_l->start, ref_r->start) == -1)
+				if (path_compare_ast(ref_l->start, ref_r->start) == -1)
 				{
 					ref_l->start_op = ref_r->start_op;
 					ref_l->start    = ref_r->start;
@@ -269,7 +289,7 @@ plan_and_merge_start(Key* key, AstPlan* l, AstPlan *r)
 }
 
 hot static inline void
-plan_and_merge_stop(Key* key, AstPlan* l, AstPlan *r)
+path_merge_stop(Key* key, AstPath* l, AstPath *r)
 {
 	auto ref_l = &l->keys[key->order];
 	auto ref_r = &r->keys[key->order];
@@ -277,7 +297,7 @@ plan_and_merge_stop(Key* key, AstPlan* l, AstPlan *r)
 	if (ref_l->stop && ref_r->stop)
 	{
 		// update key if it is < then the previous one
-		if (plan_compare_ast(ref_l->stop, ref_r->stop) > 0)
+		if (path_compare_ast(ref_l->stop, ref_r->stop) > 0)
 		{
 			ref_l->stop_op = ref_r->stop_op;
 			ref_l->stop    = ref_r->stop;
@@ -290,40 +310,40 @@ plan_and_merge_stop(Key* key, AstPlan* l, AstPlan *r)
 	}
 }
 
-hot static inline AstPlan*
-plan_and_merge(Target* target, AstPlan* l, AstPlan *r)
+hot static inline AstPath*
+path_merge(Path* self, AstPath* l, AstPath *r)
 {
 	// merge r keys into l
 	int matched_eq = 0;
-	auto keys = &target->index->keys;
+	auto keys = self->keys;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
-		if (plan_and_merge_start(key, l, r))
+		if (path_merge_start(key, l, r))
 			matched_eq++;
-		plan_and_merge_stop(key, l, r);
+		path_merge_stop(key, l, r);
 	}
 
-	// SCAN_LOOKUP
+	// point lookup
 	if (matched_eq == keys->list_count)
-		l->type = SCAN_LOOKUP;
+		l->type = PATH_LOOKUP;
 
 	return l;
 }
 
-hot AstPlan*
-plan(TargetList* target_list, Target* target, Ast* expr)
+hot static AstPath*
+path_expr(Path* self, Ast* expr)
 {
-	auto keys = &target->index->keys;
+	auto keys = self->keys;
 	if (expr == NULL)
-		return ast_plan_allocate(keys, SCAN);
+		return ast_path_allocate(keys, PATH_SCAN);
 
 	switch (expr->id) {
 	case KAND:
 	{
-		auto l = plan(target_list, target, expr->l);
-		auto r = plan(target_list, target, expr->r);
-		return plan_and_merge(target, l, r);
+		auto l = path_expr(self, expr->l);
+		auto r = path_expr(self, expr->r);
+		return path_merge(self, l, r);
 	}
 
 	case KOR:
@@ -339,11 +359,11 @@ plan(TargetList* target_list, Target* target, Ast* expr)
 	case '=':
 	{
 		Ast* path, *value;
-		if (! plan_op_of(expr, &path, &value))
+		if (! path_op_of(expr, &path, &value))
 			break;
-		auto plan = plan_op(target_list, target, expr, path, value);
-		if (plan)
-			return plan;
+		auto op = path_op(self, expr, path, value);
+		if (op)
+			return op;
 		break;
 	}
 
@@ -351,5 +371,27 @@ plan(TargetList* target_list, Target* target, Ast* expr)
 		break;
 	}
 
-	return ast_plan_allocate(keys, SCAN);
+	return ast_path_allocate(keys, PATH_SCAN);
+}
+
+hot AstPath*
+path_create(Path* self, Ast* expr)
+{
+	auto result = path_expr(self, expr);
+
+	// calculate number of key matches from start
+	bool match_start = true;
+	list_foreach(&self->keys->list)
+	{
+		auto key = list_at(Key, link);
+		auto ref = &result->keys[key->order];
+		if (match_start && ref->start)
+			result->match++;
+		else
+			match_start = false;
+		if (ref->stop)
+			result->match_stop++;
+	}
+
+	return result;
 }

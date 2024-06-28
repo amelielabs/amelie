@@ -28,7 +28,7 @@ struct Target
 	int          rexpr;
 	// target
 	AstList*     labels;
-	Ast*         plan;
+	Ast*         path;
 	Table*       table;
 	IndexConfig* index;
 	// link
@@ -52,7 +52,7 @@ target_init(Target* self, Table* table)
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
 	self->labels          = NULL;
-	self->plan            = NULL;
+	self->path            = NULL;
 	self->table           = table;
 	self->index           = NULL;
 	self->outer           = NULL;

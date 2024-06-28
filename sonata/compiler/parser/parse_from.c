@@ -177,9 +177,6 @@ parse_from_add(From* self)
 		target->index = table_find_index(table, &name->string, true);
 	}
 
-	if (target->table && !target->index)
-		target->index = table_primary(target->table);
-
 	return target;
 }
 

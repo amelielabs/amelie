@@ -25,7 +25,7 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_parser.h>
-#include <sonata_semantic.h>
+#include <sonata_planner.h>
 #include <sonata_compiler.h>
 
 typedef struct
@@ -46,12 +46,12 @@ static inline void
 scan_key(Scan* self, Target* target)
 {
 	auto cp   = self->compiler;
-	auto plan = ast_plan_of(target->plan);
+	auto path = ast_path_of(target->path);
 
 	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &plan->keys[key->order];
+		auto ref = &path->keys[key->order];
 
 		// use value from >, >=, = expression as a key
 		if (ref->start)
@@ -77,12 +77,12 @@ static inline void
 scan_stop(Scan* self, Target* target, int _eof)
 {
 	auto cp   = self->compiler;
-	auto plan = ast_plan_of(target->plan);
+	auto path = ast_path_of(target->path);
 
 	list_foreach(&target->index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &plan->keys[key->order];
+		auto ref = &path->keys[key->order];
 		if (! ref->stop)
 			continue;
 
@@ -105,13 +105,12 @@ scan_target_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
 	auto table = target->table;
-	auto index = target->index;
 
-	// prepare scan plan using where expression per target
-	if (! target->plan)
-		target->plan = &plan(target_list, target, self->expr_where)->ast;
-	auto plan = ast_plan_of(target->plan);
-	auto point_lookup = (plan->type == SCAN_LOOKUP);
+	// prepare scan path using where expression per target
+	planner(target_list, target, self->expr_where);
+	auto path = ast_path_of(target->path);
+	auto point_lookup = (path->type == PATH_LOOKUP);
+	auto index = target->index;
 
 	// push cursor keys
 	scan_key(self, target);

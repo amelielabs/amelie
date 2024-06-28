@@ -6,5 +6,4 @@
 // Real-Time SQL Database.
 //
 
-#include "semantic/plan.h"
-#include "semantic/target.h"
+void planner(TargetList*, Target*, Ast*);

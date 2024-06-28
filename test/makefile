@@ -29,7 +29,7 @@ CFLAGS_INCLUDE = -I../sonata/runtime \
                  -I../sonata/vm/vm \
                  -I../sonata/compiler \
                  -I../sonata/compiler/parser \
-                 -I../sonata/compiler/semantic \
+                 -I../sonata/compiler/planner \
                  -I../sonata/compiler/compiler \
                  -I../sonata/cluster \
                  -I../sonata/cluster/backup \

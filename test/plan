@@ -45,7 +45,7 @@ test scan
 test subselect
 test order_by
 test label
-test secondary_index
+test planner
 
 # pushdown
 directory pushdown

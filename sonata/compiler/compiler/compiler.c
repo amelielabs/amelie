@@ -25,7 +25,7 @@
 #include <sonata_executor.h>
 #include <sonata_vm.h>
 #include <sonata_parser.h>
-#include <sonata_semantic.h>
+#include <sonata_planner.h>
 #include <sonata_compiler.h>
 
 void
@@ -271,7 +271,7 @@ emit_send(Compiler* self, int start)
 	} else
 	{
 		// point-lookup or range scan
-		if (ast_plan_of(target->plan)->type == SCAN_LOOKUP)
+		if (ast_path_of(target->path)->type == PATH_LOOKUP)
 		{
 			// send to one node (shard by lookup key hash)
 			uint32_t hash = target_lookup_hash(target);

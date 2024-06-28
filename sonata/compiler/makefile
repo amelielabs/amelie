@@ -30,7 +30,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../vm/vm \
                  -I. \
                  -Iparser \
-                 -Isemantic \
+                 -Iplanner \
                  -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libsonata-compiler.a
@@ -55,7 +55,8 @@ OBJECTS        = \
                  parser/parse_watch.o \
                  parser/parse.o \
                  parser/parser.o \
-                 semantic/plan.o \
+                 planner/path.o \
+                 planner/planner.o \
                  compiler/compiler.o \
                  compiler/scan.o \
                  compiler/emit_expr.o \
