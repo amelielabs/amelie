@@ -45,6 +45,13 @@ aggr_min_state_create(Aggr* self, uint8_t* state)
 	min[1] = 0;
 }
 
+static void
+aggr_min_state_free(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	unused(state);
+}
+
 static int
 aggr_min_state_size(Aggr* self)
 {
@@ -97,6 +104,7 @@ AggrIf aggr_min =
 	.create       = aggr_min_create,
 	.free         = aggr_min_free,
 	.state_create = aggr_min_state_create,
+	.state_free   = aggr_min_state_free,
 	.state_size   = aggr_min_state_size,
 	.read         = aggr_min_read,
 	.write        = aggr_min_write,

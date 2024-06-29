@@ -42,6 +42,13 @@ aggr_count_state_create(Aggr* self, uint8_t* state)
 	*count = 0;
 }
 
+static void
+aggr_count_state_free(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	unused(state);
+}
+
 static int
 aggr_count_state_size(Aggr* self)
 {
@@ -80,6 +87,7 @@ AggrIf aggr_count =
 	.create       = aggr_count_create,
 	.free         = aggr_count_free,
 	.state_create = aggr_count_state_create,
+	.state_free   = aggr_count_state_free,
 	.state_size   = aggr_count_state_size,
 	.read         = aggr_count_read,
 	.write        = aggr_count_write,

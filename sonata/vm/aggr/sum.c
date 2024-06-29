@@ -42,6 +42,13 @@ aggr_sum_state_create(Aggr* self, uint8_t* state)
 	*sum = 0;
 }
 
+static void
+aggr_sum_state_free(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	unused(state);
+}
+
 static int
 aggr_sum_state_size(Aggr* self)
 {
@@ -82,6 +89,7 @@ AggrIf aggr_sum =
 	.create       = aggr_sum_create,
 	.free         = aggr_sum_free,
 	.state_create = aggr_sum_state_create,
+	.state_free   = aggr_sum_state_free,
 	.state_size   = aggr_sum_state_size,
 	.read         = aggr_sum_read,
 	.write        = aggr_sum_write,

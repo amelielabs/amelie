@@ -19,10 +19,38 @@
 #include <sonata_value.h>
 #include <sonata_aggr.h>
 
+hot static inline void
+group_free_node(Group* self, GroupNode* node)
+{
+	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
+	list_foreach(&self->aggrs)
+	{
+		auto aggr = list_at(Aggr, link);
+		aggr_state_free(aggr, aggr_state);
+		aggr_state += aggr_state_size(aggr);
+	}
+	for (int j = 0; j < self->keys_count; j++)
+		value_free(&node->keys[j]);
+
+	so_free(node);
+}
+
 static void
 group_free(ValueObj* obj)
 {
 	auto self = (Group*)obj;
+	if (self->ht.count > 0)
+	{
+		auto index = (GroupNode**)(self->ht.buf.start);
+		for (int i = 0; i < self->ht.size; i++)
+		{
+			auto node = index[i];
+			if (node == NULL)
+				continue;
+			group_free_node(self, node);
+		}
+	}
+
 	list_foreach_safe(&self->aggrs)
 	{
 		auto aggr = list_at(Aggr, link);
@@ -30,18 +58,6 @@ group_free(ValueObj* obj)
 	}
 	list_init(&self->aggrs);
 
-	if (self->ht.count > 0)
-	{
-		auto index = (GroupNode**)(self->ht.buf.start);
-		for (int i = 0; i < self->ht.size; i++)
-		{
-			if (index[i] == NULL)
-				continue;
-			for (int j = 0; j < self->keys_count; j++)
-				value_free(&index[i]->keys[j]);
-			so_free(index[i]);
-		}
-	}
 	self->aggr_size  = 0;
 	self->aggr_count = 0;
 	self->keys_count = 0;

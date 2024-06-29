@@ -42,6 +42,13 @@ aggr_max_state_create(Aggr* self, uint8_t* state)
 	max[0] = 0;
 }
 
+static void
+aggr_max_state_free(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	unused(state);
+}
+
 static int
 aggr_max_state_size(Aggr* self)
 {
@@ -85,6 +92,7 @@ AggrIf aggr_max =
 	.create       = aggr_max_create,
 	.free         = aggr_max_free,
 	.state_create = aggr_max_state_create,
+	.state_free   = aggr_max_state_free,
 	.state_size   = aggr_max_state_size,
 	.read         = aggr_max_read,
 	.write        = aggr_max_write,

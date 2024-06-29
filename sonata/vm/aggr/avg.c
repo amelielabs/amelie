@@ -45,6 +45,13 @@ aggr_avg_state_create(Aggr* self, uint8_t* state)
 	avg[1] = 0;
 }
 
+static void
+aggr_avg_state_free(Aggr* self, uint8_t* state)
+{
+	unused(self);
+	unused(state);
+}
+
 static int
 aggr_avg_state_size(Aggr* self)
 {
@@ -94,6 +101,7 @@ AggrIf aggr_avg =
 	.create       = aggr_avg_create,
 	.free         = aggr_avg_free,
 	.state_create = aggr_avg_state_create,
+	.state_free   = aggr_avg_state_free,
 	.state_size   = aggr_avg_state_size,
 	.read         = aggr_avg_read,
 	.write        = aggr_avg_write,

@@ -14,6 +14,7 @@ struct AggrIf
 	Aggr* (*create)(AggrIf*);
 	void  (*free)(Aggr*);
 	void  (*state_create)(Aggr*, uint8_t*);
+	void  (*state_free)(Aggr*, uint8_t*);
 	int   (*state_size)(Aggr*);
 	void  (*read)(Aggr*, uint8_t*, Value*);
 	void  (*write)(Aggr*, uint8_t*, Value*);
@@ -48,6 +49,12 @@ static inline void
 aggr_state_create(Aggr* self, uint8_t* state)
 {
 	self->iface->state_create(self, state);
+}
+
+static inline void
+aggr_state_free(Aggr* self, uint8_t* state)
+{
+	self->iface->state_free(self, state);
 }
 
 static inline void
