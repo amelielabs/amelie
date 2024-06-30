@@ -89,7 +89,6 @@ static Keyword keywords_g[] =
 {
 	{ KGROUP,                 "group",                 5  },
 	{ KGENERATE,              "generate",              8  },
-	{ KGENERATED,             "generated",             9  },
 	{ 0,                       NULL,                   0  }
 };
 

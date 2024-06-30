@@ -210,30 +210,26 @@ insert into test (id) values(3)
 select * from test
 drop table test
 
-# test: constraint generated expr
-create table test (id int primary key, data int generated)
-create table test (id int primary key, data int generated 123)
-
-# test: constraint generated serial
-create table test (id int primary key, data int generated serial)
+# test: constraint serial
+create table test (id int primary key, data int serial)
 select indexes[0].keys from system.tables()
 drop table test
 
-# test: constraint generated serial key
-create table test (id int generated serial primary key)
+# test: constraint serial key
+create table test (id int serial primary key)
 select indexes[0].keys from system.tables()
 drop table test
 
-# test: constraint generated serial key #2
-create table test (id int generated serial, primary key(id))
+# test: constraint serial key #2
+create table test (id int serial, primary key(id))
 select indexes[0].keys from system.tables()
 drop table test
 
-# test: constraint generated serial key type
-create table test (id string generated serial primary key)
+# test: constraint serial key type
+create table test (id string serial primary key)
 
-# test: constraint generated serial multiple columns
-create table test (id int generated serial primary key, data int generated serial)
+# test: constraint serial multiple columns
+create table test (id int serial primary key, data int serial)
 select indexes[0].keys from system.tables()
 drop table test
 

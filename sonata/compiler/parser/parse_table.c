@@ -260,20 +260,6 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// GENERATED
-		case KGENERATED:
-		{
-			// SERIAL
-			if (stmt_if(self, KSERIAL))
-			{
-				constraint_set_generated(cons, GENERATED_SERIAL);
-			} else
-			{
-				error("unsupported GENERATED expression");
-			}
-			break;
-		}
-
 		// PRIMARY KEY
 		case KPRIMARY:
 		{
@@ -319,7 +305,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 static void
 parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
-	// (name type [not null | default | serial | generated | primary key], ...,
+	// (name type [not null | default | serial | primary key], ...,
 	//  primary key())
 
 	// (
@@ -357,7 +343,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
-		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED]
+		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM]
 		parse_constraint(self, keys, column);
 
 		// ,
@@ -444,14 +430,14 @@ parse_validate_constraints(Columns* columns)
 		    cons->generated == GENERATED_RANDOM)
 		{
 			if (column->type != TYPE_INT)
-				error("GENERATED SERIAL column <%.*s> must be integer",
+				error("SERIAL column <%.*s> must be integer",
 				      str_size(&column->name),
 				      str_of(&column->name));
 			continue;
 		}
 
 		if (column->key)
-			error("GENERATED columns cannot be used with keys");
+			error("generated columns cannot be used with keys");
 	}
 }
 

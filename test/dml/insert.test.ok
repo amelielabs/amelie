@@ -294,7 +294,7 @@ insert into test () values ()
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 drop table test
 # test: insert serial
-create table test (id int generated serial primary key)
+create table test (id int serial primary key)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -302,7 +302,7 @@ select * from test
 [[0], [1], [2]]
 drop table test
 # test: insert serial #2
-create table test (id int generated serial primary key, data int)
+create table test (id int serial primary key, data int)
 insert into test (data) values (123)
 insert into test () values ()
 select * from test
@@ -317,7 +317,7 @@ select * from test
 [[0], [1], [2]]
 drop table test
 # test: insert serial directly
-create table test (id int generated serial primary key, data int)
+create table test (id int serial primary key, data int)
 insert into test (data) values (123)
 insert into test (id, data) values (1, 123)
 insert into test () values ()
@@ -325,14 +325,14 @@ select * from test
 [[0, 123], [1, 123], [2, null]]
 drop table test
 # test: insert serial null
-create table test (id int generated serial primary key, data int)
+create table test (id int serial primary key, data int)
 insert into test (id, data) values (null, 123)
 {"code": 1, "msg": "column <id> value cannot be NULL"}
 select * from test
 []
 drop table test
 # test: insert serial multiple column
-create table test (id int generated serial primary key, data int generated serial)
+create table test (id int serial primary key, data int serial)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
