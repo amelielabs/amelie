@@ -424,7 +424,33 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 
 	// WHERE
 	if (target->group_redirect == NULL)
+	{
+		// find lambda and read its state
+		if (target->select)
+		{
+			// get lambda aggregate value using current group by key
+			auto select = ast_select_of(target->select);
+			auto lambda = ast_aggr_match(&select->expr_aggs, name);
+			if (lambda)
+			{
+				// group by keys
+				auto node = select->expr_group_by.list;
+				while (node)
+				{
+					auto group = ast_group_of(node->ast);
+					int rexpr = emit_expr(self, select->target, group->expr);
+					op1(self, CPUSH, rexpr);
+					runpin(self, rexpr);
+					node = node->next;
+				}
+				return op3(self, CGROUP_GET, rpin(self), select->rgroup,
+				           lambda->order);
+			}
+		}
+
+		// read cursor
 		return emit_cursor_idx(self, target, name);
+	}
 
 	// SELECT name GROUP BY
 	// SELECT GROUP BY HAVING name
@@ -440,9 +466,10 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		main = target->group_main;
 
 	// match select label (aggregate or expression)
-	if (main->labels)
+	if (main->select)
 	{
-		auto label = ast_label_match(main->labels, name);
+		auto select = ast_select_of(main->select);
+		auto label  = ast_label_match(&select->expr_labels, name);
 		if (label)
 			return emit_expr(self, target, label->expr);
 	}

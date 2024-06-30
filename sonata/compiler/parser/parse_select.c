@@ -233,7 +233,7 @@ parse_select(Stmt* self)
 	if (stmt_if(self, KFROM))
 	{
 		select->target = parse_from(self, level);
-		select->target->labels = &select->expr_labels;
+		select->target->select = &select->ast;
 	}
 
 	// [WHERE]

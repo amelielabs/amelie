@@ -31,7 +31,6 @@ group_free_node(Group* self, GroupNode* node)
 	}
 	for (int j = 0; j < self->keys_count; j++)
 		value_free(&node->keys[j]);
-
 	so_free(node);
 }
 
@@ -272,6 +271,21 @@ group_write(Group* self, Stack* stack)
 
 	// process aggrs
 	group_write_node(self, node, target_data_aggs);
+}
+
+void
+group_get(Group* self, Stack* stack, int pos, Value* value)
+{
+	int count = self->keys_count;
+	Value* keys[count];
+	for (int i = 0; i < count; i++)
+		keys[i] = stack_at(stack, count - i);
+
+	// find or create group node, copy group by keys
+	auto node = group_find_or_create(self, keys);
+
+	// read aggregate value
+	group_read_aggr(self, node, pos, value);
 }
 
 void

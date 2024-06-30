@@ -147,6 +147,7 @@ vm_run(Vm*          self,
 		&&cgroup,
 		&&cgroup_add,
 		&&cgroup_write,
+		&&cgroup_get,
 		&&cgroup_read,
 		&&cgroup_read_aggr,
 		&&cgroup_merge_recv,
@@ -250,7 +251,7 @@ cresult:
 
 cbody:
 	// [order]
-	body_add(self->body, result_at(cte, op->a));
+	body_add(self->body, result_at(cte, op->a), true);
 	op_next;
 
 ccte_set:
@@ -464,6 +465,14 @@ cgroup_write:
 	group = (Group*)r[op->a].obj;
 	group_write(group, stack);
 	stack_popn(stack, group->keys_count + group->aggr_count);
+	op_next;
+
+cgroup_get:
+	// [result, group, pos]
+	// get current aggregate value by key
+	group = (Group*)r[op->b].obj;
+	group_get(group, stack, op->c, &r[op->a]);
+	stack_popn(stack, group->keys_count);
 	op_next;
 
 cgroup_read:

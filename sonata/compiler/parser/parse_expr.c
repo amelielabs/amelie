@@ -225,6 +225,34 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	return &aggr->ast;
 }
 
+static inline Ast*
+expr_lambda(Stmt* self, Expr* expr, Ast* name)
+{
+	if (unlikely(expr == NULL || !expr->aggs))
+		error("unexpected lambda usage");
+
+	// ensure lambda is not redefined
+	auto node = expr->aggs->list;
+	for (; node; node = node->next)
+	{
+		auto aggr = ast_aggr_of(node->ast);
+		if (! aggr->name)
+			continue;
+		if (str_compare(&aggr->name->string, &name->string))
+			error("lambda <%.*s> redefined", str_size(&name->string),
+			      str_of(&name->string));
+	}
+
+	// name => expr
+	auto arg = parse_expr(self, expr);
+
+	// create aggregate ast node
+	auto aggr = ast_aggr_allocate(AGGR_LAMBDA, expr->aggs->count, arg);
+	ast_list_add(expr->aggs, &aggr->ast);
+	aggr->name = name;
+	return &aggr->ast;
+}
+
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
@@ -300,10 +328,17 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KNAME:
 	case KNAME_COMPOUND:
 	{
+		// name => lambda expr
+		if (stmt_if(self, KARROW))
+		{
+			value = expr_lambda(self, expr, value);
+			break;
+		}
+
+		// function(expr, ...)
 		auto call = stmt_if(self, '(');
 		if (call)
 		{
-			// function(expr, ...)
 			call->l = value;
 			call->r = expr_call(self, expr, ')', false);
 			value = call;

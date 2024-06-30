@@ -22,6 +22,25 @@ value_array(Value* result, Stack* stack, int count)
 }
 
 static inline void
+value_array_append(Value* result, uint8_t* data, int data_size, Value* value)
+{
+	auto buf = buf_begin();
+	if (! data)
+	{
+		encode_array(buf);
+		value_write(value, buf);
+		encode_array_end(buf);
+	} else
+	{
+		buf_write(buf, data, data_size - data_size_array_end());
+		value_write(value, buf);
+		encode_array_end(buf);
+	}
+	buf_end(buf);
+	value_set_buf(result, buf);
+}
+
+static inline void
 value_array_set(Value* result, uint8_t* pos, int idx, Value* value)
 {
 	data_read_array(&pos);

@@ -27,7 +27,7 @@ struct Target
 	Ast*         expr_on;
 	int          rexpr;
 	// target
-	AstList*     labels;
+	Ast*         select;
 	Ast*         path;
 	Table*       table;
 	IndexConfig* index;
@@ -51,7 +51,7 @@ target_init(Target* self, Table* table)
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;
-	self->labels          = NULL;
+	self->select          = NULL;
 	self->path            = NULL;
 	self->table           = table;
 	self->index           = NULL;

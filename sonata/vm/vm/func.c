@@ -62,6 +62,18 @@ func_unset(Vm*       vm,
 }
 
 hot static void
+func_append(Vm*       vm,
+            Function* func,
+            Value*    result,
+            int       argc,
+            Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	value_append(result, argv[0], argv[1]);
+}
+
+hot static void
 func_sizeof(Vm*       vm,
             Function* func,
             Value*    result,
@@ -272,6 +284,7 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "has",         (FunctionMain)func_has,        2 },
 		{ "public", "set",         (FunctionMain)func_set,        3 },
 		{ "public", "unset",       (FunctionMain)func_unset,      2 },
+		{ "public", "append",      (FunctionMain)func_append,     2 },
 		{ "public", "sizeof",      (FunctionMain)func_sizeof,     1 },
 		{ "public", "string",      (FunctionMain)func_string,     1 },
 		{ "public", "json",        (FunctionMain)func_json,       1 },

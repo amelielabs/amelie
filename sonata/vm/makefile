@@ -40,6 +40,7 @@ OBJECTS        = \
                  aggr/avg.o \
                  aggr/min.o \
                  aggr/max.o \
+                 aggr/lambda.o \
                  aggr/aggrs.o \
                  aggr/group.o \
                  aggr/group_merge.o \

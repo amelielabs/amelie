@@ -46,6 +46,7 @@ test subselect
 test order_by
 test label
 test planner
+test lambda
 
 # pushdown
 directory pushdown

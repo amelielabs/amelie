@@ -111,6 +111,7 @@ OpDesc ops[] =
 	{ CGROUP,             "group"             },
 	{ CGROUP_ADD,         "group_add"         },
 	{ CGROUP_WRITE,       "group_write"       },
+	{ CGROUP_GET,         "group_get"         },
 	{ CGROUP_READ,        "group_read"        },
 	{ CGROUP_READ_AGGR,   "group_read_aggr"   },
 	{ CGROUP_MERGE_RECV,  "group_merge_recv"  },

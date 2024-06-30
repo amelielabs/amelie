@@ -51,6 +51,10 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
+  "name": "append",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "sizeof",
   "argc": 1
 }, {
@@ -122,6 +126,10 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "unset",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "append",
   "argc": 2
 }, {
   "schema": "public",

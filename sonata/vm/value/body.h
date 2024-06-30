@@ -7,7 +7,7 @@
 //
 
 hot static inline void
-body_add(Buf* self, Value* value)
+body_add(Buf* self, Value* value, bool pretty)
 {
 	switch (value->type) {
 	case VALUE_INT:
@@ -33,7 +33,10 @@ body_add(Buf* self, Value* value)
 	case VALUE_DATA:
 	{
 		uint8_t* pos = value->data;
-		json_export_pretty(self, &pos);
+		if (pretty)
+			json_export_pretty(self, &pos);
+		else
+			json_export(self, &pos);
 		break;
 	}
 	case VALUE_SET:
@@ -44,7 +47,7 @@ body_add(Buf* self, Value* value)
 		break;
 	// VALUE_GROUP
 	default:
-		assert(0);
+		error("operation unsupported");
 		break;
 	}
 }

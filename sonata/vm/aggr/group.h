@@ -31,6 +31,7 @@ Group*
 group_create(int);
 void group_add(Group*, AggrIf*);
 void group_write(Group*, Stack*);
+void group_get(Group*, Stack*, int, Value*);
 void group_read_aggr(Group*, GroupNode*, int, Value*);
 void group_read(Group*, GroupNode*, Value*);
 

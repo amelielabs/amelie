@@ -25,6 +25,7 @@
 #include "aggr/avg.h"
 #include "aggr/min.h"
 #include "aggr/max.h"
+#include "aggr/lambda.h"
 
 // group
 #include "aggr/group.h"

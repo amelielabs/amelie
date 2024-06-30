@@ -12,7 +12,8 @@ enum
 	AGGR_SUM,
 	AGGR_AVG,
 	AGGR_MIN,
-	AGGR_MAX
+	AGGR_MAX,
+	AGGR_LAMBDA
 };
 
-extern AggrIf *aggrs[];
+extern AggrIf* aggrs[];

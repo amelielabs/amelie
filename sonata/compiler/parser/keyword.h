@@ -38,6 +38,7 @@ enum
 
 	KCALL,
 	KMETHOD,
+	KARROW,
 	KNEG,
 	KARRAY,
 	KSTAR,

@@ -72,7 +72,7 @@ merge_decode(ValueObj* obj, Buf* buf)
 			body_add_comma(buf);
 		else
 			first = false;
-		body_add(buf, &row->value);
+		body_add(buf, &row->value, true);
 		merge_iterator_next(&it);
 	}
 }

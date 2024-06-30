@@ -55,6 +55,14 @@ group_node_free(void** argv)
 {
 	Group*     self = ((void**)argv)[0];
 	GroupNode* node = ((void**)argv)[1];
+
+	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
+	list_foreach(&self->aggrs)
+	{
+		auto aggr = list_at(Aggr, link);
+		aggr_state_free(aggr, aggr_state);
+		aggr_state += aggr_state_size(aggr);
+	}
 	for (int j = 0; j < self->keys_count; j++)
 		value_free(&node->keys[j]);
 	so_free(node);

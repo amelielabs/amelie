@@ -1,0 +1,63 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 2
+connect E0 S0 localhost:3485
+
+# test: lambda parsing
+select =>
+select 1 =>
+select name =>
+select name => true
+
+# test: lambda (init)
+select n => true from []
+select n => true from [1]
+select n => * from [1,2,3]
+
+# test: lambda (state access)
+explain select n => n from [1,2,3]
+select n => n from [1,2,3]
+
+select n => n::append(*) from [1,2,3]
+select n => n::append(*)::append(n) from [1,2,3]
+select n => n::append(*)::append(n::string) from [1,2,3]
+select * from (select n => n::append(*) from [1,2,3])
+
+select obj => obj::set(*, [*]) from ["a", "b", "c"]
+select obj => obj::set("key_" || *::string, *) from [1,2,3]
+
+# test: lambda (crosss state access)
+select i => i::append(*), j => j::append(i) from [1,2,3]
+
+# test: lambda (label)
+select (n => n::append(*)) as N from [1,2,3]
+
+# test: lambda (group by)
+select *, n => n::append(*) from [1,2,2,3] group by *
+
+# test: lambda (reference table)
+create table test (id int primary key) reference
+insert into test 1,2,3,4,5
+select n => n::append(id) from test
+drop table test
+
+create table test (id int primary key, data int) reference
+insert into test values (0, 0)
+insert into test values (1, 1)
+insert into test values (2, 2)
+insert into test values (3, 1)
+insert into test values (4, 3)
+
+select n => n::append(data) from test
+select data, n => n::append(id) from test group by data
+drop table test
+
+# test: lambda (distributed table)
+create table test (id int primary key)
+insert into test 1,2,3,4,5
+select n => n::append(id) from test
+explain select n => n::append(id) from test
+drop table test
+
+disconnect S0
+close E0

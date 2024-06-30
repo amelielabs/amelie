@@ -365,23 +365,13 @@ value_sizeof(Value* result, Value* a)
 always_inline hot static inline void
 value_to_string(Value* result, Value* a)
 {
-	// todo: check type
-	if (unlikely(a->type != VALUE_DATA))
-		error("to_string(): array/map type expected");
-
 	auto data = buf_begin();
-	value_write(a, data);
-	auto data_pos = data->start;
-	auto buf = buf_begin();
-	json_export(buf, &data_pos);
+	body_add(data, a, false);
 	buf_end(data);
-	buf_free(data);
-
 	Str string;
 	str_init(&string);
-	str_set(&string, (char*)buf->start, buf_size(buf));
-	value_set_string(result, &string, buf);
-	buf_end(buf);
+	str_set(&string, (char*)data->start, buf_size(data));
+	value_set_string(result, &string, data);
 }
 
 always_inline hot static inline void
@@ -426,6 +416,13 @@ value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 always_inline hot static inline void
 value_idx_set(Value* result, Value* a, Value* b, Value* c)
 {
+	if (unlikely(a->type == VALUE_NULL))
+	{
+		if (unlikely(b->type != VALUE_STRING))
+			error("set(): path type must be string");
+		value_map_as(result, b, c);
+		return;
+	}
 	if (unlikely(a->type != VALUE_DATA))
 		error("set(): map or array type expected");
 	if (data_is_map(a->data))
@@ -518,4 +515,27 @@ value_idx(Value* result, Value* a, Value* b)
 	{
 		error("[]: map or array type expected");
 	}
+}
+
+always_inline hot static inline void
+value_append(Value* result, Value* a, Value* b)
+{
+	uint8_t* data;
+	int      data_size;
+	if (a->type == VALUE_DATA)
+	{
+		data = a->data;
+		data_size = a->data_size;
+		if (! data_is_array(data))
+			error("append(): array or null expected");
+	} else
+	if (a->type == VALUE_NULL)
+	{
+		data = NULL;
+		data_size = 0;
+	} else
+	{
+		error("append(): array or null expected");
+	}
+	value_array_append(result, data, data_size, b);
 }
