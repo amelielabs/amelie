@@ -6,6 +6,71 @@
 // Real-Time SQL Database.
 //
 
+hot static inline void
+data_skip(uint8_t** pos)
+{
+	int level = 0;
+	do
+	{
+		switch (**pos) {
+		case SO_TRUE:
+		case SO_FALSE:
+		{
+			bool value;
+			data_read_bool(pos, &value);
+			break;
+		}
+		case SO_NULL:
+		{
+			data_read_null(pos);
+			break;
+		}
+		case SO_REAL32:
+		case SO_REAL64:
+		{
+			double value;
+			data_read_real(pos, &value);
+			break;
+		}
+		case SO_INTV0 ... SO_INT64:
+		{
+			int64_t value;
+			data_read_integer(pos, &value);
+			break;
+		}
+		case SO_STRINGV0 ... SO_STRING32:
+		{
+			int   value_size;
+			char* value;
+			data_read_raw(pos, &value, &value_size);
+			break;
+		}
+		case SO_ARRAY:
+		case SO_MAP:
+			*pos += data_size_type();
+			level++;
+			break;
+		case SO_ARRAY_END:
+		case SO_MAP_END:
+			*pos += data_size_type();
+			level--;
+			break;
+		case SO_INTERVAL:
+		{
+			*pos += data_size_type();
+			int64_t value;
+			data_read_integer(pos, &value);
+			data_read_integer(pos, &value);
+			data_read_integer(pos, &value);
+			break;
+		}
+		default:
+			error_data();
+			break;
+		}
+	} while (level > 0);
+}
+
 hot static inline bool
 map_find(uint8_t** pos, const char* name, int64_t name_size)
 {

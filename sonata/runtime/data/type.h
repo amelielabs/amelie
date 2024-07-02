@@ -31,7 +31,9 @@ enum
 	SO_MAP        = 78,
 	SO_MAP_END    = 79,
 	SO_ARRAY      = 80,
-	SO_ARRAY_END  = 81
+	SO_ARRAY_END  = 81,
+
+	SO_INTERVAL   = 82
 };
 
 static inline char*
@@ -54,6 +56,8 @@ type_to_string(int type)
 		return "map";
 	case SO_ARRAY ... SO_ARRAY_END:
 		return "array";
+	case SO_INTERVAL:
+		return "interval";
 	}
 	return "<unknown>";
 }

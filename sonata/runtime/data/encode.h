@@ -103,3 +103,10 @@ encode_uuid(Buf* self, Uuid* uuid)
 	uuid_to_string(uuid, uuid_sz, sizeof(uuid_sz));
 	encode_raw(self, uuid_sz, sizeof(uuid_sz) - 1);
 }
+
+always_inline hot static inline void
+encode_interval(Buf* self, Interval* iv)
+{
+	auto pos = buf_reserve(self, data_size_interval(iv));
+	data_write_interval(pos, iv);
+}

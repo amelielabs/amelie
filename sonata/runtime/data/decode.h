@@ -10,16 +10,18 @@ typedef struct Decode Decode;
 
 enum
 {
-	DECODE_UUID   = 1 << 0,
-	DECODE_STRING = 1 << 1,
-	DECODE_INT    = 1 << 2,
-	DECODE_BOOL   = 1 << 3,
-	DECODE_REAL   = 1 << 4,
-	DECODE_NULL   = 1 << 5,
-	DECODE_ARRAY  = 1 << 6,
-	DECODE_MAP    = 1 << 7,
-	DECODE_DATA   = 1 << 8,
-	DECODE_FOUND  = 1 << 9
+	DECODE_UUID            = 1 << 0,
+	DECODE_STRING          = 1 << 1,
+	DECODE_INT             = 1 << 2,
+	DECODE_BOOL            = 1 << 3,
+	DECODE_REAL            = 1 << 4,
+	DECODE_NULL            = 1 << 5,
+	DECODE_ARRAY           = 1 << 6,
+	DECODE_MAP             = 1 << 7,
+	DECODE_DATA            = 1 << 8,
+	DECODE_INTERVAL        = 1 << 9,
+	DECODE_INTERVAL_STRING = 1 << 10,
+	DECODE_FOUND           = 1 << 11
 };
 
 struct Decode
@@ -46,6 +48,24 @@ decode_map(Decode* self, uint8_t** pos)
 				continue;
 
 			switch (ref->flags & ~DECODE_FOUND) {
+			case DECODE_INTERVAL:
+			{
+				if (unlikely(! data_is_interval(*pos)))
+					error("config: interval expected for '%s'", ref->key);
+				auto value = (Interval*)ref->value;
+				data_read_interval(pos, value);
+				break;
+			}
+			case DECODE_INTERVAL_STRING:
+			{
+				if (unlikely(! data_is_string(*pos)))
+					error("config: string expected for '%s'", ref->key);
+				Str str;
+				data_read_string(pos, &str);
+				auto value = (Interval*)ref->value;
+				interval_read(value, &str);
+				break;
+			}
 			case DECODE_UUID:
 			{
 				if (unlikely(! data_is_string(*pos)))

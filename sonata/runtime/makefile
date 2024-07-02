@@ -35,6 +35,7 @@ OBJECTS        = \
                  lib/random.o \
                  lib/uuid.o \
                  lib/crc.o \
+                 lib/interval.o \
                  data/json.o \
                  data/json_export.o \
                  config/config.o \
