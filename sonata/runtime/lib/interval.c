@@ -169,3 +169,81 @@ interval_read(Interval* self, Str* str)
 error:
 	error("malformed interval string");
 }
+
+int
+interval_write(Interval* self, char* str, int str_size)
+{
+	// years/months
+	int size = 0;
+	if (self->m > 0)
+	{
+		int m = self->m;
+		int y = m / 12;
+		if (y > 0)
+		{
+			size += snprintf(str + size, str_size - size, "%d years ", y);
+			m = m % 12;
+		}
+		if (m > 0)
+			size += snprintf(str + size, str_size - size, "%d months ", m);
+	}
+
+	// weeks/days
+	if (self->d > 0)
+	{
+		int d = self->d;
+		int w = d / 7;
+		if (w > 0)
+		{
+			size += snprintf(str + size, str_size - size, "%d weeks ", w);
+			d = d % 7;
+		}
+		if (d > 0)
+			size += snprintf(str + size, str_size - size, "%d days ", d);
+	}
+
+	// hours
+	uint64_t us = self->us;
+	uint64_t hours = us / (60ULL * 60 * 1000 * 1000);
+	if (hours > 0)
+	{
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " hours ", hours);
+		us = us % (60ULL * 60 * 1000 * 1000);
+	}
+
+	// minutes
+	uint64_t minutes = us / (60ULL * 1000 * 1000);
+	if (minutes > 0)
+	{
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " minutes ", minutes);
+		us = us % (60ULL * 1000 * 1000);
+	}
+
+	// seconds
+	uint64_t seconds = us / (1000ULL * 1000);
+	if (seconds > 0)
+	{
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " seconds ", seconds);
+		us = us % (1000ULL * 1000);
+	}
+
+	// milliseconds
+	uint64_t ms = us / 1000;
+	if (ms > 0)
+	{
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " ms ", ms);
+		us = us % 1000;
+	}
+
+	// microseconds
+	if (us > 0)
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " us ", us);
+
+	// remove last space
+	if (size > 0)
+	{
+		str[size] = 0;
+		size--;
+	}
+	return size;
+}

@@ -115,6 +115,17 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		}
 		break;
 	}
+	case SO_INTERVAL:
+	{
+		Interval iv;
+		interval_init(&iv);
+		data_read_interval(pos, &iv);
+		buf_len = interval_write(&iv, buf, sizeof(buf));
+		buf_write(data, "\"", 1);
+		buf_write(data, buf, buf_len);
+		buf_write(data, "\"", 1);
+		break;
+	}
 	default:
 		error_data();
 		break;
