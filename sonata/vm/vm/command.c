@@ -572,7 +572,7 @@ cmerge(Vm* self, Op* op)
 	// add set
 	auto value = reg_at(&self->r, op->b);
 	merge_add(merge, (Set*)value->obj);
-	value->type = VALUE_NONE;
+	value_reset(value);
 
 	// prepare merge and apply offset
 	merge_open(merge, distinct, limit, offset);
@@ -622,7 +622,7 @@ cmerge_recv(Vm* self, Op* op)
 		if (value->type == VALUE_SET)
 		{
 			merge_add(merge, (Set*)value->obj);
-			value->type = VALUE_NONE;
+			value_reset(value);
 		}
 	}
 
@@ -659,8 +659,9 @@ cgroup_merge_recv(Vm* self, Op* op)
 		value_free(list[i]);
 
 	// return merged group
-	value_set_group(reg_at(&self->r, op->a), list[0]->obj);
-	list[0]->type = VALUE_NONE;
+	auto value = list[0];
+	value_set_group(reg_at(&self->r, op->a), value->obj);
+	value_reset(value);
 }
 
 hot void
@@ -791,6 +792,5 @@ crecv_to(Vm* self, Op* op)
 
 	auto stmt = dispatch_stmt(&self->plan->dispatch, op->b);
 	auto req  = container_of(list_first(&stmt->req_list.list), Req, link);
-	*reg_at(&self->r, op->a) = req->result;
-	req->result.type = VALUE_NONE;
+	value_move(reg_at(&self->r, op->a), &req->result);
 }

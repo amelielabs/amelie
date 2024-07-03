@@ -114,6 +114,22 @@ func_json(Vm*       vm,
 }
 
 hot static void
+func_interval(Vm*       vm,
+              Function* func,
+              Value*    result,
+              int       argc,
+              Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	function_validate_arg(func, argv, 0, VALUE_STRING);
+	Interval iv;
+	interval_init(&iv);
+	interval_read(&iv, &argv[0]->string);
+	value_set_interval(result, &iv);
+}
+
+hot static void
 func_error(Vm*       vm,
            Function* func,
            Value*    result,
@@ -288,6 +304,7 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "sizeof",      (FunctionMain)func_sizeof,     1 },
 		{ "public", "string",      (FunctionMain)func_string,     1 },
 		{ "public", "json",        (FunctionMain)func_json,       1 },
+		{ "public", "interval",    (FunctionMain)func_interval,   1 },
 		{ "public", "error",       (FunctionMain)func_error,      1 },
 		// system
 		{ "system", "config",      (FunctionMain)func_config,     0 },

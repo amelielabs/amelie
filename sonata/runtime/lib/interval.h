@@ -33,3 +33,4 @@ interval_set(Interval* self, int m, int d, uint64_t us)
 
 void interval_read(Interval*, Str*);
 int  interval_write(Interval*, char*, int);
+int  interval_compare(Interval*, Interval*);

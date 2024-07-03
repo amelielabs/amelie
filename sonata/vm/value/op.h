@@ -18,6 +18,7 @@ value_is_true(Value* a)
 	case VALUE_NULL:
 		return false;
 	case VALUE_DATA:
+	case VALUE_INTERVAL:
 	case VALUE_STRING:
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -366,8 +367,23 @@ always_inline hot static inline void
 value_to_string(Value* result, Value* a)
 {
 	auto data = buf_begin();
-	body_add(data, a, false);
+	switch (a->type) {
+	case VALUE_STRING:
+		buf_printf(data, "%.*s", str_size(&a->string), str_of(&a->string));
+		break;
+	case VALUE_INTERVAL:
+	{
+		buf_reserve(data, 512);
+		int size = interval_write(&a->interval, (char*)data->position, 512);
+		buf_advance(data, size);
+		break;
+	}
+	default:
+		body_add(data, a, false);
+		break;
+	}
 	buf_end(data);
+
 	Str string;
 	str_init(&string);
 	str_set(&string, (char*)data->start, buf_size(data));

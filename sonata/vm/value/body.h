@@ -39,6 +39,15 @@ body_add(Buf* self, Value* value, bool pretty)
 			json_export(self, &pos);
 		break;
 	}
+	case VALUE_INTERVAL:
+	{
+		buf_write(self, "\"", 1);
+		buf_reserve(self, 512);
+		int size = interval_write(&value->interval, (char*)self->position, 512);
+		buf_advance(self, size);
+		buf_write(self, "\"", 1);
+		break;
+	}
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(self, "[", 1);

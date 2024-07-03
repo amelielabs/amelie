@@ -245,8 +245,7 @@ crecv_to:
 
 cresult:
 	// [result]
-	*self->result = r[op->a];
-	r[op->a].type = VALUE_NONE;
+	value_move(self->result, &r[op->a]);
 	op_next;
 
 cbody:
@@ -256,8 +255,7 @@ cbody:
 
 ccte_set:
 	// [order, result]
-	*result_at(cte, op->a) = r[op->b];
-	r[op->b].type = VALUE_NONE;
+	value_move(result_at(cte, op->a), &r[op->b]);
 	op_next;
 
 csleep:
@@ -265,8 +263,7 @@ csleep:
 	op_next;
 
 cpush:
-	*stack_push(stack) = r[op->a];
-	r[op->a].type = VALUE_NONE;
+	value_move(stack_push(stack), &r[op->a]);
 	op_next;
 
 cpop:

@@ -46,7 +46,8 @@ value_compare(Value* a, Value* b)
 		return str_compare_fn(&a->string, &b->string);
 	case VALUE_DATA:
 		return data_compare(a->data, b->data);
-
+	case VALUE_INTERVAL:
+		return interval_compare(&a->interval, &b->interval);
 	// VALUE_NONE:
 	// VALUE_SET:
 	// VALUE_MERGE:

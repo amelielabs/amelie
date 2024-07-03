@@ -18,6 +18,7 @@ typedef enum
 	VALUE_NULL,
 	VALUE_STRING,
 	VALUE_DATA,
+	VALUE_INTERVAL,
 	VALUE_SET,
 	VALUE_MERGE,
 	VALUE_GROUP
@@ -35,9 +36,10 @@ struct Value
 	ValueType type;
 	union
 	{
-		int64_t integer;
-		double  real;
-		Str     string;
+		int64_t  integer;
+		double   real;
+		Str      string;
+		Interval interval;
 		struct {
 			uint8_t* data;
 			int      data_size;
@@ -60,7 +62,10 @@ value_free(Value* self)
 		return;
 
 	if (unlikely(self->buf))
+	{
 		buf_free(self->buf);
+		self->buf = NULL;
+	}
 
 	if (unlikely(self->type == VALUE_SET   ||
 	             self->type == VALUE_MERGE ||
@@ -68,6 +73,20 @@ value_free(Value* self)
 		self->obj->free(self->obj);
 
 	self->type = VALUE_NONE;
+}
+
+always_inline hot static inline void
+value_reset(Value* self)
+{
+	self->type = VALUE_NONE;
+	self->buf  = NULL;
+}
+
+always_inline hot static inline void
+value_move(Value* self, Value* from)
+{
+	*self = *from;
+	value_reset(from);
 }
 
 always_inline hot static inline void
@@ -122,6 +141,13 @@ always_inline hot static inline void
 value_set_buf(Value* self, Buf* buf)
 {
 	value_set_data(self, buf->start, buf_size(buf), buf);
+}
+
+always_inline hot static inline void
+value_set_interval(Value* self, Interval* iv)
+{
+	self->type     = VALUE_INTERVAL;
+	self->interval = *iv;
 }
 
 always_inline hot static inline void
@@ -199,6 +225,13 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 			buf_ref(buf);
 		break;
 	}
+	case SO_INTERVAL:
+	{
+		Interval iv;
+		data_read_interval(&data, &iv);
+		value_set_interval(self, &iv);
+		break;
+	}
 	default:
 		error_data();
 		break;
@@ -226,6 +259,9 @@ value_write(Value* self, Buf* buf)
 		break;
 	case VALUE_DATA:
 		buf_write(buf, self->data, self->data_size);
+		break;
+	case VALUE_INTERVAL:
+		encode_interval(buf, &self->interval);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -261,6 +297,9 @@ value_write_data(Value* self, uint8_t** pos)
 		memcpy(*pos, self->data, self->data_size);
 		*pos += self->data_size;
 		break;
+	case VALUE_INTERVAL:
+		data_write_interval(pos, &self->interval);
+		break;
 	default:
 		error("operation is not supported");
 		break;
@@ -283,6 +322,8 @@ value_size(Value* self)
 		return data_size_null();
 	case VALUE_DATA:
 		return self->data_size;
+	case VALUE_INTERVAL:
+		return data_size_interval(&self->interval);
 	default:
 		error("operation is not supported");
 		break;
@@ -335,7 +376,9 @@ value_copy(Value* self, Value* src)
 			value_set_buf(self, buf);
 		}
 		break;
-
+	case VALUE_INTERVAL:
+		value_set_interval(self, &src->interval);
+		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
@@ -373,6 +416,9 @@ value_copy_ref(Value* self, Value* src)
 		break;
 	case VALUE_DATA:
 		value_set_data(self, src->data, src->data_size, NULL);
+		break;
+	case VALUE_INTERVAL:
+		value_set_interval(self, &src->interval);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:

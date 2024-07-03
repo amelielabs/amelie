@@ -17,7 +17,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// minutes
 		// minute
 		if (str_compare_raw(type, "minutes", 7) ||
-			str_compare_raw(type, "minute", 6))
+		    str_compare_raw(type, "minute", 6))
 		{
 			self->us += value * 60ULL * 1000 * 1000;
 			return;
@@ -26,7 +26,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// month
 		// months
 		if (str_compare_raw(type, "months", 6) ||
-			str_compare_raw(type, "month", 5))
+		    str_compare_raw(type, "month", 5))
 		{
 			self->m += value;
 			return;
@@ -35,9 +35,9 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// milliseconds
 		// millisecond
 		// ms
-		if (str_compare_raw(type, "ms", 2) ||
-			str_compare_raw(type, "milliseconds", 12) ||
-			str_compare_raw(type, "millisecond", 11))
+		if (str_compare_raw(type, "ms", 2)            ||
+		    str_compare_raw(type, "milliseconds", 12) ||
+		    str_compare_raw(type, "millisecond", 11))
 		{
 			self->us += value * 1000ULL;
 			return;
@@ -46,7 +46,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// microseconds
 		// microsecond
 		if (str_compare_raw(type, "microseconds", 12) ||
-			str_compare_raw(type, "microsecond", 11))
+		    str_compare_raw(type, "microsecond", 11))
 		{
 			self->us += value;
 			return;
@@ -65,10 +65,10 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// second
 		// secs
 		// sec
-		if (str_compare_raw(type, "secs", 4) ||
-			str_compare_raw(type, "sec", 3) ||
-			str_compare_raw(type, "seconds", 7) ||
-			str_compare_raw(type, "second", 6))
+		if (str_compare_raw(type, "secs", 4)    ||
+		    str_compare_raw(type, "sec", 3)     ||
+		    str_compare_raw(type, "seconds", 7) ||
+		    str_compare_raw(type, "second", 6))
 		{
 			self->us += value * 1000ULL * 1000;
 			return;
@@ -80,9 +80,9 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// hrs	
 		// hr
 		if (str_compare_raw(type, "hrs", 3)   ||
-			str_compare_raw(type, "hr", 2)    ||
-			str_compare_raw(type, "hours", 5) ||
-			str_compare_raw(type, "hour", 4))
+		    str_compare_raw(type, "hr", 2)    ||
+		    str_compare_raw(type, "hours", 5) ||
+		    str_compare_raw(type, "hour", 4))
 		{
 			self->us += value * 60ULL * 60 * 1000 * 1000;
 			return;
@@ -92,7 +92,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// days
 		// day
 		if (str_compare_raw(type, "days", 4) ||
-			str_compare_raw(type, "day", 3))
+		    str_compare_raw(type, "day", 3))
 		{
 			self->d += value;
 			return;
@@ -102,7 +102,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// weeks
 		// week
 		if (str_compare_raw(type, "weeks", 5) ||
-			str_compare_raw(type, "week", 4))
+		    str_compare_raw(type, "week", 4))
 		{
 			self->d += value * 7;
 			return;
@@ -112,7 +112,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		// year
 		// years
 		if (str_compare_raw(type, "years", 5) ||
-			str_compare_raw(type, "year", 4))
+		    str_compare_raw(type, "year", 4))
 		{
 			self->m += value * 12;
 			return;
@@ -174,6 +174,7 @@ int
 interval_write(Interval* self, char* str, int str_size)
 {
 	// years/months
+	const char* span;
 	int size = 0;
 	if (self->m > 0)
 	{
@@ -181,11 +182,15 @@ interval_write(Interval* self, char* str, int str_size)
 		int y = m / 12;
 		if (y > 0)
 		{
-			size += snprintf(str + size, str_size - size, "%d years ", y);
+			span = y > 1? "years": "year";
+			size += snprintf(str + size, str_size - size, "%d %s ", y, span);
 			m = m % 12;
 		}
 		if (m > 0)
-			size += snprintf(str + size, str_size - size, "%d months ", m);
+		{
+			span = m > 1? "months": "month";
+			size += snprintf(str + size, str_size - size, "%d %s ", m, span);
+		}
 	}
 
 	// weeks/days
@@ -195,11 +200,15 @@ interval_write(Interval* self, char* str, int str_size)
 		int w = d / 7;
 		if (w > 0)
 		{
-			size += snprintf(str + size, str_size - size, "%d weeks ", w);
+			span = w > 1? "weeks": "week";
+			size += snprintf(str + size, str_size - size, "%d %s ", w, span);
 			d = d % 7;
 		}
 		if (d > 0)
-			size += snprintf(str + size, str_size - size, "%d days ", d);
+		{
+			span = d > 1? "days": "day";
+			size += snprintf(str + size, str_size - size, "%d %s ", d, span);
+		}
 	}
 
 	// hours
@@ -207,7 +216,8 @@ interval_write(Interval* self, char* str, int str_size)
 	uint64_t hours = us / (60ULL * 60 * 1000 * 1000);
 	if (hours > 0)
 	{
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " hours ", hours);
+		span = hours > 1? "hours": "hour";
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", hours, span);
 		us = us % (60ULL * 60 * 1000 * 1000);
 	}
 
@@ -215,7 +225,8 @@ interval_write(Interval* self, char* str, int str_size)
 	uint64_t minutes = us / (60ULL * 1000 * 1000);
 	if (minutes > 0)
 	{
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " minutes ", minutes);
+		span = minutes > 1? "minutes": "minute";
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", minutes, span);
 		us = us % (60ULL * 1000 * 1000);
 	}
 
@@ -223,7 +234,8 @@ interval_write(Interval* self, char* str, int str_size)
 	uint64_t seconds = us / (1000ULL * 1000);
 	if (seconds > 0)
 	{
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " seconds ", seconds);
+		span = seconds > 1? "seconds": "second";
+		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", seconds, span);
 		us = us % (1000ULL * 1000);
 	}
 
@@ -241,9 +253,18 @@ interval_write(Interval* self, char* str, int str_size)
 
 	// remove last space
 	if (size > 0)
-	{
-		str[size] = 0;
 		size--;
-	}
 	return size;
+}
+
+hot int
+interval_compare(Interval* a, Interval* b)
+{
+	auto rc = compare_int64(a->m, b->m);
+	if (rc != 0)
+		return rc;
+	rc = compare_int64(a->d, b->d);
+	if (rc != 0)
+		return rc;
+	return compare_int64(a->us, b->us);
 }

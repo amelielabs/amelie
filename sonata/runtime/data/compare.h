@@ -149,6 +149,19 @@ data_compare(uint8_t* a, uint8_t* b)
 			level--;
 			break;
 		}
+		case SO_INTERVAL:
+		{
+			if (! data_is_interval(b))
+				return compare_int64(*a, *b);
+			Interval a_iv;
+			Interval b_iv;
+			data_read_interval(&a, &a_iv);
+			data_read_interval(&b, &b_iv);
+			rc = interval_compare(&a_iv, &b_iv);
+			if (rc != 0)
+				return rc;
+			break;
+		}
 		}
 
 	} while (level > 0);

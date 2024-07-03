@@ -13,7 +13,6 @@ value_map(Value* result, Stack* stack, int count)
 		error("{}: incorrect map size");
 
 	auto buf = buf_begin();
-
 	encode_map(buf);
 	for (int i = 0; i < count ; i++)
 	{
