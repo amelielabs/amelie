@@ -1,0 +1,107 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: interval parsing
+# test: year
+select '1 year'::interval
+"1 year"
+select '2 years'::interval
+"2 years"
+select '2 year'::interval
+"2 years"
+select '200 years'::interval
+"200 years"
+# test: month
+select '1 month'::interval
+"1 month"
+select '1 months'::interval
+"1 month"
+select '3 months'::interval
+"3 months"
+select '5 years 3 months'::interval
+"5 years 3 months"
+select '3 months 5 years'::interval
+"5 years 3 months"
+# test: week
+select '5 weeks'::interval
+"35 days"
+select '5 week'::interval
+"35 days"
+select '1 week'::interval
+"7 days"
+select '1 year 3 weeks'::interval
+"1 year 21 days"
+select '1 week 2 weeks 3 weeks'::interval
+"42 days"
+# test: day
+select '1 week 15 days'::interval
+"22 days"
+select '15 days'::interval
+"15 days"
+select '1 day'::interval
+"1 day"
+select '15 years 10 days'::interval
+"15 years 10 days"
+select '15 years 500 days'::interval
+"15 years 500 days"
+select '15 years 6 days'::interval
+"15 years 6 days"
+select '15 years 7 days'::interval
+"15 years 7 days"
+select '15 years 8 days'::interval
+"15 years 8 days"
+select '15 years 9 days'::interval
+"15 years 9 days"
+# test: hour
+select '15 years 28 hours'::interval
+"15 years 28 hours"
+select '15 years 27 hours'::interval
+"15 years 27 hours"
+select '15 years 26 hours'::interval
+"15 years 26 hours"
+select '15 years 25 hours'::interval
+"15 years 25 hours"
+select '15 years 24 hours'::interval
+"15 years 24 hours"
+select '15 years 23 hours'::interval
+"15 years 23 hours"
+# test: minute
+select '15 years 70 minutes'::interval
+"15 years 1 hour 10 minutes"
+select '15 years 1 minute'::interval
+"15 years 1 minute"
+select '15 years 125 minutes'::interval
+"15 years 2 hours 5 minutes"
+select '8 minutes'::interval
+"8 minutes"
+# test: second
+select '8 minutes 70 seconds'::interval
+"9 minutes 10 seconds"
+select '8 minutes 60 seconds'::interval
+"9 minutes"
+select '3 seconds'::interval
+"3 seconds"
+# test: milliseconds
+select '3 milliseconds'::interval
+"3 ms"
+select '3 millisecond'::interval
+"3 ms"
+select '3 ms'::interval
+"3 ms"
+select '1 minute 3 ms'::interval
+"1 minute 3 ms"
+# test: microseconds
+select '3 microseconds'::interval
+"3 us"
+select '3 microsecond'::interval
+"3 us"
+select '3 us'::interval
+"3 us"
+select '1 minute 3 ms 10 us'::interval
+"1 minute 3 ms 10 us"
+select '50000 us'::interval
+"50 ms"
+# test: interval zero
+select '0 hour'::interval
+""
+disconnect S0
+close E0

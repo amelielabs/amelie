@@ -38,6 +38,7 @@ directory query
 group query
 test expr
 test expr_json
+test interval
 test method
 test select
 test where

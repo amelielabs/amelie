@@ -1,0 +1,76 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: interval parsing
+
+# test: year
+select '1 year'::interval
+select '2 years'::interval
+select '2 year'::interval
+select '200 years'::interval
+
+# test: month
+select '1 month'::interval
+select '1 months'::interval
+select '3 months'::interval
+select '5 years 3 months'::interval
+select '3 months 5 years'::interval
+
+# test: week
+select '5 weeks'::interval
+select '5 week'::interval
+select '1 week'::interval
+select '1 year 3 weeks'::interval
+select '1 week 2 weeks 3 weeks'::interval
+
+# test: day
+select '1 week 15 days'::interval
+select '15 days'::interval
+select '1 day'::interval
+select '15 years 10 days'::interval
+select '15 years 500 days'::interval
+
+select '15 years 6 days'::interval
+select '15 years 7 days'::interval
+select '15 years 8 days'::interval
+select '15 years 9 days'::interval
+
+# test: hour
+select '15 years 28 hours'::interval
+select '15 years 27 hours'::interval
+select '15 years 26 hours'::interval
+select '15 years 25 hours'::interval
+select '15 years 24 hours'::interval
+select '15 years 23 hours'::interval
+
+# test: minute
+select '15 years 70 minutes'::interval
+select '15 years 1 minute'::interval
+select '15 years 125 minutes'::interval
+select '8 minutes'::interval
+
+# test: second
+select '8 minutes 70 seconds'::interval
+select '8 minutes 60 seconds'::interval
+select '3 seconds'::interval
+
+# test: milliseconds
+select '3 milliseconds'::interval
+select '3 millisecond'::interval
+select '3 ms'::interval
+select '1 minute 3 ms'::interval
+
+# test: microseconds
+select '3 microseconds'::interval
+select '3 microsecond'::interval
+select '3 us'::interval
+select '1 minute 3 ms 10 us'::interval
+select '50000 us'::interval
+
+# test: interval zero
+select '0 hour'::interval
+
+disconnect S0
+close E0

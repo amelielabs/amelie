@@ -197,18 +197,8 @@ interval_write(Interval* self, char* str, int str_size)
 	if (self->d > 0)
 	{
 		int d = self->d;
-		int w = d / 7;
-		if (w > 0)
-		{
-			span = w > 1? "weeks": "week";
-			size += snprintf(str + size, str_size - size, "%d %s ", w, span);
-			d = d % 7;
-		}
-		if (d > 0)
-		{
-			span = d > 1? "days": "day";
-			size += snprintf(str + size, str_size - size, "%d %s ", d, span);
-		}
+		span = d > 1? "days": "day";
+		size += snprintf(str + size, str_size - size, "%d %s ", d, span);
 	}
 
 	// hours
