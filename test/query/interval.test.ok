@@ -1,6 +1,5 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: interval parsing
 # test: year
 select '1 year'::interval
 "1 year"
@@ -100,8 +99,23 @@ select '1 minute 3 ms 10 us'::interval
 "1 minute 3 ms 10 us"
 select '50000 us'::interval
 "50 ms"
-# test: interval zero
+# test: convertion
+select '1 hour 5 minutes 6 seconds'::interval
+"1 hour 5 minutes 6 seconds"
+select '1 hour 5 minutes 6 seconds'::interval::string
+"1 hour 5 minutes 6 seconds"
+select '1 hour 5 minutes 6 seconds'::interval::string::interval
+"1 hour 5 minutes 6 seconds"
+select '1 hour 5 minutes 6 seconds'::interval::string::interval::string
+"1 hour 5 minutes 6 seconds"
+# test: zero
 select '0 hour'::interval
+""
+select '0 hour'::interval::string
+""
+select '0 hour'::interval::string::interval
+""
+select ''::interval::string::interval
 ""
 disconnect S0
 close E0
