@@ -10,7 +10,7 @@
 #include <sonata_lib.h>
 
 static inline void
-interval_read_type(Interval* self, Str* type, uint64_t value)
+interval_read_type(Interval* self, Str* type, int64_t value)
 {
 	switch (*str_of(type)) {
 	case 'm':
@@ -19,7 +19,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		if (str_compare_raw(type, "minutes", 7) ||
 		    str_compare_raw(type, "minute", 6))
 		{
-			self->us += value * 60ULL * 1000 * 1000;
+			self->us += value * 60LL * 1000 * 1000;
 			return;
 		}
 
@@ -39,7 +39,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		    str_compare_raw(type, "milliseconds", 12) ||
 		    str_compare_raw(type, "millisecond", 11))
 		{
-			self->us += value * 1000ULL;
+			self->us += value * 1000LL;
 			return;
 		}
 
@@ -70,7 +70,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		    str_compare_raw(type, "seconds", 7) ||
 		    str_compare_raw(type, "second", 6))
 		{
-			self->us += value * 1000ULL * 1000;
+			self->us += value * 1000LL * 1000;
 			return;
 		}
 		break;
@@ -84,7 +84,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 		    str_compare_raw(type, "hours", 5) ||
 		    str_compare_raw(type, "hour", 4))
 		{
-			self->us += value * 60ULL * 60 * 1000 * 1000;
+			self->us += value * 60LL * 60 * 1000 * 1000;
 			return;
 		}
 		break;
@@ -127,6 +127,7 @@ interval_read_type(Interval* self, Str* type, uint64_t value)
 void
 interval_read(Interval* self, Str* str)
 {
+	// <ws> [sign] <cardinal> <ws> <type> [ws ...]
 	auto pos = str->pos;
 	auto end = str->end;
 	for (;;)
@@ -137,8 +138,16 @@ interval_read(Interval* self, Str* str)
 		if (pos == end)
 			break;
 
-		// <ws> <cardinal> <ws> <type> [ws ...]
-		uint64_t cardinal = 0;
+		// sign
+		bool negative = false;
+		if (*pos == '-')
+		{
+			negative = true;
+			pos++;
+		}
+
+		// cardinal
+		int64_t cardinal = 0;
 		while (pos < end && isdigit(*pos))
 		{
 			cardinal = (cardinal * 10) + (*pos - '0');
@@ -147,6 +156,8 @@ interval_read(Interval* self, Str* str)
 		if (pos == end || !isspace(*pos))
 			goto error;
 		pos++;
+		if (negative)
+			cardinal = -cardinal;
 
 		// whitespace
 		while (pos < end && isspace(*pos))
@@ -176,70 +187,70 @@ interval_write(Interval* self, char* str, int str_size)
 	// years/months
 	const char* span;
 	int size = 0;
-	if (self->m > 0)
+	if (self->m != 0)
 	{
 		int m = self->m;
 		int y = m / 12;
-		if (y > 0)
+		if (y != 0)
 		{
-			span = y > 1? "years": "year";
+			span = y != 1? "years": "year";
 			size += snprintf(str + size, str_size - size, "%d %s ", y, span);
 			m = m % 12;
 		}
-		if (m > 0)
+		if (m != 0)
 		{
-			span = m > 1? "months": "month";
+			span = m != 1? "months": "month";
 			size += snprintf(str + size, str_size - size, "%d %s ", m, span);
 		}
 	}
 
 	// weeks/days
-	if (self->d > 0)
+	if (self->d != 0)
 	{
 		int d = self->d;
-		span = d > 1? "days": "day";
+		span = d != 1? "days": "day";
 		size += snprintf(str + size, str_size - size, "%d %s ", d, span);
 	}
 
 	// hours
-	uint64_t us = self->us;
-	uint64_t hours = us / (60ULL * 60 * 1000 * 1000);
-	if (hours > 0)
+	int64_t us = self->us;
+	int64_t hours = us / (60LL * 60 * 1000 * 1000);
+	if (hours != 0)
 	{
-		span = hours > 1? "hours": "hour";
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", hours, span);
-		us = us % (60ULL * 60 * 1000 * 1000);
+		span = hours != 1? "hours": "hour";
+		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", hours, span);
+		us = us % (60LL * 60 * 1000 * 1000);
 	}
 
 	// minutes
-	uint64_t minutes = us / (60ULL * 1000 * 1000);
-	if (minutes > 0)
+	int64_t minutes = us / (60LL * 1000 * 1000);
+	if (minutes != 0)
 	{
-		span = minutes > 1? "minutes": "minute";
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", minutes, span);
-		us = us % (60ULL * 1000 * 1000);
+		span = minutes != 1? "minutes": "minute";
+		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", minutes, span);
+		us = us % (60LL * 1000 * 1000);
 	}
 
 	// seconds
-	uint64_t seconds = us / (1000ULL * 1000);
-	if (seconds > 0)
+	int64_t seconds = us / (1000LL * 1000);
+	if (seconds != 0)
 	{
-		span = seconds > 1? "seconds": "second";
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " %s ", seconds, span);
-		us = us % (1000ULL * 1000);
+		span = seconds != 1? "seconds": "second";
+		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", seconds, span);
+		us = us % (1000LL * 1000);
 	}
 
 	// milliseconds
-	uint64_t ms = us / 1000;
-	if (ms > 0)
+	int64_t ms = us / 1000;
+	if (ms != 0)
 	{
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " ms ", ms);
+		size += snprintf(str + size, str_size - size, "%" PRIi64 " ms ", ms);
 		us = us % 1000;
 	}
 
 	// microseconds
-	if (us > 0)
-		size += snprintf(str + size, str_size - size, "%" PRIu64 " us ", us);
+	if (us != 0)
+		size += snprintf(str + size, str_size - size, "%" PRIi64 " us ", us);
 
 	// remove last space
 	if (size > 0)
@@ -257,4 +268,20 @@ interval_compare(Interval* a, Interval* b)
 	if (rc != 0)
 		return rc;
 	return compare_int64(a->us, b->us);
+}
+
+void
+interval_add(Interval* result, Interval* a, Interval* b)
+{
+	result->m  = a->m + b->m;
+	result->d  = a->d + b->d;
+	result->us = a->us + b->us;
+}
+
+void
+interval_sub(Interval* result, Interval* a, Interval* b)
+{
+	result->m  = a->m - b->m;
+	result->d  = a->d - b->d;
+	result->us = a->us - b->us;
 }

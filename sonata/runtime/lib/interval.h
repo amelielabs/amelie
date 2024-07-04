@@ -10,9 +10,9 @@ typedef struct Interval Interval;
 
 struct Interval
 {
-	int      m;
-	int      d;
-	uint64_t us;
+	int     m;
+	int     d;
+	int64_t us;
 };
 
 static inline void
@@ -34,3 +34,5 @@ interval_set(Interval* self, int m, int d, uint64_t us)
 void interval_read(Interval*, Str*);
 int  interval_write(Interval*, char*, int);
 int  interval_compare(Interval*, Interval*);
+void interval_add(Interval*, Interval*, Interval*);
+void interval_sub(Interval*, Interval*, Interval*);

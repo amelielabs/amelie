@@ -99,7 +99,7 @@ select '1 minute 3 ms 10 us'::interval
 "1 minute 3 ms 10 us"
 select '50000 us'::interval
 "50 ms"
-# test: convertion
+# test: convertion (string)
 select '1 hour 5 minutes 6 seconds'::interval
 "1 hour 5 minutes 6 seconds"
 select '1 hour 5 minutes 6 seconds'::interval::string
@@ -108,6 +108,13 @@ select '1 hour 5 minutes 6 seconds'::interval::string::interval
 "1 hour 5 minutes 6 seconds"
 select '1 hour 5 minutes 6 seconds'::interval::string::interval::string
 "1 hour 5 minutes 6 seconds"
+# test: convertion (document)
+select ['5 hours 6 seconds'::interval, '1 years'::interval]
+["5 hours 6 seconds", "1 year"]
+select {"key": "5 hours 6 second"::interval}
+{
+  "key": "5 hours 6 seconds"
+}
 # test: zero
 select '0 hour'::interval
 ""
@@ -117,12 +124,36 @@ select '0 hour'::interval::string::interval
 ""
 select ''::interval::string::interval
 ""
-# test: document
-select ['5 hours 6 seconds'::interval, '1 years'::interval]
-["5 hours 6 seconds", "1 year"]
-select {"key": "5 hours 6 second"::interval}
-{
-  "key": "5 hours 6 seconds"
-}
+# test: negative
+select '-1 hour'::interval
+"-1 hours"
+select '-1 hours'::interval
+"-1 hours"
+select '-1 hour 10 minutes'::interval
+"-50 minutes"
+select '-1 hour 10 minutes 5 seconds'::interval
+"-49 minutes -55 seconds"
+select '-1 hour 10 minutes -5 seconds'::interval
+"-50 minutes -5 seconds"
+# test: add
+select  '1 hour'::interval + '2 hours'::interval
+"3 hours"
+select ('1 hour'::interval + '2 hours'::interval)::string
+"3 hours"
+select ('1 hour'::interval + '2 hours'::interval)::string::interval
+"3 hours"
+select  '1 hour'::interval + '-2 hours'::interval
+"-1 hours"
+select  '5 days 1 hour'::interval + '-2 hours'::interval
+"5 days -1 hours"
+# test: sub
+select  '1 hour'::interval - '2 hours'::interval
+"-1 hours"
+select  '10 hour'::interval - '2 hours'::interval
+"8 hours"
+select  '1 year 1 day 10 hour'::interval - '2 hours'::interval
+"1 year 1 day 8 hours"
+select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
+"1 day 8 hours"
 disconnect S0
 close E0

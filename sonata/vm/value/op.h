@@ -215,6 +215,15 @@ value_add(Value* result, Value* a, Value* b)
 			return value_set_real(result, a->real + b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->real + b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			Interval iv;
+			interval_add(&iv, &a->interval, &b->interval);
+			return value_set_interval(result, &iv);
+		}
 	}
 	error("bad + expression types");
 }
@@ -235,6 +244,15 @@ value_sub(Value* result, Value* a, Value* b)
 			return value_set_real(result, a->real - b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->real - b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			Interval iv;
+			interval_sub(&iv, &a->interval, &b->interval);
+			return value_set_interval(result, &iv);
+		}
 	}
 	error("bad - expression types");
 }
