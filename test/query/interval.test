@@ -79,5 +79,9 @@ select '0 hour'::interval::string
 select '0 hour'::interval::string::interval
 select ''::interval::string::interval
 
+# test: document
+select ['5 hours 6 seconds'::interval, '1 years'::interval]
+select {"key": "5 hours 6 second"::interval}
+
 disconnect S0
 close E0
