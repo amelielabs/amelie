@@ -36,6 +36,7 @@ OBJECTS        = \
                  lib/uuid.o \
                  lib/crc.o \
                  lib/interval.o \
+                 lib/timestamp.o \
                  data/json.o \
                  data/json_export.o \
                  config/config.o \

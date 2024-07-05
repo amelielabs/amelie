@@ -130,6 +130,40 @@ func_interval(Vm*       vm,
 }
 
 hot static void
+func_timestamp(Vm*       vm,
+               Function* func,
+               Value*    result,
+               int       argc,
+               Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	if (argv[0]->type == VALUE_STRING)
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &argv[0]->string);
+		auto time = timestamp_of(&ts);
+		value_set_int(result, time);
+	} else
+	if (argv[0]->type == VALUE_INT)
+	{
+		auto data = buf_begin();
+		buf_reserve(data, 128);
+		int size = timestamp_write(argv[0]->integer, (char*)data->position, 128);
+		buf_advance(data, size);
+		buf_end(data);
+
+		Str string;
+		str_init(&string);
+		str_set(&string, (char*)data->start, buf_size(data));
+		value_set_string(result, &string, data);
+	} else {
+		error("timestamp(): string or int expected");
+	}
+}
+
+hot static void
 func_error(Vm*       vm,
            Function* func,
            Value*    result,
@@ -305,6 +339,7 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "string",      (FunctionMain)func_string,     1 },
 		{ "public", "json",        (FunctionMain)func_json,       1 },
 		{ "public", "interval",    (FunctionMain)func_interval,   1 },
+		{ "public", "timestamp",   (FunctionMain)func_timestamp,  1 },
 		{ "public", "error",       (FunctionMain)func_error,      1 },
 		// system
 		{ "system", "config",      (FunctionMain)func_config,     0 },

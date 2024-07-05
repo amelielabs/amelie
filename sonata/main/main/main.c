@@ -66,6 +66,9 @@ main_prepare(Main* self, MainArgs* args)
 	bool bootstrap = false;
 	auto config = config();
 
+	// set UTC time by default
+	setenv("TZ", "UTC", true);
+
 	// init ssl library
 	tls_lib_init();
 

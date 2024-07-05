@@ -71,6 +71,10 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "timestamp",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "error",
   "argc": 1
 }, {
@@ -150,6 +154,10 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "interval",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "timestamp",
   "argc": 1
 }, {
   "schema": "public",
