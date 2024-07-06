@@ -56,6 +56,10 @@ value_is_equal(Value* a, Value* b)
 		return !memcmp(a->data, b->data, a->data_size);
 	case VALUE_STRING:
 		return str_compare(&a->string, &b->string);
+	case VALUE_INTERVAL:
+		if (b->type == VALUE_INTERVAL)
+			return interval_compare(&a->interval, &b->interval) == 0;
+		break;
 	default:
 		break;
 	}
@@ -137,6 +141,14 @@ value_gte(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real >= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real >= b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			int rc = interval_compare(&a->interval, &b->interval);
+			return value_set_bool(result, rc >= 0);
+		}
 	}
 	error("bad >= expression type");
 }
@@ -157,6 +169,14 @@ value_gt(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real > b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real > b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			int rc = interval_compare(&a->interval, &b->interval);
+			return value_set_bool(result, rc > 0);
+		}
 	}
 	error("bad > expression type");
 }
@@ -177,6 +197,14 @@ value_lte(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real <= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real <= b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			int rc = interval_compare(&a->interval, &b->interval);
+			return value_set_bool(result, rc <= 0);
+		}
 	}
 	error("bad <= expression type");
 }
@@ -197,6 +225,14 @@ value_lt(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real < b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real < b->real);
+	} else
+	if (a->type == VALUE_INTERVAL)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			int rc = interval_compare(&a->interval, &b->interval);
+			return value_set_bool(result, rc < 0);
+		}
 	}
 	error("bad < expression type");
 }

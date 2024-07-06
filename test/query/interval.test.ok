@@ -155,5 +155,42 @@ select  '1 year 1 day 10 hour'::interval - '2 hours'::interval
 "1 year 1 day 8 hours"
 select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
 "1 day 8 hours"
+# test: eq
+select  '1 hour'::interval = '1 hours'::interval
+true
+select  '1 hour'::interval = '1 hours 10 seconds'::interval
+false
+# test: lte
+select  '1 hour'::interval <= '1 hour'::interval
+true
+select  '60 minutes'::interval <= '1 hour'::interval
+true
+select  '10 hour'::interval <= '1 hour'::interval
+false
+# test: lt
+select  '1 hour'::interval < '1 hour'::interval
+false
+select  '60 minutes'::interval < '1 hour'::interval
+false
+select  '59 minutes'::interval < '1 hour'::interval
+true
+select  '10 hour'::interval < '1 hour'::interval
+false
+# test: gte
+select  '1 hour'::interval >= '1 hour'::interval
+true
+select  '60 minutes'::interval >= '1 hour'::interval
+true
+select  '59 minutes'::interval >= '1 hour'::interval
+false
+select  '61 minutes'::interval >= '1 hour'::interval
+true
+# test: gt
+select  '1 hour'::interval > '1 hour'::interval
+false
+select  '60 minutes'::interval > '1 hour'::interval
+false
+select  '61 minutes'::interval > '1 hour'::interval
+true
 disconnect S0
 close E0
