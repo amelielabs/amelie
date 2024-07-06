@@ -138,29 +138,67 @@ func_timestamp(Vm*       vm,
 {
 	unused(vm);
 	function_validate_argc(func, argc);
-	if (argv[0]->type == VALUE_STRING)
-	{
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, &argv[0]->string);
-		auto time = timestamp_of(&ts);
-		value_set_int(result, time);
-	} else
-	if (argv[0]->type == VALUE_INT)
-	{
-		auto data = buf_begin();
-		buf_reserve(data, 128);
-		int size = timestamp_write(argv[0]->integer, (char*)data->position, 128);
-		buf_advance(data, size);
-		buf_end(data);
+	function_validate_arg(func, argv, 0, VALUE_STRING);
+	Timestamp ts;
+	timestamp_init(&ts);
+	timestamp_read(&ts, &argv[0]->string);
+	auto time = timestamp_of(&ts, false);
+	value_set_timestamp(result, time);
+}
 
-		Str string;
-		str_init(&string);
-		str_set(&string, (char*)data->start, buf_size(data));
-		value_set_string(result, &string, data);
-	} else {
-		error("timestamp(): string or int expected");
+hot static void
+func_timestamptz(Vm*       vm,
+                 Function* func,
+                 Value*    result,
+                 int       argc,
+                 Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	function_validate_arg(func, argv, 0, VALUE_STRING);
+	Timestamp ts;
+	timestamp_init(&ts);
+	timestamp_read(&ts, &argv[0]->string);
+	auto time = timestamp_of(&ts, true);
+	value_set_timestamptz(result, time);
+}
+
+hot static void
+func_generate_series(Vm*       vm,
+                     Function* func,
+                     Value*    result,
+                     int       argc,
+                     Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	function_validate_arg(func, argv, 0, VALUE_TIMESTAMP);
+	function_validate_arg(func, argv, 1, VALUE_TIMESTAMP);
+	function_validate_arg(func, argv, 2, VALUE_INTERVAL);
+
+	Timestamp ts;
+	timestamp_init(&ts);
+
+	// end
+	timestamp_read_value(&ts, argv[1]->integer);
+	uint64_t end = timestamp_of(&ts, false);
+
+	// pos
+	timestamp_init(&ts);
+	timestamp_read_value(&ts, argv[0]->integer);
+	uint64_t pos = timestamp_of(&ts, false);
+
+	auto buf = buf_begin();
+	encode_array(buf);
+	while (pos <= end)
+	{
+		encode_timestamp(buf, pos);
+		timestamp_add(&ts, &argv[2]->interval);
+		pos = timestamp_of(&ts, false);
 	}
+	encode_array_end(buf);
+	buf_end(buf);
+	value_set_buf(result, buf);
 }
 
 hot static void
@@ -331,29 +369,31 @@ func_setup(FunctionMgr* mgr)
 	} def[] =
 	{
 		// public
-		{ "public", "has",         (FunctionMain)func_has,        2 },
-		{ "public", "set",         (FunctionMain)func_set,        3 },
-		{ "public", "unset",       (FunctionMain)func_unset,      2 },
-		{ "public", "append",      (FunctionMain)func_append,     2 },
-		{ "public", "sizeof",      (FunctionMain)func_sizeof,     1 },
-		{ "public", "string",      (FunctionMain)func_string,     1 },
-		{ "public", "json",        (FunctionMain)func_json,       1 },
-		{ "public", "interval",    (FunctionMain)func_interval,   1 },
-		{ "public", "timestamp",   (FunctionMain)func_timestamp,  1 },
-		{ "public", "error",       (FunctionMain)func_error,      1 },
+		{ "public", "has",             (FunctionMain)func_has,             2 },
+		{ "public", "set",             (FunctionMain)func_set,             3 },
+		{ "public", "unset",           (FunctionMain)func_unset,           2 },
+		{ "public", "append",          (FunctionMain)func_append,          2 },
+		{ "public", "sizeof",          (FunctionMain)func_sizeof,          1 },
+		{ "public", "string",          (FunctionMain)func_string,          1 },
+		{ "public", "json",            (FunctionMain)func_json,            1 },
+		{ "public", "interval",        (FunctionMain)func_interval,        1 },
+		{ "public", "timestamp",       (FunctionMain)func_timestamp,       1 },
+		{ "public", "timestamptz",     (FunctionMain)func_timestamptz,     1 },
+		{ "public", "generate_series", (FunctionMain)func_generate_series, 3 },
+		{ "public", "error",           (FunctionMain)func_error,           1 },
 		// system
-		{ "system", "config",      (FunctionMain)func_config,     0 },
-		{ "system", "users",       (FunctionMain)func_users,      0 },
-		{ "system", "replicas",    (FunctionMain)func_replicas,   0 },
-		{ "system", "repl",        (FunctionMain)func_repl,       0 },
-		{ "system", "replication", (FunctionMain)func_repl,       0 },
-		{ "system", "nodes",       (FunctionMain)func_nodes,      0 },
-		{ "system", "schemas",     (FunctionMain)func_schemas,    0 },
-		{ "system", "functions",   (FunctionMain)func_functions,  0 },
-		{ "system", "tables",      (FunctionMain)func_tables,     0 },
-		{ "system", "views",       (FunctionMain)func_views,      0 },
-		{ "system", "wal",         (FunctionMain)func_wal,        0 },
-		{  NULL,     NULL,          NULL,                         0 }
+		{ "system", "config",          (FunctionMain)func_config,          0 },
+		{ "system", "users",           (FunctionMain)func_users,           0 },
+		{ "system", "replicas",        (FunctionMain)func_replicas,        0 },
+		{ "system", "repl",            (FunctionMain)func_repl,            0 },
+		{ "system", "replication",     (FunctionMain)func_repl,            0 },
+		{ "system", "nodes",           (FunctionMain)func_nodes,           0 },
+		{ "system", "schemas",         (FunctionMain)func_schemas,         0 },
+		{ "system", "functions",       (FunctionMain)func_functions,       0 },
+		{ "system", "tables",          (FunctionMain)func_tables,          0 },
+		{ "system", "views",           (FunctionMain)func_views,           0 },
+		{ "system", "wal",             (FunctionMain)func_wal,             0 },
+		{  NULL,     NULL,              NULL,                              0 }
 	};
 	for (int i = 0; def[i].name; i++)
 	{

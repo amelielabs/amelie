@@ -64,6 +64,13 @@ data_skip(uint8_t** pos)
 			data_read_integer(pos, &value);
 			break;
 		}
+		case SO_TS:
+		case SO_TSTZ:
+		{
+			int64_t value;
+			data_read_timestamp(pos, &value);
+			break;
+		}
 		default:
 			error_data();
 			break;

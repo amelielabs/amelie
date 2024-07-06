@@ -21,7 +21,9 @@ enum
 	DECODE_DATA            = 1 << 8,
 	DECODE_INTERVAL        = 1 << 9,
 	DECODE_INTERVAL_STRING = 1 << 10,
-	DECODE_FOUND           = 1 << 11
+	DECODE_TS              = 1 << 11,
+	DECODE_TS_STRING       = 1 << 12,
+	DECODE_FOUND           = 1 << 13
 };
 
 struct Decode
@@ -64,6 +66,24 @@ decode_map(Decode* self, uint8_t** pos)
 				data_read_string(pos, &str);
 				auto value = (Interval*)ref->value;
 				interval_read(value, &str);
+				break;
+			}
+			case DECODE_TS:
+			{
+				if (unlikely(! data_is_timestamp_or_tz(*pos)))
+					error("config: timestamp expected for '%s'", ref->key);
+				auto value = (int64_t*)ref->value;
+				data_read_timestamp(pos, value);
+				break;
+			}
+			case DECODE_TS_STRING:
+			{
+				if (unlikely(! data_is_string(*pos)))
+					error("config: string expected for '%s'", ref->key);
+				Str str;
+				data_read_string(pos, &str);
+				auto value = (Timestamp*)ref->value;
+				timestamp_read(value, &str);
 				break;
 			}
 			case DECODE_UUID:

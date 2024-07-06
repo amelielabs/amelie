@@ -48,6 +48,25 @@ body_add(Buf* self, Value* value, bool pretty)
 		buf_write(self, "\"", 1);
 		break;
 	}
+	case VALUE_TIMESTAMP:
+	{
+		buf_write(self, "\"", 1);
+		buf_reserve(self, 128);
+		int size = timestamp_write(value->integer, (char*)self->position, 128);
+		buf_advance(self, size);
+		buf_write(self, "\"", 1);
+		break;
+	}
+	case VALUE_TIMESTAMPTZ:
+	{
+		// TODO: do tz convertion
+		buf_write(self, "\"", 1);
+		buf_reserve(self, 128);
+		int size = timestamp_write(value->integer, (char*)self->position, 128);
+		buf_advance(self, size);
+		buf_write(self, "\"", 1);
+		break;
+	}
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(self, "[", 1);

@@ -39,6 +39,7 @@ group query
 test expr
 test expr_json
 test interval
+test timestamp
 test method
 test select
 test where

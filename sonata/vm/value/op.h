@@ -19,6 +19,8 @@ value_is_true(Value* a)
 		return false;
 	case VALUE_DATA:
 	case VALUE_INTERVAL:
+	case VALUE_TIMESTAMP:
+	case VALUE_TIMESTAMPTZ:
 	case VALUE_STRING:
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -224,6 +226,31 @@ value_add(Value* result, Value* a, Value* b)
 			interval_add(&iv, &a->interval, &b->interval);
 			return value_set_interval(result, &iv);
 		}
+		if (b->type == VALUE_TIMESTAMP ||
+		    b->type == VALUE_TIMESTAMPTZ)
+		{
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read_value(&ts, b->integer);
+			timestamp_add(&ts, &a->interval);
+			if (b->type == VALUE_TIMESTAMPTZ)
+				return value_set_timestamptz(result, timestamp_of(&ts, true));
+			return value_set_timestamp(result, timestamp_of(&ts, false));
+		}
+	} else
+	if (a->type == VALUE_TIMESTAMP ||
+	    a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read_value(&ts, a->integer);
+			timestamp_add(&ts, &b->interval);
+			if (a->type == VALUE_TIMESTAMPTZ)
+				return value_set_timestamptz(result, timestamp_of(&ts, true));
+			return value_set_timestamp(result, timestamp_of(&ts, false));
+		}
 	}
 	error("bad + expression types");
 }
@@ -252,6 +279,31 @@ value_sub(Value* result, Value* a, Value* b)
 			Interval iv;
 			interval_sub(&iv, &a->interval, &b->interval);
 			return value_set_interval(result, &iv);
+		}
+		if (b->type == VALUE_TIMESTAMP ||
+		    b->type == VALUE_TIMESTAMPTZ)
+		{
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read_value(&ts, b->integer);
+			timestamp_sub(&ts, &a->interval);
+			if (b->type == VALUE_TIMESTAMPTZ)
+				return value_set_timestamptz(result, timestamp_of(&ts, true));
+			return value_set_timestamp(result, timestamp_of(&ts, false));
+		}
+	} else
+	if (a->type == VALUE_TIMESTAMP ||
+	    a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_INTERVAL)
+		{
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read_value(&ts, a->integer);
+			timestamp_sub(&ts, &b->interval);
+			if (a->type == VALUE_TIMESTAMPTZ)
+				return value_set_timestamptz(result, timestamp_of(&ts, true));
+			return value_set_timestamp(result, timestamp_of(&ts, false));
 		}
 	}
 	error("bad - expression types");
@@ -395,6 +447,22 @@ value_to_string(Value* result, Value* a)
 		int size = interval_write(&a->interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
+
+	case VALUE_TIMESTAMP:
+	{
+		buf_reserve(data, 128);
+		int size = timestamp_write(a->integer, (char*)data->position, 128);
+		buf_advance(data, size);
+		break;
+	}
+	case VALUE_TIMESTAMPTZ:
+	{
+		// TODO: use tz convertion
+		buf_reserve(data, 128);
+		int size = timestamp_write(a->integer, (char*)data->position, 128);
+		buf_advance(data, size);
+		break;
+	}
 	}
 	default:
 		body_add(data, a, false);

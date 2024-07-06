@@ -8,32 +8,34 @@
 
 enum
 {
-	SO_NULL       = 0,
+	SO_NULL      = 0,
 
-	SO_TRUE       = 1,
-	SO_FALSE      = 2,
-	SO_REAL32     = 3,
-	SO_REAL64     = 4,
+	SO_TRUE      = 1,
+	SO_FALSE     = 2,
+	SO_REAL32    = 3,
+	SO_REAL64    = 4,
 
-	SO_INTV0      = 5,   // reserved values from 0 .. 31
-	SO_INTV31     = 37,
-	SO_INT8       = 38,
-	SO_INT16      = 39,
-	SO_INT32      = 40,
-	SO_INT64      = 41,
+	SO_INTV0     = 5,  // reserved values from 0 .. 31
+	SO_INTV31    = 37,
+	SO_INT8      = 38,
+	SO_INT16     = 39,
+	SO_INT32     = 40,
+	SO_INT64     = 41,
 
-	SO_STRINGV0   = 42, // reserved values from 0 .. 31
-	SO_STRINGV31  = 74,
-	SO_STRING8    = 75,
-	SO_STRING16   = 76,
-	SO_STRING32   = 77,
+	SO_STRINGV0  = 42, // reserved values from 0 .. 31
+	SO_STRINGV31 = 74,
+	SO_STRING8   = 75,
+	SO_STRING16  = 76,
+	SO_STRING32  = 77,
 
-	SO_MAP        = 78,
-	SO_MAP_END    = 79,
-	SO_ARRAY      = 80,
-	SO_ARRAY_END  = 81,
+	SO_MAP       = 78,
+	SO_MAP_END   = 79,
+	SO_ARRAY     = 80,
+	SO_ARRAY_END = 81,
 
-	SO_INTERVAL   = 82
+	SO_INTERVAL  = 82,
+	SO_TS        = 83,
+	SO_TSTZ      = 84
 };
 
 static inline char*
@@ -58,6 +60,10 @@ type_to_string(int type)
 		return "array";
 	case SO_INTERVAL:
 		return "interval";
+	case SO_TS:
+		return "timestamp";
+	case SO_TSTZ:
+		return "timestamptz";
 	}
 	return "<unknown>";
 }

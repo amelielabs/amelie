@@ -87,7 +87,7 @@ timestamp_parse(Timestamp* self, Str* str)
 	pos += 2;
 
 	// [.ssssss]
-	if (pos_end != end && *pos_end == '.')
+	if (pos != end && *pos == '.')
 	{
 		pos++;
 		int resolution = 0;
@@ -105,7 +105,7 @@ timestamp_parse(Timestamp* self, Str* str)
 	}
 
 	// eof (local time)
-	if (pos_end == end)
+	if (pos == end)
 		return;
 
 	// Zulu (UTC)
@@ -145,18 +145,25 @@ error:
 	timestamp_error();
 }
 
-hot void
-timestamp_read(Timestamp* self, Str* str)
+hot static inline void
+timestamp_validate(Timestamp* self)
 {
-	// parse iso8601 with microsends
-	timestamp_parse(self, str);
+	// validate fields
 
-	// do corrections to support mktime
-	self->time.tm_year -= 1900;
-	self->time.tm_mon--;
+	// year (starting from unix time)
+	if (self->time.tm_year < 1970)
+		goto error;
+
+	// month
+	if (! (self->time.tm_mon >= 1 && self->time.tm_mon <= 12))
+		goto error;
+
+	// day
+	if (! (self->time.tm_mday >= 1 && self->time.tm_mday <= 31))
+		goto error;
 
 	// zone
-	if (self->zone_set)		
+	if (self->zone_set)
 	{
 		if (self->zone > 0)
 		{
@@ -173,8 +180,33 @@ error:
 	timestamp_error();
 }
 
+hot void
+timestamp_read(Timestamp* self, Str* str)
+{
+	// parse iso8601 with microsends
+	timestamp_parse(self, str);
+
+	// validate result
+	timestamp_validate(self);
+
+	// do corrections to support mktime
+	self->time.tm_year -= 1900;
+	self->time.tm_mon--;
+
+	// todo: set zone
+}
+
+hot void
+timestamp_read_value(Timestamp* self, uint64_t value)
+{
+	time_t time = value / 1000000ULL;
+	self->us = value % 1000000ULL;
+	if (! gmtime_r(&time, &self->time))
+		timestamp_error();
+}
+
 hot uint64_t
-timestamp_of(Timestamp* self)
+timestamp_of(Timestamp* self, bool with_timezone)
 {
 	// mktime (UTC)
 	self->time.tm_isdst = -1;	
@@ -187,7 +219,7 @@ timestamp_of(Timestamp* self)
 	value += self->us;
 
 	// do timezone adjustment
-	if (self->zone_set)
+	if (with_timezone && self->zone_set)
 	{
 		int zone_adj = self->zone * 60 * 1000000ULL;
 		value += zone_adj;
@@ -216,4 +248,104 @@ timestamp_write(uint64_t value, char* str, int str_size)
 	               ts.time.tm_sec,
 	               ts.us);
 	return len;
+}
+
+void
+timestamp_add(Timestamp* self, Interval* iv)
+{
+	// mktime does automatic overflow adjustment
+
+	// years/months
+	if (iv->m != 0)
+	{
+		int m = iv->m;
+		int y = m / 12;
+		if (y != 0)
+		{
+			self->time.tm_year += y;
+			m = m % 12;
+		}
+		if (m != 0)
+			self->time.tm_mon += m;
+	}
+
+	// weeks/days
+	if (iv->d != 0)
+		self->time.tm_mday += iv->d;
+
+	// hours
+	int64_t us = iv->us;
+	int64_t hours = us / (60LL * 60 * 1000 * 1000);
+	if (hours != 0)
+	{
+		self->time.tm_hour += hours;
+		us = us % (60LL * 60 * 1000 * 1000);
+	}
+
+	// minutes
+	int64_t minutes = us / (60LL * 1000 * 1000);
+	if (minutes != 0)
+	{
+		self->time.tm_min += minutes;
+		us = us % (60LL * 1000 * 1000);
+	}
+
+	// seconds
+	int64_t seconds = us / (1000LL * 1000);
+	if (seconds != 0)
+	{
+		self->time.tm_sec += seconds;
+		us = us % (1000LL * 1000);
+	}
+	self->us += us;
+}
+
+void
+timestamp_sub(Timestamp* self, Interval* iv)
+{
+	// mktime does automatic overflow adjustment
+
+	// years/months
+	if (iv->m != 0)
+	{
+		int m = iv->m;
+		int y = m / 12;
+		if (y != 0)
+		{
+			self->time.tm_year -= y;
+			m = m % 12;
+		}
+		if (m != 0)
+			self->time.tm_mon -= m;
+	}
+
+	// weeks/days
+	if (iv->d != 0)
+		self->time.tm_mday -= iv->d;
+
+	// hours
+	int64_t us = iv->us;
+	int64_t hours = us / (60LL * 60 * 1000 * 1000);
+	if (hours != 0)
+	{
+		self->time.tm_hour -= hours;
+		us = us % (60LL * 60 * 1000 * 1000);
+	}
+
+	// minutes
+	int64_t minutes = us / (60LL * 1000 * 1000);
+	if (minutes != 0)
+	{
+		self->time.tm_min -= minutes;
+		us = us % (60LL * 1000 * 1000);
+	}
+
+	// seconds
+	int64_t seconds = us / (1000LL * 1000);
+	if (seconds != 0)
+	{
+		self->time.tm_sec -= seconds;
+		us = us % (1000LL * 1000);
+	}
+	self->us -= us;
 }

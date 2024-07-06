@@ -75,6 +75,14 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "timestamptz",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "generate_series",
+  "argc": 3
+}, {
+  "schema": "public",
   "name": "error",
   "argc": 1
 }, {
@@ -159,6 +167,14 @@ select system.functions()
   "schema": "public",
   "name": "timestamp",
   "argc": 1
+}, {
+  "schema": "public",
+  "name": "timestamptz",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "generate_series",
+  "argc": 3
 }, {
   "schema": "public",
   "name": "error",

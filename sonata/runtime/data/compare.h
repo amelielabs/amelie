@@ -162,6 +162,32 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
+		case SO_TS:
+		{
+			if (! data_is_timestamp(b))
+				return compare_int64(*a, *b);
+			int64_t a_value;
+			int64_t b_value;
+			data_read_timestamp(&a, &a_value);
+			data_read_timestamp(&b, &b_value);
+			rc = compare_int64(a_value, b_value);
+			if (rc != 0)
+				return rc;
+			break;
+		}
+		case SO_TSTZ:
+		{
+			if (! data_is_timestamptz(b))
+				return compare_int64(*a, *b);
+			int64_t a_value;
+			int64_t b_value;
+			data_read_timestamp(&a, &a_value);
+			data_read_timestamp(&b, &b_value);
+			rc = compare_int64(a_value, b_value);
+			if (rc != 0)
+				return rc;
+			break;
+		}
 		}
 
 	} while (level > 0);

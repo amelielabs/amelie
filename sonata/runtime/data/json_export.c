@@ -126,6 +126,27 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "\"", 1);
 		break;
 	}
+	case SO_TS:
+	{
+		int64_t value;
+		data_read_timestamp(pos, &value);
+		buf_len = timestamp_write(value, buf, sizeof(buf));
+		buf_write(data, "\"", 1);
+		buf_write(data, buf, buf_len);
+		buf_write(data, "\"", 1);
+		break;
+	}
+	case SO_TSTZ:
+	{
+		// TODO: pass tz for correction
+		int64_t value;
+		data_read_timestamp(pos, &value);
+		buf_len = timestamp_write(value, buf, sizeof(buf));
+		buf_write(data, "\"", 1);
+		buf_write(data, buf, buf_len);
+		buf_write(data, "\"", 1);
+		break;
+	}
 	default:
 		error_data();
 		break;
