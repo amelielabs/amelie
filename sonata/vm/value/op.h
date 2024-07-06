@@ -60,6 +60,14 @@ value_is_equal(Value* a, Value* b)
 		if (b->type == VALUE_INTERVAL)
 			return interval_compare(&a->interval, &b->interval) == 0;
 		break;
+	case VALUE_TIMESTAMP:
+		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
+			return a->integer == b->integer;
+		break;
+	case VALUE_TIMESTAMPTZ:
+		if (b->type == VALUE_TIMESTAMPTZ || b->type == VALUE_INT)
+			return a->integer == b->integer;
+		break;
 	default:
 		break;
 	}
@@ -149,6 +157,16 @@ value_gte(Value* result, Value* a, Value* b)
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc >= 0);
 		}
+	} else
+	if (a->type == VALUE_TIMESTAMP)
+	{
+		if (b->type == VALUE_TIMESTAMP)
+			return value_set_bool(result, a->integer >= b->integer);
+	} else
+	if (a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_TIMESTAMPTZ)
+			return value_set_bool(result, a->integer >= b->integer);
 	}
 	error("bad >= expression type");
 }
@@ -177,6 +195,16 @@ value_gt(Value* result, Value* a, Value* b)
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc > 0);
 		}
+	} else
+	if (a->type == VALUE_TIMESTAMP)
+	{
+		if (b->type == VALUE_TIMESTAMP)
+			return value_set_bool(result, a->integer > b->integer);
+	} else
+	if (a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_TIMESTAMPTZ)
+			return value_set_bool(result, a->integer > b->integer);
 	}
 	error("bad > expression type");
 }
@@ -205,6 +233,16 @@ value_lte(Value* result, Value* a, Value* b)
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc <= 0);
 		}
+	} else
+	if (a->type == VALUE_TIMESTAMP)
+	{
+		if (b->type == VALUE_TIMESTAMP)
+			return value_set_bool(result, a->integer <= b->integer);
+	} else
+	if (a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_TIMESTAMPTZ)
+			return value_set_bool(result, a->integer <= b->integer);
 	}
 	error("bad <= expression type");
 }
@@ -233,6 +271,16 @@ value_lt(Value* result, Value* a, Value* b)
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc < 0);
 		}
+	} else
+	if (a->type == VALUE_TIMESTAMP)
+	{
+		if (b->type == VALUE_TIMESTAMP)
+			return value_set_bool(result, a->integer < b->integer);
+	} else
+	if (a->type == VALUE_TIMESTAMPTZ)
+	{
+		if (b->type == VALUE_TIMESTAMPTZ)
+			return value_set_bool(result, a->integer < b->integer);
 	}
 	error("bad < expression type");
 }
