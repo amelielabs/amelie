@@ -62,13 +62,13 @@ emit_unary(Compiler* self, Target* target, Ast* ast, int op)
 }
 
 hot static inline int
-emit_call(Compiler* self, Target* target, Ast* ast, int op)
+emit_obj(Compiler* self, Target* target, Ast* ast, int op)
 {
-	auto call = ast->l;
-	assert(call->id == KCALL);
+	auto args = ast->l;
+	assert(args->id == KARGS);
 
 	// push arguments
-	auto current = call->l;
+	auto current = args->l;
 	while (current)
 	{
 		int r = emit_expr(self, target, current);
@@ -78,16 +78,16 @@ emit_call(Compiler* self, Target* target, Ast* ast, int op)
 	}
 
 	// op
-	return op2(self, op, rpin(self), call->integer);
+	return op2(self, op, rpin(self), args->integer);
 }
 
 hot static inline int
-emit_call_function(Compiler* self, Target* target, Ast* ast)
+emit_call(Compiler* self, Target* target, Ast* ast)
 {
-	// (function_name, call)
+	// (function_name, iargs)
 	auto path = ast->l;
-	auto call = ast->r;
-	assert(call->id == KCALL);
+	auto args = ast->r;
+	assert(args->id == KARGS);
 
 	// read schema/name
 	Str schema;
@@ -103,7 +103,7 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 		      str_of(&path->string));
 
 	// push arguments
-	auto current = call->l;
+	auto current = args->l;
 	while (current)
 	{
 		int r = emit_expr(self, target, current);
@@ -113,7 +113,7 @@ emit_call_function(Compiler* self, Target* target, Ast* ast)
 	}
 
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)func, call->integer);
+	return op3(self, CCALL, rpin(self), (intptr_t)func, args->integer);
 }
 
 hot static inline int
@@ -152,8 +152,8 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 	auto expr   = ast->l;
 	auto method = ast->r;
 	auto path   = method->l;
-	auto call   = method->r;
-	assert(call->id == KCALL);
+	auto args   = method->r;
+	assert(args->id == KARGS);
 
 	// read schema/name
 	Str schema;
@@ -174,7 +174,7 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 	runpin(self, r);
 
 	// push rest arguments
-	auto current = call->l;
+	auto current = args->l;
 	while (current)
 	{
 		r = emit_expr(self, target, current);
@@ -184,7 +184,7 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 	}
 
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)func, call->integer + 1);
+	return op3(self, CCALL, rpin(self), (intptr_t)func, args->integer + 1);
 }
 
 hot static inline int
@@ -616,13 +616,13 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 
 	// object
 	case '{':
-		return emit_call(self, target, ast, CMAP);
+		return emit_obj(self, target, ast, CMAP);
 	case KARRAY:
-		return emit_call(self, target, ast, CARRAY);
+		return emit_obj(self, target, ast, CARRAY);
 
 	// function/method call
 	case '(':
-		return emit_call_function(self, target, ast);
+		return emit_call(self, target, ast);
 	case KMETHOD:
 		if (ast->r->id == '(')
 			return emit_call_method(self, target, ast);

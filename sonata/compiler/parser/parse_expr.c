@@ -131,7 +131,7 @@ expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
 }
 
 static Ast*
-expr_call(Stmt* self, Expr* expr, int endtoken, bool map_separator)
+expr_args(Stmt* self, Expr* expr, int endtoken, bool map_separator)
 {
 	int  count = 0;
 	Ast* expr_head = NULL;
@@ -169,12 +169,12 @@ expr_call(Stmt* self, Expr* expr, int endtoken, bool map_separator)
 	}
 
 done:;
-	// call(list_head, NULL)
-	auto call = ast(KCALL);
-	call->l       = expr_head;
-	call->r       = NULL;
-	call->integer = count;
-	return call;
+	// args(list_head, NULL)
+	auto args = ast(KARGS);
+	args->l       = expr_head;
+	args->r       = NULL;
+	args->integer = count;
+	return args;
 }
 
 static inline Ast*
@@ -268,14 +268,14 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// map
 	case '{':
 		// { [expr: expr, ... ] }
-		value->l = expr_call(self, expr, '}', true);
+		value->l = expr_args(self, expr, '}', true);
 		break;
 
 	// builtin functions
 	case KSET:
 	case KUNSET:
 	{
-		// function(call, NULL)
+		// function(args, NULL)
 		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),
 			      str_of(&value->string));
@@ -283,7 +283,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		name->id = KNAME;
 		value    = ast('(');
 		value->l = name;
-		value->r = expr_call(self, expr, ')', false);
+		value->r = expr_args(self, expr, ')', false);
 		break;
 	}
 
@@ -340,7 +340,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (call)
 		{
 			call->l = value;
-			call->r = expr_call(self, expr, ')', false);
+			call->r = expr_args(self, expr, ')', false);
 			value = call;
 		}
 		break;
@@ -368,7 +368,7 @@ parse_unary(Stmt*     self, Expr* expr,
 	{
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
-		ast->l  = expr_call(self, expr, ']', false);
+		ast->l  = expr_args(self, expr, ']', false);
 		ast_push(result, ast);
 		priority = priority_value;
 	} else
@@ -452,7 +452,7 @@ parse_expr(Stmt* self, Expr* expr)
 						if (call)
 						{
 							call->l = r;
-							call->r = expr_call(self, expr, ')', false);
+							call->r = expr_args(self, expr, ')', false);
 							r = call;
 						}
 					} else {
