@@ -13,7 +13,10 @@ enum
 	TYPE_INT,
 	TYPE_BOOL,
 	TYPE_REAL,
-	TYPE_STRING
+	TYPE_STRING,
+	TYPE_TIMESTAMP,
+	TYPE_TIMESTAMPTZ,
+	TYPE_INTERVAL
 };
 
 hot static inline bool
@@ -32,6 +35,12 @@ type_validate(int type, uint8_t* data)
 		return data_is_real(data);
 	case TYPE_STRING:
 		return data_is_string(data);
+	case TYPE_TIMESTAMP:
+		return data_is_timestamp(data);
+	case TYPE_TIMESTAMPTZ:
+		return data_is_timestamptz(data);
+	case TYPE_INTERVAL:
+		return data_is_interval(data);
 	}
 	return false;
 }
@@ -40,12 +49,15 @@ hot static inline const char*
 type_of(int type)
 {
 	switch (type) {
-	case TYPE_MAP:    return "map";
-	case TYPE_ARRAY:  return "array";
-	case TYPE_INT:    return "int";
-	case TYPE_BOOL:   return "bool";
-	case TYPE_REAL:   return "real";
-	case TYPE_STRING: return "string";
+	case TYPE_MAP:         return "map";
+	case TYPE_ARRAY:       return "array";
+	case TYPE_INT:         return "int";
+	case TYPE_BOOL:        return "bool";
+	case TYPE_REAL:        return "real";
+	case TYPE_STRING:      return "string";
+	case TYPE_TIMESTAMP:   return "timestamp";
+	case TYPE_TIMESTAMPTZ: return "timestamptz";
+	case TYPE_INTERVAL:    return "interval";
 	}
 	return NULL;
 }

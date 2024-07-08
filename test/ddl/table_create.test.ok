@@ -57,99 +57,237 @@ create table test()
 {"code": 1, "msg": "(<name> expected"}
 # test: column int/integer
 create table test(id int primary key, id2 integer)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "id2",
+  "type": 2,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 3,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 3,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column string/text
 create table test(id int primary key, a string, b text)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 5,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 5,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column real
 create table test(id int primary key, a real)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 4,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column map/object
 create table test(id int primary key, a map, b object)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 0,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 0,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column array
 create table test(id int primary key, a array)
-select indexes[0] from system.tables() where name = "test"
-[{
-  "name": "primary",
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
   "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "ref": 0,
-    "type": 2,
-    "path": "",
-    "asc": false
-  }]
-}]
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 1,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+drop table test
+# test: column timestamp
+create table test(id int primary key, a timestamp)
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 6,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+drop table test
+# test: column timestamptz
+create table test(id int primary key, a timestamptz)
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 7,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+drop table test
+# test: column interval
+create table test(id int primary key, a interval)
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 8,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
 drop table test
 # test: column redefined
 create table test(id int, id int)

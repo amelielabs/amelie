@@ -29,45 +29,63 @@
 int
 parse_type(Stmt* self, Column* column, Str* path)
 {
-	auto ast = stmt_next(self);
 	int  type = 0;
-	switch (ast->id) {
-	case KTMAP:
-	case KTOBJECT:
-		type = TYPE_MAP;
-		break;
-	case KTARRAY:
-		type = TYPE_ARRAY;
-		break;
-	case KTINT:
-	case KTINTEGER:
+	auto ast  = stmt_next_shadow(self);
+	if (ast->id != KNAME)
+		goto error;
+
+	if (str_compare_raw(&ast->string, "int", 3) ||
+	    str_compare_raw(&ast->string, "integer", 7))
+	{
 		type = TYPE_INT;
-		break;
-	case KTBOOL:
-	case KTBOOLEAN:
-		type = TYPE_BOOL;
-		break;
-	case KTREAL:
+	} else
+	if (str_compare_raw(&ast->string, "real", 4))
+	{
 		type = TYPE_REAL;
-		break;
-	case KTSTRING:
-	case KTEXT:
+	} else
+	if (str_compare_raw(&ast->string, "bool", 4) ||
+	    str_compare_raw(&ast->string, "boolean", 7))
+	{
+		type = TYPE_BOOL;
+	} else
+	if (str_compare_raw(&ast->string, "text", 4) ||
+	    str_compare_raw(&ast->string, "string", 6))
+	{
 		type = TYPE_STRING;
-		break;
-	default:
-		if (column && path)
-			error("%.*s.%.*s <TYPE> expected",
-			      str_size(&column->name),
-			      str_of(&column->name),
-			      str_size(path),
-			      str_of(path));
-		else
-			error("%.*s <TYPE> expected",
-			      str_size(&column->name),
-			      str_of(&column->name));
-		break;
+	} else
+	if (str_compare_raw(&ast->string, "array", 5))
+	{
+		type = TYPE_ARRAY;
+	} else
+	if (str_compare_raw(&ast->string, "object", 6) ||
+	    str_compare_raw(&ast->string, "map", 3))
+	{
+		type = TYPE_MAP;
+	} else
+	if (str_compare_raw(&ast->string, "timestamp", 9))
+	{
+		type = TYPE_TIMESTAMP;
+	} else
+	if (str_compare_raw(&ast->string, "timestamptz", 11))
+	{
+		type = TYPE_TIMESTAMPTZ;
+	} else
+	if (str_compare_raw(&ast->string, "interval", 8))
+	{
+		type = TYPE_INTERVAL;
+	} else {
+		goto error;
 	}
 	return type;
+error:
+	if (column && path)
+		error("%.*s.%.*s <TYPE> expected",
+		      str_size(&column->name),
+		      str_of(&column->name),
+		      str_size(path),
+		      str_of(path));
+	error("%.*s <TYPE> expected", str_size(&column->name),
+	      str_of(&column->name));
 }
 
 static Column*

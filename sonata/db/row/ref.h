@@ -63,6 +63,11 @@ compare(Keys* self, Ref* a, Ref* b)
 			rc = data_compare_integer(ref_key(a, key->order),
 			                          ref_key(b, key->order));
 		else
+		if (key->type == TYPE_TIMESTAMP ||
+		    key->type == TYPE_TIMESTAMPTZ)
+			rc = data_compare_timestamp(ref_key(a, key->order),
+			                            ref_key(b, key->order));
+		else
 			rc = data_compare_string(ref_key(a, key->order),
 			                         ref_key(b, key->order));
 		if (rc != 0)

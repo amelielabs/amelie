@@ -34,32 +34,47 @@ create table test()
 
 # test: column int/integer
 create table test(id int primary key, id2 integer)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column string/text
 create table test(id int primary key, a string, b text)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column real
 create table test(id int primary key, a real)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column map/object
 create table test(id int primary key, a map, b object)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column array
 create table test(id int primary key, a array)
-select indexes[0] from system.tables() where name = "test"
+select columns from system.tables() where name = "test"
+drop table test
+
+# test: column timestamp
+create table test(id int primary key, a timestamp)
+select columns from system.tables() where name = "test"
+drop table test
+
+# test: column timestamptz
+create table test(id int primary key, a timestamptz)
+select columns from system.tables() where name = "test"
+drop table test
+
+# test: column interval
+create table test(id int primary key, a interval)
+select columns from system.tables() where name = "test"
 drop table test
 
 # test: column redefined

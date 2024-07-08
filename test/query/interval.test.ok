@@ -192,5 +192,8 @@ select  '60 minutes'::interval > '1 hour'::interval
 false
 select  '61 minutes'::interval > '1 hour'::interval
 true
+# test: interval column
+create table test (id int primary key, i interval)
+drop table test
 disconnect S0
 close E0

@@ -36,6 +36,10 @@ target_lookup_hash(Target* target)
 		if (key->type == TYPE_STRING)
 			hash = key_hash_string(hash, &ref->start->string);
 		else
+		if (key->type == TYPE_TIMESTAMP ||
+		    key->type == TYPE_TIMESTAMPTZ)
+			hash = key_hash_timestamp(hash, ref->start->integer);
+		else
 			hash = key_hash_integer(hash, ref->start->integer);
 	}
 	return hash;

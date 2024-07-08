@@ -23,6 +23,22 @@ data_compare_integer(uint8_t* a, uint8_t* b)
 }
 
 always_inline hot static inline int
+data_compare_timestamp_read(uint8_t** a, uint8_t** b)
+{
+	int64_t a_value;
+	int64_t b_value;
+	data_read_timestamp(a, &a_value);
+	data_read_timestamp(b, &b_value);
+	return compare_int64(a_value, b_value);
+}
+
+always_inline hot static inline int
+data_compare_timestamp(uint8_t* a, uint8_t* b)
+{
+	return data_compare_timestamp_read(&a, &b);
+}
+
+always_inline hot static inline int
 data_compare_string_read(uint8_t** a, uint8_t** b)
 {
 	char* a_value;
@@ -166,11 +182,7 @@ data_compare(uint8_t* a, uint8_t* b)
 		{
 			if (! data_is_timestamp(b))
 				return compare_int64(*a, *b);
-			int64_t a_value;
-			int64_t b_value;
-			data_read_timestamp(&a, &a_value);
-			data_read_timestamp(&b, &b_value);
-			rc = compare_int64(a_value, b_value);
+			rc = data_compare_timestamp(a, b);
 			if (rc != 0)
 				return rc;
 			break;
@@ -179,11 +191,7 @@ data_compare(uint8_t* a, uint8_t* b)
 		{
 			if (! data_is_timestamptz(b))
 				return compare_int64(*a, *b);
-			int64_t a_value;
-			int64_t b_value;
-			data_read_timestamp(&a, &a_value);
-			data_read_timestamp(&b, &b_value);
-			rc = compare_int64(a_value, b_value);
+			rc = data_compare_timestamp(a, b);
 			if (rc != 0)
 				return rc;
 			break;

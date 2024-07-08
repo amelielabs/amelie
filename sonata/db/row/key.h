@@ -155,6 +155,12 @@ key_hash_integer(uint32_t hash, int64_t value)
 }
 
 hot static inline uint32_t
+key_hash_timestamp(uint32_t hash, int64_t value)
+{
+	return hash_murmur3_32((uint8_t*)&value, sizeof(value), hash);
+}
+
+hot static inline uint32_t
 key_hash_string(uint32_t hash, Str* string)
 {
 	return hash_murmur3_32(str_u8(string), str_size(string), hash);
@@ -168,6 +174,12 @@ key_hash(uint32_t hash, uint8_t* pos)
 		int64_t value;
 		data_read_integer(&pos, &value);
 		hash = key_hash_integer(hash, value);
+	} else
+	if (data_is_timestamp_or_tz(pos))
+	{
+		int64_t value;
+		data_read_timestamp(&pos, &value);
+		hash = key_hash_timestamp(hash, value);
 	} else
 	if (data_is_string(pos))
 	{
