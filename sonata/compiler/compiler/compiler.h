@@ -10,17 +10,16 @@ typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Parser       parser;
-	Rmap         map;
-	Code*        code;
-	Code         code_coordinator;
-	Code         code_node;
-	CodeData     code_data;
-	bool         snapshot;
-	Stmt*        current;
-	Stmt*        last;
-	FunctionMgr* function_mgr;
-	Db*          db;
+	Parser   parser;
+	Rmap     map;
+	Code*    code;
+	Code     code_coordinator;
+	Code     code_node;
+	CodeData code_data;
+	bool     snapshot;
+	Stmt*    current;
+	Stmt*    last;
+	Db*      db;
 };
 
 void compiler_init(Compiler*, Db*, FunctionMgr*);

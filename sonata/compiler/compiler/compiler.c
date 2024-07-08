@@ -33,16 +33,15 @@ compiler_init(Compiler*    self,
               Db*          db,
               FunctionMgr* function_mgr)
 {
-	self->snapshot     = false;
-	self->current      = NULL;
-	self->last         = NULL;
-	self->function_mgr = function_mgr;
-	self->db           = db;
-	self->code         = &self->code_node;
+	self->snapshot = false;
+	self->current  = NULL;
+	self->last     = NULL;
+	self->db       = db;
+	self->code     = &self->code_node;
 	code_init(&self->code_coordinator);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
-	parser_init(&self->parser, db, &self->code_data);
+	parser_init(&self->parser, db, function_mgr, &self->code_data);
 	rmap_init(&self->map);
 }
 

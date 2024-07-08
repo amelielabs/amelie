@@ -46,18 +46,19 @@ typedef enum
 
 struct Stmt
 {
-	StmtId     id;
-	Ast*       ast;
-	int        order;
-	Ast*       name;
-	Columns    columns;
-	TargetList target_list;
-	StmtList*  stmt_list;
-	CodeData*  data;
-	Json*      json;
-	Lex*       lex;
-	Db*        db;
-	List       link;
+	StmtId       id;
+	Ast*         ast;
+	int          order;
+	Ast*         name;
+	Columns      columns;
+	TargetList   target_list;
+	StmtList*    stmt_list;
+	CodeData*    data;
+	Json*        json;
+	Lex*         lex;
+	FunctionMgr* function_mgr;
+	Db*          db;
+	List         link;
 };
 
 struct StmtList
@@ -67,19 +68,24 @@ struct StmtList
 };
 
 static inline Stmt*
-stmt_allocate(Db* db, Lex* lex, CodeData* data, Json* json,
-              StmtList* stmt_list)
+stmt_allocate(Db*          db,
+              FunctionMgr* function_mgr,
+              Lex*         lex,
+              CodeData*    data,
+              Json*        json,
+              StmtList*    stmt_list)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->id        = STMT_UNDEF;
-	self->ast       = NULL;
-	self->order     = 0;
-	self->name      = NULL;
-	self->stmt_list = stmt_list;
-	self->data      = data;
-	self->json      = json;
-	self->lex       = lex;
-	self->db        = db;
+	self->id           = STMT_UNDEF;
+	self->ast          = NULL;
+	self->order        = 0;
+	self->name         = NULL;
+	self->stmt_list    = stmt_list;
+	self->data         = data;
+	self->json         = json;
+	self->lex          = lex;
+	self->function_mgr = function_mgr;
+	self->db           = db;
 	columns_init(&self->columns);
 	target_list_init(&self->target_list);
 	list_init(&self->link);

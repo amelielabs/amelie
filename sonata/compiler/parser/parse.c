@@ -361,7 +361,8 @@ parse_cte(Parser* self)
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
-		auto cte = stmt_allocate(self->db, &self->lex, self->data, &self->json,
+		auto cte = stmt_allocate(self->db, self->function_mgr, &self->lex,
+		                         self->data, &self->json,
 		                         &self->stmt_list);
 		stmt_list_add(&self->stmt_list, cte);
 
@@ -438,7 +439,8 @@ parse(Parser* self, Str* str)
 			break;
 
 		// stmt (last stmt is main)
-		self->stmt = stmt_allocate(self->db, &self->lex, self->data, &self->json,
+		self->stmt = stmt_allocate(self->db, self->function_mgr, &self->lex,
+		                           self->data, &self->json,
 		                           &self->stmt_list);
 		stmt_list_add(&self->stmt_list, self->stmt);
 		parse_stmt(self, self->stmt);

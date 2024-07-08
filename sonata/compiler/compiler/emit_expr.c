@@ -84,23 +84,9 @@ emit_obj(Compiler* self, Target* target, Ast* ast, int op)
 hot static inline int
 emit_call(Compiler* self, Target* target, Ast* ast)
 {
-	// (function_name, iargs)
-	auto path = ast->l;
+	// (function_name, args)
+	auto call = ast_call_of(ast);
 	auto args = ast->r;
-	assert(args->id == KARGS);
-
-	// read schema/name
-	Str schema;
-	Str name;
-	if (! parse_target_path(path, &schema, &name))
-		error("%.*s(): bad function call", str_size(&path->string),
-		      str_of(&path->string));
-
-	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &schema, &name);
-	if (! func)
-		error("%.*s(): function not found", str_size(&path->string),
-		      str_of(&path->string));
 
 	// push arguments
 	auto current = args->l;
@@ -113,78 +99,39 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 	}
 
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)func, args->integer);
-}
-
-hot static inline int
-emit_call_method_noargs(Compiler* self, Target* target, Ast* ast)
-{
-	// expr, path
-	auto expr = ast->l;
-	auto path = ast->r;
-
-	// read schema/name
-	Str schema;
-	Str name;
-	if (! parse_target_path(path, &schema, &name))
-		error("%.*s(): bad function call", str_size(&path->string),
-		      str_of(&path->string));
-
-	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &schema, &name);
-	if (! func)
-		error("%.*s(): function not found", str_size(&path->string),
-		      str_of(&path->string));
-
-	// use expression as the first argument to the call
-	int r = emit_expr(self, target, expr);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)func, 1);
+	return op3(self, CCALL, rpin(self), (intptr_t)call->fn, args->integer);
 }
 
 hot static inline int
 emit_call_method(Compiler* self, Target* target, Ast* ast)
 {
-	// expr, path | method(path, call)
-	auto expr   = ast->l;
-	auto method = ast->r;
-	auto path   = method->l;
-	auto args   = method->r;
-	assert(args->id == KARGS);
-
-	// read schema/name
-	Str schema;
-	Str name;
-	if (! parse_target_path(path, &schema, &name))
-		error("%.*s(): bad function call", str_size(&path->string),
-		      str_of(&path->string));
-
-	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &schema, &name);
-	if (! func)
-		error("%.*s(): function not found", str_size(&path->string),
-		      str_of(&path->string));
+	// expr, method(path, [args])
+	auto expr = ast->l;
+	auto call = ast_call_of(ast->r);
+	auto args = call->ast.r;
 
 	// use expression as the first argument to the call
 	int r = emit_expr(self, target, expr);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	// push rest arguments
-	auto current = args->l;
-	while (current)
+	// push the rest of the arguments
+	int argc = 1;
+	if (args)
 	{
-		r = emit_expr(self, target, current);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		current = current->next;
+		auto current = args->l;
+		while (current)
+		{
+			r = emit_expr(self, target, current);
+			op1(self, CPUSH, r);
+			runpin(self, r);
+			current = current->next;
+		}
+		argc += args->integer;
 	}
 
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)func, args->integer + 1);
+	return op3(self, CCALL, rpin(self), (intptr_t)call->fn, argc);
 }
 
 hot static inline int
@@ -624,9 +571,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCALL:
 		return emit_call(self, target, ast);
 	case KMETHOD:
-		if (ast->r->id == KCALL)
-			return emit_call_method(self, target, ast);
-		return emit_call_method_noargs(self, target, ast);
+		return emit_call_method(self, target, ast);
 
 	// consts
 	case KNULL:

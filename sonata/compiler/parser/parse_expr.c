@@ -178,15 +178,29 @@ done:;
 }
 
 static Ast*
-expr_call(Stmt* self, Expr* expr, Ast* path)
+expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
-	if (! stmt_if(self, '('))
-		return NULL;
-	// function(expr, ...)
+	// [schema.]function_name[(expr, ...)]
+
+	// read schema/name
+	Str schema;
+	Str name;
+	if (! parse_target_path(path, &schema, &name))
+		error("%.*s(): bad function call", str_size(&path->string),
+		      str_of(&path->string));
+
+	// find and call function
+	auto func = function_mgr_find(self->function_mgr, &schema, &name);
+	if (! func)
+		error("%.*s(): function not found", str_size(&path->string),
+		      str_of(&path->string));
+
 	auto call = ast_call_allocate();
-	call->fn = NULL;
+	call->fn = func;
 	call->ast.l = path;
-	call->ast.r = expr_args(self, expr, ')', false);
+	call->ast.r = NULL;
+	if (with_args)
+		call->ast.r = expr_args(self, expr, ')', false);
 	return &call->ast;
 }
 
@@ -288,12 +302,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSET:
 	case KUNSET:
 	{
-		auto name = value;
-		name->id = KNAME;
-		value = expr_call(self, expr, name);
-		if (! value)
+		if (! stmt_if(self,'('))
 			error("%.*s<(> expected", str_size(&value->string),
 			      str_of(&value->string));
+		value->id = KNAME;
+		value = expr_call(self, expr, value, true);
 		break;
 	}
 
@@ -346,9 +359,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 
 		// function(expr, ...)
-		auto call = expr_call(self, expr, value);
-		if (call)
-			value = call;
+		if (stmt_if(self,'('))
+			value = expr_call(self, expr, value, true);
 		break;
 	}
 	case KNAME_COMPOUND_STAR:
@@ -453,10 +465,9 @@ parse_expr(Stmt* self, Expr* expr)
 					if (r->id == KNAME ||
 					    r->id == KNAME_COMPOUND)
 					{
-						// function(expr, ...)
-						auto call = expr_call(self, expr, r);
-						if (call)
-							r = call;
+						// function[(expr, ...)]
+						auto with_args = stmt_if(self, '(') != NULL;
+						r = expr_call(self, expr, r, with_args);
 					} else {
 						error("bad '::' or '->' expression");
 					}

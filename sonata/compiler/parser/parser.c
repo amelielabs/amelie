@@ -27,12 +27,16 @@
 #include <sonata_parser.h>
 
 void
-parser_init(Parser* self, Db* db, CodeData* data)
+parser_init(Parser*      self,
+            Db*          db,
+            FunctionMgr* function_mgr,
+            CodeData*    data)
 {
-	self->explain = EXPLAIN_NONE;
-	self->stmt    = NULL;
-	self->data    = data;
-	self->db      = db;
+	self->explain      = EXPLAIN_NONE;
+	self->stmt         = NULL;
+	self->data         = data;
+	self->function_mgr = function_mgr;
+	self->db           = db;
 	stmt_list_init(&self->stmt_list);
 	lex_init(&self->lex, keywords);
 	json_init(&self->json);
