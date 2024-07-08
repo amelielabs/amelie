@@ -62,6 +62,8 @@ OpDesc ops[] =
 	{ CREAL,              "real"              },
 	{ CSTRING,            "string"            },
 	{ CSTRING_MIN,        "string_min"        },
+	{ CTIMESTAMP_MIN,     "timestamp_min"     },
+	{ CTIMESTAMPTZ_MIN,   "timestamptz_min"   },
 
 	// arguments
 	{ CARG,               "arg"               },

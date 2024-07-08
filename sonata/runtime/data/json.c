@@ -88,6 +88,18 @@ json_parse_keyword(Json* self, const char* name, int name_size)
 hot static inline void
 json_cast(Json* self, Str* str)
 {
+	// ::timestamptz
+	if (json_is_keyword(self, "::timestamptz", 13))
+	{
+		// todo: pass tzz
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, str);
+		encode_timestamptz(self->buf, timestamp_of(&ts, true));
+		self->pos += 13;
+		return;
+	}
+
 	// ::timestamp
 	if (json_is_keyword(self, "::timestamp", 11))
 	{
@@ -96,18 +108,6 @@ json_cast(Json* self, Str* str)
 		timestamp_read(&ts, str);
 		encode_timestamp(self->buf, timestamp_of(&ts, false));
 		self->pos += 11;
-		return;
-	}
-
-	// ::timestamptz
-	if (json_is_keyword(self, "::timestamptz", 13))
-	{
-		// todo: pass tzz
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, str);
-		encode_timestamp(self->buf, timestamp_of(&ts, true));
-		self->pos += 13;
 		return;
 	}
 

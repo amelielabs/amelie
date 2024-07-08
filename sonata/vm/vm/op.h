@@ -45,6 +45,8 @@ enum
 	CREAL,
 	CSTRING,
 	CSTRING_MIN,
+	CTIMESTAMP_MIN,
+	CTIMESTAMPTZ_MIN,
 
 	// argument
 	CARG,

@@ -159,8 +159,12 @@ parse_key(Stmt* self, Keys* keys)
 			asc = false;
 
 		// validate key type
-		if (type != TYPE_INT && type != TYPE_STRING)
-			error("<%.*s> column key can be string or int", str_size(&column->name),
+		if (type != TYPE_INT &&
+		    type != TYPE_STRING &&
+		    type != TYPE_TIMESTAMP &&
+		    type != TYPE_TIMESTAMPTZ)
+			error("<%.*s> column key can be string, int or timestamp",
+			      str_size(&column->name),
 			      str_of(&column->name));
 
 		// force column not_null constraint
@@ -294,9 +298,13 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			constraint_set_not_null(&column->constraint, true);
 
 			// validate key type
-			if (column->type != TYPE_INT && column->type != TYPE_STRING)
-				error("<%.*s> column key can be string or int",
-				      str_size(&column->name), str_of(&column->name));
+			if (column->type != TYPE_INT &&
+			    column->type != TYPE_STRING &&
+			    column->type != TYPE_TIMESTAMP &&
+			    column->type != TYPE_TIMESTAMPTZ)
+				error("<%.*s> column key can be string, int or timestamp",
+				      str_size(&column->name),
+				      str_of(&column->name));
 
 			// create key
 			auto key = key_allocate();

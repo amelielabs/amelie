@@ -29,6 +29,8 @@ value_compare(Value* a, Value* b)
 	switch (a->type) {
 	case VALUE_INT:
 	case VALUE_BOOL:
+	case VALUE_TIMESTAMP:
+	case VALUE_TIMESTAMPTZ:
 	{
 		if (a->integer == b->integer)
 			return 0;

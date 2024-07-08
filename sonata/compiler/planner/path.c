@@ -345,13 +345,11 @@ path_expr(Path* self, Ast* expr)
 		auto r = path_expr(self, expr->r);
 		return path_merge(self, l, r);
 	}
-
 	case KOR:
 	{
 		// todo:
 		break;
 	}
-
 	case KGTE:
 	case KLTE:
 	case '>':
@@ -366,7 +364,6 @@ path_expr(Path* self, Ast* expr)
 			return op;
 		break;
 	}
-
 	default:
 		break;
 	}

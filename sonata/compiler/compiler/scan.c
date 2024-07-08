@@ -64,10 +64,20 @@ scan_key(Scan* self, Target* target)
 
 		// set min
 		int rexpr;
-		if (key->type == TYPE_STRING)
-			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
-		else
+		switch (key->type) {
+		case TYPE_INT:
 			rexpr = op1(cp, CINT_MIN, rpin(cp));
+			break;
+		case TYPE_TIMESTAMP:
+			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp));
+			break;
+		case TYPE_TIMESTAMPTZ:
+			rexpr = op1(cp, CTIMESTAMPTZ_MIN, rpin(cp));
+			break;
+		case TYPE_STRING:
+			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
+			break;
+		}
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
 	}

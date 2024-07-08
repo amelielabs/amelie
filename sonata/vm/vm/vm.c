@@ -114,6 +114,8 @@ vm_run(Vm*          self,
 		&&creal,
 		&&cstring,
 		&&cstring_min,
+		&&ctimestamp_min,
+		&&ctimestamptz_min,
 		&&carg,
 		&&cbor,
 		&&cband,
@@ -298,6 +300,14 @@ cstring:
 cstring_min:
 	str_set(&string, "", 0);
 	value_set_string(&r[op->a], &string, NULL);
+	op_next;
+
+ctimestamp_min:
+	value_set_timestamp(&r[op->a], 0);
+	op_next;
+
+ctimestamptz_min:
+	value_set_timestamptz(&r[op->a], 0);
 	op_next;
 
 carg:
