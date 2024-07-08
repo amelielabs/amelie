@@ -70,8 +70,63 @@ json_next(Json* self)
 	return *self->pos;
 }
 
+hot static inline bool
+json_is_keyword(Json* self, const char* name, int name_size)
+{
+	return (self->pos + name_size) <= self->end &&
+	        !memcmp(self->pos, name, name_size);
+}
+
 hot static inline void
-json_parse_string(Json* self)
+json_parse_keyword(Json* self, const char* name, int name_size)
+{
+	if (unlikely(! json_is_keyword(self, name, name_size)))
+		error("unexpected token");
+	self->pos += name_size;
+}
+
+hot static inline void
+json_cast(Json* self, Str* str)
+{
+	// ::timestamp
+	if (json_is_keyword(self, "::timestamp", 11))
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, str);
+		encode_timestamp(self->buf, timestamp_of(&ts, false));
+		self->pos += 11;
+		return;
+	}
+
+	// ::timestamptz
+	if (json_is_keyword(self, "::timestamptz", 13))
+	{
+		// todo: pass tzz
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, str);
+		encode_timestamp(self->buf, timestamp_of(&ts, true));
+		self->pos += 13;
+		return;
+	}
+
+	// ::interval
+	if (json_is_keyword(self, "::interval", 10))
+	{
+		Interval iv;
+		interval_init(&iv);
+		interval_read(&iv, str);
+		encode_interval(self->buf, &iv);
+		self->pos += 10;
+		return;
+	}
+
+	error("unrecognized :: cast operator");
+}
+
+hot static inline void
+json_parse_string(Json* self, bool cast)
 {
 	// "
 	self->pos++;
@@ -99,18 +154,19 @@ json_parse_string(Json* self)
 	}
 	if (unlikely(self->pos == self->end))
 		error("unterminated string");
-
-	encode_raw(self->buf, start, self->pos - start);
+	auto size = self->pos - start;
 	self->pos++;
-}
 
-hot static inline void
-json_parse_keyword(Json* self, const char* name, int name_size)
-{
-	if (unlikely(self->pos + name_size > self->end) ||
-	             memcmp(self->pos, name, name_size) != 0)
-		error("unexpected token");
-	self->pos += name_size;
+	// ::<operation>
+	if (cast && self->pos < self->end && *self->pos == ':')
+	{
+		Str str;
+		str_set(&str, start, size);
+		json_cast(self, &str);
+	} else
+	{
+		encode_raw(self->buf, start, size);
+	}
 }
 
 hot static inline void
@@ -162,7 +218,7 @@ json_parse_const(Json* self)
 {
 	switch (*self->pos) {
 	case '"':
-		json_parse_string(self);
+		json_parse_string(self, true);
 		return;
 	case 'n':
 		json_parse_keyword(self, "null", 4);
@@ -317,7 +373,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 			// "key"
 			if (unlikely(*self->pos != '\"'))
 				error("map key expected");
-			json_parse_string(self);
+			json_parse_string(self, false);
 			// ':'
 			next = json_next(self);
 			if (next != ':')
