@@ -621,10 +621,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_obj(self, target, ast, CARRAY);
 
 	// function/method call
-	case '(':
+	case KCALL:
 		return emit_call(self, target, ast);
 	case KMETHOD:
-		if (ast->r->id == '(')
+		if (ast->r->id == KCALL)
 			return emit_call_method(self, target, ast);
 		return emit_call_method_noargs(self, target, ast);
 

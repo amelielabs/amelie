@@ -37,6 +37,7 @@ enum
 	KNOT,
 
 	KARGS,
+	KCALL,
 	KMETHOD,
 	KARROW,
 	KNEG,

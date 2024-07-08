@@ -24,6 +24,7 @@
 
 // parser
 #include "parser/parser.h"
+#include "parser/parse_call.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_misc.h"
 #include "parser/parse_system.h"

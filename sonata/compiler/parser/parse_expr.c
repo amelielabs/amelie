@@ -177,6 +177,19 @@ done:;
 	return args;
 }
 
+static Ast*
+expr_call(Stmt* self, Expr* expr, Ast* path)
+{
+	if (! stmt_if(self, '('))
+		return NULL;
+	// function(expr, ...)
+	auto call = ast_call_allocate();
+	call->fn = NULL;
+	call->ast.l = path;
+	call->ast.r = expr_args(self, expr, ')', false);
+	return &call->ast;
+}
+
 static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
@@ -275,15 +288,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSET:
 	case KUNSET:
 	{
-		// function(args, NULL)
-		if (! stmt_if(self, '('))
-			error("%.*s<(> expected", str_size(&value->string),
-			      str_of(&value->string));
 		auto name = value;
 		name->id = KNAME;
-		value    = ast('(');
-		value->l = name;
-		value->r = expr_args(self, expr, ')', false);
+		value = expr_call(self, expr, name);
+		if (! value)
+			error("%.*s<(> expected", str_size(&value->string),
+			      str_of(&value->string));
 		break;
 	}
 
@@ -336,13 +346,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 
 		// function(expr, ...)
-		auto call = stmt_if(self, '(');
+		auto call = expr_call(self, expr, value);
 		if (call)
-		{
-			call->l = value;
-			call->r = expr_args(self, expr, ')', false);
 			value = call;
-		}
 		break;
 	}
 	case KNAME_COMPOUND_STAR:
@@ -448,13 +454,9 @@ parse_expr(Stmt* self, Expr* expr)
 					    r->id == KNAME_COMPOUND)
 					{
 						// function(expr, ...)
-						auto call = stmt_if(self, '(');
+						auto call = expr_call(self, expr, r);
 						if (call)
-						{
-							call->l = r;
-							call->r = expr_args(self, expr, ')', false);
 							r = call;
-						}
 					} else {
 						error("bad '::' or '->' expression");
 					}
