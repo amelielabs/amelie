@@ -16,9 +16,13 @@ select '1969-0-0'::timestamp
 select '1969-0-0 0:0:0'::timestamp
 select '1970-0-0 00:00:00'::timestamp
 select '1970-00-00 00:00:00'::timestamp
+select timestamp '1970-00-00 00:00:00'
+select timestamp('1970-00-00 00:00:00')
 
 # test: epoch
 select '1970-01-01 00:00:00'::timestamp
+select timestamp '1970-01-01 00:00:00'
+select timestamp('1970-01-01 00:00:00')
 
 # test: day overflow
 select '1970-01-33 00:00:00'::timestamp
@@ -44,6 +48,8 @@ select '1970-01-01 00:00:00.0'::timestamp
 select '1970-01-01 00:00:00.00'::timestamp
 select '1970-01-01 00:00:00.000'::timestamp
 select '1970-01-01 00:00:00.001'::timestamp
+select timestamp '1970-01-01 00:00:00.001'
+select timestamp('1970-01-01 00:00:00.001')
 
 # test: us
 select '1970-01-01 00:00:00.0010'::timestamp
@@ -51,10 +57,14 @@ select '1970-01-01 00:00:00.00100'::timestamp
 select '1970-01-01 00:00:00.000001'::timestamp
 select '1970-01-01 00:00:00.000000'::timestamp
 select '1970-01-01 00:00:00.999999'::timestamp
+select timestamp '1970-01-01 00:00:00.999999'
+select timestamp('1970-01-01 00:00:00.999999')
+select timestamp('1970-01-01 00:00:00.999999', 123)
 
 # test: zulu
 select '1970-01-01 00:00:00.999999Z'::timestamp
 select '1970-01-01 00:00:00.999999Zjunk'::timestamp
+select timestamp '1970-01-01 00:00:00.999999Zjunk'
 
 # test: timezone
 select '1970-01-01 00:00:00.999999+'::timestamp
@@ -74,6 +84,8 @@ select '1970-01-01 01:12:59.909090'::timestamp
 select '1970-01-01 01:12:59.909090'::timestamp::string
 select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp
 select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string
+select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string
+select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string
 
 # test: convertion (document)
 select ['1970-01-01 01:12:59.909090'::timestamp]
@@ -84,6 +96,7 @@ select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
 # test: generate series (year)
 select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
 select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
+select count(*) from generate_series(timestamp '1970-01-01 00:00:00', timestamp('1980-01-01 00:00:00'), interval '1 year');
 
 # test: generate series (month)
 select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
@@ -151,6 +164,10 @@ insert into test values (2, "1970-01-01 01:13:01"::timestamp)
 select * from test
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
+
+select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 drop table test
 

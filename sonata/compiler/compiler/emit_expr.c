@@ -596,6 +596,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_string(self, &ast->string, ast->string_escape);
 	case KINTERVAL:
 		return emit_interval(self, &ast->interval);
+	case KTIMESTAMP:
+		return op2(self, CTIMESTAMP, rpin(self), ast->integer);
+	case KTIMESTAMPTZ:
+		return op2(self, CTIMESTAMPTZ, rpin(self), ast->integer);
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
 

@@ -25,8 +25,16 @@ select '1970-0-0 00:00:00'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 select '1970-00-00 00:00:00'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
+select timestamp '1970-00-00 00:00:00'
+{"code": 1, "msg": "malformed timestamp string"}
+select timestamp('1970-00-00 00:00:00')
+{"code": 1, "msg": "malformed timestamp string"}
 # test: epoch
 select '1970-01-01 00:00:00'::timestamp
+"1970-01-01 00:00:00.000000Z"
+select timestamp '1970-01-01 00:00:00'
+"1970-01-01 00:00:00.000000Z"
+select timestamp('1970-01-01 00:00:00')
 "1970-01-01 00:00:00.000000Z"
 # test: day overflow
 select '1970-01-33 00:00:00'::timestamp
@@ -57,6 +65,10 @@ select '1970-01-01 00:00:00.000'::timestamp
 "1970-01-01 00:00:00.000000Z"
 select '1970-01-01 00:00:00.001'::timestamp
 "1970-01-01 00:00:00.001000Z"
+select timestamp '1970-01-01 00:00:00.001'
+"1970-01-01 00:00:00.001000Z"
+select timestamp('1970-01-01 00:00:00.001')
+"1970-01-01 00:00:00.001000Z"
 # test: us
 select '1970-01-01 00:00:00.0010'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
@@ -68,10 +80,18 @@ select '1970-01-01 00:00:00.000000'::timestamp
 "1970-01-01 00:00:00.000000Z"
 select '1970-01-01 00:00:00.999999'::timestamp
 "1970-01-01 00:00:00.999999Z"
+select timestamp '1970-01-01 00:00:00.999999'
+"1970-01-01 00:00:00.999999Z"
+select timestamp('1970-01-01 00:00:00.999999')
+"1970-01-01 00:00:00.999999Z"
+select timestamp('1970-01-01 00:00:00.999999', 123)
+{"code": 1, "msg": "timestamp(): incorrect number of arguments"}
 # test: zulu
 select '1970-01-01 00:00:00.999999Z'::timestamp
 "1970-01-01 00:00:00.999999Z"
 select '1970-01-01 00:00:00.999999Zjunk'::timestamp
+{"code": 1, "msg": "malformed timestamp string"}
+select timestamp '1970-01-01 00:00:00.999999Zjunk'
 {"code": 1, "msg": "malformed timestamp string"}
 # test: timezone
 select '1970-01-01 00:00:00.999999+'::timestamp
@@ -102,6 +122,10 @@ select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp
 "1970-01-01 01:12:59.909090Z"
 select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string
 "1970-01-01 01:12:59.909090Z"
+select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string
+"1970-01-01 01:12:59.909090Z"
+select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string
+"1970-01-01 01:12:59.909090Z"
 # test: convertion (document)
 select ['1970-01-01 01:12:59.909090'::timestamp]
 ["1970-01-01 01:12:59.909090Z"]
@@ -115,6 +139,8 @@ select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
 select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
 ["1970-01-01 00:00:00.000000Z", "1971-01-01 00:00:00.000000Z", "1972-01-01 00:00:00.000000Z", "1973-01-01 00:00:00.000000Z", "1974-01-01 00:00:00.000000Z", "1975-01-01 00:00:00.000000Z", "1976-01-01 00:00:00.000000Z", "1977-01-01 00:00:00.000000Z", "1978-01-01 00:00:00.000000Z", "1979-01-01 00:00:00.000000Z", "1980-01-01 00:00:00.000000Z"]
 select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
+[11]
+select count(*) from generate_series(timestamp '1970-01-01 00:00:00', timestamp('1980-01-01 00:00:00'), interval '1 year');
 [11]
 # test: generate series (month)
 select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
@@ -249,6 +275,41 @@ bytecode [node]
 14        cursor_close        0      0      0
 15              result        0      0      0
 16                 ret        0      0      0
+
+"
+select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+[[1, "1970-01-01 01:13:00.000000Z"], [2, "1970-01-01 01:13:01.000000Z"]]
+explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+"
+bytecode [coordinator]
+--------
+ 0            send_all        0      0      0
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4          merge_recv        0     -1     -1
+ 5             cte_set        0      0      0
+ 6                body        0      0      0
+ 7                 ret        0      0      0
+
+
+bytecode [node]
+--------
+ 0                 set        0      0      0
+ 1             int_min        1      0      0
+ 2                push        1      0      0
+ 3         cursor_open        0      0      5      # public.test (primary)
+ 4                 jmp       12      0      0
+ 5          cursor_idx        1      0      1
+ 6           timestamp        2 4379909090      0
+ 7                  gt        3      1      2
+ 8                jntr       11      3      0
+ 9         cursor_read        1      0      0
+10             set_add        0      1      0
+11         cursor_next        0      5      0
+12        cursor_close        0      0      0
+13              result        0      0      0
+14                 ret        0      0      0
 
 "
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;

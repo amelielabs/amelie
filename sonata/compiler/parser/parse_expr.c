@@ -85,6 +85,8 @@ priority_map[UINT8_MAX] =
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
 	[KINTERVAL]                = priority_value,
+	[KTIMESTAMP]               = priority_value,
+	[KTIMESTAMPTZ]             = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -341,18 +343,39 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KINTERVAL:
 	{
 		// interval()
-		if (stmt_if(self,'('))
+		if (stmt_if(self, '('))
 		{
 			value->id = KNAME;
 			value = expr_call(self, expr, value, true);
 			break;
 		}
 		// interval 'spec'
-		auto iv = stmt_if(self, KSTRING);
-		if (! iv)
+		auto spec = stmt_if(self, KSTRING);
+		if (! spec)
 			error("INTERVAL <string> expected");
 		interval_init(&value->interval);
-		interval_read(&value->interval, &iv->string);
+		interval_read(&value->interval, &spec->string);
+		break;
+	}
+	case KTIMESTAMP:
+	case KTIMESTAMPTZ:
+	{
+		// ()
+		if (stmt_if(self, '('))
+		{
+			value->id = KNAME;
+			value = expr_call(self, expr, value, true);
+			break;
+		}
+		// timestamp 'spec'
+		auto spec = stmt_if(self, KSTRING);
+		if (! spec)
+			error("TIMESTAMP | TIMESTAMPTZ <string> expected");
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &spec->string);
+		auto with_tz = value->id == KTIMESTAMPTZ;
+		value->integer = timestamp_of(&ts, with_tz);
 		break;
 	}
 

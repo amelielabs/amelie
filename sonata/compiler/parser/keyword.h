@@ -12,11 +12,15 @@ enum
 {
 	// lexer
 	KEOF = 128,
+
+	// consts
 	KREAL,
 	KINT,
-	KARGUMENT,
 	KSTRING,
 	KINTERVAL,
+	KTIMESTAMP,
+	KTIMESTAMPTZ,
+	KARGUMENT,
 
 	// lexer operations
 	KSHL,
