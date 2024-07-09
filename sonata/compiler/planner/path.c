@@ -54,7 +54,9 @@ ast_path_allocate(Keys* keys, int type)
 hot static inline int
 path_compare_ast(Ast* a, Ast* b)
 {
-	if (a->id == KINT)
+	if (a->id == KINT ||
+	    a->id == KTIMESTAMP ||
+	    a->id == KTIMESTAMPTZ)
 	{
 		if (a->integer == b->integer)
 			return 0;
@@ -125,15 +127,23 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 		return false;
 
 	// validate value to key type
-	if (value->id == KINT)
-	{
+	switch (value->id) {
+	case KINT:
 		if (unlikely(key->type != TYPE_INT))
 			return false;
-	} else
-	if (value->id == KSTRING)
-	{
+		break;
+	case KSTRING:
 		if (unlikely(key->type != TYPE_STRING))
 			return false;
+		break;
+	case KTIMESTAMP:
+		if (unlikely(key->type != TYPE_TIMESTAMP))
+			return false;
+		break;
+	case KTIMESTAMPTZ:
+		if (unlikely(key->type != TYPE_TIMESTAMPTZ))
+			return false;
+		break;
 	}
 
 	// join: name = name
@@ -228,7 +238,10 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	//
 	if (expr->l->id == KNAME || expr->l->id == KNAME_COMPOUND)
 	{
-		if (expr->r->id == KINT || expr->r->id == KSTRING)
+		if (expr->r->id == KINT ||
+		    expr->r->id == KSTRING ||
+		    expr->r->id == KTIMESTAMP ||
+		    expr->r->id == KTIMESTAMPTZ)
 		{
 			*path  = expr->l;
 			*value = expr->r;
@@ -237,7 +250,10 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	} else
 	if (expr->r->id == KNAME || expr->r->id == KNAME_COMPOUND)
 	{
-		if (expr->l->id == KINT || expr->l->id == KSTRING)
+		if (expr->l->id == KINT ||
+		    expr->l->id == KSTRING ||
+		    expr->l->id == KTIMESTAMP ||
+		    expr->l->id == KTIMESTAMPTZ)
 		{
 			*path  = expr->r;
 			*value = expr->l;

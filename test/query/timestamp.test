@@ -48,6 +48,7 @@ select '1970-01-01 00:00:00.0'::timestamp
 select '1970-01-01 00:00:00.00'::timestamp
 select '1970-01-01 00:00:00.000'::timestamp
 select '1970-01-01 00:00:00.001'::timestamp
+select '1970-01-01 00:00:00.001'::timestamp()
 select timestamp '1970-01-01 00:00:00.001'
 select timestamp('1970-01-01 00:00:00.001')
 
@@ -92,19 +93,6 @@ select ['1970-01-01 01:12:59.909090'::timestamp]
 select ['1970-01-01 01:12:59.909090'::timestamp::string]
 select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp]
 select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
-
-# test: generate series (year)
-select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
-select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
-select count(*) from generate_series(timestamp '1970-01-01 00:00:00', timestamp('1980-01-01 00:00:00'), interval '1 year');
-
-# test: generate series (month)
-select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
-select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
-
-# test: generate series (day)
-select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 day'::interval);
-select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 day'::interval);
 
 # test: add
 select '1970-01-01 01:12:59.909090'::timestamp + 1
@@ -183,6 +171,38 @@ explain select * from test
 
 select * from test
 select * from test order by id
+
+select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+
+select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+
+select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+
+select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+drop table test
+
+# test: timestamp column (secondary index)
+create table test (id timestamp primary key)
+insert into test values ("1970-01-01 00:00:01.000001"::timestamp)
+insert into test values ("1970-01-01 00:00:01.000002"::timestamp)
+insert into test values ("1970-01-01 00:00:01.000003"::timestamp)
+insert into test values ("1970-01-01 00:00:02.000000"::timestamp)
+insert into test values ("1970-01-01 00:00:03.000000"::timestamp)
+insert into test values ("1970-01-01 00:00:04.000000"::timestamp)
+create index i on test (id) with (type = 'hash')
+select * from test use index (i)
+
+select * from test where id > timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id > timestamp '1970-01-01 00:00:01.000003'
+select count(*) from test where id > timestamp '1970-01-01 00:00:01.000003'
+
+select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+select count(*) from test where id = timestamp '1970-01-01 00:00:01.000003'
 
 drop table test
 

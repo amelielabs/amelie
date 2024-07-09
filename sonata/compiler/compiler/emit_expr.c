@@ -39,14 +39,6 @@ emit_string(Compiler* self, Str* string, bool escape)
 	return op2(self, CSTRING, rpin(self), offset);
 }
 
-hot static int
-emit_interval(Compiler* self, Interval* interval)
-{
-	int offset = code_data_offset(&self->code_data);
-	encode_interval(&self->code_data.data, interval);
-	return op2(self, CINTERVAL, rpin(self), offset);
-}
-
 hot static inline int
 emit_operator(Compiler* self, Target* target, Ast* ast, int op)
 {
@@ -595,7 +587,11 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 	case KINTERVAL:
-		return emit_interval(self, &ast->interval);
+	{
+		int offset = code_data_offset(&self->code_data);
+		encode_interval(&self->code_data.data, &ast->interval);
+		return op2(self, CINTERVAL, rpin(self), offset);
+	}
 	case KTIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self), ast->integer);
 	case KTIMESTAMPTZ:

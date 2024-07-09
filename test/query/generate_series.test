@@ -1,0 +1,20 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: generate series (year)
+select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
+select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 year'::interval);
+select count(*) from generate_series(timestamp '1970-01-01 00:00:00', timestamp('1980-01-01 00:00:00'), interval '1 year');
+
+# test: generate series (month)
+select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
+select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 month'::interval);
+
+# test: generate series (day)
+select generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 day'::interval);
+select count(*) from generate_series('1970-01-01 00:00:00'::timestamp, '1980-01-01 00:00:00'::timestamp, '1 day'::interval);
+
+disconnect S0
+close E0
