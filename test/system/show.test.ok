@@ -83,6 +83,10 @@ show functions
   "argc": 3
 }, {
   "schema": "public",
+  "name": "time_bucket",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "error",
   "argc": 1
 }, {
@@ -175,6 +179,10 @@ select system.functions()
   "schema": "public",
   "name": "generate_series",
   "argc": 3
+}, {
+  "schema": "public",
+  "name": "time_bucket",
+  "argc": 2
 }, {
   "schema": "public",
   "name": "error",

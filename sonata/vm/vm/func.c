@@ -202,6 +202,25 @@ func_generate_series(Vm*       vm,
 }
 
 hot static void
+func_time_bucket(Vm*       vm,
+                 Function* func,
+                 Value*    result,
+                 int       argc,
+                 Value**   argv)
+{
+	unused(vm);
+	function_validate_argc(func, argc);
+	function_validate_arg(func, argv, 0, VALUE_INTERVAL);
+	function_validate_arg(func, argv, 1, VALUE_TIMESTAMP);
+	auto iv = &argv[0]->interval;
+	if (iv->m != 0)
+		error("time_bucket(): month intervals are not supported");
+	uint64_t span = iv->us + iv->d * 86400000000ULL;
+	uint64_t ts = argv[1]->integer / span * span;
+	value_set_timestamp(result, ts);
+}
+
+hot static void
 func_error(Vm*       vm,
            Function* func,
            Value*    result,
@@ -380,6 +399,7 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "timestamp",       (FunctionMain)func_timestamp,       1 },
 		{ "public", "timestamptz",     (FunctionMain)func_timestamptz,     1 },
 		{ "public", "generate_series", (FunctionMain)func_generate_series, 3 },
+		{ "public", "time_bucket",     (FunctionMain)func_time_bucket,     2 },
 		{ "public", "error",           (FunctionMain)func_error,           1 },
 		// system
 		{ "system", "config",          (FunctionMain)func_config,          0 },

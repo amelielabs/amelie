@@ -38,9 +38,6 @@ directory query
 group query
 test expr
 test expr_json
-test interval
-test timestamp
-test generate_series
 test method
 test select
 test where
@@ -50,6 +47,14 @@ test order_by
 test label
 test planner
 test lambda
+
+# time
+directory time
+group time
+test interval
+test timestamp
+test generate_series
+test time_bucket
 
 # pushdown
 directory pushdown

@@ -1,0 +1,16 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: time_bucket (day)
+select time_bucket('1 day'::interval, '2024-07-09 16:42:21.438854'::timestamp)
+
+select time_bucket('10 days'::interval, '2024-07-09 16:42:21.438854'::timestamp)
+select time_bucket('10 day 15 minutes'::interval, '2024-07-09 16:42:21.438854'::timestamp)
+
+# test: time_bucket (1 hour)
+select time_bucket('1 hour'::interval, '2024-07-09 16:42:21.438854'::timestamp)
+
+disconnect S0
+close E0
