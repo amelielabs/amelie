@@ -16,12 +16,17 @@ enum
 	KINT,
 	KARGUMENT,
 	KSTRING,
+	KINTERVAL,
+
+	// lexer operations
 	KSHL,
 	KSHR,
 	KLTE,
 	KGTE,
 	KNEQU,
 	KCAT,
+
+	// name/path
 	KNAME,
 	KNAME_COMPOUND,
 	KNAME_COMPOUND_STAR,

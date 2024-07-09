@@ -14,11 +14,12 @@ struct Ast
 	union {
 		uint64_t integer;
 		double   real;
+		Interval interval;
+		Column*  column;
 		struct {
 			Str  string;
 			bool string_escape;
 		};
-		Column* column;
 	};
 	char* pos;
 	int   priority;

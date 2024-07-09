@@ -84,6 +84,7 @@ priority_map[UINT8_MAX] =
 	[KREAL]                    = priority_value,
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
+	[KINTERVAL]                = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -95,7 +96,7 @@ priority_map[UINT8_MAX] =
 	[KSTAR_STAR]               = priority_value
 };
 
-static inline void
+hot static inline void
 expr_pop(AstStack* ops, AstStack* result)
 {
 	// move operation to result as op(l, r)
@@ -116,7 +117,7 @@ expr_pop(AstStack* ops, AstStack* result)
 	ast_push(result, head);
 }
 
-static inline void
+hot static inline void
 expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
 {
 	// process last operation if it has lower or equal priority
@@ -335,6 +336,25 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KTRUE:
 	case KFALSE:
 		break;
+
+	// time-related values
+	case KINTERVAL:
+	{
+		// interval()
+		if (stmt_if(self,'('))
+		{
+			value->id = KNAME;
+			value = expr_call(self, expr, value, true);
+			break;
+		}
+		// interval 'spec'
+		auto iv = stmt_if(self, KSTRING);
+		if (! iv)
+			error("INTERVAL <string> expected");
+		interval_init(&value->interval);
+		interval_read(&value->interval, &iv->string);
+		break;
+	}
 
 	// request argument
 	case KARGUMENT:

@@ -99,6 +99,7 @@ static Keyword keywords_i[] =
 {
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
+	{ KINTERVAL,              "interval",              8  },
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },

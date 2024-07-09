@@ -8,6 +8,7 @@ select '1 year'::interval
 select '2 years'::interval
 select '2 year'::interval
 select '200 years'::interval
+select interval '200 years'
 
 # test: month
 select '1 month'::interval
@@ -15,6 +16,7 @@ select '1 months'::interval
 select '3 months'::interval
 select '5 years 3 months'::interval
 select '3 months 5 years'::interval
+select interval '3 months 5 years'
 
 # test: week
 select '5 weeks'::interval
@@ -22,6 +24,7 @@ select '5 week'::interval
 select '1 week'::interval
 select '1 year 3 weeks'::interval
 select '1 week 2 weeks 3 weeks'::interval
+select interval '1 week 2 weeks 3 weeks'
 
 # test: day
 select '1 week 15 days'::interval
@@ -34,6 +37,7 @@ select '15 years 6 days'::interval
 select '15 years 7 days'::interval
 select '15 years 8 days'::interval
 select '15 years 9 days'::interval
+select interval '15 years 9 days'
 
 # test: hour
 select '15 years 28 hours'::interval
@@ -42,12 +46,16 @@ select '15 years 26 hours'::interval
 select '15 years 25 hours'::interval
 select '15 years 24 hours'::interval
 select '15 years 23 hours'::interval
+select interval('15 years 23 hours')
+select interval '15 years 23 hours'
 
 # test: minute
 select '15 years 70 minutes'::interval
 select '15 years 1 minute'::interval
 select '15 years 125 minutes'::interval
 select '8 minutes'::interval
+select interval('8 minutes')
+select interval '8 minutes'
 
 # test: second
 select '8 minutes 70 seconds'::interval
@@ -72,6 +80,10 @@ select '1 hour 5 minutes 6 seconds'::interval
 select '1 hour 5 minutes 6 seconds'::interval::string
 select '1 hour 5 minutes 6 seconds'::interval::string::interval
 select '1 hour 5 minutes 6 seconds'::interval::string::interval::string
+select interval('1 hour 5 minutes 6 seconds')::string::interval::string
+
+select interval '1 hour 5 minutes 6 seconds' ::string::interval::string
+select (interval '1 hour 5 minutes 6 seconds')::string::interval::string
 
 # test: convertion (document)
 select ['5 hours 6 seconds'::interval, '1 years'::interval]

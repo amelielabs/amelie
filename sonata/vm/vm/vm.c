@@ -113,6 +113,7 @@ vm_run(Vm*          self,
 		&&cint_min,
 		&&creal,
 		&&cstring,
+		&&cinterval,
 		&&cstring_min,
 		&&ctimestamp_min,
 		&&ctimestamptz_min,
@@ -295,6 +296,11 @@ creal:
 cstring:
 	code_data_at_string(code_data, op->b, &string);
 	value_set_string(&r[op->a], &string, NULL);
+	op_next;
+
+cinterval:
+	// read and set interval value
+	value_read(&r[op->a], code_data_at(code_data, op->b), NULL);
 	op_next;
 
 cstring_min:

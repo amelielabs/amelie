@@ -61,6 +61,7 @@ OpDesc ops[] =
 	{ CINT_MIN,           "int_min"           },
 	{ CREAL,              "real"              },
 	{ CSTRING,            "string"            },
+	{ CINTERVAL,          "interval"          },
 	{ CSTRING_MIN,        "string_min"        },
 	{ CTIMESTAMP_MIN,     "timestamp_min"     },
 	{ CTIMESTAMPTZ_MIN,   "timestamptz_min"   },
