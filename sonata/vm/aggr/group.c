@@ -136,9 +136,16 @@ group_create_node(GroupKey* key)
 	for (int i = 0; i < self->keys_count; i++)
 	{
 		auto value = key->target_data[i];
+		value_init(&node->keys[i]);
 		switch (value->type) {
 		case VALUE_INT:
 			value_set_int(&node->keys[i], value->integer);
+			break;
+		case VALUE_TIMESTAMP:
+			value_set_timestamp(&node->keys[i], value->integer);
+			break;
+		case VALUE_TIMESTAMPTZ:
+			value_set_timestamptz(&node->keys[i], value->integer);
 			break;
 		case VALUE_BOOL:
 			value_set_bool(&node->keys[i], value->integer);
@@ -209,6 +216,8 @@ group_find_or_create(Group* self, Value** target_data)
 		switch (value->type) {
 		case VALUE_INT:
 		case VALUE_BOOL:
+		case VALUE_TIMESTAMP:
+		case VALUE_TIMESTAMPTZ:
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;
@@ -225,10 +234,8 @@ group_find_or_create(Group* self, Value** target_data)
 		case VALUE_NULL:
 		case VALUE_SET:
 		case VALUE_GROUP:
-			error("GROUP BY: unsupported key type");
-			break;
 		default:
-			assert(0);
+			error("GROUP BY: unsupported key type");
 			break;
 		}
 		key.hash ^= hash_fnv(data, data_size);

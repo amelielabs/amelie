@@ -6,11 +6,10 @@ connect E0 S0 localhost:3485
 # test: time_bucket (day)
 select time_bucket('1 day'::interval, '2024-07-09 16:42:21.438854'::timestamp)
 
-select time_bucket('10 days'::interval, '2024-07-09 16:42:21.438854'::timestamp)
-select time_bucket('10 day 15 minutes'::interval, '2024-07-09 16:42:21.438854'::timestamp)
-
 # test: time_bucket (1 hour)
 select time_bucket('1 hour'::interval, '2024-07-09 16:42:21.438854'::timestamp)
+
+select bucket, count(*) from generate_series(timestamp '1970-01-01 00:00:01', timestamp '1971-01-01 00:00:01', interval '1 hour') group by time_bucket('10 days'::interval, *) as bucket order by bucket
 
 disconnect S0
 close E0
