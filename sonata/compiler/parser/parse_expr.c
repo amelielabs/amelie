@@ -73,6 +73,7 @@ priority_map[UINT8_MAX] =
 	['(']                      = priority_value,
 	['{']                      = priority_value,
 	['@']                      = priority_value,
+	[KCASE]                    = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KSELECT]                  = priority_value,
@@ -283,6 +284,55 @@ expr_lambda(Stmt* self, Expr* expr, Ast* name)
 	return &aggr->ast;
 }
 
+static Ast*
+expr_case(Stmt* self, Expr* expr)
+{
+	auto ast = ast_case_allocate();
+	// CASE [expr] [WHEN expr THEN expr]
+	//             [ELSE expr]
+	// END
+	for (;;)
+	{
+		// WHEN expr THEN expr
+		auto when = stmt_if(self, KWHEN);
+		if (when)
+		{
+			// expr
+			when->l = parse_expr(self, expr);
+
+			// THEN
+			if (! stmt_if(self, KTHEN))
+				error("CASE WHEN expr <THEN> expected");
+
+			// expr
+			when->r = parse_expr(self, expr);
+			ast_list_add(&ast->when, when);
+			continue;
+		}
+
+		// ELSE expr
+		if (stmt_if(self, KELSE))
+		{
+			ast->expr_else = parse_expr(self, expr);
+			continue;
+		}
+
+		// END
+		if (stmt_if(self, KEND))
+		{
+			if (!ast->expr_else && !ast->when.count)
+				error("CASE <WHEN|ELSE> expected");
+			break;
+		}
+
+		// CASE expr
+		if (ast->expr || ast->expr_else || ast->when.count > 0)
+			error("CASE <expr> expected");
+		ast->expr = parse_expr(self, expr);
+	}
+	return &ast->ast;
+}
+
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
@@ -293,6 +343,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value = parse_expr(self, expr);
 		if (! stmt_if(self,')'))
 			error("(): ')' expected");
+		break;
+
+	// case
+	case KCASE:
+		value = expr_case(self, expr);
 		break;
 
 	// map

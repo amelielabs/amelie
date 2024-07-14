@@ -45,6 +45,7 @@ static Keyword keywords_b[] =
 
 static Keyword keywords_c[] =
 {
+	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },
 	{ KCREATE,                "create",                6  },
@@ -69,6 +70,8 @@ static Keyword keywords_d[] =
 
 static Keyword keywords_e[] =
 {
+	{ KELSE,                  "else",                  4  },
+	{ KEND,                   "end",                   3  },
 	{ KEXPLAIN,               "explain",               7  },
 	{ KEXISTS,                "exists",                6  },
 	{ 0,                       NULL,                   0  }
@@ -195,6 +198,7 @@ static Keyword keywords_t[] =
 	{ KTRUE,                  "true",                  4  },
 	{ KTIMESTAMP,             "timestamp",             9  },
 	{ KTIMESTAMPTZ,           "timestamptz",           11 },
+	{ KTHEN,                  "then",                  4  },
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },
 	{ 0,                       NULL,                   0  }
@@ -221,6 +225,7 @@ static Keyword keywords_v[] =
 
 static Keyword keywords_w[] =
 {
+	{ KWHEN,                  "when",                  4  },
 	{ KWHERE,                 "where",                 5  },
 	{ KWITH,                  "with",                  4  },
 	{ KWATCH,                 "watch",                 5  },

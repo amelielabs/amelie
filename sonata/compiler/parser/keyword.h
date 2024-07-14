@@ -45,6 +45,12 @@ enum
 	KOR,
 	KNOT,
 
+	KCASE,
+	KWHEN,
+	KTHEN,
+	KELSE,
+	KEND,
+
 	KARGS,
 	KCALL,
 	KMETHOD,
