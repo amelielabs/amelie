@@ -50,6 +50,7 @@ enum
 	CSTRING_MIN,
 	CTIMESTAMP_MIN,
 	CTIMESTAMPTZ_MIN,
+	CSWAP,
 
 	// argument
 	CARG,

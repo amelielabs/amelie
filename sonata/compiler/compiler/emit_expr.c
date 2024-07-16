@@ -504,6 +504,98 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	           aggr->order);
 }
 
+hot static inline int
+emit_case(Compiler* self, Target* target, Ast* ast)
+{
+	auto cs = ast_case_of(ast);
+	// CASE [expr] [WHEN expr THEN expr]
+	//             [ELSE expr]
+	// END
+	int rresult = rpin(self);
+
+	// jmp to start
+	int _start_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _start */);
+
+	// _stop_jmp
+	int _stop_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _stop */);
+
+	// foreach when
+		// if cs->expr
+			// expr
+			// WHEN expr
+			// equ
+			// jntr _next
+			// set THEN result
+			// jmp _stop
+
+		// else
+			// WHEN expr
+			// jntr _next
+			// set THEN result
+			// jmp _stop
+
+	// _else
+		// ELSE result
+	// _done
+
+	// _start
+	int _start = op_pos(self);
+	op_set_jmp(self, _start_jmp, _start);
+
+	auto node = cs->when.list;
+	for (; node; node = node->next)
+	{
+		auto when = node->ast;
+
+		int rcond;
+		if (cs->expr)
+		{
+			// WHEN expr = case_expr THEN result
+			int rexpr = emit_expr(self, target, cs->expr);
+			int rwhen = emit_expr(self, target, when->l);
+			rcond = op3(self, CEQU, rpin(self), rexpr, rwhen);
+			runpin(self, rexpr);
+			runpin(self, rwhen);
+		} else
+		{
+			// WHEN expr THEN result
+			rcond = emit_expr(self, target, when->l);
+		}
+
+		// jntr _next
+		int _next_jntr = op_pos(self);
+		op2(self, CJNTR, 0 /* _next */, rcond);
+
+		// THEN expr
+		int rthen = emit_expr(self, target, when->r);
+		op2(self, CSWAP, rresult, rthen);
+		runpin(self, rthen);
+
+		op1(self, CJMP, _stop_jmp);
+
+		// _next
+		op_at(self, _next_jntr)->a = op_pos(self);
+		runpin(self, rcond);
+	}
+
+	// _else
+	int relse;
+	if (cs->expr_else)
+		relse = emit_expr(self, target, cs->expr_else);
+	else
+		relse = op1(self, CNULL, rpin(self));
+	op2(self, CSWAP, rresult, relse);
+	runpin(self, relse);
+
+	// _stop
+	int _stop = op_pos(self);
+	op_set_jmp(self, _stop_jmp, _stop);
+	op0(self, CNOP);
+	return rresult;
+}
+
 hot int
 emit_expr(Compiler* self, Target* target, Ast* ast)
 {
@@ -676,6 +768,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// aggregate
 	case KAGGR:
 		return emit_aggregate(self, target, ast);
+
+	// CASE
+	case KCASE:
+		return emit_case(self, target, ast);
 
 	default:
 		assert(0);

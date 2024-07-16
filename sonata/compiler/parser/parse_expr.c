@@ -313,6 +313,8 @@ expr_case(Stmt* self, Expr* expr)
 		// ELSE expr
 		if (stmt_if(self, KELSE))
 		{
+			if (ast->expr_else)
+				error("CASE ELSE redefined");
 			ast->expr_else = parse_expr(self, expr);
 			continue;
 		}

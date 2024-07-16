@@ -119,6 +119,7 @@ vm_run(Vm*          self,
 		&&cstring_min,
 		&&ctimestamp_min,
 		&&ctimestamptz_min,
+		&&cswap,
 		&&carg,
 		&&cbor,
 		&&cband,
@@ -324,6 +325,12 @@ ctimestamp_min:
 
 ctimestamptz_min:
 	value_set_timestamptz(&r[op->a], 0);
+	op_next;
+
+cswap:
+	// a = b
+	r[op->a] = r[op->b];
+	value_reset(&r[op->b]);
 	op_next;
 
 carg:
