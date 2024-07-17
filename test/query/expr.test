@@ -115,6 +115,18 @@ select {} = {}
 select null = null
 select null <> null
 
+# is
+select 1 is
+select is
+select 1 is null
+select 1 is not null
+select true is null
+select [] is null
+select [] is not null
+
+select null is not null
+select null is null
+
 # or, and
 select 0 and 0
 select 0 and 1

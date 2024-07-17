@@ -44,6 +44,7 @@ enum
 	KAND,
 	KOR,
 	KNOT,
+	KIS,
 
 	KCASE,
 	KWHEN,

@@ -40,6 +40,7 @@ priority_map[UINT8_MAX] =
 	// 3
 	['=']                      = 3,
 	[KNEQU]                    = 3,
+	[KIS]                      = 3,
 	// 4
 	[KGTE]                     = 4,
 	[KLTE]                     = 4,
@@ -557,6 +558,24 @@ parse_expr(Stmt* self, Expr* expr)
 				// operator
 				expr_operator(&ops, &result, ast, priority);
 
+				if (ast->id == KIS)
+				{
+					// expr IS NOT NULL
+					auto not = stmt_if(self, KNOT);
+
+					// expr IS NULL
+					auto r = stmt_if(self, KNULL);
+					if (! r)
+						error("IS <NULL> expected");
+
+					// handle IS as = or <> null
+					if (not)
+						ast->id = KNEQU;
+					else
+						ast->id = '=';
+					ast_push(&result, r);
+					unary = false;
+				} else
 				if (ast->id == KMETHOD)
 				{
 					// expr :: path [(call, ...)]

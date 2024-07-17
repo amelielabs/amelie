@@ -71,7 +71,6 @@ value_is_equal(Value* a, Value* b)
 	default:
 		break;
 	}
-	error("bad = expression type");
 	return false;
 }
 

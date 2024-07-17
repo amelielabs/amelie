@@ -134,6 +134,24 @@ select null = null
 true
 select null <> null
 false
+select 1 is
+{"code": 1, "msg": "IS <NULL> expected"}
+select is
+{"code": 1, "msg": "bad expression"}
+select 1 is null
+false
+select 1 is not null
+true
+select true is null
+false
+select [] is null
+false
+select [] is not null
+true
+select null is not null
+false
+select null is null
+true
 select 0 and 0
 false
 select 0 and 1
