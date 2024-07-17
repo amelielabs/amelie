@@ -120,6 +120,14 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                 &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_TABLE_TRUNCATE:
+	{
+		Str schema;
+		Str name;
+		table_op_truncate_read(data, &schema, &name);
+		table_mgr_truncate(&db->table_mgr, trx, &schema, &name, true);
+		break;
+	}
 	case LOG_TABLE_COLUMN_RENAME:
 	{
 		Str schema;

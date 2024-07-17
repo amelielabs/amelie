@@ -649,3 +649,18 @@ parse_table_alter(Stmt* self)
 		error("ALTER TABLE RENAME <name> expected");
 	stmt->type = TABLE_ALTER_RENAME;
 }
+
+void
+parse_table_truncate(Stmt* self)
+{
+	// TRUNCATE [IF EXISTS] [schema.]name
+	auto stmt = ast_table_truncate_allocate();
+	self->ast = &stmt->ast;
+
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
+
+	// name
+	if (! parse_target(self, &stmt->schema, &stmt->name))
+		error("TRUNCATE <name> expected");
+}

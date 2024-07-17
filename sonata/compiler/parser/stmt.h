@@ -37,6 +37,7 @@ typedef enum
 	STMT_ALTER_TABLE,
 	STMT_ALTER_INDEX,
 	STMT_ALTER_VIEW,
+	STMT_TRUNCATE,
 	STMT_INSERT,
 	STMT_UPDATE,
 	STMT_DELETE,
@@ -148,6 +149,7 @@ stmt_is_utility(Stmt* self)
 	case STMT_ALTER_TABLE:
 	case STMT_ALTER_INDEX:
 	case STMT_ALTER_VIEW:
+	case STMT_TRUNCATE:
 		return true;
 	default:
 		break;

@@ -35,6 +35,7 @@ hash_free(Hash* self)
 {
 	hash_store_free(&self->a);
 	hash_store_free(&self->b);
+	hash_init(self);
 }
 
 static inline void

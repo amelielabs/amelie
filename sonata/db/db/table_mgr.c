@@ -166,6 +166,58 @@ table_mgr_rename(TableMgr*    self,
 }
 
 static void
+truncate_if_commit(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	auto table = table_of(handle->handle);
+	// truncate all partitions
+	part_list_truncate(&table->part_list);
+	buf_free(handle->data);
+}
+
+static void
+truncate_if_abort(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	buf_free(handle->data);
+}
+
+static LogIf truncate_if =
+{
+	.commit = truncate_if_commit,
+	.abort  = truncate_if_abort
+};
+
+void
+table_mgr_truncate(TableMgr*    self,
+                   Transaction* trx,
+                   Str*         schema,
+                   Str*         name,
+                   bool         if_exists)
+{
+	auto table = table_mgr_find(self, schema, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
+
+	// save truncate table operation
+	auto op = table_op_truncate(schema, name);
+	guard_buf(op);
+
+	// update table
+	log_handle(&trx->log, LOG_TABLE_TRUNCATE, &truncate_if,
+	           NULL,
+	           &table->handle, op);
+	unguard();
+
+	// do nothing (actual truncate will happen on commit)
+}
+
+static void
 rename_column_if_commit(Log* self, LogOp* op)
 {
 	buf_free(log_handle_of(self, op)->data);

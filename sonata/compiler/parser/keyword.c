@@ -201,6 +201,7 @@ static Keyword keywords_t[] =
 	{ KTHEN,                  "then",                  4  },
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },
+	{ KTRUNCATE,              "truncate",              8  },
 	{ 0,                       NULL,                   0  }
 };
 

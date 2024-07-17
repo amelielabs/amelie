@@ -86,6 +86,13 @@ index_tree_iterator(Index* arg)
 }
 
 static void
+index_tree_truncate(Index* arg)
+{
+	auto self = index_tree_of(arg);
+	tree_free(&self->tree);
+}
+
+static void
 index_tree_free(Index* arg)
 {
 	auto self = index_tree_of(arg);
@@ -108,6 +115,7 @@ index_tree_allocate(IndexConfig* config)
 	iface->upsert    = index_tree_upsert;
 	iface->ingest    = index_tree_ingest;
 	iface->iterator  = index_tree_iterator;
+	iface->truncate  = index_tree_truncate;
 	iface->free      = index_tree_free;
 	return &self->index;
 }

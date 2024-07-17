@@ -24,6 +24,7 @@ part_allocate(PartConfig*);
 void part_free(Part*);
 void part_index_create(Part*, IndexConfig*);
 void part_index_drop(Part*, IndexConfig*);
+void part_truncate(Part*);
 Index*
 part_find(Part*, Str*, bool);
 

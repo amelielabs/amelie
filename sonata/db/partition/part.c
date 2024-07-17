@@ -68,6 +68,16 @@ part_index_drop(Part* self, IndexConfig* config)
 	index_free(index);
 }
 
+void
+part_truncate(Part* self)
+{
+	list_foreach(&self->indexes)
+	{
+		auto index = list_at(Index, link);
+		index_truncate(index);
+	}
+}
+
 Index*
 part_find(Part* self, Str* name, bool error_if_not_exists)
 {

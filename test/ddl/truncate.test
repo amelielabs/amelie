@@ -1,0 +1,48 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: truncate parsing
+truncate
+truncate if
+truncate if 1
+truncate if not
+truncate if not not
+truncate if not exists
+truncate if exists
+
+# test: truncate
+create table test (id int primary key)
+insert into test 1,2,3,4,5
+truncate test
+select * from test
+
+# test: truncate (empty)
+truncate test
+select * from test
+
+# test: insert after truncate
+insert into test 6,7,8
+select * from test
+truncate test
+select * from test
+
+insert into test 6,7,8
+select * from test
+truncate test
+select * from test
+
+insert into test 6,7,8
+select * from test
+truncate test
+select * from test
+
+drop table test
+
+# test: truncate if exists
+truncate test
+truncate if exists test
+
+disconnect S0
+close E0

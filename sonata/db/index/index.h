@@ -18,6 +18,7 @@ struct IndexIf
 	bool      (*upsert)(Index*, Ref*, Iterator**);
 	bool      (*ingest)(Index*, Ref*);
 	Iterator* (*iterator)(Index*);
+	void      (*truncate)(Index*);
 	void      (*free)(Index*);
 };
 
@@ -40,6 +41,12 @@ static inline void
 index_free(Index* self)
 {
 	self->iface.free(self);
+}
+
+static inline void
+index_truncate(Index* self)
+{
+	self->iface.truncate(self);
 }
 
 static inline bool

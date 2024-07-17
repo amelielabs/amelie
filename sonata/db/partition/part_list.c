@@ -85,6 +85,16 @@ part_list_map(PartList* self)
 }
 
 void
+part_list_truncate(PartList* self)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part_truncate(part);
+	}
+}
+
+void
 part_list_index_create(PartList* self, IndexConfig* config)
 {
 	list_foreach(&self->list)

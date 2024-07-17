@@ -151,6 +151,17 @@ ddl_drop_table(Session* self, Transaction* trx)
 }
 
 static void
+ddl_truncate(Session* self, Transaction* trx)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_truncate_of(stmt->ast);
+
+	// truncate table
+	table_mgr_truncate(&self->share->db->table_mgr, trx, &arg->schema, &arg->name,
+	                   arg->if_exists);
+}
+
+static void
 ddl_alter_table_set_serial(Session* self)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -471,6 +482,9 @@ session_execute_ddl(Session* self)
 			break;
 		case STMT_ALTER_VIEW:
 			ddl_alter_view(self, &trx);
+			break;
+		case STMT_TRUNCATE:
+			ddl_truncate(self, &trx);
 			break;
 		default:
 			assert(0);

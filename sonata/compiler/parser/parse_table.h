@@ -6,9 +6,10 @@
 // Real-Time SQL Database.
 //
 
-typedef struct AstTableCreate AstTableCreate;
-typedef struct AstTableDrop   AstTableDrop;
-typedef struct AstTableAlter  AstTableAlter;
+typedef struct AstTableCreate   AstTableCreate;
+typedef struct AstTableDrop     AstTableDrop;
+typedef struct AstTableTruncate AstTableTruncate;
+typedef struct AstTableAlter    AstTableAlter;
 
 struct AstTableCreate
 {
@@ -18,6 +19,14 @@ struct AstTableCreate
 };
 
 struct AstTableDrop
+{
+	Ast  ast;
+	bool if_exists;
+	Str  schema;
+	Str  name;
+};
+
+struct AstTableTruncate
 {
 	Ast  ast;
 	bool if_exists;
@@ -81,6 +90,23 @@ ast_table_drop_allocate(void)
 	return self;
 }
 
+static inline AstTableTruncate*
+ast_table_truncate_of(Ast* ast)
+{
+	return (AstTableTruncate*)ast;
+}
+
+static inline AstTableTruncate*
+ast_table_truncate_allocate(void)
+{
+	AstTableTruncate* self;
+	self = ast_allocate(0, sizeof(AstTableTruncate));
+	self->if_exists = false;
+	str_init(&self->schema);
+	str_init(&self->name);
+	return self;
+}
+
 static inline AstTableAlter*
 ast_table_alter_of(Ast* ast)
 {
@@ -109,3 +135,4 @@ void parse_key(Stmt*, Keys*);
 void parse_table_create(Stmt*);
 void parse_table_drop(Stmt*);
 void parse_table_alter(Stmt*);
+void parse_table_truncate(Stmt*);

@@ -80,6 +80,13 @@ index_hash_iterator(Index* arg)
 }
 
 static void
+index_hash_truncate(Index* arg)
+{
+	auto self = index_hash_of(arg);
+	hash_free(&self->hash);
+}
+
+static void
 index_hash_free(Index* arg)
 {
 	auto self = index_hash_of(arg);
@@ -103,6 +110,7 @@ index_hash_allocate(IndexConfig* config)
 	iface->upsert    = index_hash_upsert;
 	iface->ingest    = index_hash_ingest;
 	iface->iterator  = index_hash_iterator;
+	iface->truncate  = index_hash_truncate;
 	iface->free      = index_hash_free;
 
 	hash_create(&self->hash, &config->keys);

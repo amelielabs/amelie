@@ -272,6 +272,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 		break;
 	}
+	case KTRUNCATE:
+	{
+		stmt->id = STMT_TRUNCATE;
+		parse_table_truncate(stmt);
+		break;
+	}
 
 	case KINSERT:
 		stmt->id = STMT_INSERT;

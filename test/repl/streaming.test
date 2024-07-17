@@ -10085,6 +10085,34 @@ show repl
 switch S1
 select count(id2) from test
 
+# test: ddl (truncate)
+switch S0
+truncate public.test
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(id2) from test
+
+switch S0
+insert into test 1
+insert into test 2
+insert into test 3
+insert into test 4
+insert into test 5
+insert into test 6
+insert into test 7
+insert into test 8
+insert into test 9
+insert into test 10
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select count(id2) from test
+
 disconnect S1
 close E1
 
