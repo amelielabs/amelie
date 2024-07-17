@@ -200,7 +200,7 @@ executor_commit(Executor* self, Plan* plan)
 		case PLAN_NONE:
 			// non-distributed plan executed on coordinator
 			if (plan->error)
-				msg_error_throw(plan->error);
+				msg_error_rethrow(plan->error);
 			return;
 		case PLAN_COMMIT:
 			// commited by leader
