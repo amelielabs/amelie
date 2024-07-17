@@ -106,6 +106,28 @@ select "a" < 0
 {"code": 1, "msg": "bad < expression type"}
 select "a" < "b"
 {"code": 1, "msg": "bad < expression type"}
+select 1 between
+{"code": 1, "msg": "error BETWEEN const value expected"}
+select 1 between and
+{"code": 1, "msg": "error BETWEEN const value expected"}
+select 1 between 0
+{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 1
+{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 or
+{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 and
+{"code": 1, "msg": "error BETWEEN const value expected"}
+select 1 between 0 and 0
+false
+select 1 between 0 and 1
+true
+select 1 between 1 and 1
+true
+select 1 between 1 and 0
+false
+select 0.052 between 0.010 and 0.053
+true
 select -20
 -20
 select - "test"

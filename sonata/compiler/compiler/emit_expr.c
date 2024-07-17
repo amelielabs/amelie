@@ -276,6 +276,31 @@ emit_or(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
+emit_between(Compiler* self, Target* target, Ast* ast)
+{
+	//    . BETWEEN .
+	// expr       . AND .
+	//            x     y
+	auto expr = ast->l;
+	auto x = ast->r->l;
+	auto y = ast->r->r;
+	// expr >= x AND expr <= y
+	Ast gte;
+	gte.id = KGTE;
+	gte.l  = expr;
+	gte.r  = x;
+	Ast lte;
+	lte.id = KLTE;
+	lte.l  = expr;
+	lte.r  = y;
+	Ast and;
+	and.id = KAND;
+	and.l  = &gte;
+	and.r  = &lte;
+	return emit_expr(self, target, &and);
+}
+
+hot static inline int
 emit_cursor_idx(Compiler* self, Target* target, Str* path)
 {
 	int target_id = target->id;
@@ -641,6 +666,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_operator(self, target, ast, CDIV);
 	case '%':
 		return emit_operator(self, target, ast, CMOD);
+	case KBETWEEN:
+		return emit_between(self, target, ast);
 
 	// at
 	case '.':

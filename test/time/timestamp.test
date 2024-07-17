@@ -142,6 +142,9 @@ select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestam
 select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
 select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
 
+# test: between
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
 insert into test values (0, "1970-01-01 01:12:59.909090")

@@ -46,6 +46,7 @@ priority_map[UINT8_MAX] =
 	[KLTE]                     = 4,
 	['>']                      = 4,
 	['<']                      = 4,
+	[KBETWEEN]                 = 4,
 	// 5
 	['|']                      = 5,
 	// 6
@@ -476,6 +477,46 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
+hot static inline Ast*
+expr_value_between(Stmt* self)
+{
+	auto value = stmt_next(self);
+	switch (value->id) {
+	case KREAL:
+	case KINT:
+	case KSTRING:
+		break;
+	case KINTERVAL:
+	{
+		// interval 'spec'
+		auto spec = stmt_if(self, KSTRING);
+		if (! spec)
+			error("INTERVAL <string> expected");
+		interval_init(&value->interval);
+		interval_read(&value->interval, &spec->string);
+		break;
+	}
+	case KTIMESTAMP:
+	case KTIMESTAMPTZ:
+	{
+		// timestamp 'spec'
+		auto spec = stmt_if(self, KSTRING);
+		if (! spec)
+			error("TIMESTAMP | TIMESTAMPTZ <string> expected");
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &spec->string);
+		auto with_tz = value->id == KTIMESTAMPTZ;
+		value->integer = timestamp_of(&ts, with_tz);
+		break;
+	}
+	default:
+		error("error BETWEEN const value expected");
+		break;
+	}
+	return value;
+}
+
 hot static inline int
 parse_unary(Stmt*     self, Expr* expr,
             AstStack* ops,
@@ -558,6 +599,23 @@ parse_expr(Stmt* self, Expr* expr)
 				// operator
 				expr_operator(&ops, &result, ast, priority);
 
+				if (ast->id == KBETWEEN)
+				{
+					// expr BETWEEN x AND y
+					auto x = expr_value_between(self);
+					auto r = stmt_if(self, KAND);
+					if (! r)
+						error("BETWEEN expr <AND> expected");
+					auto y = expr_value_between(self);
+					//
+					//    . BETWEEN .
+					// expr       . AND .
+					//            x     y
+					r->l = x;
+					r->r = y;
+					ast_push(&result, r);
+					unary = false;
+				} else
 				if (ast->id == KIS)
 				{
 					// expr IS NOT NULL

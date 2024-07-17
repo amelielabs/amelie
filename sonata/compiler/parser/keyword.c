@@ -39,6 +39,7 @@ static Keyword keywords_a[] =
 
 static Keyword keywords_b[] =
 {
+	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
 	{ 0,                       NULL,                   0  }
 };
