@@ -144,6 +144,7 @@ select  '61 minutes'::interval > '1 hour'::interval
 # test: between
 select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
 select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
 
 # test: interval column
 create table test (id int primary key, i interval)

@@ -219,6 +219,8 @@ select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 m
 true
 select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
 false
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+true
 # test: interval column
 create table test (id int primary key, i interval)
 insert into test values (0, "1 year 1 day 10 hour")

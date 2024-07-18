@@ -297,7 +297,12 @@ emit_between(Compiler* self, Target* target, Ast* ast)
 	and.id = KAND;
 	and.l  = &gte;
 	and.r  = &lte;
-	return emit_expr(self, target, &and);
+	Ast not;
+	not.id = KNOT;
+	not.l  = &and;
+	not.r  = NULL;
+	auto op = !ast->integer ? &not : &and;
+	return emit_expr(self, target, op);
 }
 
 hot static inline int

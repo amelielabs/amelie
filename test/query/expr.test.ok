@@ -128,6 +128,53 @@ select 1 between 1 and 0
 false
 select 0.052 between 0.010 and 0.053
 true
+select 0.058 between 0.010 and 0.053
+false
+explain select 0.058 between 0.010 and 0.053
+"
+bytecode [coordinator]
+--------
+ 0                real        1      0      0      # 0.058
+ 1                real        2      5      0      # 0.01
+ 2                 gte        3      1      2
+ 3                jntr        8      3      0
+ 4                real        1     10      0      # 0.058
+ 5                real        2     15      0      # 0.053
+ 6                 lte        4      1      2
+ 7                 jtr       10      4      0
+ 8                bool        0      0      0
+ 9                 jmp       11      0      0
+10                bool        0      1      0
+11                 nop        0      0      0
+12             cte_set        0      0      0
+13                body        0      0      0
+14                 ret        0      0      0
+
+"
+select 0.058 not between 0.010 and 0.053
+true
+explain select 0.058 not between 0.010 and 0.053
+"
+bytecode [coordinator]
+--------
+ 0                real        1      0      0      # 0.058
+ 1                real        2      5      0      # 0.01
+ 2                 gte        3      1      2
+ 3                jntr        8      3      0
+ 4                real        1     10      0      # 0.058
+ 5                real        2     15      0      # 0.053
+ 6                 lte        4      1      2
+ 7                 jtr       10      4      0
+ 8                bool        0      0      0
+ 9                 jmp       11      0      0
+10                bool        0      1      0
+11                 nop        0      0      0
+12                 not        1      0      0
+13             cte_set        0      1      0
+14                body        0      0      0
+15                 ret        0      0      0
+
+"
 select -20
 -20
 select - "test"

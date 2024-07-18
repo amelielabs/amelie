@@ -593,15 +593,22 @@ parse_expr(Stmt* self, Expr* expr)
 				unary = false;
 			} else
 			{
-				if (unlikely(ast->id == KNOT))
-					error("bad expression");
+				auto not = ast->id == KNOT;
+				if (not)
+				{
+					// expr NOT BETWEEN x AND y
+					if (! stmt_if(self, KBETWEEN))
+						error("NOT <BETWEEN> expected");
+					ast->id = KBETWEEN;
+				}
 
 				// operator
 				expr_operator(&ops, &result, ast, priority);
 
 				if (ast->id == KBETWEEN)
 				{
-					// expr BETWEEN x AND y
+					// expr [NOT] BETWEEN x AND y
+					ast->integer = !not;
 					auto x = expr_value_between(self);
 					auto r = stmt_if(self, KAND);
 					if (! r)
