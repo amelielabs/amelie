@@ -348,6 +348,40 @@ path_merge(Path* self, AstPath* l, AstPath *r)
 }
 
 hot static AstPath*
+path_expr(Path* self, Ast* expr);
+
+hot static inline AstPath*
+path_between(Path* self, Ast* expr)
+{
+	// NOT BETWEEN
+	if (! expr->integer)
+		return NULL;
+
+	//    . BETWEEN .
+	// expr       . AND .
+	//            x     y
+	if (expr->l->id != KNAME & expr->l->id != KNAME_COMPOUND)
+		return NULL;
+
+	auto x = expr->r->l;
+	auto y = expr->r->r;
+
+	// expr >= x AND expr <= y
+	auto gte = ast(KGTE);
+	gte->l = expr->l;
+	gte->r = x;
+
+	auto lte = ast(KLTE);
+	lte->l = expr->l;
+	lte->r = y;
+
+	auto and = ast(KAND);
+	and->l = gte;
+	and->r = lte;
+	return path_expr(self, and);
+}
+
+hot static AstPath*
 path_expr(Path* self, Ast* expr)
 {
 	auto keys = self->keys;
@@ -376,6 +410,13 @@ path_expr(Path* self, Ast* expr)
 		if (! path_op_of(expr, &path, &value))
 			break;
 		auto op = path_op(self, expr, path, value);
+		if (op)
+			return op;
+		break;
+	}
+	case KBETWEEN:
+	{
+		auto op = path_between(self, expr);
 		if (op)
 			return op;
 		break;

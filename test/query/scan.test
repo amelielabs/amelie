@@ -221,12 +221,21 @@ select * from test where a = 1 and b > 1
 
 drop table test
 
-## test: key gt or gt
-#create table test (id int primary key, data int default 1)
-#insert into test (id) values (1), (2), (3)
-#explain select * from test where id > 1 or id > 2
-#select * from test where id > 1 or id > 2
-#drop table test
+# test: key between
+create table test (id int primary key, data int default 1)
+insert into test (id) values (1), (2), (3)
+
+explain select * from test where id between 1 and 2
+select * from test where id between 1 and 2
+
+explain select * from test where data between 1 and 2
+select * from test where data between 1 and 2
+
+# test: key not between
+explain select * from test where id not between 1 and 2
+select * from test where id not between 1 and 2
+
+drop table test
 
 disconnect S0
 close E0
