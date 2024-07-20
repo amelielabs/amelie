@@ -518,43 +518,156 @@ expr_value_between(Stmt* self)
 	return value;
 }
 
-hot static inline int
+hot static inline bool
 parse_unary(Stmt*     self, Expr* expr,
             AstStack* ops,
             AstStack* result,
-            Ast*      ast,
-            int       priority)
+            Ast*      ast)
 {
-	if (ast->id == '[') 
-	{
+	switch (ast->id) {
+	case '[':
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
 		ast->l  = expr_args(self, expr, ']', false);
 		ast_push(result, ast);
-		priority = priority_value;
-	} else
-	if (ast->id == '*')
-	{
+		break;
+	case '*':
 		// *
 		ast->id = KSTAR;
 		ast_push(result, ast);
-		priority = priority_value;
-	} else
-	if (ast->id == KNOT)
-	{
+		break;
+	case KNOT:
 		// not expr
 		expr_operator(ops, result, ast, 11);
-	} else
-	if (ast->id == '-')
-	{
+		break;
+	case '-':
 		// - expr
 		ast->id = KNEG;
 		expr_operator(ops, result, ast, 11);
-	} else
-	{
+		break;
+	default:
 		error("bad expression");
 	}
-	return priority;
+	return false;
+}
+
+hot static inline bool
+parse_op(Stmt*     self, Expr* expr,
+         AstStack* ops,
+         AstStack* result,
+         Ast*      ast,
+         int       priority)
+{
+	auto not = ast->id == KNOT;
+	if (not)
+	{
+		// expr NOT BETWEEN
+		// expr NOT IN
+		if (stmt_if(self, KBETWEEN))
+			ast->id = KBETWEEN;
+		else
+		if (stmt_if(self, KIN))
+			ast->id = KIN;
+		else
+			error("NOT <IN or BETWEEN> expected");
+	}
+
+	// operator
+	expr_operator(ops, result, ast, priority);
+
+	bool unary = false;
+	switch (ast->id) {
+	case KBETWEEN:
+	{
+		// expr [NOT] BETWEEN x AND y
+		ast->integer = !not;
+		auto x = expr_value_between(self);
+		auto r = stmt_if(self, KAND);
+		if (! r)
+			error("BETWEEN expr <AND> expected");
+		auto y = expr_value_between(self);
+		//
+		//    . BETWEEN .
+		// expr       . AND .
+		//            x     y
+		r->l = x;
+		r->r = y;
+		ast_push(result, r);
+		break;
+	}
+	case KIS:
+	{
+		// expr IS NOT NULL
+		auto not = stmt_if(self, KNOT);
+
+		// expr IS NULL
+		auto r = stmt_if(self, KNULL);
+		if (! r)
+			error("IS <NULL> expected");
+
+		// handle IS as = or <> null
+		if (not)
+			ast->id = KNEQU;
+		else
+			ast->id = '=';
+		ast_push(result, r);
+		break;
+	}
+	case KIN:
+	{
+		// expr [NOT] IN (value, ...)
+		ast->integer = !not;
+		if (! stmt_if(self, '('))
+			error("IN <(> expected");
+		auto r = expr_args(self, expr, ')', false);
+		ast_push(result, r);
+		break;
+	}
+	case KMETHOD:
+	{
+		// expr :: path [(call, ...)]
+		// expr -> path [(call, ...)]
+		auto r = stmt_next_shadow(self);
+		if (r->id == KNAME ||
+			r->id == KNAME_COMPOUND)
+		{
+			// function[(expr, ...)]
+			auto with_args = stmt_if(self, '(') != NULL;
+			r = expr_call(self, expr, r, with_args);
+		} else {
+			error("bad '::' or '->' expression");
+		}
+		ast_push(result, r);
+		break;
+	}
+	case '[':
+	{
+		// expr[idx]
+		auto r = parse_expr(self, expr);
+		ast_push(result, r);
+		if (! stmt_if(self,']'))
+			error("[]: ']' expected");
+		break;
+	}
+	case '.':
+	{
+		// expr.name
+		// expr.path.to
+		auto r = stmt_next_shadow(self);
+		if (r->id == KNAME ||
+			r->id == KNAME_COMPOUND)
+			r->id = KSTRING;
+		else
+			error("bad '.' expression");
+		ast_push(result, r);
+		break;
+	}
+	default:
+		// next operation should be either const or unary
+		unary = true;
+		break;
+	}
+	return unary;
 }
 
 hot Ast*
@@ -587,118 +700,11 @@ parse_expr(Stmt* self, Expr* expr)
 			unary = false;
 		} else
 		{
+			// unary/object (handle as value) or operator
 			if (unary)
-			{
-				// unary/object (handle as value) or operator
-				priority = parse_unary(self, expr, &ops, &result, ast, priority);
-				unary = false;
-			} else
-			{
-				auto not = ast->id == KNOT;
-				if (not)
-				{
-					// expr NOT BETWEEN
-					// expr NOT IN
-					if (stmt_if(self, KBETWEEN))
-						ast->id = KBETWEEN;
-					else
-					if (stmt_if(self, KIN))
-						ast->id = KIN;
-					else
-						error("NOT <IN or BETWEEN> expected");
-				}
-
-				// operator
-				expr_operator(&ops, &result, ast, priority);
-
-				if (ast->id == KBETWEEN)
-				{
-					// expr [NOT] BETWEEN x AND y
-					ast->integer = !not;
-					auto x = expr_value_between(self);
-					auto r = stmt_if(self, KAND);
-					if (! r)
-						error("BETWEEN expr <AND> expected");
-					auto y = expr_value_between(self);
-					//
-					//    . BETWEEN .
-					// expr       . AND .
-					//            x     y
-					r->l = x;
-					r->r = y;
-					ast_push(&result, r);
-					unary = false;
-				} else
-				if (ast->id == KIS)
-				{
-					// expr IS NOT NULL
-					auto not = stmt_if(self, KNOT);
-
-					// expr IS NULL
-					auto r = stmt_if(self, KNULL);
-					if (! r)
-						error("IS <NULL> expected");
-
-					// handle IS as = or <> null
-					if (not)
-						ast->id = KNEQU;
-					else
-						ast->id = '=';
-					ast_push(&result, r);
-					unary = false;
-				} else
-				if (ast->id == KIN)
-				{
-					// expr [NOT] IN (value, ...)
-					ast->integer = !not;
-					if (! stmt_if(self, '('))
-						error("IN <(> expected");
-					auto r = expr_args(self, expr, ')', false);
-					ast_push(&result, r);
-					unary = false;
-				} else
-				if (ast->id == KMETHOD)
-				{
-					// expr :: path [(call, ...)]
-					// expr -> path [(call, ...)]
-					auto r = stmt_next_shadow(self);
-					if (r->id == KNAME ||
-					    r->id == KNAME_COMPOUND)
-					{
-						// function[(expr, ...)]
-						auto with_args = stmt_if(self, '(') != NULL;
-						r = expr_call(self, expr, r, with_args);
-					} else {
-						error("bad '::' or '->' expression");
-					}
-					ast_push(&result, r);
-					unary = false;
-				} else
-				if (ast->id == '[')
-				{
-					// expr[idx]
-					auto r = parse_expr(self, expr);
-					ast_push(&result, r);
-					if (! stmt_if(self,']'))
-						error("[]: ']' expected");
-					unary = false;
-				} else
-				if (ast->id == '.')
-				{
-					// expr.name
-					// expr.path.to
-					auto r = stmt_next_shadow(self);
-					if (r->id == KNAME ||
-					    r->id == KNAME_COMPOUND)
-						r->id = KSTRING;
-					else
-						error("bad '.' expression");
-					ast_push(&result, r);
-					unary = false;
-				} else {
-					unary = true;
-				}
-			}
+				unary = parse_unary(self, expr, &ops, &result, ast);
+			else
+				unary = parse_op(self, expr, &ops, &result, ast, priority);
 		}
 	}
 
