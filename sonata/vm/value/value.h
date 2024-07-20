@@ -31,6 +31,7 @@ struct ValueObj
 	void (*free)(ValueObj*);
 	void (*encode)(ValueObj*, Buf*);
 	void (*decode)(ValueObj*, Buf*);
+	bool (*in)(ValueObj*, Value*);
 };
 
 struct Value

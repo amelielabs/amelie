@@ -285,6 +285,17 @@ value_lt(Value* result, Value* a, Value* b)
 }
 
 always_inline hot static inline void
+value_in(Value* result, Value* a, Value* b)
+{
+	bool in = false;
+	if (b->type == VALUE_SET)
+		in = b->obj->in(b->obj, a);
+	else
+		in = value_is_equal(a, b);
+	return value_set_bool(result, in);
+}
+
+always_inline hot static inline void
 value_add(Value* result, Value* a, Value* b)
 {
 	if (a->type == VALUE_INT)

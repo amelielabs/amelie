@@ -84,6 +84,7 @@ merge_create(void)
 	self->obj.free   = merge_free;
 	self->obj.encode = merge_encode;
 	self->obj.decode = merge_decode;
+	self->obj.in     = NULL;
 	self->keys       = NULL;
 	self->keys_count = 0;
 	self->list_count = 0;

@@ -102,6 +102,7 @@ static Keyword keywords_h[] =
 static Keyword keywords_i[] =
 {
 	{ KIS,                    "is",                    2  },
+	{ KIN,                    "in",                    2  },
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
 	{ KINTERVAL,              "interval",              8  },

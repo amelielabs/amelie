@@ -65,6 +65,20 @@ set_decode(ValueObj* obj, Buf* buf)
 	}
 }
 
+hot static bool
+set_in(ValueObj* obj, Value* value)
+{
+	auto self = (Set*)obj;
+	int i = 0;
+	for (; i < self->list_count ; i++)
+	{
+		auto at = set_at(self, i);
+		if (value_is_equal(&at->value, value))
+			return true;
+	}
+	return false;
+}
+
 Set*
 set_create(uint8_t* data)
 {
@@ -72,6 +86,7 @@ set_create(uint8_t* data)
 	self->obj.free   = set_free;
 	self->obj.encode = set_encode;
 	self->obj.decode = set_decode;
+	self->obj.in     = set_in;
 	self->list_count = 0;
 	self->keys       = NULL;
 	self->keys_count = 0;

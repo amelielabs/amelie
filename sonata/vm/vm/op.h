@@ -69,6 +69,7 @@ enum
 	CGT,
 	CLTE,
 	CLT,
+	CIN,
 
 	CADD,
 	CSUB,

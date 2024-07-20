@@ -45,6 +45,7 @@ enum
 	KOR,
 	KNOT,
 	KIS,
+	KIN,
 	KBETWEEN,
 
 	KCASE,

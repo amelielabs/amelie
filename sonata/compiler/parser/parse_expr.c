@@ -47,6 +47,7 @@ priority_map[UINT8_MAX] =
 	['>']                      = 4,
 	['<']                      = 4,
 	[KBETWEEN]                 = 4,
+	[KIN]                      = 4,
 	// 5
 	['|']                      = 5,
 	// 6
@@ -596,10 +597,15 @@ parse_expr(Stmt* self, Expr* expr)
 				auto not = ast->id == KNOT;
 				if (not)
 				{
-					// expr NOT BETWEEN x AND y
-					if (! stmt_if(self, KBETWEEN))
-						error("NOT <BETWEEN> expected");
-					ast->id = KBETWEEN;
+					// expr NOT BETWEEN
+					// expr NOT IN
+					if (stmt_if(self, KBETWEEN))
+						ast->id = KBETWEEN;
+					else
+					if (stmt_if(self, KIN))
+						ast->id = KIN;
+					else
+						error("NOT <IN or BETWEEN> expected");
 				}
 
 				// operator
@@ -638,6 +644,16 @@ parse_expr(Stmt* self, Expr* expr)
 						ast->id = KNEQU;
 					else
 						ast->id = '=';
+					ast_push(&result, r);
+					unary = false;
+				} else
+				if (ast->id == KIN)
+				{
+					// expr [NOT] IN (value, ...)
+					ast->integer = !not;
+					if (! stmt_if(self, '('))
+						error("IN <(> expected");
+					auto r = expr_args(self, expr, ')', false);
 					ast_push(&result, r);
 					unary = false;
 				} else

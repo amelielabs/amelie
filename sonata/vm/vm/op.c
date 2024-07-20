@@ -86,6 +86,7 @@ OpDesc ops[] =
 	{ CGT,                "gt"                },
 	{ CLTE,               "lte"               },
 	{ CLT,                "lt"                },
+	{ CIN,                "in"                },
 
 	{ CADD,               "add"               },
 	{ CSUB,               "sub"               },

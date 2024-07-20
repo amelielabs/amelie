@@ -71,6 +71,8 @@ group_create(int keys_count)
 	Group* self = so_malloc(sizeof(Group));
 	self->obj.free   = group_free;
 	self->obj.encode = NULL;
+	self->obj.decode = NULL;
+	self->obj.in     = NULL;
 	self->aggr_size  = 0;
 	self->aggr_count = 0;
 	self->keys_count = keys_count;

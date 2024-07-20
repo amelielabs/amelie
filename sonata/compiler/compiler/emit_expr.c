@@ -568,7 +568,7 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 
 	// _else
 		// ELSE result
-	// _done
+	// _stop
 
 	// _start
 	int _start = op_pos(self);
@@ -623,6 +623,75 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 	int _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
 	op0(self, CNOP);
+	return rresult;
+}
+
+hot static inline int
+emit_in(Compiler* self, Target* target, Ast* ast)
+{
+	auto expr = ast->l;
+	auto args = ast->r;
+	assert(args->id == KARGS);
+
+	// expr
+	int rexpr = emit_expr(self, target, expr);
+	int rresult = op2(self, CBOOL, rpin(self), false);
+
+	// jmp to start
+	int _start_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _start */);
+
+	// _stop_jmp
+	int _stop_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _stop */);
+
+	// foreach arg
+
+		// expr
+		// in
+		// jntr _next
+		// set result to true
+		// jmp _stop
+
+	// _stop
+
+	// _start
+	int _start = op_pos(self);
+	op_set_jmp(self, _start_jmp, _start);
+
+	auto current = args->l;
+	while (current)
+	{
+		int r = emit_expr(self, target, current);
+		int rin = op3(self, CIN, rpin(self), rexpr, r);
+
+		// jntr _next
+		int _next_jntr = op_pos(self);
+		op2(self, CJNTR, 0 /* _next */, rin);
+		op2(self, CBOOL, rresult, true);
+		op1(self, CJMP, _stop_jmp);
+
+		// _next
+		op_at(self, _next_jntr)->a = op_pos(self);
+
+		runpin(self, r);
+		runpin(self, rin);
+		current = current->next;
+	}
+
+	// _stop
+	int _stop = op_pos(self);
+	op_set_jmp(self, _stop_jmp, _stop);
+	runpin(self, rexpr);
+
+	// [not]
+	if (! ast->integer)
+	{
+		int rc;
+		rc = op2(self, CNOT, rpin(self), rresult);
+		runpin(self, rresult);
+		rresult = rc;
+	}
 	return rresult;
 }
 
@@ -804,6 +873,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// CASE
 	case KCASE:
 		return emit_case(self, target, ast);
+
+	// IN
+	case KIN:
+		return emit_in(self, target, ast);
 
 	default:
 		assert(0);

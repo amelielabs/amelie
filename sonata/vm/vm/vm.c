@@ -133,6 +133,7 @@ vm_run(Vm*          self,
 		&&cgt,
 		&&clte,
 		&&clt,
+		&&cin,
 		&&cadd,
 		&&csub,
 		&&cmul,
@@ -388,6 +389,10 @@ clte:
 
 clt:
 	value_lt(&r[op->a], &r[op->b], &r[op->c]);
+	op_next;
+
+cin:
+	value_in(&r[op->a], &r[op->b], &r[op->c]);
 	op_next;
 
 cadd:
