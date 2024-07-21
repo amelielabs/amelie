@@ -14,7 +14,7 @@
 asm (
 	"\t.text\n"
 	"\t.globl context_swap\n"
-	"\t.type x,@function\n"
+	"\t.type context_swap,@function\n"
 	"context_swap:\n"
 	#if __amd64
 	"\tpushq %rbp\n"

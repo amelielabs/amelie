@@ -1,0 +1,70 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: all parsing
+select all
+select all (
+select = all
+select 1 = all
+select 1 = all (
+select 1 = all ()
+
+# test: = all(array)
+select 1 = all()
+select 1 = all([0])
+select 1 = all([0, 1])
+select 1 = all([1])
+select 1 = all([1, 1])
+select not (1 = all([1, 1]))
+
+# test: >= all(array)
+select 1 >= all([0, 1])
+select 1 >= all([2])
+select 1 >= all([1, 2])
+
+# test: > all(array)
+select 1 > all([0, 1])
+select 1 > all([0, 2])
+select 1 > all([2])
+select 1 > all([-1, 0])
+
+# test: < all(array)
+select 1 < all([0, 1])
+select 1 < all([-1, 0])
+select 1 < all([2])
+
+# test: <= all(array)
+select 1 <= all([0, 1])
+select 1 <= all([2])
+select 1 <= all([0])
+
+# test: = all(set)
+select 1 = all()
+select 1 = all(select 1)
+select 1 = all(select * from [2, 1])
+select 1 = all(select * from [1, 1])
+select not (1 = all(select * from [1, 1]))
+
+# test: >= all(set)
+select 1 >= all(select * from [0, 1])
+select 1 >= all(select * from [2])
+
+# test: > all(set)
+select 1 > all(select * from [0, -1])
+select 1 > all(select * from [0, 1])
+select 1 > all(select * from [2])
+
+# test: < all(set)
+select 1 < all(select * from [0, 1])
+select 1 < all(select * from [2])
+select 1 < all(select * from [0])
+
+# test: <= all(set)
+select 1 <= all(select * from [0, 1])
+select 1 <= all(select * from [2])
+select 1 <= all(select * from [0])
+
+disconnect S0
+close E0

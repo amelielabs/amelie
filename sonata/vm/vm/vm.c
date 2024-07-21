@@ -134,6 +134,8 @@ vm_run(Vm*          self,
 		&&clte,
 		&&clt,
 		&&cin,
+		&&call,
+		&&cany,
 		&&cadd,
 		&&csub,
 		&&cmul,
@@ -393,6 +395,14 @@ clt:
 
 cin:
 	value_in(&r[op->a], &r[op->b], &r[op->c]);
+	op_next;
+
+call:
+	value_all(&r[op->a], &r[op->b], &r[op->c], op->d);
+	op_next;
+
+cany:
+	value_any(&r[op->a], &r[op->b], &r[op->c], op->d);
 	op_next;
 
 cadd:

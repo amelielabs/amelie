@@ -47,6 +47,8 @@ enum
 	KIS,
 	KIN,
 	KBETWEEN,
+	KANY,
+	KALL,
 
 	KCASE,
 	KWHEN,

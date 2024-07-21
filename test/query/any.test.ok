@@ -1,0 +1,83 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: any parsing
+select any
+{"code": 1, "msg": "bad expression"}
+select any (
+{"code": 1, "msg": "bad expression"}
+select = any
+{"code": 1, "msg": "bad expression"}
+select 1 = any
+{"code": 1, "msg": "ANY|ALL <(> expected"}
+select 1 = any (
+{"code": 1, "msg": "bad expression"}
+select 1 = any ()
+{"code": 1, "msg": "bad expression"}
+# test: = any(array)
+select 1 = any()
+{"code": 1, "msg": "bad expression"}
+select 1 = any([0])
+false
+select 1 = any([0, 1])
+true
+select not (1 = any([0, 1]))
+false
+# test: >= any(array)
+select 1 >= any([0, 1])
+true
+select 1 >= any([2])
+false
+# test: > any(array)
+select 1 > any([0, 1])
+true
+select 1 > any([2])
+false
+# test: < any(array)
+select 1 < any([0, 1])
+false
+select 1 < any([2])
+true
+select 1 < any([0])
+false
+# test: <= any(array)
+select 1 <= any([0, 1])
+true
+select 1 <= any([2])
+true
+select 1 <= any([0])
+false
+# test: = any(set)
+select 1 = any()
+{"code": 1, "msg": "bad expression"}
+select 1 = any(select 1)
+{"code": 1, "msg": "ANY: array or result set expected"}
+select 1 = any(select * from [2, 1])
+true
+select not (1 = any(select * from [2, 1]))
+false
+# test: >= any(set)
+select 1 >= any(select * from [0, 1])
+true
+select 1 >= any(select * from [2])
+false
+# test: > any(set)
+select 1 > any(select * from [0, 1])
+true
+select 1 > any(select * from [2])
+false
+# test: < any(set)
+select 1 < any(select * from [0, 1])
+false
+select 1 < any(select * from [2])
+true
+select 1 < any(select * from [0])
+false
+# test: <= any(set)
+select 1 <= any(select * from [0, 1])
+true
+select 1 <= any(select * from [2])
+true
+select 1 <= any(select * from [0])
+false
+disconnect S0
+close E0

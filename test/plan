@@ -41,6 +41,8 @@ test expr
 test expr_json
 test case
 test in
+test any
+test all
 test method
 test select
 test where

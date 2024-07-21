@@ -695,6 +695,49 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	return rresult;
 }
 
+hot static inline int
+emit_match(Compiler* self, Target* target, Ast* ast)
+{
+	//  . ANY|ALL .
+	//  a         op .
+	//               b
+	int a = emit_expr(self, target, ast->l);
+	int b = emit_expr(self, target, ast->r->r);
+	int op;
+	switch (ast->r->id) {
+	case '=':   op = MATCH_EQU;
+		break;
+	case KNEQU: op = MATCH_NEQU;
+		break;
+	case '>':   op = MATCH_GT;
+		break;
+	case KGTE:  op = MATCH_GTE;
+		break;
+	case '<':   op = MATCH_LT;
+		break;
+	case KLTE:  op = MATCH_LTE;
+		break;
+	default:
+		abort();
+		break;
+	}
+	int rc;
+	switch (ast->id) {
+	case KANY:
+		rc = op4(self, CANY, rpin(self), a, b, op);
+		break;
+	case KALL:
+		rc = op4(self, CALL, rpin(self), a, b, op);
+		break;
+	default:
+		abort();
+		break;
+	}
+	runpin(self, a);
+	runpin(self, b);
+	return rc;
+}
+
 hot int
 emit_expr(Compiler* self, Target* target, Ast* ast)
 {
@@ -877,6 +920,11 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// IN
 	case KIN:
 		return emit_in(self, target, ast);
+
+	// ANY|ALL
+	case KANY:
+	case KALL:
+		return emit_match(self, target, ast);
 
 	default:
 		assert(0);

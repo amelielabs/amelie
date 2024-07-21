@@ -34,6 +34,8 @@ LIB            = libsonata-vm.a
 OBJECTS        = \
                  value/update.o \
                  aggr/set.o \
+                 aggr/any.o \
+                 aggr/all.o \
                  aggr/merge.o \
                  aggr/count.o \
                  aggr/sum.o \

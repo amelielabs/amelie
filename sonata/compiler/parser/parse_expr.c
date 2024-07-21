@@ -577,6 +577,36 @@ parse_op(Stmt*     self, Expr* expr,
 
 	bool unary = false;
 	switch (ast->id) {
+	case '=':
+	case KNEQU:
+	case KGTE:
+	case KLTE:
+	case '>':
+	case '<':
+	{
+		// expr operator [ANY|ALL] (expr)
+		auto r = stmt_next(self);
+		if (r->id == KANY || r->id == KALL)
+		{
+			//     . ANY|ALL .
+			//  expr         op .
+			//                  expr
+			int op = ast->id;
+			ast->id = r->id;
+			r->id = op;
+			if (! stmt_if(self, '('))
+				error("ANY|ALL <(> expected");
+			r->r = parse_expr(self, expr);
+			ast_push(result, r);
+			if (! stmt_if(self, ')'))
+				error("ANY|ALL (expr<)> expected");
+		} else
+		{
+			stmt_push(self, r);
+		}
+		unary = true;
+		break;
+	}
 	case KBETWEEN:
 	{
 		// expr [NOT] BETWEEN x AND y

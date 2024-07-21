@@ -71,6 +71,9 @@ enum
 	CLT,
 	CIN,
 
+	CALL,
+	CANY,
+
 	CADD,
 	CSUB,
 	CMUL,

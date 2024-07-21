@@ -9,6 +9,8 @@
 // set
 #include "aggr/set.h"
 #include "aggr/set_iterator.h"
+#include "aggr/any.h"
+#include "aggr/all.h"
 
 // merge
 #include "aggr/merge.h"

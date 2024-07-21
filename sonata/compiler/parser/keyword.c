@@ -30,6 +30,8 @@ static Keyword keywords_a[] =
 {
 	{ KAND,                   "and",                   3  },
 	{ KADD,                   "add",                   3  },
+	{ KANY,                   "any",                   3  },
+	{ KALL,                   "all",                   3  },
 	{ KALTER,                 "alter",                 5  },
 	{ KASC,                   "asc",                   3  },
 	{ KAVG,                   "avg",                   3  },
