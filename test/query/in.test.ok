@@ -20,13 +20,12 @@ explain select 1 in ()
 "
 bytecode [coordinator]
 --------
- 0                 int        0      1      0
- 1                bool        1      0      0
- 2                 jmp        4      0      0
- 3                 jmp        4      0      0
- 4             cte_set        0      1      0
- 5                body        0      0      0
- 6                 ret        0      0      0
+ 0                bool        0      0      0
+ 1                 jmp        3      0      0
+ 2                 jmp        3      0      0
+ 3             cte_set        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 "
 # test: in

@@ -77,6 +77,7 @@ priority_map[UINT8_MAX] =
 	['{']                      = priority_value,
 	['@']                      = priority_value,
 	[KCASE]                    = priority_value,
+	[KEXISTS]                  = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KSELECT]                  = priority_value,
@@ -354,6 +355,17 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KCASE:
 		value = expr_case(self, expr);
 		break;
+
+	// exists
+	case KEXISTS:
+	{
+		if (! stmt_if(self,'('))
+			error("EXISTS <(> expected");
+		value->r = parse_expr(self, expr);
+		if (! stmt_if(self,')'))
+			error("EXISTS (<)> expected");
+		break;
+	}
 
 	// map
 	case '{':

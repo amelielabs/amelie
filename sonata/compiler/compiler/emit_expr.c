@@ -634,7 +634,6 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	assert(args->id == KARGS);
 
 	// expr
-	int rexpr = emit_expr(self, target, expr);
 	int rresult = op2(self, CBOOL, rpin(self), false);
 
 	// jmp to start
@@ -662,8 +661,11 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	auto current = args->l;
 	while (current)
 	{
+		int rexpr = emit_expr(self, target, expr);
 		int r = emit_expr(self, target, current);
 		int rin = op3(self, CIN, rpin(self), rexpr, r);
+		runpin(self, rexpr);
+		runpin(self, r);
 
 		// jntr _next
 		int _next_jntr = op_pos(self);
@@ -674,7 +676,6 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 		// _next
 		op_at(self, _next_jntr)->a = op_pos(self);
 
-		runpin(self, r);
 		runpin(self, rin);
 		current = current->next;
 	}
@@ -682,7 +683,6 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	// _stop
 	int _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
-	runpin(self, rexpr);
 
 	// [not]
 	if (! ast->integer)
@@ -925,6 +925,16 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KANY:
 	case KALL:
 		return emit_match(self, target, ast);
+
+	// exists
+	case KEXISTS:
+	{
+		int r = emit_expr(self, target, ast->r);
+		int rc;
+		rc = op2(self, CEXISTS, rpin(self), r);
+		runpin(self, r);
+		return rc;
+	}
 
 	default:
 		assert(0);

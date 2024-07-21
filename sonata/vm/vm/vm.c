@@ -136,6 +136,7 @@ vm_run(Vm*          self,
 		&&cin,
 		&&call,
 		&&cany,
+		&&cexists,
 		&&cadd,
 		&&csub,
 		&&cmul,
@@ -395,14 +396,28 @@ clt:
 
 cin:
 	value_in(&r[op->a], &r[op->b], &r[op->c]);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
 	op_next;
 
 call:
 	value_all(&r[op->a], &r[op->b], &r[op->c], op->d);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
 	op_next;
 
 cany:
 	value_any(&r[op->a], &r[op->b], &r[op->c], op->d);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
+	op_next;
+
+cexists:
+	rc = true;
+	if (r[op->b].type == VALUE_SET)
+		rc = ((Set*)r[op->b].obj)->list_count > 0;
+	value_set_bool(&r[op->a], rc);
+	value_free(&r[op->b]);
 	op_next;
 
 cadd:

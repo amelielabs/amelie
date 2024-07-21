@@ -88,8 +88,9 @@ OpDesc ops[] =
 	{ CLT,                "lt"                },
 	{ CIN,                "in"                },
 
-	{ CALL,               "call"              },
-	{ CANY,               "cany"              },
+	{ CALL,               "all"               },
+	{ CANY,               "any"               },
+	{ CEXISTS,            "exists"            },
 
 	{ CADD,               "add"               },
 	{ CSUB,               "sub"               },

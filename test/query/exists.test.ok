@@ -1,0 +1,29 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: exists parsing
+select exists
+{"code": 1, "msg": "EXISTS <(> expected"}
+select exists 1
+{"code": 1, "msg": "EXISTS <(> expected"}
+select exists (
+{"code": 1, "msg": "bad expression"}
+select exists ()
+{"code": 1, "msg": "bad expression"}
+# test: exists (expr)
+select exists (1)
+true
+select exists (null)
+true
+select exists (false)
+true
+select exists ([])
+true
+# test: exists (set)
+select exists (select * from [])
+false
+select exists (select * from [1])
+true
+select exists (select * from [1,2,3])
+true
+disconnect S0
+close E0

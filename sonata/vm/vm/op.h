@@ -73,6 +73,7 @@ enum
 
 	CALL,
 	CANY,
+	CEXISTS,
 
 	CADD,
 	CSUB,
