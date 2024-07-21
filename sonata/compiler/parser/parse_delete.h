@@ -14,6 +14,8 @@ struct AstDelete
 	Table*  table;
 	Target* target;
 	Ast*    expr_where;
+	Ast*    returning;
+	int     rset;
 };
 
 static inline AstDelete*

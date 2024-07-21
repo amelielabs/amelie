@@ -333,5 +333,10 @@ select * from test
 select * from test use index (i)
 drop table test
 
+# test: insert returning (unsupported)
+create table test (id int primary key)
+insert into test 1,2,3 returning *
+drop table test
+
 disconnect S0
 close E0

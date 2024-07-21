@@ -200,5 +200,25 @@ select * from test
 select * from test use index (i)
 []
 drop table test
+# test: delete returning
+create table test(id int primary key)
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+delete from test returning *
+[[0], [1], [2]]
+select * from test
+[]
+insert into test values (0)
+insert into test values (1)
+insert into test values (2)
+delete from test where id >= 1 returning *
+[[1], [2]]
+select * from test
+[[0]]
+delete from test
+delete from test returning *
+[]
+drop table test
 disconnect S0
 close E0

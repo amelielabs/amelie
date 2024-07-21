@@ -350,6 +350,10 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected");
 		break;
 	}
+
+	// [RETURNING]
+	if (stmt_if(self, KRETURNING))
+		stmt->returning = parse_expr(self, NULL);
 }
 
 hot void
@@ -357,7 +361,7 @@ parse_insert(Stmt* self)
 {
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
-	// [ON CONFLICT DO NOTHING | UPDATE]
+	// [ON CONFLICT DO NOTHING | UPDATE] [RETURNING expr]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 

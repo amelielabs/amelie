@@ -15,6 +15,8 @@ struct AstUpdate
 	Target* target;
 	Ast*    expr_update;
 	Ast*    expr_where;
+	Ast*    returning;
+	int     rset;
 };
 
 static inline AstUpdate*

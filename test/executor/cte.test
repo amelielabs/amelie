@@ -124,5 +124,23 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 drop table test
 
+# test: with(update returning), expr
+create table test (id int primary key, data int) reference
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+with a as (update test set data = data + 1 returning *) select * from a
+explain with a as (update test set data = data + 1 returning *) select * from a
+drop table test
+
+# test: with(delete returning), expr
+create table test (id int primary key, data int) reference
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+with a as (delete from test returning *) select * from a
+explain with a as (delete from test returning *) select * from a
+drop table test
+
 disconnect S0
 close E0

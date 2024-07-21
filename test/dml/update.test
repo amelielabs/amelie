@@ -228,7 +228,18 @@ select * from test use index (i)
 
 create index j on test (obj.value int)
 select * from test use index (j)
+drop table test
 
+# test: update returning
+create table test(id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+explain update test set data = data + 1 returning *
+update test set data = data + 1 returning *
+update test set data = data + 1 returning *
+update test set data = data + 1 returning *
+select * from test
 drop table test
 
 disconnect S0

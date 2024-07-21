@@ -35,7 +35,10 @@ emit_upsert(Compiler* self, Ast* ast)
 	auto target = insert->target;
 	auto table  = target->table;
 
-	// generate upsert
+	// create returning set
+	int rset = -1;
+	if (insert->returning)
+		rset = op1(self, CSET, rpin(self));
 
 	// CCLOSE_PREPARE
 	op2(self, CCURSOR_PREPARE, target->id, (intptr_t)table);
@@ -73,6 +76,17 @@ emit_upsert(Compiler* self, Ast* ast)
 			op_at(self, jmp_where_jntr)->a = op_pos(self);
 	}
 
+	// [RETURNING]
+	if (insert->returning)
+	{
+		// expr
+		int rexpr = emit_expr(self, target, insert->returning);
+
+		// add to the returning set
+		op2(self, CSET_ADD, rset, rexpr);
+		runpin(self, rexpr);
+	}
+
 	// _start:
 
 	// set jmp_start to _start
@@ -83,4 +97,11 @@ emit_upsert(Compiler* self, Ast* ast)
 	
 	// CCLOSE_CURSOR
 	op1(self, CCURSOR_CLOSE, target->id);
+
+	// CRESULT (returning)
+	if (insert->returning)
+	{
+		op1(self, CRESULT, rset);
+		runpin(self, rset);
+	}
 }

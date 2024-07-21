@@ -129,10 +129,24 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 }
 
 static inline void
-emit_update_on_match(Compiler* self, void *arg)
+emit_update_on_match(Compiler* self, void* arg)
 {
 	AstUpdate* update = arg;
 	emit_update_target(self, update->target, update->expr_update);
+}
+
+static inline void
+emit_update_on_match_returning(Compiler* self, void* arg)
+{
+	AstUpdate* update = arg;
+	emit_update_target(self, update->target, update->expr_update);
+
+	// expr
+	int rexpr = emit_expr(self, update->target, update->returning);
+
+	// add to the returning set
+	op2(self, CSET_ADD, update->rset, rexpr);
+	runpin(self, rexpr);
 }
 
 hot void
@@ -142,10 +156,31 @@ emit_update(Compiler* self, Ast* ast)
 	auto update = ast_update_of(ast);
 
 	// update by cursor
+	if (! update->returning)
+	{
+		scan(self, update->target,
+		     NULL,
+		     NULL,
+		     update->expr_where,
+		     emit_update_on_match,
+		     update);
+		return;
+	}
+
+	// RETURNING expr
+
+	// create returning set
+	update->rset = op1(self, CSET, rpin(self));
+
 	scan(self, update->target,
 	     NULL,
 	     NULL,
 	     update->expr_where,
-	     emit_update_on_match,
+	     emit_update_on_match_returning,
 	     update);
+
+	// CRESULT (return set)
+	op1(self, CRESULT, update->rset);
+	runpin(self, update->rset);
+	update->rset = -1;
 }

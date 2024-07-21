@@ -344,3 +344,24 @@ pushdown_recv(Compiler* self, Ast* ast)
 
 	return rmerge;
 }
+
+int
+pushdown_recv_returning(Compiler* self, bool returning)
+{
+	// CRECV
+	op1(self, CRECV, self->current->order);
+	if (! returning)
+		return -1;
+
+	// create merge object using received sets
+
+	// distinct
+	int rdistinct = op2(self, CBOOL, rpin(self), false);
+	op1(self, CPUSH, rdistinct);
+	runpin(self, rdistinct);
+
+	// CMERGE_RECV
+	int rmerge = op4(self, CMERGE_RECV, rpin(self), -1, -1,
+	                 self->current->order);
+	return rmerge;
+}

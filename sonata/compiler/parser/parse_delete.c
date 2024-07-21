@@ -29,7 +29,7 @@
 hot void
 parse_delete(Stmt* self)
 {
-	// DELETE FROM name [WHERE expr]
+	// DELETE FROM name [WHERE expr] [RETURNING expr]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
 
@@ -53,4 +53,8 @@ parse_delete(Stmt* self)
 	// combine join on and where expression
 	stmt->expr_where =
 		parse_from_join_on_and_where(stmt->target, stmt->expr_where);
+
+	// [RETURNING]
+	if (stmt_if(self, KRETURNING))
+		stmt->returning = parse_expr(self, NULL);
 }
