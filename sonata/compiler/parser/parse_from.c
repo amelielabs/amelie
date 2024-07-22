@@ -207,15 +207,42 @@ parse_from(Stmt* self, int level)
 			continue;
 		}
 
+		TargetJoin join = JOIN_NONE;
+
 		// [JOIN]
 		// [INNER JOIN]
 		// [LEFT [OUTER] JOIN]
 		// [RIGHT [OUTER] JOIN]
-
-		// JOIN <target> ON expr
 		if (stmt_if(self, KJOIN))
+			join = JOIN_INNER;
+		else
+		if (stmt_if(self, KINNER))
 		{
-			// JOIN <name|expr>
+			if (! stmt_if(self, KJOIN))
+				error("INNER <JOIN> expected");
+			join = JOIN_INNER;
+		} else
+		if (stmt_if(self, KLEFT))
+		{
+			// [OUTER]
+			stmt_if(self, KOUTER);
+			if (! stmt_if(self, KJOIN))
+				error("LEFT <JOIN> expected");
+			join = JOIN_LEFT;
+		} else
+		if (stmt_if(self, KRIGHT))
+		{
+			// [OUTER]
+			stmt_if(self, KOUTER);
+			if (! stmt_if(self, KJOIN))
+				error("RIGHT <JOIN> expected");
+			join = JOIN_RIGHT;
+		}
+
+		// <name|expr> ON expr
+		if (join != JOIN_NONE)
+		{
+			// <name|expr>
 			auto target = parse_from_add(&from);
 
 			// ON
@@ -224,6 +251,7 @@ parse_from(Stmt* self, int level)
 
 			// expr
 			target->expr_on = parse_expr(self, NULL);
+			target->join    = join;
 			continue;
 		}
 
