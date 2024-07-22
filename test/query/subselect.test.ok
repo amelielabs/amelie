@@ -592,7 +592,7 @@ select (select * from test where false)
 # test: select (select from reference) from reference
 select (select * from test) from test
 {"code": 1, "msg": "<test> target is redefined, please use different alias for the target"}
-explain select (select inner.* from test inner) from test
+explain select (select i.* from test i) from test
 "
 bytecode [coordinator]
 --------
@@ -630,7 +630,7 @@ bytecode [node]
 
 "
 # test: select (select from reference) from reference #2
-explain select (select inner.* from test inner where test.id = inner.id) from test
+explain select (select i.* from test i where test.id = i.id) from test
 "
 bytecode [coordinator]
 --------
@@ -671,7 +671,7 @@ bytecode [node]
 22                 ret        0      0      0
 
 "
-select (select inner.* from test inner where test.id = inner.id) from test
+select (select i.* from test i where test.id = i.id) from test
 [[[1]], [[2]], [[3]]]
 # test: select (select from reference) from reference #3
 create table a (id int primary key serial, data int default 0) reference

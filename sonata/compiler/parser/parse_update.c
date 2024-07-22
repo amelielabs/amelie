@@ -86,6 +86,8 @@ parse_update(Stmt* self)
 	stmt->table = stmt->target->table;
 	if (stmt->table == NULL)
 		error("UPDATE <table name> expected");
+	if (stmt->target->next_join)
+		error("UPDATE JOIN is not supported");
 
 	// todo: ensure target uses primary index
 
@@ -95,10 +97,6 @@ parse_update(Stmt* self)
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
 		stmt->expr_where = parse_expr(self, NULL);
-
-	// combine join on and where expression
-	stmt->expr_where =
-		parse_from_join_on_and_where(stmt->target, stmt->expr_where);
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))

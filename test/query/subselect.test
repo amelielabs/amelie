@@ -214,11 +214,11 @@ select (select * from test where false)
 
 # test: select (select from reference) from reference
 select (select * from test) from test
-explain select (select inner.* from test inner) from test
+explain select (select i.* from test i) from test
 
 # test: select (select from reference) from reference #2
-explain select (select inner.* from test inner where test.id = inner.id) from test
-select (select inner.* from test inner where test.id = inner.id) from test
+explain select (select i.* from test i where test.id = i.id) from test
+select (select i.* from test i where test.id = i.id) from test
 
 # test: select (select from reference) from reference #3
 create table a (id int primary key serial, data int default 0) reference

@@ -29,29 +29,25 @@ select test.*, ref.* from ref, test
 explain select t.* from test, test t
 select t.* from test, test t
 
-# test: select from table join expr
-explain select test.*, t.* from test join [1,2,3] t
-select test.*, t.* from test join [1,2,3] t
-
 # test: select from table join expr on
-explain select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
-select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
+explain select test.id, t.* from test join [1,2,3] t on test.id = t.*
+select test.id, t.* from test join [1,2,3] t on test.id = t.*
 
-# test: select from table join expr on #2
-explain select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
-select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
+## test: select from table join expr on #2
+explain select test.id, t.*, t2.* from test join [1,2,3] t on true join [3,2,1] t2 on test.id = t.* = t2.*
+select test.id, t.*, t2.* from test join [1,2,3] t on true join [3,2,1] t2 on test.id = t.* = t2.*
 
 # test: select from table join reference
-explain select test.id, ref.id from test join ref
-select test.id, ref.id from test join ref
+explain select test.id, ref.id from test join ref on true
+select test.id, ref.id from test join ref on true
 
 # test: select from table join reference on
-explain select test.id, ref.id from test join ref on (test.id = ref.id)
-select test.id, ref.id from test join ref on (test.id = ref.id)
+explain select test.id, ref.id from test join ref on test.id = ref.id
+select test.id, ref.id from test join ref on test.id = ref.id
 
 # test: select from table join reference on #2
-explain select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
-select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
+explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
+select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 
 drop table ref
 drop table test

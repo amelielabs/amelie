@@ -9,6 +9,13 @@
 typedef struct Target Target;
 typedef struct Stmt   Stmt;
 
+typedef enum
+{
+	TARGET_JOIN_INNER,
+	TARGET_JOIN_LEFT,
+	TARGET_JOIN_RIGHT
+} TargetJoin;
+
 struct Target
 {
 	int          id;
@@ -32,6 +39,7 @@ struct Target
 	Table*       table;
 	IndexConfig* index;
 	// link
+	TargetJoin   join;
 	Target*      outer;
 	Target*      next_join;
 	Target*      next;
@@ -55,6 +63,7 @@ target_init(Target* self, Table* table)
 	self->path            = NULL;
 	self->table           = table;
 	self->index           = NULL;
+	self->join            = TARGET_JOIN_INNER;
 	self->outer           = NULL;
 	self->next_join       = NULL;
 	self->next            = NULL;

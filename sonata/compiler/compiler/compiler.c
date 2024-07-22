@@ -98,7 +98,7 @@ emit_stmt(Compiler* self)
 	{
 		auto update = ast_update_of(stmt->ast);
 
-		// validate join tables
+		// validate returning targets
 		// validate supported targets as expression or reference table
 		target_list_validate_dml(&stmt->target_list, update->target);
 
@@ -110,7 +110,7 @@ emit_stmt(Compiler* self)
 	{
 		auto delete = ast_delete_of(stmt->ast);
 
-		// validate join tables
+		// validate returning targets
 		// validate supported targets as expression or reference table
 		target_list_validate_dml(&stmt->target_list, delete->target);
 

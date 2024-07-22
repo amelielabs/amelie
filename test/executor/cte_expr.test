@@ -91,8 +91,8 @@ with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
 explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a,b
 
 # test: select from a,b join
-with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
-explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on a.* = b.*
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on a.* = b.*
 
 # test: with a, b(a)
 with a as (select [1,2,3]), b as (select * from a)

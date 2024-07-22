@@ -108,55 +108,8 @@ explain select t.* from test, test t
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 select t.* from test, test t
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
-# test: select from table join expr
-explain select test.*, t.* from test join [1,2,3] t
-"
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       23      0      0
- 5                 int        1      1      0
- 6                push        1      0      0
- 7                 int        1      2      0
- 8                push        1      0      0
- 9                 int        1      3      0
-10                push        1      0      0
-11               array        1      3      0
-12    cursor_open_expr        1      1     14
-13                 jmp       21      0      0
-14         cursor_read        2      0      0
-15                push        2      0      0
-16         cursor_read        2      1      0
-17                push        2      0      0
-18               array        2      2      0
-19             set_add        0      2      0
-20         cursor_next        1     14      0
-21        cursor_close        1      0      0
-22         cursor_next        0      5      0
-23        cursor_close        0      0      0
-24              result        0      0      0
-25                 ret        0      0      0
-
-"
-select test.*, t.* from test join [1,2,3] t
-[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3], [[2, 0], 1], [[2, 0], 2], [[2, 0], 3], [[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]
 # test: select from table join expr on
-explain select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
+explain select test.id, t.* from test join [1,2,3] t on test.id = t.*
 "
 bytecode [coordinator]
 --------
@@ -204,10 +157,9 @@ bytecode [node]
 29                 ret        0      0      0
 
 "
-select test.id, t.* from test join [1,2,3] t on (test.id = t.*)
+select test.id, t.* from test join [1,2,3] t on test.id = t.*
 [[1, 1], [2, 2], [3, 3]]
-# test: select from table join expr on #2
-explain select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
+explain select test.id, t.*, t2.* from test join [1,2,3] t on true join [3,2,1] t2 on test.id = t.* = t2.*
 "
 bytecode [coordinator]
 --------
@@ -227,7 +179,7 @@ bytecode [node]
  1             int_min        1      0      0
  2                push        1      0      0
  3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       42      0      0
+ 4                 jmp       49      0      0
  5                 int        1      1      0
  6                push        1      0      0
  7                 int        1      2      0
@@ -236,7 +188,7 @@ bytecode [node]
 10                push        1      0      0
 11               array        1      3      0
 12    cursor_open_expr        1      1     14
-13                 jmp       40      0      0
+13                 jmp       47      0      0
 14                 int        2      3      0
 15                push        2      0      0
 16                 int        2      2      0
@@ -245,35 +197,42 @@ bytecode [node]
 19                push        2      0      0
 20               array        2      3      0
 21    cursor_open_expr        2      2     23
-22                 jmp       38      0      0
-23          cursor_idx        3      0      0
-24         cursor_read        4      1      0
-25                 equ        5      3      4
-26         cursor_read        3      2      0
-27                 equ        4      5      3
-28                jntr       37      4      0
-29          cursor_idx        3      0      0
-30                push        3      0      0
-31         cursor_read        3      1      0
-32                push        3      0      0
-33         cursor_read        3      2      0
-34                push        3      0      0
-35               array        3      3      0
-36             set_add        0      3      0
-37         cursor_next        2     23      0
-38        cursor_close        2      0      0
-39         cursor_next        1     14      0
-40        cursor_close        1      0      0
-41         cursor_next        0      5      0
-42        cursor_close        0      0      0
-43              result        0      0      0
-44                 ret        0      0      0
+22                 jmp       45      0      0
+23                bool        4      1      0
+24                jntr       31      4      0
+25          cursor_idx        5      0      0
+26         cursor_read        6      1      0
+27                 equ        7      5      6
+28         cursor_read        5      2      0
+29                 equ        6      7      5
+30                 jtr       33      6      0
+31                bool        3      0      0
+32                 jmp       34      0      0
+33                bool        3      1      0
+34                 nop        0      0      0
+35                jntr       44      3      0
+36          cursor_idx        3      0      0
+37                push        3      0      0
+38         cursor_read        3      1      0
+39                push        3      0      0
+40         cursor_read        3      2      0
+41                push        3      0      0
+42               array        3      3      0
+43             set_add        0      3      0
+44         cursor_next        2     23      0
+45        cursor_close        2      0      0
+46         cursor_next        1     14      0
+47        cursor_close        1      0      0
+48         cursor_next        0      5      0
+49        cursor_close        0      0      0
+50              result        0      0      0
+51                 ret        0      0      0
 
 "
-select test.id, t.*, t2.* from test join [1,2,3] t join [3,2,1] t2 on (test.id = t.* = t2.*)
+select test.id, t.*, t2.* from test join [1,2,3] t on true join [3,2,1] t2 on test.id = t.* = t2.*
 [[1, 1, 1], [2, 2, 1], [3, 3, 1]]
 # test: select from table join reference
-explain select test.id, ref.id from test join ref
+explain select test.id, ref.id from test join ref on true
 "
 bytecode [coordinator]
 --------
@@ -293,29 +252,31 @@ bytecode [node]
  1             int_min        1      0      0
  2                push        1      0      0
  3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       18      0      0
+ 4                 jmp       20      0      0
  5             int_min        1      0      0
  6                push        1      0      0
  7         cursor_open        1     20      9      # public.ref (primary)
- 8                 jmp       16      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11          cursor_idx        1      1      0
+ 8                 jmp       18      0      0
+ 9                bool        1      1      0
+10                jntr       17      1      0
+11          cursor_idx        1      0      0
 12                push        1      0      0
-13               array        1      2      0
-14             set_add        0      1      0
-15         cursor_next        1      9      0
-16        cursor_close        1      0      0
-17         cursor_next        0      5      0
-18        cursor_close        0      0      0
-19              result        0      0      0
-20                 ret        0      0      0
+13          cursor_idx        1      1      0
+14                push        1      0      0
+15               array        1      2      0
+16             set_add        0      1      0
+17         cursor_next        1      9      0
+18        cursor_close        1      0      0
+19         cursor_next        0      5      0
+20        cursor_close        0      0      0
+21              result        0      0      0
+22                 ret        0      0      0
 
 "
-select test.id, ref.id from test join ref
+select test.id, ref.id from test join ref on true
 [[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]
 # test: select from table join reference on
-explain select test.id, ref.id from test join ref on (test.id = ref.id)
+explain select test.id, ref.id from test join ref on test.id = ref.id
 "
 bytecode [coordinator]
 --------
@@ -358,10 +319,10 @@ bytecode [node]
 24                 ret        0      0      0
 
 "
-select test.id, ref.id from test join ref on (test.id = ref.id)
+select test.id, ref.id from test join ref on test.id = ref.id
 [[1, 1], [2, 2], [3, 3]]
 # test: select from table join reference on #2
-explain select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
+explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 "
 bytecode [coordinator]
 --------
@@ -419,7 +380,7 @@ bytecode [node]
 39                 ret        0      0      0
 
 "
-select test.id, ref.id from test join ref on (test.id = ref.id) join ref ref2 on (test.id = ref2.id)
+select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [[1, 1], [2, 2], [3, 3]]
 drop table ref
 drop table test

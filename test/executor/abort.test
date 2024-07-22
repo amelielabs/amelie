@@ -93,12 +93,6 @@ update a set data = id; update b set data = id; select * from a; select * from b
 select * from a
 select * from b
 
-# test: delete a join ref update b abort
-explain delete from a, ref where a.id = ref.id; update b set data = data * 2; select error("abort")
-delete from a, ref where a.id = ref.id; update b set data = data * 2; select * from a; select error("abort")
-select * from a
-select * from b
-
 # test: upsert a update b abort
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")

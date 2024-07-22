@@ -48,18 +48,18 @@ drop table test
 # test: with(table), table (pushdown join)
 create table test (id int primary key)
 insert into test 1,2,3
-with a (id) as (select * from test) select test.* from test join a on (test.id = a.id)
-explain with a (id) as (select * from test) select test.* from test join a on (test.id = a.id)
+with a (id) as (select * from test) select test.* from test join a on test.id = a.id
+explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 
-with a (id) as (select * from test) select test.* from test join a on (test.id = a.id) order by test.id
-explain with a (id) as (select * from test) select test.* from test join a on (test.id = a.id) order by test.id
+with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
+explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
 drop table test
 
 # test: with (expr), with(table), table (pushdown join)
 create table test (id int primary key)
 insert into test 1,2,3
-with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on (test.id = a.id) join z on (test.id = z.id)
-explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on (test.id = a.id) join z on (test.id = z.id)
+with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
+explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 drop table test
 
 # test: a(table), b(a)

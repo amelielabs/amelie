@@ -207,27 +207,23 @@ parse_from(Stmt* self, int level)
 			continue;
 		}
 
-		// JOIN <target> [ON (expr)]
+		// [JOIN]
+		// [INNER JOIN]
+		// [LEFT [OUTER] JOIN]
+		// [RIGHT [OUTER] JOIN]
+
+		// JOIN <target> ON expr
 		if (stmt_if(self, KJOIN))
 		{
 			// JOIN <name|expr>
 			auto target = parse_from_add(&from);
 
 			// ON
-			if (stmt_if(self, KON))
-			{
-				// (
-				if (! stmt_if(self, '('))
-					error("JOIN ON <(> expected");
+			if (! stmt_if(self, KON))
+				error("JOIN name <ON> expected");
 
-				// expr
-				target->expr_on = parse_expr(self, NULL);
-
-				// )
-				if (! stmt_if(self, ')'))
-					error("JOIN ON (expr <)> expected");
-			}
-
+			// expr
+			target->expr_on = parse_expr(self, NULL);
 			continue;
 		}
 

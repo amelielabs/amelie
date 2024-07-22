@@ -108,6 +108,7 @@ static Keyword keywords_i[] =
 	{ KINSERT,                "insert",                6  },
 	{ KINTO,                  "into",                  4  },
 	{ KINTERVAL,              "interval",              8  },
+	{ KINNER,                 "inner",                 5  },
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
@@ -129,6 +130,7 @@ static Keyword keywords_k[] =
 static Keyword keywords_l[] =
 {
 	{ KLIMIT,                 "limit",                 5  },
+	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
 	{ 0,                       NULL,                   0  }
 };
@@ -155,6 +157,7 @@ static Keyword keywords_o[] =
 	{ KON,                    "on",                    2  },
 	{ KOFFSET,                "offset",                6  },
 	{ KORDER,                 "order",                 5  },
+	{ KOUTER,                 "outer",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -174,6 +177,7 @@ static Keyword keywords_q[] =
 
 static Keyword keywords_r[] =
 {
+	{ KRIGHT,                 "right",                 5  },
 	{ KRETURNING,             "returning",             9  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPLICA,               "replica",               7  },

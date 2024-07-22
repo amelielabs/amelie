@@ -43,16 +43,14 @@ parse_delete(Stmt* self)
 	stmt->table = stmt->target->table;
 	if (stmt->table == NULL)
 		error("DELETE FROM <table name> expected");
+	if (stmt->target->next_join)
+		error("DELETE FROM JOIN is not supported");
 
 	// todo: check primary index
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
 		stmt->expr_where = parse_expr(self, NULL);
-
-	// combine join on and where expression
-	stmt->expr_where =
-		parse_from_join_on_and_where(stmt->target, stmt->expr_where);
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))

@@ -522,9 +522,9 @@ bytecode [coordinator]
 
 "
 # test: select from a,b join
-with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on a.* = b.*
 [[1, 1], [2, 2], [3, 3]]
-explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on (a.* = b.*)
+explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a join b on a.* = b.*
 "
 bytecode [coordinator]
 --------

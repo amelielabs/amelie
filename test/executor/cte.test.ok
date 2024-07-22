@@ -309,9 +309,9 @@ drop table test
 # test: with(table), table (pushdown join)
 create table test (id int primary key)
 insert into test 1,2,3
-with a (id) as (select * from test) select test.* from test join a on (test.id = a.id)
+with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 [[1], [2], [3]]
-explain with a (id) as (select * from test) select test.* from test join a on (test.id = a.id)
+explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 "
 bytecode [coordinator]
 --------
@@ -365,9 +365,9 @@ bytecode [node]
 29                 ret        0      0      0
 
 "
-with a (id) as (select * from test) select test.* from test join a on (test.id = a.id) order by test.id
+with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
 [[1], [2], [3]]
-explain with a (id) as (select * from test) select test.* from test join a on (test.id = a.id) order by test.id
+explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
 "
 bytecode [coordinator]
 --------
@@ -428,9 +428,9 @@ drop table test
 # test: with (expr), with(table), table (pushdown join)
 create table test (id int primary key)
 insert into test 1,2,3
-with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on (test.id = a.id) join z on (test.id = z.id)
+with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 [[1], [2], [3]]
-explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on (test.id = a.id) join z on (test.id = z.id)
+explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 "
 bytecode [coordinator]
 --------
