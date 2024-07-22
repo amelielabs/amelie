@@ -11,8 +11,9 @@ typedef struct AstInsert AstInsert;
 enum
 {
 	ON_CONFLICT_NONE,
-	ON_CONFLICT_UPDATE_NONE,
-	ON_CONFLICT_UPDATE
+	ON_CONFLICT_NOTHING,
+	ON_CONFLICT_UPDATE,
+	ON_CONFLICT_ERROR
 };
 
 struct AstInsert

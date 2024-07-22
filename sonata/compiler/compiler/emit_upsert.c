@@ -51,7 +51,8 @@ emit_upsert(Compiler* self, Ast* ast)
 	int jmp_where = op_pos(self);
 
 	// ON CONFLICT UPDATE or do nothing
-	if (insert->on_conflict == ON_CONFLICT_UPDATE)
+	switch (insert->on_conflict) {
+	case ON_CONFLICT_UPDATE:
 	{
 		// WHERE expression
 		int jmp_where_jntr = 0;
@@ -74,6 +75,32 @@ emit_upsert(Compiler* self, Ast* ast)
 		// set jntr _start to _start
 		if (insert->update_where)
 			op_at(self, jmp_where_jntr)->a = op_pos(self);
+		break;
+	}
+	case ON_CONFLICT_ERROR:
+	{
+		// get public.error()
+		Str schema;
+		str_set(&schema, "public", 6);
+		Str name;
+		str_set(&name, "error", 5);
+		auto func = function_mgr_find(self->parser.function_mgr, &schema, &name);
+		assert(func);
+
+		// call error()
+		Str str;
+		str_set(&str, "unique key constraint violation", 31);
+		int r = emit_string(self, &str, false);
+		op1(self, CPUSH, r);
+		runpin(self, r);
+
+		// CALL
+		r = op3(self, CCALL, rpin(self), (intptr_t)func, 1);
+		runpin(self, r);
+		break;
+	}
+	default:
+		break;
 	}
 
 	// _returning:

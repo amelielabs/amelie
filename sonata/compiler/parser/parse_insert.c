@@ -332,7 +332,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KNOTHING:
-		stmt->on_conflict = ON_CONFLICT_UPDATE_NONE;
+		stmt->on_conflict = ON_CONFLICT_NOTHING;
 		break;
 	case KUPDATE:
 	{
@@ -350,10 +350,6 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected");
 		break;
 	}
-
-	// [RETURNING]
-	if (stmt_if(self, KRETURNING))
-		stmt->returning = parse_expr(self, NULL);
 }
 
 hot void
@@ -401,4 +397,13 @@ parse_insert(Stmt* self)
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);
+
+	// [RETURNING]
+	if (stmt_if(self, KRETURNING))
+	{
+		stmt->returning = parse_expr(self, NULL);
+		// convert insert to upsert ON CONFLICT ERROR to support returning
+		if (stmt->on_conflict == ON_CONFLICT_NONE)
+			stmt->on_conflict = ON_CONFLICT_ERROR;
+	}
 }

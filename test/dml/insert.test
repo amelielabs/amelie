@@ -333,9 +333,18 @@ select * from test
 select * from test use index (i)
 drop table test
 
-# test: insert returning (unsupported)
+# test: insert returning
 create table test (id int primary key)
+explain insert into test 1,2,3 returning *
 insert into test 1,2,3 returning *
+insert into test 1,2,3 returning * # on conflict error
+drop table test
+
+# test: insert returning (serial)
+create table test (id int primary key serial)
+explain insert into test () values (), (), () returning *
+insert into test () values (), (), () returning *
+insert into test () values (), (), () returning id
 drop table test
 
 disconnect S0

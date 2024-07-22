@@ -480,5 +480,41 @@ insert into test values(1, 0) on conflict do update set data = data + 1 returnin
 select * from test
 [[1, 2]]
 drop table test
+# test: upsert returning (do nothing, first row)
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do nothing returning *
+"
+bytecode [coordinator]
+--------
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4          merge_recv        0     -1     -1
+ 5             cte_set        0      0      0
+ 6                body        0      0      0
+ 7                 ret        0      0      0
+
+
+bytecode [node]
+--------
+ 0                 set        0      0      0
+ 1      cursor_prepare        0      -      0      # public.test
+ 2                 jmp        5      0      0
+ 3         cursor_read        1      0      0
+ 4             set_add        0      1      0
+ 5              upsert        0      3      3
+ 6        cursor_close        0      0      0
+ 7              result        0      0      0
+ 8                 ret        0      0      0
+
+"
+insert into test values(1, 0) on conflict do nothing returning *
+[[1, 0]]
+insert into test values(1, 0) on conflict do nothing returning *
+[[1, 0]]
+select * from test
+[[1, 0]]
+drop table test
 disconnect S0
 close E0
