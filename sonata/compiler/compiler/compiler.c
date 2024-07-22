@@ -83,6 +83,10 @@ emit_stmt(Compiler* self)
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
+
+		// validate returning targets
+		target_list_validate_dml(&stmt->target_list, insert->target);
+
 		if (insert->on_conflict == ON_CONFLICT_NONE)
 			emit_insert(self, stmt->ast);
 		else

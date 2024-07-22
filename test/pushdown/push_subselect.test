@@ -67,6 +67,20 @@ drop table test2
 explain select (select t.*, z.* from test z) from (select * from test) t
 select (select t.*, z.* from test z) from (select * from test) t
 
+# test: insert returning (select from table)
+explain insert into test (id) values (4) returning (select * from test t)
+insert into test (id) values (4) returning (select * from test t)
+
+# test: insert returning (select from reference)
+create table test_ (id int primary key) reference
+insert into test_ 1,2,3
+insert into test (id) values (5) returning (select * from test_)
+drop table test_
+
+# test: insert returning (select from expr)
+insert into test (id) values (6) returning [*, (select * from [1,2,3])]
+insert into test (id) values (7) returning (select test.id + * from [1,2,3])
+
 drop table test
 
 disconnect S0
