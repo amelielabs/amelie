@@ -174,6 +174,8 @@ tree_insert(Tree*      self,
 			pos = pos - l->keys_count;
 		}
 	}
+	page_pos->page = ref;
+	page_pos->page_pos = pos;
 
 	// insert
 	int size = ref->keys_count - pos;
@@ -243,6 +245,8 @@ tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 		rbtree_set(&self->tree, NULL, 0, &page->node);
 		self->count_pages++;
 		self->count++;
+		pos->page = page;
+		pos->page_pos = 0;
 		return false;
 	}
 

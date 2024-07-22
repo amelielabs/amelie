@@ -15,7 +15,7 @@ struct IndexIf
 	void      (*update)(Index*, Ref*, Ref*, Iterator*);
 	void      (*delete)(Index*, Ref*, Ref*, Iterator*);
 	bool      (*delete_by)(Index*, Ref*, Ref*);
-	bool      (*upsert)(Index*, Ref*, Iterator**);
+	bool      (*upsert)(Index*, Ref*, Iterator*);
 	bool      (*ingest)(Index*, Ref*);
 	Iterator* (*iterator)(Index*);
 	void      (*truncate)(Index*);
@@ -73,10 +73,10 @@ index_delete_by(Index* self, Ref* key, Ref* prev)
 	return self->iface.delete_by(self, key, prev);
 }
 
-static inline void
-index_upsert(Index* self, Ref* key, Iterator** it)
+static inline bool
+index_upsert(Index* self, Ref* key, Iterator* it)
 {
-	self->iface.upsert(self, key, it);
+	return self->iface.upsert(self, key, it);
 }
 
 static inline bool

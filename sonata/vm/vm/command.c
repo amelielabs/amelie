@@ -169,12 +169,12 @@ ccursor_prepare(Vm* self, Op* op)
 	// find partition
 	Table* table = (Table*)op->b;
 
-	// prepare cursor
+	// prepare cursor and primary index iterator for related partition
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
 	cursor->keys  = table_keys(table);
 	cursor->part  = part_list_match(&table->part_list, self->node);
-	cursor->it    = NULL;
+	cursor->it    = index_iterator(part_primary(cursor->part));
 }
 
 hot void
@@ -492,19 +492,12 @@ cdelete(Vm* self, Op* op)
 hot Op*
 cupsert(Vm* self, Op* op)
 {
-	// [target_id, _jmp]
+	// [target_id, _jmp, _jmp_returning]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// first call
 	if (cursor->ref_pos == 0)
 		cursor->ref_count = buf_size(self->code_arg) / sizeof(uint32_t);
-
-	if (cursor->it)
-	{
-		iterator_close(cursor->it);
-		cursor->it  = NULL;
-		cursor->ref = NULL;
-	}
 
 	// insert or upsert
 	auto list = buf_u32(self->code_arg);
@@ -518,14 +511,21 @@ cupsert(Vm* self, Op* op)
 		cursor->ref = pos;
 		cursor->ref_pos++;
 
-		// do insert or return iterator
-		part_upsert(cursor->part, self->trx, &cursor->it, &pos);
-
-		// upsert
-		if (cursor->it)
+		// insert or get (open iterator in both cases)
+		auto exists = part_upsert(cursor->part, self->trx, cursor->it, &pos);
+		if (exists)
 		{
-			// jmp to where/update
+			// upsert
+
+			// execute on where/on conflict logic (and returning after it)
 			return code_at(self->code, op->b);
+		}
+
+		// returning
+		if (op->c != -1)
+		{
+			// jmp to returning
+			return code_at(self->code, op->c);
 		}
 	}
 

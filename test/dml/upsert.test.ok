@@ -44,7 +44,7 @@ bytecode [node]
 --------
  0      cursor_prepare        0      -      0      # public.test
  1                 jmp        2      0      0
- 2              upsert        0      2      0
+ 2              upsert        0      2     -1
  3        cursor_close        0      0      0
  4                 ret        0      0      0
 
@@ -67,7 +67,7 @@ bytecode [node]
 --------
  0      cursor_prepare        0      -      0      # public.test
  1                 jmp        2      0      0
- 2              upsert        0      2      0
+ 2              upsert        0      2     -1
  3        cursor_close        0      0      0
  4                 ret        0      0      0
 
@@ -104,7 +104,7 @@ bytecode [node]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13              upsert        0      2      0
+13              upsert        0      2     -1
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
@@ -153,7 +153,7 @@ bytecode [node]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13              upsert        0      2      0
+13              upsert        0      2     -1
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
@@ -199,7 +199,7 @@ bytecode [node]
 12              assign        0      3      1
 13                push        0      0      0
 14              update        0      0      0
-15              upsert        0      2      0
+15              upsert        0      2     -1
 16        cursor_close        0      0      0
 17                 ret        0      0      0
 
@@ -245,7 +245,7 @@ bytecode [node]
 12              assign        0      3      1
 13                push        0      0      0
 14              update        0      0      0
-15              upsert        0      2      0
+15              upsert        0      2     -1
 16        cursor_close        0      0      0
 17                 ret        0      0      0
 
@@ -377,7 +377,7 @@ bytecode [node]
 13              update        0      0      0
 14         cursor_read        1      0      0
 15             set_add        0      1      0
-16              upsert        0      3      0
+16              upsert        0      3     14
 17        cursor_close        0      0      0
 18              result        0      0      0
 19                 ret        0      0      0
@@ -416,7 +416,7 @@ bytecode [node]
  2                 jmp        5      0      0
  3         cursor_read        1      0      0
  4             set_add        0      1      0
- 5              upsert        0      3      0
+ 5              upsert        0      3      3
  6        cursor_close        0      0      0
  7              result        0      0      0
  8                 ret        0      0      0
@@ -430,6 +430,55 @@ insert into test values(1, 0) on conflict do nothing returning *
 [[1, 0]]
 select * from test
 [[1, 0]]
+drop table test
+# test: upsert returning (first row)
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+"
+bytecode [coordinator]
+--------
+ 0                send        0      0      -      # public.test
+ 1                recv        0      0      0
+ 2                bool        0      0      0
+ 3                push        0      0      0
+ 4          merge_recv        0     -1     -1
+ 5             cte_set        0      0      0
+ 6                body        0      0      0
+ 7                 ret        0      0      0
+
+
+bytecode [node]
+--------
+ 0                 set        0      0      0
+ 1      cursor_prepare        0      -      0      # public.test
+ 2                 jmp       16      0      0
+ 3         cursor_read        1      0      0
+ 4                push        1      0      0
+ 5                null        1      0      0
+ 6                push        1      0      0
+ 7          cursor_idx        1      0      1
+ 8                 int        2      1      0
+ 9                 add        3      1      2
+10                push        3      0      0
+11              assign        1      3      1
+12                push        1      0      0
+13              update        0      0      0
+14         cursor_read        1      0      0
+15             set_add        0      1      0
+16              upsert        0      3     14
+17        cursor_close        0      0      0
+18              result        0      0      0
+19                 ret        0      0      0
+
+"
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+[[1, 0]]
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+[[1, 1]]
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+[[1, 2]]
+select * from test
+[[1, 2]]
 drop table test
 disconnect S0
 close E0

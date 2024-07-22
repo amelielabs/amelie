@@ -159,14 +159,14 @@ insert into test values(1, 0) on conflict do nothing returning *
 select * from test
 drop table test
 
-## test: upsert returning (first row)
-#create table test (id int primary key, data int)
-#explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-#insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-#insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-#insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-#select * from test
-#drop table test
+# test: upsert returning (first row)
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+select * from test
+drop table test
 
 disconnect S0
 close E0

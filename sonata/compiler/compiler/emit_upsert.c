@@ -53,7 +53,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	// ON CONFLICT UPDATE or do nothing
 	if (insert->on_conflict == ON_CONFLICT_UPDATE)
 	{
-		// where expression
+		// WHERE expression
 		int jmp_where_jntr = 0;
 		if (insert->update_where)
 		{
@@ -76,9 +76,14 @@ emit_upsert(Compiler* self, Ast* ast)
 			op_at(self, jmp_where_jntr)->a = op_pos(self);
 	}
 
+	// _returning:
+	int jmp_returning = -1;
+
 	// [RETURNING]
 	if (insert->returning)
 	{
+		jmp_returning = op_pos(self);
+
 		// expr
 		int rexpr = emit_expr(self, target, insert->returning);
 
@@ -93,7 +98,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	op_at(self, jmp_start)->a = op_pos(self);
 
 	// CUPSERT
-	op2(self, CUPSERT, target->id, jmp_where);
+	op3(self, CUPSERT, target->id, jmp_where, jmp_returning);
 	
 	// CCLOSE_CURSOR
 	op1(self, CCURSOR_CLOSE, target->id);

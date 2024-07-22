@@ -214,10 +214,10 @@ part_delete_by(Part*        self,
 	part_delete(self, trx, it);
 }
 
-hot void
+hot bool
 part_upsert(Part*        self,
             Transaction* trx,
-            Iterator**   it,
+            Iterator*    it,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
@@ -233,15 +233,13 @@ part_upsert(Part*        self,
 	ref_create(key, row, keys);
 	unguard();
 
-	// do insert or return iterator
-	index_upsert(primary, key, it);
-
-	// row exists (free primary row)
-	if (*it)
+	// insert or get (iterator is openned in both cases)
+	auto exists = index_upsert(primary, key, it);
+	if (exists)
 	{
 		row_free(row);
 		log_truncate(&trx->log);
-		return;
+		return true;
 	}
 
 	// insert
@@ -263,6 +261,7 @@ part_upsert(Part*        self,
 			      str_size(&index->config->name),
 			      str_of(&index->config->name));
 	}
+	return false;
 }
 
 hot void

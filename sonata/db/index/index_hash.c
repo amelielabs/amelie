@@ -46,22 +46,14 @@ index_hash_delete_by(Index* arg, Ref* key, Ref* prev)
 }
 
 hot static bool
-index_hash_upsert(Index* arg, Ref* key, Iterator** it)
+index_hash_upsert(Index* arg, Ref* key, Iterator* it)
 {
 	auto self = index_hash_of(arg);
-
-	// insert or return iterator on existing position
 	uint64_t pos = 0;	
-	if (hash_get_or_set(&self->hash, key, &pos))
-	{
-		*it = index_hash_iterator_allocate(self);
-		auto hash_it = index_hash_iterator_of(*it);
-		hash_iterator_open_at(&hash_it->iterator, &self->hash, pos);
-		return false;
-	}
-
-	*it = NULL;
-	return true;
+	auto exists = hash_get_or_set(&self->hash, key, &pos);
+	auto hash_it = index_hash_iterator_of(it);
+	hash_iterator_open_at(&hash_it->iterator, &self->hash, pos);
+	return exists;
 }
 
 hot static bool

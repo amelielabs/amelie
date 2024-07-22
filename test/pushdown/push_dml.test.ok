@@ -277,7 +277,7 @@ bytecode [node]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13              upsert        0      2      0
+13              upsert        0      2     -1
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
@@ -512,7 +512,7 @@ bytecode [node]
 10              assign        0      3      1
 11                push        0      0      0
 12              update        0      0      0
-13              upsert        0      2      0
+13              upsert        0      2     -1
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 

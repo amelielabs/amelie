@@ -52,22 +52,14 @@ index_tree_delete_by(Index* arg, Ref* key, Ref* prev)
 }
 
 hot static bool
-index_tree_upsert(Index* arg, Ref* key, Iterator** it)
+index_tree_upsert(Index* arg, Ref* key, Iterator* it)
 {
 	auto self = index_tree_of(arg);
-
-	// insert or return iterator on existing position
 	TreePos pos;
-	if (tree_set_or_get(&self->tree, key, &pos))
-	{
-		*it = index_tree_iterator_allocate(self);
-		auto tree_it = index_tree_iterator_of(*it);
-		tree_iterator_open_at(&tree_it->iterator, &self->tree, &pos);
-		return false;
-	}
-
-	*it = NULL;
-	return true;
+	auto exists = tree_set_or_get(&self->tree, key, &pos);
+	auto tree_it = index_tree_iterator_of(it);
+	tree_iterator_open_at(&tree_it->iterator, &self->tree, &pos);
+	return exists;
 }
 
 hot static bool

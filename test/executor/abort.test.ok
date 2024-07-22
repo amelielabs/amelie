@@ -124,7 +124,7 @@ bytecode [node]
  8              assign        0      3      1
  9                push        0      0      0
 10              update        0      0      0
-11              upsert        0      2      0
+11              upsert        0      2     -1
 12        cursor_close        0      0      0
 13                 ret        0      0      0
 
@@ -258,7 +258,7 @@ bytecode [node]
  8              assign        0      3      1
  9                push        0      0      0
 10              update        0      0      0
-11              upsert        0      2      0
+11              upsert        0      2     -1
 12        cursor_close        0      0      0
 13                 ret        0      0      0
 
@@ -503,7 +503,7 @@ bytecode [node]
  8              assign        0      3      1
  9                push        0      0      0
 10              update        0      0      0
-11              upsert        0      2      0
+11              upsert        0      2     -1
 12        cursor_close        0      0      0
 13                 ret        0      0      0
 14             int_min        0      0      0
