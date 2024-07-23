@@ -242,6 +242,9 @@ parse_from(Stmt* self, int level)
 		// <name|expr> ON expr
 		if (join != JOIN_NONE)
 		{
+			if (join == JOIN_LEFT || join == JOIN_RIGHT)
+				error("outer joins currently are not supported");
+
 			// <name|expr>
 			auto target = parse_from_add(&from);
 

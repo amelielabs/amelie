@@ -39,8 +39,9 @@ struct Target
 	Ast*         path;
 	Table*       table;
 	IndexConfig* index;
-	// link
+	// join
 	TargetJoin   join;
+	// link
 	Target*      outer;
 	Target*      next_join;
 	Target*      next;

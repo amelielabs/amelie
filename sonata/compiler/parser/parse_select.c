@@ -240,7 +240,7 @@ parse_select(Stmt* self)
 	if (stmt_if(self, KWHERE))
 		select->expr_where = parse_expr(self, NULL);
 
-	// use as WHERE expr or combine INNER JOIN ON (expr) together with
+	// use as WHERE expr or combine JOIN ON (expr) together with
 	// WHERE expr per target
 	if (select->target)
 		select->expr_where =

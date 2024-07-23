@@ -13,7 +13,7 @@ parse_from_join_on_and_where(Target* target, Ast* expr_where)
 {
 	while (target)
 	{
-		if (target->join == JOIN_INNER)
+		if (target->expr_on)
 		{
 			if (expr_where == NULL)
 			{
