@@ -1,38 +1,38 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_user.h>
-#include <sonata_http.h>
-#include <sonata_client.h>
-#include <sonata_server.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
-#include <sonata_executor.h>
-#include <sonata_vm.h>
-#include <sonata_parser.h>
-#include <sonata_planner.h>
-#include <sonata_compiler.h>
-#include <sonata_backup.h>
-#include <sonata_repl.h>
-#include <sonata_cluster.h>
-#include <sonata_frontend.h>
-#include <sonata_session.h>
-#include <sonata_main.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
+#include <amelie_executor.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_planner.h>
+#include <amelie_compiler.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
+#include <amelie_cluster.h>
+#include <amelie_frontend.h>
+#include <amelie_session.h>
+#include <amelie_main.h>
 
 static void
 system_save_config(void* arg)
@@ -46,11 +46,11 @@ system_save_config(void* arg)
 System*
 system_create(void)
 {
-	System* self = so_malloc(sizeof(System));
+	System* self = am_malloc(sizeof(System));
 
 	// set control
 	auto control = &self->control;
-	control->system      = &so_task->channel;
+	control->system      = &am_task->channel;
 	control->save_config = system_save_config;
 	control->arg         = self;
 	global()->control    = control;
@@ -100,7 +100,7 @@ system_free(System* self)
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
 	catalog_mgr_free(&self->catalog_mgr);
-	so_free(self);
+	am_free(self);
 }
 
 static void
@@ -189,7 +189,7 @@ system_start(System* self, Str* options, bool bootstrap)
 
 	// hello
 	log("");
-	log("sonata.");
+	log("amelie.");
 	log("");
 
 	// prepare builtin functions
@@ -317,7 +317,7 @@ system_main(System* self)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&so_task->channel, -1);
+		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
 		guard(buf_free, buf);
 

@@ -1,5 +1,5 @@
 #
-# sonata main makefile
+# amelie main makefile
 #
 CC             = clang
 AR             = ar
@@ -41,7 +41,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Isession \
                  -Imain
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-main.a
+LIB            = libamelie-main.a
 OBJECTS        = \
                  frontend/frontend.o \
                  session/explain.o \

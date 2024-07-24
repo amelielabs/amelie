@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -32,7 +32,7 @@ frontend_mgr_start(FrontendMgr*  self,
 	if (count == 0)
 		return;
 	self->workers_count = count;
-	self->workers = so_malloc(sizeof(Frontend) * count);
+	self->workers = am_malloc(sizeof(Frontend) * count);
 	int i = 0;
 	for (; i < count; i++)
 		frontend_init(&self->workers[i], on_connect, on_connect_arg);
@@ -50,7 +50,7 @@ frontend_mgr_stop(FrontendMgr* self)
 		frontend_stop(&self->workers[i]);
 		frontend_free(&self->workers[i]);
 	}
-	so_free(self->workers);
+	am_free(self->workers);
 	self->workers = NULL;
 }
 

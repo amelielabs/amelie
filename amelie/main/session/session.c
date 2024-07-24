@@ -1,42 +1,42 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_user.h>
-#include <sonata_http.h>
-#include <sonata_client.h>
-#include <sonata_server.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
-#include <sonata_executor.h>
-#include <sonata_vm.h>
-#include <sonata_parser.h>
-#include <sonata_planner.h>
-#include <sonata_compiler.h>
-#include <sonata_backup.h>
-#include <sonata_repl.h>
-#include <sonata_cluster.h>
-#include <sonata_frontend.h>
-#include <sonata_session.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
+#include <amelie_executor.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_planner.h>
+#include <amelie_compiler.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
+#include <amelie_cluster.h>
+#include <amelie_frontend.h>
+#include <amelie_session.h>
 
 Session*
 session_create(Client* client, Frontend* frontend, Share* share)
 {
-	auto self = (Session*)so_malloc(sizeof(Session));
+	auto self = (Session*)am_malloc(sizeof(Session));
 	self->client    = client;
 	self->frontend  = frontend;
 	self->lock_type = SESSION_LOCK_NONE;
@@ -61,7 +61,7 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
-	so_free(self);
+	am_free(self);
 }
 
 void
@@ -173,7 +173,7 @@ session_execute_distributed(Session* self)
 	if (leave(&e))
 	{
 		plan_shutdown(plan);
-		auto buf = msg_error(&so_self()->error);
+		auto buf = msg_error(&am_self()->error);
 		plan_set_error(plan, buf);
 	}
 
@@ -259,7 +259,7 @@ session_main(Session* self)
 		// reply
 		if (leave(&e))
 		{
-			auto error = &so_self()->error;
+			auto error = &am_self()->error;
 			buf_reset(body);
 			body_error(body, error);
 			http_write_reply(reply, 400, "Bad Request");
