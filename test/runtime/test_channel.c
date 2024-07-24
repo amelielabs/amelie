@@ -1,12 +1,12 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata.h>
-#include <sonata_test.h>
+#include <amelie.h>
+#include <amelie_test.h>
 
 static void
 test_channel_main(void *arg)
@@ -120,7 +120,7 @@ static void
 test_channel_consumer(void *arg)
 {
 	Condition* on_complete = arg;
-	auto channel = &so_task->channel; 
+	auto channel = &am_task->channel;
 	for (;;)
 	{
 		auto buf = channel_read(channel, -1);

@@ -1,54 +1,54 @@
 #
-# sonata test makefile
+# amelie test makefile
 # 
 CC             = clang
 RM             = rm
 CFLAGS         = -Wall -pthread -O0 -g
-CFLAGS_INCLUDE = -I../sonata/runtime \
-                 -I../sonata/runtime/runtime \
-                 -I../sonata/runtime/io \
-                 -I../sonata/runtime/lib \
-                 -I../sonata/runtime/data \
-                 -I../sonata/runtime/config \
-                 -I../sonata/server \
-                 -I../sonata/server/user \
-                 -I../sonata/server/http \
-                 -I../sonata/server/client \
-                 -I../sonata/server/server \
-                 -I../sonata/db \
-                 -I../sonata/db/row \
-                 -I../sonata/db/transaction \
-                 -I../sonata/db/index \
-                 -I../sonata/db/partition \
-                 -I../sonata/db/wal \
-                 -I../sonata/db/db \
-                 -I../sonata/vm \
-                 -I../sonata/vm/value \
-                 -I../sonata/vm/aggr \
-                 -I../sonata/vm/executor \
-                 -I../sonata/vm/vm \
-                 -I../sonata/compiler \
-                 -I../sonata/compiler/parser \
-                 -I../sonata/compiler/planner \
-                 -I../sonata/compiler/compiler \
-                 -I../sonata/cluster \
-                 -I../sonata/cluster/backup \
-                 -I../sonata/cluster/repl \
-                 -I../sonata/cluster/cluster \
-                 -I../sonata/main \
-                 -I../sonata/main/frontend \
-                 -I../sonata/main/session \
-                 -I../sonata/main/main \
+CFLAGS_INCLUDE = -I../amelie/runtime \
+                 -I../amelie/runtime/runtime \
+                 -I../amelie/runtime/io \
+                 -I../amelie/runtime/lib \
+                 -I../amelie/runtime/data \
+                 -I../amelie/runtime/config \
+                 -I../amelie/server \
+                 -I../amelie/server/user \
+                 -I../amelie/server/http \
+                 -I../amelie/server/client \
+                 -I../amelie/server/server \
+                 -I../amelie/db \
+                 -I../amelie/db/row \
+                 -I../amelie/db/transaction \
+                 -I../amelie/db/index \
+                 -I../amelie/db/partition \
+                 -I../amelie/db/wal \
+                 -I../amelie/db/db \
+                 -I../amelie/vm \
+                 -I../amelie/vm/value \
+                 -I../amelie/vm/aggr \
+                 -I../amelie/vm/executor \
+                 -I../amelie/vm/vm \
+                 -I../amelie/compiler \
+                 -I../amelie/compiler/parser \
+                 -I../amelie/compiler/planner \
+                 -I../amelie/compiler/compiler \
+                 -I../amelie/cluster \
+                 -I../amelie/cluster/backup \
+                 -I../amelie/cluster/repl \
+                 -I../amelie/cluster/cluster \
+                 -I../amelie/main \
+                 -I../amelie/main/frontend \
+                 -I../amelie/main/session \
+                 -I../amelie/main/main \
                  -I. \
                  -Isuite
 LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
-                  ../sonata/runtime/libsonata-runtime.a \
-                  ../sonata/server/libsonata-server.a \
-                  ../sonata/db/libsonata-db.a \
-                  ../sonata/vm/libsonata-vm.a \
-                  ../sonata/compiler/libsonata-compiler.a \
-                  ../sonata/cluster/libsonata-cluster.a \
-                  ../sonata/main/libsonata-main.a \
+                  ../amelie/runtime/libamelie-runtime.a \
+                  ../amelie/server/libamelie-server.a \
+                  ../amelie/db/libamelie-db.a \
+                  ../amelie/vm/libamelie-vm.a \
+                  ../amelie/compiler/libamelie-compiler.a \
+                  ../amelie/cluster/libamelie-cluster.a \
+                  ../amelie/main/libamelie-main.a \
                   -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto
 OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_exception.o \
@@ -66,7 +66,7 @@ OBJECTS_RUNTIME = runtime/test_task.o \
 OBJECTS         = suite/suite.o \
                   suite/session.o \
                   test.o
-TARGET          = sonata-test
+TARGET          = amelie-test
 $(TARGET): clean $(OBJECTS_RUNTIME) $(OBJECTS)
 	@$(CC) $(OBJECTS_RUNTIME) $(OBJECTS) $(SRC) $(CFLAGS_INCLUDE) $(CFLAGS) $(LFLAGS) -o $(TARGET)
 	@echo $(CC) $(SRC) $(CFLAGS) -o $(TARGET)

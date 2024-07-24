@@ -2,9 +2,9 @@
 *.a
 *.so
 test/test
-cli/sonata
+cli/amelie
 cli/t
 cli/core
-test/sonata-test
+test/amelie-test
 test/core
 test/_output

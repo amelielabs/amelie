@@ -1,12 +1,12 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata.h>
-#include <sonata_test.h>
+#include <amelie.h>
+#include <amelie_test.h>
 
 static int called = 0;
 
@@ -36,7 +36,7 @@ void
 test_task_args_main(void* arg)
 {
 	test( *(int*)arg == 123 );
-	test( *(int*)so_task->main_arg_global == 321 );
+	test( *(int*)am_task->main_arg_global == 321 );
 }
 
 void test_task_args(void)
@@ -61,7 +61,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
-	thread_status_set(&so_task->thread_status, 123);
+	thread_status_set(&am_task->thread_status, 123);
 }
 
 void test_task_status(void)

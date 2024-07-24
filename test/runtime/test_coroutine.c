@@ -1,12 +1,12 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata.h>
-#include <sonata_test.h>
+#include <amelie.h>
+#include <amelie_test.h>
 
 static int coroutine_called = -1;
 
@@ -14,7 +14,7 @@ static void
 test_coroutine_main(void* arg)
 {
 	(void)arg;
-	coroutine_called = so_self()->id;
+	coroutine_called = am_self()->id;
 }
 
 void

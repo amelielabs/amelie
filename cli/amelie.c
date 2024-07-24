@@ -1,11 +1,11 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata.h>
+#include <amelie.h>
 #include <curl/curl.h>
 
 static size_t
@@ -81,7 +81,7 @@ server(int argc, char** argv)
 {
 	if (argc != 3)
 	{
-		printf("usage: sonata server <path>\n");
+		printf("usage: amelie server <path>\n");
 		return EXIT_FAILURE;
 	}
 
@@ -117,7 +117,7 @@ server_backup(int argc, char** argv)
 {
 	if (argc != 4)
 	{
-		printf("usage: sonata backup <path> <uri>\n");
+		printf("usage: amelie backup <path> <uri>\n");
 		return EXIT_FAILURE;
 	}
 

@@ -1,17 +1,17 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata.h>
-#include <sonata_test.h>
+#include <amelie.h>
+#include <amelie_test.h>
 
 static void
 test_rpc_main(void *arg)
 {
-	auto buf = channel_read(&so_task->channel, -1);
+	auto buf = channel_read(&am_task->channel, -1);
 	auto rpc = rpc_of(buf);
 	buf_free(buf);
 
@@ -47,7 +47,7 @@ test_rpc_execute_cb(Rpc* self, void *arg)
 static void
 test_rpc_execute_main(void *arg)
 {
-	auto buf = channel_read(&so_task->channel, -1);
+	auto buf = channel_read(&am_task->channel, -1);
 	rpc_execute(buf, test_rpc_execute_cb, NULL);
 	buf_free(buf);
 }
@@ -76,7 +76,7 @@ test_rpc_execute_error_cb(Rpc* rpc, void* arg)
 static void
 test_rpc_execute_error_main(void* arg)
 {
-	auto buf = channel_read(&so_task->channel, -1);
+	auto buf = channel_read(&am_task->channel, -1);
 	rpc_execute(buf, test_rpc_execute_error_cb, NULL);
 	buf_free(buf);
 }
@@ -107,7 +107,7 @@ test_rpc_benchmark_main(void *arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&so_task->channel, -1);
+		auto buf = channel_read(&am_task->channel, -1);
 		auto rpc = rpc_of(buf);
 		buf_free(buf);
 		stop = rpc->id == 0;
