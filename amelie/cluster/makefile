@@ -1,5 +1,5 @@
 #
-# sonata cluster makefile
+# amelie cluster makefile
 #
 CC             = clang
 AR             = ar
@@ -37,7 +37,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Irepl \
                  -Icluster
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-cluster.a
+LIB            = libamelie-cluster.a
 OBJECTS        = \
                  backup/backup.o \
                  backup/restore.o \

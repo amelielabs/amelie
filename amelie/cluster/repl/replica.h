@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,13 +22,13 @@ replica_free(Replica* self)
 	if (self->config)
 		replica_config_free(self->config);
 	streamer_free(&self->streamer);
-	so_free(self);
+	am_free(self);
 }
 
 static inline Replica*
 replica_allocate(ReplicaConfig* config, Wal* wal)
 {
-	auto self = (Replica*)so_malloc(sizeof(Replica));
+	auto self = (Replica*)am_malloc(sizeof(Replica));
 	self->config = NULL;
 	wal_slot_init(&self->wal_slot);
 	streamer_init(&self->streamer, wal, &self->wal_slot);

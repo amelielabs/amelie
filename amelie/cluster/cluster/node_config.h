@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -17,7 +17,7 @@ static inline NodeConfig*
 node_config_allocate(void)
 {
 	NodeConfig* self;
-	self = so_malloc(sizeof(*self));
+	self = am_malloc(sizeof(*self));
 	uuid_init(&self->id);
 	return self;
 }
@@ -25,7 +25,7 @@ node_config_allocate(void)
 static inline void
 node_config_free(NodeConfig* self)
 {
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

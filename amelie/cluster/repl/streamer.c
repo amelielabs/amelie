@@ -1,34 +1,34 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_user.h>
-#include <sonata_http.h>
-#include <sonata_client.h>
-#include <sonata_server.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
-#include <sonata_executor.h>
-#include <sonata_vm.h>
-#include <sonata_parser.h>
-#include <sonata_planner.h>
-#include <sonata_compiler.h>
-#include <sonata_backup.h>
-#include <sonata_repl.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
+#include <amelie_executor.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_planner.h>
+#include <amelie_compiler.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
 
 static inline bool
 streamer_collect(Streamer* self)
@@ -245,7 +245,7 @@ streamer_task_main(void* arg)
 	uint64_t id = coroutine_create(streamer_main, self);
 	for (;;)
 	{
-		auto buf = channel_read(&so_task->channel, -1);
+		auto buf = channel_read(&am_task->channel, -1);
 		guard(buf_free, buf);
 		rpc_execute(buf, streamer_shutdown, &id);
 		break;

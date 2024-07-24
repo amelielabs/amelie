@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -18,7 +18,7 @@ static inline ReplicaConfig*
 replica_config_allocate(void)
 {
 	ReplicaConfig* self;
-	self = so_malloc(sizeof(*self));
+	self = am_malloc(sizeof(*self));
 	uuid_init(&self->id);
 	str_init(&self->uri);
 	return self;
@@ -28,7 +28,7 @@ static inline void
 replica_config_free(ReplicaConfig* self)
 {
 	str_free(&self->uri);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void
