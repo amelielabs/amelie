@@ -1,12 +1,12 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
 
 static void
 resolver_main(void* arg)
@@ -14,7 +14,7 @@ resolver_main(void* arg)
 	unused(arg);
 	for (bool active = true; active;)
 	{
-		auto buf = channel_read(&so_task->channel, -1);
+		auto buf = channel_read(&am_task->channel, -1);
 		auto rpc = rpc_of(buf);
 		buf_free(buf);
 		switch (rpc->id) {

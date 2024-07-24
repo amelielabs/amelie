@@ -1,11 +1,11 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
+#include <amelie_runtime.h>
 
 static inline void
 report_write(const char* file,
@@ -13,24 +13,24 @@ report_write(const char* file,
              const char* prefix,
              const char* text)
 {
-	auto self = so_self();
-	if (! so_task->log_write)
+	auto self = am_self();
+	if (! am_task->log_write)
 		return;
 
 	if (self->name[0] != 0)
-		so_task->log_write(so_task->log_write_arg,
+		am_task->log_write(am_task->log_write_arg,
 		                   file,
 		                   function,
 		                   line,
 		                   "%s %s  %s%s",
-		                   so_task->name, self->name, prefix, text);
+		                   am_task->name, self->name, prefix, text);
 	else
-		so_task->log_write(so_task->log_write_arg,
+		am_task->log_write(am_task->log_write_arg,
 		                   file,
 		                   function,
 		                   line,
 		                   "%s  %s%s",
-		                   so_task->name, prefix, text);
+		                   am_task->name, prefix, text);
 }
 
 void
@@ -65,7 +65,7 @@ report_throw(const char* file,
 		prefix = "";
 	report_write(file, function, line, prefix, text);
 
-	auto self = so_self();
+	auto self = am_self();
 	error_throw(&self->error,
 	            &self->exception_mgr,
 	            file,

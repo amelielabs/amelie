@@ -1,68 +1,68 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
 enum
 {
-	SO_NULL      = 0,
+	AM_NULL      = 0,
 
-	SO_TRUE      = 1,
-	SO_FALSE     = 2,
-	SO_REAL32    = 3,
-	SO_REAL64    = 4,
+	AM_TRUE      = 1,
+	AM_FALSE     = 2,
+	AM_REAL32    = 3,
+	AM_REAL64    = 4,
 
-	SO_INTV0     = 5,  // reserved values from 0 .. 31
-	SO_INTV31    = 37,
-	SO_INT8      = 38,
-	SO_INT16     = 39,
-	SO_INT32     = 40,
-	SO_INT64     = 41,
+	AM_INTV0     = 5,  // reserved values from 0 .. 31
+	AM_INTV31    = 37,
+	AM_INT8      = 38,
+	AM_INT16     = 39,
+	AM_INT32     = 40,
+	AM_INT64     = 41,
 
-	SO_STRINGV0  = 42, // reserved values from 0 .. 31
-	SO_STRINGV31 = 74,
-	SO_STRING8   = 75,
-	SO_STRING16  = 76,
-	SO_STRING32  = 77,
+	AM_STRINGV0  = 42, // reserved values from 0 .. 31
+	AM_STRINGV31 = 74,
+	AM_STRING8   = 75,
+	AM_STRING16  = 76,
+	AM_STRING32  = 77,
 
-	SO_MAP       = 78,
-	SO_MAP_END   = 79,
-	SO_ARRAY     = 80,
-	SO_ARRAY_END = 81,
+	AM_MAP       = 78,
+	AM_MAP_END   = 79,
+	AM_ARRAY     = 80,
+	AM_ARRAY_END = 81,
 
-	SO_INTERVAL  = 82,
-	SO_TS        = 83,
-	SO_TSTZ      = 84
+	AM_INTERVAL  = 82,
+	AM_TS        = 83,
+	AM_TSTZ      = 84
 };
 
 static inline char*
 type_to_string(int type)
 {
 	switch (type) {
-	case SO_TRUE:
-	case SO_FALSE:
+	case AM_TRUE:
+	case AM_FALSE:
 		return "bool";
-	case SO_NULL:
+	case AM_NULL:
 		return "null";
-	case SO_REAL32:
-	case SO_REAL64:
+	case AM_REAL32:
+	case AM_REAL64:
 		return "real";
-	case SO_INTV0 ... SO_INT64:
+	case AM_INTV0 ... AM_INT64:
 		return "int";
-	case SO_STRINGV0 ... SO_STRING32:
+	case AM_STRINGV0 ... AM_STRING32:
 		return "string";
-	case SO_MAP ... SO_MAP_END:
+	case AM_MAP ... AM_MAP_END:
 		return "map";
-	case SO_ARRAY ... SO_ARRAY_END:
+	case AM_ARRAY ... AM_ARRAY_END:
 		return "array";
-	case SO_INTERVAL:
+	case AM_INTERVAL:
 		return "interval";
-	case SO_TS:
+	case AM_TS:
 		return "timestamp";
-	case SO_TSTZ:
+	case AM_TSTZ:
 		return "timestamptz";
 	}
 	return "<unknown>";

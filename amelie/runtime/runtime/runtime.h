@@ -1,25 +1,25 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
 // memory
 static inline void*
-so_malloc(size_t size)
+am_malloc(size_t size)
 {
-	auto ptr = so_malloc_nothrow(size);
+	auto ptr = am_malloc_nothrow(size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
 }
 
 static inline void*
-so_realloc(void* pointer, size_t size)
+am_realloc(void* pointer, size_t size)
 {
-	auto ptr = so_realloc_nothrow(pointer, size);
+	auto ptr = am_realloc_nothrow(pointer, size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
@@ -28,7 +28,7 @@ so_realloc(void* pointer, size_t size)
 static inline void*
 palloc(size_t size)
 {
-	auto ptr = arena_allocate_nothrow(&so_self()->arena, size);
+	auto ptr = arena_allocate_nothrow(&am_self()->arena, size);
 	if (unlikely(ptr == NULL))
 		error_system();
 	return ptr;
@@ -37,20 +37,20 @@ palloc(size_t size)
 static inline int
 palloc_snapshot(void)
 {
-	return so_self()->arena.offset;
+	return am_self()->arena.offset;
 }
 
 static inline void
 palloc_truncate(int snapshot)
 {
-	arena_truncate(&so_self()->arena, snapshot);
+	arena_truncate(&am_self()->arena, snapshot);
 }
 
 // string
 static inline int
 str_strndup_nothrow(Str* self, const void* string, int size)
 {
-	char* pos = so_malloc_nothrow(size + 1);
+	char* pos = am_malloc_nothrow(size + 1);
 	if (unlikely(pos == NULL))
 		return -1;
 	memcpy(pos, string, size);
@@ -82,7 +82,7 @@ str_copy(Str* self, Str* src)
 static inline Buf*
 buf_create(void)
 {
-	auto self = buf_create_nothrow(&so_task->buf_cache, 0);
+	auto self = buf_create_nothrow(&am_task->buf_cache, 0);
 	if (unlikely(self == NULL))
 		error_system();
 	return self;
@@ -92,14 +92,14 @@ static inline Buf*
 buf_begin(void)
 {
 	auto self = buf_create();
-	buf_list_add(&so_self()->buf_list, self);
+	buf_list_add(&am_self()->buf_list, self);
 	return self;
 }
 
 static inline Buf*
 buf_end(Buf* self)
 {
-	buf_list_delete(&so_self()->buf_list, self);
+	buf_list_delete(&am_self()->buf_list, self);
 	return self;
 }
 
@@ -199,7 +199,7 @@ hot static inline bool
 event_wait(Event* self, int time_ms)
 {
 	cancellation_point();
-	bool timedout = wait_event(self, &so_task->timer_mgr, so_self(), time_ms);
+	bool timedout = wait_event(self, &am_task->timer_mgr, am_self(), time_ms);
 	cancellation_point();
 	return timedout;
 }
@@ -208,14 +208,14 @@ event_wait(Event* self, int time_ms)
 static inline Condition*
 condition_create(void)
 {
-	auto self = condition_create_nothrow(&so_task->condition_cache);
+	auto self = condition_create_nothrow(&am_task->condition_cache);
 	if (unlikely(self == NULL))
 		error_system();
 	int rc;
-	rc = condition_attach(self, &so_task->poller);
+	rc = condition_attach(self, &am_task->poller);
 	if (unlikely(rc == -1))
 	{
-		condition_cache_push(&so_task->condition_cache, self);
+		condition_cache_push(&am_task->condition_cache, self);
 		error_system();
 	}
 	return self;
@@ -224,7 +224,7 @@ condition_create(void)
 static inline void
 condition_free(Condition* self)
 {
-	condition_cache_push(&so_task->condition_cache, self);
+	condition_cache_push(&am_task->condition_cache, self);
 }
 
 hot static inline bool
@@ -238,7 +238,7 @@ static inline uint64_t
 coroutine_create(MainFunction function, void* arg)
 {
 	auto coro =
-		coroutine_mgr_create(&so_task->coroutine_mgr, task_coroutine_main,
+		coroutine_mgr_create(&am_task->coroutine_mgr, task_coroutine_main,
 		                     function, arg);
 	if (unlikely(coro == NULL))
 		error_system();
@@ -248,19 +248,19 @@ coroutine_create(MainFunction function, void* arg)
 static inline void
 coroutine_wait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&so_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
-	auto self = so_self();
+	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &so_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
 	coroutine_cancel_resume(self);
 }
 
 static inline void
 coroutine_kill_nowait(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&so_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
@@ -269,13 +269,13 @@ coroutine_kill_nowait(uint64_t id)
 static inline void
 coroutine_kill(uint64_t id)
 {
-	auto coro = coroutine_mgr_find(&so_task->coroutine_mgr, id);
+	auto coro = coroutine_mgr_find(&am_task->coroutine_mgr, id);
 	if (coro == NULL)
 		return;
 	coroutine_cancel(coro);
-	auto self = so_self();
+	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &so_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
 	coroutine_cancel_resume(self);
 }
 
@@ -304,9 +304,9 @@ task_create(Task*        self,
 {
 	int rc;
 	rc = task_create_nothrow(self, name, main, main_arg,
-	                         so_task->main_arg_global,
-	                         so_task->log_write,
-	                         so_task->log_write_arg);
+	                         am_task->main_arg_global,
+	                         am_task->log_write,
+	                         am_task->log_write_arg);
 	if (unlikely(rc == -1))
 		error_system();
 }
@@ -315,5 +315,5 @@ task_create(Task*        self,
 static inline uint64_t
 time_ms(void)
 {
-	return timer_mgr_time_ms(&so_task->timer_mgr);
+	return timer_mgr_time_ms(&am_task->timer_mgr);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -9,7 +9,7 @@
 always_inline static inline Guard*
 guard_pop(void)
 {
-	auto exception = so_self()->exception_mgr.last;
+	auto exception = am_self()->exception_mgr.last;
 	auto self = exception->guard_stack;
 	exception->guard_stack = self->prev;
 	return self;
@@ -38,7 +38,7 @@ unguard(void)
 		.function = (GuardFunction)func, \
 		.function_arg = func_arg, \
 		.prev = ({ \
-			auto exception = so_self()->exception_mgr.last; \
+			auto exception = am_self()->exception_mgr.last; \
 			auto prev = exception->guard_stack; \
 			exception->guard_stack = &self; \
 			prev; \

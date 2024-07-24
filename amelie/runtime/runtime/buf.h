@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -34,9 +34,9 @@ static inline void
 buf_free_memory(Buf* self)
 {
 	if (self->start)
-		so_free(self->start);
+		am_free(self->start);
 	if (self->cache)
-		so_free(self);
+		am_free(self);
 }
 
 static inline int
@@ -81,7 +81,7 @@ buf_reserve_nothrow(Buf* self, int size)
 		size_grow = size_actual;
 
 	uint8_t* pointer;
-	pointer = so_realloc_nothrow(self->start, size_grow);
+	pointer = am_realloc_nothrow(self->start, size_grow);
 	if (unlikely(pointer == NULL))
 		return -1;
 

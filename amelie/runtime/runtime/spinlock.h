@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -41,9 +41,9 @@ spinlock_unlock(Spinlock* self)
 typedef uint8_t Spinlock;
 
 #if defined(__x86_64__) || defined(__i386) || defined(_X86_)
-#  define SO_SPINLOCK_BACKOFF __asm__ ("pause")
+#  define AM_SPINLOCK_BACKOFF __asm__ ("pause")
 #else
-#  define SO_SPINLOCK_BACKOFF
+#  define AM_SPINLOCK_BACKOFF
 #endif
 
 static inline void
@@ -64,7 +64,7 @@ spinlock_lock(Spinlock* self)
 	if (__sync_lock_test_and_set(self, 1) != 0) {
 		unsigned int spcount = 0U;
 		for (;;) {
-			SO_SPINLOCK_BACKOFF;
+			AM_SPINLOCK_BACKOFF;
 			if (*self == 0U && __sync_lock_test_and_set(self, 1) == 0)
 				break;
 			if (++spcount > 100U)

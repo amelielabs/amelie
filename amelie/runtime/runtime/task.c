@@ -1,13 +1,13 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
+#include <amelie_runtime.h>
 
-__thread Task* so_task;
+__thread Task* am_task;
 
 static inline void
 task_shutdown(CoroutineMgr* mgr)
@@ -24,7 +24,7 @@ task_shutdown(CoroutineMgr* mgr)
 	}
 
 	// wait for completion
-	wait_event(&mgr->on_exit, &so_task->timer_mgr, so_self(), -1);
+	wait_event(&mgr->on_exit, &am_task->timer_mgr, am_self(), -1);
 }
 
 hot void
@@ -50,10 +50,10 @@ task_coroutine_main(void* arg)
 	}
 
 	// main exit
-	if (coro == so_task->main_coroutine)
+	if (coro == am_task->main_coroutine)
 	{
 		if (e.triggered)
-			thread_status_set(&so_task->thread_status, -1);
+			thread_status_set(&am_task->thread_status, -1);
 
 		// cancel all coroutines, except current one
 		task_shutdown(mgr);
@@ -128,7 +128,7 @@ task_main(void* arg)
 	Task* self = thread->arg;
 
 	// set global variable
-	so_task = self;
+	am_task = self;
 
 	// block signals
 	thread_set_sigmask_default();

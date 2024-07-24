@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -57,7 +57,7 @@ coroutine_free(Coroutine* self)
 	buf_list_free(&self->buf_list);
 	arena_reset(&self->arena);
 	context_stack_free(&self->stack);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -63,7 +63,7 @@ msg_error_rethrow(Buf* buf)
 	char sz[1024];
 	snprintf(sz, sizeof(sz), "%.*s", str_size(&text), str_of(&text));
 
-	auto self = so_self();
+	auto self = am_self();
 	error_throw(&self->error,
 	            &self->exception_mgr,
 	            source_file,

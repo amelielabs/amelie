@@ -1,11 +1,11 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
+#include <amelie_runtime.h>
 
 void
 channel_init(Channel* self)
@@ -34,7 +34,7 @@ channel_attach(Channel* self)
 {
 	if (self->on_write.attached)
 		return;
-	int rc = channel_attach_to(self, &so_task->poller);
+	int rc = channel_attach_to(self, &am_task->poller);
 	if (unlikely(rc == -1))
 		error_system();
 }

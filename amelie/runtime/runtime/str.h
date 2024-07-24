@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -27,7 +27,7 @@ static inline void
 str_free(Str* self)
 {
 	if (self->allocated)
-		so_free(self->pos);
+		am_free(self->pos);
 	str_init(self);
 }
 

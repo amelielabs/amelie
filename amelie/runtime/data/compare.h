@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -76,8 +76,8 @@ data_compare(uint8_t* a, uint8_t* b)
 	do
 	{
 		switch (*a) {
-		case SO_TRUE:
-		case SO_FALSE:
+		case AM_TRUE:
+		case AM_FALSE:
 		{
 			if (! data_is_bool(b))
 				return compare_int64(*a, *b);
@@ -90,7 +90,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case SO_NULL:
+		case AM_NULL:
 		{
 			if (! data_is_null(b))
 				return compare_int64(*a, *b);
@@ -98,8 +98,8 @@ data_compare(uint8_t* a, uint8_t* b)
 			data_skip(&b);
 			break;
 		}
-		case SO_REAL32:
-		case SO_REAL64:
+		case AM_REAL32:
+		case AM_REAL64:
 		{
 			if (! data_is_real(b))
 				return compare_int64(*a, *b);
@@ -111,7 +111,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				break;
 			return (a_value > b_value) ? 1 : -1;
 		}
-		case SO_INTV0 ... SO_INT64:
+		case AM_INTV0 ... AM_INT64:
 		{
 			if (! data_is_integer(b))
 				return compare_int64(*a, *b);
@@ -120,7 +120,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case SO_STRINGV0 ... SO_STRING32:
+		case AM_STRINGV0 ... AM_STRING32:
 		{
 			if (! data_is_string(b))
 				return compare_int64(*a, *b);
@@ -129,7 +129,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case SO_ARRAY:
+		case AM_ARRAY:
 		{
 			if (! data_is_array(b))
 				return compare_int64(*a, *b);
@@ -138,7 +138,7 @@ data_compare(uint8_t* a, uint8_t* b)
 			level++;
 			break;
 		}
-		case SO_ARRAY_END:
+		case AM_ARRAY_END:
 		{
 			if (! data_is_array_end(b))
 				return compare_int64(*a, *b);
@@ -147,7 +147,7 @@ data_compare(uint8_t* a, uint8_t* b)
 			level--;
 			break;
 		}
-		case SO_MAP:
+		case AM_MAP:
 		{
 			if (! data_is_map(b))
 				return compare_int64(*a, *b);
@@ -156,7 +156,7 @@ data_compare(uint8_t* a, uint8_t* b)
 			level++;
 			break;
 		}
-		case SO_MAP_END:
+		case AM_MAP_END:
 		{
 			if (! data_is_map_end(b))
 				return compare_int64(*a, *b);
@@ -165,7 +165,7 @@ data_compare(uint8_t* a, uint8_t* b)
 			level--;
 			break;
 		}
-		case SO_INTERVAL:
+		case AM_INTERVAL:
 		{
 			if (! data_is_interval(b))
 				return compare_int64(*a, *b);
@@ -178,7 +178,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case SO_TS:
+		case AM_TS:
 		{
 			if (! data_is_timestamp(b))
 				return compare_int64(*a, *b);
@@ -187,7 +187,7 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case SO_TSTZ:
+		case AM_TSTZ:
 		{
 			if (! data_is_timestamptz(b))
 				return compare_int64(*a, *b);

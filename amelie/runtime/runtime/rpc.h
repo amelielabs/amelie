@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -55,7 +55,7 @@ rpc_execute(Buf* buf,
 		callback(rpc, callback_arg);
 	leave(&e);
 	if (unlikely(e.triggered))
-		*rpc->error = so_self()->error;
+		*rpc->error = am_self()->error;
 	rpc_done(rpc);
 }
 
@@ -72,7 +72,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
-	auto error = &so_self()->error;
+	auto error = &am_self()->error;
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -37,7 +37,7 @@ locker_cache_free(LockerCache* self)
 	list_foreach_safe(&self->list)
 	{
 		auto locker = list_at(Locker, link);
-		so_free(locker);
+		am_free(locker);
 	}
 }
 
@@ -52,13 +52,13 @@ locker_cache_pop(LockerCache* self)
 		self->list_count--;
 	} else
 	{
-		locker = so_malloc(sizeof(Locker));
+		locker = am_malloc(sizeof(Locker));
 		list_init(&locker->link);
 	}
 	locker->refs      = 0;
 	locker->lock      = NULL;
 	locker->shared    = false;
-	locker->coroutine = so_self();
+	locker->coroutine = am_self();
 	return locker;
 }
 

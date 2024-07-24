@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -68,7 +68,7 @@ buf_create_nothrow(BufCache* self, int size)
 		buf_reset(buf);
 	} else
 	{
-		buf = so_malloc_nothrow(sizeof(Buf));
+		buf = am_malloc_nothrow(sizeof(Buf));
 		if (unlikely(buf == NULL))
 			return NULL;
 		buf_init(buf);

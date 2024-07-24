@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -26,7 +26,7 @@ struct Catalog
 static inline Catalog*
 catalog_allocate(char* name, CatalogIf* iface, void* iface_arg)
 {
-	auto self = (Catalog*)so_malloc(sizeof(Catalog));
+	auto self = (Catalog*)am_malloc(sizeof(Catalog));
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	str_set_cstr(&self->name, name);
@@ -37,5 +37,5 @@ catalog_allocate(char* name, CatalogIf* iface, void* iface_arg)
 static inline void
 catalog_free(Catalog* self)
 {
-	so_free(self);
+	am_free(self);
 }

@@ -1,5 +1,5 @@
 #
-# sonata runtime makefile
+# amelie runtime makefile
 #
 CC             = clang
 AR             = ar
@@ -12,7 +12,7 @@ CFLAGS_INCLUDE = -I. \
                  -Idata \
                  -Iconfig
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-runtime.a
+LIB            = libamelie-runtime.a
 OBJECTS        = \
                  runtime/timer_mgr.o \
                  runtime/poller.o \

@@ -1,14 +1,14 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
 
 static void
 json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
@@ -16,12 +16,12 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 	char buf[256];
 	int  buf_len;
 	switch (**pos) {
-	case SO_NULL:
+	case AM_NULL:
 		data_read_null(pos);
 		buf_write(data, "null", 4);
 		break;
-	case SO_TRUE:
-	case SO_FALSE:
+	case AM_TRUE:
+	case AM_FALSE:
 	{
 		bool value;
 		data_read_bool(pos, &value);
@@ -31,8 +31,8 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 			buf_write(data, "false", 5);
 		break;
 	}
-	case SO_REAL32:
-	case SO_REAL64:
+	case AM_REAL32:
+	case AM_REAL64:
 	{
 		double value;
 		data_read_real(pos, &value);
@@ -40,7 +40,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, buf, buf_len);
 		break;
 	}
-	case SO_INTV0 ... SO_INT64:
+	case AM_INTV0 ... AM_INT64:
 	{
 		int64_t value;
 		data_read_integer(pos, &value);
@@ -48,7 +48,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, buf, buf_len);
 		break;
 	}
-	case SO_STRINGV0 ... SO_STRING32:
+	case AM_STRINGV0 ... AM_STRING32:
 	{
 		// todo: quouting
 		char* value;
@@ -59,7 +59,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case SO_ARRAY:
+	case AM_ARRAY:
 	{
 		data_read_array(pos);
 		buf_write(data, "[", 1);
@@ -73,7 +73,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "]", 1);
 		break;
 	}
-	case SO_MAP:
+	case AM_MAP:
 	{
 		data_read_map(pos);
 		if (pretty)
@@ -115,7 +115,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		}
 		break;
 	}
-	case SO_INTERVAL:
+	case AM_INTERVAL:
 	{
 		Interval iv;
 		interval_init(&iv);
@@ -126,7 +126,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case SO_TS:
+	case AM_TS:
 	{
 		int64_t value;
 		data_read_timestamp(pos, &value);
@@ -136,7 +136,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case SO_TSTZ:
+	case AM_TSTZ:
 	{
 		// TODO: pass tz for correction
 		int64_t value;

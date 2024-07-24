@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -36,7 +36,7 @@ lock_init(Lock* self, LockerCache* locker_cache)
 hot static inline Locker*
 lock_lock(Lock* self, bool shared)
 {
-	auto coro = so_self();
+	auto coro = am_self();
 	bool wait = false;
 
 	Locker* locker = NULL;
@@ -103,7 +103,7 @@ lock_lock(Lock* self, bool shared)
 hot static inline void
 lock_unlock(Locker* locker)
 {
-	assert(locker->coroutine == so_self());
+	assert(locker->coroutine == am_self());
 	Lock* self = locker->lock;
 
 	// reentrant

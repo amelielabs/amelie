@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -27,12 +27,12 @@ struct Task
 	Thread         thread;
 };
 
-extern __thread Task* so_task;
+extern __thread Task* am_task;
 
 static inline Coroutine*
-so_self(void)
+am_self(void)
 {
-	return so_task->coroutine_mgr.current;
+	return am_task->coroutine_mgr.current;
 }
 
 void task_init(Task*);

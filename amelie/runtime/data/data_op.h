@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -13,49 +13,49 @@ data_skip(uint8_t** pos)
 	do
 	{
 		switch (**pos) {
-		case SO_TRUE:
-		case SO_FALSE:
+		case AM_TRUE:
+		case AM_FALSE:
 		{
 			bool value;
 			data_read_bool(pos, &value);
 			break;
 		}
-		case SO_NULL:
+		case AM_NULL:
 		{
 			data_read_null(pos);
 			break;
 		}
-		case SO_REAL32:
-		case SO_REAL64:
+		case AM_REAL32:
+		case AM_REAL64:
 		{
 			double value;
 			data_read_real(pos, &value);
 			break;
 		}
-		case SO_INTV0 ... SO_INT64:
+		case AM_INTV0 ... AM_INT64:
 		{
 			int64_t value;
 			data_read_integer(pos, &value);
 			break;
 		}
-		case SO_STRINGV0 ... SO_STRING32:
+		case AM_STRINGV0 ... AM_STRING32:
 		{
 			int   value_size;
 			char* value;
 			data_read_raw(pos, &value, &value_size);
 			break;
 		}
-		case SO_ARRAY:
-		case SO_MAP:
+		case AM_ARRAY:
+		case AM_MAP:
 			*pos += data_size_type();
 			level++;
 			break;
-		case SO_ARRAY_END:
-		case SO_MAP_END:
+		case AM_ARRAY_END:
+		case AM_MAP_END:
 			*pos += data_size_type();
 			level--;
 			break;
-		case SO_INTERVAL:
+		case AM_INTERVAL:
 		{
 			*pos += data_size_type();
 			int64_t value;
@@ -64,8 +64,8 @@ data_skip(uint8_t** pos)
 			data_read_integer(pos, &value);
 			break;
 		}
-		case SO_TS:
-		case SO_TSTZ:
+		case AM_TS:
+		case AM_TSTZ:
 		{
 			int64_t value;
 			data_read_timestamp(pos, &value);

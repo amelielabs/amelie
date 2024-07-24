@@ -1,12 +1,12 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
 
 void
 tcp_init(Tcp* self)
@@ -106,7 +106,7 @@ tcp_attach(Tcp* self)
 {
 	assert(self->poller == NULL);
 	assert(self->fd.fd != -1);
-	auto poller = &so_task->poller;
+	auto poller = &am_task->poller;
 	int rc;
 	rc = poller_add(poller, &self->fd);
 	if (unlikely(rc == -1))

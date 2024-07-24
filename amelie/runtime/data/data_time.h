@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -20,8 +20,8 @@ data_size_interval(Interval* iv)
 always_inline hot static inline void
 data_read_interval(uint8_t** pos, Interval* iv)
 {
-	if (unlikely(**pos != SO_INTERVAL))
-		data_error(*pos, SO_INTERVAL);
+	if (unlikely(**pos != AM_INTERVAL))
+		data_error(*pos, AM_INTERVAL);
 	*pos += data_size_type();
 	int64_t value;
 	data_read_integer(pos, &value);
@@ -36,7 +36,7 @@ always_inline hot static inline void
 data_write_interval(uint8_t** pos, Interval* iv)
 {
 	uint8_t* data = *pos;
-	*data = SO_INTERVAL;
+	*data = AM_INTERVAL;
 	*pos += data_size_type();
 	data_write_integer(pos, iv->m);
 	data_write_integer(pos, iv->d);
@@ -46,7 +46,7 @@ data_write_interval(uint8_t** pos, Interval* iv)
 always_inline hot static inline bool
 data_is_interval(uint8_t* data)
 {
-	return *data >= SO_INTERVAL;
+	return *data >= AM_INTERVAL;
 }
 
 // timestamp
@@ -60,8 +60,8 @@ data_size_timestamp(uint64_t value)
 always_inline hot static inline void
 data_read_timestamp(uint8_t** pos, int64_t* value)
 {
-	if (unlikely(**pos != SO_TS && **pos != SO_TSTZ))
-		data_error(*pos, SO_TS);
+	if (unlikely(**pos != AM_TS && **pos != AM_TSTZ))
+		data_error(*pos, AM_TS);
 	*pos += data_size_type();
 	data_read_integer(pos, value);
 }
@@ -70,7 +70,7 @@ always_inline hot static inline void
 data_write_timestamp(uint8_t** pos, uint64_t value)
 {
 	uint8_t* data = *pos;
-	*data = SO_TS;
+	*data = AM_TS;
 	*pos += data_size_type();
 	data_write_integer(pos, value);
 }
@@ -79,7 +79,7 @@ always_inline hot static inline void
 data_write_timestamptz(uint8_t** pos, uint64_t value)
 {
 	uint8_t* data = *pos;
-	*data = SO_TSTZ;
+	*data = AM_TSTZ;
 	*pos += data_size_type();
 	data_write_integer(pos, value);
 }
@@ -87,13 +87,13 @@ data_write_timestamptz(uint8_t** pos, uint64_t value)
 always_inline hot static inline bool
 data_is_timestamp(uint8_t* data)
 {
-	return *data == SO_TS;
+	return *data == AM_TS;
 }
 
 always_inline hot static inline bool
 data_is_timestamptz(uint8_t* data)
 {
-	return *data == SO_TSTZ;
+	return *data == AM_TSTZ;
 }
 
 always_inline hot static inline bool

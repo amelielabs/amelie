@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -17,7 +17,7 @@ struct Global
 	Resolver* resolver;
 };
 
-#define global() ((Global*)so_task->main_arg_global)
+#define global() ((Global*)am_task->main_arg_global)
 #define config()  global()->config
 
 // control

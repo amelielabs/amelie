@@ -1,11 +1,11 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
+#include <amelie_runtime.h>
 
 void
 timer_mgr_init(TimerMgr* self)
@@ -24,7 +24,7 @@ void
 timer_mgr_free(TimerMgr* self)
 {
 	if (self->timers)
-		so_free(self->timers);
+		am_free(self->timers);
 }
 
 uint64_t
@@ -99,7 +99,7 @@ timer_mgr_add(TimerMgr* self, Timer* timer)
 	if (self->timers == NULL || count >= self->timers_max)
 	{
 		int   timers_max = self->timers_max * 2;
-		void* timers = so_realloc_nothrow(self->timers, timers_max * sizeof(Timer*));
+		void* timers = am_realloc_nothrow(self->timers, timers_max * sizeof(Timer*));
 		if (unlikely(timers == NULL))
 			return -1;
 		self->timers = timers;
