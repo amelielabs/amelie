@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -19,7 +19,7 @@ static inline SchemaConfig*
 schema_config_allocate(void)
 {
 	SchemaConfig* self;
-	self = so_malloc(sizeof(SchemaConfig));
+	self = am_malloc(sizeof(SchemaConfig));
 	self->system = false;
 	self->create = false;
 	str_init(&self->name);
@@ -30,7 +30,7 @@ static inline void
 schema_config_free(SchemaConfig* self)
 {
 	str_free(&self->name);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,7 +22,7 @@ struct Key
 static inline Key*
 key_allocate(void)
 {
-	Key* self = so_malloc(sizeof(Key));
+	Key* self = am_malloc(sizeof(Key));
 	self->order  = -1;
 	self->column = NULL;
 	self->ref    = -1;
@@ -37,7 +37,7 @@ static inline void
 key_free(Key* self)
 {
 	str_free(&self->path);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

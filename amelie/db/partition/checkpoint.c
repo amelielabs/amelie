@@ -1,19 +1,19 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
 
 void
 checkpoint_init(Checkpoint* self)
@@ -36,7 +36,7 @@ checkpoint_free(Checkpoint* self)
 			if (worker->on_complete)
 				condition_free(worker->on_complete);
 		}
-		so_free(self->workers);
+		am_free(self->workers);
 	}
 	self->workers = NULL;
 	self->workers_count = 0;
@@ -52,7 +52,7 @@ checkpoint_begin(Checkpoint* self, CatalogMgr* catalog,
 	self->catalog = catalog_mgr_dump(catalog);
 	self->lsn = lsn;
 	self->workers_count = workers;
-	self->workers = so_malloc(sizeof(CheckpointWorker) * workers);
+	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto worker = &self->workers[i];

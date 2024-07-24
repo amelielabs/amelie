@@ -1,18 +1,18 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
 
 hot static bool
 index_hash_set(Index* arg, Ref* key, Ref* prev)
@@ -83,13 +83,13 @@ index_hash_free(Index* arg)
 {
 	auto self = index_hash_of(arg);
 	hash_free(&self->hash);
-	so_free(self);
+	am_free(self);
 }
 
 Index*
 index_hash_allocate(IndexConfig* config)
 {
-	auto self = (IndexHash*)so_malloc(sizeof(IndexHash));
+	auto self = (IndexHash*)am_malloc(sizeof(IndexHash));
 	index_init(&self->index, config);
 	hash_init(&self->hash);
 	guard(index_hash_free, self);

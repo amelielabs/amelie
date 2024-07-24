@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -29,7 +29,7 @@ static inline IndexConfig*
 index_config_allocate(Columns* columns)
 {
 	IndexConfig *self;
-	self = so_malloc(sizeof(IndexConfig));
+	self = am_malloc(sizeof(IndexConfig));
 	self->type    = INDEX_UNDEF;
 	self->unique  = false;
 	self->primary = false;
@@ -44,7 +44,7 @@ index_config_free(IndexConfig* self)
 {
 	str_free(&self->name);
 	keys_free(&self->keys);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

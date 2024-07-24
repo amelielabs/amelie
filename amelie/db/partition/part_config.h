@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -21,7 +21,7 @@ static inline PartConfig*
 part_config_allocate(void)
 {
 	PartConfig* self;
-	self = so_malloc(sizeof(PartConfig));
+	self = am_malloc(sizeof(PartConfig));
 	self->id  = 0;
 	self->min = 0;
 	self->max = 0;
@@ -33,7 +33,7 @@ part_config_allocate(void)
 static inline void
 part_config_free(PartConfig* self)
 {
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

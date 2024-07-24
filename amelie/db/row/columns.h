@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -39,14 +39,14 @@ columns_free(Columns* self)
 		column_free(column);
 	}
 	if (self->index)
-		so_free(self->index);
+		am_free(self->index);
 }
 
 static inline void
 columns_add(Columns* self, Column* column)
 {
 	Column** index;
-	index = so_realloc(self->index, sizeof(Column*) * (self->list_count + 1));
+	index = am_realloc(self->index, sizeof(Column*) * (self->list_count + 1));
 	column->order = self->list_count;
 	list_append(&self->list, &column->link);
 	self->list_count++;
@@ -59,7 +59,7 @@ columns_del(Columns* self, int at)
 {
 	assert(self->list_count > 1);
 	Column** index;
-	index = so_realloc(self->index, sizeof(Column*) * (self->list_count - 1));
+	index = am_realloc(self->index, sizeof(Column*) * (self->list_count - 1));
 	int order = 0;
 	list_foreach_safe(&self->list)
 	{

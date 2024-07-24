@@ -1,5 +1,5 @@
 #
-# sonata db makefile
+# amelie db makefile
 #
 CC             = clang
 AR             = ar
@@ -19,7 +19,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-db.a
+LIB            = libamelie-db.a
 OBJECTS        = \
                  row/row.o \
                  transaction/handle_mgr.o \

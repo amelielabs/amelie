@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -61,7 +61,7 @@ hash_store_free(HashStore* self)
 	{
 		if (self->keys->primary)
 			hash_store_free_rows(self);
-		so_free(self->store);
+		am_free(self->store);
 	}
 	self->store = NULL;
 	self->count = 0;
@@ -81,7 +81,7 @@ hash_store_create(HashStore* self, Keys* keys, size_t size)
 	size_t allocated = keys->key_size * size;
 	self->keys  = keys;
 	self->size  = size;
-	self->store = so_malloc(allocated);
+	self->store = am_malloc(allocated);
 	memset(self->store, 0, allocated);
 }
 

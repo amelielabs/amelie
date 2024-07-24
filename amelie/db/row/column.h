@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,7 +22,7 @@ struct Column
 static inline Column*
 column_allocate(void)
 {
-	Column* self = so_malloc(sizeof(Column));
+	Column* self = am_malloc(sizeof(Column));
 	self->order = 0;
 	self->key   = false; 
 	self->type  = -1;
@@ -37,7 +37,7 @@ column_free(Column* self)
 {
 	str_free(&self->name);
 	constraint_free(&self->constraint);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

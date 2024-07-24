@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,13 +22,13 @@ table_free(Table* self)
 	part_list_free(&self->part_list);
 	if (self->config)
 		table_config_free(self->config);
-	so_free(self);
+	am_free(self);
 }
 
 static inline Table*
 table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
-	Table* self = so_malloc(sizeof(Table));
+	Table* self = am_malloc(sizeof(Table));
 	self->config = NULL;
 	part_list_init(&self->part_list, part_mgr);
 	serial_init(&self->serial);

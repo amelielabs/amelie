@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -19,13 +19,13 @@ view_free(View* self)
 {
 	if (self->config)
 		view_config_free(self->config);
-	so_free(self);
+	am_free(self);
 }
 
 static inline View*
 view_allocate(ViewConfig* config)
 {
-	View* self = so_malloc(sizeof(View));
+	View* self = am_malloc(sizeof(View));
 	self->config = NULL;
 	guard(view_free, self);
 	self->config = view_config_copy(config);

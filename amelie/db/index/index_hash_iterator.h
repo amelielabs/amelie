@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -55,13 +55,13 @@ index_hash_iterator_close(Iterator* arg)
 {
 	auto self = index_hash_iterator_of(arg);
 	hash_iterator_close(&self->iterator);
-	so_free(arg);
+	am_free(arg);
 }
 
 static inline Iterator*
 index_hash_iterator_allocate(IndexHash* index)
 {
-	IndexHashIterator* self = so_malloc(sizeof(*self));
+	IndexHashIterator* self = am_malloc(sizeof(*self));
 	self->it.open  = index_hash_iterator_open;
 	self->it.has   = index_hash_iterator_has;
 	self->it.at    = index_hash_iterator_at;

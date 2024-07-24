@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -27,7 +27,7 @@ static inline void
 part_map_free(PartMap* self)
 {
 	if (self->map)
-		so_free(self->map);
+		am_free(self->map);
 }
 
 static inline void
@@ -35,7 +35,7 @@ part_map_create(PartMap* self)
 {
 	assert(! self->map);
 	int size = sizeof(Route*) * PARTITION_MAX;
-	self->map      = so_malloc(size);
+	self->map      = am_malloc(size);
 	self->map_size = PARTITION_MAX;
 	memset(self->map, 0, size);
 }

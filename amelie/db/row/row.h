@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -46,7 +46,7 @@ row_allocate(int data_size)
 
 	// allocate row
 	int size = sizeof(Row) + (1 + size_factor) + data_size;
-	Row* self = so_malloc(size);
+	Row* self = am_malloc(size);
 	self->size_factor = size_factor;
 	self->unused      = 0;
 
@@ -64,7 +64,7 @@ row_allocate(int data_size)
 always_inline static inline void
 row_free(Row* self)
 {
-	so_free(self);
+	am_free(self);
 }
 
 Row* row_create(Columns*, uint8_t**);

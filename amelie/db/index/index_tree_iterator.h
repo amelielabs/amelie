@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -55,13 +55,13 @@ index_tree_iterator_close(Iterator* arg)
 {
 	auto self = index_tree_iterator_of(arg);
 	tree_iterator_close(&self->iterator);
-	so_free(arg);
+	am_free(arg);
 }
 
 static inline Iterator*
 index_tree_iterator_allocate(IndexTree* index)
 {
-	IndexTreeIterator* self = so_malloc(sizeof(*self));
+	IndexTreeIterator* self = am_malloc(sizeof(*self));
 	self->it.open  = index_tree_iterator_open;
 	self->it.has   = index_tree_iterator_has;
 	self->it.at    = index_tree_iterator_at;

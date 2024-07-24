@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -24,7 +24,7 @@ static inline TableConfig*
 table_config_allocate(void)
 {
 	TableConfig* self;
-	self = so_malloc(sizeof(TableConfig));
+	self = am_malloc(sizeof(TableConfig));
 	self->reference        = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
@@ -55,7 +55,7 @@ table_config_free(TableConfig* self)
 	}
 
 	columns_free(&self->columns);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

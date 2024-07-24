@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -17,7 +17,7 @@ struct WalFile
 static inline WalFile*
 wal_file_allocate(uint64_t id)
 {
-	WalFile* self = so_malloc(sizeof(WalFile));
+	WalFile* self = am_malloc(sizeof(WalFile));
 	self->id = id;
 	file_init(&self->file);
 	return self;
@@ -26,7 +26,7 @@ wal_file_allocate(uint64_t id)
 static inline void
 wal_file_free(WalFile* self)
 {
-	so_free(self);
+	am_free(self);
 }
 
 static inline void
