@@ -1,24 +1,24 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_user.h>
-#include <sonata_http.h>
-#include <sonata_client.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
 
 Client*
 client_create(void)
 {
 	Client* self;
-	self = so_malloc(sizeof(Client));
+	self = am_malloc(sizeof(Client));
 	self->tls_context  = NULL;
 	self->coroutine_id = UINT64_MAX;
 	self->host         = NULL;
@@ -43,7 +43,7 @@ client_free(Client* self)
 		tls_context_free(self->tls_context);
 	uri_free(&self->uri);
 	tcp_free(&self->tcp);
-	so_free(self);
+	am_free(self);
 }
 
 void
@@ -51,7 +51,7 @@ client_set_coroutine_name(Client* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(so_self(), "client %s", addr);
+	coroutine_set_name(am_self(), "client %s", addr);
 }
 
 void
@@ -65,7 +65,7 @@ client_attach(Client* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
-	self->coroutine_id = so_self()->id;
+	self->coroutine_id = am_self()->id;
 }
 
 void

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -18,7 +18,7 @@ static inline UserConfig*
 user_config_allocate(void)
 {
 	UserConfig* self;
-	self = so_malloc(sizeof(*self));
+	self = am_malloc(sizeof(*self));
 	str_init(&self->name);
 	str_init(&self->secret);
 	return self;
@@ -29,7 +29,7 @@ user_config_free(UserConfig* self)
 {
 	str_free(&self->name);
 	str_free(&self->secret);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

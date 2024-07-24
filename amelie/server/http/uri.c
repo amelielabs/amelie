@@ -1,17 +1,17 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_user.h>
-#include <sonata_http.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_http.h>
 
 void
 uri_init(Uri* self)
@@ -35,7 +35,7 @@ uri_free(Uri* self)
 	{
 		auto host = list_at(UriHost, link);
 		str_free(&host->host);
-		so_free(host);
+		am_free(host);
 	}
 
 	list_foreach_safe(&self->args)
@@ -43,7 +43,7 @@ uri_free(Uri* self)
 		auto arg = list_at(UriArg, link);
 		str_free(&arg->name);
 		str_free(&arg->value);
-		so_free(arg);
+		am_free(arg);
 	}
 
 	str_free(&self->user);
@@ -107,7 +107,7 @@ uri_parse_user(Uri* self)
 static inline UriHost*
 uri_add_host(Uri* self)
 {
-	auto host = (UriHost*)so_malloc(sizeof(UriHost));
+	auto host = (UriHost*)am_malloc(sizeof(UriHost));
 	memset(host, 0, sizeof(*host));
 	host->port = 3485;
 	str_init(&host->host);
@@ -207,7 +207,7 @@ decode_hex(char digit)
 hot static inline void
 decode(Str* str, char* data, int data_size)
 {
-	char *start = so_malloc(data_size + 1);
+	char *start = am_malloc(data_size + 1);
 	char *pos = start;
 	int i = 0;
 	while (i < data_size)
@@ -234,7 +234,7 @@ decode(Str* str, char* data, int data_size)
 static inline UriArg*
 uri_add_arg(Uri* self)
 {
-	auto arg = (UriArg*)so_malloc(sizeof(UriArg));
+	auto arg = (UriArg*)am_malloc(sizeof(UriArg));
 	str_init(&arg->name);
 	str_init(&arg->value);
 	list_init(&arg->link);

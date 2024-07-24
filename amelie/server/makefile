@@ -1,5 +1,5 @@
 #
-# sonata server makefile
+# amelie server makefile
 #
 CC             = clang
 AR             = ar
@@ -17,7 +17,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iclient \
                  -Iserver
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-server.a
+LIB            = libamelie-server.a
 OBJECTS        = \
                  user/user_mgr.o \
                  http/http.o \

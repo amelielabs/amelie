@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,7 +22,7 @@ static inline ServerConfig*
 server_config_allocate(void)
 {
 	ServerConfig* self;
-	self = so_malloc(sizeof(*self));
+	self = am_malloc(sizeof(*self));
 	self->tls       = false;
 	self->host_addr = NULL;
 	self->port      = 3485;
@@ -39,7 +39,7 @@ server_config_free(ServerConfig* self)
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
 	str_free(&self->host);
-	so_free(self);
+	am_free(self);
 }
 
 static inline ServerConfig*
