@@ -33,6 +33,7 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-vm.a
 OBJECTS        = \
                  value/update.o \
+                 value/like.o \
                  aggr/set.o \
                  aggr/any.o \
                  aggr/all.o \

@@ -913,15 +913,15 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KAGGR:
 		return emit_aggregate(self, target, ast);
 
-	// CASE
+	// case
 	case KCASE:
 		return emit_case(self, target, ast);
 
-	// IN
+	// in
 	case KIN:
 		return emit_in(self, target, ast);
 
-	// ANY|ALL
+	// any|all
 	case KANY:
 	case KALL:
 		return emit_match(self, target, ast);
@@ -930,10 +930,28 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KEXISTS:
 	{
 		int r = emit_expr(self, target, ast->r);
-		int rc;
-		rc = op2(self, CEXISTS, rpin(self), r);
+		int rc = op2(self, CEXISTS, rpin(self), r);
 		runpin(self, r);
 		return rc;
+	}
+
+	// like
+	case KLIKE:
+	{
+		int rexpr    = emit_expr(self, target, ast->l);
+		int rpattern = emit_expr(self, target, ast->r);
+		int rresult  = op3(self, CLIKE, rpin(self), rexpr, rpattern);
+		runpin(self, rexpr);
+		runpin(self, rpattern);
+
+		// [not]
+		if (! ast->integer)
+		{
+			int rc = op2(self, CNOT, rpin(self), rresult);
+			runpin(self, rresult);
+			rresult = rc;
+		}
+		return rresult;
 	}
 
 	default:

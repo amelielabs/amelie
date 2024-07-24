@@ -41,6 +41,7 @@ priority_map[UINT8_MAX] =
 	['=']                      = 3,
 	[KNEQU]                    = 3,
 	[KIS]                      = 3,
+	[KLIKE]                    = 3,
 	// 4
 	[KGTE]                     = 4,
 	[KLTE]                     = 4,
@@ -575,13 +576,17 @@ parse_op(Stmt*     self, Expr* expr,
 	{
 		// expr NOT BETWEEN
 		// expr NOT IN
+		// expr NOT LIKE
 		if (stmt_if(self, KBETWEEN))
 			ast->id = KBETWEEN;
 		else
 		if (stmt_if(self, KIN))
 			ast->id = KIN;
 		else
-			error("NOT <IN or BETWEEN> expected");
+		if (stmt_if(self, KLIKE))
+			ast->id = KLIKE;
+		else
+			error("NOT <IN or BETWEEN or LIKE> expected");
 	}
 
 	// operator
@@ -652,6 +657,14 @@ parse_op(Stmt*     self, Expr* expr,
 			ast->id = KNEQU;
 		else
 			ast->id = '=';
+		ast_push(result, r);
+		break;
+	}
+	case KLIKE:
+	{
+		// expr [NOT] LIKE pattern
+		ast->integer = !not;
+		auto r = parse_expr(self, expr);
 		ast_push(result, r);
 		break;
 	}

@@ -87,6 +87,7 @@ OpDesc ops[] =
 	{ CLTE,               "lte"               },
 	{ CLT,                "lt"                },
 	{ CIN,                "in"                },
+	{ CLIKE,              "like"              },
 
 	{ CALL,               "all"               },
 	{ CANY,               "any"               },

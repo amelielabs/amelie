@@ -129,6 +129,7 @@ static Keyword keywords_k[] =
 
 static Keyword keywords_l[] =
 {
+	{ KLIKE,                  "like",                  4  },
 	{ KLIMIT,                 "limit",                 5  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },

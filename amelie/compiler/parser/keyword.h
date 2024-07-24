@@ -49,6 +49,7 @@ enum
 	KBETWEEN,
 	KANY,
 	KALL,
+	KLIKE,
 
 	KCASE,
 	KWHEN,

@@ -22,4 +22,5 @@
 
 // operations
 #include "value/op.h"
+#include "value/like.h"
 #include "value/compare.h"

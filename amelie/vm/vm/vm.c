@@ -134,6 +134,7 @@ vm_run(Vm*          self,
 		&&clte,
 		&&clt,
 		&&cin,
+		&&clike,
 		&&call,
 		&&cany,
 		&&cexists,
@@ -396,6 +397,12 @@ clt:
 
 cin:
 	value_in(&r[op->a], &r[op->b], &r[op->c]);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
+	op_next;
+
+clike:
+	value_like(&r[op->a], &r[op->b], &r[op->c]);
 	value_free(&r[op->b]);
 	value_free(&r[op->c]);
 	op_next;

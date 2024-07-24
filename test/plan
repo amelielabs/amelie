@@ -43,6 +43,7 @@ test case
 test in
 test any
 test all
+test like
 test exists
 test method
 test select

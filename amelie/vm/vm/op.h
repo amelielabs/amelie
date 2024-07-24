@@ -70,6 +70,7 @@ enum
 	CLTE,
 	CLT,
 	CIN,
+	CLIKE,
 
 	CALL,
 	CANY,
