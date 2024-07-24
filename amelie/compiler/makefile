@@ -1,5 +1,5 @@
 #
-# sonata compiler makefile
+# amelie compiler makefile
 #
 CC             = clang
 AR             = ar
@@ -33,7 +33,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iplanner \
                  -Icompiler
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-compiler.a
+LIB            = libamelie-compiler.a
 OBJECTS        = \
                  parser/keyword.o \
                  parser/lex.o \
