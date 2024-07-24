@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -22,7 +22,7 @@ struct Req
 static inline Req*
 req_allocate(void)
 {
-	auto self = (Req*)so_malloc(sizeof(Req));
+	auto self = (Req*)am_malloc(sizeof(Req));
 	self->op        = 0;
 	self->arg_start = NULL;
 	self->route     = NULL;
@@ -38,7 +38,7 @@ req_free(Req* self)
 {
 	buf_free(&self->arg);
 	value_free(&self->result);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

@@ -1,5 +1,5 @@
 #
-# sonata vm makefile
+# amelie vm makefile
 #
 CC             = clang
 AR             = ar
@@ -30,7 +30,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iexecutor \
                  -Ivm
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
-LIB            = libsonata-vm.a
+LIB            = libamelie-vm.a
 OBJECTS        = \
                  value/update.o \
                  aggr/set.o \

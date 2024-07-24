@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -195,35 +195,35 @@ hot static inline void
 value_read(Value* self, uint8_t* data, Buf* buf)
 {
 	switch (*data) {
-	case SO_TRUE:
-	case SO_FALSE:
+	case AM_TRUE:
+	case AM_FALSE:
 	{
 		bool boolean;
 		data_read_bool(&data, &boolean);
 		value_set_bool(self, boolean);
 		break;
 	}
-	case SO_NULL:
+	case AM_NULL:
 	{
 		value_set_null(self);
 		break;
 	}
-	case SO_REAL32:
-	case SO_REAL64:
+	case AM_REAL32:
+	case AM_REAL64:
 	{
 		double real;
 		data_read_real(&data, &real);
 		value_set_real(self, real);
 		break;
 	}
-	case SO_INTV0 ... SO_INT64:
+	case AM_INTV0 ... AM_INT64:
 	{
 		int64_t integer;
 		data_read_integer(&data, &integer);
 		value_set_int(self, integer);
 		break;
 	}
-	case SO_STRINGV0 ... SO_STRING32:
+	case AM_STRINGV0 ... AM_STRING32:
 	{
 		Str string;
 		data_read_string(&data, &string);
@@ -232,8 +232,8 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 			buf_ref(buf);
 		break;
 	}
-	case SO_ARRAY:
-	case SO_MAP:
+	case AM_ARRAY:
+	case AM_MAP:
 	{
 		uint8_t* end = data;
 		data_skip(&end);
@@ -242,21 +242,21 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 			buf_ref(buf);
 		break;
 	}
-	case SO_INTERVAL:
+	case AM_INTERVAL:
 	{
 		Interval iv;
 		data_read_interval(&data, &iv);
 		value_set_interval(self, &iv);
 		break;
 	}
-	case SO_TS:
+	case AM_TS:
 	{
 		int64_t integer;
 		data_read_timestamp(&data, &integer);
 		value_set_timestamp(self, integer);
 		break;
 	}
-	case SO_TSTZ:
+	case AM_TSTZ:
 	{
 		int64_t integer;
 		data_read_timestamp(&data, &integer);

@@ -1,23 +1,23 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
 
 static inline void
 set_free_row(Set* self, SetRow* row)
@@ -26,7 +26,7 @@ set_free_row(Set* self, SetRow* row)
 	int i = 0;
 	for (; i < self->keys_count ; i++)
 		value_free(&row->keys[i]);
-	so_free(row);
+	am_free(row);
 }
 
 static void
@@ -37,8 +37,8 @@ set_free(ValueObj* obj)
 		set_free_row(self, set_at(self, i));
 	buf_free(&self->list);
 	if (self->keys)
-		so_free(self->keys);
-	so_free(self);
+		am_free(self->keys);
+	am_free(self);
 }
 
 static void
@@ -82,7 +82,7 @@ set_in(ValueObj* obj, Value* value)
 Set*
 set_create(uint8_t* data)
 {
-	Set* self = so_malloc(sizeof(Set));
+	Set* self = am_malloc(sizeof(Set));
 	self->obj.free   = set_free;
 	self->obj.encode = set_encode;
 	self->obj.decode = set_decode;
@@ -100,7 +100,7 @@ set_create(uint8_t* data)
 		data_read_array(&data);
 		if (self->keys_count > 0)
 		{
-			self->keys = so_malloc(sizeof(SetKey) * self->keys_count);
+			self->keys = am_malloc(sizeof(SetKey) * self->keys_count);
 			for (int i = 0; i < self->keys_count; i++)
 				data_read_bool(&data, &self->keys[i].asc);
 		}
@@ -114,7 +114,7 @@ set_add(Set* self, Value* value, Value** keys)
 	buf_reserve(&self->list, sizeof(SetRow**));
 	int size = sizeof(SetRow) + sizeof(Value) * self->keys_count;
 
-	SetRow* row = so_malloc(size);
+	SetRow* row = am_malloc(size);
 	memset(row, 0, size);
 	buf_write(&self->list, &row, sizeof(SetRow**));
 	self->list_count++;

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -25,7 +25,7 @@ struct Trx
 static inline Trx*
 trx_allocate(TrxCache* cache)
 {
-	auto self = (Trx*)so_malloc(sizeof(Trx));
+	auto self = (Trx*)am_malloc(sizeof(Trx));
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->cte       = NULL;
@@ -44,7 +44,7 @@ trx_free(Trx* self)
 	transaction_free(&self->trx);
 	channel_detach(&self->src);
 	channel_free(&self->src);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
@@ -25,10 +25,10 @@ function_allocate(const char*  schema,
                   int          argc,
                   FunctionMain main)
 {
-	Function* self = so_malloc(sizeof(Function));
+	Function* self = am_malloc(sizeof(Function));
 	self->argc = argc;
 	self->main = main;
-	guard(so_free, self);
+	guard(am_free, self);
 	str_strdup(&self->schema, schema);
 	str_strdup(&self->name, name);
 	list_init(&self->link);
@@ -40,7 +40,7 @@ function_free(Function* self)
 {
 	str_free(&self->schema);
 	str_free(&self->name);
-	so_free(self);
+	am_free(self);
 }
 
 static inline void

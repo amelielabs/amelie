@@ -1,23 +1,23 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
 
 static void
 merge_free(ValueObj* obj)
@@ -30,7 +30,7 @@ merge_free(ValueObj* obj)
 		set->obj.free(&set->obj);
 	}
 	buf_free(&self->list);
-	so_free(self);
+	am_free(self);
 }
 
 static void
@@ -80,7 +80,7 @@ merge_decode(ValueObj* obj, Buf* buf)
 Merge*
 merge_create(void)
 {
-	Merge* self = so_malloc(sizeof(Merge));
+	Merge* self = am_malloc(sizeof(Merge));
 	self->obj.free   = merge_free;
 	self->obj.encode = merge_encode;
 	self->obj.decode = merge_decode;

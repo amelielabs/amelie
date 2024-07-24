@@ -1,23 +1,23 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
 
 hot static inline void
 group_free_node(Group* self, GroupNode* node)
@@ -31,7 +31,7 @@ group_free_node(Group* self, GroupNode* node)
 	}
 	for (int j = 0; j < self->keys_count; j++)
 		value_free(&node->keys[j]);
-	so_free(node);
+	am_free(node);
 }
 
 static void
@@ -62,13 +62,13 @@ group_free(ValueObj* obj)
 	self->keys_count = 0;
 
 	hashtable_free(&self->ht);
-	so_free(self);
+	am_free(self);
 }
 
 Group*
 group_create(int keys_count)
 {
-	Group* self = so_malloc(sizeof(Group));
+	Group* self = am_malloc(sizeof(Group));
 	self->obj.free   = group_free;
 	self->obj.encode = NULL;
 	self->obj.decode = NULL;
@@ -129,7 +129,7 @@ group_create_node(GroupKey* key)
 	// allocate new node
 	int index_size = sizeof(Value) * self->keys_count;
 	GroupNode* node;
-	node = so_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
+	node = am_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
 	node->node.hash = key->hash;
 
 	// copy keys

@@ -1,28 +1,28 @@
 
 //
-// sonata.
+// amelie.
 //
 // Real-Time SQL Database.
 //
 
-#include <sonata_runtime.h>
-#include <sonata_io.h>
-#include <sonata_lib.h>
-#include <sonata_data.h>
-#include <sonata_config.h>
-#include <sonata_row.h>
-#include <sonata_transaction.h>
-#include <sonata_index.h>
-#include <sonata_partition.h>
-#include <sonata_wal.h>
-#include <sonata_db.h>
-#include <sonata_value.h>
-#include <sonata_aggr.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_data.h>
+#include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_aggr.h>
 
 static Aggr*
 aggr_max_create(AggrIf* iface)
 {
-	Aggr* self = so_malloc(sizeof(Aggr));
+	Aggr* self = am_malloc(sizeof(Aggr));
 	self->iface = iface;
 	list_init(&self->link);
 	return self;
@@ -31,7 +31,7 @@ aggr_max_create(AggrIf* iface)
 static void
 aggr_max_free(Aggr* self)
 {
-	so_free(self);
+	am_free(self);
 }
 
 static void
