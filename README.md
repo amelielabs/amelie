@@ -25,6 +25,8 @@ The database has a modern set of standard and unique features, which we continuo
 - Lambda aggregates, etc.
 - Schemaless tables
 - Parallel snapshotting and recovery
+- Hot Backup
+- Asynchronous replication
 - JSON-Native and RESTfull
 
 ### Fluent in JSON
@@ -65,10 +67,6 @@ select {"metrics": obj.data} from collection
 select {"id": 42, "data": [1,2,3]}.data[2]
 3
 ```
-
-### Asynchronous Replication
-
-Amelie has support for `Hot Backup` and `Async Replication` which allows to create fault tolerant `Primary-Replica` setups.
 
 ### RESTfull
 
