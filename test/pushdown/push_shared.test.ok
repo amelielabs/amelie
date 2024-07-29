@@ -1,8 +1,8 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
-# test: select from reference
-create table test (id int primary key, data int default 0) reference
-select *.name, *.reference from system.tables()
+# test: select from shared
+create table test (id int primary key, data int default 0) shared
+select *.name, *.shared from system.tables()
 [["test", true]]
 insert into test (id) values (1), (2), (3)
 explain select * from test
@@ -36,7 +36,7 @@ bytecode [node]
 "
 select * from test
 [[1, 0], [2, 0], [3, 0]]
-# test: select from (select from reference)
+# test: select from (select from shared)
 explain select * from (select * from test)
 "
 bytecode [coordinator]
@@ -72,7 +72,7 @@ bytecode [node]
 "
 select * from (select * from test)
 [[1, 0], [2, 0], [3, 0]]
-# test: select (select expr) from reference
+# test: select (select expr) from shared
 explain select (select test.*) from test
 "
 bytecode [coordinator]
@@ -104,7 +104,7 @@ bytecode [node]
 "
 select (select test.*) from test
 [[1, 0], [2, 0], [3, 0]]
-# test: select (select from reference)
+# test: select (select from shared)
 explain select (select * from test)
 "
 bytecode [coordinator]
@@ -133,7 +133,7 @@ bytecode [node]
 "
 select (select * from test)
 [[1, 0], [2, 0], [3, 0]]
-# test: select (select from reference) from expr
+# test: select (select from shared) from expr
 explain select (select a.*, * from test) from [1,2,3] a
 "
 bytecode [coordinator]
@@ -224,7 +224,7 @@ bytecode [node]
 "
 select (select a.*, id from test) from [1,2,3] a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select (select from reference) from reference
+# test: select (select from shared) from shared
 explain select (select a.*, id from test) from test a
 "
 bytecode [coordinator]
@@ -311,7 +311,7 @@ bytecode [node]
 "
 select (select a.id, id from test) from test a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select (select from reference) from (select from expr)
+# test: select (select from shared) from (select from expr)
 explain select (select a.*, id from test) from (select * from [1,2,3]) a
 "
 bytecode [coordinator]
@@ -364,7 +364,7 @@ bytecode [node]
 "
 select (select a.*, id from test) from (select * from [1,2,3]) a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select (select from reference) from (select from reference)
+# test: select (select from shared) from (select from shared)
 explain select (select a.*, id from test) from (select * from test t) a
 "
 bytecode [coordinator]
@@ -461,7 +461,7 @@ bytecode [node]
 "
 select (select a.*[0], id from test) from (select * from test t) a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select from reference, expr
+# test: select from shared, expr
 explain select test.*, t.* from test, [1,2,3] t
 "
 bytecode [coordinator]
@@ -508,7 +508,7 @@ bytecode [node]
 "
 select test.*, t.* from test, [1,2,3] t
 [[[1, 0], 1], [[1, 0], 2], [[1, 0], 3], [[2, 0], 1], [[2, 0], 2], [[2, 0], 3], [[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]
-# test: select from expr, reference
+# test: select from expr, shared
 explain select test.*, t.* from [1,2,3] t, test
 "
 bytecode [coordinator]
@@ -552,7 +552,7 @@ bytecode [node]
 "
 select test.*, t.* from [1,2,3] t, test
 [[[1, 0], 1], [[2, 0], 1], [[3, 0], 1], [[1, 0], 2], [[2, 0], 2], [[3, 0], 2], [[1, 0], 3], [[2, 0], 3], [[3, 0], 3]]
-# test: select from reference, reference
+# test: select from shared, shared
 explain select test.*, t.* from test, test t
 "
 bytecode [coordinator]

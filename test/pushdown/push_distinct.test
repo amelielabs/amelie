@@ -92,8 +92,8 @@ select count(*) from test group by id
 
 drop table test
 
-# test: select distinct star from reference empty
-create table test (id int primary key serial, data int default 0) reference
+# test: select distinct star from shared empty
+create table test (id int primary key serial, data int default 0) shared
 explain select distinct * from test
 select distinct * from test
 
@@ -102,53 +102,53 @@ update test set data = id / 2
 select * from test
 select * from test order by id
 
-# test: select distinct star from reference
+# test: select distinct star from shared
 explain select distinct * from test
 select distinct * from test
 
-# test: select distinct from reference
+# test: select distinct from shared
 explain select distinct id from test
 select distinct id from test
 select distinct data from test
 
-# test: select distinct from reference #2
+# test: select distinct from shared #2
 explain select distinct id, data from test
 select distinct id, data from test
 
-# test: select distinct from reference limit
+# test: select distinct from shared limit
 explain select distinct data from test limit 4
 select distinct data from test limit 4
 
-# test: select distinct from reference limit 0
+# test: select distinct from shared limit 0
 explain select distinct data from test limit 0
 select distinct data from test limit 0
 
-# test: select distinct from reference limit/offset
+# test: select distinct from shared limit/offset
 explain select distinct data from test limit 1 offset 1
 select distinct data from test limit 1 offset 0
 select distinct data from test limit 1 offset 1
 select distinct data from test limit 1 offset 2
 select distinct data from test limit 1 offset 3
 
-# test: select distinct from reference offset
+# test: select distinct from shared offset
 explain select distinct data from test offset 1
 select distinct data from test offset 0
 select distinct data from test offset 1
 select distinct data from test offset 2
 select distinct data from test offset 3
 
-# test: select distinct from reference order by
+# test: select distinct from shared order by
 explain select distinct data from test order by data
 select distinct data from test order by data
 
-# test: select distinct from reference group by
+# test: select distinct from shared group by
 explain select distinct count(*) from test
 select distinct count(*) from test
 
 explain select distinct count(*) from test group by id
 select distinct count(*) from test group by id
 
-# test: select distinct on from reference
+# test: select distinct on from shared
 explain select distinct on (*) * from test
 select distinct on (*) * from test
 
@@ -157,10 +157,10 @@ explain select distinct on (data) * from test
 select distinct on (data) * from test
 select distinct on (id) * from test
 
-# test: select distinct on from reference order by
+# test: select distinct on from shared order by
 explain select distinct on (data) * from test order by data, id
 
-# test: select distinct on from reference group by
+# test: select distinct on from shared group by
 explain select distinct on (count(*)) * from test group by id
 select distinct on (count(*)) * from test group by id
 

@@ -37,35 +37,35 @@ insert into test values(1, 0) on conflict do update set data = id; select error(
 select * from test
 drop table test
 
-# test: reference insert abort by error
-create table test (id int primary key, data int default 0) reference
+# test: shared insert abort by error
+create table test (id int primary key, data int default 0) shared
 
 insert into test (id) values (0), (1), (2), (3), (1)
 select * from test
 
-# test: reference insert abort by error #2
+# test: shared insert abort by error #2
 insert into test (id) values (0), (1), (2), (3)
 select * from test
 
-# test: reference insert abort by error #3
+# test: shared insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
 select * from test
 
-# test: reference insert abort by error #4
+# test: shared insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
 select * from test
 
-# test: reference delete abort
+# test: shared delete abort
 explain delete from test; select error("abort")
 delete from test; select error("abort")
 select * from test
 
-# test: reference update abort
+# test: shared update abort
 explain update test set data = id; select error("abort")
 update test set data = id; select error("abort")
 select * from test
 
-# test: reference upsert abort
+# test: shared upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 select * from test
@@ -74,7 +74,7 @@ drop table test
 create table a (id int primary key, data int default 0)
 create table b (id int primary key, data int default 0)
 
-create table ref (id int primary key, data int default 0) reference
+create table ref (id int primary key, data int default 0) shared
 insert into ref values (0, 8), (1, 8), (2, 8);
 
 # test: insert a select a

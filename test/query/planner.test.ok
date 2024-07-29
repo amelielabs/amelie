@@ -85,7 +85,7 @@ select * from test use index (i)
 drop index i on test
 drop table test
 # test: hash/hash
-create table test (id int, data int, primary key (id, data)) reference with (type = 'hash')
+create table test (id int, data int, primary key (id, data)) shared with (type = 'hash')
 create unique index i on test (data) with (type = 'hash')
 insert into test values (0, 2)
 insert into test values (1, 1)

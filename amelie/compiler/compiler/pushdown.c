@@ -219,7 +219,7 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 	select->rset = rset;
 	select->on_match = emit_select_on_match;
 
-	// redirect each target reference to the group scan target
+	// redirect each target to the group scan target
 	auto target_group = select->target_group;
 	target_group_redirect(select->target, target_group);
 
@@ -272,7 +272,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	select->rset = rset;
 	select->on_match = emit_select_on_match;
 
-	// redirect each target reference to the group scan target
+	// redirect each target to the group scan target
 	target_group_redirect(select->target, target_group);
 
 	// scan over created group

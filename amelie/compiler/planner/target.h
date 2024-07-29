@@ -15,7 +15,7 @@ analyze_stmts(Parser* parser, int* count)
 	{
 		auto stmt = list_at(Stmt, link);
 		if (target_list_has(&stmt->target_list, TARGET_TABLE) ||
-		    target_list_has(&stmt->target_list, TARGET_TABLE_REFERENCE))
+		    target_list_has(&stmt->target_list, TARGET_TABLE_SHARED))
 		{
 			last = stmt;
 			(*count)++;

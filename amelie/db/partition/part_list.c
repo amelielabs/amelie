@@ -18,7 +18,7 @@
 void
 part_list_init(PartList* self, PartMgr* mgr)
 {
-	self->reference  = false;
+	self->shared     = false;
 	self->list_count = 0;
 	self->mgr        = mgr;
 	list_init(&self->list);
@@ -45,11 +45,11 @@ part_list_free(PartList* self)
 
 void
 part_list_create(PartList* self,
-                 bool      reference,
+                 bool      shared,
                  List*     parts,
                  List*     indexes)
 {
-	self->reference = reference;
+	self->shared = shared;
 
 	// prepare partition mapping
 	part_map_create(&self->map);
@@ -117,8 +117,8 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 hot Part*
 part_list_match(PartList* self, Uuid* node)
 {
-	// get first part, if reference or find part by node id
-	if (self->reference)
+	// get first part if shared or find by node id
+	if (self->shared)
 	{
 		auto first = list_first(&self->list);
 		return container_of(first, Part, link);

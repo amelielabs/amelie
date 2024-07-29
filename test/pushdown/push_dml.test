@@ -3,23 +3,23 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 
-# test: reference insert
-create table test (id int primary key, data int default 0) reference
+# test: shared insert
+create table test (id int primary key, data int default 0) shared
 explain insert into test (id) values (1), (2), (3)
 insert into test (id) values (1), (2), (3)
 
-# test: reference delete
+# test: shared delete
 explain delete from test
 delete from test
 select * from test
 
-# test: reference update
+# test: shared update
 insert into test (id) values (1), (2), (3)
 explain update test set data = id
 update test set data = id
 select * from test
 
-# test: reference upsert
+# test: shared upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 select * from test

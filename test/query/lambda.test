@@ -35,13 +35,13 @@ select (n => n::append(*)) as N from [1,2,3]
 # test: lambda (group by)
 select *, n => n::append(*) from [1,2,2,3] group by *
 
-# test: lambda (reference table)
-create table test (id int primary key) reference
+# test: lambda (shared table)
+create table test (id int primary key) shared
 insert into test 1,2,3,4,5
 select n => n::append(id) from test
 drop table test
 
-create table test (id int primary key, data int) reference
+create table test (id int primary key, data int) shared
 insert into test values (0, 0)
 insert into test values (1, 1)
 insert into test values (2, 2)

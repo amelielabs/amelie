@@ -42,7 +42,7 @@ select * from test.test
 drop table test.test
 drop schema test
 
-# test: update star reference
+# test: update star shared
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)

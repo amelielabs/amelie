@@ -18,13 +18,13 @@ select (select * from test) from [1,2,3]
 explain select (select * from test) from (select * from [1,2,3])
 select (select * from test) from (select * from [1,2,3])
 
-# test: select (select from table) from reference
-create table test2 (id int primary key) reference
+# test: select (select from table) from shared
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select (select * from test) from test2
 select (select * from test) from test2
 
-# test: select (select from table) from (select from reference)
+# test: select (select from table) from (select from shared)
 explain select (select * from test) from (select * from test2)
 select (select * from test) from (select * from test2)
 drop table test2
@@ -37,8 +37,8 @@ select * from (select * from test)
 explain select * from (select (select 123) from test)
 select * from (select (select 123) from test)
 
-# test: select from (select (select from reference) from table)
-create table test2 (id int primary key) reference
+# test: select from (select (select from shared) from table)
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select * from test2) from test)
 select * from (select (select * from test2) from test)
@@ -56,8 +56,8 @@ select (select t.*) from (select * from test) t
 explain select (select t.*, * from [1,2,3]) from (select * from test) t
 select (select t.*, * from [1,2,3]) from (select * from test) t
 
-# test: select (select from reference) from (select from table)
-create table test2 (id int primary key) reference
+# test: select (select from shared) from (select from table)
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select (select t.*, * from test2) from (select * from test) t
 select (select t.*, * from test2) from (select * from test) t
@@ -71,8 +71,8 @@ select (select t.*, z.* from test z) from (select * from test) t
 explain insert into test (id) values (4) returning (select * from test t)
 insert into test (id) values (4) returning (select * from test t)
 
-# test: insert returning (select from reference)
-create table test_ (id int primary key) reference
+# test: insert returning (select from shared)
+create table test_ (id int primary key) shared
 insert into test_ 1,2,3
 insert into test (id) values (5) returning (select * from test_)
 drop table test_

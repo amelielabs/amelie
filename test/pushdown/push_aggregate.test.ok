@@ -613,8 +613,8 @@ select * from test group by data order by count(*) desc
 select data, count(*) c from test group by data order by c desc
 [[0, 2], [1, 2], [2, 1]]
 drop table test
-# test: select count from reference empty
-create table test (id int primary key, data int) reference
+# test: select count from shared empty
+create table test (id int primary key, data int) shared
 explain select count(*) from test
 "
 bytecode [coordinator]
@@ -656,7 +656,7 @@ bytecode [node]
 "
 select count(*) from test
 [0]
-# test: select count from reference
+# test: select count from shared
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -705,7 +705,7 @@ bytecode [node]
 "
 select count(*) from test
 [5]
-# test: select sum from reference
+# test: select sum from shared
 explain select sum(id) from test
 "
 bytecode [coordinator]
@@ -749,7 +749,7 @@ select sum(id) from test
 [10]
 select sum(data) from test
 [4]
-# test: select avg from reference
+# test: select avg from shared
 explain select avg(id) from test
 "
 bytecode [coordinator]
@@ -793,7 +793,7 @@ select avg(id) from test
 [2]
 select avg(data) from test
 [0]
-# test: select min from reference empty
+# test: select min from shared empty
 delete from test
 select min(id) from test
 [0]
@@ -807,7 +807,7 @@ select min(id) from test
 [0]
 select min(data) from test
 [0]
-# test: select max from reference empty
+# test: select max from shared empty
 delete from test
 select max(id) from test
 [0]
@@ -816,12 +816,12 @@ insert into test values (1, 0)
 insert into test values (2, 1)
 insert into test values (3, 1)
 insert into test values (4, 2)
-# test: select max from reference
+# test: select max from shared
 select max(id) from test
 [4]
 select max(data) from test
 [2]
-# test: select from (select aggr from reference)
+# test: select from (select aggr from shared)
 explain select * from (select count(*) from test)
 "
 bytecode [coordinator]
@@ -869,7 +869,7 @@ bytecode [node]
 "
 select * from (select count(*) from test)
 [5]
-# test: select aggr from reference group by
+# test: select aggr from shared group by
 explain select id, count(*) from test group by id
 "
 bytecode [coordinator]
@@ -916,7 +916,7 @@ select id, count(*) from test group by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select data, count(*) from test group by data
 [[0, 2], [1, 2], [2, 1]]
-# test: select from (select aggr from reference group by)
+# test: select from (select aggr from shared group by)
 explain select * from (select id, count(*) from test group by id)
 "
 bytecode [coordinator]
@@ -969,7 +969,7 @@ select * from (select id, count(*) from test group by id)
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select * from (select data, count(*) from test group by data)
 [[0, 2], [1, 2], [2, 1]]
-# test: select from reference having label
+# test: select from shared having label
 explain select id, count(*) c from test group by id having c >= 1
 "
 bytecode [coordinator]

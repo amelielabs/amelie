@@ -230,8 +230,8 @@ select (select (select * from [1,2,3])) from test
 # test: select (select (select from table)) from table
 explain select (select (select * from test t)) from test
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
-# test: select (select (select from reference)) from table
-create table ref (id int primary key, data int default 0) reference
+# test: select (select (select from shared)) from table
+create table ref (id int primary key, data int default 0) shared
 insert into ref (id) values (1), (2), (3)
 explain select (select (select * from ref)) from test
 "
@@ -322,7 +322,7 @@ select * from test where (select * from [1,2,3])
 # test: select from table where (select from table)
 explain select * from test where (select * from test t)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
-# test: select from table where (select from reference)
+# test: select from table where (select from shared)
 explain select * from test where (select * from ref)
 "
 bytecode [coordinator]

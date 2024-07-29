@@ -455,8 +455,8 @@ select * from test order by id desc offset 0
 select * from test order by id desc offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
-# test: select from reference order by
-create table test (id int primary key serial) reference
+# test: select from shared order by
+create table test (id int primary key serial) shared
 insert into test generate 20
 select * from test
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
@@ -494,7 +494,7 @@ bytecode [node]
 "
 select * from test order by id
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
-# test: select from reference order by asc
+# test: select from shared order by asc
 explain select * from test order by id asc
 "
 bytecode [coordinator]
@@ -529,7 +529,7 @@ bytecode [node]
 "
 select * from test order by id asc
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
-# test: select from reference order by desc
+# test: select from shared order by desc
 explain select * from test order by id desc
 "
 bytecode [coordinator]
@@ -564,7 +564,7 @@ bytecode [node]
 "
 select * from test order by id desc
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
-# test: select from reference order by limit
+# test: select from shared order by limit
 explain select * from test order by id limit 1
 "
 bytecode [coordinator]
@@ -610,7 +610,7 @@ select * from test order by id limit 10
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
 select * from test order by id limit 20
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
-# test: select from reference order by limit 0
+# test: select from shared order by limit 0
 explain select * from test order by id limit 0
 "
 bytecode [coordinator]
@@ -648,7 +648,7 @@ select * from test order by id limit 0
 []
 select * from test order by id limit -1
 {"code": 1, "msg": "LIMIT: positive integer value expected"}
-# test: select from reference order by desc limit
+# test: select from shared order by desc limit
 explain select * from test order by id desc limit 1
 "
 bytecode [coordinator]
@@ -694,7 +694,7 @@ select * from test order by id desc limit 10
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10]]
 select * from test order by id desc limit 20
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
-# test: select from reference order by limit offset
+# test: select from shared order by limit offset
 explain select * from test order by id limit 1 offset 0
 "
 bytecode [coordinator]
@@ -731,7 +731,7 @@ bytecode [node]
 "
 select * from test order by id limit 1 offset 0
 [[0]]
-# test: select from reference order by limit offset #2
+# test: select from shared order by limit offset #2
 explain select * from test order by id limit 1 offset 1
 "
 bytecode [coordinator]
@@ -774,7 +774,7 @@ select * from test order by id limit 1 offset 3
 [[3]]
 select * from test order by id limit 1 offset 4
 [[4]]
-# test: select from reference order by desc limit offset
+# test: select from shared order by desc limit offset
 explain select * from test order by id desc limit 1 offset 1
 "
 bytecode [coordinator]
@@ -817,7 +817,7 @@ select * from test order by id desc limit 1 offset 3
 [[16]]
 select * from test order by id desc limit 1 offset 4
 [[15]]
-# test: select from reference order by offset
+# test: select from shared order by offset
 explain select * from test order by id offset 1
 "
 bytecode [coordinator]
@@ -863,7 +863,7 @@ select * from test order by id offset 0
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test order by id offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
-# test: select from reference order by desc offset
+# test: select from shared order by desc offset
 explain select * from test order by id desc offset 1
 "
 bytecode [coordinator]

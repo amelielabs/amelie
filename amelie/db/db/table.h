@@ -45,7 +45,7 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 static inline void
 table_open(Table* self)
 {
-	part_list_create(&self->part_list, self->config->reference,
+	part_list_create(&self->part_list, self->config->shared,
 	                 &self->config->partitions,
 	                 &self->config->indexes);
 }

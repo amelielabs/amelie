@@ -109,12 +109,12 @@ select data, count(*) c from test group by data order by c desc
 
 drop table test
 
-# test: select count from reference empty
-create table test (id int primary key, data int) reference
+# test: select count from shared empty
+create table test (id int primary key, data int) shared
 explain select count(*) from test
 select count(*) from test
 
-# test: select count from reference
+# test: select count from shared
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -125,17 +125,17 @@ select * from test
 explain select count(*) from test
 select count(*) from test
 
-# test: select sum from reference
+# test: select sum from shared
 explain select sum(id) from test
 select sum(id) from test
 select sum(data) from test
 
-# test: select avg from reference
+# test: select avg from shared
 explain select avg(id) from test
 select avg(id) from test
 select avg(data) from test
 
-# test: select min from reference empty
+# test: select min from shared empty
 delete from test
 select min(id) from test
 insert into test values (0, 0)
@@ -148,7 +148,7 @@ insert into test values (4, 2)
 select min(id) from test
 select min(data) from test
 
-# test: select max from reference empty
+# test: select max from shared empty
 delete from test
 select max(id) from test
 insert into test values (0, 0)
@@ -157,25 +157,25 @@ insert into test values (2, 1)
 insert into test values (3, 1)
 insert into test values (4, 2)
 
-# test: select max from reference
+# test: select max from shared
 select max(id) from test
 select max(data) from test
 
-# test: select from (select aggr from reference)
+# test: select from (select aggr from shared)
 explain select * from (select count(*) from test)
 select * from (select count(*) from test)
 
-# test: select aggr from reference group by
+# test: select aggr from shared group by
 explain select id, count(*) from test group by id
 select id, count(*) from test group by id
 select data, count(*) from test group by data
 
-# test: select from (select aggr from reference group by)
+# test: select from (select aggr from shared group by)
 explain select * from (select id, count(*) from test group by id)
 select * from (select id, count(*) from test group by id)
 select * from (select data, count(*) from test group by data)
 
-# test: select from reference having label
+# test: select from shared having label
 explain select id, count(*) c from test group by id having c >= 1
 select id, count(*) c from test group by id having c >= 1
 select id, count(*) c from test group by id having c > 1

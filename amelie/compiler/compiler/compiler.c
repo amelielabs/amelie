@@ -99,7 +99,7 @@ emit_stmt(Compiler* self)
 		auto update = ast_update_of(stmt->ast);
 
 		// validate returning targets
-		// validate supported targets as expression or reference table
+		// validate supported targets as expression or shared table
 		target_list_validate_dml(&stmt->target_list, update->target);
 
 		emit_update(self, stmt->ast);
@@ -111,7 +111,7 @@ emit_stmt(Compiler* self)
 		auto delete = ast_delete_of(stmt->ast);
 
 		// validate returning targets
-		// validate supported targets as expression or reference table
+		// validate supported targets as expression or shared table
 		target_list_validate_dml(&stmt->target_list, delete->target);
 
 		emit_delete(self, stmt->ast);
@@ -134,16 +134,16 @@ emit_stmt(Compiler* self)
 			return;
 		}
 
-		// direct query from distributed or reference table
+		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
 		if (select->target && select->target->table)
 		{
-			// select from table/reference
+			// select from table/shared
 
-			// validate supported targets as expressions or references table
+			// validate supported targets as expressions or shared table
 			target_list_validate(&stmt->target_list, select->target);
 
-			// table or reference table
+			// distributed table or shared table
 			pushdown(self, stmt->ast);
 			break;
 		}
@@ -173,10 +173,10 @@ emit_stmt(Compiler* self)
 			break;
 		}
 
-		// expression or reference table targets only
+		// expression or shared table targets only
 
-		// select (select from reference)
-		// select expr(select from reference)
+		// select (select from shared)
+		// select expr(select from shared)
 	
 		// select pushdown to the first node
 		pushdown_first(self, stmt->ast);
@@ -226,7 +226,7 @@ emit_send(Compiler* self, int start)
 		if (target_list_expr(&stmt->target_list))
 			break;
 
-		// direct query from distributed or reference table
+		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
 		if (select->target && select->target->table)
 		{
@@ -244,7 +244,7 @@ emit_send(Compiler* self, int start)
 			break;
 		}
 
-		// nested expression or nested reference table targets
+		// nested expression or nested shared table targets
 
 		// CSEND_FIRST
 		op2(self, CSEND_FIRST, stmt->order, start);
@@ -265,7 +265,7 @@ emit_send(Compiler* self, int start)
 		return;
 
 	auto table = target->table;
-	if (table->config->reference)
+	if (table->config->shared)
 	{
 		// send to first node
 
@@ -327,7 +327,7 @@ emit_recv(Compiler* self)
 			break;
 		}
 
-		// direct query from distributed or reference table
+		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
 		if (select->target && select->target->table)
 		{
@@ -345,7 +345,7 @@ emit_recv(Compiler* self)
 			break;
 		}
 
-		// nested expression or nested reference table targets
+		// nested expression or nested shared table targets
 		// (first node only, single result)
 
 		// CRECV_TO

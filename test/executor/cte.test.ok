@@ -43,8 +43,8 @@ bytecode [node]
 
 "
 drop table test
-# test: with(reference), expr
-create table test (id int primary key) reference
+# test: with(shared), expr
+create table test (id int primary key) shared
 insert into test 1,2,3
 with a as (select * from test) select * from a
 [[1], [2], [3]]
@@ -138,7 +138,7 @@ bytecode [node]
 
 "
 drop table test
-# test: with(reference), reference (pushdown)
+# test: with(shared), shared (pushdown)
 create table test (id int primary key)
 insert into test 1,2,3
 with a as (select * from test) select * from test
@@ -1049,7 +1049,7 @@ bytecode [node]
 
 "
 drop table test
-create table test (id int primary key) reference
+create table test (id int primary key) shared
 insert into test 1,2,3
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
@@ -1117,7 +1117,7 @@ bytecode [node]
 "
 drop table test
 # test: with(update returning), expr
-create table test (id int primary key, data int) reference
+create table test (id int primary key, data int) shared
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)
@@ -1173,7 +1173,7 @@ bytecode [node]
 "
 drop table test
 # test: with(delete returning), expr
-create table test (id int primary key, data int) reference
+create table test (id int primary key, data int) shared
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)

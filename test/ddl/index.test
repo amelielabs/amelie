@@ -42,9 +42,9 @@ drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
 
-# test: create index (unique reference)
+# test: create index (unique shared)
 drop table test
-create table test (id int primary key, a int, b int) reference
+create table test (id int primary key, a int, b int) shared
 create unique index i on test (a)
 select system.tables()[0].indexes
 drop index i on test
@@ -76,9 +76,9 @@ drop index i on test
 
 create index i on test (a) with (type = 'unknown')
 
-# test: create index (reference)
+# test: create index (shared)
 drop table test
-create table test (id int primary key, a int, b int) reference
+create table test (id int primary key, a int, b int) shared
 create index i on test (a)
 select system.tables()[0].indexes
 drop index i on test

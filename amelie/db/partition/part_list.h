@@ -10,7 +10,7 @@ typedef struct PartList PartList;
 
 struct PartList
 {
-	bool     reference;
+	bool     shared;
 	List     list;
 	int      list_count;
 	PartMap  map;

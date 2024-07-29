@@ -458,12 +458,12 @@ bytecode [node]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
-# test: insert secondary index unique (non reference)
+# test: insert secondary index unique (non shared)
 create unique index i on test (data)
-{"code": 1, "msg": "CREATE UNIQUE INDEX can be created only on reference tables"}
+{"code": 1, "msg": "CREATE UNIQUE INDEX cannot be created on distributed tables"}
 # test: insert secondary index (unique)
 drop table test
-create table test (id int primary key, data int) reference
+create table test (id int primary key, data int) shared
 insert into test values (0, 2)
 insert into test values (1, 1)
 insert into test values (2, 0)

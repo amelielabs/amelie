@@ -137,7 +137,7 @@ session_execute_distributed(Session* self)
 	auto executor = self->share->executor;
 	auto plan = &self->plan;
 
-	// todo: reference lock?
+	// todo: shared table lock?
 
 	// generate bytecode
 	compiler_emit(&self->compiler);

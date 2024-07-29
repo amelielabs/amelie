@@ -17,14 +17,14 @@ explain select (select * from test) from (select * from [1,2,3])
 {"code": 1, "msg": "FROM SELECT: undefined distributed table"}
 select (select * from test) from (select * from [1,2,3])
 {"code": 1, "msg": "FROM SELECT: undefined distributed table"}
-# test: select (select from table) from reference
-create table test2 (id int primary key) reference
+# test: select (select from table) from shared
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select (select * from test) from test2
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 select (select * from test) from test2
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
-# test: select (select from table) from (select from reference)
+# test: select (select from table) from (select from shared)
 explain select (select * from test) from (select * from test2)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 select (select * from test) from (select * from test2)
@@ -108,8 +108,8 @@ bytecode [node]
 "
 select * from (select (select 123) from test)
 [123, 123, 123]
-# test: select from (select (select from reference) from table)
-create table test2 (id int primary key) reference
+# test: select from (select (select from shared) from table)
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select * from test2) from test)
 "
@@ -258,8 +258,8 @@ bytecode [node]
 "
 select (select t.*, * from [1,2,3]) from (select * from test) t
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
-# test: select (select from reference) from (select from table)
-create table test2 (id int primary key) reference
+# test: select (select from shared) from (select from table)
+create table test2 (id int primary key) shared
 insert into test2 (id) values (1), (2), (3)
 explain select (select t.*, * from test2) from (select * from test) t
 "
@@ -322,8 +322,8 @@ explain insert into test (id) values (4) returning (select * from test t)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 insert into test (id) values (4) returning (select * from test t)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
-# test: insert returning (select from reference)
-create table test_ (id int primary key) reference
+# test: insert returning (select from shared)
+create table test_ (id int primary key) shared
 insert into test_ 1,2,3
 insert into test (id) values (5) returning (select * from test_)
 [[[1], [2], [3]]]

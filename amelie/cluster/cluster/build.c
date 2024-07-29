@@ -115,8 +115,8 @@ build_run(Build* self)
 {
 	channel_attach(&self->channel);
 
-	// run on first node (for reference table) or use whole cluster
-	if (self->table && self->table->config->reference)
+	// run on first node (for shared table) or use whole cluster
+	if (self->table && self->table->config->shared)
 		build_run_first(self);
 	else
 		build_run_all(self);

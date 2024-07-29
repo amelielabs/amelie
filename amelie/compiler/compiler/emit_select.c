@@ -226,7 +226,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	     emit_select_on_match_group_target,
 	     select);
 
-	// redirect each target reference to the group scan target
+	// redirect each target to the group scan target
 	target_group_redirect(select->target, target_group);
 
 	// scan over created group

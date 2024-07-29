@@ -134,27 +134,27 @@ insert into test values(1, 0) on conflict do update set data = id; select error(
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
-# test: reference insert abort by error
-create table test (id int primary key, data int default 0) reference
+# test: shared insert abort by error
+create table test (id int primary key, data int default 0) shared
 insert into test (id) values (0), (1), (2), (3), (1)
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
-# test: reference insert abort by error #2
+# test: shared insert abort by error #2
 insert into test (id) values (0), (1), (2), (3)
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference insert abort by error #3
+# test: shared insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference insert abort by error #4
+# test: shared insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference delete abort
+# test: shared delete abort
 explain delete from test; select error("abort")
 "
 bytecode [coordinator]
@@ -187,7 +187,7 @@ delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference update abort
+# test: shared update abort
 explain update test set data = id; select error("abort")
 "
 bytecode [coordinator]
@@ -228,7 +228,7 @@ update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
-# test: reference upsert abort
+# test: shared upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 "
 bytecode [coordinator]
@@ -270,7 +270,7 @@ select * from test
 drop table test
 create table a (id int primary key, data int default 0)
 create table b (id int primary key, data int default 0)
-create table ref (id int primary key, data int default 0) reference
+create table ref (id int primary key, data int default 0) shared
 insert into ref values (0, 8), (1, 8), (2, 8);
 # test: insert a select a
 insert into a (id) values (0), (1), (2), (3); select * from a

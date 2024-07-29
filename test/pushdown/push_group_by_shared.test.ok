@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
-# test: select from reference group by empty
-create table test (id int primary key, data int) reference
+# test: select from shared group by empty
+create table test (id int primary key, data int) shared
 explain select * from test group by id
 "
 bytecode [coordinator]
@@ -39,7 +39,7 @@ bytecode [node]
 "
 select * from test group by id
 []
-# test: select from reference group by
+# test: select from shared group by
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -121,23 +121,23 @@ bytecode [node]
 "
 select * from test group by data
 [0, 1, 2]
-# test: select from reference group by keys only
+# test: select from shared group by keys only
 select data from test group by id
 {"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
-# test: select from reference group by column
+# test: select from shared group by column
 select id from test group by id
 [0, 1, 2, 3, 4]
 select data from test group by data
 [0, 1, 2]
-# test: select from reference group by column, column
+# test: select from shared group by column, column
 select id, data from test group by id, data
 [[0, 0], [2, 1], [1, 0], [4, 2], [3, 1]]
 select id, data from test group by data, id
 [[0, 0], [2, 1], [1, 0], [4, 2], [3, 1]]
-# test: select expr from reference group by
+# test: select expr from shared group by
 select id, 100 + id from test group by id
 [[0, 100], [1, 101], [2, 102], [3, 103], [4, 104]]
-# test: select from (select from reference  group by)
+# test: select from (select from shared  group by)
 explain select * from (select * from test group by id)
 "
 bytecode [coordinator]
@@ -185,7 +185,7 @@ select 100 + * from (select * from test group by id)
 [100, 101, 102, 103, 104]
 select * from (select id, 100 + id from test group by id)
 [[0, 100], [1, 101], [2, 102], [3, 103], [4, 104]]
-# test: select from reference group by limit
+# test: select from shared group by limit
 explain select id from test group by id limit 1
 "
 bytecode [coordinator]
@@ -230,7 +230,7 @@ select id from test group by id limit 3
 [0, 1, 2]
 select id from test group by id limit 4
 [0, 1, 2, 3]
-# test: select from reference group by limit/offset
+# test: select from shared group by limit/offset
 explain select id from test group by id limit 1 offset 1
 "
 bytecode [coordinator]
@@ -280,7 +280,7 @@ select id from test group by id limit 1 offset 3
 [3]
 select id from test group by id limit 1 offset 4
 [4]
-# test: select from reference group by offset
+# test: select from shared group by offset
 explain select id from test group by id offset 1
 "
 bytecode [coordinator]
@@ -327,7 +327,7 @@ select id from test group by id offset 3
 [3, 4]
 select id from test group by id offset 4
 [4]
-# test: select from (select from reference group by limit)
+# test: select from (select from shared group by limit)
 explain select * from (select id from test group by id limit 1)
 "
 bytecode [coordinator]
@@ -380,7 +380,7 @@ select * from (select id from test group by id limit 3)
 [0, 1, 2]
 select * from (select id from test group by id limit 4)
 [0, 1, 2, 3]
-# test: select from (select from reference group by limit/offset)
+# test: select from (select from shared group by limit/offset)
 explain select * from (select id from test group by id limit 1 offset 1)
 "
 bytecode [coordinator]
@@ -436,7 +436,7 @@ select * from (select id from test group by id limit 1 offset 3)
 [3]
 select * from (select id from test group by id limit 1 offset 4)
 [4]
-# test: select from (select from reference group by offset)
+# test: select from (select from shared group by offset)
 explain select * from (select id from test group by id offset 1)
 "
 bytecode [coordinator]
@@ -489,7 +489,7 @@ select * from (select id from test group by id offset 3)
 [3, 4]
 select * from (select id from test group by id offset 4)
 [4]
-# test: select from reference group by having
+# test: select from shared group by having
 explain select id from test group by id having id >= 3
 "
 bytecode [coordinator]
@@ -545,7 +545,7 @@ select id from test group by id having id = 5
 []
 select id from test group by id having id >= 1 and id <= 3
 [1, 2, 3]
-# test: select from reference group by having limit
+# test: select from shared group by having limit
 explain select id from test group by id having id >= 1 limit 1
 "
 bytecode [coordinator]
@@ -592,7 +592,7 @@ select id from test group by id having id >= 1 limit 1
 [1]
 select id from test group by id having id >= 1 limit 2
 [1, 2]
-# test: select from reference group by having limit/offset
+# test: select from shared group by having limit/offset
 explain select id from test group by id having id >= 1 limit 1 offset 1
 "
 bytecode [coordinator]
@@ -644,7 +644,7 @@ select id from test group by id having id >= 1 limit 1 offset 2
 [3]
 select id from test group by id having id >= 1 limit 1 offset 3
 [4]
-# test: select from reference group by having offset
+# test: select from shared group by having offset
 explain select id from test group by id having id >= 1 offset 1
 "
 bytecode [coordinator]
@@ -693,7 +693,7 @@ select id from test group by id having id >= 1 offset 2
 [3, 4]
 select id from test group by id having id >= 1 offset 3
 [4]
-# test: select from (select from reference group by having)
+# test: select from (select from shared group by having)
 explain select * from (select id from test group by id having id >= 3)
 "
 bytecode [coordinator]
@@ -741,7 +741,7 @@ bytecode [node]
 "
 select * from (select id from test group by id having id >= 3)
 [3, 4]
-# test: select from (select from reference group by having limit)
+# test: select from (select from shared group by having limit)
 explain select * from (select id from test group by id having id >= 1 limit 1)
 "
 bytecode [coordinator]
@@ -794,7 +794,7 @@ select * from (select id from test group by id having id >= 1 limit 1)
 [1]
 select * from (select id from test group by id having id >= 1 limit 2)
 [1, 2]
-# test: select from (select from reference group by having limit/offset)
+# test: select from (select from shared group by having limit/offset)
 explain select * from (select id from test group by id having id >= 1 limit 1 offset 1)
 "
 bytecode [coordinator]
@@ -852,7 +852,7 @@ select * from (select id from test group by id having id >= 1 limit 1 offset 2)
 [3]
 select * from (select id from test group by id having id >= 1 limit 1 offset 3)
 [4]
-# test: select from (select from reference group by having offset)
+# test: select from (select from shared group by having offset)
 explain select * from (select id from test group by id having id >= 1 offset 1)
 "
 bytecode [coordinator]
@@ -907,7 +907,7 @@ select * from (select id from test group by id having id >= 1 offset 2)
 [3, 4]
 select * from (select id from test group by id having id >= 1 offset 3)
 [4]
-# test: select from reference group by order by
+# test: select from shared group by order by
 explain select id from test group by id order by id
 "
 bytecode [coordinator]
@@ -948,10 +948,10 @@ bytecode [node]
 "
 select id from test group by id order by id
 [0, 1, 2, 3, 4]
-# test: select from reference group by order by keys only
+# test: select from shared group by order by keys only
 select id from test group by id order by data
 {"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
-# test: select from reference group by order by desc
+# test: select from shared group by order by desc
 explain select id from test group by id order by id desc
 "
 bytecode [coordinator]
@@ -992,7 +992,7 @@ bytecode [node]
 "
 select id from test group by id order by id desc
 [4, 3, 2, 1, 0]
-# test: select from (select from reference group by order by)
+# test: select from (select from shared group by order by)
 explain select * from (select id from test group by id order by id desc)
 "
 bytecode [coordinator]
@@ -1042,7 +1042,7 @@ bytecode [node]
 "
 select * from (select id from test group by id order by id desc)
 [4, 3, 2, 1, 0]
-# test: select from reference group by order by asc limit
+# test: select from shared group by order by asc limit
 explain select id from test group by id order by id asc limit 1
 "
 bytecode [coordinator]
@@ -1091,7 +1091,7 @@ select id from test group by id order by id asc limit 2
 [0, 1]
 select id from test group by id order by id asc limit 3
 [0, 1, 2]
-# test: select from reference group by order by asc limit/offset
+# test: select from shared group by order by asc limit/offset
 explain select id from test group by id order by id asc limit 1 offset 1
 "
 bytecode [coordinator]
@@ -1141,7 +1141,7 @@ select id from test group by id order by id asc limit 1 offset 2
 [2]
 select id from test group by id order by id asc limit 1 offset 3
 [3]
-# test: select from reference group by order by asc offset
+# test: select from shared group by order by asc offset
 explain select id from test group by id order by id asc offset 1
 "
 bytecode [coordinator]
@@ -1190,7 +1190,7 @@ select id from test group by id order by id asc offset 2
 [2, 3, 4]
 select id from test group by id order by id asc offset 3
 [3, 4]
-# test: select from reference group by order by desc limit
+# test: select from shared group by order by desc limit
 explain select id from test group by id order by id desc limit 1
 "
 bytecode [coordinator]
@@ -1239,7 +1239,7 @@ select id from test group by id order by id desc limit 2
 [4, 3]
 select id from test group by id order by id desc limit 3
 [4, 3, 2]
-# test: select from reference group by order by desc limit/offset
+# test: select from shared group by order by desc limit/offset
 explain select id from test group by id order by id desc limit 1 offset 1
 "
 bytecode [coordinator]
@@ -1289,7 +1289,7 @@ select id from test group by id order by id desc limit 1 offset 2
 [2]
 select id from test group by id order by id desc limit 1 offset 3
 [1]
-# test: select from reference group by order by desc offset
+# test: select from shared group by order by desc offset
 explain select id from test group by id order by id desc offset 1
 "
 bytecode [coordinator]
@@ -1340,7 +1340,7 @@ select id from test group by id order by id desc offset 2
 [2, 1, 0]
 select id from test group by id order by id desc offset 3
 [1, 0]
-# test: select from (select from reference group by order by asc limit)
+# test: select from (select from shared group by order by asc limit)
 explain select * from (select id from test group by id order by id asc limit 1)
 "
 bytecode [coordinator]
@@ -1397,7 +1397,7 @@ select * from (select id from test group by id order by id asc limit 2)
 [0, 1]
 select * from (select id from test group by id order by id asc limit 3)
 [0, 1, 2]
-# test: select from (select from reference group by order by asc limit/offset)
+# test: select from (select from shared group by order by asc limit/offset)
 explain select * from (select id from test group by id order by id asc limit 1 offset 1)
 "
 bytecode [coordinator]
@@ -1453,7 +1453,7 @@ select * from (select id from test group by id order by id asc limit 1 offset 2)
 [2]
 select * from (select id from test group by id order by id asc limit 1 offset 3)
 [3]
-# test: select from (select from reference group by order by asc offset)
+# test: select from (select from shared group by order by asc offset)
 explain select * from (select id from test group by id order by id asc offset 1)
 "
 bytecode [coordinator]
@@ -1510,7 +1510,7 @@ select * from (select id from test group by id order by id asc offset 2)
 [2, 3, 4]
 select * from (select id from test group by id order by id asc offset 3)
 [3, 4]
-# test: select from (select from reference group by order by desc limit)
+# test: select from (select from shared group by order by desc limit)
 explain select * from (select id from test group by id order by id desc limit 1)
 "
 bytecode [coordinator]
@@ -1567,7 +1567,7 @@ select * from (select id from test group by id order by id desc limit 2)
 [4, 3]
 select * from (select id from test group by id order by id desc limit 3)
 [4, 3, 2]
-# test: select from (select from reference group by order by desc limit/offset)
+# test: select from (select from shared group by order by desc limit/offset)
 explain select * from (select id from test group by id order by id desc limit 1 offset 1)
 "
 bytecode [coordinator]
@@ -1623,7 +1623,7 @@ select * from (select id from test group by id order by id desc limit 1 offset 2
 [2]
 select * from (select id from test group by id order by id desc limit 1 offset 3)
 [1]
-# test: select from (select from reference group by order by desc offset)
+# test: select from (select from shared group by order by desc offset)
 explain select * from (select id from test group by id order by id desc offset 1)
 "
 bytecode [coordinator]
@@ -1680,7 +1680,7 @@ select * from (select id from test group by id order by id desc offset 2)
 [2, 1, 0]
 select * from (select id from test group by id order by id desc offset 3)
 [1, 0]
-# test: select from reference group by having order by
+# test: select from shared group by having order by
 explain select data from test where data > 0 group by data having data >= 1 order by data
 "
 bytecode [coordinator]
@@ -1729,7 +1729,7 @@ bytecode [node]
 "
 select data from test where data > 0 group by data having data >= 1 order by data
 [1, 2]
-# test: select from reference group by having order by limit
+# test: select from shared group by having order by limit
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1
 "
 bytecode [coordinator]
@@ -1782,7 +1782,7 @@ bytecode [node]
 "
 select data from test where data > 0 group by data having data >= 1 order by data limit 1
 [1]
-# test: select from reference group by having order by limit/offset
+# test: select from shared group by having order by limit/offset
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
 "
 bytecode [coordinator]
@@ -1836,7 +1836,7 @@ bytecode [node]
 "
 select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
 [2]
-# test: select from reference group by having order by offset
+# test: select from shared group by having order by offset
 explain select data from test where data > 0 group by data having data >= 1 order by data offset 1
 "
 bytecode [coordinator]
@@ -1889,7 +1889,7 @@ bytecode [node]
 "
 select data from test where data > 0 group by data having data >= 1 order by data offset 1
 [2]
-# test: select from (select from reference group by having order by)
+# test: select from (select from shared group by having order by)
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data)
 "
 bytecode [coordinator]
@@ -1947,7 +1947,7 @@ bytecode [node]
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data)
 [1, 2]
-# test: select from (select from reference group by having order by limit)
+# test: select from (select from shared group by having order by limit)
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1)
 "
 bytecode [coordinator]
@@ -2006,7 +2006,7 @@ bytecode [node]
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1)
 [1]
-# test: select from (select from reference group by having order by desc limit)
+# test: select from (select from shared group by having order by desc limit)
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1)
 "
 bytecode [coordinator]
@@ -2065,7 +2065,7 @@ bytecode [node]
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1)
 [2]
-# test: select from (select from reference group by having order by limit/offset)
+# test: select from (select from shared group by having order by limit/offset)
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1)
 "
 bytecode [coordinator]
@@ -2125,7 +2125,7 @@ bytecode [node]
 "
 select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1)
 [2]
-# test: select from (select from reference group by having order by offset)
+# test: select from (select from shared group by having order by offset)
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1)
 "
 bytecode [coordinator]

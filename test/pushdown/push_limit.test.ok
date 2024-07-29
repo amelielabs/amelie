@@ -239,8 +239,8 @@ select * from test offset 0
 select * from test offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
-# test: select from reference limit
-create table test (id int primary key serial) reference
+# test: select from shared limit
+create table test (id int primary key serial) shared
 insert into test generate 20
 select * from test limit 100
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
@@ -289,7 +289,7 @@ select * from test limit 10
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
 select * from test limit 20
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
-# test: select from reference limit 0
+# test: select from shared limit 0
 explain select * from test limit 0
 "
 bytecode [coordinator]
@@ -327,7 +327,7 @@ select * from test limit 0
 []
 select * from test limit -1
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
-# test: select from reference limit offset
+# test: select from shared limit offset
 explain select * from test limit 1 offset 0
 "
 bytecode [coordinator]
@@ -366,7 +366,7 @@ bytecode [node]
 "
 select * from test limit 1 offset 0
 [[0]]
-# test: select from reference limit offset #2
+# test: select from shared limit offset #2
 explain select * from test limit 1 offset 1
 "
 bytecode [coordinator]
@@ -411,7 +411,7 @@ select * from test limit 1 offset 3
 [[3]]
 select * from test limit 1 offset 4
 [[4]]
-# test: select from reference limit offset #3
+# test: select from shared limit offset #3
 select * from test limit 2 offset 1
 [[1], [2]]
 select * from test limit 2 offset 2
@@ -420,12 +420,12 @@ select * from test limit 2 offset 3
 [[3], [4]]
 select * from test limit 2 offset 4
 [[4], [5]]
-# test: select from reference limit offset #4
+# test: select from shared limit offset #4
 select * from test limit 2 offset 0
 [[0], [1]]
 select * from test limit 1 offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
-# test: select from reference limit offset #5
+# test: select from shared limit offset #5
 select * from test limit 0 offset 1
 []
 select * from test limit 0 offset 2
@@ -434,7 +434,7 @@ select * from test limit 0 offset 3
 []
 select * from test limit 0 offset 4
 []
-# test: select from reference offset
+# test: select from shared offset
 explain select * from test offset 1
 "
 bytecode [coordinator]

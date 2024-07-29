@@ -69,14 +69,14 @@ group pushdown
 test push_ddl
 test push_dml
 test push_expr
-test push_reference
+test push_shared
 test push_subselect
 test push_select
 test push_limit
 test push_order_by
 test push_distinct
 test push_group_by
-test push_group_by_reference
+test push_group_by_shared
 test push_group_by_expr
 test push_aggregate
 test push_join

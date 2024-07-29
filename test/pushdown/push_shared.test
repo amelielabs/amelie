@@ -3,60 +3,60 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 
-# test: select from reference
-create table test (id int primary key, data int default 0) reference
-select *.name, *.reference from system.tables()
+# test: select from shared
+create table test (id int primary key, data int default 0) shared
+select *.name, *.shared from system.tables()
 insert into test (id) values (1), (2), (3)
 
 explain select * from test
 select * from test
 
-# test: select from (select from reference)
+# test: select from (select from shared)
 explain select * from (select * from test)
 select * from (select * from test)
 
-# test: select (select expr) from reference
+# test: select (select expr) from shared
 explain select (select test.*) from test
 select (select test.*) from test
 
-# test: select (select from reference)
+# test: select (select from shared)
 explain select (select * from test)
 select (select * from test)
 
-# test: select (select from reference) from expr
+# test: select (select from shared) from expr
 explain select (select a.*, * from test) from [1,2,3] a
 select (select a.*, * from test) from [1,2,3] a
 
 explain select (select a.*, id from test) from [1,2,3] a
 select (select a.*, id from test) from [1,2,3] a
 
-# test: select (select from reference) from reference
+# test: select (select from shared) from shared
 explain select (select a.*, id from test) from test a
 select (select a.*, id from test) from test a
 
 explain select (select a.id, id from test) from test a
 select (select a.id, id from test) from test a
 
-# test: select (select from reference) from (select from expr)
+# test: select (select from shared) from (select from expr)
 explain select (select a.*, id from test) from (select * from [1,2,3]) a
 select (select a.*, id from test) from (select * from [1,2,3]) a
 
-# test: select (select from reference) from (select from reference)
+# test: select (select from shared) from (select from shared)
 explain select (select a.*, id from test) from (select * from test t) a
 select (select a.*, id from test) from (select * from test t) a
 
 explain select (select a.*[0], id from test) from (select * from test t) a
 select (select a.*[0], id from test) from (select * from test t) a
 
-# test: select from reference, expr
+# test: select from shared, expr
 explain select test.*, t.* from test, [1,2,3] t
 select test.*, t.* from test, [1,2,3] t
 
-# test: select from expr, reference
+# test: select from expr, shared
 explain select test.*, t.* from [1,2,3] t, test
 select test.*, t.* from [1,2,3] t, test
 
-# test: select from reference, reference
+# test: select from shared, shared
 explain select test.*, t.* from test, test t
 select test.*, t.* from test, test t
 

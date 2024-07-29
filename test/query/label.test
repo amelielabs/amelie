@@ -3,7 +3,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
-create table test (id int primary key, data int default 1) reference
+create table test (id int primary key, data int default 1) shared
 insert into test (id) values (1), (2), (3)
 
 # test: select label
@@ -16,33 +16,33 @@ select 1 AS name
 select * name from [1,2,3] group by *
 select * name from [1,2,3] group by * having name > 1
 
-# test: select from reference having label
+# test: select from shared having label
 select id z from test group by id having z > 1
 select id z from test group by id having id > 1
 
-# test: select from reference having label aggr
+# test: select from shared having label aggr
 select id, count(*) as z from test group by id having z >= 1
 select id, count(*) as z from test group by id having z > 1
 select id from test group by id having count(*) >= 1
 
-# test: select from reference group by label
+# test: select from shared group by label
 select z from test group by id z having z >= 1
 select * from test group by id z having z >= 1
 
-# test: select from reference group by as label
+# test: select from shared group by as label
 select z from test group by id as z having z >= 1
 select * from test group by id as z having z >= 1
 
-# test: select from (select from reference) label
+# test: select from (select from shared) label
 select * from (select * from test)
 select t.* from (select * from test) t
 
-# test: select from (select label from reference) label
+# test: select from (select label from shared) label
 select t.id from (select * as id from test) t
 select t.id from (select * id from test) t
 select t.id from (select * from test) t
 
-# test: select from (select {} from reference) label
+# test: select from (select {} from shared) label
 select t.id from (select {"id": id} from test) t
 
 drop table test

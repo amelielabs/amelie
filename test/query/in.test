@@ -30,7 +30,7 @@ select 1 in (select * from [3,2,1])
 select 0 in (select * from [3,2,1])
 
 # test: in (select from table)
-create table test (id int primary key) reference
+create table test (id int primary key) shared
 insert into test 1,2,3
 select 1 in (select * from test)
 select 1 in (select id from test)
@@ -57,7 +57,7 @@ select 1 not in (select * from [3,2,1])
 select 1 not in (select * from [3,2,4,0])
 
 # test: not in (select from table)
-create table test (id int primary key) reference
+create table test (id int primary key) shared
 insert into test 1,2,3
 select 1 not in (select * from test)
 select 0 not in (select id from test)

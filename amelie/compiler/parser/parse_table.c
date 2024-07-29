@@ -470,8 +470,8 @@ parse_validate_constraints(Columns* columns)
 void
 parse_table_create(Stmt* self)
 {
-	// CREATE TABLE [IF NOT EXISTS] name (key)
-	// [REFERENCE] [WITH()]
+	// CREATE TABLE [IF NOT EXISTS] name (key) [SHARED]
+	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -504,9 +504,9 @@ parse_table_create(Stmt* self)
 	parse_columns(self, &stmt->config->columns, &index_config->keys);
 	parse_validate_constraints(&stmt->config->columns);
 
-	// [REFERENCE]
-	if (stmt_if(self, KREFERENCE))
-		table_config_set_reference(stmt->config, true);
+	// [SHARED]
+	if (stmt_if(self, KSHARED))
+		table_config_set_shared(stmt->config, true);
 
 	// [WITH]
 	parse_with(self, stmt, index_config);

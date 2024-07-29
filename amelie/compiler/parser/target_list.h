@@ -10,11 +10,11 @@ typedef struct TargetList TargetList;
 
 enum
 {
-	TARGET_NONE            = 0,
-	TARGET_EXPR            = 1 << 0,
-	TARGET_TABLE_REFERENCE = 1 << 1,
-	TARGET_TABLE           = 1 << 2,
-	TARGET_CTE             = 1 << 3
+	TARGET_NONE         = 0,
+	TARGET_EXPR         = 1 << 0,
+	TARGET_TABLE_SHARED = 1 << 1,
+	TARGET_TABLE        = 1 << 2,
+	TARGET_CTE          = 1 << 3
 };
 
 struct TargetList
@@ -88,8 +88,8 @@ target_list_add(TargetList* self,
 	} else
 	if (table)
 	{
-		if (table->config->reference)
-			self->state |= TARGET_TABLE_REFERENCE;
+		if (table->config->shared)
+			self->state |= TARGET_TABLE_SHARED;
 		else
 			self->state |= TARGET_TABLE;
 	} else
@@ -143,7 +143,7 @@ target_list_validate_subqueries(TargetList* self, Target* primary)
 		if (target->group_main)
 			continue;
 
-		if (target->table->config->reference)
+		if (target->table->config->shared)
 			continue;
 
 		error("subqueries to distributed tables are not supported");
@@ -158,7 +158,7 @@ target_list_validate(TargetList* self, Target* primary)
 
 	// SELECT FROM table
 
-	// validate supported targets as expression or reference table
+	// validate supported targets as expression or shared table
 	target_list_validate_subqueries(self, primary);
 }
 
@@ -180,6 +180,6 @@ target_list_validate_dml(TargetList* self, Target* primary)
 		target = target->next_join;
 	}
 
-	// validate supported targets as expression or reference table
+	// validate supported targets as expression or shared table
 	target_list_validate_subqueries(self, primary);
 }

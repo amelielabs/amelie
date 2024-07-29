@@ -184,7 +184,6 @@ static Keyword keywords_r[] =
 	{ KREPLICA,               "replica",               7  },
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
-	{ KREFERENCE,             "reference",             9  },
 	{ KRESET,                 "reset",                 5  },
 	{ KRANDOM,                "random",                6  },
 	{ 0,                       NULL,                   0  }
@@ -201,6 +200,7 @@ static Keyword keywords_s[] =
 	{ KSWITCH,                "switch",                6  },
 	{ KSCHEMA,                "schema",                6  },
 	{ KSERIAL,                "serial",                6  },
+	{ KSHARED,                "shared",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

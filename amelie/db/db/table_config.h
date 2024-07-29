@@ -12,7 +12,7 @@ struct TableConfig
 {
 	Str     schema;
 	Str     name;
-	bool    reference;
+	bool    shared;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -25,7 +25,7 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->reference        = false;
+	self->shared           = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
 	str_init(&self->schema);
@@ -73,9 +73,9 @@ table_config_set_name(TableConfig* self, Str* name)
 }
 
 static inline void
-table_config_set_reference(TableConfig* self, bool reference)
+table_config_set_shared(TableConfig* self, bool value)
 {
-	self->reference = reference;
+	self->shared = value;
 }
 
 static inline void
@@ -106,7 +106,7 @@ table_config_copy(TableConfig* self)
 	guard(table_config_free, copy);
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
-	table_config_set_reference(copy, self->reference);
+	table_config_set_shared(copy, self->shared);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -143,7 +143,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STRING, "schema",     &self->schema    },
 		{ DECODE_STRING, "name",       &self->name      },
 		{ DECODE_ARRAY,  "columns",    &pos_columns     },
-		{ DECODE_BOOL,   "reference",  &self->reference },
+		{ DECODE_BOOL,   "shared",     &self->shared    },
 		{ DECODE_ARRAY,  "indexes",    &pos_indexes     },
 		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
 		{ 0,              NULL,        NULL             },
@@ -186,9 +186,9 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// reference
-	encode_raw(buf, "reference", 9);
-	encode_bool(buf, self->reference);
+	// shared
+	encode_raw(buf, "shared", 6);
+	encode_bool(buf, self->shared);
 
 	// columns
 	encode_raw(buf, "columns", 7);
