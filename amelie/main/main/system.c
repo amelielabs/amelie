@@ -166,6 +166,18 @@ system_configure(Str* options, bool bootstrap)
 }
 
 static void
+system_set_timezone(void)
+{
+	auto name = &config()->timezone.string;
+	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
+	if (! global()->timezone)
+		error("failed to find timezone %.*s", str_size(name), str_of(name));
+
+	log("time: %d timezones loaded", global()->timezone_mgr->ht.count);
+	log("time: system timezone is '%.*s'", str_size(name), str_of(name));
+}
+
+static void
 system_recover(System* self)
 {
 	// ask each node to recover last checkpoint partitions in parallel
@@ -191,6 +203,9 @@ system_start(System* self, Str* options, bool bootstrap)
 	log("");
 	log("amelie.");
 	log("");
+
+	// set system timezone
+	system_set_timezone();
 
 	// prepare builtin functions
 	func_setup(&self->function_mgr);

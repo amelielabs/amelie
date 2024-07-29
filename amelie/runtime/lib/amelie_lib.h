@@ -20,5 +20,7 @@
 #include "lib/id_mgr.h"
 
 // time
+#include "lib/timezone.h"
+#include "lib/timezone_mgr.h"
 #include "lib/interval.h"
 #include "lib/timestamp.h"

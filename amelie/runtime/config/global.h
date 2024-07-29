@@ -10,11 +10,13 @@ typedef struct Global Global;
 
 struct Global
 {
-	Config*   config;
-	Control*  control;
-	Random*   random;
-	Logger*   logger;
-	Resolver* resolver;
+	Config*      config;
+	Control*     control;
+	Timezone*    timezone;
+	TimezoneMgr* timezone_mgr;
+	Random*      random;
+	Logger*      logger;
+	Resolver*    resolver;
 };
 
 #define global() ((Global*)am_task->main_arg_global)

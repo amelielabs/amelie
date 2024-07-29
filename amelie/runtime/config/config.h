@@ -14,6 +14,7 @@ struct Config
 	Var  version;
 	Var  uuid;
 	Var  directory;
+	Var  timezone;
 	// log
 	Var  log_enable;
 	Var  log_to_file;

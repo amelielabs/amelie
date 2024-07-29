@@ -75,6 +75,9 @@ main_prepare(Main* self, MainArgs* args)
 	// init uuid manager
 	random_open(&self->random);
 
+	// read time zones
+	timezone_mgr_open(&self->timezone_mgr);
+
 	// start resolver
 	resolver_start(&self->resolver);
 
@@ -157,14 +160,17 @@ main_init(Main* self)
 	random_init(&self->random);
 	resolver_init(&self->resolver);
 	config_init(&self->config);
+	timezone_mgr_init(&self->timezone_mgr);
 	task_init(&self->task);
 
 	auto global = &self->global;
-	global->config   = &self->config;
-	global->control  = NULL;
-	global->random   = &self->random;
-	global->logger   = &self->logger;
-	global->resolver = &self->resolver;
+	global->config       = &self->config;
+	global->timezone     = NULL;
+	global->timezone_mgr = &self->timezone_mgr;
+	global->control      = NULL;
+	global->random       = &self->random;
+	global->logger       = &self->logger;
+	global->resolver     = &self->resolver;
 }
 
 void
@@ -172,6 +178,7 @@ main_free(Main* self)
 {
 	task_free(&self->task);
 	config_free(&self->config);
+	timezone_mgr_free(&self->timezone_mgr);
 	random_free(&self->random);
 	logger_close(&self->logger);
 	tls_lib_free();
