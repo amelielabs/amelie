@@ -22,6 +22,7 @@ struct Session
 	Plan        plan;
 	Explain     explain;
 	Client*     client;
+	Local       local;
 	SessionLock lock_type;
 	Locker*     lock;
 	Frontend*   frontend;

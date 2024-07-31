@@ -31,7 +31,7 @@ uint64_t
 timer_mgr_gettime(void)
 {
 	struct timespec t;
-	clock_gettime(CLOCK_MONOTONIC, &t);
+	clock_gettime(CLOCK_REALTIME_COARSE, &t);
 	return t.tv_sec*  (uint64_t) 1e9 + t.tv_nsec;
 }
 

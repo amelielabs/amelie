@@ -17,3 +17,4 @@
 
 // global
 #include "config/global.h"
+#include "config/local.h"

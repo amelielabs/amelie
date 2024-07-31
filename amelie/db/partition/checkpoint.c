@@ -173,7 +173,7 @@ checkpoint_create_catalog(Checkpoint* self)
 	buf_init(&text);
 	guard(buf_free, &text);
 	uint8_t* pos = self->catalog->start;
-	json_export_pretty(&text, &pos);
+	json_export_pretty(&text, global()->timezone, &pos);
 
 	// create config file
 	File file;

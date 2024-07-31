@@ -328,8 +328,8 @@ value_add(Value* result, Value* a, Value* b)
 			timestamp_read_value(&ts, b->integer);
 			timestamp_add(&ts, &a->interval);
 			if (b->type == VALUE_TIMESTAMPTZ)
-				return value_set_timestamptz(result, timestamp_of(&ts, true));
-			return value_set_timestamp(result, timestamp_of(&ts, false));
+				return value_set_timestamptz(result, timestamp_of(&ts, NULL));
+			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
 	} else
 	if (a->type == VALUE_TIMESTAMP ||
@@ -342,8 +342,8 @@ value_add(Value* result, Value* a, Value* b)
 			timestamp_read_value(&ts, a->integer);
 			timestamp_add(&ts, &b->interval);
 			if (a->type == VALUE_TIMESTAMPTZ)
-				return value_set_timestamptz(result, timestamp_of(&ts, true));
-			return value_set_timestamp(result, timestamp_of(&ts, false));
+				return value_set_timestamptz(result, timestamp_of(&ts, NULL));
+			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
 	}
 	error("bad + expression types");
@@ -382,8 +382,8 @@ value_sub(Value* result, Value* a, Value* b)
 			timestamp_read_value(&ts, b->integer);
 			timestamp_sub(&ts, &a->interval);
 			if (b->type == VALUE_TIMESTAMPTZ)
-				return value_set_timestamptz(result, timestamp_of(&ts, true));
-			return value_set_timestamp(result, timestamp_of(&ts, false));
+				return value_set_timestamptz(result, timestamp_of(&ts, NULL));
+			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
 	} else
 	if (a->type == VALUE_TIMESTAMP ||
@@ -396,8 +396,8 @@ value_sub(Value* result, Value* a, Value* b)
 			timestamp_read_value(&ts, a->integer);
 			timestamp_sub(&ts, &b->interval);
 			if (a->type == VALUE_TIMESTAMPTZ)
-				return value_set_timestamptz(result, timestamp_of(&ts, true));
-			return value_set_timestamp(result, timestamp_of(&ts, false));
+				return value_set_timestamptz(result, timestamp_of(&ts, NULL));
+			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
 	}
 	error("bad - expression types");
@@ -528,7 +528,7 @@ value_sizeof(Value* result, Value* a)
 }
 
 always_inline hot static inline void
-value_to_string(Value* result, Value* a)
+value_to_string(Value* result, Value* a, Timezone* timezone)
 {
 	auto data = buf_begin();
 	switch (a->type) {
@@ -545,21 +545,20 @@ value_to_string(Value* result, Value* a)
 	case VALUE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
-		int size = timestamp_write(a->integer, (char*)data->position, 128);
+		int size = timestamp_write(a->integer, NULL, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
 	case VALUE_TIMESTAMPTZ:
 	{
-		// TODO: use tz convertion
 		buf_reserve(data, 128);
-		int size = timestamp_write(a->integer, (char*)data->position, 128);
+		int size = timestamp_write(a->integer, timezone, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
 	}
 	default:
-		body_add(data, a, false);
+		body_add(data, a, timezone, false);
 		break;
 	}
 	buf_end(data);
@@ -571,7 +570,7 @@ value_to_string(Value* result, Value* a)
 }
 
 always_inline hot static inline void
-value_to_json(Value* result, Value* a)
+value_to_json(Value* result, Value* a, Timezone* timezone)
 {
 	if (unlikely(a->type != VALUE_STRING))
 		error("json(): string type expected");
@@ -580,7 +579,7 @@ value_to_json(Value* result, Value* a)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &a->string, buf);
+	json_parse(&json, timezone, &a->string, buf);
 	buf_end(buf);
 	value_set_buf(result, buf);
 }

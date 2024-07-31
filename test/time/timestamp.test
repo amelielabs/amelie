@@ -62,17 +62,52 @@ select timestamp '1970-01-01 00:00:00.999999'
 select timestamp('1970-01-01 00:00:00.999999')
 select timestamp('1970-01-01 00:00:00.999999', 123)
 
+# test: precision
+select '1970-01-01 00:00:00.1'::timestamp
+select '1970-01-01 00:00:00.10'::timestamp
+select '1970-01-01 00:00:00.100'::timestamp
+select '1970-01-01 00:00:00.01'::timestamp
+select '1970-01-01 00:00:00.010'::timestamp
+select '1970-01-01 00:00:00.001'::timestamp
+select '1970-01-01 00:00:00.0010'::timestamp
+select '1970-01-01 00:00:00.00100'::timestamp
+select '1970-01-01 00:00:00.001000'::timestamp
+
+select '1970-01-01 00:00:00.0001'::timestamp
+select '1970-01-01 00:00:00.00010'::timestamp
+select '1970-01-01 00:00:00.000100'::timestamp
+
+select '1970-01-01 00:00:00.00001'::timestamp
+select '1970-01-01 00:00:00.000010'::timestamp
+select '1970-01-01 00:00:00.000001'::timestamp
+
+select '1970-01-01 00:00:00.0000001'::timestamp
+
 # test: zulu
 select '1970-01-01 00:00:00.999999Z'::timestamp
 select '1970-01-01 00:00:00.999999Zjunk'::timestamp
 select timestamp '1970-01-01 00:00:00.999999Zjunk'
 
-# test: timezone
+# test: timezone (hh)
 select '1970-01-01 00:00:00.999999+'::timestamp
 select '1970-01-01 00:00:00.999999+0'::timestamp
 select '1970-01-01 00:00:00.999999+00'::timestamp
 select '1970-01-01 00:00:00.999999-00'::timestamp
 select '1970-01-01 00:00:00.999999-000'::timestamp
+
+# test: timezone (hhmm)
+select '1970-01-01 00:00:00.999999+0000'::timestamp
+select '1970-01-01 00:00:00.999999-0000'::timestamp
+select '1970-01-01 00:00:00.999999+0030'::timestamp
+select '1970-01-01 00:00:00.999999+1030'::timestamp
+select '1970-01-01 00:00:00.999999+9930'::timestamp
+
+# test: timezone (hh:mm)
+select '1970-01-01 00:00:00.999999+00:00'::timestamp
+select '1970-01-01 00:00:00.999999-00:00'::timestamp
+select '1970-01-01 00:00:00.999999+00:30'::timestamp
+select '1970-01-01 00:00:00.999999+10:30'::timestamp
+select '1970-01-01 00:00:00.999999+99:30'::timestamp
 
 # test: timezone (ignore)
 select '1970-01-01 00:00:00.999999+00'::timestamp

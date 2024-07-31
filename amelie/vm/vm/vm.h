@@ -23,6 +23,7 @@ struct Vm
 	Value*       result;
 	Buf*         body;
 	Transaction* trx;
+	Local*       local;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
@@ -30,5 +31,5 @@ struct Vm
 void vm_init(Vm*, Db*, Uuid*, Executor*, Plan*, Buf*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Transaction*, Code*, CodeData*, Buf*,
+void vm_run(Vm*, Local*, Transaction*, Code*, CodeData*, Buf*,
             Result*, Value*, int);

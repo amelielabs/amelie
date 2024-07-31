@@ -117,7 +117,7 @@ backup_prepare_state(Backup* self)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &config_str, buf);
+	json_parse(&json, global()->timezone, &config_str, buf);
 
 	encode_map_end(buf);
 }
@@ -215,7 +215,7 @@ backup_main(void* arg)
 
 		// send backup state
 		auto reply = &client->reply;
-		body_add_buf(&reply->content, &self->state);
+		body_add_buf(&reply->content, &self->state, global()->timezone);
 		http_write_reply(reply, 200, "OK");
 		http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
 		http_write(reply, "Content-Type", "application/json");

@@ -88,7 +88,7 @@ replay(Session* self, WalWrite* write)
 	auto executor = self->share->executor;
 	auto plan = &self->plan;
 	plan_reset(plan);
-	plan_create(plan, NULL, NULL, 1, 0);
+	plan_create(plan, &self->local, NULL, NULL, 1, 0);
 
 	ReqList req_list;
 	req_list_init(&req_list);

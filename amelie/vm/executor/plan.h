@@ -32,6 +32,7 @@ struct Plan
 	TrxCache*  trx_cache;
 	ReqCache*  req_cache;
 	Router*    router;
+	Local*     local;
 	List       link_group;
 	List       link;
 };
@@ -51,6 +52,7 @@ plan_init(Plan*     self, Router* router,
 	self->req_cache   = req_cache;
 	self->trx_cache   = trx_cache;
 	self->router      = router;
+	self->local       = NULL;
 	trx_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
@@ -84,18 +86,23 @@ plan_reset(Plan* self)
 	}
 	self->state    = PLAN_NONE;
 	self->snapshot = false;
+	self->local    = NULL;
 	list_init(&self->link_group);
 	list_init(&self->link);
 }
 
 static inline void
-plan_create(Plan* self, Code* code, CodeData* code_data,
-            int   stmt_count,
-            int   stmt_last)
+plan_create(Plan*     self,
+            Local*    local,
+            Code*     code,
+            CodeData* code_data,
+            int       stmt_count,
+            int       stmt_last)
 {
 	auto set_size = self->router->list_count;
-	self->code = code;
+	self->code      = code;
 	self->code_data = code_data;
+	self->local     = local;
 	trx_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, stmt_count, stmt_last);
 	result_create(&self->cte, stmt_count);
@@ -154,7 +161,10 @@ plan_send(Plan* self, int stmt, ReqList* list)
 		{
 			auto route = list_at(Route, link);
 			auto trx = trx_create(self->trx_cache);
-			trx_set(trx, route, self->code, self->code_data, &self->cte);
+			trx_set(trx, self->local, route,
+			        self->code,
+			        self->code_data,
+			        &self->cte);
 			trx_set_set(set, route->order, trx);
 		}
 	}
@@ -169,7 +179,10 @@ plan_send(Plan* self, int stmt, ReqList* list)
 		if (trx == NULL)
 		{
 			trx = trx_create(self->trx_cache);
-			trx_set(trx, route, self->code, self->code_data, &self->cte);
+			trx_set(trx, self->local, route,
+			        self->code,
+			        self->code_data,
+			        &self->cte);
 			trx_set_set(set, route->order, trx);
 		}
 

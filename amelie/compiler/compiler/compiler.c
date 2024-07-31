@@ -70,9 +70,9 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse(Compiler* self, Str* text)
+compiler_parse(Compiler* self, Local* local, Str* text)
 {
-	parse(&self->parser, text);
+	parse(&self->parser, local, text);
 }
 
 static void

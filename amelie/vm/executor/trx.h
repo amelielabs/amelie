@@ -17,6 +17,7 @@ struct Trx
 	Result*     cte;
 	ReqQueue    queue;
 	Route*      route;
+	Local*      local;
 	Channel     src;
 	List        link;
 	TrxCache*   cache;
@@ -29,6 +30,7 @@ trx_allocate(TrxCache* cache)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->cte       = NULL;
+	self->local     = NULL;
 	self->route     = NULL;
 	self->cache     = cache;
 	transaction_init(&self->trx);
@@ -50,6 +52,7 @@ trx_free(Trx* self)
 static inline void
 trx_reset(Trx* self)
 {
+	self->local     = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->cte       = NULL;
@@ -61,11 +64,13 @@ trx_reset(Trx* self)
 
 static inline void
 trx_set(Trx*      self,
+        Local*    local,
         Route*    route,
         Code*     code,
         CodeData* code_data,
         Result*   cte)
 {
+	self->local     = local;
 	self->code      = code;
 	self->code_data = code_data;
 	self->route     = route;

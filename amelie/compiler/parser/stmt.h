@@ -58,6 +58,7 @@ struct Stmt
 	Json*        json;
 	Lex*         lex;
 	FunctionMgr* function_mgr;
+	Local*       local;
 	Db*          db;
 	List         link;
 };
@@ -71,6 +72,7 @@ struct StmtList
 static inline Stmt*
 stmt_allocate(Db*          db,
               FunctionMgr* function_mgr,
+              Local*       local,
               Lex*         lex,
               CodeData*    data,
               Json*        json,
@@ -86,6 +88,7 @@ stmt_allocate(Db*          db,
 	self->json         = json;
 	self->lex          = lex;
 	self->function_mgr = function_mgr;
+	self->local        = local;
 	self->db           = db;
 	columns_init(&self->columns);
 	target_list_init(&self->target_list);

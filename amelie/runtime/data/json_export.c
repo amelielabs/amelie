@@ -11,7 +11,7 @@
 #include <amelie_data.h>
 
 static void
-json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
+json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** pos)
 {
 	char buf[256];
 	int  buf_len;
@@ -65,7 +65,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 		buf_write(data, "[", 1);
 		while (! data_read_array_end(pos))
 		{
-			json_export_as(data, pretty, deep, pos);
+			json_export_as(data, timezone, pretty, deep, pos);
 			// ,
 			if (! data_is_array_end(*pos))
 				buf_write(data, ", ", 2);
@@ -84,10 +84,10 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 				for (int i = 0; i < deep + 1; i++)
 					buf_write(data, "  ", 2);
 				// key
-				json_export_as(data, pretty, deep + 1, pos);
+				json_export_as(data, timezone, pretty, deep + 1, pos);
 				buf_write(data, ": ", 2);
 				// value
-				json_export_as(data, pretty, deep + 1, pos);
+				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
 				if (data_is_map_end(*pos))
 					buf_write(data, "\n", 1);
@@ -103,10 +103,10 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 			while (! data_read_map_end(pos))
 			{
 				// key
-				json_export_as(data, pretty, deep + 1, pos);
+				json_export_as(data, timezone, pretty, deep + 1, pos);
 				buf_write(data, ": ", 2);
 				// value
-				json_export_as(data, pretty, deep + 1, pos);
+				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
 				if (! data_is_map_end(*pos))
 					buf_write(data, ", ", 2);
@@ -130,7 +130,7 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 	{
 		int64_t value;
 		data_read_timestamp(pos, &value);
-		buf_len = timestamp_write(value, buf, sizeof(buf));
+		buf_len = timestamp_write(value, NULL, buf, sizeof(buf));
 		buf_write(data, "\"", 1);
 		buf_write(data, buf, buf_len);
 		buf_write(data, "\"", 1);
@@ -138,10 +138,9 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 	}
 	case AM_TSTZ:
 	{
-		// TODO: pass tz for correction
 		int64_t value;
 		data_read_timestamp(pos, &value);
-		buf_len = timestamp_write(value, buf, sizeof(buf));
+		buf_len = timestamp_write(value, timezone, buf, sizeof(buf));
 		buf_write(data, "\"", 1);
 		buf_write(data, buf, buf_len);
 		buf_write(data, "\"", 1);
@@ -154,13 +153,13 @@ json_export_as(Buf* data, bool pretty, int deep, uint8_t** pos)
 }
 
 void
-json_export(Buf* self, uint8_t** pos)
+json_export(Buf* self, Timezone* timezone, uint8_t** pos)
 {
-	json_export_as(self, false, 0, pos);
+	json_export_as(self, timezone, false, 0, pos);
 }
 
 void
-json_export_pretty(Buf* self, uint8_t** pos)
+json_export_pretty(Buf* self, Timezone* timezone, uint8_t** pos)
 {
-	json_export_as(self, true, 0, pos);
+	json_export_as(self, timezone, true, 0, pos);
 }

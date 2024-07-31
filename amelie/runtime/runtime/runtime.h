@@ -317,3 +317,9 @@ time_ms(void)
 {
 	return timer_mgr_time_ms(&am_task->timer_mgr);
 }
+
+static inline uint64_t
+time_us(void)
+{
+	return timer_mgr_time_us(&am_task->timer_mgr);
+}

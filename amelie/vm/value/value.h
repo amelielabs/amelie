@@ -30,7 +30,7 @@ struct ValueObj
 {
 	void (*free)(ValueObj*);
 	void (*encode)(ValueObj*, Buf*);
-	void (*decode)(ValueObj*, Buf*);
+	void (*decode)(ValueObj*, Buf*, Timezone*);
 	bool (*in)(ValueObj*, Value*);
 };
 

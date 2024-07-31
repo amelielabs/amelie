@@ -36,6 +36,7 @@ parser_init(Parser*      self,
 	self->stmt         = NULL;
 	self->data         = data;
 	self->function_mgr = function_mgr;
+	self->local        = NULL;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
 	lex_init(&self->lex, keywords);
@@ -47,6 +48,7 @@ parser_reset(Parser* self)
 {
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
+	self->local   = NULL;
 	list_foreach_safe(&self->stmt_list.list)
 	{
 		auto stmt = list_at(Stmt, link);

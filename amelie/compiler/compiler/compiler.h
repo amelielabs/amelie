@@ -25,7 +25,7 @@ struct Compiler
 void compiler_init(Compiler*, Db*, FunctionMgr*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
-void compiler_parse(Compiler*, Str*);
+void compiler_parse(Compiler*, Local*, Str*);
 void compiler_emit(Compiler*);
 
 static inline Stmt*

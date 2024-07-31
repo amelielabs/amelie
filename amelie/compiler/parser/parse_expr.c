@@ -447,8 +447,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &spec->string);
-		auto with_tz = value->id == KTIMESTAMPTZ;
-		value->integer = timestamp_of(&ts, with_tz);
+		auto tz = value->id == KTIMESTAMPTZ ? self->local->timezone: NULL;
+		value->integer = timestamp_of(&ts, tz);
 		break;
 	}
 
@@ -520,8 +520,8 @@ expr_value_between(Stmt* self)
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &spec->string);
-		auto with_tz = value->id == KTIMESTAMPTZ;
-		value->integer = timestamp_of(&ts, with_tz);
+		auto tz = value->id == KTIMESTAMPTZ ? self->local->timezone: NULL;
+		value->integer = timestamp_of(&ts, tz);
 		break;
 	}
 	default:

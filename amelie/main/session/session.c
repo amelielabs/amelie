@@ -42,6 +42,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->lock_type = SESSION_LOCK_NONE;
 	self->lock      = NULL;
 	self->share     = share;
+	local_init(&self->local, global());
 	explain_init(&self->explain);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
@@ -127,7 +128,8 @@ session_explain(Session* self)
 	                   &self->plan,
 	                   false);
 	guard_buf(buf);
-	body_add_buf(&self->client->reply.content, buf);
+	body_add_buf(&self->client->reply.content, buf,
+	              self->local.timezone);
 }
 
 hot static inline void
@@ -147,7 +149,9 @@ session_execute_distributed(Session* self)
 	int last  = -1;
 	if (compiler->last)
 		last = compiler->last->order;
-	plan_create(plan, &compiler->code_node, &compiler->code_data, stmts, last);
+	plan_create(plan, &self->local, &compiler->code_node,
+	            &compiler->code_data,
+	            stmts, last);
 
 	// mark plan for distributed snapshot case
 	if (compiler->snapshot)
@@ -164,7 +168,8 @@ session_execute_distributed(Session* self)
 	Exception e;
 	if (enter(&e))
 	{
-		vm_run(&self->vm, NULL,
+		vm_run(&self->vm, &self->local,
+		       NULL,
 		       &compiler->code_coordinator,
 		       &compiler->code_data,
 		       NULL,
@@ -195,7 +200,7 @@ session_execute(Session* self)
 	// parse SQL query
 	Str text;
 	buf_str(&self->client->request.content, &text);
-	compiler_parse(compiler, &text);
+	compiler_parse(compiler, &self->local, &text);
 
 	if (! compiler->parser.stmt_list.list_count)
 	{

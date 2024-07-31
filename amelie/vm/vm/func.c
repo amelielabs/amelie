@@ -98,19 +98,19 @@ func_string(Vm*       vm,
 {
 	unused(vm);
 	function_validate_argc(func, argc);
-	value_to_string(result, argv[0]);
+	value_to_string(result, argv[0], vm->local->timezone);
 }
 
 hot static void
 func_json(Vm*       vm,
-            Function* func,
-            Value*    result,
-            int       argc,
-            Value**   argv)
+          Function* func,
+          Value*    result,
+          int       argc,
+          Value**   argv)
 {
 	unused(vm);
 	function_validate_argc(func, argc);
-	value_to_json(result, argv[0]);
+	value_to_json(result, argv[0], vm->local->timezone);
 }
 
 hot static void
@@ -142,7 +142,7 @@ func_timestamp(Vm*       vm,
 	Timestamp ts;
 	timestamp_init(&ts);
 	timestamp_read(&ts, &argv[0]->string);
-	auto time = timestamp_of(&ts, false);
+	auto time = timestamp_of(&ts, NULL);
 	value_set_timestamp(result, time);
 }
 
@@ -159,7 +159,7 @@ func_timestamptz(Vm*       vm,
 	Timestamp ts;
 	timestamp_init(&ts);
 	timestamp_read(&ts, &argv[0]->string);
-	auto time = timestamp_of(&ts, true);
+	auto time = timestamp_of(&ts, vm->local->timezone);
 	value_set_timestamptz(result, time);
 }
 
@@ -181,12 +181,12 @@ func_generate_series(Vm*       vm,
 
 	// end
 	timestamp_read_value(&ts, argv[1]->integer);
-	uint64_t end = timestamp_of(&ts, false);
+	uint64_t end = timestamp_of(&ts, NULL);
 
 	// pos
 	timestamp_init(&ts);
 	timestamp_read_value(&ts, argv[0]->integer);
-	uint64_t pos = timestamp_of(&ts, false);
+	uint64_t pos = timestamp_of(&ts, NULL);
 
 	auto buf = buf_begin();
 	encode_array(buf);
@@ -194,7 +194,7 @@ func_generate_series(Vm*       vm,
 	{
 		encode_timestamp(buf, pos);
 		timestamp_add(&ts, &argv[2]->interval);
-		pos = timestamp_of(&ts, false);
+		pos = timestamp_of(&ts, NULL);
 	}
 	encode_array_end(buf);
 	buf_end(buf);
@@ -218,6 +218,19 @@ func_time_bucket(Vm*       vm,
 	uint64_t span = iv->us + iv->d * 86400000000ULL;
 	uint64_t ts = argv[1]->integer / span * span;
 	value_set_timestamp(result, ts);
+}
+
+hot static void
+func_now(Vm*       vm,
+         Function* func,
+         Value*    result,
+         int       argc,
+         Value**   argv)
+{
+	unused(vm);
+	unused(argv);
+	function_validate_argc(func, argc);
+	value_set_timestamptz(result, time_us());
 }
 
 hot static void
@@ -400,6 +413,7 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "timestamptz",     (FunctionMain)func_timestamptz,     1 },
 		{ "public", "generate_series", (FunctionMain)func_generate_series, 3 },
 		{ "public", "time_bucket",     (FunctionMain)func_time_bucket,     2 },
+		{ "public", "now",             (FunctionMain)func_now,             0 },
 		{ "public", "error",           (FunctionMain)func_error,           1 },
 		// system
 		{ "system", "config",          (FunctionMain)func_config,          0 },

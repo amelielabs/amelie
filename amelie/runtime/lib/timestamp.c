@@ -32,7 +32,7 @@ timestamp_parse_part(char* pos, char* pos_end)
 hot static void
 timestamp_parse(Timestamp* self, Str* str)
 {
-	// yyyy-mm-dd< |T>hh:mm:ss[.ssssss][+/-hh|Z|]
+	// yyyy-mm-dd< |T>hh:mm:ss[.ssssss][+/-hh[:mm]|Z|]
 	auto pos = str->pos;
 	auto end = str->end;
 
@@ -97,11 +97,24 @@ timestamp_parse(Timestamp* self, Str* str)
 			resolution++;
 			pos++;
 		}
-		if (resolution == 3)
-			self->us *= 1000; // convert to us
-		else
-		if (unlikely(resolution != 6))
+		// convert to us
+		switch (resolution) {
+		case 1: self->us *= 100000;
+			break;
+		case 2: self->us *= 10000;
+			break;
+		case 3: self->us *= 1000;
+			break;
+		case 4: self->us *= 100;
+			break;
+		case 5: self->us *= 10;
+			break;
+		case 6:
+			break;
+		case 0:
+		default:
 			goto error;
+		}
 	}
 
 	// eof (local time)
@@ -121,7 +134,7 @@ timestamp_parse(Timestamp* self, Str* str)
 
 	// +/-hh
 	pos_end = pos + 3;
-	if (unlikely(pos_end != end))
+	if (unlikely(pos_end > end))
 		goto error;
 
 	// +/-
@@ -134,10 +147,26 @@ timestamp_parse(Timestamp* self, Str* str)
 	pos++;
 
 	// hh
-	self->zone = timestamp_parse_part(pos, pos_end);
-	// todo: hh::mm
+	int hh = timestamp_parse_part(pos, pos_end);
+	pos += 2;
+
+	// [:]mm
+	int mm = 0;
+	if (pos != end)
+	{
+		if (*pos == ':')
+			pos++;
+		pos_end = pos + 2;
+		if (unlikely(pos_end != end))
+			goto error;
+		mm = timestamp_parse_part(pos, pos_end);
+	}
+
+	// store timezone offset in seconds
+	self->zone = hh * 60 * 60 + mm * 60;
 	if (negative)
 		self->zone = -self->zone;
+
 	self->zone_set = true;
 	return;
 
@@ -167,11 +196,11 @@ timestamp_validate(Timestamp* self)
 	{
 		if (self->zone > 0)
 		{
-			if (! (self->zone >= 0 && self->zone <= 24))
+			if (! (self->zone >= 0 && self->zone <= 24 * 60 * 60))
 				goto error;
 		} else
 		{
-			if (self->zone < -24)
+			if (self->zone < -24 * 60 * 60)
 				goto error;
 		}
 	}
@@ -192,13 +221,12 @@ timestamp_read(Timestamp* self, Str* str)
 	// do corrections to support mktime
 	self->time.tm_year -= 1900;
 	self->time.tm_mon--;
-
-	// todo: set zone
 }
 
 hot void
 timestamp_read_value(Timestamp* self, uint64_t value)
 {
+	// UTC time in seconds
 	time_t time = value / 1000000ULL;
 	self->us = value % 1000000ULL;
 	if (! gmtime_r(&time, &self->time))
@@ -206,47 +234,95 @@ timestamp_read_value(Timestamp* self, uint64_t value)
 }
 
 hot uint64_t
-timestamp_of(Timestamp* self, bool with_timezone)
+timestamp_of(Timestamp* self, Timezone* timezone)
 {
-	// mktime (UTC)
+	// mktime
 	self->time.tm_isdst = -1;	
 	time_t time = mktime(&self->time);
 	if (unlikely(time == (time_t)-1))
 		timestamp_error();
 
+	auto zone_set = self->zone_set;
+	if (timezone)
+	{
+		if (! zone_set)
+		{
+			auto tztime = timezone_match(timezone, time);
+			assert(tztime);
+			time -= tztime->utoff;
+		}
+	} else
+	{
+		// do not apply timezone adjustment if timezone is
+		// not supplied
+		zone_set = false;
+	}
+
+	if (zone_set)
+		time -= self->zone;
+
 	uint64_t value;
 	value  = time * 1000000ULL; // convert to us
 	value += self->us;
-
-	// do timezone adjustment
-	if (with_timezone && self->zone_set)
-	{
-		int zone_adj = self->zone * 60 * 1000000ULL;
-		value += zone_adj;
-	}
-
 	return value;
 }
 
 hot int
-timestamp_write(uint64_t value, char* str, int str_size)
+timestamp_write(uint64_t value, Timezone* timezone, char* str, int str_size)
 {
+	// UTC time in seconds
 	time_t time = value / 1000000ULL;
+
+	// do timezone adjustment
+	TimezoneTime* tztime = NULL;
+	if (timezone)
+	{
+		tztime = timezone_match(timezone, time);
+		assert(tztime);
+		time += tztime->utoff;
+	}
 	Timestamp ts;
 	timestamp_init(&ts);
 	ts.us = value % 1000000ULL;
 	if (! gmtime_r(&time, &ts.time))
 		timestamp_error();
 
+	// timezone offset
+	char timezone_sz[16] = { 0 };
+	if (timezone)
+	{
+		int sign   = tztime->utoff >= 0 ? 1: -1;
+		int offset = tztime->utoff * sign;
+		int hr     =  offset / 3600;
+		int min    = (offset - (3600 * hr)) / 60;
+		if (min != 0)
+			snprintf(timezone_sz, sizeof(timezone_sz), "%c%02d:%02d",
+			         sign > 0 ? '+' : '-', hr, min);
+		else
+			snprintf(timezone_sz, sizeof(timezone_sz), "%c%02d",
+			         sign > 0 ? '+' : '-', hr);
+	}
+
+	// display in ms or us
+	char fraction_sz[16];
+	if (ts.us == 0) {
+		fraction_sz[0] = 0;
+	} else
+	if ((ts.us % 1000) == 0)
+		snprintf(fraction_sz, sizeof(fraction_sz), ".%03d", ts.us / 1000);
+	else
+		snprintf(fraction_sz, sizeof(fraction_sz), ".%06d", ts.us);
+
 	int len;
-	len = snprintf(str, str_size, "%d-%02d-%02d %02d:%02d:%02d.%06dZ",
+	len = snprintf(str, str_size, "%d-%02d-%02d %02d:%02d:%02d%s%s",
 	               ts.time.tm_year + 1900,
 	               ts.time.tm_mon  + 1,
 	               ts.time.tm_mday,
 	               ts.time.tm_hour,
 	               ts.time.tm_min,
 	               ts.time.tm_sec,
-	               ts.us);
+	               fraction_sz,
+	               timezone_sz);
 	return len;
 }
 

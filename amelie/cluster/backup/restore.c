@@ -100,7 +100,7 @@ restore_start(Restore* self)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &text, &self->state_data);
+	json_parse(&json, global()->timezone, &text, &self->state_data);
 
 	uint8_t* pos = self->state_data.start;
 	Decode map[] =
@@ -199,7 +199,7 @@ restore_write_config(Restore* self)
 	buf_init(&text);
 	guard(buf_free, &text);
 	uint8_t* pos = self->config;
-	json_export_pretty(&text, &pos);
+	json_export_pretty(&text, global()->timezone, &pos);
 
 	// create config file
 	char path[PATH_MAX];

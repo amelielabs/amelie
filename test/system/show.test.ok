@@ -87,6 +87,10 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
+  "name": "now",
+  "argc": 0
+}, {
+  "schema": "public",
   "name": "error",
   "argc": 1
 }, {
@@ -183,6 +187,10 @@ select system.functions()
   "schema": "public",
   "name": "time_bucket",
   "argc": 2
+}, {
+  "schema": "public",
+  "name": "now",
+  "argc": 0
 }, {
   "schema": "public",
   "name": "error",

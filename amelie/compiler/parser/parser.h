@@ -24,6 +24,7 @@ struct Parser
 	Json         json;
 	Lex          lex;
 	FunctionMgr* function_mgr;
+	Local*       local;
 	Db*          db;
 };
 

@@ -108,7 +108,7 @@ checkpoint_mgr_open_catalog(CatalogMgr* catalog_mgr)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &catalog_data, NULL);
+	json_parse(&json, global()->timezone, &catalog_data, NULL);
 
 	// restore system objects
 	uint8_t* pos = json.buf->start;

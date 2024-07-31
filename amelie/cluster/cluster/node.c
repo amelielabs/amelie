@@ -94,7 +94,9 @@ node_execute(Node* self, Trx* trx)
 			} else
 			{
 				vm_reset(&self->vm);
-				vm_run(&self->vm, &trx->trx, trx->code, trx->code_data,
+				vm_run(&self->vm, trx->local,
+				       &trx->trx,
+				        trx->code, trx->code_data,
 				       &req->arg,
 				        trx->cte,
 				       &req->result,

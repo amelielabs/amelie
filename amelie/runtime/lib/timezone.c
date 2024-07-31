@@ -113,6 +113,7 @@ timezone_free(Timezone* self)
 	am_free(self);
 }
 
+#if 0
 hot TimezoneTime*
 timezone_match(Timezone* self, time_t time)
 {
@@ -144,47 +145,46 @@ timezone_match(Timezone* self, time_t time)
 	auto type = self->transition_types[min - 1];
 	return &self->times[type];
 }
+#endif
 
-/*
-tzzone_t *libtz_tzzone_at(const tzinfo_t *zi, int64_t whence) {
-  int l = 1, r = zi->timecnt;
-  if(r == 0) return &zi->tz[0];
+hot TimezoneTime*
+timezone_match(Timezone* self, time_t time)
+{
+	if (self->header.timecnt == 0)
+		return &self->times[0];
 
-  int i = (l+r)/2;
-  while(i > l)
-  {
-    if(l >= zi->timecnt)
+	int min = 1;
+	int max = self->header.timecnt;
+	int mid = (min + max) / 2;
+	while (mid > min)
 	{
-      i = zi->timecnt;
-      break;
-    }
+		if (min >= (int)self->header.timecnt)
+		{
+			mid = self->header.timecnt;
+			break;
+		}
+		if (min == mid)
+			break;
 
-    if(l == i) break;
+		if (self->transition_times[mid] == time)
+		{
+			mid++;
+			break;
+		}
+		if (self->transition_times[mid] < time)
+			min = mid + 1;
+		else
+			max = mid - 1;
 
-    if(zi->trans_times[i] == whence) { i++; break; }
-    else if(zi->trans_times[i] > whence) r = i-1;
-    else l = i+1;
-    i = (l+r)/2;
-  }
-  if(i > zi->timecnt) i = zi->timecnt;
+		mid = (min + max) / 2;
+	}
 
-  if(whence > zi->trans_times[i]) i++;
-  return &zi->tz[zi->trans_types[i-1]];
+	if (mid > (int)self->header.timecnt)
+		mid = self->header.timecnt;
+
+	if (time > self->transition_times[mid])
+		mid++;
+
+	auto type = self->transition_types[mid - 1];
+	return &self->times[type];
 }
-
-struct tm *
-libtz_zonetime(const tzinfo_t *zi, const time_t *timep, struct tm *result, const tzzone_t **tzr) {
-  struct tm *rv;
-  time_t whence;
-  if(!zi) return NULL;
-  whence = timep ? *timep : time(NULL);
-  tzzone_t *tz = libtz_tzzone_at(zi, whence);
-  if(!tz) return NULL;
-  whence += tz->offset;
-  rv = gmtime_r(&whence, result);
-  if(!rv) return NULL;
-  rv->tm_isdst = tz->dst;
-  if(tzr) *tzr = tz;
-  return rv;
-}
-*/

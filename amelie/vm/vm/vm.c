@@ -44,6 +44,7 @@ vm_init(Vm*          self,
 	self->result       = NULL;
 	self->body         = body;
 	self->trx          = NULL;
+	self->local        = NULL;
 	self->function_mgr = function_mgr;
 	self->db           = db;
 	reg_init(&self->r);
@@ -73,6 +74,7 @@ vm_reset(Vm* self)
 
 hot void
 vm_run(Vm*          self,
+       Local*       local,
        Transaction* trx,
        Code*        code,
        CodeData*    code_data,
@@ -81,6 +83,7 @@ vm_run(Vm*          self,
        Value*       result,
        int          start)
 {
+	self->local      = local;
 	self->trx        = trx;
 	self->code       = code;
 	self->code_data  = code_data;
@@ -261,7 +264,7 @@ cresult:
 
 cbody:
 	// [order]
-	body_add(self->body, result_at(cte, op->a), true);
+	body_add(self->body, result_at(cte, op->a), local->timezone, true);
 	op_next;
 
 ccte_set:

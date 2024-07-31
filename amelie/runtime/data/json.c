@@ -16,6 +16,7 @@ json_init(Json* self)
 	self->pos = NULL;
 	self->end = NULL;
 	self->buf = NULL;
+	self->tz  = NULL;
 	buf_init(&self->buf_data);
 	buf_init(&self->stack);
 }
@@ -33,6 +34,7 @@ json_reset(Json* self)
 	self->pos = NULL;
 	self->end = NULL;
 	self->buf = NULL;
+	self->tz  = NULL;
 	buf_reset(&self->buf_data);
 	buf_reset(&self->stack);
 }
@@ -91,11 +93,10 @@ json_cast(Json* self, Str* str)
 	// ::timestamptz
 	if (json_is_keyword(self, "::timestamptz", 13))
 	{
-		// todo: pass tzz
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, str);
-		encode_timestamptz(self->buf, timestamp_of(&ts, true));
+		encode_timestamptz(self->buf, timestamp_of(&ts, self->tz));
 		self->pos += 13;
 		return;
 	}
@@ -106,7 +107,7 @@ json_cast(Json* self, Str* str)
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, str);
-		encode_timestamp(self->buf, timestamp_of(&ts, false));
+		encode_timestamp(self->buf, timestamp_of(&ts, NULL));
 		self->pos += 11;
 		return;
 	}
@@ -244,10 +245,11 @@ json_parse_const(Json* self)
 }
 
 hot void
-json_parse(Json* self, Str* text, Buf* buf)
+json_parse(Json* self, Timezone* tz, Str* text, Buf* buf)
 {
 	self->pos = str_of(text);
 	self->end = str_of(text) + str_size(text);
+	self->tz  = tz;
 	if (buf == NULL)
 	{
 		self->buf = &self->buf_data;

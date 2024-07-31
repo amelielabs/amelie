@@ -419,6 +419,7 @@ session_execute_utility(Session* self)
 	if (buf)
 	{
 		guard_buf(buf);
-		body_add_buf(&self->client->reply.content, buf);
+		body_add_buf(&self->client->reply.content, buf,
+		              self->local.timezone);
 	}
 }

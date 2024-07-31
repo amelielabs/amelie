@@ -195,7 +195,7 @@ config_set(Config* self, Str* options)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, options, NULL);
+	json_parse(&json, NULL, options, NULL);
 	uint8_t* pos = json.buf->start;
 	config_set_data(self, &pos);
 }
@@ -227,7 +227,7 @@ config_save_to(Config* self, const char* path)
 	buf_init(&text);
 	guard(buf_free, &text);
 	uint8_t* pos = buf.start;
-	json_export_pretty(&text, &pos);
+	json_export_pretty(&text, NULL, &pos);
 
 	// create config file
 	File file;
