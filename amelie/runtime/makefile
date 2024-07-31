@@ -41,6 +41,7 @@ OBJECTS        = \
                  lib/timestamp.o \
                  data/json.o \
                  data/json_export.o \
+                 config/config_local.o \
                  config/config.o \
                  config/catalog_mgr.o
 $(LIB): clean $(OBJECTS)

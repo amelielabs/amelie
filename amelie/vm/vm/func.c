@@ -258,7 +258,7 @@ func_config(Vm*       vm,
 	unused(vm);
 	unused(argv);
 	function_validate_argc(func, argc);
-	auto buf = config_list(config());
+	auto buf = config_list(config(), &vm->local->config);
 	value_set_buf(result, buf);
 }
 

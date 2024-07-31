@@ -73,7 +73,7 @@ ctl_show(Session* self)
 		buf = view_mgr_list(&share->db->view_mgr);
 	else
 	if (str_compare_raw(name, "all", 3))
-		buf = config_list(global()->config);
+		buf = config_list(global()->config, &self->local.config);
 	else
 	{
 		auto var = config_find(global()->config, name);
@@ -82,6 +82,8 @@ ctl_show(Session* self)
 		if (unlikely(var == NULL))
 			error("SHOW name: '%.*s' not found", str_size(name),
 			      str_of(name));
+		if (var_is(var, VAR_L))
+			var = config_local_find(&self->local.config, name);
 		buf = buf_begin();
 		var_encode(var, buf);
 		buf_end(buf);
@@ -111,8 +113,32 @@ ctl_set(Session* self)
 	if (! var_is(var, VAR_E))
 		session_lock(self, SESSION_LOCK_EXCLUSIVE);
 
-	// set value
+	// local variable
 	auto value = arg->value;
+	if (var_is(var, VAR_L))
+	{
+		auto local = &self->local;
+		var = config_local_find(&local->config, name);
+		assert(var);
+
+		// validate and set timezone first
+		if (var == &local->config.timezone)
+		{
+			if (value->id != KSTRING)
+				error("set '%.*s': string value expected", str_size(name),
+				      str_of(name));
+			auto timezone = timezone_mgr_find(global()->timezone_mgr, &value->string);
+			if (! timezone)
+				error("set '%.*s': unable to find timezone '%.*s'", str_size(name),
+				      str_of(name), str_size(&value->string),
+				      str_of(&value->string));
+
+			// set new timezone
+			local->timezone = timezone;
+		}
+	}
+
+	// set value
 	switch (var->type) {
 	case VAR_BOOL:
 	{

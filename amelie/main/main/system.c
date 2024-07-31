@@ -168,7 +168,7 @@ system_configure(Str* options, bool bootstrap)
 static void
 system_set_timezone(void)
 {
-	auto name = &config()->timezone.string;
+	auto name = &config()->timezone_default.string;
 	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
 	if (! global()->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));

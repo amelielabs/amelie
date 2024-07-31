@@ -62,6 +62,7 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
+	local_free(&self->local);
 	am_free(self);
 }
 

@@ -705,17 +705,17 @@ select 1; show all
 show all; select 1
 {"code": 1, "msg": "CTE or multi-statement utility commands are not supported"}
 with config as (select system.config()) select * from config
-["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", true, true, false, true, false, "", "", "", [{
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", "UTC", true, true, false, true, false, "", "", "", [{
   "host": "127.0.0.1",
   "port": 3485
 }], 1, 3, true, 104857600, false, false, false, "", 3000, false, 0, 0, 0]
 select (select * from system.config())
-["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", true, true, false, true, false, "", "", "", [{
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", "UTC", true, true, false, true, false, "", "", "", [{
   "host": "127.0.0.1",
   "port": 3485
 }], 1, 3, true, 104857600, false, false, false, "", 3000, false, 0, 0, 0]
 select * from (select * from system.config())
-["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", true, true, false, true, false, "", "", "", [{
+["0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", "UTC", true, true, false, true, false, "", "", "", [{
   "host": "127.0.0.1",
   "port": 3485
 }], 1, 3, true, 104857600, false, false, false, "", 3000, false, 0, 0, 0]

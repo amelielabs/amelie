@@ -15,6 +15,7 @@ struct Config
 	Var  uuid;
 	Var  directory;
 	Var  timezone;
+	Var  timezone_default;
 	// log
 	Var  log_enable;
 	Var  log_to_file;
@@ -68,5 +69,5 @@ void config_set(Config*, Str*);
 void config_open(Config*, const char*);
 void config_save(Config*, const char*);
 void config_print(Config*);
-Buf* config_list(Config*);
+Buf* config_list(Config*, ConfigLocal*);
 Var* config_find(Config*, Str*);

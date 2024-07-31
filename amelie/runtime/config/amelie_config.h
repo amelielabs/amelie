@@ -8,6 +8,7 @@
 
 // config
 #include "config/var.h"
+#include "config/config_local.h"
 #include "config/config.h"
 #include "config/control.h"
 

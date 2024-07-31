@@ -78,7 +78,8 @@ config_prepare(Config* self)
 		{ "version",                 VAR_STRING, VAR_E,                &self->version,                 "0.0",       0                },
 		{ "uuid",                    VAR_STRING, VAR_C,                &self->uuid,                    NULL,        0                },
 		{ "directory",               VAR_STRING, VAR_E,                &self->directory,               NULL,        0                },
-		{ "timezone",                VAR_STRING, VAR_C,                &self->timezone,                "UTC",       0                },
+		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,    &self->timezone,                NULL,        0                },
+		{ "timezone_default",        VAR_STRING, VAR_C,                &self->timezone_default,        "UTC",       0                },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                &self->log_enable,              NULL,        true             },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                &self->log_to_file,             NULL,        true             },
@@ -293,7 +294,7 @@ config_print(Config* self)
 }
 
 Buf*
-config_list(Config* self)
+config_list(Config* self, ConfigLocal* local)
 {
 	auto buf = buf_begin();
 	encode_map(buf);
@@ -303,6 +304,8 @@ config_list(Config* self)
 		if (var_is(var, VAR_H) || var_is(var, VAR_S))
 			continue;
 		encode_string(buf, &var->name);
+		if (var_is(var, VAR_L))
+			var = config_local_find(local, &var->name);
 		var_encode(var, buf);
 	}
 	encode_map_end(buf);
