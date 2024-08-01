@@ -91,6 +91,10 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "bool",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "real",
   "argc": 1
 }, {
@@ -194,6 +198,10 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "int",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "bool",
   "argc": 1
 }, {
   "schema": "public",
