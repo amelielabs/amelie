@@ -155,6 +155,21 @@ array_find(uint8_t** pos, int position)
 	return false;
 }
 
+hot static inline bool
+array_last(uint8_t** pos)
+{
+	data_read_array(pos);
+	while (! data_read_array_end(pos))
+	{
+		auto at = *pos;
+		data_skip(&at);
+		if (data_is_array_end(at))
+			return true;
+		*pos = at;
+	}
+	return false;
+}
+
 static inline bool
 array_has(uint8_t* array, int position)
 {

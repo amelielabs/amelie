@@ -1,0 +1,182 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: append
+select append(null)
+{"code": 1, "msg": "append(): incorrect number of arguments"}
+select append(null, 0)
+[0]
+select []::append(1)
+[1]
+select []::append(1)::append(2)
+[1, 2]
+select []::append(1)::append(2)::append(3)
+[1, 2, 3]
+# test: append update
+create table test (id int primary key, data array)
+insert into test values (0, [])
+update test set data = data::append(1)::append(2)
+select * from test
+[[0, [1, 2]]]
+drop table test
+# test: push
+select push(null)
+{"code": 1, "msg": "push(): incorrect number of arguments"}
+select push(null, 0)
+{"code": 1, "msg": "push(): incorrect type of 0 argument"}
+select push([], 0)
+[0]
+select []::push()
+{"code": 1, "msg": "push(): incorrect number of arguments"}
+select []::push(1)
+[1]
+select []::push(2)::push(1)
+[1, 2]
+select []::push(2)::push(1)::push(0)
+[0, 1, 2]
+# test: push update
+create table test (id int primary key, data array)
+insert into test values (0, [])
+update test set data = push(data, 1)
+select * from test
+[[0, [1]]]
+update test set data = data::push(2)::push(1)
+select * from test
+[[0, [1, 2, 1]]]
+drop table test
+# test: pop
+select pop()
+{"code": 1, "msg": "pop(): incorrect number of arguments"}
+select pop(null)
+{"code": 1, "msg": "pop(): incorrect type of 0 argument"}
+select pop([])
+[]
+select []::pop
+[]
+select [1]::pop
+[]
+select [1,2]::pop
+[2]
+select [1,2,3]::pop
+[2, 3]
+select [1,2,3]::pop::pop
+[3]
+select [1,2,3]::pop::pop::pop
+[]
+select [1,2,3]::pop::pop::pop::pop
+[]
+# test: pop update
+create table test (id int primary key, data array)
+insert into test values (0, [1,2,3,4])
+update test set data = pop(data)
+select * from test
+[[0, [2, 3, 4]]]
+update test set data = data::pop
+select * from test
+[[0, [3, 4]]]
+update test set data = data::pop::pop
+select * from test
+[[0, []]]
+drop table test
+# test: pop_back
+select pop_back()
+{"code": 1, "msg": "pop_back(): incorrect number of arguments"}
+select pop_back(null)
+{"code": 1, "msg": "pop_back(): incorrect type of 0 argument"}
+select pop_back([])
+[]
+select []::pop_back
+[]
+select [1]::pop_back
+[]
+select [1,2]::pop_back
+[1]
+select [1,2,3]::pop_back
+[1, 2]
+select [1,2,3]::pop_back::pop_back
+[1]
+select [1,2,3]::pop_back::pop_back::pop_back
+[]
+select [1,2,3]::pop_back::pop_back::pop_back::pop_back
+[]
+# test: pop_back update
+create table test (id int primary key, data array)
+insert into test values (0, [1,2,3,4])
+update test set data = data::pop_back
+select * from test
+[[0, [1, 2, 3]]]
+update test set data = data::pop::pop_back
+select * from test
+[[0, [2]]]
+drop table test
+# test: put
+select put(null)
+{"code": 1, "msg": "put(): incorrect number of arguments"}
+select put(null, 0)
+{"code": 1, "msg": "put(): incorrect number of arguments"}
+select put([], 0, 0)
+{"code": 1, "msg": "put: array index '0' is out of bounds"}
+select put([1], 0, 0)
+[0]
+select [1,2,3]::put(0, '0')
+["0", 2, 3]
+select [1,2,3]::put(0, '0')::put(1, '1')
+["0", "1", 3]
+select [1,2,3]::put(0, '0')::put(1, '1')
+["0", "1", 3]
+select [1,2,3]::put(0, '0')::put(2, '1')
+["0", 2, "1"]
+select [1,2,3]::put(0, '0')::put(3, '1')
+{"code": 1, "msg": "put: array index '3' is out of bounds"}
+select [1,2,3]::put(0, '0')::put(-1, '1')
+{"code": 1, "msg": "put: array index '-1' is out of bounds"}
+# test: put update
+create table test (id int primary key, data array)
+insert into test values (0, [1,2,3])
+update test set data = data::put(1, null)
+select * from test
+[[0, [1, null, 3]]]
+drop table test
+# test: remove
+select remove(null)
+{"code": 1, "msg": "remove(): incorrect number of arguments"}
+select remove(null, 0)
+{"code": 1, "msg": "remove(): incorrect type of 0 argument"}
+select remove([], 0)
+{"code": 1, "msg": "<0>: array index is out of bounds"}
+select remove([], 1)
+{"code": 1, "msg": "<1>: array index is out of bounds"}
+select remove([1], 0)
+[]
+select remove([1], -1)
+{"code": 1, "msg": "<-1>: array index is out of bounds"}
+select remove([1], -10)
+{"code": 1, "msg": "<-10>: array index is out of bounds"}
+select remove([1, 2], 3)
+{"code": 1, "msg": "<3>: array index is out of bounds"}
+select remove([1, 2], 1)
+[1]
+select remove([1, 2], 1)
+[1]
+select remove([1, 2, 3], 1)
+[1, 3]
+select remove([1, 2, 3], 0)
+[2, 3]
+select remove([1, 2, 3], 2)
+[1, 2]
+select []::append(1)::append(2)::append(3)
+[1, 2, 3]
+select []::append(1)::append(2)::append(3)::remove(0)
+[2, 3]
+select []::append(1)::append(2)::append(3)::remove(0)::remove(0)
+[3]
+select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0)
+[]
+# test: remove update
+create table test (id int primary key, data array)
+insert into test values (0, [1,2,3])
+update test set data = data::remove(1)
+select * from test
+[[0, [1, 3]]]
+drop table test
+disconnect S0
+close E0

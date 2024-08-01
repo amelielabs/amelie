@@ -27,38 +27,6 @@
 #include <amelie_func.h>
 
 hot static void
-fn_has(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	value_idx_has(self->result, argv[0], argv[1]);
-}
-
-hot static void
-fn_set(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	value_idx_set(self->result, argv[0], argv[1], argv[2]);
-}
-
-hot static void
-fn_unset(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	value_idx_unset(self->result, argv[0], argv[1]);
-}
-
-hot static void
-fn_append(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	value_append(self->result, argv[0], argv[1]);
-}
-
-hot static void
 fn_sizeof(Call* self)
 {
 	auto arg = self->argv[0];
@@ -139,11 +107,7 @@ fn_register(FunctionMgr* mgr)
 {
 	FunctionDef def[] =
 	{
-		// public
-		{ "public", "has",             fn_has,             2 },
-		{ "public", "set",             fn_set,             3 },
-		{ "public", "unset",           fn_unset,           2 },
-		{ "public", "append",          fn_append,          2 },
+		// string
 		{ "public", "sizeof",          fn_sizeof,          1 },
 
 		// time
@@ -159,5 +123,6 @@ fn_register(FunctionMgr* mgr)
 	function_mgr_register(mgr, fn_system);
 	function_mgr_register(mgr, fn_cast);
 	function_mgr_register(mgr, fn_null);
+	function_mgr_register(mgr, fn_object);
 	function_mgr_register(mgr, def);
 }

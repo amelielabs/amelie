@@ -36,6 +36,7 @@ OBJECTS        = \
                  func/fn_system.o \
                  func/fn_cast.o \
                  func/fn_null.o \
+                 func/fn_object.o \
                  func/fn.o \
                  value/update.o \
                  value/like.o \

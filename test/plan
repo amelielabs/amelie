@@ -60,6 +60,7 @@ directory func
 group func
 test func_cast
 test func_null
+test func_object
 
 # time
 directory time

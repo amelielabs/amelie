@@ -119,6 +119,30 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
+  "name": "append",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "push",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "pop",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "pop_back",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "put",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "remove",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "has",
   "argc": 2
 }, {
@@ -128,10 +152,6 @@ show functions
 }, {
   "schema": "public",
   "name": "unset",
-  "argc": 2
-}, {
-  "schema": "public",
-  "name": "append",
   "argc": 2
 }, {
   "schema": "public",
@@ -237,6 +257,30 @@ select system.functions()
   "argc": 2
 }, {
   "schema": "public",
+  "name": "append",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "push",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "pop",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "pop_back",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "put",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "remove",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "has",
   "argc": 2
 }, {
@@ -246,10 +290,6 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "unset",
-  "argc": 2
-}, {
-  "schema": "public",
-  "name": "append",
   "argc": 2
 }, {
   "schema": "public",
