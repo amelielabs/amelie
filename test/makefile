@@ -27,6 +27,7 @@ CFLAGS_INCLUDE = -I../amelie/runtime \
                  -I../amelie/vm/aggr \
                  -I../amelie/vm/executor \
                  -I../amelie/vm/vm \
+                 -I../amelie/vm/call \
                  -I../amelie/compiler \
                  -I../amelie/compiler/parser \
                  -I../amelie/compiler/planner \

@@ -7,8 +7,19 @@
 //
 
 typedef struct Function Function;
+typedef struct Call     Call;
+typedef struct Vm       Vm;
 
-typedef void (*FunctionMain)(void*, Function*, Value*, int, Value**);
+typedef void (*FunctionMain)(Call*);
+
+struct Call
+{
+	int       argc;
+	Value**   argv;
+	Value*    result;
+	Vm*       vm;
+	Function* function;
+};
 
 struct Function
 {
@@ -44,22 +55,6 @@ function_free(Function* self)
 }
 
 static inline void
-function_validate_argc(Function* self, int argc)
-{
-	if (unlikely(argc != self->argc))
-		error("%.*s(): incorrect number of arguments", str_size(&self->name),
-		      str_of(&self->name));
-}
-
-static inline void
-function_validate_arg(Function* self, Value** argv, int order, ValueType type)
-{
-	if (unlikely(argv[order]->type != type))
-		error("%.*s(): incorrect type of %d argument", str_size(&self->name),
-		      str_of(&self->name), order);
-}
-
-static inline void
 function_write(Function* self, Buf* buf)
 {
 	// map
@@ -78,4 +73,20 @@ function_write(Function* self, Buf* buf)
 	encode_integer(buf, self->argc);
 
 	encode_map_end(buf);
+}
+
+static inline void
+call_validate(Call* self)
+{
+	if (unlikely(self->argc != self->function->argc))
+		error("%.*s(): incorrect number of arguments", str_size(&self->function->name),
+		      str_of(&self->function->name));
+}
+
+static inline void
+call_validate_arg(Call* self, int order, ValueType type)
+{
+	if (unlikely(self->argv[order]->type != type))
+		error("%.*s(): incorrect type of %d argument", str_size(&self->function->name),
+		      str_of(&self->function->name), order);
 }

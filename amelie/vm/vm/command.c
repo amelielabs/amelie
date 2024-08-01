@@ -405,7 +405,15 @@ ccall(Vm* self, Op* op)
 
 	// call an internal function
 	auto func = (Function*)op->b;
-	func->main(self, func, reg_at(&self->r, op->a), argc, argv);
+	Call call =
+	{
+		.argc     = argc,
+		.argv     = argv,
+		.result   = reg_at(&self->r, op->a),
+		.function = func,
+		.vm       = self
+	};
+	func->main(&call);
 
 	stack_popn(&self->stack, op->c);
 }

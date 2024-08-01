@@ -38,6 +38,50 @@ select system.schemas()
 # test: show functions
 show functions
 [{
+  "schema": "system",
+  "name": "config",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "users",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "replicas",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "repl",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "replication",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "nodes",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "schemas",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "functions",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "tables",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "views",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "wal",
+  "argc": 0
+}, {
   "schema": "public",
   "name": "has",
   "argc": 2
@@ -89,53 +133,53 @@ show functions
   "schema": "public",
   "name": "error",
   "argc": 1
-}, {
-  "schema": "system",
-  "name": "config",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "users",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "replicas",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "repl",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "replication",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "nodes",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "schemas",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "functions",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "tables",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "views",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "wal",
-  "argc": 0
 }]
 select system.functions()
 [{
+  "schema": "system",
+  "name": "config",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "users",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "replicas",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "repl",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "replication",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "nodes",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "schemas",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "functions",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "tables",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "views",
+  "argc": 0
+}, {
+  "schema": "system",
+  "name": "wal",
+  "argc": 0
+}, {
   "schema": "public",
   "name": "has",
   "argc": 2
@@ -187,50 +231,6 @@ select system.functions()
   "schema": "public",
   "name": "error",
   "argc": 1
-}, {
-  "schema": "system",
-  "name": "config",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "users",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "replicas",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "repl",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "replication",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "nodes",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "schemas",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "functions",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "tables",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "views",
-  "argc": 0
-}, {
-  "schema": "system",
-  "name": "wal",
-  "argc": 0
 }]
 # test: show tables
 show tables
@@ -256,7 +256,17 @@ show wal
   "slots_min": -1
 }
 select system.wal()
-{"code": 1, "msg": "todo: "}
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
 # test: show all
 show all
 {

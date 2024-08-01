@@ -28,7 +28,8 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Ivalue \
                  -Iaggr \
                  -Iexecutor \
-                 -Ivm
+                 -Ivm \
+                 -Icall
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-vm.a
 OBJECTS        = \
@@ -51,7 +52,7 @@ OBJECTS        = \
                  vm/op.o \
                  vm/vm.o \
                  vm/command.o \
-                 vm/func.o
+                 call/func.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
