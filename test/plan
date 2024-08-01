@@ -55,6 +55,11 @@ test label
 test planner
 test lambda
 
+# function
+directory func
+group func
+test func_cast
+
 # time
 directory time
 group time

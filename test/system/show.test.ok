@@ -83,6 +83,30 @@ show functions
   "argc": 0
 }, {
   "schema": "public",
+  "name": "string",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "int",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "real",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "json",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "interval",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "timestamp",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "has",
   "argc": 2
 }, {
@@ -100,22 +124,6 @@ show functions
 }, {
   "schema": "public",
   "name": "sizeof",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "string",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "json",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "interval",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "timestamp",
   "argc": 1
 }, {
   "schema": "public",
@@ -181,6 +189,30 @@ select system.functions()
   "argc": 0
 }, {
   "schema": "public",
+  "name": "string",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "int",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "real",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "json",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "interval",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "timestamp",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "has",
   "argc": 2
 }, {
@@ -198,22 +230,6 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "sizeof",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "string",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "json",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "interval",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "timestamp",
   "argc": 1
 }, {
   "schema": "public",

@@ -1,0 +1,87 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: (int) int to int
+select 1::int
+select 1::int(123)
+
+# test: (int) string to int
+select '123'::int
+select '1423423423'::int
+select '1423abc'::int
+
+# test: (int) real to int
+select 3.14::int
+
+# test: (int) bool to int
+select true::int
+select false::int
+
+# test: (int) timestamp to int
+select 1722517792056945::timestamp
+select 1722517792056945::timestamp::int
+select 1722517792056945::timestamp::int::timestamp
+
+# test: (int) interval to int
+select '1 hour'::interval::int
+
+# test: (bool) int to bool
+select 1::bool
+select 0::bool
+select 23431::bool
+
+# test: (bool) real to bool
+select 3.14::bool
+select 0.14::bool
+select 0.0::bool
+
+# test: (bool) timestamp to bool
+select 1722517792056945::timestamp::bool
+
+# test: (bool) interval to bool
+select '1 hour'::interval::bool
+select '0 secs'::interval::bool
+
+# test: (real) int to real
+select 1::real
+
+# test: (real) real to real
+select 3.14::real
+
+# test: (real) bool to real
+select true::real
+select false::real
+
+# test: (string) int to string
+select 16384::string
+
+# test: (string) string to string
+select 'hello'::string
+
+# test: (string) interal to string
+select '1 hour'::interval::string
+
+# test: (string) timestamp to string
+select '2024-07-29 18:40:19'::timestamp::string
+
+# test: (string) object to string
+select {"id": 42, "data": [1,2,3]}::string
+
+# test: (json) int to json
+select 1::json
+
+# test: (json) string to json
+select '1'::json
+select ('{"id":55}'::json).id
+
+# test: (interval) string to interval
+select '1 hour 55 minutes 5 secs'::interval
+select '1 hour 55 minutes 5 secs'::interval::string
+
+# test: (timestamp) string to timestamp
+select '2024-07-29 18:40:19'::timestamp
+
+disconnect S0
+close E0

@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void func_setup(FunctionMgr*);
+void fn_register(FunctionMgr*);

@@ -37,6 +37,16 @@ function_mgr_add(FunctionMgr* self, Function* func)
 	self->list_count++;
 }
 
+static inline void
+function_mgr_register(FunctionMgr* self, FunctionDef* list)
+{
+	for (int i = 0; list[i].name; i++)
+	{
+		auto func = function_allocate(&list[i]);
+		function_mgr_add(self, func);
+	}
+}
+
 static inline Function*
 function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 {

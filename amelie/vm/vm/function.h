@@ -6,9 +6,10 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Function Function;
-typedef struct Call     Call;
-typedef struct Vm       Vm;
+typedef struct FunctionDef FunctionDef;
+typedef struct Function    Function;
+typedef struct Call        Call;
+typedef struct Vm          Vm;
 
 typedef void (*FunctionMain)(Call*);
 
@@ -21,6 +22,14 @@ struct Call
 	Function* function;
 };
 
+struct FunctionDef
+{
+	const char*  schema;
+	const char*  name;
+	FunctionMain function;
+	int          argc;
+};
+
 struct Function
 {
 	Str          schema;
@@ -31,17 +40,14 @@ struct Function
 };
 
 static inline Function*
-function_allocate(const char*  schema,
-                  const char*  name,
-                  int          argc,
-                  FunctionMain main)
+function_allocate(FunctionDef* def)
 {
 	Function* self = am_malloc(sizeof(Function));
-	self->argc = argc;
-	self->main = main;
+	self->argc = def->argc;
+	self->main = def->function;
 	guard(am_free, self);
-	str_strdup(&self->schema, schema);
-	str_strdup(&self->name, name);
+	str_strdup(&self->schema, def->schema);
+	str_strdup(&self->name, def->name);
 	list_init(&self->link);
 	return unguard();
 }

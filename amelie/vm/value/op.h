@@ -526,6 +526,73 @@ value_to_string(Value* result, Value* a, Timezone* timezone)
 }
 
 always_inline hot static inline void
+value_to_int(Value* result, Value* a)
+{
+	int64_t value = 0;
+	switch (a->type) {
+	case VALUE_REAL:
+		value = a->real;
+		break;
+	case VALUE_BOOL:
+	case VALUE_INT:
+	case VALUE_TIMESTAMP:
+		value = a->integer;
+		break;
+	case VALUE_STRING:
+		if (str_toint(&a->string, &value) == -1)
+			error("int(): failed to cast string");
+		break;
+	default:
+		error("int(): operation type is not supported");
+		break;
+	}
+	value_set_int(result, value);
+}
+
+always_inline hot static inline void
+value_to_bool(Value* result, Value* a)
+{
+	bool value = false;
+	switch (a->type) {
+	case VALUE_REAL:
+		value = a->real > 0.0;
+		break;
+	case VALUE_BOOL:
+	case VALUE_INT:
+	case VALUE_TIMESTAMP:
+		value = a->integer > 0;
+		break;
+	case VALUE_INTERVAL:
+		value = (a->interval.us + a->interval.d + a->interval.m) > 0;
+		break;
+	default:
+		error("bool(): operation type is not supported");
+		break;
+	}
+	value_set_int(result, value);
+}
+
+always_inline hot static inline void
+value_to_real(Value* result, Value* a)
+{
+	double value = 0;
+	switch (a->type) {
+	case VALUE_REAL:
+		value = a->real;
+		break;
+	case VALUE_BOOL:
+	case VALUE_INT:
+	case VALUE_TIMESTAMP:
+		value = a->integer;
+		break;
+	default:
+		error("real(): operation type is not supported");
+		break;
+	}
+	value_set_real(result, value);
+}
+
+always_inline hot static inline void
 value_to_json(Value* result, Value* a, Timezone* timezone)
 {
 	if (unlikely(a->type != VALUE_STRING))

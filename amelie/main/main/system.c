@@ -208,8 +208,8 @@ system_start(System* self, Str* options, bool bootstrap)
 	// set system timezone
 	system_set_timezone();
 
-	// prepare builtin functions
-	func_setup(&self->function_mgr);
+	// register builtin functions
+	fn_register(&self->function_mgr);
 
 	// open user manager
 	user_mgr_open(&self->user_mgr);

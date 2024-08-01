@@ -1,0 +1,98 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: (int) int to int
+select 1::int
+1
+select 1::int(123)
+{"code": 1, "msg": "int(): incorrect number of arguments"}
+# test: (int) string to int
+select '123'::int
+123
+select '1423423423'::int
+1423423423
+select '1423abc'::int
+{"code": 1, "msg": "int(): failed to cast string"}
+# test: (int) real to int
+select 3.14::int
+3
+# test: (int) bool to int
+select true::int
+1
+select false::int
+0
+# test: (int) timestamp to int
+select 1722517792056945::timestamp
+"2024-08-01 13:09:52.056945+00"
+select 1722517792056945::timestamp::int
+1722517792056945
+select 1722517792056945::timestamp::int::timestamp
+"2024-08-01 13:09:52.056945+00"
+# test: (int) interval to int
+select '1 hour'::interval::int
+{"code": 1, "msg": "int(): operation type is not supported"}
+# test: (bool) int to bool
+select 1::bool
+1
+select 0::bool
+0
+select 23431::bool
+1
+# test: (bool) real to bool
+select 3.14::bool
+1
+select 0.14::bool
+1
+select 0.0::bool
+0
+# test: (bool) timestamp to bool
+select 1722517792056945::timestamp::bool
+1
+# test: (bool) interval to bool
+select '1 hour'::interval::bool
+1
+select '0 secs'::interval::bool
+0
+# test: (real) int to real
+select 1::real
+1
+# test: (real) real to real
+select 3.14::real
+3.14
+# test: (real) bool to real
+select true::real
+1
+select false::real
+0
+# test: (string) int to string
+select 16384::string
+"16384"
+# test: (string) string to string
+select 'hello'::string
+"hello"
+# test: (string) interal to string
+select '1 hour'::interval::string
+"1 hour"
+# test: (string) timestamp to string
+select '2024-07-29 18:40:19'::timestamp::string
+"2024-07-29 18:40:19+00"
+# test: (string) object to string
+select {"id": 42, "data": [1,2,3]}::string
+"{"id": 42, "data": [1, 2, 3]}"
+# test: (json) int to json
+select 1::json
+{"code": 1, "msg": "json(): string type expected"}
+# test: (json) string to json
+select '1'::json
+1
+select ('{"id":55}'::json).id
+55
+# test: (interval) string to interval
+select '1 hour 55 minutes 5 secs'::interval
+"1 hour 55 minutes 5 seconds"
+select '1 hour 55 minutes 5 secs'::interval::string
+"1 hour 55 minutes 5 seconds"
+# test: (timestamp) string to timestamp
+select '2024-07-29 18:40:19'::timestamp
+"2024-07-29 18:40:19+00"
+disconnect S0
+close E0
