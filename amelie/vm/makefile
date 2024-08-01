@@ -29,14 +29,14 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Iaggr \
                  -Iexecutor \
                  -Ivm \
-                 -Icall
+                 -Ifunc
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-vm.a
 OBJECTS        = \
-                 call/fn_system.o \
-                 call/fn_cast.o \
-                 call/fn_null.o \
-                 call/fn.o \
+                 func/fn_system.o \
+                 func/fn_cast.o \
+                 func/fn_null.o \
+                 func/fn.o \
                  value/update.o \
                  value/like.o \
                  aggr/set.o \

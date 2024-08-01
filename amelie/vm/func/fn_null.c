@@ -24,7 +24,7 @@
 #include <amelie_aggr.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
-#include <amelie_call.h>
+#include <amelie_func.h>
 
 hot static void
 fn_coalesce(Call* self)

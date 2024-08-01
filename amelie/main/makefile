@@ -28,7 +28,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../vm/aggr \
                  -I../vm/executor \
                  -I../vm/vm \
-                 -I../vm/call \
+                 -I../vm/func \
                  -I../compiler \
                  -I../compiler/parser \
                  -I../compiler/planner \
