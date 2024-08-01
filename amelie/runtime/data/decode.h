@@ -70,7 +70,7 @@ decode_map(Decode* self, uint8_t** pos)
 			}
 			case DECODE_TS:
 			{
-				if (unlikely(! data_is_timestamp_or_tz(*pos)))
+				if (unlikely(! data_is_timestamp(*pos)))
 					error("config: timestamp expected for '%s'", ref->key);
 				auto value = (int64_t*)ref->value;
 				data_read_timestamp(pos, value);

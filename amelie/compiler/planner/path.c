@@ -54,9 +54,7 @@ ast_path_allocate(Keys* keys, int type)
 hot static inline int
 path_compare_ast(Ast* a, Ast* b)
 {
-	if (a->id == KINT ||
-	    a->id == KTIMESTAMP ||
-	    a->id == KTIMESTAMPTZ)
+	if (a->id == KINT || a->id == KTIMESTAMP)
 	{
 		if (a->integer == b->integer)
 			return 0;
@@ -138,10 +136,6 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 		break;
 	case KTIMESTAMP:
 		if (unlikely(key->type != TYPE_TIMESTAMP))
-			return false;
-		break;
-	case KTIMESTAMPTZ:
-		if (unlikely(key->type != TYPE_TIMESTAMPTZ))
 			return false;
 		break;
 	}
@@ -240,8 +234,7 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	{
 		if (expr->r->id == KINT ||
 		    expr->r->id == KSTRING ||
-		    expr->r->id == KTIMESTAMP ||
-		    expr->r->id == KTIMESTAMPTZ)
+		    expr->r->id == KTIMESTAMP)
 		{
 			*path  = expr->l;
 			*value = expr->r;
@@ -252,8 +245,7 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	{
 		if (expr->l->id == KINT ||
 		    expr->l->id == KSTRING ||
-		    expr->l->id == KTIMESTAMP ||
-		    expr->l->id == KTIMESTAMPTZ)
+		    expr->l->id == KTIMESTAMP)
 		{
 			*path  = expr->r;
 			*value = expr->l;

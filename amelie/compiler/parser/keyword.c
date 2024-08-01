@@ -208,7 +208,6 @@ static Keyword keywords_t[] =
 {
 	{ KTRUE,                  "true",                  4  },
 	{ KTIMESTAMP,             "timestamp",             9  },
-	{ KTIMESTAMPTZ,           "timestamptz",           11 },
 	{ KTHEN,                  "then",                  4  },
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },

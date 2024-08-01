@@ -20,7 +20,6 @@ typedef enum
 	VALUE_DATA,
 	VALUE_INTERVAL,
 	VALUE_TIMESTAMP,
-	VALUE_TIMESTAMPTZ,
 	VALUE_SET,
 	VALUE_MERGE,
 	VALUE_GROUP
@@ -161,13 +160,6 @@ value_set_timestamp(Value* self, uint64_t value)
 }
 
 always_inline hot static inline void
-value_set_timestamptz(Value* self, uint64_t value)
-{
-	self->type    = VALUE_TIMESTAMPTZ;
-	self->integer = value;
-}
-
-always_inline hot static inline void
 value_set_set(Value* self, ValueObj* obj)
 {
 	self->type = VALUE_SET;
@@ -249,18 +241,11 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_interval(self, &iv);
 		break;
 	}
-	case AM_TS:
+	case AM_TIMESTAMP:
 	{
 		int64_t integer;
 		data_read_timestamp(&data, &integer);
 		value_set_timestamp(self, integer);
-		break;
-	}
-	case AM_TSTZ:
-	{
-		int64_t integer;
-		data_read_timestamp(&data, &integer);
-		value_set_timestamptz(self, integer);
 		break;
 	}
 	default:
@@ -296,9 +281,6 @@ value_write(Value* self, Buf* buf)
 		break;
 	case VALUE_TIMESTAMP:
 		encode_timestamp(buf, self->integer);
-		break;
-	case VALUE_TIMESTAMPTZ:
-		encode_timestamptz(buf, self->integer);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -340,9 +322,6 @@ value_write_data(Value* self, uint8_t** pos)
 	case VALUE_TIMESTAMP:
 		data_write_timestamp(pos, self->integer);
 		break;
-	case VALUE_TIMESTAMPTZ:
-		data_write_timestamptz(pos, self->integer);
-		break;
 	default:
 		error("operation is not supported");
 		break;
@@ -368,7 +347,6 @@ value_size(Value* self)
 	case VALUE_INTERVAL:
 		return data_size_interval(&self->interval);
 	case VALUE_TIMESTAMP:
-	case VALUE_TIMESTAMPTZ:
 		return data_size_timestamp(self->integer);
 	default:
 		error("operation is not supported");
@@ -428,9 +406,6 @@ value_copy(Value* self, Value* src)
 	case VALUE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);
 		break;
-	case VALUE_TIMESTAMPTZ:
-		value_set_timestamptz(self, src->integer);
-		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
@@ -474,9 +449,6 @@ value_copy_ref(Value* self, Value* src)
 		break;
 	case VALUE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);
-		break;
-	case VALUE_TIMESTAMPTZ:
-		value_set_timestamptz(self, src->integer);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:

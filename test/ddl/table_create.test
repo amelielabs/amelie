@@ -67,11 +67,6 @@ create table test(id int primary key, a timestamp)
 select columns from system.tables() where name = "test"
 drop table test
 
-# test: column timestamptz
-create table test(id int primary key, a timestamptz)
-select columns from system.tables() where name = "test"
-drop table test
-
 # test: column interval
 create table test(id int primary key, a interval)
 select columns from system.tables() where name = "test"

@@ -19,7 +19,6 @@ enum
 	KSTRING,
 	KINTERVAL,
 	KTIMESTAMP,
-	KTIMESTAMPTZ,
 	KARGUMENT,
 
 	// lexer operations

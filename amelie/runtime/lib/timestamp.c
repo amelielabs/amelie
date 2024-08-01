@@ -238,7 +238,7 @@ timestamp_of(Timestamp* self, Timezone* timezone)
 {
 	// mktime
 	self->time.tm_isdst = -1;	
-	time_t time = mktime(&self->time);
+	int64_t time = mktime(&self->time);
 	if (unlikely(time == (time_t)-1))
 		timestamp_error();
 
@@ -260,6 +260,9 @@ timestamp_of(Timestamp* self, Timezone* timezone)
 
 	if (zone_set)
 		time -= self->zone;
+
+	if (unlikely(time < 0))
+		error("timestamp overflow");
 
 	uint64_t value;
 	value  = time * 1000000ULL; // convert to us

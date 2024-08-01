@@ -34,8 +34,7 @@ enum
 	AM_ARRAY_END = 81,
 
 	AM_INTERVAL  = 82,
-	AM_TS        = 83,
-	AM_TSTZ      = 84
+	AM_TIMESTAMP = 83
 };
 
 static inline char*
@@ -60,10 +59,8 @@ type_to_string(int type)
 		return "array";
 	case AM_INTERVAL:
 		return "interval";
-	case AM_TS:
+	case AM_TIMESTAMP:
 		return "timestamp";
-	case AM_TSTZ:
-		return "timestamptz";
 	}
 	return "<unknown>";
 }

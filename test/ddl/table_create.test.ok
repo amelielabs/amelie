@@ -243,29 +243,6 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
-# test: column timestamptz
-create table test(id int primary key, a timestamptz)
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": 2,
-  "constraint": {
-    "not_null": true,
-    "generated": 0,
-    "modulo": 9223372036854775807,
-    "default": null
-  }
-}, {
-  "name": "a",
-  "type": 7,
-  "constraint": {
-    "not_null": false,
-    "generated": 0,
-    "modulo": 9223372036854775807,
-    "default": null
-  }
-}]]
-drop table test
 # test: column interval
 create table test(id int primary key, a interval)
 select columns from system.tables() where name = "test"
@@ -280,7 +257,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 8,
+  "type": 7,
   "constraint": {
     "not_null": false,
     "generated": 0,

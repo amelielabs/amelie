@@ -7,7 +7,7 @@
 //
 
 hot static inline void
-body_add(Buf* self, Value* value, Timezone* tz, bool pretty)
+body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
 {
 	switch (value->type) {
 	case VALUE_INT:
@@ -34,9 +34,9 @@ body_add(Buf* self, Value* value, Timezone* tz, bool pretty)
 	{
 		uint8_t* pos = value->data;
 		if (pretty)
-			json_export_pretty(self, tz, &pos);
+			json_export_pretty(self, timezone, &pos);
 		else
-			json_export(self, tz, &pos);
+			json_export(self, timezone, &pos);
 		break;
 	}
 	case VALUE_INTERVAL:
@@ -52,16 +52,7 @@ body_add(Buf* self, Value* value, Timezone* tz, bool pretty)
 	{
 		buf_write(self, "\"", 1);
 		buf_reserve(self, 128);
-		int size = timestamp_write(value->integer, NULL, (char*)self->position, 128);
-		buf_advance(self, size);
-		buf_write(self, "\"", 1);
-		break;
-	}
-	case VALUE_TIMESTAMPTZ:
-	{
-		buf_write(self, "\"", 1);
-		buf_reserve(self, 128);
-		int size = timestamp_write(value->integer, tz, (char*)self->position, 128);
+		int size = timestamp_write(value->integer, timezone, (char*)self->position, 128);
 		buf_advance(self, size);
 		buf_write(self, "\"", 1);
 		break;
@@ -69,7 +60,7 @@ body_add(Buf* self, Value* value, Timezone* tz, bool pretty)
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(self, "[", 1);
-		value->obj->decode(value->obj, self, tz);
+		value->obj->decode(value->obj, self, timezone);
 		buf_write(self, "]", 1);
 		break;
 	// VALUE_GROUP

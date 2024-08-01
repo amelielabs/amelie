@@ -75,10 +75,6 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
-  "name": "timestamptz",
-  "argc": 1
-}, {
-  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -174,10 +170,6 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "timestamp",
-  "argc": 1
-}, {
-  "schema": "public",
-  "name": "timestamptz",
   "argc": 1
 }, {
   "schema": "public",

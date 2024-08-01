@@ -146,9 +146,6 @@ group_create_node(GroupKey* key)
 		case VALUE_TIMESTAMP:
 			value_set_timestamp(&node->keys[i], value->integer);
 			break;
-		case VALUE_TIMESTAMPTZ:
-			value_set_timestamptz(&node->keys[i], value->integer);
-			break;
 		case VALUE_BOOL:
 			value_set_bool(&node->keys[i], value->integer);
 			break;
@@ -219,7 +216,6 @@ group_find_or_create(Group* self, Value** target_data)
 		case VALUE_INT:
 		case VALUE_BOOL:
 		case VALUE_TIMESTAMP:
-		case VALUE_TIMESTAMPTZ:
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;

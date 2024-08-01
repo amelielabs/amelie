@@ -53,7 +53,7 @@ set_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-set_decode(ValueObj* obj, Buf* buf, Timezone* tz)
+set_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
 {
 	auto self = (Set*)obj;
 	int i = 0;
@@ -61,7 +61,7 @@ set_decode(ValueObj* obj, Buf* buf, Timezone* tz)
 	{
 		if (i > 0)
 			body_add_comma(buf);
-		body_add(buf, &set_at(self, i)->value, tz, true);
+		body_add(buf, &set_at(self, i)->value, timezone, true);
 	}
 }
 

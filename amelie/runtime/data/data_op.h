@@ -64,8 +64,7 @@ data_skip(uint8_t** pos)
 			data_read_integer(pos, &value);
 			break;
 		}
-		case AM_TS:
-		case AM_TSTZ:
+		case AM_TIMESTAMP:
 		{
 			int64_t value;
 			data_read_timestamp(pos, &value);

@@ -30,7 +30,6 @@ value_compare(Value* a, Value* b)
 	case VALUE_INT:
 	case VALUE_BOOL:
 	case VALUE_TIMESTAMP:
-	case VALUE_TIMESTAMPTZ:
 	{
 		if (a->integer == b->integer)
 			return 0;

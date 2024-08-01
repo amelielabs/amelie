@@ -66,10 +66,6 @@ parse_type(Stmt* self, Column* column, Str* path)
 	{
 		type = TYPE_TIMESTAMP;
 	} else
-	if (str_compare_raw(&ast->string, "timestamptz", 11))
-	{
-		type = TYPE_TIMESTAMPTZ;
-	} else
 	if (str_compare_raw(&ast->string, "interval", 8))
 	{
 		type = TYPE_INTERVAL;
@@ -161,8 +157,7 @@ parse_key(Stmt* self, Keys* keys)
 		// validate key type
 		if (type != TYPE_INT &&
 		    type != TYPE_STRING &&
-		    type != TYPE_TIMESTAMP &&
-		    type != TYPE_TIMESTAMPTZ)
+		    type != TYPE_TIMESTAMP)
 			error("<%.*s> column key can be string, int or timestamp",
 			      str_size(&column->name),
 			      str_of(&column->name));
@@ -300,8 +295,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			// validate key type
 			if (column->type != TYPE_INT &&
 			    column->type != TYPE_STRING &&
-			    column->type != TYPE_TIMESTAMP &&
-			    column->type != TYPE_TIMESTAMPTZ)
+			    column->type != TYPE_TIMESTAMP)
 				error("<%.*s> column key can be string, int or timestamp",
 				      str_size(&column->name),
 				      str_of(&column->name));

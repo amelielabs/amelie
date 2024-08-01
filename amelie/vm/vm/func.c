@@ -142,25 +142,8 @@ func_timestamp(Vm*       vm,
 	Timestamp ts;
 	timestamp_init(&ts);
 	timestamp_read(&ts, &argv[0]->string);
-	auto time = timestamp_of(&ts, NULL);
-	value_set_timestamp(result, time);
-}
-
-hot static void
-func_timestamptz(Vm*       vm,
-                 Function* func,
-                 Value*    result,
-                 int       argc,
-                 Value**   argv)
-{
-	unused(vm);
-	function_validate_argc(func, argc);
-	function_validate_arg(func, argv, 0, VALUE_STRING);
-	Timestamp ts;
-	timestamp_init(&ts);
-	timestamp_read(&ts, &argv[0]->string);
 	auto time = timestamp_of(&ts, vm->local->timezone);
-	value_set_timestamptz(result, time);
+	value_set_timestamp(result, time);
 }
 
 hot static void
@@ -230,7 +213,7 @@ func_now(Vm*       vm,
 	unused(vm);
 	unused(argv);
 	function_validate_argc(func, argc);
-	value_set_timestamptz(result, time_us());
+	value_set_timestamp(result, time_us());
 }
 
 hot static void
@@ -410,7 +393,6 @@ func_setup(FunctionMgr* mgr)
 		{ "public", "json",            (FunctionMain)func_json,            1 },
 		{ "public", "interval",        (FunctionMain)func_interval,        1 },
 		{ "public", "timestamp",       (FunctionMain)func_timestamp,       1 },
-		{ "public", "timestamptz",     (FunctionMain)func_timestamptz,     1 },
 		{ "public", "generate_series", (FunctionMain)func_generate_series, 3 },
 		{ "public", "time_bucket",     (FunctionMain)func_time_bucket,     2 },
 		{ "public", "now",             (FunctionMain)func_now,             0 },

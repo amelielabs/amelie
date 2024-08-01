@@ -63,10 +63,8 @@ OpDesc ops[] =
 	{ CSTRING,            "string"            },
 	{ CINTERVAL,          "interval"          },
 	{ CTIMESTAMP,         "timestamp"         },
-	{ CTIMESTAMPTZ,       "timestamptz"       },
 	{ CSTRING_MIN,        "string_min"        },
 	{ CTIMESTAMP_MIN,     "timestamp_min"     },
-	{ CTIMESTAMPTZ_MIN,   "timestamptz_min"   },
 	{ CSWAP,              "swap"              },
 
 	// arguments

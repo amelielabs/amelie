@@ -126,17 +126,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case AM_TS:
-	{
-		int64_t value;
-		data_read_timestamp(pos, &value);
-		buf_len = timestamp_write(value, NULL, buf, sizeof(buf));
-		buf_write(data, "\"", 1);
-		buf_write(data, buf, buf_len);
-		buf_write(data, "\"", 1);
-		break;
-	}
-	case AM_TSTZ:
+	case AM_TIMESTAMP:
 	{
 		int64_t value;
 		data_read_timestamp(pos, &value);

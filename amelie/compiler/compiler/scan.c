@@ -71,9 +71,6 @@ scan_key(Scan* self, Target* target)
 		case TYPE_TIMESTAMP:
 			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp));
 			break;
-		case TYPE_TIMESTAMPTZ:
-			rexpr = op1(cp, CTIMESTAMPTZ_MIN, rpin(cp));
-			break;
 		case TYPE_STRING:
 			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
 			break;

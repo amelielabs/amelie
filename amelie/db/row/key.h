@@ -175,7 +175,7 @@ key_hash(uint32_t hash, uint8_t* pos)
 		data_read_integer(&pos, &value);
 		hash = key_hash_integer(hash, value);
 	} else
-	if (data_is_timestamp_or_tz(pos))
+	if (data_is_timestamp(pos))
 	{
 		int64_t value;
 		data_read_timestamp(&pos, &value);

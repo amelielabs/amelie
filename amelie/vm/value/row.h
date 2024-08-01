@@ -35,15 +35,6 @@ value_ref(Keys* self, Ref* row, Stack* stack)
 			size += data_size_timestamp(ref->integer);
 			break;
 		}
-		case TYPE_TIMESTAMPTZ:
-		{
-			if (unlikely(ref->type != VALUE_TIMESTAMPTZ)) {
-				error = true;
-				break;
-			}
-			size += data_size_timestamp(ref->integer);
-			break;
-		}
 		case TYPE_STRING:
 			if (unlikely(ref->type != VALUE_STRING)) {
 				error = true;
@@ -75,9 +66,6 @@ value_ref(Keys* self, Ref* row, Stack* stack)
 			break;
 		case TYPE_TIMESTAMP:
 			data_write_timestamp(&pos, ref->integer);
-			break;
-		case TYPE_TIMESTAMPTZ:
-			data_write_timestamptz(&pos, ref->integer);
 			break;
 		case TYPE_STRING:
 			data_write_string(&pos, &ref->string);

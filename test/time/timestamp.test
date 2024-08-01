@@ -184,7 +184,6 @@ select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
 insert into test values (0, "1970-01-01 01:12:59.909090")
-insert into test values (0, "1970-01-01 01:12:59.909090"::timestamptz)
 insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
 insert into test values (1, "1970-01-01 01:13:00"::timestamp)
 insert into test values (2, "1970-01-01 01:13:01"::timestamp)

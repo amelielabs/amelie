@@ -92,7 +92,6 @@ priority_map[UINT8_MAX] =
 	[KSTRING]                  = priority_value,
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
-	[KTIMESTAMPTZ]             = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -431,7 +430,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 	}
 	case KTIMESTAMP:
-	case KTIMESTAMPTZ:
 	{
 		// ()
 		if (stmt_if(self, '('))
@@ -443,12 +441,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		// timestamp 'spec'
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
-			error("TIMESTAMP | TIMESTAMPTZ <string> expected");
+			error("TIMESTAMP <string> expected");
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &spec->string);
-		auto tz = value->id == KTIMESTAMPTZ ? self->local->timezone: NULL;
-		value->integer = timestamp_of(&ts, tz);
+		value->integer = timestamp_of(&ts, self->local->timezone);
 		break;
 	}
 
@@ -511,17 +508,15 @@ expr_value_between(Stmt* self)
 		break;
 	}
 	case KTIMESTAMP:
-	case KTIMESTAMPTZ:
 	{
 		// timestamp 'spec'
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
-			error("TIMESTAMP | TIMESTAMPTZ <string> expected");
+			error("TIMESTAMP <string> expected");
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &spec->string);
-		auto tz = value->id == KTIMESTAMPTZ ? self->local->timezone: NULL;
-		value->integer = timestamp_of(&ts, tz);
+		value->integer = timestamp_of(&ts, self->local->timezone);
 		break;
 	}
 	default:

@@ -178,18 +178,9 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
-		case AM_TS:
+		case AM_TIMESTAMP:
 		{
 			if (! data_is_timestamp(b))
-				return compare_int64(*a, *b);
-			rc = data_compare_timestamp(a, b);
-			if (rc != 0)
-				return rc;
-			break;
-		}
-		case AM_TSTZ:
-		{
-			if (! data_is_timestamptz(b))
 				return compare_int64(*a, *b);
 			rc = data_compare_timestamp(a, b);
 			if (rc != 0)

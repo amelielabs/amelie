@@ -830,8 +830,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	}
 	case KTIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self), ast->integer);
-	case KTIMESTAMPTZ:
-		return op2(self, CTIMESTAMPTZ, rpin(self), ast->integer);
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
 

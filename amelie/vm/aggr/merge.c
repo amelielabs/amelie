@@ -56,7 +56,7 @@ merge_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-merge_decode(ValueObj* obj, Buf* buf, Timezone* tz)
+merge_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
 {
 	auto self = (Merge*)obj;
 	MergeIterator it;
@@ -72,7 +72,7 @@ merge_decode(ValueObj* obj, Buf* buf, Timezone* tz)
 			body_add_comma(buf);
 		else
 			first = false;
-		body_add(buf, &row->value, tz, true);
+		body_add(buf, &row->value, timezone, true);
 		merge_iterator_next(&it);
 	}
 }
