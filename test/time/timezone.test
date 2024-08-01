@@ -1,0 +1,56 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: utc by default
+show timezone
+show timezone_default
+
+# test: set unknown timezone
+set timezone to 'mars'
+show timezone
+select system.config().timezone
+
+# test: utc
+select '2024-07-29 18:40:19'::timestamp
+select '2024-07-29 18:40:19+00'::timestamp
+select '2024-07-29 18:40:19Z'::timestamp
+select '2024-07-29T18:40:19Z'::timestamp
+
+# test: localtime to localtime
+set timezone to 'Asia/Famagusta'
+select '2024-07-29 18:40:19'::timestamp
+
+# test: utc to localtime
+select '2024-07-29 18:40:19Z'::timestamp
+
+# test: timestamp column
+create table test (time timestamp primary key)
+
+# test: timestamp column (localtime)
+insert into test values ("2024-07-29 18:40:19"::timestamp)
+select * from test
+
+# test: timestamp column (utc)
+insert into test values ("2024-07-29 18:40:19Z"::timestamp)
+select * from test
+
+set timezone to 'UTC'
+select * from test
+drop table test
+
+# test: timestamp object
+select {"time": "2024-07-29 18:40:19"::timestamp}
+select {"time": "2024-07-29 18:40:19Z"::timestamp}
+
+# test: timestamp object (localtime)
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+
+set timezone to 'Asia/Famagusta'
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+select {"time": "2024-07-29 18:40:19"::timestamp}
+select {"time": timestamp "2024-07-29 18:40:19"}
+
+disconnect S0
+close E0

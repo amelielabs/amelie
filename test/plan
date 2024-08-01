@@ -60,6 +60,7 @@ directory time
 group time
 test interval
 test timestamp
+test timezone
 test generate_series
 test time_bucket
 
