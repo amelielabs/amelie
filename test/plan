@@ -59,6 +59,7 @@ test lambda
 directory func
 group func
 test func_cast
+test func_null
 
 # time
 directory time

@@ -35,6 +35,7 @@ LIB            = libamelie-vm.a
 OBJECTS        = \
                  call/fn_system.o \
                  call/fn_cast.o \
+                 call/fn_null.o \
                  call/fn.o \
                  value/update.o \
                  value/like.o \

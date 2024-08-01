@@ -158,5 +158,6 @@ fn_register(FunctionMgr* mgr)
 	};
 	function_mgr_register(mgr, fn_system);
 	function_mgr_register(mgr, fn_cast);
+	function_mgr_register(mgr, fn_null);
 	function_mgr_register(mgr, def);
 }

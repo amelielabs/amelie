@@ -111,6 +111,14 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "coalesce",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "nullif",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "has",
   "argc": 2
 }, {
@@ -219,6 +227,14 @@ select system.functions()
   "schema": "public",
   "name": "timestamp",
   "argc": 1
+}, {
+  "schema": "public",
+  "name": "coalesce",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "nullif",
+  "argc": 2
 }, {
   "schema": "public",
   "name": "has",
