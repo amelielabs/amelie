@@ -72,7 +72,6 @@ aggr_lambda_write(Aggr* self, uint8_t* state, Value* value)
 	unused(self);
 	if (unlikely(value->type == VALUE_NULL))
 		return;
-	unused(self);
 	Value* ref = (Value*)state;
 	value_free(ref);
 	value_copy(ref, value);
