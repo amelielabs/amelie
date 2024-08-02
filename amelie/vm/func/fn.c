@@ -111,5 +111,6 @@ fn_register(FunctionMgr* mgr)
 	function_mgr_register(mgr, fn_null_def);
 	function_mgr_register(mgr, fn_object_def);
 	function_mgr_register(mgr, fn_string_def);
+	function_mgr_register(mgr, fn_math_def);
 	function_mgr_register(mgr, def);
 }

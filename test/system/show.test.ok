@@ -179,6 +179,26 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "greatest",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "least",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "abs",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "round",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sign",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -334,6 +354,26 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "upper",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "greatest",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "least",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "abs",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "round",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sign",
   "argc": 1
 }, {
   "schema": "public",

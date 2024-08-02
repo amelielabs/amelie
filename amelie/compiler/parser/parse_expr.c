@@ -69,9 +69,9 @@ priority_map[UINT8_MAX] =
 	['%']                      = 10,
 	// 11 (reserved for unary)
 	// 12
-	[KMETHOD]                  = 12,
 	['[']                      = 12,
 	['.']                      = 12,
+	[KMETHOD]                  = 12,
 	// values (priority is not used)
 	//
 	['(']                      = priority_value,

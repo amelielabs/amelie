@@ -12,6 +12,7 @@ value_is_true(Value* a)
 	switch (a->type) {
 	case VALUE_INT:
 	case VALUE_BOOL:
+	case VALUE_TIMESTAMP:
 		return a->integer > 0;
 	case VALUE_REAL:
 		return a->real > 0.0;
@@ -19,7 +20,6 @@ value_is_true(Value* a)
 		return false;
 	case VALUE_DATA:
 	case VALUE_INTERVAL:
-	case VALUE_TIMESTAMP:
 	case VALUE_STRING:
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -36,7 +36,8 @@ value_is_equal(Value* a, Value* b)
 	switch (a->type) {
 	case VALUE_INT:
 	case VALUE_BOOL:
-		if (b->type == VALUE_INT || b->type == VALUE_BOOL)
+		if (b->type == VALUE_INT || b->type == VALUE_BOOL ||
+		    b->type == VALUE_TIMESTAMP)
 			return a->integer == b->integer;
 		if (b->type == VALUE_REAL)
 			return a->integer == b->real;
@@ -132,7 +133,7 @@ value_gte(Value* result, Value* a, Value* b)
 {
 	if (a->type == VALUE_INT)
 	{
-		if (b->type == VALUE_INT)
+		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer >= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer >= b->real);
@@ -154,7 +155,7 @@ value_gte(Value* result, Value* a, Value* b)
 	} else
 	if (a->type == VALUE_TIMESTAMP)
 	{
-		if (b->type == VALUE_TIMESTAMP)
+		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer >= b->integer);
 	}
 	error("bad >= expression type");
@@ -165,7 +166,7 @@ value_gt(Value* result, Value* a, Value* b)
 {
 	if (a->type == VALUE_INT)
 	{
-		if (b->type == VALUE_INT)
+		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer > b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer > b->real);
@@ -187,7 +188,7 @@ value_gt(Value* result, Value* a, Value* b)
 	} else
 	if (a->type == VALUE_TIMESTAMP)
 	{
-		if (b->type == VALUE_TIMESTAMP)
+		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer > b->integer);
 	}
 	error("bad > expression type");
@@ -198,7 +199,7 @@ value_lte(Value* result, Value* a, Value* b)
 {
 	if (a->type == VALUE_INT)
 	{
-		if (b->type == VALUE_INT)
+		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer <= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer <= b->real);
@@ -220,7 +221,7 @@ value_lte(Value* result, Value* a, Value* b)
 	} else
 	if (a->type == VALUE_TIMESTAMP)
 	{
-		if (b->type == VALUE_TIMESTAMP)
+		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer <= b->integer);
 	}
 	error("bad <= expression type");
@@ -231,7 +232,7 @@ value_lt(Value* result, Value* a, Value* b)
 {
 	if (a->type == VALUE_INT)
 	{
-		if (b->type == VALUE_INT)
+		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer < b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer < b->real);
@@ -253,7 +254,7 @@ value_lt(Value* result, Value* a, Value* b)
 	} else
 	if (a->type == VALUE_TIMESTAMP)
 	{
-		if (b->type == VALUE_TIMESTAMP)
+		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer < b->integer);
 	}
 	error("bad < expression type");

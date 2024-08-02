@@ -328,35 +328,6 @@ value_write_data(Value* self, uint8_t** pos)
 	}
 }
 
-/*
-always_inline hot static inline int
-value_size(Value* self)
-{
-	switch (self->type) {
-	case VALUE_INT:
-		return data_size_integer(self->integer);
-	case VALUE_BOOL:
-		return data_size_bool();
-	case VALUE_REAL:
-		return data_size_real(self->real);
-	case VALUE_STRING:
-		return data_size_string(str_size(&self->string));
-	case VALUE_NULL:
-		return data_size_null();
-	case VALUE_DATA:
-		return self->data_size;
-	case VALUE_INTERVAL:
-		return data_size_interval(&self->interval);
-	case VALUE_TIMESTAMP:
-		return data_size_timestamp(self->integer);
-	default:
-		error("operation is not supported");
-		break;
-	}
-	return 0;
-}
-*/
-
 always_inline hot static inline void
 value_copy(Value* self, Value* src)
 {
