@@ -328,6 +328,7 @@ value_write_data(Value* self, uint8_t** pos)
 	}
 }
 
+/*
 always_inline hot static inline int
 value_size(Value* self)
 {
@@ -354,6 +355,7 @@ value_size(Value* self)
 	}
 	return 0;
 }
+*/
 
 always_inline hot static inline void
 value_copy(Value* self, Value* src)

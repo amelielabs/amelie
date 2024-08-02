@@ -110,7 +110,7 @@ fn_wal(Call* self)
 	value_set_buf(self->result, buf);
 }
 
-FunctionDef fn_system[] =
+FunctionDef fn_system_def[] =
 {
 	{ "system", "config",      fn_config,    0 },
 	{ "system", "users",       fn_users,     0 },

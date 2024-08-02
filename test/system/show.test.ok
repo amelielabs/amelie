@@ -123,6 +123,10 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
+  "name": "push_back",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "push",
   "argc": 2
 }, {
@@ -155,7 +159,23 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
-  "name": "sizeof",
+  "name": "length",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "size",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "concat",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "lower",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "upper",
   "argc": 1
 }, {
   "schema": "public",
@@ -261,6 +281,10 @@ select system.functions()
   "argc": 2
 }, {
   "schema": "public",
+  "name": "push_back",
+  "argc": 2
+}, {
+  "schema": "public",
   "name": "push",
   "argc": 2
 }, {
@@ -293,7 +317,23 @@ select system.functions()
   "argc": 2
 }, {
   "schema": "public",
-  "name": "sizeof",
+  "name": "length",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "size",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "concat",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "lower",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "upper",
   "argc": 1
 }, {
   "schema": "public",

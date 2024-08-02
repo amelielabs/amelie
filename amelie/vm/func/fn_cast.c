@@ -95,7 +95,7 @@ fn_timestamp(Call* self)
 	}
 }
 
-FunctionDef fn_cast[] =
+FunctionDef fn_cast_def[] =
 {
 	{ "public", "string",    fn_string,    1 },
 	{ "public", "int",       fn_int,       1 },

@@ -243,8 +243,8 @@ drop table test
 create table a (id int primary key serial, data int default 0) shared
 create table b (id int primary key serial, data int default 1) shared
 
-explain select sizeof(select * from a)
-select sizeof(select * from a)
+explain select length(select * from a)
+select length(select * from a)
 
 explain select (select * from a)[0]
 select (select * from a)[0]

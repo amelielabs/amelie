@@ -52,7 +52,7 @@ fn_nullif(Call* self)
 	value_copy(self->result, self->argv[0]);
 }
 
-FunctionDef fn_null[] =
+FunctionDef fn_null_def[] =
 {
 	{ "public", "coalesce", fn_coalesce, 0 },
 	{ "public", "nullif",   fn_nullif,   2 },

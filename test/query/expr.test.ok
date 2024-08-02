@@ -11,14 +11,8 @@ select 123456789012345
 123456789012345
 select -20
 -20
-select sizeof(0)
-1
-select sizeof(1234)
-1
-select sizeof(123456789)
-1
-select sizeof(123456789012345)
-1
+select length(0)
+{"code": 1, "msg": "length(): operation type is not supported"}
 select 1.0
 1
 select 1.1234
@@ -45,10 +39,14 @@ select "hello world"
 "hello world"
 select ""
 ""
-select sizeof("hello world")
+select length("hello world")
 11
-select sizeof("")
+select length("")
 0
+select "hello world"::length
+11
+select "hello world"::length()
+11
 select true
 true
 select false
@@ -330,9 +328,13 @@ select [0, 1, 2][3]
 {"code": 1, "msg": "<3>: array index not found"}
 select [0, [1, 2], 3][1]
 [1, 2]
-select sizeof([])
+select length([])
 0
-select sizeof([0, [1, 2], 3])
+select length([0, [1, 2], 3])
+3
+select []::length
+0
+select [0, [1, 2], 3]::length
 3
 # test: map
 select {}
@@ -361,5 +363,7 @@ select {"a": {"b": 777}}["a.b"]
 777
 select {"a": {"b": 777}}["a" || "." || "b"]
 777
+select {"a": {"b": 777}}::length()
+1
 disconnect S0
 close E0

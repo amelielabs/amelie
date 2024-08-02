@@ -5,7 +5,7 @@ create table test (id int primary key, data int default 0) shared
 select *.name, *.shared from system.tables()
 [["test", true]]
 # test: shared has single partition
-select sizeof(partitions) = 1 from system.tables()
+select length(partitions) = 1 from system.tables()
 [true]
 drop table test
 # test: table create
@@ -13,7 +13,7 @@ create table test (id int primary key, data int default 0)
 select *.name, *.shared from system.tables()
 [["test", false]]
 # test: table partitions created on each shard
-select sizeof(partitions) = 3 from system.tables()
+select partitions::length = 3 from system.tables()
 [true]
 drop table test
 disconnect S0

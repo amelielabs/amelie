@@ -14,11 +14,11 @@ select 1::()
 {"code": 1, "msg": "bad '::' or '->' expression"}
 select 1::[]()
 {"code": 1, "msg": "bad '::' or '->' expression"}
-select 1::sizeof()
-1
-select "hello"::sizeof()
+select 1::length()
+{"code": 1, "msg": "length(): operation type is not supported"}
+select "hello"::length()
 5
-explain select system.config().directory::sizeof()
+explain select system.config().directory::length()
 "
 bytecode [coordinator]
 --------
@@ -26,13 +26,13 @@ bytecode [coordinator]
  1              string        1      0      0      # directory
  2                 idx        2      0      1
  3                push        2      0      0
- 4                call        0      -      1      # public.sizeof()
+ 4                call        0      -      1      # public.length()
  5             cte_set        0      0      0
  6                body        0      0      0
  7                 ret        0      0      0
 
 "
-select system.config().directory::sizeof()
+select system.config().directory::length()
 10
 select [null]::put(0, 123)
 [123]
@@ -58,7 +58,7 @@ select 1::schema.name
 {"code": 1, "msg": "schema.name(): function not found"}
 select 1::schema.name.name
 {"code": 1, "msg": "schema.name.name(): bad function call"}
-explain select system.config().directory::sizeof
+explain select system.config().directory::length
 "
 bytecode [coordinator]
 --------
@@ -66,15 +66,15 @@ bytecode [coordinator]
  1              string        1      0      0      # directory
  2                 idx        2      0      1
  3                push        2      0      0
- 4                call        0      -      1      # public.sizeof()
+ 4                call        0      -      1      # public.length()
  5             cte_set        0      0      0
  6                body        0      0      0
  7                 ret        0      0      0
 
 "
-select system.config().directory::sizeof
+select system.config().directory::length
 10
-select sizeof(system.config().directory)
+select length(system.config().directory)
 10
 # test: select
 create table test (id int primary key serial, data object)

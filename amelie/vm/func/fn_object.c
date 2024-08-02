@@ -124,18 +124,19 @@ fn_has(Call* self)
 	value_has(self->result, argv[0], argv[1]);
 }
 
-FunctionDef fn_object[] =
+FunctionDef fn_object_def[] =
 {
 	// array
-	{ "public", "append",   fn_append,   2 },
-	{ "public", "push",     fn_push,     2 },
-	{ "public", "pop",      fn_pop,      1 },
-	{ "public", "pop_back", fn_pop_back, 1 },
-	{ "public", "put",      fn_put,      3 },
-	{ "public", "remove",   fn_remove,   2 },
+	{ "public", "append",    fn_append,   2 },
+	{ "public", "push_back", fn_append,   2 },
+	{ "public", "push",      fn_push,     2 },
+	{ "public", "pop",       fn_pop,      1 },
+	{ "public", "pop_back",  fn_pop_back, 1 },
+	{ "public", "put",       fn_put,      3 },
+	{ "public", "remove",    fn_remove,   2 },
 	/// map
-	{ "public", "set",      fn_set,      3 },
-	{ "public", "unset",    fn_unset,    2 },
-	{ "public", "has",      fn_has,      2 },
-	{  NULL,     NULL,      NULL,        0 }
+	{ "public", "set",       fn_set,      3 },
+	{ "public", "unset",     fn_unset,    2 },
+	{ "public", "has",       fn_has,      2 },
+	{  NULL,     NULL,       NULL,        0 }
 };

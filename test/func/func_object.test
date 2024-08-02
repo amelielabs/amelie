@@ -12,6 +12,7 @@ select []::append(1)::append(2)::append(3)
 
 select []::append(1, 2)
 select []::append(1, 2, 3)
+select []::append(1, 2, 3)::size
 
 # test: append update
 create table test (id int primary key, data array)
@@ -20,6 +21,11 @@ update test set data = data::append(1)::append(2)
 update test set data = data::append(3, 4, 5)
 select * from test
 drop table test
+
+# test: push_back
+select []::push_back(1)
+select []::push_back(1)::push_back(2)
+select []::append(1)::append(2)::push_back(3)
 
 # test: push
 select push(null)
@@ -162,6 +168,7 @@ select set({"a": {"b": {"c": 55}}}, "a.b", 34)
 select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
 select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
 
 select set([], 0, 1)
 

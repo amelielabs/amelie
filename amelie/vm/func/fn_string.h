@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-extern FunctionDef fn_system_def[];
+extern FunctionDef fn_string_def[];

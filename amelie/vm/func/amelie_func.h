@@ -10,4 +10,5 @@
 #include "func/fn_cast.h"
 #include "func/fn_null.h"
 #include "func/fn_object.h"
+#include "func/fn_string.h"
 #include "func/fn.h"

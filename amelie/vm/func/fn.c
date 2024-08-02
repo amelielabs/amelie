@@ -27,17 +27,6 @@
 #include <amelie_func.h>
 
 hot static void
-fn_sizeof(Call* self)
-{
-	auto arg = self->argv[0];
-	call_validate(self);
-	if (arg->type == VALUE_SET)
-		value_set_int(self->result, ((Set*)arg->obj)->list_count);
-	else
-		value_sizeof(self->result, arg);
-}
-
-hot static void
 fn_generate_series(Call* self)
 {
 	auto argv = self->argv;
@@ -107,9 +96,6 @@ fn_register(FunctionMgr* mgr)
 {
 	FunctionDef def[] =
 	{
-		// string
-		{ "public", "sizeof",          fn_sizeof,          1 },
-
 		// time
 		{ "public", "generate_series", fn_generate_series, 3 },
 		{ "public", "time_bucket",     fn_time_bucket,     2 },
@@ -120,9 +106,10 @@ fn_register(FunctionMgr* mgr)
 
 		{  NULL,     NULL,             NULL,               0 }
 	};
-	function_mgr_register(mgr, fn_system);
-	function_mgr_register(mgr, fn_cast);
-	function_mgr_register(mgr, fn_null);
-	function_mgr_register(mgr, fn_object);
+	function_mgr_register(mgr, fn_system_def);
+	function_mgr_register(mgr, fn_cast_def);
+	function_mgr_register(mgr, fn_null_def);
+	function_mgr_register(mgr, fn_object_def);
+	function_mgr_register(mgr, fn_string_def);
 	function_mgr_register(mgr, def);
 }

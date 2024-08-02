@@ -1,0 +1,60 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: length/size
+select ""::length
+0
+select ""::size
+0
+select "hello"::length
+5
+select "hello"::size
+5
+select null::size
+0
+select []::size
+0
+select [1,2,3]::size
+3
+select {}::size
+0
+select {"a": null}::size
+1
+select {"a": null, "b": null}::size
+2
+select (select * from [1,2,3])::size
+3
+# test: concat
+select concat()
+""
+select concat(null)
+""
+select concat(null, null)
+""
+select concat("a", null)
+"a"
+select concat("a", null, "b")
+"ab"
+select concat("a", null, "b")
+"ab"
+select concat("a", null, "b", 3)
+{"code": 1, "msg": "concat(): string argument expected"}
+select concat("a", null, "b", 3::string)
+"ab3"
+select lambda list = list::concat(*::string) from [1,2,3]
+["123"]
+select (lambda list = list::concat(*::string))::size from [1,2,3]
+[3]
+# test: lower
+select ""::lower
+""
+select "Hello World"::lower
+"hello world"
+select null::lower
+{"code": 1, "msg": "lower(): incorrect type of 0 argument"}
+# test: upper
+select ""::upper
+""
+select "Hello World"::upper
+"HELLO WORLD"
+disconnect S0
+close E0

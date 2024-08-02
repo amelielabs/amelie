@@ -775,7 +775,7 @@ drop table test
 # test: select set operations
 create table a (id int primary key serial, data int default 0) shared
 create table b (id int primary key serial, data int default 1) shared
-explain select sizeof(select * from a)
+explain select length(select * from a)
 "
 bytecode [coordinator]
 --------
@@ -798,12 +798,12 @@ bytecode [node]
  7         cursor_next        0      5      0
  8        cursor_close        0      0      0
  9                push        0      0      0
-10                call        0      -      1      # public.sizeof()
+10                call        0      -      1      # public.length()
 11              result        0      0      0
 12                 ret        0      0      0
 
 "
-select sizeof(select * from a)
+select length(select * from a)
 0
 explain select (select * from a)[0]
 "

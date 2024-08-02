@@ -228,9 +228,11 @@ data_write_raw(uint8_t** pos, const char* value, uint32_t size)
 		*(int32_t*)(data + data_size_type()) = size;
 		*pos += data_size32();
 	}
-	if (size > 0)
+	if (value && size > 0)
+	{
 		memcpy(*pos, value, size);
-	*pos += size;
+		*pos += size;
+	}
 }
 
 always_inline hot static inline void

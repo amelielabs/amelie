@@ -1,0 +1,45 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: length/size
+select ""::length
+select ""::size
+select "hello"::length
+select "hello"::size
+
+select null::size
+select []::size
+select [1,2,3]::size
+
+select {}::size
+select {"a": null}::size
+select {"a": null, "b": null}::size
+
+select (select * from [1,2,3])::size
+
+# test: concat
+select concat()
+select concat(null)
+select concat(null, null)
+select concat("a", null)
+select concat("a", null, "b")
+select concat("a", null, "b")
+select concat("a", null, "b", 3)
+select concat("a", null, "b", 3::string)
+
+select lambda list = list::concat(*::string) from [1,2,3]
+select (lambda list = list::concat(*::string))::size from [1,2,3]
+
+# test: lower
+select ""::lower
+select "Hello World"::lower
+select null::lower
+
+# test: upper
+select ""::upper
+select "Hello World"::upper
+
+disconnect S0
+close E0

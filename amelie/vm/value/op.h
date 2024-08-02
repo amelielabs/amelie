@@ -467,12 +467,11 @@ value_cat(Value* result, Value* a, Value* b)
 }
 
 always_inline hot static inline void
-value_sizeof(Value* result, Value* a)
+value_length(Value* result, Value* a)
 {
-	int rc = 1;
+	int64_t rc = 0;
 	switch (a->type) {
 	case VALUE_NULL:
-		rc = 0;
 		break;
 	case VALUE_DATA:
 		if (data_is_array(a->data))
@@ -485,6 +484,7 @@ value_sizeof(Value* result, Value* a)
 		rc = str_size(&a->string);
 		break;
 	default:
+		error("length(): operation type is not supported");
 		break;
 	}
 	value_set_int(result, rc);

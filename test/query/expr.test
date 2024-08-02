@@ -13,10 +13,7 @@ select 123456789012345
 
 select -20
 
-select sizeof(0)
-select sizeof(1234)
-select sizeof(123456789)
-select sizeof(123456789012345)
+select length(0)
 
 # real
 select 1.0
@@ -43,8 +40,11 @@ select 1e40
 # string
 select "hello world"
 select ""
-select sizeof("hello world")
-select sizeof("")
+select length("hello world")
+select length("")
+
+select "hello world"::length
+select "hello world"::length()
 
 # bool
 select true
@@ -218,8 +218,11 @@ select [0, 1, 2][3]
 
 select [0, [1, 2], 3][1]
 
-select sizeof([])
-select sizeof([0, [1, 2], 3])
+select length([])
+select length([0, [1, 2], 3])
+
+select []::length
+select [0, [1, 2], 3]::length
 
 # test: map
 select {}
@@ -233,6 +236,7 @@ select {"a": 123}["a"]
 select {"a": {"b": 777}}.a.b
 select {"a": {"b": 777}}["a.b"]
 select {"a": {"b": 777}}["a" || "." || "b"]
+select {"a": {"b": 777}}::length()
 
 disconnect S0
 close E0

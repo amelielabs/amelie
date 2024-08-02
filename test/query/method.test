@@ -13,11 +13,11 @@ select 1::
 select 1::()
 select 1::[]()
 
-select 1::sizeof()
-select "hello"::sizeof()
+select 1::length()
+select "hello"::length()
 
-explain select system.config().directory::sizeof()
-select system.config().directory::sizeof()
+explain select system.config().directory::length()
+select system.config().directory::length()
 
 select [null]::put(0, 123)
 select put([null], 0, 123)
@@ -33,9 +33,9 @@ select {}::public.set("a", 1)::public.set("b", 2)
 select 1::schema.name
 select 1::schema.name.name
 
-explain select system.config().directory::sizeof
-select system.config().directory::sizeof
-select sizeof(system.config().directory)
+explain select system.config().directory::length
+select system.config().directory::length
+select length(system.config().directory)
 
 # test: select
 create table test (id int primary key serial, data object)

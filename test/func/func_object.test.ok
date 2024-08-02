@@ -15,6 +15,8 @@ select []::append(1, 2)
 [1, 2]
 select []::append(1, 2, 3)
 [1, 2, 3]
+select []::append(1, 2, 3)::size
+3
 # test: append update
 create table test (id int primary key, data array)
 insert into test values (0, [])
@@ -23,6 +25,13 @@ update test set data = data::append(3, 4, 5)
 select * from test
 [[0, [1, 2, 3, 4, 5]]]
 drop table test
+# test: push_back
+select []::push_back(1)
+[1]
+select []::push_back(1)::push_back(2)
+[1, 2]
+select []::append(1)::append(2)::push_back(3)
+[1, 2, 3]
 # test: push
 select push(null)
 {"code": 1, "msg": "push(): expected two or more arguments"}
@@ -274,6 +283,8 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
   },
   "c": 88
 }
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
+2
 select set([], 0, 1)
 {"code": 1, "msg": "set(): map type expected"}
 # test: set update
