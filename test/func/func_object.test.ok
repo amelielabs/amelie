@@ -190,5 +190,266 @@ update test set data = data::remove(1)
 select * from test
 [[0, [1, 3]]]
 drop table test
+# test: set
+select {}::set("id", 42)
+{
+  "id": 42
+}
+select {}::set("id", 42)::set("data", [1,2,3])
+{
+  "id": 42,
+  "data": [1, 2, 3]
+}
+select {}::set("id", 42)::set("data", {"misc": null}).data.misc
+null
+select set({"a": 0}, "a", 1)
+{
+  "a": 1
+}
+select set({"a": 0}, "a", {"b": 2})
+{
+  "a": {
+    "b": 2
+  }
+}
+select set({"a": 0}, "a", {"b": 2}).a.b
+2
+select set({"a": 0}, "a", {"b": 2})["a.b"]
+2
+select set({"a": 0}, "b", {"c": 3})
+{
+  "a": 0,
+  "b": {
+    "c": 3
+  }
+}
+select set({"a": 0}, "b", [1, 2]).b
+[1, 2]
+select set({"a": 0}, "b", [1, 2]).b[1]
+2
+select set({"a": 88}, "a", 34)
+{
+  "a": 34
+}
+select set({"a": 88}, "", 34)
+{"code": 1, "msg": "update: incorrect path"}
+select set({"a": 88}, " ", 34)
+{"code": 1, "msg": "update: incorrect path"}
+select set({"a": 88}, ".", 34)
+{"code": 1, "msg": "set: incorrect path"}
+select set({"a": {"b": 22}}, "a.b", 34)
+{
+  "a": {
+    "b": 34
+  }
+}
+select set({"a": {"b": {"c": 55}}}, "a.b", 34)
+{
+  "a": {
+    "b": 34
+  }
+}
+select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
+{
+  "a": {
+    "b": {
+      "c": 34
+    }
+  }
+}
+select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
+{
+  "a": {
+    "b": {
+      "c": {
+        "d": 0
+      }
+    }
+  }
+}
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+{
+  "a": {
+    "b": 34
+  },
+  "c": 88
+}
+select set([], 0, 1)
+{"code": 1, "msg": "set(): map type expected"}
+# test: set update
+create table test (id int primary key, data object)
+insert into test values (0, {})
+update test set data.misc = 42
+select * from test
+[[0, {
+  "misc": 42
+}]]
+update test set data.data = {"id": id}
+select * from test
+[[0, {
+  "misc": 42,
+  "data": {
+    "id": 0
+  }
+}]]
+drop table test
+# test: unset
+select {"a": 1, "b": 2, "c": 3}::unset("a")
+{
+  "b": 2,
+  "c": 3
+}
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("a")
+{
+  "b": 2,
+  "c": 3
+}
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")
+{
+  "b": 2
+}
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")
+{
+}
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42)
+{
+  "a": 42
+}
+select unset({}, "a")
+{
+}
+select unset({}, "")
+{"code": 1, "msg": "update: incorrect path"}
+select unset({"a": 0}, "a")
+{
+}
+select unset({"a": 0}, "b")
+{
+  "a": 0
+}
+select unset({"a": {"b": 2}}, "a")
+{
+}
+select unset({"a": {"b": 2}}, "a.b")
+{
+  "a": {
+  }
+}
+select unset({"a": {"b": 2}, "g": 3}, "a")
+{
+  "g": 3
+}
+select unset({"a": {"b": 22}}, "a.b")
+{
+  "a": {
+  }
+}
+select unset({"a": {"b": {"c": 55}}}, "a.b")
+{
+  "a": {
+  }
+}
+select unset({"a": {"b": {"c": 55}}}, "a.b.c")
+{
+  "a": {
+    "b": {
+    }
+  }
+}
+select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
+{
+  "a": {
+    "b": {
+      "c": {
+      }
+    }
+  }
+}
+select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
+{
+  "a": {
+    "b": {
+      "c": {
+        "v": 77
+      }
+    }
+  }
+}
+select unset([1], 0)
+{"code": 1, "msg": "unset(): map type expected"}
+# test: unset update
+create table test (id int primary key, data object)
+insert into test values (0, {"a": 1, "b": 2, "c": 3})
+update test set data = data::unset("b")
+select * from test
+[[0, {
+  "a": 1,
+  "c": 3
+}]]
+update test set data = data::unset("b"), data = data::unset("c")
+select * from test
+[[0, {
+  "a": 1
+}]]
+drop table test
+# test: has
+select {}::has("id")
+false
+select {"id": null}::has("id")
+true
+select {"id": null, "data": {"misc": true}}::has("data.misc")
+true
+select has({"a": 0}, "a")
+true
+select has({"a": 0}, "b")
+false
+select has({"a": {"b": 777}}, "a.b")
+true
+select has({"a": {"b": 777}}, "a.c")
+false
+# test: has update
+create table test (id int primary key, data object)
+insert into test values (0, {"a": 1, "b": 2, "c": 3})
+insert into test values (1, {"a": 1, "b": 2})
+insert into test values (2, {"a": 1, "c": 3})
+select * from test where data::has("b")
+[[0, {
+  "a": 1,
+  "b": 2,
+  "c": 3
+}], [1, {
+  "a": 1,
+  "b": 2
+}]]
+update test set data = data::set("c", 3) where not data::has("c")
+select * from test
+[[0, {
+  "a": 1,
+  "b": 2,
+  "c": 3
+}], [1, {
+  "a": 1,
+  "b": 2,
+  "c": 3
+}], [2, {
+  "a": 1,
+  "c": 3
+}]]
+delete from test where data::has("b") returning *
+[[0, {
+  "a": 1,
+  "b": 2,
+  "c": 3
+}], [1, {
+  "a": 1,
+  "b": 2,
+  "c": 3
+}]]
+select * from test
+[[2, {
+  "a": 1,
+  "c": 3
+}]]
+drop table test
 disconnect S0
 close E0

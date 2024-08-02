@@ -101,19 +101,11 @@ fn_remove(Call* self)
 }
 
 hot static void
-fn_has(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	value_idx_has(self->result, argv[0], argv[1]);
-}
-
-hot static void
 fn_set(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self);
-	value_idx_set(self->result, argv[0], argv[1], argv[2]);
+	value_set(self->result, argv[0], argv[1], argv[2]);
 }
 
 hot static void
@@ -121,7 +113,15 @@ fn_unset(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self);
-	value_idx_unset(self->result, argv[0], argv[1]);
+	value_unset(self->result, argv[0], argv[1]);
+}
+
+hot static void
+fn_has(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self);
+	value_has(self->result, argv[0], argv[1]);
 }
 
 FunctionDef fn_object[] =
@@ -134,8 +134,8 @@ FunctionDef fn_object[] =
 	{ "public", "put",      fn_put,      3 },
 	{ "public", "remove",   fn_remove,   2 },
 	/// map
-	{ "public", "has",      fn_has,      2 },
 	{ "public", "set",      fn_set,      3 },
 	{ "public", "unset",    fn_unset,    2 },
+	{ "public", "has",      fn_has,      2 },
 	{  NULL,     NULL,      NULL,        0 }
 };

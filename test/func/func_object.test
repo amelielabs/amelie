@@ -141,5 +141,91 @@ update test set data = data::remove(1)
 select * from test
 drop table test
 
+# test: set
+select {}::set("id", 42)
+select {}::set("id", 42)::set("data", [1,2,3])
+select {}::set("id", 42)::set("data", {"misc": null}).data.misc
+
+select set({"a": 0}, "a", 1)
+select set({"a": 0}, "a", {"b": 2})
+select set({"a": 0}, "a", {"b": 2}).a.b
+select set({"a": 0}, "a", {"b": 2})["a.b"]
+select set({"a": 0}, "b", {"c": 3})
+select set({"a": 0}, "b", [1, 2]).b
+select set({"a": 0}, "b", [1, 2]).b[1]
+select set({"a": 88}, "a", 34)
+select set({"a": 88}, "", 34)
+select set({"a": 88}, " ", 34)
+select set({"a": 88}, ".", 34)
+select set({"a": {"b": 22}}, "a.b", 34)
+select set({"a": {"b": {"c": 55}}}, "a.b", 34)
+select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
+select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+
+select set([], 0, 1)
+
+# test: set update
+create table test (id int primary key, data object)
+insert into test values (0, {})
+update test set data.misc = 42
+select * from test
+update test set data.data = {"id": id}
+select * from test
+drop table test
+
+# test: unset
+select {"a": 1, "b": 2, "c": 3}::unset("a")
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("a")
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42)
+
+select unset({}, "a")
+select unset({}, "")
+select unset({"a": 0}, "a")
+select unset({"a": 0}, "b")
+select unset({"a": {"b": 2}}, "a")
+select unset({"a": {"b": 2}}, "a.b")
+select unset({"a": {"b": 2}, "g": 3}, "a")
+select unset({"a": {"b": 22}}, "a.b")
+select unset({"a": {"b": {"c": 55}}}, "a.b")
+select unset({"a": {"b": {"c": 55}}}, "a.b.c")
+select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
+select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
+
+select unset([1], 0)
+
+# test: unset update
+create table test (id int primary key, data object)
+insert into test values (0, {"a": 1, "b": 2, "c": 3})
+update test set data = data::unset("b")
+select * from test
+update test set data = data::unset("b"), data = data::unset("c")
+select * from test
+drop table test
+
+# test: has
+select {}::has("id")
+select {"id": null}::has("id")
+select {"id": null, "data": {"misc": true}}::has("data.misc")
+
+select has({"a": 0}, "a")
+select has({"a": 0}, "b")
+select has({"a": {"b": 777}}, "a.b")
+select has({"a": {"b": 777}}, "a.c")
+
+# test: has update
+create table test (id int primary key, data object)
+insert into test values (0, {"a": 1, "b": 2, "c": 3})
+insert into test values (1, {"a": 1, "b": 2})
+insert into test values (2, {"a": 1, "c": 3})
+select * from test where data::has("b")
+update test set data = data::set("c", 3) where not data::has("c")
+select * from test
+delete from test where data::has("b") returning *
+select * from test
+drop table test
+
 disconnect S0
 close E0

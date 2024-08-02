@@ -619,7 +619,7 @@ value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 	if (b->type == VALUE_NULL)
 	{
 		// row[column] = value
-		value_array_set(result, a->data, column, c);
+		value_array_put(result, a->data, column, c);
 	} else
 	if (b->type == VALUE_STRING)
 	{
@@ -632,7 +632,7 @@ value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 }
 
 always_inline hot static inline void
-value_idx_set(Value* result, Value* a, Value* b, Value* c)
+value_set(Value* result, Value* a, Value* b, Value* c)
 {
 	if (unlikely(a->type == VALUE_NULL))
 	{
@@ -642,65 +642,34 @@ value_idx_set(Value* result, Value* a, Value* b, Value* c)
 		return;
 	}
 	if (unlikely(a->type != VALUE_DATA))
-		error("set(): map or array type expected");
-	if (data_is_map(a->data))
-	{
-		if (unlikely(b->type != VALUE_STRING))
-			error("set(): path type must be string");
-		update_set(result, a->data, &b->string, c);
-	} else
-	if (data_is_array(a->data))
-	{
-		if (b->type == VALUE_INT)
-			value_array_set(result, a->data, b->integer, c);
-		else
-			error("set(): position type must be integer");
-	}
+		error("set(): map type expected");
+	if (! data_is_map(a->data))
+		error("set(): map type expected");
+	if (unlikely(b->type != VALUE_STRING))
+		error("set(): path type must be string");
+	update_set(result, a->data, &b->string, c);
 }
 
 always_inline hot static inline void
-value_idx_unset(Value* result, Value* a, Value* b)
+value_unset(Value* result, Value* a, Value* b)
 {
 	if (unlikely(a->type != VALUE_DATA))
-		error("unset(): map or array type expected");
-	if (data_is_map(a->data))
-	{
-		if (unlikely(b->type != VALUE_STRING))
-			error("unset(): path type must be string");
-		update_unset(result, a->data, &b->string);
-	} else
-	if (data_is_array(a->data))
-	{
-		if (b->type == VALUE_INT)
-			value_array_remove(result, a->data, b->integer);
-		else
-			error("unset(): map or array type expected");
-	} else
-	{
-		error("unset(): map or array type expected");
-	}
+		error("unset(): map type expected");
+	if (! data_is_map(a->data))
+		error("unset(): map type expected");
+	if (unlikely(b->type != VALUE_STRING))
+		error("unset(): path type must be string");
+	update_unset(result, a->data, &b->string);
 }
 
 always_inline hot static inline void
-value_idx_has(Value* result, Value* a, Value* b)
+value_has(Value* result, Value* a, Value* b)
 {
 	if (unlikely(a->type != VALUE_DATA))
-		error("has(): map or array type expected");
-	if (data_is_map(a->data))
-	{
-		if (unlikely(b->type != VALUE_STRING))
-			error("has(): path type must be string");
-		value_map_has(result, a->data, &b->string);
-	} else
-	if (data_is_array(a->data))
-	{
-		if (unlikely(b->type != VALUE_INT))
-			error("has(): position type must be integer");
-		value_array_has(result, a->data, b->integer);
-	} else
-	{
-		error("has(): map or array type expected");
-	}
+		error("has(): map type expected");
+	if (unlikely(b->type != VALUE_STRING))
+		error("has(): path type must be string");
+	value_map_has(result, a->data, &b->string);
 }
 
 always_inline hot static inline void
@@ -734,6 +703,18 @@ value_idx(Value* result, Value* a, Value* b)
 		error("[]: map or array type expected");
 	}
 }
+
+/*
+always_inline hot static inline void
+value_append(Value* result, Value* a, int argc, Value** argv)
+{
+	if (a->type != VALUE_DATA)
+		error("append(): array expected");
+	if (! data_is_array(a->data))
+		error("append(): array expected");
+	value_array_append(result, a->data, a->data_size, argc, argv);
+}
+*/
 
 always_inline hot static inline void
 value_append(Value* result, Value* a, int argc, Value** argv)

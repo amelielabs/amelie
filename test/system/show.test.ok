@@ -143,15 +143,15 @@ show functions
   "argc": 2
 }, {
   "schema": "public",
-  "name": "has",
-  "argc": 2
-}, {
-  "schema": "public",
   "name": "set",
   "argc": 3
 }, {
   "schema": "public",
   "name": "unset",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "has",
   "argc": 2
 }, {
   "schema": "public",
@@ -281,15 +281,15 @@ select system.functions()
   "argc": 2
 }, {
   "schema": "public",
-  "name": "has",
-  "argc": 2
-}, {
-  "schema": "public",
   "name": "set",
   "argc": 3
 }, {
   "schema": "public",
   "name": "unset",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "has",
   "argc": 2
 }, {
   "schema": "public",

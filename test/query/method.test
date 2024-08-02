@@ -19,12 +19,12 @@ select "hello"::sizeof()
 explain select system.config().directory::sizeof()
 select system.config().directory::sizeof()
 
-select []::set(0, 123)
-select set([], 0, 123)
+select [null]::put(0, 123)
+select put([null], 0, 123)
 
 # test: expr :: method() :: method()
-select [1]::set(1, 2)::set(2, 3)
-select [1]::set(1, 2)::set(2, 3)::set(3, 4)
+select [1]::append(1)::append(2)
+select [1]::append(1)::append(2)::append(3)
 
 select {}::set("a", 1)::set("b", 2)
 select {}::public.set("a", 1)::public.set("b", 2)

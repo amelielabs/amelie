@@ -221,11 +221,6 @@ select [0, [1, 2], 3][1]
 select sizeof([])
 select sizeof([0, [1, 2], 3])
 
-# todo
-# append
-# put
-# remove
-
 # test: map
 select {}
 select {"a"}
@@ -238,44 +233,6 @@ select {"a": 123}["a"]
 select {"a": {"b": 777}}.a.b
 select {"a": {"b": 777}}["a.b"]
 select {"a": {"b": 777}}["a" || "." || "b"]
-
-# has
-select has({"a": 0}, "a")
-select has({"a": 0}, "b")
-select has({"a": {"b": 777}}, "a.b")
-select has({"a": {"b": 777}}, "a.c")
-
-# set
-select set({"a": 0}, "a", 1)
-select set({"a": 0}, "a", {"b": 2})
-select set({"a": 0}, "a", {"b": 2}).a.b
-select set({"a": 0}, "a", {"b": 2})["a.b"]
-select set({"a": 0}, "b", {"c": 3})
-select set({"a": 0}, "b", [1, 2]).b
-select set({"a": 0}, "b", [1, 2]).b[1]
-select set({"a": 88}, "a", 34)
-select set({"a": 88}, "", 34)
-select set({"a": 88}, " ", 34)
-select set({"a": 88}, ".", 34)
-select set({"a": {"b": 22}}, "a.b", 34)
-select set({"a": {"b": {"c": 55}}}, "a.b", 34)
-select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
-select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
-select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
-
-# unset
-select unset({}, "a")
-select unset({}, "")
-select unset({"a": 0}, "a")
-select unset({"a": 0}, "b")
-select unset({"a": {"b": 2}}, "a")
-select unset({"a": {"b": 2}}, "a.b")
-select unset({"a": {"b": 2}, "g": 3}, "a")
-select unset({"a": {"b": 22}}, "a.b")
-select unset({"a": {"b": {"c": 55}}}, "a.b")
-select unset({"a": {"b": {"c": 55}}}, "a.b.c")
-select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
-select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
 
 disconnect S0
 close E0
