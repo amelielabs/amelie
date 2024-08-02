@@ -87,6 +87,7 @@ priority_map[UINT8_MAX] =
 	[KAVG]                     = priority_value,
 	[KMIN]                     = priority_value,
 	[KMAX]                     = priority_value,
+	[KLAMBDA]                  = priority_value,
 	[KREAL]                    = priority_value,
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
@@ -255,16 +256,23 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	}
 
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(id, expr->aggs->count, arg);
+	auto aggr = ast_aggr_allocate(id, expr->aggs->count, arg, NULL);
 	ast_list_add(expr->aggs, &aggr->ast);
 	return &aggr->ast;
 }
 
 static inline Ast*
-expr_lambda(Stmt* self, Expr* expr, Ast* name)
+expr_lambda(Stmt* self, Expr* expr)
 {
 	if (unlikely(expr == NULL || !expr->aggs))
 		error("unexpected lambda usage");
+
+	// lambda name(expr) = expr
+
+	// name
+	auto name = stmt_if(self, KNAME);
+	if (! name)
+		error("lambda <name> expected");
 
 	// ensure lambda is not redefined
 	auto node = expr->aggs->list;
@@ -278,11 +286,25 @@ expr_lambda(Stmt* self, Expr* expr, Ast* name)
 			      str_of(&name->string));
 	}
 
-	// name => expr
+	Ast* init = NULL;
+#if 0
+	// (expr)
+	if (! stmt_if(self, '('))
+		error("lambda name <(> expected");
+	auto init = parse_expr(self, expr);
+	if (! stmt_if(self, '('))
+		error("lambda name (expr<)> expected");
+#endif
+
+	// =
+	if (! stmt_if(self, '='))
+		error("lambda name (expr) <=> expected");
+
+	// expr
 	auto arg = parse_expr(self, expr);
 
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(AGGR_LAMBDA, expr->aggs->count, arg);
+	auto aggr = ast_aggr_allocate(AGGR_LAMBDA, expr->aggs->count, arg, init);
 	ast_list_add(expr->aggs, &aggr->ast);
 	aggr->name = name;
 	return &aggr->ast;
@@ -402,6 +424,10 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value = expr_aggregate(self, expr, value);
 		break;
 
+	case KLAMBDA:
+		value = expr_lambda(self, expr);
+		break;
+
 	// const
 	case KNULL:
 	case KREAL:
@@ -464,13 +490,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KNAME:
 	case KNAME_COMPOUND:
 	{
-		// name => lambda expr
-		if (stmt_if(self, KARROW))
-		{
-			value = expr_lambda(self, expr, value);
-			break;
-		}
-
 		// function(expr, ...)
 		if (stmt_if(self,'('))
 			value = expr_call(self, expr, value, true);

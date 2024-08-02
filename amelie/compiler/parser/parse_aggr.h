@@ -14,6 +14,7 @@ struct AstAggr
 	int  id;
 	int  order;
 	Ast* expr;
+	Ast* expr_init;
 	Ast* name;
 };
 
@@ -24,14 +25,15 @@ ast_aggr_of(Ast* ast)
 }
 
 static inline AstAggr*
-ast_aggr_allocate(int id, int order, Ast* expr)
+ast_aggr_allocate(int id, int order, Ast* expr, Ast* expr_init)
 {
 	AstAggr* self;
 	self = ast_allocate(KAGGR, sizeof(AstAggr));
-	self->id    = id;
-	self->order = order;
-	self->expr  = expr;
-	self->name  = NULL;
+	self->id        = id;
+	self->order     = order;
+	self->expr      = expr;
+	self->expr_init = expr_init;
+	self->name      = NULL;
 	return self;
 }
 

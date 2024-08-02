@@ -170,12 +170,6 @@ lex_next(Lex* self)
 			ast->id = KMETHOD;
 			return ast;
 		}
-		// =>
-		if (symbol == '=' && symbol_next == '>') {
-			self->pos++;
-			ast->id = KARROW;
-			return ast;
-		}
 		// <>
 		if (symbol == '<' && symbol_next == '>') {
 			self->pos++;

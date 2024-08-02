@@ -131,6 +131,7 @@ static Keyword keywords_l[] =
 {
 	{ KLIKE,                  "like",                  4  },
 	{ KLIMIT,                 "limit",                 5  },
+	{ KLAMBDA,                "lambda",                6  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
 	{ 0,                       NULL,                   0  }
