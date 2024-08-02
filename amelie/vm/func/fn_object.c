@@ -30,21 +30,23 @@ hot static void
 fn_append(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
-	value_append(self->result, argv[0], argv[1]);
+	if (self->argc < 2)
+		error("append(): expected two or more arguments");
+	value_append(self->result, argv[0], self->argc - 1, argv + 1);
 }
 
 hot static void
 fn_push(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	if (self->argc < 2)
+		error("push(): expected two or more arguments");
 	call_validate_arg(self, 0, VALUE_DATA);
 	auto data = argv[0]->data;
 	auto data_size = argv[0]->data_size;
 	if (! data_is_array(data))
 		error("push(): array expected");
-	value_array_push(self->result, data, data_size, argv[1]);
+	value_array_push(self->result, data, data_size, self->argc - 1, argv + 1);
 }
 
 hot static void

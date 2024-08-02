@@ -22,18 +22,22 @@ value_array(Value* result, Stack* stack, int count)
 }
 
 static inline void
-value_array_append(Value* result, uint8_t* data, int data_size, Value* value)
+value_array_append(Value*  result, uint8_t* data, int data_size,
+                   int     argc,
+                   Value** argv)
 {
 	auto buf = buf_begin();
 	if (! data)
 	{
 		encode_array(buf);
-		value_write(value, buf);
+		for (int i = 0; i < argc; i++)
+			value_write(argv[i], buf);
 		encode_array_end(buf);
 	} else
 	{
 		buf_write(buf, data, data_size - data_size_array_end());
-		value_write(value, buf);
+		for (int i = 0; i < argc; i++)
+			value_write(argv[i], buf);
 		encode_array_end(buf);
 	}
 	buf_end(buf);
@@ -41,11 +45,14 @@ value_array_append(Value* result, uint8_t* data, int data_size, Value* value)
 }
 
 static inline void
-value_array_push(Value* result, uint8_t* data, int data_size, Value* value)
+value_array_push(Value*  result, uint8_t* data, int data_size,
+                 int     argc,
+                 Value** argv)
 {
 	auto buf = buf_begin();
 	encode_array(buf);
-	value_write(value, buf);
+	for (int i = 0; i < argc; i++)
+		value_write(argv[i], buf);
 	buf_write(buf, data + data_size_array(), data_size - data_size_array());
 	buf_end(buf);
 	value_set_buf(result, buf);

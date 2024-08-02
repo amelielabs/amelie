@@ -10,10 +10,14 @@ select []::append(1)
 select []::append(1)::append(2)
 select []::append(1)::append(2)::append(3)
 
+select []::append(1, 2)
+select []::append(1, 2, 3)
+
 # test: append update
 create table test (id int primary key, data array)
 insert into test values (0, [])
 update test set data = data::append(1)::append(2)
+update test set data = data::append(3, 4, 5)
 select * from test
 drop table test
 
@@ -27,6 +31,9 @@ select []::push(1)
 select []::push(2)::push(1)
 select []::push(2)::push(1)::push(0)
 
+select []::push(1, 2)
+select [3]::push(1, 2)
+
 # test: push update
 create table test (id int primary key, data array)
 insert into test values (0, [])
@@ -34,6 +41,7 @@ insert into test values (0, [])
 update test set data = push(data, 1)
 select * from test
 update test set data = data::push(2)::push(1)
+update test set data = data::push(-1, 0)
 select * from test
 drop table test
 
@@ -124,6 +132,7 @@ select []::append(1)::append(2)::append(3)
 select []::append(1)::append(2)::append(3)::remove(0)
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0)
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0)
+select []::append(1,2,3)::remove(0)::remove(0)::remove(0)
 
 # test: remove update
 create table test (id int primary key, data array)

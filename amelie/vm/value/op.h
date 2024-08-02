@@ -736,7 +736,7 @@ value_idx(Value* result, Value* a, Value* b)
 }
 
 always_inline hot static inline void
-value_append(Value* result, Value* a, Value* b)
+value_append(Value* result, Value* a, int argc, Value** argv)
 {
 	uint8_t* data;
 	int      data_size;
@@ -755,5 +755,5 @@ value_append(Value* result, Value* a, Value* b)
 	{
 		error("append(): array or null expected");
 	}
-	value_array_append(result, data, data_size, b);
+	value_array_append(result, data, data_size, argc, argv);
 }
