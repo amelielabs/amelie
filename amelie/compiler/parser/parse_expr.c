@@ -695,7 +695,6 @@ parse_op(Stmt*     self, Expr* expr,
 	case KMETHOD:
 	{
 		// expr :: path [(call, ...)]
-		// expr -> path [(call, ...)]
 		auto r = stmt_next_shadow(self);
 		if (r->id == KNAME ||
 			r->id == KNAME_COMPOUND)
@@ -704,7 +703,7 @@ parse_op(Stmt*     self, Expr* expr,
 			auto with_args = stmt_if(self, '(') != NULL;
 			r = expr_call(self, expr, r, with_args);
 		} else {
-			error("bad '::' or '->' expression");
+			error("bad '::' expression");
 		}
 		ast_push(result, r);
 		break;
