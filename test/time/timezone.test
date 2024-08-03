@@ -27,10 +27,18 @@ select '2024-07-29 18:40:19Z'::timestamp
 
 # test: explicit convertion
 select '2024-07-29 18:40:19'::timestamp('UTC')
+select '2024-07-29 18:40:19'::timestamp('Asia/Famagusta')
 select '2024-07-29 18:40:19'::timestamp
 
 # unknown timezone
 select '2024-07-29 18:40:19'::timestamp('jupiter')
+
+# test: at_timezone
+select '2024-07-29 18:40:19'::timestamp
+select '2024-07-29 18:40:19'::timestamp::at_timezone('UTC')
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
+select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
 
 # test: timestamp column
 create table test (time timestamp primary key)

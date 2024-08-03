@@ -357,6 +357,10 @@ show functions
   "schema": "public",
   "name": "now",
   "argc": 0
+}, {
+  "schema": "public",
+  "name": "at_timezone",
+  "argc": 2
 }]
 select system.functions()
 [{
@@ -679,6 +683,10 @@ select system.functions()
   "schema": "public",
   "name": "now",
   "argc": 0
+}, {
+  "schema": "public",
+  "name": "at_timezone",
+  "argc": 2
 }]
 # test: show tables
 show tables

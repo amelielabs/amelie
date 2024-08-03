@@ -82,8 +82,8 @@ fn_timestamp(Call* self)
 		Timezone* timezone = self->vm->local->timezone;
 		if (self->argc == 2)
 		{
-			auto name = &self->argv[1]->string;
 			call_validate_arg(self, 1, VALUE_STRING);
+			auto name = &self->argv[1]->string;
 			timezone = timezone_mgr_find(global()->timezone_mgr, name);
 			if (! timezone)
 				error("timestamp(): failed to find timezone '%.*s'",

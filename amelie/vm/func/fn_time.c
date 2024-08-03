@@ -82,10 +82,38 @@ fn_now(Call* self)
 	value_set_timestamp(self->result, time_us());
 }
 
+hot static void
+fn_at_timezone(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self);
+	call_validate_arg(self, 0, VALUE_TIMESTAMP);
+	call_validate_arg(self, 1, VALUE_STRING);
+
+	auto name = &self->argv[1]->string;
+	auto timezone = timezone_mgr_find(global()->timezone_mgr, name);
+	if (! timezone)
+		error("timestamp(): failed to find timezone '%.*s'",
+		      str_size(name), str_of(name));
+
+	auto data = buf_begin();
+	buf_reserve(data, 128);
+	int size = timestamp_write(argv[0]->integer, timezone,
+	                           (char*)data->position, 128);
+	buf_advance(data, size);
+	buf_end(data);
+
+	Str string;
+	str_init(&string);
+	str_set(&string, (char*)data->start, buf_size(data));
+	value_set_string(self->result, &string, data);
+}
+
 FunctionDef fn_time_def[] =
 {
 	{ "public", "generate_series", fn_generate_series, 3 },
 	{ "public", "time_bucket",     fn_time_bucket,     2 },
 	{ "public", "now",             fn_now,             0 },
+	{ "public", "at_timezone",     fn_at_timezone,     2 },
 	{  NULL,     NULL,             NULL,               0 }
 };
