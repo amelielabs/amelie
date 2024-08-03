@@ -82,6 +82,13 @@ str_advance(Str *self, int size)
 	assert(self->pos <= self->end);
 }
 
+static inline void
+str_truncate(Str *self, int size)
+{
+	self->end -= size;
+	assert(self->pos <= self->end);
+}
+
 static inline bool
 str_empty(Str* self)
 {

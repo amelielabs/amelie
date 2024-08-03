@@ -179,6 +179,30 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "substr",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "strpos",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "replace",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "ltrim",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "rtrim",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "trim",
+  "argc": 0
+}, {
+  "schema": "public",
   "name": "greatest",
   "argc": 0
 }, {
@@ -475,6 +499,30 @@ select system.functions()
   "schema": "public",
   "name": "upper",
   "argc": 1
+}, {
+  "schema": "public",
+  "name": "substr",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "strpos",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "replace",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "ltrim",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "rtrim",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "trim",
+  "argc": 0
 }, {
   "schema": "public",
   "name": "greatest",

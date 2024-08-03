@@ -120,12 +120,263 @@ fn_upper(Call* self)
 	value_set_string(self->result, &string, buf);
 }
 
+static void
+fn_substr(Call* self)
+{
+	auto argv = self->argv;
+	if (self->argc < 2 || self->argc > 3)
+		error("substr(): unexpected number of arguments");
+
+	// (string, pos)
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_INT);
+	auto src = &argv[0]->string;
+	auto pos = argv[1]->integer;
+
+	// position starts from 1
+	if (pos == 0)
+		error("substr(): position is out of bounds");
+	pos--;
+
+	if (pos >= str_size(src))
+		error("substr(): position is out of bounds");
+
+	// (string, pos, count)
+	int count = str_size(src) - pos;
+	if (self->argc == 3)
+	{
+		call_validate_arg(self, 2, VALUE_INT);
+		count = argv[2]->integer;
+		if ((pos + count) > str_size(src))
+			error("substr(): position is out of bounds");
+	}
+
+	Str string;
+	str_set(&string, str_of(src) + pos, count);
+	auto buf = buf_begin();
+	encode_string(buf, &string);
+	buf_end(buf);
+
+	Str result;
+	uint8_t* pos_str = buf->start;
+	data_read_string(&pos_str, &result);
+	value_set_string(self->result, &result, buf);
+}
+
+static void
+fn_strpos(Call* self)
+{
+	// (string, substring)
+	auto argv = self->argv;
+	call_validate(self);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_STRING);
+
+	auto src = &argv[0]->string;
+	auto substr = &argv[1]->string;
+	if (str_size(substr) == 0)
+	{
+		value_set_int(self->result, 0);
+		return;
+	}
+
+	auto pos = src->pos;
+	auto end = src->end;
+	while (pos < end)
+	{
+		if ((end - pos) < str_size(substr))
+			break;
+
+		if (*pos == *str_of(substr))
+		{
+			if (str_compare_raw(substr, pos, str_size(substr)))
+			{
+				value_set_int(self->result, (pos - src->pos) + 1);
+				return;
+			}
+		}
+		pos++;
+	}
+
+	value_set_int(self->result, 0);
+}
+
+static void
+fn_replace(Call* self)
+{
+	// (string, from, to)
+	auto argv = self->argv;
+	call_validate(self);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 2, VALUE_STRING);
+
+	auto src  = &argv[0]->string;
+	auto from = &argv[1]->string;
+	auto to   = &argv[2]->string;
+	if (str_size(from) == 0)
+	{
+		error("replace(): invalid from argument");
+		return;
+	}
+
+	auto buf = buf_begin();
+	encode_string32(buf, 0);
+
+	auto pos = src->pos;
+	auto end = src->end;
+	while (pos < end)
+	{
+		if ((end - pos) < str_size(from))
+		{
+			buf_write(buf, pos, end - pos);
+			break;
+		}
+
+		if (*pos == *str_of(from))
+		{
+			if (str_compare_raw(from, pos, str_size(from)))
+			{
+				if (str_size(to) > 0)
+					buf_write_str(buf, to);
+				pos += str_size(from);
+				continue;
+			}
+		}
+
+		buf_write(buf, pos, 1);
+		pos++;
+	}
+
+	buf_end(buf);
+
+	// update string size
+	int size = buf_size(buf) - data_size_string32();
+	uint8_t* pos_str = buf->start;
+	data_write_string32(&pos_str, size);
+
+	Str string;
+	pos_str = buf->start;
+	data_read_string(&pos_str, &string);
+	value_set_string(self->result, &string, buf);
+}
+
+static inline void
+str_ltrim(Str* self, char* filter, char* filter_end)
+{
+	auto pos = self->pos;
+	auto end = self->end;
+	while (pos < end)
+	{
+		auto match = false;
+		for (auto at = filter; at < filter_end; at++)
+		{
+			if (*pos == *at)
+			{
+				match = true;
+				break;
+			}
+		}
+		if (! match)
+			break;
+		self->pos++;
+		pos++;
+	}
+}
+
+static inline void
+str_rtrim(Str* self, char* filter, char* filter_end)
+{
+	if (str_size(self) == 0)
+		return;
+	auto pos = self->end - 1;
+	auto start = self->pos;
+	while (pos >= start)
+	{
+		auto match = false;
+		for (auto at = filter; at < filter_end; at++)
+		{
+			if (*pos == *at)
+			{
+				match = true;
+				break;
+			}
+		}
+		if (! match)
+			break;
+		self->end--;
+		pos--;
+	}
+}
+
+static void
+trim(Call* self, bool left, bool right)
+{
+	auto argv = self->argv;
+	if (self->argc < 1 || self->argc > 2)
+		error("trim(): unexpected number of arguments");
+	call_validate_arg(self, 0, VALUE_STRING);
+
+	// (string [, filter])
+	char* filter = " \t\v\n\f";
+	char* filter_end;
+	if (self->argc == 2)
+	{
+		call_validate_arg(self, 1, VALUE_STRING);
+		filter = str_of(&argv[1]->string);
+		filter_end = filter + str_size(&argv[1]->string);
+	} else {
+		filter_end = filter + strlen(filter);
+	}
+
+	auto src = &argv[0]->string;
+	Str string;
+	str_set_str(&string, src);
+	if (left)
+		str_ltrim(&string, filter, filter_end);
+	if (right)
+		str_rtrim(&string, filter, filter_end);
+
+	auto buf = buf_begin();
+	encode_string(buf, &string);
+	buf_end(buf);
+
+	Str result;
+	uint8_t* pos_str = buf->start;
+	data_read_string(&pos_str, &result);
+	value_set_string(self->result, &result, buf);
+}
+
+static void
+fn_ltrim(Call* self)
+{
+	trim(self, true, false);
+}
+
+static void
+fn_rtrim(Call* self)
+{
+	trim(self, false, true);
+}
+
+static void
+fn_trim(Call* self)
+{
+	trim(self, true, true);
+}
+
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length", fn_length, 1 },
-	{ "public", "size",   fn_length, 1 },
-	{ "public", "concat", fn_concat, 0 },
-	{ "public", "lower",  fn_lower,  1 },
-	{ "public", "upper",  fn_upper,  1 },
-	{  NULL,     NULL,    NULL,      0 }
+	{ "public", "length",  fn_length,  1 },
+	{ "public", "size",    fn_length,  1 },
+	{ "public", "concat",  fn_concat,  0 },
+	{ "public", "lower",   fn_lower,   1 },
+	{ "public", "upper",   fn_upper,   1 },
+	{ "public", "substr",  fn_substr,  0 },
+	{ "public", "strpos",  fn_strpos,  2 },
+	{ "public", "replace", fn_replace, 3 },
+	{ "public", "ltrim",   fn_ltrim,   0 },
+	{ "public", "rtrim",   fn_rtrim,   0 },
+	{ "public", "trim",    fn_trim,    0 },
+	{  NULL,     NULL,     NULL,       0 }
 };
