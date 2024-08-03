@@ -195,6 +195,9 @@ session_execute(Session* self)
 {
 	auto compiler = &self->compiler;
 
+	// set transaction time
+	local_update_time(&self->local);
+
 	// take shared session lock (catalog access during parsing)
 	session_lock(self, SESSION_LOCK);
 
