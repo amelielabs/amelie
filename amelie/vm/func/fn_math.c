@@ -26,7 +26,7 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-hot static void
+static void
 fn_greatest(Call* self)
 {
 	Value* max = NULL;
@@ -50,7 +50,7 @@ fn_greatest(Call* self)
 		value_set_null(self->result);
 }
 
-hot static void
+static void
 fn_least(Call* self)
 {
 	Value* max = NULL;
@@ -74,7 +74,7 @@ fn_least(Call* self)
 		value_set_null(self->result);
 }
 
-hot static void
+static void
 fn_abs(Call* self)
 {
 	auto arg = self->argv[0];
@@ -88,7 +88,7 @@ fn_abs(Call* self)
 		error("abs(): int or real argument expected");
 }
 
-hot static void
+static void
 fn_round(Call* self)
 {
 	auto arg = self->argv[0];
@@ -97,7 +97,7 @@ fn_round(Call* self)
 	value_set_int(self->result, llround(arg->real));
 }
 
-hot static void
+static void
 fn_sign(Call* self)
 {
 	auto arg = self->argv[0];
@@ -124,7 +124,7 @@ fn_sign(Call* self)
 	value_set_int(self->result, sign);
 }
 
-hot static void
+static void
 fn_ceil(Call* self)
 {
 	auto arg = self->argv[0];
@@ -133,7 +133,7 @@ fn_ceil(Call* self)
 	value_set_real(self->result, ceil(arg->real));
 }
 
-hot static void
+static void
 fn_exp(Call* self)
 {
 	auto arg = self->argv[0];
@@ -146,7 +146,7 @@ fn_exp(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_floor(Call* self)
 {
 	auto arg = self->argv[0];
@@ -155,7 +155,7 @@ fn_floor(Call* self)
 	value_set_real(self->result, floor(arg->real));
 }
 
-hot static void
+static void
 fn_mod(Call* self)
 {
 	auto argv = self->argv;
@@ -185,7 +185,7 @@ error:
 	error("mod(): int or real arguments expected");
 }
 
-hot static void
+static void
 fn_power(Call* self)
 {
 	auto argv = self->argv;
@@ -217,7 +217,7 @@ error:
 	error("power(): int or real arguments expected");
 }
 
-hot static void
+static void
 fn_trunc(Call* self)
 {
 	auto arg = self->argv[0];
@@ -226,14 +226,14 @@ fn_trunc(Call* self)
 	value_set_real(self->result, trunc(arg->real));
 }
 
-hot static void
+static void
 fn_pi(Call* self)
 {
 	call_validate(self);
 	value_set_real(self->result, 3.141592653589793);
 }
 
-hot static void
+static void
 fn_sqrt(Call* self)
 {
 	auto arg = self->argv[0];
@@ -253,7 +253,7 @@ fn_sqrt(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_acos(Call* self)
 {
 	auto arg = self->argv[0];
@@ -273,7 +273,7 @@ fn_acos(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_acosh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -293,7 +293,7 @@ fn_acosh(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_asin(Call* self)
 {
 	auto arg = self->argv[0];
@@ -313,7 +313,7 @@ fn_asin(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_asinh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -333,7 +333,7 @@ fn_asinh(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_atan(Call* self)
 {
 	auto arg = self->argv[0];
@@ -353,7 +353,7 @@ fn_atan(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_atanh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -373,7 +373,7 @@ fn_atanh(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_atan2(Call* self)
 {
 	auto argv = self->argv;
@@ -404,7 +404,7 @@ fn_atan2(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_cos(Call* self)
 {
 	auto arg = self->argv[0];
@@ -424,7 +424,7 @@ fn_cos(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_cosh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -444,7 +444,7 @@ fn_cosh(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_sin(Call* self)
 {
 	auto arg = self->argv[0];
@@ -464,7 +464,7 @@ fn_sin(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_sinh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -484,7 +484,7 @@ fn_sinh(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_tan(Call* self)
 {
 	auto arg = self->argv[0];
@@ -504,7 +504,7 @@ fn_tan(Call* self)
 	value_set_real(self->result, result);
 }
 
-hot static void
+static void
 fn_tanh(Call* self)
 {
 	auto arg = self->argv[0];
@@ -521,6 +521,66 @@ fn_tanh(Call* self)
 	double result = tanh(value);
 	if (errno != 0)
 		error("tanh(): operation failed");
+	value_set_real(self->result, result);
+}
+
+static void
+fn_ln(Call* self)
+{
+	auto arg = self->argv[0];
+	call_validate(self);
+	double value;
+	if (arg->type == VALUE_INT)
+		value = arg->integer;
+	else
+	if (arg->type == VALUE_REAL)
+		value = arg->real;
+	else
+		error("ln(): int or real arguments expected");
+	errno = 0;
+	double result = log(value);
+	if (errno != 0)
+		error("ln(): operation failed");
+	value_set_real(self->result, result);
+}
+
+static void
+fn_log(Call* self)
+{
+	auto arg = self->argv[0];
+	call_validate(self);
+	double value;
+	if (arg->type == VALUE_INT)
+		value = arg->integer;
+	else
+	if (arg->type == VALUE_REAL)
+		value = arg->real;
+	else
+		error("log(): int or real arguments expected");
+	errno = 0;
+	double result = log10(value);
+	if (errno != 0)
+		error("log(): operation failed");
+	value_set_real(self->result, result);
+}
+
+static void
+fn_log2(Call* self)
+{
+	auto arg = self->argv[0];
+	call_validate(self);
+	double value;
+	if (arg->type == VALUE_INT)
+		value = arg->integer;
+	else
+	if (arg->type == VALUE_REAL)
+		value = arg->real;
+	else
+		error("log2(): int or real arguments expected");
+	errno = 0;
+	double result = log2(value);
+	if (errno != 0)
+		error("log2(): operation failed");
 	value_set_real(self->result, result);
 }
 
@@ -553,6 +613,11 @@ FunctionDef fn_math_def[] =
 	{ "public", "sinh",     fn_sinh,     1 },
 	{ "public", "tan",      fn_tan,      1 },
 	{ "public", "tanh",     fn_tanh,     1 },
+
+	{ "public", "ln",       fn_ln,       1 },
+	{ "public", "log",      fn_log,      1 },
+	{ "public", "log10",    fn_log,      1 },
+	{ "public", "log2",     fn_log2,     1 },
 
 	{  NULL,     NULL,      NULL,        0 }
 };

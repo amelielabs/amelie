@@ -114,5 +114,17 @@ select atanh(0.5)
 # test: atan2
 select atan2(1, 0)
 1.5708
+# test: ln
+select ln(2.0)
+0.693147
+# test: log
+select log(1000)
+3
+# test: log10
+select log10(1000)
+3
+# test: log2
+select log2(8)
+3
 disconnect S0
 close E0

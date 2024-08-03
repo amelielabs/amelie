@@ -283,6 +283,22 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "ln",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log10",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log2",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -542,6 +558,22 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "tanh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "ln",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log10",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "log2",
   "argc": 1
 }, {
   "schema": "public",

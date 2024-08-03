@@ -37,7 +37,7 @@ fn_length(Call* self)
 		value_length(self->result, arg);
 }
 
-hot static void
+static void
 fn_concat(Call* self)
 {
 	auto argv = self->argv;
@@ -70,7 +70,7 @@ fn_concat(Call* self)
 	value_set_string(self->result, &string, buf);
 }
 
-hot static void
+static void
 fn_lower(Call* self)
 {
 	auto arg = self->argv[0];
@@ -95,7 +95,7 @@ fn_lower(Call* self)
 	value_set_string(self->result, &string, buf);
 }
 
-hot static void
+static void
 fn_upper(Call* self)
 {
 	auto arg = self->argv[0];
