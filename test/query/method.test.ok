@@ -9,11 +9,11 @@ select 1 :: schema.name.name()
 {"code": 1, "msg": "schema.name.name(): bad function call"}
 # test: expr :: method()
 select 1::
-{"code": 1, "msg": "bad '::' or '->' expression"}
+{"code": 1, "msg": "bad '::' expression"}
 select 1::()
-{"code": 1, "msg": "bad '::' or '->' expression"}
+{"code": 1, "msg": "bad '::' expression"}
 select 1::[]()
-{"code": 1, "msg": "bad '::' or '->' expression"}
+{"code": 1, "msg": "bad '::' expression"}
 select 1::length()
 {"code": 1, "msg": "length(): operation type is not supported"}
 select "hello"::length()
