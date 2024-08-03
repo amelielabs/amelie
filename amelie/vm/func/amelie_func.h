@@ -13,4 +13,5 @@
 #include "func/fn_string.h"
 #include "func/fn_math.h"
 #include "func/fn_misc.h"
+#include "func/fn_time.h"
 #include "func/fn.h"

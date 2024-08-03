@@ -75,17 +75,30 @@ fn_interval(Call* self)
 hot static void
 fn_timestamp(Call* self)
 {
-	call_validate(self);
+	if (self->argc < 1 || self->argc > 2)
+		error("timestamp(): unexpected number of arguments");
 	if (self->argv[0]->type == VALUE_STRING)
 	{
+		Timezone* timezone = self->vm->local->timezone;
+		if (self->argc == 2)
+		{
+			auto name = &self->argv[1]->string;
+			call_validate_arg(self, 1, VALUE_STRING);
+			timezone = timezone_mgr_find(global()->timezone_mgr, name);
+			if (! timezone)
+				error("timestamp(): failed to find timezone '%.*s'",
+				      str_size(name), str_of(name));
+		}
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &self->argv[0]->string);
-		auto time = timestamp_of(&ts, self->vm->local->timezone);
+		auto time = timestamp_of(&ts, timezone);
 		value_set_timestamp(self->result, time);
 	} else
 	if (self->argv[0]->type == VALUE_INT)
 	{
+		if (self->argc == 2)
+			error("timestamp(): unexpected argument");
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read_value(&ts, self->argv[0]->integer);
@@ -103,6 +116,6 @@ FunctionDef fn_cast_def[] =
 	{ "public", "real",      fn_real,      1 },
 	{ "public", "json",      fn_json,      1 },
 	{ "public", "interval",  fn_interval,  1 },
-	{ "public", "timestamp", fn_timestamp, 1 },
+	{ "public", "timestamp", fn_timestamp, 0 },
 	{  NULL,     NULL,       NULL,         0 }
 };

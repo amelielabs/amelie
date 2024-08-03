@@ -25,6 +25,13 @@ select '2024-07-29 18:40:19'::timestamp
 # test: utc to localtime
 select '2024-07-29 18:40:19Z'::timestamp
 
+# test: explicit convertion
+select '2024-07-29 18:40:19'::timestamp('UTC')
+select '2024-07-29 18:40:19'::timestamp
+
+# unknown timezone
+select '2024-07-29 18:40:19'::timestamp('jupiter')
+
 # test: timestamp column
 create table test (time timestamp primary key)
 

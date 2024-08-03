@@ -241,7 +241,6 @@ select count(*) from test where id > timestamp '1970-01-01 00:00:01.000003'
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 select count(*) from test where id = timestamp '1970-01-01 00:00:01.000003'
-
 drop table test
 
 disconnect S0

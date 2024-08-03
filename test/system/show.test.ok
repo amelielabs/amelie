@@ -108,7 +108,7 @@ show functions
 }, {
   "schema": "public",
   "name": "timestamp",
-  "argc": 1
+  "argc": 0
 }, {
   "schema": "public",
   "name": "coalesce",
@@ -430,7 +430,7 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "timestamp",
-  "argc": 1
+  "argc": 0
 }, {
   "schema": "public",
   "name": "coalesce",
