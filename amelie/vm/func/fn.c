@@ -82,15 +82,6 @@ fn_now(Call* self)
 	value_set_timestamp(self->result, time_us());
 }
 
-hot static void
-fn_error(Call* self)
-{
-	auto arg = self->argv[0];
-	call_validate(self);
-	call_validate_arg(self, 0, VALUE_STRING);
-	error("%.*s", str_size(&arg->string), str_of(&arg->string));
-}
-
 void
 fn_register(FunctionMgr* mgr)
 {
@@ -101,9 +92,6 @@ fn_register(FunctionMgr* mgr)
 		{ "public", "time_bucket",     fn_time_bucket,     2 },
 		{ "public", "now",             fn_now,             0 },
 
-		// misc
-		{ "public", "error",           fn_error,           1 },
-
 		{  NULL,     NULL,             NULL,               0 }
 	};
 	function_mgr_register(mgr, fn_system_def);
@@ -112,5 +100,6 @@ fn_register(FunctionMgr* mgr)
 	function_mgr_register(mgr, fn_object_def);
 	function_mgr_register(mgr, fn_string_def);
 	function_mgr_register(mgr, fn_math_def);
+	function_mgr_register(mgr, fn_misc_def);
 	function_mgr_register(mgr, def);
 }

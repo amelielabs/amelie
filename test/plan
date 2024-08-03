@@ -63,6 +63,7 @@ test func_null
 test func_object
 test func_string
 test func_math
+test func_misc
 
 # time
 directory time

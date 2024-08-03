@@ -299,6 +299,30 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "error",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "type",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "random",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "random_uuid",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "md5",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sha1",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -309,10 +333,6 @@ show functions
   "schema": "public",
   "name": "now",
   "argc": 0
-}, {
-  "schema": "public",
-  "name": "error",
-  "argc": 1
 }]
 select system.functions()
 [{
@@ -577,6 +597,30 @@ select system.functions()
   "argc": 1
 }, {
   "schema": "public",
+  "name": "error",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "type",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "random",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "random_uuid",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "md5",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sha1",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -587,10 +631,6 @@ select system.functions()
   "schema": "public",
   "name": "now",
   "argc": 0
-}, {
-  "schema": "public",
-  "name": "error",
-  "argc": 1
 }]
 # test: show tables
 show tables
