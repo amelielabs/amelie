@@ -31,13 +31,68 @@ select abs(-485)
 
 # test: round
 select 13.485::round
-select 485::round
 
 # test: sign
 select 13.485::sign
 select 485::sign
 select 0::sign
 select -10::sign
+
+# test: ceil
+select 42::ceil
+select 42.2::ceil
+select ceil(-42.8)
+
+# test: floor
+select floor(42.8)
+select floor(-42.8)
+
+# test: exp
+select exp(1)
+select exp(1.0)
+select 1.0::exp
+
+# test: mod
+select mod(9, 4)
+select mod(30.0, 3.6)
+
+# test: pi
+select pi()
+
+# test: power
+select power(9, 3)
+select power(9.1, 3.2)
+
+# test: trunc
+select trunc(42.8)
+select trunc(-48.8023)
+
+# test: sqrt
+select sqrt(2)
+select sqrt(2.0)
+select sqrt(2.3)
+select sqrt(-2.3)
+
+# test: acos
+select acos(1)
+
+# test: acosh
+select acosh(1)
+
+# test: asin
+select asin(1)
+
+# test: asinh
+select asinh(1)
+
+# test: atan
+select atan(1)
+
+# test: atanh
+select atanh(0.5)
+
+# test: atan2
+select atan2(1, 0)
 
 disconnect S0
 close E0

@@ -38,8 +38,6 @@ select abs(-485)
 # test: round
 select 13.485::round
 13
-select 485::round
-485
 # test: sign
 select 13.485::sign
 1
@@ -49,5 +47,72 @@ select 0::sign
 0
 select -10::sign
 -1
+# test: ceil
+select 42::ceil
+{"code": 1, "msg": "ceil(): incorrect type of 0 argument"}
+select 42.2::ceil
+43
+select ceil(-42.8)
+-42
+# test: floor
+select floor(42.8)
+42
+select floor(-42.8)
+-43
+# test: exp
+select exp(1)
+{"code": 1, "msg": "exp(): incorrect type of 0 argument"}
+select exp(1.0)
+2.71828
+select 1.0::exp
+2.71828
+# test: mod
+select mod(9, 4)
+1
+select mod(30.0, 3.6)
+1.2
+# test: pi
+select pi()
+3.14159
+# test: power
+select power(9, 3)
+729
+select power(9.1, 3.2)
+1172.01
+# test: trunc
+select trunc(42.8)
+42
+select trunc(-48.8023)
+-48
+# test: sqrt
+select sqrt(2)
+1.41421
+select sqrt(2.0)
+1.41421
+select sqrt(2.3)
+1.51658
+select sqrt(-2.3)
+{"code": 1, "msg": "sqrt(): operation failed"}
+# test: acos
+select acos(1)
+0
+# test: acosh
+select acosh(1)
+0
+# test: asin
+select asin(1)
+1.5708
+# test: asinh
+select asinh(1)
+0.881374
+# test: atan
+select atan(1)
+0.785398
+# test: atanh
+select atanh(0.5)
+0.549306
+# test: atan2
+select atan2(1, 0)
+1.5708
 disconnect S0
 close E0

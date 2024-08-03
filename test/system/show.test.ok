@@ -199,6 +199,90 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
+  "name": "ceil",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "exp",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "floor",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "mod",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "power",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "trunc",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "pi",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "sqrt",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "acos",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "acosh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "asin",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "asinh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atan",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atanh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atan2",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "cos",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "cosh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sin",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sinh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "tan",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "tanh",
+  "argc": 1
+}, {
+  "schema": "public",
   "name": "generate_series",
   "argc": 3
 }, {
@@ -374,6 +458,90 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "sign",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "ceil",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "exp",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "floor",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "mod",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "power",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "trunc",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "pi",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "sqrt",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "acos",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "acosh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "asin",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "asinh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atan",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atanh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "atan2",
+  "argc": 2
+}, {
+  "schema": "public",
+  "name": "cos",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "cosh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sin",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "sinh",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "tan",
+  "argc": 1
+}, {
+  "schema": "public",
+  "name": "tanh",
   "argc": 1
 }, {
   "schema": "public",
