@@ -155,8 +155,8 @@ restore_copy_file(Restore* self, Str* name)
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
 	         str_size(name), str_of(name));
 
-	log("%.*s (%" PRIu64 " bytes)", str_size(name),
-	    str_of(name), len);
+	info("%.*s (%" PRIu64 " bytes)", str_size(name),
+	     str_of(name), len);
 
 	File file;
 	file_init(&file);
@@ -226,5 +226,5 @@ restore(Str* uri)
 	restore_copy(&restore);
 	restore_write_config(&restore);
 
-	log("complete.");
+	info("complete.");
 }

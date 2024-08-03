@@ -73,7 +73,7 @@ void
 primary_main(Primary* self)
 {
 	auto request = &self->client->request;
-	log("primary connected.");
+	info("primary connected.");
 
 	// join
 	self->replay(self, &request->content);

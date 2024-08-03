@@ -40,7 +40,12 @@
 })
 
 // log
-#define log(fmt, ...) \
+#define info(fmt, ...) \
+	report(source_file, \
+	       source_function, \
+	       source_line, "", fmt, ## __VA_ARGS__)
+
+#define debug(fmt, ...) \
 	report(source_file, \
 	       source_function, \
 	       source_line, "", fmt, ## __VA_ARGS__)

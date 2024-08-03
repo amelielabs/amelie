@@ -174,8 +174,8 @@ system_set_timezone(void)
 	if (! global()->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));
 
-	log("time: %d timezones loaded", global()->timezone_mgr->ht.count);
-	log("time: system timezone is '%.*s'", str_size(name), str_of(name));
+	info("time: %d timezones loaded", global()->timezone_mgr->ht.count);
+	info("time: system timezone is '%.*s'", str_size(name), str_of(name));
 }
 
 static void
@@ -201,9 +201,9 @@ system_start(System* self, Str* options, bool bootstrap)
 	system_configure(options, bootstrap);
 
 	// hello
-	log("");
-	log("amelie.");
-	log("");
+	info("");
+	info("amelie.");
+	info("");
 
 	// set system timezone
 	system_set_timezone();
@@ -241,9 +241,9 @@ system_start(System* self, Str* options, bool bootstrap)
 	// prepare replication manager
 	repl_open(&self->repl);
 
-	log("");
+	info("");
 	config_print(config());
-	log("");
+	info("");
 
 	// start server
 	server_start(&self->server, system_on_server_connect, self);

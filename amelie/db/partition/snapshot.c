@@ -56,7 +56,7 @@ snapshot_begin(Snapshot* self)
 	         self->lsn,
 	         self->partition);
 
-	log("snapshot: %s begin", path);
+	info("snapshot: %s begin", path);
 
 	// prepare batch
 	buf_reserve(&self->data, sizeof(Msg) * self->count_batch);
@@ -80,7 +80,7 @@ snapshot_end(Snapshot* self)
 	         self->partition);
 
 	double size = self->file.size / 1024 / 1024;
-	log("snapshot: %s complete (%.2f MiB)", path, size);
+	info("snapshot: %s complete (%.2f MiB)", path, size);
 }
 
 hot static inline void

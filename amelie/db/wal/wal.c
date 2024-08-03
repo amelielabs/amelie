@@ -128,7 +128,7 @@ wal_gc(Wal* self, uint64_t min)
 			snprintf(path, sizeof(path), "%s/wal/%020" PRIu64 ".wal",
 			         config_directory(),
 			         id_list[i]);
-			log("wal: removing %s", path);
+			info("wal: removing %s", path);
 			fs_unlink("%s", path);
 		}
 	}
@@ -179,7 +179,7 @@ wal_open(Wal* self)
 	// create log directory
 	if (! fs_exists("%s", path))
 	{
-		log("wal: new directory '%s'", path);
+		info("wal: new directory '%s'", path);
 		fs_mkdir(0755, "%s", path);
 	}
 

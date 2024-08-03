@@ -86,7 +86,7 @@ repl_start(Repl* self)
 	if (var_int_of(&config()->repl))
 		return;
 
-	log("replication: start as '%s'", repl_role_of(self->role));
+	info("replication: start as '%s'", repl_role_of(self->role));
 	var_int_set(&config()->repl, true);
 
 	// start replicas
@@ -99,7 +99,7 @@ repl_stop(Repl* self)
 	if (! var_int_of(&config()->repl))
 		return;
 
-	log("replication: stop");
+	info("replication: stop");
 	var_int_set(&config()->repl, false);
 
 	// stop replicas
@@ -125,8 +125,8 @@ repl_promote(Repl* self, Str* primary_id)
 		// set new primary id
 		var_string_set(&config()->repl_primary, primary_id);
 
-		log("replication: switch to replica, new primary is '%.*s'", str_size(primary_id),
-		    str_of(primary_id));
+		info("replication: switch to replica, new primary is '%.*s'", str_size(primary_id),
+		     str_of(primary_id));
 		return;
 	}
 
@@ -141,7 +141,7 @@ repl_promote(Repl* self, Str* primary_id)
 	var_string_set(&config()->repl_primary, &empty);
 
 	self->role = REPL_PRIMARY;
-	log("replication: switch to primary");
+	info("replication: switch to primary");
 }
 
 Buf*

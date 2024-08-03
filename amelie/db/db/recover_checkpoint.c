@@ -21,13 +21,13 @@ hot static void
 recover_partition(Part* self, Table* table)
 {
 	auto checkpoint = config_checkpoint();
-	log("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ")",
-	    checkpoint,
-	    str_size(&table->config->schema),
-	    str_of(&table->config->schema),
-	    str_size(&table->config->name),
-	    str_of(&table->config->name),
-	    self->config->id);
+	info("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ")",
+	     checkpoint,
+	     str_size(&table->config->schema),
+	     str_of(&table->config->schema),
+	     str_size(&table->config->name),
+	     str_of(&table->config->name),
+	     self->config->id);
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);
@@ -46,14 +46,14 @@ recover_partition(Part* self, Table* table)
 		count++;
 	}
 
-	log("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ") %" PRIu64 " rows loaded",
-	    checkpoint,
-	    str_size(&table->config->schema),
-	    str_of(&table->config->schema),
-	    str_size(&table->config->name),
-	    str_of(&table->config->name),
-	    self->config->id,
-	    count);
+	info("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ") %" PRIu64 " rows loaded",
+	     checkpoint,
+	     str_size(&table->config->schema),
+	     str_of(&table->config->schema),
+	     str_size(&table->config->name),
+	     str_of(&table->config->name),
+	     self->config->id,
+	     count);
 }
 
 hot void

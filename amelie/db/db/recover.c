@@ -274,7 +274,7 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 
 	if (leave(&e))
 	{
-		log("recover: wal lsn %" PRIu64 ": replay error", write->lsn);
+		info("recover: wal lsn %" PRIu64 ": replay error", write->lsn);
 		transaction_abort(trx);
 		rethrow();
 	}
@@ -292,7 +292,7 @@ recover_wal(Recover* self)
 
 	// start wal recover from the last checkpoint
 	auto checkpoint = config_checkpoint() + 1;
-	log("recover: wal from: %" PRIu64, checkpoint);
+	info("recover: wal from: %" PRIu64, checkpoint);
 
 	WalCursor cursor;
 	wal_cursor_init(&cursor);
@@ -311,9 +311,9 @@ recover_wal(Recover* self)
 		total_writes += write->count;
 		total++;
 		if ((total % 10000) == 0)
-			log("recover: %.1f million records processed",
-			    total_writes / 1000000.0);
+			info("recover: %.1f million records processed",
+			     total_writes / 1000000.0);
 	}
 
-	log("recover: complete (%" PRIu64 " writes)", total_writes);
+	info("recover: complete (%" PRIu64 " writes)", total_writes);
 }

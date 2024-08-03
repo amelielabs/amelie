@@ -179,16 +179,16 @@ var_print(Var* self)
 {
 	switch (self->type) {
 	case VAR_BOOL:
-		log("%-32s%s", str_of(&self->name),
-		    var_int_of(self) ? "true" : "false");
+		info("%-32s%s", str_of(&self->name),
+		     var_int_of(self) ? "true" : "false");
 		break;
 	case VAR_INT:
-		log("%-32s%" PRIu64, str_of(&self->name),
-		    var_int_of(self));
+		info("%-32s%" PRIu64, str_of(&self->name),
+		     var_int_of(self));
 		break;
 	case VAR_STRING:
-		log("%-32s%.*s", str_of(&self->name),
-		    str_size(&self->string), str_of(&self->string));
+		info("%-32s%.*s", str_of(&self->name),
+		     str_size(&self->string), str_of(&self->string));
 		break;
 	case VAR_DATA:
 		break;

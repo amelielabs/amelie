@@ -74,7 +74,8 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 			continue;
 		if (incomplete)
 		{
-			log("checkpoint: removing incomplete checkpoint: '%s/%s'", path, entry->d_name);
+			info("checkpoint: removing incomplete checkpoint: '%s/%s'",
+			     path, entry->d_name);
 			fs_rmdir("%s/%s", path, entry->d_name);
 			continue;
 		}

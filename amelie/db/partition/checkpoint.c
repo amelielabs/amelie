@@ -191,8 +191,8 @@ checkpoint_run(Checkpoint* self)
 	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete",
 	         config_directory(), self->lsn);
 
-	log("checkpoint %" PRIu64 ": using %d workers", self->lsn,
-	    self->workers_count);
+	info("checkpoint %" PRIu64 ": using %d workers", self->lsn,
+	     self->workers_count);
 
 	fs_mkdir(0755, "%s", path);
 
@@ -244,5 +244,5 @@ checkpoint_wait(Checkpoint* self, CheckpointMgr* checkpoint_mgr)
 	// done
 	var_int_set(&config()->checkpoint, self->lsn);
 
-	log("checkpoint %" PRIu64 ": complete", self->lsn);
+	info("checkpoint %" PRIu64 ": complete", self->lsn);
 }

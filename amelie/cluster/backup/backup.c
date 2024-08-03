@@ -170,8 +170,8 @@ backup_send(Backup* self, Str* url)
 	guard(file_close, &file);
 	file_open(&file, path);
 
-	log("%.*s (%" PRIu64 " bytes)", str_size(url),
-	    str_of(url), file.size);
+	info("%.*s (%" PRIu64 " bytes)", str_size(url),
+	     str_of(url), file.size);
 
 	// prepare and send header
 	auto reply = &self->client->reply;
@@ -204,7 +204,7 @@ backup_main(void* arg)
 	auto    client = self->client;
 	auto    tcp    = &client->tcp;
 
-	log("begin");
+	info("begin");
 
 	Exception e;
 	if (enter(&e))
@@ -242,7 +242,7 @@ backup_main(void* arg)
 	{ }
 
 	condition_signal(self->on_complete);
-	log("complete");
+	info("complete");
 }
 
 void
@@ -269,7 +269,7 @@ backup_run(Backup* self, Client* client)
 void
 backup(Db* db, Client* client)
 {
-	log("begin backup");
+	info("begin backup");
 
 	// processs backup and wait for completion
 	Backup backup;

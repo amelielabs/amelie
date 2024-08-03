@@ -85,7 +85,7 @@ client_accept(Client* self)
 	// hello
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
-		log("connected");
+		info("connected");
 
 	// handshake
 	tcp_connect_fd(&self->tcp);
@@ -108,7 +108,7 @@ client_connect_to(Client* self, UriHost* host)
 	self->host = host;
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
-		log("connected to %s:%d", str_of(&host->host), host->port);
+		info("connected to %s:%d", str_of(&host->host), host->port);
 }
 
 void
@@ -146,10 +146,10 @@ client_close(Client* self)
 	if (log_connections && tcp_connected(&self->tcp))
 	{
 		if (self->host != NULL)
-			log("disconnected from %s:%d", str_of(&self->host->host),
-			    self->host->port);
+			info("disconnected from %s:%d", str_of(&self->host->host),
+			     self->host->port);
 		else
-			log("disconnected");
+			info("disconnected");
 	}
 	self->host = NULL;
 	tcp_close(&self->tcp);

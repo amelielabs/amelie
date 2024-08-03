@@ -98,17 +98,17 @@ part_build(PartBuild* self)
 	iterator_open(it, NULL);
 	switch (self->type) {
 	case PART_BUILD_INDEX:
-		log("build %" PRIu64 ": create index", id);
+		info("build %" PRIu64 ": create index", id);
 		part_build_index(self, it);
 		break;
 	case PART_BUILD_COLUMN_ADD:
-		log("build %" PRIu64 ": add column", id);
+		info("build %" PRIu64 ": add column", id);
 		part_build_column_add(self, it);
 		break;
 	case PART_BUILD_COLUMN_DROP:
-		log("build %" PRIu64 ": drop column", id);
+		info("build %" PRIu64 ": drop column", id);
 		part_build_column_drop(self, it);
 		break;
 	}
-	log("build %" PRIu64 ": complete", id);
+	info("build %" PRIu64 ": complete", id);
 }

@@ -175,8 +175,8 @@ decode_map(Decode* self, uint8_t** pos)
 		if (! found)
 		{
 			data_skip(pos);
-			log("config: unknown key '%.*s'", str_size(&key),
-			    str_of(&key));
+			info("config: unknown key '%.*s'", str_size(&key),
+			     str_of(&key));
 		}
 	}
 

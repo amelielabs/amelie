@@ -31,7 +31,7 @@ server_listen_main(void* arg)
 
 		// bind
 		listen_start(&listen->listen, 4096, listen->addr->ai_addr);
-		log("start");
+		info("start");
 
 		// process incoming connection
 		for (;;)

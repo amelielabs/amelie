@@ -197,7 +197,7 @@ streamer_process(Streamer* self)
 
 		// reconnect
 		auto reconnect_interval = var_int_of(&config()->repl_reconnect_ms);
-		log("reconnect in %d ms", reconnect_interval);
+		info("reconnect in %d ms", reconnect_interval);
 		coroutine_sleep(reconnect_interval);
 	}
 }
@@ -206,7 +206,7 @@ static void
 streamer_main(void* arg)
 {
 	Streamer* self = arg;
-	log("start");
+	info("start");
 
 	Exception e;
 	if (enter(&e))
@@ -227,7 +227,7 @@ streamer_main(void* arg)
 		self->client = NULL;
 	}
 
-	log("stop");
+	info("stop");
 }
 
 static void
