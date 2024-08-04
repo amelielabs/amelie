@@ -433,7 +433,6 @@ typedef enum
 {
 	TIMESTAMP_YEAR,
 	TIMESTAMP_MONTH,
-	TIMESTAMP_WEEK,
 	TIMESTAMP_DAY,
 	TIMESTAMP_HOUR,
 	TIMESTAMP_MINUTE,
@@ -494,11 +493,6 @@ timestamp_read_field(Str* type)
 		if (str_compare_raw(type, "day", 3))
 			return TIMESTAMP_DAY;
 		break;
-	case 'w':
-		// week
-		if (str_compare_raw(type, "week", 4))
-			return TIMESTAMP_WEEK;
-		break;
 	case 'y':
 		// year
 		if (str_compare_raw(type, "year", 4))
@@ -517,8 +511,6 @@ timestamp_trunc(Timestamp* self, Str* field)
 	int rc = timestamp_read_field(field);
 	if (rc == -1)
 		error("unknown timestamp truncate field");
-	if (rc == TIMESTAMP_WEEK)
-		error("cannot truncate interval by week");
 
 	auto time = &self->time;
 	time->tm_wday = -1;
@@ -542,4 +534,57 @@ timestamp_trunc(Timestamp* self, Str* field)
 	case TIMESTAMP_MICROSECOND:
 		break;
 	}
+}
+
+uint64_t
+timestamp_extract(uint64_t value, Timezone* timezone, Str* field)
+{
+	// timestamp is in utc
+	int rc = timestamp_read_field(field);
+	if (rc == -1)
+		error("unknown timestamp field");
+
+	// UTC time in seconds
+	time_t time = value / 1000000ULL;
+
+	// do timezone adjustment
+	auto tztime = timezone_match(timezone, time);
+	assert(tztime);
+	time += tztime->utoff;
+
+	Timestamp ts;
+	timestamp_init(&ts);
+	ts.us = value % 1000000ULL;
+	if (! gmtime_r(&time, &ts.time))
+		timestamp_error();
+
+	uint64_t result;
+	auto tm = &ts.time;
+	switch (rc) {
+	case TIMESTAMP_YEAR:
+		result = tm->tm_year + 1900;
+		break;
+	case TIMESTAMP_MONTH:
+		result = tm->tm_mon + 1;
+		break;
+	case TIMESTAMP_DAY:
+		result = tm->tm_mday;
+		break;
+	case TIMESTAMP_HOUR:
+		result = tm->tm_hour;
+		break;
+	case TIMESTAMP_MINUTE:
+		result = tm->tm_min;
+		break;
+	case TIMESTAMP_SECOND:
+		result = tm->tm_sec;
+		break;
+	case TIMESTAMP_MILLISECOND:
+		result = ts.us / 1000;
+		break;
+	case TIMESTAMP_MICROSECOND:
+		result = ts.us;
+		break;
+	}
+	return result;
 }

@@ -292,7 +292,6 @@ typedef enum
 {
 	INTERVAL_YEAR,
 	INTERVAL_MONTH,
-	INTERVAL_WEEK,
 	INTERVAL_DAY,
 	INTERVAL_HOUR,
 	INTERVAL_MINUTE,
@@ -353,11 +352,6 @@ interval_read_field(Str* type)
 		if (str_compare_raw(type, "day", 3))
 			return INTERVAL_DAY;
 		break;
-	case 'w':
-		// week
-		if (str_compare_raw(type, "week", 4))
-			return INTERVAL_WEEK;
-		break;
 	case 'y':
 		// year
 		if (str_compare_raw(type, "year", 4))
@@ -375,9 +369,6 @@ interval_trunc(Interval* self, Str* field)
 	int rc = interval_read_field(field);
 	if (rc == -1)
 		error("unknown interval truncate field");
-
-	if (rc == INTERVAL_WEEK)
-		error("cannot truncate interval by week");
 
 	switch (rc) {
 	case INTERVAL_YEAR:

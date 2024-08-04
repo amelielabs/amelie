@@ -41,7 +41,7 @@ select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month'
 "12 years 5 months"
 # test: date_trunc(interval week)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
-{"code": 1, "msg": "cannot truncate interval by week"}
+{"code": 1, "msg": "unknown interval truncate field"}
 # test: date_trunc(interval day)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
 "12 years 5 months 3 days"
@@ -116,7 +116,7 @@ select date_trunc(TIMESTAMP '2011-12-16 20:38:40', 'month');
 "2011-12-01 00:00:00+00"
 # test: date_trunc(timestamp week)
 select date_trunc('week', TIMESTAMP '2001-02-16 20:38:40');
-{"code": 1, "msg": "cannot truncate interval by week"}
+{"code": 1, "msg": "unknown timestamp truncate field"}
 # test: date_trunc(timestamp day)
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
 "2001-02-16 00:00:00+00"
@@ -162,5 +162,49 @@ select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
 "2001-02-16 00:00:00+02"
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
 {"code": 1, "msg": "date_trunc(): incorrect type of 1 argument"}
+# test: extract(timestamp year)
+select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
+2001
+select public.extract('year', TIMESTAMP '2011-12-16 20:38:40');
+2011
+# test: extract(timestamp month)
+select public.extract('month', TIMESTAMP '2001-01-16 20:38:40');
+1
+# test: extract(timestamp week)
+select public.extract('week', TIMESTAMP '2001-01-16 20:38:40');
+{"code": 1, "msg": "unknown timestamp field"}
+# test: extract(timestamp day)
+select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
+16
+# test: extract(timestamp hour)
+set timezone to 'UTC'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
+20
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
+20
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+01');
+19
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+18
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
+18
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
+20
+set timezone to 'Asia/Famagusta'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+20
+set timezone to 'UTC'
+# test: extract(timestamp minute)
+select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
+38
+# test: extract(timestamp second)
+select public.extract('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
+40
+# test: extract(timestamp ms)
+select public.extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
+123
+# test: extract(timestamp us)
+select public.extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
+123456
 disconnect S0
 close E0

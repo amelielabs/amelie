@@ -29,3 +29,4 @@ int      timestamp_write(uint64_t, Timezone*, char*, int);
 void     timestamp_add(Timestamp*, Interval*);
 void     timestamp_sub(Timestamp*, Interval*);
 void     timestamp_trunc(Timestamp*, Str*);
+uint64_t timestamp_extract(uint64_t, Timezone*, Str*);

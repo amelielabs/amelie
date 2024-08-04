@@ -208,6 +208,67 @@ fn_date_trunc(Call* self)
 	}
 }
 
+hot static void
+fn_extract(Call* self)
+{
+	auto argv = self->argv;
+	if (self->argc < 2 || self->argc > 3)
+		error("extract(): unexpected number of arguments");
+
+	// (string, interval)
+	// (string, timestamp [, timezone])
+	//
+	// (interval, string)
+	// (timestamp, string [, timezone])
+	Timezone* timezone = self->vm->local->timezone;
+	if (self->argc == 3)
+	{
+		call_validate_arg(self, 2, VALUE_STRING);
+		auto name = &self->argv[2]->string;
+		timezone = timezone_mgr_find(global()->timezone_mgr, name);
+		if (! timezone)
+			error("extract(): failed to find timezone '%.*s'",
+			      str_size(name), str_of(name));
+	}
+
+	if (argv[0]->type == VALUE_STRING)
+	{
+		if (argv[1]->type == VALUE_INTERVAL)
+		{
+			/*
+			Interval iv = argv[1]->interval;
+			interval_trunc(&iv, &argv[0]->string);
+			value_set_interval(self->result, &iv);
+			*/
+		} else
+		if (argv[1]->type == VALUE_TIMESTAMP)
+		{
+			auto value = timestamp_extract(argv[1]->integer, timezone, &argv[0]->string);
+			value_set_int(self->result, value);
+		} else {
+			error("extract(): invalid arguments");
+		}
+	} else
+	if (argv[0]->type == VALUE_INTERVAL)
+	{
+		call_validate_arg(self, 1, VALUE_STRING);
+		/*
+		Interval iv = argv[0]->interval;
+		interval_trunc(&iv, &argv[1]->string);
+		value_set_interval(self->result, &iv);
+		*/
+	} else
+	if (argv[0]->type == VALUE_TIMESTAMP)
+	{
+		call_validate_arg(self, 1, VALUE_STRING);
+		auto value = timestamp_extract(argv[0]->integer, timezone, &argv[1]->string);
+		value_set_int(self->result, value);
+	} else
+	{
+		error("extract(): invalid arguments");
+	}
+}
+
 FunctionDef fn_time_def[] =
 {
 	{ "public", "now",             fn_now,             0 },
@@ -215,5 +276,6 @@ FunctionDef fn_time_def[] =
 	{ "public", "generate_series", fn_generate_series, 3 },
 	{ "public", "date_bin",        fn_date_bin,        0 },
 	{ "public", "date_trunc",      fn_date_trunc,      0 },
+	{ "public", "extract",         fn_extract,         0 },
 	{  NULL,     NULL,             NULL,               0 }
 };

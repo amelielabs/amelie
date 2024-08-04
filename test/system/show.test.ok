@@ -365,6 +365,10 @@ show functions
   "schema": "public",
   "name": "date_trunc",
   "argc": 0
+}, {
+  "schema": "public",
+  "name": "extract",
+  "argc": 0
 }]
 select system.functions()
 [{
@@ -694,6 +698,10 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "date_trunc",
+  "argc": 0
+}, {
+  "schema": "public",
+  "name": "extract",
   "argc": 0
 }]
 # test: show tables

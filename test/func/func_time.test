@@ -130,5 +130,43 @@ select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
 select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
 
+# test: extract(timestamp year)
+select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
+select public.extract('year', TIMESTAMP '2011-12-16 20:38:40');
+
+# test: extract(timestamp month)
+select public.extract('month', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp week)
+select public.extract('week', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp day)
+select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp hour)
+set timezone to 'UTC'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+01');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
+set timezone to 'Asia/Famagusta'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+set timezone to 'UTC'
+
+# test: extract(timestamp minute)
+select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp second)
+select public.extract('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
+
+# test: extract(timestamp ms)
+select public.extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
+
+# test: extract(timestamp us)
+select public.extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
+
 disconnect S0
 close E0
