@@ -36,3 +36,4 @@ int  interval_write(Interval*, char*, int);
 int  interval_compare(Interval*, Interval*);
 void interval_add(Interval*, Interval*, Interval*);
 void interval_sub(Interval*, Interval*, Interval*);
+void interval_trunc(Interval*, Str*);

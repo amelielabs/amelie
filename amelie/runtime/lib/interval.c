@@ -16,7 +16,9 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	case 'm':
 		// minutes
 		// minute
-		if (str_compare_raw(type, "minutes", 7) ||
+		// min
+		if (str_compare_raw(type, "min", 3) ||
+		    str_compare_raw(type, "minutes", 7) ||
 		    str_compare_raw(type, "minute", 6))
 		{
 			self->us += value * 60LL * 1000 * 1000;
@@ -284,4 +286,151 @@ interval_sub(Interval* result, Interval* a, Interval* b)
 	result->m  = a->m - b->m;
 	result->d  = a->d - b->d;
 	result->us = a->us - b->us;
+}
+
+typedef enum
+{
+	INTERVAL_YEAR,
+	INTERVAL_QUARTER,
+	INTERVAL_MONTH,
+	INTERVAL_WEEK,
+	INTERVAL_DAY,
+	INTERVAL_HOUR,
+	INTERVAL_MINUTE,
+	INTERVAL_SECOND,
+	INTERVAL_MILLISECOND,
+	INTERVAL_MICROSECOND
+} IntervalField;
+
+static inline int
+interval_read_field(Str* type)
+{
+	switch (*str_of(type)) {
+	case 'm':
+		// minute
+		if (str_compare_raw(type, "minute", 6))
+			return INTERVAL_MINUTE;
+
+		// month
+		if (str_compare_raw(type, "month", 5))
+			return INTERVAL_MONTH;
+
+		// millisecond
+		// milliseconds
+		// ms
+		if (str_compare_raw(type, "ms", 2) ||
+		    str_compare_raw(type, "milliseconds", 12) ||
+		    str_compare_raw(type, "millisecond", 11))
+			return INTERVAL_MILLISECOND;
+
+		// microseconds
+		// microsecond
+		if (str_compare_raw(type, "microseconds", 12) ||
+		    str_compare_raw(type, "microsecond", 11))
+			return INTERVAL_MICROSECOND;
+		break;
+	case 'u':
+		// us
+		if (str_compare_raw(type, "us", 2))
+			return INTERVAL_MICROSECOND;
+		break;
+	case 's':
+		// second
+		// sec
+		if (str_compare_raw(type, "sec", 3) ||
+		    str_compare_raw(type, "second", 6))
+			return INTERVAL_SECOND;
+		break;
+	case 'h':
+		// hour
+		// hr
+		if (str_compare_raw(type, "hr", 2)    ||
+		    str_compare_raw(type, "hour", 4))
+			return INTERVAL_HOUR;
+		break;
+	case 'd':
+		// day
+		if (str_compare_raw(type, "day", 3))
+			return INTERVAL_DAY;
+		break;
+	case 'w':
+		// week
+		if (str_compare_raw(type, "week", 4))
+			return INTERVAL_WEEK;
+		break;
+	case 'q':
+		// quarter
+		if (str_compare_raw(type, "quarter", 7))
+			return INTERVAL_QUARTER;
+	case 'y':
+		// year
+		if (str_compare_raw(type, "year", 4))
+			return INTERVAL_YEAR;
+		break;
+	default:
+		break;
+	}
+	return -1;
+}
+
+void
+interval_trunc(Interval* self, Str* field)
+{
+	int rc = interval_read_field(field);
+	if (rc == -1)
+		error("unknown interval truncate field");
+
+	if (rc == INTERVAL_WEEK)
+		error("cannot truncate interval by week");
+
+	switch (rc) {
+	case INTERVAL_YEAR:
+	{
+		self->m  = (self->m / 12) * 12;
+		self->d  = 0;
+		self->us = 0;
+		break;
+	}
+	case INTERVAL_QUARTER:
+		self->m  = (self->m / 3) * 3;
+		self->d  = 0;
+		self->us = 0;
+		break;
+	case INTERVAL_MONTH:
+		self->d  = 0;
+		self->us = 0;
+		break;
+	case INTERVAL_DAY:
+	{
+		const auto hour = 24ULL * 60 * 60 * 1000 * 1000;
+		self->us = (self->us / hour) * hour;
+		break;
+	}
+	case INTERVAL_HOUR:
+	{
+		const auto min = 60ULL * 60 * 1000 * 1000;
+		self->us = (self->us / min) * min;
+		break;
+	}
+	case INTERVAL_MINUTE:
+	{
+		const auto sec = 60ULL * 1000 * 1000;
+		self->us = (self->us / sec) * sec;
+		break;
+	}
+	case INTERVAL_SECOND:
+	{
+		const auto sec = 1000ULL * 1000;
+		self->us = (self->us / sec) * sec;
+		break;
+	}
+	case INTERVAL_MILLISECOND:
+	{
+		const auto ms = 1000ULL;
+		self->us = (self->us / ms) * ms;
+		break;
+	}
+	case INTERVAL_MICROSECOND:
+		break;
+	}
 }

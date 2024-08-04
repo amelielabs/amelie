@@ -34,5 +34,36 @@ select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAM
 set timezone to 'UTC'
 select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
 
+# test: date_trunc(interval year)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
+
+# test: date_trunc(interval quorter)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'quarter')
+
+# test: date_trunc(interval month)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
+
+# test: date_trunc(interval week)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
+
+# test: date_trunc(interval day)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
+select '12 years 5 month 3 days 2 hr 47 min 33 sec'::interval::date_trunc('day')
+
+# test: date_trunc(interval hour)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'hour')
+
+# test: date_trunc(interval minute)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'minute')
+
+# test: date_trunc(interval second)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'sec')
+
+# test: date_trunc(interval ms)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'ms')
+
+# test: date_trunc(interval us)
+select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
+
 disconnect S0
 close E0
