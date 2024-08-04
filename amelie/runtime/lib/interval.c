@@ -416,3 +416,40 @@ interval_trunc(Interval* self, Str* field)
 		break;
 	}
 }
+
+uint64_t
+interval_extract(Interval* self, Str* field)
+{
+	int rc = interval_read_field(field);
+	if (rc == -1)
+		error("unknown interval field");
+
+	uint64_t result;
+	switch (rc) {
+	case INTERVAL_YEAR:
+		result = self->m / 12;
+		break;
+	case INTERVAL_MONTH:
+		result = self->m % 12;
+		break;
+	case INTERVAL_DAY:
+		result = self->d;
+		break;
+	case INTERVAL_HOUR:
+		result = (self->us / (60ULL * 60 * 1000 * 1000));
+		break;
+	case INTERVAL_MINUTE:
+		result = (self->us % (60ULL * 60 * 1000 * 1000)) / (60ULL * 1000 * 1000);
+		break;
+	case INTERVAL_SECOND:
+		result = (self->us % (60ULL * 1000 * 1000)) / (1000ULL * 1000);
+		break;
+	case INTERVAL_MILLISECOND:
+		result = (self->us % (1000ULL * 1000)) / (1000ULL);
+		break;
+	case INTERVAL_MICROSECOND:
+		result = (self->us % (1000));
+		break;
+	}
+	return result;
+}

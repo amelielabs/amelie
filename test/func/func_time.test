@@ -167,6 +167,32 @@ select public.extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
 
 # test: extract(timestamp us)
 select public.extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
+select TIMESTAMP '2001-01-16 20:38:40.123456'::extract('us')
+
+# test: extract(interval year)
+select public.extract('year', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval month)
+select public.extract('month', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval day)
+select public.extract('day', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval hour)
+select public.extract('hour', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval minute)
+select public.extract('min', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval second)
+select public.extract('sec', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval ms)
+select public.extract('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval us)
+select public.extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us')
 
 disconnect S0
 close E0

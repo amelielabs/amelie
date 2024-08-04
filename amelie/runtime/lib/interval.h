@@ -31,9 +31,10 @@ interval_set(Interval* self, int m, int d, uint64_t us)
 	self->us = us;
 }
 
-void interval_read(Interval*, Str*);
-int  interval_write(Interval*, char*, int);
-int  interval_compare(Interval*, Interval*);
-void interval_add(Interval*, Interval*, Interval*);
-void interval_sub(Interval*, Interval*, Interval*);
-void interval_trunc(Interval*, Str*);
+void     interval_read(Interval*, Str*);
+int      interval_write(Interval*, char*, int);
+int      interval_compare(Interval*, Interval*);
+void     interval_add(Interval*, Interval*, Interval*);
+void     interval_sub(Interval*, Interval*, Interval*);
+void     interval_trunc(Interval*, Str*);
+uint64_t interval_extract(Interval*, Str*);

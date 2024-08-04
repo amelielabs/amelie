@@ -231,42 +231,31 @@ fn_extract(Call* self)
 			      str_size(name), str_of(name));
 	}
 
+	uint64_t value;
 	if (argv[0]->type == VALUE_STRING)
 	{
 		if (argv[1]->type == VALUE_INTERVAL)
-		{
-			/*
-			Interval iv = argv[1]->interval;
-			interval_trunc(&iv, &argv[0]->string);
-			value_set_interval(self->result, &iv);
-			*/
-		} else
+			value = interval_extract(&argv[1]->interval, &argv[0]->string);
+		else
 		if (argv[1]->type == VALUE_TIMESTAMP)
-		{
-			auto value = timestamp_extract(argv[1]->integer, timezone, &argv[0]->string);
-			value_set_int(self->result, value);
-		} else {
+			value = timestamp_extract(argv[1]->integer, timezone, &argv[0]->string);
+		else
 			error("extract(): invalid arguments");
-		}
 	} else
 	if (argv[0]->type == VALUE_INTERVAL)
 	{
 		call_validate_arg(self, 1, VALUE_STRING);
-		/*
-		Interval iv = argv[0]->interval;
-		interval_trunc(&iv, &argv[1]->string);
-		value_set_interval(self->result, &iv);
-		*/
+		value = interval_extract(&argv[0]->interval, &argv[1]->string);
 	} else
 	if (argv[0]->type == VALUE_TIMESTAMP)
 	{
 		call_validate_arg(self, 1, VALUE_STRING);
-		auto value = timestamp_extract(argv[0]->integer, timezone, &argv[1]->string);
-		value_set_int(self->result, value);
+		value = timestamp_extract(argv[0]->integer, timezone, &argv[1]->string);
 	} else
 	{
 		error("extract(): invalid arguments");
 	}
+	value_set_int(self->result, value);
 }
 
 FunctionDef fn_time_def[] =
