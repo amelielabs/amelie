@@ -73,6 +73,7 @@ static Keyword keywords_d[] =
 
 static Keyword keywords_e[] =
 {
+	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
 	{ KEXPLAIN,               "explain",               7  },

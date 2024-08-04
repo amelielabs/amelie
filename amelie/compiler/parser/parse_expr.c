@@ -81,6 +81,7 @@ priority_map[UINT8_MAX] =
 	[KEXISTS]                  = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
+	[KEXTRACT]                 = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
 	[KSUM]                     = priority_value,
@@ -362,6 +363,45 @@ expr_case(Stmt* self, Expr* expr)
 }
 
 hot static inline Ast*
+expr_extract(Stmt* self, Expr* expr, Ast* value)
+{
+	// replace as call to public.extract(field, expr)
+
+	// make explicitly lower case
+	str_set(&value->string, "extract", 7);
+
+	// (
+	if (! stmt_if(self, '('))
+		error("EXTRACT <(> expected");
+	value->id = KNAME;
+	value = expr_call(self, expr, value, false);
+
+	// field
+	auto field = stmt_next_shadow(self);
+	if (field->id != KNAME && field->id != KSTRING)
+		error("EXTRACT (<field> expected");
+	field->id = KSTRING;
+
+	// FROM
+	if (! stmt_if(self, KFROM))
+		error("EXTRACT (field <FROM> expected");
+
+	// expr
+	auto time = parse_expr(self, expr);
+	field->next = time;
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("EXTRACT (field FROM expr <)> expected");
+
+	// args(list_head, NULL)
+	value->r = ast(KARGS);
+	value->r->l       = field;
+	value->r->integer = 2;
+	return value;
+}
+
+hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
 	switch (value->id) {
@@ -398,14 +438,20 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// builtin functions
 	case KSET:
 	case KUNSET:
+	case KRANDOM:
 	{
-		if (! stmt_if(self,'('))
+		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),
 			      str_of(&value->string));
 		value->id = KNAME;
 		value = expr_call(self, expr, value, true);
 		break;
 	}
+
+	// EXTRACT (field FROM expr)
+	case KEXTRACT:
+		value = expr_extract(self, expr, value);
+		break;
 
 	// sub-query
 	case KSELECT:

@@ -49,6 +49,7 @@ enum
 	KANY,
 	KALL,
 	KLIKE,
+	KEXTRACT,
 
 	KCASE,
 	KWHEN,

@@ -194,5 +194,14 @@ select public.extract('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec
 select public.extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
 select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us')
 
+# test: extract from interval
+select extract(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+select extract('min' FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+
+# test: extract from timestamp
+select extract(us FROM TIMESTAMP '2001-01-16 20:38:40.123456')
+select EXTRACT(ms FROM TIMESTAMP '2001-01-16 20:38:40.123456')
+
 disconnect S0
 close E0
