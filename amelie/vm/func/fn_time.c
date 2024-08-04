@@ -27,6 +27,40 @@
 #include <amelie_func.h>
 
 hot static void
+fn_now(Call* self)
+{
+	call_validate(self);
+	value_set_timestamp(self->result, time_us());
+}
+
+hot static void
+fn_at_timezone(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self);
+	call_validate_arg(self, 0, VALUE_TIMESTAMP);
+	call_validate_arg(self, 1, VALUE_STRING);
+
+	auto name = &self->argv[1]->string;
+	auto timezone = timezone_mgr_find(global()->timezone_mgr, name);
+	if (! timezone)
+		error("timestamp(): failed to find timezone '%.*s'",
+		      str_size(name), str_of(name));
+
+	auto data = buf_begin();
+	buf_reserve(data, 128);
+	int size = timestamp_write(argv[0]->integer, timezone,
+	                           (char*)data->position, 128);
+	buf_advance(data, size);
+	buf_end(data);
+
+	Str string;
+	str_init(&string);
+	str_set(&string, (char*)data->start, buf_size(data));
+	value_set_string(self->result, &string, data);
+}
+
+hot static void
 fn_generate_series(Call* self)
 {
 	auto argv = self->argv;
@@ -61,59 +95,59 @@ fn_generate_series(Call* self)
 }
 
 hot static void
-fn_time_bucket(Call* self)
+fn_date_bin(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
-	call_validate_arg(self, 0, VALUE_INTERVAL);
-	call_validate_arg(self, 1, VALUE_TIMESTAMP);
-	auto iv = &argv[0]->interval;
+	if (self->argc < 2 || self->argc > 3)
+		error("date_bin(): unexpected number of arguments");
+
+	// (interval, timestamp [, timestamp_origin])
+	// (timestamp, interval [, timestamp_origin])
+	Interval* iv;
+	uint64_t  timestamp;
+	if (argv[0]->type == VALUE_INTERVAL)
+	{
+		call_validate_arg(self, 1, VALUE_TIMESTAMP);
+		iv = &argv[0]->interval;
+		timestamp = argv[1]->integer;
+	} else
+	if (argv[0]->type == VALUE_TIMESTAMP)
+	{
+		call_validate_arg(self, 1, VALUE_INTERVAL);
+		timestamp = argv[0]->integer;
+		iv = &argv[1]->interval;
+	} else {
+		error("date_bin(): invalid arguments");
+	}
+
+	uint64_t origin;
+	if (self->argc == 3)
+	{
+		call_validate_arg(self, 2, VALUE_TIMESTAMP);
+		origin = argv[2]->integer;
+	} else
+	{
+		// default origin for 2001-01-01 00:00:00
+		origin = 978307200000000ULL;
+	}
+
 	if (iv->m != 0)
-		error("time_bucket(): month intervals are not supported");
-	uint64_t span = iv->us + iv->d * 86400000000ULL;
-	uint64_t ts = argv[1]->integer / span * span;
-	value_set_timestamp(self->result, ts);
-}
-
-hot static void
-fn_now(Call* self)
-{
-	call_validate(self);
-	value_set_timestamp(self->result, time_us());
-}
-
-hot static void
-fn_at_timezone(Call* self)
-{
-	auto argv = self->argv;
-	call_validate(self);
-	call_validate_arg(self, 0, VALUE_TIMESTAMP);
-	call_validate_arg(self, 1, VALUE_STRING);
-
-	auto name = &self->argv[1]->string;
-	auto timezone = timezone_mgr_find(global()->timezone_mgr, name);
-	if (! timezone)
-		error("timestamp(): failed to find timezone '%.*s'",
-		      str_size(name), str_of(name));
-
-	auto data = buf_begin();
-	buf_reserve(data, 128);
-	int size = timestamp_write(argv[0]->integer, timezone,
-	                           (char*)data->position, 128);
-	buf_advance(data, size);
-	buf_end(data);
-
-	Str string;
-	str_init(&string);
-	str_set(&string, (char*)data->start, buf_size(data));
-	value_set_string(self->result, &string, data);
+		error("date_bin(): month and year intervals are not supported");
+	int64_t span = iv->d * 86400000000ULL + iv->us;
+	if (span <= 0)
+		error("date_bin(): invalid argument");
+	if (origin > timestamp)
+		error("date_bin(): origin is in the future");
+	uint64_t at = timestamp - origin;
+	uint64_t delta = at - at % span;
+	value_set_timestamp(self->result, origin + delta);
 }
 
 FunctionDef fn_time_def[] =
 {
-	{ "public", "generate_series", fn_generate_series, 3 },
-	{ "public", "time_bucket",     fn_time_bucket,     2 },
 	{ "public", "now",             fn_now,             0 },
 	{ "public", "at_timezone",     fn_at_timezone,     2 },
+	{ "public", "generate_series", fn_generate_series, 3 },
+	{ "public", "date_bin",        fn_date_bin,        0 },
 	{  NULL,     NULL,             NULL,               0 }
 };

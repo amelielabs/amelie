@@ -347,20 +347,20 @@ show functions
   "argc": 1
 }, {
   "schema": "public",
-  "name": "generate_series",
-  "argc": 3
-}, {
-  "schema": "public",
-  "name": "time_bucket",
-  "argc": 2
-}, {
-  "schema": "public",
   "name": "now",
   "argc": 0
 }, {
   "schema": "public",
   "name": "at_timezone",
   "argc": 2
+}, {
+  "schema": "public",
+  "name": "generate_series",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "date_bin",
+  "argc": 0
 }]
 select system.functions()
 [{
@@ -673,20 +673,20 @@ select system.functions()
   "argc": 1
 }, {
   "schema": "public",
-  "name": "generate_series",
-  "argc": 3
-}, {
-  "schema": "public",
-  "name": "time_bucket",
-  "argc": 2
-}, {
-  "schema": "public",
   "name": "now",
   "argc": 0
 }, {
   "schema": "public",
   "name": "at_timezone",
   "argc": 2
+}, {
+  "schema": "public",
+  "name": "generate_series",
+  "argc": 3
+}, {
+  "schema": "public",
+  "name": "date_bin",
+  "argc": 0
 }]
 # test: show tables
 show tables

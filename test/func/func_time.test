@@ -1,0 +1,38 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: date_bin
+set timezone to 'UTC'
+
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17');
+
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
+
+# test: date_bin (call as a method)
+select TIMESTAMP '2020-02-11 15:44:17'::date_bin(INTERVAL '15 minutes');
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval);
+
+select *, '2020-02-11 15:44:17'::timestamp::date_bin(*::interval) from ['15 days', '2 hours', '1 hour 30 minutes', '15 minutes', '10 seconds', '100 milliseconds', '250 microseconds']
+
+# test: date_bin (negative interval)
+select date_bin(INTERVAL '-15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin (month)
+select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin (year)
+select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin (timezone)
+set timezone to 'Asia/Famagusta'
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
+
+set timezone to 'UTC'
+select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
+
+disconnect S0
+close E0
