@@ -7,7 +7,7 @@ We are building a new lightweight in-memory OLTP SQL database with a focus on pe
 
 Amelie was designed as an alternative to in-memory NoSQL databases.
 
-It has a unique architecture designed for automatic table partitioning, full parallelization, and lock-less execution.
+It has a unique architecture designed for full parallelization, automatic table partitioning, and lock-less execution.
 It is based on the idea of automatically treating local machine CPU cores as if they were distributed system nodes, sharding data, partitioning, 
 and generating parallel plans for all types of queries.
 
