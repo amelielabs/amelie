@@ -36,6 +36,7 @@ static Keyword keywords_a[] =
 	{ KASC,                   "asc",                   3  },
 	{ KAVG,                   "avg",                   3  },
 	{ KAS,                    "as",                    2  },
+	{ KAT,                    "at",                    2  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -210,6 +211,7 @@ static Keyword keywords_t[] =
 {
 	{ KTRUE,                  "true",                  4  },
 	{ KTIMESTAMP,             "timestamp",             9  },
+	{ KTIMEZONE,              "timezone",              8  },
 	{ KTHEN,                  "then",                  4  },
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },

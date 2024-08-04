@@ -50,6 +50,8 @@ enum
 	KALL,
 	KLIKE,
 	KEXTRACT,
+	KAT,
+	KTIMEZONE,
 
 	KCASE,
 	KWHEN,

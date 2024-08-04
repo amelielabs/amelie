@@ -49,6 +49,7 @@ priority_map[UINT8_MAX] =
 	['<']                      = 4,
 	[KBETWEEN]                 = 4,
 	[KIN]                      = 4,
+	[KAT]                      = 4,
 	// 5
 	['|']                      = 5,
 	// 6
@@ -735,6 +736,15 @@ parse_op(Stmt*     self, Expr* expr,
 		if (! stmt_if(self, '('))
 			error("IN <(> expected");
 		auto r = expr_args(self, expr, ')', false);
+		ast_push(result, r);
+		break;
+	}
+	case KAT:
+	{
+		// expr AT TIMEZONE expr
+		if (! stmt_if(self, KTIMEZONE))
+			error("AT <TIMEZONE> expected");
+		auto r = parse_expr(self, expr);
 		ast_push(result, r);
 		break;
 	}

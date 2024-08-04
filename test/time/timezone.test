@@ -40,6 +40,12 @@ select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
 select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
 
+# test: at timezone operator
+select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
+select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
+select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
+select '2024-07-29 18:40:19'::timestamp at timezone null
+
 # test: timestamp column
 create table test (time timestamp primary key)
 

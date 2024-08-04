@@ -746,6 +746,33 @@ emit_match(Compiler* self, Target* target, Ast* ast)
 	return rc;
 }
 
+hot static inline int
+emit_at_timezone(Compiler* self, Target* target, Ast* ast)
+{
+	// public.at_timezone(time, timezone)
+	Str schema;
+	str_set(&schema, "public", 6);
+	Str name;
+	str_set(&name, "at_timezone", 11);
+
+	// find and call function
+	auto fn = function_mgr_find(self->parser.function_mgr, &schema, &name);
+	if (! fn)
+		error("at_timezone(): function not found");
+
+	// push arguments
+	int r = emit_expr(self, target, ast->l);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = emit_expr(self, target, ast->r);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// CALL
+	return op3(self, CCALL, rpin(self), (intptr_t)fn, 2);
+}
+
 hot int
 emit_expr(Compiler* self, Target* target, Ast* ast)
 {
@@ -940,6 +967,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		runpin(self, r);
 		return rc;
 	}
+
+	// at timezone
+	case KAT:
+		return emit_at_timezone(self, target, ast);
 
 	// like
 	case KLIKE:
