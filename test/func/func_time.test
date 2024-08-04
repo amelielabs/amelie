@@ -37,9 +37,6 @@ select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', times
 # test: date_trunc(interval year)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
 
-# test: date_trunc(interval quorter)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'quarter')
-
 # test: date_trunc(interval month)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
 
@@ -64,6 +61,74 @@ select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 40
 
 # test: date_trunc(interval us)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
+
+# test: date_trunc(timestamp year)
+select date_trunc('year', TIMESTAMP '2001-01-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-03-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-04-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-05-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-06-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-07-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-08-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-09-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-10-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-11-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2011-12-16 20:38:40');
+
+# test: date_trunc(timestamp month)
+select date_trunc('month', TIMESTAMP '2001-01-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-03-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-04-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-05-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-06-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-07-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-08-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-09-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-10-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-11-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2011-12-16 20:38:40');
+select date_trunc(TIMESTAMP '2011-12-16 20:38:40', 'month');
+
+# test: date_trunc(timestamp week)
+select date_trunc('week', TIMESTAMP '2001-02-16 20:38:40');
+
+# test: date_trunc(timestamp day)
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
+
+# test: date_trunc(timestamp hour)
+select date_trunc('hour', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp minute)
+select date_trunc('min', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp second)
+select date_trunc('sec', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp ms)
+select date_trunc('ms', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp us)
+select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp day, timezone)
+set timezone to 'UTC'
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
+
+set timezone to 'Asia/Famagusta'
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z');
+
+select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
+select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
+select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
 
 disconnect S0
 close E0

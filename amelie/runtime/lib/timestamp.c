@@ -428,3 +428,118 @@ timestamp_sub(Timestamp* self, Interval* iv)
 	}
 	self->us -= us;
 }
+
+typedef enum
+{
+	TIMESTAMP_YEAR,
+	TIMESTAMP_MONTH,
+	TIMESTAMP_WEEK,
+	TIMESTAMP_DAY,
+	TIMESTAMP_HOUR,
+	TIMESTAMP_MINUTE,
+	TIMESTAMP_SECOND,
+	TIMESTAMP_MILLISECOND,
+	TIMESTAMP_MICROSECOND
+} TimestampField;
+
+static inline int
+timestamp_read_field(Str* type)
+{
+	switch (*str_of(type)) {
+	case 'm':
+		// minute
+		if (str_compare_raw(type, "min", 3) ||
+		    str_compare_raw(type, "minute", 6))
+			return TIMESTAMP_MINUTE;
+
+		// month
+		if (str_compare_raw(type, "month", 5))
+			return TIMESTAMP_MONTH;
+
+		// millisecond
+		// milliseconds
+		// ms
+		if (str_compare_raw(type, "ms", 2) ||
+		    str_compare_raw(type, "milliseconds", 12) ||
+		    str_compare_raw(type, "millisecond", 11))
+			return TIMESTAMP_MILLISECOND;
+
+		// microseconds
+		// microsecond
+		if (str_compare_raw(type, "microseconds", 12) ||
+		    str_compare_raw(type, "microsecond", 11))
+			return TIMESTAMP_MICROSECOND;
+		break;
+	case 'u':
+		// us
+		if (str_compare_raw(type, "us", 2))
+			return TIMESTAMP_MICROSECOND;
+		break;
+	case 's':
+		// second
+		// sec
+		if (str_compare_raw(type, "sec", 3) ||
+		    str_compare_raw(type, "second", 6))
+			return TIMESTAMP_SECOND;
+		break;
+	case 'h':
+		// hour
+		// hr
+		if (str_compare_raw(type, "hr", 2)    ||
+		    str_compare_raw(type, "hour", 4))
+			return TIMESTAMP_HOUR;
+		break;
+	case 'd':
+		// day
+		if (str_compare_raw(type, "day", 3))
+			return TIMESTAMP_DAY;
+		break;
+	case 'w':
+		// week
+		if (str_compare_raw(type, "week", 4))
+			return TIMESTAMP_WEEK;
+		break;
+	case 'y':
+		// year
+		if (str_compare_raw(type, "year", 4))
+			return TIMESTAMP_YEAR;
+		break;
+	default:
+		break;
+	}
+	return -1;
+}
+
+void
+timestamp_trunc(Timestamp* self, Str* field)
+{
+	// timestamp is in utc
+	int rc = timestamp_read_field(field);
+	if (rc == -1)
+		error("unknown timestamp truncate field");
+	if (rc == TIMESTAMP_WEEK)
+		error("cannot truncate interval by week");
+
+	auto time = &self->time;
+	time->tm_wday = -1;
+	time->tm_yday = -1;
+
+	switch (rc) {
+	case TIMESTAMP_YEAR:
+		time->tm_mon = 0;
+	case TIMESTAMP_MONTH:
+		time->tm_mday = 1;
+	case TIMESTAMP_DAY:
+		time->tm_hour = 0;
+	case TIMESTAMP_HOUR:
+		time->tm_min = 0;
+	case TIMESTAMP_MINUTE:
+		time->tm_sec = 0;
+	case TIMESTAMP_SECOND:
+		self->us = 0;
+	case TIMESTAMP_MILLISECOND:
+		self->us = (self->us / 1000) * 1000;
+	case TIMESTAMP_MICROSECOND:
+		break;
+	}
+}

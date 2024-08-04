@@ -151,10 +151,21 @@ fn_date_trunc(Call* self)
 		error("date_trunc(): unexpected number of arguments");
 
 	// (string, interval)
-	// (string, timestamp [, timestamp_origin])
+	// (string, timestamp [, timezone])
 	//
 	// (interval, string)
-	// (timestamp, string [, timestamp_origin])
+	// (timestamp, string [, timezone])
+	Timezone* timezone = self->vm->local->timezone;
+	if (self->argc == 3)
+	{
+		call_validate_arg(self, 2, VALUE_STRING);
+		auto name = &self->argv[2]->string;
+		timezone = timezone_mgr_find(global()->timezone_mgr, name);
+		if (! timezone)
+			error("date_trunc(): failed to find timezone '%.*s'",
+			      str_size(name), str_of(name));
+	}
+
 	if (argv[0]->type == VALUE_STRING)
 	{
 		if (argv[1]->type == VALUE_INTERVAL)
@@ -165,6 +176,12 @@ fn_date_trunc(Call* self)
 		} else
 		if (argv[1]->type == VALUE_TIMESTAMP)
 		{
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read_value(&ts, self->argv[1]->integer);
+			timestamp_trunc(&ts, &argv[0]->string);
+			auto time = timestamp_of(&ts, timezone);
+			value_set_timestamp(self->result, time);
 		} else {
 			error("date_trunc(): invalid arguments");
 		}
@@ -179,6 +196,12 @@ fn_date_trunc(Call* self)
 	if (argv[0]->type == VALUE_TIMESTAMP)
 	{
 		call_validate_arg(self, 1, VALUE_STRING);
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read_value(&ts, self->argv[0]->integer);
+		timestamp_trunc(&ts, &argv[1]->string);
+		auto time = timestamp_of(&ts, timezone);
+		value_set_timestamp(self->result, time);
 	} else
 	{
 		error("date_trunc(): invalid arguments");

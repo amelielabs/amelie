@@ -291,7 +291,6 @@ interval_sub(Interval* result, Interval* a, Interval* b)
 typedef enum
 {
 	INTERVAL_YEAR,
-	INTERVAL_QUARTER,
 	INTERVAL_MONTH,
 	INTERVAL_WEEK,
 	INTERVAL_DAY,
@@ -308,7 +307,8 @@ interval_read_field(Str* type)
 	switch (*str_of(type)) {
 	case 'm':
 		// minute
-		if (str_compare_raw(type, "minute", 6))
+		if (str_compare_raw(type, "min", 3) ||
+		    str_compare_raw(type, "minute", 6))
 			return INTERVAL_MINUTE;
 
 		// month
@@ -358,10 +358,6 @@ interval_read_field(Str* type)
 		if (str_compare_raw(type, "week", 4))
 			return INTERVAL_WEEK;
 		break;
-	case 'q':
-		// quarter
-		if (str_compare_raw(type, "quarter", 7))
-			return INTERVAL_QUARTER;
 	case 'y':
 		// year
 		if (str_compare_raw(type, "year", 4))
@@ -391,11 +387,6 @@ interval_trunc(Interval* self, Str* field)
 		self->us = 0;
 		break;
 	}
-	case INTERVAL_QUARTER:
-		self->m  = (self->m / 3) * 3;
-		self->d  = 0;
-		self->us = 0;
-		break;
 	case INTERVAL_MONTH:
 		self->d  = 0;
 		self->us = 0;
