@@ -29,7 +29,7 @@
 hot static void
 fn_now(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	value_set_timestamp(self->result, time_us());
 }
 
@@ -37,7 +37,7 @@ hot static void
 fn_at_timezone(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	call_validate_arg(self, 0, VALUE_TIMESTAMP);
 	call_validate_arg(self, 1, VALUE_STRING);
 
@@ -64,7 +64,7 @@ hot static void
 fn_generate_series(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 3);
 	call_validate_arg(self, 0, VALUE_TIMESTAMP);
 	call_validate_arg(self, 1, VALUE_TIMESTAMP);
 	call_validate_arg(self, 2, VALUE_INTERVAL);
@@ -260,11 +260,11 @@ fn_extract(Call* self)
 
 FunctionDef fn_time_def[] =
 {
-	{ "public", "now",             fn_now,             0 },
-	{ "public", "at_timezone",     fn_at_timezone,     2 },
-	{ "public", "generate_series", fn_generate_series, 3 },
-	{ "public", "date_bin",        fn_date_bin,        0 },
-	{ "public", "date_trunc",      fn_date_trunc,      0 },
-	{ "public", "extract",         fn_extract,         0 },
-	{  NULL,     NULL,             NULL,               0 }
+	{ "public", "now",             fn_now,             false },
+	{ "public", "at_timezone",     fn_at_timezone,     false },
+	{ "public", "generate_series", fn_generate_series, false },
+	{ "public", "date_bin",        fn_date_bin,        false },
+	{ "public", "date_trunc",      fn_date_trunc,      false },
+	{ "public", "extract",         fn_extract,         false },
+	{  NULL,     NULL,             NULL,               false }
 };

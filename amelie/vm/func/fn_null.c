@@ -43,7 +43,7 @@ fn_coalesce(Call* self)
 hot static void
 fn_nullif(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 2);
 	if (value_is_equal(self->argv[0], self->argv[1]))
 	{
 		value_set_null(self->result);
@@ -54,7 +54,7 @@ fn_nullif(Call* self)
 
 FunctionDef fn_null_def[] =
 {
-	{ "public", "coalesce", fn_coalesce, 0 },
-	{ "public", "nullif",   fn_nullif,   2 },
-	{  NULL,     NULL,      NULL,        0 }
+	{ "public", "coalesce", fn_coalesce, false },
+	{ "public", "nullif",   fn_nullif,   false },
+	{  NULL,     NULL,      NULL,        false }
 };

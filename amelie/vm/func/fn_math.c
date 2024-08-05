@@ -78,7 +78,7 @@ static void
 fn_abs(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	if (arg->type == VALUE_INT)
 		value_set_int(self->result, llabs(arg->integer));
 	else
@@ -92,7 +92,7 @@ static void
 fn_round(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_REAL);
 	value_set_int(self->result, llround(arg->real));
 }
@@ -102,7 +102,7 @@ fn_sign(Call* self)
 {
 	auto arg = self->argv[0];
 	int sign = 0;
-	call_validate(self);
+	call_validate(self, 1);
 	if (arg->type == VALUE_INT)
 	{
 		if (arg->integer > 0)
@@ -128,7 +128,7 @@ static void
 fn_ceil(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_REAL);
 	value_set_real(self->result, ceil(arg->real));
 }
@@ -137,7 +137,7 @@ static void
 fn_exp(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_REAL);
 	errno = 0;
 	double result = exp(arg->real);
@@ -150,7 +150,7 @@ static void
 fn_floor(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_REAL);
 	value_set_real(self->result, floor(arg->real));
 }
@@ -159,7 +159,7 @@ static void
 fn_mod(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	if (argv[0]->type == VALUE_INT)
 	{
 		if (argv[1]->type != VALUE_INT)
@@ -189,7 +189,7 @@ static void
 fn_power(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	if (argv[0]->type == VALUE_INT)
 	{
 		if (argv[1]->type != VALUE_INT)
@@ -221,7 +221,7 @@ static void
 fn_trunc(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_REAL);
 	value_set_real(self->result, trunc(arg->real));
 }
@@ -229,7 +229,7 @@ fn_trunc(Call* self)
 static void
 fn_pi(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	value_set_real(self->result, 3.141592653589793);
 }
 
@@ -237,7 +237,7 @@ static void
 fn_sqrt(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -257,7 +257,7 @@ static void
 fn_acos(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -277,7 +277,7 @@ static void
 fn_acosh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -297,7 +297,7 @@ static void
 fn_asin(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -317,7 +317,7 @@ static void
 fn_asinh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -337,7 +337,7 @@ static void
 fn_atan(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -357,7 +357,7 @@ static void
 fn_atanh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -377,7 +377,7 @@ static void
 fn_atan2(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 
 	double arg1;
 	if (argv[0]->type == VALUE_INT)
@@ -408,7 +408,7 @@ static void
 fn_cos(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -428,7 +428,7 @@ static void
 fn_cosh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -448,7 +448,7 @@ static void
 fn_sin(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -468,7 +468,7 @@ static void
 fn_sinh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -488,7 +488,7 @@ static void
 fn_tan(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -508,7 +508,7 @@ static void
 fn_tanh(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -528,7 +528,7 @@ static void
 fn_ln(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -548,7 +548,7 @@ static void
 fn_log(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -568,7 +568,7 @@ static void
 fn_log2(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	double value;
 	if (arg->type == VALUE_INT)
 		value = arg->integer;
@@ -586,38 +586,38 @@ fn_log2(Call* self)
 
 FunctionDef fn_math_def[] =
 {
-	{ "public", "greatest", fn_greatest, 0 },
-	{ "public", "least",    fn_least,    0 },
-	{ "public", "abs",      fn_abs,      1 },
-	{ "public", "round",    fn_round,    1 },
-	{ "public", "sign",     fn_sign,     1 },
-	{ "public", "ceil",     fn_ceil,     1 },
-	{ "public", "exp",      fn_exp,      1 },
-	{ "public", "floor",    fn_floor,    1 },
-	{ "public", "mod",      fn_mod,      2 },
-	{ "public", "power",    fn_power,    2 },
-	{ "public", "trunc",    fn_trunc,    1 },
-	{ "public", "pi",       fn_pi,       0 },
-	{ "public", "sqrt",     fn_sqrt,     1 },
+	{ "public", "greatest", fn_greatest, false },
+	{ "public", "least",    fn_least,    false },
+	{ "public", "abs",      fn_abs,      false },
+	{ "public", "round",    fn_round,    false },
+	{ "public", "sign",     fn_sign,     false },
+	{ "public", "ceil",     fn_ceil,     false },
+	{ "public", "exp",      fn_exp,      false },
+	{ "public", "floor",    fn_floor,    false },
+	{ "public", "mod",      fn_mod,      false },
+	{ "public", "power",    fn_power,    false },
+	{ "public", "trunc",    fn_trunc,    false },
+	{ "public", "pi",       fn_pi,       false },
+	{ "public", "sqrt",     fn_sqrt,     false },
 
-	{ "public", "acos",     fn_acos,     1 },
-	{ "public", "acosh",    fn_acosh,    1 },
-	{ "public", "asin",     fn_asin,     1 },
-	{ "public", "asinh",    fn_asinh,    1 },
-	{ "public", "atan",     fn_atan,     1 },
-	{ "public", "atanh",    fn_atanh,    1 },
-	{ "public", "atan2",    fn_atan2,    2 },
-	{ "public", "cos",      fn_cos,      1 },
-	{ "public", "cosh",     fn_cosh,     1 },
-	{ "public", "sin",      fn_sin,      1 },
-	{ "public", "sinh",     fn_sinh,     1 },
-	{ "public", "tan",      fn_tan,      1 },
-	{ "public", "tanh",     fn_tanh,     1 },
+	{ "public", "acos",     fn_acos,     false },
+	{ "public", "acosh",    fn_acosh,    false },
+	{ "public", "asin",     fn_asin,     false },
+	{ "public", "asinh",    fn_asinh,    false },
+	{ "public", "atan",     fn_atan,     false },
+	{ "public", "atanh",    fn_atanh,    false },
+	{ "public", "atan2",    fn_atan2,    false },
+	{ "public", "cos",      fn_cos,      false },
+	{ "public", "cosh",     fn_cosh,     false },
+	{ "public", "sin",      fn_sin,      false },
+	{ "public", "sinh",     fn_sinh,     false },
+	{ "public", "tan",      fn_tan,      false },
+	{ "public", "tanh",     fn_tanh,     false },
 
-	{ "public", "ln",       fn_ln,       1 },
-	{ "public", "log",      fn_log,      1 },
-	{ "public", "log10",    fn_log,      1 },
-	{ "public", "log2",     fn_log2,     1 },
+	{ "public", "ln",       fn_ln,       false },
+	{ "public", "log",      fn_log,      false },
+	{ "public", "log10",    fn_log,      false },
+	{ "public", "log2",     fn_log2,     false },
 
-	{  NULL,     NULL,      NULL,        0 }
+	{  NULL,     NULL,      NULL,        false }
 };

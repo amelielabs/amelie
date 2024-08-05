@@ -53,7 +53,7 @@ hot static void
 fn_pop(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_DATA);
 	auto data = argv[0]->data;
 	auto data_size = argv[0]->data_size;
@@ -66,7 +66,7 @@ hot static void
 fn_pop_back(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_DATA);
 	auto data = argv[0]->data;
 	if (! data_is_array(data))
@@ -78,7 +78,7 @@ hot static void
 fn_put(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 3);
 	call_validate_arg(self, 0, VALUE_DATA);
 	call_validate_arg(self, 1, VALUE_INT);
 	auto data = argv[0]->data;
@@ -91,7 +91,7 @@ hot static void
 fn_remove(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	call_validate_arg(self, 0, VALUE_DATA);
 	call_validate_arg(self, 1, VALUE_INT);
 	auto data = argv[0]->data;
@@ -104,7 +104,7 @@ hot static void
 fn_set(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 3);
 	value_set(self->result, argv[0], argv[1], argv[2]);
 }
 
@@ -112,7 +112,7 @@ hot static void
 fn_unset(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	value_unset(self->result, argv[0], argv[1]);
 }
 
@@ -120,23 +120,23 @@ hot static void
 fn_has(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	value_has(self->result, argv[0], argv[1]);
 }
 
 FunctionDef fn_object_def[] =
 {
 	// array
-	{ "public", "append",    fn_append,   2 },
-	{ "public", "push_back", fn_append,   2 },
-	{ "public", "push",      fn_push,     2 },
-	{ "public", "pop",       fn_pop,      1 },
-	{ "public", "pop_back",  fn_pop_back, 1 },
-	{ "public", "put",       fn_put,      3 },
-	{ "public", "remove",    fn_remove,   2 },
-	/// map
-	{ "public", "set",       fn_set,      3 },
-	{ "public", "unset",     fn_unset,    2 },
-	{ "public", "has",       fn_has,      2 },
-	{  NULL,     NULL,       NULL,        0 }
+	{ "public", "append",    fn_append,   false },
+	{ "public", "push_back", fn_append,   false },
+	{ "public", "push",      fn_push,     false },
+	{ "public", "pop",       fn_pop,      false },
+	{ "public", "pop_back",  fn_pop_back, false },
+	{ "public", "put",       fn_put,      false },
+	{ "public", "remove",    fn_remove,   false },
+	// map
+	{ "public", "set",       fn_set,      false },
+	{ "public", "unset",     fn_unset,    false },
+	{ "public", "has",       fn_has,      false },
+	{  NULL,     NULL,       NULL,        false }
 };

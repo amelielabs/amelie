@@ -39,670 +39,504 @@ select system.schemas()
 show functions
 [{
   "schema": "system",
-  "name": "config",
-  "argc": 0
+  "name": "config"
 }, {
   "schema": "system",
-  "name": "users",
-  "argc": 0
+  "name": "users"
 }, {
   "schema": "system",
-  "name": "replicas",
-  "argc": 0
+  "name": "replicas"
 }, {
   "schema": "system",
-  "name": "repl",
-  "argc": 0
+  "name": "repl"
 }, {
   "schema": "system",
-  "name": "replication",
-  "argc": 0
+  "name": "replication"
 }, {
   "schema": "system",
-  "name": "nodes",
-  "argc": 0
+  "name": "nodes"
 }, {
   "schema": "system",
-  "name": "schemas",
-  "argc": 0
+  "name": "schemas"
 }, {
   "schema": "system",
-  "name": "functions",
-  "argc": 0
+  "name": "functions"
 }, {
   "schema": "system",
-  "name": "tables",
-  "argc": 0
+  "name": "tables"
 }, {
   "schema": "system",
-  "name": "views",
-  "argc": 0
+  "name": "views"
 }, {
   "schema": "system",
-  "name": "wal",
-  "argc": 0
+  "name": "wal"
 }, {
   "schema": "public",
-  "name": "string",
-  "argc": 1
+  "name": "string"
 }, {
   "schema": "public",
-  "name": "int",
-  "argc": 1
+  "name": "int"
 }, {
   "schema": "public",
-  "name": "bool",
-  "argc": 1
+  "name": "bool"
 }, {
   "schema": "public",
-  "name": "real",
-  "argc": 1
+  "name": "real"
 }, {
   "schema": "public",
-  "name": "json",
-  "argc": 1
+  "name": "json"
 }, {
   "schema": "public",
-  "name": "interval",
-  "argc": 1
+  "name": "interval"
 }, {
   "schema": "public",
-  "name": "timestamp",
-  "argc": 0
+  "name": "timestamp"
 }, {
   "schema": "public",
-  "name": "coalesce",
-  "argc": 0
+  "name": "coalesce"
 }, {
   "schema": "public",
-  "name": "nullif",
-  "argc": 2
+  "name": "nullif"
 }, {
   "schema": "public",
-  "name": "append",
-  "argc": 2
+  "name": "append"
 }, {
   "schema": "public",
-  "name": "push_back",
-  "argc": 2
+  "name": "push_back"
 }, {
   "schema": "public",
-  "name": "push",
-  "argc": 2
+  "name": "push"
 }, {
   "schema": "public",
-  "name": "pop",
-  "argc": 1
+  "name": "pop"
 }, {
   "schema": "public",
-  "name": "pop_back",
-  "argc": 1
+  "name": "pop_back"
 }, {
   "schema": "public",
-  "name": "put",
-  "argc": 3
+  "name": "put"
 }, {
   "schema": "public",
-  "name": "remove",
-  "argc": 2
+  "name": "remove"
 }, {
   "schema": "public",
-  "name": "set",
-  "argc": 3
+  "name": "set"
 }, {
   "schema": "public",
-  "name": "unset",
-  "argc": 2
+  "name": "unset"
 }, {
   "schema": "public",
-  "name": "has",
-  "argc": 2
+  "name": "has"
 }, {
   "schema": "public",
-  "name": "length",
-  "argc": 1
+  "name": "length"
 }, {
   "schema": "public",
-  "name": "size",
-  "argc": 1
+  "name": "size"
 }, {
   "schema": "public",
-  "name": "concat",
-  "argc": 0
+  "name": "concat"
 }, {
   "schema": "public",
-  "name": "lower",
-  "argc": 1
+  "name": "lower"
 }, {
   "schema": "public",
-  "name": "upper",
-  "argc": 1
+  "name": "upper"
 }, {
   "schema": "public",
-  "name": "substr",
-  "argc": 0
+  "name": "substr"
 }, {
   "schema": "public",
-  "name": "strpos",
-  "argc": 2
+  "name": "strpos"
 }, {
   "schema": "public",
-  "name": "replace",
-  "argc": 3
+  "name": "replace"
 }, {
   "schema": "public",
-  "name": "ltrim",
-  "argc": 0
+  "name": "ltrim"
 }, {
   "schema": "public",
-  "name": "rtrim",
-  "argc": 0
+  "name": "rtrim"
 }, {
   "schema": "public",
-  "name": "trim",
-  "argc": 0
+  "name": "trim"
 }, {
   "schema": "public",
-  "name": "greatest",
-  "argc": 0
+  "name": "greatest"
 }, {
   "schema": "public",
-  "name": "least",
-  "argc": 0
+  "name": "least"
 }, {
   "schema": "public",
-  "name": "abs",
-  "argc": 1
+  "name": "abs"
 }, {
   "schema": "public",
-  "name": "round",
-  "argc": 1
+  "name": "round"
 }, {
   "schema": "public",
-  "name": "sign",
-  "argc": 1
+  "name": "sign"
 }, {
   "schema": "public",
-  "name": "ceil",
-  "argc": 1
+  "name": "ceil"
 }, {
   "schema": "public",
-  "name": "exp",
-  "argc": 1
+  "name": "exp"
 }, {
   "schema": "public",
-  "name": "floor",
-  "argc": 1
+  "name": "floor"
 }, {
   "schema": "public",
-  "name": "mod",
-  "argc": 2
+  "name": "mod"
 }, {
   "schema": "public",
-  "name": "power",
-  "argc": 2
+  "name": "power"
 }, {
   "schema": "public",
-  "name": "trunc",
-  "argc": 1
+  "name": "trunc"
 }, {
   "schema": "public",
-  "name": "pi",
-  "argc": 0
+  "name": "pi"
 }, {
   "schema": "public",
-  "name": "sqrt",
-  "argc": 1
+  "name": "sqrt"
 }, {
   "schema": "public",
-  "name": "acos",
-  "argc": 1
+  "name": "acos"
 }, {
   "schema": "public",
-  "name": "acosh",
-  "argc": 1
+  "name": "acosh"
 }, {
   "schema": "public",
-  "name": "asin",
-  "argc": 1
+  "name": "asin"
 }, {
   "schema": "public",
-  "name": "asinh",
-  "argc": 1
+  "name": "asinh"
 }, {
   "schema": "public",
-  "name": "atan",
-  "argc": 1
+  "name": "atan"
 }, {
   "schema": "public",
-  "name": "atanh",
-  "argc": 1
+  "name": "atanh"
 }, {
   "schema": "public",
-  "name": "atan2",
-  "argc": 2
+  "name": "atan2"
 }, {
   "schema": "public",
-  "name": "cos",
-  "argc": 1
+  "name": "cos"
 }, {
   "schema": "public",
-  "name": "cosh",
-  "argc": 1
+  "name": "cosh"
 }, {
   "schema": "public",
-  "name": "sin",
-  "argc": 1
+  "name": "sin"
 }, {
   "schema": "public",
-  "name": "sinh",
-  "argc": 1
+  "name": "sinh"
 }, {
   "schema": "public",
-  "name": "tan",
-  "argc": 1
+  "name": "tan"
 }, {
   "schema": "public",
-  "name": "tanh",
-  "argc": 1
+  "name": "tanh"
 }, {
   "schema": "public",
-  "name": "ln",
-  "argc": 1
+  "name": "ln"
 }, {
   "schema": "public",
-  "name": "log",
-  "argc": 1
+  "name": "log"
 }, {
   "schema": "public",
-  "name": "log10",
-  "argc": 1
+  "name": "log10"
 }, {
   "schema": "public",
-  "name": "log2",
-  "argc": 1
+  "name": "log2"
 }, {
   "schema": "public",
-  "name": "error",
-  "argc": 1
+  "name": "error"
 }, {
   "schema": "public",
-  "name": "type",
-  "argc": 1
+  "name": "type"
 }, {
   "schema": "public",
-  "name": "random",
-  "argc": 0
+  "name": "random"
 }, {
   "schema": "public",
-  "name": "random_uuid",
-  "argc": 0
+  "name": "random_uuid"
 }, {
   "schema": "public",
-  "name": "md5",
-  "argc": 1
+  "name": "md5"
 }, {
   "schema": "public",
-  "name": "sha1",
-  "argc": 1
+  "name": "sha1"
 }, {
   "schema": "public",
-  "name": "now",
-  "argc": 0
+  "name": "now"
 }, {
   "schema": "public",
-  "name": "at_timezone",
-  "argc": 2
+  "name": "at_timezone"
 }, {
   "schema": "public",
-  "name": "generate_series",
-  "argc": 3
+  "name": "generate_series"
 }, {
   "schema": "public",
-  "name": "date_bin",
-  "argc": 0
+  "name": "date_bin"
 }, {
   "schema": "public",
-  "name": "date_trunc",
-  "argc": 0
+  "name": "date_trunc"
 }, {
   "schema": "public",
-  "name": "extract",
-  "argc": 0
+  "name": "extract"
 }]
 select system.functions()
 [{
   "schema": "system",
-  "name": "config",
-  "argc": 0
+  "name": "config"
 }, {
   "schema": "system",
-  "name": "users",
-  "argc": 0
+  "name": "users"
 }, {
   "schema": "system",
-  "name": "replicas",
-  "argc": 0
+  "name": "replicas"
 }, {
   "schema": "system",
-  "name": "repl",
-  "argc": 0
+  "name": "repl"
 }, {
   "schema": "system",
-  "name": "replication",
-  "argc": 0
+  "name": "replication"
 }, {
   "schema": "system",
-  "name": "nodes",
-  "argc": 0
+  "name": "nodes"
 }, {
   "schema": "system",
-  "name": "schemas",
-  "argc": 0
+  "name": "schemas"
 }, {
   "schema": "system",
-  "name": "functions",
-  "argc": 0
+  "name": "functions"
 }, {
   "schema": "system",
-  "name": "tables",
-  "argc": 0
+  "name": "tables"
 }, {
   "schema": "system",
-  "name": "views",
-  "argc": 0
+  "name": "views"
 }, {
   "schema": "system",
-  "name": "wal",
-  "argc": 0
+  "name": "wal"
 }, {
   "schema": "public",
-  "name": "string",
-  "argc": 1
+  "name": "string"
 }, {
   "schema": "public",
-  "name": "int",
-  "argc": 1
+  "name": "int"
 }, {
   "schema": "public",
-  "name": "bool",
-  "argc": 1
+  "name": "bool"
 }, {
   "schema": "public",
-  "name": "real",
-  "argc": 1
+  "name": "real"
 }, {
   "schema": "public",
-  "name": "json",
-  "argc": 1
+  "name": "json"
 }, {
   "schema": "public",
-  "name": "interval",
-  "argc": 1
+  "name": "interval"
 }, {
   "schema": "public",
-  "name": "timestamp",
-  "argc": 0
+  "name": "timestamp"
 }, {
   "schema": "public",
-  "name": "coalesce",
-  "argc": 0
+  "name": "coalesce"
 }, {
   "schema": "public",
-  "name": "nullif",
-  "argc": 2
+  "name": "nullif"
 }, {
   "schema": "public",
-  "name": "append",
-  "argc": 2
+  "name": "append"
 }, {
   "schema": "public",
-  "name": "push_back",
-  "argc": 2
+  "name": "push_back"
 }, {
   "schema": "public",
-  "name": "push",
-  "argc": 2
+  "name": "push"
 }, {
   "schema": "public",
-  "name": "pop",
-  "argc": 1
+  "name": "pop"
 }, {
   "schema": "public",
-  "name": "pop_back",
-  "argc": 1
+  "name": "pop_back"
 }, {
   "schema": "public",
-  "name": "put",
-  "argc": 3
+  "name": "put"
 }, {
   "schema": "public",
-  "name": "remove",
-  "argc": 2
+  "name": "remove"
 }, {
   "schema": "public",
-  "name": "set",
-  "argc": 3
+  "name": "set"
 }, {
   "schema": "public",
-  "name": "unset",
-  "argc": 2
+  "name": "unset"
 }, {
   "schema": "public",
-  "name": "has",
-  "argc": 2
+  "name": "has"
 }, {
   "schema": "public",
-  "name": "length",
-  "argc": 1
+  "name": "length"
 }, {
   "schema": "public",
-  "name": "size",
-  "argc": 1
+  "name": "size"
 }, {
   "schema": "public",
-  "name": "concat",
-  "argc": 0
+  "name": "concat"
 }, {
   "schema": "public",
-  "name": "lower",
-  "argc": 1
+  "name": "lower"
 }, {
   "schema": "public",
-  "name": "upper",
-  "argc": 1
+  "name": "upper"
 }, {
   "schema": "public",
-  "name": "substr",
-  "argc": 0
+  "name": "substr"
 }, {
   "schema": "public",
-  "name": "strpos",
-  "argc": 2
+  "name": "strpos"
 }, {
   "schema": "public",
-  "name": "replace",
-  "argc": 3
+  "name": "replace"
 }, {
   "schema": "public",
-  "name": "ltrim",
-  "argc": 0
+  "name": "ltrim"
 }, {
   "schema": "public",
-  "name": "rtrim",
-  "argc": 0
+  "name": "rtrim"
 }, {
   "schema": "public",
-  "name": "trim",
-  "argc": 0
+  "name": "trim"
 }, {
   "schema": "public",
-  "name": "greatest",
-  "argc": 0
+  "name": "greatest"
 }, {
   "schema": "public",
-  "name": "least",
-  "argc": 0
+  "name": "least"
 }, {
   "schema": "public",
-  "name": "abs",
-  "argc": 1
+  "name": "abs"
 }, {
   "schema": "public",
-  "name": "round",
-  "argc": 1
+  "name": "round"
 }, {
   "schema": "public",
-  "name": "sign",
-  "argc": 1
+  "name": "sign"
 }, {
   "schema": "public",
-  "name": "ceil",
-  "argc": 1
+  "name": "ceil"
 }, {
   "schema": "public",
-  "name": "exp",
-  "argc": 1
+  "name": "exp"
 }, {
   "schema": "public",
-  "name": "floor",
-  "argc": 1
+  "name": "floor"
 }, {
   "schema": "public",
-  "name": "mod",
-  "argc": 2
+  "name": "mod"
 }, {
   "schema": "public",
-  "name": "power",
-  "argc": 2
+  "name": "power"
 }, {
   "schema": "public",
-  "name": "trunc",
-  "argc": 1
+  "name": "trunc"
 }, {
   "schema": "public",
-  "name": "pi",
-  "argc": 0
+  "name": "pi"
 }, {
   "schema": "public",
-  "name": "sqrt",
-  "argc": 1
+  "name": "sqrt"
 }, {
   "schema": "public",
-  "name": "acos",
-  "argc": 1
+  "name": "acos"
 }, {
   "schema": "public",
-  "name": "acosh",
-  "argc": 1
+  "name": "acosh"
 }, {
   "schema": "public",
-  "name": "asin",
-  "argc": 1
+  "name": "asin"
 }, {
   "schema": "public",
-  "name": "asinh",
-  "argc": 1
+  "name": "asinh"
 }, {
   "schema": "public",
-  "name": "atan",
-  "argc": 1
+  "name": "atan"
 }, {
   "schema": "public",
-  "name": "atanh",
-  "argc": 1
+  "name": "atanh"
 }, {
   "schema": "public",
-  "name": "atan2",
-  "argc": 2
+  "name": "atan2"
 }, {
   "schema": "public",
-  "name": "cos",
-  "argc": 1
+  "name": "cos"
 }, {
   "schema": "public",
-  "name": "cosh",
-  "argc": 1
+  "name": "cosh"
 }, {
   "schema": "public",
-  "name": "sin",
-  "argc": 1
+  "name": "sin"
 }, {
   "schema": "public",
-  "name": "sinh",
-  "argc": 1
+  "name": "sinh"
 }, {
   "schema": "public",
-  "name": "tan",
-  "argc": 1
+  "name": "tan"
 }, {
   "schema": "public",
-  "name": "tanh",
-  "argc": 1
+  "name": "tanh"
 }, {
   "schema": "public",
-  "name": "ln",
-  "argc": 1
+  "name": "ln"
 }, {
   "schema": "public",
-  "name": "log",
-  "argc": 1
+  "name": "log"
 }, {
   "schema": "public",
-  "name": "log10",
-  "argc": 1
+  "name": "log10"
 }, {
   "schema": "public",
-  "name": "log2",
-  "argc": 1
+  "name": "log2"
 }, {
   "schema": "public",
-  "name": "error",
-  "argc": 1
+  "name": "error"
 }, {
   "schema": "public",
-  "name": "type",
-  "argc": 1
+  "name": "type"
 }, {
   "schema": "public",
-  "name": "random",
-  "argc": 0
+  "name": "random"
 }, {
   "schema": "public",
-  "name": "random_uuid",
-  "argc": 0
+  "name": "random_uuid"
 }, {
   "schema": "public",
-  "name": "md5",
-  "argc": 1
+  "name": "md5"
 }, {
   "schema": "public",
-  "name": "sha1",
-  "argc": 1
+  "name": "sha1"
 }, {
   "schema": "public",
-  "name": "now",
-  "argc": 0
+  "name": "now"
 }, {
   "schema": "public",
-  "name": "at_timezone",
-  "argc": 2
+  "name": "at_timezone"
 }, {
   "schema": "public",
-  "name": "generate_series",
-  "argc": 3
+  "name": "generate_series"
 }, {
   "schema": "public",
-  "name": "date_bin",
-  "argc": 0
+  "name": "date_bin"
 }, {
   "schema": "public",
-  "name": "date_trunc",
-  "argc": 0
+  "name": "date_trunc"
 }, {
   "schema": "public",
-  "name": "extract",
-  "argc": 0
+  "name": "extract"
 }]
 # test: show tables
 show tables

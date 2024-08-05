@@ -29,42 +29,42 @@
 hot static void
 fn_string(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	value_to_string(self->result, self->argv[0], self->vm->local->timezone);
 }
 
 hot static void
 fn_int(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	value_to_int(self->result, self->argv[0]);
 }
 
 hot static void
 fn_bool(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	value_to_bool(self->result, self->argv[0]);
 }
 
 hot static void
 fn_real(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	value_to_real(self->result, self->argv[0]);
 }
 
 hot static void
 fn_json(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	value_to_json(self->result, self->argv[0], self->vm->local->timezone);
 }
 
 hot static void
 fn_interval(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 	Interval iv;
 	interval_init(&iv);
@@ -110,12 +110,12 @@ fn_timestamp(Call* self)
 
 FunctionDef fn_cast_def[] =
 {
-	{ "public", "string",    fn_string,    1 },
-	{ "public", "int",       fn_int,       1 },
-	{ "public", "bool",      fn_bool,      1 },
-	{ "public", "real",      fn_real,      1 },
-	{ "public", "json",      fn_json,      1 },
-	{ "public", "interval",  fn_interval,  1 },
-	{ "public", "timestamp", fn_timestamp, 0 },
-	{  NULL,     NULL,       NULL,         0 }
+	{ "public", "string",    fn_string,    false },
+	{ "public", "int",       fn_int,       false },
+	{ "public", "bool",      fn_bool,      false },
+	{ "public", "real",      fn_real,      false },
+	{ "public", "json",      fn_json,      false },
+	{ "public", "interval",  fn_interval,  false },
+	{ "public", "timestamp", fn_timestamp, false },
+	{  NULL,     NULL,       NULL,         false }
 };

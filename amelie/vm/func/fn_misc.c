@@ -32,7 +32,7 @@ static void
 fn_error(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 	error("%.*s", str_size(&arg->string), str_of(&arg->string));
 }
@@ -42,7 +42,7 @@ fn_type(Call* self)
 {
 	auto  arg  = self->argv[0];
 	char* name = NULL;
-	call_validate(self);
+	call_validate(self, 1);
 	switch (arg->type) {
 	case VALUE_INT:
 		name = "int";
@@ -86,7 +86,7 @@ fn_type(Call* self)
 static void
 fn_random(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	int64_t value = random_generate(global()->random);
 	value_set_int(self->result, llabs(value));
 }
@@ -94,7 +94,7 @@ fn_random(Call* self)
 static void
 fn_random_uuid(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 
 	Uuid id;
 	uuid_init(&id);
@@ -138,7 +138,7 @@ static void
 fn_md5(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 
 	char digest[32];
@@ -161,7 +161,7 @@ static void
 fn_sha1(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 
 	char digest[40];
@@ -182,11 +182,11 @@ fn_sha1(Call* self)
 
 FunctionDef fn_misc_def[] =
 {
-	{ "public", "error",       fn_error,       1 },
-	{ "public", "type",        fn_type,        1 },
-	{ "public", "random",      fn_random,      0 },
-	{ "public", "random_uuid", fn_random_uuid, 0 },
-	{ "public", "md5",         fn_md5,         1 },
-	{ "public", "sha1",        fn_sha1,        1 },
-	{  NULL,     NULL,         NULL,           0 }
+	{ "public", "error",       fn_error,       false },
+	{ "public", "type",        fn_type,        false },
+	{ "public", "random",      fn_random,      false },
+	{ "public", "random_uuid", fn_random_uuid, false },
+	{ "public", "md5",         fn_md5,         false },
+	{ "public", "sha1",        fn_sha1,        false },
+	{  NULL,     NULL,         NULL,           false }
 };

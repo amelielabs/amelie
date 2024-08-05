@@ -29,7 +29,7 @@
 static void
 fn_config(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = config_list(config(), &self->vm->local->config);
 	value_set_buf(self->result, buf);
 }
@@ -37,7 +37,7 @@ fn_config(Call* self)
 static void
 fn_users(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_USERS, 1, &buf);
 	value_set_buf(self->result, buf);
@@ -46,7 +46,7 @@ fn_users(Call* self)
 static void
 fn_replicas(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPLICAS, 1, &buf);
 	value_set_buf(self->result, buf);
@@ -55,7 +55,7 @@ fn_replicas(Call* self)
 static void
 fn_repl(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPL, 1, &buf);
 	value_set_buf(self->result, buf);
@@ -64,7 +64,7 @@ fn_repl(Call* self)
 static void
 fn_nodes(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_NODES, 1, &buf);
 	value_set_buf(self->result, buf);
@@ -73,7 +73,7 @@ fn_nodes(Call* self)
 static void
 fn_schemas(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = schema_mgr_list(&self->vm->db->schema_mgr);
 	value_set_buf(self->result, buf);
 }
@@ -81,7 +81,7 @@ fn_schemas(Call* self)
 static void
 fn_functions(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = function_mgr_list(self->vm->function_mgr);
 	value_set_buf(self->result, buf);
 }
@@ -89,7 +89,7 @@ fn_functions(Call* self)
 static void
 fn_tables(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = table_mgr_list(&self->vm->db->table_mgr);
 	value_set_buf(self->result, buf);
 }
@@ -97,7 +97,7 @@ fn_tables(Call* self)
 static void
 fn_views(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = view_mgr_list(&self->vm->db->view_mgr);
 	value_set_buf(self->result, buf);
 }
@@ -105,23 +105,23 @@ fn_views(Call* self)
 static void
 fn_wal(Call* self)
 {
-	call_validate(self);
+	call_validate(self, 0);
 	auto buf = wal_show(&self->vm->db->wal);
 	value_set_buf(self->result, buf);
 }
 
 FunctionDef fn_system_def[] =
 {
-	{ "system", "config",      fn_config,    0 },
-	{ "system", "users",       fn_users,     0 },
-	{ "system", "replicas",    fn_replicas,  0 },
-	{ "system", "repl",        fn_repl,      0 },
-	{ "system", "replication", fn_repl,      0 },
-	{ "system", "nodes",       fn_nodes,     0 },
-	{ "system", "schemas",     fn_schemas,   0 },
-	{ "system", "functions",   fn_functions, 0 },
-	{ "system", "tables",      fn_tables,    0 },
-	{ "system", "views",       fn_views,     0 },
-	{ "system", "wal",         fn_wal,       0 },
-	{  NULL,     NULL,         NULL,         0 }
+	{ "system", "config",      fn_config,    false },
+	{ "system", "users",       fn_users,     false },
+	{ "system", "replicas",    fn_replicas,  false },
+	{ "system", "repl",        fn_repl,      false },
+	{ "system", "replication", fn_repl,      false },
+	{ "system", "nodes",       fn_nodes,     false },
+	{ "system", "schemas",     fn_schemas,   false },
+	{ "system", "functions",   fn_functions, false },
+	{ "system", "tables",      fn_tables,    false },
+	{ "system", "views",       fn_views,     false },
+	{ "system", "wal",         fn_wal,       false },
+	{  NULL,     NULL,         NULL,         false }
 };

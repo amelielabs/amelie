@@ -27,14 +27,13 @@ struct FunctionDef
 	const char*  schema;
 	const char*  name;
 	FunctionMain function;
-	int          argc;
+	bool         context;
 };
 
 struct Function
 {
 	Str          schema;
 	Str          name;
-	int          argc;
 	FunctionMain main;
 	List         link;
 };
@@ -43,7 +42,6 @@ static inline Function*
 function_allocate(FunctionDef* def)
 {
 	Function* self = am_malloc(sizeof(Function));
-	self->argc = def->argc;
 	self->main = def->function;
 	guard(am_free, self);
 	str_strdup(&self->schema, def->schema);
@@ -74,17 +72,13 @@ function_write(Function* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// argc
-	encode_raw(buf, "argc", 4);
-	encode_integer(buf, self->argc);
-
 	encode_map_end(buf);
 }
 
 static inline void
-call_validate(Call* self)
+call_validate(Call* self, int argc)
 {
-	if (unlikely(self->argc != self->function->argc))
+	if (unlikely(argc != self->argc))
 		error("%.*s(): incorrect number of arguments", str_size(&self->function->name),
 		      str_of(&self->function->name));
 }

@@ -30,7 +30,7 @@ hot static void
 fn_length(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	if (arg->type == VALUE_SET)
 		value_set_int(self->result, ((Set*)arg->obj)->list_count);
 	else
@@ -74,7 +74,7 @@ static void
 fn_lower(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 
 	auto src = str_of(&arg->string);
@@ -99,7 +99,7 @@ static void
 fn_upper(Call* self)
 {
 	auto arg = self->argv[0];
-	call_validate(self);
+	call_validate(self, 1);
 	call_validate_arg(self, 0, VALUE_STRING);
 
 	auto src = str_of(&arg->string);
@@ -168,7 +168,7 @@ fn_strpos(Call* self)
 {
 	// (string, substring)
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 2);
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
@@ -206,7 +206,7 @@ fn_replace(Call* self)
 {
 	// (string, from, to)
 	auto argv = self->argv;
-	call_validate(self);
+	call_validate(self, 3);
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 	call_validate_arg(self, 2, VALUE_STRING);
@@ -367,16 +367,16 @@ fn_trim(Call* self)
 
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length",  fn_length,  1 },
-	{ "public", "size",    fn_length,  1 },
-	{ "public", "concat",  fn_concat,  0 },
-	{ "public", "lower",   fn_lower,   1 },
-	{ "public", "upper",   fn_upper,   1 },
-	{ "public", "substr",  fn_substr,  0 },
-	{ "public", "strpos",  fn_strpos,  2 },
-	{ "public", "replace", fn_replace, 3 },
-	{ "public", "ltrim",   fn_ltrim,   0 },
-	{ "public", "rtrim",   fn_rtrim,   0 },
-	{ "public", "trim",    fn_trim,    0 },
-	{  NULL,     NULL,     NULL,       0 }
+	{ "public", "length",  fn_length,  false },
+	{ "public", "size",    fn_length,  false },
+	{ "public", "concat",  fn_concat,  false },
+	{ "public", "lower",   fn_lower,   false },
+	{ "public", "upper",   fn_upper,   false },
+	{ "public", "substr",  fn_substr,  false },
+	{ "public", "strpos",  fn_strpos,  false },
+	{ "public", "replace", fn_replace, false },
+	{ "public", "ltrim",   fn_ltrim,   false },
+	{ "public", "rtrim",   fn_rtrim,   false },
+	{ "public", "trim",    fn_trim,    false },
+	{  NULL,     NULL,     NULL,       false }
 };
