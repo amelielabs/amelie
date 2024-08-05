@@ -38,6 +38,7 @@ OBJECTS        = \
                  func/fn_null.o \
                  func/fn_object.o \
                  func/fn_string.o \
+                 func/fn_regexp.o \
                  func/fn_math.o \
                  func/fn_misc.o \
                  func/fn_time.o \

@@ -49,7 +49,7 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../amelie/compiler/libamelie-compiler.a \
                   ../amelie/cluster/libamelie-cluster.a \
                   ../amelie/main/libamelie-main.a \
-                  -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto
+                  -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto -lpcre2-8
 SRC            = amelie.c
 TARGET         = amelie
 $(TARGET): clean $(OBJECTS)

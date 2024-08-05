@@ -162,6 +162,9 @@ show functions
   "name": "trim"
 }, {
   "schema": "public",
+  "name": "regexp_like"
+}, {
+  "schema": "public",
   "name": "greatest"
 }, {
   "schema": "public",
@@ -411,6 +414,9 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "trim"
+}, {
+  "schema": "public",
+  "name": "regexp_like"
 }, {
   "schema": "public",
   "name": "greatest"

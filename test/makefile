@@ -50,7 +50,7 @@ LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
                   ../amelie/compiler/libamelie-compiler.a \
                   ../amelie/cluster/libamelie-cluster.a \
                   ../amelie/main/libamelie-main.a \
-                  -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto
+                  -Wl,-no-whole-archive -lm -lcurl -lssl -lcrypto -lpcre2-8
 OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_exception.o \
                   runtime/test_palloc.o \
