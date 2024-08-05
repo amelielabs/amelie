@@ -24,6 +24,7 @@ struct Vm
 	Buf*         body;
 	Transaction* trx;
 	Local*       local;
+	CallMgr      call_mgr;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };

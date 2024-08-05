@@ -50,6 +50,7 @@ vm_init(Vm*          self,
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	cursor_mgr_init(&self->cursor_mgr);
+	call_mgr_init(&self->call_mgr);
 }
 
 void
@@ -58,14 +59,20 @@ vm_free(Vm* self)
 	vm_reset(self);
 	stack_free(&self->stack);
 	cursor_mgr_free(&self->cursor_mgr);
+	call_mgr_free(&self->call_mgr);
 }
 
 void
 vm_reset(Vm* self)
 {
+	if (self->code_data)
+		call_mgr_reset(&self->call_mgr, self->code_data, self);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
 	cursor_mgr_reset(&self->cursor_mgr);
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->code_arg  = NULL;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -90,6 +97,7 @@ vm_run(Vm*          self,
 	self->code_arg   = code_arg;
 	self->cte        = cte;
 	self->result     = result;
+	call_mgr_prepare(&self->call_mgr, code_data);
 
 	const void* ops[] =
 	{

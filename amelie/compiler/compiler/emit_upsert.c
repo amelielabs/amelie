@@ -95,7 +95,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		runpin(self, r);
 
 		// CALL
-		r = op3(self, CCALL, rpin(self), (intptr_t)func, 1);
+		r = op4(self, CCALL, rpin(self), (intptr_t)func, 1, -1);
 		runpin(self, r);
 		break;
 	}

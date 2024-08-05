@@ -106,8 +106,14 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 		current = current->next;
 	}
 
+	// register function call, if it has context
+	Function* fn = call->fn;
+	int call_id = -1;
+	if (fn->context)
+		call_id = code_data_add_call(&self->code_data, fn);
+
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)call->fn, args->integer);
+	return op4(self, CCALL, rpin(self), (intptr_t)fn, args->integer, call_id);
 }
 
 hot static inline int
@@ -138,8 +144,14 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 		argc += args->integer;
 	}
 
+	// register function call, if it has context
+	Function* fn = call->fn;
+	int call_id = -1;
+	if (fn->context)
+		call_id = code_data_add_call(&self->code_data, fn);
+
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)call->fn, argc);
+	return op4(self, CCALL, rpin(self), (intptr_t)fn, argc, call_id);
 }
 
 hot static inline int
@@ -770,7 +782,7 @@ emit_at_timezone(Compiler* self, Target* target, Ast* ast)
 	runpin(self, r);
 
 	// CALL
-	return op3(self, CCALL, rpin(self), (intptr_t)fn, 2);
+	return op4(self, CCALL, rpin(self), (intptr_t)fn, 2, -1);
 }
 
 hot int

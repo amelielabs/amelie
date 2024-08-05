@@ -11,28 +11,38 @@ typedef struct CodeData CodeData;
 struct CodeData
 {
 	Buf data;
+	Buf call;
 };
 
 static inline void
 code_data_init(CodeData* self)
 {
 	buf_init(&self->data);
+	buf_init(&self->call);
 }
 
 static inline void
 code_data_free(CodeData* self)
 {
 	buf_free(&self->data);
+	buf_free(&self->call);
 }
 
 static inline void
 code_data_reset(CodeData* self)
 {
 	buf_reset(&self->data);
+	buf_reset(&self->call);
 }
 
 static inline int
 code_data_offset(CodeData* self)
+{
+	return buf_size(&self->data);
+}
+
+static inline int
+code_data_pos(CodeData* self)
 {
 	return buf_size(&self->data);
 }
@@ -62,10 +72,26 @@ code_data_at_string(CodeData* self, int offset, Str* string)
 	data_read_string(&pos, string);
 }
 
-static inline int
-code_data_pos(CodeData* self)
+static inline void*
+code_data_at_call(CodeData* self, int id)
 {
-	return buf_size(&self->data);
+	assert(self->call.start != NULL);
+	auto list = (void**)self->call.start;
+	return list[id];
+}
+
+static inline int
+code_data_count_call(CodeData* self)
+{
+	return buf_size(&self->call) / sizeof(void*);
+}
+
+static inline int
+code_data_add_call(CodeData* self, void* pointer)
+{
+	int id = buf_size(&self->call) / sizeof(void*);
+	buf_write(&self->call, &pointer, sizeof(pointer));
+	return id;
 }
 
 static inline int

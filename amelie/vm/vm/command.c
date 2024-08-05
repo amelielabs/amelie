@@ -395,7 +395,7 @@ ccursor_idx(Vm* self, Op* op)
 hot void
 ccall(Vm* self, Op* op)
 {
-	// [result, function, argc]
+	// [result, function, argc, call_id]
 
 	// prepare call arguments
 	int    argc = op->c;
@@ -403,15 +403,22 @@ ccall(Vm* self, Op* op)
 	for (int i = 0; i < argc; i++)
 		argv[i] = stack_at(&self->stack, argc - i);
 
-	// call an internal function
+	// get function execution context, if any
+	void** context = NULL;
+	if (op->d != -1)
+		context = call_mgr_at(&self->call_mgr, op->d);
+
+	// call the function
 	auto func = (Function*)op->b;
 	Call call =
 	{
 		.argc     = argc,
 		.argv     = argv,
 		.result   = reg_at(&self->r, op->a),
+		.vm       = self,
+		.type     = CALL_EXECUTE,
 		.function = func,
-		.vm       = self
+		.context  = context
 	};
 	func->main(&call);
 
