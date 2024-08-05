@@ -13,5 +13,36 @@ select '<a href="../">Up</a>'::regexp_like('')
 true
 select regexp_like('a(123)b', '([(])?[0-9]+(?(1)[)])')
 true
+select regexp_like('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
+true
+# test: regexp_substr
+select regexp_substr('a(123)b', '([(])?[0-9]+(?(1)[)])');
+"(123)"
+select regexp_substr('aaa123', '[a-z]*\K[0-9]*');
+"123"
+select regexp_substr('ab1','[a-z](?![a-z])');
+"b"
+select regexp_substr('---abcd---xyz---', '\b\w{3}\b');
+"xyz"
+select regexp_substr('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
+"barbeque"
+# test: regexp_match
+select regexp_match('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
+["barbeque", "bar", "beque"]
+select regexp_match('foobarbequebaz', '(bar)(beque)');
+["barbeque", "bar", "beque"]
+select regexp_match('ABCAB', '(A)(B)');
+["AB", "A", "B"]
+select regexp_match('ABCAB', 'A');
+["A"]
+select regexp_match('ABCAB', '(A)');
+["A", "A"]
+# test: regexp_replace
+select regexp_replace('ABCAB', '(A)', '_');
+"_BC_B"
+select regexp_replace('ABCAB', '(A)', '|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|');
+"|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B"
+select regexp_replace('/* Comment1 */ i+= 1; /* Comment2 */', '/[*].*?[*]/', '')
+" i+= 1; "
 disconnect S0
 close E0

@@ -165,6 +165,15 @@ show functions
   "name": "regexp_like"
 }, {
   "schema": "public",
+  "name": "regexp_substr"
+}, {
+  "schema": "public",
+  "name": "regexp_match"
+}, {
+  "schema": "public",
+  "name": "regexp_replace"
+}, {
+  "schema": "public",
   "name": "greatest"
 }, {
   "schema": "public",
@@ -417,6 +426,15 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "regexp_like"
+}, {
+  "schema": "public",
+  "name": "regexp_substr"
+}, {
+  "schema": "public",
+  "name": "regexp_match"
+}, {
+  "schema": "public",
+  "name": "regexp_replace"
 }, {
   "schema": "public",
   "name": "greatest"
