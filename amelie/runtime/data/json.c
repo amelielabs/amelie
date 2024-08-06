@@ -120,8 +120,8 @@ json_parse_string(Json* self, Str* str)
 	str_set(str, start, size);
 }
 
-hot static inline void
-json_parse_integer(Json* self)
+hot static inline bool
+json_parse_num(Json* self, int64_t* value, double* real)
 {
 	bool minus = false;
 	if (*self->pos == '-')
@@ -129,7 +129,6 @@ json_parse_integer(Json* self)
 		minus = true;
 		self->pos++;
 	}
-	int64_t value = 0;
 	auto start = self->pos;
 	while (self->pos < self->end)
 	{
@@ -142,24 +141,83 @@ json_parse_integer(Json* self)
 		}
 		if (! isdigit(*self->pos))
 			break;
-		value = (value * 10) + *self->pos - '0';
+		*value = (*value * 10) + *self->pos - '0';
 		self->pos++;
 	}
 	if (minus)
-		value = -value;
-	encode_integer(self->buf, value);
-	return;
+		*value = -(*value);
+	return true;
 
 read_as_double:
 	errno = 0;
 	char* end = NULL;
-	double real = strtod(start, &end);
+	*real = strtod(start, &end);
 	if (errno == ERANGE)
 		error("bad float number token");
 	self->pos = end;
 	if (minus)
-		real = -real;
-	encode_real(self->buf, real);
+		*real = -(*real);
+	return false;
+}
+
+hot static inline void
+json_parse_integer(Json* self)
+{
+	int64_t value = 0;
+	double  value_real = 0;
+	if (json_parse_num(self, &value, &value_real))
+		encode_integer(self->buf, value);
+	else
+		encode_real(self->buf, value_real);
+}
+
+hot static inline void
+json_parse_vector(Json* self)
+{
+	// [int| real[, ...]]
+	auto next = json_next(self);
+	if (next != '[')
+		error("VECTOR <[> expected");
+	self->pos++;
+
+	auto buf    = self->buf;
+	auto offset = buf_size(buf);
+	int  count  = 0;
+	buf_reserve(self->buf, data_size_vector(0));
+	data_write_vector_size(&buf->position, 0);
+	for (;;)
+	{
+		// int | real
+		next = json_next(self);
+		if (likely(isdigit(next) || next == '.' || next == '-'))
+		{
+			int64_t value_int  = 0;
+			double  value_real = 0;
+			float   value;
+			if (json_parse_num(self, &value_int, &value_real))
+				value = value_int;
+			else
+				value = value_real;
+			buf_write(buf, &value, sizeof(float));
+			count++;
+			// ,
+			next = json_next(self);
+			if (next == ',')
+			{
+				self->pos++;
+				continue;
+			}
+		}
+		// ]
+		if (*self->pos == ']')
+		{
+			self->pos++;
+			break;
+		}
+		error("VECTOR integer of real value expected");
+	}
+	uint8_t* pos = buf->start + offset;
+	data_write_vector_size(&pos, count);
 }
 
 hot static inline void
@@ -221,6 +279,13 @@ json_parse_const(Json* self)
 		interval_init(&iv);
 		interval_read(&iv, &str);
 		encode_interval(self->buf, &iv);
+		return;
+	}
+	case 'v':
+	{
+		// VECTOR []
+		json_parse_keyword(self, "vector", 6);
+		json_parse_vector(self);
 		return;
 	}
 	default:

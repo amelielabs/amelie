@@ -75,6 +75,11 @@ test timestamp
 test timezone
 test generate_series
 
+# vector
+directory vector
+group vector
+test vector
+
 # pushdown
 directory pushdown
 group pushdown

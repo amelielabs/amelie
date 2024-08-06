@@ -757,7 +757,7 @@ value_idx(Value* result, Value* a, Value* b)
 		/* vector[idx] */
 		if (unlikely(b->type != VALUE_INT))
 			error("[]: vector key type must be int");
-		if (unlikely(b->integer < 0 || b->integer > a->vector.size))
+		if (unlikely(b->integer < 0 || b->integer >= a->vector.size))
 			error("[]: vector index  is out of bounds");
 		value_set_real(result, a->vector.value[b->integer]);
 		return;

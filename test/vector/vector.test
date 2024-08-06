@@ -1,0 +1,80 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: vector create
+select [1,2,3]::vector
+select [1,2,3]::vector::type
+select [1,2,3]::vector::length
+select ""::vector
+select [1.0]::vector
+select [1.0, 1.1, 1.2]::vector
+select []::vector
+select []::vector::length
+
+# test: vector at
+select [1.0, 1.1, 1.2]::vector[0]
+select [1.0, 1.1, 1.2]::vector[1]
+select [1.0, 1.1, 1.2]::vector[2]
+select [1.0, 1.1, 1.2]::vector[3]
+select [1.0, 1.1, 1.2]::vector[-10]
+
+# test: vector eq
+select [1.0, 1.1]::vector = [1.0, 1.1]::vector
+select [1.0, 1.1]::vector <> [1.0, 1.1]::vector
+select [1.0, 1.1]::vector = [1.0, 1.0]::vector
+select [1.0, 1.1]::vector <> [1.0, 1.0]::vector
+select [1.0, 1.1]::vector = [1.0]::vector
+select [1.0, 1.1]::vector = []::vector
+select []::vector = []::vector
+
+# test: vector lt
+select [1.0, 1.1]::vector < [1.0, 1.1]::vector
+select [1.0, 1.1]::vector < [1.0, 1.2]::vector
+select [1.0, 1.1]::vector < [1.0]::vector
+
+# test: vector lte
+select [1.0, 1.1]::vector <= [1.0, 1.1]::vector
+select [1.0, 1.1]::vector <= [1.0, 1.2]::vector
+select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
+
+# test: vector gt
+select [1.0, 1.1]::vector > [1.0, 1.1]::vector
+select [1.0, 1.2]::vector > [1.0, 1.1]::vector
+select [1.0, 1.1]::vector > [1.0]::vector
+
+# test: vector gte
+select [1.0, 1.1]::vector >= [1.0, 1.1]::vector
+select [1.0, 1.2]::vector >= [1.0, 1.1]::vector
+select [1.0, 1.1]::vector >= [1.0]::vector
+
+# test: vector add
+select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector
+select [1.0, 2.1, 3]::vector + [1, 1]::vector
+
+# test: vector sub
+select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector
+select [1.0, 2.1, 3]::vector - [1, 1]::vector
+
+# test: vector mul
+select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector
+select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
+
+# test: vector column
+create table test (id int primary key, vec vector)
+insert into test values (0, [])
+insert into test values (0, vector [])
+insert into test values (1, vector [1.0])
+insert into test values (2, vector [1])
+insert into test values (3, vector [1.0, 1.1,])
+insert into test values (4, vector [1.0,)
+insert into test values (5, vector [1.0,])
+insert into test values (6, vector [1.0, 1.1])
+insert into test values (7, vector [1.0, 1.1, -2.2, -8])
+select * from test
+select vec::type from test
+drop table test
+
+disconnect S0
+close E0

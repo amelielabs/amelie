@@ -83,5 +83,18 @@ select '1 hour 55 minutes 5 secs'::interval::string
 # test: (timestamp) string to timestamp
 select '2024-07-29 18:40:19'::timestamp
 
+# test: (vector) array to vector
+select []::vector
+select []::vector::length
+select [1.0]::vector
+select [1]::vector
+select [1, 2.0, "test"]::vector
+select [1, 2.0, "test"]::vector
+select [1, 2.0, {}]::vector
+select [1, 2.0, null]::vector
+select [1,2,3]::vector
+select [1,2,3]::vector::type
+select [1,2,3]::vector::length
+
 disconnect S0
 close E0

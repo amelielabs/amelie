@@ -72,6 +72,11 @@ create table test(id int primary key, a interval)
 select columns from system.tables() where name = "test"
 drop table test
 
+# test: column vector
+create table test(id int primary key, a vector)
+select columns from system.tables() where name = "test"
+drop table test
+
 # test: column redefined
 create table test(id int, id int)
 

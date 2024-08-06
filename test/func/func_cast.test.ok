@@ -94,5 +94,28 @@ select '1 hour 55 minutes 5 secs'::interval::string
 # test: (timestamp) string to timestamp
 select '2024-07-29 18:40:19'::timestamp
 "2024-07-29 18:40:19+00"
+# test: (vector) array to vector
+select []::vector
+[]
+select []::vector::length
+0
+select [1.0]::vector
+[1]
+select [1]::vector
+[1]
+select [1, 2.0, "test"]::vector
+{"code": 1, "msg": "vector(): int or real values expected"}
+select [1, 2.0, "test"]::vector
+{"code": 1, "msg": "vector(): int or real values expected"}
+select [1, 2.0, {}]::vector
+{"code": 1, "msg": "vector(): int or real values expected"}
+select [1, 2.0, null]::vector
+{"code": 1, "msg": "vector(): int or real values expected"}
+select [1,2,3]::vector
+[1, 2, 3]
+select [1,2,3]::vector::type
+"vector"
+select [1,2,3]::vector::length
+3
 disconnect S0
 close E0

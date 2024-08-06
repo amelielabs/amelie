@@ -266,6 +266,29 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+# test: column vector
+create table test(id int primary key, a vector)
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
+  "type": 2,
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 8,
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "default": null
+  }
+}]]
+drop table test
 # test: column redefined
 create table test(id int, id int)
 {"code": 1, "msg": "<id> column redefined"}
