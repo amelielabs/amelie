@@ -88,39 +88,10 @@ json_parse_keyword(Json* self, const char* name, int name_size)
 }
 
 hot static inline void
-json_cast(Json* self, Str* str)
-{
-	// ::timestamp
-	if (json_is_keyword(self, "::timestamp", 11))
-	{
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, str);
-		encode_timestamp(self->buf, timestamp_of(&ts, self->tz));
-		self->pos += 11;
-		return;
-	}
-
-	// ::interval
-	if (json_is_keyword(self, "::interval", 10))
-	{
-		Interval iv;
-		interval_init(&iv);
-		interval_read(&iv, str);
-		encode_interval(self->buf, &iv);
-		self->pos += 10;
-		return;
-	}
-
-	error("unrecognized :: cast operator");
-}
-
-hot static inline void
-json_parse_string(Json* self, bool cast)
+json_parse_string(Json* self, Str* str)
 {
 	// "
 	self->pos++;
-
 	auto start = self->pos;
 	bool slash = false;
 	while (self->pos < self->end)
@@ -146,17 +117,7 @@ json_parse_string(Json* self, bool cast)
 		error("unterminated string");
 	auto size = self->pos - start;
 	self->pos++;
-
-	// ::<operation>
-	if (cast && self->pos < self->end && *self->pos == ':')
-	{
-		Str str;
-		str_set(&str, start, size);
-		json_cast(self, &str);
-	} else
-	{
-		encode_raw(self->buf, start, size);
-	}
+	str_set(str, start, size);
 }
 
 hot static inline void
@@ -168,7 +129,6 @@ json_parse_integer(Json* self)
 		minus = true;
 		self->pos++;
 	}
-
 	int64_t value = 0;
 	auto start = self->pos;
 	while (self->pos < self->end)
@@ -185,7 +145,6 @@ json_parse_integer(Json* self)
 		value = (value * 10) + *self->pos - '0';
 		self->pos++;
 	}
-
 	if (minus)
 		value = -value;
 	encode_integer(self->buf, value);
@@ -208,20 +167,62 @@ json_parse_const(Json* self)
 {
 	switch (*self->pos) {
 	case '"':
-		json_parse_string(self, true);
+	{
+		Str str;
+		json_parse_string(self, &str);
+		encode_string(self->buf, &str);
 		return;
+	}
 	case 'n':
+	{
 		json_parse_keyword(self, "null", 4);
 		encode_null(self->buf);
 		return;
+	}
 	case 't':
-		json_parse_keyword(self, "true", 4);
-		encode_bool(self->buf, true);
+	{
+		if (json_is_keyword(self, "true", 4))
+		{
+			json_parse_keyword(self, "true", 4);
+			encode_bool(self->buf, true);
+		} else
+		if (json_is_keyword(self, "timestamp", 9))
+		{
+			// TIMESTAMP "string"
+			self->pos += 9;
+			if (json_next(self) != '\"')
+				error("TIMESTAMP <string> expected");
+			Str str;
+			json_parse_string(self, &str);
+			Timestamp ts;
+			timestamp_init(&ts);
+			timestamp_read(&ts, &str);
+			encode_timestamp(self->buf, timestamp_of(&ts, self->tz));
+		} else {
+			break;
+		}
 		return;
+	}
 	case 'f':
+	{
 		json_parse_keyword(self, "false", 5);
 		encode_bool(self->buf, false);
 		return;
+	}
+	case 'i':
+	{
+		// INTERVAL "string"
+		json_parse_keyword(self, "interval", 8);
+		if (json_next(self) != '\"')
+			error("INTERVAL <string> expected");
+		Str str;
+		json_parse_string(self, &str);
+		Interval iv;
+		interval_init(&iv);
+		interval_read(&iv, &str);
+		encode_interval(self->buf, &iv);
+		return;
+	}
 	default:
 		if (likely(isdigit(*self->pos) || *self->pos == '.' || *self->pos == '-'))
 		{
@@ -364,7 +365,9 @@ json_parse(Json* self, Timezone* tz, Str* text, Buf* buf)
 			// "key"
 			if (unlikely(*self->pos != '\"'))
 				error("map key expected");
-			json_parse_string(self, false);
+			Str str;
+			json_parse_string(self, &str);
+			encode_string(self->buf, &str);
 			// ':'
 			next = json_next(self);
 			if (next != ':')

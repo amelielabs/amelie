@@ -50,11 +50,11 @@ select '2024-07-29 18:40:19'::timestamp at timezone null
 create table test (time timestamp primary key)
 
 # test: timestamp column (localtime)
-insert into test values ("2024-07-29 18:40:19"::timestamp)
+insert into test values (timestamp "2024-07-29 18:40:19")
 select * from test
 
 # test: timestamp column (utc)
-insert into test values ("2024-07-29 18:40:19Z"::timestamp)
+insert into test values (timestamp "2024-07-29 18:40:19Z")
 select * from test
 
 set timezone to 'UTC'

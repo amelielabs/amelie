@@ -185,8 +185,9 @@ select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 
 create table test (id int primary key, ts timestamp)
 insert into test values (0, "1970-01-01 01:12:59.909090")
 insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
-insert into test values (1, "1970-01-01 01:13:00"::timestamp)
-insert into test values (2, "1970-01-01 01:13:01"::timestamp)
+insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
+insert into test values (1, timestamp "1970-01-01 01:13:00")
+insert into test values (2, timestamp "1970-01-01 01:13:01")
 select * from test
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
@@ -199,12 +200,12 @@ drop table test
 
 # test: timestamp column (key)
 create table test (id timestamp primary key)
-insert into test values ("1970-01-01 00:00:01.000001"::timestamp)
-insert into test values ("1970-01-01 00:00:01.000002"::timestamp)
-insert into test values ("1970-01-01 00:00:01.000003"::timestamp)
-insert into test values ("1970-01-01 00:00:02.000000"::timestamp)
-insert into test values ("1970-01-01 00:00:03.000000"::timestamp)
-insert into test values ("1970-01-01 00:00:04.000000"::timestamp)
+insert into test values (timestamp "1970-01-01 00:00:01.000001")
+insert into test values (timestamp "1970-01-01 00:00:01.000002")
+insert into test values (timestamp "1970-01-01 00:00:01.000003")
+insert into test values (timestamp "1970-01-01 00:00:02.000000")
+insert into test values (timestamp "1970-01-01 00:00:03.000000")
+insert into test values (timestamp "1970-01-01 00:00:04.000000")
 explain select * from test
 
 select * from test
@@ -225,12 +226,12 @@ drop table test
 
 # test: timestamp column (secondary index)
 create table test (id timestamp primary key)
-insert into test values ("1970-01-01 00:00:01.000001"::timestamp)
-insert into test values ("1970-01-01 00:00:01.000002"::timestamp)
-insert into test values ("1970-01-01 00:00:01.000003"::timestamp)
-insert into test values ("1970-01-01 00:00:02.000000"::timestamp)
-insert into test values ("1970-01-01 00:00:03.000000"::timestamp)
-insert into test values ("1970-01-01 00:00:04.000000"::timestamp)
+insert into test values (timestamp "1970-01-01 00:00:01.000001")
+insert into test values (timestamp "1970-01-01 00:00:01.000002")
+insert into test values (timestamp "1970-01-01 00:00:01.000003")
+insert into test values (timestamp "1970-01-01 00:00:02.000000")
+insert into test values (timestamp "1970-01-01 00:00:03.000000")
+insert into test values (timestamp "1970-01-01 00:00:04.000000")
 create index i on test (id) with (type = 'hash')
 select * from test use index (i)
 

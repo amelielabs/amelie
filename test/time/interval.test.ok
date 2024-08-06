@@ -226,8 +226,10 @@ create table test (id int primary key, i interval)
 insert into test values (0, "1 year 1 day 10 hour")
 {"code": 1, "msg": "column <i>: does not match data type"}
 insert into test values (0, "1 year 1 day 10 hour"::interval)
-insert into test values (1, "1 year 1 day 11 hour"::interval)
-insert into test values (2, "1 year 1 day 12 hour 500 us"::interval)
+{"code": 1, "msg": "expected ')'"}
+insert into test values (0, interval "1 year 1 day 10 hour")
+insert into test values (1, interval "1 year 1 day 11 hour")
+insert into test values (2, interval "1 year 1 day 12 hour 500 us")
 select * from test
 [[0, "1 year 1 day 10 hours"], [1, "1 year 1 day 11 hours"], [2, "1 year 1 day 12 hours 500 us"]]
 select * from test where i > "1 year 1 day 10 hour"::interval
