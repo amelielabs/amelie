@@ -24,3 +24,6 @@
 #include "lib/timezone_mgr.h"
 #include "lib/interval.h"
 #include "lib/timestamp.h"
+
+// vector
+#include "lib/vector.h"

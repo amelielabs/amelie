@@ -26,17 +26,7 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-void
-fn_register(FunctionMgr* mgr)
+FunctionDef fn_vector_def[] =
 {
-	function_mgr_register(mgr, fn_system_def);
-	function_mgr_register(mgr, fn_cast_def);
-	function_mgr_register(mgr, fn_null_def);
-	function_mgr_register(mgr, fn_object_def);
-	function_mgr_register(mgr, fn_string_def);
-	function_mgr_register(mgr, fn_regexp_def);
-	function_mgr_register(mgr, fn_math_def);
-	function_mgr_register(mgr, fn_misc_def);
-	function_mgr_register(mgr, fn_time_def);
-	function_mgr_register(mgr, fn_vector_def);
-}
+	{  NULL,     NULL,       NULL,         false }
+};

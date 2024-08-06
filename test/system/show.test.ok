@@ -93,6 +93,9 @@ show functions
   "name": "timestamp"
 }, {
   "schema": "public",
+  "name": "vector"
+}, {
+  "schema": "public",
   "name": "coalesce"
 }, {
   "schema": "public",
@@ -354,6 +357,9 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "timestamp"
+}, {
+  "schema": "public",
+  "name": "vector"
 }, {
   "schema": "public",
   "name": "coalesce"

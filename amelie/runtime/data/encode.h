@@ -117,3 +117,10 @@ encode_timestamp(Buf* self, uint64_t value)
 	auto pos = buf_reserve(self, data_size_timestamp(value));
 	data_write_timestamp(pos, value);
 }
+
+always_inline hot static inline void
+encode_vector(Buf* self, Vector* vector)
+{
+	auto pos = buf_reserve(self, data_size_vector(vector->size));
+	data_write_vector(pos, vector);
+}

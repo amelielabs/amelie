@@ -20,6 +20,7 @@ typedef enum
 	VALUE_DATA,
 	VALUE_INTERVAL,
 	VALUE_TIMESTAMP,
+	VALUE_VECTOR,
 	VALUE_SET,
 	VALUE_MERGE,
 	VALUE_GROUP
@@ -42,6 +43,7 @@ struct Value
 		double   real;
 		Str      string;
 		Interval interval;
+		Vector   vector;
 		struct {
 			uint8_t* data;
 			int      data_size;
@@ -160,6 +162,14 @@ value_set_timestamp(Value* self, uint64_t value)
 }
 
 always_inline hot static inline void
+value_set_vector(Value* self, Vector* vector, Buf* buf)
+{
+	self->type   = VALUE_VECTOR;
+	self->vector = *vector;
+	self->buf    = buf;
+}
+
+always_inline hot static inline void
 value_set_set(Value* self, ValueObj* obj)
 {
 	self->type = VALUE_SET;
@@ -248,6 +258,13 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_timestamp(self, integer);
 		break;
 	}
+	case AM_VECTOR:
+	{
+		Vector vector;
+		data_read_vector(&data, &vector);
+		value_set_vector(self, &vector, buf);
+		break;
+	}
 	default:
 		error_data();
 		break;
@@ -281,6 +298,9 @@ value_write(Value* self, Buf* buf)
 		break;
 	case VALUE_TIMESTAMP:
 		encode_timestamp(buf, self->integer);
+		break;
+	case VALUE_VECTOR:
+		encode_vector(buf, &self->vector);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -321,6 +341,9 @@ value_write_data(Value* self, uint8_t** pos)
 		break;
 	case VALUE_TIMESTAMP:
 		data_write_timestamp(pos, self->integer);
+		break;
+	case VALUE_VECTOR:
+		data_write_vector(pos, &self->vector);
 		break;
 	default:
 		error("operation is not supported");
@@ -379,6 +402,22 @@ value_copy(Value* self, Value* src)
 	case VALUE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);
 		break;
+	case VALUE_VECTOR:
+		if (src->buf)
+		{
+			value_set_vector(self, &src->vector, src->buf);
+			buf_ref(src->buf);
+		} else
+		{
+			auto buf = buf_begin();
+			encode_vector(buf, &src->vector);
+			buf_end(buf);
+			uint8_t* pos = buf->start;
+			Vector vector;
+			data_read_vector(&pos, &vector);
+			value_set_vector(self, &vector, buf);
+		}
+		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
@@ -422,6 +461,9 @@ value_copy_ref(Value* self, Value* src)
 		break;
 	case VALUE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);
+		break;
+	case VALUE_VECTOR:
+		value_set_vector(self, &src->vector, NULL);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:

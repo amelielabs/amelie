@@ -39,6 +39,7 @@ OBJECTS        = \
                  lib/timezone_mgr.o \
                  lib/interval.o \
                  lib/timestamp.o \
+                 lib/vector.o \
                  data/json.o \
                  data/json_export.o \
                  config/config_local.o \

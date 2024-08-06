@@ -69,6 +69,10 @@ parse_type(Stmt* self, Column* column, Str* path)
 	if (str_compare_raw(&ast->string, "interval", 8))
 	{
 		type = TYPE_INTERVAL;
+	} else
+	if (str_compare_raw(&ast->string, "vector", 6))
+	{
+		type = TYPE_VECTOR;
 	} else {
 		goto error;
 	}

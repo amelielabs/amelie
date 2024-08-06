@@ -68,6 +68,9 @@ fn_type(Call* self)
 	case VALUE_TIMESTAMP:
 		name = "timestamp";
 		break;
+	case VALUE_VECTOR:
+		name = "vector";
+		break;
 	case VALUE_SET:
 		name = "set";
 		break;

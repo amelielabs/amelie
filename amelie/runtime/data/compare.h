@@ -187,6 +187,19 @@ data_compare(uint8_t* a, uint8_t* b)
 				return rc;
 			break;
 		}
+		case AM_VECTOR:
+		{
+			if (! data_is_vector(b))
+				return compare_int64(*a, *b);
+			Vector a_vector;
+			Vector b_vector;
+			data_read_vector(&a, &a_vector);
+			data_read_vector(&a, &a_vector);
+			rc = vector_compare(&a_vector, &b_vector);
+			if (rc != 0)
+				return rc;
+			break;
+		}
 		}
 
 	} while (level > 0);

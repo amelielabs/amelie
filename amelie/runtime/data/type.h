@@ -34,7 +34,8 @@ enum
 	AM_ARRAY_END = 81,
 
 	AM_INTERVAL  = 82,
-	AM_TIMESTAMP = 83
+	AM_TIMESTAMP = 83,
+	AM_VECTOR    = 84
 };
 
 static inline char*
@@ -61,6 +62,8 @@ type_to_string(int type)
 		return "interval";
 	case AM_TIMESTAMP:
 		return "timestamp";
+	case AM_VECTOR:
+		return "vector";
 	}
 	return "<unknown>";
 }

@@ -70,6 +70,12 @@ data_skip(uint8_t** pos)
 			data_read_timestamp(pos, &value);
 			break;
 		}
+		case AM_VECTOR:
+		{
+			Vector vector;
+			data_read_vector(pos, &vector);
+			break;
+		}
 		default:
 			error_data();
 			break;

@@ -46,7 +46,7 @@ data_write_interval(uint8_t** pos, Interval* iv)
 always_inline hot static inline bool
 data_is_interval(uint8_t* data)
 {
-	return *data >= AM_INTERVAL;
+	return *data == AM_INTERVAL;
 }
 
 // timestamp

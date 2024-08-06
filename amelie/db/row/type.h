@@ -15,7 +15,8 @@ enum
 	TYPE_REAL,
 	TYPE_STRING,
 	TYPE_TIMESTAMP,
-	TYPE_INTERVAL
+	TYPE_INTERVAL,
+	TYPE_VECTOR
 };
 
 hot static inline bool
@@ -38,6 +39,8 @@ type_validate(int type, uint8_t* data)
 		return data_is_timestamp(data);
 	case TYPE_INTERVAL:
 		return data_is_interval(data);
+	case TYPE_VECTOR:
+		return data_is_vector(data);
 	}
 	return false;
 }
@@ -54,6 +57,7 @@ type_of(int type)
 	case TYPE_STRING:    return "string";
 	case TYPE_TIMESTAMP: return "timestamp";
 	case TYPE_INTERVAL:  return "interval";
+	case TYPE_VECTOR:    return "vector";
 	}
 	return NULL;
 }

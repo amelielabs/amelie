@@ -18,6 +18,7 @@ value_is_true(Value* a)
 		return a->real > 0.0;
 	case VALUE_NULL:
 		return false;
+	case VALUE_VECTOR:
 	case VALUE_DATA:
 	case VALUE_INTERVAL:
 	case VALUE_STRING:
@@ -63,6 +64,10 @@ value_is_equal(Value* a, Value* b)
 	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return a->integer == b->integer;
+		break;
+	case VALUE_VECTOR:
+		if (b->type == VALUE_VECTOR)
+			return vector_compare(&a->vector, &b->vector) == 0;
 		break;
 	default:
 		break;
@@ -157,6 +162,14 @@ value_gte(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer >= b->integer);
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc >= 0);
+		}
 	}
 	error("bad >= expression type");
 }
@@ -190,6 +203,14 @@ value_gt(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer > b->integer);
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc > 0);
+		}
 	}
 	error("bad > expression type");
 }
@@ -223,6 +244,14 @@ value_lte(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer <= b->integer);
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc <= 0);
+		}
 	}
 	error("bad <= expression type");
 }
@@ -256,6 +285,14 @@ value_lt(Value* result, Value* a, Value* b)
 	{
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer < b->integer);
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc < 0);
+		}
 	}
 	error("bad < expression type");
 }
@@ -315,6 +352,18 @@ value_add(Value* result, Value* a, Value* b)
 			timestamp_add(&ts, &b->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			if (a->vector.size != b->vector.size)
+				error("vector sizes mismatch");
+			Vector vector;
+			auto buf = vector_create(&vector, a->vector.size);
+			vector_add(&vector, &a->vector, &b->vector);
+			return value_set_vector(result, &vector, buf);
+		}
 	}
 	error("bad + expression types");
 }
@@ -363,6 +412,18 @@ value_sub(Value* result, Value* a, Value* b)
 			timestamp_sub(&ts, &b->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			if (a->vector.size != b->vector.size)
+				error("vector sizes mismatch");
+			Vector vector;
+			auto buf = vector_create(&vector, a->vector.size);
+			vector_sub(&vector, &a->vector, &b->vector);
+			return value_set_vector(result, &vector, buf);
+		}
 	}
 	error("bad - expression types");
 }
@@ -383,6 +444,18 @@ value_mul(Value* result, Value* a, Value* b)
 			return value_set_real(result, a->real * b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->real * b->real);
+	} else
+	if (a->type == VALUE_VECTOR)
+	{
+		if (b->type == VALUE_VECTOR)
+		{
+			if (a->vector.size != b->vector.size)
+				error("vector sizes mismatch");
+			Vector vector;
+			auto buf = vector_create(&vector, a->vector.size);
+			vector_mul(&vector, &a->vector, &b->vector);
+			return value_set_vector(result, &vector, buf);
+		}
 	}
 	error("bad * expression types");
 }
@@ -483,6 +556,9 @@ value_length(Value* result, Value* a)
 		break;
 	case VALUE_STRING:
 		rc = str_size(&a->string);
+		break;
+	case VALUE_VECTOR:
+		rc = a->vector.size;
 		break;
 	default:
 		error("length(): operation type is not supported");
@@ -676,6 +752,17 @@ value_has(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_idx(Value* result, Value* a, Value* b)
 {
+	if (a->type == VALUE_VECTOR)
+	{
+		/* vector[idx] */
+		if (unlikely(b->type != VALUE_INT))
+			error("[]: vector key type must be int");
+		if (unlikely(b->integer < 0 || b->integer > a->vector.size))
+			error("[]: vector index  is out of bounds");
+		value_set_real(result, a->vector.value[b->integer]);
+		return;
+	}
+
 	if (unlikely(a->type != VALUE_DATA))
 		error("[]: map or array type expected");
 
@@ -704,18 +791,6 @@ value_idx(Value* result, Value* a, Value* b)
 		error("[]: map or array type expected");
 	}
 }
-
-/*
-always_inline hot static inline void
-value_append(Value* result, Value* a, int argc, Value** argv)
-{
-	if (a->type != VALUE_DATA)
-		error("append(): array expected");
-	if (! data_is_array(a->data))
-		error("append(): array expected");
-	value_array_append(result, a->data, a->data_size, argc, argv);
-}
-*/
 
 always_inline hot static inline void
 value_append(Value* result, Value* a, int argc, Value** argv)

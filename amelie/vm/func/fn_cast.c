@@ -108,6 +108,55 @@ fn_timestamp(Call* self)
 	}
 }
 
+hot static void
+fn_vector(Call* self)
+{
+	auto arg = self->argv[0];
+	call_validate(self, 1);
+	call_validate_arg(self, 0, VALUE_DATA);
+
+	uint8_t* pos = arg->data;
+	if (! data_is_array(pos))
+		error("vector(): array argument expected");
+
+	auto buf = buf_begin();
+	buf_reserve(buf, data_size_vector(0));
+	data_write_vector_size(&buf->position, 0);
+
+	data_read_array(&pos);
+	int count = 0;
+	while (! data_read_array_end(&pos))
+	{
+		float value_flt;
+		if (data_is_real(pos))
+		{
+			double value;
+			data_read_real(&pos, &value);
+			value_flt = value;
+		} else
+		if (data_is_integer(pos))
+		{
+			int64_t value;
+			data_read_integer(&pos, &value);
+			value_flt = value;
+		} else {
+			error("vector(): int or real values expected");
+		}
+		buf_write(buf, &value_flt, sizeof(float));
+		count++;
+	}
+	buf_end(buf);
+
+	// update vector size
+	uint8_t* pos_str = buf->start;
+	data_write_vector_size(&pos_str, count);
+
+	pos_str = buf->start;
+	Vector vector;
+	data_read_vector(&pos_str, &vector);
+	value_set_vector(self->result, &vector, buf);
+}
+
 FunctionDef fn_cast_def[] =
 {
 	{ "public", "string",    fn_string,    false },
@@ -117,5 +166,6 @@ FunctionDef fn_cast_def[] =
 	{ "public", "json",      fn_json,      false },
 	{ "public", "interval",  fn_interval,  false },
 	{ "public", "timestamp", fn_timestamp, false },
+	{ "public", "vector",    fn_vector,    false },
 	{  NULL,     NULL,       NULL,         false }
 };

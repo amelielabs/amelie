@@ -39,6 +39,19 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
 			json_export(self, timezone, &pos);
 		break;
 	}
+	case VALUE_VECTOR:
+	{
+		buf_write(self, "[", 1);
+		for (int i = 0; i < value->vector.size; i++)
+		{
+			char buf[32];
+			auto buf_len = snprintf(buf, sizeof(buf), "%g%s", value->vector.value[i],
+			                        i != value->vector.size - 1? ", ": "");
+			buf_write(self, buf, buf_len);
+		}
+		buf_write(self, "]", 1);
+		break;
+	}
 	case VALUE_INTERVAL:
 	{
 		buf_write(self, "\"", 1);

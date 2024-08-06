@@ -136,6 +136,20 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_write(data, "\"", 1);
 		break;
 	}
+	case AM_VECTOR:
+	{
+		Vector vector;
+		data_read_vector(pos, &vector);
+		buf_write(data, "[", 1);
+		for (int i = 0; i < vector.size; i++)
+		{
+			buf_len = snprintf(buf, sizeof(buf), "%g%s", vector.value[i],
+			                   i != vector.size - 1? ", ": "");
+			buf_write(data, buf, buf_len);
+		}
+		buf_write(data, "]", 1);
+		break;
+	}
 	default:
 		error_data();
 		break;

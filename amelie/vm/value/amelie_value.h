@@ -16,6 +16,7 @@
 // objects
 #include "value/map.h"
 #include "value/array.h"
+#include "value/vector.h"
 #include "value/update.h"
 #include "value/row.h"
 #include "value/body.h"

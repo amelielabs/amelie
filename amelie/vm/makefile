@@ -42,6 +42,7 @@ OBJECTS        = \
                  func/fn_math.o \
                  func/fn_misc.o \
                  func/fn_time.o \
+                 func/fn_vector.o \
                  func/fn.o \
                  value/update.o \
                  value/like.o \
