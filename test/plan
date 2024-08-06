@@ -66,6 +66,7 @@ test func_regexp
 test func_math
 test func_misc
 test func_time
+test func_vector
 
 # time
 directory time

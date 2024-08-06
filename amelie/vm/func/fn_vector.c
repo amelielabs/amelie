@@ -26,7 +26,21 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
+hot static void
+fn_cos_distance(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_VECTOR);
+	call_validate_arg(self, 1, VALUE_VECTOR);
+	if (argv[0]->vector.size != argv[1]->vector.size)
+		error("cos_distance(): vector sizes does not match");
+	auto distance = vector_distance(&argv[0]->vector, &argv[1]->vector);
+	value_set_real(self->result, distance);
+}
+
 FunctionDef fn_vector_def[] =
 {
-	{  NULL,     NULL,       NULL,         false }
+	{ "public", "cos_distance", fn_cos_distance, false },
+	{  NULL,     NULL,          NULL,            false }
 };

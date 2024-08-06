@@ -301,6 +301,9 @@ show functions
 }, {
   "schema": "public",
   "name": "extract"
+}, {
+  "schema": "public",
+  "name": "cos_distance"
 }]
 select system.functions()
 [{
@@ -567,6 +570,9 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "extract"
+}, {
+  "schema": "public",
+  "name": "cos_distance"
 }]
 # test: show tables
 show tables
