@@ -13,6 +13,7 @@ select [1,2,3]::type
 select (select * from [1,2,3])::type
 
 # test: random
+select random()::type
 select public.random()::type
 
 # test: random uuid

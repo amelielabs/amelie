@@ -80,6 +80,7 @@ priority_map[UINT8_MAX] =
 	['@']                      = priority_value,
 	[KCASE]                    = priority_value,
 	[KEXISTS]                  = priority_value,
+	[KRANDOM]                  = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
