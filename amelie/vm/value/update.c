@@ -18,373 +18,225 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 
-static inline bool
-update_path_has(char** path, int* path_size)
+typedef struct
 {
-	unused(path);
-	return *path_size > 0;
+	uint8_t* pos;
+	char*    path_pos;
+	char*    path_end;
+	bool     found;
+	Value*   value;
+	Buf*     buf;
+} Update;
+
+static inline void
+update_init(Update* self, uint8_t* pos, Str* path, Buf* buf, Value* value)
+{
+	self->pos      = pos;
+	self->path_pos = path->pos;
+	self->path_end = path->end;
+	self->found    = false;
+	self->value    = value;
+	self->buf      = buf;
+}
+
+static inline bool
+update_has(Update* self)
+{
+	return self->path_pos < self->path_end;
 }
 
 static inline void
-update_path_read(char** path, int* path_size, char** name, int* name_size)
+update_read(Update* self, Str* name)
 {
-	if (unlikely(! update_path_has(path, path_size)))
-		error("update: incorrect path");
-
-	char* pos = *path;
-	int i = 0;
-	for (; i < *path_size; i++)
+	if (unlikely(! update_has(self)))
+		error("set: incorrect path");
+	auto start = self->path_pos;
+	while (self->path_pos < self->path_end)
 	{
-		if ((*path)[i] == '.')
-		{
-			*path      += 1;
-			*path_size -= 1;
+		if (*self->path_pos == '.')
 			break;
-		}
-		if (unlikely(isspace((*path)[i])))
-			error("update: incorrect path");
+		if (unlikely(isspace(*self->path_pos)))
+			error("set: incorrect path");
+		self->path_pos++;
 	}
-	*name       = pos;
-	*name_size  = i;
-	*path      += i;
-	*path_size -= i;
+	str_set(name, start, self->path_pos - start);
+	if (unlikely(! str_size(name)))
+		error("set: incorrect path");
+	if (self->path_pos != self->path_end)
+		self->path_pos++;
 }
 
-hot static inline int
-update_name_to_idx(const char* name, int name_size)
+static inline void
+update_unset_next(Update* self)
 {
-	int value = 0;
-	const char* end = name + name_size;
-	while (name < end) 
+	// read next key in the update path
+	Str key;
+	update_read(self, &key);
+
+	auto buf = self->buf;
+	auto pos = &self->pos;
+	if (unlikely(! data_is_map(*pos)))
+		error("unset: map expected, but got %s", type_to_string(**pos));
+	data_read_map(pos);
+
+	encode_map(buf);
+	while (! data_read_map_end(pos))
 	{
-		if (unlikely(! isdigit(*name)))
-			error("update: incorrect array position");
-		value = (value * 10) + *name - '0';
-		name++;
-	}
-	return value;
-}
+		// key
+		Str at;
+		data_read_string(pos, &at);
 
-hot static inline void
-update_set_to(Buf*      buf,
-              uint8_t** pos,
-              char**    path,
-              int*      path_size,
-              Value*    value,
-              bool*     found);
-
-hot static inline void
-update_set_to_array(Buf*      buf,
-                    uint8_t** pos,
-                    int       idx,
-                    char**    path,
-                    int*      path_size,
-                    Value*    value,
-                    bool*     found)
-{
-	if (unlikely(! data_is_array(*pos)))
-		error("set: unexpected data type");
-	data_read_array(pos);
-
-	encode_array(buf);
-	int i = 0;
-	while (! data_read_array_end(pos))
-	{
-		// replace
-		if (i == idx)
+		// match key
+		if (str_compare(&key, &at))
 		{
-			if (update_path_has(path, path_size))
+			if (update_has(self))
 			{
-				update_set_to(buf, pos, path, path_size, value, found);
-			} else
-			{
-				// replace value
-				value_write(value, buf);
-				assert(! *found);
-				*found = true;
-				data_skip(pos);
+				encode_string(buf, &at);
+				update_unset_next(self);
+				continue;
 			}
-
-			i++;
+			data_skip(pos);
 			continue;
 		}
 
+		// copy
+		encode_string(buf, &at);
 		uint8_t* start = *pos;
 		data_skip(pos);
 		buf_write(buf, start, *pos - start);
-		i++;
 	}
-
-	// extend array by one
-	if (idx == i)
-	{
-		if (update_path_has(path, path_size))
-			error("set: incorrect path");
-		value_write(value, buf);
-		assert(! *found);
-		*found = true;
-	} else
-	if (idx > i)
-	{
-		error("set: incorrect array position");
-	}
-	encode_array_end(buf);
+	encode_map_end(buf);
 }
 
-hot static inline void
-update_set_to_map(Buf*      buf,
-                  uint8_t** pos,
-                  char*     name,
-                  int       name_size,
-                  char**    path,
-                  int*      path_size,
-                  Value*    value,
-                  bool*     found)
+static inline void
+update_set_next(Update* self)
 {
+	// read next key in the update path
+	Str key;
+	update_read(self, &key);
+
+	auto buf = self->buf;
+	auto pos = &self->pos;
 	if (unlikely(! data_is_map(*pos)))
-		error("set: unexpected data type");
+		error("set: map expected, but got %s", type_to_string(**pos));
 	data_read_map(pos);
 
 	encode_map(buf);
 	while (! data_read_map_end(pos))
 	{
 		// key 
-		Str key;
-		data_read_string(pos, &key);
-		encode_string(buf, &key);
+		Str at;
+		data_read_string(pos, &at);
+		encode_string(buf, &at);
 
-		// path match
-		if (str_compare_raw(&key, name, name_size))
+		// match key
+		if (!self->found && str_compare(&key, &at))
 		{
-			if (update_path_has(path, path_size))
+			// path.path
+			if (update_has(self))
 			{
-				update_set_to(buf, pos, path, path_size, value, found);
-			} else
-			{
-				// replace value
-				assert(! *found);
-				value_write(value, buf);
-				*found = true;
-				data_skip(pos);
+				update_set_next(self);
+				continue;
 			}
-			continue;
-		}
 
-		// value
-		uint8_t *start = *pos;
-		data_skip(pos);
-		buf_write(buf, start, *pos - start);
-	}
-
-	if (! *found)
-	{
-		if (update_path_has(path, path_size))
-			error("set: incorrect path");
-
-		// key
-		encode_raw(buf, name, name_size);
-
-		// value
-		value_write(value, buf);
-	}
-	encode_map_end(buf);
-}
-
-hot static inline void
-update_set_to(Buf*      buf,
-              uint8_t** pos,
-              char**    path,
-              int*      path_size,
-              Value*    value,
-              bool*     found)
-{
-	// iterate over path
-	char* name;
-	int   name_size;
-	update_path_read(path, path_size, &name, &name_size);
-	if (unlikely(name_size == 0))
-		error("set: incorrect path");
-
-	if (isdigit(*name))
-	{
-		// array
-		int idx = update_name_to_idx(name, name_size);
-		update_set_to_array(buf, pos, idx, path, path_size,
-		                    value, found);
-	} else
-	{
-		// map
-		update_set_to_map(buf, pos, name, name_size,
-		                  path, path_size,
-		                  value, found);
-	}
-}
-
-hot static inline void
-update_unset_to(Buf* buf, uint8_t** pos, char** path, int* path_size);
-
-hot static inline void
-update_unset_to_array(Buf*      buf,
-                      uint8_t** pos,
-                      int       idx,
-                      char**    path,
-                      int*      path_size)
-{
-	if (unlikely(! data_is_array(*pos)))
-		error("unset: unexpected data type");
-
-	data_read_array(pos);
-
-	encode_array(buf);
-	if (update_path_has(path, path_size))
-	{
-		// replace array element
-		int i = 0;
-		while (! data_read_array_end(pos))
-		{
-			if (i == idx)
-			{
-				update_unset_to(buf, pos, path, path_size);
-			} else
-			{
-				uint8_t* start = *pos;
-				data_skip(pos);
-				buf_write(buf, start, *pos - start);
-			}
-			i++;
-		}
-
-	} else
-	{
-		// remove array element
-		int i = 0;
-		while (! data_read_array_end(pos))
-		{
-			uint8_t* start = *pos;
+			// replace value
+			assert(! self->found);
+			value_write(self->value, buf);
+			self->found = true;
 			data_skip(pos);
-			if (i != idx)
-				buf_write(buf, start, *pos - start);
-			i++;
-		}
-	}
-	encode_array_end(buf);
-}
-
-hot static inline void
-update_unset_to_map(Buf*      buf,
-                    uint8_t** pos,
-                    char*     name,
-                    int       name_size,
-                    char**    path,
-                    int*      path_size)
-{
-	if (unlikely(! data_is_map(*pos)))
-		error("unset: unexpected data type");
-	data_read_map(pos);
-
-	encode_map(buf);
-	while (! data_read_map_end(pos))
-	{
-		// key
-		Str key;
-		data_read_string(pos, &key);
-
-		// path match
-		if (str_compare_raw(&key, name, name_size))
-		{
-			if (update_path_has(path, path_size))
-			{
-				encode_string(buf, &key);
-				update_unset_to(buf, pos, path, path_size);
-			} else
-			{
-				data_skip(pos);
-			}
 			continue;
 		}
 
-		// copy
-		encode_string(buf, &key);
+		// value
 		uint8_t* start = *pos;
 		data_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
-	encode_map_end(buf);
-}
 
-hot static inline void
-update_unset_to(Buf* buf, uint8_t** pos, char** path, int* path_size)
-{
-	// iterate over path
-	char* name;
-	int   name_size;
-	update_path_read(path, path_size, &name, &name_size);
-	if (unlikely(name_size == 0))
-		error("unset: incorrect path");
+	// append to set
+	if (! self->found)
+	{
+		if (update_has(self))
+			error("set: incorrect path");
 
-	if (isdigit(*name))
-	{
-		// array
-		int idx = update_name_to_idx(name, name_size);
-		update_unset_to_array(buf, pos, idx, path, path_size);
-	} else
-	{
-		// map
-		update_unset_to_map(buf, pos, name, name_size,
-		                    path,
-		                    path_size);
+		// key
+		encode_string(buf, &key);
+
+		// value
+		value_write(self->value, buf);
 	}
+	encode_map_end(buf);
 }
 
 hot void
 update_set(Value* result, uint8_t* data, Str* path, Value* value)
 {
-	auto  buf = buf_begin();
-	bool  found = false;
-	char* path_ptr = str_of(path);
-	int   path_size = str_size(path);
-	update_set_to(buf, &data, &path_ptr, &path_size, value, &found);
+	auto buf = buf_begin();
+	Update self;
+	update_init(&self, data, path, buf, value);
+	update_set_next(&self);
 	buf_end(buf);
-	if (data_is_map(buf->start))
-		value_set_map_buf(result, buf);
-	else
-		value_set_array_buf(result, buf);
-}
-
-hot void
-update_set_array(Value* result, uint8_t* data, int idx,
-                 Str* path, Value* value)
-{
-	auto  buf = buf_begin();
-	bool  found = false;
-	char* path_ptr = str_of(path);
-	int   path_size = str_size(path);
-	update_set_to_array(buf, &data, idx, &path_ptr, &path_size, value, &found);
-	buf_end(buf);
-	value_set_array_buf(result, buf);
+	value_set_map_buf(result, buf);
 }
 
 hot void
 update_unset(Value* result, uint8_t* data, Str* path)
 {
-	auto  buf = buf_begin();
-	char* path_ptr = str_of(path);
-	int   path_size = str_size(path);
-	update_unset_to(buf, &data, &path_ptr, &path_size);
+	auto buf = buf_begin();
+	Update self;
+	update_init(&self, data, path, buf, NULL);
+	update_unset_next(&self);
 	buf_end(buf);
-	if (data_is_map(buf->start))
-		value_set_map_buf(result, buf);
-	else
-		value_set_array_buf(result, buf);
+	value_set_map_buf(result, buf);
+}
+
+static inline void
+update_set_array_next(Update* self, int idx)
+{
+	auto buf = self->buf;
+	auto pos = &self->pos;
+	if (unlikely(! data_is_array(*pos)))
+		error("set: array expected, but got %s", type_to_string(**pos));
+	data_read_array(pos);
+
+	encode_array(buf);
+	int at = 0;
+	for (; !data_read_array_end(pos); at++)
+	{
+		// replace
+		if (at == idx)
+		{
+			// [idx].path
+			if (update_has(self))
+			{
+				update_set_next(self);
+			} else
+			{
+				// replace value
+				value_write(self->value, buf);
+				assert(! self->found);
+				self->found = true;
+				data_skip(pos);
+			}
+			continue;
+		}
+
+		uint8_t* start = *pos;
+		data_skip(pos);
+		buf_write(buf, start, *pos - start);
+	}
+	if (idx >= at)
+		error("set: array position is out of bounds");
+	encode_array_end(buf);
 }
 
 hot void
-update_unset_array(Value* result, uint8_t* data, int idx, Str* path)
+update_set_array(Value* result, uint8_t* data, int idx, Str* path, Value* value)
 {
-	auto  buf = buf_begin();
-	char* path_ptr = str_of(path);
-	int   path_size = str_size(path);
-	update_unset_to_array(buf, &data, idx, &path_ptr, &path_size);
+	auto buf = buf_begin();
+	Update self;
+	update_init(&self, data, path, buf, value);
+	update_set_array_next(&self, idx);
 	buf_end(buf);
 	value_set_array_buf(result, buf);
 }

@@ -241,9 +241,9 @@ select set({"a": 88}, "a", 34)
   "a": 34
 }
 select set({"a": 88}, "", 34)
-{"code": 1, "msg": "update: incorrect path"}
+{"code": 1, "msg": "set: incorrect path"}
 select set({"a": 88}, " ", 34)
-{"code": 1, "msg": "update: incorrect path"}
+{"code": 1, "msg": "set: incorrect path"}
 select set({"a": 88}, ".", 34)
 {"code": 1, "msg": "set: incorrect path"}
 select set({"a": {"b": 22}}, "a.b", 34)
@@ -330,7 +330,7 @@ select unset({}, "a")
 {
 }
 select unset({}, "")
-{"code": 1, "msg": "update: incorrect path"}
+{"code": 1, "msg": "set: incorrect path"}
 select unset({"a": 0}, "a")
 {
 }
