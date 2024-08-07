@@ -74,7 +74,19 @@ select 1::json
 
 # test: (json) string to json
 select '1'::json
-select ('{"id":55}'::json).id
+select '1'::json::type
+
+# test: (json) array to json
+select '[1,2,3]'::json
+select '[1,2,3]'::json::type
+
+# test: (json) map to json
+select '{"id":55}'::json
+select '{"id":55}'::json::type
+
+# test: (json) vector to json
+select 'vector [1,2,3]'::json
+select 'vector [1,2,3]'::json::type
 
 # test: (interval) string to interval
 select '1 hour 55 minutes 5 secs'::interval
