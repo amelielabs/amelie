@@ -33,17 +33,6 @@ CFLAGS_INCLUDE = -I../runtime \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-vm.a
 OBJECTS        = \
-                 func/fn_system.o \
-                 func/fn_cast.o \
-                 func/fn_null.o \
-                 func/fn_object.o \
-                 func/fn_string.o \
-                 func/fn_regexp.o \
-                 func/fn_math.o \
-                 func/fn_misc.o \
-                 func/fn_time.o \
-                 func/fn_vector.o \
-                 func/fn.o \
                  value/update.o \
                  value/like.o \
                  aggr/set.o \
@@ -62,7 +51,18 @@ OBJECTS        = \
                  executor/executor.o \
                  vm/op.o \
                  vm/vm.o \
-                 vm/command.o
+                 vm/command.o \
+                 func/fn_system.o \
+                 func/fn_cast.o \
+                 func/fn_null.o \
+                 func/fn_object.o \
+                 func/fn_string.o \
+                 func/fn_regexp.o \
+                 func/fn_math.o \
+                 func/fn_misc.o \
+                 func/fn_time.o \
+                 func/fn_vector.o \
+                 func/fn.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

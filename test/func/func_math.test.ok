@@ -49,7 +49,7 @@ select -10::sign
 -1
 # test: ceil
 select 42::ceil
-{"code": 1, "msg": "ceil(): incorrect type of 0 argument"}
+{"code": 1, "msg": "ceil(): expected real for argument 0, but got int"}
 select 42.2::ceil
 43
 select ceil(-42.8)
@@ -61,7 +61,7 @@ select floor(-42.8)
 -43
 # test: exp
 select exp(1)
-{"code": 1, "msg": "exp(): incorrect type of 0 argument"}
+{"code": 1, "msg": "exp(): expected real for argument 0, but got int"}
 select exp(1.0)
 2.71828
 select 1.0::exp

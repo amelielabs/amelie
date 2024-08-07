@@ -834,7 +834,7 @@ bytecode [node]
 
 "
 select (select * from a)[0]
-{"code": 1, "msg": "[]: map or array type expected"}
+{"code": 1, "msg": "[]: map or array expected"}
 explain select (select a.* from a) + (select b.* from b)
 "
 bytecode [coordinator]

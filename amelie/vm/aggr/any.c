@@ -210,11 +210,8 @@ value_any_set_gte(Value* result, Value* a, Value* b)
 void
 value_any(Value* result, Value* a, Value* b, int op)
 {
-	if (b->type == VALUE_DATA)
+	if (b->type == VALUE_ARRAY)
 	{
-		if (! data_is_array(b->data))
-			error("ANY: array or result set expected");
-
 		value_set_bool(result, false);
 		switch (op) {
 		case MATCH_EQU:

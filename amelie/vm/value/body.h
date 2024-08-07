@@ -30,7 +30,8 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
 	case VALUE_NULL:
 		buf_write(self, "null", 4);
 		break;
-	case VALUE_DATA:
+	case VALUE_MAP:
+	case VALUE_ARRAY:
 	{
 		uint8_t* pos = value->data;
 		if (pretty)

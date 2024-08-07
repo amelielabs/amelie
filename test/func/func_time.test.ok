@@ -161,7 +161,7 @@ select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
 select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
 "2001-02-16 00:00:00+02"
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
-{"code": 1, "msg": "date_trunc(): incorrect type of 1 argument"}
+{"code": 1, "msg": "date_trunc(): expected string for argument 1, but got interval"}
 # test: extract(timestamp year)
 select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
 2001

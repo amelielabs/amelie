@@ -50,7 +50,7 @@ select ""::lower
 select "Hello World"::lower
 "hello world"
 select null::lower
-{"code": 1, "msg": "lower(): incorrect type of 0 argument"}
+{"code": 1, "msg": "lower(): expected string for argument 0, but got null"}
 # test: upper
 select ""::upper
 ""
@@ -149,7 +149,7 @@ select ""::ltrim()
 select ""::ltrim("")
 ""
 select ""::ltrim(null)
-{"code": 1, "msg": "ltrim(): incorrect type of 1 argument"}
+{"code": 1, "msg": "ltrim(): expected string for argument 1, but got null"}
 select "  	 123"::ltrim()
 "123"
 select "  123"::ltrim(" ")
@@ -166,7 +166,7 @@ select ""::rtrim()
 select ""::rtrim("")
 ""
 select ""::rtrim(null)
-{"code": 1, "msg": "rtrim(): incorrect type of 1 argument"}
+{"code": 1, "msg": "rtrim(): expected string for argument 1, but got null"}
 select "  	 123"::rtrim()
 "  	 123"
 select "  123  "::rtrim(" ")
@@ -189,7 +189,7 @@ select ""::trim()
 select ""::trim("")
 ""
 select ""::trim(null)
-{"code": 1, "msg": "trim(): incorrect type of 1 argument"}
+{"code": 1, "msg": "trim(): expected string for argument 1, but got null"}
 select "  	 123"::trim()
 "123"
 select "  123  "::trim(" ")

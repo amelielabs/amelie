@@ -252,7 +252,7 @@ select "a" + "b"
 select "a" || "b"
 "ab"
 select "a"[0]
-{"code": 1, "msg": "[]: map or array type expected"}
+{"code": 1, "msg": "[]: map or array expected"}
 select "\"Hello World\""
 "\"Hello World\""
 select 1.1 + 1.1
@@ -306,7 +306,7 @@ false
 select 2.8 & 3.4
 {"code": 1, "msg": "bad & expression type"}
 select 0[0]
-{"code": 1, "msg": "[]: map or array type expected"}
+{"code": 1, "msg": "[]: map or array expected"}
 select name[0]
 {"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
 # test: array

@@ -76,62 +76,63 @@ hot static bool
 ccursor_open_value(Vm* self, int target, Value* value)
 {
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, target);
-
-	if (value->type == VALUE_DATA)
+	switch (value->type) {
+	case VALUE_MAP:
 	{
-		bool end = false;
-		if (data_is_array(value->data))
+		cursor->type    = CURSOR_MAP;
+		cursor->obj_pos = value->data;
+		data_read_map(&cursor->obj_pos);
+		auto end = data_is_map_end(cursor->obj_pos);
+		if (! end)
 		{
-			cursor->type    = CURSOR_ARRAY;
-			cursor->obj_pos = value->data;
-			data_read_array(&cursor->obj_pos);
-			end = data_is_array_end(cursor->obj_pos);
-		} else
-		if (data_is_map(value->data))
-		{
-			cursor->type    = CURSOR_MAP;
-			cursor->obj_pos = value->data;
-			data_read_map(&cursor->obj_pos);
-			end = data_is_map_end(cursor->obj_pos);
-			if (! end)
-			{
-				cursor->ref_key = cursor->obj_pos;
-				data_skip(&cursor->obj_pos);
-			}
-		} else {
-			error("FROM: array, map or data type expected, but got %s",
-			      type_to_string(*value->data));
+			cursor->ref_key = cursor->obj_pos;
+			data_skip(&cursor->obj_pos);
 		}
 		if (end)
 			return false;
-	} else
-	if (value->type == VALUE_SET)
+		break;
+	}
+	case VALUE_ARRAY:
+	{
+		cursor->type    = CURSOR_ARRAY;
+		cursor->obj_pos = value->data;
+		data_read_array(&cursor->obj_pos);
+		auto end = data_is_array_end(cursor->obj_pos);
+		if (end)
+			return false;
+		break;
+	}
+	case VALUE_SET:
 	{
 		cursor->type = CURSOR_SET;
 		auto set = (Set*)value->obj;
 		set_iterator_open(&cursor->set_it, set);
 		if (! set_iterator_has(&cursor->set_it))
 			return false;
-	} else
-	if (value->type == VALUE_MERGE)
+		break;
+	}
+	case VALUE_MERGE:
 	{
 		cursor->type = CURSOR_MERGE;
 		auto merge = (Merge*)value->obj;
 		merge_iterator_open(&cursor->merge_it, merge);
 		if (! merge_iterator_has(&cursor->merge_it))
 			return false;
-	} else
-	if (value->type == VALUE_GROUP)
+		break;
+	}
+	case VALUE_GROUP:
 	{
 		cursor->type  = CURSOR_GROUP;
 		cursor->group = (Group*)value->obj;
 		if (cursor->group->ht.count == 0)
 			return false;
 		cursor->group_pos = group_next(cursor->group, -1);
-	} else
-	{
+		break;
+	}
+	default:
 		error("FROM: array, map or data type expected, but got %s",
-		      value_type_to_string(value));
+		      value_type_to_string(value->type));
+		break;
 	}
 
 	// jmp on success
@@ -288,7 +289,7 @@ ccursor_read(Vm* self, Op* op)
 		}
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
-		value_set_data(a, row_data(current), row_size(current), NULL);
+		value_set_array(a, row_data(current), row_size(current), NULL);
 		break;
 	}
 	case CURSOR_ARRAY:
@@ -353,9 +354,9 @@ ccursor_idx(Vm* self, Op* op)
 	case CURSOR_SET:
 	{
 		auto value = &set_iterator_at(&cursor->set_it)->value;
-		if (value->type != VALUE_DATA)
-			error("cursor: object type expected to be array or map, but got %s",
-			      value_type_to_string(value));
+		if (value->type != VALUE_MAP && value->type != VALUE_ARRAY)
+			error("cursor: object expected to be array or map, but got %s",
+			      value_type_to_string(value->type));
 		data     = value->data;
 		data_buf = value->buf;
 		break;
@@ -363,9 +364,9 @@ ccursor_idx(Vm* self, Op* op)
 	case CURSOR_MERGE:
 	{
 		auto value = &merge_iterator_at(&cursor->merge_it)->value;
-		if (value->type != VALUE_DATA)
-			error("cursor: object type expected to be array or map, but got %s",
-			      value_type_to_string(value));
+		if (value->type != VALUE_MAP && value->type != VALUE_ARRAY)
+			error("cursor: object expected to be array or map, but got %s",
+			      value_type_to_string(value->type));
 		data     = value->data;
 		data_buf = value->buf;
 		break;
@@ -421,7 +422,7 @@ ccursor_idx(Vm* self, Op* op)
 		}
 	}
 
-	value_read(reg_at(&self->r, op->a), data, data_buf);
+	value_read_ref(reg_at(&self->r, op->a), data, data_buf);
 }
 
 hot void
@@ -491,27 +492,25 @@ cupdate(Vm* self, Op* op)
 	// update by cursor
 	uint8_t* pos;
 	auto value = stack_at(&self->stack, 1);
-	if (likely(value->type == VALUE_DATA))
+	switch (value->type) {
+	case VALUE_MAP:
+	case VALUE_ARRAY:
 	{
-		if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
-			error("UPDATE: array, map or data set expected, but got %s",
-			      type_to_string(*value->data));
-
 		pos = value->data;
 		part_update(part, trx, it, &pos);
-
-	} else
-	if (value->type == VALUE_SET)
+		break;
+	}
+	case VALUE_SET:
 	{
 		auto buf = buf_begin();
 		buf_end(buf);
 		guard_buf(buf);
-
 		auto set = (Set*)value->obj;
 		for (int j = 0; j < set->list_count; j++)
 		{
 			auto ref = &set_at(set, j)->value;
-			if (likely(ref->type == VALUE_DATA))
+			if (likely(ref->type == VALUE_ARRAY ||
+			           ref->type == VALUE_MAP))
 			{
 				pos = ref->data;
 			} else
@@ -522,10 +521,12 @@ cupdate(Vm* self, Op* op)
 			}
 			part_update(part, trx, it, &pos);
 		}
-	} else
-	{
-		error("UPDATE: array, map or data set expected, but got %s",
-		      value_type_to_string(value));
+		break;
+	}
+	default:
+		error("UPDATE: array, map or set expected, but got %s",
+		      value_type_to_string(value->type));
+		break;
 	}
 
 	stack_popn(&self->stack, 1);

@@ -27,7 +27,7 @@ value_map(Value* result, Stack* stack, int count)
 	encode_map_end(buf);
 
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_map_buf(result, buf);
 }
 
 static inline void
@@ -45,5 +45,5 @@ value_map_as(Value* result, Value* key, Value* value)
 	value_write(value, buf);
 	encode_map_end(buf);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_map_buf(result, buf);
 }

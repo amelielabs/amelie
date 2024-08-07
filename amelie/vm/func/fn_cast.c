@@ -113,12 +113,9 @@ fn_vector(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 
 	uint8_t* pos = arg->data;
-	if (! data_is_array(pos))
-		error("vector(): array argument expected");
-
 	auto buf = buf_begin();
 	buf_reserve(buf, data_size_vector(0));
 	data_write_vector_size(&buf->position, 0);

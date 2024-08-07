@@ -9,7 +9,9 @@ select 1::type
 select "Hi"::type
 "string"
 select [1,2,3]::type
-"data"
+"array"
+select {}::type
+"map"
 select (select * from [1,2,3])::type
 "set"
 # test: random

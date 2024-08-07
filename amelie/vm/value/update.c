@@ -345,7 +345,10 @@ update_set(Value* result, uint8_t* data, Str* path, Value* value)
 	int   path_size = str_size(path);
 	update_set_to(buf, &data, &path_ptr, &path_size, value, &found);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	if (data_is_map(buf->start))
+		value_set_map_buf(result, buf);
+	else
+		value_set_array_buf(result, buf);
 }
 
 hot void
@@ -358,7 +361,7 @@ update_set_array(Value* result, uint8_t* data, int idx,
 	int   path_size = str_size(path);
 	update_set_to_array(buf, &data, idx, &path_ptr, &path_size, value, &found);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 hot void
@@ -369,7 +372,10 @@ update_unset(Value* result, uint8_t* data, Str* path)
 	int   path_size = str_size(path);
 	update_unset_to(buf, &data, &path_ptr, &path_size);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	if (data_is_map(buf->start))
+		value_set_map_buf(result, buf);
+	else
+		value_set_array_buf(result, buf);
 }
 
 hot void
@@ -380,5 +386,5 @@ update_unset_array(Value* result, uint8_t* data, int idx, Str* path)
 	int   path_size = str_size(path);
 	update_unset_to_array(buf, &data, idx, &path_ptr, &path_size);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }

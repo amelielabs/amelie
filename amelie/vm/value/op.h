@@ -18,9 +18,10 @@ value_is_true(Value* a)
 		return a->real > 0.0;
 	case VALUE_NULL:
 		return false;
-	case VALUE_VECTOR:
-	case VALUE_DATA:
+	case VALUE_MAP:
+	case VALUE_ARRAY:
 	case VALUE_INTERVAL:
+	case VALUE_VECTOR:
 	case VALUE_STRING:
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -51,8 +52,9 @@ value_is_equal(Value* a, Value* b)
 		break;
 	case VALUE_NULL:
 		return b->type == VALUE_NULL;
-	case VALUE_DATA:
-		if (b->type != VALUE_DATA || a->data_size != b->data_size)
+	case VALUE_MAP:
+	case VALUE_ARRAY:
+		if (b->type != a->type || a->data_size != b->data_size)
 			return false;
 		return !memcmp(a->data, b->data, a->data_size);
 	case VALUE_STRING:
@@ -547,12 +549,11 @@ value_length(Value* result, Value* a)
 	switch (a->type) {
 	case VALUE_NULL:
 		break;
-	case VALUE_DATA:
-		if (data_is_array(a->data))
-			rc = array_size(a->data);
-		else
-		if (data_is_map(a->data))
-			rc = map_size(a->data);
+	case VALUE_MAP:
+		rc = map_size(a->data);
+		break;
+	case VALUE_ARRAY:
+		rc = array_size(a->data);
 		break;
 	case VALUE_STRING:
 		rc = str_size(&a->string);
@@ -681,17 +682,17 @@ value_to_json(Value* result, Value* a, Timezone* timezone)
 	guard(json_free, &json);
 	json_parse(&json, timezone, &a->string, buf);
 	buf_end(buf);
-	value_set_buf(result, buf);
+
+	value_read(result, buf->start, buf);
+	if (! result->buf)
+		buf_free(buf);
 }
 
 always_inline hot static inline void
 value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 {
-	if (unlikely(a->type != VALUE_DATA))
-		error("set(): map or array type expected");
-
-	if (unlikely(! data_is_array(a->data)))
-		error("set(): array type expected");
+	if (unlikely(a->type != VALUE_ARRAY))
+		error("set: row expected");
 
 	if (b->type == VALUE_NULL)
 	{
@@ -702,9 +703,8 @@ value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 	{
 		// row[column].path = value
 		update_set_array(result, a->data, column, &b->string, c);
-	} else
-	{
-		error("set(): path type must be string");
+	} else {
+		error("set: path type must be string");
 	}
 }
 
@@ -718,10 +718,8 @@ value_set(Value* result, Value* a, Value* b, Value* c)
 		value_map_as(result, b, c);
 		return;
 	}
-	if (unlikely(a->type != VALUE_DATA))
-		error("set(): map type expected");
-	if (! data_is_map(a->data))
-		error("set(): map type expected");
+	if (unlikely(a->type != VALUE_MAP))
+		error("set(): map expected");
 	if (unlikely(b->type != VALUE_STRING))
 		error("set(): path type must be string");
 	update_set(result, a->data, &b->string, c);
@@ -730,10 +728,8 @@ value_set(Value* result, Value* a, Value* b, Value* c)
 always_inline hot static inline void
 value_unset(Value* result, Value* a, Value* b)
 {
-	if (unlikely(a->type != VALUE_DATA))
-		error("unset(): map type expected");
-	if (! data_is_map(a->data))
-		error("unset(): map type expected");
+	if (unlikely(a->type != VALUE_MAP))
+		error("unset(): map expected");
 	if (unlikely(b->type != VALUE_STRING))
 		error("unset(): path type must be string");
 	update_unset(result, a->data, &b->string);
@@ -742,8 +738,8 @@ value_unset(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_has(Value* result, Value* a, Value* b)
 {
-	if (unlikely(a->type != VALUE_DATA))
-		error("has(): map type expected");
+	if (unlikely(a->type != VALUE_MAP))
+		error("has(): map expected");
 	if (unlikely(b->type != VALUE_STRING))
 		error("has(): path type must be string");
 	value_map_has(result, a->data, &b->string);
@@ -752,21 +748,18 @@ value_has(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_idx(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_VECTOR)
+	switch (a->type) {
+	case VALUE_VECTOR:
 	{
-		/* vector[idx] */
+		// vector[idx]
 		if (unlikely(b->type != VALUE_INT))
 			error("[]: vector key type must be int");
 		if (unlikely(b->integer < 0 || b->integer >= a->vector.size))
 			error("[]: vector index  is out of bounds");
 		value_set_real(result, a->vector.value[b->integer]);
-		return;
+		break;
 	}
-
-	if (unlikely(a->type != VALUE_DATA))
-		error("[]: map or array type expected");
-
-	if (data_is_map(a->data))
+	case VALUE_MAP:
 	{
 		// map['path']
 		if (unlikely(b->type != VALUE_STRING))
@@ -775,20 +768,23 @@ value_idx(Value* result, Value* a, Value* b)
 		if (! map_find_path(&data, &b->string))
 			error("<%.*s>: map path not found", str_size(&b->string),
 				  str_of(&b->string));
-		value_read(result, data, a->buf);
-	} else
-	if (data_is_array(a->data))
+		value_read_ref(result, data, a->buf);
+		break;
+	}
+	case VALUE_ARRAY:
 	{
-		/* array[idx] */
+		// array[idx]
 		if (unlikely(b->type != VALUE_INT))
 			error("[]: array key type must be int");
 		uint8_t* data = a->data;
 		if (! array_find(&data, b->integer))
 			error("<%d>: array index not found", b->integer);
-		value_read(result, data, a->buf);
-	} else
-	{
-		error("[]: map or array type expected");
+		value_read_ref(result, data, a->buf);
+		break;
+	}
+	default:
+		error("[]: map or array expected");
+		break;
 	}
 }
 
@@ -797,12 +793,10 @@ value_append(Value* result, Value* a, int argc, Value** argv)
 {
 	uint8_t* data;
 	int      data_size;
-	if (a->type == VALUE_DATA)
+	if (a->type == VALUE_ARRAY)
 	{
 		data = a->data;
 		data_size = a->data_size;
-		if (! data_is_array(data))
-			error("append(): array or null expected");
 	} else
 	if (a->type == VALUE_NULL)
 	{

@@ -47,7 +47,7 @@ select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
 "2024-07-30 00:40:19+09"
 select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
-{"code": 1, "msg": "at_timezone(): incorrect type of 1 argument"}
+{"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: at timezone operator
 select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
 "2024-07-29 15:40:19+00"
@@ -56,7 +56,7 @@ select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
 select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
 "2024-07-30 00:40:19+09"
 select '2024-07-29 18:40:19'::timestamp at timezone null
-{"code": 1, "msg": "at_timezone(): incorrect type of 1 argument"}
+{"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: timestamp column
 create table test (time timestamp primary key)
 # test: timestamp column (localtime)

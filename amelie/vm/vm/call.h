@@ -30,14 +30,17 @@ static inline void
 call_validate(Call* self, int argc)
 {
 	if (unlikely(argc != self->argc))
-		error("%.*s(): incorrect number of arguments", str_size(&self->function->name),
-		      str_of(&self->function->name));
+		error("%.*s(): expected %d arguments, but got %d", str_size(&self->function->name),
+		      str_of(&self->function->name), argc, self->argc);
 }
 
 static inline void
 call_validate_arg(Call* self, int order, ValueType type)
 {
 	if (unlikely(self->argv[order]->type != type))
-		error("%.*s(): incorrect type of %d argument", str_size(&self->function->name),
-		      str_of(&self->function->name), order);
+		error("%.*s(): expected %s for argument %d, but got %s", str_size(&self->function->name),
+		      str_of(&self->function->name),
+		      value_type_to_string(type),
+		      order,
+		      value_type_to_string(self->argv[order]->type));
 }

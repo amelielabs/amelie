@@ -17,7 +17,8 @@ typedef enum
 	VALUE_REAL,
 	VALUE_NULL,
 	VALUE_STRING,
-	VALUE_DATA,
+	VALUE_MAP,
+	VALUE_ARRAY,
 	VALUE_INTERVAL,
 	VALUE_TIMESTAMP,
 	VALUE_VECTOR,
@@ -133,18 +134,33 @@ value_set_string(Value* self, Str* str, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_data(Value* self, uint8_t* data, int data_size, Buf* buf)
+value_set_map(Value* self, uint8_t* data, int data_size, Buf* buf)
 {
-	self->type      = VALUE_DATA;
+	self->type      = VALUE_MAP;
 	self->data      = data;
 	self->data_size = data_size;
 	self->buf       = buf;
 }
 
 always_inline hot static inline void
-value_set_buf(Value* self, Buf* buf)
+value_set_map_buf(Value* self, Buf* buf)
 {
-	value_set_data(self, buf->start, buf_size(buf), buf);
+	value_set_map(self, buf->start, buf_size(buf), buf);
+}
+
+always_inline hot static inline void
+value_set_array(Value* self, uint8_t* data, int data_size, Buf* buf)
+{
+	self->type      = VALUE_ARRAY;
+	self->data      = data;
+	self->data_size = data_size;
+	self->buf       = buf;
+}
+
+always_inline hot static inline void
+value_set_array_buf(Value* self, Buf* buf)
+{
+	value_set_array(self, buf->start, buf_size(buf), buf);
 }
 
 always_inline hot static inline void
@@ -230,18 +246,20 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		Str string;
 		data_read_string(&data, &string);
 		value_set_string(self, &string, buf);
-		if (buf)
-			buf_ref(buf);
 		break;
 	}
-	case AM_ARRAY:
 	case AM_MAP:
 	{
 		uint8_t* end = data;
 		data_skip(&end);
-		value_set_data(self, data, end - data, buf);
-		if (buf)
-			buf_ref(buf);
+		value_set_map(self, data, end - data, buf);
+		break;
+	}
+	case AM_ARRAY:
+	{
+		uint8_t* end = data;
+		data_skip(&end);
+		value_set_array(self, data, end - data, buf);
 		break;
 	}
 	case AM_INTERVAL:
@@ -271,6 +289,14 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 	}
 }
 
+hot static inline void
+value_read_ref(Value* self, uint8_t* data, Buf* buf)
+{
+	value_read(self, data, buf);
+	if (self->buf && buf)
+		buf_ref(buf);
+}
+
 always_inline hot static inline void
 value_write(Value* self, Buf* buf)
 {
@@ -290,7 +316,8 @@ value_write(Value* self, Buf* buf)
 	case VALUE_NULL:
 		encode_null(buf);
 		break;
-	case VALUE_DATA:
+	case VALUE_MAP:
+	case VALUE_ARRAY:
 		buf_write(buf, self->data, self->data_size);
 		break;
 	case VALUE_INTERVAL:
@@ -332,7 +359,8 @@ value_write_data(Value* self, uint8_t** pos)
 	case VALUE_NULL:
 		data_write_null(pos);
 		break;
-	case VALUE_DATA:
+	case VALUE_MAP:
+	case VALUE_ARRAY:
 		memcpy(*pos, self->data, self->data_size);
 		*pos += self->data_size;
 		break;
@@ -383,17 +411,30 @@ value_copy(Value* self, Value* src)
 			value_set_string(self, &string, buf);
 		}
 		break;
-	case VALUE_DATA:
+	case VALUE_MAP:
 		if (src->buf)
 		{
-			value_set_data(self, src->data, src->data_size, src->buf);
+			value_set_map(self, src->data, src->data_size, src->buf);
 			buf_ref(src->buf);
 		} else
 		{
 			auto buf = buf_begin();
 			buf_write(buf, src->data, src->data_size);
 			buf_end(buf);
-			value_set_buf(self, buf);
+			value_set_map_buf(self, buf);
+		}
+		break;
+	case VALUE_ARRAY:
+		if (src->buf)
+		{
+			value_set_array(self, src->data, src->data_size, src->buf);
+			buf_ref(src->buf);
+		} else
+		{
+			auto buf = buf_begin();
+			buf_write(buf, src->data, src->data_size);
+			buf_end(buf);
+			value_set_array_buf(self, buf);
 		}
 		break;
 	case VALUE_INTERVAL:
@@ -424,7 +465,7 @@ value_copy(Value* self, Value* src)
 		auto buf = buf_begin();
 		value_write(src, buf);
 		buf_end(buf);
-		value_set_buf(self, buf);
+		value_read(self, buf->start, buf);
 		break;
 	}
 	// VALUE_GROUP
@@ -453,8 +494,11 @@ value_copy_ref(Value* self, Value* src)
 	case VALUE_STRING:
 		value_set_string(self, &src->string, NULL);
 		break;
-	case VALUE_DATA:
-		value_set_data(self, src->data, src->data_size, NULL);
+	case VALUE_MAP:
+		value_set_map(self, src->data, src->data_size, NULL);
+		break;
+	case VALUE_ARRAY:
+		value_set_array(self, src->data, src->data_size, NULL);
 		break;
 	case VALUE_INTERVAL:
 		value_set_interval(self, &src->interval);
@@ -471,7 +515,7 @@ value_copy_ref(Value* self, Value* src)
 		auto buf = buf_begin();
 		value_write(src, buf);
 		buf_end(buf);
-		value_set_buf(self, buf);
+		value_read(self, buf->start, buf);
 		break;
 	}
 	// VALUE_GROUP
@@ -482,10 +526,10 @@ value_copy_ref(Value* self, Value* src)
 }
 
 static inline char*
-value_type_to_string(Value* self)
+value_type_to_string(ValueType type)
 {
 	char* name;
-	switch (self->type) {
+	switch (type) {
 	case VALUE_NONE:
 		name = "none";
 		break;
@@ -504,8 +548,11 @@ value_type_to_string(Value* self)
 	case VALUE_STRING:
 		name = "string";
 		break;
-	case VALUE_DATA:
-		name = "data";
+	case VALUE_MAP:
+		name = "map";
+		break;
+	case VALUE_ARRAY:
+		name = "array";
 		break;
 	case VALUE_INTERVAL:
 		name = "interval";

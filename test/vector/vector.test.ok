@@ -8,7 +8,7 @@ select [1,2,3]::vector::type
 select [1,2,3]::vector::length
 3
 select ""::vector
-{"code": 1, "msg": "vector(): incorrect type of 0 argument"}
+{"code": 1, "msg": "vector(): expected array for argument 0, but got string"}
 select [1.0]::vector
 [1]
 select [1.0, 1.1, 1.2]::vector

@@ -91,7 +91,7 @@ fn_generate_series(Call* self)
 	}
 	encode_array_end(buf);
 	buf_end(buf);
-	value_set_buf(self->result, buf);
+	value_set_array_buf(self->result, buf);
 }
 
 hot static void

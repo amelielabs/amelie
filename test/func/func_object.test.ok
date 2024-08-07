@@ -36,7 +36,7 @@ select []::append(1)::append(2)::push_back(3)
 select push(null)
 {"code": 1, "msg": "push(): expected two or more arguments"}
 select push(null, 0)
-{"code": 1, "msg": "push(): incorrect type of 0 argument"}
+{"code": 1, "msg": "push(): expected array for argument 0, but got null"}
 select push([], 0)
 [0]
 select []::push()
@@ -64,9 +64,9 @@ select * from test
 drop table test
 # test: pop
 select pop()
-{"code": 1, "msg": "pop(): incorrect number of arguments"}
+{"code": 1, "msg": "pop(): expected 1 arguments, but got 0"}
 select pop(null)
-{"code": 1, "msg": "pop(): incorrect type of 0 argument"}
+{"code": 1, "msg": "pop(): expected array for argument 0, but got null"}
 select pop([])
 []
 select []::pop
@@ -98,9 +98,9 @@ select * from test
 drop table test
 # test: pop_back
 select pop_back()
-{"code": 1, "msg": "pop_back(): incorrect number of arguments"}
+{"code": 1, "msg": "pop_back(): expected 1 arguments, but got 0"}
 select pop_back(null)
-{"code": 1, "msg": "pop_back(): incorrect type of 0 argument"}
+{"code": 1, "msg": "pop_back(): expected array for argument 0, but got null"}
 select pop_back([])
 []
 select []::pop_back
@@ -129,9 +129,9 @@ select * from test
 drop table test
 # test: put
 select put(null)
-{"code": 1, "msg": "put(): incorrect number of arguments"}
+{"code": 1, "msg": "put(): expected 3 arguments, but got 1"}
 select put(null, 0)
-{"code": 1, "msg": "put(): incorrect number of arguments"}
+{"code": 1, "msg": "put(): expected 3 arguments, but got 2"}
 select put([], 0, 0)
 {"code": 1, "msg": "put: array index '0' is out of bounds"}
 select put([1], 0, 0)
@@ -157,9 +157,9 @@ select * from test
 drop table test
 # test: remove
 select remove(null)
-{"code": 1, "msg": "remove(): incorrect number of arguments"}
+{"code": 1, "msg": "remove(): expected 2 arguments, but got 1"}
 select remove(null, 0)
-{"code": 1, "msg": "remove(): incorrect type of 0 argument"}
+{"code": 1, "msg": "remove(): expected array for argument 0, but got null"}
 select remove([], 0)
 {"code": 1, "msg": "<0>: array index is out of bounds"}
 select remove([], 1)
@@ -286,7 +286,7 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
 2
 select set([], 0, 1)
-{"code": 1, "msg": "set(): map type expected"}
+{"code": 1, "msg": "set(): map expected"}
 # test: set update
 create table test (id int primary key, data object)
 insert into test values (0, {})
@@ -387,7 +387,7 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
   }
 }
 select unset([1], 0)
-{"code": 1, "msg": "unset(): map type expected"}
+{"code": 1, "msg": "unset(): map expected"}
 # test: unset update
 create table test (id int primary key, data object)
 insert into test values (0, {"a": 1, "b": 2, "c": 3})

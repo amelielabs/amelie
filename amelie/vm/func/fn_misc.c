@@ -40,10 +40,10 @@ fn_error(Call* self)
 static void
 fn_type(Call* self)
 {
-	auto  arg  = self->argv[0];
+	auto arg = self->argv[0];
 	call_validate(self, 1);
 	Str string;
-	str_set_cstr(&string, value_type_to_string(arg));
+	str_set_cstr(&string, value_type_to_string(arg->type));
 	value_set_string(self->result, &string, NULL);
 }
 

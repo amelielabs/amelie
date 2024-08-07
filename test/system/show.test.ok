@@ -681,7 +681,7 @@ select system.config().directory
 select system.config()["directory"]
 "_output/E0"
 select system.config(123)
-{"code": 1, "msg": "config(): incorrect number of arguments"}
+{"code": 1, "msg": "config(): expected 0 arguments, but got 1"}
 # test: show name
 show log_enable
 true

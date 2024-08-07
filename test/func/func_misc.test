@@ -10,6 +10,7 @@ select error("error test")
 select 1::type
 select "Hi"::type
 select [1,2,3]::type
+select {}::type
 select (select * from [1,2,3])::type
 
 # test: random

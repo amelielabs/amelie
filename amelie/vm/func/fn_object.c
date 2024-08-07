@@ -41,11 +41,9 @@ fn_push(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2)
 		error("push(): expected two or more arguments");
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 	auto data = argv[0]->data;
 	auto data_size = argv[0]->data_size;
-	if (! data_is_array(data))
-		error("push(): array expected");
 	value_array_push(self->result, data, data_size, self->argc - 1, argv + 1);
 }
 
@@ -54,11 +52,9 @@ fn_pop(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 	auto data = argv[0]->data;
 	auto data_size = argv[0]->data_size;
-	if (! data_is_array(data))
-		error("pop(): array expected");
 	value_array_pop(self->result, data, data_size);
 }
 
@@ -67,10 +63,8 @@ fn_pop_back(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 	auto data = argv[0]->data;
-	if (! data_is_array(data))
-		error("pop_back(): array expected");
 	value_array_pop_back(self->result, data);
 }
 
@@ -79,11 +73,9 @@ fn_put(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 	call_validate_arg(self, 1, VALUE_INT);
 	auto data = argv[0]->data;
-	if (! data_is_array(data))
-		error("remove(): array expected");
 	value_array_put(self->result, data, argv[1]->integer, argv[2]);
 }
 
@@ -92,11 +84,9 @@ fn_remove(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_DATA);
+	call_validate_arg(self, 0, VALUE_ARRAY);
 	call_validate_arg(self, 1, VALUE_INT);
 	auto data = argv[0]->data;
-	if (! data_is_array(data))
-		error("remove(): array expected");
 	value_array_remove(self->result, data, argv[1]->integer);
 }
 

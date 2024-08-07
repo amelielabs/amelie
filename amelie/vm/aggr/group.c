@@ -157,9 +157,14 @@ group_create_node(GroupKey* key)
 			value_set_string(&node->keys[i], &value->string, NULL);
 			pos += str_size(&value->string);
 			break;
-		case VALUE_DATA:
+		case VALUE_MAP:
 			memcpy(pos, value->data, value->data_size);
-			value_set_data(&node->keys[i], pos, value->data_size, NULL);
+			value_set_map(&node->keys[i], pos, value->data_size, NULL);
+			pos += value->data_size;
+			break;
+		case VALUE_ARRAY:
+			memcpy(pos, value->data, value->data_size);
+			value_set_array(&node->keys[i], pos, value->data_size, NULL);
 			pos += value->data_size;
 			break;
 		default:
@@ -224,9 +229,14 @@ group_find_or_create(Group* self, Value** target_data)
 			data_size = sizeof(value->real);
 			break;
 		case VALUE_STRING:
-		case VALUE_DATA:
 			data = str_of(&value->string);
 			data_size = str_size(&value->string);
+			key.size += data_size;
+			break;
+		case VALUE_MAP:
+		case VALUE_ARRAY:
+			data = value->data;
+			data_size = value->data_size;
 			key.size += data_size;
 			break;
 		case VALUE_NULL:
@@ -324,7 +334,7 @@ group_read(Group* self, GroupNode* node, Value* result)
 			value_write(&node->keys[i], buf);
 		encode_array_end(buf);
 		buf_end(buf);
-		value_set_buf(result, buf);
+		value_set_array_buf(result, buf);
 	} else {
 		value_copy(result, &node->keys[0]);
 	}

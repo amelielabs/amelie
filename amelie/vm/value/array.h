@@ -18,7 +18,7 @@ value_array(Value* result, Stack* stack, int count)
 	}
 	encode_array_end(buf);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -41,7 +41,7 @@ value_array_append(Value*  result, uint8_t* data, int data_size,
 		encode_array_end(buf);
 	}
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -55,7 +55,7 @@ value_array_push(Value*  result, uint8_t* data, int data_size,
 		value_write(argv[i], buf);
 	buf_write(buf, data + data_size_array(), data_size - data_size_array());
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -70,7 +70,7 @@ value_array_pop(Value* result, uint8_t* data, int data_size)
 		data_skip(&pos);
 	buf_write(buf, pos, end - pos);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -84,7 +84,7 @@ value_array_pop_back(Value* result, uint8_t* pos)
 		encode_array(buf);
 	encode_array_end(buf);
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -113,7 +113,7 @@ value_array_put(Value* result, uint8_t* pos, int idx, Value* value)
 	encode_array_end(buf);
 
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }
 
 static inline void
@@ -137,5 +137,5 @@ value_array_remove(Value* result, uint8_t* pos, int idx)
 	encode_array_end(buf);
 
 	buf_end(buf);
-	value_set_buf(result, buf);
+	value_set_array_buf(result, buf);
 }

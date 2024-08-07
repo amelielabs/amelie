@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 select 1::int
 1
 select 1::int(123)
-{"code": 1, "msg": "int(): incorrect number of arguments"}
+{"code": 1, "msg": "int(): expected 1 arguments, but got 2"}
 # test: (int) string to int
 select '123'::int
 123
