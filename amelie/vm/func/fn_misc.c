@@ -41,48 +41,9 @@ static void
 fn_type(Call* self)
 {
 	auto  arg  = self->argv[0];
-	char* name = NULL;
 	call_validate(self, 1);
-	switch (arg->type) {
-	case VALUE_INT:
-		name = "int";
-		break;
-	case VALUE_BOOL:
-		name = "int";
-		break;
-	case VALUE_REAL:
-		name = "real";
-		break;
-	case VALUE_NULL:
-		name = "null";
-		break;
-	case VALUE_STRING:
-		name = "string";
-		break;
-	case VALUE_DATA:
-		name = "data";
-		break;
-	case VALUE_INTERVAL:
-		name = "interval";
-		break;
-	case VALUE_TIMESTAMP:
-		name = "timestamp";
-		break;
-	case VALUE_VECTOR:
-		name = "vector";
-		break;
-	case VALUE_SET:
-		name = "set";
-		break;
-	case VALUE_MERGE:
-		name = "merge";
-		break;
-	default:
-		error("type(): operation type not supported");
-		break;
-	}
 	Str string;
-	str_set_cstr(&string, name);
+	str_set_cstr(&string, value_type_to_string(arg));
 	value_set_string(self->result, &string, NULL);
 }
 

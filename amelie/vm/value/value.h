@@ -480,3 +480,51 @@ value_copy_ref(Value* self, Value* src)
 		break;
 	}
 }
+
+static inline char*
+value_type_to_string(Value* self)
+{
+	char* name;
+	switch (self->type) {
+	case VALUE_NONE:
+		name = "none";
+		break;
+	case VALUE_INT:
+		name = "int";
+		break;
+	case VALUE_BOOL:
+		name = "int";
+		break;
+	case VALUE_REAL:
+		name = "real";
+		break;
+	case VALUE_NULL:
+		name = "null";
+		break;
+	case VALUE_STRING:
+		name = "string";
+		break;
+	case VALUE_DATA:
+		name = "data";
+		break;
+	case VALUE_INTERVAL:
+		name = "interval";
+		break;
+	case VALUE_TIMESTAMP:
+		name = "timestamp";
+		break;
+	case VALUE_VECTOR:
+		name = "vector";
+		break;
+	case VALUE_SET:
+		name = "set";
+		break;
+	case VALUE_MERGE:
+		name = "merge";
+		break;
+	case VALUE_GROUP:
+		name = "group";
+		break;
+	}
+	return name;
+}

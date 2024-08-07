@@ -304,9 +304,9 @@ select (select **, * from (t.obj.data)) from test t
 drop table test
 # test: select from (select const)
 select * from (select 0)
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 select * from (select null)
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got null"}
 # test: select from (select [])
 select * from (select [])
 []
@@ -346,9 +346,9 @@ select * from (select {"a": 1, "b": null})
 select alias.* from (select [1,2,3]) alias
 [1, 2, 3]
 select alias from (select [1,2,3]) alias
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column alias: row or map expected, but got int"}
 select alias from (select alias.*) alias
-{"code": 1, "msg": "*: not in active aggregation"}
+{"code": 1, "msg": "*: not in active scan"}
 select alias from (select alias) alias
 {"code": 1, "msg": "<alias> target column cannot be found"}
 select (select 123 from alias) from (select alias) alias
@@ -397,12 +397,12 @@ bytecode [node]
 "
 # test: select target.* from (select from shared)
 select test.* from (select * from test)
-{"code": 1, "msg": "*: not in active aggregation"}
+{"code": 1, "msg": "*: not in active scan"}
 select test from (select * from test)
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column test: row or map expected, but got array"}
 # test: select alias.* from (select from shared)
 select alias from (select * from test) alias
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column alias: row or map expected, but got array"}
 select alias.* from (select * from test) alias
 [[1], [2], [3]]
 select alias.* from (select test.* from test) alias
@@ -420,7 +420,7 @@ insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
 # test: select target.path from (select from shared)
 select obj from (select * from test)
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column obj: row or map expected, but got array"}
 select * from (select * from test) alias
 [[{
   "data": {

@@ -613,7 +613,7 @@ select columns from system.tables()
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 select a from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column a: does not exists"}
 select b from test
 [1, 2, 3]
 select columns from system.tables()
@@ -653,9 +653,9 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column a: does not exists"}
 select b from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column b: does not exists"}
 drop table test
 # test: drop column (key order)
 create table test (a text, b int, id int primary key)
@@ -723,7 +723,7 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column a: does not exists"}
 select b from test
 [1, 2, 3]
 select columns from system.tables()
@@ -763,9 +763,9 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column a: does not exists"}
 select b from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column b: does not exists"}
 drop table test
 disconnect S0
 close E0

@@ -99,7 +99,8 @@ ccursor_open_value(Vm* self, int target, Value* value)
 				data_skip(&cursor->obj_pos);
 			}
 		} else {
-			error("FROM: array, map or data type expected");
+			error("FROM: array, map or data type expected, but got %s",
+			      type_to_string(*value->data));
 		}
 		if (end)
 			return false;
@@ -129,7 +130,8 @@ ccursor_open_value(Vm* self, int target, Value* value)
 		cursor->group_pos = group_next(cursor->group, -1);
 	} else
 	{
-		error("FROM: array, map or data type expected");
+		error("FROM: array, map or data type expected, but got %s",
+		      value_type_to_string(value));
 	}
 
 	// jmp on success
@@ -278,7 +280,12 @@ ccursor_read(Vm* self, Op* op)
 	case CURSOR_TABLE:
 	{
 		if (unlikely(! iterator_has(cursor->it)))
-			error("*: not in active aggregation");
+		{
+			auto config = cursor->table->config;
+			error("%.*s.%.*s.*: not in active scan",
+			      str_size(&config->schema), str_of(&config->schema),
+			      str_size(&config->name), str_of(&config->name));
+		}
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
 		value_set_data(a, row_data(current), row_size(current), NULL);
@@ -309,7 +316,7 @@ ccursor_read(Vm* self, Op* op)
 		break;
 	}
 	default:
-		error("*: not in active aggregation");
+		error("*: not in active scan");
 		break;
 	}
 }
@@ -326,7 +333,12 @@ ccursor_idx(Vm* self, Op* op)
 	case CURSOR_TABLE:
 	{
 		if (unlikely(! iterator_has(cursor->it)))
-			error("*: not in active aggregation");
+		{
+			auto config = cursor->table->config;
+			error("%.*s.%.*s.*: not in active scan",
+			      str_size(&config->schema), str_of(&config->schema),
+			      str_size(&config->name), str_of(&config->name));
+		}
 		auto current = iterator_at(cursor->it);
 		assert(current != NULL);
 		data     = row_data(current);
@@ -342,7 +354,8 @@ ccursor_idx(Vm* self, Op* op)
 	{
 		auto value = &set_iterator_at(&cursor->set_it)->value;
 		if (value->type != VALUE_DATA)
-			error("current cursor object type is not a map");
+			error("cursor: object type expected to be array or map, but got %s",
+			      value_type_to_string(value));
 		data     = value->data;
 		data_buf = value->buf;
 		break;
@@ -351,7 +364,8 @@ ccursor_idx(Vm* self, Op* op)
 	{
 		auto value = &merge_iterator_at(&cursor->merge_it)->value;
 		if (value->type != VALUE_DATA)
-			error("current cursor object type is not a map");
+			error("cursor: object type expected to be array or map, but got %s",
+			      value_type_to_string(value));
 		data     = value->data;
 		data_buf = value->buf;
 		break;
@@ -370,23 +384,41 @@ ccursor_idx(Vm* self, Op* op)
 	{
 		int column_order = op->c;
 		if (unlikely(! data_is_array(data)))
-			error("current cursor object is not an array");
+			error("[]: array expected, but got %s",
+			       type_to_string(*data));
 
 		if (! array_find(&data, column_order))
-			error("column <%d> does not exists", column_order);
+			error("[]: index %d is out of bounds", column_order);
 	}
 
 	// match name in the object
 	if (op->d != -1)
 	{
-		if (unlikely(! data_is_map(data)))
-			error("current cursor object type is not a map");
-
 		Str name;
 		code_data_at_string(self->code_data, op->d, &name);
+		if (unlikely(! data_is_map(data)))
+		{
+			if (cursor->type == CURSOR_TABLE && op->c == -1)
+				error("column %.*s: does not exists", str_size(&name), str_of(&name));
+			else
+				error("column %.*s: row or map expected, but got %s",
+				      str_size(&name), str_of(&name),
+				      type_to_string(*data));
+		}
+
 		if (! map_find_path(&data, &name))
-			error("object path '%.*s' not found", str_size(&name),
-			      str_of(&name));
+		{
+			if (cursor->type == CURSOR_TABLE)
+			{
+				auto column = columns_of(table_columns(cursor->table), op->c);
+				error("column %.*s.%.*s: path not found",
+				      str_size(&column->name), str_of(&column->name),
+				      str_size(&name), str_of(&name));
+			} else {
+				error("%.*s: path not found", str_size(&name),
+				      str_of(&name));
+			}
+		}
 	}
 
 	value_read(reg_at(&self->r, op->a), data, data_buf);
@@ -441,7 +473,8 @@ cinsert(Vm* self, Op* op)
 	{
 		uint8_t* pos = code_data_at(self->code_data, list[i]);
 		if (unlikely(! data_is_array(pos)))
-			error("INSERT/REPLACE: array expected");
+			error("INSERT/REPLACE: array expected, but got %s",
+			      type_to_string(*pos));
 		part_insert(part, self->trx, false, &pos);
 	}
 }
@@ -461,7 +494,8 @@ cupdate(Vm* self, Op* op)
 	if (likely(value->type == VALUE_DATA))
 	{
 		if (unlikely(!data_is_array(value->data) && !data_is_map(value->data)))
-			error("UPDATE: array, map or data set expected");
+			error("UPDATE: array, map or data set expected, but got %s",
+			      type_to_string(*value->data));
 
 		pos = value->data;
 		part_update(part, trx, it, &pos);
@@ -490,7 +524,8 @@ cupdate(Vm* self, Op* op)
 		}
 	} else
 	{
-		error("UPDATE: array, map or data set expected");
+		error("UPDATE: array, map or data set expected, but got %s",
+		      value_type_to_string(value));
 	}
 
 	stack_popn(&self->stack, 1);
@@ -520,7 +555,8 @@ cupsert(Vm* self, Op* op)
 	{
 		uint8_t* pos = code_data_at(self->code_data, list[cursor->ref_pos]);
 		if (unlikely(! data_is_array(pos)))
-			error("UPSERT: array expected");
+			error("UPSERT: array expected, but got %s",
+			      type_to_string(*pos));
 
 		// set cursor ref pointer to the current insert row data
 		cursor->ref = pos;

@@ -46,7 +46,7 @@ select t.id from (select * as id from test) t
 select t.id from (select * id from test) t
 [1, 2, 3]
 select t.id from (select * from test) t
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column id: row or map expected, but got array"}
 # test: select from (select {} from shared) label
 select t.id from (select {"id": id} from test) t
 [1, 2, 3]

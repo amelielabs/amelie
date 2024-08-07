@@ -14,13 +14,13 @@ select from
 select 1 from
 {"code": 1, "msg": "bad expression"}
 select 1 from "test"
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got string"}
 select 1 from name
 {"code": 1, "msg": "<name> table or view is not found"}
 select 1 from 1 where
 {"code": 1, "msg": "bad expression"}
 select 1 from 1 where null
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 # test: select expr
 select 1
 1
@@ -73,13 +73,13 @@ select **
 {"code": 1, "msg": "<**> no FROM clause defined"}
 # test: select from expr
 select * from 1
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 select * from 3.14
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got real"}
 select * from null
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got null"}
 select * from "test"
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got string"}
 select * from []
 []
 # test: select from []
@@ -212,7 +212,7 @@ select * from [1, 2, 3] list, [3,2,1] list
 # test: select from view expr
 create view test as select 123
 select * from test
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 drop view test
 create view test as select [1,2,3]
 explain select * from test
@@ -807,7 +807,7 @@ bytecode [node]
 select obj.id from test
 [1, 2, 3]
 select obj.data from test
-{"code": 1, "msg": "object path 'data' not found"}
+{"code": 1, "msg": "column obj.data: path not found"}
 select (select * from test.*) from test
 [[{
   "id": 1

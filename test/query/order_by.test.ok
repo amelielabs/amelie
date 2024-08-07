@@ -37,9 +37,9 @@ bytecode [coordinator]
 
 "
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, map or data type expected"}
+{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 select (select * from [1,3,2] order by *)
 [1, 2, 3]
 select * from (select * from [1,3,2] order by *)
@@ -115,7 +115,7 @@ select * from test order by data asc
 select * from test order by test.data
 [[1, 1], [3, 2], [2, 3]]
 select * from test order by test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column test: does not exists"}
 # test: order by alias.column
 select * from test alias order by alias.data
 [[1, 1], [3, 2], [2, 3]]

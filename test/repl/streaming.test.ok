@@ -10072,7 +10072,7 @@ select count(data) from test
 switch S0
 alter table test drop column data
 select count(data) from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column data: does not exists"}
 select count(id) from test
 [9999]
 # test: wait replica sync
@@ -10085,7 +10085,7 @@ show repl
 }
 switch S1
 select count(data) from test
-{"code": 1, "msg": "current cursor object type is not a map"}
+{"code": 1, "msg": "column data: does not exists"}
 select count(id) from test
 [9999]
 # test: ddl (rename column)
