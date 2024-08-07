@@ -224,7 +224,7 @@ true
 # test: interval column
 create table test (id int primary key, i interval)
 insert into test values (0, "1 year 1 day 10 hour")
-{"code": 1, "msg": "column <i>: does not match data type"}
+{"code": 1, "msg": "column i: does not match data type interval"}
 insert into test values (0, "1 year 1 day 10 hour"::interval)
 {"code": 1, "msg": "expected ')'"}
 insert into test values (0, interval "1 year 1 day 10 hour")

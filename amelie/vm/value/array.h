@@ -109,7 +109,7 @@ value_array_put(Value* result, uint8_t* pos, int idx, Value* value)
 
 	// extend by one
 	if (idx < 0 || idx >= i)
-		error("put: array index '%d' is out of bounds", idx);
+		error("put: array index %d is out of bounds", idx);
 	encode_array_end(buf);
 
 	buf_end(buf);
@@ -133,7 +133,7 @@ value_array_remove(Value* result, uint8_t* pos, int idx)
 		i++;
 	}
 	if (idx < 0 || idx >= i)
-		error("<%d>: array index is out of bounds", idx);
+		error("remove: array index %d is out of bounds", idx);
 	encode_array_end(buf);
 
 	buf_end(buf);

@@ -271,7 +271,7 @@ false
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
 insert into test values (0, "1970-01-01 01:12:59.909090")
-{"code": 1, "msg": "column <ts>: does not match data type"}
+{"code": 1, "msg": "column ts: does not match data type timestamp"}
 insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
 {"code": 1, "msg": "expected ')'"}
 insert into test values (0, timestamp "1970-01-01 01:12:59.909090")

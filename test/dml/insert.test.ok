@@ -28,7 +28,7 @@ insert into test values(123,
 {"code": 1, "msg": "row has incorrect number of columns"}
 # test: insert type validate
 insert into test values ("123")
-{"code": 1, "msg": "column <id>: does not match data type"}
+{"code": 1, "msg": "column id: does not match data type int"}
 insert into test values (123, 123)
 {"code": 1, "msg": "row has incorrect number of columns"}
 select * from test
@@ -82,7 +82,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "asc": true
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column <obj>: does not match data type"}
+{"code": 1, "msg": "column obj: does not match data type map"}
 insert into test values ( {"id": 48} )
 select * from test
 [[{
@@ -101,7 +101,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "asc": true
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column <obj>: does not match data type"}
+{"code": 1, "msg": "column obj: does not match data type map"}
 insert into test values ( {"id": 48} )
 {"code": 1, "msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": []} )
@@ -109,7 +109,7 @@ insert into test values ( {"data": []} )
 insert into test values ( {"data": {}} )
 {"code": 1, "msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": {"id": "48"} } )
-{"code": 1, "msg": "column obj: key path <data.id> does not match data type"}
+{"code": 1, "msg": "column obj: key path <data.id> does not match data type int"}
 insert into test values ( {"data": {"id": 48} } )
 select * from test
 [[{

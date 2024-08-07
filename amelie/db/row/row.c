@@ -33,14 +33,15 @@ row_create(Columns* columns, uint8_t** pos)
 		{
 			// NOT NULL constraint
 			if (unlikely(column->constraint.not_null))
-				error("column <%.*s>: cannot be null",
+				error("column %.*s: cannot be null",
 				      str_size(&column->name),
 				      str_of(&column->name));
 		} else
 		if (unlikely(! type_validate(column->type, *pos))) {
-			error("column <%.*s>: does not match data type",
+			error("column %.*s: does not match data type %s",
 			      str_size(&column->name),
-			      str_of(&column->name));
+			      str_of(&column->name),
+			      type_of(column->type));
 		}
 
 		data_skip(pos);
@@ -77,14 +78,15 @@ row_create_hash(Keys* keys, uint32_t* hash, uint8_t** pos)
 		{
 			// NOT NULL constraint
 			if (unlikely(column->constraint.not_null))
-				error("column <%.*s>: cannot be null",
+				error("column %.*s: cannot be null",
 				      str_size(&column->name),
 				      str_of(&column->name));
 		} else
 		if (unlikely(! type_validate(column->type, *pos))) {
-			error("column <%.*s>: does not match data type",
+			error("column %.*s: does not match data type %s",
 			      str_size(&column->name),
-			      str_of(&column->name));
+			      str_of(&column->name),
+			      type_of(column->type));
 		}
 
 		// indexate keys per column

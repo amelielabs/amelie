@@ -133,7 +133,7 @@ select put(null)
 select put(null, 0)
 {"code": 1, "msg": "put(): expected 3 arguments, but got 2"}
 select put([], 0, 0)
-{"code": 1, "msg": "put: array index '0' is out of bounds"}
+{"code": 1, "msg": "put: array index 0 is out of bounds"}
 select put([1], 0, 0)
 [0]
 select [1,2,3]::put(0, '0')
@@ -145,9 +145,9 @@ select [1,2,3]::put(0, '0')::put(1, '1')
 select [1,2,3]::put(0, '0')::put(2, '1')
 ["0", 2, "1"]
 select [1,2,3]::put(0, '0')::put(3, '1')
-{"code": 1, "msg": "put: array index '3' is out of bounds"}
+{"code": 1, "msg": "put: array index 3 is out of bounds"}
 select [1,2,3]::put(0, '0')::put(-1, '1')
-{"code": 1, "msg": "put: array index '-1' is out of bounds"}
+{"code": 1, "msg": "put: array index -1 is out of bounds"}
 # test: put update
 create table test (id int primary key, data array)
 insert into test values (0, [1,2,3])
@@ -161,17 +161,17 @@ select remove(null)
 select remove(null, 0)
 {"code": 1, "msg": "remove(): expected array for argument 0, but got null"}
 select remove([], 0)
-{"code": 1, "msg": "<0>: array index is out of bounds"}
+{"code": 1, "msg": "remove: array index 0 is out of bounds"}
 select remove([], 1)
-{"code": 1, "msg": "<1>: array index is out of bounds"}
+{"code": 1, "msg": "remove: array index 1 is out of bounds"}
 select remove([1], 0)
 []
 select remove([1], -1)
-{"code": 1, "msg": "<-1>: array index is out of bounds"}
+{"code": 1, "msg": "remove: array index -1 is out of bounds"}
 select remove([1], -10)
-{"code": 1, "msg": "<-10>: array index is out of bounds"}
+{"code": 1, "msg": "remove: array index -10 is out of bounds"}
 select remove([1, 2], 3)
-{"code": 1, "msg": "<3>: array index is out of bounds"}
+{"code": 1, "msg": "remove: array index 3 is out of bounds"}
 select remove([1, 2], 1)
 [1]
 select remove([1, 2], 1)

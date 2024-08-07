@@ -110,12 +110,13 @@ column_find(Column* self, uint8_t** pos)
 
 	// find column
 	if (! array_find(pos, self->order))
-		error("column <%.*s>: is not found", str_size(&self->name),
+		error("column %.*s: is not found", str_size(&self->name),
 		      str_of(&self->name));
 
 	// validate data type
 	if (! type_validate(self->type, *pos))
-		error("column <%.*s>: does not match data type",
+		error("column %.*s: does not match data type",
 		      str_size(&self->name),
-		      str_of(&self->name));
+		      str_of(&self->name),
+		      type_of(self->type));
 }

@@ -141,11 +141,12 @@ key_find(Key* self, uint8_t** pos)
 
 	// validate data type
 	if (! type_validate(self->type, *pos))
-		error("column %.*s: key path <%.*s> does not match data type",
+		error("column %.*s: key path <%.*s> does not match data type %s",
 		      str_size(&self->column->name),
 		      str_of(&self->column->name),
 		      str_size(&self->path),
-		      str_of(&self->path));
+		      str_of(&self->path),
+		      type_of(self->type));
 }
 
 hot static inline uint32_t
