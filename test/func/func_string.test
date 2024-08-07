@@ -135,5 +135,11 @@ select "123$"::trim("$")
 select "$"::trim("$")
 select ""::trim("$")
 
+# test: like
+select 'hello, world'::like('hello%world')
+select 'hello, world' like 'hello%world'
+select public.like('hello, world', 'hello%world')
+select like('hello, world', 'hello%world')
+
 disconnect S0
 close E0

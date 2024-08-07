@@ -365,6 +365,16 @@ fn_trim(Call* self)
 	trim(self, true, true);
 }
 
+static void
+fn_like(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_STRING);
+	value_like(self->result, argv[0], argv[1]);
+}
+
 FunctionDef fn_string_def[] =
 {
 	{ "public", "length",  fn_length,  false },
@@ -378,5 +388,6 @@ FunctionDef fn_string_def[] =
 	{ "public", "ltrim",   fn_ltrim,   false },
 	{ "public", "rtrim",   fn_rtrim,   false },
 	{ "public", "trim",    fn_trim,    false },
+	{ "public", "like",    fn_like,    false },
 	{  NULL,     NULL,     NULL,       false }
 };
