@@ -150,14 +150,6 @@ parse_key(Stmt* self, Keys* keys)
 		else
 			type = parse_type(self, column, &path);
 
-		// ASC | DESC
-		bool asc = true;
-		if (stmt_if(self, KASC))
-			asc = true;
-		else
-		if (stmt_if(self, KDESC))
-			asc = false;
-
 		// validate key type
 		if (type != TYPE_INT &&
 		    type != TYPE_STRING &&
@@ -174,7 +166,6 @@ parse_key(Stmt* self, Keys* keys)
 		key_set_ref(key, column->order);
 		key_set_type(key, type);
 		key_set_path(key, &path);
-		key_set_asc(key, asc);
 		keys_add(keys, key);
 
 		// ,

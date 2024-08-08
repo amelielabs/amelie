@@ -230,6 +230,15 @@ create index j on test (obj.value int)
 select * from test use index (j)
 drop table test
 
+# test: update from secondary index
+create table test (obj object, primary key (obj.id int))
+create index i on test (obj.data int)
+insert into test {"id": 0, "data": 2}
+insert into test {"id": 1, "data": 1}
+insert into test {"id": 2, "data": 0}
+update test use index (i) set obj.value = obj.data
+drop table test
+
 # test: update returning
 create table test(id int primary key, data int)
 insert into test values (0, 0)

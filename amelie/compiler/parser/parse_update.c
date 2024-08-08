@@ -88,8 +88,9 @@ parse_update(Stmt* self)
 		error("UPDATE <table name> expected");
 	if (stmt->target->next_join)
 		error("UPDATE JOIN is not supported");
-
-	// todo: ensure target uses primary index
+	if (stmt->target->index)
+		if (table_primary(stmt->table) != stmt->target->index)
+			error("UPDATE only primary index supported");
 
 	// SET path = expr [, ... ]
 	stmt->expr_update = parse_update_expr(self);

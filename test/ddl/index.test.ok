@@ -37,8 +37,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -48,13 +47,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 # test: create index if not exists
@@ -70,8 +67,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -81,13 +77,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -102,8 +96,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -113,18 +106,15 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 2,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -139,8 +129,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -150,18 +139,15 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -181,8 +167,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -192,8 +177,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }]
 }]
 drop index i on test
@@ -233,8 +217,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -244,13 +227,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -264,8 +245,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -275,13 +255,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -300,8 +278,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -311,13 +288,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on test
@@ -353,8 +328,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -364,13 +338,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 drop index i on public.test
@@ -383,8 +355,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 # test: drop index if exists
@@ -435,8 +406,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -446,13 +416,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 alter index i on test rename to j
@@ -465,8 +433,7 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "j",
@@ -476,13 +443,11 @@ select system.tables()[0].indexes
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]
 # test: alter index rename if exists

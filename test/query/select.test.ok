@@ -187,8 +187,7 @@ select * from system.tables()[0].indexes[0].keys
 [{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]
 drop table test
 # test: select from expr alias

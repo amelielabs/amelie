@@ -45,8 +45,9 @@ parse_delete(Stmt* self)
 		error("DELETE FROM <table name> expected");
 	if (stmt->target->next_join)
 		error("DELETE FROM JOIN is not supported");
-
-	// todo: check primary index
+	if (stmt->target->index)
+		if (table_primary(stmt->table) != stmt->target->index)
+			error("DELETE only primary index supported");
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))

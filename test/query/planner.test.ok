@@ -446,8 +446,7 @@ select indexes from system.tables()
   "keys": [{
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }, {
   "name": "i",
@@ -457,13 +456,11 @@ select indexes from system.tables()
   "keys": [{
     "ref": 1,
     "type": 2,
-    "path": "",
-    "asc": true
+    "path": ""
   }, {
     "ref": 0,
     "type": 2,
-    "path": "",
-    "asc": false
+    "path": ""
   }]
 }]]
 explain select * from test where data = 1 and id = 1

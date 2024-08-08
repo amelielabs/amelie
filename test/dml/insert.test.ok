@@ -56,13 +56,11 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }, {
   "ref": 1,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }]]
 insert into test values (123)
 {"code": 1, "msg": "unexpected token"}
@@ -78,8 +76,7 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "id",
-  "asc": true
+  "path": "id"
 }]]
 insert into test values (123)
 {"code": 1, "msg": "column obj: does not match data type map"}
@@ -97,8 +94,7 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "data.id",
-  "asc": true
+  "path": "data.id"
 }]]
 insert into test values (123)
 {"code": 1, "msg": "column obj: does not match data type map"}
@@ -124,13 +120,11 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "data.id",
-  "asc": true
+  "path": "data.id"
 }, {
   "ref": 0,
   "type": 2,
-  "path": "id",
-  "asc": true
+  "path": "id"
 }]]
 insert into test values ( {"data": {"id": 48} } )
 {"code": 1, "msg": "column obj: key path <id> is not found"}

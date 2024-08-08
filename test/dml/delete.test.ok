@@ -200,6 +200,15 @@ select * from test
 select * from test use index (i)
 []
 drop table test
+# test: delete from secondary index
+create table test (obj object, primary key (obj.id int))
+create index i on test (obj.data int)
+insert into test {"id": 0, "data": 2}
+insert into test {"id": 1, "data": 1}
+insert into test {"id": 2, "data": 0}
+delete from test use index (i)
+{"code": 1, "msg": "DELETE only primary index supported"}
+drop table test
 # test: delete returning
 create table test(id int primary key)
 insert into test values (0)

@@ -72,8 +72,7 @@ show tables
     "keys": [{
       "ref": 0,
       "type": 2,
-      "path": "",
-      "asc": false
+      "path": ""
     }]
   }],
   "partitions": [{
@@ -104,8 +103,7 @@ show tables
     "keys": [{
       "ref": 0,
       "type": 2,
-      "path": "",
-      "asc": false
+      "path": ""
     }]
   }],
   "partitions": [{
@@ -197,8 +195,7 @@ show tables
     "keys": [{
       "ref": 0,
       "type": 2,
-      "path": "",
-      "asc": false
+      "path": ""
     }]
   }],
   "partitions": [{
@@ -229,8 +226,7 @@ show tables
     "keys": [{
       "ref": 0,
       "type": 2,
-      "path": "",
-      "asc": false
+      "path": ""
     }]
   }],
   "partitions": [{
@@ -261,8 +257,7 @@ show tables
     "keys": [{
       "ref": 0,
       "type": 2,
-      "path": "",
-      "asc": false
+      "path": ""
     }]
   }],
   "partitions": [{

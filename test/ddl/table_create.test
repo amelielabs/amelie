@@ -106,15 +106,6 @@ drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
 
-# test: primary key asc/desc
-create table test(id int, id2 int, primary key(id asc))
-select indexes[0].keys from system.tables() where name = "test"
-drop table test
-
-create table test(id int, primary key(id desc))
-select indexes[0].keys from system.tables() where name = "test"
-drop table test
-
 # test: primary key ensure valid type
 create table test(id map primary key)
 create table test(id map, primary key(id))

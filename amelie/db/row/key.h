@@ -15,7 +15,6 @@ struct Key
 	int64_t ref;
 	int64_t type;
 	Str     path;
-	bool    asc;
 	List    link;
 };
 
@@ -27,7 +26,6 @@ key_allocate(void)
 	self->column = NULL;
 	self->ref    = -1;
 	self->type   = -1;
-	self->asc    = false;
 	str_init(&self->path);
 	list_init(&self->link);
 	return self;
@@ -58,12 +56,6 @@ key_set_path(Key* self, Str* path)
 	str_copy(&self->path, path);
 }
 
-static inline void
-key_set_asc(Key* self, bool value)
-{
-	self->asc = value;
-}
-
 static inline Key*
 key_copy(Key* self)
 {
@@ -72,7 +64,6 @@ key_copy(Key* self)
 	key_set_ref(copy, self->ref);
 	key_set_type(copy, self->type);
 	key_set_path(copy, &self->path);
-	key_set_asc(copy, self->asc);
 	return unguard();
 }
 
@@ -94,7 +85,6 @@ key_read(uint8_t** pos)
 		{ DECODE_INT,    "ref",  &self->ref  },
 		{ DECODE_INT,    "type", &self->type },
 		{ DECODE_STRING, "path", &self->path },
-		{ DECODE_BOOL,   "asc",  &self->asc  },
 		{ 0,              NULL,  NULL        },
 	};
 	decode_map(map, pos);
@@ -117,10 +107,6 @@ key_write(Key* self, Buf* buf)
 	// path
 	encode_raw(buf, "path", 4);
 	encode_string(buf, &self->path);
-
-	// asc
-	encode_raw(buf, "asc", 3);
-	encode_bool(buf, self->asc);
 
 	encode_map_end(buf);
 }

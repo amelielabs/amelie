@@ -324,37 +324,16 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }, {
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }]]
 drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
 {"code": 1, "msg": "PRIMARY KEY defined twice"}
-# test: primary key asc/desc
-create table test(id int, id2 int, primary key(id asc))
-select indexes[0].keys from system.tables() where name = "test"
-[[{
-  "ref": 0,
-  "type": 2,
-  "path": "",
-  "asc": true
-}]]
-drop table test
-create table test(id int, primary key(id desc))
-select indexes[0].keys from system.tables() where name = "test"
-[[{
-  "ref": 0,
-  "type": 2,
-  "path": "",
-  "asc": false
-}]]
-drop table test
 # test: primary key ensure valid type
 create table test(id map primary key)
 {"code": 1, "msg": "<id> column key can be string, int or timestamp"}
@@ -371,8 +350,7 @@ select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
   "type": 2,
-  "path": "id",
-  "asc": true
+  "path": "id"
 }]]
 drop table test
 create table test (id int primary key)
@@ -432,8 +410,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: constraint default with key
@@ -451,8 +428,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: constraint not null forced for keys
@@ -461,8 +437,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: constraint not null forced for keys #2
@@ -471,8 +446,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }]]
 drop table test
 # test: constraint not null
@@ -483,8 +457,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -498,8 +471,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -514,8 +486,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: constraint serial key
@@ -524,8 +495,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: constraint serial key #2
@@ -534,8 +504,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": true
+  "path": ""
 }]]
 drop table test
 # test: constraint serial key type
@@ -547,8 +516,7 @@ select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
   "type": 2,
-  "path": "",
-  "asc": false
+  "path": ""
 }]]
 drop table test
 # test: with parsing
