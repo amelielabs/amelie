@@ -162,8 +162,13 @@ create view test as select 1
 create table test (id int primary key)
 drop view test
 
+# test: distributed
+create distributed table test (id int primary key)
+select *.name, *.shared from system.tables()
+drop table test
+
 # test: shared
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 select *.name, *.shared from system.tables()
 drop table test
 

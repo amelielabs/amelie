@@ -6,7 +6,7 @@ show nodes
 # test: ddl (without nodes)
 create table test (id int primary key)
 {"code": 1, "msg": "system has no nodes"}
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 {"code": 1, "msg": "system has no nodes"}
 select * from test
 {"code": 1, "msg": "<test> table or view is not found"}
@@ -48,7 +48,7 @@ show nodes
 }]
 # test: ddl/dml (with one node)
 create table test1 (id int primary key)
-create table test2 (id int primary key) shared
+create shared table test2 (id int primary key)
 show tables
 [{
   "schema": "public",

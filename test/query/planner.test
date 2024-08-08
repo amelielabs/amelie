@@ -28,7 +28,7 @@ drop index i on test
 drop table test
 
 # test: hash/hash
-create table test (id int, data int, primary key (id, data)) shared with (type = 'hash')
+create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')
 create unique index i on test (data) with (type = 'hash')
 
 insert into test values (0, 2)

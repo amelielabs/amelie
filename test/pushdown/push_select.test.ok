@@ -231,7 +231,7 @@ select (select (select * from [1,2,3])) from test
 explain select (select (select * from test t)) from test
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: select (select (select from shared)) from table
-create table ref (id int primary key, data int default 0) shared
+create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 explain select (select (select * from ref)) from test
 "

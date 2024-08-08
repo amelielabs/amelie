@@ -108,7 +108,7 @@ select (select t.**) from {"a": 1, "b": 2} t
 select (select t.**) from {"a": 1, "b": 2}
 {"code": 1, "msg": "<t> target not found"}
 # test: select (select *) from shared
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -224,7 +224,7 @@ select (select t.id) from test
 select (select t.id) from test t
 [1, 2, 3]
 drop table test
-create table test (obj object, primary key(obj.data.id int)) shared
+create shared table test (obj object, primary key(obj.data.id int))
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -356,7 +356,7 @@ select (select 123 from alias) from (select alias) alias
 select (select 123 from [1,2,3] alias) from (select alias) alias
 {"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
 # test: select * from (select from shared)
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -414,7 +414,7 @@ select alias.* from (select alias.* from test alias) alias
 select alias.* from (select * from test) alias
 [[1], [2], [3]]
 drop table test
-create table test (obj object, primary key(obj.data.id int)) shared
+create shared table test (obj object, primary key(obj.data.id int))
 insert into test {"data": {"id": 1}}
 insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
@@ -467,7 +467,7 @@ select alias.*[0].data.id from (select * from test) alias
 [1, 2, 3]
 drop table test
 # test: select (select *) from view
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 create view test_view as select [1,2,3]
 explain select (select *) from test_view
 {"code": 1, "msg": "<*> no FROM clause defined"}
@@ -554,7 +554,7 @@ select * from test_view
 drop view test_view
 drop table test
 # test: select (select from shared)
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -674,8 +674,8 @@ bytecode [node]
 select (select i.* from test i where test.id = i.id) from test
 [[[1]], [[2]], [[3]]]
 # test: select (select from shared) from shared #3
-create table a (id int primary key serial, data int default 0) shared
-create table b (id int primary key serial, data int default 1) shared
+create shared table a (id int primary key serial, data int default 0)
+create shared table b (id int primary key serial, data int default 1)
 insert into a () values (), (), ()
 insert into b () values (), (), ()
 explain select (select * from b where a.id = b.id) from a
@@ -773,8 +773,8 @@ drop table a
 drop table b
 drop table test
 # test: select set operations
-create table a (id int primary key serial, data int default 0) shared
-create table b (id int primary key serial, data int default 1) shared
+create shared table a (id int primary key serial, data int default 0)
+create shared table b (id int primary key serial, data int default 1)
 explain select length(select * from a)
 "
 bytecode [coordinator]

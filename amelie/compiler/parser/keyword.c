@@ -68,6 +68,7 @@ static Keyword keywords_d[] =
 	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
 	{ KDEBUG,                 "debug",                 5  },
+	{ KDISTRIBUTED,           "distributed",           11 },
 	{ KDEFAULT,               "default",               7  },
 	{ 0,                       NULL,                   0  }
 };

@@ -589,7 +589,7 @@ select count(*) from test group by id
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 drop table test
 # test: select distinct star from shared empty
-create table test (id int primary key serial, data int default 0) shared
+create shared table test (id int primary key serial, data int default 0)
 explain select distinct * from test
 "
 bytecode [coordinator]

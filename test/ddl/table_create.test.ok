@@ -399,8 +399,13 @@ create view test as select 1
 create table test (id int primary key)
 {"code": 1, "msg": "view <test> with the same name exists"}
 drop view test
+# test: distributed
+create distributed table test (id int primary key)
+select *.name, *.shared from system.tables()
+[["test", false]]
+drop table test
 # test: shared
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 select *.name, *.shared from system.tables()
 [["test", true]]
 drop table test

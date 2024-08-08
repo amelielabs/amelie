@@ -59,7 +59,7 @@ select * from test offset -1
 drop table test
 
 # test: select from shared limit
-create table test (id int primary key serial) shared
+create shared table test (id int primary key serial)
 insert into test generate 20
 select * from test limit 100
 

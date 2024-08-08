@@ -614,7 +614,7 @@ select data, count(*) c from test group by data order by c desc
 [[0, 2], [1, 2], [2, 1]]
 drop table test
 # test: select count from shared empty
-create table test (id int primary key, data int) shared
+create shared table test (id int primary key, data int)
 explain select count(*) from test
 "
 bytecode [coordinator]

@@ -51,7 +51,7 @@ true
 select 0 in (select * from [3,2,1])
 false
 # test: in (select from table)
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test 1,2,3
 select 1 in (select * from test)
 false
@@ -90,7 +90,7 @@ false
 select 1 not in (select * from [3,2,4,0])
 true
 # test: not in (select from table)
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test 1,2,3
 select 1 not in (select * from test)
 true

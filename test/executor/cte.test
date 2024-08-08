@@ -11,7 +11,7 @@ explain with a as (select * from test) select * from a
 drop table test
 
 # test: with(shared), expr
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test 1,2,3
 with a as (select * from test) select * from a
 explain with a as (select * from test) select * from a
@@ -118,14 +118,14 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 drop table test
 
-create table test (id int primary key) shared
+create shared table test (id int primary key)
 insert into test 1,2,3
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 drop table test
 
 # test: with(update returning), expr
-create table test (id int primary key, data int) shared
+create shared table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)
@@ -134,7 +134,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
 drop table test
 
 # test: with(delete returning), expr
-create table test (id int primary key, data int) shared
+create shared table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)

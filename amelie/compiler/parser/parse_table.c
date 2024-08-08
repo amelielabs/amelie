@@ -457,9 +457,9 @@ parse_validate_constraints(Columns* columns)
 }
 
 void
-parse_table_create(Stmt* self)
+parse_table_create(Stmt* self, bool shared)
 {
-	// CREATE TABLE [IF NOT EXISTS] name (key) [SHARED]
+	// CREATE [SHARED|DISTRIBUTED] TABLE [IF NOT EXISTS] name (key)
 	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
@@ -475,6 +475,7 @@ parse_table_create(Stmt* self)
 
 	// create table config
 	stmt->config = table_config_allocate();
+	table_config_set_shared(stmt->config, shared);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 
@@ -492,10 +493,6 @@ parse_table_create(Stmt* self)
 	// (columns)
 	parse_columns(self, &stmt->config->columns, &index_config->keys);
 	parse_validate_constraints(&stmt->config->columns);
-
-	// [SHARED]
-	if (stmt_if(self, KSHARED))
-		table_config_set_shared(stmt->config, true);
 
 	// [WITH]
 	parse_with(self, stmt, index_config);

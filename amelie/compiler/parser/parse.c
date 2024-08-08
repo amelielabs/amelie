@@ -146,14 +146,41 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE]
-		bool unique = stmt_if(stmt, KUNIQUE);
-		if (unique)
+		// [UNIQUE | SHARED | DISTRIBUTED]
+		bool unique = false;
+		bool shared = false;
+		auto mod = lex_next(lex);
+		switch (mod->id) {
+		case KUNIQUE:
 		{
 			auto next = stmt_if(stmt, KINDEX);
 			if (! next)
 				error("CREATE UNIQUE <INDEX> expected");
 			stmt_push(stmt, next);
+			unique = true;
+			break;
+		}
+		case KSHARED:
+		{
+			auto next = stmt_if(stmt, KTABLE);
+			if (! next)
+				error("CREATE SHARED <TABLE> expected");
+			stmt_push(stmt, next);
+			shared = true;
+			break;
+		}
+		case KDISTRIBUTED:
+		{
+			auto next = stmt_if(stmt, KTABLE);
+			if (! next)
+				error("CREATE DISTRIBUTED <TABLE> expected");
+			stmt_push(stmt, next);
+			shared = false;
+			break;
+		}
+		default:
+			stmt_push(stmt, mod);
+			break;
 		}
 
 		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
@@ -180,7 +207,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		if (lex_if(lex, KTABLE))
 		{
 			stmt->id = STMT_CREATE_TABLE;
-			parse_table_create(stmt);
+			parse_table_create(stmt, shared);
 		} else
 		if (lex_if(lex, KINDEX))
 		{

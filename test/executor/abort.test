@@ -38,7 +38,7 @@ select * from test
 drop table test
 
 # test: shared insert abort by error
-create table test (id int primary key, data int default 0) shared
+create shared table test (id int primary key, data int default 0)
 
 insert into test (id) values (0), (1), (2), (3), (1)
 select * from test
@@ -74,7 +74,7 @@ drop table test
 create table a (id int primary key, data int default 0)
 create table b (id int primary key, data int default 0)
 
-create table ref (id int primary key, data int default 0) shared
+create shared table ref (id int primary key, data int default 0)
 insert into ref values (0, 8), (1, 8), (2, 8);
 
 # test: insert a select a

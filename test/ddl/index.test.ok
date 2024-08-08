@@ -156,7 +156,7 @@ create unique index i on test (a)
 {"code": 1, "msg": "CREATE UNIQUE INDEX cannot be created on distributed tables"}
 # test: create index (unique shared)
 drop table test
-create table test (id int primary key, a int, b int) shared
+create shared table test (id int primary key, a int, b int)
 create unique index i on test (a)
 select system.tables()[0].indexes
 [{
@@ -267,7 +267,7 @@ create index i on test (a) with (type = 'unknown')
 {"code": 1, "msg": "WITH: unknown primary index type"}
 # test: create index (shared)
 drop table test
-create table test (id int primary key, a int, b int) shared
+create shared table test (id int primary key, a int, b int)
 create index i on test (a)
 select system.tables()[0].indexes
 [{
