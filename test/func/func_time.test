@@ -33,6 +33,7 @@ select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAM
 
 set timezone to 'UTC'
 select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
+select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin desc
 
 # test: date_trunc(interval year)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
