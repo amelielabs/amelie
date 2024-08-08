@@ -35,15 +35,3 @@ value_map_has(Value* result, uint8_t* data, Str* path)
 {
 	value_set_bool(result, map_has(data, path));
 }
-
-static inline void
-value_map_as(Value* result, Value* key, Value* value)
-{
-	auto buf = buf_begin();
-	encode_map(buf);
-	value_write(key, buf);
-	value_write(value, buf);
-	encode_map_end(buf);
-	buf_end(buf);
-	value_set_map_buf(result, buf);
-}

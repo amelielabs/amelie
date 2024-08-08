@@ -5,7 +5,7 @@ connect E0 S0 localhost:3485
 
 # test: append
 select append(null)
-select append(null, 0)
+select append(null, 1)
 select []::append(1)
 select []::append(1)::append(2)
 select []::append(1)::append(2)::append(3)
@@ -148,6 +148,7 @@ select * from test
 drop table test
 
 # test: set
+select set(null, "id", 42)
 select {}::set("id", 42)
 select {}::set("id", 42)::set("data", [1,2,3])
 select {}::set("id", 42)::set("data", {"misc": null}).data.misc

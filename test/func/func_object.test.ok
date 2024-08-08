@@ -3,8 +3,8 @@ connect E0 S0 localhost:3485
 # test: append
 select append(null)
 {"code": 1, "msg": "append(): expected two or more arguments"}
-select append(null, 0)
-[0]
+select append(null, 1)
+{"code": 1, "msg": "append(): array expected"}
 select []::append(1)
 [1]
 select []::append(1)::append(2)
@@ -200,6 +200,8 @@ select * from test
 [[0, [1, 3]]]
 drop table test
 # test: set
+select set(null, "id", 42)
+{"code": 1, "msg": "set(): map expected"}
 select {}::set("id", 42)
 {
   "id": 42

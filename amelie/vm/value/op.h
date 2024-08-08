@@ -711,13 +711,6 @@ value_assign(Value* result, int column, Value* a, Value* b, Value* c)
 always_inline hot static inline void
 value_set(Value* result, Value* a, Value* b, Value* c)
 {
-	if (unlikely(a->type == VALUE_NULL))
-	{
-		if (unlikely(b->type != VALUE_STRING))
-			error("set(): path type must be string");
-		value_map_as(result, b, c);
-		return;
-	}
 	if (unlikely(a->type != VALUE_MAP))
 		error("set(): map expected");
 	if (unlikely(b->type != VALUE_STRING))
@@ -791,20 +784,7 @@ value_idx(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_append(Value* result, Value* a, int argc, Value** argv)
 {
-	uint8_t* data;
-	int      data_size;
-	if (a->type == VALUE_ARRAY)
-	{
-		data = a->data;
-		data_size = a->data_size;
-	} else
-	if (a->type == VALUE_NULL)
-	{
-		data = NULL;
-		data_size = 0;
-	} else
-	{
-		error("append(): array or null expected");
-	}
-	value_array_append(result, data, data_size, argc, argv);
+	if (unlikely(a->type != VALUE_ARRAY))
+		error("append(): array expected");
+	value_array_append(result, a->data, a->data_size, argc, argv);
 }

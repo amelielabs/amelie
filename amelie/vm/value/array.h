@@ -27,19 +27,10 @@ value_array_append(Value*  result, uint8_t* data, int data_size,
                    Value** argv)
 {
 	auto buf = buf_begin();
-	if (! data)
-	{
-		encode_array(buf);
-		for (int i = 0; i < argc; i++)
-			value_write(argv[i], buf);
-		encode_array_end(buf);
-	} else
-	{
-		buf_write(buf, data, data_size - data_size_array_end());
-		for (int i = 0; i < argc; i++)
-			value_write(argv[i], buf);
-		encode_array_end(buf);
-	}
+	buf_write(buf, data, data_size - data_size_array_end());
+	for (int i = 0; i < argc; i++)
+		value_write(argv[i], buf);
+	encode_array_end(buf);
 	buf_end(buf);
 	value_set_array_buf(result, buf);
 }
