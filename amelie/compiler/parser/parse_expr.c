@@ -289,15 +289,12 @@ expr_lambda(Stmt* self, Expr* expr)
 			      str_of(&name->string));
 	}
 
-	Ast* init = NULL;
-#if 0
 	// (expr)
 	if (! stmt_if(self, '('))
 		error("lambda name <(> expected");
 	auto init = parse_expr(self, expr);
-	if (! stmt_if(self, '('))
+	if (! stmt_if(self, ')'))
 		error("lambda name (expr<)> expected");
-#endif
 
 	// =
 	if (! stmt_if(self, '='))

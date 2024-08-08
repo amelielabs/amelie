@@ -20,8 +20,9 @@
 #include <amelie_aggr.h>
 
 static Aggr*
-aggr_max_create(AggrIf* iface)
+aggr_max_create(AggrIf* iface, Value* init)
 {
+	unused(init);
 	Aggr* self = am_malloc(sizeof(Aggr));
 	self->iface = iface;
 	list_init(&self->link);

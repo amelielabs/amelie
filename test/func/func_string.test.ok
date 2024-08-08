@@ -40,9 +40,9 @@ select concat("a", null, "b", 3)
 {"code": 1, "msg": "concat(): string argument expected"}
 select concat("a", null, "b", 3::string)
 "ab3"
-select lambda list = list::concat(*::string) from [1,2,3]
+select lambda list("") = list::concat(*::string) from [1,2,3]
 ["123"]
-select (lambda list = list::concat(*::string))::size from [1,2,3]
+select (lambda list("") = list::concat(*::string))::size from [1,2,3]
 [3]
 # test: lower
 select ""::lower

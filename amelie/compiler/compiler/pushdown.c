@@ -42,8 +42,11 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	auto node = select->expr_aggs.list;
 	while (node)
 	{
-		auto aggr = ast_aggr_of(node->ast);
-		op3(self, CGROUP_ADD, rgroup, aggr->id, aggr->order);
+		auto aggr  = ast_aggr_of(node->ast);
+		int  rexpr = -1;
+		if (aggr->expr_init)
+			rexpr = emit_expr(self, select->target, aggr->expr_init);
+		op3(self, CGROUP_ADD, rgroup, aggr->id, rexpr);
 		node = node->next;
 	}
 

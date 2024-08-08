@@ -29,7 +29,7 @@ struct Group
 
 Group*
 group_create(int);
-void group_add(Group*, AggrIf*);
+void group_add(Group*, AggrIf*, Value*);
 void group_write(Group*, Stack*);
 void group_get(Group*, Stack*, int, Value*);
 void group_read_aggr(Group*, GroupNode*, int, Value*);

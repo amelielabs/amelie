@@ -11,7 +11,7 @@ typedef struct Aggr   Aggr;
 
 struct AggrIf
 {
-	Aggr* (*create)(AggrIf*);
+	Aggr* (*create)(AggrIf*, Value*);
 	void  (*free)(Aggr*);
 	void  (*state_create)(Aggr*, uint8_t*);
 	void  (*state_free)(Aggr*, uint8_t*);
@@ -28,9 +28,9 @@ struct Aggr
 };
 
 static inline Aggr*
-aggr_create(AggrIf* iface)
+aggr_create(AggrIf* iface, Value* init)
 {
-	return iface->create(iface);
+	return iface->create(iface, init);
 }
 
 static inline void

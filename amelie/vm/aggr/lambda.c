@@ -19,28 +19,44 @@
 #include <amelie_value.h>
 #include <amelie_aggr.h>
 
-static Aggr*
-aggr_lambda_create(AggrIf* iface)
+typedef struct
 {
-	Aggr* self = am_malloc(sizeof(Aggr));
-	self->iface = iface;
-	list_init(&self->link);
-	return self;
+	Aggr  aggr;
+	Value init;
+} Lambda;
+
+static inline Lambda*
+lambda_of(Aggr* self)
+{
+	return (Lambda*)self;
+}
+
+static Aggr*
+aggr_lambda_create(AggrIf* iface, Value* init)
+{
+	auto self = (Lambda*)am_malloc(sizeof(Lambda));
+	self->aggr.iface = iface;
+	list_init(&self->aggr.link);
+	value_init(&self->init);
+	value_copy(&self->init, init);
+	return &self->aggr;
 }
 
 static void
 aggr_lambda_free(Aggr* self)
 {
+	auto lambda = lambda_of(self);
+	value_free(&lambda->init);
 	am_free(self);
 }
 
 static void
 aggr_lambda_state_create(Aggr* self, uint8_t* state)
 {
-	unused(self);
+	auto lambda = lambda_of(self);
 	Value* ref = (Value*)state;
 	value_init(ref);
-	value_set_null(ref);
+	value_copy(ref, &lambda->init);
 }
 
 static void

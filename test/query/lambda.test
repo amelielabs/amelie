@@ -9,37 +9,42 @@ select 1 lambda
 select lambda name
 select lambda name -
 select lambda name =
+select lambda name (
+select lambda name ()
+select lambda name (true)
+select lambda name (true) =
 
 # test: lambda (init)
-select lambda n = true from []
-select lambda n = true from [1]
-select lambda n = * from [1,2,3]
+select lambda n(false) = true from []
+select lambda n(false) = true from [1]
+select lambda n(null) = * from [1,2,3]
 
 # test: lambda (state access)
-explain select lambda n = n from [1,2,3]
-select lambda n = n from [1,2,3]
+explain select lambda n(123) = n from [1,2,3]
+select lambda n(123) = n from [1,2,3]
 
-select lambda n = n::append(*) from [1,2,3]
-select lambda n = n::append(*)::append(n) from [1,2,3]
-select lambda n = n::append(*)::append(n::string) from [1,2,3]
-select * from (select lambda n = n::append(*) from [1,2,3])
+select lambda n([]) = n::append(*) from [1,2,3]
+select lambda n([]) = n::append(*)::append(n) from [1,2,3]
+select lambda n([]) = n::append(*)::append(n::string) from [1,2,3]
+select * from (select lambda n([]) = n::append(*) from [1,2,3])
 
-select lambda obj = obj::set(*, [*]) from ["a", "b", "c"]
-select lambda obj = obj::set("key_" || *::string, *) from [1,2,3]
+select lambda obj({}) = obj::set(*, [*]) from ["a", "b", "c"]
+select lambda obj({}) = obj::set("key_" || *::string, *) from [1,2,3]
 
 # test: lambda (crosss state access)
-select lambda i = i::append(*), lambda j = j::append(i) from [1,2,3]
+select lambda i([]) = i::append(*), lambda j([]) = j::append(i) from [1,2,3]
 
 # test: lambda (label)
-select (lambda n = n::append(*)) as N from [1,2,3]
+select (lambda n([]) = n::append(*)) as N from [1,2,3]
 
 # test: lambda (group by)
-select *, lambda n = n::append(*) from [1,2,2,3] group by *
+select *, lambda n(0) = n + 1 from [1,2,2,3] group by *
+select *, lambda n([]) = n::append(*) from [1,2,2,3] group by *
 
 # test: lambda (shared table)
 create table test (id int primary key) shared
 insert into test 1,2,3,4,5
-select lambda n = n::append(id) from test
+select lambda n([]) = n::append(id) from test
 drop table test
 
 create table test (id int primary key, data int) shared
@@ -48,15 +53,32 @@ insert into test values (1, 1)
 insert into test values (2, 2)
 insert into test values (3, 1)
 insert into test values (4, 3)
-select lambda n = n::append(data) from test
-select data, lambda n = n::append(id) from test group by data
+select lambda n([]) = n::append(data) from test
+select data, lambda n([]) = n::append(id) from test group by data
 drop table test
 
 # test: lambda (distributed table)
 create table test (id int primary key)
 insert into test 1,2,3,4,5
-select lambda n = n::append(id) from test
-explain select lambda n = n::append(id) from test
+select lambda n([]) = n::append(id) from test
+explain select lambda n([]) = n::append(id) from test
+drop table test
+
+# test: lambda (init exceptions)
+create table test (id int primary key) shared
+insert into test 1,2,3,4,5
+
+# not supported
+select lambda n(id) = n::append(id) from test
+select lambda n(id) = 0
+select lambda n(id) = 0 from [1,2,3]
+select lambda n(*) = 0 from [1,2,3]
+
+# test: lambda (subquery)
+select lambda n(select * from test) = n from [1, 2, 3]
+select lambda n(select * from test) = n::append(*) from [1, 2, 3]
+select lambda n(select id from test) = n::append(*) from [6, 7, 8]
+
 drop table test
 
 disconnect S0

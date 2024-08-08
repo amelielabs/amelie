@@ -85,9 +85,9 @@ group_create(int keys_count)
 }
 
 void
-group_add(Group* self, AggrIf* iface)
+group_add(Group* self, AggrIf* iface, Value* init)
 {
-	auto aggr = aggr_create(iface);
+	auto aggr = aggr_create(iface, init);
 	self->aggr_size += aggr_state_size(aggr);
 	self->aggr_count++;
 	list_append(&self->aggrs, &aggr->link);

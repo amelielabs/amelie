@@ -346,7 +346,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      0      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2                null        1      0      0
  3                push        1      0      0
  4         group_write        0      0      0
@@ -393,7 +393,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      1      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2             int_min        1      0      0
  3                push        1      0      0
  4         cursor_open        0      0      6      # public.test (primary)
@@ -563,7 +563,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      1      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2             int_min        1      0      0
  3                push        1      0      0
  4         cursor_open        0      0      6      # public.test (primary)
@@ -934,7 +934,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      0      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2                null        1      0      0
  3                push        1      0      0
  4         group_write        0      0      0
@@ -981,7 +981,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      1      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2             int_min        1      0      0
  3                push        1      0      0
  4         cursor_open        0      0      6      # public.test (primary)
@@ -1134,7 +1134,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      1      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2             int_min        1      0      0
  3                push        1      0      0
  4         cursor_open        0      0      6      # public.test (primary)
@@ -1424,7 +1424,7 @@ bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
  1               group        1      1      0
- 2           group_add        1      0      0
+ 2           group_add        1      0     -1
  3                 int        2      0      0
  4                push        2      0      0
  5                 int        2      1      0

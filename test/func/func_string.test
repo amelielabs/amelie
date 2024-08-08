@@ -29,8 +29,8 @@ select concat("a", null, "b")
 select concat("a", null, "b", 3)
 select concat("a", null, "b", 3::string)
 
-select lambda list = list::concat(*::string) from [1,2,3]
-select (lambda list = list::concat(*::string))::size from [1,2,3]
+select lambda list("") = list::concat(*::string) from [1,2,3]
+select (lambda list("") = list::concat(*::string))::size from [1,2,3]
 
 # test: lower
 select ""::lower

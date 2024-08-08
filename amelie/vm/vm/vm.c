@@ -524,8 +524,13 @@ cgroup:
 	op_next;
 
 cgroup_add:
-	// [group, type]
-	group_add((Group*)r[op->a].obj, aggrs[op->b]);
+	// [group, type, init_value]
+	c = NULL;
+	if (op->c != -1)
+		c = &r[op->c];
+	group_add((Group*)r[op->a].obj, aggrs[op->b], c);
+	if (c)
+		value_free(c);
 	op_next;
 
 cgroup_write:

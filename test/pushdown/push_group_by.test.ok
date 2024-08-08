@@ -2262,7 +2262,7 @@ bytecode [coordinator]
  9        cursor_close        1      0      0
 10                 set        0      0      0
 11               group        2      0      0
-12           group_add        2      0      0
+12           group_add        2      0     -1
 13                null        3      0      0
 14                push        3      0      0
 15         group_write        2      0      0
@@ -2287,7 +2287,7 @@ bytecode [coordinator]
 bytecode [node]
 --------
  0               group        0      1      0
- 1           group_add        0      0      0
+ 1           group_add        0      0     -1
  2             int_min        1      0      0
  3                push        1      0      0
  4         cursor_open        0      0      6      # public.test (primary)
