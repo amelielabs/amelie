@@ -139,8 +139,11 @@ build_execute(Build* self, Uuid* node)
 			if (! part)
 				break;
 			// build new index content for current node
+			auto config = self->table->config;
 			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL, self->index);
+			part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
+			                self->index,
+			                &config->schema, &config->name);
 			part_build(&pb);
 			break;
 		}
@@ -152,8 +155,11 @@ build_execute(Build* self, Uuid* node)
 			auto part_dest = part_list_match(&self->table_new->part_list, node);
 			assert(part_dest);
 			// build new table with new column for current node
+			auto config = self->table->config;
 			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column, NULL);
+			part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
+			                NULL,
+			                &config->schema, &config->name);
 			part_build(&pb);
 			break;
 		}
@@ -165,8 +171,11 @@ build_execute(Build* self, Uuid* node)
 			auto part_dest = part_list_match(&self->table_new->part_list, node);
 			assert(part_dest);
 			// build new table without column for current node
+			auto config = self->table->config;
 			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column, NULL);
+			part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
+			                NULL,
+			                &config->schema, &config->name);
 			part_build(&pb);
 			break;
 		}

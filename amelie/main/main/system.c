@@ -176,12 +176,15 @@ system_set_timezone(void)
 
 	info("time: %d timezones loaded", global()->timezone_mgr->ht.count);
 	info("time: system timezone is '%.*s'", str_size(name), str_of(name));
+	info("");
 }
 
 static void
 system_recover(System* self)
 {
 	// ask each node to recover last checkpoint partitions in parallel
+	info("recover: checkpoint %" PRIu64, config_checkpoint());
+
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL, NULL);
 	guard(build_free, &build);

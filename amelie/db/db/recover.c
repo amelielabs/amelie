@@ -292,7 +292,7 @@ recover_wal(Recover* self)
 
 	// start wal recover from the last checkpoint
 	auto checkpoint = config_checkpoint() + 1;
-	info("recover: wal from: %" PRIu64, checkpoint);
+	info("recover: wal");
 
 	WalCursor cursor;
 	wal_cursor_init(&cursor);
@@ -315,5 +315,5 @@ recover_wal(Recover* self)
 			     total_writes / 1000000.0);
 	}
 
-	info("recover: complete (%" PRIu64 " writes)", total_writes);
+	info("recover: wal complete (%" PRIu64 " records)", total_writes);
 }

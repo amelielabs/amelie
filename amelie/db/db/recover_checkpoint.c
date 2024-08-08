@@ -21,8 +21,7 @@ hot static void
 recover_partition(Part* self, Table* table)
 {
 	auto checkpoint = config_checkpoint();
-	info("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ")",
-	     checkpoint,
+	info("recover: %.*s.%.*s (partition %" PRIu64 ")",
 	     str_size(&table->config->schema),
 	     str_of(&table->config->schema),
 	     str_size(&table->config->name),
@@ -46,8 +45,7 @@ recover_partition(Part* self, Table* table)
 		count++;
 	}
 
-	info("recover %" PRIu64 ": %.*s.%.*s (partition %" PRIu64 ") %" PRIu64 " rows loaded",
-	     checkpoint,
+	info("recover: %.*s.%.*s (partition %" PRIu64 ") complete (%" PRIu64 " rows)",
 	     str_size(&table->config->schema),
 	     str_of(&table->config->schema),
 	     str_size(&table->config->name),

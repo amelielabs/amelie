@@ -98,17 +98,61 @@ part_build(PartBuild* self)
 	iterator_open(it, NULL);
 	switch (self->type) {
 	case PART_BUILD_INDEX:
-		info("build %" PRIu64 ": create index", id);
+		info("build %.*s.%.*s: create index %.*s (partition %" PRIu64 ")",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->index->name),
+		     str_of(&self->index->name),
+		     id);
 		part_build_index(self, it);
+		info("build %.*s.%.*s: create index %.*s (partition %" PRIu64 ") complete",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->index->name),
+		     str_of(&self->index->name),
+		     id);
 		break;
 	case PART_BUILD_COLUMN_ADD:
-		info("build %" PRIu64 ": add column", id);
+		info("build %.*s.%.*s: add column %.*s (partition %" PRIu64 ")",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name),
+		     id);
 		part_build_column_add(self, it);
+		info("build %.*s.%.*s: add column %.*s (partition %" PRIu64 ") complete",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name),
+		     id);
 		break;
 	case PART_BUILD_COLUMN_DROP:
-		info("build %" PRIu64 ": drop column", id);
+		info("build %.*s.%.*s: drop column %.*s (partition %" PRIu64 ")",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name),
+		     id);
 		part_build_column_drop(self, it);
+		info("build %.*s.%.*s: drop column %.*s (partition %" PRIu64 ") complete",
+		     str_size(self->schema),
+		     str_of(self->schema),
+		     str_size(self->name),
+		     str_of(self->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name),
+		     id);
 		break;
 	}
-	info("build %" PRIu64 ": complete", id);
 }
