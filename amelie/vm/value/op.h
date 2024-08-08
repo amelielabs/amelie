@@ -151,6 +151,13 @@ value_gte(Value* result, Value* a, Value* b)
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real >= b->real);
 		break;
+	case VALUE_STRING:
+		if (b->type == VALUE_STRING)
+		{
+			int rc = str_compare_fn(&a->string, &b->string);
+			return value_set_bool(result, rc >= 0);
+		}
+		break;
 	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
@@ -190,6 +197,13 @@ value_gt(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real > b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real > b->real);
+		break;
+	case VALUE_STRING:
+		if (b->type == VALUE_STRING)
+		{
+			int rc = str_compare_fn(&a->string, &b->string);
+			return value_set_bool(result, rc > 0);
+		}
 		break;
 	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
@@ -231,6 +245,13 @@ value_lte(Value* result, Value* a, Value* b)
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real <= b->real);
 		break;
+	case VALUE_STRING:
+		if (b->type == VALUE_STRING)
+		{
+			int rc = str_compare_fn(&a->string, &b->string);
+			return value_set_bool(result, rc <= 0);
+		}
+		break;
 	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
@@ -270,6 +291,13 @@ value_lt(Value* result, Value* a, Value* b)
 			return value_set_bool(result, a->real < b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real < b->real);
+		break;
+	case VALUE_STRING:
+		if (b->type == VALUE_STRING)
+		{
+			int rc = str_compare_fn(&a->string, &b->string);
+			return value_set_bool(result, rc < 0);
+		}
 		break;
 	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)

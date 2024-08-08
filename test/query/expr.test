@@ -92,8 +92,15 @@ select 0 > 0
 select 0 >= 0
 select 0 < 0
 select 0 <= 0
+
 select "a" < 0
 select "a" < "b"
+select "a" < "a"
+select "a" <= "a"
+
+select "a" > "b"
+select "a" > "a"
+select "a" >= "a"
 
 # between
 select 1 between

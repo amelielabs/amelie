@@ -103,7 +103,17 @@ true
 select "a" < 0
 {"code": 1, "msg": "bad < expression type"}
 select "a" < "b"
-{"code": 1, "msg": "bad < expression type"}
+true
+select "a" < "a"
+false
+select "a" <= "a"
+true
+select "a" > "b"
+false
+select "a" > "a"
+false
+select "a" >= "a"
+true
 select 1 between
 {"code": 1, "msg": "error BETWEEN const value expected"}
 select 1 between and
