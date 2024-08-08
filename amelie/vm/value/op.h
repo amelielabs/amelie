@@ -138,40 +138,39 @@ value_nequ(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_gte(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer >= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer >= b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->real >= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real >= b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc >= 0);
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer >= b->integer);
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
 			return value_set_bool(result, rc >= 0);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad >= expression type");
 }
@@ -179,40 +178,39 @@ value_gte(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_gt(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer > b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer > b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->real > b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real > b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc > 0);
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer > b->integer);
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
 			return value_set_bool(result, rc > 0);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad > expression type");
 }
@@ -220,40 +218,39 @@ value_gt(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_lte(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer <= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer <= b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->real <= b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real <= b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc <= 0);
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer <= b->integer);
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
 			return value_set_bool(result, rc <= 0);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad <= expression type");
 }
@@ -261,40 +258,39 @@ value_lte(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_lt(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT || b->type == VALUE_TIMESTAMP)
 			return value_set_bool(result, a->integer < b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->integer < b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_bool(result, a->real < b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_bool(result, a->real < b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			int rc = interval_compare(&a->interval, &b->interval);
 			return value_set_bool(result, rc < 0);
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_TIMESTAMP || b->type == VALUE_INT)
 			return value_set_bool(result, a->integer < b->integer);
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
 			return value_set_bool(result, rc < 0);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad < expression type");
 }
@@ -313,22 +309,20 @@ value_in(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_add(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT)
 			return value_set_int(result, a->integer + b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->integer + b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_real(result, a->real + b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->real + b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			Interval iv;
@@ -343,9 +337,8 @@ value_add(Value* result, Value* a, Value* b)
 			timestamp_add(&ts, &a->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_INTERVAL)
 		{
 			Timestamp ts;
@@ -354,9 +347,8 @@ value_add(Value* result, Value* a, Value* b)
 			timestamp_add(&ts, &b->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			if (a->vector.size != b->vector.size)
@@ -366,6 +358,9 @@ value_add(Value* result, Value* a, Value* b)
 			vector_add(&vector, &a->vector, &b->vector);
 			return value_set_vector(result, &vector, buf);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad + expression types");
 }
@@ -373,22 +368,20 @@ value_add(Value* result, Value* a, Value* b)
 always_inline hot static inline void
 value_sub(Value* result, Value* a, Value* b)
 {
-	if (a->type == VALUE_INT)
-	{
+	switch (a->type) {
+	case VALUE_INT:
 		if (b->type == VALUE_INT)
 			return value_set_int(result, a->integer - b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->integer - b->real);
-	} else
-	if (a->type == VALUE_REAL)
-	{
+		break;
+	case VALUE_REAL:
 		if (b->type == VALUE_INT)
 			return value_set_real(result, a->real - b->integer);
 		if (b->type == VALUE_REAL)
 			return value_set_real(result, a->real - b->real);
-	} else
-	if (a->type == VALUE_INTERVAL)
-	{
+		break;
+	case VALUE_INTERVAL:
 		if (b->type == VALUE_INTERVAL)
 		{
 			Interval iv;
@@ -403,9 +396,8 @@ value_sub(Value* result, Value* a, Value* b)
 			timestamp_sub(&ts, &a->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
-	} else
-	if (a->type == VALUE_TIMESTAMP)
-	{
+		break;
+	case VALUE_TIMESTAMP:
 		if (b->type == VALUE_INTERVAL)
 		{
 			Timestamp ts;
@@ -414,9 +406,8 @@ value_sub(Value* result, Value* a, Value* b)
 			timestamp_sub(&ts, &b->interval);
 			return value_set_timestamp(result, timestamp_of(&ts, NULL));
 		}
-	} else
-	if (a->type == VALUE_VECTOR)
-	{
+		break;
+	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 		{
 			if (a->vector.size != b->vector.size)
@@ -426,6 +417,9 @@ value_sub(Value* result, Value* a, Value* b)
 			vector_sub(&vector, &a->vector, &b->vector);
 			return value_set_vector(result, &vector, buf);
 		}
+		break;
+	default:
+		break;
 	}
 	error("bad - expression types");
 }
