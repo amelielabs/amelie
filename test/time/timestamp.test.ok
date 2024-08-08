@@ -277,10 +277,11 @@ insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
 insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
 insert into test values (1, timestamp "1970-01-01 01:13:00")
 insert into test values (2, timestamp "1970-01-01 01:13:01")
+insert into test values (3, timestamp '1970-01-01 01:13:01')
 select * from test
-[[0, "1970-01-01 01:12:59.909090+00"], [1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"]]
+[[0, "1970-01-01 01:12:59.909090+00"], [1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
-[[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"]]
+[[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 "
 bytecode [coordinator]
@@ -317,7 +318,7 @@ bytecode [node]
 
 "
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
-[[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"]]
+[[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 "
 bytecode [coordinator]
@@ -352,7 +353,7 @@ bytecode [node]
 
 "
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
-[[2, "1970-01-01 01:13:01+00"]]
+[[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 drop table test
 # test: timestamp column (key)
 create table test (id timestamp primary key)

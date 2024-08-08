@@ -80,7 +80,7 @@ json_is_keyword(Json* self, const char* name, int name_size)
 }
 
 hot static inline void
-json_parse_keyword(Json* self, const char* name, int name_size)
+json_keyword(Json* self, const char* name, int name_size)
 {
 	if (unlikely(! json_is_keyword(self, name, name_size)))
 		error("unexpected token");
@@ -88,7 +88,7 @@ json_parse_keyword(Json* self, const char* name, int name_size)
 }
 
 hot static inline void
-json_parse_string(Json* self, Str* str)
+json_string_read(Json* self, Str* str, int string_end)
 {
 	// "
 	self->pos++;
@@ -96,7 +96,7 @@ json_parse_string(Json* self, Str* str)
 	bool slash = false;
 	while (self->pos < self->end)
 	{
-		if (*self->pos == '\"') {
+		if (*self->pos == string_end) {
 			if (slash) {
 				slash = false;
 				self->pos++;
@@ -121,7 +121,17 @@ json_parse_string(Json* self, Str* str)
 }
 
 hot static inline bool
-json_parse_num(Json* self, int64_t* value, double* real)
+json_string(Json* self, Str* str)
+{
+	auto next = json_next(self);
+	if (next != '\"' && next != '\'')
+		return false;
+	json_string_read(self, str, next);
+	return true;
+}
+
+hot static inline bool
+json_integer_read(Json* self, int64_t* value, double* real)
 {
 	bool minus = false;
 	if (*self->pos == '-')
@@ -161,18 +171,18 @@ read_as_double:
 }
 
 hot static inline void
-json_parse_integer(Json* self)
+json_integer(Json* self)
 {
 	int64_t value = 0;
 	double  value_real = 0;
-	if (json_parse_num(self, &value, &value_real))
+	if (json_integer_read(self, &value, &value_real))
 		encode_integer(self->buf, value);
 	else
 		encode_real(self->buf, value_real);
 }
 
 hot static inline void
-json_parse_vector(Json* self)
+json_vector(Json* self)
 {
 	// [int| real[, ...]]
 	auto next = json_next(self);
@@ -194,7 +204,7 @@ json_parse_vector(Json* self)
 			int64_t value_int  = 0;
 			double  value_real = 0;
 			float   value;
-			if (json_parse_num(self, &value_int, &value_real))
+			if (json_integer_read(self, &value_int, &value_real))
 				value = value_int;
 			else
 				value = value_real;
@@ -221,19 +231,20 @@ json_parse_vector(Json* self)
 }
 
 hot static inline void
-json_parse_const(Json* self)
+json_const(Json* self)
 {
 	switch (*self->pos) {
 	case '"':
+	case '\'':
 	{
 		Str str;
-		json_parse_string(self, &str);
+		json_string_read(self, &str, *self->pos);
 		encode_string(self->buf, &str);
 		return;
 	}
 	case 'n':
 	{
-		json_parse_keyword(self, "null", 4);
+		json_keyword(self, "null", 4);
 		encode_null(self->buf);
 		return;
 	}
@@ -241,17 +252,16 @@ json_parse_const(Json* self)
 	{
 		if (json_is_keyword(self, "true", 4))
 		{
-			json_parse_keyword(self, "true", 4);
+			json_keyword(self, "true", 4);
 			encode_bool(self->buf, true);
 		} else
 		if (json_is_keyword(self, "timestamp", 9))
 		{
 			// TIMESTAMP "string"
 			self->pos += 9;
-			if (json_next(self) != '\"')
-				error("TIMESTAMP <string> expected");
 			Str str;
-			json_parse_string(self, &str);
+			if (! json_string(self, &str))
+				error("TIMESTAMP <string> expected");
 			Timestamp ts;
 			timestamp_init(&ts);
 			timestamp_read(&ts, &str);
@@ -263,18 +273,17 @@ json_parse_const(Json* self)
 	}
 	case 'f':
 	{
-		json_parse_keyword(self, "false", 5);
+		json_keyword(self, "false", 5);
 		encode_bool(self->buf, false);
 		return;
 	}
 	case 'i':
 	{
 		// INTERVAL "string"
-		json_parse_keyword(self, "interval", 8);
-		if (json_next(self) != '\"')
-			error("INTERVAL <string> expected");
+		json_keyword(self, "interval", 8);
 		Str str;
-		json_parse_string(self, &str);
+		if (! json_string(self, &str))
+			error("INTERVAL <string> expected");
 		Interval iv;
 		interval_init(&iv);
 		interval_read(&iv, &str);
@@ -284,14 +293,14 @@ json_parse_const(Json* self)
 	case 'v':
 	{
 		// VECTOR []
-		json_parse_keyword(self, "vector", 6);
-		json_parse_vector(self);
+		json_keyword(self, "vector", 6);
+		json_vector(self);
 		return;
 	}
 	default:
 		if (likely(isdigit(*self->pos) || *self->pos == '.' || *self->pos == '-'))
 		{
-			json_parse_integer(self);
+			json_integer(self);
 			return;
 		}
 		break;
@@ -403,7 +412,7 @@ json_parse(Json* self, Timezone* tz, Str* text, Buf* buf)
 				json_push(self, JSON_MAP_KEY);
 			} else
 			{
-				json_parse_const(self);
+				json_const(self);
 			}
 			break;
 		}
@@ -428,10 +437,9 @@ json_parse(Json* self, Timezone* tz, Str* text, Buf* buf)
 		case JSON_MAP_KEY:
 		{
 			// "key"
-			if (unlikely(*self->pos != '\"'))
-				error("map key expected");
 			Str str;
-			json_parse_string(self, &str);
+			if (! json_string(self, &str))
+				error("map key expected");
 			encode_string(self->buf, &str);
 			// ':'
 			next = json_next(self);
