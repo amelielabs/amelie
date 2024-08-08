@@ -73,5 +73,13 @@ select {"time": "2024-07-29 18:40:19+03"::timestamp}
 select {"time": "2024-07-29 18:40:19"::timestamp}
 select {"time": timestamp "2024-07-29 18:40:19"}
 
+# test: timestamp name case
+set timezone to 'UTC'
+set timezone to 'utc'
+show timezone
+set timezone to 'asia/famagusta'
+show timezone
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+
 disconnect S0
 close E0

@@ -81,7 +81,7 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 		auto tz = timezone_create(&name, path);
 		if (tz)
 		{
-			tz->node.hash = hash_fnv(str_of(&name), str_size(&name));
+			tz->node.hash = hash_fnv_lower(&name);
 			hashtable_set(&self->ht, &tz->node);
 		}
 	}
@@ -98,13 +98,14 @@ hot static inline bool
 timezone_cmp(HashtableNode* node, void* ptr)
 {
 	auto tz = container_of(node, Timezone, node);
-	return str_compare(&tz->name, ptr);
+	Str* with = ptr;
+	return str_strncasecmp(&tz->name, str_of(with), str_size(with));
 }
 
 hot Timezone*
 timezone_mgr_find(TimezoneMgr* self, Str* name)
 {
-	uint32_t hash = hash_fnv(str_of(name), str_size(name));
+	uint32_t hash = hash_fnv_lower(name);
 	auto node = hashtable_get(&self->ht, hash, timezone_cmp, name);
 	if (! node)
 		return NULL;

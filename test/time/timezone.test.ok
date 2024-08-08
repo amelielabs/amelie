@@ -98,5 +98,17 @@ select {"time": timestamp "2024-07-29 18:40:19"}
 {
   "time": "2024-07-29 18:40:19+03"
 }
+# test: timestamp name case
+set timezone to 'UTC'
+set timezone to 'utc'
+show timezone
+"utc"
+set timezone to 'asia/famagusta'
+show timezone
+"asia/famagusta"
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+{
+  "time": "2024-07-29 18:40:19+03"
+}
 disconnect S0
 close E0

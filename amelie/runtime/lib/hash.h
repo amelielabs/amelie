@@ -7,14 +7,28 @@
 //
 
 static inline uint32_t
-hash_fnv(const char *data, int size)
+hash_fnv(const char* data, int size)
 {
-	const unsigned char *pos = (const unsigned char*)data;
-	const unsigned char *end = pos + size;
+	auto pos = (const unsigned char*)data;
+	auto end = (const unsigned char*)pos + size;
 	uint32_t hash = 2166136261;
 	while (pos < end)
 	{
 		hash = (hash * 16777619) ^ *pos;
+		pos++;
+	}
+	return hash;
+}
+
+static inline uint32_t
+hash_fnv_lower(Str* str)
+{
+	auto pos = (const unsigned char*)str->pos;
+	auto end = (const unsigned char*)str->end;
+	uint32_t hash = 2166136261;
+	while (pos < end)
+	{
+		hash = (hash * 16777619) ^ tolower(*pos);
 		pos++;
 	}
 	return hash;
