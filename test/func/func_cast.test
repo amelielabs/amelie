@@ -69,24 +69,24 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: (string) object to string
 select {"id": 42, "data": [1,2,3]}::string
 
-# test: (json) int to json
-select 1::json
+# test: (native) int to native
+select 1::native
 
-# test: (json) string to json
-select '1'::json
-select '1'::json::type
+# test: (native) string to native
+select '1'::native
+select '1'::native::type
 
-# test: (json) array to json
-select '[1,2,3]'::json
-select '[1,2,3]'::json::type
+# test: (native) array to native
+select '[1,2,3]'::native
+select '[1,2,3]'::native::type
 
-# test: (json) map to json
-select '{"id":55}'::json
-select '{"id":55}'::json::type
+# test: (native) map to native
+select '{"id":55}'::native
+select '{"id":55}'::native::type
 
-# test: (json) vector to json
-select 'vector [1,2,3]'::json
-select 'vector [1,2,3]'::json::type
+# test: (native) vector to native
+select 'vector [1,2,3]'::native
+select 'vector [1,2,3]'::native::type
 
 # test: (interval) string to interval
 select '1 hour 55 minutes 5 secs'::interval

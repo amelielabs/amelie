@@ -84,7 +84,7 @@ show functions
   "name": "real"
 }, {
   "schema": "public",
-  "name": "json"
+  "name": "native"
 }, {
   "schema": "public",
   "name": "interval"
@@ -356,7 +356,7 @@ select system.functions()
   "name": "real"
 }, {
   "schema": "public",
-  "name": "json"
+  "name": "native"
 }, {
   "schema": "public",
   "name": "interval"

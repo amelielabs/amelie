@@ -671,10 +671,10 @@ value_to_real(Value* result, Value* a)
 }
 
 always_inline hot static inline void
-value_to_json(Value* result, Value* a, Timezone* timezone)
+value_to_native(Value* result, Value* a, Timezone* timezone)
 {
 	if (unlikely(a->type != VALUE_STRING))
-		error("json(): string type expected");
+		error("native(): string type expected");
 
 	auto buf = buf_begin();
 	Json json;

@@ -55,10 +55,10 @@ fn_real(Call* self)
 }
 
 hot static void
-fn_json(Call* self)
+fn_native(Call* self)
 {
 	call_validate(self, 1);
-	value_to_json(self->result, self->argv[0], self->vm->local->timezone);
+	value_to_native(self->result, self->argv[0], self->vm->local->timezone);
 }
 
 hot static void
@@ -160,7 +160,7 @@ FunctionDef fn_cast_def[] =
 	{ "public", "int",       fn_int,       false },
 	{ "public", "bool",      fn_bool,      false },
 	{ "public", "real",      fn_real,      false },
-	{ "public", "json",      fn_json,      false },
+	{ "public", "native",    fn_native,    false },
 	{ "public", "interval",  fn_interval,  false },
 	{ "public", "timestamp", fn_timestamp, false },
 	{ "public", "vector",    fn_vector,    false },

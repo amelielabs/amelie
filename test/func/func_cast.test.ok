@@ -78,30 +78,30 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: (string) object to string
 select {"id": 42, "data": [1,2,3]}::string
 "{"id": 42, "data": [1, 2, 3]}"
-# test: (json) int to json
-select 1::json
-{"code": 1, "msg": "json(): string type expected"}
-# test: (json) string to json
-select '1'::json
+# test: (native) int to native
+select 1::native
+{"code": 1, "msg": "native(): string type expected"}
+# test: (native) string to native
+select '1'::native
 1
-select '1'::json::type
+select '1'::native::type
 "int"
-# test: (json) array to json
-select '[1,2,3]'::json
+# test: (native) array to native
+select '[1,2,3]'::native
 [1, 2, 3]
-select '[1,2,3]'::json::type
+select '[1,2,3]'::native::type
 "array"
-# test: (json) map to json
-select '{"id":55}'::json
+# test: (native) map to native
+select '{"id":55}'::native
 {
   "id": 55
 }
-select '{"id":55}'::json::type
+select '{"id":55}'::native::type
 "map"
-# test: (json) vector to json
-select 'vector [1,2,3]'::json
+# test: (native) vector to native
+select 'vector [1,2,3]'::native
 [1, 2, 3]
-select 'vector [1,2,3]'::json::type
+select 'vector [1,2,3]'::native::type
 "vector"
 # test: (interval) string to interval
 select '1 hour 55 minutes 5 secs'::interval
