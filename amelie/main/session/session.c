@@ -118,19 +118,20 @@ session_reset(Session* self)
 }
 
 hot static inline void
-session_explain(Session* self)
+session_explain(Session* self, bool profile)
 {
-	// todo: profile
-	(void)self;
+	auto compiler = &self->compiler;
+	auto body     = &self->client->reply.content;
 	auto buf = explain(&self->explain,
-	                   &self->compiler.code_coordinator,
-	                   &self->compiler.code_node,
-	                   &self->compiler.code_data,
+	                   &compiler->code_coordinator,
+	                   &compiler->code_node,
+	                   &compiler->code_data,
 	                   &self->plan,
-	                   false);
+	                   body,
+	                   profile);
 	guard_buf(buf);
-	body_add_buf(&self->client->reply.content, buf,
-	              self->local.timezone);
+	buf_reset(body);
+	body_add_buf(body, buf, self->local.timezone);
 }
 
 hot static inline void
@@ -138,7 +139,8 @@ session_execute_distributed(Session* self)
 {
 	auto compiler = &self->compiler;
 	auto executor = self->share->executor;
-	auto plan = &self->plan;
+	auto explain  = &self->explain;
+	auto plan     = &self->plan;
 
 	// todo: shared table lock?
 
@@ -159,11 +161,16 @@ session_execute_distributed(Session* self)
 		plan_set_snapshot(plan);
 
 	// explain
-	if (compiler->parser.explain != EXPLAIN_NONE)
+	if (compiler->parser.explain == EXPLAIN)
 	{
-		session_explain(self);
+		session_explain(self, false);
 		return;
 	}
+
+	// profile
+	auto profile = parser_is_profile(&compiler->parser);
+	if (profile)
+		explain_start(&explain->time_run_us);
 
 	// execute coordinator
 	Exception e;
@@ -186,8 +193,21 @@ session_execute_distributed(Session* self)
 	// mark plan as completed
 	executor_complete(executor, plan);
 
+	if (profile)
+	{
+		explain_end(&explain->time_run_us);
+		explain_start(&explain->time_commit_us);
+	}
+
 	// coordinate wal write and group commit, handle abort
 	executor_commit(executor, plan);
+
+	// explain profile
+	if (profile)
+	{
+		explain_end(&explain->time_commit_us);
+		session_explain(self, true);
+	}
 }
 
 static void

@@ -31,3 +31,9 @@ struct Parser
 void parser_init(Parser*, Db*, FunctionMgr*, CodeData*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
+
+static inline bool
+parser_is_profile(Parser* self)
+{
+	return self->explain == (EXPLAIN|EXPLAIN_PROFILE);
+}

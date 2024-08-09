@@ -36,19 +36,15 @@
 void
 explain_init(Explain* self)
 {
-	self->active         = false;
 	self->time_run_us    = 0;
 	self->time_commit_us = 0;
-	self->sent_size      = 0;
 }
 
 void
 explain_reset(Explain* self)
 {
-	self->active         = false;
 	self->time_run_us    = 0;
 	self->time_commit_us = 0;
-	self->sent_size      = 0;
 }
 
 Buf*
@@ -57,6 +53,7 @@ explain(Explain*  self,
         Code*     node,
         CodeData* data,
         Plan*     plan,
+        Buf*      body,
         bool      profile)
 {
 	auto buf = buf_begin();
@@ -86,7 +83,7 @@ explain(Explain*  self,
 		buf_printf(buf, " time run:     %.3f ms\n", self->time_run_us / 1000.0);
 		buf_printf(buf, " time commit:  %.3f ms\n", self->time_commit_us / 1000.0);
 		buf_printf(buf, " time:         %.3f ms\n", time_us / 1000.0);
-		buf_printf(buf, " sent total:   %d\n", self->sent_size);
+		buf_printf(buf, " sent total:   %d\n", buf_size(body));
 	}
 
 	auto string = buf_begin();
