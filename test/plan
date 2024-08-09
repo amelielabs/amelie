@@ -112,6 +112,13 @@ group cluster
 test node
 test indexate
 
+# recovery
+directory recovery
+group recovery
+test wal_dml
+test wal_ddl
+test checkpoint
+
 # backup
 directory backup
 group backup

@@ -1,0 +1,224 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
+# test: create wal on start
+show wal
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
+select system.wal()
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
+show lsn
+0
+show all
+{
+  "version": "0.0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "timezone": "UTC",
+  "timezone_default": "UTC",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "frontends": 1,
+  "shards": 3,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "repl": false,
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "read_only": false,
+  "lsn": 0,
+  "psn": 0,
+  "checkpoint": 0
+}
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+show wal
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
+select system.wal()
+{
+  "active": true,
+  "rotate_wm": 104857600,
+  "sync_on_rotate": false,
+  "sync_on_write": false,
+  "lsn": 0,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1
+}
+show lsn
+0
+show all
+{
+  "version": "0.0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "timezone": "UTC",
+  "timezone_default": "UTC",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "frontends": 1,
+  "shards": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "repl": false,
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "read_only": false,
+  "lsn": 0,
+  "psn": 0,
+  "checkpoint": 0
+}
+# test: create table
+create table test (id int serial primary key, data int default 0)
+show lsn
+1
+select serial("public", "test")
+0
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+1
+select serial("public", "test")
+0
+# test: insert
+insert into test () values (), (), ()
+show lsn
+2
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 0], [2, 0]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+2
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 0], [2, 0]]
+# test: update
+update test set data = id
+show lsn
+3
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 1], [2, 2]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+3
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 1], [2, 2]]
+# test: upsert
+insert into test values (2, 0) on conflict do update set data = data + 1
+show lsn
+4
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 1], [2, 3]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+4
+select serial("public", "test")
+3
+select * from test
+[[0, 0], [1, 1], [2, 3]]
+# test: delete
+delete from test where id in (0, 1)
+show lsn
+5
+select serial("public", "test")
+3
+select * from test
+[[2, 3]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+5
+select serial("public", "test")
+3
+select * from test
+[[2, 3]]
+disconnect S0
+close E0

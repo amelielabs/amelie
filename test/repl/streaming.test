@@ -10113,6 +10113,19 @@ show repl
 switch S1
 select count(id2) from test
 
+# test: create table (serial)
+switch S0
+create table test2 (id int primary key serial)
+insert into test2 () values (), (), (), ()
+select serial("public", "test2")
+
+# test: wait replica sync
+watch system.replicas()[0].lsn = system.config().lsn
+show repl
+
+switch S1
+select serial("public", "test2")
+
 disconnect S1
 close E1
 

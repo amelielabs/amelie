@@ -1,0 +1,385 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+connect E0 S0 localhost:3485
+# test: create table
+create table test (id int serial primary key, data int default 0)
+show lsn
+1
+select serial("public", "test")
+0
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+1
+select serial("public", "test")
+0
+# test: alter table rename
+alter table test rename to test2
+show lsn
+2
+select serial("public", "test")
+{"code": 1, "msg": "table 'test': not exists"}
+select serial("public", "test2")
+0
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+2
+select serial("public", "test")
+{"code": 1, "msg": "table 'test': not exists"}
+select serial("public", "test2")
+0
+# test: alter table column add
+insert into test2() values (), (), ()
+select * from test2
+[[0, 0], [1, 0], [2, 0]]
+show lsn
+3
+select serial("public", "test2")
+3
+alter table test2 add column obj map
+select * from test2
+[[0, 0, null], [1, 0, null], [2, 0, null]]
+select obj from test2
+[null, null, null]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+4
+select serial("public", "test2")
+0
+select * from test2
+[[0, 0, null], [1, 0, null], [2, 0, null]]
+# test: alter table column rename
+alter table test2 rename column data to abc
+select * from test2
+[[0, 0, null], [1, 0, null], [2, 0, null]]
+select data from test2
+{"code": 1, "msg": "column data: does not exists"}
+select abc from test2
+[0, 0, 0]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+5
+select serial("public", "test2")
+0
+select data from test2
+{"code": 1, "msg": "column data: does not exists"}
+select abc from test2
+[0, 0, 0]
+# test: alter table column drop
+alter table test2 drop column abc
+select abc from test2
+{"code": 1, "msg": "column abc: does not exists"}
+select * from test2
+[[0, null], [1, null], [2, null]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+6
+select serial("public", "test2")
+0
+select * from test2
+[[0, null], [1, null], [2, null]]
+# test: create index
+create index i on test2 (id)
+select * from test2 use index (i)
+[[0, null], [1, null], [2, null]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+7
+select serial("public", "test2")
+0
+select * from test2 use index (i)
+[[0, null], [1, null], [2, null]]
+# test: alter index rename
+alter index i on test2 rename to i2
+show lsn
+8
+select * from test2 use index (i2)
+[[0, null], [1, null], [2, null]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+8
+select serial("public", "test2")
+0
+select * from test2 use index (i2)
+[[0, null], [1, null], [2, null]]
+# test: drop index
+drop index i2 on test2
+select * from test2 use index (i)
+{"code": 1, "msg": "index 'i': not exists"}
+select * from test2 use index (i2)
+{"code": 1, "msg": "index 'i2': not exists"}
+select * from test2
+[[0, null], [1, null], [2, null]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+9
+select serial("public", "test2")
+0
+select * from test2 use index (i)
+{"code": 1, "msg": "index 'i': not exists"}
+select * from test2 use index (i2)
+{"code": 1, "msg": "index 'i2': not exists"}
+select * from test2
+[[0, null], [1, null], [2, null]]
+# test: truncate
+truncate test2
+select * from test2
+[]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+10
+select serial("public", "test2")
+0
+select * from test2
+[]
+# test: drop table
+drop table test2
+show lsn
+11
+select serial("public", "test2")
+{"code": 1, "msg": "table 'test2': not exists"}
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+11
+select * from test2
+{"code": 1, "msg": "<test2> table or view is not found"}
+show tables
+[]
+# test: create schema
+create schema test
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}, {
+  "name": "test",
+  "system": false,
+  "create": true
+}]
+show lsn
+12
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+12
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}, {
+  "name": "test",
+  "system": false,
+  "create": true
+}]
+# test: alter schema rename
+alter schema test rename to test2
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}, {
+  "name": "test2",
+  "system": false,
+  "create": true
+}]
+show lsn
+13
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+13
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}, {
+  "name": "test2",
+  "system": false,
+  "create": true
+}]
+# test: drop schema
+drop schema test2
+show lsn
+14
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+14
+show schemas
+[{
+  "name": "system",
+  "system": true,
+  "create": false
+}, {
+  "name": "public",
+  "system": true,
+  "create": true
+}]
+# test: create view
+create view test as select [1,2,3]
+show lsn
+15
+show views
+[{
+  "schema": "public",
+  "name": "test",
+  "query": "select [1,2,3]",
+  "columns": []
+}]
+select * from test
+[1, 2, 3]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+15
+show views
+[{
+  "schema": "public",
+  "name": "test",
+  "query": "select [1,2,3]",
+  "columns": []
+}]
+select * from test
+[1, 2, 3]
+# test: alter view rename
+alter view test rename to test2
+show lsn
+16
+show views
+[{
+  "schema": "public",
+  "name": "test2",
+  "query": "select [1,2,3]",
+  "columns": []
+}]
+select * from test2
+[1, 2, 3]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+16
+show views
+[{
+  "schema": "public",
+  "name": "test2",
+  "query": "select [1,2,3]",
+  "columns": []
+}]
+select * from test2
+[1, 2, 3]
+# test: drop view
+drop view test2
+show lsn
+17
+show views
+[]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+17
+show views
+[]
+disconnect S0
+close E0

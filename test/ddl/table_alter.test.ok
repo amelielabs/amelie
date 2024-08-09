@@ -22,7 +22,7 @@ alter table if exists test rename test2
 # test: alter table no command
 create table test (id int primary key)
 alter table test
-{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP> expected"}
+{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
 # test: rename
 alter table test rename
 {"code": 1, "msg": "ALTER TABLE RENAME <name> expected"}
@@ -241,7 +241,7 @@ create table test (id int primary key)
 alter table
 {"code": 1, "msg": "ALTER TABLE <name> expected"}
 alter table test
-{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP> expected"}
+{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
 alter table test add
 {"code": 1, "msg": "ALTER TABLE name ADD <COLUMN> expected"}
 alter table test add 1
@@ -439,7 +439,7 @@ create table test (id int primary key)
 alter table
 {"code": 1, "msg": "ALTER TABLE <name> expected"}
 alter table test
-{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP> expected"}
+{"code": 1, "msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
 alter table test drop
 {"code": 1, "msg": "ALTER TABLE name DROP <COLUMN> expected"}
 alter table test drop column

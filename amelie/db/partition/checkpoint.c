@@ -133,7 +133,18 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	condition_signal(worker->on_complete);
 
 	// done
-	_exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
+
+	// valgrind hack.
+	//
+	// When using _exit(2) valgrind would complain about
+	// memory not being freed in the child.
+	//
+	// We use a simple hack that instead executes another
+	// app which returns result code.
+	//
+	if (! error)
+		execl("/bin/true", "/bin/true", NULL);
+	execl("/bin/false", "/bin/false", NULL);
 }
 
 static bool

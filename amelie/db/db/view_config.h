@@ -82,7 +82,7 @@ view_config_read(uint8_t** pos)
 		{ DECODE_STRING, "schema",  &self->schema },
 		{ DECODE_STRING, "name",    &self->name   },
 		{ DECODE_STRING, "query",   &self->query  },
-		{ DECODE_MAP,    "columns", &columns      },
+		{ DECODE_ARRAY,  "columns", &columns      },
 		{ 0,             NULL,       NULL         },
 	};
 	decode_map(map, pos);
