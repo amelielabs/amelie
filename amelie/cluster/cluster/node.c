@@ -62,8 +62,6 @@ node_execute_write(Node* self, Trx* trx, Req* req)
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
 
-		// todo: serial recover
-
 		// replay write
 		if (type == LOG_REPLACE)
 			part_insert(part, &trx->trx, true, &data);

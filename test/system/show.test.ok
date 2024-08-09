@@ -288,6 +288,9 @@ show functions
   "name": "sha1"
 }, {
   "schema": "public",
+  "name": "serial"
+}, {
+  "schema": "public",
   "name": "now"
 }, {
   "schema": "public",
@@ -558,6 +561,9 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "sha1"
+}, {
+  "schema": "public",
+  "name": "serial"
 }, {
   "schema": "public",
   "name": "now"

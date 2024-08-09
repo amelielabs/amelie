@@ -6,6 +6,9 @@
 // Real-Time SQL Database.
 //
 
+// serial
+#include "row/serial.h"
+
 // column
 #include "row/type.h"
 #include "row/constraint.h"
@@ -19,6 +22,3 @@
 // row
 #include "row/row.h"
 #include "row/ref.h"
-
-// serial
-#include "row/serial.h"

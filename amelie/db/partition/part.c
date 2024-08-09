@@ -16,12 +16,13 @@
 #include <amelie_partition.h>
 
 Part*
-part_allocate(PartConfig* config)
+part_allocate(PartConfig* config, Serial* serial)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->route         = NULL;
 	self->config        = NULL;
 	self->indexes_count = 0;
+	self->serial        = serial;
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);

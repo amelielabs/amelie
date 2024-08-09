@@ -46,6 +46,7 @@ part_list_free(PartList* self)
 void
 part_list_create(PartList* self,
                  bool      shared,
+                 Serial*   serial,
                  List*     parts,
                  List*     indexes)
 {
@@ -60,7 +61,7 @@ part_list_create(PartList* self,
 		config_psn_follow(config->id);
 
 		// prepare part
-		auto part = part_allocate(config);
+		auto part = part_allocate(config, serial);
 		list_append(&self->list, &part->link);
 		self->list_count++;
 	}

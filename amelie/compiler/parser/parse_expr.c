@@ -84,6 +84,7 @@ priority_map[UINT8_MAX] =
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
+	[KSERIAL]                  = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
 	[KSUM]                     = priority_value,
@@ -438,6 +439,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSET:
 	case KUNSET:
 	case KRANDOM:
+	case KSERIAL:
 	{
 		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),

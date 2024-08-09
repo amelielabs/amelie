@@ -72,18 +72,32 @@ static LogIf log_if_secondary =
 	.abort  = log_if_secondary_abort
 };
 
+static inline void
+part_sync_serial(Part* self, uint8_t* pos_serial)
+{
+	int64_t value;
+	data_read_integer(&pos_serial, &value);
+	serial_sync(self->serial, value);
+}
+
 hot void
 part_insert(Part*        self,
             Transaction* trx,
-            bool         replace,
+            bool         recover,
             uint8_t**    pos)
 {
 	auto primary = part_primary(self);
-	auto keys = index_keys(primary);
+	auto keys    = index_keys(primary);
+	auto replace = recover;
 
 	// allocate primary row
-	auto row = row_create(keys->columns, pos);
+	uint8_t* pos_serial = NULL;
+	auto row = row_create(keys->columns, pos, &pos_serial);
 	guard(row_free, row);
+
+	// sync last serial column value during recover
+	if (pos_serial && recover)
+		part_sync_serial(self, pos_serial);
 
 	// add log record
 	Ref* key, *prev;
@@ -127,7 +141,7 @@ part_update(Part*        self,
 	auto keys = index_keys(primary);
 
 	// allocate row
-	auto row = row_create(keys->columns, pos);
+	auto row = row_create(keys->columns, pos, NULL);
 	guard(row_free, row);
 
 	// add log record
@@ -199,7 +213,7 @@ part_delete_by(Part*        self,
 	auto keys = index_keys(primary);
 
 	// allocate row to use as a key
-	auto row = row_create(keys->columns, pos);
+	auto row = row_create(keys->columns, pos, NULL);
 	guard(row_free, row);
 
 	uint8_t key_data[keys->key_size];
@@ -224,7 +238,7 @@ part_upsert(Part*        self,
 	auto keys = index_keys(primary);
 
 	// allocate primary row
-	auto row = row_create(primary->config->keys.columns, pos);
+	auto row = row_create(primary->config->keys.columns, pos, NULL);
 	guard(row_free, row);
 
 	// add log record
@@ -287,8 +301,13 @@ part_ingest(Part* self, uint8_t** pos)
 	auto keys = index_keys(primary);
 
 	// allocate row
-	auto row = row_create(keys->columns, pos);
+	uint8_t* pos_serial = NULL;
+	auto row = row_create(keys->columns, pos, &pos_serial);
 	guard(row_free, row);
+
+	// sync last serial column value during recover
+	if (pos_serial)
+		part_sync_serial(self, pos_serial);
 
 	uint8_t key_data[keys->key_size];
 	auto    key = (Ref*)key_data;
@@ -301,35 +320,3 @@ part_ingest(Part* self, uint8_t** pos)
 	// secondary indexes
 	part_ingest_secondary(self, row);
 }
-
-/*
-void
-part_ingest_alter_add(Part* self, Row* origin, Buf* data)
-{
-	auto primary = part_primary(self);
-	auto keys = index_keys(primary);
-
-	// allocate row based on original row with a new column data
-	auto row = row_alter_add(origin, data);
-	guard(row_free, row);
-
-	uint8_t key_data[keys->key_size];
-	auto    key = (Ref*)key_data;
-	ref_create(key, row, keys);
-
-	// update primary index
-	index_ingest(primary, key);
-	unguard();
-
-	// secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
-	{
-		auto    index = list_at(Index, link);
-		auto    keys = index_keys(index);
-		uint8_t key_data[keys->key_size];
-		auto    key = (Ref*)key_data;
-		ref_create(key, row, keys);
-		index_ingest(index, key);
-	}
-}
-*/

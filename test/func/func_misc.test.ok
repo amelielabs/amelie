@@ -28,5 +28,13 @@ select md5("hello world")
 # test: sha1
 select sha1("hello world")
 "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed"
+# test: serial
+select serial("public", "abc")
+{"code": 1, "msg": "table 'abc': not exists"}
+create table test (id int primary key serial)
+insert into test () values (), (), ()
+select serial("public", "test")
+3
+drop table test
 disconnect S0
 close E0

@@ -144,6 +144,19 @@ fn_sha1(Call* self)
 	value_set_string(self->result, &string, buf);
 }
 
+static void
+fn_serial(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, VALUE_STRING);
+	auto table = table_mgr_find(&self->vm->db->table_mgr,
+	                            &argv[0]->string,
+	                            &argv[1]->string, true);
+	value_set_int(self->result, serial_get(&table->serial));
+}
+
 FunctionDef fn_misc_def[] =
 {
 	{ "public", "error",       fn_error,       false },
@@ -152,5 +165,6 @@ FunctionDef fn_misc_def[] =
 	{ "public", "random_uuid", fn_random_uuid, false },
 	{ "public", "md5",         fn_md5,         false },
 	{ "public", "sha1",        fn_sha1,        false },
+	{ "public", "serial",      fn_serial,      false },
 	{  NULL,     NULL,         NULL,           false }
 };

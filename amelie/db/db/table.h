@@ -22,6 +22,7 @@ table_free(Table* self)
 	part_list_free(&self->part_list);
 	if (self->config)
 		table_config_free(self->config);
+	serial_free(&self->serial);
 	am_free(self);
 }
 
@@ -30,8 +31,8 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
 	Table* self = am_malloc(sizeof(Table));
 	self->config = NULL;
-	part_list_init(&self->part_list, part_mgr);
 	serial_init(&self->serial);
+	part_list_init(&self->part_list, part_mgr);
 	guard(table_free, self);
 	self->config = table_config_copy(config);
 
@@ -46,6 +47,7 @@ static inline void
 table_open(Table* self)
 {
 	part_list_create(&self->part_list, self->config->shared,
+	                 &self->serial,
 	                 &self->config->partitions,
 	                 &self->config->indexes);
 }

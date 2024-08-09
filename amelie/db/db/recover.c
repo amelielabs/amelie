@@ -60,8 +60,6 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
 
-		// todo: serial recover
-
 		// replay write
 		if (type == LOG_REPLACE)
 			part_insert(part, trx, true, data);

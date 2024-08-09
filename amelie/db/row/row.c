@@ -13,7 +13,7 @@
 #include <amelie_row.h>
 
 hot Row*
-row_create(Columns* columns, uint8_t** pos)
+row_create(Columns* columns, uint8_t** pos, uint8_t** pos_serial)
 {
 	// []
 	uint8_t* data = *pos;	
@@ -43,6 +43,10 @@ row_create(Columns* columns, uint8_t** pos)
 			      str_of(&column->name),
 			      type_of(column->type));
 		}
+
+		// return last serial column position
+		if (pos_serial && column->constraint.generated == GENERATED_SERIAL)
+			*pos_serial = *pos;
 
 		data_skip(pos);
 	}

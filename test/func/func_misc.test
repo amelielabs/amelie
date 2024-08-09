@@ -26,5 +26,12 @@ select md5("hello world")
 # test: sha1
 select sha1("hello world")
 
+# test: serial
+select serial("public", "abc")
+create table test (id int primary key serial)
+insert into test () values (), (), ()
+select serial("public", "test")
+drop table test
+
 disconnect S0
 close E0
