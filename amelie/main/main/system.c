@@ -173,8 +173,6 @@ system_set_timezone(void)
 	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
 	if (! global()->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));
-
-	info("time: %d timezones loaded", global()->timezone_mgr->ht.count);
 	info("time: system timezone is '%.*s'", str_size(name), str_of(name));
 	info("");
 }
