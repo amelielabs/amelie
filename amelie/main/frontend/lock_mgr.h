@@ -8,6 +8,13 @@
 
 typedef struct LockMgr LockMgr;
 
+enum
+{
+	LOCK_NONE,
+	LOCK,
+	LOCK_EXCLUSIVE
+};
+
 struct LockMgr
 {
 	Resource  rw;

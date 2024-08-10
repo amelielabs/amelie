@@ -24,15 +24,15 @@ struct Global
 
 // control
 static inline void
-control_lock(int type)
+control_lock(void)
 {
-	rpc(global()->control->system, RPC_LOCK, 1, type);
+	rpc(global()->control->system, RPC_LOCK, 0);
 }
 
 static inline void
-control_unlock(int type)
+control_unlock(void)
 {
-	rpc(global()->control->system, RPC_UNLOCK, 1, type);
+	rpc(global()->control->system, RPC_UNLOCK, 0);
 }
 
 static inline void

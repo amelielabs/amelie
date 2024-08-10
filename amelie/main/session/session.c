@@ -83,7 +83,7 @@ session_lock(Session* self, int type)
 		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
 		break;
 	case LOCK_EXCLUSIVE:
-		control_lock(LOCK_EXCLUSIVE);
+		control_lock();
 		break;
 	case LOCK_NONE:
 		break;
@@ -100,7 +100,7 @@ session_unlock(Session* self)
 		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
 		break;
 	case LOCK_EXCLUSIVE:
-		control_unlock(LOCK_EXCLUSIVE);
+		control_unlock();
 		break;
 	case LOCK_NONE:
 		break;

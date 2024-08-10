@@ -128,7 +128,7 @@ backup_prepare(Backup* self)
 	auto db = self->db;
 
 	// take exclusive lock
-	control_lock(LOCK_EXCLUSIVE);
+	control_lock();
 
 	Exception e;
 	if (enter(&e))
@@ -148,7 +148,7 @@ backup_prepare(Backup* self)
 		self->checkpoint_snapshot = 0;
 	}
 
-	control_unlock(LOCK_EXCLUSIVE);
+	control_unlock();
 	if (leave(&e))
 	{ }
 }

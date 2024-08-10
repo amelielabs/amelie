@@ -69,19 +69,13 @@ frontend_rpc(Rpc* rpc, void* arg)
 		break;
 	}
 	case RPC_LOCK:
-	{
 		// exclusive lock
-		int type = rpc_arg(rpc, 0);
-		lock_mgr_lock(&self->lock_mgr, type);
+		lock_mgr_lock(&self->lock_mgr, LOCK_EXCLUSIVE);
 		break;
-	}
 	case RPC_UNLOCK:
-	{
 		// exclusive unlock
-		int type = rpc_arg(rpc, 0);
-		lock_mgr_unlock(&self->lock_mgr, type, NULL);
+		lock_mgr_unlock(&self->lock_mgr, LOCK_EXCLUSIVE, NULL);
 		break;
-	}
 	case RPC_STOP:
 	{
 		// disconnect clients

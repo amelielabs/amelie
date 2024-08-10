@@ -66,8 +66,8 @@
 
 // rpc
 #include "runtime/rpc.h"
+#include "runtime/rpc_queue.h"
 
 // lock
-#include "runtime/lock_id.h"
 #include "runtime/lock.h"
 #include "runtime/resource.h"

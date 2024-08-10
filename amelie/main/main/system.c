@@ -48,6 +48,7 @@ System*
 system_create(void)
 {
 	System* self = am_malloc(sizeof(System));
+	self->lock = false;
 
 	// set control
 	auto control = &self->control;
@@ -67,6 +68,7 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	cluster_init(&self->cluster, &self->db, &self->function_mgr);
 	executor_init(&self->executor, &self->db, &self->cluster.router);
+	rpc_queue_init(&self->lock_queue);
 
 	// db
 	db_init(&self->db, (PartMapper)cluster_map, &self->cluster);
@@ -277,34 +279,10 @@ system_stop(System* self)
 }
 
 static void
-system_lock(System* self, int type)
-{
-	frontend_mgr_lock(&self->frontend_mgr, type);
-}
-
-static void
-system_unlock(System* self, int type)
-{
-	frontend_mgr_unlock(&self->frontend_mgr, type);
-}
-
-static void
 system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
 	switch (rpc->id) {
-	case RPC_LOCK:
-	{
-		int type = rpc_arg(rpc, 0);
-		system_lock(self, type);
-		break;
-	}
-	case RPC_UNLOCK:
-	{
-		int type = rpc_arg(rpc, 0);
-		system_unlock(self, type);
-		break;
-	}
 	case RPC_SHOW_USERS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
@@ -334,6 +312,37 @@ system_rpc(Rpc* rpc, void* arg)
 	}
 }
 
+static void
+system_lock(System* self, Rpc* rpc)
+{
+	if (self->lock)
+	{
+		rpc_queue_add(&self->lock_queue, rpc);
+	} else
+	{
+		frontend_mgr_lock(&self->frontend_mgr);
+		rpc_done(rpc);
+		self->lock = true;
+	}
+}
+
+static void
+system_unlock(System* self, Rpc* rpc)
+{
+	assert(self->lock);
+	frontend_mgr_unlock(&self->frontend_mgr);
+
+	auto pending = rpc_queue_pop(&self->lock_queue);
+	if (pending)
+	{
+		frontend_mgr_lock(&self->frontend_mgr);
+		rpc_done(pending);
+	} else {
+		self->lock = false;
+	}
+	rpc_done(rpc);
+}
+
 void
 system_main(System* self)
 {
@@ -344,10 +353,20 @@ system_main(System* self)
 		auto msg = msg_of(buf);
 		guard(buf_free, buf);
 
-		if (msg->id == RPC_STOP)
+		switch (msg->id) {
+		case RPC_STOP:
+			stop = true;
 			break;
-
-		// system command
-		rpc_execute(buf, system_rpc, self);
+		case RPC_LOCK:
+			system_lock(self, rpc_of(buf));
+			break;
+		case RPC_UNLOCK:
+			system_unlock(self, rpc_of(buf));
+			break;
+		default:
+			// system command
+			rpc_execute(buf, system_rpc, self);
+			break;
+		}
 	}
 }

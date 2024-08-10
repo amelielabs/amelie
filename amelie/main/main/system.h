@@ -19,6 +19,8 @@ struct System
 	Executor    executor;
 	Cluster     cluster;
 	FrontendMgr frontend_mgr;
+	bool        lock;
+	RpcQueue    lock_queue;
 	// db
 	Db          db;
 	// server
