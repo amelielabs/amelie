@@ -80,7 +80,7 @@ session_lock(Session* self, SessionLock type)
 		break;
 	case SESSION_LOCK:
 		// take shared frontend lock
-		self->lock = lock_lock(&self->frontend->lock, true);
+		self->lock = resource_lock(&self->frontend->rw, true);
 		break;
 	case SESSION_LOCK_EXCLUSIVE:
 		// take global lock
@@ -97,7 +97,7 @@ session_unlock(Session* self)
 	case SESSION_LOCK_NONE:
 		break;
 	case SESSION_LOCK:
-		lock_unlock(self->lock);
+		resource_unlock(self->lock);
 		self->lock = NULL;
 		break;
 	case SESSION_LOCK_EXCLUSIVE:

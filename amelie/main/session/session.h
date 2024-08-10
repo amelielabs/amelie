@@ -24,7 +24,7 @@ struct Session
 	Client*     client;
 	Local       local;
 	SessionLock lock_type;
-	Locker*     lock;
+	Lock*       lock;
 	Frontend*   frontend;
 	Share*      share;
 };

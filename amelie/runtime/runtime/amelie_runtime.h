@@ -68,5 +68,5 @@
 #include "runtime/rpc.h"
 
 // lock
-#include "runtime/locker.h"
 #include "runtime/lock.h"
+#include "runtime/resource.h"

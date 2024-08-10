@@ -69,14 +69,14 @@ main_prepare(Main* self, MainArgs* args)
 	// set UTC time by default
 	setenv("TZ", "UTC", true);
 
+	// read time zones
+	timezone_mgr_open(&self->timezone_mgr);
+
 	// init ssl library
 	tls_lib_init();
 
 	// init uuid manager
 	random_open(&self->random);
-
-	// read time zones
-	timezone_mgr_open(&self->timezone_mgr);
 
 	// start resolver
 	resolver_start(&self->resolver);
