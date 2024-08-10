@@ -39,8 +39,9 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->client    = client;
 	self->frontend  = frontend;
-	self->lock_type = SESSION_LOCK_NONE;
+	self->lock_mask = LOCK_NONE;
 	self->lock      = NULL;
+	self->lock_ref  = NULL;
 	self->share     = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
@@ -58,7 +59,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 void
 session_free(Session *self)
 {
-	assert(self->lock_type == SESSION_LOCK_NONE);
+	assert(self->lock_mask == LOCK_NONE);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
@@ -66,45 +67,102 @@ session_free(Session *self)
 	am_free(self);
 }
 
-void
-session_lock(Session* self, SessionLock type)
+static inline bool
+session_lock_has(Session* self, int type)
 {
-	// upgrade lock
-	if (self->lock_type == type)
-		return;
-	if (self->lock_type != SESSION_LOCK_NONE)
-		session_unlock(self);
-
-	switch (type) {
-	case SESSION_LOCK_NONE:
-		break;
-	case SESSION_LOCK:
-		// take shared frontend lock
-		self->lock = resource_lock(&self->frontend->rw, true);
-		break;
-	case SESSION_LOCK_EXCLUSIVE:
-		// take global lock
-		control_lock();
-		break;
-	}
-	self->lock_type = type;
+	return (self->lock_mask & type) > 0;
 }
 
 void
-session_unlock(Session* self)
+session_lock(Session* self, int type)
 {
-	switch (self->lock_type) {
-	case SESSION_LOCK_NONE:
-		break;
-	case SESSION_LOCK:
-		resource_unlock(self->lock);
-		self->lock = NULL;
-		break;
-	case SESSION_LOCK_EXCLUSIVE:
-		control_unlock();
+	if (session_lock_has(self, type))
+		return;
+
+	switch (type) {
+	case LOCK:
+	{
+		// downgrade lock
+		if (session_lock_has(self, LOCK_EXCLUSIVE))
+			session_unlock(self, LOCK_EXCLUSIVE);
+
+		// take shared frontend lock
+		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
 		break;
 	}
-	self->lock_type = SESSION_LOCK_NONE;
+	case LOCK_EXCLUSIVE:
+	{
+		// upgrade lock
+		if (session_lock_has(self, LOCK))
+			session_unlock(self, LOCK);
+		control_lock(LOCK_EXCLUSIVE);
+		break;
+	}
+	case LOCK_REF:
+	{
+		// downgrade lock
+		if (session_lock_has(self, LOCK_REF_EXCLUSIVE))
+			session_unlock(self, LOCK_REF_EXCLUSIVE);
+
+		// take shared frontend lock for shared tables
+		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
+		break;
+	}
+	case LOCK_REF_EXCLUSIVE:
+	{
+		// upgrade lock
+		if (session_lock_has(self, LOCK_REF))
+			session_unlock(self, LOCK_REF);
+		control_lock(LOCK_REF_EXCLUSIVE);
+		break;
+	}
+	case LOCK_CHECKPOINT:
+		control_lock(LOCK_CHECKPOINT);
+		break;
+	case LOCK_NONE:
+		break;
+	}
+
+	self->lock_mask |= type;
+}
+
+void
+session_unlock(Session* self, int type)
+{
+	if (! session_lock_has(self, type))
+		return;
+
+	switch (type) {
+	case LOCK:
+		lock_mgr_unlock(&self->frontend->lock_mgr, type, self->lock);
+		break;
+	case LOCK_EXCLUSIVE:
+		control_unlock(LOCK_EXCLUSIVE);
+		break;
+	case LOCK_REF:
+		lock_mgr_unlock(&self->frontend->lock_mgr, type, self->lock_ref);
+		break;
+	case LOCK_REF_EXCLUSIVE:
+		control_unlock(LOCK_REF_EXCLUSIVE);
+		break;
+	case LOCK_CHECKPOINT:
+		control_unlock(LOCK_CHECKPOINT);
+		break;
+	case LOCK_NONE:
+		break;
+	}
+
+	self->lock_mask &= ~type;
+}
+
+void
+session_unlock_all(Session* self)
+{
+	session_unlock(self, LOCK_CHECKPOINT);
+	session_unlock(self, LOCK_REF_EXCLUSIVE);
+	session_unlock(self, LOCK_REF);
+	session_unlock(self, LOCK_EXCLUSIVE);
+	session_unlock(self, LOCK);
 }
 
 static inline void
@@ -219,7 +277,7 @@ session_execute(Session* self)
 	local_update_time(&self->local);
 
 	// take shared session lock (catalog access during parsing)
-	session_lock(self, SESSION_LOCK);
+	session_lock(self, LOCK);
 
 	// parse SQL query
 	Str text;
@@ -228,19 +286,18 @@ session_execute(Session* self)
 
 	if (! compiler->parser.stmt_list.list_count)
 	{
-		session_unlock(self);
+		session_unlock(self, LOCK);
 		return;
 	}
 
-	// execute utility or DDL command
+	// execute utility, DDL, DML or Query
 	auto stmt = compiler_stmt(compiler);
 	if (stmt && stmt_is_utility(stmt))
 		session_execute_utility(self);
 	else
-		// DML or Select
 		session_execute_distributed(self);
 
-	session_unlock(self);
+	session_unlock_all(self);
 }
 
 hot void
@@ -296,7 +353,7 @@ session_main(Session* self)
 			http_write(reply, "Content-Type", "application/json");
 			http_write_end(reply);
 
-			session_unlock(self);
+			session_unlock_all(self);
 		} else {
 			http_write_reply(reply, 200, "OK");
 			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));

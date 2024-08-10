@@ -72,22 +72,22 @@ frontend_mgr_forward(FrontendMgr* self, Buf* buf)
 }
 
 static inline void
-frontend_mgr_lock(FrontendMgr* self)
+frontend_mgr_lock(FrontendMgr* self, int type)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto fe = &self->workers[i];
-		rpc(&fe->task.channel, RPC_LOCK, 0);
+		rpc(&fe->task.channel, RPC_LOCK, 1, type);
 	}
 }
 
 static inline void
-frontend_mgr_unlock(FrontendMgr* self)
+frontend_mgr_unlock(FrontendMgr* self, int type)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto fe = &self->workers[i];
-		rpc(&fe->task.channel, RPC_UNLOCK, 0);
+		rpc(&fe->task.channel, RPC_UNLOCK, 1, type);
 	}
 }
 

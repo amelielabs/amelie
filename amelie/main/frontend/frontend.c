@@ -70,16 +70,16 @@ frontend_rpc(Rpc* rpc, void* arg)
 	}
 	case RPC_LOCK:
 	{
-		// take exclusive session lock
-		assert(! self->lock_exclusive);
-		self->lock_exclusive = resource_lock(&self->rw, false);
+		// exclusive lock
+		int type = rpc_arg(rpc, 0);
+		lock_mgr_lock(&self->lock_mgr, type);
 		break;
 	}
 	case RPC_UNLOCK:
 	{
-		assert(self->lock_exclusive);
-		resource_unlock(self->lock_exclusive);
-		self->lock_exclusive = NULL;
+		// exclusive unlock
+		int type = rpc_arg(rpc, 0);
+		lock_mgr_unlock(&self->lock_mgr, type, NULL);
 		break;
 	}
 	case RPC_STOP:
@@ -131,9 +131,7 @@ frontend_init(Frontend*     self,
 {
 	self->on_connect     = on_connect;
 	self->on_connect_arg = on_connect_arg;
-	self->lock_exclusive = NULL;
-	lock_cache_init(&self->lock_cache);
-	resource_init(&self->rw, &self->lock_cache);
+	lock_mgr_init(&self->lock_mgr);
 	client_mgr_init(&self->client_mgr);
 	req_cache_init(&self->req_cache);
 	trx_cache_init(&self->trx_cache);
@@ -144,10 +142,10 @@ frontend_init(Frontend*     self,
 void
 frontend_free(Frontend* self)
 {
-	lock_cache_free(&self->lock_cache);
 	client_mgr_free(&self->client_mgr);
 	trx_cache_free(&self->trx_cache);
 	req_cache_free(&self->req_cache);
+	lock_mgr_free(&self->lock_mgr);
 	user_cache_free(&self->user_cache);
 }
 

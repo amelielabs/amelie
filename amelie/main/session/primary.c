@@ -119,8 +119,8 @@ on_write(Primary* self, Buf* data)
 	Session* session = self->replay_arg;
 
 	// take shared lock
-	session_lock(session, SESSION_LOCK);
-	guard(session_unlock, session);
+	session_lock(session, LOCK);
+	guard(session_unlock_all, session);
 
 	// validate request fields and check current replication state
 
@@ -137,7 +137,7 @@ on_write(Primary* self, Buf* data)
 		if ((write->flags & WAL_UTILITY) > 0)
 		{
 			// upgrade to exclusive lock
-			session_lock(session, SESSION_LOCK_EXCLUSIVE);
+			session_lock(session, LOCK_EXCLUSIVE);
 
 			// read and execute ddl command
 			recover_next_write(self->recover, write, true, WAL_UTILITY);	

@@ -111,7 +111,7 @@ ctl_set(Session* self)
 
 	// upgrade to exclusive lock, if var requires config update
 	if (! var_is(var, VAR_E))
-		session_lock(self, SESSION_LOCK_EXCLUSIVE);
+		session_lock(self, LOCK_EXCLUSIVE);
 
 	// local variable
 	auto value = arg->value;
@@ -184,7 +184,7 @@ ctl_user(Session* self)
 	auto user_mgr = self->share->user_mgr;
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
@@ -212,7 +212,7 @@ ctl_user(Session* self)
 	}
 
 	// downgrade back to shared lock to avoid deadlocking
-	session_lock(self, SESSION_LOCK);
+	session_lock(self, LOCK);
 
 	// sync frontends user caches
 	frontend_mgr_sync(self->share->frontend_mgr, &user_mgr->cache);
@@ -224,7 +224,7 @@ ctl_replica(Session* self)
 	auto replica_mgr = &self->share->repl->replica_mgr;
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
@@ -266,7 +266,7 @@ ctl_node(Session* self)
 	auto cluster = self->share->cluster;
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
@@ -309,7 +309,7 @@ ctl_repl(Session* self)
 	auto repl = self->share->repl;
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
@@ -358,7 +358,7 @@ ctl_checkpoint(Session* self)
 	// todo: concurrent checkpoint lock required
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	// prepare checkpoint
 	uint64_t lsn = config_lsn();
@@ -389,7 +389,7 @@ ctl_checkpoint(Session* self)
 		checkpoint_run(&cp);
 
 		// unlock frontends
-		session_unlock(self);
+		session_unlock(self, LOCK_EXCLUSIVE);
 
 		// wait for completion
 		checkpoint_wait(&cp, &db->checkpoint_mgr);

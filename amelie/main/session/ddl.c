@@ -431,7 +431,7 @@ session_execute_ddl(Session* self)
 		error("system is in read-only mode");
 
 	// upgrade to exclusive lock
-	session_lock(self, SESSION_LOCK_EXCLUSIVE);
+	session_lock(self, LOCK_EXCLUSIVE);
 
 	Transaction trx;
 	transaction_init(&trx);

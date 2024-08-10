@@ -277,15 +277,15 @@ system_stop(System* self)
 }
 
 static void
-system_lock(System* self)
+system_lock(System* self, int type)
 {
-	frontend_mgr_lock(&self->frontend_mgr);
+	frontend_mgr_lock(&self->frontend_mgr, type);
 }
 
 static void
-system_unlock(System* self)
+system_unlock(System* self, int type)
 {
-	frontend_mgr_unlock(&self->frontend_mgr);
+	frontend_mgr_unlock(&self->frontend_mgr, type);
 }
 
 static void
@@ -294,11 +294,17 @@ system_rpc(Rpc* rpc, void* arg)
 	System* self = arg;
 	switch (rpc->id) {
 	case RPC_LOCK:
-		system_lock(self);
+	{
+		int type = rpc_arg(rpc, 0);
+		system_lock(self, type);
 		break;
+	}
 	case RPC_UNLOCK:
-		system_unlock(self);
+	{
+		int type = rpc_arg(rpc, 0);
+		system_unlock(self, type);
 		break;
+	}
 	case RPC_SHOW_USERS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);

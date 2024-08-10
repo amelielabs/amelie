@@ -14,11 +14,7 @@ struct Frontend
 {
 	ReqCache      req_cache;
 	TrxCache      trx_cache;
-
-	Resource      rw;
-	Lock*         lock_exclusive;
-	LockCache     lock_cache;
-
+	LockMgr       lock_mgr;
 	ClientMgr     client_mgr;
 	UserCache     user_cache;
 	FrontendEvent on_connect;
