@@ -16,7 +16,7 @@ struct Session
 	Explain   explain;
 	Client*   client;
 	Local     local;
-	int       lock_mask;
+	int       lock_type;
 	Lock*     lock;
 	Lock*     lock_ref;
 	Frontend* frontend;
@@ -27,6 +27,5 @@ Session*
 session_create(Client*, Frontend*, Share*);
 void session_free(Session*);
 void session_lock(Session*, int);
-void session_unlock(Session*, int);
-void session_unlock_all(Session*);
+void session_unlock(Session*);
 void session_main(Session*);

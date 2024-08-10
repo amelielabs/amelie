@@ -39,7 +39,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->client    = client;
 	self->frontend  = frontend;
-	self->lock_mask = LOCK_NONE;
+	self->lock_type = LOCK_NONE;
 	self->lock      = NULL;
 	self->lock_ref  = NULL;
 	self->share     = share;
@@ -59,7 +59,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 void
 session_free(Session *self)
 {
-	assert(self->lock_mask == LOCK_NONE);
+	assert(self->lock_type == LOCK_NONE);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	plan_free(&self->plan);
@@ -67,102 +67,45 @@ session_free(Session *self)
 	am_free(self);
 }
 
-static inline bool
-session_lock_has(Session* self, int type)
-{
-	return (self->lock_mask & type) > 0;
-}
-
 void
 session_lock(Session* self, int type)
 {
-	if (session_lock_has(self, type))
+	if (self->lock_type == type)
 		return;
+
+	// downgrade or upgrade lock request
+	if (self->lock_type != LOCK_NONE)
+		session_unlock(self);
 
 	switch (type) {
 	case LOCK:
-	{
-		// downgrade lock
-		if (session_lock_has(self, LOCK_EXCLUSIVE))
-			session_unlock(self, LOCK_EXCLUSIVE);
-
 		// take shared frontend lock
 		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
 		break;
-	}
 	case LOCK_EXCLUSIVE:
-	{
-		// upgrade lock
-		if (session_lock_has(self, LOCK))
-			session_unlock(self, LOCK);
 		control_lock(LOCK_EXCLUSIVE);
-		break;
-	}
-	case LOCK_REF:
-	{
-		// downgrade lock
-		if (session_lock_has(self, LOCK_REF_EXCLUSIVE))
-			session_unlock(self, LOCK_REF_EXCLUSIVE);
-
-		// take shared frontend lock for shared tables
-		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
-		break;
-	}
-	case LOCK_REF_EXCLUSIVE:
-	{
-		// upgrade lock
-		if (session_lock_has(self, LOCK_REF))
-			session_unlock(self, LOCK_REF);
-		control_lock(LOCK_REF_EXCLUSIVE);
-		break;
-	}
-	case LOCK_CHECKPOINT:
-		control_lock(LOCK_CHECKPOINT);
 		break;
 	case LOCK_NONE:
 		break;
 	}
 
-	self->lock_mask |= type;
+	self->lock_type = type;
 }
 
 void
-session_unlock(Session* self, int type)
+session_unlock(Session* self)
 {
-	if (! session_lock_has(self, type))
-		return;
-
-	switch (type) {
+	switch (self->lock_type) {
 	case LOCK:
-		lock_mgr_unlock(&self->frontend->lock_mgr, type, self->lock);
+		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
 		break;
 	case LOCK_EXCLUSIVE:
 		control_unlock(LOCK_EXCLUSIVE);
 		break;
-	case LOCK_REF:
-		lock_mgr_unlock(&self->frontend->lock_mgr, type, self->lock_ref);
-		break;
-	case LOCK_REF_EXCLUSIVE:
-		control_unlock(LOCK_REF_EXCLUSIVE);
-		break;
-	case LOCK_CHECKPOINT:
-		control_unlock(LOCK_CHECKPOINT);
-		break;
 	case LOCK_NONE:
 		break;
 	}
-
-	self->lock_mask &= ~type;
-}
-
-void
-session_unlock_all(Session* self)
-{
-	session_unlock(self, LOCK_CHECKPOINT);
-	session_unlock(self, LOCK_REF_EXCLUSIVE);
-	session_unlock(self, LOCK_REF);
-	session_unlock(self, LOCK_EXCLUSIVE);
-	session_unlock(self, LOCK);
+	self->lock_type = LOCK_NONE;
 }
 
 static inline void
@@ -200,10 +143,10 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto plan     = &self->plan;
 
-	// todo: shared table lock?
+	// todo: shared table lock
 
 	// generate bytecode
-	compiler_emit(&self->compiler);
+	compiler_emit(compiler);
 
 	// prepare plan
 	int stmts = compiler->parser.stmt_list.list_count;
@@ -286,7 +229,7 @@ session_execute(Session* self)
 
 	if (! compiler->parser.stmt_list.list_count)
 	{
-		session_unlock(self, LOCK);
+		session_unlock(self);
 		return;
 	}
 
@@ -297,7 +240,7 @@ session_execute(Session* self)
 	else
 		session_execute_distributed(self);
 
-	session_unlock_all(self);
+	session_unlock(self);
 }
 
 hot void
@@ -353,7 +296,7 @@ session_main(Session* self)
 			http_write(reply, "Content-Type", "application/json");
 			http_write_end(reply);
 
-			session_unlock_all(self);
+			session_unlock(self);
 		} else {
 			http_write_reply(reply, 200, "OK");
 			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));

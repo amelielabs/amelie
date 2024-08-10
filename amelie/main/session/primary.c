@@ -120,7 +120,7 @@ on_write(Primary* self, Buf* data)
 
 	// take shared lock
 	session_lock(session, LOCK);
-	guard(session_unlock_all, session);
+	guard(session_unlock, session);
 
 	// validate request fields and check current replication state
 

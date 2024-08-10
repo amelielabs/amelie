@@ -389,7 +389,7 @@ ctl_checkpoint(Session* self)
 		checkpoint_run(&cp);
 
 		// unlock frontends
-		session_unlock(self, LOCK_EXCLUSIVE);
+		session_unlock(self);
 
 		// wait for completion
 		checkpoint_wait(&cp, &db->checkpoint_mgr);
