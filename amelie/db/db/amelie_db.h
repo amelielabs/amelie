@@ -29,7 +29,7 @@
 
 // db
 #include "db/db.h"
-#include "db/db_catalog.h"
+#include "db/db_checkpoint.h"
 #include "db/cascade.h"
 
 // recover

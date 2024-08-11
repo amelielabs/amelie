@@ -18,12 +18,13 @@
 
 void
 checkpoint_mgr_init(CheckpointMgr* self,
-                    CatalogIf*     catalog_if,
-                    void*          catalog_if_arg)
+                    CheckpointIf*  iface,
+                    void*          iface_arg)
 {
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
 	id_mgr_init(&self->list);
 	id_mgr_init(&self->list_snapshot);
-	catalog_init(&self->catalog, catalog_if, catalog_if_arg);
 }
 
 void
@@ -117,7 +118,7 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 
 	// restore system objects
 	uint8_t* pos = json.buf->start;
-	catalog_restore(&self->catalog, &pos);
+	self->iface->catalog_restore(&pos, self->iface_arg);
 }
 
 void

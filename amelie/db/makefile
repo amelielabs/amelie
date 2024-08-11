@@ -43,7 +43,7 @@ OBJECTS        = \
                  db/table_index.o \
                  db/view_mgr.o \
                  db/db.o \
-                 db/db_catalog.o \
+                 db/db_checkpoint.o \
                  db/recover_checkpoint.o \
                  db/recover.o \
                  db/cascade.o

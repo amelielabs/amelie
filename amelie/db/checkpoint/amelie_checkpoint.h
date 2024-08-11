@@ -6,9 +6,6 @@
 // Real-Time SQL Database.
 //
 
-// catalog
-#include "checkpoint/catalog.h"
-
 // checkpoint snapshot
 #include "checkpoint/snapshot.h"
 #include "checkpoint/snapshot_cursor.h"

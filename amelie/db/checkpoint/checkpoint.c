@@ -49,7 +49,11 @@ checkpoint_free(Checkpoint* self)
 void
 checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 {
-	self->catalog = catalog_dump(&self->mgr->catalog);
+	// prepare catalog data
+	auto mgr = self->mgr;
+	self->catalog = mgr->iface->catalog_dump(mgr->iface_arg);
+
+	// prepare workers
 	self->lsn = lsn;
 	self->workers_count = workers;
 	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);
@@ -61,10 +65,13 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 		worker->list_count  = 0;
 		list_init(&worker->list);
 	}
+
+	// add partitions
+	mgr->iface->add(self, mgr->iface_arg);
 }
 
-static void
-checkpoint_add_partition(Checkpoint* self, Part* part)
+void
+checkpoint_add(Checkpoint* self, Part* part)
 {
 	// distribute among workers
 	if (self->rr == self->workers_count)
@@ -75,16 +82,6 @@ checkpoint_add_partition(Checkpoint* self, Part* part)
 	list_init(&part->link_cp);
 	list_append(&worker->list, &part->link_cp);
 	worker->list_count++;
-}
-
-void
-checkpoint_add(Checkpoint* self, PartList* part_list)
-{
-	list_foreach(&part_list->list)
-	{
-		auto part = list_at(Part, link);
-		checkpoint_add_partition(self, part);
-	}
 }
 
 hot static bool
@@ -249,11 +246,10 @@ checkpoint_wait(Checkpoint* self)
 	         config_directory(), self->lsn);
 	fs_rename(path, "%s/%" PRIu64, config_directory(), self->lsn);
 
+	// done
+
 	// register checkpoint
 	checkpoint_mgr_add(self->mgr, self->lsn);
-
-	// done
 	var_int_set(&config()->checkpoint, self->lsn);
-
 	info("checkpoint %" PRIu64 ": complete", self->lsn);
 }

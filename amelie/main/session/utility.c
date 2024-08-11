@@ -342,14 +342,6 @@ ctl_repl(Session* self)
 }
 
 static void
-ctl_gc(Session* self)
-{
-	auto share = self->share;
-	checkpoint_mgr_gc(&share->db->checkpoint_mgr);
-	wal_gc(&share->db->wal, config_checkpoint());
-}
-
-static void
 ctl_checkpoint(Session* self)
 {
 	auto stmt  = compiler_stmt(&self->compiler);
@@ -369,22 +361,15 @@ ctl_checkpoint(Session* self)
 	if (arg->workers)
 		workers = arg->workers->integer;
 
+	auto cp_mgr = &share->db->checkpoint_mgr;
 	Checkpoint cp;
-	checkpoint_init(&cp, &share->db->checkpoint_mgr);
+	checkpoint_init(&cp, cp_mgr);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// prepare checkpoint
 		checkpoint_begin(&cp, lsn, workers);
-
-		// prepare partitions
-		auto db = share->db;
-		list_foreach(&db->table_mgr.mgr.list)
-		{
-			auto table = table_of(list_at(Handle, link));
-			checkpoint_add(&cp, &table->part_list);
-		}
 
 		// run workers and create snapshots
 		checkpoint_run(&cp);
@@ -401,7 +386,7 @@ ctl_checkpoint(Session* self)
 		rethrow();
 
 	// run system cleanup
-	ctl_gc(self);
+	cp_mgr->iface->complete(cp_mgr->iface_arg);
 }
 
 void

@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-extern CatalogIf db_catalog_if;
+extern CheckpointIf db_checkpoint_if;
