@@ -16,6 +16,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -Itransaction \
                  -Iindex \
                  -Ipartition \
+                 -Icheckpoint \
                  -Iwal \
                  -Idb
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
@@ -31,10 +32,10 @@ OBJECTS        = \
                  partition/part_build.o \
                  partition/part_op.o \
                  partition/part_list.o \
-                 partition/snapshot.o \
-                 partition/snapshot_cursor.o \
-                 partition/checkpoint_mgr.o \
-                 partition/checkpoint.o \
+                 checkpoint/snapshot.o \
+                 checkpoint/snapshot_cursor.o \
+                 checkpoint/checkpoint_mgr.o \
+                 checkpoint/checkpoint.o \
                  wal/wal.o \
                  wal/wal_cursor.o \
                  db/schema_mgr.o \

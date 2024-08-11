@@ -21,6 +21,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../db/transaction \
                  -I../db/index \
                  -I../db/partition \
+                 -I../db/checkpoint \
                  -I../db/wal \
                  -I../db/db \
                  -I../vm \

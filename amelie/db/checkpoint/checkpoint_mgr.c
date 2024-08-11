@@ -14,6 +14,7 @@
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_partition.h>
+#include <amelie_checkpoint.h>
 
 void
 checkpoint_mgr_init(CheckpointMgr* self)

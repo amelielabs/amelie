@@ -20,6 +20,7 @@ CFLAGS_INCLUDE = -I../amelie/runtime \
                  -I../amelie/db/transaction \
                  -I../amelie/db/index \
                  -I../amelie/db/partition \
+                 -I../amelie/db/checkpoint \
                  -I../amelie/db/wal \
                  -I../amelie/db/db \
                  -I../amelie/vm \
