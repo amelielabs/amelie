@@ -43,8 +43,7 @@ OBJECTS        = \
                  data/json.o \
                  data/json_export.o \
                  config/config_local.o \
-                 config/config.o \
-                 config/catalog_mgr.o
+                 config/config.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

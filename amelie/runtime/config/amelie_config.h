@@ -12,10 +12,6 @@
 #include "config/config.h"
 #include "config/control.h"
 
-// catalog
-#include "config/catalog.h"
-#include "config/catalog_mgr.h"
-
 // global
 #include "config/global.h"
 #include "config/local.h"

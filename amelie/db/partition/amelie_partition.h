@@ -18,6 +18,10 @@
 #include "partition/part_mgr.h"
 #include "partition/part_list.h"
 
+// catalog
+#include "partition/catalog.h"
+#include "partition/catalog_mgr.h"
+
 // partition snapshot
 #include "partition/snapshot.h"
 #include "partition/snapshot_cursor.h"

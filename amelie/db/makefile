@@ -31,6 +31,7 @@ OBJECTS        = \
                  partition/part_build.o \
                  partition/part_op.o \
                  partition/part_list.o \
+                 partition/catalog_mgr.o \
                  partition/snapshot.o \
                  partition/snapshot_cursor.o \
                  partition/checkpoint_mgr.o \
