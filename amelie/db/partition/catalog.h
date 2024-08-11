@@ -17,25 +17,27 @@ struct CatalogIf
 
 struct Catalog
 {
-	Str        name;
 	CatalogIf* iface;
 	void*      iface_arg;
-	List       link;
 };
 
-static inline Catalog*
-catalog_allocate(char* name, CatalogIf* iface, void* iface_arg)
+static inline void
+catalog_init(Catalog* self, CatalogIf* iface, void* iface_arg)
 {
-	auto self = (Catalog*)am_malloc(sizeof(Catalog));
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
-	str_set_cstr(&self->name, name);
-	list_init(&self->link);
-	return self;
+}
+
+static inline Buf*
+catalog_dump(Catalog* self)
+{
+	auto buf = buf_begin();
+	self->iface->dump(self, buf);
+	return buf_end(buf);
 }
 
 static inline void
-catalog_free(Catalog* self)
+catalog_restore(Catalog* self, uint8_t** pos)
 {
-	am_free(self);
+	self->iface->restore(self, pos);
 }

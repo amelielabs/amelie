@@ -16,6 +16,6 @@ struct CheckpointMgr
 
 void checkpoint_mgr_init(CheckpointMgr*);
 void checkpoint_mgr_free(CheckpointMgr*);
-void checkpoint_mgr_open(CheckpointMgr*, CatalogMgr*);
+void checkpoint_mgr_open(CheckpointMgr*, Catalog*);
 void checkpoint_mgr_gc(CheckpointMgr*);
 void checkpoint_mgr_add(CheckpointMgr*, uint64_t);

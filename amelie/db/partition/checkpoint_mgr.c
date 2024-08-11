@@ -90,7 +90,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 }
 
 static void
-checkpoint_mgr_open_catalog(CatalogMgr* catalog_mgr)
+checkpoint_mgr_open_catalog(Catalog* catalog)
 {
 	auto checkpoint = config_checkpoint();
 	if (! checkpoint)
@@ -113,17 +113,17 @@ checkpoint_mgr_open_catalog(CatalogMgr* catalog_mgr)
 
 	// restore system objects
 	uint8_t* pos = json.buf->start;
-	catalog_mgr_restore(catalog_mgr, &pos);
+	catalog_restore(catalog, &pos);
 }
 
 void
-checkpoint_mgr_open(CheckpointMgr* self, CatalogMgr* catalog_mgr)
+checkpoint_mgr_open(CheckpointMgr* self, Catalog* catalog)
 {
 	// get a list of available checkpoints
 	checkpoint_mgr_open_dir(self);
 
 	// restore last checkpoint catalog
-	checkpoint_mgr_open_catalog(catalog_mgr);
+	checkpoint_mgr_open_catalog(catalog);
 }
 
 void

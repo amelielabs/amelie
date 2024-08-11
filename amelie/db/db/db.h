@@ -19,5 +19,5 @@ struct Db
 
 void db_init(Db*, PartMapper, void*);
 void db_free(Db*);
-void db_open(Db*, CatalogMgr*);
+void db_open(Db*);
 void db_close(Db*);

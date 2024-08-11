@@ -57,9 +57,6 @@ system_create(void)
 	control->arg         = self;
 	global()->control    = control;
 
-	// config state
-	catalog_mgr_init(&self->catalog_mgr);
-
 	// server
 	user_mgr_init(&self->user_mgr);
 	server_init(&self->server);
@@ -87,7 +84,6 @@ system_create(void)
 	share->frontend_mgr = &self->frontend_mgr;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
-	share->catalog_mgr  = &self->catalog_mgr;
 	share->db           = &self->db;
 	return self;
 }
@@ -102,7 +98,6 @@ system_free(System* self)
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
-	catalog_mgr_free(&self->catalog_mgr);
 	am_free(self);
 }
 
@@ -221,7 +216,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	cluster_open(&self->cluster, bootstrap);
 
 	// create system object and objects from last snapshot
-	db_open(&self->db, &self->catalog_mgr);
+	db_open(&self->db);
 
 	// start backend
 	cluster_start(&self->cluster);

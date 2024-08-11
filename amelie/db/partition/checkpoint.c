@@ -45,11 +45,11 @@ checkpoint_free(Checkpoint* self)
 }
 
 void
-checkpoint_begin(Checkpoint* self, CatalogMgr* catalog,
+checkpoint_begin(Checkpoint* self, Catalog* catalog,
                  uint64_t    lsn,
                  int         workers)
 {
-	self->catalog = catalog_mgr_dump(catalog);
+	self->catalog = catalog_dump(catalog);
 	self->lsn = lsn;
 	self->workers_count = workers;
 	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);

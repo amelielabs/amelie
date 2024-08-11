@@ -73,19 +73,17 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 }
 
 void
-db_open(Db* self, CatalogMgr* cat_mgr)
+db_open(Db* self)
 {
 	// prepare system schemas
 	db_create_system_schema(self, "system", false);
 	db_create_system_schema(self, "public", true);
 
-	// register db catalog
-	auto cat = catalog_allocate("db", &db_catalog_if, self);
-	catalog_mgr_add(cat_mgr, cat);
-
 	// read directory and restore last checkpoint catalog
 	// (schemas, tables, views)
-	checkpoint_mgr_open(&self->checkpoint_mgr, cat_mgr);
+	Catalog catalog;
+	catalog_init(&catalog, &db_catalog_if,  self);
+	checkpoint_mgr_open(&self->checkpoint_mgr, &catalog);
 }
 
 void

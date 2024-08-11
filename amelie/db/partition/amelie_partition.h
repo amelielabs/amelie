@@ -20,7 +20,6 @@
 
 // catalog
 #include "partition/catalog.h"
-#include "partition/catalog_mgr.h"
 
 // partition snapshot
 #include "partition/snapshot.h"

@@ -27,7 +27,6 @@ struct System
 	Server      server;
 	UserMgr     user_mgr;
 	// config state
-	CatalogMgr  catalog_mgr;
 	Control     control;
 };
 
