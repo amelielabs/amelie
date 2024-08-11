@@ -27,3 +27,6 @@
 
 // vector
 #include "lib/vector.h"
+
+// logger
+#include "lib/logger.h"

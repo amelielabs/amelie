@@ -23,7 +23,6 @@ OBJECTS        = \
                  runtime/task.o \
                  runtime/report.o \
                  io/vfs.o \
-                 io/logger.o \
                  io/tls_lib.o \
                  io/tls_context.o \
                  io/tls.o \
@@ -40,6 +39,7 @@ OBJECTS        = \
                  lib/interval.o \
                  lib/timestamp.o \
                  lib/vector.o \
+                 lib/logger.o \
                  data/json.o \
                  data/json_export.o \
                  config/config_local.o \

@@ -156,23 +156,19 @@ system_configure(Str* options, bool bootstrap)
 			config_set(config, options);
 	}
 
-	// reconfigure logger
-	auto logger = global()->logger;
-	logger_set_enable(logger, var_int_of(&config->log_enable));
-	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
-	if (! var_int_of(&config->log_to_file))
-		logger_close(logger);
-}
-
-static void
-system_set_timezone(void)
-{
+	// set system timezone
 	auto name = &config()->timezone_default.string;
 	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
 	if (! global()->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));
-	info("time: system timezone is '%.*s'", str_size(name), str_of(name));
-	info("");
+
+	// reconfigure logger
+	auto logger = global()->logger;
+	logger_set_enable(logger, var_int_of(&config->log_enable));
+	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
+	logger_set_timezone(logger, global()->timezone);
+	if (! var_int_of(&config->log_to_file))
+		logger_close(logger);
 }
 
 static void
@@ -200,12 +196,12 @@ system_start(System* self, Str* options, bool bootstrap)
 	system_configure(options, bootstrap);
 
 	// hello
+	auto tz = &config()->timezone_default.string;
 	info("");
 	info("amelie.");
 	info("");
-
-	// set system timezone
-	system_set_timezone();
+	info("time: system timezone is '%.*s'", str_size(tz), str_of(tz));
+	info("");
 
 	// register builtin functions
 	fn_register(&self->function_mgr);

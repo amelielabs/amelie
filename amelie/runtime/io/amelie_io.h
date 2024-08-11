@@ -11,7 +11,6 @@
 #include "io/vfs.h"
 #include "io/fs.h"
 #include "io/file.h"
-#include "io/logger.h"
 
 // tls
 #include "io/tls_lib.h"
