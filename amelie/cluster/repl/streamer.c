@@ -247,8 +247,9 @@ streamer_task_main(void* arg)
 	for (;;)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
+		auto rpc = rpc_of(buf);
 		guard(buf_free, buf);
-		rpc_execute(buf, streamer_shutdown, &id);
+		rpc_execute(rpc, streamer_shutdown, &id);
 		break;
 	}
 }

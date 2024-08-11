@@ -176,8 +176,11 @@ node_main(void* arg)
 			break;
 		}
 		default:
-			rpc_execute(buf, node_rpc, self);
+		{
+			auto rpc = rpc_of(buf);
+			rpc_execute(rpc, node_rpc, self);
 			break;
+		}
 		}
 
 		if (msg->id == RPC_STOP)

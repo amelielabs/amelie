@@ -347,46 +347,12 @@ ctl_checkpoint(Session* self)
 	auto stmt  = compiler_stmt(&self->compiler);
 	auto arg   = ast_checkpoint_of(stmt->ast);
 	auto share = self->share;
+	session_unlock(self);
 
-	// todo: concurrent checkpoint lock required
-
-	// upgrade to exclusive lock
-	session_lock(self, LOCK_EXCLUSIVE);
-
-	// prepare checkpoint
-	uint64_t lsn = config_lsn();
-	if (lsn == config_checkpoint())
-		return;
 	int workers = share->cluster->list_count;
 	if (arg->workers)
 		workers = arg->workers->integer;
-
-	auto cp_mgr = &share->db->checkpoint_mgr;
-	Checkpoint cp;
-	checkpoint_init(&cp, cp_mgr);
-
-	Exception e;
-	if (enter(&e))
-	{
-		// prepare checkpoint
-		checkpoint_begin(&cp, lsn, workers);
-
-		// run workers and create snapshots
-		checkpoint_run(&cp);
-
-		// unlock frontends
-		session_unlock(self);
-
-		// wait for completion
-		checkpoint_wait(&cp);
-	}
-
-	checkpoint_free(&cp);
-	if (leave(&e))
-		rethrow();
-
-	// run system cleanup
-	cp_mgr->iface->complete(cp_mgr->iface_arg);
+	rpc(global()->control->system, RPC_CHECKPOINT, 1, workers);
 }
 
 void

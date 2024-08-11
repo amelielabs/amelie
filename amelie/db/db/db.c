@@ -25,6 +25,7 @@ db_init(Db* self, PartMapper mapper, void* mapper_arg)
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
+	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_init(&self->wal);
 }
 
@@ -83,11 +84,17 @@ db_open(Db* self)
 	// read directory and restore last checkpoint catalog
 	// (schemas, tables, views)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
+
+	// start checkpointer service
+	checkpointer_start(&self->checkpointer);
 }
 
 void
 db_close(Db* self)
 {
+	// stop checkpointer service
+	checkpointer_stop(&self->checkpointer);
+
 	// free views
 	view_mgr_free(&self->view_mgr);
 

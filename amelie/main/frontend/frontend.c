@@ -112,7 +112,8 @@ frontend_main(void* arg)
 		{
 			// command
 			stop = msg->id == RPC_STOP;
-			rpc_execute(buf, frontend_rpc, self);
+			auto rpc = rpc_of(buf);
+			rpc_execute(rpc, frontend_rpc, self);
 			break;
 		}
 		}

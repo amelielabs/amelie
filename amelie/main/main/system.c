@@ -342,26 +342,26 @@ system_unlock(System* self, Rpc* rpc)
 void
 system_main(System* self)
 {
-	bool stop = false;
-	while (! stop)
+	for (;;)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
 		guard(buf_free, buf);
-
-		switch (msg->id) {
-		case RPC_STOP:
-			stop = true;
+		if (msg->id == RPC_STOP)
 			break;
+		auto rpc = rpc_of(buf);
+		switch (msg->id) {
 		case RPC_LOCK:
-			system_lock(self, rpc_of(buf));
+			system_lock(self, rpc);
 			break;
 		case RPC_UNLOCK:
-			system_unlock(self, rpc_of(buf));
+			system_unlock(self, rpc);
+			break;
+		case RPC_CHECKPOINT:
+			checkpointer_request(&self->db.checkpointer, rpc);
 			break;
 		default:
-			// system command
-			rpc_execute(buf, system_rpc, self);
+			rpc_execute(rpc, system_rpc, self);
 			break;
 		}
 	}

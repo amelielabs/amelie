@@ -48,7 +48,7 @@ static void
 test_rpc_execute_main(void *arg)
 {
 	auto buf = channel_read(&am_task->channel, -1);
-	rpc_execute(buf, test_rpc_execute_cb, NULL);
+	rpc_execute(rpc_of(buf), test_rpc_execute_cb, NULL);
 	buf_free(buf);
 }
 
@@ -77,7 +77,7 @@ static void
 test_rpc_execute_error_main(void* arg)
 {
 	auto buf = channel_read(&am_task->channel, -1);
-	rpc_execute(buf, test_rpc_execute_error_cb, NULL);
+	rpc_execute(rpc_of(buf), test_rpc_execute_error_cb, NULL);
 	buf_free(buf);
 }
 

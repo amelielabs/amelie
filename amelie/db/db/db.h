@@ -13,6 +13,7 @@ struct Db
 	SchemaMgr     schema_mgr;
 	ViewMgr       view_mgr;
 	TableMgr      table_mgr;
+	Checkpointer  checkpointer;
 	CheckpointMgr checkpoint_mgr;
 	Wal           wal;
 };

@@ -45,18 +45,17 @@ rpc_done(Rpc* rpc)
 }
 
 hot static inline void
-rpc_execute(Buf* buf,
+rpc_execute(Rpc* self,
             void (*callback)(Rpc*, void*),
             void  *callback_arg)
 {
-	auto rpc = rpc_of(buf);
 	Exception e;
 	if (enter(&e))
-		callback(rpc, callback_arg);
+		callback(self, callback_arg);
 	leave(&e);
 	if (unlikely(e.triggered))
-		*rpc->error = am_self()->error;
-	rpc_done(rpc);
+		*self->error = am_self()->error;
+	rpc_done(self);
 }
 
 hot static inline int

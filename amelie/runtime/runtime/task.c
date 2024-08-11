@@ -44,9 +44,11 @@ task_coroutine_main(void* arg)
 	if (unlikely(leave(&e)))
 	{
 		auto error = &coro->error;
-		report(error->file, error->function, error->line,
-		       "error: ",
-		       "unhandled exception: %s", error->text);
+		if (error->code != CANCEL) {
+			report(error->file, error->function, error->line,
+			       "error: ",
+			       "unhandled exception: %s", error->text);
+		}
 	}
 
 	// main exit
