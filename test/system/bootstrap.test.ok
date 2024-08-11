@@ -29,10 +29,12 @@ show all
   "repl": false,
   "repl_primary": "",
   "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
   "read_only": false,
   "lsn": 0,
-  "psn": 0,
-  "checkpoint": 0
+  "psn": 0
 }
 # test: ensure uuid recover
 disconnect S0
@@ -67,10 +69,12 @@ show all
   "repl": false,
   "repl_primary": "",
   "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
   "read_only": false,
   "lsn": 0,
-  "psn": 0,
-  "checkpoint": 0
+  "psn": 0
 }
 disconnect S0
 close E0

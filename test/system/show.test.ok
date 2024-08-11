@@ -650,10 +650,12 @@ show all
   "repl": false,
   "repl_primary": "",
   "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
   "read_only": false,
   "lsn": 0,
-  "psn": 0,
-  "checkpoint": 0
+  "psn": 0
 }
 select system.config()
 {
@@ -683,10 +685,12 @@ select system.config()
   "repl": false,
   "repl_primary": "",
   "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
   "read_only": false,
   "lsn": 0,
-  "psn": 0,
-  "checkpoint": 0
+  "psn": 0
 }
 select system.config().directory
 "_output/E0"

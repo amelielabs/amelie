@@ -84,9 +84,6 @@ db_open(Db* self)
 	// read directory and restore last checkpoint catalog
 	// (schemas, tables, views)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
-
-	// start checkpointer service
-	checkpointer_start(&self->checkpointer);
 }
 
 void

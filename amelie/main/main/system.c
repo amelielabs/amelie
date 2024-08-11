@@ -225,7 +225,8 @@ system_start(System* self, Str* options, bool bootstrap)
 	// do parallel recover of snapshots and wal
 	system_recover(self);
 
-	// todo: start checkpoint worker
+	// start checkpointer service
+	checkpointer_start(&self->db.checkpointer);
 
 	// start frontends
 	auto workers = var_int_of(&config()->frontends);

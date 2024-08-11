@@ -104,11 +104,14 @@ config_prepare(Config* self)
 		{ "repl",                    VAR_BOOL,   VAR_C,                &self->repl,                    0,           false            },
 		{ "repl_primary",            VAR_STRING, VAR_C,                &self->repl_primary,            NULL,        0                },
 		{ "repl_reconnect_ms",       VAR_INT,    VAR_C|VAR_R,          &self->repl_reconnect_ms,       NULL,        3000             },
+		// checkpoint
+		{ "checkpoint_interval",     VAR_STRING, VAR_C,                &self->checkpoint_interval,     "5 min",     0                },
+		{ "checkpoint_workers",      VAR_INT,    VAR_C,                &self->checkpoint_workers,      NULL,        3                },
+		{ "checkpoint",              VAR_INT,    VAR_E,                &self->checkpoint,              NULL,        0                },
 		// state
 		{ "read_only",               VAR_BOOL,   VAR_E,                &self->read_only,               NULL,        false            },
 		{ "lsn",                     VAR_INT,    VAR_E,                &self->lsn,                     NULL,        0                },
 		{ "psn",                     VAR_INT,    VAR_E,                &self->psn,                     NULL,        0                },
-		{ "checkpoint",              VAR_INT,    VAR_E,                &self->checkpoint,              NULL,        0                },
 		// state persistent
 		{ "nodes",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->nodes,                   NULL,        0                },
 		{ "replicas",                VAR_DATA,   VAR_C|VAR_H|VAR_S,    &self->replicas,                NULL,        0                },

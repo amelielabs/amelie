@@ -40,11 +40,14 @@ struct Config
 	Var  repl;
 	Var  repl_primary;
 	Var  repl_reconnect_ms;
+	// checkpoint
+	Var  checkpoint_interval;
+	Var  checkpoint_workers;
+	Var  checkpoint;
 	// state
 	Var  read_only;
 	Var  lsn;
 	Var  psn;
-	Var  checkpoint;
 	// state persistent
 	Var  nodes;
 	Var  replicas;

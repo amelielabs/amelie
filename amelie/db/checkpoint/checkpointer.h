@@ -12,7 +12,9 @@ struct Checkpointer
 {
 	RpcQueue       req_queue;
 	Event          req_queue_event;
-	int64_t        coroutine_id;
+	int64_t        worker_id;
+	int64_t        worker_periodic_id;
+	int            interval_us;
 	CheckpointMgr* mgr;
 };
 

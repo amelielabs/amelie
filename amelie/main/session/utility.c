@@ -344,14 +344,18 @@ ctl_repl(Session* self)
 static void
 ctl_checkpoint(Session* self)
 {
-	auto stmt  = compiler_stmt(&self->compiler);
-	auto arg   = ast_checkpoint_of(stmt->ast);
-	auto share = self->share;
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_checkpoint_of(stmt->ast);
 	session_unlock(self);
 
-	int workers = share->cluster->list_count;
-	if (arg->workers)
+	int workers;
+	if (arg->workers) {
 		workers = arg->workers->integer;
+	} else {
+		workers = var_int_of(&config()->checkpoint_workers);
+		if (workers == 0)
+			workers = 1;
+	}
 	rpc(global()->control->system, RPC_CHECKPOINT, 1, workers);
 }
 

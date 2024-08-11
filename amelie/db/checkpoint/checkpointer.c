@@ -80,11 +80,28 @@ checkpointer_main(void* arg)
 	}
 }
 
+static void
+checkpointer_periodic_main(void* arg)
+{
+	Checkpointer* self = arg;
+	coroutine_set_name(am_self(), "checkpointer_periodic");
+	for (;;)
+	{
+		int workers = var_int_of(&config()->checkpoint_workers);
+		if (workers == 0)
+			workers = 1;
+		coroutine_sleep(self->interval_us);
+		rpc(global()->control->system, RPC_CHECKPOINT, 1, workers);
+	}
+}
+
 void
 checkpointer_init(Checkpointer* self, CheckpointMgr* mgr)
 {
 	self->mgr = mgr;
-	self->coroutine_id = -1;
+	self->worker_id = -1;
+	self->worker_periodic_id = -1;
+	self->interval_us = 0;
 	event_init(&self->req_queue_event);
 	rpc_queue_init(&self->req_queue);
 }
@@ -92,16 +109,37 @@ checkpointer_init(Checkpointer* self, CheckpointMgr* mgr)
 void
 checkpointer_start(Checkpointer* self)
 {
-	self->coroutine_id = coroutine_create(checkpointer_main, self);
+	// prepare periodic interval
+	Interval interval;
+	interval_init(&interval);
+	interval_read(&interval, &config()->checkpoint_interval.string);
+	if (interval.m > 0 || interval.d > 0)
+		error("checkpoint: interval cannot include day or month");
+
+	// start periodic checkpoint worker
+	self->interval_us = interval.us / 1000;
+	if (self->interval_us != 0)
+		self->worker_periodic_id = coroutine_create(checkpointer_periodic_main, self);
+	else
+		info("checkpoint: periodic checkpoint is disabled");
+
+	// start checkpoint worker
+	self->worker_id = coroutine_create(checkpointer_main, self);
 }
 
 void
 checkpointer_stop(Checkpointer* self)
 {
-	if (self->coroutine_id != -1)
+	if (self->worker_periodic_id != -1)
 	{
-		coroutine_kill(self->coroutine_id);
-		self->coroutine_id = -1;
+		coroutine_kill(self->worker_periodic_id);
+		self->worker_periodic_id = -1;
+	}
+
+	if (self->worker_id != -1)
+	{
+		coroutine_kill(self->worker_id);
+		self->worker_id = -1;
 	}
 }
 
