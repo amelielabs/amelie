@@ -24,11 +24,12 @@ struct Checkpoint
 	CheckpointWorker* workers;
 	int               workers_count;
 	int               rr;
+	CheckpointMgr*    mgr;
 };
 
-void checkpoint_init(Checkpoint*);
+void checkpoint_init(Checkpoint*, CheckpointMgr*);
 void checkpoint_free(Checkpoint*);
-void checkpoint_begin(Checkpoint*, Catalog*, uint64_t, int);
+void checkpoint_begin(Checkpoint*, uint64_t, int);
 void checkpoint_add(Checkpoint*, PartList*);
 void checkpoint_run(Checkpoint*);
-void checkpoint_wait(Checkpoint*, CheckpointMgr*);
+void checkpoint_wait(Checkpoint*);

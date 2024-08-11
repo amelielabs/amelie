@@ -17,10 +17,13 @@
 #include <amelie_checkpoint.h>
 
 void
-checkpoint_mgr_init(CheckpointMgr* self)
+checkpoint_mgr_init(CheckpointMgr* self,
+                    CatalogIf*     catalog_if,
+                    void*          catalog_if_arg)
 {
 	id_mgr_init(&self->list);
 	id_mgr_init(&self->list_snapshot);
+	catalog_init(&self->catalog, catalog_if, catalog_if_arg);
 }
 
 void
@@ -91,7 +94,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 }
 
 static void
-checkpoint_mgr_open_catalog(Catalog* catalog)
+checkpoint_mgr_open_catalog(CheckpointMgr* self)
 {
 	auto checkpoint = config_checkpoint();
 	if (! checkpoint)
@@ -114,17 +117,17 @@ checkpoint_mgr_open_catalog(Catalog* catalog)
 
 	// restore system objects
 	uint8_t* pos = json.buf->start;
-	catalog_restore(catalog, &pos);
+	catalog_restore(&self->catalog, &pos);
 }
 
 void
-checkpoint_mgr_open(CheckpointMgr* self, Catalog* catalog)
+checkpoint_mgr_open(CheckpointMgr* self)
 {
 	// get a list of available checkpoints
 	checkpoint_mgr_open_dir(self);
 
 	// restore last checkpoint catalog
-	checkpoint_mgr_open_catalog(catalog);
+	checkpoint_mgr_open_catalog(self);
 }
 
 void

@@ -24,7 +24,7 @@ db_init(Db* self, PartMapper mapper, void* mapper_arg)
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
 	view_mgr_init(&self->view_mgr);
 	schema_mgr_init(&self->schema_mgr);
-	checkpoint_mgr_init(&self->checkpoint_mgr);
+	checkpoint_mgr_init(&self->checkpoint_mgr, &db_catalog_if, self);
 	wal_init(&self->wal);
 }
 
@@ -82,9 +82,7 @@ db_open(Db* self)
 
 	// read directory and restore last checkpoint catalog
 	// (schemas, tables, views)
-	Catalog catalog;
-	catalog_init(&catalog, &db_catalog_if,  self);
-	checkpoint_mgr_open(&self->checkpoint_mgr, &catalog);
+	checkpoint_mgr_open(&self->checkpoint_mgr);
 }
 
 void

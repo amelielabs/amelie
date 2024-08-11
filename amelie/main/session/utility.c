@@ -369,17 +369,14 @@ ctl_checkpoint(Session* self)
 	if (arg->workers)
 		workers = arg->workers->integer;
 
-	Catalog catalog;
-	catalog_init(&catalog, &db_catalog_if, share->db);
-
 	Checkpoint cp;
-	checkpoint_init(&cp);
+	checkpoint_init(&cp, &share->db->checkpoint_mgr);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// prepare checkpoint
-		checkpoint_begin(&cp, &catalog, lsn, workers);
+		checkpoint_begin(&cp, lsn, workers);
 
 		// prepare partitions
 		auto db = share->db;
@@ -396,7 +393,7 @@ ctl_checkpoint(Session* self)
 		session_unlock(self);
 
 		// wait for completion
-		checkpoint_wait(&cp, &db->checkpoint_mgr);
+		checkpoint_wait(&cp);
 	}
 
 	checkpoint_free(&cp);

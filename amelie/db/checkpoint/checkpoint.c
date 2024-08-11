@@ -17,13 +17,14 @@
 #include <amelie_checkpoint.h>
 
 void
-checkpoint_init(Checkpoint* self)
+checkpoint_init(Checkpoint* self, CheckpointMgr* mgr)
 {
 	self->catalog       = NULL;
 	self->lsn           = 0;
 	self->workers       = NULL;
 	self->workers_count = 0;
 	self->rr            = 0;
+	self->mgr           = mgr;
 }
 
 void
@@ -46,11 +47,9 @@ checkpoint_free(Checkpoint* self)
 }
 
 void
-checkpoint_begin(Checkpoint* self, Catalog* catalog,
-                 uint64_t    lsn,
-                 int         workers)
+checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 {
-	self->catalog = catalog_dump(catalog);
+	self->catalog = catalog_dump(&self->mgr->catalog);
 	self->lsn = lsn;
 	self->workers_count = workers;
 	self->workers = am_malloc(sizeof(CheckpointWorker) * workers);
@@ -222,7 +221,7 @@ checkpoint_run(Checkpoint* self)
 }
 
 void
-checkpoint_wait(Checkpoint* self, CheckpointMgr* checkpoint_mgr)
+checkpoint_wait(Checkpoint* self)
 {
 	int errors = 0;
 	for (int i = 0; i < self->workers_count; i++)
@@ -251,7 +250,7 @@ checkpoint_wait(Checkpoint* self, CheckpointMgr* checkpoint_mgr)
 	fs_rename(path, "%s/%" PRIu64, config_directory(), self->lsn);
 
 	// register checkpoint
-	checkpoint_mgr_add(checkpoint_mgr, self->lsn);
+	checkpoint_mgr_add(self->mgr, self->lsn);
 
 	// done
 	var_int_set(&config()->checkpoint, self->lsn);
