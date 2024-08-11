@@ -144,8 +144,6 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto plan     = &self->plan;
 
-	// todo: shared table lock
-
 	// generate bytecode
 	compiler_emit(compiler);
 

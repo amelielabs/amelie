@@ -435,6 +435,10 @@ compiler_emit(Compiler* self)
 	if (count >= 2)
 		self->snapshot = true;
 
+	// same applies to shared tables DML
+	if (parser_is_shared_table_dml(parser))
+		self->snapshot = true;
+
 	// process statements
 	auto recv_last = -1;
 	list_foreach(&stmt_list->list)
