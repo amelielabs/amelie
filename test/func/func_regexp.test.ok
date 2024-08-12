@@ -2,30 +2,30 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: regexp_like
 select regexp_like('<a href="../">Up</a>', '<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>')
-true
+[true]
 select regexp_like('<a href="../">Up</a', '<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>')
-false
+[false]
 select '<a href="../">Up</a>'::regexp_like('<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>')
-true
+[true]
 select ''::regexp_like('<(?<tag>[a-z][a-z0-9]*)[^>]*>[^<]*</(?P=tag)>')
-false
+[false]
 select '<a href="../">Up</a>'::regexp_like('')
-true
+[true]
 select regexp_like('a(123)b', '([(])?[0-9]+(?(1)[)])')
-true
+[true]
 select regexp_like('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
-true
+[true]
 # test: regexp_substr
 select regexp_substr('a(123)b', '([(])?[0-9]+(?(1)[)])');
-"(123)"
+["(123)"]
 select regexp_substr('aaa123', '[a-z]*\K[0-9]*');
-"123"
+["123"]
 select regexp_substr('ab1','[a-z](?![a-z])');
-"b"
+["b"]
 select regexp_substr('---abcd---xyz---', '\b\w{3}\b');
-"xyz"
+["xyz"]
 select regexp_substr('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
-"barbeque"
+["barbeque"]
 # test: regexp_match
 select regexp_match('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
 ["barbeque", "bar", "beque"]
@@ -39,10 +39,10 @@ select regexp_match('ABCAB', '(A)');
 ["A", "A"]
 # test: regexp_replace
 select regexp_replace('ABCAB', '(A)', '_');
-"_BC_B"
+["_BC_B"]
 select regexp_replace('ABCAB', '(A)', '|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|');
-"|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B"
+["|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B"]
 select regexp_replace('/* Comment1 */ i+= 1; /* Comment2 */', '/[*].*?[*]/', '')
-" i+= 1; "
+[" i+= 1; "]
 disconnect S0
 close E0

@@ -5,29 +5,29 @@ select error("error test")
 {"code": 1, "msg": "error test"}
 # test: type
 select 1::type
-"int"
+["int"]
 select "Hi"::type
-"string"
+["string"]
 select [1,2,3]::type
-"array"
+["array"]
 select {}::type
-"map"
+["map"]
 select (select * from [1,2,3])::type
-"set"
+["set"]
 # test: random
 select random()::type
-"int"
+["int"]
 select public.random()::type
-"int"
+["int"]
 # test: random uuid
 select random_uuid()::size
-36
+[36]
 # test: md5
 select md5("hello world")
-"5eb63bbbe01eeed093cb22bb8f5acdc3"
+["5eb63bbbe01eeed093cb22bb8f5acdc3"]
 # test: sha1
 select sha1("hello world")
-"2aae6c35c94fcfb415dbe95f408b9ce91ee846ed"
+["2aae6c35c94fcfb415dbe95f408b9ce91ee846ed"]
 # test: serial
 select serial("public", "abc")
 {"code": 1, "msg": "table 'abc': not exists"}
@@ -36,7 +36,7 @@ create table test (id int primary key serial)
 insert into test () values (), (), ()
 []
 select serial("public", "test")
-3
+[3]
 drop table test
 []
 disconnect S0

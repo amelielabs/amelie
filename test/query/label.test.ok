@@ -6,10 +6,10 @@ insert into test (id) values (1), (2), (3)
 []
 # test: select label
 select 1 name
-1
+[1]
 # test: select as label
 select 1 AS name
-1
+[1]
 # test: select from expr having label
 select * name from [1,2,3] group by *
 [1, 2, 3]

@@ -503,7 +503,7 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -530,11 +530,11 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [[0, 2], [1, 1], [2, 0]]
 explain select * from test use index (i)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -563,7 +563,7 @@ bytecode [node]
 11              result        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
@@ -650,7 +650,7 @@ drop table test
 create table test (id int primary key)
 []
 explain insert into test 1,2,3 returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -678,7 +678,7 @@ bytecode [node]
 10              result        0      0      0
 11                 ret        0      0      0
 
-"
+"]
 insert into test 1,2,3 returning *
 [[1], [2], [3]]
 insert into test 1,2,3 returning * # on conflict error
@@ -689,7 +689,7 @@ drop table test
 create table test (id int primary key serial)
 []
 explain insert into test () values (), (), () returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -717,7 +717,7 @@ bytecode [node]
 10              result        0      0      0
 11                 ret        0      0      0
 
-"
+"]
 insert into test () values (), (), () returning *
 [[3], [4], [5]]
 insert into test () values (), (), () returning id

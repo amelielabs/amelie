@@ -20023,19 +20023,19 @@ insert into test 9999
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 # test: validate
 show lsn
-10000
+[10000]
 select count(*) from test
 [9999]
 switch S1
 show lsn
-10000
+[10000]
 select count(*) from test
 [9999]
 # test: ddl (create index)
@@ -20050,11 +20050,11 @@ select count(*) from test use index(i)
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(*) from test
 [9999]
@@ -20070,11 +20070,11 @@ select count(data) from test
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(data) from test
 [9999]
@@ -20090,11 +20090,11 @@ select count(id) from test
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(data) from test
 {"code": 1, "msg": "column data: does not exists"}
@@ -20110,11 +20110,11 @@ select count(id2) from test
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(id2) from test
 [9999]
@@ -20126,11 +20126,11 @@ truncate public.test
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(id2) from test
 [0]
@@ -20158,11 +20158,11 @@ insert into test 10
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select count(id2) from test
 [10]
@@ -20173,19 +20173,19 @@ create table test2 (id int primary key serial)
 insert into test2 () values (), (), (), ()
 []
 select serial("public", "test2")
-4
+[4]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
 []
 show repl
-{
+[{
   "active": true,
   "role": "primary",
   "primary": null
-}
+}]
 switch S1
 select serial("public", "test2")
-4
+[4]
 disconnect S1
 close E1
 disconnect S0

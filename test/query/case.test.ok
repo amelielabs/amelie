@@ -12,9 +12,9 @@ select case 1 then 1
 select case 1 when 1 then 1
 {"code": 1, "msg": "CASE <expr> expected"}
 select case 1 when 1 then 1 end
-1
+[1]
 explain select case 1 when 1 then 1 end
-"
+["
 bytecode [coordinator]
 --------
  0                 jmp        2      0      0
@@ -33,11 +33,11 @@ bytecode [coordinator]
 13                body        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select case 0 when 1 then 1 when 2 then 2 end
-null
+[null]
 explain select case 0 when 1 then 1 when 2 then 2 end
-"
+["
 bytecode [coordinator]
 --------
  0                 jmp        2      0      0
@@ -63,11 +63,11 @@ bytecode [coordinator]
 20                body        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 select case 0 when 1 then 1 when 2 then 2 else 'else' end
-"else"
+["else"]
 explain select case 0 when 1 then 1 when 2 then 2 else 'else' end
-"
+["
 bytecode [coordinator]
 --------
  0                 jmp        2      0      0
@@ -93,11 +93,11 @@ bytecode [coordinator]
 20                body        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end
-2
+[2]
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end
-null
+[null]
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] end
 []
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] end
@@ -107,9 +107,9 @@ select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] whe
 select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] when null then null end
 {"code": 1, "msg": "CASE ELSE redefined"}
 select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
-null
+[null]
 explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
-"
+["
 bytecode [coordinator]
 --------
  0                 jmp        2      0      0
@@ -154,13 +154,13 @@ bytecode [coordinator]
 39                body        0      0      0
 40                 ret        0      0      0
 
-"
+"]
 select case end
 {"code": 1, "msg": "CASE <WHEN|ELSE> expected"}
 select case else end
 {"code": 1, "msg": "bad expression"}
 select case else 1 end
-1
+[1]
 # test: case
 select case
 {"code": 1, "msg": "bad expression"}
@@ -169,9 +169,9 @@ select case when 1
 select case when 1 then 1
 {"code": 1, "msg": "CASE <expr> expected"}
 select case when 1 then 1 end
-1
+[1]
 explain select case when 1 then 1 end
-"
+["
 bytecode [coordinator]
 --------
  0                 jmp        2      0      0
@@ -188,31 +188,31 @@ bytecode [coordinator]
 11                body        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select case else
 {"code": 1, "msg": "bad expression"}
 select case else end
 {"code": 1, "msg": "bad expression"}
 select case else 1 end
-1
+[1]
 select case when 1=1 then 1 end
-1
+[1]
 select case when 1=0 then 1 when 1=3 when 1=1 then 'yes' end
 {"code": 1, "msg": "CASE WHEN expr <THEN> expected"}
 select case when 1=0 then 1 when 1=3 then 2 when 1=1 then 'yes' end
-"yes"
+["yes"]
 select case when 1=0 then 1 when 1=3 then 2 else 'no' end
-"no"
+["no"]
 select case when 1=0 then 1 when 1=3 then 2 end
-null
+[null]
 select case when [1,2,3] = [1,2,3] then true end
-true
+[true]
 select case when select [1,2,3] = select [1,2,3] then true end
-true
+[true]
 select case when select [1,2,3] = select [1,2,3,4] then true end
-null
+[null]
 select case when select [1,2,3] = select [1,2,3,4] then true else 'else' end
-"else"
+["else"]
 select case when select [1,2,3] = select [1,2,3,4] then true else 'else' else null end
 {"code": 1, "msg": "CASE ELSE redefined"}
 disconnect S0

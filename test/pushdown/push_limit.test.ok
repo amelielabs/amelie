@@ -8,7 +8,7 @@ insert into test generate 20
 select * from test limit 100
 [[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 explain select * from test limit 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -39,7 +39,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test limit 1
 [[0]]
 select * from test limit 2
@@ -54,7 +54,7 @@ select * from test limit 20
 [[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 # test: select from table limit 0
 explain select * from test limit 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -85,14 +85,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test limit 0
 []
 select * from test limit -1
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from table limit offset
 explain select * from test limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -126,12 +126,12 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select * from test limit 1 offset 0
 [[0]]
 # test: select from table limit offset #2
 explain select * from test limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -165,7 +165,7 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select * from test limit 1 offset 1
 [[1]]
 select * from test limit 1 offset 2
@@ -199,7 +199,7 @@ select * from test limit 0 offset 4
 []
 # test: select from table offset
 explain select * from test offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -227,7 +227,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test offset 1
 [[1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 select * from test offset 2
@@ -250,7 +250,7 @@ insert into test generate 20
 select * from test limit 100
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 explain select * from test limit 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -281,7 +281,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test limit 1
 [[0]]
 select * from test limit 2
@@ -296,7 +296,7 @@ select * from test limit 20
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from shared limit 0
 explain select * from test limit 0
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -327,14 +327,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test limit 0
 []
 select * from test limit -1
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from shared limit offset
 explain select * from test limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -368,12 +368,12 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select * from test limit 1 offset 0
 [[0]]
 # test: select from shared limit offset #2
 explain select * from test limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -407,7 +407,7 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select * from test limit 1 offset 1
 [[1]]
 select * from test limit 1 offset 2
@@ -441,7 +441,7 @@ select * from test limit 0 offset 4
 []
 # test: select from shared offset
 explain select * from test offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -469,7 +469,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test offset 1
 [[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset 2
@@ -488,7 +488,7 @@ drop table test
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 100
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -546,7 +546,7 @@ bytecode [coordinator]
 52                body        0      0      0
 53                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
 [0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2
@@ -561,7 +561,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 20
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from expr limit 0
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -619,14 +619,14 @@ bytecode [coordinator]
 52                body        0      0      0
 53                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
 []
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit -1
 {"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from expr limit offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -687,7 +687,7 @@ bytecode [coordinator]
 55                body        0      0      0
 56                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
 [0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 1
@@ -698,7 +698,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset
 [3]
 # test: select from expr limit offset #2
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -759,7 +759,7 @@ bytecode [coordinator]
 55                body        0      0      0
 56                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
 [0, 1]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 1
@@ -777,7 +777,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset
 []
 # test: select from expr offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -835,7 +835,7 @@ bytecode [coordinator]
 52                body        0      0      0
 53                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 2

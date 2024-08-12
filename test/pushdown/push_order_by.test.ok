@@ -8,7 +8,7 @@ insert into test generate 20
 select * from test
 [[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 explain select * from test order by id
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -38,12 +38,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from table order by asc
 explain select * from test order by id asc
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -73,12 +73,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id asc
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from table order by desc
 explain select * from test order by id desc
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -108,12 +108,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 # test: select from table order by limit
 explain select * from test order by id limit 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -144,7 +144,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1
 [[0]]
 select * from test order by id limit 2
@@ -159,7 +159,7 @@ select * from test order by id limit 20
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from table order by limit 0
 explain select * from test order by id limit 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -190,14 +190,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 0
 []
 select * from test order by id limit -1
 {"code": 1, "msg": "LIMIT: positive integer value expected"}
 # test: select from table order by desc limit
 explain select * from test order by id desc limit 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -228,7 +228,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc limit 1
 [[19]]
 select * from test order by id desc limit 2
@@ -243,7 +243,7 @@ select * from test order by id desc limit 20
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 # test: select from table order by limit offset
 explain select * from test order by id limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -275,12 +275,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1 offset 0
 [[0]]
 # test: select from table order by limit offset #2
 explain select * from test order by id limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -312,7 +312,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1 offset 1
 [[1]]
 select * from test order by id limit 1 offset 2
@@ -323,7 +323,7 @@ select * from test order by id limit 1 offset 4
 [[4]]
 # test: select from table order by desc limit offset
 explain select * from test order by id desc limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -355,7 +355,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc limit 1 offset 1
 [[18]]
 select * from test order by id desc limit 1 offset 2
@@ -366,7 +366,7 @@ select * from test order by id desc limit 1 offset 4
 [[15]]
 # test: select from table order by offset
 explain select * from test order by id offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -397,7 +397,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id offset 1
 [[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test order by id offset 2
@@ -412,7 +412,7 @@ select * from test order by id offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from table order by desc offset
 explain select * from test order by id desc offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -443,7 +443,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc offset 1
 [[18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 select * from test order by id desc offset 2
@@ -466,7 +466,7 @@ insert into test generate 20
 select * from test
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 explain select * from test order by id
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -496,12 +496,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from shared order by asc
 explain select * from test order by id asc
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -531,12 +531,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id asc
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from shared order by desc
 explain select * from test order by id desc
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -566,12 +566,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 # test: select from shared order by limit
 explain select * from test order by id limit 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -602,7 +602,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1
 [[0]]
 select * from test order by id limit 2
@@ -617,7 +617,7 @@ select * from test order by id limit 20
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 # test: select from shared order by limit 0
 explain select * from test order by id limit 0
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -648,14 +648,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 0
 []
 select * from test order by id limit -1
 {"code": 1, "msg": "LIMIT: positive integer value expected"}
 # test: select from shared order by desc limit
 explain select * from test order by id desc limit 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -686,7 +686,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc limit 1
 [[19]]
 select * from test order by id desc limit 2
@@ -701,7 +701,7 @@ select * from test order by id desc limit 20
 [[19], [18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 # test: select from shared order by limit offset
 explain select * from test order by id limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -733,12 +733,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1 offset 0
 [[0]]
 # test: select from shared order by limit offset #2
 explain select * from test order by id limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -770,7 +770,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id limit 1 offset 1
 [[1]]
 select * from test order by id limit 1 offset 2
@@ -781,7 +781,7 @@ select * from test order by id limit 1 offset 4
 [[4]]
 # test: select from shared order by desc limit offset
 explain select * from test order by id desc limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -813,7 +813,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc limit 1 offset 1
 [[18]]
 select * from test order by id desc limit 1 offset 2
@@ -824,7 +824,7 @@ select * from test order by id desc limit 1 offset 4
 [[15]]
 # test: select from shared order by offset
 explain select * from test order by id offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -855,7 +855,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id offset 1
 [[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test order by id offset 2
@@ -870,7 +870,7 @@ select * from test order by id offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from shared order by desc offset
 explain select * from test order by id desc offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -901,7 +901,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by id desc offset 1
 [[18], [17], [16], [15], [14], [13], [12], [11], [10], [9], [8], [7], [6], [5], [4], [3], [2], [1], [0]]
 select * from test order by id desc offset 2
@@ -918,7 +918,7 @@ drop table test
 []
 # test: select from expr order by
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -979,12 +979,12 @@ bytecode [coordinator]
 55                body        0      0      0
 56                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from expr order by asc
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * asc
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1045,12 +1045,12 @@ bytecode [coordinator]
 55                body        0      0      0
 56                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * asc
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from expr order by desc
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1111,12 +1111,12 @@ bytecode [coordinator]
 55                body        0      0      0
 56                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # test: select from expr order by limit
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1178,7 +1178,7 @@ bytecode [coordinator]
 56                body        0      0      0
 57                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1
 [0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 2
@@ -1193,7 +1193,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * lim
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from expr order by limit 0
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 0
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1255,14 +1255,14 @@ bytecode [coordinator]
 56                body        0      0      0
 57                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 0
 []
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit -1
 {"code": 1, "msg": "LIMIT: positive integer value expected"}
 # test: select from expr order by desc limit
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1324,7 +1324,7 @@ bytecode [coordinator]
 56                body        0      0      0
 57                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1
 [19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 2
@@ -1339,7 +1339,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * des
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # test: select from expr order by limit offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 0
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1402,12 +1402,12 @@ bytecode [coordinator]
 57                body        0      0      0
 58                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 0
 [0]
 # test: select from expr order by limit offset #2
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1470,7 +1470,7 @@ bytecode [coordinator]
 57                body        0      0      0
 58                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 1
 [1]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * limit 1 offset 2
@@ -1481,7 +1481,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * lim
 [4]
 # test: select from expr order by desc limit offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1544,7 +1544,7 @@ bytecode [coordinator]
 57                body        0      0      0
 58                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 0
 [19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc limit 1 offset 1
@@ -1557,7 +1557,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * des
 [15]
 # test: select from expr order by offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1619,7 +1619,7 @@ bytecode [coordinator]
 56                body        0      0      0
 57                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 1
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * offset 2
@@ -1634,7 +1634,7 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * off
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 # test: select from expr order by desc offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1696,7 +1696,7 @@ bytecode [coordinator]
 56                body        0      0      0
 57                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 1
 [18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by * desc offset 2

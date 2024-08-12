@@ -24,7 +24,7 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: delete abort
 explain delete from test; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -50,14 +50,14 @@ bytecode [node]
  6        cursor_close        0      0      0
  7                 ret        0      0      0
 
-"
+"]
 delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: update abort
 explain update test set data = id; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -91,14 +91,14 @@ bytecode [node]
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -130,7 +130,7 @@ bytecode [node]
 12        cursor_close        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
@@ -161,7 +161,7 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared delete abort
 explain delete from test; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -187,14 +187,14 @@ bytecode [node]
  6        cursor_close        0      0      0
  7                 ret        0      0      0
 
-"
+"]
 delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared update abort
 explain update test set data = id; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -228,14 +228,14 @@ bytecode [node]
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -267,7 +267,7 @@ bytecode [node]
 12        cursor_close        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
@@ -287,7 +287,7 @@ insert into a (id) values (0), (1), (2), (3); select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert b
 explain insert into b (id) values (10), (20), (30)
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.b
@@ -303,7 +303,7 @@ bytecode [node]
  0              insert        -      0      0      # public.b
  1                 ret        0      0      0
 
-"
+"]
 insert into b (id) values (10), (20), (30)
 []
 select * from a
@@ -314,7 +314,7 @@ select * from b
 update a set data = 0
 []
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -402,7 +402,7 @@ bytecode [node]
 52              result        0      0      0
 53                 ret        0      0      0
 
-"
+"]
 update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
@@ -411,7 +411,7 @@ select * from b
 [[30, 0], [10, 0], [20, 0]]
 # test: upsert a update b abort
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.a
@@ -482,7 +482,7 @@ bytecode [node]
 41              result        0      0      0
 42                 ret        0      0      0
 
-"
+"]
 insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a

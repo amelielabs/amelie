@@ -28,7 +28,7 @@ select lambda n(null) = * from [1,2,3]
 [3]
 # test: lambda (state access)
 explain select lambda n(123) = n from [1,2,3]
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -62,7 +62,7 @@ bytecode [coordinator]
 28                body        0      0      0
 29                 ret        0      0      0
 
-"
+"]
 select lambda n(123) = n from [1,2,3]
 [123]
 select lambda n([]) = n::append(*) from [1,2,3]
@@ -131,7 +131,7 @@ insert into test 1,2,3,4,5
 select lambda n([]) = n::append(id) from test
 {"code": 1, "msg": "operation not supported"}
 explain select lambda n([]) = n::append(id) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -173,7 +173,7 @@ bytecode [node]
 19              result        0      0      0
 20                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: lambda (init exceptions)

@@ -2,57 +2,57 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: consts
 select 0
-0
+[0]
 select 1234
-1234
+[1234]
 select 123456789
-123456789
+[123456789]
 select 123456789012345
-123456789012345
+[123456789012345]
 select -20
--20
+[-20]
 select length(0)
 {"code": 1, "msg": "length(): operation type is not supported"}
 select 1.0
-1
+[1]
 select 1.1234
-1.1234
+[1.1234]
 select 1.17549e-38
-1.17549e-38
+[1.17549e-38]
 select 3.40282e+38
-3.40282e+38
+[3.40282e+38]
 select 2.2250738585072014e-308
-2.22507e-308
+[2.22507e-308]
 select 1.79769e+308
-1.79769e+308
+[1.79769e+308]
 select 1e1
-10
+[10]
 select 1e2
-100
+[100]
 select 1e4
-10000
+[10000]
 select 1e8
-1e+08
+[1e+08]
 select 1e40
-1e+40
+[1e+40]
 select "hello world"
-"hello world"
+["hello world"]
 select ""
-""
+[""]
 select length("hello world")
-11
+[11]
 select length("")
-0
+[0]
 select "hello world"::length
-11
+[11]
 select "hello world"::length()
-11
+[11]
 select true
-true
+[true]
 select false
-false
+[false]
 select null
-null
+[null]
 select name
 {"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
 select path.to.name
@@ -61,11 +61,11 @@ select *
 {"code": 1, "msg": "<*> no FROM clause defined"}
 # test: basic operations
 select 0 + 0
-0
+[0]
 select 2 + 2
-4
+[4]
 select 32 - 2
-30
+[30]
 select "a" + 0
 {"code": 1, "msg": "bad + expression types"}
 select 0 + "a"
@@ -73,47 +73,47 @@ select 0 + "a"
 select 0 || 0
 {"code": 1, "msg": "bad || expression types"}
 select 2 * 2
-4
+[4]
 select 8 * 8
-64
+[64]
 select 64 / ( 4 + 4 )
-8
+[8]
 select 64 / 0
 {"code": 1, "msg": "zero division"}
 select 64 % 0
 {"code": 1, "msg": "zero division"}
 select 60 & 13
-12
+[12]
 select 60 | 13
-61
+[61]
 select 60 ^ 13
-49
+[49]
 select 60 << 2
-240
+[240]
 select 60 >> 2
-15
+[15]
 select 0 > 0
-false
+[false]
 select 0 >= 0
-true
+[true]
 select 0 < 0
-false
+[false]
 select 0 <= 0
-true
+[true]
 select "a" < 0
 {"code": 1, "msg": "bad < expression type"}
 select "a" < "b"
-true
+[true]
 select "a" < "a"
-false
+[false]
 select "a" <= "a"
-true
+[true]
 select "a" > "b"
-false
+[false]
 select "a" > "a"
-false
+[false]
 select "a" >= "a"
-true
+[true]
 select 1 between
 {"code": 1, "msg": "error BETWEEN const value expected"}
 select 1 between and
@@ -127,19 +127,19 @@ select 1 between 0 or
 select 1 between 0 and
 {"code": 1, "msg": "error BETWEEN const value expected"}
 select 1 between 0 and 0
-false
+[false]
 select 1 between 0 and 1
-true
+[true]
 select 1 between 1 and 1
-true
+[true]
 select 1 between 1 and 0
-false
+[false]
 select 0.052 between 0.010 and 0.053
-true
+[true]
 select 0.058 between 0.010 and 0.053
-false
+[false]
 explain select 0.058 between 0.010 and 0.053
-"
+["
 bytecode [coordinator]
 --------
  0                real        1      0      0      # 0.058
@@ -158,11 +158,11 @@ bytecode [coordinator]
 13                body        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select 0.058 not between 0.010 and 0.053
-true
+[true]
 explain select 0.058 not between 0.010 and 0.053
-"
+["
 bytecode [coordinator]
 --------
  0                real        1      0      0      # 0.058
@@ -182,137 +182,137 @@ bytecode [coordinator]
 14                body        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select -20
--20
+[-20]
 select - "test"
 {"code": 1, "msg": "bad - expression type"}
 select not 20
-false
+[false]
 select not "test"
-false
+[false]
 select 1 = 1
-true
+[true]
 select 1 <> 1
-false
+[false]
 select "a" = "a"
-true
+[true]
 select "a" <> "a"
-false
+[false]
 select "a" = "b"
-false
+[false]
 select "a" <> "b"
-true
+[true]
 select [] = []
-true
+[true]
 select {} = {}
-true
+[true]
 select null = null
-true
+[true]
 select null <> null
-false
+[false]
 select 1 is
 {"code": 1, "msg": "IS <NULL> expected"}
 select is
 {"code": 1, "msg": "bad expression"}
 select 1 is null
-false
+[false]
 select 1 is not null
-true
+[true]
 select true is null
-false
+[false]
 select [] is null
-false
+[false]
 select [] is not null
-true
+[true]
 select null is not null
-false
+[false]
 select null is null
-true
+[true]
 select 0 and 0
-false
+[false]
 select 0 and 1
-false
+[false]
 select 1 and 0
-false
+[false]
 select 1 and 1
-true
+[true]
 select "a" and "b"
-true
+[true]
 select "a" and not "b"
-false
+[false]
 select not 0 and not 0
-true
+[true]
 select 0 or 0
-false
+[false]
 select 0 or 1
-true
+[true]
 select 1 or 0
-true
+[true]
 select 1 or 1
-true
+[true]
 select "a" or "b"
-true
+[true]
 select "a" or not "b"
-true
+[true]
 select not 0 or not 0
-true
+[true]
 select "a" + "b"
 {"code": 1, "msg": "bad + expression types"}
 select "a" || "b"
-"ab"
+["ab"]
 select "a"[0]
 {"code": 1, "msg": "[]: map or array expected"}
 select "\"Hello World\""
-"\"Hello World\""
+["\"Hello World\""]
 select 1.1 + 1.1
-2.2
+[2.2]
 select 1.2 - 1.1
-0.1
+[0.1]
 select 1.1234 - 1.12
-0.00339997
+[0.00339997]
 select 1 + 1.1
-2.1
+[2.1]
 select 1.1 + 1
-2.1
+[2.1]
 select 1 - 1.1
--0.1
+[-0.1]
 select 1.1 - 1
-0.1
+[0.1]
 select 12 * 1.4
-16.8
+[16.8]
 select 1.4 * 12
-16.8
+[16.8]
 select 12 / 1.4
-8.57143
+[8.57143]
 select 1.4 / 12.0
-0.116667
+[0.116667]
 select 12.2 * 1.4
-17.08
+[17.08]
 select 12.4 / 1.4
-8.85714
+[8.85714]
 select 1.0 >= 1.0
-true
+[true]
 select 1.0 >= 1.1
-false
+[false]
 select 1 >= 1.1
-false
+[false]
 select 1.0 > 1.0
-false
+[false]
 select 1.1 > 1.0
-true
+[true]
 select 2.8 < 3.4
-true
+[true]
 select -7.6
--7.6
+[-7.6]
 select -7.6 + 1
--6.6
+[-6.6]
 select 1.1 and 0.0
-false
+[false]
 select 1.1 or 0.0
-true
+[true]
 select not 2.8
-false
+[false]
 select 2.8 & 3.4
 {"code": 1, "msg": "bad & expression type"}
 select 0[0]
@@ -329,51 +329,51 @@ select [0, [1, 2], 3]
 select [][0]
 {"code": 1, "msg": "<0>: array index not found"}
 select [0, 1, 2][0]
-0
+[0]
 select [0, 1, 2][1]
-1
+[1]
 select [0, 1, 2][2]
-2
+[2]
 select [0, 1, 2][3]
 {"code": 1, "msg": "<3>: array index not found"}
 select [0, [1, 2], 3][1]
 [1, 2]
 select length([])
-0
+[0]
 select length([0, [1, 2], 3])
-3
+[3]
 select []::length
-0
+[0]
 select [0, [1, 2], 3]::length
-3
+[3]
 # test: map
 select {}
-{
-}
+[{
+}]
 select {"a"}
 {"code": 1, "msg": "{}: {name <:>} expected"}
 select {"a": 0}
-{
+[{
   "a": 0
-}
+}]
 select {"a": 0, "b"}
 {"code": 1, "msg": "{}: {name <:>} expected"}
 select {"a": 0, "b": 1}
-{
+[{
   "a": 0,
   "b": 1
-}
+}]
 select {"a": 123}.a
-123
+[123]
 select {"a": 123}["a"]
-123
+[123]
 select {"a": {"b": 777}}.a.b
-777
+[777]
 select {"a": {"b": 777}}["a.b"]
-777
+[777]
 select {"a": {"b": 777}}["a" || "." || "b"]
-777
+[777]
 select {"a": {"b": 777}}::length()
-1
+[1]
 disconnect S0
 close E0

@@ -17,67 +17,67 @@ select 1 = any ()
 select 1 = any()
 {"code": 1, "msg": "bad expression"}
 select 1 = any([0])
-false
+[false]
 select 1 = any([0, 1])
-true
+[true]
 select not (1 = any([0, 1]))
-false
+[false]
 # test: >= any(array)
 select 1 >= any([0, 1])
-true
+[true]
 select 1 >= any([2])
-false
+[false]
 # test: > any(array)
 select 1 > any([0, 1])
-true
+[true]
 select 1 > any([2])
-false
+[false]
 # test: < any(array)
 select 1 < any([0, 1])
-false
+[false]
 select 1 < any([2])
-true
+[true]
 select 1 < any([0])
-false
+[false]
 # test: <= any(array)
 select 1 <= any([0, 1])
-true
+[true]
 select 1 <= any([2])
-true
+[true]
 select 1 <= any([0])
-false
+[false]
 # test: = any(set)
 select 1 = any()
 {"code": 1, "msg": "bad expression"}
 select 1 = any(select 1)
 {"code": 1, "msg": "ANY: array or result set expected"}
 select 1 = any(select * from [2, 1])
-true
+[true]
 select not (1 = any(select * from [2, 1]))
-false
+[false]
 # test: >= any(set)
 select 1 >= any(select * from [0, 1])
-true
+[true]
 select 1 >= any(select * from [2])
-false
+[false]
 # test: > any(set)
 select 1 > any(select * from [0, 1])
-true
+[true]
 select 1 > any(select * from [2])
-false
+[false]
 # test: < any(set)
 select 1 < any(select * from [0, 1])
-false
+[false]
 select 1 < any(select * from [2])
-true
+[true]
 select 1 < any(select * from [0])
-false
+[false]
 # test: <= any(set)
 select 1 <= any(select * from [0, 1])
-true
+[true]
 select 1 <= any(select * from [2])
-true
+[true]
 select 1 <= any(select * from [0])
-false
+[false]
 disconnect S0
 close E0

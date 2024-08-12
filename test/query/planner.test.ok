@@ -11,7 +11,7 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -38,7 +38,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [[0, 2], [1, 1], [2, 0]]
 # test: from use index
@@ -55,7 +55,7 @@ select * from test use index (
 select * from test use index (123
 {"code": 1, "msg": "USE INDEX (<index name> expected"}
 explain select * from test use index (i)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -84,7 +84,7 @@ bytecode [node]
 11              result        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
@@ -104,7 +104,7 @@ insert into test values (2, 0)
 []
 # test: hash/hash (scan)
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -133,12 +133,12 @@ bytecode [node]
 11              result        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select * from test
 [[0, 2], [2, 0], [1, 1]]
 # test: hash/hash (unique point lookup)
 explain select * from test where data = 2
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -169,11 +169,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where data = 2
 [[0, 2]]
 explain select * from test where id = 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -206,11 +206,11 @@ bytecode [node]
 15              result        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from test where id = 1
 [[1, 1]]
 explain select * from test where id = 1 and data = 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -252,11 +252,11 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select * from test where id = 1 and data = 1
 [[1, 1]]
 explain select * from test where data = 1 and id = 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -298,7 +298,7 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select * from test where data = 1 and id = 1
 [[1, 1]]
 drop table test
@@ -315,7 +315,7 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test where id = 1
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -346,11 +346,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id = 1
 [[1, 1]]
 explain select * from test where id > 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -381,11 +381,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id > 1
 [[2, 0]]
 explain select * from test where data > 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -416,12 +416,12 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where data > 1
 [[0, 2]]
 # test: tree/hash (point lookup)
 explain select * from test where data = 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -452,7 +452,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where data = 1
 [[1, 1]]
 select indexes from system.tables()
@@ -482,7 +482,7 @@ select indexes from system.tables()
   }]
 }]]
 explain select * from test where data = 1 and id = 1
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -524,12 +524,12 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select * from test where data = 1 and id = 1
 [[1, 1]]
 # test: tree/hash (hash override)
 explain select * from test where id = 1 and data = 1
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -571,7 +571,7 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select * from test where id = 1 and data = 1
 [[1, 1]]
 drop table test
@@ -589,7 +589,7 @@ insert into test values (2, 0)
 []
 # test: tree/tree (scan)
 explain select * from test where id > 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -620,11 +620,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id > 1
 [[2, 0]]
 explain select * from test where data > 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -657,12 +657,12 @@ bytecode [node]
 15              result        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from test where data > 1
 [[0, 2]]
 # test: tree/tree (stop condition)
 explain select * from test where data < 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -699,11 +699,11 @@ bytecode [node]
 19              result        0      0      0
 20                 ret        0      0      0
 
-"
+"]
 select * from test where data < 1
 [[2, 0]]
 explain select * from test where id < 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -738,11 +738,11 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from test where id < 1
 [[0, 2]]
 explain select * from test where id < 1 and data < 2
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -786,7 +786,7 @@ bytecode [node]
 26              result        0      0      0
 27                 ret        0      0      0
 
-"
+"]
 select * from test where id < 1 and data < 2
 []
 drop table test

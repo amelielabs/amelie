@@ -2,60 +2,60 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: utc by default
 show timezone
-"UTC"
+["UTC"]
 show timezone_default
-"UTC"
+["UTC"]
 # test: set unknown timezone
 set timezone to 'mars'
 {"code": 1, "msg": "set 'timezone': unable to find timezone 'mars'"}
 show timezone
-"UTC"
+["UTC"]
 select system.config().timezone
-"UTC"
+["UTC"]
 # test: utc
 select '2024-07-29 18:40:19'::timestamp
-"2024-07-29 18:40:19+00"
+["2024-07-29 18:40:19+00"]
 select '2024-07-29 18:40:19+00'::timestamp
-"2024-07-29 18:40:19+00"
+["2024-07-29 18:40:19+00"]
 select '2024-07-29 18:40:19Z'::timestamp
-"2024-07-29 18:40:19+00"
+["2024-07-29 18:40:19+00"]
 select '2024-07-29T18:40:19Z'::timestamp
-"2024-07-29 18:40:19+00"
+["2024-07-29 18:40:19+00"]
 # test: localtime to localtime
 set timezone to 'Asia/Famagusta'
 []
 select '2024-07-29 18:40:19'::timestamp
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 # test: utc to localtime
 select '2024-07-29 18:40:19Z'::timestamp
-"2024-07-29 21:40:19+03"
+["2024-07-29 21:40:19+03"]
 # test: explicit convertion
 select '2024-07-29 18:40:19'::timestamp('UTC')
-"2024-07-29 21:40:19+03"
+["2024-07-29 21:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp('Asia/Famagusta')
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp('jupiter')
 {"code": 1, "msg": "timestamp(): failed to find timezone 'jupiter'"}
 # test: at_timezone
 select '2024-07-29 18:40:19'::timestamp
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone('UTC')
-"2024-07-29 15:40:19+00"
+["2024-07-29 15:40:19+00"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
-"2024-07-30 00:40:19+09"
+["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
 {"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: at timezone operator
 select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
-"2024-07-29 15:40:19+00"
+["2024-07-29 15:40:19+00"]
 select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
-"2024-07-29 18:40:19+03"
+["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
-"2024-07-30 00:40:19+09"
+["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp at timezone null
 {"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: timestamp column
@@ -79,46 +79,46 @@ drop table test
 []
 # test: timestamp object
 select {"time": "2024-07-29 18:40:19"::timestamp}
-{
+[{
   "time": "2024-07-29 18:40:19+00"
-}
+}]
 select {"time": "2024-07-29 18:40:19Z"::timestamp}
-{
+[{
   "time": "2024-07-29 18:40:19+00"
-}
+}]
 # test: timestamp object (localtime)
 select {"time": "2024-07-29 18:40:19+03"::timestamp}
-{
+[{
   "time": "2024-07-29 15:40:19+00"
-}
+}]
 set timezone to 'Asia/Famagusta'
 []
 select {"time": "2024-07-29 18:40:19+03"::timestamp}
-{
+[{
   "time": "2024-07-29 18:40:19+03"
-}
+}]
 select {"time": "2024-07-29 18:40:19"::timestamp}
-{
+[{
   "time": "2024-07-29 18:40:19+03"
-}
+}]
 select {"time": timestamp "2024-07-29 18:40:19"}
-{
+[{
   "time": "2024-07-29 18:40:19+03"
-}
+}]
 # test: timestamp name case
 set timezone to 'UTC'
 []
 set timezone to 'utc'
 []
 show timezone
-"utc"
+["utc"]
 set timezone to 'asia/famagusta'
 []
 show timezone
-"asia/famagusta"
+["asia/famagusta"]
 select {"time": "2024-07-29 18:40:19+03"::timestamp}
-{
+[{
   "time": "2024-07-29 18:40:19+03"
-}
+}]
 disconnect S0
 close E0

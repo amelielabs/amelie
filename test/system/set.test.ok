@@ -20,64 +20,64 @@ set log_enable to 0 # ro
 {"code": 1, "msg": "SET 'log_enable': variable is read-only"}
 # test: set int
 show test_int
-0
+[0]
 set test_int to "test"
 {"code": 1, "msg": "SET 'test_int': integer value expected"}
 show test_int
-0
+[0]
 set test_int to 1234
 []
 show test_int
-1234
+[1234]
 set test_int to -1
 {"code": 1, "msg": "SET name TO <value> expected string or int"}
 show test_int
-1234
+[1234]
 set test_int to 2147483647
 []
 show test_int
-2147483647
+[2147483647]
 set test_int to 4294967295
 []
 show test_int
-4294967295
+[4294967295]
 set test_int to 9223372036854775807
 []
 show test_int
-9223372036854775807
+[9223372036854775807]
 set test_int to 18446744073709551615
 []
 show test_int
--1
+[-1]
 set test_int to 18446744073709551616
 []
 show test_int
-0
+[0]
 # test: set string
 show test_string
-""
+[""]
 set test_string to 1234
 {"code": 1, "msg": "SET 'test_string': string value expected"}
 show test_string
-""
+[""]
 set test_string to "hello"
 []
 show test_string
-"hello"
+["hello"]
 set test_string to ""
 []
 show test_string
-""
+[""]
 set test_string to "world"
 []
 show test_string
-"world"
+["world"]
 # test: set data
 show test_data
-null
+[null]
 set test_data to 1234
 {"code": 1, "msg": "SET 'test_data': variable cannot be changed"}
 show test_data
-null
+[null]
 disconnect S0
 close E0

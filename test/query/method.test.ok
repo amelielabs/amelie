@@ -17,9 +17,9 @@ select 1::[]()
 select 1::length()
 {"code": 1, "msg": "length(): operation type is not supported"}
 select "hello"::length()
-5
+[5]
 explain select system.config().directory::length()
-"
+["
 bytecode [coordinator]
 --------
  0                call        0      -      0      # system.config()
@@ -31,9 +31,9 @@ bytecode [coordinator]
  6                body        0      0      0
  7                 ret        0      0      0
 
-"
+"]
 select system.config().directory::length()
-10
+[10]
 select [null]::put(0, 123)
 [123]
 select put([null], 0, 123)
@@ -44,22 +44,22 @@ select [1]::append(1)::append(2)
 select [1]::append(1)::append(2)::append(3)
 [1, 1, 2, 3]
 select {}::set("a", 1)::set("b", 2)
-{
+[{
   "a": 1,
   "b": 2
-}
+}]
 select {}::public.set("a", 1)::public.set("b", 2)
-{
+[{
   "a": 1,
   "b": 2
-}
+}]
 # test: expr :: method
 select 1::schema.name
 {"code": 1, "msg": "schema.name(): function not found"}
 select 1::schema.name.name
 {"code": 1, "msg": "schema.name.name(): bad function call"}
 explain select system.config().directory::length
-"
+["
 bytecode [coordinator]
 --------
  0                call        0      -      0      # system.config()
@@ -71,11 +71,11 @@ bytecode [coordinator]
  6                body        0      0      0
  7                 ret        0      0      0
 
-"
+"]
 select system.config().directory::length
-10
+[10]
 select length(system.config().directory)
-10
+[10]
 # test: select
 create table test (id int primary key serial, data object)
 []

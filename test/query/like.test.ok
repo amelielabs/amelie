@@ -13,52 +13,52 @@ select 1 like
 select 1 like 1
 {"code": 1, "msg": "LIKE: arguments expected to be strings"}
 select '' like ''
-true
+[true]
 select '' like '%'
-true
+[true]
 select '' like '%_'
-true
+[true]
 select '' like '%_'
-true
+[true]
 select 'abc' like 'abc'
-true
+[true]
 select 'abc' like '_b_'
-true
+[true]
 select 'abc' like 'ab_'
-true
+[true]
 select 'abc' like 'abc'
-true
+[true]
 select 'abc' like '__c'
-true
+[true]
 select 'abc' like '___'
-true
+[true]
 select 'abcd' like '___'
-false
+[false]
 select 'abcd' like 'a'
-false
+[false]
 select 'abcd' like 'abc'
-false
+[false]
 select 'abcd' like 'abc'
-false
+[false]
 select 'abcd' like 'abc%'
-true
+[true]
 select 'abcd' like 'abc%d'
-true
+[true]
 select 'abcd' like 'abc%de'
-false
+[false]
 select 'hello, world' like 'hello%world'
-true
+[true]
 select 'http://google.com' like '%google%'
-true
+[true]
 # test: like escape
 select '%' like '\%'
-true
+[true]
 select '%' like '\\%'
-false
+[false]
 select '123 %-%-% day' like '%\%-\%-\%%'
-true
+[true]
 select '123 %_%_% day' like '%\%\_\%\_\%%'
-true
+[true]
 # test: not like
 select not like
 {"code": 1, "msg": "bad expression"}
@@ -67,8 +67,8 @@ select not
 select not like 20
 {"code": 1, "msg": "bad expression"}
 select 'abcd' like 'abc%d'
-true
+[true]
 select 'abcd' not like 'abc%d'
-false
+[false]
 disconnect S0
 close E0

@@ -4,16 +4,16 @@ connect E0 S0 localhost:3485
 set timezone to 'UTC'
 []
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
-"2020-02-11 15:30:00+00"
+["2020-02-11 15:30:00+00"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17');
-"2020-02-11 15:30:00+00"
+["2020-02-11 15:30:00+00"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
-"2020-02-11 15:32:30+00"
+["2020-02-11 15:32:30+00"]
 # test: date_bin (call as a method)
 select TIMESTAMP '2020-02-11 15:44:17'::date_bin(INTERVAL '15 minutes');
-"2020-02-11 15:30:00+00"
+["2020-02-11 15:30:00+00"]
 select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval);
-"2020-02-11 15:30:00+00"
+["2020-02-11 15:30:00+00"]
 select *, '2020-02-11 15:44:17'::timestamp::date_bin(*::interval) from ['15 days', '2 hours', '1 hour 30 minutes', '15 minutes', '10 seconds', '100 milliseconds', '250 microseconds']
 [["15 days", "2020-02-06 00:00:00+00"], ["2 hours", "2020-02-11 14:00:00+00"], ["1 hour 30 minutes", "2020-02-11 15:00:00+00"], ["15 minutes", "2020-02-11 15:30:00+00"], ["10 seconds", "2020-02-11 15:44:10+00"], ["100 milliseconds", "2020-02-11 15:44:17+00"], ["250 microseconds", "2020-02-11 15:44:17+00"]]
 # test: date_bin (negative interval)
@@ -29,9 +29,9 @@ select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', T
 set timezone to 'Asia/Famagusta'
 []
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
-"2020-02-11 15:30:00+02"
+["2020-02-11 15:30:00+02"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
-"2020-02-11 15:32:30+02"
+["2020-02-11 15:32:30+02"]
 set timezone to 'UTC'
 []
 select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
@@ -40,221 +40,221 @@ select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', times
 [["2022-01-02 00:00:00+00", 1], ["2022-01-01 23:00:00+00", 1], ["2022-01-01 22:00:00+00", 1], ["2022-01-01 21:00:00+00", 1], ["2022-01-01 20:00:00+00", 1], ["2022-01-01 19:00:00+00", 1], ["2022-01-01 18:00:00+00", 1], ["2022-01-01 17:00:00+00", 1], ["2022-01-01 16:00:00+00", 1], ["2022-01-01 15:00:00+00", 1], ["2022-01-01 14:00:00+00", 1], ["2022-01-01 13:00:00+00", 1], ["2022-01-01 12:00:00+00", 1], ["2022-01-01 11:00:00+00", 1], ["2022-01-01 10:00:00+00", 1], ["2022-01-01 09:00:00+00", 1], ["2022-01-01 08:00:00+00", 1], ["2022-01-01 07:00:00+00", 1], ["2022-01-01 06:00:00+00", 1], ["2022-01-01 05:00:00+00", 1], ["2022-01-01 04:00:00+00", 1], ["2022-01-01 03:00:00+00", 1], ["2022-01-01 02:00:00+00", 1], ["2022-01-01 01:00:00+00", 1], ["2022-01-01 00:00:00+00", 1]]
 # test: date_trunc(interval year)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
-"12 years"
+["12 years"]
 # test: date_trunc(interval month)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
-"12 years 5 months"
+["12 years 5 months"]
 # test: date_trunc(interval week)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
 {"code": 1, "msg": "unknown interval truncate field"}
 # test: date_trunc(interval day)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
-"12 years 5 months 3 days"
+["12 years 5 months 3 days"]
 select '12 years 5 month 3 days 2 hr 47 min 33 sec'::interval::date_trunc('day')
-"12 years 5 months 3 days"
+["12 years 5 months 3 days"]
 # test: date_trunc(interval hour)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'hour')
-"12 years 5 months 3 days 2 hours"
+["12 years 5 months 3 days 2 hours"]
 # test: date_trunc(interval minute)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'minute')
-"12 years 5 months 3 days 2 hours 47 minutes"
+["12 years 5 months 3 days 2 hours 47 minutes"]
 # test: date_trunc(interval second)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'sec')
-"12 years 5 months 3 days 2 hours 47 minutes 33 seconds"
+["12 years 5 months 3 days 2 hours 47 minutes 33 seconds"]
 # test: date_trunc(interval ms)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'ms')
-"12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms"
+["12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms"]
 # test: date_trunc(interval us)
 select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
-"12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms 400 us"
+["12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms 400 us"]
 # test: date_trunc(timestamp year)
 select date_trunc('year', TIMESTAMP '2001-01-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-03-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-04-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-05-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-06-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-07-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-08-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-09-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-10-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-11-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2011-12-16 20:38:40');
-"2011-01-01 00:00:00+00"
+["2011-01-01 00:00:00+00"]
 # test: date_trunc(timestamp month)
 select date_trunc('month', TIMESTAMP '2001-01-16 20:38:40');
-"2001-01-01 00:00:00+00"
+["2001-01-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-02-16 20:38:40');
-"2001-02-01 00:00:00+00"
+["2001-02-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-03-16 20:38:40');
-"2001-03-01 00:00:00+00"
+["2001-03-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-04-16 20:38:40');
-"2001-04-01 00:00:00+00"
+["2001-04-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-05-16 20:38:40');
-"2001-05-01 00:00:00+00"
+["2001-05-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-06-16 20:38:40');
-"2001-06-01 00:00:00+00"
+["2001-06-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-07-16 20:38:40');
-"2001-07-01 00:00:00+00"
+["2001-07-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-08-16 20:38:40');
-"2001-08-01 00:00:00+00"
+["2001-08-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-09-16 20:38:40');
-"2001-09-01 00:00:00+00"
+["2001-09-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-10-16 20:38:40');
-"2001-10-01 00:00:00+00"
+["2001-10-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2001-11-16 20:38:40');
-"2001-11-01 00:00:00+00"
+["2001-11-01 00:00:00+00"]
 select date_trunc('month', TIMESTAMP '2011-12-16 20:38:40');
-"2011-12-01 00:00:00+00"
+["2011-12-01 00:00:00+00"]
 select date_trunc(TIMESTAMP '2011-12-16 20:38:40', 'month');
-"2011-12-01 00:00:00+00"
+["2011-12-01 00:00:00+00"]
 # test: date_trunc(timestamp week)
 select date_trunc('week', TIMESTAMP '2001-02-16 20:38:40');
 {"code": 1, "msg": "unknown timestamp truncate field"}
 # test: date_trunc(timestamp day)
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
-"2001-02-16 00:00:00+00"
+["2001-02-16 00:00:00+00"]
 # test: date_trunc(timestamp hour)
 select date_trunc('hour', TIMESTAMP '2001-02-16 20:38:40.123456');
-"2001-02-16 20:00:00+00"
+["2001-02-16 20:00:00+00"]
 # test: date_trunc(timestamp minute)
 select date_trunc('min', TIMESTAMP '2001-02-16 20:38:40.123456');
-"2001-02-16 20:38:00+00"
+["2001-02-16 20:38:00+00"]
 # test: date_trunc(timestamp second)
 select date_trunc('sec', TIMESTAMP '2001-02-16 20:38:40.123456');
-"2001-02-16 20:38:40+00"
+["2001-02-16 20:38:40+00"]
 # test: date_trunc(timestamp ms)
 select date_trunc('ms', TIMESTAMP '2001-02-16 20:38:40.123456');
-"2001-02-16 20:38:40.123+00"
+["2001-02-16 20:38:40.123+00"]
 # test: date_trunc(timestamp us)
 select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
-"2001-02-16 20:38:40.123456+00"
+["2001-02-16 20:38:40.123456+00"]
 # test: date_trunc(timestamp day, timezone)
 set timezone to 'UTC'
 []
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
-"2001-02-16 00:00:00+00"
+["2001-02-16 00:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
-"2001-02-15 22:00:00+00"
+["2001-02-15 22:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
-"2001-02-15 15:00:00+00"
+["2001-02-15 15:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
-"2001-02-15 15:00:00+00"
+["2001-02-15 15:00:00+00"]
 set timezone to 'Asia/Famagusta'
 []
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
-"2001-02-16 02:00:00+02"
+["2001-02-16 02:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Asia/Famagusta');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
-"2001-02-16 00:00:00+02"
+["2001-02-16 00:00:00+02"]
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
 {"code": 1, "msg": "date_trunc(): expected string for argument 1, but got interval"}
 # test: extract(timestamp year)
 select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
-2001
+[2001]
 select public.extract('year', TIMESTAMP '2011-12-16 20:38:40');
-2011
+[2011]
 # test: extract(timestamp month)
 select public.extract('month', TIMESTAMP '2001-01-16 20:38:40');
-1
+[1]
 # test: extract(timestamp week)
 select public.extract('week', TIMESTAMP '2001-01-16 20:38:40');
 {"code": 1, "msg": "unknown timestamp field"}
 # test: extract(timestamp day)
 select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
-16
+[16]
 # test: extract(timestamp hour)
 set timezone to 'UTC'
 []
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
-20
+[20]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
-20
+[20]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+01');
-19
+[19]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
-18
+[18]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
-18
+[18]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
-20
+[20]
 set timezone to 'Asia/Famagusta'
 []
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
-20
+[20]
 set timezone to 'UTC'
 []
 # test: extract(timestamp minute)
 select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
-38
+[38]
 # test: extract(timestamp second)
 select public.extract('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
-40
+[40]
 # test: extract(timestamp ms)
 select public.extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
-123
+[123]
 # test: extract(timestamp us)
 select public.extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
-123456
+[123456]
 select TIMESTAMP '2001-01-16 20:38:40.123456'::extract('us')
-123456
+[123456]
 # test: extract(interval year)
 select public.extract('year', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-12
+[12]
 # test: extract(interval month)
 select public.extract('month', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-5
+[5]
 # test: extract(interval day)
 select public.extract('day', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-3
+[3]
 # test: extract(interval hour)
 select public.extract('hour', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-2
+[2]
 # test: extract(interval minute)
 select public.extract('min', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-47
+[47]
 # test: extract(interval second)
 select public.extract('sec', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-33
+[33]
 # test: extract(interval ms)
 select public.extract('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-500
+[500]
 # test: extract(interval us)
 select public.extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
-400
+[400]
 select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us')
-0
+[0]
 # test: extract from interval
 select extract(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
-47
+[47]
 select extract('min' FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
-47
+[47]
 select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
-47
+[47]
 # test: extract from timestamp
 select extract(us FROM TIMESTAMP '2001-01-16 20:38:40.123456')
-123456
+[123456]
 select EXTRACT(ms FROM TIMESTAMP '2001-01-16 20:38:40.123456')
-123
+[123]
 disconnect S0
 close E0

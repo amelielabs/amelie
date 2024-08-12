@@ -135,7 +135,7 @@ select id from test_view
 select * from test_view
 [[1], [2], [3]]
 explain select id from test_view
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -169,7 +169,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop view test_view
 []
 drop table test

@@ -8,7 +8,7 @@ insert into test 1,2,3
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -43,7 +43,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(shared), expr
@@ -54,7 +54,7 @@ insert into test 1,2,3
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -89,7 +89,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(table), table
@@ -100,7 +100,7 @@ insert into test 1,2,3
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -144,7 +144,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(shared), shared (pushdown)
@@ -155,7 +155,7 @@ insert into test 1,2,3
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -199,7 +199,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(expr), table (pushdown)
@@ -208,7 +208,7 @@ create table test (id int primary key)
 insert into test 1,2,3
 []
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -258,7 +258,7 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
@@ -269,7 +269,7 @@ create table test (id int primary key)
 insert into test 1,2,3
 []
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -319,7 +319,7 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
@@ -332,7 +332,7 @@ insert into test 1,2,3
 with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 [[1], [2], [3]]
 explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -384,11 +384,11 @@ bytecode [node]
 28              result        0      0      0
 29                 ret        0      0      0
 
-"
+"]
 with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
 [[1], [2], [3]]
 explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id order by test.id
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -443,7 +443,7 @@ bytecode [node]
 31              result        0      0      0
 32                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with (expr), with(table), table (pushdown join)
@@ -454,7 +454,7 @@ insert into test 1,2,3
 with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 [[1], [2], [3]]
 explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -536,7 +536,7 @@ bytecode [node]
 41              result        0      0      0
 42                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(a)
@@ -547,7 +547,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select * from a) select * from b
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a) select * from b
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -590,7 +590,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(expr), c(a)
@@ -601,7 +601,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -652,7 +652,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(expr), c(table)
@@ -663,7 +663,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -723,7 +723,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(table), c(expr)
@@ -734,7 +734,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
 [1, 2, 3]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -794,7 +794,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(table), c(expr), d(table)
@@ -805,7 +805,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -882,7 +882,7 @@ bytecode [node]
 31              result        0      0      0
 32                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(expr), b(table), c(expr)
@@ -893,7 +893,7 @@ insert into test 1,2,3
 with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
-"
+["
 bytecode [coordinator]
 --------
  0                 int        0      1      0
@@ -952,7 +952,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(expr), b(table), c(table)
@@ -963,7 +963,7 @@ insert into test 1,2,3
 with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0                 int        0      1      0
@@ -1023,7 +1023,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: a(table), b(a), c(table)
@@ -1034,7 +1034,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -1094,7 +1094,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 create shared table test (id int primary key)
@@ -1104,7 +1104,7 @@ insert into test 1,2,3
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1164,7 +1164,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(update returning), expr
@@ -1179,7 +1179,7 @@ insert into test values (2, 0)
 with a as (update test set data = data + 1 returning *) select * from a
 [[0, 1], [1, 1], [2, 1]]
 explain with a as (update test set data = data + 1 returning *) select * from a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1225,7 +1225,7 @@ bytecode [node]
 20              result        0      0      0
 21                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: with(delete returning), expr
@@ -1240,7 +1240,7 @@ insert into test values (2, 0)
 with a as (delete from test returning *) select * from a
 [[0, 0], [1, 0], [2, 0]]
 explain with a as (delete from test returning *) select * from a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1276,7 +1276,7 @@ bytecode [node]
 10              result        0      0      0
 11                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 disconnect S0

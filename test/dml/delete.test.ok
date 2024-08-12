@@ -61,7 +61,7 @@ insert into test values (1)
 insert into test values (2)
 []
 explain delete from test where id = 3
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -87,7 +87,7 @@ bytecode [node]
 10        cursor_close        0      0      0
 11                 ret        0      0      0
 
-"
+"]
 delete from test where id = 3
 []
 select * from test
@@ -134,7 +134,7 @@ delete from test where id >= 2
 select * from test
 [[0], [1]]
 explain delete from test where id > 0 and id < 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -173,7 +173,7 @@ bytecode [node]
 23        cursor_close        0      0      0
 24                 ret        0      0      0
 
-"
+"]
 delete from test where id > 0 and id < 1
 []
 select * from test

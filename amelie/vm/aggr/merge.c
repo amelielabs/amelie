@@ -73,7 +73,7 @@ merge_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
 			body_add_comma(buf);
 		else
 			first = false;
-		body_add(buf, &row->value, timezone, true);
+		body_add(buf, &row->value, timezone, true, true);
 		merge_iterator_next(&it);
 	}
 }

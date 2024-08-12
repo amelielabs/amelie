@@ -216,7 +216,7 @@ backup_main(void* arg)
 
 		// send backup state
 		auto reply = &client->reply;
-		body_add_buf(&reply->content, &self->state, global()->timezone);
+		body_add_raw(&reply->content, &self->state, global()->timezone);
 		http_write_reply(reply, 200, "OK");
 		http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
 		http_write(reply, "Content-Type", "application/json");

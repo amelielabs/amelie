@@ -2,71 +2,71 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: default checkpoint
 show checkpoint
-0
+[0]
 # test: checkpoint (no data)
 checkpoint
 []
 show checkpoint
-0
+[0]
 # test: create table
 create distributed table test (id int primary key serial)
 []
 show lsn
-1
+[1]
 # test: checkpoint
 checkpoint
 []
 show lsn
-1
+[1]
 show checkpoint
-1
+[1]
 # test: restart/recover
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-1
+[1]
 show checkpoint
-1
+[1]
 select * from test
 []
 # test: insert
 insert into test () values (), (), ()
 []
 select serial("public", "test")
-3
+[3]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-2
+[2]
 show checkpoint
-1
+[1]
 select serial("public", "test")
-3
+[3]
 select * from test
 [[0], [1], [2]]
 # test: checkpoint
 checkpoint
 []
 show lsn
-2
+[2]
 show checkpoint
-2
+[2]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-2
+[2]
 show checkpoint
-2
+[2]
 select serial("public", "test")
-3
+[3]
 select * from test
 [[0], [1], [2]]
 # test: create schema
@@ -75,16 +75,16 @@ create schema test
 alter table public.test rename to test.test
 []
 show lsn
-4
+[4]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-4
+[4]
 show checkpoint
-2
+[2]
 show schemas
 [{
   "name": "system",
@@ -100,25 +100,25 @@ show schemas
   "create": true
 }]
 select serial("test", "test")
-3
+[3]
 select * from test.test
 [[0], [1], [2]]
 # test: checkpoint
 checkpoint
 []
 show lsn
-4
+[4]
 show checkpoint
-4
+[4]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-4
+[4]
 show checkpoint
-4
+[4]
 show schemas
 [{
   "name": "system",
@@ -134,14 +134,14 @@ show schemas
   "create": true
 }]
 select serial("test", "test")
-3
+[3]
 select * from test.test
 [[0], [1], [2]]
 # test: create view
 create view test_view as select [1,2,3]
 []
 show lsn
-5
+[5]
 select * from test_view
 [1, 2, 3]
 # test: restart/recover (checkpoint + wal)
@@ -150,9 +150,9 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-5
+[5]
 show checkpoint
-4
+[4]
 show schemas
 [{
   "name": "system",
@@ -168,7 +168,7 @@ show schemas
   "create": true
 }]
 select serial("test", "test")
-3
+[3]
 select * from test.test
 [[0], [1], [2]]
 select * from test_view
@@ -177,18 +177,18 @@ select * from test_view
 checkpoint
 []
 show lsn
-5
+[5]
 show checkpoint
-5
+[5]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-5
+[5]
 show checkpoint
-5
+[5]
 show schemas
 [{
   "name": "system",
@@ -204,7 +204,7 @@ show schemas
   "create": true
 }]
 select serial("test", "test")
-3
+[3]
 select * from test.test
 [[0], [1], [2]]
 select * from test_view
@@ -215,16 +215,16 @@ drop view test_view
 drop table test.test
 []
 show lsn
-7
+[7]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-7
+[7]
 show checkpoint
-5
+[5]
 show views
 []
 show tables
@@ -233,18 +233,18 @@ show tables
 checkpoint
 []
 show lsn
-7
+[7]
 show checkpoint
-7
+[7]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-7
+[7]
 show checkpoint
-7
+[7]
 show views
 []
 show tables

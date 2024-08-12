@@ -8,7 +8,7 @@ select *.name, *.shared from system.tables()
 insert into test (id) values (1), (2), (3)
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -35,12 +35,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select from (select from shared)
 explain select * from (select * from test)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -71,12 +71,12 @@ bytecode [node]
 16              result        0      0      0
 17                 ret        0      0      0
 
-"
+"]
 select * from (select * from test)
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select expr) from shared
 explain select (select test.*) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -103,12 +103,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select test.*) from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select from shared)
 explain select (select * from test)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -132,12 +132,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select * from test)
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select from shared) from expr
 explain select (select a.*, * from test) from [1,2,3] a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -178,11 +178,11 @@ bytecode [node]
 26              result        0      0      0
 27                 ret        0      0      0
 
-"
+"]
 select (select a.*, * from test) from [1,2,3] a
 [[[1, [1, 0]], [1, [2, 0]], [1, [3, 0]]], [[2, [1, 0]], [2, [2, 0]], [2, [3, 0]]], [[3, [1, 0]], [3, [2, 0]], [3, [3, 0]]]]
 explain select (select a.*, id from test) from [1,2,3] a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -223,12 +223,12 @@ bytecode [node]
 26              result        0      0      0
 27                 ret        0      0      0
 
-"
+"]
 select (select a.*, id from test) from [1,2,3] a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
 # test: select (select from shared) from shared
 explain select (select a.*, id from test) from test a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -267,11 +267,11 @@ bytecode [node]
 21              result        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select (select a.*, id from test) from test a
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
 explain select (select a.id, id from test) from test a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -310,12 +310,12 @@ bytecode [node]
 21              result        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select (select a.id, id from test) from test a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
 # test: select (select from shared) from (select from expr)
 explain select (select a.*, id from test) from (select * from [1,2,3]) a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -363,12 +363,12 @@ bytecode [node]
 33              result        0      0      0
 34                 ret        0      0      0
 
-"
+"]
 select (select a.*, id from test) from (select * from [1,2,3]) a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
 # test: select (select from shared) from (select from shared)
 explain select (select a.*, id from test) from (select * from test t) a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -411,11 +411,11 @@ bytecode [node]
 28              result        0      0      0
 29                 ret        0      0      0
 
-"
+"]
 select (select a.*, id from test) from (select * from test t) a
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
 explain select (select a.*[0], id from test) from (select * from test t) a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -460,12 +460,12 @@ bytecode [node]
 30              result        0      0      0
 31                 ret        0      0      0
 
-"
+"]
 select (select a.*[0], id from test) from (select * from test t) a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
 # test: select from shared, expr
 explain select test.*, t.* from test, [1,2,3] t
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -507,12 +507,12 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select test.*, t.* from test, [1,2,3] t
 [[[1, 0], 1], [[1, 0], 2], [[1, 0], 3], [[2, 0], 1], [[2, 0], 2], [[2, 0], 3], [[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]
 # test: select from expr, shared
 explain select test.*, t.* from [1,2,3] t, test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -551,12 +551,12 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select test.*, t.* from [1,2,3] t, test
 [[[1, 0], 1], [[2, 0], 1], [[3, 0], 1], [[1, 0], 2], [[2, 0], 2], [[3, 0], 2], [[1, 0], 3], [[2, 0], 3], [[3, 0], 3]]
 # test: select from shared, shared
 explain select test.*, t.* from test, test t
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -593,7 +593,7 @@ bytecode [node]
 19              result        0      0      0
 20                 ret        0      0      0
 
-"
+"]
 select test.*, t.* from test, test t
 [[[1, 0], [1, 0]], [[1, 0], [2, 0]], [[1, 0], [3, 0]], [[2, 0], [1, 0]], [[2, 0], [2, 0]], [[2, 0], [3, 0]], [[3, 0], [1, 0]], [[3, 0], [2, 0]], [[3, 0], [3, 0]]]
 drop table test

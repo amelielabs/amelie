@@ -31,11 +31,11 @@ select timestamp('1970-00-00 00:00:00')
 {"code": 1, "msg": "malformed timestamp string"}
 # test: epoch
 select '1970-01-01 00:00:00'::timestamp
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select timestamp '1970-01-01 00:00:00'
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select timestamp('1970-01-01 00:00:00')
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 # test: day overflow
 select '1970-01-33 00:00:00'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
@@ -44,86 +44,86 @@ select '1970-13-01 00:00:00'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 # test: second overflow
 select '1970-01-01 00:00:70'::timestamp
-"1970-01-01 00:01:10+00"
+["1970-01-01 00:01:10+00"]
 # test: minute overflow
 select '1970-01-01 00:70:00'::timestamp
-"1970-01-01 01:10:00+00"
+["1970-01-01 01:10:00+00"]
 # test: hour overflow
 select '1970-01-01 28:00:00'::timestamp
-"1970-01-02 04:00:00+00"
+["1970-01-02 04:00:00+00"]
 # test: 24hour
 select '1970-01-01 24:00:00'::timestamp
-"1970-01-02 00:00:00+00"
+["1970-01-02 00:00:00+00"]
 # test: ms
 select '1970-01-01 00:00:00.'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 select '1970-01-01 00:00:00.0'::timestamp
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select '1970-01-01 00:00:00.00'::timestamp
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select '1970-01-01 00:00:00.000'::timestamp
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select '1970-01-01 00:00:00.001'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.001'::timestamp()
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select timestamp '1970-01-01 00:00:00.001'
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select timestamp('1970-01-01 00:00:00.001')
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 # test: us
 select '1970-01-01 00:00:00.0010'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.00100'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.000001'::timestamp
-"1970-01-01 00:00:00.000001+00"
+["1970-01-01 00:00:00.000001+00"]
 select '1970-01-01 00:00:00.000000'::timestamp
-"1970-01-01 00:00:00+00"
+["1970-01-01 00:00:00+00"]
 select '1970-01-01 00:00:00.999999'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select timestamp '1970-01-01 00:00:00.999999'
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select timestamp('1970-01-01 00:00:00.999999')
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select timestamp('1970-01-01 00:00:00.999999', 123)
 {"code": 1, "msg": "timestamp(): expected string for argument 1, but got int"}
 # test: precision
 select '1970-01-01 00:00:00.1'::timestamp
-"1970-01-01 00:00:00.100+00"
+["1970-01-01 00:00:00.100+00"]
 select '1970-01-01 00:00:00.10'::timestamp
-"1970-01-01 00:00:00.100+00"
+["1970-01-01 00:00:00.100+00"]
 select '1970-01-01 00:00:00.100'::timestamp
-"1970-01-01 00:00:00.100+00"
+["1970-01-01 00:00:00.100+00"]
 select '1970-01-01 00:00:00.01'::timestamp
-"1970-01-01 00:00:00.010+00"
+["1970-01-01 00:00:00.010+00"]
 select '1970-01-01 00:00:00.010'::timestamp
-"1970-01-01 00:00:00.010+00"
+["1970-01-01 00:00:00.010+00"]
 select '1970-01-01 00:00:00.001'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.0010'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.00100'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.001000'::timestamp
-"1970-01-01 00:00:00.001+00"
+["1970-01-01 00:00:00.001+00"]
 select '1970-01-01 00:00:00.0001'::timestamp
-"1970-01-01 00:00:00.000100+00"
+["1970-01-01 00:00:00.000100+00"]
 select '1970-01-01 00:00:00.00010'::timestamp
-"1970-01-01 00:00:00.000100+00"
+["1970-01-01 00:00:00.000100+00"]
 select '1970-01-01 00:00:00.000100'::timestamp
-"1970-01-01 00:00:00.000100+00"
+["1970-01-01 00:00:00.000100+00"]
 select '1970-01-01 00:00:00.00001'::timestamp
-"1970-01-01 00:00:00.000010+00"
+["1970-01-01 00:00:00.000010+00"]
 select '1970-01-01 00:00:00.000010'::timestamp
-"1970-01-01 00:00:00.000010+00"
+["1970-01-01 00:00:00.000010+00"]
 select '1970-01-01 00:00:00.000001'::timestamp
-"1970-01-01 00:00:00.000001+00"
+["1970-01-01 00:00:00.000001+00"]
 select '1970-01-01 00:00:00.0000001'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 # test: zulu
 select '1970-01-01 00:00:00.999999Z'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999Zjunk'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 select timestamp '1970-01-01 00:00:00.999999Zjunk'
@@ -134,16 +134,16 @@ select '1970-01-01 00:00:00.999999+'::timestamp
 select '1970-01-01 00:00:00.999999+0'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 select '1970-01-01 00:00:00.999999+00'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-00'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-000'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 # test: timezone (hhmm)
 select '1970-01-01 00:00:00.999999+0000'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-0000'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999+0030'::timestamp
 {"code": 1, "msg": "timestamp overflow"}
 select '1970-01-01 00:00:00.999999+1030'::timestamp
@@ -152,9 +152,9 @@ select '1970-01-01 00:00:00.999999+9930'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 # test: timezone (hh:mm)
 select '1970-01-01 00:00:00.999999+00:00'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-00:00'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999+00:30'::timestamp
 {"code": 1, "msg": "timestamp overflow"}
 select '1970-01-01 00:00:00.999999+10:30'::timestamp
@@ -163,7 +163,7 @@ select '1970-01-01 00:00:00.999999+99:30'::timestamp
 {"code": 1, "msg": "malformed timestamp string"}
 # test: timezone (ignore)
 select '1970-01-01 00:00:00.999999+00'::timestamp
-"1970-01-01 00:00:00.999999+00"
+["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999+01'::timestamp
 {"code": 1, "msg": "timestamp overflow"}
 select '1970-01-01 00:00:00.999999+02'::timestamp
@@ -172,17 +172,17 @@ select '1970-01-01 00:00:00.999999+03'::timestamp
 {"code": 1, "msg": "timestamp overflow"}
 # test: convertion (string)
 select '1970-01-01 01:12:59.909090'::timestamp
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 select '1970-01-01 01:12:59.909090'::timestamp::string
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string
-"1970-01-01 01:12:59.909090+00"
+["1970-01-01 01:12:59.909090+00"]
 # test: convertion (document)
 select ['1970-01-01 01:12:59.909090'::timestamp]
 ["1970-01-01 01:12:59.909090+00"]
@@ -198,15 +198,15 @@ select '1970-01-01 01:12:59.909090'::timestamp + 1
 select '1970-01-01 01:12:59.909090'::timestamp + '1 hour'
 {"code": 1, "msg": "bad + expression types"}
 select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval
-"1970-01-01 01:00:00+00"
+["1970-01-01 01:00:00+00"]
 select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval
-"1971-01-01 00:00:00+00"
+["1971-01-01 00:00:00+00"]
 select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval
-"1972-01-01 00:00:00+00"
+["1972-01-01 00:00:00+00"]
 select '1 year'::interval + '1 year'::interval
-"2 years"
+["2 years"]
 select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
-"1972-01-01 00:00:00+00"
+["1972-01-01 00:00:00+00"]
 # test: sub
 select '1970-01-01 01:12:59.909090'::timestamp + 1
 {"code": 1, "msg": "bad + expression types"}
@@ -215,59 +215,59 @@ select '1970-01-01 01:12:59.909090'::timestamp - '1 hour'
 select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval
 {"code": 1, "msg": "timestamp overflow"}
 select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval
-"1972-01-01 00:00:00+00"
+["1972-01-01 00:00:00+00"]
 select '1 year'::interval - '1 year'::interval
-""
+[""]
 select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval
-"1980-01-01 00:00:00+00"
+["1980-01-01 00:00:00+00"]
 select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
-"1980-01-01 00:00:00+00"
+["1980-01-01 00:00:00+00"]
 # test: eq
 select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp
-true
+[true]
 select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
-false
+[false]
 # test: lte
 select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-true
+[true]
 select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-true
+[true]
 select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp
-false
+[false]
 select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
-true
+[true]
 # test: lt
 select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-false
+[false]
 select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-true
+[true]
 select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp
-false
+[false]
 select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
-true
+[true]
 # test: gte
 select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-true
+[true]
 select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-false
+[false]
 select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp
-true
+[true]
 select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
-false
+[false]
 # test: gt
 select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-false
+[false]
 select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-false
+[false]
 select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
-true
+[true]
 select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
-false
+[false]
 # test: between
 select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
-true
+[true]
 select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
-false
+[false]
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
 []
@@ -288,7 +288,7 @@ select * from test
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -321,11 +321,11 @@ bytecode [node]
 15              result        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -356,7 +356,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 drop table test
@@ -377,7 +377,7 @@ insert into test values (timestamp "1970-01-01 00:00:03.000000")
 insert into test values (timestamp "1970-01-01 00:00:04.000000")
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -404,7 +404,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [["1970-01-01 00:00:01.000001+00"], ["1970-01-01 00:00:01.000002+00"], ["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 select * from test order by id
@@ -412,7 +412,7 @@ select * from test order by id
 select * from test where id > timestamp '1970-01-01 00:00:01.000002'
 [["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -443,11 +443,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
 [["1970-01-01 00:00:01.000002+00"], ["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -478,11 +478,11 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000001+00"], ["1970-01-01 00:00:01.000002+00"]]
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -517,11 +517,11 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000003+00"]]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -552,7 +552,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 drop table test
 []
 # test: timestamp column (secondary index)
@@ -577,7 +577,7 @@ select * from test use index (i)
 select * from test where id > timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000003'
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -608,13 +608,13 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select count(*) from test where id > timestamp '1970-01-01 00:00:01.000003'
 [3]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000003+00"]]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -645,7 +645,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select count(*) from test where id = timestamp '1970-01-01 00:00:01.000003'
 [1]
 drop table test

@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select from expr where
 explain select * from [1, 2, 3] where true
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -25,7 +25,7 @@ bytecode [coordinator]
 17                body        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from [1, 2, 3] where true
 [1, 2, 3]
 select * from [1, 2, 3] where false
@@ -63,7 +63,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select * from test where *[0] >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -96,7 +96,7 @@ bytecode [node]
 15              result        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from test where *[0] >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -111,7 +111,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select * from test where id >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -142,7 +142,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -165,7 +165,7 @@ select * from test
   "data": 123
 }]]
 explain select * from test where data.data >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -196,7 +196,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where data.data >= 0
 [[0, {
   "data": 123
@@ -231,7 +231,7 @@ select * from test
   }
 }]]
 explain select * from test where data.data.data >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -262,7 +262,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where data.data.data >= 0
 [[0, {
   "data": {
@@ -289,7 +289,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select * from test where test.id >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -320,7 +320,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where test.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -335,7 +335,7 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 []
 explain select * from test where test.data.data >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -366,7 +366,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where test.data.data >= 0
 [[0, {
   "data": 123
@@ -387,7 +387,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select * from test alias where alias.id >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -418,7 +418,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test alias where alias.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -433,7 +433,7 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 []
 explain select * from test alias where alias.data.data >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -464,7 +464,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test alias where alias.data.data >= 0
 [[0, {
   "data": 123
@@ -481,7 +481,7 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 []
 explain select * from test where true
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -510,7 +510,7 @@ bytecode [node]
 11              result        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select * from test where true
 [[1], [2], [3]]
 select * from test where false
@@ -523,7 +523,7 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 []
 explain select * from test where id >= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -554,7 +554,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id >= 0
 [[1], [2], [3]]
 select * from test where id >= 1
@@ -578,7 +578,7 @@ select * from test where id > 9
 []
 # test: where lte
 explain select * from test where id <= 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -613,7 +613,7 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from test where id <= 0
 []
 select * from test where id <= 1
@@ -626,7 +626,7 @@ select * from test where id <= 8
 [[1], [2], [3]]
 # test: where lt
 explain select * from test where id < 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -661,7 +661,7 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from test where id < 0
 []
 select * from test where id < 1

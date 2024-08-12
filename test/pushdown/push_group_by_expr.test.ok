@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select from expr group by empty
 explain select * from [] group by *
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -25,12 +25,12 @@ bytecode [coordinator]
 17                body        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from [] group by *
 []
 # test: select from expr group by
 explain select * from [0,1,2,3,4] group by *
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -63,12 +63,12 @@ bytecode [coordinator]
 27                body        0      0      0
 28                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by *
 [0, 1, 2, 3, 4]
 # test: select expr from expr group by
 explain select 100 + * from [0,1,2,3,4] group by *
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -103,12 +103,12 @@ bytecode [coordinator]
 29                body        0      0      0
 30                 ret        0      0      0
 
-"
+"]
 select 100 + * from [0,1,2,3,4] group by *
 [100, 101, 102, 103, 104]
 # test: select from (select from expr group by)
 explain select * from (select * from [0,1,2,3,4] group by *)
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -148,12 +148,12 @@ bytecode [coordinator]
 34                body        0      0      0
 35                 ret        0      0      0
 
-"
+"]
 select * from (select * from [0,1,2,3,4] group by *)
 [0, 1, 2, 3, 4]
 # test: select from expr group by limit
 explain select * from [0,1,2,3,4] group by * limit 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -189,7 +189,7 @@ bytecode [coordinator]
 30                body        0      0      0
 31                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * limit 2
 [0, 1]
 select * from [0,1,2,3,4] group by * limit 3
@@ -198,7 +198,7 @@ select * from [0,1,2,3,4] group by * limit 4
 [0, 1, 2, 3]
 # test: select from expr group by limit/offset
 explain select * from [0,1,2,3,4] group by * limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -237,7 +237,7 @@ bytecode [coordinator]
 33                body        0      0      0
 34                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * limit 1 offset 0
 [0]
 select * from [0,1,2,3,4] group by * limit 1 offset 1
@@ -248,7 +248,7 @@ select * from [0,1,2,3,4] group by * limit 1 offset 3
 [3]
 # test: select from expr group by offset
 explain select * from [0,1,2,3,4] group by * offset 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -284,7 +284,7 @@ bytecode [coordinator]
 30                body        0      0      0
 31                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * offset 0
 [0, 1, 2, 3, 4]
 select * from [0,1,2,3,4] group by * offset 1
@@ -295,7 +295,7 @@ select * from [0,1,2,3,4] group by * offset 3
 [3, 4]
 # test: select from (select from expr group by limit)
 explain select * from (select * from [0,1,2,3,4] group by * limit 1)
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -338,7 +338,7 @@ bytecode [coordinator]
 37                body        0      0      0
 38                 ret        0      0      0
 
-"
+"]
 select * from (select * from [0,1,2,3,4] group by * limit 2)
 [0, 1]
 select * from (select * from [0,1,2,3,4] group by * limit 3)
@@ -347,7 +347,7 @@ select * from (select * from [0,1,2,3,4] group by * limit 4)
 [0, 1, 2, 3]
 # test: select from (select from expr group by limit/offset)
 explain select * from (select * from [0,1,2,3,4] group by * limit 1 offset 1)
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -393,7 +393,7 @@ bytecode [coordinator]
 40                body        0      0      0
 41                 ret        0      0      0
 
-"
+"]
 select * from (select * from [0,1,2,3,4] group by * limit 1 offset 0)
 [0]
 select * from (select * from [0,1,2,3,4] group by * limit 1 offset 1)
@@ -404,7 +404,7 @@ select * from (select * from [0,1,2,3,4] group by * limit 1 offset 3)
 [3]
 # test: select from (select from expr group by offset)
 explain select * from (select * from [0,1,2,3,4] group by * offset 1)
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -447,7 +447,7 @@ bytecode [coordinator]
 37                body        0      0      0
 38                 ret        0      0      0
 
-"
+"]
 select * from (select * from [0,1,2,3,4] group by * offset 0)
 [0, 1, 2, 3, 4]
 select * from (select * from [0,1,2,3,4] group by * offset 1)
@@ -458,7 +458,7 @@ select * from (select * from [0,1,2,3,4] group by * offset 3)
 [3, 4]
 # test: select from table group by having
 explain select * from [0,1,2,3,4] group by * having * >= 3
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -495,7 +495,7 @@ bytecode [coordinator]
 31                body        0      0      0
 32                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * having * >= 3
 [3, 4]
 select * from [0,1,2,3,4] group by * having * = 0
@@ -514,7 +514,7 @@ select * from [0,1,2,3,4] group by * having * >= 1 and * <= 3
 [1, 2, 3]
 # test: select from table group by having limit
 explain select * from [0,1,2,3,4] group by * having * >= 1 limit 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -554,14 +554,14 @@ bytecode [coordinator]
 34                body        0      0      0
 35                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * having * >= 1 limit 1
 [1]
 select * from [0,1,2,3,4] group by * having * >= 1 limit 2
 [1, 2]
 # test: select from table group by having limit/offset
 explain select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -604,7 +604,7 @@ bytecode [coordinator]
 37                body        0      0      0
 38                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 1
 [2]
 select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 2
@@ -613,7 +613,7 @@ select * from [0,1,2,3,4] group by * having * >= 1 limit 1 offset 3
 [4]
 # test: select from table group by having offset
 explain select * from [0,1,2,3,4] group by * having * >= 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -653,7 +653,7 @@ bytecode [coordinator]
 34                body        0      0      0
 35                 ret        0      0      0
 
-"
+"]
 select * from [0,1,2,3,4] group by * having * >= 1 offset 1
 [2, 3, 4]
 select * from [0,1,2,3,4] group by * having * >= 1 offset 2

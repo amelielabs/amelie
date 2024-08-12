@@ -2,35 +2,35 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: coalesce
 select coalesce()
-null
+[null]
 select coalesce(1)
-1
+[1]
 select coalesce(null)
-null
+[null]
 select coalesce(null, 1)
-1
+[1]
 select coalesce(1, null)
-1
+[1]
 select coalesce(1, null, 2)
-1
+[1]
 select null::coalesce
-null
+[null]
 select 1::coalesce
-1
+[1]
 # test: nullif
 select nullif()
 {"code": 1, "msg": "nullif(): expected 2 arguments, but got 0"}
 select nullif(1)
 {"code": 1, "msg": "nullif(): expected 2 arguments, but got 1"}
 select nullif(1, 2)
-1
+[1]
 select nullif(1, null)
-1
+[1]
 select nullif(null, 1)
-null
+[null]
 select nullif(1, 1)
-null
+[null]
 select 1::nullif(1)
-null
+[null]
 disconnect S0
 close E0

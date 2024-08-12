@@ -33,7 +33,7 @@ drop table test
 create table test (id int primary key, data int)
 []
 explain insert into test values(1, 0) on conflict do nothing
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -52,7 +52,7 @@ bytecode [node]
  3        cursor_close        0      0      0
  4                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do nothing
 []
 insert into test values(1, 0) on conflict do nothing
@@ -60,7 +60,7 @@ insert into test values(1, 0) on conflict do nothing
 insert into test values(1, 0) on conflict do nothing
 []
 explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -79,7 +79,7 @@ bytecode [node]
  3        cursor_close        0      0      0
  4                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 []
 select * from test
@@ -90,7 +90,7 @@ drop table test
 create table test (id int primary key, data int)
 []
 explain insert into test values(1, 0) on conflict do update set data = data + 1
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -120,7 +120,7 @@ bytecode [node]
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do update set data = data + 1
 []
 select * from test
@@ -148,7 +148,7 @@ drop table test
 create table test (id int primary key, data int)
 []
 explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -178,7 +178,7 @@ bytecode [node]
 14        cursor_close        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 []
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
@@ -201,7 +201,7 @@ insert into test values (1, 0) on conflict do update set data = data + 1
 select * from test
 [[1, 2]]
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -233,7 +233,7 @@ bytecode [node]
 16        cursor_close        0      0      0
 17                 ret        0      0      0
 
-"
+"]
 insert into test values (1, 0) on conflict do update set data = data + 1 where true
 []
 select * from test
@@ -254,7 +254,7 @@ create table test (id int primary key, data int)
 insert into test values (1, 0) on conflict do update set data = data + 1
 []
 explain insert into test values (1, 123) on conflict do update set data = data + @[1]
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -286,7 +286,7 @@ bytecode [node]
 16        cursor_close        0      0      0
 17                 ret        0      0      0
 
-"
+"]
 insert into test values (1, 123) on conflict do update set data = data + @[1]
 []
 select * from test
@@ -414,7 +414,7 @@ create table test (id int primary key, data int)
 insert into test values (1, 0)
 []
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -450,7 +450,7 @@ bytecode [node]
 18              result        0      0      0
 19                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [[1, 1]]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
@@ -467,7 +467,7 @@ create table test (id int primary key, data int)
 insert into test values (1, 0)
 []
 explain insert into test values(1, 0) on conflict do nothing returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -492,7 +492,7 @@ bytecode [node]
  7              result        0      0      0
  8                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do nothing returning *
 [[1, 0]]
 insert into test values(1, 0) on conflict do nothing returning *
@@ -507,7 +507,7 @@ drop table test
 create table test (id int primary key, data int)
 []
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -543,7 +543,7 @@ bytecode [node]
 18              result        0      0      0
 19                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [[1, 0]]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
@@ -558,7 +558,7 @@ drop table test
 create table test (id int primary key, data int)
 []
 explain insert into test values(1, 0) on conflict do nothing returning *
-"
+["
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
@@ -583,7 +583,7 @@ bytecode [node]
  7              result        0      0      0
  8                 ret        0      0      0
 
-"
+"]
 insert into test values(1, 0) on conflict do nothing returning *
 [[1, 0]]
 insert into test values(1, 0) on conflict do nothing returning *

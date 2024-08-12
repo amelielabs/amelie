@@ -614,7 +614,7 @@ value_to_string(Value* result, Value* a, Timezone* timezone)
 	}
 	}
 	default:
-		body_add(data, a, timezone, false);
+		body_add(data, a, timezone, false, false);
 		break;
 	}
 	buf_end(data);

@@ -23,20 +23,20 @@ select 1 from 1 where null
 {"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 # test: select expr
 select 1
-1
+[1]
 select 1, 2
 [1, 2]
 select [1, 2]
 [1, 2]
 select {}
-{
-}
+[{
+}]
 select null
-null
+[null]
 select null, null
 [null, null]
 explain select 1
-"
+["
 bytecode [coordinator]
 --------
  0                 int        0      1      0
@@ -44,9 +44,9 @@ bytecode [coordinator]
  2                body        0      0      0
  3                 ret        0      0      0
 
-"
+"]
 explain select [1, 2, 3]
-"
+["
 bytecode [coordinator]
 --------
  0                 int        0      1      0
@@ -60,7 +60,7 @@ bytecode [coordinator]
  8                body        0      0      0
  9                 ret        0      0      0
 
-"
+"]
 # test: select name
 select name
 {"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
@@ -98,7 +98,7 @@ select *, *, * from [1, 2, 3]
 select ** from [1, 2, 3]
 {"code": 1, "msg": "**: reference is not defined"}
 explain select * from [1, 2, 3]
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -119,7 +119,7 @@ bytecode [coordinator]
 15                body        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from [1, [2, [3]]]
 [1, [2, [3]]]
 select test.* from ([{"id": 1}, {"id": 2}, {"id": 3}]) test
@@ -142,7 +142,7 @@ select * from {"a": 1, "b": 2}
 select * from {"a": 1, "b": 2, "c": 3}
 [1, 2, 3]
 explain select * from {"a": 1, "b": 2, "c": 3}
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -169,7 +169,7 @@ bytecode [coordinator]
 21                body        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select **, * from {"a": 1, "b": 2, "c": 3}
 [["a", 1], ["b", 2], ["c", 3]]
 select **, * from {"a": 1, "b": {"c": 3}}
@@ -220,7 +220,7 @@ drop view test
 create view test as select [1,2,3]
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -241,7 +241,7 @@ bytecode [coordinator]
 15                body        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select * from test
 [1, 2, 3]
 drop view test
@@ -250,7 +250,7 @@ drop view test
 create view test as select {"a": 1, "b": 2, "c": 3}
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -277,7 +277,7 @@ bytecode [coordinator]
 21                body        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select **, * from test
 [["a", 1], ["b", 2], ["c", 3]]
 drop view test
@@ -302,7 +302,7 @@ drop schema test cascade
 create view test as select * from [1,2,3]
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -330,7 +330,7 @@ bytecode [coordinator]
 22                body        0      0      0
 23                 ret        0      0      0
 
-"
+"]
 select * from test
 [1, 2, 3]
 drop view test
@@ -339,7 +339,7 @@ drop view test
 create view test as select * from {"a": 1, "b": 2, "c": 3}
 []
 explain select * from test list
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -373,7 +373,7 @@ bytecode [coordinator]
 28                body        0      0      0
 29                 ret        0      0      0
 
-"
+"]
 select * from test list
 [1, 2, 3]
 select list.* from test list
@@ -406,7 +406,7 @@ select * from test
 select (select ** from test.*) from test
 [["schema", "name", "query", "columns"]]
 explain select (select ** from test.*) from test
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -435,7 +435,7 @@ bytecode [coordinator]
 23                body        0      0      0
 24                 ret        0      0      0
 
-"
+"]
 drop view test
 []
 # test: select star from table
@@ -448,7 +448,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -475,7 +475,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [[0], [1], [2]]
 select test.* from test
@@ -494,7 +494,7 @@ insert into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select id, data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -525,7 +525,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select id, data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -548,7 +548,7 @@ select * from test
   "data": 123
 }]]
 explain select data.data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -575,7 +575,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select data.data from test
 [123, 123, 123]
 drop table test
@@ -604,7 +604,7 @@ select * from test
   }
 }]]
 explain select data.data.data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -631,7 +631,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select data.data.data from test
 [123, 123, 123]
 drop table test
@@ -646,7 +646,7 @@ insert into test () values ()
 insert into test () values ()
 []
 explain select test.id, test.data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -677,7 +677,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select test.id, test.data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -692,7 +692,7 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 []
 explain select test.data.data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -719,7 +719,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select test.data.data from test
 [123, 123, 123]
 drop table test
@@ -736,7 +736,7 @@ insert into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select alias.id, alias.data from test alias
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -767,7 +767,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select alias.id, alias.data from test alias
 [[0, 0], [1, 0], [2, 0]]
 drop table test
@@ -782,7 +782,7 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 []
 explain select alias.data.data from test alias
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -809,7 +809,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select alias.data.data from test alias
 [123, 123, 123]
 drop table test
@@ -840,7 +840,7 @@ select obj from test
   "id": 3
 }]
 explain select obj.id from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -867,7 +867,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select obj.id from test
 [1, 2, 3]
 select obj.data from test
@@ -881,7 +881,7 @@ select (select * from test.*) from test
   "id": 3
 }]]
 explain select (select **, * from test.*[0]) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -921,7 +921,7 @@ bytecode [node]
 22              result        0      0      0
 23                 ret        0      0      0
 
-"
+"]
 select (select **, * from test.*[0]) from test
 [[["id", 1]], [["id", 2]], [["id", 3]]]
 drop table test

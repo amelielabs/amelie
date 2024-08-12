@@ -37,7 +37,7 @@ drop table test2
 []
 # test: select from (select from table)
 explain select * from (select * from test)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -71,12 +71,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from (select * from test)
 [[1, 0], [2, 0], [3, 0]]
 # test: select from (select (select expr) from table)
 explain select * from (select (select 123) from test)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -110,7 +110,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from (select (select 123) from test)
 [123, 123, 123]
 # test: select from (select (select from shared) from table)
@@ -119,7 +119,7 @@ create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 []
 explain select * from (select (select * from test2) from test)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -161,7 +161,7 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select * from (select (select * from test2) from test)
 [[[1], [2], [3]], [[1], [2], [3]], [[1], [2], [3]]]
 drop table test2
@@ -173,7 +173,7 @@ select * from (select (select * from test t) from test)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: select (select expr) from (select from table)
 explain select (select t.*) from (select * from test) t
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -207,12 +207,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select t.*) from (select * from test) t
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select from expr) from (select from table)
 explain select (select t.*, * from [1,2,3]) from (select * from test) t
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -263,7 +263,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select t.*, * from [1,2,3]) from (select * from test) t
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
 # test: select (select from shared) from (select from table)
@@ -272,7 +272,7 @@ create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 []
 explain select (select t.*, * from test2) from (select * from test) t
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -318,7 +318,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select t.*, * from test2) from (select * from test) t
 [[[[1, 0], [1]], [[1, 0], [2]], [[1, 0], [3]]], [[[2, 0], [1]], [[2, 0], [2]], [[2, 0], [3]]], [[[3, 0], [1]], [[3, 0], [2]], [[3, 0], [3]]]]
 drop table test2

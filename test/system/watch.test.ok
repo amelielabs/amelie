@@ -5,9 +5,9 @@ watch
 {"code": 1, "msg": "bad expression"}
 # test: watch
 show lsn
-0
+[0]
 explain watch system.config().lsn = 0
-"
+["
 bytecode [coordinator]
 --------
  0                call        0      -      0      # system.config()
@@ -24,12 +24,12 @@ bytecode [coordinator]
 11                body        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 watch system.config().lsn = 0
 []
 # test: watch subquery
 explain watch (select 123) = 123
-"
+["
 bytecode [coordinator]
 --------
  0                 int        0    123      0
@@ -44,7 +44,7 @@ bytecode [coordinator]
  9                body        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 watch (select 123) = 123
 []
 create table test (id int primary key serial)

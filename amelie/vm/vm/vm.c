@@ -272,7 +272,7 @@ cresult:
 
 cbody:
 	// [order]
-	body_add(self->body, result_at(cte, op->a), local->timezone, true);
+	body_add(self->body, result_at(cte, op->a), local->timezone, true, true);
 	op_next;
 
 cbody_empty:

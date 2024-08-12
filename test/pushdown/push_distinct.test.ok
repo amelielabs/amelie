@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 create table test (id int primary key serial, data int default 0)
 []
 explain select distinct * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -34,7 +34,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct * from test
 []
 insert into test generate 20
@@ -47,7 +47,7 @@ select * from test order by id
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct star from table
 explain select distinct * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -77,12 +77,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct from table
 explain select distinct id from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -112,14 +112,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct id from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select distinct data from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 # test: select distinct from table #2
 explain select distinct id, data from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -155,12 +155,12 @@ bytecode [node]
 18              result        0      0      0
 19                 ret        0      0      0
 
-"
+"]
 select distinct id, data from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct from table limit
 explain select distinct data from test limit 4
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -191,12 +191,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 4
 [0, 1, 2, 3]
 # test: select distinct from table limit 0
 explain select distinct data from test limit 0
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -227,12 +227,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 0
 []
 # test: select distinct from table limit/offset
 explain select distinct data from test limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -264,7 +264,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 1 offset 0
 [0]
 select distinct data from test limit 1 offset 1
@@ -275,7 +275,7 @@ select distinct data from test limit 1 offset 3
 [3]
 # test: select distinct from table offset
 explain select distinct data from test offset 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -306,7 +306,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 select distinct data from test offset 1
@@ -322,7 +322,7 @@ select distinct data from test order by data
 {"code": 1, "msg": "ORDER BY and DISTINCT cannot be combined"}
 # test: select distinct from table group by
 explain select distinct count(*) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -365,11 +365,11 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select distinct count(*) from test
 [20]
 explain select distinct count(*) from test group by id
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -411,14 +411,14 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select distinct count(*) from test group by id
 [1]
 # test: select distinct on
 select distinct
 {"code": 1, "msg": "bad expression"}
 select distinct 123
-123
+[123]
 select distinct on
 {"code": 1, "msg": "DISTINCT <(> expected"}
 select distinct on (
@@ -433,7 +433,7 @@ select distinct on (123,)
 {"code": 1, "msg": "bad expression"}
 # test: select distinct on from table
 explain select distinct on (*) * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -463,11 +463,11 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct on (*) * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 explain select * from test order by data
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -497,9 +497,9 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 explain select distinct on (data) * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -529,7 +529,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct on (data) * from test
 [[0, 0], [2, 1], [4, 2], [6, 3], [8, 4], [10, 5], [12, 6], [14, 7], [17, 8], [18, 9]]
 select distinct on (id) * from test
@@ -539,7 +539,7 @@ explain select distinct on (data) * from test order by data, id
 {"code": 1, "msg": "ORDER BY and DISTINCT cannot be combined"}
 # test: select distinct on from table group by
 explain select distinct on (count(*)) * from test group by id
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -581,7 +581,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select distinct on (count(*)) * from test group by id
 [0]
 select distinct on (count(*)) count(*) from test group by id
@@ -596,7 +596,7 @@ drop table test
 create shared table test (id int primary key serial, data int default 0)
 []
 explain select distinct * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -626,7 +626,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct * from test
 []
 insert into test generate 20
@@ -639,7 +639,7 @@ select * from test order by id
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct star from shared
 explain select distinct * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -669,12 +669,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct from shared
 explain select distinct id from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -704,14 +704,14 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct id from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select distinct data from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 # test: select distinct from shared #2
 explain select distinct id, data from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -747,12 +747,12 @@ bytecode [node]
 18              result        0      0      0
 19                 ret        0      0      0
 
-"
+"]
 select distinct id, data from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 # test: select distinct from shared limit
 explain select distinct data from test limit 4
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -783,12 +783,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 4
 [0, 1, 2, 3]
 # test: select distinct from shared limit 0
 explain select distinct data from test limit 0
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -819,12 +819,12 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 0
 []
 # test: select distinct from shared limit/offset
 explain select distinct data from test limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -856,7 +856,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test limit 1 offset 0
 [0]
 select distinct data from test limit 1 offset 1
@@ -867,7 +867,7 @@ select distinct data from test limit 1 offset 3
 [3]
 # test: select distinct from shared offset
 explain select distinct data from test offset 1
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -898,7 +898,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct data from test offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 select distinct data from test offset 1
@@ -914,7 +914,7 @@ select distinct data from test order by data
 {"code": 1, "msg": "ORDER BY and DISTINCT cannot be combined"}
 # test: select distinct from shared group by
 explain select distinct count(*) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -957,11 +957,11 @@ bytecode [node]
 14              result        0      0      0
 15                 ret        0      0      0
 
-"
+"]
 select distinct count(*) from test
 [20]
 explain select distinct count(*) from test group by id
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1003,12 +1003,12 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select distinct count(*) from test group by id
 [1]
 # test: select distinct on from shared
 explain select distinct on (*) * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1038,11 +1038,11 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct on (*) * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
 explain select * from test order by data
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1072,9 +1072,9 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 explain select distinct on (data) * from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1104,7 +1104,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select distinct on (data) * from test
 [[0, 0], [2, 1], [4, 2], [6, 3], [8, 4], [10, 5], [12, 6], [14, 7], [16, 8], [18, 9]]
 select distinct on (id) * from test
@@ -1114,7 +1114,7 @@ explain select distinct on (data) * from test order by data, id
 {"code": 1, "msg": "ORDER BY and DISTINCT cannot be combined"}
 # test: select distinct on from shared group by
 explain select distinct on (count(*)) * from test group by id
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -1156,7 +1156,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select distinct on (count(*)) * from test group by id
 [0]
 select distinct on (count(*)) count(*) from test group by id
@@ -1169,7 +1169,7 @@ drop table test
 []
 # test: select distinct star from expr empty
 explain select distinct * from []
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1190,12 +1190,12 @@ bytecode [coordinator]
 15                body        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select distinct * from []
 []
 # test: select distinct star from expr
 explain select distinct * from [0,1,2,3,4,2,3,4]
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1232,12 +1232,12 @@ bytecode [coordinator]
 31                body        0      0      0
 32                 ret        0      0      0
 
-"
+"]
 select distinct * from [0,1,2,3,4,2,3,4]
 [0, 1, 2, 3, 4]
 # test: select distinct from expr limit
 explain select distinct * from [0,1,2,3,4,2,3,4] limit 2
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1275,12 +1275,12 @@ bytecode [coordinator]
 32                body        0      0      0
 33                 ret        0      0      0
 
-"
+"]
 select distinct * from [0,1,2,3,4,2,3,4] limit 2
 [0, 1]
 # test: select distinct from expr limit 0
 explain select distinct * from [0,1,2,3,4,2,3,4] limit 0
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1318,12 +1318,12 @@ bytecode [coordinator]
 32                body        0      0      0
 33                 ret        0      0      0
 
-"
+"]
 select distinct * from [0,1,2,3,4,2,3,4] limit 0
 []
 # test: select distinct from expr limit/offset
 explain select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1362,7 +1362,7 @@ bytecode [coordinator]
 33                body        0      0      0
 34                 ret        0      0      0
 
-"
+"]
 select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 0
 [0]
 select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 1
@@ -1373,7 +1373,7 @@ select distinct * from [0,1,2,3,4,2,3,4] limit 1 offset 3
 [3]
 # test: select distinct from expr offset
 explain select distinct * from [0,1,2,3,4,2,3,4] offset 1
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1411,7 +1411,7 @@ bytecode [coordinator]
 32                body        0      0      0
 33                 ret        0      0      0
 
-"
+"]
 select distinct * from [0,1,2,3,4,2,3,4] offset 0
 [0, 1, 2, 3, 4]
 select distinct * from [0,1,2,3,4,2,3,4] offset 1
@@ -1427,7 +1427,7 @@ select distinct * from [0,1,2,3,4,2,3,4] order by *
 {"code": 1, "msg": "ORDER BY and DISTINCT cannot be combined"}
 # test: select distinct from expr group by
 explain select distinct count(*) from [0,1,2,3,4,2,3,4] group by *
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1475,7 +1475,7 @@ bytecode [coordinator]
 42                body        0      0      0
 43                 ret        0      0      0
 
-"
+"]
 select distinct *, count(*) from [0,1,2,3,4,2,3,4] group by *
 [[0, 1], [1, 1], [2, 2], [3, 2], [4, 2]]
 select distinct * from [0,1,2,3,4,2,3,4] group by *
@@ -1484,7 +1484,7 @@ select distinct count(*) from [0,1,2,3,4,2,3,4] group by *
 [1, 2]
 # test: select distinct on from expr
 explain select distinct on (*) * from [0,1,2,3,4,2,3,4]
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -1521,7 +1521,7 @@ bytecode [coordinator]
 31                body        0      0      0
 32                 ret        0      0      0
 
-"
+"]
 select distinct on (*) * from [0,1,2,3,4,2,3,4]
 [0, 1, 2, 3, 4]
 disconnect S0

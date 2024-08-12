@@ -17,81 +17,81 @@ select 1 = all ()
 select 1 = all()
 {"code": 1, "msg": "bad expression"}
 select 1 = all([0])
-false
+[false]
 select 1 = all([0, 1])
-false
+[false]
 select 1 = all([1])
-true
+[true]
 select 1 = all([1, 1])
-true
+[true]
 select not (1 = all([1, 1]))
-false
+[false]
 # test: >= all(array)
 select 1 >= all([0, 1])
-true
+[true]
 select 1 >= all([2])
-false
+[false]
 select 1 >= all([1, 2])
-false
+[false]
 # test: > all(array)
 select 1 > all([0, 1])
-false
+[false]
 select 1 > all([0, 2])
-false
+[false]
 select 1 > all([2])
-false
+[false]
 select 1 > all([-1, 0])
-true
+[true]
 # test: < all(array)
 select 1 < all([0, 1])
-false
+[false]
 select 1 < all([-1, 0])
-false
+[false]
 select 1 < all([2])
-true
+[true]
 # test: <= all(array)
 select 1 <= all([0, 1])
-false
+[false]
 select 1 <= all([2])
-true
+[true]
 select 1 <= all([0])
-false
+[false]
 # test: = all(set)
 select 1 = all()
 {"code": 1, "msg": "bad expression"}
 select 1 = all(select 1)
 {"code": 1, "msg": "ALL: array or result set expected"}
 select 1 = all(select * from [2, 1])
-false
+[false]
 select 1 = all(select * from [1, 1])
-true
+[true]
 select not (1 = all(select * from [1, 1]))
-false
+[false]
 # test: >= all(set)
 select 1 >= all(select * from [0, 1])
-true
+[true]
 select 1 >= all(select * from [2])
-false
+[false]
 # test: > all(set)
 select 1 > all(select * from [0, -1])
-true
+[true]
 select 1 > all(select * from [0, 1])
-false
+[false]
 select 1 > all(select * from [2])
-false
+[false]
 # test: < all(set)
 select 1 < all(select * from [0, 1])
-false
+[false]
 select 1 < all(select * from [2])
-true
+[true]
 select 1 < all(select * from [0])
-false
+[false]
 # test: <= all(set)
 select 1 <= all(select * from [0, 1])
-false
+[false]
 select 1 <= all(select * from [2])
-true
+[true]
 select 1 <= all(select * from [0])
-false
+[false]
 disconnect S0
 close E0

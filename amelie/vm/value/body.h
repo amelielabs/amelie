@@ -7,8 +7,29 @@
 //
 
 hot static inline void
-body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
+body_begin(Buf* self)
 {
+	buf_write(self, "[", 1);
+}
+
+hot static inline void
+body_end(Buf* self)
+{
+	buf_write(self, "]", 1);
+}
+
+hot static inline void
+body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
+{
+	// wrap body in [] unless returning array, vector, set or merge
+	wrap = wrap && buf_empty(self) &&
+	       (value->type != VALUE_ARRAY  &&
+	        value->type != VALUE_VECTOR &&
+	        value->type != VALUE_SET    &&
+	        value->type != VALUE_MERGE);
+	if (wrap)
+		body_begin(self);
+
 	switch (value->type) {
 	case VALUE_INT:
 		buf_printf(self, "%" PRIi64, value->integer);
@@ -82,18 +103,10 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
 		error("operation unsupported");
 		break;
 	}
-}
 
-hot static inline void
-body_begin(Buf* self)
-{
-	buf_write(self, "[", 1);
-}
-
-hot static inline void
-body_end(Buf* self)
-{
-	buf_write(self, "]", 1);
+	// ]
+	if (wrap)
+		body_end(self);
 }
 
 hot static inline void
@@ -111,6 +124,20 @@ body_add_comma(Buf* self)
 
 hot static inline void
 body_add_buf(Buf* self, Buf* buf, Timezone* tz)
+{
+	// wrap body in [] unless returning data is array or vector
+	uint8_t* pos = buf->start;
+	bool wrap = buf_empty(self) &&
+	            (!data_is_array(pos) && !data_is_vector(pos));
+	if (wrap)
+		body_begin(self);
+	json_export_pretty(self, tz, &pos);
+	if (wrap)
+		body_end(self);
+}
+
+hot static inline void
+body_add_raw(Buf* self, Buf* buf, Timezone* tz)
 {
 	uint8_t* pos = buf->start;
 	json_export_pretty(self, tz, &pos);

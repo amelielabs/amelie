@@ -6,7 +6,7 @@ create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 []
 explain select * from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -33,12 +33,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select from table where
 explain select * from test where id > 1
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -69,7 +69,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id > 1
 [[2, 0], [3, 0]]
 select * from test where id > 2
@@ -78,7 +78,7 @@ select * from test where id > 3
 []
 # test: select from table where point lookup
 explain select * from test where id = 1
-"
+["
 bytecode [coordinator]
 --------
  0           send_hash        0      0      -      # public.test
@@ -109,7 +109,7 @@ bytecode [node]
 13              result        0      0      0
 14                 ret        0      0      0
 
-"
+"]
 select * from test where id = 1
 [[1, 0]]
 select * from test where id = 2
@@ -122,7 +122,7 @@ select * from test where id = 0
 []
 # test: select (select expr) from table
 explain select (select test.*) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -149,12 +149,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select test.*) from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select (select expr)) from table
 explain select (select (select (test.*))) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -181,12 +181,12 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select (select (test.*))) from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select (select from expr)) from table
 explain select (select (select * from [1,2,3])) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -226,7 +226,7 @@ bytecode [node]
 22              result        0      0      0
 23                 ret        0      0      0
 
-"
+"]
 select (select (select * from [1,2,3])) from test
 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
 # test: select (select (select from table)) from table
@@ -238,7 +238,7 @@ create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 []
 explain select (select (select * from ref)) from test
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -273,12 +273,12 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 select (select (select * from ref)) from test
 [[[1, 0], [2, 0], [3, 0]], [[1, 0], [2, 0], [3, 0]], [[1, 0], [2, 0], [3, 0]]]
 # test: select from table where (select from expr)
 explain select * from test where (select * from [1,2,3])
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -320,7 +320,7 @@ bytecode [node]
 24              result        0      0      0
 25                 ret        0      0      0
 
-"
+"]
 select * from test where (select * from [1,2,3])
 [[1, 0], [2, 0], [3, 0]]
 # test: select from table where (select from table)
@@ -328,7 +328,7 @@ explain select * from test where (select * from test t)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: select from table where (select from shared)
 explain select * from test where (select * from ref)
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -365,7 +365,7 @@ bytecode [node]
 19              result        0      0      0
 20                 ret        0      0      0
 
-"
+"]
 select * from test where (select * from ref)
 [[1, 0], [2, 0], [3, 0]]
 drop table ref

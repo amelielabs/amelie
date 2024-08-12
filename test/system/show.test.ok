@@ -598,7 +598,7 @@ select system.views()
 []
 # test: show wal
 show wal
-{
+[{
   "active": true,
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
@@ -608,9 +608,9 @@ show wal
   "files": 1,
   "slots": 0,
   "slots_min": -1
-}
+}]
 select system.wal()
-{
+[{
   "active": true,
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
@@ -620,10 +620,10 @@ select system.wal()
   "files": 1,
   "slots": 0,
   "slots_min": -1
-}
+}]
 # test: show all
 show all
-{
+[{
   "version": "0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
@@ -656,9 +656,9 @@ show all
   "read_only": false,
   "lsn": 0,
   "psn": 0
-}
+}]
 select system.config()
-{
+[{
   "version": "0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
@@ -691,16 +691,16 @@ select system.config()
   "read_only": false,
   "lsn": 0,
   "psn": 0
-}
+}]
 select system.config().directory
-"_output/E0"
+["_output/E0"]
 select system.config()["directory"]
-"_output/E0"
+["_output/E0"]
 select system.config(123)
 {"code": 1, "msg": "config(): expected 0 arguments, but got 1"}
 # test: show name
 show log_enable
-true
+[true]
 show "log_enable"
 {"code": 1, "msg": "SHOW <name> expected"}
 disconnect S0

@@ -62,7 +62,7 @@ set_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
 	{
 		if (i > 0)
 			body_add_comma(buf);
-		body_add(buf, &set_at(self, i)->value, timezone, true);
+		body_add(buf, &set_at(self, i)->value, timezone, true, true);
 	}
 }
 

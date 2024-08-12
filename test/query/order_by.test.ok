@@ -8,7 +8,7 @@ select * from [1,3,2] order by
 select * from [1,3,2] order by *
 [1, 2, 3]
 explain select * from [1,3,2] order by *
-"
+["
 bytecode [coordinator]
 --------
  0         set_ordered        0      0      0
@@ -35,7 +35,7 @@ bytecode [coordinator]
 21                body        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select * from 1 order by *
 {"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
 select * from 1 order by *
@@ -71,7 +71,7 @@ insert into test values (2, 3)
 insert into test values (3, 2)
 []
 explain select * from test order by data
-"
+["
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
@@ -101,7 +101,7 @@ bytecode [node]
 12              result        0      0      0
 13                 ret        0      0      0
 
-"
+"]
 select * from test order by data
 [[1, 1], [3, 2], [2, 3]]
 # test: order by column asc

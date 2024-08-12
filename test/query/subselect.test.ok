@@ -2,28 +2,28 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select (select const)
 select (select 0)
-0
+[0]
 select (select 1234)
-1234
+[1234]
 select (select null)
-null
+[null]
 select (select "hello")
-"hello"
+["hello"]
 # test: select (select expr)
 select (select 1 + 1)
-2
+[2]
 select (select 2 * 2)
-4
+[4]
 select (select 8 * 8)
-64
+[64]
 select (select 64 / ( 4 + 4 ))
-8
+[8]
 select (select 64 / 0)
 {"code": 1, "msg": "zero division"}
 select (select 64 % 0)
 {"code": 1, "msg": "zero division"}
 select (select 1 + 1) + (select 2)
-4
+[4]
 # test: select (select [])
 select (select [])
 []
@@ -32,7 +32,7 @@ select (select [1])
 select (select [1,2,3])
 [1, 2, 3]
 select (select [1,2,3])[1]
-2
+[2]
 # test: select (select function())
 select system.schemas()
 [{
@@ -56,19 +56,19 @@ select (select system.schemas())
 }]
 # test: select (select {})
 select (select {})
-{
-}
+[{
+}]
 select (select {"a": 1})
-{
+[{
   "a": 1
-}
+}]
 select (select {"a": 1, "b": null})
-{
+[{
   "a": 1,
   "b": null
-}
+}]
 select (select {"a": 1, "b": null}).a
-1
+[1]
 # test: select (select *) from expr
 explain select (select *) from [1,2,3]
 {"code": 1, "msg": "<*> no FROM clause defined"}
@@ -76,7 +76,7 @@ select (select *) from [1,2,3]
 {"code": 1, "msg": "<*> no FROM clause defined"}
 # test: select (select alias.*) from expr
 explain select (select t.*) from [1,2,3] t
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -97,7 +97,7 @@ bytecode [coordinator]
 15                body        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select (select t.*) from [1,2,3] t
 [1, 2, 3]
 select (select t.*) from [1,2,3]
@@ -122,7 +122,7 @@ select (select test.*) from test
 [[1], [2], [3]]
 # test: select (select target.*) from shared
 explain select (select test.*) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -149,7 +149,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select test.*) from test
 [[1], [2], [3]]
 # test: select (select alias.*) from shared
@@ -161,7 +161,7 @@ select (select t) from test t
 {"code": 1, "msg": "<t> target column cannot be found"}
 # test: select (select target.column) from shared
 explain select (select test.id) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -188,14 +188,14 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select test.id) from test
 [1, 2, 3]
 select (select id) from test
 {"code": 1, "msg": "<id> target column cannot be found"}
 # test: select (select alias.column) from shared
 explain select (select t.id) from test t
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -222,7 +222,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select t.id) from test
 {"code": 1, "msg": "<t> target cannot be found"}
 select (select t.id) from test t
@@ -377,7 +377,7 @@ insert into test values (3)
 select * from (select * from test)
 [[1], [2], [3]]
 explain select * from (select * from test)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -408,7 +408,7 @@ bytecode [node]
 16              result        0      0      0
 17                 ret        0      0      0
 
-"
+"]
 # test: select target.* from (select from shared)
 select test.* from (select * from test)
 {"code": 1, "msg": "*: not in active scan"}
@@ -497,7 +497,7 @@ select (select *) from test_view
 {"code": 1, "msg": "<*> no FROM clause defined"}
 # test: select (select alias.*) from view
 explain select (select t.*) from test_view t
-"
+["
 bytecode [coordinator]
 --------
  0                 set        0      0      0
@@ -518,7 +518,7 @@ bytecode [coordinator]
 15                body        0      0      0
 16                 ret        0      0      0
 
-"
+"]
 select (select t.*) from test_view t
 [1, 2, 3]
 select (select t.*) from test_view
@@ -546,7 +546,7 @@ insert into test values (3)
 create view test_view as select * from test
 []
 explain select * from test_view
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -577,7 +577,7 @@ bytecode [node]
 16              result        0      0      0
 17                 ret        0      0      0
 
-"
+"]
 select * from test_view
 [[1], [2], [3]]
 drop view test_view
@@ -594,7 +594,7 @@ insert into test values (2)
 insert into test values (3)
 []
 explain select (select * from test)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -618,7 +618,7 @@ bytecode [node]
  9              result        0      0      0
 10                 ret        0      0      0
 
-"
+"]
 select (select * from test)
 [[1], [2], [3]]
 # test: select (select from shared) no result
@@ -628,7 +628,7 @@ select (select * from test where false)
 select (select * from test) from test
 {"code": 1, "msg": "<test> target is redefined, please use different alias for the target"}
 explain select (select i.* from test i) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -663,10 +663,10 @@ bytecode [node]
 17              result        0      0      0
 18                 ret        0      0      0
 
-"
+"]
 # test: select (select from shared) from shared #2
 explain select (select i.* from test i where test.id = i.id) from test
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -705,7 +705,7 @@ bytecode [node]
 21              result        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select (select i.* from test i where test.id = i.id) from test
 [[[1]], [[2]], [[3]]]
 # test: select (select from shared) from shared #3
@@ -718,7 +718,7 @@ insert into a () values (), (), ()
 insert into b () values (), (), ()
 []
 explain select (select * from b where a.id = b.id) from a
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -757,14 +757,14 @@ bytecode [node]
 21              result        0      0      0
 22                 ret        0      0      0
 
-"
+"]
 select (select * from b where a.id = b.id) from a
 [[[0, 1]], [[1, 1]], [[2, 1]]]
 select (select a.*, b.* from b where a.id = b.id) from a
 [[[[0, 0], [0, 1]]], [[[1, 0], [1, 1]]], [[[2, 0], [2, 1]]]]
 # test: select from table where (select from shared)
 explain select * from a where (select true from b where a.id = b.id)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -805,7 +805,7 @@ bytecode [node]
 23              result        0      0      0
 24                 ret        0      0      0
 
-"
+"]
 select * from a where (select true from b where a.id = b.id)
 [[0, 0], [1, 0], [2, 0]]
 drop table a
@@ -820,7 +820,7 @@ create shared table a (id int primary key serial, data int default 0)
 create shared table b (id int primary key serial, data int default 1)
 []
 explain select length(select * from a)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -846,11 +846,11 @@ bytecode [node]
 11              result        0      0      0
 12                 ret        0      0      0
 
-"
+"]
 select length(select * from a)
-0
+[0]
 explain select (select * from a)[0]
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -876,11 +876,11 @@ bytecode [node]
 11              result        2      0      0
 12                 ret        0      0      0
 
-"
+"]
 select (select * from a)[0]
 {"code": 1, "msg": "[]: map or array expected"}
 explain select (select a.* from a) + (select b.* from b)
-"
+["
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
@@ -914,7 +914,7 @@ bytecode [node]
 19              result        2      0      0
 20                 ret        0      0      0
 
-"
+"]
 select (select a.* from a) + (select b.* from b)
 {"code": 1, "msg": "bad + expression types"}
 drop table a

@@ -2,129 +2,129 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: greatest
 select greatest()
-null
+[null]
 select greatest(1)
-1
+[1]
 select greatest(null)
-null
+[null]
 select greatest(null, 1)
-1
+[1]
 select greatest(null, 1, 3)
-3
+[3]
 select greatest(8, null, 1, 3)
-8
+[8]
 # test: least
 select least()
-null
+[null]
 select least(1)
-1
+[1]
 select least(null)
-null
+[null]
 select least(null, 1)
-1
+[1]
 select least(null, 1, 3)
-1
+[1]
 select least(8, null, 1, 3)
-1
+[1]
 # test: abs
 select abs(13.485)
-13.485
+[13.485]
 select abs(-13.485)
-13.485
+[13.485]
 select abs(485)
-485
+[485]
 select abs(-485)
-485
+[485]
 # test: round
 select 13.485::round
-13
+[13]
 # test: sign
 select 13.485::sign
-1
+[1]
 select 485::sign
-1
+[1]
 select 0::sign
-0
+[0]
 select -10::sign
--1
+[-1]
 # test: ceil
 select 42::ceil
 {"code": 1, "msg": "ceil(): expected real for argument 0, but got int"}
 select 42.2::ceil
-43
+[43]
 select ceil(-42.8)
--42
+[-42]
 # test: floor
 select floor(42.8)
-42
+[42]
 select floor(-42.8)
--43
+[-43]
 # test: exp
 select exp(1)
 {"code": 1, "msg": "exp(): expected real for argument 0, but got int"}
 select exp(1.0)
-2.71828
+[2.71828]
 select 1.0::exp
-2.71828
+[2.71828]
 # test: mod
 select mod(9, 4)
-1
+[1]
 select mod(30.0, 3.6)
-1.2
+[1.2]
 # test: pi
 select pi()
-3.14159
+[3.14159]
 # test: power
 select power(9, 3)
-729
+[729]
 select power(9.1, 3.2)
-1172.01
+[1172.01]
 # test: trunc
 select trunc(42.8)
-42
+[42]
 select trunc(-48.8023)
--48
+[-48]
 # test: sqrt
 select sqrt(2)
-1.41421
+[1.41421]
 select sqrt(2.0)
-1.41421
+[1.41421]
 select sqrt(2.3)
-1.51658
+[1.51658]
 select sqrt(-2.3)
 {"code": 1, "msg": "sqrt(): operation failed"}
 # test: acos
 select acos(1)
-0
+[0]
 # test: acosh
 select acosh(1)
-0
+[0]
 # test: asin
 select asin(1)
-1.5708
+[1.5708]
 # test: asinh
 select asinh(1)
-0.881374
+[0.881374]
 # test: atan
 select atan(1)
-0.785398
+[0.785398]
 # test: atanh
 select atanh(0.5)
-0.549306
+[0.549306]
 # test: atan2
 select atan2(1, 0)
-1.5708
+[1.5708]
 # test: ln
 select ln(2.0)
-0.693147
+[0.693147]
 # test: log
 select log(1000)
-3
+[3]
 # test: log10
 select log10(1000)
-3
+[3]
 # test: log2
 select log2(8)
-3
+[3]
 disconnect S0
 close E0

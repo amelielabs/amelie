@@ -9,9 +9,9 @@ close E0
 open E1
 connect E1 S0 localhost:3480
 show uuid
-"00000000-0000-0000-0000-000000000000"
+["00000000-0000-0000-0000-000000000000"]
 select system.nodes()::length
-3
+[3]
 disconnect S0
 close E1
 # test: backup wal
@@ -22,7 +22,7 @@ create table test (id int primary key)
 insert into test 1,2,3
 []
 show lsn
-2
+[2]
 backup E2 127.0.0.1:3480
 close E2
 disconnect S0
@@ -31,20 +31,20 @@ close E0
 open E2
 connect E2 S0 localhost:3480
 show uuid
-"00000000-0000-0000-0000-000000000000"
+["00000000-0000-0000-0000-000000000000"]
 select * from test
 [[1], [2], [3]]
 show lsn
-2
+[2]
 disconnect S0
 close E2
 # test: backup wal #2
 open E0 "wal_rotate_wm": 0
 connect E0 S0 localhost:3480
 show lsn
-2
+[2]
 show wal
-{
+[{
   "active": true,
   "rotate_wm": 0,
   "sync_on_rotate": false,
@@ -54,11 +54,11 @@ show wal
   "files": 2,
   "slots": 0,
   "slots_min": -1
-}
+}]
 insert into test 4
 []
 show wal
-{
+[{
   "active": true,
   "rotate_wm": 0,
   "sync_on_rotate": false,
@@ -68,7 +68,7 @@ show wal
   "files": 3,
   "slots": 0,
   "slots_min": -1
-}
+}]
 backup E3 127.0.0.1:3480
 close E3
 disconnect S0
@@ -77,13 +77,13 @@ close E0
 open E3
 connect E3 S0 localhost:3480
 show uuid
-"00000000-0000-0000-0000-000000000000"
+["00000000-0000-0000-0000-000000000000"]
 select * from test
 [[1], [2], [3], [4]]
 show lsn
-3
+[3]
 show wal
-{
+[{
   "active": true,
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
@@ -93,22 +93,22 @@ show wal
   "files": 2,
   "slots": 0,
   "slots_min": -1
-}
+}]
 disconnect S0
 close E3
 # test: backup checkpoint
 open E0
 connect E0 S0 localhost:3480
 show lsn
-3
+[3]
 show checkpoint
-0
+[0]
 checkpoint
 []
 show lsn
-3
+[3]
 show checkpoint
-3
+[3]
 backup E4 127.0.0.1:3480
 close E4
 disconnect S0
@@ -117,9 +117,9 @@ close E0
 open E4
 connect E4 S0 localhost:3480
 show lsn
-3
+[3]
 show checkpoint
-3
+[3]
 select * from test
 [[1], [2], [3], [4]]
 disconnect S0
@@ -130,9 +130,9 @@ connect E0 S0 localhost:3480
 insert into test 5,6,7
 []
 show lsn
-4
+[4]
 show checkpoint
-3
+[3]
 backup E5 127.0.0.1:3480
 close E5
 disconnect S0
@@ -141,9 +141,9 @@ close E0
 open E5
 connect E5 S0 localhost:3480
 show lsn
-4
+[4]
 show checkpoint
-3
+[3]
 select * from test
 [[1], [6], [7], [2], [3], [4], [5]]
 disconnect S0
