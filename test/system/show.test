@@ -33,6 +33,9 @@ select system.views()
 show wal
 select system.wal()
 
+# test: show config
+show all
+
 # test: show all
 show all
 

@@ -73,7 +73,8 @@ ctl_show(Session* self)
 	if (str_compare_raw(name, "views", 5))
 		buf = view_mgr_list(&share->db->view_mgr);
 	else
-	if (str_compare_raw(name, "all", 3))
+	if (str_compare_raw(name, "config", 6) ||
+	    str_compare_raw(name, "all", 3))
 		buf = config_list(global()->config, &self->local.config);
 	else
 	{
