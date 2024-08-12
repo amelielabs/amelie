@@ -29,8 +29,7 @@ select 1, 2
 select [1, 2]
 [1, 2]
 select {}
-[{
-}]
+[{}]
 select null
 [null]
 select null, null

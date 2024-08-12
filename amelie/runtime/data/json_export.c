@@ -78,6 +78,12 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		data_read_map(pos);
 		if (pretty)
 		{
+			// {}
+			if (data_is_map_end(*pos))
+			{
+				buf_write(data, "{}", 2);
+				break;
+			}
 			buf_write(data, "{\n", 2);
 			while (! data_read_map_end(pos))
 			{

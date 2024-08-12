@@ -56,8 +56,7 @@ select (select system.schemas())
 }]
 # test: select (select {})
 select (select {})
-[{
-}]
+[{}]
 select (select {"a": 1})
 [{
   "a": 1

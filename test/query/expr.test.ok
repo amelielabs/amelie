@@ -348,8 +348,7 @@ select [0, [1, 2], 3]::length
 [3]
 # test: map
 select {}
-[{
-}]
+[{}]
 select {"a"}
 {"code": 1, "msg": "{}: {name <:>} expected"}
 select {"a": 0}

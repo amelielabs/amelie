@@ -357,31 +357,26 @@ select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")
   "b": 2
 }]
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")
-[{
-}]
+[{}]
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42)
 [{
   "a": 42
 }]
 select unset({}, "a")
-[{
-}]
+[{}]
 select unset({}, "")
 {"code": 1, "msg": "set: incorrect path"}
 select unset({"a": 0}, "a")
-[{
-}]
+[{}]
 select unset({"a": 0}, "b")
 [{
   "a": 0
 }]
 select unset({"a": {"b": 2}}, "a")
-[{
-}]
+[{}]
 select unset({"a": {"b": 2}}, "a.b")
 [{
-  "a": {
-  }
+  "a": {}
 }]
 select unset({"a": {"b": 2}, "g": 3}, "a")
 [{
@@ -389,27 +384,23 @@ select unset({"a": {"b": 2}, "g": 3}, "a")
 }]
 select unset({"a": {"b": 22}}, "a.b")
 [{
-  "a": {
-  }
+  "a": {}
 }]
 select unset({"a": {"b": {"c": 55}}}, "a.b")
 [{
-  "a": {
-  }
+  "a": {}
 }]
 select unset({"a": {"b": {"c": 55}}}, "a.b.c")
 [{
   "a": {
-    "b": {
-    }
+    "b": {}
   }
 }]
 select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
 [{
   "a": {
     "b": {
-      "c": {
-      }
+      "c": {}
     }
   }
 }]
