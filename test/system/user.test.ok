@@ -17,6 +17,7 @@ create user test abc
 {"code": 1, "msg": "unknown command: <abc>"}
 # test: create user
 create user test
+[]
 show users
 [{
   "name": "test"
@@ -25,6 +26,7 @@ show users
 create user test
 {"code": 1, "msg": "user 'test': already exists"}
 create user if not exists test
+[]
 # test: create user password
 create user test2 password
 {"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
@@ -35,6 +37,7 @@ create user test2 password password
 create user test2 password "test" abc
 {"code": 1, "msg": "unknown command: <abc>"}
 create user test2 password "test"
+[]
 show users
 [{
   "name": "test"
@@ -58,6 +61,7 @@ drop user test abc
 {"code": 1, "msg": "unknown command: <abc>"}
 # test: drop user
 drop user test
+[]
 show users
 [{
   "name": "test2"
@@ -66,6 +70,7 @@ show users
 drop user test
 {"code": 1, "msg": "user 'test': not exists"}
 drop user if exists test
+[]
 # test: alter user statment parsing
 alter user
 {"code": 1, "msg": "ALTER USER <name> expected"}
@@ -87,18 +92,21 @@ alter user test2 password "abc" abc
 {"code": 1, "msg": "unknown command: <abc>"}
 # test: alter user
 alter user test2 password "abc"
+[]
 show users
 [{
   "name": "test2"
 }]
 # test: alter user unset password
 alter user test2 password ""
+[]
 show users
 [{
   "name": "test2"
 }]
 # test: alter user set password
 alter user test2 password "abc"
+[]
 show users
 [{
   "name": "test2"
@@ -113,6 +121,7 @@ show users
   "name": "test2"
 }]
 drop user test2
+[]
 show users
 []
 disconnect S0

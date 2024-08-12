@@ -13,40 +13,55 @@ drop table name junk
 drop table name
 {"code": 1, "msg": "table 'name': not exists"}
 drop table if exists test
+[]
 # test: drop table
 create table test(id int primary key)
+[]
 select name from system.tables()
 ["test"]
 drop table test
+[]
 select name from system.tables()
 []
 # test: drop table if exists
 create table test(id int primary key)
+[]
 select name from system.tables()
 ["test"]
 drop table test
+[]
 select name from system.tables()
 []
 drop table if exists test
+[]
 drop table if exists test.test
+[]
 # test: recreate same table after drop
 create table test (id int primary key)
+[]
 select name from system.tables()
 ["test"]
 drop table test
+[]
 create table test (id int primary key)
+[]
 select name from system.tables()
 ["test"]
 drop table test
+[]
 # test: drop table schema
 create schema test
+[]
 create table test.test (id int primary key)
+[]
 select name from system.tables() where *.schema = "test" and name = "test"
 ["test"]
 drop table test
 {"code": 1, "msg": "table 'test': not exists"}
 drop table test.test
+[]
 drop schema test
+[]
 select name from system.tables() where *.schema = "test" and name = "test"
 []
 disconnect S0

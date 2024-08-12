@@ -2,7 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select from table
 create table test (id int primary key, data int default 0)
+[]
 insert into test (id) values (1), (2), (3)
+[]
 explain select * from test
 "
 bytecode [coordinator]
@@ -232,7 +234,9 @@ explain select (select (select * from test t)) from test
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: select (select (select from shared)) from table
 create shared table ref (id int primary key, data int default 0)
+[]
 insert into ref (id) values (1), (2), (3)
+[]
 explain select (select (select * from ref)) from test
 "
 bytecode [coordinator]
@@ -365,6 +369,8 @@ bytecode [node]
 select * from test where (select * from ref)
 [[1, 0], [2, 0], [3, 0]]
 drop table ref
+[]
 drop table test
+[]
 disconnect S0
 close E0

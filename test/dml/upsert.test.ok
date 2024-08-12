@@ -2,6 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: on conflict parsing
 create table test (id int primary key, data int)
+[]
 insert into test values(1, 0) 123
 {"code": 1, "msg": "unknown command"}
 insert into test values(1, 0) ON
@@ -27,17 +28,20 @@ insert into test values(1, 0) on conflict do update set path
 insert into test values(1, 0) on conflict do update set path =
 {"code": 1, "msg": "bad expression"}
 drop table test
+[]
 # test: on conflict do nothing
 create table test (id int primary key, data int)
+[]
 explain insert into test values(1, 0) on conflict do nothing
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -50,17 +54,21 @@ bytecode [node]
 
 "
 insert into test values(1, 0) on conflict do nothing
+[]
 insert into test values(1, 0) on conflict do nothing
+[]
 insert into test values(1, 0) on conflict do nothing
+[]
 explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -73,20 +81,24 @@ bytecode [node]
 
 "
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
+[]
 select * from test
 [[1, 0], [2, 0]]
 drop table test
+[]
 # test: upsert insert
 create table test (id int primary key, data int)
+[]
 explain insert into test values(1, 0) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -110,32 +122,41 @@ bytecode [node]
 
 "
 insert into test values(1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 0]]
 drop table test
+[]
 # test: upsert
 create table test (id int primary key, data int)
+[]
 insert into test values(1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 0]]
 insert into test values(1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 1]]
 insert into test values(1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 2]]
 drop table test
+[]
 # test: upsert batch
 create table test (id int primary key, data int)
+[]
 explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -159,16 +180,24 @@ bytecode [node]
 
 "
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+[]
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+[]
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 8]]
 drop table test
+[]
 # test: upsert where
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0) on conflict do update set data = data + 1
+[]
 insert into test values (1, 0) on conflict do update set data = data + 1
+[]
 insert into test values (1, 0) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 2]]
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
@@ -177,9 +206,10 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -205,27 +235,34 @@ bytecode [node]
 
 "
 insert into test values (1, 0) on conflict do update set data = data + 1 where true
+[]
 select * from test
 [[1, 3]]
 insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3
+[]
 select * from test
 [[1, 3]]
 insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3
+[]
 select * from test
 [[1, 4]]
 drop table test
+[]
 # test: upsert row access
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0) on conflict do update set data = data + 1
+[]
 explain insert into test values (1, 123) on conflict do update set data = data + @[1]
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -251,20 +288,27 @@ bytecode [node]
 
 "
 insert into test values (1, 123) on conflict do update set data = data + @[1]
+[]
 select * from test
 [[1, 123]]
 select *[1] from test
 [123]
 drop table test
+[]
 # test: upsert row access #2
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0) on conflict do update set data = data + 1
+[]
 select @ from test
 {"code": 1, "msg": "@: reference is not defined"}
 drop table test
+[]
 # test: upsert error
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 0], [2, 0], [3, null]]
 insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
@@ -272,45 +316,66 @@ insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = 
 select * from test
 [[1, 0], [2, 0], [3, null]]
 drop table test
+[]
 # test: upsert generate
 create table test (id int primary key serial, data int default 0)
+[]
 insert into test generate 10 on conflict do update set data = data + 1
+[]
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
 alter table test set serial to 0
+[]
 insert into test generate 10 on conflict do update set data = data + 1
+[]
 select * from test
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
 drop table test
+[]
 # test: upsert secondary index
 create table test (id int primary key, data int, value int)
+[]
 create index i on test (data)
+[]
 insert into test values (0, 2, 0)
+[]
 insert into test values (1, 1, 0)
+[]
 insert into test values (2, 0, 0)
+[]
 select * from test
 [[0, 2, 0], [1, 1, 0], [2, 0, 0]]
 select * from test use index (i)
 [[2, 0, 0], [1, 1, 0], [0, 2, 0]]
 insert into test values (0, 2, 0) on conflict do update set value = value + 1
+[]
 select * from test
 [[0, 2, 1], [1, 1, 0], [2, 0, 0]]
 select * from test use index (i)
 [[2, 0, 0], [1, 1, 0], [0, 2, 1]]
 insert into test values (3, 2, 0) on conflict do update set value = 10
+[]
 select * from test
 [[0, 2, 1], [1, 1, 0], [2, 0, 0], [3, 2, 0]]
 select * from test use index (i)
 [[2, 0, 0], [1, 1, 0], [0, 2, 1], [3, 2, 0]]
 drop table test
+[]
 # test: upsert secondary index (object)
 create table test (obj object, primary key (obj.id int))
+[]
 create index i on test (obj.data int)
+[]
 insert into test {"id": 0, "data": 2}
+[]
 insert into test {"id": 1, "data": 1}
+[]
 insert into test {"id": 2, "data": 0}
+[]
 insert into test {"id": 2, "data": 0} on conflict do update set obj.value = obj.id
+[]
 insert into test {"id": 3, "data": 0} on conflict do update set obj.value = obj.id
+[]
 select * from test
 [[{
   "id": 0,
@@ -342,9 +407,12 @@ select * from test use index (i)
   "data": 2
 }]]
 drop table test
+[]
 # test: upsert returning
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0)
+[]
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 "
 bytecode [coordinator]
@@ -392,9 +460,12 @@ insert into test values(1, 0) on conflict do update set data = data + 1 returnin
 select * from test
 [[1, 3]]
 drop table test
+[]
 # test: upsert returning (do nothing)
 create table test (id int primary key, data int)
+[]
 insert into test values (1, 0)
+[]
 explain insert into test values(1, 0) on conflict do nothing returning *
 "
 bytecode [coordinator]
@@ -431,8 +502,10 @@ insert into test values(1, 0) on conflict do nothing returning *
 select * from test
 [[1, 0]]
 drop table test
+[]
 # test: upsert returning (first row)
 create table test (id int primary key, data int)
+[]
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 "
 bytecode [coordinator]
@@ -480,8 +553,10 @@ insert into test values(1, 0) on conflict do update set data = data + 1 returnin
 select * from test
 [[1, 2]]
 drop table test
+[]
 # test: upsert returning (do nothing, first row)
 create table test (id int primary key, data int)
+[]
 explain insert into test values(1, 0) on conflict do nothing returning *
 "
 bytecode [coordinator]
@@ -516,5 +591,6 @@ insert into test values(1, 0) on conflict do nothing returning *
 select * from test
 [[1, 0]]
 drop table test
+[]
 disconnect S0
 close E0

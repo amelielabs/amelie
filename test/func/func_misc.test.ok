@@ -32,9 +32,12 @@ select sha1("hello world")
 select serial("public", "abc")
 {"code": 1, "msg": "table 'abc': not exists"}
 create table test (id int primary key serial)
+[]
 insert into test () values (), (), ()
+[]
 select serial("public", "test")
 3
 drop table test
+[]
 disconnect S0
 close E0

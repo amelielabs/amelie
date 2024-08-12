@@ -355,7 +355,10 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	// CRECV
 	op1(self, CRECV, self->current->order);
 	if (! returning)
-		return -1;
+	{
+		// []
+		return op2(self, CARRAY, rpin(self), 0);
+	}
 
 	// create merge object using received sets
 

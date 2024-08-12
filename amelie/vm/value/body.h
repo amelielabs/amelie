@@ -85,16 +85,35 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty)
 }
 
 hot static inline void
-body_add_buf(Buf* self, Buf* buf, Timezone* tz)
+body_begin(Buf* self)
 {
-	uint8_t* pos = buf->start;
-	json_export_pretty(self, tz, &pos);
+	buf_write(self, "[", 1);
+}
+
+hot static inline void
+body_end(Buf* self)
+{
+	buf_write(self, "]", 1);
+}
+
+hot static inline void
+body_empty(Buf* self)
+{
+	body_begin(self);
+	body_end(self);
 }
 
 hot static inline void
 body_add_comma(Buf* self)
 {
 	buf_write(self, ", ", 2);
+}
+
+hot static inline void
+body_add_buf(Buf* self, Buf* buf, Timezone* tz)
+{
+	uint8_t* pos = buf->start;
+	json_export_pretty(self, tz, &pos);
 }
 
 static inline void

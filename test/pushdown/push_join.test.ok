@@ -1,9 +1,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 create shared table ref (id int primary key, data int default 0)
+[]
 insert into ref (id) values (1), (2), (3)
+[]
 create table test (id int primary key, data int default 0)
+[]
 insert into test (id) values (1), (2), (3)
+[]
 # test: select from table, expr
 explain select test.*, t.* from test, [1,2,3] t
 "
@@ -383,6 +387,8 @@ bytecode [node]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [[1, 1], [2, 2], [3, 3]]
 drop table ref
+[]
 drop table test
+[]
 disconnect S0
 close E0

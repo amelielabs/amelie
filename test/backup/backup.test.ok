@@ -18,7 +18,9 @@ close E1
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3
 connect E0 S0 localhost:3480
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 show lsn
 2
 backup E2 127.0.0.1:3480
@@ -54,6 +56,7 @@ show wal
   "slots_min": -1
 }
 insert into test 4
+[]
 show wal
 {
   "active": true,
@@ -101,6 +104,7 @@ show lsn
 show checkpoint
 0
 checkpoint
+[]
 show lsn
 3
 show checkpoint
@@ -124,6 +128,7 @@ close E4
 open E0
 connect E0 S0 localhost:3480
 insert into test 5,6,7
+[]
 show lsn
 4
 show checkpoint

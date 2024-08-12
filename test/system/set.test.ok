@@ -26,6 +26,7 @@ set test_int to "test"
 show test_int
 0
 set test_int to 1234
+[]
 show test_int
 1234
 set test_int to -1
@@ -33,18 +34,23 @@ set test_int to -1
 show test_int
 1234
 set test_int to 2147483647
+[]
 show test_int
 2147483647
 set test_int to 4294967295
+[]
 show test_int
 4294967295
 set test_int to 9223372036854775807
+[]
 show test_int
 9223372036854775807
 set test_int to 18446744073709551615
+[]
 show test_int
 -1
 set test_int to 18446744073709551616
+[]
 show test_int
 0
 # test: set string
@@ -55,12 +61,15 @@ set test_string to 1234
 show test_string
 ""
 set test_string to "hello"
+[]
 show test_string
 "hello"
 set test_string to ""
+[]
 show test_string
 ""
 set test_string to "world"
+[]
 show test_string
 "world"
 # test: set data

@@ -2,12 +2,14 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: insert abort by error
 create table test (id int primary key, data int default 0)
+[]
 insert into test (id) values (0), (1), (2), (3), (1)
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: insert abort by error #2
 insert into test (id) values (0), (1), (2), (3)
+[]
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #3
@@ -27,7 +29,7 @@ bytecode [coordinator]
 --------
  0            send_all        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0     20      0      # abort
  5                push        0      0      0
@@ -60,7 +62,7 @@ bytecode [coordinator]
 --------
  0            send_all        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0     20      0      # abort
  5                push        0      0      0
@@ -101,7 +103,7 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0      6      0      # abort
  5                push        0      0      0
@@ -134,14 +136,17 @@ insert into test values(1, 0) on conflict do update set data = id; select error(
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
+[]
 # test: shared insert abort by error
 create shared table test (id int primary key, data int default 0)
+[]
 insert into test (id) values (0), (1), (2), (3), (1)
 {"code": 1, "msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: shared insert abort by error #2
 insert into test (id) values (0), (1), (2), (3)
+[]
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared insert abort by error #3
@@ -161,7 +166,7 @@ bytecode [coordinator]
 --------
  0          send_first        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0     20      0      # abort
  5                push        0      0      0
@@ -194,7 +199,7 @@ bytecode [coordinator]
 --------
  0          send_first        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0     20      0      # abort
  5                push        0      0      0
@@ -235,7 +240,7 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
  4              string        0      6      0      # abort
  5                push        0      0      0
@@ -268,10 +273,15 @@ insert into test values(1, 0) on conflict do update set data = id; select error(
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
+[]
 create table a (id int primary key, data int default 0)
+[]
 create table b (id int primary key, data int default 0)
+[]
 create shared table ref (id int primary key, data int default 0)
+[]
 insert into ref values (0, 8), (1, 8), (2, 8);
+[]
 # test: insert a select a
 insert into a (id) values (0), (1), (2), (3); select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
@@ -282,9 +292,10 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.b
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -294,12 +305,14 @@ bytecode [node]
 
 "
 insert into b (id) values (10), (20), (30)
+[]
 select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
 [[30, 0], [10, 0], [20, 0]]
 # test: update a update b abort
 update a set data = 0
+[]
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 "
 bytecode [coordinator]
@@ -309,10 +322,10 @@ bytecode [coordinator]
  2            send_all        2     32      0
  3            send_all        3     43      0
  4                recv        0      0      0
- 5                null        0      0      0
+ 5               array        0      0      0
  6             cte_set        0      0      0
  7                recv        1      0      0
- 8                null        0      0      0
+ 8               array        0      0      0
  9             cte_set        1      0      0
 10                recv        2      0      0
 11                bool        0      0      0
@@ -405,10 +418,10 @@ bytecode [coordinator]
  1            send_all        1     14      0
  2            send_all        2     32      0
  3                recv        0      0      0
- 4                null        0      0      0
+ 4               array        0      0      0
  5             cte_set        0      0      0
  6                recv        1      0      0
- 7                null        0      0      0
+ 7               array        0      0      0
  8             cte_set        1      0      0
  9                recv        2      0      0
 10                bool        0      0      0
@@ -477,7 +490,10 @@ select * from a
 select * from b
 [[30, 0], [10, 0], [20, 0]]
 drop table a
+[]
 drop table b
+[]
 drop table ref
+[]
 disconnect S0
 close E0

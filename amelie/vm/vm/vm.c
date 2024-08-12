@@ -115,6 +115,7 @@ vm_run(Vm*          self,
 		&&crecv_to,
 		&&cresult,
 		&&cbody,
+		&&cbody_empty,
 		&&ccte_set,
 		&&csleep,
 		&&cpush,
@@ -272,6 +273,10 @@ cresult:
 cbody:
 	// [order]
 	body_add(self->body, result_at(cte, op->a), local->timezone, true);
+	op_next;
+
+cbody_empty:
+	body_empty(self->body);
 	op_next;
 
 ccte_set:

@@ -1,7 +1,9 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
 connect E0 S0 localhost:3485
 create table test (id int primary key, data int default 0)
+[]
 insert into test (id) values (1), (2), (3)
+[]
 # test: select (select from table)
 explain select (select * from test)
 {"code": 1, "msg": "FROM: undefined distributed table"}
@@ -19,7 +21,9 @@ select (select * from test) from (select * from [1,2,3])
 {"code": 1, "msg": "FROM SELECT: undefined distributed table"}
 # test: select (select from table) from shared
 create shared table test2 (id int primary key)
+[]
 insert into test2 (id) values (1), (2), (3)
+[]
 explain select (select * from test) from test2
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 select (select * from test) from test2
@@ -30,6 +34,7 @@ explain select (select * from test) from (select * from test2)
 select (select * from test) from (select * from test2)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 drop table test2
+[]
 # test: select from (select from table)
 explain select * from (select * from test)
 "
@@ -110,7 +115,9 @@ select * from (select (select 123) from test)
 [123, 123, 123]
 # test: select from (select (select from shared) from table)
 create shared table test2 (id int primary key)
+[]
 insert into test2 (id) values (1), (2), (3)
+[]
 explain select * from (select (select * from test2) from test)
 "
 bytecode [coordinator]
@@ -158,6 +165,7 @@ bytecode [node]
 select * from (select (select * from test2) from test)
 [[[1], [2], [3]], [[1], [2], [3]], [[1], [2], [3]]]
 drop table test2
+[]
 # test: select from (select (select from table) from table)
 explain select * from (select (select * from test t) from test)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
@@ -260,7 +268,9 @@ select (select t.*, * from [1,2,3]) from (select * from test) t
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
 # test: select (select from shared) from (select from table)
 create shared table test2 (id int primary key)
+[]
 insert into test2 (id) values (1), (2), (3)
+[]
 explain select (select t.*, * from test2) from (select * from test) t
 "
 bytecode [coordinator]
@@ -312,6 +322,7 @@ bytecode [node]
 select (select t.*, * from test2) from (select * from test) t
 [[[[1, 0], [1]], [[1, 0], [2]], [[1, 0], [3]]], [[[2, 0], [1]], [[2, 0], [2]], [[2, 0], [3]]], [[[3, 0], [1]], [[3, 0], [2]], [[3, 0], [3]]]]
 drop table test2
+[]
 # test: select (select from table) from (select from table)
 explain select (select t.*, z.* from test z) from (select * from test) t
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
@@ -324,15 +335,19 @@ insert into test (id) values (4) returning (select * from test t)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: insert returning (select from shared)
 create shared table test_ (id int primary key)
+[]
 insert into test_ 1,2,3
+[]
 insert into test (id) values (5) returning (select * from test_)
 [[[1], [2], [3]]]
 drop table test_
+[]
 # test: insert returning (select from expr)
 insert into test (id) values (6) returning [*, (select * from [1,2,3])]
 [[[6, 0], [1, 2, 3]]]
 insert into test (id) values (7) returning (select test.id + * from [1,2,3])
 [[8, 9, 10]]
 drop table test
+[]
 disconnect S0
 close E0

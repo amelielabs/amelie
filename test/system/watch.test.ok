@@ -19,12 +19,14 @@ bytecode [coordinator]
  6               sleep     1000      0      0
  7                 jmp        0      0      0
  8                 nop        0      0      0
- 9                bool        0      1      0
+ 9               array        0      0      0
 10             cte_set        0      0      0
-11                 ret        0      0      0
+11                body        0      0      0
+12                 ret        0      0      0
 
 "
 watch system.config().lsn = 0
+[]
 # test: watch subquery
 explain watch (select 123) = 123
 "
@@ -37,13 +39,16 @@ bytecode [coordinator]
  4               sleep     1000      0      0
  5                 jmp        0      0      0
  6                 nop        0      0      0
- 7                bool        0      1      0
+ 7               array        0      0      0
  8             cte_set        0      0      0
- 9                 ret        0      0      0
+ 9                body        0      0      0
+10                 ret        0      0      0
 
 "
 watch (select 123) = 123
+[]
 create table test (id int primary key serial)
+[]
 watch select * from test
 {"code": 1, "msg": "WATCH: sub queries are not supported"}
 disconnect S0

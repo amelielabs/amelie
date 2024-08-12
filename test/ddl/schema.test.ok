@@ -57,6 +57,7 @@ create schema test abc
 {"code": 1, "msg": "unknown command: <abc>"}
 # test: create schema
 create schema test
+[]
 show schemas
 [{
   "name": "system",
@@ -89,6 +90,7 @@ select system.schemas()
 create schema test
 {"code": 1, "msg": "schema 'test': already exists"}
 create schema if not exists test
+[]
 show schemas
 [{
   "name": "system",
@@ -116,6 +118,7 @@ drop schema test abc
 {"code": 1, "msg": "unknown command: <abc>"}
 # test: drop schema
 drop schema test
+[]
 show schemas
 [{
   "name": "system",
@@ -130,6 +133,7 @@ show schemas
 drop schema test
 {"code": 1, "msg": "schema 'test': not exists"}
 drop schema if exists test
+[]
 show schemas
 [{
   "name": "system",
@@ -155,11 +159,15 @@ show schemas
 }]
 # test: drop schema with dependency
 create schema test
+[]
 create table test.test(id int primary key)
+[]
 drop schema test
 {"code": 1, "msg": "table 'test' depends on schema 'test"}
 drop table test.test
+[]
 drop schema test
+[]
 # test: alter schema statment parsing
 alter schema
 {"code": 1, "msg": "ALTER SCHEMA <name> expected"}
@@ -175,6 +183,7 @@ alter schema test rename "hello"
 {"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
 # test: alter schema rename
 create schema test
+[]
 select system.schemas()
 [{
   "name": "system",
@@ -190,6 +199,7 @@ select system.schemas()
   "create": true
 }]
 alter schema test rename test2
+[]
 select system.schemas()
 [{
   "name": "system",

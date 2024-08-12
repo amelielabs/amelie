@@ -44,6 +44,7 @@ OpDesc ops[] =
 	{ CRECV_TO,           "recv_to"           },
 	{ CRESULT,            "result"            },
 	{ CBODY,              "body"              },
+	{ CBODY_EMPTY,        "body_empty"        },
 
 	// cte
 	{ CCTE_SET,           "cte_set"           },

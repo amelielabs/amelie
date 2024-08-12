@@ -23,11 +23,13 @@ show repl
 }
 # test: start replica
 start repl
+[]
 # test: promote (using self id)
 promote "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "repl: primary id cannot match this server id"}
 # test: promote
 promote "00000000-0000-0000-0000-000000000000"
+[]
 show repl
 {
   "active": true,
@@ -41,6 +43,7 @@ switch S0
 show replicas
 []
 create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481"
+[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -51,22 +54,30 @@ show replicas
 }]
 # test: start primary
 start repl
+[]
 # test: wait for primary connect
 watch system.replicas()[0].connected = true
+[]
 # test: write
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 show lsn
 2
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
+[]
 # test: stop replica
 disconnect S1
 close E1
 # test: write (replica off)
 insert into test 4
+[]
 insert into test 5
+[]
 insert into test 6
+[]
 show lsn
 5
 # test: replica lag
@@ -81,14 +92,17 @@ show replicas
 # test: replica disconnected
 switch S0
 watch system.replicas()[0].connected = false
+[]
 # test: restart replica
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
 connect E1 S1 localhost:3481
 # test: wait for primary reconnect
 switch S0
 watch system.replicas()[0].connected = true
+[]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
+[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -105,12 +119,17 @@ connect E0 S0 localhost:3480
 # test: wait for primary reconnect
 switch S0
 watch system.replicas()[0].connected = true
+[]
 # test: write
 insert into test 7
+[]
 insert into test 8
+[]
 insert into test 9
+[]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
+[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -156,6 +175,7 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000"
 }
 promote reset
+[]
 show repl
 {
   "active": true,
@@ -165,11 +185,13 @@ show repl
 # test: drop replica
 switch S0
 drop replica "00000000-0000-0000-0000-000000000001"
+[]
 show replicas
 []
 # test: promote new primary
 switch S0
 promote "00000000-0000-0000-0000-000000000001"
+[]
 show repl
 {
   "active": true,
@@ -179,15 +201,22 @@ show repl
 # test: create replica
 switch S1
 create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1:3480"
+[]
 # test: wait for primary connect
 watch system.replicas()[0].connected = true
+[]
 watch system.replicas()[0].lsn = system.config().lsn
+[]
 # test: write
 insert into test 10
+[]
 insert into test 11
+[]
 insert into test 12
+[]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
+[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000000",

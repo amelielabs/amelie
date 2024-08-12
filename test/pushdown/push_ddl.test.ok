@@ -2,19 +2,23 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: shared table create
 create shared table test (id int primary key, data int default 0)
+[]
 select *.name, *.shared from system.tables()
 [["test", true]]
 # test: shared has single partition
 select length(partitions) = 1 from system.tables()
 [true]
 drop table test
+[]
 # test: table create
 create table test (id int primary key, data int default 0)
+[]
 select *.name, *.shared from system.tables()
 [["test", false]]
 # test: table partitions created on each shard
 select partitions::length = 3 from system.tables()
 [true]
 drop table test
+[]
 disconnect S0
 close E0

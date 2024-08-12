@@ -2,15 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: shared insert
 create shared table test (id int primary key, data int default 0)
+[]
 explain insert into test (id) values (1), (2), (3)
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -20,6 +22,7 @@ bytecode [node]
 
 "
 insert into test (id) values (1), (2), (3)
+[]
 # test: shared delete
 explain delete from test
 "
@@ -27,9 +30,10 @@ bytecode [coordinator]
 --------
  0          send_first        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -45,19 +49,22 @@ bytecode [node]
 
 "
 delete from test
+[]
 select * from test
 []
 # test: shared update
 insert into test (id) values (1), (2), (3)
+[]
 explain update test set data = id
 "
 bytecode [coordinator]
 --------
  0          send_first        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -81,6 +88,7 @@ bytecode [node]
 
 "
 update test set data = id
+[]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 # test: shared upsert
@@ -90,9 +98,10 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -116,20 +125,24 @@ bytecode [node]
 
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 2], [2, 3], [3, 4]]
 drop table test
+[]
 # test: table insert
 create table test (id int primary key, data int default 0)
+[]
 explain insert into test (id) values (1), (2), (3)
 "
 bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -139,6 +152,7 @@ bytecode [node]
 
 "
 insert into test (id) values (1), (2), (3)
+[]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
 # test: table delete
@@ -148,9 +162,10 @@ bytecode [coordinator]
 --------
  0            send_all        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -166,19 +181,22 @@ bytecode [node]
 
 "
 delete from test
+[]
 select * from test
 []
 # test: table update
 insert into test (id) values (1), (2), (3)
+[]
 explain update test set data = id
 "
 bytecode [coordinator]
 --------
  0            send_all        0      0      0
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -202,6 +220,7 @@ bytecode [node]
 
 "
 update test set data = id
+[]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 # test: table upsert
@@ -211,9 +230,10 @@ bytecode [coordinator]
 --------
  0                send        0      0      -      # public.test
  1                recv        0      0      0
- 2                null        0      0      0
+ 2               array        0      0      0
  3             cte_set        0      0      0
- 4                 ret        0      0      0
+ 4                body        0      0      0
+ 5                 ret        0      0      0
 
 
 bytecode [node]
@@ -237,8 +257,10 @@ bytecode [node]
 
 "
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
+[]
 select * from test
 [[1, 2], [2, 3], [3, 4]]
 drop table test
+[]
 disconnect S0
 close E0

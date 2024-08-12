@@ -26,6 +26,7 @@ enum
 	CRECV_TO,
 	CRESULT,
 	CBODY,
+	CBODY_EMPTY,
 
 	// cte
 	CCTE_SET,

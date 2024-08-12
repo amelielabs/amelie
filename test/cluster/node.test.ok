@@ -25,6 +25,7 @@ create node for 1
 create node "" for compute
 {"code": 1, "msg": "failed to parse uuid"}
 create node "00000000-0000-0000-0000-000000000000" for compute
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -42,13 +43,16 @@ create node if not
 create node if not exists
 {"code": 1, "msg": "CREATE NODE <FOR> expected"}
 create node if not exists "00000000-0000-0000-0000-000000000000" for compute
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: ddl/dml (with one node)
 create table test1 (id int primary key)
+[]
 create shared table test2 (id int primary key)
+[]
 show tables
 [{
   "schema": "public",
@@ -114,6 +118,7 @@ show tables
   }]
 }]
 insert into test1 values (1), (2), (3); insert into test2 4,5,6
+[]
 select * from test1
 [[1], [2], [3]]
 select * from test2
@@ -142,6 +147,7 @@ drop node ""
 drop node "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -151,7 +157,9 @@ drop node "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
 # test: drop node without dependency
 create node "00000000-0000-0000-0000-000000000001" for compute
+[]
 create node "00000000-0000-0000-0000-000000000002" for compute
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -161,6 +169,7 @@ show nodes
   "id": "00000000-0000-0000-0000-000000000002"
 }]
 drop node "00000000-0000-0000-0000-000000000001"
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -170,8 +179,10 @@ show nodes
 drop node "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
+[]
 # test: ddl (two nodes partitioning)
 create table test3 (id int primary key)
+[]
 show tables
 [{
   "schema": "public",
@@ -276,7 +287,9 @@ show tables
 drop node "00000000-0000-0000-0000-000000000002"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
 drop table test3
+[]
 drop node "00000000-0000-0000-0000-000000000002"
+[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"

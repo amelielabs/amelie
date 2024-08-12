@@ -2,7 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: with(table), expr
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
@@ -43,9 +45,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(shared), expr
 create shared table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
@@ -86,9 +91,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(table), table
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
@@ -138,9 +146,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(shared), shared (pushdown)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
@@ -190,9 +201,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(expr), table (pushdown)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 "
 bytecode [coordinator]
@@ -248,9 +262,12 @@ bytecode [node]
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
+[]
 # test: with(expr), table (pushdown)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 "
 bytecode [coordinator]
@@ -306,9 +323,12 @@ bytecode [node]
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
+[]
 # test: with(table), table (pushdown join)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 [[1], [2], [3]]
 explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id
@@ -425,9 +445,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with (expr), with(table), table (pushdown join)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 [[1], [2], [3]]
 explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
@@ -515,9 +538,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(a)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select * from a) select * from b
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a) select * from b
@@ -566,9 +592,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(expr), c(a)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
@@ -625,9 +654,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(expr), c(table)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
@@ -693,9 +725,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(table), c(expr)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
 [1, 2, 3]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
@@ -761,9 +796,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(table), c(expr), d(table)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
@@ -846,9 +884,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(expr), b(table), c(expr)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
@@ -913,9 +954,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(expr), b(table), c(table)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
@@ -981,9 +1025,12 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: a(table), b(a), c(table)
 create table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
@@ -1049,8 +1096,11 @@ bytecode [node]
 
 "
 drop table test
+[]
 create shared table test (id int primary key)
+[]
 insert into test 1,2,3
+[]
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
@@ -1116,11 +1166,16 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(update returning), expr
 create shared table test (id int primary key, data int)
+[]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 0)
+[]
 with a as (update test set data = data + 1 returning *) select * from a
 [[0, 1], [1, 1], [2, 1]]
 explain with a as (update test set data = data + 1 returning *) select * from a
@@ -1172,11 +1227,16 @@ bytecode [node]
 
 "
 drop table test
+[]
 # test: with(delete returning), expr
 create shared table test (id int primary key, data int)
+[]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 0)
+[]
 with a as (delete from test returning *) select * from a
 [[0, 0], [1, 0], [2, 0]]
 explain with a as (delete from test returning *) select * from a
@@ -1218,5 +1278,6 @@ bytecode [node]
 
 "
 drop table test
+[]
 disconnect S0
 close E0

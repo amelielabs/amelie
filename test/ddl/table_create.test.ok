@@ -57,6 +57,7 @@ create table test()
 {"code": 1, "msg": "(<name> expected"}
 # test: column int/integer
 create table test(id int primary key, id2 integer)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -78,8 +79,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -110,8 +113,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column string/text
 create table test(id int primary key, a string, b text)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -142,8 +147,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column real
 create table test(id int primary key, a real)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -165,8 +172,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column map/object
 create table test(id int primary key, a map, b object)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -197,8 +206,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column array
 create table test(id int primary key, a array)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -220,8 +231,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column timestamp
 create table test(id int primary key, a timestamp)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -243,8 +256,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column interval
 create table test(id int primary key, a interval)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -266,8 +281,10 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column vector
 create table test(id int primary key, a vector)
+[]
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
@@ -289,6 +306,7 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
+[]
 # test: column redefined
 create table test(id int, id int)
 {"code": 1, "msg": "<id> column redefined"}
@@ -317,9 +335,11 @@ create table test(id int, primary key(idd))
 {"code": 1, "msg": "<idd> column does not exists"}
 # test: primary key redefined
 create table test(id int, primary key(id, id))
+[]
 create table test(id int primary key, primary key(id))
 {"code": 1, "msg": "table 'test': already exists"}
 create table if not exists test(id int primary key, primary key(id))
+[]
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
@@ -331,6 +351,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": ""
 }]]
 drop table test
+[]
 # test: primary key redefined #2
 create table test(id int primary key primary key)
 {"code": 1, "msg": "PRIMARY KEY defined twice"}
@@ -346,6 +367,7 @@ create table test(data map, primary key(data.id))
 create table test(data map, primary key(data.id map))
 {"code": 1, "msg": "<data> column key can be string, int or timestamp"}
 create table test(data map, primary key(data.id integer))
+[]
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
@@ -353,31 +375,39 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "id"
 }]]
 drop table test
+[]
 create table test (id int primary key)
+[]
 create table test (id int primary key)
 {"code": 1, "msg": "table 'test': already exists"}
 # test: table create if not exists
 create table test (id int primary key)
 {"code": 1, "msg": "table 'test': already exists"}
 create table if not exists test (id int primary key)
+[]
 select name from system.tables() where name = "test"
 ["test"]
 drop table test
+[]
 select name from system.tables() where name = "test"
 []
 # test: schema default
 create table test (id int primary key)
+[]
 select *.schema from system.tables() where name = "test"
 ["public"]
 drop table test
+[]
 # test: schema system
 create table system.test (id int primary key)
 {"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: schema default explicit
 create table public.test (id int primary key)
+[]
 select *.schema from system.tables() where name = "test"
 ["public"]
 drop table public.test
+[]
 # test: schema non-exists
 create table test.test (id int primary key)
 {"code": 1, "msg": "schema 'test': not exists"}
@@ -385,32 +415,45 @@ select *.schema from system.tables() where name = "test"
 []
 # test: schema set
 create table test (id int primary key)
+[]
 create schema test
+[]
 create table test.test (id int primary key)
+[]
 select *.schema || "." || *.name from system.tables() where name = "test"
 ["public.test", "test.test"]
 select name from system.tables() where *.schema = "test" and name = "test"
 ["test"]
 drop table test
+[]
 drop table test.test
+[]
 drop schema test
+[]
 # test: table create with conflicting view
 create view test as select 1
+[]
 create table test (id int primary key)
 {"code": 1, "msg": "view <test> with the same name exists"}
 drop view test
+[]
 # test: distributed
 create distributed table test (id int primary key)
+[]
 select *.name, *.shared from system.tables()
 [["test", false]]
 drop table test
+[]
 # test: shared
 create shared table test (id int primary key)
+[]
 select *.name, *.shared from system.tables()
 [["test", true]]
 drop table test
+[]
 # test: constraint default
 create table test (id int primary key, data int default 1)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -418,17 +461,23 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint default with key
 create table test (id int default 1 primary key)
+[]
 drop table test
+[]
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id))
+[]
 drop table test
+[]
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
 {"code": 1, "msg": "only consts allowed as DEFAULT expression"}
 # test: constraint not null with key
 create table test (id int not null primary key)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -436,8 +485,10 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -445,8 +496,10 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -454,10 +507,12 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint not null
 create table test (id int primary key, data int not)
 {"code": 1, "msg": "NOT <NULL> expected"}
 create table test (id int primary key, data int not null)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -465,13 +520,16 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 insert into test values(1, 1)
+[]
 insert into test values(2, null)
 {"code": 1, "msg": "column <data> value cannot be NULL"}
 insert into test values(null, null)
 {"code": 1, "msg": "column <id> value cannot be NULL"}
 drop table test
+[]
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -479,14 +537,18 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 insert into test values(1, 1)
+[]
 insert into test values(2, null)
 {"code": 1, "msg": "column <data> value cannot be NULL"}
 insert into test (id) values(3)
+[]
 select * from test
 [[1, 1], [3, 123]]
 drop table test
+[]
 # test: constraint serial
 create table test (id int primary key, data int serial)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -494,8 +556,10 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint serial key
 create table test (id int serial primary key)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -503,8 +567,10 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint serial key #2
 create table test (id int serial, primary key(id))
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -512,11 +578,13 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: constraint serial key type
 create table test (id string serial primary key)
 {"code": 1, "msg": "SERIAL column <id> must be integer"}
 # test: constraint serial multiple columns
 create table test (id int serial primary key, data int serial)
+[]
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
@@ -524,6 +592,7 @@ select indexes[0].keys from system.tables()
   "path": ""
 }]]
 drop table test
+[]
 # test: with parsing
 create table test (id int primary key) with
 {"code": 1, "msg": "WITH <(> expected"}

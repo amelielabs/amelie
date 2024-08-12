@@ -1,10 +1,15 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 create table test (id int primary key, data int)
+[]
 create index i on test (data)
+[]
 insert into test values (0, 2)
+[]
 insert into test values (1, 1)
+[]
 insert into test values (2, 0)
+[]
 explain select * from test
 "
 bytecode [coordinator]
@@ -83,13 +88,20 @@ bytecode [node]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
+[]
 drop table test
+[]
 # test: hash/hash
 create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')
+[]
 create unique index i on test (data) with (type = 'hash')
+[]
 insert into test values (0, 2)
+[]
 insert into test values (1, 1)
+[]
 insert into test values (2, 0)
+[]
 # test: hash/hash (scan)
 explain select * from test
 "
@@ -290,12 +302,18 @@ bytecode [node]
 select * from test where data = 1 and id = 1
 [[1, 1]]
 drop table test
+[]
 # test: tree/hash
 create table test (id int primary key, data int)
+[]
 create index i on test (data) with (type = 'hash')
+[]
 insert into test values (0, 2)
+[]
 insert into test values (1, 1)
+[]
 insert into test values (2, 0)
+[]
 explain select * from test where id = 1
 "
 bytecode [coordinator]
@@ -557,12 +575,18 @@ bytecode [node]
 select * from test where id = 1 and data = 1
 [[1, 1]]
 drop table test
+[]
 # test: tree/tree
 create table test (id int primary key, data int)
+[]
 create index i on test (data)
+[]
 insert into test values (0, 2)
+[]
 insert into test values (1, 1)
+[]
 insert into test values (2, 0)
+[]
 # test: tree/tree (scan)
 explain select * from test where id > 1
 "
@@ -766,5 +790,6 @@ bytecode [node]
 select * from test where id < 1 and data < 2
 []
 drop table test
+[]
 disconnect S0
 close E0

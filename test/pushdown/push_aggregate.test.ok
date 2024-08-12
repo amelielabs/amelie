@@ -2,6 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select count from table empty
 create table test (id int primary key, data int)
+[]
 explain select count(*) from test
 "
 bytecode [coordinator]
@@ -45,10 +46,15 @@ select count(*) from test
 [0]
 # test: select count from table
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 select * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]]
 explain select count(*) from test
@@ -94,6 +100,7 @@ select count(*) from test
 [5]
 # test: select sum from table empty
 delete from test
+[]
 explain select sum(id) from test
 "
 bytecode [coordinator]
@@ -136,10 +143,15 @@ bytecode [node]
 select sum(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select sum from table
 explain select sum(id) from test
 "
@@ -186,13 +198,19 @@ select sum(data) from test
 [4]
 # test: select avg from table empty
 delete from test
+[]
 select avg(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select avg from table
 explain select avg(id) from test
 "
@@ -239,13 +257,19 @@ select avg(data) from test
 [0]
 # test: select min from table empty
 delete from test
+[]
 select min(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select min from table
 select min(id) from test
 [0]
@@ -253,13 +277,19 @@ select min(data) from test
 [0]
 # test: select max from table empty
 delete from test
+[]
 select max(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select max from table
 select max(id) from test
 [4]
@@ -613,8 +643,10 @@ select * from test group by data order by count(*) desc
 select data, count(*) c from test group by data order by c desc
 [[0, 2], [1, 2], [2, 1]]
 drop table test
+[]
 # test: select count from shared empty
 create shared table test (id int primary key, data int)
+[]
 explain select count(*) from test
 "
 bytecode [coordinator]
@@ -658,10 +690,15 @@ select count(*) from test
 [0]
 # test: select count from shared
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 select * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]]
 explain select count(*) from test
@@ -795,13 +832,19 @@ select avg(data) from test
 [0]
 # test: select min from shared empty
 delete from test
+[]
 select min(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select min from table
 select min(id) from test
 [0]
@@ -809,13 +852,19 @@ select min(data) from test
 [0]
 # test: select max from shared empty
 delete from test
+[]
 select max(id) from test
 [0]
 insert into test values (0, 0)
+[]
 insert into test values (1, 0)
+[]
 insert into test values (2, 1)
+[]
 insert into test values (3, 1)
+[]
 insert into test values (4, 2)
+[]
 # test: select max from shared
 select max(id) from test
 [4]
@@ -1025,6 +1074,7 @@ select data, count(*) c from test group by data having c > 1
 select data, count(*) c from test group by data having data > 1
 [[2, 1]]
 drop table test
+[]
 # test: select count from expr emtpy
 explain select count(*) from []
 "

@@ -88,21 +88,30 @@ select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
 {"code": 1, "msg": "vector sizes mismatch"}
 # test: vector column
 create table test (id int primary key, vec vector)
+[]
 insert into test values (0, [])
 {"code": 1, "msg": "column vec: does not match data type vector"}
 insert into test values (0, vector [])
+[]
 insert into test values (1, vector [1.0])
+[]
 insert into test values (2, vector [1])
+[]
 insert into test values (3, vector [1.0, 1.1,])
+[]
 insert into test values (4, vector [1.0,)
 {"code": 1, "msg": "VECTOR integer of real value expected"}
 insert into test values (5, vector [1.0,])
+[]
 insert into test values (6, vector [1.0, 1.1])
+[]
 insert into test values (7, vector [1.0, 1.1, -2.2, -8])
+[]
 select * from test
 [[0, []], [1, [1]], [2, [1]], [3, [1, 1.1]], [5, [1]], [6, [1, 1.1]], [7, [1, 1.1, -2.2, -8]]]
 select vec::type from test
 ["vector", "vector", "vector", "vector", "vector", "vector", "vector"]
 drop table test
+[]
 disconnect S0
 close E0

@@ -23,6 +23,7 @@ select '2024-07-29T18:40:19Z'::timestamp
 "2024-07-29 18:40:19+00"
 # test: localtime to localtime
 set timezone to 'Asia/Famagusta'
+[]
 select '2024-07-29 18:40:19'::timestamp
 "2024-07-29 18:40:19+03"
 # test: utc to localtime
@@ -59,18 +60,23 @@ select '2024-07-29 18:40:19'::timestamp at timezone null
 {"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: timestamp column
 create table test (time timestamp primary key)
+[]
 # test: timestamp column (localtime)
 insert into test values (timestamp "2024-07-29 18:40:19")
+[]
 select * from test
 [["2024-07-29 18:40:19+03"]]
 # test: timestamp column (utc)
 insert into test values (timestamp "2024-07-29 18:40:19Z")
+[]
 select * from test
 [["2024-07-29 18:40:19+03"], ["2024-07-29 21:40:19+03"]]
 set timezone to 'UTC'
+[]
 select * from test
 [["2024-07-29 15:40:19+00"], ["2024-07-29 18:40:19+00"]]
 drop table test
+[]
 # test: timestamp object
 select {"time": "2024-07-29 18:40:19"::timestamp}
 {
@@ -86,6 +92,7 @@ select {"time": "2024-07-29 18:40:19+03"::timestamp}
   "time": "2024-07-29 15:40:19+00"
 }
 set timezone to 'Asia/Famagusta'
+[]
 select {"time": "2024-07-29 18:40:19+03"::timestamp}
 {
   "time": "2024-07-29 18:40:19+03"
@@ -100,10 +107,13 @@ select {"time": timestamp "2024-07-29 18:40:19"}
 }
 # test: timestamp name case
 set timezone to 'UTC'
+[]
 set timezone to 'utc'
+[]
 show timezone
 "utc"
 set timezone to 'asia/famagusta'
+[]
 show timezone
 "asia/famagusta"
 select {"time": "2024-07-29 18:40:19+03"::timestamp}

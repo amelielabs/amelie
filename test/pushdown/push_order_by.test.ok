@@ -2,7 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select from table order by
 create table test (id int primary key serial)
+[]
 insert into test generate 20
+[]
 select * from test
 [[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 explain select * from test order by id
@@ -455,9 +457,12 @@ select * from test order by id desc offset 0
 select * from test order by id desc offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
+[]
 # test: select from shared order by
 create shared table test (id int primary key serial)
+[]
 insert into test generate 20
+[]
 select * from test
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 explain select * from test order by id
@@ -910,6 +915,7 @@ select * from test order by id desc offset 0
 select * from test order by id desc offset -1
 {"code": 1, "msg": "OFFSET: positive integer value expected"}
 drop table test
+[]
 # test: select from expr order by
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] order by *
 "

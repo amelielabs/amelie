@@ -1,6 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 create table test (id int primary key, a int, b int)
+[]
 # test: create index parsing
 create index
 {"code": 1, "msg": "CREATE INDEX <name> expected"}
@@ -28,6 +29,7 @@ create index i on test ()
 {"code": 1, "msg": "KEY (<name> expected"}
 # test: create index
 create index i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -58,6 +60,7 @@ select system.tables()[0].indexes
 create index i on test (a)
 {"code": 1, "msg": "table 'test' index 'i': already exists"}
 create index if not exists i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -85,8 +88,10 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 # test: create index (compound key)
 create index i on test (b, a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -118,8 +123,10 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 # test: create index (key reuse)
 create index i on test (a, a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -151,13 +158,17 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 # test: create index (unique)
 create unique index i on test (a)
 {"code": 1, "msg": "CREATE UNIQUE INDEX cannot be created on distributed tables"}
 # test: create index (unique shared)
 drop table test
+[]
 create shared table test (id int primary key, a int, b int)
+[]
 create unique index i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -181,8 +192,11 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 drop table test
+[]
 create table test (id int primary key, a int, b int)
+[]
 # test: create index with parsing
 create index i on test (a) 1
 {"code": 1, "msg": "unknown command"}
@@ -208,6 +222,7 @@ create index i on test (a) with (, type = 'tree'
 {"code": 1, "msg": "WITH (<name> expected"}
 # test: create index with
 create index i on test (a) with (type = 'hash')
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -235,7 +250,9 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 create index i on test (a) with (type = 'tree')
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -263,12 +280,16 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 create index i on test (a) with (type = 'unknown')
 {"code": 1, "msg": "WITH: unknown primary index type"}
 # test: create index (shared)
 drop table test
+[]
 create shared table test (id int primary key, a int, b int)
+[]
 create index i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -296,6 +317,7 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on test
+[]
 # test: drop index parsing
 drop index
 {"code": 1, "msg": "DROP INDEX <name> expected"}
@@ -319,6 +341,7 @@ drop index i on public.test
 {"code": 1, "msg": "table 'test' index 'i': not exists"}
 # test: drop index
 create index i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -346,6 +369,7 @@ select system.tables()[0].indexes
   }]
 }]
 drop index i on public.test
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -362,6 +386,7 @@ select system.tables()[0].indexes
 drop index i on public.test
 {"code": 1, "msg": "table 'test' index 'i': not exists"}
 drop index if exists i on public.test
+[]
 # test: alter index parsing
 alter
 {"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected"}
@@ -397,6 +422,7 @@ alter index i on test rename to
 {"code": 1, "msg": "ALTER INDEX name ON name RENAME TO <name> expected"}
 # test: alter index rename
 create index i on test (a)
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -424,6 +450,7 @@ select system.tables()[0].indexes
   }]
 }]
 alter index i on test rename to j
+[]
 select system.tables()[0].indexes
 [{
   "name": "primary",
@@ -454,6 +481,7 @@ select system.tables()[0].indexes
 alter index k on test rename to z
 {"code": 1, "msg": "table 'test' index 'k': not exists"}
 alter index if exists k on public.test rename to z
+[]
 # test: alter index rename (conflict)
 alter index j on test rename to j
 {"code": 1, "msg": "table 'test' index 'j': already exists"}

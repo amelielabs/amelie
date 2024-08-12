@@ -229,6 +229,8 @@ session_execute(Session* self)
 	if (! compiler->parser.stmt_list.list_count)
 	{
 		session_unlock(self);
+		auto body = &self->client->reply.content;
+		body_empty(body);
 		return;
 	}
 

@@ -393,38 +393,12 @@ emit_recv_upto(Compiler* self, int last, int order)
 	self->current = current;
 }
 
-static inline bool
-compiler_is_returning(Compiler* self)
-{
-	auto parser = &self->parser;
-	if (! parser->stmt)
-		return false;
-	auto returning = false;
-	auto stmt = self->parser.stmt;
-	switch (stmt->id) {
-	case STMT_SELECT:
-		returning = true;
-		break;
-	case STMT_DELETE:
-		returning = ast_delete_of(stmt->ast)->returning != NULL;
-		break;
-	case STMT_UPDATE:
-		returning = ast_update_of(stmt->ast)->returning != NULL;
-		break;
-	case STMT_INSERT:
-		returning = ast_insert_of(stmt->ast)->returning != NULL;
-		break;
-	default:
-		break;
-	}
-	return returning;
-}
-
 hot void
 compiler_emit(Compiler* self)
 {
 	auto parser = &self->parser;
 	auto stmt_list = &parser->stmt_list;
+	assert(stmt_list->list_count > 0);
 
 	// analyze statements
 	//
@@ -480,8 +454,10 @@ compiler_emit(Compiler* self)
 	emit_recv_upto(self, recv_last, stmt_list->list_count);
 
 	// CBODY (for the main statement, if any)
-	if (compiler_is_returning(self))
+	if (parser->stmt)
 		op1(self, CBODY, parser->stmt->order);
+	else
+		op0(self, CBODY_EMPTY);
 
 	// CRET
 	compiler_switch_coordinator(self);

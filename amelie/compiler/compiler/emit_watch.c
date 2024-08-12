@@ -59,5 +59,5 @@ emit_watch(Compiler* self, Ast* ast)
 
 	// nop
 	op0(self, CNOP);
-	return op2(self, CBOOL, rpin(self), true);
+	return op2(self, CARRAY, rpin(self), 0);
 }
