@@ -28,6 +28,8 @@ struct Config
 	Var  tls_key;
 	Var  listen;
 	Var  listen_uri;
+	// limits
+	Var  limit_write;
 	// cluster
 	Var  frontends;
 	Var  shards;

@@ -40,6 +40,12 @@ atomic_u64_of(atomic_u64* self)
 }
 
 static inline uint64_t
+atomic_u64_add(atomic_u64* self, uint64_t value)
+{
+	return __sync_fetch_and_add(self, value);
+}
+
+static inline uint64_t
 atomic_u64_inc(atomic_u64* self)
 {
 	return __sync_fetch_and_add(self, 1);

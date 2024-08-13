@@ -46,6 +46,7 @@ show all
     "host": "127.0.0.1",
     "port": 3485
   }],
+  "limit_write": 0,
   "frontends": 1,
   "shards": 3,
   "wal": true,
@@ -112,6 +113,7 @@ show all
     "host": "127.0.0.1",
     "port": 3485
   }],
+  "limit_write": 0,
   "frontends": 1,
   "shards": 1,
   "wal": true,

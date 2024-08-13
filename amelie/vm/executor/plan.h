@@ -28,6 +28,7 @@ struct Plan
 	CodeData*  code_data;
 	Result     cte;
 	Buf*       error;
+	Limit      limit;
 	Condition* on_commit;
 	TrxCache*  trx_cache;
 	ReqCache*  req_cache;
@@ -54,6 +55,7 @@ plan_init(Plan*     self, Router* router,
 	self->router      = router;
 	self->local       = NULL;
 	trx_set_init(&self->set);
+	limit_init(&self->limit, var_int_of(&config()->limit_write));
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
 	list_init(&self->link_group);
@@ -79,6 +81,7 @@ plan_reset(Plan* self)
 	dispatch_reset(&self->dispatch, self->req_cache);
 	trx_set_reset(&self->set);
 	result_reset(&self->cte);
+	limit_reset(&self->limit, var_int_of(&config()->limit_write));
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -164,7 +167,8 @@ plan_send(Plan* self, int stmt, ReqList* list)
 			trx_set(trx, self->local, route,
 			        self->code,
 			        self->code_data,
-			        &self->cte);
+			        &self->cte,
+			        &self->limit);
 			trx_set_set(set, route->order, trx);
 		}
 	}
@@ -182,7 +186,8 @@ plan_send(Plan* self, int stmt, ReqList* list)
 			trx_set(trx, self->local, route,
 			        self->code,
 			        self->code_data,
-			        &self->cte);
+			        &self->cte,
+			        &self->limit);
 			trx_set_set(set, route->order, trx);
 		}
 

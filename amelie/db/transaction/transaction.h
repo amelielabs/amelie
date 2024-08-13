@@ -10,10 +10,11 @@ typedef struct Transaction Transaction;
 
 struct Transaction
 {
-	bool  active;
-	bool  aborted;
-	Log   log;
-	void* arg;
+	bool   active;
+	bool   aborted;
+	Log    log;
+	Limit* limit;
+	void*  arg;
 };
 
 static inline void
@@ -21,6 +22,7 @@ transaction_init(Transaction* self)
 {
 	self->active  = false;
 	self->aborted = false;
+	self->limit   = NULL;
 	self->arg     = NULL;
 	log_init(&self->log);
 }
@@ -30,6 +32,7 @@ transaction_reset(Transaction* self)
 {
 	self->active  = false;
 	self->aborted = false;
+	self->limit   = NULL;
 	self->arg     = NULL;
 	log_reset(&self->log);
 }
@@ -38,6 +41,12 @@ static inline void
 transaction_free(Transaction* self)
 {
 	log_free(&self->log);
+}
+
+static inline void
+transaction_set_limit(Transaction* self, Limit* limit)
+{
+	self->limit = limit;
 }
 
 static inline bool

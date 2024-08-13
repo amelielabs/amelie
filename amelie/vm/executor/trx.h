@@ -68,13 +68,15 @@ trx_set(Trx*      self,
         Route*    route,
         Code*     code,
         CodeData* code_data,
-        Result*   cte)
+        Result*   cte,
+        Limit*    limit)
 {
 	self->local     = local;
 	self->code      = code;
 	self->code_data = code_data;
 	self->route     = route;
 	self->cte       = cte;
+	transaction_set_limit(&self->trx, limit);
 }
 
 static inline void

@@ -95,6 +95,10 @@ part_insert(Part*        self,
 	auto row = row_create(keys->columns, pos, &pos_serial);
 	guard(row_free, row);
 
+	// ensure transaction log limit
+	if (trx->limit)
+		limit_ensure(trx->limit, row);
+
 	// sync last serial column value during recover
 	if (pos_serial && recover)
 		part_sync_serial(self, pos_serial);
@@ -144,6 +148,10 @@ part_update(Part*        self,
 	auto row = row_create(keys->columns, pos, NULL);
 	guard(row_free, row);
 
+	// ensure transaction log limit
+	if (trx->limit)
+		limit_ensure(trx->limit, row);
+
 	// add log record
 	Ref* key, *prev;
 	log_row(&trx->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
@@ -181,6 +189,10 @@ part_delete(Part*        self,
 	auto keys = index_keys(primary);
 	auto row = iterator_at(it);
 
+	// ensure transaction log limit
+	if (trx->limit)
+		limit_ensure(trx->limit, row);
+
 	// add log record
 	Ref* key, *prev;
 	log_row(&trx->log, LOG_DELETE, &log_if, primary, keys, &key, &prev);
@@ -216,6 +228,9 @@ part_delete_by(Part*        self,
 	auto row = row_create(keys->columns, pos, NULL);
 	guard(row_free, row);
 
+	// note: transaction memory limit is not ensured here
+	// since this operation is used for recovery
+
 	uint8_t key_data[keys->key_size];
 	auto    key = (Ref*)key_data;
 	ref_create(key, row, keys);
@@ -240,6 +255,10 @@ part_upsert(Part*        self,
 	// allocate primary row
 	auto row = row_create(primary->config->keys.columns, pos, NULL);
 	guard(row_free, row);
+
+	// ensure transaction log limit
+	if (trx->limit)
+		limit_ensure(trx->limit, row);
 
 	// add log record
 	Ref* key, *prev;
