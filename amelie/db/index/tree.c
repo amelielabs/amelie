@@ -91,25 +91,30 @@ hot static inline
 rbtree_get(tree_find, tree_compare(arg, tree_of(n), key))
 
 hot static inline TreePage*
+tree_search_page_for_write(Tree*        self,
+                           Ref*         key,
+                           int*         page_rel,
+                           RbtreeNode** page_ref)
+{
+	// page[n].min <= key && key < page[n + 1].min
+	*page_rel = tree_find(&self->tree, self, key, page_ref);
+	assert(*page_ref != NULL);
+	TreePage* page = tree_of(*page_ref);
+	if (*page_rel == 1)
+	{
+		auto prev = rbtree_prev(&self->tree, *page_ref);
+		if (prev)
+			page = tree_of(prev);
+	}
+	return page;
+}
+
+hot static inline TreePage*
 tree_search_page(Tree* self, Ref* key)
 {
-	if (self->count_pages == 1)
-	{
-		auto first = rbtree_min(&self->tree);
-		return tree_of(first);
-	}
-
-	// page[n].min <= key && key < page[n + 1].min
-	RbtreeNode* part_ptr = NULL;
-	int rc = tree_find(&self->tree, self, key, &part_ptr);
-	assert(part_ptr != NULL);
-	if (rc == 1)
-	{
-		auto prev = rbtree_prev(&self->tree, part_ptr);
-		if (prev)
-			part_ptr = prev;
-	}
-	return tree_of(part_ptr);
+	RbtreeNode* page_ref;
+	int page_rel;
+	return tree_search_page_for_write(self, key, &page_rel, &page_ref);
 }
 
 hot static inline int
@@ -207,7 +212,9 @@ tree_set(Tree* self, Ref* key, Ref* prev)
 	}
 
 	// search page
-	auto page = tree_search_page(self, key);
+	RbtreeNode* page_ref;
+	int  page_rel;
+	auto page = tree_search_page_for_write(self, key, &page_rel, &page_ref);
 
 	// insert into page
 	TreePage* page_split = NULL;
@@ -227,7 +234,7 @@ tree_set(Tree* self, Ref* key, Ref* prev)
 	// update split page
 	if (page_split)
 	{
-		rbtree_set(&self->tree, &page->node, -1, &page_split->node);
+		rbtree_set(&self->tree, page_ref, page_rel, &page_split->node);
 		self->count_pages++;
 	}
 	return false;
@@ -251,7 +258,9 @@ tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 	}
 
 	// search page
-	auto page = tree_search_page(self, key);
+	RbtreeNode* page_ref;
+	int  page_rel;
+	auto page = tree_search_page_for_write(self, key, &page_rel, &page_ref);
 
 	// insert into page
 	TreePage* page_split = NULL;
@@ -262,7 +271,7 @@ tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 	// update split page
 	if (page_split)
 	{
-		rbtree_set(&self->tree, &page->node, -1, &page_split->node);
+		rbtree_set(&self->tree, page_ref, page_rel, &page_split->node);
 		self->count_pages++;
 	}
 	return false;
