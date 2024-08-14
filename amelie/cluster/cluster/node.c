@@ -140,6 +140,9 @@ node_rpc(Rpc* rpc, void* arg)
 {
 	Node* self = arg;
 	switch (rpc->id) {
+	case RPC_SYNC:
+		// do nothing, just respond
+		break;
 	case RPC_STOP:
 		unused(self);
 		vm_reset(&self->vm);
@@ -230,4 +233,10 @@ node_stop(Node* self)
 		task_free(&self->task);
 		task_init(&self->task);
 	}
+}
+
+void
+node_sync(Node* self)
+{
+	rpc(&self->task.channel, RPC_SYNC, 0);
 }

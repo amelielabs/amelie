@@ -217,7 +217,7 @@ ctl_user(Session* self)
 	session_lock(self, LOCK);
 
 	// sync frontends user caches
-	frontend_mgr_sync(self->share->frontend_mgr, &user_mgr->cache);
+	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
 }
 
 static void

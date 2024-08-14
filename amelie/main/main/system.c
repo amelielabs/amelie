@@ -232,7 +232,7 @@ system_start(System* self, Str* options, bool bootstrap)
 	                   workers);
 
 	// synchronize caches
-	frontend_mgr_sync(&self->frontend_mgr, &self->user_mgr.cache);
+	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
 	repl_open(&self->repl);
@@ -313,7 +313,15 @@ system_lock(System* self, Rpc* rpc)
 		rpc_queue_add(&self->lock_queue, rpc);
 	} else
 	{
+		// request exclusive lock for each frontend worker
 		frontend_mgr_lock(&self->frontend_mgr);
+
+		// sync to make last operation copleted on nodes
+		//
+		// even with exclusive lock, there is a chance that
+		// last abort did not not finished yet on nodes
+		cluster_sync(&self->cluster);
+
 		rpc_done(rpc);
 		self->lock = true;
 	}

@@ -92,11 +92,11 @@ frontend_mgr_unlock(FrontendMgr* self)
 }
 
 static inline void
-frontend_mgr_sync(FrontendMgr* self, UserCache* user_cache)
+frontend_mgr_sync_users(FrontendMgr* self, UserCache* user_cache)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto fe = &self->workers[i];
-		rpc(&fe->task.channel, RPC_SYNC, 1, user_cache);
+		rpc(&fe->task.channel, RPC_SYNC_USERS, 1, user_cache);
 	}
 }

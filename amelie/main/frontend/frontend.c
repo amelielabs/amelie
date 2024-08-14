@@ -62,7 +62,7 @@ frontend_rpc(Rpc* rpc, void* arg)
 {
 	Frontend* self = arg;
 	switch (rpc->id) {
-	case RPC_SYNC:
+	case RPC_SYNC_USERS:
 	{
 		// sync user caches
 		UserCache* with = rpc_arg_ptr(rpc, 0);

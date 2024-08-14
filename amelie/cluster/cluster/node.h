@@ -23,3 +23,4 @@ node_allocate(NodeConfig*, Db*, FunctionMgr*);
 void node_free(Node*);
 void node_start(Node*);
 void node_stop(Node*);
+void node_sync(Node*);
