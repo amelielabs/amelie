@@ -139,7 +139,8 @@ hash_store_delete(HashStore* self, Ref* key, Ref* prev)
 		{
 			if (! compare(self->keys, ref, key))
 			{
-				hash_store_copy(self, prev, ref);
+				if (prev)
+					hash_store_copy(self, prev, ref);
 				ref->row = HT_DELETED;
 				self->count--;
 				return true;
