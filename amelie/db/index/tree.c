@@ -212,9 +212,7 @@ tree_set(Tree* self, Ref* key, Ref* prev)
 	}
 
 	// search page
-	RbtreeNode* page_ref;
-	int  page_rel;
-	auto page = tree_search_page_for_write(self, key, &page_rel, &page_ref);
+	auto page = tree_search_page(self, key);
 
 	// insert into page
 	TreePage* page_split = NULL;
@@ -234,6 +232,9 @@ tree_set(Tree* self, Ref* key, Ref* prev)
 	// update split page
 	if (page_split)
 	{
+		RbtreeNode* page_ref;
+		int page_rel;
+		tree_search_page_for_write(self, tree_at(self, page_split, 0), &page_rel, &page_ref);
 		rbtree_set(&self->tree, page_ref, page_rel, &page_split->node);
 		self->count_pages++;
 	}
@@ -258,9 +259,7 @@ tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 	}
 
 	// search page
-	RbtreeNode* page_ref;
-	int  page_rel;
-	auto page = tree_search_page_for_write(self, key, &page_rel, &page_ref);
+	auto page = tree_search_page(self, key);
 
 	// insert into page
 	TreePage* page_split = NULL;
@@ -271,6 +270,9 @@ tree_set_or_get(Tree* self, Ref* key, TreePos* pos)
 	// update split page
 	if (page_split)
 	{
+		RbtreeNode* page_ref;
+		int page_rel;
+		tree_search_page_for_write(self, tree_at(self, page_split, 0), &page_rel, &page_ref);
 		rbtree_set(&self->tree, page_ref, page_rel, &page_split->node);
 		self->count_pages++;
 	}

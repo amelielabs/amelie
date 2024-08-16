@@ -34,6 +34,12 @@ test update
 test delete
 test upsert
 
+# index
+directory index
+group index
+test tree_shared
+test tree
+
 # query
 directory query
 group query
