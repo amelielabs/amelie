@@ -1,0 +1,65 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: limit_write
+create table test (id int primary key)
+[]
+set limit_write to 1
+[]
+insert into test 123
+{"code": 1, "msg": "transaction log limit reached"}
+set limit_write to 10000
+[]
+drop table test
+[]
+# test: limit_send
+set limit_send to 0
+[]
+select system.config()
+{"code": 1, "msg": "http reply limit reached"}
+set limit_send to 1000000
+[]
+select system.config()
+[{
+  "version": "0.0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "timezone": "UTC",
+  "timezone_default": "UTC",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 1000000,
+  "limit_recv": 1048576,
+  "limit_write": 10000,
+  "frontends": 1,
+  "shards": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "repl": false,
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
+  "read_only": false,
+  "lsn": 2,
+  "psn": 1
+}]
+# test: limit_recv
+set limit_recv to 0
+[]
+select 1
+{"code": 1, "msg": "http request limit reached"}
+disconnect S0
+close E0

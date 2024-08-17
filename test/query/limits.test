@@ -1,0 +1,27 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: limit_write
+create table test (id int primary key)
+set limit_write to 1
+insert into test 123
+set limit_write to 10000
+drop table test
+
+# test: limit_send
+set limit_send to 0
+select system.config()
+
+set limit_send to 1000000
+select system.config()
+
+# test: limit_recv
+
+# this will fail all queries after it
+set limit_recv to 0
+select 1
+
+disconnect S0
+close E0

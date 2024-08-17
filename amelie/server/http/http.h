@@ -40,7 +40,7 @@ void http_reset(Http*);
 void http_log(Http*);
 bool http_read(Http*, Readahead*, bool);
 void http_read_content(Http*, Readahead*, Buf*);
-void http_read_content_limit(Http*, Readahead*, Buf*, uint64_t);
+bool http_read_content_limit(Http*, Readahead*, Buf*, uint64_t);
 void http_write_request(Http*, char*, ...);
 void http_write_reply(Http*, int, char*);
 void http_write(Http*, char*, char*, ...);

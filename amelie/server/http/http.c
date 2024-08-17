@@ -222,21 +222,21 @@ error:
 	error("failed to parse HTTP request");
 }
 
-hot void
+hot bool
 http_read_content_limit(Http* self, Readahead* readahead, Buf* content,
                         uint64_t limit)
 {
 	// read content
 	auto content_len = http_find(self, "content-length", 14);
 	if (! content_len)
-		return;
+		return false;
 
 	int64_t len;
 	if (unlikely(str_toint(&content_len->value, &len) == -1))
 		error("failed to parse HTTP request");
 
 	if (unlikely((uint64_t)len >= limit))
-		error("http request limit reached");
+		return true;
 
 	buf_reserve(content, len + 1);
 	for (;;)
@@ -255,6 +255,7 @@ http_read_content_limit(Http* self, Readahead* readahead, Buf* content,
 		buf_write(content, pos, size);
 	}
 	*content->position = '\0';
+	return false;
 }
 
 hot void

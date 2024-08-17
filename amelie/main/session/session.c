@@ -215,6 +215,9 @@ session_execute(Session* self)
 {
 	auto compiler = &self->compiler;
 
+	// prepare session state for execution
+	session_reset(self);
+
 	// set transaction time
 	local_update_time(&self->local);
 
@@ -244,6 +247,20 @@ session_execute(Session* self)
 	session_unlock(self);
 }
 
+hot static inline void
+session_read(Session* self)
+{
+	auto client = self->client;
+	auto limit = var_int_of(&config()->limit_recv);
+	auto limit_reached =
+		http_read_content_limit(&client->request,
+		                        &client->readahead,
+		                        &client->request.content,
+		                         limit);
+	if (unlikely(limit_reached))
+		error("http request limit reached");
+}
+
 hot void
 session_main(Session* self)
 {
@@ -255,14 +272,12 @@ session_main(Session* self)
 
 	for (;;)
 	{
-		// read request
+		// read request header
+		http_reset(reply);
 		http_reset(request);
 		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
 			break;
-		auto limit = var_int_of(&config()->limit_recv);
-		http_read_content_limit(request, readahead, &request->content, limit);
-		http_reset(reply);
 
 		// handle backup
 		auto url = &request->options[HTTP_URL];
@@ -283,7 +298,7 @@ session_main(Session* self)
 		Exception e;
 		if (enter(&e))
 		{
-			session_reset(self);
+			session_read(self);
 			session_execute(self);
 		}
 

@@ -62,6 +62,7 @@ test order_by
 test label
 test planner
 test lambda
+test limits
 
 # function
 directory func
