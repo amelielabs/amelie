@@ -7,6 +7,14 @@
 //
 
 hot static inline void
+body_ensure_limit(Buf* self)
+{
+	auto limit = var_int_of(&config()->limit_send);
+	if (unlikely((uint64_t)buf_size(self) >= limit))
+		error("http reply limit reached");
+}
+
+hot static inline void
 body_begin(Buf* self)
 {
 	buf_write(self, "[", 1);
@@ -16,13 +24,6 @@ hot static inline void
 body_end(Buf* self)
 {
 	buf_write(self, "]", 1);
-}
-
-hot static inline void
-body_ensure_limit(Buf* self)
-{
-	if (unlikely((uint64_t)buf_size(self) >= var_int_of(&config()->limit_send)))
-		error("reply size memory limit reached");
 }
 
 hot static inline void

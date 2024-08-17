@@ -260,7 +260,8 @@ session_main(Session* self)
 		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
 			break;
-		http_read_content(request, readahead, &request->content);
+		auto limit = var_int_of(&config()->limit_recv);
+		http_read_content_limit(request, readahead, &request->content, limit);
 		http_reset(reply);
 
 		// handle backup
