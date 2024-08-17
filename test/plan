@@ -39,6 +39,8 @@ directory index
 group index
 test tree_shared
 test tree
+test hash_shared
+test hash
 
 # query
 directory query
