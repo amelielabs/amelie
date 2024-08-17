@@ -13,12 +13,14 @@ struct BufCache
 	Spinlock lock;
 	int      list_count;
 	List     list;
+	int      limit_buf;
 };
 
 static inline void
-buf_cache_init(BufCache* self)
+buf_cache_init(BufCache* self, int limit_buf)
 {
 	self->list_count = 0;
+	self->limit_buf  = limit_buf;
 	spinlock_init(&self->lock);
 	list_init(&self->list);
 }
@@ -52,6 +54,11 @@ buf_cache_pop(BufCache* self)
 static inline void
 buf_cache_push(BufCache* self, Buf* buf)
 {
+	if (unlikely(buf_capacity(buf)) >= self->limit_buf)
+	{
+		buf_free_memory(buf);
+		return;
+	}
 	list_init(&buf->link);
 	spinlock_lock(&self->lock);
 	list_append(&self->list, &buf->link);

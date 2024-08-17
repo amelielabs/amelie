@@ -167,7 +167,7 @@ task_init(Task* self)
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	condition_cache_init(&self->condition_cache);
-	buf_cache_init(&self->buf_cache);
+	buf_cache_init(&self->buf_cache, 32 * 1024); // 32kb max
 	channel_init(&self->channel);
 	thread_status_init(&self->thread_status);
 	thread_init(&self->thread);
