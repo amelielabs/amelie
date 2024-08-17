@@ -93,6 +93,8 @@ config_prepare(Config* self)
 		{ "listen",                  VAR_DATA,   VAR_C,                &self->listen,                  NULL,        0                },
 		{ "listen_uri",              VAR_STRING, VAR_E|VAR_H,          &self->listen_uri,              NULL,        0                },
 		// limits
+		{ "limit_send",              VAR_INT,    VAR_C|VAR_R,          &self->limit_send,              NULL,        3 * 1024 * 1024  },
+		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,          &self->limit_recv,              NULL,        1 * 1024 * 1024  },
 		{ "limit_write",             VAR_INT,    VAR_C|VAR_R,          &self->limit_write,             NULL,        0                },
 		// cluster
 		{ "frontends",               VAR_INT,    VAR_C,                &self->frontends,               NULL,        1                },

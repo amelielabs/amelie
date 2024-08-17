@@ -20,6 +20,8 @@ show all
     "host": "127.0.0.1",
     "port": 3485
   }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "shards": 1,
@@ -61,6 +63,8 @@ show all
     "host": "127.0.0.1",
     "port": 3485
   }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
   "shards": 1,

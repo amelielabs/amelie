@@ -19,6 +19,13 @@ body_end(Buf* self)
 }
 
 hot static inline void
+body_ensure_limit(Buf* self)
+{
+	if (unlikely((uint64_t)buf_size(self) >= var_int_of(&config()->limit_send)))
+		error("reply size memory limit reached");
+}
+
+hot static inline void
 body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 {
 	// wrap body in [] unless returning array, vector, set or merge
@@ -107,6 +114,8 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 	// ]
 	if (wrap)
 		body_end(self);
+
+	body_ensure_limit(self);
 }
 
 hot static inline void
@@ -134,6 +143,7 @@ body_add_buf(Buf* self, Buf* buf, Timezone* tz)
 	json_export_pretty(self, tz, &pos);
 	if (wrap)
 		body_end(self);
+	body_ensure_limit(self);
 }
 
 hot static inline void
@@ -141,6 +151,7 @@ body_add_raw(Buf* self, Buf* buf, Timezone* tz)
 {
 	uint8_t* pos = buf->start;
 	json_export_pretty(self, tz, &pos);
+	body_ensure_limit(self);
 }
 
 static inline void
