@@ -122,63 +122,6 @@ static inline int
 code_data_add_string_unescape(CodeData* self, Str* string)
 {
 	int offset = code_data_pos(self);
-	encode_string32(&self->data, str_size(string));
-	buf_reserve(&self->data, str_size(string));
-
-	uint8_t* start  = self->data.position;
-	uint8_t* result = start;
-	char*    pos    = str_of(string);
-	char*    end    = str_of(string) + str_size(string);
-
-	bool slash = false;
-	for (; pos < end; pos++)
-	{
-		if (*pos == '\\' && !slash) {
-			slash = true;
-			continue;
-		}
-		if (unlikely(slash)) {
-			switch (*pos) {
-			case '\\':
-				*result = '\\';
-				break;
-			case '"':
-				*result = '"';
-				break;
-			case 'a':
-				*result = '\a';
-				break;
-			case 'b':
-				*result = '\b';
-				break;
-			case 'f':
-				*result = '\f';
-				break;
-			case 'n':
-				*result = '\n';
-				break;
-			case 'r':
-				*result = '\r';
-				break;
-			case 't':
-				*result = '\t';
-				break;
-			case 'v':
-				*result = '\v';
-				break;
-			}
-			slash = false;
-		} else {
-			*result = *pos;
-		}
-		result++;
-	}
-
-	int new_size = result - start;
-	buf_advance(&self->data, new_size);
-
-	// update generated string size
-	start = self->data.start + offset;
-	data_write_string32(&start, new_size);
+	encode_string_escape(&self->data, string);
 	return offset;
 }

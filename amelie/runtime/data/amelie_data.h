@@ -14,6 +14,7 @@
 #include "data/data_op.h"
 #include "data/compare.h"
 #include "data/encode.h"
+#include "data/encode_escape.h"
 #include "data/decode.h"
 
 // misc
