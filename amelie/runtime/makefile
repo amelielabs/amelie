@@ -34,6 +34,7 @@ OBJECTS        = \
                  lib/random.o \
                  lib/uuid.o \
                  lib/crc.o \
+                 lib/base64.o \
                  lib/timezone.o \
                  lib/timezone_mgr.o \
                  lib/interval.o \

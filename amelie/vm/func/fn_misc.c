@@ -146,6 +146,44 @@ fn_sha1(Call* self)
 }
 
 static void
+fn_encode(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_STRING);
+
+	if (! str_compare_cstr(&argv[1]->string, "base64"))
+		error("encode(): unsupported format");
+
+	auto buf = buf_begin();
+	base64_encode(buf, &argv[0]->string);
+	buf_end(buf);
+	Str string;
+	str_set_u8(&string, buf->start, buf_size(buf));
+	value_set_string(self->result, &string, buf);
+}
+
+static void
+fn_decode(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 1, VALUE_STRING);
+
+	if (! str_compare_cstr(&argv[1]->string, "base64"))
+		error("decode(): unsupported format");
+
+	auto buf = buf_begin();
+	base64_decode(buf, &argv[0]->string);
+	buf_end(buf);
+	Str string;
+	str_set_u8(&string, buf->start, buf_size(buf));
+	value_set_string(self->result, &string, buf);
+}
+
+static void
 fn_serial(Call* self)
 {
 	auto argv = self->argv;
@@ -166,6 +204,8 @@ FunctionDef fn_misc_def[] =
 	{ "public", "random_uuid", fn_random_uuid, false },
 	{ "public", "md5",         fn_md5,         false },
 	{ "public", "sha1",        fn_sha1,        false },
+	{ "public", "encode",      fn_encode,      false },
+	{ "public", "decode",      fn_decode,      false },
 	{ "public", "serial",      fn_serial,      false },
 	{  NULL,     NULL,         NULL,           false }
 };

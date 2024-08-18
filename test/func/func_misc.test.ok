@@ -28,6 +28,23 @@ select md5("hello world")
 # test: sha1
 select sha1("hello world")
 ["2aae6c35c94fcfb415dbe95f408b9ce91ee846ed"]
+# test: base64
+select "hello world"::encode("base64")
+["aGVsbG8gd29ybGQ="]
+select "hello world"::encode("base64")::decode("base64")
+["hello world"]
+select "{\"alg\":\"HS256\",\"typ\":\"JWT\"}"::encode("base64");
+["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"]
+select decode("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", "base64")
+["{\"alg\":\"HS256\",\"typ\":\"JWT\"}"]
+select "{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"::encode("base64")
+["eyJzdWIiOiIxMjM0NTYiLCJuYW1lIjoidGVzdCIsImlhdCI6MTUxNjIzOTAyMn0="]
+select "{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"::encode("base64")::decode("base64")
+["{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"]
+select "eyJzdWIiOiIxMjM0NTYiLCJuYW1lIjoidGVzdCIsImlhdCI6MTUxNjIzOTAyMn0"::decode("base64")
+["{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"]
+select system.config()::string::encode("base64")::decode("base64") = system.config()::string
+[true]
 # test: serial
 select serial("public", "abc")
 {"code": 1, "msg": "table 'abc': not exists"}

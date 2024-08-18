@@ -113,6 +113,13 @@ buf_append(Buf* self, void* ptr, int size)
 	buf_advance(self, size);
 }
 
+static inline void
+buf_append_u8(Buf* self, uint8_t value)
+{
+	*self->position = value;
+	buf_advance(self, 1);
+}
+
 static inline char*
 buf_cstr(Buf* self)
 {

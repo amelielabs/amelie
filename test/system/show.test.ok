@@ -288,6 +288,12 @@ show functions
   "name": "sha1"
 }, {
   "schema": "public",
+  "name": "encode"
+}, {
+  "schema": "public",
+  "name": "decode"
+}, {
+  "schema": "public",
   "name": "serial"
 }, {
   "schema": "public",
@@ -561,6 +567,12 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "sha1"
+}, {
+  "schema": "public",
+  "name": "encode"
+}, {
+  "schema": "public",
+  "name": "decode"
 }, {
   "schema": "public",
   "name": "serial"
