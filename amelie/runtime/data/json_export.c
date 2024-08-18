@@ -50,12 +50,10 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 	}
 	case AM_STRINGV0 ... AM_STRING32:
 	{
-		// todo: quouting
-		char* value;
-		int   size;
-		data_read_raw(pos, &value, &size);
+		Str str;
+		data_read_string(pos, &str);
 		buf_write(data, "\"", 1);
-		buf_write(data, value, size);
+		escape_string_raw(data, &str);
 		buf_write(data, "\"", 1);
 		break;
 	}

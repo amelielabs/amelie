@@ -58,40 +58,53 @@ explain(Explain*  self,
         bool      profile)
 {
 	auto buf = buf_begin();
+	encode_map(buf);
+	unused(plan);
+
+	// bytecode
+	encode_raw(buf, "bytecode", 8);
+	encode_map(buf);
 
 	// coordinator code
-	Str str;
-	str_init(&str);
-	str_set_cstr(&str, "coordinator");
-	op_dump(coordinator, data, buf, &str);
+	encode_raw(buf, "coordinator", 11);
+	op_dump(coordinator, data, buf);
 
 	// node code
 	if (code_count(node) > 0)
 	{
-		str_set_cstr(&str, "node");
-		op_dump(node, data, buf, &str);
+		encode_raw(buf, "node", 4);
+		op_dump(node, data, buf);
 	}
+	encode_map_end(buf);
 
-	// profiler stats
+	// profiler
 	if (profile)
 	{
-		unused(plan);
+		encode_raw(buf, "profiler", 8);
+		encode_map(buf);
 
 		uint64_t time_us = self->time_run_us + self->time_commit_us;
-		buf_printf(buf, "%s", "\n");
-		buf_printf(buf, "%s", "profiler\n");
-		buf_printf(buf, "%s", "--------\n");
-		buf_printf(buf, " time run:     %.3f ms\n", self->time_run_us / 1000.0);
-		buf_printf(buf, " time commit:  %.3f ms\n", self->time_commit_us / 1000.0);
-		buf_printf(buf, " time:         %.3f ms\n", time_us / 1000.0);
-		buf_printf(buf, " sent total:   %d\n", buf_size(body));
+
+		// time_run
+		encode_raw(buf, "time_run_ms", 11);
+		encode_real(buf, self->time_run_us / 1000.0);
+
+		// time_commit
+		encode_raw(buf, "time_commit_ms", 14);
+		encode_real(buf, self->time_commit_us / 1000.0);
+
+		// time
+		encode_raw(buf, "time_ms", 7);
+		encode_real(buf, time_us / 1000.0);
+
+		// sent_total
+		encode_raw(buf, "sent_total", 10);
+		encode_integer(buf, buf_size(body));
+
+		encode_map_end(buf);
 	}
 
-	auto string = buf_begin();
-	str_set(&str, (char*)buf->start, buf_size(buf));
-	encode_string(string, &str);
-	buf_end(string);
+	encode_map_end(buf);
 	buf_end(buf);
-	buf_free(buf);
-	return string;
+	return buf;
 }

@@ -503,67 +503,65 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test
 [[0, 2], [1, 1], [2, 0]]
 explain select * from test use index (i)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i)
- 6                 jmp       10      0      0
- 7         cursor_read        1      0      0
- 8             set_add        0      1      0
- 9         cursor_next        0      7      0
-10        cursor_close        0      0      0
-11              result        0      0      0
-12                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i)",
+      "06": "jmp                 10     0      0     ",
+      "07": "cursor_read         1      0      0     ",
+      "08": "set_add             0      1      0     ",
+      "09": "cursor_next         0      7      0     ",
+      "10": "cursor_close        0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
@@ -650,35 +648,34 @@ drop table test
 create table test (id int primary key)
 []
 explain insert into test 1,2,3 returning *
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1      cursor_prepare        0      -      0      # public.test
- 2                 jmp        8      0      0
- 3              string        1     11      0      # unique key constraint violation
- 4                push        1      0      0
- 5                call        1      -      1      # public.error()
- 6         cursor_read        1      0      0
- 7             set_add        0      1      0
- 8              upsert        0      3      6
- 9        cursor_close        0      0      0
-10              result        0      0      0
-11                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "cursor_prepare      0      -      0     # public.test",
+      "02": "jmp                 8      0      0     ",
+      "03": "string              1      11     0     # unique key constraint violation",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.error()",
+      "06": "cursor_read         1      0      0     ",
+      "07": "set_add             0      1      0     ",
+      "08": "upsert              0      3      6     ",
+      "09": "cursor_close        0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into test 1,2,3 returning *
 [[1], [2], [3]]
 insert into test 1,2,3 returning * # on conflict error
@@ -689,35 +686,34 @@ drop table test
 create table test (id int primary key serial)
 []
 explain insert into test () values (), (), () returning *
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1      cursor_prepare        0      -      0      # public.test
- 2                 jmp        8      0      0
- 3              string        1     11      0      # unique key constraint violation
- 4                push        1      0      0
- 5                call        1      -      1      # public.error()
- 6         cursor_read        1      0      0
- 7             set_add        0      1      0
- 8              upsert        0      3      6
- 9        cursor_close        0      0      0
-10              result        0      0      0
-11                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "cursor_prepare      0      -      0     # public.test",
+      "02": "jmp                 8      0      0     ",
+      "03": "string              1      11     0     # unique key constraint violation",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.error()",
+      "06": "cursor_read         1      0      0     ",
+      "07": "set_add             0      1      0     ",
+      "08": "upsert              0      3      6     ",
+      "09": "cursor_close        0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into test () values (), (), () returning *
 [[3], [4], [5]]
 insert into test () values (), (), () returning id

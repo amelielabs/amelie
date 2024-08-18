@@ -135,41 +135,40 @@ select id from test_view
 select * from test_view
 [[1], [2], [3]]
 explain select id from test_view
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        1      0      8
- 7                 jmp       11      0      0
- 8          cursor_idx        2      1      0
- 9             set_add        1      2      0
-10         cursor_next        1      8      0
-11        cursor_close        1      0      0
-12             cte_set        0      1      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    1      0      8     ",
+      "07": "jmp                 11     0      0     ",
+      "08": "cursor_idx          2      1      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         1      8      0     ",
+      "11": "cursor_close        1      0      0     ",
+      "12": "cte_set             0      1      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 drop view test_view
 []
 drop table test

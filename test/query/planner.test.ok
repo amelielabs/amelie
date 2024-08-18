@@ -11,34 +11,33 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test
 [[0, 2], [1, 1], [2, 0]]
 # test: from use index
@@ -55,36 +54,35 @@ select * from test use index (
 select * from test use index (123
 {"code": 1, "msg": "USE INDEX (<index name> expected"}
 explain select * from test use index (i)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i)
- 6                 jmp       10      0      0
- 7         cursor_read        1      0      0
- 8             set_add        0      1      0
- 9         cursor_next        0      7      0
-10        cursor_close        0      0      0
-11              result        0      0      0
-12                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i)",
+      "06": "jmp                 10     0      0     ",
+      "07": "cursor_read         1      0      0     ",
+      "08": "set_add             0      1      0     ",
+      "09": "cursor_next         0      7      0     ",
+      "10": "cursor_close        0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
@@ -104,201 +102,196 @@ insert into test values (2, 0)
 []
 # test: hash/hash (scan)
 explain select * from test
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       10      0      0
- 7         cursor_read        1      0      0
- 8             set_add        0      1      0
- 9         cursor_next        0      7      0
-10        cursor_close        0      0      0
-11              result        0      0      0
-12                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary)",
+      "06": "jmp                 10     0      0     ",
+      "07": "cursor_read         1      0      0     ",
+      "08": "set_add             0      1      0     ",
+      "09": "cursor_next         0      7      0     ",
+      "10": "cursor_close        0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test
 [[0, 2], [2, 0], [1, 1]]
 # test: hash/hash (unique point lookup)
 explain select * from test where data = 2
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      2      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (i), lookup
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      1
- 6                 int        2      2      0
- 7                 equ        3      1      2
- 8                jntr        4      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11                 jmp        4      0      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 2",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (i, lookup)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      1     ",
+      "06": "int                 2      -      0     # 2",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "jmp                 4      0      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data = 2
 [[0, 2]]
 explain select * from test where id = 1
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       14      0      0
- 7          cursor_idx        1      0      0
- 8                 int        2      1      0
- 9                 equ        3      1      2
-10                jntr       13      3      0
-11         cursor_read        1      0      0
-12             set_add        0      1      0
-13         cursor_next        0      7      0
-14        cursor_close        0      0      0
-15              result        0      0      0
-16                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary)",
+      "06": "jmp                 14     0      0     ",
+      "07": "cursor_idx          1      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "equ                 3      1      2     ",
+      "10": "jntr                13     3      0     ",
+      "11": "cursor_read         1      0      0     ",
+      "12": "set_add             0      1      0     ",
+      "13": "cursor_next         0      7      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = 1
 [[1, 1]]
 explain select * from test where id = 1 and data = 1
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3                 int        1      1      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary), lookup
- 6                 jmp       23      0      0
- 7          cursor_idx        2      0      0
- 8                 int        3      1      0
- 9                 equ        4      2      3
-10                jntr       15      4      0
-11          cursor_idx        2      0      1
-12                 int        3      1      0
-13                 equ        5      2      3
-14                 jtr       17      5      0
-15                bool        1      0      0
-16                 jmp       18      0      0
-17                bool        1      1      0
-18                 nop        0      0      0
-19                jntr        6      1      0
-20         cursor_read        1      0      0
-21             set_add        0      1      0
-22                 jmp        6      0      0
-23        cursor_close        0      0      0
-24              result        0      0      0
-25                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary, lookup)",
+      "06": "jmp                 23     0      0     ",
+      "07": "cursor_idx          2      0      0     ",
+      "08": "int                 3      -      0     # 1",
+      "09": "equ                 4      2      3     ",
+      "10": "jntr                15     4      0     ",
+      "11": "cursor_idx          2      0      1     ",
+      "12": "int                 3      -      0     # 1",
+      "13": "equ                 5      2      3     ",
+      "14": "jtr                 17     5      0     ",
+      "15": "bool                1      0      0     ",
+      "16": "jmp                 18     0      0     ",
+      "17": "bool                1      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "jntr                6      1      0     ",
+      "20": "cursor_read         1      0      0     ",
+      "21": "set_add             0      1      0     ",
+      "22": "jmp                 6      0      0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "result              0      0      0     ",
+      "25": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = 1 and data = 1
 [[1, 1]]
 explain select * from test where data = 1 and id = 1
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3                 int        1      1      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary), lookup
- 6                 jmp       23      0      0
- 7          cursor_idx        2      0      1
- 8                 int        3      1      0
- 9                 equ        4      2      3
-10                jntr       15      4      0
-11          cursor_idx        2      0      0
-12                 int        3      1      0
-13                 equ        5      2      3
-14                 jtr       17      5      0
-15                bool        1      0      0
-16                 jmp       18      0      0
-17                bool        1      1      0
-18                 nop        0      0      0
-19                jntr        6      1      0
-20         cursor_read        1      0      0
-21             set_add        0      1      0
-22                 jmp        6      0      0
-23        cursor_close        0      0      0
-24              result        0      0      0
-25                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary, lookup)",
+      "06": "jmp                 23     0      0     ",
+      "07": "cursor_idx          2      0      1     ",
+      "08": "int                 3      -      0     # 1",
+      "09": "equ                 4      2      3     ",
+      "10": "jntr                15     4      0     ",
+      "11": "cursor_idx          2      0      0     ",
+      "12": "int                 3      -      0     # 1",
+      "13": "equ                 5      2      3     ",
+      "14": "jtr                 17     5      0     ",
+      "15": "bool                1      0      0     ",
+      "16": "jmp                 18     0      0     ",
+      "17": "bool                1      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "jntr                6      1      0     ",
+      "20": "cursor_read         1      0      0     ",
+      "21": "set_add             0      1      0     ",
+      "22": "jmp                 6      0      0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "result              0      0      0     ",
+      "25": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data = 1 and id = 1
 [[1, 1]]
 drop table test
@@ -315,144 +308,140 @@ insert into test values (1, 1)
 insert into test values (2, 0)
 []
 explain select * from test where id = 1
-["
-bytecode [coordinator]
---------
- 0           send_hash        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary), lookup
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6                 int        2      1      0
- 7                 equ        3      1      2
- 8                jntr        4      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11                 jmp        4      0      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "jmp                 4      0      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = 1
 [[1, 1]]
 explain select * from test where id > 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6                 int        2      1      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id > 1
 [[2, 0]]
 explain select * from test where data > 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      1
- 6                 int        2      1      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      1     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data > 1
 [[0, 2]]
 # test: tree/hash (point lookup)
 explain select * from test where data = 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      1
- 6                 int        2      1      0
- 7                 equ        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      1     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data = 1
 [[1, 1]]
 select indexes from system.tables()
@@ -482,96 +471,94 @@ select indexes from system.tables()
   }]
 }]]
 explain select * from test where data = 1 and id = 1
-["
-bytecode [coordinator]
---------
- 0           send_hash        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3                 int        1      1      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i), lookup
- 6                 jmp       23      0      0
- 7          cursor_idx        2      0      1
- 8                 int        3      1      0
- 9                 equ        4      2      3
-10                jntr       15      4      0
-11          cursor_idx        2      0      0
-12                 int        3      1      0
-13                 equ        5      2      3
-14                 jtr       17      5      0
-15                bool        1      0      0
-16                 jmp       18      0      0
-17                bool        1      1      0
-18                 nop        0      0      0
-19                jntr        6      1      0
-20         cursor_read        1      0      0
-21             set_add        0      1      0
-22         cursor_next        0      7      0
-23        cursor_close        0      0      0
-24              result        0      0      0
-25                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i, lookup)",
+      "06": "jmp                 23     0      0     ",
+      "07": "cursor_idx          2      0      1     ",
+      "08": "int                 3      -      0     # 1",
+      "09": "equ                 4      2      3     ",
+      "10": "jntr                15     4      0     ",
+      "11": "cursor_idx          2      0      0     ",
+      "12": "int                 3      -      0     # 1",
+      "13": "equ                 5      2      3     ",
+      "14": "jtr                 17     5      0     ",
+      "15": "bool                1      0      0     ",
+      "16": "jmp                 18     0      0     ",
+      "17": "bool                1      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "jntr                6      1      0     ",
+      "20": "cursor_read         1      0      0     ",
+      "21": "set_add             0      1      0     ",
+      "22": "cursor_next         0      7      0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "result              0      0      0     ",
+      "25": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data = 1 and id = 1
 [[1, 1]]
 # test: tree/hash (hash override)
 explain select * from test where id = 1 and data = 1
-["
-bytecode [coordinator]
---------
- 0           send_hash        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3                 int        1      1      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i), lookup
- 6                 jmp       23      0      0
- 7          cursor_idx        2      0      0
- 8                 int        3      1      0
- 9                 equ        4      2      3
-10                jntr       15      4      0
-11          cursor_idx        2      0      1
-12                 int        3      1      0
-13                 equ        5      2      3
-14                 jtr       17      5      0
-15                bool        1      0      0
-16                 jmp       18      0      0
-17                bool        1      1      0
-18                 nop        0      0      0
-19                jntr        6      1      0
-20         cursor_read        1      0      0
-21             set_add        0      1      0
-22         cursor_next        0      7      0
-23        cursor_close        0      0      0
-24              result        0      0      0
-25                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i, lookup)",
+      "06": "jmp                 23     0      0     ",
+      "07": "cursor_idx          2      0      0     ",
+      "08": "int                 3      -      0     # 1",
+      "09": "equ                 4      2      3     ",
+      "10": "jntr                15     4      0     ",
+      "11": "cursor_idx          2      0      1     ",
+      "12": "int                 3      -      0     # 1",
+      "13": "equ                 5      2      3     ",
+      "14": "jtr                 17     5      0     ",
+      "15": "bool                1      0      0     ",
+      "16": "jmp                 18     0      0     ",
+      "17": "bool                1      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "jntr                6      1      0     ",
+      "20": "cursor_read         1      0      0     ",
+      "21": "set_add             0      1      0     ",
+      "22": "cursor_next         0      7      0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "result              0      0      0     ",
+      "25": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = 1 and data = 1
 [[1, 1]]
 drop table test
@@ -589,204 +576,199 @@ insert into test values (2, 0)
 []
 # test: tree/tree (scan)
 explain select * from test where id > 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6                 int        2      1      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id > 1
 [[2, 0]]
 explain select * from test where data > 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 int        1      1      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i)
- 6                 jmp       14      0      0
- 7          cursor_idx        1      0      1
- 8                 int        2      1      0
- 9                  gt        3      1      2
-10                jntr       13      3      0
-11         cursor_read        1      0      0
-12             set_add        0      1      0
-13         cursor_next        0      7      0
-14        cursor_close        0      0      0
-15              result        0      0      0
-16                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i)",
+      "06": "jmp                 14     0      0     ",
+      "07": "cursor_idx          1      0      1     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "gt                  3      1      2     ",
+      "10": "jntr                13     3      0     ",
+      "11": "cursor_read         1      0      0     ",
+      "12": "set_add             0      1      0     ",
+      "13": "cursor_next         0      7      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data > 1
 [[0, 2]]
 # test: tree/tree (stop condition)
 explain select * from test where data < 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (i)
- 6                 jmp       18      0      0
- 7          cursor_idx        1      0      1
- 8                 int        2      1      0
- 9                  lt        3      1      2
-10                jntr        6      3      0
-11          cursor_idx        1      0      1
-12                 int        2      1      0
-13                  lt        3      1      2
-14                jntr       17      3      0
-15         cursor_read        1      0      0
-16             set_add        0      1      0
-17         cursor_next        0      7      0
-18        cursor_close        0      0      0
-19              result        0      0      0
-20                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i)",
+      "06": "jmp                 18     0      0     ",
+      "07": "cursor_idx          1      0      1     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "lt                  3      1      2     ",
+      "10": "jntr                6      3      0     ",
+      "11": "cursor_idx          1      0      1     ",
+      "12": "int                 2      -      0     # 1",
+      "13": "lt                  3      1      2     ",
+      "14": "jntr                17     3      0     ",
+      "15": "cursor_read         1      0      0     ",
+      "16": "set_add             0      1      0     ",
+      "17": "cursor_next         0      7      0     ",
+      "18": "cursor_close        0      0      0     ",
+      "19": "result              0      0      0     ",
+      "20": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where data < 1
 [[2, 0]]
 explain select * from test where id < 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       16      0      0
- 5          cursor_idx        1      0      0
- 6                 int        2      1      0
- 7                  lt        3      1      2
- 8                jntr        4      3      0
- 9          cursor_idx        1      0      0
-10                 int        2      1      0
-11                  lt        3      1      2
-12                jntr       15      3      0
-13         cursor_read        1      0      0
-14             set_add        0      1      0
-15         cursor_next        0      5      0
-16        cursor_close        0      0      0
-17              result        0      0      0
-18                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 16     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "lt                  3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "lt                  3      1      2     ",
+      "12": "jntr                15     3      0     ",
+      "13": "cursor_read         1      0      0     ",
+      "14": "set_add             0      1      0     ",
+      "15": "cursor_next         0      5      0     ",
+      "16": "cursor_close        0      0      0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id < 1
 [[0, 2]]
 explain select * from test where id < 1 and data < 2
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       25      0      0
- 5          cursor_idx        1      0      0
- 6                 int        2      1      0
- 7                  lt        3      1      2
- 8                jntr        4      3      0
- 9          cursor_idx        2      0      0
-10                 int        3      1      0
-11                  lt        4      2      3
-12                jntr       17      4      0
-13          cursor_idx        2      0      1
-14                 int        3      2      0
-15                  lt        5      2      3
-16                 jtr       19      5      0
-17                bool        1      0      0
-18                 jmp       20      0      0
-19                bool        1      1      0
-20                 nop        0      0      0
-21                jntr       24      1      0
-22         cursor_read        1      0      0
-23             set_add        0      1      0
-24         cursor_next        0      5      0
-25        cursor_close        0      0      0
-26              result        0      0      0
-27                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 25     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "lt                  3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_idx          2      0      0     ",
+      "10": "int                 3      -      0     # 1",
+      "11": "lt                  4      2      3     ",
+      "12": "jntr                17     4      0     ",
+      "13": "cursor_idx          2      0      1     ",
+      "14": "int                 3      -      0     # 2",
+      "15": "lt                  5      2      3     ",
+      "16": "jtr                 19     5      0     ",
+      "17": "bool                1      0      0     ",
+      "18": "jmp                 20     0      0     ",
+      "19": "bool                1      1      0     ",
+      "20": "nop                 0      0      0     ",
+      "21": "jntr                24     1      0     ",
+      "22": "cursor_read         1      0      0     ",
+      "23": "set_add             0      1      0     ",
+      "24": "cursor_next         0      5      0     ",
+      "25": "cursor_close        0      0      0     ",
+      "26": "result              0      0      0     ",
+      "27": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id < 1 and data < 2
 []
 drop table test

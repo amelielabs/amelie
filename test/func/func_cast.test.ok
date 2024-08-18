@@ -77,7 +77,7 @@ select '2024-07-29 18:40:19'::timestamp::string
 ["2024-07-29 18:40:19+00"]
 # test: (string) object to string
 select {"id": 42, "data": [1,2,3]}::string
-["{"id": 42, "data": [1, 2, 3]}"]
+["{\"id\": 42, \"data\": [1, 2, 3]}"]
 # test: (native) int to native
 select 1::native
 {"code": 1, "msg": "native(): string type expected"}

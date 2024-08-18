@@ -14,86 +14,89 @@ select case 1 when 1 then 1
 select case 1 when 1 then 1 end
 [1]
 explain select case 1 when 1 then 1 end
-["
-bytecode [coordinator]
---------
- 0                 jmp        2      0      0
- 1                 jmp       11      0      0
- 2                 int        1      1      0
- 3                 int        2      1      0
- 4                 equ        3      1      2
- 5                jntr        9      3      0
- 6                 int        1      1      0
- 7                swap        0      1      0
- 8                 jmp        1      0      0
- 9                null        1      0      0
-10                swap        0      1      0
-11                 nop        0      0      0
-12             cte_set        0      0      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 11     0      0     ",
+      "02": "int                 1      -      0     # 1",
+      "03": "int                 2      -      0     # 1",
+      "04": "equ                 3      1      2     ",
+      "05": "jntr                9      3      0     ",
+      "06": "int                 1      -      0     # 1",
+      "07": "swap                0      1      0     ",
+      "08": "jmp                 1      0      0     ",
+      "09": "null                1      0      0     ",
+      "10": "swap                0      1      0     ",
+      "11": "nop                 0      0      0     ",
+      "12": "cte_set             0      0      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select case 0 when 1 then 1 when 2 then 2 end
 [null]
 explain select case 0 when 1 then 1 when 2 then 2 end
-["
-bytecode [coordinator]
---------
- 0                 jmp        2      0      0
- 1                 jmp       18      0      0
- 2                 int        1      0      0
- 3                 int        2      1      0
- 4                 equ        3      1      2
- 5                jntr        9      3      0
- 6                 int        1      1      0
- 7                swap        0      1      0
- 8                 jmp        1      0      0
- 9                 int        1      0      0
-10                 int        2      2      0
-11                 equ        3      1      2
-12                jntr       16      3      0
-13                 int        1      2      0
-14                swap        0      1      0
-15                 jmp        1      0      0
-16                null        1      0      0
-17                swap        0      1      0
-18                 nop        0      0      0
-19             cte_set        0      0      0
-20                body        0      0      0
-21                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 18     0      0     ",
+      "02": "int                 1      -      0     # 0",
+      "03": "int                 2      -      0     # 1",
+      "04": "equ                 3      1      2     ",
+      "05": "jntr                9      3      0     ",
+      "06": "int                 1      -      0     # 1",
+      "07": "swap                0      1      0     ",
+      "08": "jmp                 1      0      0     ",
+      "09": "int                 1      -      0     # 0",
+      "10": "int                 2      -      0     # 2",
+      "11": "equ                 3      1      2     ",
+      "12": "jntr                16     3      0     ",
+      "13": "int                 1      -      0     # 2",
+      "14": "swap                0      1      0     ",
+      "15": "jmp                 1      0      0     ",
+      "16": "null                1      0      0     ",
+      "17": "swap                0      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "cte_set             0      0      0     ",
+      "20": "body                0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
 select case 0 when 1 then 1 when 2 then 2 else 'else' end
 ["else"]
 explain select case 0 when 1 then 1 when 2 then 2 else 'else' end
-["
-bytecode [coordinator]
---------
- 0                 jmp        2      0      0
- 1                 jmp       18      0      0
- 2                 int        1      0      0
- 3                 int        2      1      0
- 4                 equ        3      1      2
- 5                jntr        9      3      0
- 6                 int        1      1      0
- 7                swap        0      1      0
- 8                 jmp        1      0      0
- 9                 int        1      0      0
-10                 int        2      2      0
-11                 equ        3      1      2
-12                jntr       16      3      0
-13                 int        1      2      0
-14                swap        0      1      0
-15                 jmp        1      0      0
-16              string        1      0      0      # else
-17                swap        0      1      0
-18                 nop        0      0      0
-19             cte_set        0      0      0
-20                body        0      0      0
-21                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 18     0      0     ",
+      "02": "int                 1      -      0     # 0",
+      "03": "int                 2      -      0     # 1",
+      "04": "equ                 3      1      2     ",
+      "05": "jntr                9      3      0     ",
+      "06": "int                 1      -      0     # 1",
+      "07": "swap                0      1      0     ",
+      "08": "jmp                 1      0      0     ",
+      "09": "int                 1      -      0     # 0",
+      "10": "int                 2      -      0     # 2",
+      "11": "equ                 3      1      2     ",
+      "12": "jntr                16     3      0     ",
+      "13": "int                 1      -      0     # 2",
+      "14": "swap                0      1      0     ",
+      "15": "jmp                 1      0      0     ",
+      "16": "string              1      0      0     # else",
+      "17": "swap                0      1      0     ",
+      "18": "nop                 0      0      0     ",
+      "19": "cte_set             0      0      0     ",
+      "20": "body                0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
 select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end
 [2]
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end
@@ -109,52 +112,53 @@ select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] when n
 select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
 [null]
 explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
-["
-bytecode [coordinator]
---------
- 0                 jmp        2      0      0
- 1                 jmp       37      0      0
- 2                null        1      0      0
- 3                 int        2      1      0
- 4                push        2      0      0
- 5                 int        2      0      0
- 6                push        2      0      0
- 7               array        2      2      0
- 8                 equ        3      1      2
- 9                jntr       13      3      0
-10                 int        1      1      0
-11                swap        0      1      0
-12                 jmp        1      0      0
-13                null        1      0      0
-14                 int        2      1      0
-15                push        2      0      0
-16                 int        2      2      0
-17                push        2      0      0
-18                 int        2      3      0
-19                push        2      0      0
-20                 int        2      4      0
-21                push        2      0      0
-22               array        2      4      0
-23                 equ        3      1      2
-24                jntr       28      3      0
-25                 int        1      2      0
-26                swap        0      1      0
-27                 jmp        1      0      0
-28                null        1      0      0
-29                null        2      0      0
-30                 equ        3      1      2
-31                jntr       35      3      0
-32                null        1      0      0
-33                swap        0      1      0
-34                 jmp        1      0      0
-35               array        1      0      0
-36                swap        0      1      0
-37                 nop        0      0      0
-38             cte_set        0      0      0
-39                body        0      0      0
-40                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 37     0      0     ",
+      "02": "null                1      0      0     ",
+      "03": "int                 2      -      0     # 1",
+      "04": "push                2      0      0     ",
+      "05": "int                 2      -      0     # 0",
+      "06": "push                2      0      0     ",
+      "07": "array               2      2      0     ",
+      "08": "equ                 3      1      2     ",
+      "09": "jntr                13     3      0     ",
+      "10": "int                 1      -      0     # 1",
+      "11": "swap                0      1      0     ",
+      "12": "jmp                 1      0      0     ",
+      "13": "null                1      0      0     ",
+      "14": "int                 2      -      0     # 1",
+      "15": "push                2      0      0     ",
+      "16": "int                 2      -      0     # 2",
+      "17": "push                2      0      0     ",
+      "18": "int                 2      -      0     # 3",
+      "19": "push                2      0      0     ",
+      "20": "int                 2      -      0     # 4",
+      "21": "push                2      0      0     ",
+      "22": "array               2      4      0     ",
+      "23": "equ                 3      1      2     ",
+      "24": "jntr                28     3      0     ",
+      "25": "int                 1      -      0     # 2",
+      "26": "swap                0      1      0     ",
+      "27": "jmp                 1      0      0     ",
+      "28": "null                1      0      0     ",
+      "29": "null                2      0      0     ",
+      "30": "equ                 3      1      2     ",
+      "31": "jntr                35     3      0     ",
+      "32": "null                1      0      0     ",
+      "33": "swap                0      1      0     ",
+      "34": "jmp                 1      0      0     ",
+      "35": "array               1      0      0     ",
+      "36": "swap                0      1      0     ",
+      "37": "nop                 0      0      0     ",
+      "38": "cte_set             0      0      0     ",
+      "39": "body                0      0      0     ",
+      "40": "ret                 0      0      0     "
+    }
+  }
+}]
 select case end
 {"code": 1, "msg": "CASE <WHEN|ELSE> expected"}
 select case else end
@@ -171,24 +175,25 @@ select case when 1 then 1
 select case when 1 then 1 end
 [1]
 explain select case when 1 then 1 end
-["
-bytecode [coordinator]
---------
- 0                 jmp        2      0      0
- 1                 jmp        9      0      0
- 2                 int        1      1      0
- 3                jntr        7      1      0
- 4                 int        2      1      0
- 5                swap        0      2      0
- 6                 jmp        1      0      0
- 7                null        1      0      0
- 8                swap        0      1      0
- 9                 nop        0      0      0
-10             cte_set        0      0      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 9      0      0     ",
+      "02": "int                 1      -      0     # 1",
+      "03": "jntr                7      1      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "swap                0      2      0     ",
+      "06": "jmp                 1      0      0     ",
+      "07": "null                1      0      0     ",
+      "08": "swap                0      1      0     ",
+      "09": "nop                 0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select case else
 {"code": 1, "msg": "bad expression"}
 select case else end

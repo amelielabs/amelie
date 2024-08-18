@@ -288,75 +288,73 @@ select * from test
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       14      0      0
- 5          cursor_idx        1      0      1
- 6              string        2     20      0      # 1970-01-01 01:12:59.909090
- 7                push        2      0      0
- 8                call        2      -      1      # public.timestamp()
- 9                  gt        3      1      2
-10                jntr       13      3      0
-11         cursor_read        1      0      0
-12             set_add        0      1      0
-13         cursor_next        0      5      0
-14        cursor_close        0      0      0
-15              result        0      0      0
-16                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 14     0      0     ",
+      "05": "cursor_idx          1      0      1     ",
+      "06": "string              2      20     0     # 1970-01-01 01:12:59.909090",
+      "07": "push                2      0      0     ",
+      "08": "call                2      -      1     # public.timestamp()",
+      "09": "gt                  3      1      2     ",
+      "10": "jntr                13     3      0     ",
+      "11": "cursor_read         1      0      0     ",
+      "12": "set_add             0      1      0     ",
+      "13": "cursor_next         0      5      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      1
- 6           timestamp        2 4379909090      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      1     ",
+      "06": "timestamp           2      -      0     # 4379909090",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 drop table test
@@ -377,34 +375,33 @@ insert into test values (timestamp "1970-01-01 00:00:03.000000")
 insert into test values (timestamp "1970-01-01 00:00:04.000000")
 []
 explain select * from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1       timestamp_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp_min       1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test
 [["1970-01-01 00:00:01.000001+00"], ["1970-01-01 00:00:01.000002+00"], ["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 select * from test order by id
@@ -412,147 +409,143 @@ select * from test order by id
 select * from test where id > timestamp '1970-01-01 00:00:01.000002'
 [["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1           timestamp        1 1000002      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000002      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp           1      -      0     # 1000002",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000002",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
 [["1970-01-01 00:00:01.000002+00"], ["1970-01-01 00:00:01.000003+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1           timestamp        1 1000002      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000002      0
- 7                 gte        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp           1      -      0     # 1000002",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000002",
+      "07": "gte                 3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000001+00"], ["1970-01-01 00:00:01.000002+00"]]
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1       timestamp_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       16      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000003      0
- 7                  lt        3      1      2
- 8                jntr        4      3      0
- 9          cursor_idx        1      0      0
-10           timestamp        2 1000003      0
-11                  lt        3      1      2
-12                jntr       15      3      0
-13         cursor_read        1      0      0
-14             set_add        0      1      0
-15         cursor_next        0      5      0
-16        cursor_close        0      0      0
-17              result        0      0      0
-18                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp_min       1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 16     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000003",
+      "07": "lt                  3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "timestamp           2      -      0     # 1000003",
+      "11": "lt                  3      1      2     ",
+      "12": "jntr                15     3      0     ",
+      "13": "cursor_read         1      0      0     ",
+      "14": "set_add             0      1      0     ",
+      "15": "cursor_next         0      5      0     ",
+      "16": "cursor_close        0      0      0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000003+00"]]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-["
-bytecode [coordinator]
---------
- 0           send_hash        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1           timestamp        1 1000003      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary), lookup
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000003      0
- 7                 equ        3      1      2
- 8                jntr        4      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11                 jmp        4      0      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp           1      -      0     # 1000003",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000003",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "jmp                 4      0      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 drop table test
 []
 # test: timestamp column (secondary index)
@@ -577,75 +570,73 @@ select * from test use index (i)
 select * from test where id > timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:04+00"]]
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000003'
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1           timestamp        1 1000003      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000003      0
- 7                  gt        3      1      2
- 8                jntr       11      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp           1      -      0     # 1000003",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000003",
+      "07": "gt                  3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test where id > timestamp '1970-01-01 00:00:01.000003'
 [3]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 [["1970-01-01 00:00:01.000003+00"]]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-["
-bytecode [coordinator]
---------
- 0           send_hash        0      0      -      # public.test
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5             cte_set        0      0      0
- 6                body        0      0      0
- 7                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1           timestamp        1 1000003      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (i), lookup
- 4                 jmp       12      0      0
- 5          cursor_idx        1      0      0
- 6           timestamp        2 1000003      0
- 7                 equ        3      1      2
- 8                jntr        4      3      0
- 9         cursor_read        1      0      0
-10             set_add        0      1      0
-11         cursor_next        0      5      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "timestamp           1      -      0     # 1000003",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (i, lookup)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "timestamp           2      -      0     # 1000003",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test where id = timestamp '1970-01-01 00:00:01.000003'
 [1]
 drop table test

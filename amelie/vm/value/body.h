@@ -53,7 +53,7 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 		break;
 	case VALUE_STRING:
 		buf_write(self, "\"", 1);
-		buf_printf(self, "%.*s", str_size(&value->string), str_of(&value->string));
+		escape_string_raw(self, &value->string);
 		buf_write(self, "\"", 1);
 		break;
 	case VALUE_NULL:

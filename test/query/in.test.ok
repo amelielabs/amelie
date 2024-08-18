@@ -17,17 +17,18 @@ select 1 in (
 select 1 in ()
 [false]
 explain select 1 in ()
-["
-bytecode [coordinator]
---------
- 0                bool        0      0      0
- 1                 jmp        3      0      0
- 2                 jmp        3      0      0
- 3             cte_set        0      0      0
- 4                body        0      0      0
- 5                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "bool                0      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 3      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "body                0      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
 # test: in
 select 1 in (3, 1, 2)
 [true]

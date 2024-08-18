@@ -4,44 +4,43 @@ connect E0 S0 localhost:3485
 create table test (id int primary key, data int)
 []
 explain select count(*) from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      0     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test
 [0]
 # test: select count from table
@@ -58,88 +57,86 @@ insert into test values (4, 2)
 select * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]]
 explain select count(*) from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      0     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test
 [5]
 # test: select sum from table empty
 delete from test
 []
 explain select sum(id) from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      1     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      1      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select sum(id) from test
 [0]
 insert into test values (0, 0)
@@ -154,44 +151,43 @@ insert into test values (4, 2)
 []
 # test: select sum from table
 explain select sum(id) from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      1     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      1      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select sum(id) from test
 [10]
 select sum(data) from test
@@ -213,44 +209,43 @@ insert into test values (4, 2)
 []
 # test: select avg from table
 explain select avg(id) from test
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      2     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      2      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select avg(id) from test
 [2]
 select avg(data) from test
@@ -297,201 +292,197 @@ select max(data) from test
 [2]
 # test: select from (select aggr from table)
 explain select * from (select count(*) from test)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10                 set        0      0      0
-11    cursor_open_expr        2      1     13
-12                 jmp       16      0      0
-13         cursor_read        2      2      0
-14             set_add        0      2      0
-15         cursor_next        2     13      0
-16        cursor_close        2      0      0
-17             cte_set        0      0      0
-18                body        0      0      0
-19                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      0     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "set                 0      0      0     ",
+      "11": "cursor_open_expr    2      1      13    ",
+      "12": "jmp                 16     0      0     ",
+      "13": "cursor_read         2      2      0     ",
+      "14": "set_add             0      2      0     ",
+      "15": "cursor_next         2      13     0     ",
+      "16": "cursor_close        2      0      0     ",
+      "17": "cte_set             0      0      0     ",
+      "18": "body                0      0      0     ",
+      "19": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select count(*) from test)
 [5]
 # test: select aggr from table group by
 explain select id, count(*) from test group by id
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       13      0      0
- 6          group_read        2      1      0
- 7                push        2      0      0
- 8     group_read_aggr        2      1      0
- 9                push        2      0      0
-10               array        2      2      0
-11             set_add        1      2      0
-12         cursor_next        1      6      0
-13        cursor_close        1      0      0
-14             cte_set        0      1      0
-15                body        0      0      0
-16                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 13     0      0     ",
+      "06": "group_read          2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "group_read_aggr     2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "array               2      2      0     ",
+      "11": "set_add             1      2      0     ",
+      "12": "cursor_next         1      6      0     ",
+      "13": "cursor_close        1      0      0     ",
+      "14": "cte_set             0      1      0     ",
+      "15": "body                0      0      0     ",
+      "16": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select id, count(*) from test group by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select data, count(*) from test group by data
 [[0, 2], [1, 2], [2, 1]]
 # test: select from (select aggr from table group by)
 explain select * from (select id, count(*) from test group by id)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       13      0      0
- 6          group_read        2      1      0
- 7                push        2      0      0
- 8     group_read_aggr        2      1      0
- 9                push        2      0      0
-10               array        2      2      0
-11             set_add        1      2      0
-12         cursor_next        1      6      0
-13        cursor_close        1      0      0
-14                 set        0      0      0
-15    cursor_open_expr        2      1     17
-16                 jmp       20      0      0
-17         cursor_read        2      2      0
-18             set_add        0      2      0
-19         cursor_next        2     17      0
-20        cursor_close        2      0      0
-21             cte_set        0      0      0
-22                body        0      0      0
-23                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 13     0      0     ",
+      "06": "group_read          2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "group_read_aggr     2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "array               2      2      0     ",
+      "11": "set_add             1      2      0     ",
+      "12": "cursor_next         1      6      0     ",
+      "13": "cursor_close        1      0      0     ",
+      "14": "set                 0      0      0     ",
+      "15": "cursor_open_expr    2      1      17    ",
+      "16": "jmp                 20     0      0     ",
+      "17": "cursor_read         2      2      0     ",
+      "18": "set_add             0      2      0     ",
+      "19": "cursor_next         2      17     0     ",
+      "20": "cursor_close        2      0      0     ",
+      "21": "cte_set             0      0      0     ",
+      "22": "body                0      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select id, count(*) from test group by id)
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select * from (select data, count(*) from test group by data)
 [[0, 2], [1, 2], [2, 1]]
 # test: select from table having label
 explain select id, count(*) c from test group by id having c >= 1
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       17      0      0
- 6     group_read_aggr        2      1      0
- 7                 int        3      1      0
- 8                 gte        4      2      3
- 9                jntr       16      4      0
-10          group_read        2      1      0
-11                push        2      0      0
-12     group_read_aggr        2      1      0
-13                push        2      0      0
-14               array        2      2      0
-15             set_add        1      2      0
-16         cursor_next        1      6      0
-17        cursor_close        1      0      0
-18             cte_set        0      1      0
-19                body        0      0      0
-20                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 17     0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "gte                 4      2      3     ",
+      "09": "jntr                16     4      0     ",
+      "10": "group_read          2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "group_read_aggr     2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "array               2      2      0     ",
+      "15": "set_add             1      2      0     ",
+      "16": "cursor_next         1      6      0     ",
+      "17": "cursor_close        1      0      0     ",
+      "18": "cte_set             0      1      0     ",
+      "19": "body                0      0      0     ",
+      "20": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select id, count(*) c from test group by id having c >= 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select id, count(*) c from test group by id having c > 1
@@ -502,142 +493,139 @@ select data, count(*) c from test group by data having data > 1
 [[2, 1]]
 # test: select from table having aggr
 explain select data, count(*) from test group by data having count(*) = 2
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       17      0      0
- 6     group_read_aggr        2      1      1
- 7                 int        3      2      0
- 8                 equ        4      2      3
- 9                jntr       16      4      0
-10          group_read        2      1      0
-11                push        2      0      0
-12     group_read_aggr        2      1      0
-13                push        2      0      0
-14               array        2      2      0
-15             set_add        1      2      0
-16         cursor_next        1      6      0
-17        cursor_close        1      0      0
-18             cte_set        0      1      0
-19                body        0      0      0
-20                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2           group_add        0      0     -1
- 3             int_min        1      0      0
- 4                push        1      0      0
- 5         cursor_open        0      0      7      # public.test (primary)
- 6                 jmp       15      0      0
- 7          cursor_idx        1      0      1
- 8                push        1      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         cursor_read        1      0      0
-12                push        1      0      0
-13         group_write        0      0      0
-14         cursor_next        0      7      0
-15        cursor_close        0      0      0
-16              result        0      0      0
-17                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 17     0      0     ",
+      "06": "group_read_aggr     2      1      1     ",
+      "07": "int                 3      -      0     # 2",
+      "08": "equ                 4      2      3     ",
+      "09": "jntr                16     4      0     ",
+      "10": "group_read          2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "group_read_aggr     2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "array               2      2      0     ",
+      "15": "set_add             1      2      0     ",
+      "16": "cursor_next         1      6      0     ",
+      "17": "cursor_close        1      0      0     ",
+      "18": "cte_set             0      1      0     ",
+      "19": "body                0      0      0     ",
+      "20": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "group_add           0      0      -1    ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary)",
+      "06": "jmp                 15     0      0     ",
+      "07": "cursor_idx          1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_read         1      0      0     ",
+      "12": "push                1      0      0     ",
+      "13": "group_write         0      0      0     ",
+      "14": "cursor_next         0      7      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
+    }
+  }
+}]
 select data, count(*) from test group by data having count(*) = 2
 [[0, 2], [1, 2]]
 explain select data from test group by data having count(*) = 2
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       13      0      0
- 6     group_read_aggr        2      1      0
- 7                 int        3      2      0
- 8                 equ        4      2      3
- 9                jntr       12      4      0
-10          group_read        2      1      0
-11             set_add        1      2      0
-12         cursor_next        1      6      0
-13        cursor_close        1      0      0
-14             cte_set        0      1      0
-15                body        0      0      0
-16                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      1
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 13     0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "int                 3      -      0     # 2",
+      "08": "equ                 4      2      3     ",
+      "09": "jntr                12     4      0     ",
+      "10": "group_read          2      1      0     ",
+      "11": "set_add             1      2      0     ",
+      "12": "cursor_next         1      6      0     ",
+      "13": "cursor_close        1      0      0     ",
+      "14": "cte_set             0      1      0     ",
+      "15": "body                0      0      0     ",
+      "16": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      1     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select data from test group by data having count(*) = 2
 [0, 1]
 # test: select from table group by order by aggr
 explain select * from test group by data order by count(*)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3         set_ordered        1     20      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       11      0      0
- 6         cursor_read        2      1      0
- 7     group_read_aggr        3      1      0
- 8                push        3      0      0
- 9             set_add        1      2      0
-10         cursor_next        1      6      0
-11        cursor_close        1      0      0
-12            set_sort        1      0      0
-13             cte_set        0      1      0
-14                body        0      0      0
-15                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      1
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set_ordered         1      20     0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 11     0      0     ",
+      "06": "cursor_read         2      1      0     ",
+      "07": "group_read_aggr     3      1      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         1      6      0     ",
+      "11": "cursor_close        1      0      0     ",
+      "12": "set_sort            1      0      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "body                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      1     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test group by data order by count(*) desc
 [0, 1, 2]
 select data, count(*) c from test group by data order by c desc
@@ -648,44 +636,43 @@ drop table test
 create shared table test (id int primary key, data int)
 []
 explain select count(*) from test
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      0     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test
 [0]
 # test: select count from shared
@@ -702,130 +689,127 @@ insert into test values (4, 2)
 select * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]]
 explain select count(*) from test
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      0     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9         cursor_read        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test
 [5]
 # test: select sum from shared
 explain select sum(id) from test
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      1     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      1      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select sum(id) from test
 [10]
 select sum(data) from test
 [4]
 # test: select avg from shared
 explain select avg(id) from test
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp        9      0      0
- 6     group_read_aggr        2      1      0
- 7             set_add        1      2      0
- 8         cursor_next        1      6      0
- 9        cursor_close        1      0      0
-10             cte_set        0      1      0
-11                body        0      0      0
-12                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      0      0
- 1           group_add        0      2     -1
- 2                null        1      0      0
- 3                push        1      0      0
- 4         group_write        0      0      0
- 5             int_min        1      0      0
- 6                push        1      0      0
- 7         cursor_open        0      0      9      # public.test (primary)
- 8                 jmp       13      0      0
- 9          cursor_idx        1      0      0
-10                push        1      0      0
-11         group_write        0      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14              result        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 9      0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "set_add             1      2      0     ",
+      "08": "cursor_next         1      6      0     ",
+      "09": "cursor_close        1      0      0     ",
+      "10": "cte_set             0      1      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      0      0     ",
+      "01": "group_add           0      2      -1    ",
+      "02": "null                1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "group_write         0      0      0     ",
+      "05": "int_min             1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_open         0      0      9     # public.test (primary)",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_idx          1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "group_write         0      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select avg(id) from test
 [2]
 select avg(data) from test
@@ -872,199 +856,195 @@ select max(data) from test
 [2]
 # test: select from (select aggr from shared)
 explain select * from (select count(*) from test)
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1             recv_to        0      0      0
- 2             cte_set        0      0      0
- 3                body        0      0      0
- 4                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 set        1      0      0
- 2               group        2      0      0
- 3           group_add        2      0     -1
- 4                null        3      0      0
- 5                push        3      0      0
- 6         group_write        2      0      0
- 7             int_min        3      0      0
- 8                push        3      0      0
- 9         cursor_open        0      0     11      # public.test (primary)
-10                 jmp       15      0      0
-11         cursor_read        3      0      0
-12                push        3      0      0
-13         group_write        2      0      0
-14         cursor_next        0     11      0
-15        cursor_close        0      0      0
-16    cursor_open_expr        1      2     18
-17                 jmp       21      0      0
-18     group_read_aggr        3      1      0
-19             set_add        1      3      0
-20         cursor_next        1     18      0
-21        cursor_close        1      0      0
-22    cursor_open_expr        2      1     24
-23                 jmp       27      0      0
-24         cursor_read        2      2      0
-25             set_add        0      2      0
-26         cursor_next        2     24      0
-27        cursor_close        2      0      0
-28              result        0      0      0
-29                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "set                 1      0      0     ",
+      "02": "group               2      0      0     ",
+      "03": "group_add           2      0      -1    ",
+      "04": "null                3      0      0     ",
+      "05": "push                3      0      0     ",
+      "06": "group_write         2      0      0     ",
+      "07": "int_min             3      0      0     ",
+      "08": "push                3      0      0     ",
+      "09": "cursor_open         0      0      11    # public.test (primary)",
+      "10": "jmp                 15     0      0     ",
+      "11": "cursor_read         3      0      0     ",
+      "12": "push                3      0      0     ",
+      "13": "group_write         2      0      0     ",
+      "14": "cursor_next         0      11     0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "cursor_open_expr    1      2      18    ",
+      "17": "jmp                 21     0      0     ",
+      "18": "group_read_aggr     3      1      0     ",
+      "19": "set_add             1      3      0     ",
+      "20": "cursor_next         1      18     0     ",
+      "21": "cursor_close        1      0      0     ",
+      "22": "cursor_open_expr    2      1      24    ",
+      "23": "jmp                 27     0      0     ",
+      "24": "cursor_read         2      2      0     ",
+      "25": "set_add             0      2      0     ",
+      "26": "cursor_next         2      24     0     ",
+      "27": "cursor_close        2      0      0     ",
+      "28": "result              0      0      0     ",
+      "29": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select count(*) from test)
 [5]
 # test: select aggr from shared group by
 explain select id, count(*) from test group by id
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       13      0      0
- 6          group_read        2      1      0
- 7                push        2      0      0
- 8     group_read_aggr        2      1      0
- 9                push        2      0      0
-10               array        2      2      0
-11             set_add        1      2      0
-12         cursor_next        1      6      0
-13        cursor_close        1      0      0
-14             cte_set        0      1      0
-15                body        0      0      0
-16                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 13     0      0     ",
+      "06": "group_read          2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "group_read_aggr     2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "array               2      2      0     ",
+      "11": "set_add             1      2      0     ",
+      "12": "cursor_next         1      6      0     ",
+      "13": "cursor_close        1      0      0     ",
+      "14": "cte_set             0      1      0     ",
+      "15": "body                0      0      0     ",
+      "16": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select id, count(*) from test group by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select data, count(*) from test group by data
 [[0, 2], [1, 2], [2, 1]]
 # test: select from (select aggr from shared group by)
 explain select * from (select id, count(*) from test group by id)
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1             recv_to        0      0      0
- 2             cte_set        0      0      0
- 3                body        0      0      0
- 4                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1                 set        1      0      0
- 2               group        2      1      0
- 3           group_add        2      0     -1
- 4             int_min        3      0      0
- 5                push        3      0      0
- 6         cursor_open        0      0      8      # public.test (primary)
- 7                 jmp       14      0      0
- 8          cursor_idx        3      0      0
- 9                push        3      0      0
-10         cursor_read        3      0      0
-11                push        3      0      0
-12         group_write        2      0      0
-13         cursor_next        0      8      0
-14        cursor_close        0      0      0
-15    cursor_open_expr        1      2     17
-16                 jmp       24      0      0
-17          group_read        3      1      0
-18                push        3      0      0
-19     group_read_aggr        3      1      0
-20                push        3      0      0
-21               array        3      2      0
-22             set_add        1      3      0
-23         cursor_next        1     17      0
-24        cursor_close        1      0      0
-25    cursor_open_expr        2      1     27
-26                 jmp       30      0      0
-27         cursor_read        2      2      0
-28             set_add        0      2      0
-29         cursor_next        2     27      0
-30        cursor_close        2      0      0
-31              result        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "set                 1      0      0     ",
+      "02": "group               2      1      0     ",
+      "03": "group_add           2      0      -1    ",
+      "04": "int_min             3      0      0     ",
+      "05": "push                3      0      0     ",
+      "06": "cursor_open         0      0      8     # public.test (primary)",
+      "07": "jmp                 14     0      0     ",
+      "08": "cursor_idx          3      0      0     ",
+      "09": "push                3      0      0     ",
+      "10": "cursor_read         3      0      0     ",
+      "11": "push                3      0      0     ",
+      "12": "group_write         2      0      0     ",
+      "13": "cursor_next         0      8      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "cursor_open_expr    1      2      17    ",
+      "16": "jmp                 24     0      0     ",
+      "17": "group_read          3      1      0     ",
+      "18": "push                3      0      0     ",
+      "19": "group_read_aggr     3      1      0     ",
+      "20": "push                3      0      0     ",
+      "21": "array               3      2      0     ",
+      "22": "set_add             1      3      0     ",
+      "23": "cursor_next         1      17     0     ",
+      "24": "cursor_close        1      0      0     ",
+      "25": "cursor_open_expr    2      1      27    ",
+      "26": "jmp                 30     0      0     ",
+      "27": "cursor_read         2      2      0     ",
+      "28": "set_add             0      2      0     ",
+      "29": "cursor_next         2      27     0     ",
+      "30": "cursor_close        2      0      0     ",
+      "31": "result              0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select id, count(*) from test group by id)
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select * from (select data, count(*) from test group by data)
 [[0, 2], [1, 2], [2, 1]]
 # test: select from shared having label
 explain select id, count(*) c from test group by id having c >= 1
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2    group_merge_recv        0      0      0
- 3                 set        1      0      0
- 4    cursor_open_expr        1      0      6
- 5                 jmp       17      0      0
- 6     group_read_aggr        2      1      0
- 7                 int        3      1      0
- 8                 gte        4      2      3
- 9                jntr       16      4      0
-10          group_read        2      1      0
-11                push        2      0      0
-12     group_read_aggr        2      1      0
-13                push        2      0      0
-14               array        2      2      0
-15             set_add        1      2      0
-16         cursor_next        1      6      0
-17        cursor_close        1      0      0
-18             cte_set        0      1      0
-19                body        0      0      0
-20                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0               group        0      1      0
- 1           group_add        0      0     -1
- 2             int_min        1      0      0
- 3                push        1      0      0
- 4         cursor_open        0      0      6      # public.test (primary)
- 5                 jmp       12      0      0
- 6          cursor_idx        1      0      0
- 7                push        1      0      0
- 8         cursor_read        1      0      0
- 9                push        1      0      0
-10         group_write        0      0      0
-11         cursor_next        0      6      0
-12        cursor_close        0      0      0
-13              result        0      0      0
-14                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "group_merge_recv    0      0      0     ",
+      "03": "set                 1      0      0     ",
+      "04": "cursor_open_expr    1      0      6     ",
+      "05": "jmp                 17     0      0     ",
+      "06": "group_read_aggr     2      1      0     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "gte                 4      2      3     ",
+      "09": "jntr                16     4      0     ",
+      "10": "group_read          2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "group_read_aggr     2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "array               2      2      0     ",
+      "15": "set_add             1      2      0     ",
+      "16": "cursor_next         1      6      0     ",
+      "17": "cursor_close        1      0      0     ",
+      "18": "cte_set             0      1      0     ",
+      "19": "body                0      0      0     ",
+      "20": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "group               0      1      0     ",
+      "01": "group_add           0      0      -1    ",
+      "02": "int_min             1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_idx          1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "cursor_read         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "group_write         0      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
 select id, count(*) c from test group by id having c >= 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 select id, count(*) c from test group by id having c > 1
@@ -1077,439 +1057,449 @@ drop table test
 []
 # test: select count from expr emtpy
 explain select count(*) from []
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      0     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6               array        2      0      0
- 7    cursor_open_expr        0      2      9
- 8                 jmp       13      0      0
- 9         cursor_read        3      0      0
-10                push        3      0      0
-11         group_write        1      0      0
-12         cursor_next        0      9      0
-13        cursor_close        0      0      0
-14    cursor_open_expr        1      1     16
-15                 jmp       19      0      0
-16     group_read_aggr        2      1      0
-17             set_add        0      2      0
-18         cursor_next        1     16      0
-19        cursor_close        1      0      0
-20             cte_set        0      0      0
-21                body        0      0      0
-22                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      0      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "array               2      0      0     ",
+      "07": "cursor_open_expr    0      2      9     ",
+      "08": "jmp                 13     0      0     ",
+      "09": "cursor_read         3      0      0     ",
+      "10": "push                3      0      0     ",
+      "11": "group_write         1      0      0     ",
+      "12": "cursor_next         0      9      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "cursor_open_expr    1      1      16    ",
+      "15": "jmp                 19     0      0     ",
+      "16": "group_read_aggr     2      1      0     ",
+      "17": "set_add             0      2      0     ",
+      "18": "cursor_next         1      16     0     ",
+      "19": "cursor_close        1      0      0     ",
+      "20": "cte_set             0      0      0     ",
+      "21": "body                0      0      0     ",
+      "22": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from []
 [0]
 # test: select count from expr
 explain select count(*) from [0,1,2,3,4]
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      0     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6                 int        2      0      0
- 7                push        2      0      0
- 8                 int        2      1      0
- 9                push        2      0      0
-10                 int        2      2      0
-11                push        2      0      0
-12                 int        2      3      0
-13                push        2      0      0
-14                 int        2      4      0
-15                push        2      0      0
-16               array        2      5      0
-17    cursor_open_expr        0      2     19
-18                 jmp       23      0      0
-19         cursor_read        3      0      0
-20                push        3      0      0
-21         group_write        1      0      0
-22         cursor_next        0     19      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      1     26
-25                 jmp       29      0      0
-26     group_read_aggr        2      1      0
-27             set_add        0      2      0
-28         cursor_next        1     26      0
-29        cursor_close        1      0      0
-30             cte_set        0      0      0
-31                body        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      0      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "int                 2      -      0     # 0",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 3",
+      "13": "push                2      0      0     ",
+      "14": "int                 2      -      0     # 4",
+      "15": "push                2      0      0     ",
+      "16": "array               2      5      0     ",
+      "17": "cursor_open_expr    0      2      19    ",
+      "18": "jmp                 23     0      0     ",
+      "19": "cursor_read         3      0      0     ",
+      "20": "push                3      0      0     ",
+      "21": "group_write         1      0      0     ",
+      "22": "cursor_next         0      19     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      1      26    ",
+      "25": "jmp                 29     0      0     ",
+      "26": "group_read_aggr     2      1      0     ",
+      "27": "set_add             0      2      0     ",
+      "28": "cursor_next         1      26     0     ",
+      "29": "cursor_close        1      0      0     ",
+      "30": "cte_set             0      0      0     ",
+      "31": "body                0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from [0,1,2,3,4]
 [5]
 # test: select sum from expr
 explain select sum(*) from [0,1,2,3,4]
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      1     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6                 int        2      0      0
- 7                push        2      0      0
- 8                 int        2      1      0
- 9                push        2      0      0
-10                 int        2      2      0
-11                push        2      0      0
-12                 int        2      3      0
-13                push        2      0      0
-14                 int        2      4      0
-15                push        2      0      0
-16               array        2      5      0
-17    cursor_open_expr        0      2     19
-18                 jmp       23      0      0
-19         cursor_read        3      0      0
-20                push        3      0      0
-21         group_write        1      0      0
-22         cursor_next        0     19      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      1     26
-25                 jmp       29      0      0
-26     group_read_aggr        2      1      0
-27             set_add        0      2      0
-28         cursor_next        1     26      0
-29        cursor_close        1      0      0
-30             cte_set        0      0      0
-31                body        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      1      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "int                 2      -      0     # 0",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 3",
+      "13": "push                2      0      0     ",
+      "14": "int                 2      -      0     # 4",
+      "15": "push                2      0      0     ",
+      "16": "array               2      5      0     ",
+      "17": "cursor_open_expr    0      2      19    ",
+      "18": "jmp                 23     0      0     ",
+      "19": "cursor_read         3      0      0     ",
+      "20": "push                3      0      0     ",
+      "21": "group_write         1      0      0     ",
+      "22": "cursor_next         0      19     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      1      26    ",
+      "25": "jmp                 29     0      0     ",
+      "26": "group_read_aggr     2      1      0     ",
+      "27": "set_add             0      2      0     ",
+      "28": "cursor_next         1      26     0     ",
+      "29": "cursor_close        1      0      0     ",
+      "30": "cte_set             0      0      0     ",
+      "31": "body                0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select sum(*) from [0,1,2,3,4]
 [10]
 # test: select avg from expr
 explain select avg(*) from [0,1,2,3,4]
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      2     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6                 int        2      0      0
- 7                push        2      0      0
- 8                 int        2      1      0
- 9                push        2      0      0
-10                 int        2      2      0
-11                push        2      0      0
-12                 int        2      3      0
-13                push        2      0      0
-14                 int        2      4      0
-15                push        2      0      0
-16               array        2      5      0
-17    cursor_open_expr        0      2     19
-18                 jmp       23      0      0
-19         cursor_read        3      0      0
-20                push        3      0      0
-21         group_write        1      0      0
-22         cursor_next        0     19      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      1     26
-25                 jmp       29      0      0
-26     group_read_aggr        2      1      0
-27             set_add        0      2      0
-28         cursor_next        1     26      0
-29        cursor_close        1      0      0
-30             cte_set        0      0      0
-31                body        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      2      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "int                 2      -      0     # 0",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 3",
+      "13": "push                2      0      0     ",
+      "14": "int                 2      -      0     # 4",
+      "15": "push                2      0      0     ",
+      "16": "array               2      5      0     ",
+      "17": "cursor_open_expr    0      2      19    ",
+      "18": "jmp                 23     0      0     ",
+      "19": "cursor_read         3      0      0     ",
+      "20": "push                3      0      0     ",
+      "21": "group_write         1      0      0     ",
+      "22": "cursor_next         0      19     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      1      26    ",
+      "25": "jmp                 29     0      0     ",
+      "26": "group_read_aggr     2      1      0     ",
+      "27": "set_add             0      2      0     ",
+      "28": "cursor_next         1      26     0     ",
+      "29": "cursor_close        1      0      0     ",
+      "30": "cte_set             0      0      0     ",
+      "31": "body                0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select avg(*) from [0,1,2,3,4]
 [2]
 # test: select min from expr
 explain select min(*) from [0,1,2,3,4]
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      3     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6                 int        2      0      0
- 7                push        2      0      0
- 8                 int        2      1      0
- 9                push        2      0      0
-10                 int        2      2      0
-11                push        2      0      0
-12                 int        2      3      0
-13                push        2      0      0
-14                 int        2      4      0
-15                push        2      0      0
-16               array        2      5      0
-17    cursor_open_expr        0      2     19
-18                 jmp       23      0      0
-19         cursor_read        3      0      0
-20                push        3      0      0
-21         group_write        1      0      0
-22         cursor_next        0     19      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      1     26
-25                 jmp       29      0      0
-26     group_read_aggr        2      1      0
-27             set_add        0      2      0
-28         cursor_next        1     26      0
-29        cursor_close        1      0      0
-30             cte_set        0      0      0
-31                body        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      3      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "int                 2      -      0     # 0",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 3",
+      "13": "push                2      0      0     ",
+      "14": "int                 2      -      0     # 4",
+      "15": "push                2      0      0     ",
+      "16": "array               2      5      0     ",
+      "17": "cursor_open_expr    0      2      19    ",
+      "18": "jmp                 23     0      0     ",
+      "19": "cursor_read         3      0      0     ",
+      "20": "push                3      0      0     ",
+      "21": "group_write         1      0      0     ",
+      "22": "cursor_next         0      19     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      1      26    ",
+      "25": "jmp                 29     0      0     ",
+      "26": "group_read_aggr     2      1      0     ",
+      "27": "set_add             0      2      0     ",
+      "28": "cursor_next         1      26     0     ",
+      "29": "cursor_close        1      0      0     ",
+      "30": "cte_set             0      0      0     ",
+      "31": "body                0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select min(*) from [0,1,2,3,4]
 [0]
 # test: select max from expr
 explain select max(*) from [0,1,2,3,4]
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      0      0
- 2           group_add        1      4     -1
- 3                null        2      0      0
- 4                push        2      0      0
- 5         group_write        1      0      0
- 6                 int        2      0      0
- 7                push        2      0      0
- 8                 int        2      1      0
- 9                push        2      0      0
-10                 int        2      2      0
-11                push        2      0      0
-12                 int        2      3      0
-13                push        2      0      0
-14                 int        2      4      0
-15                push        2      0      0
-16               array        2      5      0
-17    cursor_open_expr        0      2     19
-18                 jmp       23      0      0
-19         cursor_read        3      0      0
-20                push        3      0      0
-21         group_write        1      0      0
-22         cursor_next        0     19      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      1     26
-25                 jmp       29      0      0
-26     group_read_aggr        2      1      0
-27             set_add        0      2      0
-28         cursor_next        1     26      0
-29        cursor_close        1      0      0
-30             cte_set        0      0      0
-31                body        0      0      0
-32                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      0      0     ",
+      "02": "group_add           1      4      -1    ",
+      "03": "null                2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "group_write         1      0      0     ",
+      "06": "int                 2      -      0     # 0",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 3",
+      "13": "push                2      0      0     ",
+      "14": "int                 2      -      0     # 4",
+      "15": "push                2      0      0     ",
+      "16": "array               2      5      0     ",
+      "17": "cursor_open_expr    0      2      19    ",
+      "18": "jmp                 23     0      0     ",
+      "19": "cursor_read         3      0      0     ",
+      "20": "push                3      0      0     ",
+      "21": "group_write         1      0      0     ",
+      "22": "cursor_next         0      19     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      1      26    ",
+      "25": "jmp                 29     0      0     ",
+      "26": "group_read_aggr     2      1      0     ",
+      "27": "set_add             0      2      0     ",
+      "28": "cursor_next         1      26     0     ",
+      "29": "cursor_close        1      0      0     ",
+      "30": "cte_set             0      0      0     ",
+      "31": "body                0      0      0     ",
+      "32": "ret                 0      0      0     "
+    }
+  }
+}]
 select max(*) from [0,1,2,3,4]
 [4]
 # test: select from (select aggr from expr)
 explain select * from (select count(*) from [0,1,2,3,4])
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1                 set        1      0      0
- 2               group        2      0      0
- 3           group_add        2      0     -1
- 4                null        3      0      0
- 5                push        3      0      0
- 6         group_write        2      0      0
- 7                 int        3      0      0
- 8                push        3      0      0
- 9                 int        3      1      0
-10                push        3      0      0
-11                 int        3      2      0
-12                push        3      0      0
-13                 int        3      3      0
-14                push        3      0      0
-15                 int        3      4      0
-16                push        3      0      0
-17               array        3      5      0
-18    cursor_open_expr        0      3     20
-19                 jmp       24      0      0
-20         cursor_read        4      0      0
-21                push        4      0      0
-22         group_write        2      0      0
-23         cursor_next        0     20      0
-24        cursor_close        0      0      0
-25    cursor_open_expr        1      2     27
-26                 jmp       30      0      0
-27     group_read_aggr        3      1      0
-28             set_add        1      3      0
-29         cursor_next        1     27      0
-30        cursor_close        1      0      0
-31    cursor_open_expr        2      1     33
-32                 jmp       36      0      0
-33         cursor_read        2      2      0
-34             set_add        0      2      0
-35         cursor_next        2     33      0
-36        cursor_close        2      0      0
-37             cte_set        0      0      0
-38                body        0      0      0
-39                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "set                 1      0      0     ",
+      "02": "group               2      0      0     ",
+      "03": "group_add           2      0      -1    ",
+      "04": "null                3      0      0     ",
+      "05": "push                3      0      0     ",
+      "06": "group_write         2      0      0     ",
+      "07": "int                 3      -      0     # 0",
+      "08": "push                3      0      0     ",
+      "09": "int                 3      -      0     # 1",
+      "10": "push                3      0      0     ",
+      "11": "int                 3      -      0     # 2",
+      "12": "push                3      0      0     ",
+      "13": "int                 3      -      0     # 3",
+      "14": "push                3      0      0     ",
+      "15": "int                 3      -      0     # 4",
+      "16": "push                3      0      0     ",
+      "17": "array               3      5      0     ",
+      "18": "cursor_open_expr    0      3      20    ",
+      "19": "jmp                 24     0      0     ",
+      "20": "cursor_read         4      0      0     ",
+      "21": "push                4      0      0     ",
+      "22": "group_write         2      0      0     ",
+      "23": "cursor_next         0      20     0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "cursor_open_expr    1      2      27    ",
+      "26": "jmp                 30     0      0     ",
+      "27": "group_read_aggr     3      1      0     ",
+      "28": "set_add             1      3      0     ",
+      "29": "cursor_next         1      27     0     ",
+      "30": "cursor_close        1      0      0     ",
+      "31": "cursor_open_expr    2      1      33    ",
+      "32": "jmp                 36     0      0     ",
+      "33": "cursor_read         2      2      0     ",
+      "34": "set_add             0      2      0     ",
+      "35": "cursor_next         2      33     0     ",
+      "36": "cursor_close        2      0      0     ",
+      "37": "cte_set             0      0      0     ",
+      "38": "body                0      0      0     ",
+      "39": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select count(*) from [0,1,2,3,4])
 [5]
 # test: select aggr from expr group by
 explain select *, count(*) from [0,1,2,3,4] group by *
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      1      0
- 2           group_add        1      0     -1
- 3                 int        2      0      0
- 4                push        2      0      0
- 5                 int        2      1      0
- 6                push        2      0      0
- 7                 int        2      2      0
- 8                push        2      0      0
- 9                 int        2      3      0
-10                push        2      0      0
-11                 int        2      4      0
-12                push        2      0      0
-13               array        2      5      0
-14    cursor_open_expr        0      2     16
-15                 jmp       22      0      0
-16         cursor_read        3      0      0
-17                push        3      0      0
-18         cursor_read        3      0      0
-19                push        3      0      0
-20         group_write        1      0      0
-21         cursor_next        0     16      0
-22        cursor_close        0      0      0
-23    cursor_open_expr        1      1     25
-24                 jmp       32      0      0
-25         cursor_read        2      1      0
-26                push        2      0      0
-27     group_read_aggr        2      1      0
-28                push        2      0      0
-29               array        2      2      0
-30             set_add        0      2      0
-31         cursor_next        1     25      0
-32        cursor_close        1      0      0
-33             cte_set        0      0      0
-34                body        0      0      0
-35                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      1      0     ",
+      "02": "group_add           1      0      -1    ",
+      "03": "int                 2      -      0     # 0",
+      "04": "push                2      0      0     ",
+      "05": "int                 2      -      0     # 1",
+      "06": "push                2      0      0     ",
+      "07": "int                 2      -      0     # 2",
+      "08": "push                2      0      0     ",
+      "09": "int                 2      -      0     # 3",
+      "10": "push                2      0      0     ",
+      "11": "int                 2      -      0     # 4",
+      "12": "push                2      0      0     ",
+      "13": "array               2      5      0     ",
+      "14": "cursor_open_expr    0      2      16    ",
+      "15": "jmp                 22     0      0     ",
+      "16": "cursor_read         3      0      0     ",
+      "17": "push                3      0      0     ",
+      "18": "cursor_read         3      0      0     ",
+      "19": "push                3      0      0     ",
+      "20": "group_write         1      0      0     ",
+      "21": "cursor_next         0      16     0     ",
+      "22": "cursor_close        0      0      0     ",
+      "23": "cursor_open_expr    1      1      25    ",
+      "24": "jmp                 32     0      0     ",
+      "25": "cursor_read         2      1      0     ",
+      "26": "push                2      0      0     ",
+      "27": "group_read_aggr     2      1      0     ",
+      "28": "push                2      0      0     ",
+      "29": "array               2      2      0     ",
+      "30": "set_add             0      2      0     ",
+      "31": "cursor_next         1      25     0     ",
+      "32": "cursor_close        1      0      0     ",
+      "33": "cte_set             0      0      0     ",
+      "34": "body                0      0      0     ",
+      "35": "ret                 0      0      0     "
+    }
+  }
+}]
 select *, count(*) from [0,1,2,3,4] group by *
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 # test: select from (select aggr from expr group by)
 explain select * from (select *, count(*) from [0,1,2,3,4] group by *)
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1                 set        1      0      0
- 2               group        2      1      0
- 3           group_add        2      0     -1
- 4                 int        3      0      0
- 5                push        3      0      0
- 6                 int        3      1      0
- 7                push        3      0      0
- 8                 int        3      2      0
- 9                push        3      0      0
-10                 int        3      3      0
-11                push        3      0      0
-12                 int        3      4      0
-13                push        3      0      0
-14               array        3      5      0
-15    cursor_open_expr        0      3     17
-16                 jmp       23      0      0
-17         cursor_read        4      0      0
-18                push        4      0      0
-19         cursor_read        4      0      0
-20                push        4      0      0
-21         group_write        2      0      0
-22         cursor_next        0     17      0
-23        cursor_close        0      0      0
-24    cursor_open_expr        1      2     26
-25                 jmp       33      0      0
-26         cursor_read        3      1      0
-27                push        3      0      0
-28     group_read_aggr        3      1      0
-29                push        3      0      0
-30               array        3      2      0
-31             set_add        1      3      0
-32         cursor_next        1     26      0
-33        cursor_close        1      0      0
-34    cursor_open_expr        2      1     36
-35                 jmp       39      0      0
-36         cursor_read        2      2      0
-37             set_add        0      2      0
-38         cursor_next        2     36      0
-39        cursor_close        2      0      0
-40             cte_set        0      0      0
-41                body        0      0      0
-42                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "set                 1      0      0     ",
+      "02": "group               2      1      0     ",
+      "03": "group_add           2      0      -1    ",
+      "04": "int                 3      -      0     # 0",
+      "05": "push                3      0      0     ",
+      "06": "int                 3      -      0     # 1",
+      "07": "push                3      0      0     ",
+      "08": "int                 3      -      0     # 2",
+      "09": "push                3      0      0     ",
+      "10": "int                 3      -      0     # 3",
+      "11": "push                3      0      0     ",
+      "12": "int                 3      -      0     # 4",
+      "13": "push                3      0      0     ",
+      "14": "array               3      5      0     ",
+      "15": "cursor_open_expr    0      3      17    ",
+      "16": "jmp                 23     0      0     ",
+      "17": "cursor_read         4      0      0     ",
+      "18": "push                4      0      0     ",
+      "19": "cursor_read         4      0      0     ",
+      "20": "push                4      0      0     ",
+      "21": "group_write         2      0      0     ",
+      "22": "cursor_next         0      17     0     ",
+      "23": "cursor_close        0      0      0     ",
+      "24": "cursor_open_expr    1      2      26    ",
+      "25": "jmp                 33     0      0     ",
+      "26": "cursor_read         3      1      0     ",
+      "27": "push                3      0      0     ",
+      "28": "group_read_aggr     3      1      0     ",
+      "29": "push                3      0      0     ",
+      "30": "array               3      2      0     ",
+      "31": "set_add             1      3      0     ",
+      "32": "cursor_next         1      26     0     ",
+      "33": "cursor_close        1      0      0     ",
+      "34": "cursor_open_expr    2      1      36    ",
+      "35": "jmp                 39     0      0     ",
+      "36": "cursor_read         2      2      0     ",
+      "37": "set_add             0      2      0     ",
+      "38": "cursor_next         2      36     0     ",
+      "39": "cursor_close        2      0      0     ",
+      "40": "cte_set             0      0      0     ",
+      "41": "body                0      0      0     ",
+      "42": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select *, count(*) from [0,1,2,3,4] group by *)
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 # test: select from expr having label
 explain select *, count(*) c from [0,1,2,3,4] group by * having c >= 1
-["
-bytecode [coordinator]
---------
- 0                 set        0      0      0
- 1               group        1      1      0
- 2           group_add        1      0     -1
- 3                 int        2      0      0
- 4                push        2      0      0
- 5                 int        2      1      0
- 6                push        2      0      0
- 7                 int        2      2      0
- 8                push        2      0      0
- 9                 int        2      3      0
-10                push        2      0      0
-11                 int        2      4      0
-12                push        2      0      0
-13               array        2      5      0
-14    cursor_open_expr        0      2     16
-15                 jmp       22      0      0
-16         cursor_read        3      0      0
-17                push        3      0      0
-18         cursor_read        3      0      0
-19                push        3      0      0
-20         group_write        1      0      0
-21         cursor_next        0     16      0
-22        cursor_close        0      0      0
-23    cursor_open_expr        1      1     25
-24                 jmp       36      0      0
-25     group_read_aggr        2      1      0
-26                 int        3      1      0
-27                 gte        4      2      3
-28                jntr       35      4      0
-29         cursor_read        2      1      0
-30                push        2      0      0
-31     group_read_aggr        2      1      0
-32                push        2      0      0
-33               array        2      2      0
-34             set_add        0      2      0
-35         cursor_next        1     25      0
-36        cursor_close        1      0      0
-37             cte_set        0      0      0
-38                body        0      0      0
-39                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      0      0     ",
+      "01": "group               1      1      0     ",
+      "02": "group_add           1      0      -1    ",
+      "03": "int                 2      -      0     # 0",
+      "04": "push                2      0      0     ",
+      "05": "int                 2      -      0     # 1",
+      "06": "push                2      0      0     ",
+      "07": "int                 2      -      0     # 2",
+      "08": "push                2      0      0     ",
+      "09": "int                 2      -      0     # 3",
+      "10": "push                2      0      0     ",
+      "11": "int                 2      -      0     # 4",
+      "12": "push                2      0      0     ",
+      "13": "array               2      5      0     ",
+      "14": "cursor_open_expr    0      2      16    ",
+      "15": "jmp                 22     0      0     ",
+      "16": "cursor_read         3      0      0     ",
+      "17": "push                3      0      0     ",
+      "18": "cursor_read         3      0      0     ",
+      "19": "push                3      0      0     ",
+      "20": "group_write         1      0      0     ",
+      "21": "cursor_next         0      16     0     ",
+      "22": "cursor_close        0      0      0     ",
+      "23": "cursor_open_expr    1      1      25    ",
+      "24": "jmp                 36     0      0     ",
+      "25": "group_read_aggr     2      1      0     ",
+      "26": "int                 3      -      0     # 1",
+      "27": "gte                 4      2      3     ",
+      "28": "jntr                35     4      0     ",
+      "29": "cursor_read         2      1      0     ",
+      "30": "push                2      0      0     ",
+      "31": "group_read_aggr     2      1      0     ",
+      "32": "push                2      0      0     ",
+      "33": "array               2      2      0     ",
+      "34": "set_add             0      2      0     ",
+      "35": "cursor_next         1      25     0     ",
+      "36": "cursor_close        1      0      0     ",
+      "37": "cte_set             0      0      0     ",
+      "38": "body                0      0      0     ",
+      "39": "ret                 0      0      0     "
+    }
+  }
+}]
 select *, count(*) c from [0,1,2,3,4] group by * having c >= 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
 disconnect S0

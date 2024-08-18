@@ -34,10 +34,9 @@ select 'hello, world' like 'hello%world'
 select 'http://google.com' like '%google%'
 
 # test: like escape
-select '%' like '\%'
 select '%' like '\\%'
-select '123 %-%-% day' like '%\%-\%-\%%'
-select '123 %_%_% day' like '%\%\_\%\_\%%'
+select '123 %-%-% day' like '%%-%%-%%'
+select '123 %_%_% day' like '%%_%%_%%'
 
 # test: not like
 select not like

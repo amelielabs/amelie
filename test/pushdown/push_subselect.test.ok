@@ -37,80 +37,78 @@ drop table test2
 []
 # test: select from (select from table)
 explain select * from (select * from test)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        1      0      8
- 7                 jmp       11      0      0
- 8         cursor_read        2      1      0
- 9             set_add        1      2      0
-10         cursor_next        1      8      0
-11        cursor_close        1      0      0
-12             cte_set        0      1      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    1      0      8     ",
+      "07": "jmp                 11     0      0     ",
+      "08": "cursor_read         2      1      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         1      8      0     ",
+      "11": "cursor_close        1      0      0     ",
+      "12": "cte_set             0      1      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select * from test)
 [[1, 0], [2, 0], [3, 0]]
 # test: select from (select (select expr) from table)
 explain select * from (select (select 123) from test)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        1      0      8
- 7                 jmp       11      0      0
- 8         cursor_read        2      1      0
- 9             set_add        1      2      0
-10         cursor_next        1      8      0
-11        cursor_close        1      0      0
-12             cte_set        0      1      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5                 int        1    123      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    1      0      8     ",
+      "07": "jmp                 11     0      0     ",
+      "08": "cursor_read         2      1      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         1      8      0     ",
+      "11": "cursor_close        1      0      0     ",
+      "12": "cte_set             0      1      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "int                 1      -      0     # 123",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select (select 123) from test)
 [123, 123, 123]
 # test: select from (select (select from shared) from table)
@@ -119,49 +117,48 @@ create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 []
 explain select * from (select (select * from test2) from test)
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        2      0      8
- 7                 jmp       11      0      0
- 8         cursor_read        2      2      0
- 9             set_add        1      2      0
-10         cursor_next        2      8      0
-11        cursor_close        2      0      0
-12             cte_set        0      1      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        1      0      5      # public.test (primary)
- 4                 jmp       16      0      0
- 5                 set        1      0      0
- 6             int_min        2      0      0
- 7                push        2      0      0
- 8         cursor_open        0     20     10      # public.test2 (primary)
- 9                 jmp       13      0      0
-10         cursor_read        2      0      0
-11             set_add        1      2      0
-12         cursor_next        0     10      0
-13        cursor_close        0      0      0
-14             set_add        0      1      0
-15         cursor_next        1      5      0
-16        cursor_close        1      0      0
-17              result        0      0      0
-18                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    2      0      8     ",
+      "07": "jmp                 11     0      0     ",
+      "08": "cursor_read         2      2      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         2      8      0     ",
+      "11": "cursor_close        2      0      0     ",
+      "12": "cte_set             0      1      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         1      0      5     # public.test (primary)",
+      "04": "jmp                 16     0      0     ",
+      "05": "set                 1      0      0     ",
+      "06": "int_min             2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "cursor_open         0      20     10    # public.test2 (primary)",
+      "09": "jmp                 13     0      0     ",
+      "10": "cursor_read         2      0      0     ",
+      "11": "set_add             1      2      0     ",
+      "12": "cursor_next         0      10     0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "set_add             0      1      0     ",
+      "15": "cursor_next         1      5      0     ",
+      "16": "cursor_close        1      0      0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from (select (select * from test2) from test)
 [[[1], [2], [3]], [[1], [2], [3]], [[1], [2], [3]]]
 drop table test2
@@ -173,97 +170,95 @@ select * from (select (select * from test t) from test)
 {"code": 1, "msg": "subqueries to distributed tables are not supported"}
 # test: select (select expr) from (select from table)
 explain select (select t.*) from (select * from test) t
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        1      0      8
- 7                 jmp       11      0      0
- 8         cursor_read        2      1      0
- 9             set_add        1      2      0
-10         cursor_next        1      8      0
-11        cursor_close        1      0      0
-12             cte_set        0      1      0
-13                body        0      0      0
-14                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        0      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      0      0
- 6             set_add        0      1      0
- 7         cursor_next        0      5      0
- 8        cursor_close        0      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    1      0      8     ",
+      "07": "jmp                 11     0      0     ",
+      "08": "cursor_read         2      1      0     ",
+      "09": "set_add             1      2      0     ",
+      "10": "cursor_next         1      8      0     ",
+      "11": "cursor_close        1      0      0     ",
+      "12": "cte_set             0      1      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select (select t.*) from (select * from test) t
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select from expr) from (select from table)
 explain select (select t.*, * from [1,2,3]) from (select * from test) t
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        2      0      8
- 7                 jmp       28      0      0
- 8                 set        2      0      0
- 9                 int        3      1      0
-10                push        3      0      0
-11                 int        3      2      0
-12                push        3      0      0
-13                 int        3      3      0
-14                push        3      0      0
-15               array        3      3      0
-16    cursor_open_expr        0      3     18
-17                 jmp       25      0      0
-18         cursor_read        4      2      0
-19                push        4      0      0
-20         cursor_read        4      0      0
-21                push        4      0      0
-22               array        4      2      0
-23             set_add        2      4      0
-24         cursor_next        0     18      0
-25        cursor_close        0      0      0
-26             set_add        1      2      0
-27         cursor_next        2      8      0
-28        cursor_close        2      0      0
-29             cte_set        0      1      0
-30                body        0      0      0
-31                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        1      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      1      0
- 6             set_add        0      1      0
- 7         cursor_next        1      5      0
- 8        cursor_close        1      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    2      0      8     ",
+      "07": "jmp                 28     0      0     ",
+      "08": "set                 2      0      0     ",
+      "09": "int                 3      -      0     # 1",
+      "10": "push                3      0      0     ",
+      "11": "int                 3      -      0     # 2",
+      "12": "push                3      0      0     ",
+      "13": "int                 3      -      0     # 3",
+      "14": "push                3      0      0     ",
+      "15": "array               3      3      0     ",
+      "16": "cursor_open_expr    0      3      18    ",
+      "17": "jmp                 25     0      0     ",
+      "18": "cursor_read         4      2      0     ",
+      "19": "push                4      0      0     ",
+      "20": "cursor_read         4      0      0     ",
+      "21": "push                4      0      0     ",
+      "22": "array               4      2      0     ",
+      "23": "set_add             2      4      0     ",
+      "24": "cursor_next         0      18     0     ",
+      "25": "cursor_close        0      0      0     ",
+      "26": "set_add             1      2      0     ",
+      "27": "cursor_next         2      8      0     ",
+      "28": "cursor_close        2      0      0     ",
+      "29": "cte_set             0      1      0     ",
+      "30": "body                0      0      0     ",
+      "31": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         1      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      1      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         1      5      0     ",
+      "08": "cursor_close        1      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select (select t.*, * from [1,2,3]) from (select * from test) t
 [[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
 # test: select (select from shared) from (select from table)
@@ -272,53 +267,52 @@ create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 []
 explain select (select t.*, * from test2) from (select * from test) t
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2                bool        0      0      0
- 3                push        0      0      0
- 4          merge_recv        0     -1     -1
- 5                 set        1      0      0
- 6    cursor_open_expr        2      0      8
- 7                 jmp       23      0      0
- 8                 set        2      0      0
- 9             int_min        3      0      0
-10                push        3      0      0
-11         cursor_open        0     20     13      # public.test2 (primary)
-12                 jmp       20      0      0
-13         cursor_read        3      2      0
-14                push        3      0      0
-15         cursor_read        3      0      0
-16                push        3      0      0
-17               array        3      2      0
-18             set_add        2      3      0
-19         cursor_next        0     13      0
-20        cursor_close        0      0      0
-21             set_add        1      2      0
-22         cursor_next        2      8      0
-23        cursor_close        2      0      0
-24             cte_set        0      1      0
-25                body        0      0      0
-26                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0                 set        0      0      0
- 1             int_min        1      0      0
- 2                push        1      0      0
- 3         cursor_open        1      0      5      # public.test (primary)
- 4                 jmp        8      0      0
- 5         cursor_read        1      1      0
- 6             set_add        0      1      0
- 7         cursor_next        1      5      0
- 8        cursor_close        1      0      0
- 9              result        0      0      0
-10                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "set                 1      0      0     ",
+      "06": "cursor_open_expr    2      0      8     ",
+      "07": "jmp                 23     0      0     ",
+      "08": "set                 2      0      0     ",
+      "09": "int_min             3      0      0     ",
+      "10": "push                3      0      0     ",
+      "11": "cursor_open         0      20     13    # public.test2 (primary)",
+      "12": "jmp                 20     0      0     ",
+      "13": "cursor_read         3      2      0     ",
+      "14": "push                3      0      0     ",
+      "15": "cursor_read         3      0      0     ",
+      "16": "push                3      0      0     ",
+      "17": "array               3      2      0     ",
+      "18": "set_add             2      3      0     ",
+      "19": "cursor_next         0      13     0     ",
+      "20": "cursor_close        0      0      0     ",
+      "21": "set_add             1      2      0     ",
+      "22": "cursor_next         2      8      0     ",
+      "23": "cursor_close        2      0      0     ",
+      "24": "cte_set             0      1      0     ",
+      "25": "body                0      0      0     ",
+      "26": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         1      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      1      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         1      5      0     ",
+      "08": "cursor_close        1      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
 select (select t.*, * from test2) from (select * from test) t
 [[[[1, 0], [1]], [[1, 0], [2]], [[1, 0], [3]]], [[[2, 0], [1]], [[2, 0], [2]], [[2, 0], [3]]], [[[3, 0], [1]], [[3, 0], [2]], [[3, 0], [3]]]]
 drop table test2

@@ -7,7 +7,7 @@
 //
 
 hot static inline void
-encode_string_escape(Buf* self, Str* string)
+escape_string(Buf* self, Str* string)
 {
 	int offset = buf_size(self);
 	encode_string32(self, str_size(string));
@@ -69,4 +69,39 @@ encode_string_escape(Buf* self, Str* string)
 	// update generated string size
 	start = self->start + offset;
 	data_write_string32(&start, new_size);
+}
+
+hot static inline void
+escape_string_raw(Buf* self, Str* raw)
+{
+	auto end = raw->end;
+	for (auto pos = raw->pos; pos < end; pos++)
+	{
+		switch (*pos) {
+		case '\"':
+			buf_write(self, "\\\"", 2);
+			break;
+		case '\\':
+			buf_write(self, "\\\\", 2);
+			break;
+		case '\b':
+			buf_write(self, "\\b", 2);
+			break;
+		case '\f':
+			buf_write(self, "\\f", 2);
+			break;
+		case '\n':
+			buf_write(self, "\\n", 2);
+			break;
+		case '\r':
+			buf_write(self, "\\r", 2);
+			break;
+		case '\t':
+			buf_write(self, "\\t", 2);
+			break;
+		default:
+			buf_write(self, pos, 1);
+			break;
+		}
+	}
 }

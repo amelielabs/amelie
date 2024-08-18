@@ -158,28 +158,28 @@ OpDesc ops[] =
 };
 
 static inline void
-op_write(Buf* output, Op* op, int pos, bool a, bool b, bool c, char *fmt, ...)
+op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
 {
-	buf_printf(output, "%2d  %18s   ", pos, ops[op->op].name);
+	buf_printf(output, "%-20s", ops[op->op].name);
 
 	if (a)
-		buf_printf(output, "%6" PRIi64 " ", op->a);
+		buf_printf(output, "%-6" PRIi64 " ", op->a);
 	else
-		buf_printf(output, "%6s ", "-");
+		buf_printf(output, "%-6s ", "-");
 
 	if (b)
-		buf_printf(output, "%6" PRIi64 " ", op->b);
+		buf_printf(output, "%-6" PRIi64 " ", op->b);
 	else
-		buf_printf(output, "%6s ", "-");
+		buf_printf(output, "%-6s ", "-");
 
 	if (c)
-		buf_printf(output, "%6" PRIi64, op->c);
+		buf_printf(output, "%-6" PRIi64, op->c);
 	else
-		buf_printf(output, "%6s", "-");
+		buf_printf(output, "%-6s", "-");
 
 	if (fmt)
 	{
-		buf_printf(output, "      # ");
+		buf_printf(output, "# ");
 		va_list args;
 		va_start(args, fmt);
 		buf_vprintf(output, fmt, args);
@@ -188,38 +188,47 @@ op_write(Buf* output, Op* op, int pos, bool a, bool b, bool c, char *fmt, ...)
 }
 
 void
-op_dump(Code* self, CodeData* data, Buf* output, Str* section)
+op_dump(Code* self, CodeData* data, Buf* buf)
 {
-	buf_printf(output, "\n");
-	buf_printf(output, "bytecode [%.*s]\n", str_size(section), str_of(section));
-	buf_printf(output, "--------\n");
+	auto output = buf_begin();
+	encode_map(buf);
 
 	auto op  = (Op*)self->code.start;
 	auto end = (Op*)self->code.position;
-
-	int pos = 0;
-	while (op < end)
+	for (int pos = 0; op < end; pos++)
 	{
+		// "pos": "op description"
+		char pos_sz[32];
+		int  pos_sz_len = snprintf(pos_sz, sizeof(pos_sz), "%02d", pos);
+		encode_raw(buf, pos_sz, pos_sz_len);
+
+		buf_reset(output);
 		switch (op->op) {
+		case CINT:
+		case CTIMESTAMP:
+		{
+			op_write(output, op, true, false, true, "%" PRIi64, op->b);
+			break;
+		}
 		case CSTRING:
 		{
 			Str str;
 			code_data_at_string(data, op->b, &str);
-			op_write(output, op, pos, true, true, true, "%.*s",
+			op_write(output, op, true, true, true, "%.*s",
 			         str_size(&str), str_of(&str));
 			break;
 		}
 		case CREAL:
 		{
 			double real = code_data_at_real(data, op->b);
-			op_write(output, op, pos, true, true, true, "%g", real);
+			op_write(output, op, true, true, true, "%g", real);
 			break;
 		}
 		case CSEND_HASH:
 		case CSEND:
 		{
 			auto table = (Table*)op->c;
-			op_write(output, op, pos, true, true, false,
+			op_write(output, op, true, true, false,
 			         "%.*s.%.*s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
@@ -230,7 +239,7 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		case CINSERT:
 		{
 			auto table = (Table*)op->a;
-			op_write(output, op, pos, false, true, true,
+			op_write(output, op, false, true, true,
 			         "%.*s.%.*s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
@@ -247,8 +256,8 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			data_read_string(&ref, &schema);
 			data_read_string(&ref, &table);
 			data_read_string(&ref, &index);
-			op_write(output, op, pos, true, true, true,
-			         "%.*s.%.*s (%.*s)%s",
+			op_write(output, op, true, true, true,
+			         "%.*s.%.*s (%.*s%s)",
 			         str_size(&schema),
 			         str_of(&schema),
 			         str_size(&table),
@@ -261,7 +270,7 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		case CCURSOR_PREPARE:
 		{
 			auto table = (Table*)op->b;
-			op_write(output, op, pos, true, false, true,
+			op_write(output, op, true, false, true,
 			         "%.*s.%.*s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
@@ -272,12 +281,12 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		case CCURSOR_IDX:
 		{
 			if (op->d == -1) {
-				op_write(output, op, pos, true, true, true, NULL);
+				op_write(output, op, true, true, true, NULL);
 			} else
 			{
 				Str name;
 				code_data_at_string(data, op->d, &name);
-				op_write(output, op, pos, true, true, true,
+				op_write(output, op, true, true, true,
 				         "%.*s", str_size(&name), str_of(&name));
 			}
 			break;
@@ -285,7 +294,7 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
-			op_write(output, op, pos, true, false, true,
+			op_write(output, op,true, false, true,
 			         "%.*s.%.*s()",
 			         str_size(&function->schema),
 			         str_of(&function->schema),
@@ -294,14 +303,15 @@ op_dump(Code* self, CodeData* data, Buf* output, Str* section)
 			break;
 		}
 		default:
-			op_write(output, op, pos, true, true, true, NULL);
+			op_write(output, op, true, true, true, NULL);
 			break;
 		}
-		buf_printf(output, "\n");
-
+		encode_raw(buf, (char*)output->start, buf_size(output));
 		op++;
-		pos++;
 	}
 
-	buf_printf(output, "\n");
+	encode_map_end(buf);
+
+	buf_end(output);
+	buf_free(output);
 }

@@ -34,9 +34,9 @@ emit_string(Compiler* self, Str* string, bool escape)
 {
 	int offset;
 	if (escape)
-		offset = code_data_add_string(&self->code_data, string);
-	else
 		offset = code_data_add_string_unescape(&self->code_data, string);
+	else
+		offset = code_data_add_string(&self->code_data, string);
 	return op2(self, CSTRING, rpin(self), offset);
 }
 

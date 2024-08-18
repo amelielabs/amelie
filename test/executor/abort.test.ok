@@ -24,113 +24,110 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: delete abort
 explain delete from test; select error("abort")
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     20      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp        6      0      0
- 4              delete        0      0      0
- 5         cursor_next        0      4      0
- 6        cursor_close        0      0      0
- 7                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      20     0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int_min             0      0      0     ",
+      "01": "push                0      0      0     ",
+      "02": "cursor_open         0      0      4     # public.test (primary)",
+      "03": "jmp                 6      0      0     ",
+      "04": "delete              0      0      0     ",
+      "05": "cursor_next         0      4      0     ",
+      "06": "cursor_close        0      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
 delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: update abort
 explain update test set data = id; select error("abort")
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     20      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       14      0      0
- 4         cursor_read        0      0      0
- 5                push        0      0      0
- 6                null        0      0      0
- 7                push        0      0      0
- 8          cursor_idx        0      0      0
- 9                push        0      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13         cursor_next        0      4      0
-14        cursor_close        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      20     0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int_min             0      0      0     ",
+      "01": "push                0      0      0     ",
+      "02": "cursor_open         0      0      4     # public.test (primary)",
+      "03": "jmp                 14     0      0     ",
+      "04": "cursor_read         0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "null                0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "cursor_idx          0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "assign              0      3      1     ",
+      "11": "push                0      0      0     ",
+      "12": "update              0      0      0     ",
+      "13": "cursor_next         0      4      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0      6      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       11      0      0
- 2         cursor_read        0      0      0
- 3                push        0      0      0
- 4                null        0      0      0
- 5                push        0      0      0
- 6          cursor_idx        0      0      0
- 7                push        0      0      0
- 8              assign        0      3      1
- 9                push        0      0      0
-10              update        0      0      0
-11              upsert        0      2     -1
-12        cursor_close        0      0      0
-13                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      6      0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "cursor_prepare      0      -      0     # public.test",
+      "01": "jmp                 11     0      0     ",
+      "02": "cursor_read         0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "null                0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "cursor_idx          0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "assign              0      3      1     ",
+      "09": "push                0      0      0     ",
+      "10": "update              0      0      0     ",
+      "11": "upsert              0      2      -1    ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
@@ -161,113 +158,110 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared delete abort
 explain delete from test; select error("abort")
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     20      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp        6      0      0
- 4              delete        0      0      0
- 5         cursor_next        0      4      0
- 6        cursor_close        0      0      0
- 7                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      20     0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int_min             0      0      0     ",
+      "01": "push                0      0      0     ",
+      "02": "cursor_open         0      0      4     # public.test (primary)",
+      "03": "jmp                 6      0      0     ",
+      "04": "delete              0      0      0     ",
+      "05": "cursor_next         0      4      0     ",
+      "06": "cursor_close        0      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
 delete from test; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared update abort
 explain update test set data = id; select error("abort")
-["
-bytecode [coordinator]
---------
- 0          send_first        0      0      0
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0     20      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.test (primary)
- 3                 jmp       14      0      0
- 4         cursor_read        0      0      0
- 5                push        0      0      0
- 6                null        0      0      0
- 7                push        0      0      0
- 8          cursor_idx        0      0      0
- 9                push        0      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13         cursor_next        0      4      0
-14        cursor_close        0      0      0
-15                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      20     0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int_min             0      0      0     ",
+      "01": "push                0      0      0     ",
+      "02": "cursor_open         0      0      4     # public.test (primary)",
+      "03": "jmp                 14     0      0     ",
+      "04": "cursor_read         0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "null                0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "cursor_idx          0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "assign              0      3      1     ",
+      "11": "push                0      0      0     ",
+      "12": "update              0      0      0     ",
+      "13": "cursor_next         0      4      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 update test set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared upsert abort
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.test
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4              string        0      6      0      # abort
- 5                push        0      0      0
- 6                call        0      -      1      # public.error()
- 7             cte_set        1      0      0
- 8                body        1      0      0
- 9                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0      cursor_prepare        0      -      0      # public.test
- 1                 jmp       11      0      0
- 2         cursor_read        0      0      0
- 3                push        0      0      0
- 4                null        0      0      0
- 5                push        0      0      0
- 6          cursor_idx        0      0      0
- 7                push        0      0      0
- 8              assign        0      3      1
- 9                push        0      0      0
-10              update        0      0      0
-11              upsert        0      2     -1
-12        cursor_close        0      0      0
-13                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "string              0      6      0     # abort",
+      "05": "push                0      0      0     ",
+      "06": "call                0      -      1     # public.error()",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "cursor_prepare      0      -      0     # public.test",
+      "01": "jmp                 11     0      0     ",
+      "02": "cursor_read         0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "null                0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "cursor_idx          0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "assign              0      3      1     ",
+      "09": "push                0      0      0     ",
+      "10": "update              0      0      0     ",
+      "11": "upsert              0      2      -1    ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from test
@@ -287,23 +281,22 @@ insert into a (id) values (0), (1), (2), (3); select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert b
 explain insert into b (id) values (10), (20), (30)
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.b
- 1                recv        0      0      0
- 2               array        0      0      0
- 3             cte_set        0      0      0
- 4                body        0      0      0
- 5                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0              insert        -      0      0      # public.b
- 1                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.b",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "body                0      0      0     ",
+      "05": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.b",
+      "01": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into b (id) values (10), (20), (30)
 []
 select * from a
@@ -314,95 +307,94 @@ select * from b
 update a set data = 0
 []
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
-["
-bytecode [coordinator]
---------
- 0            send_all        0      0      0
- 1            send_all        1     16      0
- 2            send_all        2     32      0
- 3            send_all        3     43      0
- 4                recv        0      0      0
- 5               array        0      0      0
- 6             cte_set        0      0      0
- 7                recv        1      0      0
- 8               array        0      0      0
- 9             cte_set        1      0      0
-10                recv        2      0      0
-11                bool        0      0      0
-12                push        0      0      0
-13          merge_recv        0     -1     -1
-14             cte_set        2      0      0
-15                recv        3      0      0
-16                bool        0      0      0
-17                push        0      0      0
-18          merge_recv        0     -1     -1
-19             cte_set        3      0      0
-20              string        0     68      0      # abort
-21                push        0      0      0
-22                call        0      -      1      # public.error()
-23             cte_set        4      0      0
-24                body        4      0      0
-25                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0             int_min        0      0      0
- 1                push        0      0      0
- 2         cursor_open        0      0      4      # public.a (primary)
- 3                 jmp       14      0      0
- 4         cursor_read        0      0      0
- 5                push        0      0      0
- 6                null        0      0      0
- 7                push        0      0      0
- 8          cursor_idx        0      0      0
- 9                push        0      0      0
-10              assign        0      3      1
-11                push        0      0      0
-12              update        0      0      0
-13         cursor_next        0      4      0
-14        cursor_close        0      0      0
-15                 ret        0      0      0
-16             int_min        0      0      0
-17                push        0      0      0
-18         cursor_open        0     17     20      # public.b (primary)
-19                 jmp       30      0      0
-20         cursor_read        0      0      0
-21                push        0      0      0
-22                null        0      0      0
-23                push        0      0      0
-24          cursor_idx        0      0      0
-25                push        0      0      0
-26              assign        0      3      1
-27                push        0      0      0
-28              update        0      0      0
-29         cursor_next        0     20      0
-30        cursor_close        0      0      0
-31                 ret        0      0      0
-32                 set        0      0      0
-33             int_min        1      0      0
-34                push        1      0      0
-35         cursor_open        0     34     37      # public.a (primary)
-36                 jmp       40      0      0
-37         cursor_read        1      0      0
-38             set_add        0      1      0
-39         cursor_next        0     37      0
-40        cursor_close        0      0      0
-41              result        0      0      0
-42                 ret        0      0      0
-43                 set        0      0      0
-44             int_min        1      0      0
-45                push        1      0      0
-46         cursor_open        0     51     48      # public.b (primary)
-47                 jmp       51      0      0
-48         cursor_read        1      0      0
-49             set_add        0      1      0
-50         cursor_next        0     48      0
-51        cursor_close        0      0      0
-52              result        0      0      0
-53                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "send_all            1      16     0     ",
+      "02": "send_all            2      32     0     ",
+      "03": "send_all            3      43     0     ",
+      "04": "recv                0      0      0     ",
+      "05": "array               0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "recv                1      0      0     ",
+      "08": "array               0      0      0     ",
+      "09": "cte_set             1      0      0     ",
+      "10": "recv                2      0      0     ",
+      "11": "bool                0      0      0     ",
+      "12": "push                0      0      0     ",
+      "13": "merge_recv          0      -1     -1    ",
+      "14": "cte_set             2      0      0     ",
+      "15": "recv                3      0      0     ",
+      "16": "bool                0      0      0     ",
+      "17": "push                0      0      0     ",
+      "18": "merge_recv          0      -1     -1    ",
+      "19": "cte_set             3      0      0     ",
+      "20": "string              0      68     0     # abort",
+      "21": "push                0      0      0     ",
+      "22": "call                0      -      1     # public.error()",
+      "23": "cte_set             4      0      0     ",
+      "24": "body                4      0      0     ",
+      "25": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int_min             0      0      0     ",
+      "01": "push                0      0      0     ",
+      "02": "cursor_open         0      0      4     # public.a (primary)",
+      "03": "jmp                 14     0      0     ",
+      "04": "cursor_read         0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "null                0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "cursor_idx          0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "assign              0      3      1     ",
+      "11": "push                0      0      0     ",
+      "12": "update              0      0      0     ",
+      "13": "cursor_next         0      4      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "ret                 0      0      0     ",
+      "16": "int_min             0      0      0     ",
+      "17": "push                0      0      0     ",
+      "18": "cursor_open         0      17     20    # public.b (primary)",
+      "19": "jmp                 30     0      0     ",
+      "20": "cursor_read         0      0      0     ",
+      "21": "push                0      0      0     ",
+      "22": "null                0      0      0     ",
+      "23": "push                0      0      0     ",
+      "24": "cursor_idx          0      0      0     ",
+      "25": "push                0      0      0     ",
+      "26": "assign              0      3      1     ",
+      "27": "push                0      0      0     ",
+      "28": "update              0      0      0     ",
+      "29": "cursor_next         0      20     0     ",
+      "30": "cursor_close        0      0      0     ",
+      "31": "ret                 0      0      0     ",
+      "32": "set                 0      0      0     ",
+      "33": "int_min             1      0      0     ",
+      "34": "push                1      0      0     ",
+      "35": "cursor_open         0      34     37    # public.a (primary)",
+      "36": "jmp                 40     0      0     ",
+      "37": "cursor_read         1      0      0     ",
+      "38": "set_add             0      1      0     ",
+      "39": "cursor_next         0      37     0     ",
+      "40": "cursor_close        0      0      0     ",
+      "41": "result              0      0      0     ",
+      "42": "ret                 0      0      0     ",
+      "43": "set                 0      0      0     ",
+      "44": "int_min             1      0      0     ",
+      "45": "push                1      0      0     ",
+      "46": "cursor_open         0      51     48    # public.b (primary)",
+      "47": "jmp                 51     0      0     ",
+      "48": "cursor_read         1      0      0     ",
+      "49": "set_add             0      1      0     ",
+      "50": "cursor_next         0      48     0     ",
+      "51": "cursor_close        0      0      0     ",
+      "52": "result              0      0      0     ",
+      "53": "ret                 0      0      0     "
+    }
+  }
+}]
 update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a
@@ -411,78 +403,77 @@ select * from b
 [[30, 0], [10, 0], [20, 0]]
 # test: upsert a update b abort
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
-["
-bytecode [coordinator]
---------
- 0                send        0      0      -      # public.a
- 1            send_all        1     14      0
- 2            send_all        2     32      0
- 3                recv        0      0      0
- 4               array        0      0      0
- 5             cte_set        0      0      0
- 6                recv        1      0      0
- 7               array        0      0      0
- 8             cte_set        1      0      0
- 9                recv        2      0      0
-10                bool        0      0      0
-11                push        0      0      0
-12          merge_recv        0     -1     -1
-13             cte_set        2      0      0
-14              string        0     44      0      # abort
-15                push        0      0      0
-16                call        0      -      1      # public.error()
-17             cte_set        3      0      0
-18                body        3      0      0
-19                 ret        0      0      0
-
-
-bytecode [node]
---------
- 0      cursor_prepare        0      -      0      # public.a
- 1                 jmp       11      0      0
- 2         cursor_read        0      0      0
- 3                push        0      0      0
- 4                null        0      0      0
- 5                push        0      0      0
- 6          cursor_idx        0      0      0
- 7                push        0      0      0
- 8              assign        0      3      1
- 9                push        0      0      0
-10              update        0      0      0
-11              upsert        0      2     -1
-12        cursor_close        0      0      0
-13                 ret        0      0      0
-14             int_min        0      0      0
-15                push        0      0      0
-16         cursor_open        0     10     18      # public.b (primary)
-17                 jmp       30      0      0
-18         cursor_read        0      0      0
-19                push        0      0      0
-20                null        0      0      0
-21                push        0      0      0
-22          cursor_idx        0      0      1
-23                 int        1      2      0
-24                 mul        2      0      1
-25                push        2      0      0
-26              assign        0      3      1
-27                push        0      0      0
-28              update        0      0      0
-29         cursor_next        0     18      0
-30        cursor_close        0      0      0
-31                 ret        0      0      0
-32                 set        0      0      0
-33             int_min        1      0      0
-34                push        1      0      0
-35         cursor_open        0     27     37      # public.a (primary)
-36                 jmp       40      0      0
-37         cursor_read        1      0      0
-38             set_add        0      1      0
-39         cursor_next        0     37      0
-40        cursor_close        0      0      0
-41              result        0      0      0
-42                 ret        0      0      0
-
-"]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.a",
+      "01": "send_all            1      14     0     ",
+      "02": "send_all            2      32     0     ",
+      "03": "recv                0      0      0     ",
+      "04": "array               0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "recv                1      0      0     ",
+      "07": "array               0      0      0     ",
+      "08": "cte_set             1      0      0     ",
+      "09": "recv                2      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             2      0      0     ",
+      "14": "string              0      44     0     # abort",
+      "15": "push                0      0      0     ",
+      "16": "call                0      -      1     # public.error()",
+      "17": "cte_set             3      0      0     ",
+      "18": "body                3      0      0     ",
+      "19": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "cursor_prepare      0      -      0     # public.a",
+      "01": "jmp                 11     0      0     ",
+      "02": "cursor_read         0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "null                0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "cursor_idx          0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "assign              0      3      1     ",
+      "09": "push                0      0      0     ",
+      "10": "update              0      0      0     ",
+      "11": "upsert              0      2      -1    ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "ret                 0      0      0     ",
+      "14": "int_min             0      0      0     ",
+      "15": "push                0      0      0     ",
+      "16": "cursor_open         0      10     18    # public.b (primary)",
+      "17": "jmp                 30     0      0     ",
+      "18": "cursor_read         0      0      0     ",
+      "19": "push                0      0      0     ",
+      "20": "null                0      0      0     ",
+      "21": "push                0      0      0     ",
+      "22": "cursor_idx          0      0      1     ",
+      "23": "int                 1      -      0     # 2",
+      "24": "mul                 2      0      1     ",
+      "25": "push                2      0      0     ",
+      "26": "assign              0      3      1     ",
+      "27": "push                0      0      0     ",
+      "28": "update              0      0      0     ",
+      "29": "cursor_next         0      18     0     ",
+      "30": "cursor_close        0      0      0     ",
+      "31": "ret                 0      0      0     ",
+      "32": "set                 0      0      0     ",
+      "33": "int_min             1      0      0     ",
+      "34": "push                1      0      0     ",
+      "35": "cursor_open         0      27     37    # public.a (primary)",
+      "36": "jmp                 40     0      0     ",
+      "37": "cursor_read         1      0      0     ",
+      "38": "set_add             0      1      0     ",
+      "39": "cursor_next         0      37     0     ",
+      "40": "cursor_close        0      0      0     ",
+      "41": "result              0      0      0     ",
+      "42": "ret                 0      0      0     "
+    }
+  }
+}]
 insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 {"code": 1, "msg": "abort"}
 select * from a

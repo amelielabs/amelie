@@ -18,11 +18,11 @@ select regexp_like('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
 # test: regexp_substr
 select regexp_substr('a(123)b', '([(])?[0-9]+(?(1)[)])');
 ["(123)"]
-select regexp_substr('aaa123', '[a-z]*\K[0-9]*');
+select regexp_substr('aaa123', '[a-z]*\\K[0-9]*');
 ["123"]
 select regexp_substr('ab1','[a-z](?![a-z])');
 ["b"]
-select regexp_substr('---abcd---xyz---', '\b\w{3}\b');
+select regexp_substr('---abcd---xyz---', '\\b\\w{3}\\b');
 ["xyz"]
 select regexp_substr('foobarbequebazilbarfbonk', '(b[^b]+)(b[^b]+)')
 ["barbeque"]

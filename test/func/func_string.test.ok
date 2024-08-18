@@ -168,7 +168,7 @@ select ""::rtrim("")
 select ""::rtrim(null)
 {"code": 1, "msg": "rtrim(): expected string for argument 1, but got null"}
 select "  	 123"::rtrim()
-["  	 123"]
+["  \t 123"]
 select "  123  "::rtrim(" ")
 ["  123"]
 select "  123  "::rtrim(" 13")
