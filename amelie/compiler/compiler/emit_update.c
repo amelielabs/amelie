@@ -60,7 +60,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		case KNAME_COMPOUND:
 		{
 			Str name;
-			str_split_or_set(&path, &name, '.');
+			str_split(&path, &name, '.');
 
 			column = columns_find(columns, &name);
 			if (! column)

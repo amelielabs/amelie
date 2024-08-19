@@ -166,7 +166,7 @@ str_compare_fn(Str* a, Str* b)
 }
 
 static inline bool
-str_split_or_set(Str* self, Str* chunk, char token)
+str_split(Str* self, Str* chunk, char token)
 {
 	str_init(chunk);
 	char* pos = strnchr(str_of(self), str_size(self), token);

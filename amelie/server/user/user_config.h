@@ -75,7 +75,7 @@ user_config_read(uint8_t** pos)
 		{ DECODE_STRING, "secret", &self->secret },
 		{ 0,              NULL,    NULL          },
 	};
-	decode_map(map, pos);
+	decode_map(map, "user", pos);
 	return unguard();
 }
 

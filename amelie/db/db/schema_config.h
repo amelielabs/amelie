@@ -75,7 +75,7 @@ schema_config_read(uint8_t** pos)
 		{ DECODE_BOOL,   "create",     &self->create },
 		{ 0,              NULL,        NULL          },
 	};
-	decode_map(map, pos);
+	decode_map(map, "schema", pos);
 	return unguard();
 }
 

@@ -343,7 +343,7 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	// name.path
 	//
 	Str  name;
-	bool compound = str_split_or_set(&ref, &name, '.');
+	bool compound = str_split(&ref, &name, '.');
 
 	// get target columns
 	Columns* columns = NULL;
@@ -488,7 +488,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 {
 	// check if first path is a table name
 	Str name;
-	str_split_or_set(&ast->string, &name, '.');
+	str_split(&ast->string, &name, '.');
 
 	Str path;
 	str_init(&path);
@@ -920,7 +920,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	{
 		// path.*
 		Str name;
-		str_split_or_set(&ast->string, &name, '.');
+		str_split(&ast->string, &name, '.');
 
 		auto target_list = compiler_target_list(self);
 		auto match = target_list_match(target_list, &name);
@@ -938,7 +938,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	{
 		// path.**
 		Str name;
-		str_split_or_set(&ast->string, &name, '.');
+		str_split(&ast->string, &name, '.');
 
 		auto target_list = compiler_target_list(self);
 		auto match = target_list_match(target_list, &name);

@@ -34,7 +34,7 @@ struct Decode
 };
 
 static inline void
-decode_map(Decode* self, uint8_t** pos)
+decode_map(Decode* self, const char* context, uint8_t** pos)
 {
 	// read map and compare against keys
 	data_read_map(pos);
@@ -53,7 +53,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_INTERVAL:
 			{
 				if (unlikely(! data_is_interval(*pos)))
-					error("config: interval expected for '%s'", ref->key);
+					error("%s: interval expected for '%s'", context,
+					      ref->key);
 				auto value = (Interval*)ref->value;
 				data_read_interval(pos, value);
 				break;
@@ -61,7 +62,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_INTERVAL_STRING:
 			{
 				if (unlikely(! data_is_string(*pos)))
-					error("config: string expected for '%s'", ref->key);
+					error("%s: string expected for '%s'", context,
+					      ref->key);
 				Str str;
 				data_read_string(pos, &str);
 				auto value = (Interval*)ref->value;
@@ -71,7 +73,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_TS:
 			{
 				if (unlikely(! data_is_timestamp(*pos)))
-					error("config: timestamp expected for '%s'", ref->key);
+					error("%s: timestamp expected for '%s'",
+					      context, ref->key);
 				auto value = (int64_t*)ref->value;
 				data_read_timestamp(pos, value);
 				break;
@@ -79,7 +82,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_TS_STRING:
 			{
 				if (unlikely(! data_is_string(*pos)))
-					error("config: string expected for '%s'", ref->key);
+					error("%s: string expected for '%s'", context,
+					       ref->key);
 				Str str;
 				data_read_string(pos, &str);
 				auto value = (Timestamp*)ref->value;
@@ -89,7 +93,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_UUID:
 			{
 				if (unlikely(! data_is_string(*pos)))
-					error("config: string expected for '%s'", ref->key);
+					error("%s: string expected for '%s'", context,
+					      ref->key);
 				auto value = (Uuid*)ref->value;
 				Str uuid;
 				data_read_string(pos, &uuid);
@@ -99,7 +104,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_STRING:
 			{
 				if (unlikely(! data_is_string(*pos)))
-					error("config: string expected for '%s'", ref->key);
+					error("%s: string expected for '%s'", context,
+					      ref->key);
 				auto value = (Str*)ref->value;
 				str_free(value);
 				data_read_string_copy(pos, value);
@@ -108,7 +114,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_INT:
 			{
 				if (unlikely(! data_is_integer(*pos)))
-					error("config: integer expected for '%s'", ref->key);
+					error("%s: integer expected for '%s'", context,
+					      ref->key);
 				auto value = (int64_t*)ref->value;
 				data_read_integer(pos, value);
 				break;
@@ -116,7 +123,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_BOOL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("config: bool expected for '%s'", ref->key);
+					error("%s: bool expected for '%s'", context,
+					      ref->key);
 				auto value = (bool*)ref->value;
 				data_read_bool(pos, value);
 				break;
@@ -124,7 +132,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_REAL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("config: real expected for '%s'", ref->key);
+					error("%s: real expected for '%s'", context,
+					      ref->key);
 				auto value = (double*)ref->value;
 				data_read_real(pos, value);
 				break;
@@ -132,14 +141,16 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_NULL:
 			{
 				if (unlikely(! data_is_bool(*pos)))
-					error("config: null expected for '%s'", ref->key);
+					error("%s: null expected for '%s'", context,
+					      ref->key);
 				data_read_null(pos);
 				break;
 			}
 			case DECODE_ARRAY:
 			{
 				if (unlikely(! data_is_array(*pos)))
-					error("config: array expected for '%s'", ref->key);
+					error("%s: array expected for '%s'", context,
+					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
 				data_skip(pos);
@@ -148,7 +159,8 @@ decode_map(Decode* self, uint8_t** pos)
 			case DECODE_MAP:
 			{
 				if (unlikely(! data_is_map(*pos)))
-					error("config: map expected for '%s'", ref->key);
+					error("%s: map expected for '%s'", context,
+					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
 				data_skip(pos);
@@ -175,7 +187,7 @@ decode_map(Decode* self, uint8_t** pos)
 		if (! found)
 		{
 			data_skip(pos);
-			info("config: unknown key '%.*s'", str_size(&key),
+			info("%s: unknown key '%.*s'", context, str_size(&key),
 			     str_of(&key));
 		}
 	}
@@ -184,6 +196,6 @@ decode_map(Decode* self, uint8_t** pos)
 	for (auto ref = self; ref->key; ref++)
 	{
 		if (! (ref->flags & DECODE_FOUND))
-			error("config: key '%s' is not found", ref->key);
+			error("%s: key '%s' is not found", context, ref->key);
 	}
 }

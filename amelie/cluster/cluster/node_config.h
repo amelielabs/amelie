@@ -53,7 +53,7 @@ node_config_read(uint8_t** pos)
 		{ DECODE_UUID, "id",   &self->id },
 		{ 0,            NULL,  NULL      },
 	};
-	decode_map(map, pos);
+	decode_map(map, "node", pos);
 	return unguard();
 }
 

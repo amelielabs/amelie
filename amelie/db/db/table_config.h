@@ -148,7 +148,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
 		{ 0,              NULL,        NULL             },
 	};
-	decode_map(map, pos);
+	decode_map(map, "table", pos);
 
 	// columns
 	columns_read(&self->columns, &pos_columns);

@@ -108,7 +108,7 @@ parse_key_column(Stmt* self, Columns* columns, Str* path)
 	if (tk->id == KNAME_COMPOUND)
 	{
 		// column.path
-		str_split_or_set(&tk->string, &name, '.');
+		str_split(&tk->string, &name, '.');
 
 		// exclude column name from the path
 		str_set_str(path, &tk->string);

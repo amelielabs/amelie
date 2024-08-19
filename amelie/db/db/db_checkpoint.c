@@ -119,7 +119,7 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 		{ DECODE_ARRAY, "views",   &pos_views   },
 		{ 0,             NULL,      NULL        },
 	};
-	decode_map(map, pos);
+	decode_map(map, "catalog", pos);
 
 	// schemas
 	data_read_array(&pos_schemas);

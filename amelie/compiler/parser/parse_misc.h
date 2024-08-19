@@ -45,7 +45,7 @@ parse_target_path(Ast* path, Str* schema, Str* name)
 	// schema.name
 	if (path->id == KNAME_COMPOUND)
 	{
-		str_split_or_set(&path->string, schema, '.');
+		str_split(&path->string, schema, '.');
 		str_set_str(name, &path->string);
 		str_advance(name, str_size(schema) + 1);
 		if (strnchr(str_of(name), str_size(name), '.'))

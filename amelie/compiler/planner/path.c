@@ -89,7 +89,7 @@ path_compare(Path* self, Ast* ast, Key* key)
 	Str path;
 	str_set_str(&path, &ast->string);
 	Str name;
-	str_split_or_set(&ast->string, &name, '.');
+	str_split(&ast->string, &name, '.');
 
 	// [target.]
 	if (target_compare(self->target, &name))
@@ -97,11 +97,11 @@ path_compare(Path* self, Ast* ast, Key* key)
 		str_advance(&path, str_size(&name) + 1);
 
 		// skip target name
-		str_split_or_set(&path, &name, '.');
+		str_split(&path, &name, '.');
 	}
 
 	// column[.path]
-	bool compound = str_split_or_set(&path, &name, '.');
+	bool compound = str_split(&path, &name, '.');
 	if (! str_compare(&name, &column->name))
 		return false;
 
@@ -149,7 +149,7 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 	if (value->id == KNAME_COMPOUND)
 	{
 		Str name;
-		str_split_or_set(&path->string, &name, '.');
+		str_split(&path->string, &name, '.');
 
 		auto join = target_list_match(self->target_list, &name);
 		if (join)

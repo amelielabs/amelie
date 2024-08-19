@@ -21,6 +21,8 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-server.a
 OBJECTS        = \
                  user/user_mgr.o \
+                 auth/auth_cache.o \
+                 auth/auth_state.o \
                  auth/auth.o \
                  http/http.o \
                  http/uri.o \

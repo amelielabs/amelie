@@ -101,7 +101,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 		{ DECODE_ARRAY,  "keys",    &keys          },
 		{ 0,              NULL,     NULL           },
 	};
-	decode_map(map, pos);
+	decode_map(map, "index", pos);
 	keys_read(&self->keys, &keys);
 	return unguard();
 }

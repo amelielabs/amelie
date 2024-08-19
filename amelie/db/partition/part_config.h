@@ -79,7 +79,7 @@ part_config_read(uint8_t** pos)
 		{ DECODE_INT,  "max",  &self->max  },
 		{ 0,            NULL,  NULL        },
 	};
-	decode_map(map, pos);
+	decode_map(map, "part", pos);
 	return unguard();
 }
 

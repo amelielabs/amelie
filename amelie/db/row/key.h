@@ -87,7 +87,7 @@ key_read(uint8_t** pos)
 		{ DECODE_STRING, "path", &self->path },
 		{ 0,              NULL,  NULL        },
 	};
-	decode_map(map, pos);
+	decode_map(map, "key", pos);
 	return unguard();
 }
 

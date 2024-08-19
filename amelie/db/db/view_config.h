@@ -85,7 +85,7 @@ view_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "columns", &columns      },
 		{ 0,             NULL,       NULL         },
 	};
-	decode_map(map, pos);
+	decode_map(map, "view", pos);
 	columns_read(&self->columns, &columns);
 	return unguard();
 }

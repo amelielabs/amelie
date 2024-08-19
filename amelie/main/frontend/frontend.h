@@ -16,7 +16,7 @@ struct Frontend
 	TrxCache      trx_cache;
 	LockMgr       lock_mgr;
 	ClientMgr     client_mgr;
-	UserCache     user_cache;
+	Auth          auth;
 	FrontendEvent on_connect;
 	void*         on_connect_arg;
 	Task          task;

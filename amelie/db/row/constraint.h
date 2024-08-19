@@ -83,7 +83,7 @@ constraint_read(Constraint* self, uint8_t** pos)
 		{ DECODE_DATA, "default",   &self->value     },
 		{ 0,            NULL,       NULL             },
 	};
-	decode_map(map, pos);
+	decode_map(map, "constraint", pos);
 }
 
 static inline void

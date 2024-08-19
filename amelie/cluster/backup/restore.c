@@ -112,7 +112,7 @@ restore_start(Restore* self)
 		{ DECODE_MAP,   "config",     &self->config     },
 		{ 0,             NULL,        NULL              }
 	};
-	decode_map(map, &pos);
+	decode_map(map, "restore", &pos);
 
 	// create checkpoint directory
 	if (self->checkpoint > 0)

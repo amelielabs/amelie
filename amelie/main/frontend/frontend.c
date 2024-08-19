@@ -67,7 +67,7 @@ frontend_rpc(Rpc* rpc, void* arg)
 	{
 		// sync user caches
 		UserCache* with = rpc_arg_ptr(rpc, 0);
-		user_cache_sync(&self->user_cache, with);
+		auth_sync(&self->auth, with);
 		break;
 	}
 	case RPC_LOCK:
@@ -132,7 +132,7 @@ frontend_init(Frontend*     self,
 	client_mgr_init(&self->client_mgr);
 	req_cache_init(&self->req_cache);
 	trx_cache_init(&self->trx_cache);
-	user_cache_init(&self->user_cache);
+	auth_init(&self->auth);
 	task_init(&self->task);
 }
 
@@ -143,7 +143,7 @@ frontend_free(Frontend* self)
 	trx_cache_free(&self->trx_cache);
 	req_cache_free(&self->req_cache);
 	lock_mgr_free(&self->lock_mgr);
-	user_cache_free(&self->user_cache);
+	auth_free(&self->auth);
 }
 
 void
