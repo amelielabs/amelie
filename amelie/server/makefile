@@ -13,6 +13,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../runtime/config \
                  -I. \
                  -Iuser \
+                 -Iauth \
                  -Ihttp \
                  -Iclient \
                  -Iserver
@@ -20,6 +21,7 @@ CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-server.a
 OBJECTS        = \
                  user/user_mgr.o \
+                 auth/auth.o \
                  http/http.o \
                  http/uri.o \
                  client/client.o \

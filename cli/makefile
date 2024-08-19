@@ -12,6 +12,7 @@ CFLAGS_INCLUDE = -I../amelie/runtime \
                  -I../amelie/runtime/config \
                  -I../amelie/server \
                  -I../amelie/server/user \
+                 -I../amelie/server/auth \
                  -I../amelie/server/http \
                  -I../amelie/server/client \
                  -I../amelie/server/server \
