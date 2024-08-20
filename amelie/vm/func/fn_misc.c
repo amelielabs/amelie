@@ -154,15 +154,27 @@ fn_encode(Call* self)
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
-	if (! str_compare_cstr(&argv[1]->string, "base64"))
+	if (str_compare_cstr(&argv[1]->string, "base64"))
+	{
+		auto buf = buf_begin();
+		base64_encode(buf, &argv[0]->string);
+		buf_end(buf);
+		Str string;
+		str_set_u8(&string, buf->start, buf_size(buf));
+		value_set_string(self->result, &string, buf);
+	} else
+	if (str_compare_cstr(&argv[1]->string, "base64url"))
+	{
+		auto buf = buf_begin();
+		base64url_encode(buf, &argv[0]->string);
+		buf_end(buf);
+		Str string;
+		str_set_u8(&string, buf->start, buf_size(buf));
+		value_set_string(self->result, &string, buf);
+	} else {
 		error("encode(): unsupported format");
+	}
 
-	auto buf = buf_begin();
-	base64_encode(buf, &argv[0]->string);
-	buf_end(buf);
-	Str string;
-	str_set_u8(&string, buf->start, buf_size(buf));
-	value_set_string(self->result, &string, buf);
 }
 
 static void
@@ -173,15 +185,26 @@ fn_decode(Call* self)
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
-	if (! str_compare_cstr(&argv[1]->string, "base64"))
+	if (str_compare_cstr(&argv[1]->string, "base64"))
+	{
+		auto buf = buf_begin();
+		base64_decode(buf, &argv[0]->string);
+		buf_end(buf);
+		Str string;
+		str_set_u8(&string, buf->start, buf_size(buf));
+		value_set_string(self->result, &string, buf);
+	} else
+	if (str_compare_cstr(&argv[1]->string, "base64url"))
+	{
+		auto buf = buf_begin();
+		base64url_decode(buf, &argv[0]->string);
+		buf_end(buf);
+		Str string;
+		str_set_u8(&string, buf->start, buf_size(buf));
+		value_set_string(self->result, &string, buf);
+	} else {
 		error("decode(): unsupported format");
-
-	auto buf = buf_begin();
-	base64_decode(buf, &argv[0]->string);
-	buf_end(buf);
-	Str string;
-	str_set_u8(&string, buf->start, buf_size(buf));
-	value_set_string(self->result, &string, buf);
+	}
 }
 
 static void

@@ -16,6 +16,7 @@
 #include "lib/uuid.h"
 #include "lib/crc.h"
 #include "lib/base64.h"
+#include "lib/base64url.h"
 
 // id manager
 #include "lib/id_mgr.h"
