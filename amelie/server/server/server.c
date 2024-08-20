@@ -113,7 +113,7 @@ server_listen_add(Server* self, ServerConfig* config)
 			tls_context_set_path(context, TLS_FILE_CA, directory,
 			                     &tls_ca->string);
 
-		// create tsl context
+		// create tls context
 		tls_context_create(context);
 	}
 
