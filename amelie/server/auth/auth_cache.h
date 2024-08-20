@@ -11,9 +11,9 @@ typedef struct AuthCache     AuthCache;
 
 struct AuthCacheNode
 {
+	HashtableNode node;
 	User*         user;
 	Str           digest;
-	HashtableNode node;
 };
 
 struct AuthCache

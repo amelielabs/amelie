@@ -19,29 +19,25 @@
 void
 auth_state_init(AuthState* self)
 {
-	self->data = NULL;
 	str_init(&self->header);
 	str_init(&self->payload);
 	str_init(&self->digest);
 	str_init(&self->digest_origin);
+	buf_init(&self->data);
 	json_init(&self->json);
 }
 
 void
 auth_state_free(AuthState* self)
 {
-	if (self->data)
-		buf_free(self->data);
+	buf_free(&self->data);
 	json_free(&self->json);
 }
 
 void
 auth_state_reset(AuthState* self)
 {
-	if (self->data)
-		buf_reset(self->data);
-	else
-		self->data = buf_create();
+	buf_reset(&self->data);
 	str_init(&self->header);
 	str_init(&self->payload);
 	str_init(&self->digest);
@@ -92,22 +88,24 @@ hot void
 auth_state_read_header(AuthState* self)
 {
 	// convert header from base64url
-	base64url_decode(self->data, &self->header);
+	base64url_decode(&self->data, &self->header);
 
 	// parse json
 	Str text;
-	buf_str(self->data, &text);
+	buf_str(&self->data, &text);
 	json_parse(&self->json, global()->timezone, &text, NULL);
 
 	// decode header fields
 	Str alg;
+	str_init(&alg);
 	Str typ;
+	str_init(&typ);
 	uint8_t* pos = self->json.buf_data.start;
 	Decode map[] =
 	{
-		{ DECODE_STRING, "alg", &alg },
-		{ DECODE_STRING, "typ", &typ },
-		{ 0,              NULL, NULL },
+		{ DECODE_STRING_READ, "alg", &alg },
+		{ DECODE_STRING_READ, "typ", &typ },
+		{ 0,                   NULL, NULL },
 	};
 	decode_map(map, "auth", &pos);
 
@@ -126,12 +124,12 @@ hot void
 auth_state_read_payload(AuthState* self, Str* role)
 {
 	// convert payload from base64url
-	buf_reset(self->data);
-	base64url_decode(self->data, &self->payload);
+	buf_reset(&self->data);
+	base64url_decode(&self->data, &self->payload);
 
 	// parse json
 	Str text;
-	buf_str(self->data, &text);
+	buf_str(&self->data, &text);
 	json_reset(&self->json);
 	json_parse(&self->json, global()->timezone, &text, NULL);
 
@@ -139,8 +137,8 @@ auth_state_read_payload(AuthState* self, Str* role)
 	uint8_t* pos = self->json.buf_data.start;
 	Decode map[] =
 	{
-		{ DECODE_STRING, "sub", role },
-		{ 0,              NULL, NULL },
+		{ DECODE_STRING_READ, "sub", role },
+		{ 0,                   NULL, NULL },
 	};
 	decode_map(map, "auth", &pos);
 }
@@ -149,9 +147,9 @@ hot void
 auth_state_validate(AuthState* self, Str* secret)
 {
 	// decode digest from base64url
-	buf_reset(self->data);
-	base64url_decode(self->data, &self->digest);
-	if (unlikely(buf_size(self->data) != 32))
+	buf_reset(&self->data);
+	base64url_decode(&self->data, &self->digest);
+	if (unlikely(buf_size(&self->data) != 32))
 		error("auth: digest has unexpected size");
 
 	// HMACSHA256
@@ -161,6 +159,6 @@ auth_state_validate(AuthState* self, Str* secret)
 	     str_size(&self->digest_origin),
 	     digest, NULL);
 
-	if (memcmp(self->data->start, digest, 32) != 0)
+	if (memcmp(self->data.start, digest, 32) != 0)
 		error("auth: digest mismatch");
 }

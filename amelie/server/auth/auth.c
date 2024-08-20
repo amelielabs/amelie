@@ -64,8 +64,7 @@ auth_run(Auth* self, Str* token)
 	// find user
 	user = user_cache_find(&self->user_cache, &role);
 	if (! user)
-		error("auth: user %.*s not found", str_size(&user->config->name),
-		      str_of(&user->config->name));
+		error("auth: user %.*s not found", str_size(&role), str_of(&role));
 
 	// validate digest using user secret
 	auth_state_validate(state, &user->config->secret);

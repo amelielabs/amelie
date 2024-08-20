@@ -12,18 +12,19 @@ enum
 {
 	DECODE_UUID            = 1 << 0,
 	DECODE_STRING          = 1 << 1,
-	DECODE_INT             = 1 << 2,
-	DECODE_BOOL            = 1 << 3,
-	DECODE_REAL            = 1 << 4,
-	DECODE_NULL            = 1 << 5,
-	DECODE_ARRAY           = 1 << 6,
-	DECODE_MAP             = 1 << 7,
-	DECODE_DATA            = 1 << 8,
-	DECODE_INTERVAL        = 1 << 9,
-	DECODE_INTERVAL_STRING = 1 << 10,
-	DECODE_TS              = 1 << 11,
-	DECODE_TS_STRING       = 1 << 12,
-	DECODE_FOUND           = 1 << 13
+	DECODE_STRING_READ     = 1 << 2,
+	DECODE_INT             = 1 << 3,
+	DECODE_BOOL            = 1 << 4,
+	DECODE_REAL            = 1 << 5,
+	DECODE_NULL            = 1 << 6,
+	DECODE_ARRAY           = 1 << 7,
+	DECODE_MAP             = 1 << 8,
+	DECODE_DATA            = 1 << 9,
+	DECODE_INTERVAL        = 1 << 10,
+	DECODE_INTERVAL_STRING = 1 << 11,
+	DECODE_TS              = 1 << 12,
+	DECODE_TS_STRING       = 1 << 13,
+	DECODE_FOUND           = 1 << 14
 };
 
 struct Decode
@@ -111,6 +112,15 @@ decode_map(Decode* self, const char* context, uint8_t** pos)
 				data_read_string_copy(pos, value);
 				break;
 			}
+			case DECODE_STRING_READ:
+			{
+				if (unlikely(! data_is_string(*pos)))
+					error("%s: string expected for '%s'", context,
+					      ref->key);
+				auto value = (Str*)ref->value;
+				data_read_string(pos, value);
+				break;
+			}
 			case DECODE_INT:
 			{
 				if (unlikely(! data_is_integer(*pos)))
@@ -185,11 +195,7 @@ decode_map(Decode* self, const char* context, uint8_t** pos)
 		}
 
 		if (! found)
-		{
 			data_skip(pos);
-			info("%s: unknown key '%.*s'", context, str_size(&key),
-			     str_of(&key));
-		}
 	}
 
 	// ensure all keys were found

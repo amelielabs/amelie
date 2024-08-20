@@ -39,8 +39,8 @@ auth_cache_free(AuthCache* self)
 				continue;
 			auth_cache_node_free(node);
 		}
-		hashtable_free(&self->ht);
 	}
+	hashtable_free(&self->ht);
 	hashtable_init(&self->ht);
 }
 
@@ -61,11 +61,10 @@ void
 auth_cache_add(AuthCache* self, User* user, Str* digest)
 {
 	auto node = (AuthCacheNode*)am_malloc(sizeof(AuthCacheNode));
-	node->user = user;
-	str_init(&node->digest);
-	node->user = user;
 	hashtable_node_init(&node->node);
 	node->node.hash = hash_murmur3_32(str_u8(digest), str_size(digest), 0);
+	node->user = user;
+	str_init(&node->digest);
 	guard(auth_cache_node_free, node);
 
 	str_copy(&node->digest, digest);

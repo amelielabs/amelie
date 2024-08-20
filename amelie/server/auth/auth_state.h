@@ -14,7 +14,7 @@ struct AuthState
 	Str  payload;
 	Str  digest;
 	Str  digest_origin;
-	Buf* data;
+	Buf  data;
 	Json json;
 };
 
