@@ -38,12 +38,14 @@ auth_state_free(AuthState* self)
 void
 auth_state_reset(AuthState* self)
 {
+	if (self->data)
+		buf_reset(self->data);
+	else
+		self->data = buf_create();
 	str_init(&self->header);
 	str_init(&self->payload);
 	str_init(&self->digest);
 	str_init(&self->digest_origin);
-	if (self->data)
-		buf_reset(self->data);
 	json_reset(&self->json);
 }
 
@@ -74,7 +76,8 @@ auth_state_read(AuthState* self, Str* token)
 	str_advance(digest, str_size(&self->payload) + 1);
 
 	// save string used for the digest (header.payload)
-	str_set(&self->digest_origin, token->pos, (digest->pos - token->pos) - 1);
+	auto start = token->pos + 7;
+	str_set(&self->digest_origin, start, (digest->pos - start) - 1);
 
 	// digest
 	if (unlikely(str_empty(&self->digest)))
@@ -88,8 +91,8 @@ error_jwt:
 hot void
 auth_state_read_header(AuthState* self)
 {
-	// convert header from base64
-	base64_decode(self->data, &self->header);
+	// convert header from base64url
+	base64url_decode(self->data, &self->header);
 
 	// parse json
 	Str text;
@@ -122,9 +125,9 @@ auth_state_read_header(AuthState* self)
 hot void
 auth_state_read_payload(AuthState* self, Str* role)
 {
-	// convert payload from base64
+	// convert payload from base64url
 	buf_reset(self->data);
-	base64_decode(self->data, &self->payload);
+	base64url_decode(self->data, &self->payload);
 
 	// parse json
 	Str text;
@@ -136,8 +139,8 @@ auth_state_read_payload(AuthState* self, Str* role)
 	uint8_t* pos = self->json.buf_data.start;
 	Decode map[] =
 	{
-		{ DECODE_STRING, "role", role },
-		{ 0,              NULL,  NULL },
+		{ DECODE_STRING, "sub", role },
+		{ 0,              NULL, NULL },
 	};
 	decode_map(map, "auth", &pos);
 }
@@ -145,9 +148,9 @@ auth_state_read_payload(AuthState* self, Str* role)
 hot void
 auth_state_validate(AuthState* self, Str* secret)
 {
-	// decode digest from base64
+	// decode digest from base64url
 	buf_reset(self->data);
-	base64_decode(self->data, &self->digest);
+	base64url_decode(self->data, &self->digest);
 	if (unlikely(buf_size(self->data) != 32))
 		error("auth: digest has unexpected size");
 

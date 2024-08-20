@@ -45,6 +45,13 @@ auth_cache_free(AuthCache* self)
 }
 
 void
+auth_cache_prepare(AuthCache* self)
+{
+	if (unlikely(! hashtable_created(&self->ht)))
+		hashtable_create(&self->ht, 256);
+}
+
+void
 auth_cache_reset(AuthCache* self)
 {
 	auth_cache_free(self);

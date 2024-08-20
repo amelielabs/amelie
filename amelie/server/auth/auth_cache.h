@@ -24,5 +24,6 @@ struct AuthCache
 void  auth_cache_init(AuthCache*);
 void  auth_cache_free(AuthCache*);
 void  auth_cache_reset(AuthCache*);
+void  auth_cache_prepare(AuthCache*);
 void  auth_cache_add(AuthCache*, User*, Str*);
 User* auth_cache_find(AuthCache*, Str*);

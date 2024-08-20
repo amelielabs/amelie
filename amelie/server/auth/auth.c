@@ -41,6 +41,7 @@ auth_run(Auth* self, Str* token)
 {
 	auto state = &self->state;
 	auth_state_reset(state);
+	auth_cache_prepare(&self->cache);
 
 	// parse authentication token
 	auth_state_read(state, token);

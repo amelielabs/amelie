@@ -262,6 +262,27 @@ session_read(Session* self)
 		error("http request limit reached");
 }
 
+hot static inline bool
+session_auth(Session* self)
+{
+	auto client  = self->client;
+	auto request = &client->request;
+	auto reply   = &client->reply;
+	auto auth_header = http_find(request, "Authorization", 13);
+	if (auth_header)
+	{
+		auto user = auth(&self->frontend->auth, &auth_header->value);
+		if (! user)
+		{
+			http_write_reply(reply, 401, "Unauthorized");
+			http_write_end(reply);
+			tcp_write_buf(&client->tcp, &reply->raw);
+			return false;
+		}
+	}
+	return true;
+}
+
 hot void
 session_main(Session* self)
 {
@@ -278,6 +299,10 @@ session_main(Session* self)
 		http_reset(request);
 		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
+			break;
+
+		// authenticate
+		if (! session_auth(self))
 			break;
 
 		// handle backup
