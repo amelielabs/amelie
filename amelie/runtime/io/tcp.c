@@ -215,7 +215,7 @@ static inline int
 tcp_read_tls(Tcp* self, Buf* buf, int size)
 {
 	int rc;
-	rc = tls_read(&self->tls, buf, size);
+	rc = tls_read(&self->tls, buf->position, size);
 	if (rc == -1)
 	{
 		// need more data
