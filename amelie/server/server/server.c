@@ -159,12 +159,24 @@ server_listen_set_uri(Server* self)
 	// set listen_uri for cli
 	auto listen_uri = &config()->listen_uri;
 	auto first = container_of(self->config.next, ServerConfig, link);
-	char uri[128];
-	if (str_compare_raw(&first->host, "*", 1))
-		snprintf(uri, sizeof(uri), "localhost:%d", (int)first->port);
+	char uri[256];
+	int  uri_len = 0;
+
+	// http or https
+	if (first->tls)
+		uri_len = snprintf(uri, sizeof(uri), "https://");
 	else
-		snprintf(uri, sizeof(uri), "%.*s:%d", str_size(&first->host),
+		uri_len = snprintf(uri, sizeof(uri), "http://");
+
+	// host:port
+	if (str_compare_raw(&first->host, "*", 1))
+		snprintf(uri + uri_len, sizeof(uri) - uri_len, "localhost:%d",
+		         (int)first->port);
+	else
+		snprintf(uri + uri_len, sizeof(uri) - uri_len, "%.*s:%d",
+		         str_size(&first->host),
 		         str_of(&first->host), (int)first->port);
+
 	var_string_set_raw(listen_uri, uri, strlen(uri));
 }
 
