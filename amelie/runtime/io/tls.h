@@ -27,3 +27,4 @@ bool tls_read_pending(Tls*);
 int  tls_read(Tls*, void*, int);
 int  tls_write(Tls*, void*, int);
 int  tls_writev(Tls*, struct iovec*, int);
+int  tls_explain(Tls*, char*, int);

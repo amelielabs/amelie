@@ -314,3 +314,13 @@ tls_writev(Tls* self, struct iovec* iov, int count)
 	}
 	return tls_write(self, self->write_buf.start, buf_size(&self->write_buf));
 }
+
+int
+tls_explain(Tls* self, char* buf, int size)
+{
+	if (! tls_is_set(self))
+		return 0;
+	auto version = SSL_get_version(self->ssl);
+	auto cipher  = SSL_get_cipher_name(self->ssl);
+	return snprintf(buf, size, "%s, %s", version, cipher);
+}

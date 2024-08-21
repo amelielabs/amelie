@@ -82,13 +82,22 @@ client_accept(Client* self)
 	// new client
 	client_set_coroutine_name(self);
 
+	// handshake
+	tcp_connect_fd(&self->tcp);
+
 	// hello
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected");
-
-	// handshake
-	tcp_connect_fd(&self->tcp);
+	{
+		if (tls_is_set(&self->tcp.tls))
+		{
+			char tls_string[128];
+			tls_explain(&self->tcp.tls, tls_string, sizeof(tls_string));
+			info("connected (%s)", tls_string);
+		} else {
+			info("connected");
+		}
+	}
 }
 
 static void
