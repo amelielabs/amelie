@@ -75,7 +75,7 @@ tls_create(Tls* self, Fd* fd)
 	self->ssl = ssl;
 
 	// set server name
-	auto server = tls_context_get(self->context, TLS_SERVER);
+	auto server = remote_get(self->context->remote, REMOTE_SERVER);
 	if (server)
 	{
 		int rc;
@@ -148,48 +148,47 @@ tls_verify_name(const char* cert_name, const char* name)
 	if (strcasecmp(cert_name, name) == 0)
 		return true;
 
-	/* wildcard match */
+	// wildcard match
 	if (cert_name[0] != '*')
 		return false;
 
-	/*
-	 * valid wildcards:
-	 * - "*.domain.tld"
-	 * - "*.sub.domain.tld"
-	 * - etc.
-	 * reject "*.tld".
-	 * no attempt to prevent the use of eg. "*.co.uk".
-	*/
+	//
+	// valid wildcards:
+	// - "*.domain.tld"
+	// - "*.sub.domain.tld"
+	// - etc.
+	// reject "*.tld".
+	// no attempt to prevent the use of eg. "*.co.uk".
+	//
 	cert_domain = &cert_name[1];
 
-	/* disallow "*"  */
+	// disallow "*"
 	if (cert_domain[0] == '\0')
 		return false;
 
-	/* disallow "*foo" */
+	// disallow "*foo"
 	if (cert_domain[0] != '.')
 		return false;
 
-	/* disallow "*.." */
+	// disallow "*.."
 	if (cert_domain[1] == '.')
 		return false;
 
+	// disallow "*.bar"
 	next_dot = strchr(&cert_domain[1], '.');
-	/* disallow "*.bar" */
 	if (next_dot == NULL)
 		return false;
 
-	/* disallow "*.bar.." */
+	// disallow "*.bar.."
 	if (next_dot[1] == '.')
 		return false;
 
+	// no wildcard match against a name with no host part.
 	domain = strchr(name, '.');
-
-	/* no wildcard match against a name with no host part. */
 	if (name[0] == '.')
 		return false;
 
-	/* no wildcard match against a name with no domain part. */
+	// no wildcard match against a name with no domain part.
 	if (domain == NULL || strlen(domain) == 1)
 		return false;
 
@@ -238,7 +237,7 @@ tls_handshake(Tls* self)
 	// verify server name against certficiate common name
 	if (self->context->client)
 	{
-		auto server = tls_context_get(self->context, TLS_SERVER);
+		auto server = remote_get(self->context->remote, REMOTE_SERVER);
 		if (server)
 			tls_verify_common_name(self, server);
 	}

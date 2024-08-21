@@ -12,6 +12,7 @@ struct ServerConfig
 {
 	bool             tls;
 	TlsContext       tls_context;
+	Remote           remote;
 	Str              host;
 	struct addrinfo* host_addr;
 	int64_t          port;
@@ -27,7 +28,8 @@ server_config_allocate(void)
 	self->host_addr = NULL;
 	self->port      = 3485;
 	str_init(&self->host);
-	tls_context_init(&self->tls_context, false);
+	tls_context_init(&self->tls_context);
+	remote_init(&self->remote);
 	list_init(&self->link);
 	return self;
 }
@@ -36,6 +38,7 @@ static inline void
 server_config_free(ServerConfig* self)
 {
 	tls_context_free(&self->tls_context);
+	remote_free(&self->remote);
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
 	str_free(&self->host);

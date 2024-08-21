@@ -13,6 +13,7 @@
 #include "io/file.h"
 
 // tls
+#include "io/remote.h"
 #include "io/tls_lib.h"
 #include "io/tls_context.h"
 #include "io/tls.h"

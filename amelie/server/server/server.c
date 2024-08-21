@@ -87,7 +87,7 @@ server_listen_add(Server* self, ServerConfig* config)
 	// configure and create server tls context
 	if (config->tls)
 	{
-		auto context = &config->tls_context;
+		auto remote = &config->remote;
 
 		// <directory>/certs
 		char directory[PATH_MAX];
@@ -97,24 +97,21 @@ server_listen_add(Server* self, ServerConfig* config)
 		auto tls_cert = &config()->tls_cert;
 		if (! var_string_is_set(tls_cert))
 			error("server: <tls_cert> is not defined"); 
-		tls_context_set_path(context, TLS_FILE_CERT, directory,
-		                     &tls_cert->string);
+		remote_set_path(remote, REMOTE_FILE_CERT, directory, &tls_cert->string);
 
 		// tls_key
 		auto tls_key = &config()->tls_key;
 		if (! var_string_is_set(tls_key))
 			error("server: <tls_key> is not defined"); 
-		tls_context_set_path(context, TLS_FILE_KEY, directory,
-		                     &tls_key->string);
+		remote_set_path(remote, REMOTE_FILE_KEY, directory, &tls_key->string);
 
 		// tls_ca
 		auto tls_ca = &config()->tls_ca;
 		if (var_string_is_set(tls_ca))
-			tls_context_set_path(context, TLS_FILE_CA, directory,
-			                     &tls_ca->string);
+			remote_set_path(remote, REMOTE_FILE_CA, directory, &tls_ca->string);
 
 		// create tls context
-		tls_context_create(context);
+		tls_context_create(&config->tls_context, false, remote);
 	}
 
 	// foreach resolved address
