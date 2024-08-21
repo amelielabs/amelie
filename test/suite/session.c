@@ -73,7 +73,9 @@ test_session_on_write(void* ptr, size_t len, size_t nmemb, void* arg)
 }
 
 void
-test_session_connect(TestSuite* self, TestSession* session, const char* uri)
+test_session_connect(TestSuite* self, TestSession* session,
+                     const char* uri,
+                     const char* cafile)
 {
 	auto curl = session->handle;
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 0);
@@ -85,6 +87,16 @@ test_session_connect(TestSuite* self, TestSession* session, const char* uri)
 		test_error(self, "line %d: connect: failed to set uri",
 		           self->current_line);
 		return;
+	}
+	if (cafile)
+	{
+		code = curl_easy_setopt(curl, CURLOPT_CAINFO, cafile);
+		if (code != CURLE_OK)
+		{
+			test_error(self, "line %d: connect: failed to set cafile",
+			           self->current_line);
+			return;
+		}
 	}
 
 	/*curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);*/

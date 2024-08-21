@@ -453,7 +453,38 @@ test_suite_connect(TestSuite* self, char* arg)
 	if (session == NULL)
 		return -1;
 
-	test_session_connect(self, session, uri);
+	test_session_connect(self, session, uri, NULL);
+	self->current_session = session;
+	return 0;
+}
+
+static int
+test_suite_connect_tls(TestSuite* self, char* arg)
+{
+	char* env_name = test_suite_arg(&arg);
+	char* name = test_suite_arg(&arg);
+	char* uri = test_suite_arg(&arg);
+	char* cafile = test_suite_arg(&arg);
+
+	if (env_name == NULL || name == NULL || uri == NULL || cafile == NULL)
+	{
+		test_error(self, "line %d: connect_tls <env_name> <name> <uri> <cafile> expected",
+		           self->current_line);
+		return -1;
+	}
+
+	auto env = test_env_find(self, env_name);
+	if (! env) {
+		test_error(self, "line %d: connect_tls: env name not found",
+		           self->current_line);
+		return -1;
+	}
+
+	auto session = test_session_new(self, env, name);
+	if (session == NULL)
+		return -1;
+
+	test_session_connect(self, session, uri, cafile);
 	self->current_session = session;
 	return 0;
 }
@@ -741,6 +772,14 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 		// backup
 		if (strncmp(query, "backup", 6) == 0) {
 			rc = test_suite_backup(self, query + 6);
+			if (rc == -1)
+				return -1;
+			continue;
+		}
+
+		// connect_tls
+		if (strncmp(query, "connect_tls", 11) == 0) {
+			rc = test_suite_connect_tls(self, query + 11);
 			if (rc == -1)
 				return -1;
 			continue;
