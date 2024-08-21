@@ -38,9 +38,7 @@
 
 typedef struct
 {
-	Str*  directory;
 	Str*  options;
-	Str*  backup;
 	Main* self;
 } MainArgs;
 
@@ -63,7 +61,7 @@ main_prepare_listen(void)
 }
 
 static bool
-main_prepare(Main* self, MainArgs* args)
+main_prepare(Main* self, Str* options)
 {
 	bool bootstrap = false;
 	auto config = config();
@@ -91,7 +89,7 @@ main_prepare(Main* self, MainArgs* args)
 
 	// set directory
 	char path[PATH_MAX];
-	var_string_set(&config->directory, args->directory);
+	var_string_set(&config->directory, &options[MAIN_DIRECTORY]);
 
 	// create directory if not exists
 	bootstrap = !fs_exists("%s", config_directory());
@@ -111,6 +109,7 @@ main_runner(void* arg)
 {
 	MainArgs* args = arg;
 	Main* self = args->self;
+	auto options = args->options;
 
 	System* system = NULL;
 	Exception e;
@@ -118,10 +117,10 @@ main_runner(void* arg)
 	{
 		// create base directory and setup logger
 		bool bootstrap;
-		bootstrap = main_prepare(self, args);
+		bootstrap = main_prepare(self, options);
 
 		// do system restore or start
-		if (args->backup)
+		if (! str_empty(&options[MAIN_BACKUP]))
 		{
 			if (! bootstrap)
 				error("directory already exists");
@@ -129,17 +128,18 @@ main_runner(void* arg)
 			Remote remote;
 			remote_init(&remote);
 			guard(remote_free, &remote);
-			remote_set(&remote, REMOTE_URI, args->backup);
+			remote_set(&remote, REMOTE_URI, &options[MAIN_BACKUP]);
+			remote_set(&remote, REMOTE_FILE_CA, &options[MAIN_BACKUP_CAFILE]);
 			restore(&remote);
 		} else
 		{
 			system = system_create();
-			system_start(system, args->options, bootstrap);
+			system_start(system, &options[MAIN_CONFIG], bootstrap);
 
 			// notify main_start about start completion
 			thread_status_set(&self->task.thread_status, true);
 
-			// handle connections until stop
+			// handle system requests
 			system_main(system);
 		}
 	}
@@ -192,15 +192,13 @@ main_free(Main* self)
 }
 
 int
-main_start(Main* self, Str* directory, Str* options, Str* backup)
+main_start(Main* self, Str* options)
 {
 	// start main task
 	MainArgs args =
 	{
-		.directory = directory,
-		.options   = options,
-		.backup    = backup,
-		.self      = self
+		.options = options,
+		.self    = self
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", main_runner, &args, &self->global,

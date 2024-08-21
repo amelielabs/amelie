@@ -31,6 +31,8 @@ client(char* url)
 		curl_easy_cleanup(curl);
 		return EXIT_FAILURE;
 	}
+	curl_easy_setopt(curl, CURLOPT_CAINFO, "./t/certs/ca.crt");
+	/*curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);*/
 
 	char text[1024];
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
@@ -85,19 +87,18 @@ server(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
+	Str options[MAIN_MAX];
+	for (int i = 0; i < MAIN_MAX; i++)
+		str_init(&options[i]);
+	// directory
+	str_set_cstr(&options[MAIN_DIRECTORY], argv[2]);
+	// config
+	char config[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
+	str_set_cstr(&options[MAIN_CONFIG], config);
+
 	Main main;
 	main_init(&main);
-
-	Str directory;
-	str_init(&directory);
-	str_set_cstr(&directory, argv[2]);
-
-	Str config;
-	str_init(&config);
-	char options[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
-	str_set_cstr(&config, options);
-
-	int rc = main_start(&main, &directory, &config, NULL);
+	int rc = main_start(&main, options);
 	if (rc == -1)
 	{
 		main_stop(&main);
@@ -121,23 +122,20 @@ server_backup(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
+	Str options[MAIN_MAX];
+	for (int i = 0; i < MAIN_MAX; i++)
+		str_init(&options[i]);
+	// directory
+	str_set_cstr(&options[MAIN_DIRECTORY], argv[2]);
+	// config
+	char config[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
+	str_set_cstr(&options[MAIN_CONFIG], config);
+	// backup
+	str_set_cstr(&options[MAIN_BACKUP], argv[3]);
+
 	Main main;
 	main_init(&main);
-
-	Str directory;
-	str_init(&directory);
-	str_set_cstr(&directory, argv[2]);
-
-	Str config;
-	str_init(&config);
-	char options[] = "{ \"log_to_stdout\": true, \"frontends\": 3, \"shards\": 6 }";
-	str_set_cstr(&config, options);
-
-	Str backup;
-	str_init(&backup);
-	str_set_cstr(&backup, argv[3]);
-
-	int rc = main_start(&main, &directory, &config, &backup);
+	int rc = main_start(&main, options);
 	if (rc == -1)
 	{
 		main_stop(&main);
@@ -159,7 +157,7 @@ main(int argc, char* argv[])
 	if (argc >= 2 && !strcmp(argv[1], "backup"))
 		return server_backup(argc, argv);
 
-	char* url = "localhost:3485";
+	char* url = "https://localhost:3485";
 	if (argc >= 2)
 		url = argv[1];
 	return client(url);

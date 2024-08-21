@@ -300,7 +300,7 @@ error:
 }
 
 static int
-test_suite_create(TestSuite* self, char* name, char* uri, char* config)
+test_suite_create(TestSuite* self, char* name, char* config, char* uri, char* ca)
 {
 	auto env = test_env_find(self, name);
 	if (env) {
@@ -315,10 +315,6 @@ test_suite_create(TestSuite* self, char* name, char* uri, char* config)
 
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
-
-	Str directory;
-	str_init(&directory);
-	str_set_cstr(&directory, path);
 
 	char prefmt_config[4096];
 	snprintf(prefmt_config, sizeof(prefmt_config),
@@ -338,20 +334,25 @@ test_suite_create(TestSuite* self, char* name, char* uri, char* config)
 	          (self->current_test_options && config) ? ", " : "",
 	          (config) ? config : "");
 
-	Str options;
-	str_init(&options);
-	str_set_cstr(&options, prefmt_config);
+	Str options[MAIN_MAX];
+	for (int i = 0; i < MAIN_MAX; i++)
+		str_init(&options[i]);
 
-	Str* backup = NULL;
-	Str  backup_;
-	str_init(&backup_);
+	// directory
+	str_set_cstr(&options[MAIN_DIRECTORY], path);
+
+	// config
+	str_set_cstr(&options[MAIN_CONFIG], prefmt_config);
+
+	// backup
 	if (uri)
-	{
-		str_set_cstr(&backup_, uri);
-		backup = &backup_;
-	}
+		str_set_cstr(&options[MAIN_BACKUP], uri);
 
-	int rc = main_start(&env->main, &directory, &options, backup);
+	// backup_cafile
+	if (ca)
+		str_set_cstr(&options[MAIN_BACKUP_CAFILE], ca);
+
+	int rc = main_start(&env->main, options);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
@@ -375,7 +376,7 @@ test_suite_open(TestSuite* self, char* arg)
 		return -1;
 	}
 
-	return test_suite_create(self, name, NULL, config);
+	return test_suite_create(self, name, config, NULL, NULL);
 }
 
 static int
@@ -383,6 +384,7 @@ test_suite_backup(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
 	char* uri = test_suite_arg(&arg);
+	char* cafile = test_suite_arg(&arg);
 	char* config = arg;
 
 	if (name == NULL)
@@ -399,7 +401,7 @@ test_suite_backup(TestSuite* self, char* arg)
 		return -1;
 	}
 
-	return test_suite_create(self, name, uri, config);
+	return test_suite_create(self, name, config, uri, cafile);
 }
 
 static int

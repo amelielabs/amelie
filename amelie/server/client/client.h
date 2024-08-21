@@ -10,17 +10,17 @@ typedef struct Client Client;
 
 struct Client
 {
-	Http        request;
-	Http        reply;
-	Readahead   readahead;
-	Tcp         tcp;
-	TlsContext* tls_context;
-	UriHost*    host;
-	Uri         uri;
-	Remote*     remote;
-	uint64_t    coroutine_id;
-	void*       arg;
-	List        link;
+	Http       request;
+	Http       reply;
+	Readahead  readahead;
+	Tcp        tcp;
+	TlsContext tls_context;
+	UriHost*   host;
+	Uri        uri;
+	Remote*    remote;
+	uint64_t   coroutine_id;
+	void*      arg;
+	List       link;
 };
 
 Client*

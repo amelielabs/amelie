@@ -31,6 +31,12 @@ tls_context_free(TlsContext* self)
 		SSL_CTX_free(self->ctx);
 }
 
+bool
+tls_context_created(TlsContext* self)
+{
+	return self->ctx != NULL;
+}
+
 void
 tls_context_create(TlsContext* self, bool client, Remote* remote)
 {

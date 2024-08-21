@@ -17,4 +17,5 @@ struct TlsContext
 
 void tls_context_init(TlsContext*);
 void tls_context_free(TlsContext*);
+bool tls_context_created(TlsContext*);
 void tls_context_create(TlsContext*, bool, Remote*);
