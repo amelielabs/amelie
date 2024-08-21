@@ -47,8 +47,12 @@ tls_context_set(TlsContext* self, int id, Str* value)
 void
 tls_context_set_path(TlsContext* self, int id, const char* directory, Str* name)
 {
-	// absolute file path
-	if (*str_of(name) == '/')
+	// relative to the cwd
+	auto relative = str_compare_raw_prefix(name, "./", 2) ||
+	                str_compare_raw_prefix(name, "../", 3);
+
+	// absolute or relative file path
+	if (*str_of(name) == '/' || relative)
 	{
 		tls_context_set(self, id, name);
 		return;

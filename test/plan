@@ -128,6 +128,11 @@ test wal_dml
 test wal_ddl
 test checkpoint
 
+# tls
+directory tls
+group tls
+test tls
+
 # backup
 directory backup
 group backup
