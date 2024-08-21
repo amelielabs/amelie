@@ -32,7 +32,7 @@ show read_only
 switch S0
 show replicas
 
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481"
+create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 show replicas
 
 # test: start primary
@@ -135,7 +135,7 @@ show repl
 
 # test: create replica
 switch S1
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1:3480"
+create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
 
 # test: wait for primary connect
 watch system.replicas()[0].connected = true

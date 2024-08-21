@@ -55,7 +55,7 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	SSL_CTX_set_mode(ctx, SSL_MODE_RELEASE_BUFFERS);
 
 	// certficate file
-	auto cert = remote_get(remote, REMOTE_FILE_CERT);
+	auto cert = remote_get_cstr(remote, REMOTE_FILE_CERT);
 	int rc;
 	if (cert)
 	{
@@ -65,7 +65,7 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	}
 
 	// key file
-	auto key = remote_get(remote, REMOTE_FILE_KEY);
+	auto key = remote_get_cstr(remote, REMOTE_FILE_KEY);
 	if (key)
 	{
 		rc = SSL_CTX_use_PrivateKey_file(ctx, key, SSL_FILETYPE_PEM);
@@ -80,8 +80,8 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	}
 
 	// ca file and ca_path
-	auto ca_path = remote_get(remote, REMOTE_PATH_CA);
-	auto ca_file = remote_get(remote, REMOTE_FILE_CA);
+	auto ca_path = remote_get_cstr(remote, REMOTE_PATH_CA);
+	auto ca_file = remote_get_cstr(remote, REMOTE_FILE_CA);
 	if (ca_file || ca_path)
 	{
 		rc = SSL_CTX_load_verify_locations(ctx, ca_file, ca_path);

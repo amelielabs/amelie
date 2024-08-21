@@ -242,8 +242,8 @@ ctl_replica(Session* self)
 		uuid_from_string(&id, &arg->id->string);
 		replica_config_set_id(config, &id);
 
-		// uri
-		replica_config_set_uri(config, &arg->uri->string);
+		// remote
+		replica_config_set_remote(config, &arg->remote);
 		replica_mgr_create(replica_mgr, config, arg->if_not_exists);
 		break;
 	}

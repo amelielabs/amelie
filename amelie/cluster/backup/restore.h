@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void restore(Str*);
+void restore(Remote*);

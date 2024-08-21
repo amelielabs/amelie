@@ -43,10 +43,40 @@ parse_replica_create(Stmt* self)
 	if (! stmt->id)
 		error("CREATE REPLICA <id> expected");
 
-	// uri
-	stmt->uri = stmt_if(self, KSTRING);
-	if (! stmt->uri)
-		error("CREATE REPLICA id <uri> expected");
+	// options
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id == KEOF)
+			break;
+		if (name->id != KNAME)
+			error("CREATE REPLICA id <option name> expected");
+
+		// string
+		auto value = stmt_if(self, KSTRING);
+		if (! stmt->id)
+			error("CREATE REPLICA id name <string> expected");
+
+		if (str_strncasecmp(&name->string, "uri", 3))
+			remote_set(&stmt->remote, REMOTE_URI, &value->string);
+		else
+		if (str_strncasecmp(&name->string, "tls_ca", 6))
+			remote_set(&stmt->remote, REMOTE_FILE_CA, &value->string);
+		else
+		if (str_strncasecmp(&name->string, "tls_cert", 8))
+			remote_set(&stmt->remote, REMOTE_FILE_CERT, &value->string);
+		else
+		if (str_strncasecmp(&name->string, "tls_key", 7))
+			remote_set(&stmt->remote, REMOTE_FILE_KEY, &value->string);
+		else
+			error("CREATE REPLICA: unknown option <%.*s>",
+			      str_size(&name->string), str_of(&name->string));
+	}
+
+	// validate options
+	if (str_empty(remote_get(&stmt->remote, REMOTE_URI)))
+		error("CREATE REPLICA <uri> is not defined");
 }
 
 void

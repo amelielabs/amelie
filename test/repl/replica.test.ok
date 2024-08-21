@@ -6,13 +6,15 @@ create replica
 create replica 123
 {"code": 1, "msg": "CREATE REPLICA <id> expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
+{"code": 1, "msg": "CREATE REPLICA <uri> is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" 1
-{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
+{"code": 1, "msg": "CREATE REPLICA id <option name> expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "CREATE REPLICA id <uri> expected"}
-# test: create replica
+{"code": 1, "msg": "CREATE REPLICA <uri> is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" "localhost"
+{"code": 1, "msg": "CREATE REPLICA id <option name> expected"}
+# test: create replica
+create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 []
 show replicas
 [{
@@ -23,7 +25,7 @@ show replicas
   "lag": 0
 }]
 # test: create replica if not exists
-create replica if not exists "00000000-0000-0000-0000-000000000000" "localhost"
+create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
 []
 select * from system.replicas()
 [{
@@ -51,9 +53,9 @@ drop replica if exists "00000000-0000-0000-0000-000000000000"
 drop replica "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
 # test: recover
-create replica "00000000-0000-0000-0000-000000000000" "localhost"
+create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 []
-create replica "00000000-0000-0000-0000-000000000001" "localhost"
+create replica "00000000-0000-0000-0000-000000000001" uri "localhost"
 []
 show replicas
 [{

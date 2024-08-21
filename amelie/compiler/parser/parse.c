@@ -46,6 +46,12 @@ parse_stmt_free(Stmt* stmt)
 			user_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_REPLICA:
+	{
+		auto ast = ast_replica_create_of(stmt->ast);
+		remote_free(&ast->remote);
+		break;
+	}
 	case STMT_CREATE_SCHEMA:
 	{
 		auto ast = ast_schema_create_of(stmt->ast);

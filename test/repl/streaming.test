@@ -14,7 +14,7 @@ start repl
 promote "00000000-0000-0000-0000-000000000000"
 
 switch S0
-create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481"
+create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 start repl
 
 # test: wait for primary connect

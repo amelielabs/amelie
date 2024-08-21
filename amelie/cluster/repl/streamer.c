@@ -215,7 +215,7 @@ streamer_main(void* arg)
 	{
 		// create client, set node uri
 		self->client = client_create();
-		client_set_uri(self->client, self->replica_uri);
+		client_set_remote(self->client, self->remote);
 		streamer_process(self);
 	}
 
@@ -263,8 +263,8 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 	self->lsn           = 0;
 	self->wal           = wal;
 	self->wal_slot      = wal_slot;
+	self->remote        = NULL;
 	self->replica_id[0] = 0;
-	self->replica_uri   = NULL;
 	wal_cursor_init(&self->wal_cursor);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -277,10 +277,10 @@ streamer_free(Streamer* self)
 }
 
 void
-streamer_start(Streamer* self, Uuid* id, Str* uri)
+streamer_start(Streamer* self, Uuid* id, Remote* remote)
 {
 	uuid_to_string(id, self->replica_id, sizeof(self->replica_id));
-	self->replica_uri = uri;
+	self->remote = remote;
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 

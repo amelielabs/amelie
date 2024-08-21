@@ -75,7 +75,7 @@ tls_create(Tls* self, Fd* fd)
 	self->ssl = ssl;
 
 	// set server name
-	auto server = remote_get(self->context->remote, REMOTE_SERVER);
+	auto server = remote_get_cstr(self->context->remote, REMOTE_SERVER);
 	if (server)
 	{
 		int rc;
@@ -237,7 +237,7 @@ tls_handshake(Tls* self)
 	// verify server name against certficiate common name
 	if (self->context->client)
 	{
-		auto server = remote_get(self->context->remote, REMOTE_SERVER);
+		auto server = remote_get_cstr(self->context->remote, REMOTE_SERVER);
 		if (server)
 			tls_verify_common_name(self, server);
 	}

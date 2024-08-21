@@ -39,17 +39,19 @@ struct Restore
 	uint8_t* files;
 	uint8_t* config;
 	Client*  client;
+	Remote*  remote;
 	Buf      buf;
 	Buf      state_data;
 	Buf      state;
 };
 
 static void
-restore_init(Restore* self)
+restore_init(Restore* self, Remote* remote)
 {
 	self->checkpoint = 0;
 	self->files      = NULL;
 	self->config     = NULL;
+	self->remote     = remote;
 	buf_init(&self->state_data);
 	buf_init(&self->state);
 	buf_init(&self->buf);
@@ -66,12 +68,12 @@ restore_free(Restore* self)
 }
 
 static void
-restore_connect(Restore* self, Str* uri)
+restore_connect(Restore* self)
 {
 	self->client = client_create();
 	auto client = self->client;
 	client->readahead.readahead = 256 * 1024;
-	client_set_uri(client, uri);
+	client_set_remote(client, self->remote);
 	client_connect(client);
 }
 
@@ -216,14 +218,14 @@ restore_write_config(Restore* self)
 }
 
 void
-restore(Str* uri)
+restore(Remote* remote)
 {
 	coroutine_set_name(am_self(), "restore");
 
 	Restore restore;
-	restore_init(&restore);
+	restore_init(&restore, remote);
 	guard(restore_free, &restore);
-	restore_connect(&restore, uri);
+	restore_connect(&restore);
 	restore_start(&restore);
 	restore_copy(&restore);
 	restore_write_config(&restore);

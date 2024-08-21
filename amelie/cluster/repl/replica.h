@@ -41,7 +41,7 @@ replica_allocate(ReplicaConfig* config, Wal* wal)
 static inline void
 replica_start(Replica* self)
 {
-	streamer_start(&self->streamer, &self->config->id, &self->config->uri);
+	streamer_start(&self->streamer, &self->config->id, &self->config->remote);
 }
 
 static inline void
@@ -61,7 +61,7 @@ replica_status(Replica* self, Buf* buf)
 
 	// uri
 	encode_raw(buf, "uri", 3);
-	encode_string(buf, &self->config->uri);
+	encode_string(buf, remote_get(&self->config->remote, REMOTE_URI));
 
 	// connected
 	encode_raw(buf, "connected", 9);

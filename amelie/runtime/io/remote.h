@@ -68,8 +68,22 @@ remote_set_path(Remote* self, int id, const char* directory, Str* name)
 	remote_set(self, id, &dir_path);
 }
 
-static inline char*
+static inline Str*
 remote_get(Remote* self, int id)
 {
+	return &self->options[id];
+}
+
+static inline char*
+remote_get_cstr(Remote* self, int id)
+{
 	return str_of(&self->options[id]);
+}
+
+static inline void
+remote_copy(Remote* self, Remote* from)
+{
+	for (int i = 0; i < REMOTE_MAX;i ++)
+		if (! str_empty(&from->options[i]))
+			remote_set(self, i, &from->options[i]);
 }

@@ -11,10 +11,10 @@ typedef struct AstReplicaDrop   AstReplicaDrop;
 
 struct AstReplicaCreate
 {
-	Ast  ast;
-	bool if_not_exists;
-	Ast* id;
-	Ast* uri;
+	Ast    ast;
+	bool   if_not_exists;
+	Ast*   id;
+	Remote remote;
 };
 
 struct AstReplicaDrop
@@ -36,7 +36,7 @@ ast_replica_create_allocate(void)
 	AstReplicaCreate* self;
 	self = ast_allocate(0, sizeof(AstReplicaCreate));
 	self->if_not_exists = false;
-	self->id            = NULL;
+	remote_init(&self->remote);
 	return self;
 }
 

@@ -125,7 +125,12 @@ main_runner(void* arg)
 		{
 			if (! bootstrap)
 				error("directory already exists");
-			restore(args->backup);
+
+			Remote remote;
+			remote_init(&remote);
+			guard(remote_free, &remote);
+			remote_set(&remote, REMOTE_URI, args->backup);
+			restore(&remote);
 		} else
 		{
 			system = system_create();
