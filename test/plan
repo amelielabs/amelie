@@ -137,6 +137,7 @@ test tls
 directory backup
 group backup
 test backup
+test backup_tls
 
 # replication
 directory repl
@@ -144,3 +145,4 @@ group repl
 test replica
 test repl
 test streaming
+test streaming_tls

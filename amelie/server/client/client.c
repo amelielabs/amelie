@@ -110,9 +110,13 @@ client_connect_to(Client* self, UriHost* host)
 	guard(freeaddrinfo, addr);
 
 	// prepare for https connection
-	if (self->uri.proto == URI_HTTPS)
+	if (self->uri.proto == URI_HTTPS) {
 		if (! tls_context_created(&self->tls_context))
+		{
 			tls_context_create(&self->tls_context, true, self->remote);
+			tcp_set_tls(&self->tcp, &self->tls_context);
+		}
+	}
 
 	// connect
 	tcp_connect(&self->tcp, addr->ai_addr);

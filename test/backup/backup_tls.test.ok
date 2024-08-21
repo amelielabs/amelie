@@ -1,0 +1,59 @@
+# test: prepare server
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "shards": 3
+connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
+create table test (id int primary key serial)
+[]
+insert into test generate 500
+[]
+# test: backup (using https)
+backup E1 https://127.0.0.1:3480 ./tls/ca.crt
+close E1
+# test: shutdown previous server
+disconnect S0
+close E0
+# test: restore and validate
+open E1
+connect_tls E1 S1 https://localhost:3480 ./tls/ca.crt
+show all
+[{
+  "version": "0.0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "directory": "_output/E1",
+  "timezone": "UTC",
+  "timezone_default": "UTC",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_query": false,
+  "tls_cert": "./tls/server.crt",
+  "tls_key": "./tls/server.key",
+  "tls_ca": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3480,
+    "tls": true
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "shards": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "repl": false,
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 0,
+  "read_only": false,
+  "lsn": 2,
+  "psn": 3
+}]
+select count(*) from test
+[500]
+disconnect S1
+close E1
