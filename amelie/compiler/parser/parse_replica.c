@@ -70,6 +70,9 @@ parse_replica_create(Stmt* self)
 		if (str_strncasecmp(&name->string, "tls_key", 7))
 			remote_set(&stmt->remote, REMOTE_FILE_KEY, &value->string);
 		else
+		if (str_strncasecmp(&name->string, "token", 5))
+			remote_set(&stmt->remote, REMOTE_TOKEN, &value->string);
+		else
 			error("CREATE REPLICA: unknown option <%.*s>",
 			      str_size(&name->string), str_of(&name->string));
 	}

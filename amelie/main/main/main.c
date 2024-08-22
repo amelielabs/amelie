@@ -130,6 +130,7 @@ main_runner(void* arg)
 			guard(remote_free, &remote);
 			remote_set(&remote, REMOTE_URI, &options[MAIN_BACKUP]);
 			remote_set(&remote, REMOTE_FILE_CA, &options[MAIN_BACKUP_CAFILE]);
+			remote_set(&remote, REMOTE_TOKEN, &options[MAIN_BACKUP_TOKEN]);
 			restore(&remote);
 		} else
 		{

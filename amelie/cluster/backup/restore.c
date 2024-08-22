@@ -83,10 +83,13 @@ restore_start(Restore* self)
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
+	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
 	// GET /backup
 	auto request = &client->request;
 	http_write_request(request, "GET /backup");
+	if (! str_empty(token))
+		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
@@ -131,11 +134,14 @@ restore_copy_file(Restore* self, Str* name)
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
+	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
 	// GET /backup/<path>
 	auto request = &client->request;
 	http_write_request(request, "GET /backup/%.*s", str_size(name),
 	                   str_of(name));
+	if (! str_empty(token))
+		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 

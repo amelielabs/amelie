@@ -65,6 +65,7 @@ replica_config_read(uint8_t** pos)
 		{ DECODE_STRING, "tls_ca",   remote_get(&self->remote, REMOTE_FILE_CA)   },
 		{ DECODE_STRING, "tls_cert", remote_get(&self->remote, REMOTE_FILE_CERT) },
 		{ DECODE_STRING, "tls_key",  remote_get(&self->remote, REMOTE_FILE_KEY)  },
+		{ DECODE_STRING, "token",    remote_get(&self->remote, REMOTE_TOKEN)     },
 		{ 0,              NULL,      NULL                                        },
 	};
 	decode_map(map, "replica", pos);
@@ -85,5 +86,7 @@ replica_config_write(ReplicaConfig* self, Buf* buf)
 	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_CERT));
 	encode_raw(buf, "tls_key", 7);
 	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_KEY));
+	encode_raw(buf, "token", 5);
+	encode_string(buf, remote_get(&self->remote, REMOTE_TOKEN));
 	encode_map_end(buf);
 }

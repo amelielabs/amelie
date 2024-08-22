@@ -74,7 +74,10 @@ streamer_write(Streamer* self, Buf* content)
 	auto client = self->client;
 	auto request = &client->request;
 	auto id = &config()->uuid.string;
+	auto token = remote_get(self->remote, REMOTE_TOKEN);
 	http_write_request(request, "POST /repl");
+	if (! str_empty(token))
+		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
 	http_write(request, "Content-Type", "application/octet-stream");
 	http_write(request, "Amelie-Id", "%.*s", str_size(id), str_of(id));
