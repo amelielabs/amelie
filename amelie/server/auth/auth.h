@@ -10,7 +10,7 @@ typedef struct Auth Auth;
 
 struct Auth
 {
-	AuthState state;
+	JwtDecode jwt;
 	AuthCache cache;
 	UserCache user_cache;
 };

@@ -16,7 +16,7 @@
 void
 auth_init(Auth* self)
 {
-	auth_state_init(&self->state);
+	jwt_decode_init(&self->jwt);
 	auth_cache_init(&self->cache);
 	user_cache_init(&self->user_cache);
 }
@@ -24,7 +24,7 @@ auth_init(Auth* self)
 void
 auth_free(Auth* self)
 {
-	auth_state_free(&self->state);
+	jwt_decode_free(&self->jwt);
 	auth_cache_free(&self->cache);
 	user_cache_free(&self->user_cache);
 }
@@ -39,27 +39,24 @@ auth_sync(Auth* self, UserCache* cache)
 hot static inline User*
 auth_run(Auth* self, Str* token)
 {
-	auto state = &self->state;
-	auth_state_reset(state);
+	auto jwt = &self->jwt;
+	jwt_decode_reset(jwt);
 	auth_cache_prepare(&self->cache);
 
 	// parse authentication token
-	auth_state_read(state, token);
+	jwt_decode(jwt, token);
 
 	// check auth cache, if the digest is already authenticated
-	auto user = auth_cache_find(&self->cache, &state->digest);
+	auto user = auth_cache_find(&self->cache, &jwt->digest);
 	if (user)
 		return user;
 
 	// process with authentication
 
-	// validate header
-	auth_state_read_header(state);
-
-	// validate payload, read role
+	// validate header, payload and read role
 	Str role;
 	str_init(&role);
-	auth_state_read_payload(state, &role);
+	jwt_decode_data(jwt, &role);
 
 	// find user
 	user = user_cache_find(&self->user_cache, &role);
@@ -67,10 +64,10 @@ auth_run(Auth* self, Str* token)
 		error("auth: user %.*s not found", str_size(&role), str_of(&role));
 
 	// validate digest using user secret
-	auth_state_validate(state, &user->config->secret);
+	jwt_decode_validate(jwt, &user->config->secret);
 
 	// add user and token digest to the cache
-	auth_cache_add(&self->cache, user, &state->digest);
+	auth_cache_add(&self->cache, user, &jwt->digest);
 	return user;
 }
 

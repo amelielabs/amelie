@@ -17,7 +17,7 @@
 #include <openssl/evp.h>
 
 void
-auth_state_init(AuthState* self)
+jwt_decode_init(JwtDecode* self)
 {
 	str_init(&self->header);
 	str_init(&self->payload);
@@ -28,14 +28,14 @@ auth_state_init(AuthState* self)
 }
 
 void
-auth_state_free(AuthState* self)
+jwt_decode_free(JwtDecode* self)
 {
 	buf_free(&self->data);
 	json_free(&self->json);
 }
 
 void
-auth_state_reset(AuthState* self)
+jwt_decode_reset(JwtDecode* self)
 {
 	buf_reset(&self->data);
 	str_init(&self->header);
@@ -46,7 +46,7 @@ auth_state_reset(AuthState* self)
 }
 
 hot void
-auth_state_read(AuthState* self, Str* token)
+jwt_decode(JwtDecode* self, Str* token)
 {
 	// parse authentication token
 	auto digest = &self->digest;
@@ -81,11 +81,11 @@ auth_state_read(AuthState* self, Str* token)
 	return;
 
 error_jwt:
-	error("auth: failed to parse token");
+	error("jwt: failed to parse token");
 }
 
-hot void
-auth_state_read_header(AuthState* self)
+hot static void
+jwt_decode_header(JwtDecode* self)
 {
 	// convert header from base64url
 	base64url_decode(&self->data, &self->header);
@@ -107,21 +107,21 @@ auth_state_read_header(AuthState* self)
 		{ DECODE_STRING_READ, "typ", &typ },
 		{ 0,                   NULL, NULL },
 	};
-	decode_map(map, "auth", &pos);
+	decode_map(map, "jwt", &pos);
 
 	// alg
 	if (unlikely(! str_strncasecmp(&alg, "HS256", 5)))
-		error("auth: unsupported header alg field: %.*s", str_size(&alg),
+		error("jwt: unsupported header alg field: %.*s", str_size(&alg),
 		      str_of(&alg));
 
 	// type
 	if (unlikely(! str_strncasecmp(&typ, "JWT", 3)))
-		error("auth: unsupported header type field: %.*s", str_size(&typ),
+		error("jwt: unsupported header type field: %.*s", str_size(&typ),
 		      str_of(&typ));
 }
 
-hot void
-auth_state_read_payload(AuthState* self, Str* role)
+hot static void
+jwt_decode_payload(JwtDecode* self, Str* role)
 {
 	// convert payload from base64url
 	buf_reset(&self->data);
@@ -140,17 +140,24 @@ auth_state_read_payload(AuthState* self, Str* role)
 		{ DECODE_STRING_READ, "sub", role },
 		{ 0,                   NULL, NULL },
 	};
-	decode_map(map, "auth", &pos);
+	decode_map(map, "jwt", &pos);
 }
 
 hot void
-auth_state_validate(AuthState* self, Str* secret)
+jwt_decode_data(JwtDecode* self, Str* role)
+{
+	jwt_decode_header(self);
+	jwt_decode_payload(self, role);
+}
+
+hot void
+jwt_decode_validate(JwtDecode* self, Str* secret)
 {
 	// decode digest from base64url
 	buf_reset(&self->data);
 	base64url_decode(&self->data, &self->digest);
 	if (unlikely(buf_size(&self->data) != 32))
-		error("auth: digest has unexpected size");
+		error("jwt: digest has unexpected size");
 
 	// HMACSHA256
 	uint8_t digest[32];
@@ -160,5 +167,5 @@ auth_state_validate(AuthState* self, Str* secret)
 	     digest, NULL);
 
 	if (memcmp(self->data.start, digest, 32) != 0)
-		error("auth: digest mismatch");
+		error("jwt: digest mismatch");
 }
