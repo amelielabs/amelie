@@ -220,16 +220,81 @@ fn_serial(Call* self)
 	value_set_int(self->result, serial_get(&table->serial));
 }
 
+static void
+fn_jwt(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 3);
+	call_validate_arg(self, 2, VALUE_STRING);
+
+	// header
+	Buf* header = NULL;
+	Str  header_str;
+	if (argv[0]->type == VALUE_MAP)
+	{
+		header = buf_begin();
+		auto pos = argv[0]->data;
+		json_export(header, self->vm->local->timezone, &pos);
+		buf_str(header, &header_str);
+	} else
+	if (argv[0]->type == VALUE_STRING)
+	{
+		header_str = argv[0]->string;
+	} else {
+		error("jwt(): string or map expected");
+	}
+
+	// payload
+	Buf* payload = NULL;
+	Str  payload_str;
+	if (argv[1]->type == VALUE_MAP)
+	{
+		payload = buf_begin();
+		auto pos = argv[1]->data;
+		json_export(payload, self->vm->local->timezone, &pos);
+		buf_str(payload, &payload_str);
+	} else
+	if (argv[1]->type == VALUE_STRING)
+	{
+		payload_str = argv[1]->string;
+	} else {
+		error("jwt(): string or map expected");
+	}
+
+	// create jwt using supplied data
+	JwtEncode jwt;
+	jwt_encode_init(&jwt);
+	guard(jwt_encode_free, &jwt);
+	auto buf = jwt_encode(&jwt, &header_str, &payload_str,
+	                      &argv[2]->string);
+	Str string;
+	buf_str(buf, &string);
+	value_set_string(self->result, &string, buf);
+
+	// cleanup
+	if (header)
+	{
+		buf_end(header);
+		buf_free(header);
+	}
+	if (payload)
+	{
+		buf_end(payload);
+		buf_free(payload);
+	}
+}
+
 FunctionDef fn_misc_def[] =
 {
-	{ "public", "error",       fn_error,       false },
-	{ "public", "type",        fn_type,        false },
-	{ "public", "random",      fn_random,      false },
-	{ "public", "random_uuid", fn_random_uuid, false },
-	{ "public", "md5",         fn_md5,         false },
-	{ "public", "sha1",        fn_sha1,        false },
-	{ "public", "encode",      fn_encode,      false },
-	{ "public", "decode",      fn_decode,      false },
-	{ "public", "serial",      fn_serial,      false },
-	{  NULL,     NULL,         NULL,           false }
+	{ "public", "error",        fn_error,        false },
+	{ "public", "type",         fn_type,         false },
+	{ "public", "random",       fn_random,       false },
+	{ "public", "random_uuid",  fn_random_uuid,  false },
+	{ "public", "md5",          fn_md5,          false },
+	{ "public", "sha1",         fn_sha1,         false },
+	{ "public", "encode",       fn_encode,       false },
+	{ "public", "decode",       fn_decode,       false },
+	{ "public", "serial",       fn_serial,       false },
+	{ "public", "jwt",          fn_jwt,          false },
+	{  NULL,     NULL,          NULL,            false }
 };

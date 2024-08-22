@@ -8,6 +8,8 @@
 
 // jwt
 #include "auth/jwt_decode.h"
+#include "auth/jwt_encode.h"
+#include "auth/jwt.h"
 
 // auth
 #include "auth/auth_cache.h"

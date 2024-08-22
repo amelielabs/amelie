@@ -22,6 +22,8 @@ LIB            = libamelie-server.a
 OBJECTS        = \
                  user/user_mgr.o \
                  auth/jwt_decode.o \
+                 auth/jwt_encode.o \
+                 auth/jwt.o \
                  auth/auth_cache.o \
                  auth/auth.o \
                  http/http.o \

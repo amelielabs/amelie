@@ -63,5 +63,9 @@ insert into test () values (), (), ()
 select serial("public", "test")
 drop table test
 
+# test: jwt
+select jwt({"alg": "HS256", "typ": "JWT"}, {}, "123")
+select jwt({"alg": "HS256", "typ": "JWT"}, {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}, "123")
+
 disconnect S0
 close E0

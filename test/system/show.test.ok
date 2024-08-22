@@ -297,6 +297,9 @@ show functions
   "name": "serial"
 }, {
   "schema": "public",
+  "name": "jwt"
+}, {
+  "schema": "public",
   "name": "now"
 }, {
   "schema": "public",
@@ -576,6 +579,9 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "serial"
+}, {
+  "schema": "public",
+  "name": "jwt"
 }, {
   "schema": "public",
   "name": "now"
