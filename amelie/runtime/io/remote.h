@@ -10,6 +10,7 @@ typedef struct Remote Remote;
 
 enum
 {
+	REMOTE_NAME,
 	REMOTE_URI,
 	REMOTE_PATH_CA,
 	REMOTE_FILE_CA,
@@ -22,13 +23,15 @@ enum
 
 struct Remote
 {
-	Str options[REMOTE_MAX];
+	Str  options[REMOTE_MAX];
+	List link;
 };
 
 static inline void
 remote_init(Remote* self)
 {
 	memset(self->options, 0, sizeof(self->options));
+	list_init(&self->link);
 }
 
 static inline void
@@ -36,6 +39,14 @@ remote_free(Remote* self)
 {
 	for (int i = 0; i < REMOTE_MAX;i ++)
 		str_free(&self->options[i]);
+}
+
+static inline Remote*
+remote_allocate(void)
+{
+	auto self = (Remote*)am_malloc(sizeof(Remote));
+	remote_init(self);
+	return self;
 }
 
 static inline void

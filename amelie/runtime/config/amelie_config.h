@@ -15,3 +15,6 @@
 // global
 #include "config/global.h"
 #include "config/local.h"
+
+// locations
+#include "config/locations.h"
