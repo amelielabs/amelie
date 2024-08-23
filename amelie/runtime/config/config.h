@@ -73,6 +73,7 @@ void config_init(Config*);
 void config_free(Config*);
 void config_prepare(Config*);
 void config_set(Config*, Str*);
+void config_set_argv(Config*, int, char**);
 void config_open(Config*, const char*);
 void config_save(Config*, const char*);
 void config_print(Config*);

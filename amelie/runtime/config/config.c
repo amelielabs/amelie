@@ -148,6 +148,7 @@ config_set_data(Config* self, uint8_t** pos)
 			error("config: unknown option '%.*s'",
 			      str_size(&name), str_of(&name));
 
+		// ensure variable can be changed
 		if (unlikely(! var_is(var, VAR_C)))
 			error("config: option '%.*s' cannot be changed",
 			      str_size(&name), str_of(&name));
@@ -190,9 +191,6 @@ config_set_data(Config* self, uint8_t** pos)
 			var_data_set(var, start, *pos - start);
 			break;
 		}
-		default:
-			error("config: bad option '%.*s' value",
-			      str_size(&name), str_of(&name));
 		}
 	}
 }
@@ -206,6 +204,79 @@ config_set(Config* self, Str* options)
 	json_parse(&json, NULL, options, NULL);
 	uint8_t* pos = json.buf->start;
 	config_set_data(self, &pos);
+}
+
+void
+config_set_argv(Config* self, int argc, char** argv)
+{
+	for (int i = 0; i < argc; i += 2)
+	{
+		// find variable and set value
+		Str name;
+		str_set_cstr(&name, argv[i]);
+		auto var = config_find(self, &name);
+		if (unlikely(var == NULL))
+			error("config: unknown option '%.*s'",
+			      str_size(&name), str_of(&name));
+
+		if ((i + 1) < argc)
+			error("config: value expected for option '%.*s'",
+			      str_size(&name), str_of(&name));
+		auto at = argv[i + 1];
+
+		// ensure variable can be changed
+		if (unlikely(! var_is(var, VAR_C)))
+			error("config: option '%.*s' cannot be changed",
+			      str_size(&name), str_of(&name));
+
+		// set value based on type
+		switch (var->type) {
+		case VAR_BOOL:
+		{
+			bool value;
+			if (! strcasecmp(at, "true"))
+				value = true;
+			else
+			if (! strcasecmp(at, "false"))
+				value = false;
+			else
+				error("config: bool expected for option '%.*s'",
+				      str_size(&name), str_of(&name));
+			var_int_set(var, value);
+			break;
+		}
+		case VAR_INT:
+		{
+			errno = 0;
+			auto value = strtoull(argv[i], NULL, 10);
+			if (errno != 0)
+				error("config: integer expected for option '%.*s'",
+				      str_size(&name), str_of(&name));
+			var_int_set(var, value);
+			break;
+		}
+		case VAR_STRING:
+		{
+			Str value;
+			str_set_cstr(&value, argv[i]);
+			var_string_set(var, &value);
+			break;
+		}
+		case VAR_DATA:
+		{
+			Str value;
+			str_set_cstr(&value, argv[i]);
+
+			Json json;
+			json_init(&json);
+			guard(json_free, &json);
+			json_parse(&json, NULL, &value, NULL);
+
+			var_data_set(var, json.buf->start, buf_size(json.buf));
+			break;
+		}
+		}
+	}
 }
 
 static void
