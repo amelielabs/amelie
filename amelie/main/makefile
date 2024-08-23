@@ -42,6 +42,7 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I. \
                  -Ifrontend \
                  -Isession \
+                 -Isystem \
                  -Imain
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-main.a
@@ -52,7 +53,7 @@ OBJECTS        = \
                  session/utility.o \
                  session/ddl.o \
                  session/primary.o \
-                 main/system.o \
+                 system/system.o \
                  main/main.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

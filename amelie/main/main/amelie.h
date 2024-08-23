@@ -36,4 +36,5 @@
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
+#include <amelie_system.h>
 #include <amelie_main.h>

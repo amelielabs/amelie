@@ -41,6 +41,7 @@ CFLAGS_INCLUDE = -I../amelie/runtime \
                  -I../amelie/main \
                  -I../amelie/main/frontend \
                  -I../amelie/main/session \
+                 -I../amelie/main/system \
                  -I../amelie/main/main \
                  -I.
 LFLAGS         = -rdynamic -pthread -Wl,-whole-archive \
