@@ -123,7 +123,7 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 }
 
 static void
-system_configure(Str* options, bool bootstrap)
+system_configure(bool bootstrap, int argc, char** argv)
 {
 	auto config = config();
 
@@ -132,8 +132,7 @@ system_configure(Str* options, bool bootstrap)
 	if (bootstrap)
 	{
 		// set options first, to properly generate config
-		if (! str_empty(options))
-			config_set(config, options);
+		config_set_argv(config, argc, argv);
 
 		// generate uuid, unless it is set
 		if (! var_string_is_set(&config->uuid))
@@ -153,8 +152,7 @@ system_configure(Str* options, bool bootstrap)
 		config_open(config, path);
 
 		// redefine options
-		if (! str_empty(options))
-			config_set(config, options);
+		config_set_argv(config, argc, argv);
 	}
 
 	// set system timezone
@@ -191,10 +189,10 @@ system_recover(System* self)
 }
 
 void
-system_start(System* self, Str* options, bool bootstrap)
+system_start(System* self, bool bootstrap, int argc, char** argv)
 {
 	// open or create config
-	system_configure(options, bootstrap);
+	system_configure(bootstrap, argc, argv);
 
 	// hello
 	auto tz = &config()->timezone_default.string;
