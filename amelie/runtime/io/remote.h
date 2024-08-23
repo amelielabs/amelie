@@ -12,24 +12,28 @@ enum
 {
 	REMOTE_NAME,
 	REMOTE_URI,
+	REMOTE_USER,
+	REMOTE_SECRET,
+	REMOTE_TOKEN,
 	REMOTE_PATH_CA,
 	REMOTE_FILE_CA,
 	REMOTE_FILE_CERT,
 	REMOTE_FILE_KEY,
 	REMOTE_SERVER,
-	REMOTE_TOKEN,
 	REMOTE_MAX
 };
 
 struct Remote
 {
 	Str  options[REMOTE_MAX];
+	bool allocated;
 	List link;
 };
 
 static inline void
 remote_init(Remote* self)
 {
+	self->allocated = false;
 	memset(self->options, 0, sizeof(self->options));
 	list_init(&self->link);
 }
@@ -39,6 +43,8 @@ remote_free(Remote* self)
 {
 	for (int i = 0; i < REMOTE_MAX;i ++)
 		str_free(&self->options[i]);
+	if (self->allocated)
+		am_free(self);
 }
 
 static inline Remote*
@@ -46,6 +52,7 @@ remote_allocate(void)
 {
 	auto self = (Remote*)am_malloc(sizeof(Remote));
 	remote_init(self);
+	self->allocated = true;
 	return self;
 }
 
@@ -98,4 +105,32 @@ remote_copy(Remote* self, Remote* from)
 	for (int i = 0; i < REMOTE_MAX;i ++)
 		if (! str_empty(&from->options[i]))
 			remote_set(self, i, &from->options[i]);
+}
+
+static inline const char*
+remote_nameof(int id)
+{
+	switch (id) {
+	case REMOTE_NAME:
+		return "name";
+	case REMOTE_URI:
+		return "uri";
+	case REMOTE_USER:
+		return "user";
+	case REMOTE_SECRET:
+		return "secret";
+	case REMOTE_TOKEN:
+		return "token";
+	case REMOTE_PATH_CA:
+		return "tls_capath";
+	case REMOTE_FILE_CA:
+		return "tls_ca";
+	case REMOTE_FILE_CERT:
+		return "tls_cert";
+	case REMOTE_FILE_KEY:
+		return "tls_key";
+	case REMOTE_SERVER:
+		return "tls_server";
+	}
+	return NULL;
 }

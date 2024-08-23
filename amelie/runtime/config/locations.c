@@ -11,44 +11,6 @@
 #include <amelie_data.h>
 #include <amelie_config.h>
 
-static inline Remote*
-locations_read(uint8_t** pos)
-{
-	auto self = remote_allocate();
-	guard(remote_free, self);
-	Decode map[] =
-	{
-		{ DECODE_STRING, "name",     remote_get(self, REMOTE_NAME)      },
-		{ DECODE_STRING, "uri",      remote_get(self, REMOTE_URI)       },
-		{ DECODE_STRING, "tls_ca",   remote_get(self, REMOTE_FILE_CA)   },
-		{ DECODE_STRING, "tls_cert", remote_get(self, REMOTE_FILE_CERT) },
-		{ DECODE_STRING, "tls_key",  remote_get(self, REMOTE_FILE_KEY)  },
-		{ DECODE_STRING, "token",    remote_get(self, REMOTE_TOKEN)     },
-		{ 0,              NULL,      NULL                               },
-	};
-	decode_map(map, "remote", pos);
-	return unguard();
-}
-
-static inline void
-locations_write(Remote* remote, Buf* buf)
-{
-	encode_map(buf);
-	encode_raw(buf, "name", 4);
-	encode_string(buf, remote_get(remote, REMOTE_NAME));
-	encode_raw(buf, "uri", 3);
-	encode_string(buf, remote_get(remote, REMOTE_URI));
-	encode_raw(buf, "tls_ca", 6);
-	encode_string(buf, remote_get(remote, REMOTE_FILE_CA));
-	encode_raw(buf, "tls_cert", 8);
-	encode_string(buf, remote_get(remote, REMOTE_FILE_CERT));
-	encode_raw(buf, "tls_key", 7);
-	encode_string(buf, remote_get(remote, REMOTE_FILE_KEY));
-	encode_raw(buf, "token", 5);
-	encode_string(buf, remote_get(remote, REMOTE_TOKEN));
-	encode_map_end(buf);
-}
-
 void
 locations_init(Locations* self)
 {
@@ -63,8 +25,24 @@ locations_free(Locations* self)
 	{
 		auto remote = list_at(Remote, link);
 		remote_free(remote);
-		am_free(remote);
 	}
+}
+
+static inline Remote*
+locations_read(uint8_t** pos)
+{
+	auto self = remote_allocate();
+	guard(remote_free, self);
+	Decode map[REMOTE_MAX + 1];
+	for (int id = 0; id < REMOTE_MAX; id++)
+	{
+		map[id].flags = DECODE_STRING;
+		map[id].key   = remote_nameof(id);
+		map[id].value = remote_get(self, id);
+	}
+	memset(&map[REMOTE_MAX], 0, sizeof(Decode));
+	decode_map(map, "remote", pos);
+	return unguard();
 }
 
 void
@@ -113,7 +91,13 @@ locations_sync(Locations* self, const char* path)
 	{
 		auto remote = list_at(Remote, link);
 		encode_string(&buf, remote_get(remote, REMOTE_NAME));
-		locations_write(remote, &buf);
+		encode_map(&buf);
+		for (int id = 0; id < REMOTE_MAX; id++)
+		{
+			encode_cstr(&buf, remote_nameof(id));
+			encode_string(&buf, remote_get(remote, id));
+		}
+		encode_map_end(&buf);
 	}
 	encode_map_end(&buf);
 
@@ -151,7 +135,6 @@ locations_delete(Locations* self, Str* name)
 	list_unlink(&remote->link);
 	self->list_count--;
 	remote_free(remote);
-	am_free(remote);
 }
 
 Remote*
@@ -164,4 +147,35 @@ locations_find(Locations* self, Str* name)
 			return remote;
 	}
 	return NULL;
+}
+
+void
+locations_set(Locations* self, Remote* remote, int argc, char** argv)
+{
+	for (int i = 0; i < argc; i++)
+	{
+		int id = 0;
+		for (; id < REMOTE_MAX; id++)
+		{
+			auto arg = argv[i];
+			if (! strncmp(arg, "--", 2))
+				arg += 2;
+			if (! strcasecmp(arg, remote_nameof(id)))
+				break;
+		}
+
+		Str value;
+		str_set_cstr(&value, argv[i]);
+		if (id == REMOTE_MAX)
+		{
+			// not found, assuming argument is a remote name
+			auto match = locations_find(self, &value);
+			if (! match)
+				error("remote: location or option '%s' not found", argv[i]);
+			remote_copy(remote, match);
+		} else
+		{
+			remote_set(remote, id, &value);
+		}
+	}
 }

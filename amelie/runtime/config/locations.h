@@ -20,5 +20,6 @@ void locations_open(Locations*, const char*);
 void locations_sync(Locations*, const char*);
 void locations_add(Locations*, Remote*);
 void locations_delete(Locations*, Str*);
+void locations_set(Locations*, Remote*, int, char**);
 Remote*
 locations_find(Locations*, Str*);
