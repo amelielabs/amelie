@@ -346,3 +346,20 @@ tcp_write_pair(Tcp* self, Buf* a, Buf* b)
 	};
 	tcp_write(self, iov, 2);
 }
+
+void
+tcp_write_pair_str(Tcp* self, Buf* a, Str* b)
+{
+	struct iovec iov[2] =
+	{
+		{
+			.iov_base = a->start,
+			.iov_len  = buf_size(a)
+		},
+		{
+			.iov_base = b->pos,
+			.iov_len  = str_size(b)
+		},
+	};
+	tcp_write(self, iov, 2);
+}

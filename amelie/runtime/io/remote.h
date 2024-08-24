@@ -10,8 +10,8 @@ typedef struct Remote Remote;
 
 enum
 {
-	REMOTE_NAME,
 	REMOTE_URI,
+	REMOTE_NAME,
 	REMOTE_USER,
 	REMOTE_SECRET,
 	REMOTE_TOKEN,
@@ -25,17 +25,13 @@ enum
 
 struct Remote
 {
-	Str  options[REMOTE_MAX];
-	bool allocated;
-	List link;
+	Str options[REMOTE_MAX];
 };
 
 static inline void
 remote_init(Remote* self)
 {
-	self->allocated = false;
 	memset(self->options, 0, sizeof(self->options));
-	list_init(&self->link);
 }
 
 static inline void
@@ -43,17 +39,6 @@ remote_free(Remote* self)
 {
 	for (int i = 0; i < REMOTE_MAX;i ++)
 		str_free(&self->options[i]);
-	if (self->allocated)
-		am_free(self);
-}
-
-static inline Remote*
-remote_allocate(void)
-{
-	auto self = (Remote*)am_malloc(sizeof(Remote));
-	remote_init(self);
-	self->allocated = true;
-	return self;
 }
 
 static inline void

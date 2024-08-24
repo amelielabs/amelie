@@ -34,3 +34,4 @@ int  tcp_read(Tcp*, Buf*, int);
 void tcp_write(Tcp*, struct iovec*, int);
 void tcp_write_buf(Tcp*, Buf*);
 void tcp_write_pair(Tcp*, Buf*, Buf*);
+void tcp_write_pair_str(Tcp*, Buf*, Str*);

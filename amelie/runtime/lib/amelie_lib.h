@@ -21,6 +21,9 @@
 // id manager
 #include "lib/id_mgr.h"
 
+// args
+#include "lib/arg.h"
+
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"

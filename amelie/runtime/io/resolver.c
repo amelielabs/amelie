@@ -50,7 +50,8 @@ resolver_start(Resolver* self)
 void
 resolver_stop(Resolver* self)
 {
-	rpc(&self->task.channel, RPC_STOP, 0);
+	if (task_active(&self->task))
+		rpc(&self->task.channel, RPC_STOP, 0);
 	task_wait(&self->task);
 	task_free(&self->task);
 }

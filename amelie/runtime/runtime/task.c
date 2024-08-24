@@ -55,7 +55,7 @@ task_coroutine_main(void* arg)
 	if (coro == am_task->main_coroutine)
 	{
 		if (e.triggered)
-			thread_status_set(&am_task->thread_status, -1);
+			status_set(&am_task->status, -1);
 
 		// cancel all coroutines, except current one
 		task_shutdown(mgr);
@@ -169,7 +169,7 @@ task_init(Task* self)
 	condition_cache_init(&self->condition_cache);
 	buf_cache_init(&self->buf_cache, 32 * 1024); // 32kb max
 	channel_init(&self->channel);
-	thread_status_init(&self->thread_status);
+	status_init(&self->status);
 	thread_init(&self->thread);
 }
 
@@ -182,7 +182,7 @@ task_free(Task* self)
 	channel_detach(&self->channel);
 	channel_free(&self->channel);
 	poller_free(&self->poller);
-	thread_status_free(&self->thread_status);
+	status_free(&self->status);
 	buf_cache_free(&self->buf_cache);
 }
 

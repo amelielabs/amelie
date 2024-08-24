@@ -15,8 +15,8 @@
 #include "runtime/spinlock.h"
 #include "runtime/mutex.h"
 #include "runtime/cond_var.h"
-#include "runtime/thread_status.h"
 #include "runtime/thread.h"
+#include "runtime/status.h"
 
 // basic data structures
 #include "runtime/list.h"
