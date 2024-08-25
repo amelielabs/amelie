@@ -213,4 +213,29 @@ login_mgr_set(LoginMgr* self, Remote* remote, int argc, char** argv)
 
 		remote_set(remote, id, &value);
 	}
+
+	// validate uri
+	auto uri = remote_get(remote, REMOTE_URI);
+	if (str_empty(uri))
+		error("login: uri is not defined");
+
+	// generate auth token
+	auto user   = remote_get(remote, REMOTE_USER);
+	auto secret = remote_get(remote, REMOTE_SECRET);
+	if (!str_empty(user) || !str_empty(secret))
+	{
+		if (str_empty(user) || str_empty(secret))
+			error("login: both user and secret options are expected");
+
+		// create jwt token
+		auto jwt = jwt_create(user, secret, NULL);
+		guard_buf(jwt);
+		Str jwt_str;
+		buf_str(jwt, &jwt_str);
+		remote_set(remote, REMOTE_TOKEN, &jwt_str);
+
+		// reset user and secret, keep only token
+		str_free(user);
+		str_free(secret);
+	}
 }

@@ -7,4 +7,4 @@
 //
 
 Buf*
-jwt_create(User*, Timestamp*);
+jwt_create(Str*, Str*, Timestamp*);

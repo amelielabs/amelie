@@ -13,7 +13,7 @@ amelie_usage(void)
 	auto version = &config()->version.string;
 	info("amelie (version: %.*s)", str_size(version), str_of(version));
 	info("");
-	info("usage: amelie [command] options]");
+	info("usage: amelie [command | login] [options]");
 	info("");
 	info("  commands:");
 	info("");
@@ -103,8 +103,6 @@ amelie_backup(Amelie* self, int argc, char** argv)
 	remote_init(&remote);
 	guard(remote_free, &remote);
 	login_mgr_set(&self->home.login_mgr, &remote, argc - 1, argv + 1);
-	if (str_empty(remote_get(&remote, REMOTE_URI)))
-		error("uri is not defined");
 
 	// disable log output
 	if (str_compare_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
@@ -174,9 +172,6 @@ amelie_client(Amelie* self, int argc, char** argv)
 	{
 		// prepare remote
 		login_mgr_set(&self->home.login_mgr, &remote, argc, argv);
-
-		if (str_empty(remote_get(&remote, REMOTE_URI)))
-			error("uri is not defined");
 
 		// create client and connect
 		client = client_create();

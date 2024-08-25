@@ -14,9 +14,9 @@
 #include <amelie_auth.h>
 
 Buf*
-jwt_create(User* user, Timestamp* expire)
+jwt_create(Str* user, Str* secret, Timestamp* expire)
 {
-	if (str_empty(&user->config->secret))
+	if (str_empty(secret))
 		error("jwt: user secret is not set");
 
 	JwtEncode jwt;
@@ -35,7 +35,7 @@ jwt_create(User* user, Timestamp* expire)
 
 	// sub
 	encode_raw(payload, "sub", 3);
-	encode_string(payload, &user->config->name);
+	encode_string(payload, user);
 
 	// iat
 	auto iat = time_ms() / 1000;
@@ -52,14 +52,14 @@ jwt_create(User* user, Timestamp* expire)
 	encode_map_end(payload);
 
 	// convert payload to json
-	int offset = buf_size(payload);
+	auto payload_json = buf_create();
+	guard_buf(payload_json);
+
 	uint8_t* pos = payload->start;
-	json_export(payload, NULL, &pos);
+	json_export(payload_json, NULL, &pos);
 
 	// create jwt
 	Str payload_str;
-	str_set_u8(&payload_str, payload->start + offset,
-	           buf_size(payload) - offset);
-	return jwt_encode(&jwt, &header_str, &payload_str,
-	                  &user->config->secret);
+	buf_str(payload_json, &payload_str);
+	return jwt_encode(&jwt, &header_str, &payload_str, secret);
 }
