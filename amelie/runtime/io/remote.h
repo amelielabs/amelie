@@ -20,6 +20,7 @@ enum
 	REMOTE_FILE_CERT,
 	REMOTE_FILE_KEY,
 	REMOTE_SERVER,
+	REMOTE_DEBUG,
 	REMOTE_MAX
 };
 
@@ -116,6 +117,8 @@ remote_nameof(int id)
 		return "tls_key";
 	case REMOTE_SERVER:
 		return "tls_server";
+	case REMOTE_DEBUG:
+		return "debug";
 	}
 	return NULL;
 }

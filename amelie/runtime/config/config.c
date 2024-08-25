@@ -216,13 +216,11 @@ config_set_argv(Config* self, int argc, char** argv)
 		if (arg_parse(argv[i], &name, &value) == -1)
 			error("config: invalid option '%s'", argv[i]);
 
-		// ensure value is defined
-		if (str_empty(&value))
-			error("config: value is not defined for option '%s'", argv[i]);
-
-		// --configure=json exception
-		if (str_compare_cstr(&name, "configure"))
+		// --json={}
+		if (str_compare_cstr(&name, "json"))
 		{
+			if (str_empty(&value))
+				error("config: value is not defined for option '--json'");
 			config_set(self, &value);
 			continue;
 		}
@@ -237,19 +235,27 @@ config_set_argv(Config* self, int argc, char** argv)
 			error("config: option '%.*s' cannot be changed",
 			      str_size(&name), str_of(&name));
 
+		// ensure value is defined
+		if (var->type != VAR_BOOL && str_empty(&value))
+			error("config: value is not defined for option '%.*s'",
+			      str_size(&name), str_of(&name));
+
 		// set value based on type
 		switch (var->type) {
 		case VAR_BOOL:
 		{
-			bool result;
-			if (str_compare_cstr(&value, "true"))
-				result = true;
-			else
-			if (str_compare_cstr(&value, "false"))
-				result = false;
-			else
-				error("config: bool expected for option '%.*s'",
-				      str_size(&name), str_of(&name));
+			bool result = true;
+			if (! str_empty(&value))
+			{
+				if (str_compare_cstr(&value, "true"))
+					result = true;
+				else
+				if (str_compare_cstr(&value, "false"))
+					result = false;
+				else
+					error("config: bool expected for option '%.*s'",
+					      str_size(&name), str_of(&name));
+			}
 			var_int_set(var, result);
 			break;
 		}
