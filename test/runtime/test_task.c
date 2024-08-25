@@ -5,7 +5,7 @@
 // Real-Time SQL Database.
 //
 
-#include <amelie.h>
+#include <amelie_private.h>
 #include <amelie_test.h>
 
 static int called = 0;
@@ -61,7 +61,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
-	thread_status_set(&am_task->thread_status, 123);
+	status_set(&am_task->status, 123);
 }
 
 void test_task_status(void)
@@ -74,7 +74,7 @@ void test_task_status(void)
 	                         NULL, NULL, NULL, NULL);
 	test(rc == 0);
 
-	test(thread_status_wait(&task.thread_status) == 123);
+	test(status_wait(&task.status) == 123);
 
 	task_wait(&task);
 	task_free(&task);

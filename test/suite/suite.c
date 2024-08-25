@@ -5,7 +5,7 @@
 // Real-Time SQL Database.
 //
 
-#include <amelie.h>
+#include <amelie_private.h>
 #include <amelie_test.h>
 #include <dlfcn.h>
 
@@ -122,7 +122,7 @@ test_env_new(TestSuite* self, const char* name)
 		return NULL;
 	}
 	env->sessions = 0;
-	main_init(&env->main);
+	amelie_init(&env->main);
 	list_init(&env->link);
 	list_append(&self->list_env, &env->link);
 	return env;
@@ -133,8 +133,8 @@ test_env_free(TestSuite* self, TestEnv* env)
 {
 	(void)self;
 	list_unlink(&env->link);
-	main_stop(&env->main);
-	main_free(&env->main);
+	amelie_stop(&env->main);
+	amelie_free(&env->main);
 	free(env->name);
 	free(env);
 }
@@ -300,8 +300,17 @@ error:
 }
 
 static int
-test_suite_create(TestSuite* self, char* name, char* config, char* uri, char* ca)
+test_suite_open(TestSuite* self, char* arg)
 {
+	char* name = test_suite_arg(&arg);
+	char* options = arg;
+	if (name == NULL)
+	{
+		test_error(self, "line %d: open <name> expected",
+		           self->current_line);
+		return -1;
+	}
+
 	auto env = test_env_find(self, name);
 	if (env) {
 		test_error(self, "line %d: env name redefined",
@@ -316,43 +325,40 @@ test_suite_create(TestSuite* self, char* name, char* config, char* uri, char* ca
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
 
-	char prefmt_config[4096];
-	snprintf(prefmt_config, sizeof(prefmt_config),
-	         "{ "
-	         " \"log_enable\": true, "
-	         " \"log_to_stdout\": false, "
-	         " \"wal_sync_on_rotate\": false, "
-	         " \"wal_sync_on_write\": false, "
-	         " \"shards\": 1, "
-	         " \"frontends\": 1 "
-			 " %s"
-	         " %s%s "
-	         " %s "
-	         "} ",
-	          (self->current_test_options || config) ? "," : "",
-	          (self->current_test_options) ? self->current_test_options : "",
-	          (self->current_test_options && config) ? ", " : "",
-	          (config) ? config : "");
+	// server <path> [server options]
+	int   argc = 9;
+	char* argv[14] =
+	{
+		"amelie-test",
+		"server",
+		path,
+		"--log_enable=true",
+		"--log_to_stdout=false",
+		"--wal_sync_on_rotate=false",
+		"--wal_sync_on_write=false",
+		"--shards=1",
+		"--frontends=1"
+	};
 
-	Str options[MAIN_MAX];
-	for (int i = 0; i < MAIN_MAX; i++)
-		str_init(&options[i]);
+	char options_test[1024];
+	if (self->current_test_options)
+	{
+		snprintf(options_test, sizeof(options_test), "--json={%s}",
+		         self->current_test_options);
+		argv[argc] = options_test;
+		argc++;
+	}
 
-	// directory
-	str_set_cstr(&options[MAIN_DIRECTORY], path);
+	char options_this[1024];
+	if (options)
+	{
+		snprintf(options_this, sizeof(options_this), "--json={%s}",
+		         options);
+		argv[argc] = options_this;
+		argc++;
+	}
 
-	// config
-	str_set_cstr(&options[MAIN_CONFIG], prefmt_config);
-
-	// backup
-	if (uri)
-		str_set_cstr(&options[MAIN_BACKUP], uri);
-
-	// backup_cafile
-	if (ca)
-		str_set_cstr(&options[MAIN_BACKUP_CAFILE], ca);
-
-	int rc = main_start(&env->main, options);
+	int rc = amelie_start(&env->main, argc, argv);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
@@ -364,29 +370,10 @@ test_suite_create(TestSuite* self, char* name, char* config, char* uri, char* ca
 }
 
 static int
-test_suite_open(TestSuite* self, char* arg)
-{
-	char* name = test_suite_arg(&arg);
-	char* config = arg;
-
-	if (name == NULL)
-	{
-		test_error(self, "line %d: open <name> expected",
-		           self->current_line);
-		return -1;
-	}
-
-	return test_suite_create(self, name, config, NULL, NULL);
-}
-
-static int
 test_suite_backup(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
-	char* uri = test_suite_arg(&arg);
-	char* cafile = test_suite_arg(&arg);
-	char* config = arg;
-
+	char* options = arg;
 	if (name == NULL)
 	{
 		test_error(self, "line %d: backup <name> expected",
@@ -394,14 +381,48 @@ test_suite_backup(TestSuite* self, char* arg)
 		return -1;
 	}
 
-	if (uri == NULL)
-	{
-		test_error(self, "line %d: backup name <uri> expected",
+	auto env = test_env_find(self, name);
+	if (env) {
+		test_error(self, "line %d: env name redefined",
 		           self->current_line);
 		return -1;
 	}
 
-	return test_suite_create(self, name, config, uri, cafile);
+	env = test_env_new(self, name);
+	if (env == NULL)
+		return -1;
+
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
+
+	// backup <path> --json {remote options}
+	int   argc = 4;
+	char* argv[6] =
+	{
+		"amelie-test",
+		"backup",
+		path,
+		"--debug=0"
+	};
+
+	char options_this[1024];
+	if (options)
+	{
+		snprintf(options_this, sizeof(options_this), "--json={%s}",
+		         options);
+		argv[argc] = options_this;
+		argc++;
+	}
+
+	int rc = amelie_start(&env->main, argc, argv);
+	if (rc == -1)
+	{
+		test_error(self, "line %d: start failed", self->current_line);
+		test_env_free(self, env);
+		return -1;
+	}
+
+	return 0;
 }
 
 static int

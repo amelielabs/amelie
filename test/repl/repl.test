@@ -7,7 +7,7 @@ connect E0 S0 localhost:3480
 show repl
 
 # test: backup replica
-backup E1 127.0.0.1:3480
+backup E1 "uri": "127.0.0.1:3480"
 close E1
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]

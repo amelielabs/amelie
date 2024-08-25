@@ -5,7 +5,7 @@
 // Real-Time SQL Database.
 //
 
-#include <amelie.h>
+#include <amelie_private.h>
 #include <amelie_test.h>
 
 static int cond_value = 0;

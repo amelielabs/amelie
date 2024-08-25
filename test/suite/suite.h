@@ -31,10 +31,10 @@ struct TestGroup
 
 struct TestEnv
 {
-	char* name;
-	Main  main;
-	int   sessions;
-	List  link;
+	char*  name;
+	Amelie main;
+	int    sessions;
+	List   link;
 };
 
 struct TestSession

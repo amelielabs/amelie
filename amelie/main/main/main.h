@@ -6,23 +6,7 @@
 // Real-Time SQL Database.
 //
 
-typedef struct MainOptions MainOptions;
-typedef struct Main        Main;
-
-enum
-{
-	MAIN_DIRECTORY,
-	MAIN_CONFIG,
-	MAIN_BACKUP,
-	MAIN_BACKUP_CAFILE,
-	MAIN_BACKUP_TOKEN,
-	MAIN_MAX
-};
-
-struct MainOptions
-{
-	Str options[MAIN_MAX];
-};
+typedef struct Main Main;
 
 struct Main
 {
@@ -32,10 +16,10 @@ struct Main
 	Config      config;
 	TimezoneMgr timezone_mgr;
 	Global      global;
-	Task        task;
 };
 
 void main_init(Main*);
 void main_free(Main*);
-int  main_start(Main*, Str*);
+void main_start(Main*);
 void main_stop(Main*);
+bool main_open(Main*, char*);

@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/serve
 connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
 
 # test: create replica (backup using https)
-backup E1 https://127.0.0.1:3480 ./tls/ca.crt
+backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt"
 close E1
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true }]
