@@ -10,7 +10,50 @@
 static void
 amelie_usage(void)
 {
-	error("usage: amelie [command] options]");
+	auto version = &config()->version.string;
+	info("amelie (version: %.*s)", str_size(version), str_of(version));
+	info("");
+	info("usage: amelie [command] options]");
+	info("");
+	info("  commands:");
+	info("");
+	info("    server <path> [server options]");
+	info("    backup <path> [login] [remote options]");
+	info("    client [login] [remote options]");
+	info("    login  <name> [remote options]");
+	info("    logout <name>");
+	info("");
+	info("  remote options:");
+	info("");
+	int id = 0;
+	for (; id < REMOTE_MAX; id++)
+		info("    --%s=string", remote_nameof(id));
+	info("    --json=string");
+
+	info("");
+	info("  server options:");
+	info("");
+	list_foreach(&config()->list)
+	{
+		auto var = list_at(Var, link);
+		if (! var_is(var, VAR_C))
+			continue;
+		char* type;
+		switch (var->type) {
+		case VAR_BOOL: type = "bool";
+			break;
+		case VAR_INT: type = "int";
+			break;
+		case VAR_STRING: type = "string";
+			break;
+		case VAR_DATA: type = "json";
+			break;
+		}
+		info("    --%.*s=%s", str_size(&var->name),
+		     str_of(&var->name), type);
+	}
+	info("    --json=string");
+	info("");
 }
 
 static void
@@ -176,7 +219,6 @@ amelie_login(Amelie* self, int argc, char** argv)
 	}
 
 	login_mgr_set(&home->login_mgr, &login->remote, argc - 1, argv + 1);
-
 	home_sync(home);
 }
 
@@ -186,12 +228,10 @@ amelie_logout(Amelie* self, int argc, char** argv)
 	// amelie logout name
 	auto home = &self->home;
 	home_open(home);
-
 	unused(argc);
 	Str name;
 	str_set_cstr(&name, argv[0]);
 	login_mgr_delete(&home->login_mgr, &name);
-
 	home_sync(home);
 }
 
@@ -200,18 +240,17 @@ amelie_main(Amelie* self, int argc, char** argv)
 {
 	// amelie [command] [options]
 	if (argc <= 1)
-		amelie_usage();
+		goto usage;
 
 	if (!strcmp(argv[1], "-h") ||
 	    !strcmp(argv[1], "--help"))
-	{
-		amelie_usage();
-		return;
-	}
+		goto usage;
+
 	if (!strcmp(argv[1], "-v") ||
 	    !strcmp(argv[1], "--version"))
 	{
-		// todo
+		auto version = &config()->version.string;
+		info("%.*s", str_size(version), str_of(version));
 		return;	
 	}
 
@@ -219,41 +258,45 @@ amelie_main(Amelie* self, int argc, char** argv)
 	{
 		// server
 		if (argc <= 2)
-			amelie_usage();
+			goto usage;
 		amelie_server(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "backup"))
 	{
 		// backup
 		if (argc <= 2)
-			amelie_usage();
+			goto usage;
 		amelie_backup(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "client"))
 	{
 		// client
 		if (argc <= 2)
-			amelie_usage();
+			goto usage;
 		amelie_client(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "login"))
 	{
 		// login
 		if (argc <= 2)
-			amelie_usage();
+			goto usage;
 		amelie_login(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "logout"))
 	{
 		// logout
 		if (argc != 3)
-			amelie_usage();
+			goto usage;
 		amelie_logout(self, argc - 2, argv + 2);
 	} else
 	{
 		// client by default
 		amelie_client(self, argc - 1, argv + 1);
 	}
+	return;
+
+usage:
+	amelie_usage();
 }
 
 typedef struct
