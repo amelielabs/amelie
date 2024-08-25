@@ -10,7 +10,7 @@ typedef struct Var Var;
 
 enum
 {
-	// can be set
+	// can be set in config or start option
 	VAR_C = 1 << 0,
 	// can be set in runtime
 	VAR_R = 1 << 1,
@@ -18,12 +18,14 @@ enum
 	VAR_H = 1 << 2,
 	// secret
 	VAR_S = 1 << 3,
+	// system
+	VAR_Y = 1 << 4,
 	// excluded from config
-	VAR_E = 1 << 4,
+	VAR_E = 1 << 5,
 	// cannot be zero
-	VAR_Z = 1 << 5,
+	VAR_Z = 1 << 6,
 	// local
-	VAR_L = 1 << 6
+	VAR_L = 1 << 7
 };
 
 typedef enum

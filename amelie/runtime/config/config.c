@@ -117,9 +117,9 @@ config_prepare(Config* self)
 		{ "lsn",                     VAR_INT,    VAR_E,                   &self->lsn,                     NULL,        0                },
 		{ "psn",                     VAR_INT,    VAR_E,                   &self->psn,                     NULL,        0                },
 		// state persistent
-		{ "nodes",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,       &self->nodes,                   NULL,        0                },
-		{ "replicas",                VAR_DATA,   VAR_C|VAR_H|VAR_S,       &self->replicas,                NULL,        0                },
-		{ "users",                   VAR_DATA,   VAR_C|VAR_H|VAR_S,       &self->users,                   NULL,        0                },
+		{ "nodes",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->nodes,                   NULL,        0                },
+		{ "replicas",                VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,        0                },
+		{ "users",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,        0                },
 		// testing
 		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,       &self->test_bool,               NULL,        false            },
 		{ "test_int",                VAR_INT,    VAR_E|VAR_H|VAR_R,       &self->test_int,                NULL,        0                },
@@ -133,7 +133,7 @@ config_prepare(Config* self)
 }
 
 static void
-config_set_data(Config* self, uint8_t** pos)
+config_set_data(Config* self, uint8_t** pos, bool system)
 {
 	data_read_map(pos);
 	while (! data_read_map_end(pos))
@@ -150,6 +150,11 @@ config_set_data(Config* self, uint8_t** pos)
 
 		// ensure variable can be changed
 		if (unlikely(! var_is(var, VAR_C)))
+			error("config: option '%.*s' cannot be changed",
+			      str_size(&name), str_of(&name));
+
+		// system state var (can be changed only druing config read)
+		if (unlikely(var_is(var, VAR_Y) && !system))
 			error("config: option '%.*s' cannot be changed",
 			      str_size(&name), str_of(&name));
 
@@ -196,14 +201,14 @@ config_set_data(Config* self, uint8_t** pos)
 }
 
 void
-config_set(Config* self, Str* options)
+config_set(Config* self, Str* options, bool system)
 {
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
 	json_parse(&json, NULL, options, NULL);
 	uint8_t* pos = json.buf->start;
-	config_set_data(self, &pos);
+	config_set_data(self, &pos, system);
 }
 
 void
@@ -221,7 +226,7 @@ config_set_argv(Config* self, int argc, char** argv)
 		{
 			if (str_empty(&value))
 				error("config: value is not defined for option '--json'");
-			config_set(self, &value);
+			config_set(self, &value, false);
 			continue;
 		}
 
@@ -231,7 +236,7 @@ config_set_argv(Config* self, int argc, char** argv)
 			      str_size(&name), str_of(&name));
 
 		// ensure variable can be changed
-		if (unlikely(! var_is(var, VAR_C)))
+		if (unlikely(!var_is(var, VAR_C) || var_is(var, VAR_Y)))
 			error("config: option '%.*s' cannot be changed",
 			      str_size(&name), str_of(&name));
 
@@ -359,7 +364,7 @@ config_open(Config* self, const char* path)
 		Str options;
 		str_init(&options);
 		buf_str(&buf, &options);
-		config_set(self, &options);
+		config_set(self, &options, true);
 		return;
 	}
 
