@@ -165,7 +165,7 @@ restore_copy_file(Restore* self, Str* name)
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
 	         str_size(name), str_of(name));
 
-	info("%.*s (%" PRIu64 " bytes)", str_size(name),
+	info("file %.*s (%" PRIu64 " bytes)", str_size(name),
 	     str_of(name), len);
 
 	File file;

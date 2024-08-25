@@ -172,7 +172,7 @@ backup_send(Backup* self, Str* url)
 	guard(file_close, &file);
 	file_open(&file, path);
 
-	info("%.*s (%" PRIu64 " bytes)", str_size(url),
+	info("file %.*s (%" PRIu64 " bytes)", str_size(url),
 	     str_of(url), file.size);
 
 	// prepare and send header

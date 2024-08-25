@@ -14,6 +14,7 @@ logger_init(Logger* self)
 {
 	self->enable    = true;
 	self->to_stdout = false;
+	self->cli       = false;
 	self->fd        = -1;
 	self->timezone  = NULL;
 }
@@ -45,6 +46,12 @@ logger_set_enable(Logger* self, bool enable)
 }
 
 void
+logger_set_cli(Logger* self, bool enable)
+{
+	self->cli = enable;
+}
+
+void
 logger_set_to_stdout(Logger *self, bool enable)
 {
 	self->to_stdout = enable;
@@ -61,21 +68,23 @@ logger_write(void*       arg,
              const char* file,
              const char* function,
              int         line,
-             const char* fmt, ...)
+             const char* prefix,
+             const char* text)
 {
 	Logger* self = arg;
 
 	unused(file);
 	unused(function);
 	unused(line);
+
 	if (! self->enable)
 		return;
 
 	int  buf_len = 0;
 	char buf[1024];
 
-	va_list args;
-	va_start(args, fmt);
+	if (self->fd == -1 && self->cli && self->to_stdout)
+		goto print_stdout;
 
 	// timestamp
 	if (self->timezone)
@@ -86,14 +95,25 @@ logger_write(void*       arg,
 	}
 
 	// message
-	buf_len += vsnprintf(buf + buf_len, sizeof(buf) - buf_len, fmt, args);
-	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "\n");
-	va_end(args);
+	if (am_self()->name[0])
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s  %s%s\n",
+		                    am_self()->name,
+		                    prefix, text);
+	else
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s  %s%s\n",
+		                    am_task->name,
+		                    prefix, text);
 
-	// write
+	// write to the log file
 	if (self->fd != -1)
 		vfs_write(self->fd, buf, buf_len);
 
+print_stdout:
+	// cli print (simplified output)
+	if (self->cli)
+		buf_len = snprintf(buf, sizeof(buf), "%s%s\n", prefix, text);
+
+	// print
 	if (self->to_stdout)
 		vfs_write(STDOUT_FILENO, buf, buf_len);
 }

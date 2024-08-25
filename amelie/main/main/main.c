@@ -81,11 +81,12 @@ main_start(Main* self)
 	// prepare default logger settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
+	logger_set_cli(logger, true);
 	logger_set_to_stdout(logger, true);
 }
 
 bool
-main_open(Main* self, char* directory)
+main_open(Main* self, char* directory, bool cli)
 {
 	// set directory
 	char path[PATH_MAX];
@@ -99,6 +100,7 @@ main_open(Main* self, char* directory)
 	// open log with default settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
+	logger_set_cli(logger, cli);
 	snprintf(path, sizeof(path), "%s/log", config_directory());
 	logger_open(logger, path);
 	return bootstrap;

@@ -12,14 +12,17 @@ struct Logger
 {
 	bool      enable;
 	bool      to_stdout;
+	bool      cli;
 	int       fd;
 	Timezone* timezone;
 };
 
 void logger_init(Logger*);
 void logger_open(Logger*, const char*);
-void logger_set_enable(Logger*, bool enable);
-void logger_set_to_stdout(Logger*, bool enable);
+void logger_set_enable(Logger*, bool);
+void logger_set_cli(Logger*, bool);
+void logger_set_to_stdout(Logger*, bool);
 void logger_set_timezone(Logger*, Timezone*);
 void logger_close(Logger*);
-void logger_write(void*, const char*, const char*, int, const char*, ...);
+void logger_write(void*, const char*, const char*, int,
+                  const char*, const char*);

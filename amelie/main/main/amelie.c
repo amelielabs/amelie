@@ -60,7 +60,7 @@ static void
 amelie_server(Amelie* self, int argc, char** argv)
 {
 	// amelie server path [server options]
-	auto bootstrap = main_open(&self->main, argv[0]);
+	auto bootstrap = main_open(&self->main, argv[0], false);
 
 	System* system = NULL;
 	Exception e;
@@ -93,7 +93,7 @@ amelie_backup(Amelie* self, int argc, char** argv)
 	home_open(&self->home);
 
 	// amelie backup path [remote options]
-	auto bootstrap = main_open(&self->main, argv[0]);
+	auto bootstrap = main_open(&self->main, argv[0], true);
 	if (! bootstrap)
 		error("directory already exists");
 
