@@ -36,6 +36,8 @@ OBJECTS        = \
                  lib/crc.o \
                  lib/base64.o \
                  lib/base64url.o \
+                 lib/linenoise.o \
+                 lib/cli.o \
                  lib/timezone.o \
                  lib/timezone_mgr.o \
                  lib/interval.o \

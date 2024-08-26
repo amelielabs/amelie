@@ -24,6 +24,9 @@
 // args
 #include "lib/arg.h"
 
+// cli
+#include "lib/cli.h"
+
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"

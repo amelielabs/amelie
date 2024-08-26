@@ -112,27 +112,23 @@ amelie_backup(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_client_main(Client* client)
+amelie_client_main(Amelie* self, Client* client)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
 	auto token   = remote_get(client->remote, REMOTE_TOKEN);
 	auto uri     = remote_get(client->remote, REMOTE_URI);
+
+	char prompt[128];
+	snprintf(prompt, sizeof(prompt), "%.*s> ", str_size(uri), str_of(uri));
 	for (;;)
 	{
 		// >
-		if (isatty(fileno(stdin)))
-		{
-			printf("%.*s> ", str_size(uri), str_of(uri));
-			fflush(stdout);
-		}
-
-		// read command
-		char text[1024];
-		if (! fgets(text, sizeof(text), stdin))
-			break;
 		Str content;
-		str_set_cstr(&content, text);
+		str_init(&content);
+		if (! cli(prompt, &content))
+			break;
+		guard(str_free, &content);
 		if (! str_size(&content))
 			continue;
 
@@ -155,6 +151,8 @@ amelie_client_main(Client* client)
 		// print
 		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
 	}
+
+	home_sync(&self->home);
 }
 
 static void
@@ -180,7 +178,7 @@ amelie_client(Amelie* self, int argc, char** argv)
 		client_connect(client);
 
 		// process cli
-		amelie_client_main(client);
+		amelie_client_main(self, client);
 	}
 
 	if (leave(&e))
