@@ -392,7 +392,12 @@ test_suite_backup(TestSuite* self, char* arg)
 	if (env == NULL)
 		return -1;
 
+	// set client home
 	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/home", self->option_result_dir);
+	setenv("AMELIE_HOME", path, 1);
+
+	// set base dir
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
 
 	// backup <path> --json {remote options}
