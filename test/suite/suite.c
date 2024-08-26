@@ -325,12 +325,12 @@ test_suite_open(TestSuite* self, char* arg)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
 
-	// server <path> [server options]
+	// start <path> [server options]
 	int   argc = 9;
 	char* argv[14] =
 	{
 		"amelie-test",
-		"server",
+		"start",
 		path,
 		"--log_enable=true",
 		"--log_to_stdout=false",

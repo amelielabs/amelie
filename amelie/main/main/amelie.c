@@ -17,7 +17,8 @@ amelie_usage(void)
 	info("");
 	info("  commands:");
 	info("");
-	info("    server <path> [server options]");
+	info("    start  <path> [server options]");
+	info("    stop   <path>");
 	info("    backup <path> [login] [remote options]");
 	info("    client [login] [remote options]");
 	info("    login  <name> [remote options]");
@@ -58,9 +59,9 @@ amelie_usage(void)
 }
 
 static void
-amelie_server(Amelie* self, int argc, char** argv)
+amelie_cmd_start(Amelie* self, int argc, char** argv)
 {
-	// amelie server path [server options]
+	// amelie start path [server options]
 	auto bootstrap = main_open(&self->main, argv[0], false);
 
 	System* system = NULL;
@@ -89,7 +90,16 @@ amelie_server(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_backup(Amelie* self, int argc, char** argv)
+amelie_cmd_stop(Amelie* self, int argc, char** argv)
+{
+	// amelie stop path
+	(void)self;
+	(void)argc;
+	(void)argv;
+}
+
+static void
+amelie_cmd_backup(Amelie* self, int argc, char** argv)
 {
 	home_open(&self->home);
 
@@ -112,7 +122,7 @@ amelie_backup(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_client_main(Amelie* self, Client* client)
+amelie_cmd_client_main(Amelie* self, Client* client)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
@@ -156,7 +166,7 @@ amelie_client_main(Amelie* self, Client* client)
 }
 
 static void
-amelie_client(Amelie* self, int argc, char** argv)
+amelie_cmd_client(Amelie* self, int argc, char** argv)
 {
 	// amelie client [remote options]
 	home_open(&self->home);
@@ -178,7 +188,7 @@ amelie_client(Amelie* self, int argc, char** argv)
 		client_connect(client);
 
 		// process cli
-		amelie_client_main(self, client);
+		amelie_cmd_client_main(self, client);
 	}
 
 	if (leave(&e))
@@ -195,7 +205,7 @@ amelie_client(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_login(Amelie* self, int argc, char** argv)
+amelie_cmd_login(Amelie* self, int argc, char** argv)
 {
 	// amelie login name [remote options]
 	auto home = &self->home;
@@ -218,7 +228,7 @@ amelie_login(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_logout(Amelie* self, int argc, char** argv)
+amelie_cmd_logout(Amelie* self, int argc, char** argv)
 {
 	// amelie logout name
 	auto home = &self->home;
@@ -249,44 +259,51 @@ amelie_main(Amelie* self, int argc, char** argv)
 		return;	
 	}
 
-	if (! strcmp(argv[1], "server"))
+	if (! strcmp(argv[1], "start"))
 	{
-		// server
+		// start
 		if (argc <= 2)
 			goto usage;
-		amelie_server(self, argc - 2, argv + 2);
+		amelie_cmd_start(self, argc - 2, argv + 2);
+	} else
+	if (! strcmp(argv[1], "stop"))
+	{
+		// stop
+		if (argc <= 2)
+			goto usage;
+		amelie_cmd_stop(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "backup"))
 	{
 		// backup
 		if (argc <= 2)
 			goto usage;
-		amelie_backup(self, argc - 2, argv + 2);
+		amelie_cmd_backup(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "client"))
 	{
 		// client
 		if (argc <= 2)
 			goto usage;
-		amelie_client(self, argc - 2, argv + 2);
+		amelie_cmd_client(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "login"))
 	{
 		// login
 		if (argc <= 2)
 			goto usage;
-		amelie_login(self, argc - 2, argv + 2);
+		amelie_cmd_login(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "logout"))
 	{
 		// logout
 		if (argc != 3)
 			goto usage;
-		amelie_logout(self, argc - 2, argv + 2);
+		amelie_cmd_logout(self, argc - 2, argv + 2);
 	} else
 	{
 		// client by default
-		amelie_client(self, argc - 1, argv + 1);
+		amelie_cmd_client(self, argc - 1, argv + 1);
 	}
 	return;
 
