@@ -117,12 +117,13 @@ amelie_client_main(Client* client)
 	auto request = &client->request;
 	auto reply   = &client->reply;
 	auto token   = remote_get(client->remote, REMOTE_TOKEN);
+	auto uri     = remote_get(client->remote, REMOTE_URI);
 	for (;;)
 	{
 		// >
 		if (isatty(fileno(stdin)))
 		{
-			printf("> ");
+			printf("%.*s> ", str_size(uri), str_of(uri));
 			fflush(stdout);
 		}
 
