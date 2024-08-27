@@ -64,6 +64,8 @@ amelie_cmd_init(Amelie* self, int argc, char** argv)
 {
 	// amelie init path [server options]
 	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
+	if (! bootstrap)
+		error("directory already exists");
 
 	// start, bootstrap and quick exit
 	System* system = NULL;

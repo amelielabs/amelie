@@ -45,6 +45,24 @@ vfs_close(int fd)
 }
 
 int
+vfs_flock_shared(int fd)
+{
+	return flock(fd, LOCK_SH|LOCK_NB);
+}
+
+int
+vfs_flock_exclusive(int fd)
+{
+	return flock(fd, LOCK_EX|LOCK_NB);
+}
+
+int
+vfs_flock_unlock(int fd)
+{
+	return flock(fd, LOCK_UN|LOCK_NB);
+}
+
+int
 vfs_sync(int fd)
 {
 #if defined(__APPLE__)

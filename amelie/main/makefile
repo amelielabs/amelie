@@ -54,9 +54,10 @@ OBJECTS        = \
                  session/ddl.o \
                  session/primary.o \
                  system/system.o \
-                 main/main.o \
                  main/login_mgr.o \
-                 main/amelie.o
+                 main/main.o \
+                 main/amelie.o \
+                 main/runner.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
