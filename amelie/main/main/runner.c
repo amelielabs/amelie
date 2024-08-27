@@ -154,7 +154,7 @@ runner_open(Runner* self)
 }
 
 static inline int
-runner_start_daemonize(Runner* self)
+runner_start_daemon(Runner* self)
 {
 	pid_t pid = fork();
 	if (pid == -1)
@@ -183,9 +183,8 @@ runner_start_daemonize(Runner* self)
 	dup2(fd, 0);
 	dup2(fd, 1);
 	dup2(fd, 2);
-	if (fd > 2) {
+	if (fd > 2)
 		close(fd);
-	}
 	return 0;
 }
 
@@ -198,20 +197,20 @@ runner_start(Runner* self)
 		return -1;
 
 	// try to take exclusive directory lock
-    rc = vfs_flock_exclusive(self->directory_fd);
-    if (rc == -1)
-    {
-        if (errno == EWOULDBLOCK)
+	rc = vfs_flock_exclusive(self->directory_fd);
+	if (rc == -1)
+	{
+		if (errno == EWOULDBLOCK)
 			printf("error: instance already started\n");
 		else
 			printf("error: directory '%s' failed to take directory lock (%s)\n",
 			       self->directory, strerror(errno));
 		return -1;
-    }
+	}
 
 	// daemonize
 	if (self->daemon)
-		return runner_start_daemonize(self);
+		return runner_start_daemon(self);
 
 	return runner_write_pidfile(self, getpid());
 }
@@ -225,18 +224,18 @@ runner_stop(Runner* self)
 		return -1;
 
 	// try to take exclusive directory lock
-    rc = vfs_flock_exclusive(self->directory_fd);
+	rc = vfs_flock_exclusive(self->directory_fd);
 	if (rc == 0)
 	{
 		// instance is not active
 		return 0;
 	}
-    if (rc == -1 && errno != EWOULDBLOCK)
-    {
+	if (rc == -1 && errno != EWOULDBLOCK)
+	{
 		printf("error: directory '%s' failed to take directory lock (%s)\n",
 		       self->directory, strerror(errno));
 		return -1;
-    }
+	}
 
 	// read pidfile
 	auto pid = runner_read_pidfile(self);
