@@ -62,14 +62,14 @@ static void
 amelie_cmd_start(Amelie* self, int argc, char** argv)
 {
 	// amelie start path [server options]
-	auto bootstrap = main_open(&self->main, argv[0], false);
+	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
 
 	System* system = NULL;
 	Exception e;
 	if (enter(&e))
 	{
 		system = system_create();
-		system_start(system, bootstrap, argc - 1, argv + 1);
+		system_start(system, bootstrap);
 
 		// notify amelie_start about start completion
 		status_set(&self->task.status, AMELIE_RUN);
@@ -104,7 +104,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 	home_open(&self->home);
 
 	// amelie backup path [remote options]
-	auto bootstrap = main_open(&self->main, argv[0], true);
+	auto bootstrap = main_create(&self->main, argv[0]);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -170,6 +170,7 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 {
 	// amelie client [remote options]
 	home_open(&self->home);
+	var_int_set(&config()->log_connections, false);
 
 	Remote remote;
 	remote_init(&remote);

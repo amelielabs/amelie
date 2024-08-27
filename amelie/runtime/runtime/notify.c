@@ -21,12 +21,11 @@ notify_on_read(Fd* fd)
 void
 notify_init(Notify* self)
 {
-	memset(&self->fd, 0, sizeof(self->fd));
-	self->fd.fd     = -1;
 	self->signaled  = 0;
 	self->on_notify = NULL;
 	self->arg       = NULL;
 	self->poller    = NULL;
+	fd_init(&self->fd);
 }
 
 int

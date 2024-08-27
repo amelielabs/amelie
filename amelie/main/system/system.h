@@ -33,6 +33,6 @@ struct System
 System*
 system_create(void);
 void system_free(System*);
-void system_start(System*, bool, int, char**);
+void system_start(System*, bool);
 void system_stop(System*);
 void system_main(System*);

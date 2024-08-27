@@ -66,6 +66,13 @@ main_start(Main* self)
 	// read time zones
 	timezone_mgr_open(&self->timezone_mgr);
 
+	// set default timezone to UTC
+	Str utc;
+	str_set_cstr(&utc, "UTC");
+	global()->timezone = timezone_mgr_find(global()->timezone_mgr, &utc);
+	if (! global()->timezone)
+		error("failed to find timezone %.*s", str_size(&utc), str_of(&utc));
+
 	// init uuid manager
 	random_open(&self->random);
 
@@ -83,27 +90,7 @@ main_start(Main* self)
 	logger_set_enable(logger, true);
 	logger_set_cli(logger, true);
 	logger_set_to_stdout(logger, true);
-}
-
-bool
-main_open(Main* self, char* directory, bool cli)
-{
-	// set directory
-	char path[PATH_MAX];
-	var_string_set_raw(&config()->directory, directory, strlen(directory));
-
-	// create directory if not exists
-	auto bootstrap = !fs_exists("%s", config_directory());
-	if (bootstrap)
-		fs_mkdir(0755, "%s", config_directory());
-
-	// open log with default settings
-	auto logger = &self->logger;
-	logger_set_enable(logger, true);
-	logger_set_cli(logger, cli);
-	snprintf(path, sizeof(path), "%s/log", config_directory());
-	logger_open(logger, path);
-	return bootstrap;
+	logger_set_timezone(logger, global()->timezone);
 }
 
 void
@@ -111,4 +98,80 @@ main_stop(Main* self)
 {
 	// stop resolver
 	resolver_stop(&self->resolver);
+}
+
+bool
+main_create(Main* self, char* directory)
+{
+	unused(self);
+
+	// set directory
+	var_string_set_raw(&config()->directory, directory, strlen(directory));
+
+	// create directory if not exists
+	auto bootstrap = !fs_exists("%s", config_directory());
+	if (bootstrap)
+		fs_mkdir(0755, "%s", config_directory());
+
+	return bootstrap;
+}
+
+bool
+main_open(Main* self, char* directory, int argc, char** argv)
+{
+	auto config = config();
+
+	// create base directory, if not exists
+	auto bootstrap = main_create(self, directory);
+
+	// open log with default settings
+	auto logger = &self->logger;
+	logger_set_enable(logger, true);
+	logger_set_cli(logger, false);
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/log", config_directory());
+	logger_open(logger, path);
+
+	// read config
+	snprintf(path, sizeof(path), "%s/config.json", config_directory());
+	if (bootstrap)
+	{
+		// set options first, to properly generate config
+		config_set_argv(config, argc, argv);
+
+		// generate uuid, unless it is set
+		if (! var_string_is_set(&config->uuid))
+		{
+			Uuid uuid;
+			uuid_generate(&uuid, global()->random);
+			char uuid_sz[UUID_SZ];
+			uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
+			var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
+		}
+
+		// create config file
+		config_open(config, path);
+	} else
+	{
+		// open config file
+		config_open(config, path);
+
+		// redefine options
+		config_set_argv(config, argc, argv);
+	}
+
+	// set system timezone
+	auto name = &config()->timezone_default.string;
+	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
+	if (! global()->timezone)
+		error("failed to find timezone %.*s", str_size(name), str_of(name));
+
+	// reconfigure logger
+	logger_set_enable(logger, var_int_of(&config->log_enable));
+	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
+	logger_set_timezone(logger, global()->timezone);
+	if (! var_int_of(&config->log_to_file))
+		logger_close(logger);
+
+	return bootstrap;
 }

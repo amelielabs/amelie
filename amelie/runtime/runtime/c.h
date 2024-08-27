@@ -42,6 +42,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <sys/signalfd.h>
 #include <sys/un.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>

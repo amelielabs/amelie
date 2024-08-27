@@ -60,7 +60,6 @@ static inline void
 thread_set_sigmask_default(void)
 {
 	sigset_t mask;
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGPIPE);
+	sigfillset(&mask);
 	pthread_sigmask(SIG_BLOCK, &mask, NULL);
 }

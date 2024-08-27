@@ -22,4 +22,5 @@ void main_init(Main*);
 void main_free(Main*);
 void main_start(Main*);
 void main_stop(Main*);
-bool main_open(Main*, char*, bool);
+bool main_create(Main*, char*);
+bool main_open(Main*, char*, int, char**);
