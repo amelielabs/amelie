@@ -21,6 +21,7 @@ show all
   "directory": "_output/E1",
   "timezone": "UTC",
   "timezone_default": "UTC",
+  "daemon": false,
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

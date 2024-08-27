@@ -80,6 +80,7 @@ config_prepare(Config* self)
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,        0                },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,        0                },
 		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        "UTC",       0                },
+		{ "daemon",                  VAR_BOOL,   VAR_C,                   &self->daemon,                  NULL,        false            },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,        true             },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },
