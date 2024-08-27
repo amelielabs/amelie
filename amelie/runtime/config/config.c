@@ -84,7 +84,7 @@ config_prepare(Config* self)
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,        true             },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },
-		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,        false            },
+		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,        true             },
 		{ "log_connections",         VAR_BOOL,   VAR_C|VAR_R,             &self->log_connections,         NULL,        true             },
 		{ "log_query",               VAR_BOOL,   VAR_C|VAR_R,             &self->log_query,               NULL,        false            },
 		// server

@@ -17,6 +17,7 @@ amelie_usage(void)
 	info("");
 	info("  commands:");
 	info("");
+	info("    init   <path> [server options]");
 	info("    start  <path> [server options]");
 	info("    stop   <path>");
 	info("    backup <path> [login] [remote options]");
@@ -56,6 +57,31 @@ amelie_usage(void)
 	}
 	info("    --json=string");
 	info("");
+}
+
+static void
+amelie_cmd_init(Amelie* self, int argc, char** argv)
+{
+	// amelie init path [server options]
+	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
+
+	// start, bootstrap and quick exit
+	System* system = NULL;
+	Exception e;
+	if (enter(&e))
+	{
+		system = system_create();
+		system_start(system, bootstrap);
+	}
+
+	if (leave(&e))
+	{ }
+
+	if (system)
+	{
+		system_stop(system);
+		system_free(system);
+	}
 }
 
 static void
@@ -260,6 +286,13 @@ amelie_main(Amelie* self, int argc, char** argv)
 		return;	
 	}
 
+	if (! strcmp(argv[1], "init"))
+	{
+		// init
+		if (argc <= 2)
+			goto usage;
+		amelie_cmd_init(self, argc - 2, argv + 2);
+	} else
 	if (! strcmp(argv[1], "start"))
 	{
 		// start
