@@ -334,6 +334,7 @@ test_suite_open(TestSuite* self, char* arg)
 		path,
 		"--log_enable=true",
 		"--log_to_stdout=false",
+		"--timezone_default=UTC",
 		"--wal_sync_on_rotate=false",
 		"--wal_sync_on_write=false",
 		"--shards=1",
