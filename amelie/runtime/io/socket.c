@@ -119,6 +119,9 @@ socket_connect(int fd, struct sockaddr* sa)
 	} else
 	if (sa->sa_family == AF_INET6) {
 		addrlen = sizeof(struct sockaddr_in6);
+	} else
+	if (sa->sa_family == AF_UNIX) {
+		addrlen = sizeof(struct sockaddr_un);
 	} else {
 		errno = EINVAL;
 		return -1;
@@ -137,6 +140,9 @@ socket_bind(int fd, struct sockaddr* sa)
 	} else
 	if (sa->sa_family == AF_INET6) {
 		addrlen = sizeof(struct sockaddr_in6);
+	} else
+	if (sa->sa_family == AF_UNIX) {
+		addrlen = sizeof(struct sockaddr_un);
 	} else {
 		errno = EINVAL;
 		return -1;

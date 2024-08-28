@@ -25,12 +25,34 @@ server_listen_main(void* arg)
 	if (enter(&e))
 	{
 		// set listen address
-		char addr_name[128];
-		socket_getaddrname(listen->addr->ai_addr, addr_name, sizeof(addr_name), true, true);
-		coroutine_set_name(am_self(), "listen %s", addr_name);
+		char addr_name[PATH_MAX];
 
 		// bind
-		listen_start(&listen->listen, 4096, listen->addr->ai_addr);
+		struct sockaddr_un addr_un;
+		struct sockaddr*   addr;
+		if (listen->addr) {
+			addr = listen->addr->ai_addr;
+			socket_getaddrname(addr, addr_name, sizeof(addr_name), true, true);
+		} else
+		{
+			auto path = &listen->config->path;
+			memset(&addr_un, 0, sizeof(addr_un));
+			addr_un.sun_family = AF_UNIX;
+
+			if (*str_of(path) == '/')
+				snprintf(addr_name, sizeof(addr_name), "%.*s",
+				         str_size(path), str_of(path));
+			else
+				snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
+				         config_directory(),
+				         str_size(path), str_of(path));
+
+			snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
+			addr = (struct sockaddr*)&addr_un;
+		}
+		coroutine_set_name(am_self(), "listen %s", addr_name);
+
+		listen_start(&listen->listen, 4096, addr);
 		info("start");
 
 		// process incoming connection
@@ -48,7 +70,7 @@ server_listen_main(void* arg)
 				client->arg = self;
 				if (listen->tls)
 					tcp_set_tls(&client->tcp, listen->tls_context);
-				tcp_set_fd(&client->tcp, fd);
+				tcp_set_fd(&client->tcp, fd, addr->sa_family);
 				fd = -1;
 
 				// process client
@@ -67,12 +89,35 @@ server_listen_main(void* arg)
 	if (leave(&e))
 	{ }
 
+	// remove unix socket after use
+	if (! listen->addr)
+	{
+		auto path = &listen->config->path;
+		char addr_name[PATH_MAX];
+		if (*str_of(path) == '/')
+			snprintf(addr_name, sizeof(addr_name), "%.*s",
+			         str_size(path), str_of(path));
+		else
+			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
+			         config_directory(), str_size(path), str_of(path));
+		vfs_unlink(addr_name);
+	}
+
 	listen_stop(&listen->listen);
 }
 
 static void
 server_listen_add(Server* self, ServerConfig* config)
 {
+	// unix socket
+	if (! str_empty(&config->path))
+	{
+		auto listen = server_listen_allocate(config);
+		list_append(&self->listen, &listen->link);
+		self->listen_count++;
+		return;
+	}
+
 	if (str_empty(&config->host))
 		error("server: listen[] <host> is not set"); 
 

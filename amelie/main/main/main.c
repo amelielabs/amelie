@@ -114,8 +114,10 @@ main_bootstrap(Main* self)
 	// set default server listen
 	if (! var_data_is_set(&config->listen))
 	{
+		char listen[] = "[{\"host\": \"*\", \"port\": 3485}, {\"path\": \"amelie.sock\"}]";
+
 		Str listen_default;
-		str_set_cstr(&listen_default, "[{\"host\": \"*\", \"port\": 3485}]");
+		str_set_cstr(&listen_default, listen);
 
 		Buf data;
 		buf_init(&data);

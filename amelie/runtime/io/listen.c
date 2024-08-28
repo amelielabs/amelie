@@ -23,14 +23,6 @@ listen_socket_init(int fd, struct sockaddr* addr)
 	if (unlikely(rc == -1))
 		error_system();
 
-	rc = socket_set_keepalive(fd, 7200, 1);
-	if (unlikely(rc == -1))
-		error_system();
-
-	rc = socket_set_nodelay(fd, 1);
-	if (unlikely(rc == -1))
-		error_system();
-
 	rc = socket_set_nosigpipe(fd, 1);
 	if (unlikely(rc == -1))
 		error_system();
@@ -38,6 +30,17 @@ listen_socket_init(int fd, struct sockaddr* addr)
 	rc = socket_set_reuseaddr(fd, 1);
 	if (unlikely(rc == -1))
 		error_system();
+
+	if (addr->sa_family != AF_UNIX)
+	{
+		rc = socket_set_keepalive(fd, 7200, 1);
+		if (unlikely(rc == -1))
+			error_system();
+
+		rc = socket_set_nodelay(fd, 1);
+		if (unlikely(rc == -1))
+			error_system();
+	}
 
 	if (addr->sa_family == AF_INET6)
 	{

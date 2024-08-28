@@ -49,31 +49,34 @@ tcp_set_tls(Tcp* self, TlsContext *context)
 }
 
 static inline void
-tcp_socket_init(int fd)
+tcp_socket_init(int fd, int family)
 {
 	int rc;
 	rc = socket_set_nonblock(fd, 1);
 	if (unlikely(rc == -1))
 		error_system();
 
-	rc = socket_set_keepalive(fd, 7200, 1);
-	if (unlikely(rc == -1))
-		error_system();
-
-	rc = socket_set_nodelay(fd, 1);
-	if (unlikely(rc == -1))
-		error_system();
-
 	rc = socket_set_nosigpipe(fd, 1);
 	if (unlikely(rc == -1))
 		error_system();
+
+	if (family != AF_UNIX)
+	{
+		rc = socket_set_keepalive(fd, 7200, 1);
+		if (unlikely(rc == -1))
+			error_system();
+
+		rc = socket_set_nodelay(fd, 1);
+		if (unlikely(rc == -1))
+			error_system();
+	}
 }
 
 void
-tcp_set_fd(Tcp* self, int fd)
+tcp_set_fd(Tcp* self, int fd, int family)
 {
 	assert(self->poller == NULL);
-	tcp_socket_init(fd);
+	tcp_socket_init(fd, family);
 	self->fd.fd = fd;
 }
 
@@ -149,7 +152,7 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 	if (enter(&e))
 	{
 		// set socket options
-		tcp_socket_init(self->fd.fd);
+		tcp_socket_init(self->fd.fd, addr->sa_family);
 
 		// start async connection
 		int rc;

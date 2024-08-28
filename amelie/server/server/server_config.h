@@ -13,6 +13,7 @@ struct ServerConfig
 	bool             tls;
 	TlsContext       tls_context;
 	Remote           remote;
+	Str              path;
 	Str              host;
 	struct addrinfo* host_addr;
 	int64_t          port;
@@ -24,9 +25,10 @@ server_config_allocate(void)
 {
 	ServerConfig* self;
 	self = am_malloc(sizeof(*self));
-	self->tls       = false;
-	self->host_addr = NULL;
-	self->port      = 3485;
+	self->tls        = false;
+	self->host_addr  = NULL;
+	self->port       = 3485;
+	str_init(&self->path);
 	str_init(&self->host);
 	tls_context_init(&self->tls_context);
 	remote_init(&self->remote);
@@ -41,6 +43,7 @@ server_config_free(ServerConfig* self)
 	remote_free(&self->remote);
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
+	str_free(&self->path);
 	str_free(&self->host);
 	am_free(self);
 }
@@ -67,6 +70,13 @@ server_config_read(uint8_t** pos)
 			// bool
 			data_read_bool(pos, &self->tls);
 		} else
+		if (str_compare_raw(&name, "path", 4))
+		{
+			// string
+			if (! data_is_string(*pos))
+				error("server: listen[] <path> must be a string");
+			data_read_string_copy(pos, &self->path);
+		} else
 		if (str_compare_raw(&name, "host", 4))
 		{
 			// string
@@ -86,6 +96,5 @@ server_config_read(uint8_t** pos)
 			      str_size(&name), str_of(&name)); 
 		}
 	}
-
 	return unguard();
 }
