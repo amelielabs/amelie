@@ -27,7 +27,6 @@ struct Config
 	Var  tls_cert;
 	Var  tls_key;
 	Var  listen;
-	Var  listen_uri;
 	// limits
 	Var  limit_send;
 	Var  limit_recv;

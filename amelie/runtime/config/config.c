@@ -97,7 +97,6 @@ config_prepare(Config* self)
 		{ "tls_key",                 VAR_STRING, VAR_C,                   &self->tls_key,                 NULL,        0                },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,        0                },
 		{ "listen",                  VAR_DATA,   VAR_C,                   &self->listen,                  NULL,        0                },
-		{ "listen_uri",              VAR_STRING, VAR_E|VAR_H,             &self->listen_uri,              NULL,        0                },
 		// limits
 		{ "limit_send",              VAR_INT,    VAR_C|VAR_R,             &self->limit_send,              NULL,        3 * 1024 * 1024  },
 		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,        1 * 1024 * 1024  },
