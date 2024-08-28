@@ -1,6 +1,6 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3485, "tls": true }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3485, "tls": true }], "backends": 3
 
 # test: connect (non tls)
 connect E0 S0 http://localhost:3485

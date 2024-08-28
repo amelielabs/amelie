@@ -80,6 +80,7 @@ cluster_add(Cluster* self, NodeConfig* config)
 	auto node = node_allocate(config, self->db, self->function_mgr);
 	list_append(&self->list, &node->link);
 	self->list_count++;
+	var_int_set(&config()->backends, self->list_count);
 
 	router_add(&self->router, &node->route);
 	return node;
@@ -90,6 +91,7 @@ cluster_del(Cluster* self, Node* node)
 {
 	list_unlink(&node->link);
 	self->list_count--;
+	var_int_set(&config()->backends, self->list_count);
 
 	router_del(&self->router, &node->route);
 	node_free(node);
@@ -99,8 +101,8 @@ static void
 cluster_bootstrap(Cluster* self)
 {
 	// precreate compute nodes
-	auto shards = var_int_of(&config()->shards);
-	while (shards-- > 0)
+	auto be = var_int_of(&config()->backends);
+	while (be-- > 0)
 	{
 		auto config = node_config_allocate();
 		guard(node_config_free, config);
@@ -140,6 +142,7 @@ cluster_open(Cluster* self, bool bootstrap)
 		guard(node_config_free, config);
 		cluster_add(self, config);
 	}
+
 }
 
 void

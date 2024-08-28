@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "shards": 3, "repl_reconnect_ms": 10
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
 connect E0 S0 localhost:3480
 # test: create replica
 backup E1 "uri": "127.0.0.1:3480"

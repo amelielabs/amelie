@@ -73,6 +73,12 @@ config_free(Config* self)
 void
 config_prepare(Config* self)
 {
+	auto cpus = get_nprocs();
+	auto default_fe = cpus / 3;
+	auto default_be = cpus - default_fe;
+	if (default_fe == 0)
+		default_fe = 1;
+
 	ConfigDef defaults[] =
 	{
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.0",       0                },
@@ -97,8 +103,8 @@ config_prepare(Config* self)
 		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,        1 * 1024 * 1024  },
 		{ "limit_write",             VAR_INT,    VAR_C|VAR_R,             &self->limit_write,             NULL,        0                },
 		// cluster
-		{ "frontends",               VAR_INT,    VAR_C,                   &self->frontends,               NULL,        1                },
-		{ "shards",                  VAR_INT,    VAR_C,                   &self->shards,                  NULL,        1                },
+		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,        default_fe       },
+		{ "backends",                VAR_INT,    VAR_C|VAR_E,             &self->backends,                NULL,        default_be       },
 		// wal
 		{ "wal",                     VAR_BOOL,   VAR_C,                   &self->wal,                     NULL,        true             },
 		{ "wal_rotate_wm",           VAR_INT,    VAR_C|VAR_R,             &self->wal_rotate_wm,           NULL,        104857600        },
@@ -176,6 +182,11 @@ config_set_data(Config* self, uint8_t** pos, bool system)
 				      str_size(&name), str_of(&name));
 			int64_t value;
 			data_read_integer(pos, &value);
+
+			if (unlikely(value == 0 && var_is(var, VAR_Z)))
+				error("config: option '%.*s' cannot be zero",
+				      str_size(&name), str_of(&name));
+
 			var_int_set(var, value);
 			break;
 		}
@@ -275,6 +286,9 @@ config_set_argv(Config* self, int argc, char** argv)
 			int64_t result = 0;
 			if (str_toint(&value, &result) == -1)
 				error("config: integer expected for option '%.*s'",
+				      str_size(&name), str_of(&name));
+			if (unlikely(result == 0 && var_is(var, VAR_Z)))
+				error("config: option '%.*s' cannot be zero",
 				      str_size(&name), str_of(&name));
 			var_int_set(var, result);
 			break;

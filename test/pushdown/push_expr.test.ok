@@ -1,12 +1,12 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "shards": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select expr
-explain select system.config().shards
+explain select system.config().backends
 [{
   "bytecode": {
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
-      "01": "string              1      0      0     # shards",
+      "01": "string              1      0      0     # backends",
       "02": "idx                 2      0      1     ",
       "03": "cte_set             0      2      0     ",
       "04": "body                0      0      0     ",
@@ -14,7 +14,7 @@ explain select system.config().shards
     }
   }
 }]
-select system.config().shards
+select system.config().backends
 [3]
 # test: select from expr
 explain select * from [1,2,3]

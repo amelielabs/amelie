@@ -34,7 +34,7 @@ struct Config
 	Var  limit_write;
 	// cluster
 	Var  frontends;
-	Var  shards;
+	Var  backends;
 	// wal
 	Var  wal;
 	Var  wal_rotate_wm;

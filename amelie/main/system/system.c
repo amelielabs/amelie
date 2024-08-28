@@ -148,7 +148,7 @@ system_start(System* self, bool bootstrap)
 	info("");
 	info("amelie.");
 	info("");
-	info("time: system timezone is '%.*s'", str_size(tz), str_of(tz));
+	info("time: default timezone is '%.*s'", str_size(tz), str_of(tz));
 	info("");
 
 	// register builtin functions
@@ -159,6 +159,9 @@ system_start(System* self, bool bootstrap)
 
 	// prepare cluster
 	cluster_open(&self->cluster, bootstrap);
+
+	info("cluster: system has %d compute nodes", self->cluster.list_count);
+	info("");
 
 	// create system object and objects from last snapshot
 	db_open(&self->db);

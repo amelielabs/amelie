@@ -326,7 +326,7 @@ test_suite_open(TestSuite* self, char* arg)
 	snprintf(path, sizeof(path), "%s/%s", self->option_result_dir, name);
 
 	// start <path> [server options]
-	int   argc = 9;
+	int   argc = 10;
 	char* argv[14] =
 	{
 		"amelie-test",
@@ -337,8 +337,8 @@ test_suite_open(TestSuite* self, char* arg)
 		"--timezone_default=UTC",
 		"--wal_sync_on_rotate=false",
 		"--wal_sync_on_write=false",
-		"--shards=1",
-		"--frontends=1"
+		"--frontends=1",
+		"--backends=1"
 	};
 
 	char options_test[1024];
