@@ -79,7 +79,7 @@ config_prepare(Config* self)
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,        0                },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,        0                },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,        0                },
-		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        "UTC",       0                },
+		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        NULL,        0                },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,        true             },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },

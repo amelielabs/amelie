@@ -190,6 +190,15 @@ str_shrink(Str* self)
 		self->end--;
 }
 
+static inline void
+str_chomp(Str* self)
+{
+	if (str_empty(self))
+		return;
+	if (self->end[-1] == '\n')
+		self->end--;
+}
+
 static inline int
 str_toint(Str* self, int64_t* value)
 {

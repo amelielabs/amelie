@@ -36,42 +36,27 @@ main_free(Main* self)
 	tls_lib_free();
 }
 
-static void
-main_prepare_listen(void)
-{
-	Str listen_default;
-	str_set_cstr(&listen_default, "[{\"host\": \"*\", \"port\": 3485}]");
-
-	Buf data;
-	buf_init(&data);
-	guard_buf(&data);
-
-	Json json;
-	json_init(&json);
-	guard(json_free, &json);
-	json_parse(&json, NULL, &listen_default, &data);
-
-	var_data_set_buf(&config()->listen, &data);
-}
-
 void
 main_start(Main* self)
 {
+	// prepare default logger settings
+	auto logger = &self->logger;
+	logger_set_enable(logger, true);
+	logger_set_cli(logger, true);
+	logger_set_to_stdout(logger, true);
+
 	// init ssl library
 	tls_lib_init();
 
-	// set UTC time by default
+	// set UTC time by default (for posix time api)
 	setenv("TZ", "UTC", true);
 
 	// read time zones
 	timezone_mgr_open(&self->timezone_mgr);
 
-	// set default timezone to UTC
-	Str utc;
-	str_set_cstr(&utc, "UTC");
-	global()->timezone = timezone_mgr_find(global()->timezone_mgr, &utc);
-	if (! global()->timezone)
-		error("failed to find timezone %.*s", str_size(&utc), str_of(&utc));
+	// set default timezone as system timezone
+	global()->timezone = self->timezone_mgr.system;
+	logger_set_timezone(logger, global()->timezone);
 
 	// init uuid manager
 	random_open(&self->random);
@@ -81,16 +66,6 @@ main_start(Main* self)
 
 	// prepare default configuration
 	config_prepare(config());
-
-	// set default server listen
-	main_prepare_listen();
-
-	// prepare default logger settings
-	auto logger = &self->logger;
-	logger_set_enable(logger, true);
-	logger_set_cli(logger, true);
-	logger_set_to_stdout(logger, true);
-	logger_set_timezone(logger, global()->timezone);
 }
 
 void
@@ -116,6 +91,45 @@ main_create(Main* self, char* directory)
 	return bootstrap;
 }
 
+static void
+main_bootstrap(Main* self)
+{
+	auto config = config();
+	unused(self);
+
+	// generate uuid, unless it is set
+	if (! var_string_is_set(&config->uuid))
+	{
+		Uuid uuid;
+		uuid_generate(&uuid, global()->random);
+		char uuid_sz[UUID_SZ];
+		uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
+		var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
+	}
+
+	// set default timezone using system timezone
+	if (! var_string_is_set(&config->timezone_default))
+		var_string_set(&config->timezone_default, &self->timezone_mgr.system->name);
+
+	// set default server listen
+	if (! var_data_is_set(&config->listen))
+	{
+		Str listen_default;
+		str_set_cstr(&listen_default, "[{\"host\": \"*\", \"port\": 3485}]");
+
+		Buf data;
+		buf_init(&data);
+		guard_buf(&data);
+
+		Json json;
+		json_init(&json);
+		guard(json_free, &json);
+		json_parse(&json, NULL, &listen_default, &data);
+
+		var_data_set_buf(&config()->listen, &data);
+	}
+}
+
 bool
 main_open(Main* self, char* directory, int argc, char** argv)
 {
@@ -139,15 +153,8 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		// set options first, to properly generate config
 		config_set_argv(config, argc, argv);
 
-		// generate uuid, unless it is set
-		if (! var_string_is_set(&config->uuid))
-		{
-			Uuid uuid;
-			uuid_generate(&uuid, global()->random);
-			char uuid_sz[UUID_SZ];
-			uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
-			var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
-		}
+		// set default settings
+		main_bootstrap(self);
 
 		// create config file
 		config_open(config, path);

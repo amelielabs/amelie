@@ -12,6 +12,7 @@
 void
 timezone_mgr_init(TimezoneMgr* self)
 {
+	self->system = NULL;
 	hashtable_init(&self->ht);
 }
 
@@ -87,11 +88,33 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 	}
 }
 
+static void
+timezone_mgr_read_system_timezone(TimezoneMgr* self)
+{
+	// read /etc/timezone content
+	Buf buf;
+	buf_init(&buf);
+	guard(buf_free, &buf);
+	file_import(&buf, "/etc/timezone");
+
+	Str name;
+	str_init(&name);
+	buf_str(&buf, &name);
+	str_chomp(&name);
+
+	// set as system timezone in timezone mgr
+	self->system = timezone_mgr_find(self, &name);
+	if (! self->system)
+		error("timezone: failed to set system timezone '%.*s'",
+		      str_size(&name), str_of(&name));
+}
+
 void
 timezone_mgr_open(TimezoneMgr* self)
 {
 	hashtable_create(&self->ht, 2048);
 	timezone_mgr_read(self, "/usr/share/zoneinfo", NULL);
+	timezone_mgr_read_system_timezone(self);
 }
 
 hot static inline bool

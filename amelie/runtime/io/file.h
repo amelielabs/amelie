@@ -60,6 +60,13 @@ file_open(File* self, const char* path)
 }
 
 static inline void
+file_open_rdonly(File* self, const char* path)
+{
+	// open existing file
+	file_open_as(self, path, O_RDONLY, 0);
+}
+
+static inline void
 file_create(File* self, const char* path)
 {
 	// create file
@@ -227,6 +234,6 @@ file_import(Buf* buf, const char* fmt, ...)
 	File file;
 	file_init(&file);
 	guard(file_close, &file);
-	file_open(&file, path);
+	file_open_rdonly(&file, path);
 	file_pread_buf(&file, buf, file.size, 0);
 }
