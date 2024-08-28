@@ -80,7 +80,6 @@ config_prepare(Config* self)
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,        0                },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,        0                },
 		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        "UTC",       0                },
-		{ "daemon",                  VAR_BOOL,   VAR_C,                   &self->daemon,                  NULL,        false            },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,        true             },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },
@@ -230,6 +229,12 @@ config_set_argv(Config* self, int argc, char** argv)
 			config_set(self, &value, false);
 			continue;
 		}
+
+		// --daemon (handled by runner)
+		if (str_compare_cstr(&name, "daemon") ||
+		    str_compare_cstr(&name, "daemon=true") ||
+		    str_compare_cstr(&name, "daemon=false"))
+			continue;
 
 		auto var = config_find(self, &name);
 		if (unlikely(var == NULL))

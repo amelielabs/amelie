@@ -16,7 +16,6 @@ struct Config
 	Var  directory;
 	Var  timezone;
 	Var  timezone_default;
-	Var  daemon;
 	// log
 	Var  log_enable;
 	Var  log_to_file;

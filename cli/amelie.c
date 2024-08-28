@@ -10,19 +10,19 @@
 int
 main(int argc, char* argv[])
 {
-	Runner runner;
-	runner_init(&runner);
-	auto rc = runner_main(&runner, argc, argv);
+	Ctl ctl;
+	ctl_init(&ctl);
+	auto rc = ctl_main(&ctl, argc, argv);
 	if (rc == -1)
 		return EXIT_FAILURE;
-	if (runner.type == RUNNER_STOP)
+	if (ctl.type == CTL_STOP)
 		return EXIT_SUCCESS;
 
 	Amelie amelie;
 	amelie_init(&amelie);
 	auto status = amelie_start(&amelie, argc, argv);
 	if (status == AMELIE_RUN)
-		runner_wait_for_signal();
+		ctl_wait_for_signal();
 	amelie_stop(&amelie);
 	amelie_free(&amelie);
 	return status == AMELIE_ERROR? EXIT_FAILURE: EXIT_SUCCESS;

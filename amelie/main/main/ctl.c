@@ -8,9 +8,9 @@
 #include <amelie_private.h>
 
 void
-runner_init(Runner* self)
+ctl_init(Ctl* self)
 {
-	self->type         = RUNNER_COMMON;
+	self->type         = CTL_COMMON;
 	self->daemon       = false;
 	self->directory    = NULL;
 	self->directory_fd = -1;
@@ -18,15 +18,15 @@ runner_init(Runner* self)
 	self->argv         = NULL;
 }
 
-static inline int
-runner_prepare(Runner* self, int argc, char** argv)
+static int
+ctl_prepare(Ctl* self, int argc, char** argv)
 {
 	self->argc = argc;
 	self->argv = argv;
 
 	if (argc >= 2 && !strcmp(argv[1], "start"))
 	{
-		self->type = RUNNER_START;
+		self->type = CTL_START;
 		if (argc < 3)
 		{
 			printf("error: start <path> expected\n");
@@ -49,7 +49,7 @@ runner_prepare(Runner* self, int argc, char** argv)
 	} else
 	if (argc >= 2 && !strcmp(argv[1], "stop"))
 	{
-		self->type = RUNNER_STOP;
+		self->type = CTL_STOP;
 		if (argc < 3)
 		{
 			printf("error: stop <path> expected\n");
@@ -60,13 +60,14 @@ runner_prepare(Runner* self, int argc, char** argv)
 		self->directory = argv[2];
 	} else
 	{
-		self->type = RUNNER_COMMON;
+		self->type = CTL_COMMON;
 	}
+
 	return 0;
 }
 
-static inline int
-runner_read_pidfile(Runner* self)
+static int
+ctl_read_pidfile(Ctl* self)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
@@ -102,8 +103,8 @@ runner_read_pidfile(Runner* self)
 	return pid;
 }
 
-static inline int
-runner_write_pidfile(Runner* self, pid_t pid)
+static int
+ctl_write_pidfile(Ctl* self, pid_t pid)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
@@ -128,8 +129,8 @@ runner_write_pidfile(Runner* self, pid_t pid)
 	return 0;
 }
 
-static inline int
-runner_open(Runner* self)
+static int
+ctl_open(Ctl* self)
 {
 	// ensure directory exists
 	struct stat st;
@@ -154,7 +155,7 @@ runner_open(Runner* self)
 }
 
 static inline int
-runner_start_daemon(Runner* self)
+ctl_start_daemon(Ctl* self)
 {
 	pid_t pid = fork();
 	if (pid == -1)
@@ -167,7 +168,7 @@ runner_start_daemon(Runner* self)
 	if (pid > 0)
 	{
 		// create pid file by parent before exit
-		runner_write_pidfile(self, pid);
+		ctl_write_pidfile(self, pid);
 		_exit(EXIT_SUCCESS);
 	}
 
@@ -189,10 +190,10 @@ runner_start_daemon(Runner* self)
 }
 
 static inline int
-runner_start(Runner* self)
+ctl_start(Ctl* self)
 {
 	// open directory
-	auto rc = runner_open(self);
+	auto rc = ctl_open(self);
 	if (rc == -1)
 		return -1;
 
@@ -210,16 +211,16 @@ runner_start(Runner* self)
 
 	// daemonize
 	if (self->daemon)
-		return runner_start_daemon(self);
+		return ctl_start_daemon(self);
 
-	return runner_write_pidfile(self, getpid());
+	return ctl_write_pidfile(self, getpid());
 }
 
 static inline int
-runner_stop(Runner* self)
+ctl_stop(Ctl* self)
 {
 	// open directory
-	auto rc = runner_open(self);
+	auto rc = ctl_open(self);
 	if (rc == -1)
 		return -1;
 
@@ -238,7 +239,7 @@ runner_stop(Runner* self)
 	}
 
 	// read pidfile
-	auto pid = runner_read_pidfile(self);
+	auto pid = ctl_read_pidfile(self);
 	if (pid == -1)
 		return -1;
 
@@ -250,24 +251,24 @@ runner_stop(Runner* self)
 }
 
 int
-runner_main(Runner* self, int argc, char** argv)
+ctl_main(Ctl* self, int argc, char** argv)
 {
-	auto rc = runner_prepare(self, argc, argv);
+	auto rc = ctl_prepare(self, argc, argv);
 	if (rc == -1)
 		return -1;
 	switch (self->type) {
-	case RUNNER_START:
-		return runner_start(self);
-	case RUNNER_STOP:
-		return runner_stop(self);
-	case RUNNER_COMMON:
+	case CTL_START:
+		return ctl_start(self);
+	case CTL_STOP:
+		return ctl_stop(self);
+	case CTL_COMMON:
 		break;
 	}
 	return 0;
 }
 
 void
-runner_wait_for_signal(void)
+ctl_wait_for_signal(void)
 {
 	// wait signal for completion
 	sigset_t mask;

@@ -57,7 +57,7 @@ OBJECTS        = \
                  main/login_mgr.o \
                  main/main.o \
                  main/amelie.o \
-                 main/runner.o
+                 main/ctl.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

@@ -15,5 +15,5 @@
 #include "main/main.h"
 #include "main/amelie.h"
 
-// runner
-#include "main/runner.h"
+// ctl
+#include "main/ctl.h"
