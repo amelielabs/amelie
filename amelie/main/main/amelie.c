@@ -154,11 +154,22 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
+	auto name    = remote_get(client->remote, REMOTE_NAME);
 	auto token   = remote_get(client->remote, REMOTE_TOKEN);
 	auto uri     = remote_get(client->remote, REMOTE_URI);
+	auto path    = remote_get(client->remote, REMOTE_PATH);
 
+	Str* prompt_str;
+	if (! str_empty(name))
+		prompt_str = name;
+	else
+	if (! str_empty(path))
+		prompt_str = path;
+	else
+		prompt_str = uri;
 	char prompt[128];
-	snprintf(prompt, sizeof(prompt), "%.*s> ", str_size(uri), str_of(uri));
+	snprintf(prompt, sizeof(prompt), "%.*s> ", str_size(prompt_str),
+	         str_of(prompt_str));
 	for (;;)
 	{
 		// >

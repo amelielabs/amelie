@@ -215,9 +215,10 @@ login_mgr_set(LoginMgr* self, Remote* remote, int argc, char** argv)
 	}
 
 	// validate uri
-	auto uri = remote_get(remote, REMOTE_URI);
-	if (str_empty(uri))
-		error("login: uri is not defined");
+	auto uri  = remote_get(remote, REMOTE_URI);
+	auto path = remote_get(remote, REMOTE_PATH);
+	if (str_empty(uri) && str_empty(path))
+		error("login: uri or unix socket path is not defined");
 
 	// generate auth token
 	auto user   = remote_get(remote, REMOTE_USER);

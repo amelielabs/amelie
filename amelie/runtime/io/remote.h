@@ -15,6 +15,7 @@ enum
 	REMOTE_USER,
 	REMOTE_SECRET,
 	REMOTE_TOKEN,
+	REMOTE_PATH,
 	REMOTE_PATH_CA,
 	REMOTE_FILE_CA,
 	REMOTE_FILE_CERT,
@@ -107,6 +108,8 @@ remote_nameof(int id)
 		return "secret";
 	case REMOTE_TOKEN:
 		return "token";
+	case REMOTE_PATH:
+		return "path";
 	case REMOTE_PATH_CA:
 		return "tls_capath";
 	case REMOTE_FILE_CA:

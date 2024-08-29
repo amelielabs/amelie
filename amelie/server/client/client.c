@@ -58,7 +58,8 @@ client_set_remote(Client* self, Remote* remote)
 {
 	self->remote = remote;
 	auto uri = remote_get(remote, REMOTE_URI);
-	uri_set(&self->uri, uri);
+	if (! str_empty(uri))
+		uri_set(&self->uri, uri);
 }
 
 void
@@ -102,6 +103,25 @@ client_accept(Client* self)
 }
 
 static void
+client_connect_to_path(Client* self, Str* path)
+{
+	struct sockaddr_un addr_un;
+	struct sockaddr*   addr = (struct sockaddr*)&addr_un;
+	memset(&addr_un, 0, sizeof(addr_un));
+	addr_un.sun_family = AF_UNIX;
+	snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%.*s",
+	         str_size(path), str_of(path));
+
+	// connect
+	tcp_connect(&self->tcp, addr);
+
+	// connected
+	bool log_connections = var_int_of(&config()->log_connections);
+	if (log_connections)
+		info("connected to %.*s", str_size(path), str_of(path));
+}
+
+static void
 client_connect_to(Client* self, UriHost* host)
 {
 	// resolve host address
@@ -131,6 +151,15 @@ client_connect_to(Client* self, UriHost* host)
 void
 client_connect(Client* self)
 {
+	// unix socket
+	auto path = remote_get(self->remote, REMOTE_PATH);
+	if (! str_empty(path))
+	{
+		client_connect_to_path(self, path);
+		return;
+	}
+
+	// tcp
 	list_foreach(&self->uri.hosts)
 	{
 		auto host = list_at(UriHost, link);

@@ -157,8 +157,10 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 		// start async connection
 		int rc;
 		rc = socket_connect(self->fd.fd, addr);
-		if (rc == 0) {
+		if (rc == 0)
+		{
 			self->connected = true;
+			tcp_attach(self);
 		} else
 		{
 			assert(rc == -1);

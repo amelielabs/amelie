@@ -14,6 +14,7 @@ struct ServerConfig
 	TlsContext       tls_context;
 	Remote           remote;
 	Str              path;
+	Str              path_mode;
 	Str              host;
 	struct addrinfo* host_addr;
 	int64_t          port;
@@ -29,6 +30,7 @@ server_config_allocate(void)
 	self->host_addr  = NULL;
 	self->port       = 3485;
 	str_init(&self->path);
+	str_init(&self->path_mode);
 	str_init(&self->host);
 	tls_context_init(&self->tls_context);
 	remote_init(&self->remote);
@@ -44,6 +46,7 @@ server_config_free(ServerConfig* self)
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
 	str_free(&self->path);
+	str_free(&self->path_mode);
 	str_free(&self->host);
 	am_free(self);
 }
@@ -76,6 +79,13 @@ server_config_read(uint8_t** pos)
 			if (! data_is_string(*pos))
 				error("server: listen[] <path> must be a string");
 			data_read_string_copy(pos, &self->path);
+		} else
+		if (str_compare_raw(&name, "path_mode", 9))
+		{
+			// string
+			if (! data_is_string(*pos))
+				error("server: listen[] <path_mode> must be a string");
+			data_read_string_copy(pos, &self->path_mode);
 		} else
 		if (str_compare_raw(&name, "host", 4))
 		{
