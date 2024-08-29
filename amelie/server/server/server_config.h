@@ -15,6 +15,7 @@ struct ServerConfig
 	Remote           remote;
 	Str              path;
 	Str              path_mode;
+	int              mode;
 	Str              host;
 	struct addrinfo* host_addr;
 	int64_t          port;
@@ -29,6 +30,7 @@ server_config_allocate(void)
 	self->tls        = false;
 	self->host_addr  = NULL;
 	self->port       = 3485;
+	self->mode       = 0644;
 	str_init(&self->path);
 	str_init(&self->path_mode);
 	str_init(&self->host);
@@ -86,6 +88,14 @@ server_config_read(uint8_t** pos)
 			if (! data_is_string(*pos))
 				error("server: listen[] <path_mode> must be a string");
 			data_read_string_copy(pos, &self->path_mode);
+			if (! str_empty(&self->path_mode))
+			{
+				errno = 0;
+				auto mode = strtol(str_of(&self->path_mode), NULL, 8);
+				if (errno != 0)
+					error("server: failed to read path mode");
+				self->mode = mode;
+			}
 		} else
 		if (str_compare_raw(&name, "host", 4))
 		{

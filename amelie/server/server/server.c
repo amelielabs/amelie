@@ -21,24 +21,20 @@ server_listen_main(void* arg)
 	ServerListen* listen = arg;
 	Server*       self = listen->arg;
 
+	auto               is_unixsocket = !listen->addr;
+	char               addr_name[PATH_MAX];
+	struct sockaddr_un addr_un;
+	struct sockaddr*   addr;
+
 	Exception e;
 	if (enter(&e))
 	{
 		// set listen address
-		char addr_name[PATH_MAX];
-
-		// bind
-		struct sockaddr_un addr_un;
-		struct sockaddr*   addr;
-		if (listen->addr) {
-			addr = listen->addr->ai_addr;
-			socket_getaddrname(addr, addr_name, sizeof(addr_name), true, true);
-		} else
+		if (is_unixsocket)
 		{
 			auto path = &listen->config->path;
 			memset(&addr_un, 0, sizeof(addr_un));
 			addr_un.sun_family = AF_UNIX;
-
 			if (*str_of(path) == '/')
 				snprintf(addr_name, sizeof(addr_name), "%.*s",
 				         str_size(path), str_of(path));
@@ -46,13 +42,26 @@ server_listen_main(void* arg)
 				snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
 				         config_directory(),
 				         str_size(path), str_of(path));
-
 			snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
 			addr = (struct sockaddr*)&addr_un;
+		} else
+		{
+			addr = listen->addr->ai_addr;
+			socket_getaddrname(addr, addr_name, sizeof(addr_name), true, true);
 		}
 		coroutine_set_name(am_self(), "listen %s", addr_name);
 
+		// bind
 		listen_start(&listen->listen, 4096, addr);
+
+		// change unix socket mode
+		if (is_unixsocket)
+		{
+			auto rc = chmod(addr_name, listen->config->mode);
+			if (rc == -1)
+				error_system();
+		}
+
 		info("start");
 
 		// process incoming connection
@@ -90,18 +99,8 @@ server_listen_main(void* arg)
 	{ }
 
 	// remove unix socket after use
-	if (! listen->addr)
-	{
-		auto path = &listen->config->path;
-		char addr_name[PATH_MAX];
-		if (*str_of(path) == '/')
-			snprintf(addr_name, sizeof(addr_name), "%.*s",
-			         str_size(path), str_of(path));
-		else
-			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
-			         config_directory(), str_size(path), str_of(path));
+	if (is_unixsocket)
 		vfs_unlink(addr_name);
-	}
 
 	listen_stop(&listen->listen);
 }

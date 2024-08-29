@@ -167,13 +167,25 @@ login_mgr_set_json(Remote* remote, Str* text)
 void
 login_mgr_set(LoginMgr* self, Remote* remote, int argc, char** argv)
 {
-	// [name] [remote options]
+	// [path or name] [remote options]
 	if (argc == 0)
 		return;
 
-	// name
+	if (!strncmp(argv[0], ".", 1) ||
+	    !strncmp(argv[0], "/", 1))
+	{
+		// directory path
+		char path[PATH_MAX];
+		snprintf(path, sizeof(path), "%s/amelie.sock", argv[0]);
+		Str str;
+		str_set_cstr(&str, path);
+		remote_set(remote, REMOTE_PATH, &str);
+		argc--;
+		argv++;
+	} else
 	if (strncmp(argv[0], "--", 2) != 0)
 	{
+		// login name
 		Str name;
 		str_set_cstr(&name, argv[0]);
 		auto match = login_mgr_find(self, &name);
