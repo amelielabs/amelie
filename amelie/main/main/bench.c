@@ -237,8 +237,8 @@ bench_service(Bench* self, bool init)
 void
 bench_run(Bench* self)
 {
-	int workers = self->opt_threads;
-	int connections = self->opt_connections / workers;
+	auto workers = self->opt_threads;
+	auto connections = self->opt_connections / workers;
 	while (workers-- > 0)
 	{
 		auto worker = bench_worker_allocate(self, connections);
@@ -247,11 +247,11 @@ bench_run(Bench* self)
 
 	info("amelie benchmark.");
 	info("");
-	info("duration:    %d sec", self->opt_duration);
-	info("threads:     %d", self->opt_threads);
-	info("connections: %d (%d per thread)", self->opt_connections,
+	info("duration:     %d sec", self->opt_duration);
+	info("threads:      %d", self->opt_threads);
+	info("connections:  %d (%d per thread)", self->opt_connections,
 	     connections);
-	info("duration:    %d sec", self->opt_duration);
+	info("duration:     %d sec", self->opt_duration);
 	info("");
 
 	// prepare tables
@@ -290,6 +290,6 @@ bench_run(Bench* self)
 
 	// report
 	info("");
-	info("transactions %" PRIu64, self->transactions);
-	info("writes       %" PRIu64, self->transactions * self->opt_batch);
+	info("transactions: %" PRIu64, self->transactions);
+	info("writes:       %" PRIu64, self->transactions * self->opt_batch);
 }
