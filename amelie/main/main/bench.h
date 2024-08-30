@@ -12,6 +12,7 @@ typedef struct Bench       Bench;
 struct BenchWorker
 {
 	int    connections;
+	bool   shutdown;
 	Bench* bench;
 	Task   task;
 	List   link;

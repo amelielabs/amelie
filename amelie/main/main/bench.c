@@ -40,12 +40,10 @@ bench_insert(BenchWorker* self, Client* client)
 	str_init(&cmd);
 	str_set_cstr(&cmd, "insert into __test generate 500");
 
-	auto code = &client->reply.options[HTTP_CODE];
-	for (;;)
+	while (! self->shutdown)
 	{
 		bench_execute(client, bench->remote, &cmd);
-		if (*str_of(code) == '2')
-			atomic_u64_add(&bench->transactions, 1);
+		atomic_u64_add(&bench->transactions, 1);
 	}
 }
 
@@ -81,9 +79,6 @@ static void
 bench_worker_main(void* arg)
 {
 	BenchWorker* self = arg;
-	(void)self;
-
-	info("start (%d connections)", self->connections);
 
 	// start connections
 	int connections = self->connections;
@@ -100,9 +95,10 @@ bench_worker_main(void* arg)
 			break;
 	}
 
-	info("stop");
-
-	// cancel
+	// wait for completion
+	self->shutdown = true;
+	while (am_task->coroutine_mgr.count > 1)
+		coroutine_yield();
 }
 
 static BenchWorker*
@@ -110,6 +106,7 @@ bench_worker_allocate(Bench* bench, int connections)
 {
 	auto self = (BenchWorker*)am_malloc(sizeof(BenchWorker));
 	self->connections = connections;
+	self->shutdown    = false;
 	self->bench       = bench;
 	task_init(&self->task);
 	list_init(&self->link);
@@ -275,7 +272,6 @@ bench_run(Bench* self)
 		info("rps %" PRIu64 " sec", n - prev);
 		prev = n;
 	}
-	info("");
 
 	// stop
 	list_foreach(&self->list)
@@ -296,5 +292,4 @@ bench_run(Bench* self)
 	info("");
 	info("transactions %" PRIu64, self->transactions);
 	info("writes       %" PRIu64, self->transactions * self->opt_batch);
-	info("");
 }
