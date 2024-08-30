@@ -8,11 +8,11 @@
 #include <amelie_private.h>
 
 hot static inline void
-bench_execute(BenchWorker* self, Client* client, Str* cmd)
+bench_execute(Client* client, Remote* remote, Str* cmd)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
-	auto token   = remote_get(self->bench->remote, REMOTE_TOKEN);
+	auto token   = remote_get(remote, REMOTE_TOKEN);
 
 	// request
 	http_write_request(request, "POST /");
@@ -38,12 +38,12 @@ bench_insert(BenchWorker* self, Client* client)
 
 	Str cmd;
 	str_init(&cmd);
-	str_set_cstr(&cmd, "insert into test generate 500");
+	str_set_cstr(&cmd, "insert into __test generate 500");
 
 	auto code = &client->reply.options[HTTP_CODE];
 	for (;;)
 	{
-		bench_execute(self, client, &cmd);
+		bench_execute(client, bench->remote, &cmd);
 		if (*str_of(code) == '2')
 			atomic_u64_add(&bench->transactions, 1);
 	}
@@ -191,6 +191,52 @@ bench_set_remote(Bench* self, Remote* remote)
 	self->remote = remote;
 }
 
+static void
+bench_service_init(Bench* self, Client* client)
+{
+	Str str;
+	str_set_cstr(&str, "create table __test (id int primary key serial)");
+	bench_execute(client, self->remote, &str);
+}
+
+static void
+bench_service_cleanup(Bench* self, Client* client)
+{
+	Str str;
+	str_set_cstr(&str, "drop table __test");
+	bench_execute(client, self->remote, &str);
+}
+
+static void
+bench_service(Bench* self, bool init)
+{
+	Client* client = NULL;
+
+	Exception e;
+	if (enter(&e))
+	{
+		// create client and connect
+		client = client_create();
+		client_set_remote(client, self->remote);
+		client_connect(client);
+
+		// process
+		if (init)
+			bench_service_init(self, client);
+		else
+			bench_service_cleanup(self, client);
+	}
+
+	if (leave(&e))
+	{ }
+
+	if (client)
+	{
+		client_close(client);
+		client_free(client);
+	}
+}
+
 void
 bench_run(Bench* self)
 {
@@ -210,6 +256,9 @@ bench_run(Bench* self)
 	     connections);
 	info("duration:    %d sec", self->opt_duration);
 	info("");
+
+	// prepare tables
+	bench_service(self, true);
 
 	// begin
 	list_foreach_safe(&self->list)
@@ -239,6 +288,9 @@ bench_run(Bench* self)
 		auto worker = list_at(BenchWorker, link);
 		bench_worker_stop(worker);
 	}
+
+	// cleanup
+	bench_service(self, false);
 
 	// report
 	info("");
