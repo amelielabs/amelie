@@ -10,15 +10,14 @@ typedef struct ServerConfig ServerConfig;
 
 struct ServerConfig
 {
+	Str              host;
+	int64_t          host_port;
+	struct addrinfo* host_addr;
 	bool             tls;
 	TlsContext       tls_context;
-	Remote           remote;
 	Str              path;
-	Str              path_mode;
-	int              mode;
-	Str              host;
-	struct addrinfo* host_addr;
-	int64_t          port;
+	int              path_mode;
+	Remote           remote;
 	List             link;
 };
 
@@ -27,13 +26,12 @@ server_config_allocate(void)
 {
 	ServerConfig* self;
 	self = am_malloc(sizeof(*self));
-	self->tls        = false;
+	self->host_port  = 3485;
 	self->host_addr  = NULL;
-	self->port       = 3485;
-	self->mode       = 0644;
-	str_init(&self->path);
-	str_init(&self->path_mode);
+	self->tls        = false;
+	self->path_mode  = 0644;
 	str_init(&self->host);
+	str_init(&self->path);
 	tls_context_init(&self->tls_context);
 	remote_init(&self->remote);
 	list_init(&self->link);
@@ -43,13 +41,12 @@ server_config_allocate(void)
 static inline void
 server_config_free(ServerConfig* self)
 {
-	tls_context_free(&self->tls_context);
-	remote_free(&self->remote);
 	if (self->host_addr)
 		freeaddrinfo(self->host_addr);
 	str_free(&self->path);
-	str_free(&self->path_mode);
 	str_free(&self->host);
+	tls_context_free(&self->tls_context);
+	remote_free(&self->remote);
 	am_free(self);
 }
 
@@ -70,11 +67,6 @@ server_config_read(uint8_t** pos)
 		data_read_string(pos, &name);
 
 		// value
-		if (str_compare_raw(&name, "tls", 3))
-		{
-			// bool
-			data_read_bool(pos, &self->tls);
-		} else
 		if (str_compare_raw(&name, "path", 4))
 		{
 			// string
@@ -87,33 +79,65 @@ server_config_read(uint8_t** pos)
 			// string
 			if (! data_is_string(*pos))
 				error("server: listen[] <path_mode> must be a string");
-			data_read_string_copy(pos, &self->path_mode);
-			if (! str_empty(&self->path_mode))
-			{
-				errno = 0;
-				auto mode = strtol(str_of(&self->path_mode), NULL, 8);
-				if (errno != 0)
-					error("server: failed to read path mode");
-				self->mode = mode;
-			}
+			Str path_mode;
+			data_read_string(pos, &path_mode);
+			errno = 0;
+			auto mode = strtol(str_of(&path_mode), NULL, 8);
+			if (errno != 0)
+				error("server: failed to read path_mode");
+			self->path_mode = mode;
 		} else
 		if (str_compare_raw(&name, "host", 4))
 		{
 			// string
 			if (! data_is_string(*pos))
-				error("server: listen[] <host> must be a string"); 
+				error("server: listen[] <host> must be a string");
 			data_read_string_copy(pos, &self->host);
 		} else
 		if (str_compare_raw(&name, "port", 4))
 		{
 			// int
 			if (! data_is_integer(*pos))
-				error("server: listen[] <port> must be an integer"); 
-			data_read_integer(pos, &self->port);
+				error("server: listen[] <port> must be an integer");
+			data_read_integer(pos, &self->host_port);
+		} else
+		if (str_compare_raw(&name, "tls", 3))
+		{
+			// bool
+			if (! data_is_bool(*pos))
+				error("server: listen[] <tls> must be a bool");
+			data_read_bool(pos, &self->tls);
+		} else
+		if (str_compare_raw(&name, "tls_ca", 6))
+		{
+			// string
+			if (! data_is_string(*pos))
+				error("server: listen[] <tls_ca> must be a string");
+			Str str;
+			data_read_string(pos, &str);
+			remote_set(&self->remote, REMOTE_FILE_CA, &str);
+		} else
+		if (str_compare_raw(&name, "tls_cert", 8))
+		{
+			// string
+			if (! data_is_string(*pos))
+				error("server: listen[] <tls_cert> must be a string");
+			Str str;
+			data_read_string(pos, &str);
+			remote_set(&self->remote, REMOTE_FILE_CERT, &str);
+		} else
+		if (str_compare_raw(&name, "tls_key", 7))
+		{
+			// string
+			if (! data_is_string(*pos))
+				error("server: listen[] <tls_key> must be a string");
+			Str str;
+			data_read_string(pos, &str);
+			remote_set(&self->remote, REMOTE_FILE_KEY, &str);
 		} else
 		{
 			error("server: listen[] unknown listen option '%.*s'",
-			      str_size(&name), str_of(&name)); 
+			      str_size(&name), str_of(&name));
 		}
 	}
 	return unguard();

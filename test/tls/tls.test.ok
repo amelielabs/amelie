@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3485, "tls": true }], "backends": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3
 # test: connect (non tls)
 connect E0 S0 http://localhost:3485
 select 1
@@ -22,14 +22,12 @@ show all
   "log_to_file": true,
   "log_to_stdout": false,
   "log_connections": true,
-  "log_query": false,
-  "tls_cert": "./tls/server.crt",
-  "tls_key": "./tls/server.key",
-  "tls_ca": "",
   "listen": [{
     "host": "127.0.0.1",
     "port": 3485,
-    "tls": true
+    "tls": true,
+    "tls_cert": "./tls/server.crt",
+    "tls_key": "./tls/server.key"
   }],
   "limit_send": 3145728,
   "limit_recv": 1048576,

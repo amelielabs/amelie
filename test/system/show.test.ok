@@ -651,10 +651,6 @@ show all
   "log_to_file": true,
   "log_to_stdout": false,
   "log_connections": true,
-  "log_query": false,
-  "tls_cert": "",
-  "tls_key": "",
-  "tls_ca": "",
   "listen": [{
     "host": "127.0.0.1",
     "port": 3485
@@ -690,10 +686,6 @@ show all
   "log_to_file": true,
   "log_to_stdout": false,
   "log_connections": true,
-  "log_query": false,
-  "tls_cert": "",
-  "tls_key": "",
-  "tls_ca": "",
   "listen": [{
     "host": "127.0.0.1",
     "port": 3485
@@ -728,10 +720,6 @@ select system.config()
   "log_to_file": true,
   "log_to_stdout": false,
   "log_connections": true,
-  "log_query": false,
-  "tls_cert": "",
-  "tls_key": "",
-  "tls_ca": "",
   "listen": [{
     "host": "127.0.0.1",
     "port": 3485

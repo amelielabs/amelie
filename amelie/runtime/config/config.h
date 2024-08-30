@@ -21,11 +21,7 @@ struct Config
 	Var  log_to_file;
 	Var  log_to_stdout;
 	Var  log_connections;
-	Var  log_query;
 	// server
-	Var  tls_ca;
-	Var  tls_cert;
-	Var  tls_key;
 	Var  listen;
 	// limits
 	Var  limit_send;

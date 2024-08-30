@@ -10,8 +10,8 @@ typedef struct Remote Remote;
 
 enum
 {
-	REMOTE_URI,
 	REMOTE_NAME,
+	REMOTE_URI,
 	REMOTE_USER,
 	REMOTE_SECRET,
 	REMOTE_TOKEN,

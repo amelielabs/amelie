@@ -19,6 +19,7 @@ static void
 server_listen_main(void* arg)
 {
 	ServerListen* listen = arg;
+	ServerConfig* config = listen->config;
 	Server*       self = listen->arg;
 
 	auto               is_unixsocket = !listen->addr;
@@ -32,7 +33,7 @@ server_listen_main(void* arg)
 		// set listen address
 		if (is_unixsocket)
 		{
-			auto path = &listen->config->path;
+			auto path = &config->path;
 			memset(&addr_un, 0, sizeof(addr_un));
 			addr_un.sun_family = AF_UNIX;
 			if (*str_of(path) == '/')
@@ -57,7 +58,7 @@ server_listen_main(void* arg)
 		// change unix socket mode
 		if (is_unixsocket)
 		{
-			auto rc = chmod(addr_name, listen->config->mode);
+			auto rc = chmod(addr_name, config->path_mode);
 			if (rc == -1)
 				error_system();
 		}
@@ -77,8 +78,8 @@ server_listen_main(void* arg)
 				// create new client
 				client = client_create();
 				client->arg = self;
-				if (listen->tls)
-					tcp_set_tls(&client->tcp, listen->tls_context);
+				if (config->tls)
+					tcp_set_tls(&client->tcp, &config->tls_context);
 				tcp_set_fd(&client->tcp, fd, addr->sa_family);
 				fd = -1;
 
@@ -95,6 +96,7 @@ server_listen_main(void* arg)
 			}
 		}
 	}
+
 	if (leave(&e))
 	{ }
 
@@ -126,33 +128,19 @@ server_listen_add(Server* self, ServerConfig* config)
 		host = NULL;
 
 	// resolve
-	resolve(global()->resolver, host, config->port, &config->host_addr);
+	resolve(global()->resolver, host, config->host_port, &config->host_addr);
 
 	// configure and create server tls context
 	if (config->tls)
 	{
+		// validate server tls options
 		auto remote = &config->remote;
-
-		// <directory>/certs
-		char directory[PATH_MAX];
-		snprintf(directory, sizeof(directory), "%s/certs", config_directory());
-
-		// tls_cert
-		auto tls_cert = &config()->tls_cert;
-		if (! var_string_is_set(tls_cert))
-			error("server: <tls_cert> is not defined"); 
-		remote_set_path(remote, REMOTE_FILE_CERT, directory, &tls_cert->string);
-
-		// tls_key
-		auto tls_key = &config()->tls_key;
-		if (! var_string_is_set(tls_key))
-			error("server: <tls_key> is not defined"); 
-		remote_set_path(remote, REMOTE_FILE_KEY, directory, &tls_key->string);
-
-		// tls_ca
-		auto tls_ca = &config()->tls_ca;
-		if (var_string_is_set(tls_ca))
-			remote_set_path(remote, REMOTE_FILE_CA, directory, &tls_ca->string);
+		auto tls_cert = remote_get(remote, REMOTE_FILE_CERT);
+		if (str_empty(tls_cert))
+			error("server: <tls_cert> is not defined");
+		auto tls_key  = remote_get(remote, REMOTE_FILE_KEY);
+		if (str_empty(tls_key))
+			error("server: <tls_key> is not defined");
 
 		// create tls context
 		tls_context_create(&config->tls_context, false, remote);
@@ -160,15 +148,12 @@ server_listen_add(Server* self, ServerConfig* config)
 
 	// foreach resolved address
 	struct addrinfo* ai = config->host_addr;
-	while (ai)
+	for (; ai; ai = ai->ai_next)
 	{
 		auto listen = server_listen_allocate(config);
-		listen->addr        = ai;
-		listen->tls         =  config->tls;
-		listen->tls_context = &config->tls_context;
+		listen->addr = ai;
 		list_append(&self->listen, &listen->link);
 		self->listen_count++;
-		ai = ai->ai_next;
 	}
 }
 
