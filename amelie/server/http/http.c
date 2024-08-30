@@ -63,7 +63,7 @@ http_log(Http* self)
 	auto url     = &self->options[HTTP_URL];
 	auto version = &self->options[HTTP_VERSION];
 	auto code    = &self->options[HTTP_CODE];
-	auto msg     = &self->options[HTTP_CODE];
+	auto msg     = &self->options[HTTP_MSG];
 
 	info("method:  %.*s", str_size(method), str_of(method));
 	info("url:     %.*s", str_size(url), str_of(url));

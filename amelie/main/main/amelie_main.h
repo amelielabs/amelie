@@ -15,5 +15,8 @@
 #include "main/main.h"
 #include "main/amelie.h"
 
+// benchmark
+#include "main/bench.h"
+
 // ctl
 #include "main/ctl.h"

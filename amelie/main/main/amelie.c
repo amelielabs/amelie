@@ -24,6 +24,7 @@ amelie_usage(void)
 	info("    client [login] [remote options]");
 	info("    login  <name> [remote options]");
 	info("    logout <name>");
+	info("    bench  [login] [remote options]");
 	info("");
 	info("  remote options:");
 	info("");
@@ -241,7 +242,6 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 	}
 
 	remote_free(&remote);
-	status_set(&self->task.status, AMELIE_COMPLETE);
 }
 
 static void
@@ -278,6 +278,37 @@ amelie_cmd_logout(Amelie* self, int argc, char** argv)
 	str_set_cstr(&name, argv[0]);
 	login_mgr_delete(&home->login_mgr, &name);
 	home_sync(home);
+}
+
+static void
+amelie_cmd_bench(Amelie* self, int argc, char** argv)
+{
+	// amelie bench name
+	auto home = &self->home;
+	home_open(home);
+	var_int_set(&config()->log_connections, false);
+
+	Remote remote;
+	remote_init(&remote);
+
+	Bench bench;
+	bench_init(&bench);
+
+	Exception e;
+	if (enter(&e))
+	{
+		// prepare remote
+		login_mgr_set(&self->home.login_mgr, &remote, argc, argv);
+
+		bench_set_remote(&bench, &remote);
+		bench_run(&bench);
+	}
+
+	if (leave(&e))
+	{ }
+
+	bench_free(&bench);
+	remote_free(&remote);
 }
 
 static void
@@ -347,6 +378,13 @@ amelie_main(Amelie* self, int argc, char** argv)
 		if (argc != 3)
 			goto usage;
 		amelie_cmd_logout(self, argc - 2, argv + 2);
+	} else
+	if (! strcmp(argv[1], "bench"))
+	{
+		// benchmark
+		if (argc <= 2)
+			goto usage;
+		amelie_cmd_bench(self, argc - 2, argv + 2);
 	} else
 	{
 		// client by default
