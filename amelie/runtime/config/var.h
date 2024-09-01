@@ -6,7 +6,8 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Var Var;
+typedef struct Var    Var;
+typedef struct VarDef VarDef;
 
 enum
 {
@@ -38,16 +39,25 @@ typedef enum
 
 struct Var
 {
-	int     flags;
-	VarType type;
 	Str     name;
+	VarType type;
+	int     flags;
 	List    link;
-	List    link_persistent;
 	union
 	{
 		atomic_u64 integer;
 		Str        string;
 	};
+};
+
+struct VarDef
+{
+	const char* name;
+	VarType     type;
+	int         flags;
+	Var*        var;
+	char*       default_string;
+	uint64_t    default_int;
 };
 
 static inline void
@@ -58,7 +68,6 @@ var_init(Var* self, const char* name, VarType type, int flags)
 	self->flags = flags;
 	str_set_cstr(&self->name, name);
 	list_init(&self->link);
-	list_init(&self->link_persistent);
 }
 
 static inline void
@@ -130,11 +139,11 @@ var_string_set_raw(Var* self, const char* value, int size)
 	str_strndup(&self->string, value, size);
 }
 
-static inline char*
+static inline Str*
 var_string_of(Var* self)
 {
 	assert(self->type == VAR_STRING);
-	return str_of(&self->string);
+	return &self->string;
 }
 
 // data
@@ -177,23 +186,107 @@ var_data_of(Var* self)
 }
 
 static inline void
-var_print(Var* self) 
+var_set_data(Var* self, uint8_t** pos)
 {
+	auto name = &self->name;
 	switch (self->type) {
 	case VAR_BOOL:
-		info("%-32s%s", str_of(&self->name),
-		     var_int_of(self) ? "true" : "false");
+	{
+		if (unlikely(! data_is_bool(*pos)))
+			error("option '%.*s': bool value expected",
+			      str_size(name), str_of(name));
+		bool value;
+		data_read_bool(pos, &value);
+		var_int_set(self, value);
 		break;
+	}
 	case VAR_INT:
-		info("%-32s%" PRIu64, str_of(&self->name),
-		     var_int_of(self));
+	{
+		if (unlikely(! data_is_integer(*pos)))
+			error("option '%.*s': integer value expected",
+			      str_size(name), str_of(name));
+		int64_t value;
+		data_read_integer(pos, &value);
+
+		if (unlikely(value == 0 && var_is(self, VAR_Z)))
+			error("option '%.*s': cannot be set to zero",
+			      str_size(name), str_of(name));
+		var_int_set(self, value);
 		break;
+	}
 	case VAR_STRING:
-		info("%-32s%.*s", str_of(&self->name),
-		     str_size(&self->string), str_of(&self->string));
+	{
+		if (unlikely(! data_is_string(*pos)))
+			error("config: string expected for option '%.*s'",
+			      str_size(name), str_of(name));
+		Str value;
+		data_read_string(pos, &value);
+		var_string_set(self, &value);
 		break;
+	}
 	case VAR_DATA:
+	{
+		auto start = *pos;
+		data_skip(pos);
+		var_data_set(self, start, *pos - start);
 		break;
+	}
+	}
+}
+
+static inline void
+var_set(Var* self, Str* value)
+{
+	// ensure value is defined
+	auto name = &self->name;
+	if (self->type != VAR_BOOL && str_empty(value))
+		error("option '%.*s': value is not defined",
+		      str_size(name), str_of(name));
+
+	switch (self->type) {
+	case VAR_BOOL:
+	{
+		bool result = true;
+		if (! str_empty(value))
+		{
+			if (str_compare_cstr(value, "true"))
+				result = true;
+			else
+			if (str_compare_cstr(value, "false"))
+				result = false;
+			else
+				error("option '%.*s': bool value expected",
+				      str_size(name), str_of(name));
+		}
+		var_int_set(self, result);
+		break;
+	}
+	case VAR_INT:
+	{
+		int64_t result = 0;
+		if (str_toint(value, &result) == -1)
+			error("option '%.*s': integer value expected",
+			      str_size(name), str_of(name));
+		if (unlikely(result == 0 && var_is(self, VAR_Z)))
+			error("option '%.*s': cannot be set to zero",
+			      str_size(name), str_of(name));
+		var_int_set(self, result);
+		break;
+	}
+	case VAR_STRING:
+	{
+		var_string_set(self, value);
+		break;
+	}
+	case VAR_DATA:
+	{
+		Json json;
+		json_init(&json);
+		guard(json_free, &json);
+		json_parse(&json, NULL, value, NULL);
+		var_data_set(self, json.buf->start, buf_size(json.buf));
+		break;
+	}
 	}
 }
 
@@ -215,6 +308,27 @@ var_encode(Var* self, Buf* buf)
 		break;
 	case VAR_INT:
 		encode_integer(buf, var_int_of(self));
+		break;
+	}
+}
+
+static inline void
+var_print(Var* self)
+{
+	switch (self->type) {
+	case VAR_BOOL:
+		info("%-32s%s", str_of(&self->name),
+		     var_int_of(self) ? "true" : "false");
+		break;
+	case VAR_INT:
+		info("%-32s%" PRIu64, str_of(&self->name),
+		     var_int_of(self));
+		break;
+	case VAR_STRING:
+		info("%-32s%.*s", str_of(&self->name),
+		     str_size(&self->string), str_of(&self->string));
+		break;
+	case VAR_DATA:
 		break;
 	}
 }

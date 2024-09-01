@@ -14,13 +14,6 @@ random_init(Random* self)
 {
 	self->seed[0] = 0;
 	self->seed[1] = 0;
-	spinlock_init(&self->lock);
-}
-
-void
-random_free(Random* self)
-{
-	spinlock_free(&self->lock);
 }
 
 void
@@ -48,24 +41,18 @@ random_open(Random* self)
 	self->seed[1] = seed_random_dev[1];
 }
 
-static inline uint64_t
-random_xorshift128plus(Random* self)
-{
-	uint64_t a = self->seed[0];
-	uint64_t b = self->seed[1];
-	self->seed[0] = b;
-	a ^= a << 23;
-	self->seed[1] = a ^ b ^ (a >> 17) ^ (b >> 26);
-	return self->seed[1] + b;
-}
-
-uint64_t
+hot uint64_t
 random_generate(Random* self)
 {
-	spinlock_lock(&self->lock);
-	auto value = random_xorshift128plus(self);
-	spinlock_unlock(&self->lock);
-	return value;
+	// xorshift128plus
+	auto seed = self->seed;
+	uint64_t a = atomic_u64_of(&seed[0]);
+	uint64_t b = atomic_u64_of(&seed[1]);
+	atomic_u64_set(&seed[0], b);
+	a ^= a << 23;
+	uint64_t c = a ^ b ^ (a >> 17) ^ (b >> 26);
+	atomic_u64_set(&seed[1], c);
+	return c + b;
 }
 
 void

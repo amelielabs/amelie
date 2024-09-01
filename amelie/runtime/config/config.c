@@ -11,63 +11,17 @@
 #include <amelie_data.h>
 #include <amelie_config.h>
 
-typedef struct
-{
-	const char* name;
-	VarType     type;
-	int         flags;
-	Var*        var;
-	char*       default_string;
-	uint64_t    default_int;
-} ConfigDef;
-
-static inline void
-config_add(Config* self, ConfigDef* def)
-{
-	auto var = def->var;
-	var_init(var, def->name, def->type, def->flags);
-	list_append(&self->list, &var->link);
-	self->count++;
-
-	if (! (var_is(var, VAR_H) || var_is(var, VAR_S)))
-		self->count_visible++;
-	if (var_is(var, VAR_C))
-		self->count_config++;
-	if (! var_is(var, VAR_E))
-	{
-		list_append(&self->list_persistent, &var->link_persistent);
-		self->count_persistent++;
-	}
-
-	switch (def->type) {
-	case VAR_BOOL:
-	case VAR_INT:
-		var_int_set(var, def->default_int);
-		break;
-	case VAR_STRING:
-		if (def->default_string)
-			var_string_set_raw(var, def->default_string, strlen(def->default_string));
-		break;
-	case VAR_DATA:
-		break;
-	}
-}
-
 void
 config_init(Config* self)
 {
 	memset(self, 0, sizeof(*self));
-	list_init(&self->list);
-	list_init(&self->list_persistent);
+	vars_init(&self->vars);
 }
 
 void
 config_free(Config* self)
 {
-	list_foreach_safe(&self->list) {
-		auto var = list_at(Var, link);
-		var_free(var);
-	}
+	vars_free(&self->vars);
 }
 
 void
@@ -79,7 +33,7 @@ config_prepare(Config* self)
 	if (default_fe == 0)
 		default_fe = 1;
 
-	ConfigDef defaults[] =
+	VarDef defs[] =
 	{
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.0",       0                },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,        0                },
@@ -129,211 +83,21 @@ config_prepare(Config* self)
 		{  NULL,                     0,          0,                       NULL,                           NULL,        0                },
 	};
 
-	for (int i = 0; defaults[i].name != NULL; i++)
-		config_add(self, &defaults[i]);
-}
-
-static void
-config_set_data(Config* self, uint8_t** pos, bool system)
-{
-	data_read_map(pos);
-	while (! data_read_map_end(pos))
-	{
-		// key
-		Str name;
-		data_read_string(pos, &name);
-
-		// find variable and set value
-		auto var = config_find(self, &name);
-		if (unlikely(var == NULL))
-			error("config: unknown option '%.*s'",
-			      str_size(&name), str_of(&name));
-
-		// ensure variable can be changed
-		if (unlikely(! var_is(var, VAR_C)))
-			error("config: option '%.*s' cannot be changed",
-			      str_size(&name), str_of(&name));
-
-		// system state var (can be changed only druing config read)
-		if (unlikely(var_is(var, VAR_Y) && !system))
-			error("config: option '%.*s' cannot be changed",
-			      str_size(&name), str_of(&name));
-
-		switch (var->type) {
-		case VAR_BOOL:
-		{
-			if (unlikely(! data_is_bool(*pos)))
-				error("config: bool expected for option '%.*s'",
-				      str_size(&name), str_of(&name));
-			bool value;
-			data_read_bool(pos, &value);
-			var_int_set(var, value);
-			break;
-		}
-		case VAR_INT:
-		{
-			if (unlikely(! data_is_integer(*pos)))
-				error("config: integer expected for option '%.*s'",
-				      str_size(&name), str_of(&name));
-			int64_t value;
-			data_read_integer(pos, &value);
-
-			if (unlikely(value == 0 && var_is(var, VAR_Z)))
-				error("config: option '%.*s' cannot be zero",
-				      str_size(&name), str_of(&name));
-
-			var_int_set(var, value);
-			break;
-		}
-		case VAR_STRING:
-		{
-			if (unlikely(! data_is_string(*pos)))
-				error("config: string expected for option '%.*s'",
-				      str_size(&name), str_of(&name));
-			Str value;
-			data_read_string(pos, &value);
-			var_string_set(var, &value);
-			break;
-		}
-		case VAR_DATA:
-		{
-			auto start = *pos;
-			data_skip(pos);
-			var_data_set(var, start, *pos - start);
-			break;
-		}
-		}
-	}
-}
-
-void
-config_set(Config* self, Str* options, bool system)
-{
-	Json json;
-	json_init(&json);
-	guard(json_free, &json);
-	json_parse(&json, NULL, options, NULL);
-	uint8_t* pos = json.buf->start;
-	config_set_data(self, &pos, system);
-}
-
-void
-config_set_argv(Config* self, int argc, char** argv)
-{
-	for (int i = 0; i < argc; i++)
-	{
-		Str name;
-		Str value;
-		if (arg_parse(argv[i], &name, &value) == -1)
-			error("config: invalid option '%s'", argv[i]);
-
-		// --json={}
-		if (str_compare_cstr(&name, "json"))
-		{
-			if (str_empty(&value))
-				error("config: value is not defined for option '--json'");
-			config_set(self, &value, false);
-			continue;
-		}
-
-		// --daemon (handled by runner)
-		if (str_compare_cstr(&name, "daemon") ||
-		    str_compare_cstr(&name, "daemon=true") ||
-		    str_compare_cstr(&name, "daemon=false"))
-			continue;
-
-		auto var = config_find(self, &name);
-		if (unlikely(var == NULL))
-			error("config: unknown option '%.*s'",
-			      str_size(&name), str_of(&name));
-
-		// ensure variable can be changed
-		if (unlikely(!var_is(var, VAR_C) || var_is(var, VAR_Y)))
-			error("config: option '%.*s' cannot be changed",
-			      str_size(&name), str_of(&name));
-
-		// ensure value is defined
-		if (var->type != VAR_BOOL && str_empty(&value))
-			error("config: value is not defined for option '%.*s'",
-			      str_size(&name), str_of(&name));
-
-		// set value based on type
-		switch (var->type) {
-		case VAR_BOOL:
-		{
-			bool result = true;
-			if (! str_empty(&value))
-			{
-				if (str_compare_cstr(&value, "true"))
-					result = true;
-				else
-				if (str_compare_cstr(&value, "false"))
-					result = false;
-				else
-					error("config: bool expected for option '%.*s'",
-					      str_size(&name), str_of(&name));
-			}
-			var_int_set(var, result);
-			break;
-		}
-		case VAR_INT:
-		{
-			int64_t result = 0;
-			if (str_toint(&value, &result) == -1)
-				error("config: integer expected for option '%.*s'",
-				      str_size(&name), str_of(&name));
-			if (unlikely(result == 0 && var_is(var, VAR_Z)))
-				error("config: option '%.*s' cannot be zero",
-				      str_size(&name), str_of(&name));
-			var_int_set(var, result);
-			break;
-		}
-		case VAR_STRING:
-		{
-			var_string_set(var, &value);
-			break;
-		}
-		case VAR_DATA:
-		{
-			Json json;
-			json_init(&json);
-			guard(json_free, &json);
-			json_parse(&json, NULL, &value, NULL);
-
-			var_data_set(var, json.buf->start, buf_size(json.buf));
-			break;
-		}
-		}
-	}
-}
-
-static void
-config_list_persistent(Config* self, Buf* buf)
-{
-	encode_map(buf);
-	list_foreach(&self->list_persistent)
-	{
-		auto var = list_at(Var, link_persistent);
-		encode_string(buf, &var->name);
-		var_encode(var, buf);
-	}
-	encode_map_end(buf);
+	vars_define(&self->vars, defs);
 }
 
 static void
 config_save_to(Config* self, const char* path)
 {
 	// get a list of variables
-	Buf buf;
-	buf_init(&buf);
-	guard(buf_free, &buf);
-	config_list_persistent(self, &buf);
+	auto buf = vars_list_persistent(&self->vars);
+	guard_buf(buf);
 
 	// convert to json
 	Buf text;
 	buf_init(&text);
 	guard(buf_free, &text);
-	uint8_t* pos = buf.start;
+	uint8_t* pos = buf->start;
 	json_export_pretty(&text, NULL, &pos);
 
 	// create config file
@@ -379,52 +143,10 @@ config_open(Config* self, const char* path)
 		Str options;
 		str_init(&options);
 		buf_str(&buf, &options);
-		config_set(self, &options, true);
+		vars_set(&self->vars, &options, true);
 		return;
 	}
 
 	// create config file
 	config_save_to(self, path);
-}
-
-void
-config_print(Config* self)
-{
-	list_foreach(&self->list)
-	{
-		auto var = list_at(Var, link);
-		if (var_is(var, VAR_H) || var_is(var, VAR_S))
-			continue;
-		var_print(var);
-	}
-}
-
-Buf*
-config_list(Config* self, ConfigLocal* local)
-{
-	auto buf = buf_begin();
-	encode_map(buf);
-	list_foreach(&self->list)
-	{
-		auto var = list_at(Var, link);
-		if (var_is(var, VAR_H) || var_is(var, VAR_S))
-			continue;
-		encode_string(buf, &var->name);
-		if (var_is(var, VAR_L))
-			var = config_local_find(local, &var->name);
-		var_encode(var, buf);
-	}
-	encode_map_end(buf);
-	return buf_end(buf);
-}
-
-Var*
-config_find(Config* self, Str* name)
-{
-	list_foreach(&self->list) {
-		auto var = list_at(Var, link);
-		if (str_compare(&var->name, name))
-			return var;
-	}
-	return NULL;
 }

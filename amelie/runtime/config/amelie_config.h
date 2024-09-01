@@ -8,8 +8,11 @@
 
 // config
 #include "config/var.h"
-#include "config/config_local.h"
+#include "config/vars.h"
 #include "config/config.h"
+#include "config/config_local.h"
+
+// constrol
 #include "config/control.h"
 
 // global

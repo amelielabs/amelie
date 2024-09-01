@@ -45,7 +45,7 @@ control_save_config(void)
 static inline const char*
 config_directory(void)
 {
-	return var_string_of(&config()->directory);
+	return str_of(var_string_of(&config()->directory));
 }
 
 // checkpoint

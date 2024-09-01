@@ -46,6 +46,7 @@ OBJECTS        = \
                  lib/logger.o \
                  data/json.o \
                  data/json_export.o \
+                 config/vars.o \
                  config/config_local.o \
                  config/config.o
 $(LIB): clean $(OBJECTS)
