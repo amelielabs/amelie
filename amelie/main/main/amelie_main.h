@@ -18,6 +18,7 @@
 // benchmark
 #include "main/bench.h"
 #include "main/bench_insert.h"
+#include "main/bench_upsert.h"
 #include "main/bench_tpcb.h"
 
 // ctl

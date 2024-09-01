@@ -59,6 +59,7 @@ OBJECTS        = \
                  main/amelie.o \
                  main/bench.o \
                  main/bench_insert.o \
+                 main/bench_upsert.o \
                  main/bench_tpcb.o \
                  main/ctl.o
 $(LIB): clean $(OBJECTS)

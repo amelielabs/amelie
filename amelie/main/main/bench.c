@@ -178,6 +178,9 @@ bench_run(Bench* self)
 	if (str_compare_cstr(type, "insert"))
 		self->iface = &bench_insert;
 	else
+	if (str_compare_cstr(type, "upsert"))
+		self->iface = &bench_upsert;
+	else
 		error("unknown benchmark type '%.*s'", str_size(type),
 		      str_of(type));
 

@@ -221,16 +221,24 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		for (; id < REMOTE_MAX; id++)
 			if (str_compare_cstr(&name, remote_nameof(id)))
 				break;
-		if (id == REMOTE_MAX)
+		if (id != REMOTE_MAX)
 		{
-			// todo: vars
-			error("login: unknown option '%.*s'", str_size(&name),
-			      str_of(&name));
+			remote_set(remote, id, &value);
+			continue;
 		}
 
-		remote_set(remote, id, &value);
+		if (vars)
+		{
+			auto var = vars_find(vars, &name);
+			if (var)
+			{
+				var_set(var, &value);
+				continue;
+			}
+		}
 
-		(void)vars;
+		error("login: unknown option '%.*s'", str_size(&name),
+		      str_of(&name));
 	}
 
 	// validate uri

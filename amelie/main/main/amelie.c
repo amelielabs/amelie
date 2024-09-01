@@ -57,6 +57,14 @@ amelie_usage(void)
 	}
 	info("    --json=string");
 	info("");
+	info("  bench options:");
+	info("");
+	info("    --type=string");
+	info("    --threads=int");
+	info("    --clients=int");
+	info("    --time=int");
+	info("    --scale=int");
+	info("");
 }
 
 static void
