@@ -107,7 +107,7 @@ restore_start(Restore* self)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, global()->timezone, &text, &self->state_data);
+	json_parse(&json, &text, &self->state_data);
 
 	uint8_t* pos = self->state_data.start;
 	Decode map[] =

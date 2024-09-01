@@ -99,6 +99,7 @@ priority_map[UINT8_MAX] =
 	[KSTRING]                  = priority_value,
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
+	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -523,6 +524,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->integer = timestamp_of(&ts, self->local->timezone);
 		break;
 	}
+	case KCURRENT_TIMESTAMP:
+		break;
 
 	// request argument
 	case KARGUMENT:

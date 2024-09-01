@@ -60,7 +60,7 @@ hot static void
 fn_native(Call* self)
 {
 	call_validate(self, 1);
-	value_to_native(self->result, self->argv[0], self->vm->local->timezone);
+	value_to_native(self->result, self->argv[0], self->vm->local);
 }
 
 hot static void

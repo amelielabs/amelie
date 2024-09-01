@@ -13,10 +13,11 @@
 void
 json_init(Json* self)
 {
-	self->pos = NULL;
-	self->end = NULL;
-	self->buf = NULL;
-	self->tz  = NULL;
+	self->pos     = NULL;
+	self->end     = NULL;
+	self->buf     = NULL;
+	self->tz      = NULL;
+	self->time_us = 0;
 	buf_init(&self->buf_data);
 	buf_init(&self->stack);
 }
@@ -31,12 +32,20 @@ json_free(Json* self)
 void
 json_reset(Json* self)
 {
-	self->pos = NULL;
-	self->end = NULL;
-	self->buf = NULL;
-	self->tz  = NULL;
+	self->pos     = NULL;
+	self->end     = NULL;
+	self->buf     = NULL;
+	self->time_us = 0;
+	self->tz      = NULL;
 	buf_reset(&self->buf_data);
 	buf_reset(&self->stack);
+}
+
+void
+json_set_time(Json* self, Timezone* timezone, uint64_t time)
+{
+	self->time_us = time;
+	self->tz      = timezone;
 }
 
 typedef enum
@@ -76,7 +85,7 @@ hot static inline bool
 json_is_keyword(Json* self, const char* name, int name_size)
 {
 	return (self->pos + name_size) <= self->end &&
-	        !memcmp(self->pos, name, name_size);
+	        !strncasecmp(self->pos, name, name_size);
 }
 
 hot static inline void
@@ -262,6 +271,8 @@ json_const(Json* self)
 			Str str;
 			if (! json_string(self, &str))
 				error("TIMESTAMP <string> expected");
+			if (unlikely(! self->tz))
+				error("unexpected operation with timestamp");
 			Timestamp ts;
 			timestamp_init(&ts);
 			timestamp_read(&ts, &str);
@@ -270,6 +281,19 @@ json_const(Json* self)
 			break;
 		}
 		return;
+	}
+	case 'c':
+	{
+		if (json_is_keyword(self, "current_timestamp", 17))
+		{
+			auto time = self->time_us;
+			if (time == 0)
+				time = time_us();
+			encode_timestamp(self->buf, time);
+			self->pos += 17;
+			return;
+		}
+		break;
 	}
 	case 'f':
 	{
@@ -308,12 +332,12 @@ json_const(Json* self)
 	error("unexpected token");
 }
 
+
 hot void
-json_parse(Json* self, Timezone* tz, Str* text, Buf* buf)
+json_parse(Json* self, Str* text, Buf* buf)
 {
 	self->pos = str_of(text);
 	self->end = str_of(text) + str_size(text);
-	self->tz  = tz;
 	if (buf == NULL)
 	{
 		self->buf = &self->buf_data;

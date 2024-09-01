@@ -119,7 +119,7 @@ backup_prepare_state(Backup* self)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, global()->timezone, &config_str, buf);
+	json_parse(&json, &config_str, buf);
 
 	encode_map_end(buf);
 }

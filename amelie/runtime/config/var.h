@@ -283,7 +283,7 @@ var_set(Var* self, Str* value)
 		Json json;
 		json_init(&json);
 		guard(json_free, &json);
-		json_parse(&json, NULL, value, NULL);
+		json_parse(&json, value, NULL);
 		var_data_set(self, json.buf->start, buf_size(json.buf));
 		break;
 	}

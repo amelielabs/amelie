@@ -263,6 +263,11 @@ select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
 [true]
 select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
 [false]
+# test: current_timestamp
+select current_timestamp::int > 0
+[true]
+select "current_timestamp"::native::int > 0
+[true]
 # test: between
 select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
 [true]
@@ -357,6 +362,11 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 }]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
+# test: timestamp current_timestamp column
+insert into test values (4, current_timestamp)
+[]
+select ts::int > 0 from test where id = 4
+[true]
 drop table test
 []
 # test: timestamp column (key)

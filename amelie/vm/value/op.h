@@ -693,7 +693,7 @@ value_to_real(Value* result, Value* a)
 }
 
 always_inline hot static inline void
-value_to_native(Value* result, Value* a, Timezone* timezone)
+value_to_native(Value* result, Value* a, Local* local)
 {
 	if (unlikely(a->type != VALUE_STRING))
 		error("native(): string type expected");
@@ -702,7 +702,8 @@ value_to_native(Value* result, Value* a, Timezone* timezone)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, timezone, &a->string, buf);
+	json_set_time(&json, local->timezone, local->time_us);
+	json_parse(&json, &a->string, buf);
 	buf_end(buf);
 
 	value_read(result, buf->start, buf);

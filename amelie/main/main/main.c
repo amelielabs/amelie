@@ -128,7 +128,7 @@ main_bootstrap(Main* self)
 		Json json;
 		json_init(&json);
 		guard(json_free, &json);
-		json_parse(&json, NULL, &listen_default, &data);
+		json_parse(&json, &listen_default, &data);
 
 		var_data_set_buf(&config()->listen, &data);
 	}

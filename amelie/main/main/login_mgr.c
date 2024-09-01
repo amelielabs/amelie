@@ -42,7 +42,7 @@ login_mgr_open(LoginMgr* self, const char* path)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, global()->timezone, &text, NULL);
+	json_parse(&json, &text, NULL);
 
 	// {}
 	uint8_t* pos = json.buf->start;
@@ -133,7 +133,7 @@ login_mgr_set_json(Remote* remote, Str* text)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, NULL, text, NULL);
+	json_parse(&json, text, NULL);
 
 	uint8_t* pos = json.buf->start;
 

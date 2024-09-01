@@ -107,7 +107,7 @@ vars_set(Vars* self, Str* options, bool system)
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, NULL, options, NULL);
+	json_parse(&json, options, NULL);
 	uint8_t* pos = json.buf->start;
 	vars_set_data(self, &pos, system);
 }

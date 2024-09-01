@@ -38,7 +38,7 @@ static inline void
 jwt_encode_validate(JwtEncode* self, Str* header, Str* payload)
 {
 	// parse header json
-	json_parse(&self->json, global()->timezone, header, NULL);
+	json_parse(&self->json, header, NULL);
 
 	// decode header fields
 	Str alg;
@@ -66,7 +66,7 @@ jwt_encode_validate(JwtEncode* self, Str* header, Str* payload)
 
 	// parse payload json (do not check fields)
 	json_reset(&self->json);
-	json_parse(&self->json, global()->timezone, payload, NULL);
+	json_parse(&self->json, payload, NULL);
 }
 
 Buf*

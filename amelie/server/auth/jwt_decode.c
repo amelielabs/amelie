@@ -93,7 +93,7 @@ jwt_decode_header(JwtDecode* self)
 	// parse json
 	Str text;
 	buf_str(&self->data, &text);
-	json_parse(&self->json, global()->timezone, &text, NULL);
+	json_parse(&self->json, &text, NULL);
 
 	// decode header fields
 	Str alg;
@@ -131,7 +131,7 @@ jwt_decode_payload(JwtDecode* self, Str* role)
 	Str text;
 	buf_str(&self->data, &text);
 	json_reset(&self->json);
-	json_parse(&self->json, global()->timezone, &text, NULL);
+	json_parse(&self->json, &text, NULL);
 
 	// decode payload fields
 	uint8_t* pos = self->json.buf_data.start;

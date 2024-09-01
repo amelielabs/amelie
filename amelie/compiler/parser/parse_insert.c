@@ -44,7 +44,8 @@ parse_value(Stmt* self)
 	json_reset(self->json);
 	Str in;
 	str_set(&in, pos, self->lex->end - pos);
-	json_parse(self->json, self->local->timezone, &in, &self->data->data);
+	json_set_time(self->json, self->local->timezone, self->local->time_us);
+	json_parse(self->json, &in, &self->data->data);
 	self->lex->pos = self->json->pos;
 }
 

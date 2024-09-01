@@ -879,6 +879,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	}
 	case KTIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self), ast->integer);
+	case KCURRENT_TIMESTAMP:
+		return op2(self, CTIMESTAMP, rpin(self), self->parser.local->time_us);
+
 	case KARGUMENT:
 		return op2(self, CARG, rpin(self), ast->integer);
 

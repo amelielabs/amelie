@@ -51,6 +51,7 @@ static Keyword keywords_b[] =
 
 static Keyword keywords_c[] =
 {
+	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
 	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },

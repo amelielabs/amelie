@@ -27,7 +27,7 @@ tpcb_execute(Client* client, Buf* filler,
 	           delta, tid);
 	buf_printf(buf, "UPDATE branches SET bbalance = bbalance + %d WHERE bid = %d;",
 	           delta, bid);
-	buf_printf(buf, "INSERT INTO history (tid, bid, aid, delta, filler) VALUES (%d, %d, %d, %d, \"%.*s\");",
+	buf_printf(buf, "INSERT INTO history (tid, bid, aid, delta, time, filler) VALUES (%d, %d, %d, %d, current_timestamp, \"%.*s\");",
 	           tid, bid, aid, delta, 50, filler->start);
 
 	Str cmd;
@@ -45,7 +45,7 @@ bench_tpcb_init(Bench* self, Client* client)
 		"create table branches (bid int primary key, bbalance int, filler text) with (type = \"hash\")",
 		"create table tellers (tid int primary key, bid int, tbalance int, filler text) with (type = \"hash\")",
 		"create table accounts (aid int primary key, bid int, abalance int, filler text) with (type = \"hash\")",
-		"create table history (tid int, bid int, aid int, delta int, time int primary key serial, filler text) with (type = \"hash\")",
+		"create table history (tid int, bid int, aid int, delta int, time timestamp, seq int primary key serial, filler text) with (type = \"hash\")",
 		 NULL
 	};
 
