@@ -133,7 +133,7 @@ bench_free(Bench* self)
 }
 
 static void
-bench_service(Bench* self, bool init)
+bench_service(Bench* self, bool create)
 {
 	Client* client = NULL;
 
@@ -144,10 +144,20 @@ bench_service(Bench* self, bool init)
 		client = client_create();
 		client_set_remote(client, self->remote);
 		client_connect(client);
-		if (init)
-			self->iface->init(self, client);
-		else
-			self->iface->cleanup(self, client);
+
+		// drop test schema if exists
+		Str str;
+		str_set_cstr(&str, "drop schema if exists __bench cascade");
+		client_execute(client, &str);
+
+		if (create)
+		{
+			// create test schema and run benchmark
+			str_set_cstr(&str, "create schema __bench");
+			client_execute(client, &str);
+
+			self->iface->create(self, client);
+		}
 	}
 
 	if (leave(&e))

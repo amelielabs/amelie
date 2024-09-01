@@ -8,20 +8,11 @@
 #include <amelie_private.h>
 
 static void
-bench_insert_init(Bench* self, Client* client)
+bench_insert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __test (id int primary key serial)");
-	client_execute(client, &str);
-}
-
-static void
-bench_insert_cleanup(Bench* self, Client* client)
-{
-	unused(self);
-	Str str;
-	str_set_cstr(&str, "drop table __test");
+	str_set_cstr(&str, "create table __bench.test (id int primary key serial)");
 	client_execute(client, &str);
 }
 
@@ -32,7 +23,7 @@ bench_insert_main(BenchWorker* self, Client* client)
 	auto batch = var_int_of(&bench->batch);
 
 	char text[256];
-	snprintf(text, sizeof(text), "insert into __test generate %" PRIu64, batch);
+	snprintf(text, sizeof(text), "insert into __bench.test generate %" PRIu64, batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
 
@@ -46,7 +37,6 @@ bench_insert_main(BenchWorker* self, Client* client)
 
 BenchIf bench_insert =
 {
-	.init    = bench_insert_init,
-	.cleanup = bench_insert_cleanup,
-	.main    = bench_insert_main
+	.create = bench_insert_create,
+	.main   = bench_insert_main
 };

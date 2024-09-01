@@ -8,20 +8,11 @@
 #include <amelie_private.h>
 
 static void
-bench_upsert_init(Bench* self, Client* client)
+bench_upsert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __test (id int primary key random (100000), data int default 0)");
-	client_execute(client, &str);
-}
-
-static void
-bench_upsert_cleanup(Bench* self, Client* client)
-{
-	unused(self);
-	Str str;
-	str_set_cstr(&str, "drop table __test");
+	str_set_cstr(&str, "create table __bench.test (id int primary key random (100000), data int default 0)");
 	client_execute(client, &str);
 }
 
@@ -33,8 +24,9 @@ bench_upsert_main(BenchWorker* self, Client* client)
 
 	char text[256];
 	snprintf(text, sizeof(text),
-	         "insert into __test generate %" PRIu64
-	         " on conflict do update set data = data + 1",
+	         "insert into __bench.test "
+	         "generate %" PRIu64 " "
+	         "on conflict do update set data = data + 1",
 	         batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
@@ -49,7 +41,6 @@ bench_upsert_main(BenchWorker* self, Client* client)
 
 BenchIf bench_upsert =
 {
-	.init    = bench_upsert_init,
-	.cleanup = bench_upsert_cleanup,
-	.main    = bench_upsert_main
+	.create = bench_upsert_create,
+	.main   = bench_upsert_main
 };
