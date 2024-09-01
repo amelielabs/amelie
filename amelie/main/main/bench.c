@@ -7,46 +7,6 @@
 
 #include <amelie_private.h>
 
-hot static inline void
-bench_execute(Client* client, Remote* remote, Str* cmd)
-{
-	auto request = &client->request;
-	auto reply   = &client->reply;
-	auto token   = remote_get(remote, REMOTE_TOKEN);
-
-	// request
-	http_write_request(request, "POST /");
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Length", "%d", str_size(cmd));
-	http_write(request, "Content-Type", "text/plain");
-	http_write_end(request);
-	tcp_write_pair_str(&client->tcp, &request->raw, cmd);
-
-	// reply
-	http_reset(reply);
-	auto eof = http_read(reply, &client->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	http_read_content(reply, &client->readahead, &reply->content);
-}
-
-hot static void
-bench_insert(BenchWorker* self, Client* client)
-{
-	auto bench = self->bench;
-
-	Str cmd;
-	str_init(&cmd);
-	str_set_cstr(&cmd, "insert into __test generate 500");
-
-	while (! self->shutdown)
-	{
-		bench_execute(client, bench->remote, &cmd);
-		atomic_u64_add(&bench->transactions, 1);
-	}
-}
-
 static void
 bench_connection(void* arg)
 {
@@ -62,7 +22,7 @@ bench_connection(void* arg)
 		client_connect(client);
 
 		// process
-		bench_insert(self, client);
+		self->bench->iface->main(self, client);
 	}
 
 	if (leave(&e))
@@ -142,16 +102,23 @@ bench_worker_stop(BenchWorker* self)
 }
 
 void
-bench_init(Bench* self)
+bench_init(Bench* self, Remote* remote)
 {
 	memset(self, 0, sizeof(*self));
-
-	self->opt_threads     = 4;
-	self->opt_connections = 12;
-	self->opt_duration    = 10;
-	self->opt_batch       = 500;
-
+	self->remote = remote;
+	vars_init(&self->vars);
 	list_init(&self->list);
+	VarDef defs[] =
+	{
+		{ "type",    VAR_STRING, VAR_C, &self->type,    "tpcb", 0   },
+		{ "threads", VAR_INT,    VAR_C, &self->threads,  NULL,  4   },
+		{ "clients", VAR_INT,    VAR_C, &self->clients,  NULL,  12  },
+		{ "time",    VAR_INT,    VAR_C, &self->time,     NULL,  10  },
+		{ "scale",   VAR_INT,    VAR_C, &self->scale,    NULL,  1   },
+		{ "batch",   VAR_INT,    VAR_C, &self->batch,    NULL,  500 },
+		{  NULL,     0,          0,     NULL,            NULL,  0   }
+	};
+	vars_define(&self->vars, defs);
 }
 
 void
@@ -162,46 +129,7 @@ bench_free(Bench* self)
 		auto worker = list_at(BenchWorker, link);
 		bench_worker_free(worker);
 	}
-}
-
-void
-bench_set_threads(Bench* self, int value)
-{
-	self->opt_threads = value;
-}
-
-void
-bench_set_connections(Bench* self, int value)
-{
-	self->opt_connections = value;
-}
-
-void
-bench_set_duration(Bench* self, int value)
-{
-	self->opt_duration = value;
-}
-
-void
-bench_set_remote(Bench* self, Remote* remote)
-{
-	self->remote = remote;
-}
-
-static void
-bench_service_init(Bench* self, Client* client)
-{
-	Str str;
-	str_set_cstr(&str, "create table __test (id int primary key serial)");
-	bench_execute(client, self->remote, &str);
-}
-
-static void
-bench_service_cleanup(Bench* self, Client* client)
-{
-	Str str;
-	str_set_cstr(&str, "drop table __test");
-	bench_execute(client, self->remote, &str);
+	vars_free(&self->vars);
 }
 
 static void
@@ -216,12 +144,10 @@ bench_service(Bench* self, bool init)
 		client = client_create();
 		client_set_remote(client, self->remote);
 		client_connect(client);
-
-		// process
 		if (init)
-			bench_service_init(self, client);
+			self->iface->init(self, client);
 		else
-			bench_service_cleanup(self, client);
+			self->iface->cleanup(self, client);
 	}
 
 	if (leave(&e))
@@ -237,22 +163,40 @@ bench_service(Bench* self, bool init)
 void
 bench_run(Bench* self)
 {
-	auto workers = self->opt_threads;
-	auto connections = self->opt_connections / workers;
-	while (workers-- > 0)
-	{
-		auto worker = bench_worker_allocate(self, connections);
-		list_append(&self->list, &worker->link);
-	}
+	// validate options
+	auto type               = var_string_of(&self->type);
+	auto scale              = var_int_of(&self->scale);
+	auto time               = var_int_of(&self->time);
+	auto workers            = var_int_of(&self->threads);
+	auto clients            = var_int_of(&self->clients);
+	auto clients_per_worker = clients / workers;
 
+	// set benchmark
+	if (str_compare_cstr(type, "tpcb"))
+		self->iface = &bench_tpcb;
+	else
+	if (str_compare_cstr(type, "insert"))
+		self->iface = &bench_insert;
+	else
+		error("unknown benchmark type '%.*s'", str_size(type),
+		      str_of(type));
+
+	// hello
 	info("amelie benchmark.");
 	info("");
-	info("duration:     %d sec", self->opt_duration);
-	info("threads:      %d", self->opt_threads);
-	info("connections:  %d (%d per thread)", self->opt_connections,
-	     connections);
-	info("duration:     %d sec", self->opt_duration);
+	info("type:    %.*s", str_size(type), str_of(type));
+	info("time:    %" PRIu64 " sec", time);
+	info("threads: %" PRIu64, workers);
+	info("clients: %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
+	info("scale:   %" PRIu64, scale);
 	info("");
+
+	// prepare workers
+	while (workers-- > 0)
+	{
+		auto worker = bench_worker_allocate(self, clients_per_worker);
+		list_append(&self->list, &worker->link);
+	}
 
 	// prepare tables
 	bench_service(self, true);
@@ -264,13 +208,22 @@ bench_run(Bench* self)
 		bench_worker_start(worker);
 	}
 
-	uint64_t prev = 0;
-	for (auto duration = self->opt_duration; duration > 0; duration--)
+	uint64_t prev_tx = 0;
+	uint64_t prev_wr = 0;
+	for (auto duration = time; duration > 0; duration--)
 	{
 		coroutine_sleep(1000);
-		auto n = atomic_u64_of(&self->transactions) * self->opt_batch;
-		info("rps %" PRIu64 " sec", n - prev);
-		prev = n;
+		auto tx = atomic_u64_of(&self->transactions);
+		auto wr = atomic_u64_of(&self->writes);
+		if (wr > 0)
+			info("%" PRIu64 " transactions/sec, %.2f millions writes/sec (%" PRIu64 ")",
+			     tx - prev_tx,
+			     (float)(wr - prev_wr) / 1000000.0,
+			     wr - prev_wr);
+		else
+			info("%" PRIu64 " transactions/sec", tx - prev_tx);
+		prev_tx = tx;
+		prev_wr = wr;
 	}
 
 	// stop
@@ -291,5 +244,7 @@ bench_run(Bench* self)
 	// report
 	info("");
 	info("transactions: %" PRIu64, self->transactions);
-	info("writes:       %" PRIu64, self->transactions * self->opt_batch);
+	info("writes:       %.2f millions writes (%" PRIu64 ")",
+	     self->writes / 1000000.0,
+	     self->writes);
 }

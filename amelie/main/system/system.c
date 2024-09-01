@@ -189,7 +189,7 @@ system_start(System* self, bool bootstrap)
 	repl_open(&self->repl);
 
 	info("");
-	config_print(config());
+	vars_print(&config()->vars);
 	info("");
 
 	// start server

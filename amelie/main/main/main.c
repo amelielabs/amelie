@@ -31,7 +31,6 @@ main_free(Main* self)
 {
 	config_free(&self->config);
 	timezone_mgr_free(&self->timezone_mgr);
-	random_free(&self->random);
 	logger_close(&self->logger);
 	tls_lib_free();
 }
@@ -156,7 +155,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	if (bootstrap)
 	{
 		// set options first, to properly generate config
-		config_set_argv(config, argc, argv);
+		vars_set_argv(&config->vars, argc, argv);
 
 		// set default settings
 		main_bootstrap(self);
@@ -169,7 +168,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		config_open(config, path);
 
 		// redefine options
-		config_set_argv(config, argc, argv);
+		vars_set_argv(&config->vars, argc, argv);
 	}
 
 	// set system timezone

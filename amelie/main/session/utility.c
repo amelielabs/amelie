@@ -76,17 +76,17 @@ ctl_show(Session* self)
 	else
 	if (str_compare_raw(name, "config", 6) ||
 	    str_compare_raw(name, "all", 3))
-		buf = config_list(global()->config, &self->local.config);
+		buf = vars_list(&global()->config->vars, &self->local.config.vars);
 	else
 	{
-		auto var = config_find(global()->config, name);
+		auto var = vars_find(&global()->config->vars, name);
 		if (var && var_is(var, VAR_S))
 			var = NULL;
 		if (unlikely(var == NULL))
 			error("SHOW name: '%.*s' not found", str_size(name),
 			      str_of(name));
 		if (var_is(var, VAR_L))
-			var = config_local_find(&self->local.config, name);
+			var = vars_find(&self->local.config.vars, name);
 		buf = buf_begin();
 		var_encode(var, buf);
 		buf_end(buf);
@@ -102,7 +102,7 @@ ctl_set(Session* self)
 	auto name = &arg->name->string;
 
 	// find variable
-	auto var = config_find(global()->config, name);
+	auto var = vars_find(&global()->config->vars, name);
 	if (var && var_is(var, VAR_S))
 		var = NULL;
 	if (unlikely(var == NULL))
@@ -121,7 +121,7 @@ ctl_set(Session* self)
 	if (var_is(var, VAR_L))
 	{
 		auto local = &self->local;
-		var = config_local_find(&local->config, name);
+		var = vars_find(&local->config.vars, name);
 		assert(var);
 
 		// validate and set timezone first

@@ -20,23 +20,22 @@ amelie_usage(void)
 	info("    init   <path> [server options]");
 	info("    start  <path> [server options]");
 	info("    stop   <path>");
-	info("    backup <path> [login] [remote options]");
-	info("    client [login] [remote options]");
-	info("    login  <name> [remote options]");
-	info("    logout <name>");
-	info("    bench  [login] [remote options]");
+	info("    backup <path> [login] [client options]");
+	info("    client [login] [client options]");
+	info("    bench  [login] [client options] [options]");
+	info("    login  <login> [client options]");
+	info("    logout <login>");
 	info("");
-	info("  remote options:");
+	info("  client options:");
 	info("");
 	int id = 0;
 	for (; id < REMOTE_MAX; id++)
 		info("    --%s=string", remote_nameof(id));
 	info("    --json=string");
-
 	info("");
 	info("  server options:");
 	info("");
-	list_foreach(&config()->list)
+	list_foreach(&config()->vars.list)
 	{
 		auto var = list_at(Var, link);
 		if (!var_is(var, VAR_C) || var_is(var, VAR_Y) ||
@@ -141,7 +140,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 	Remote remote;
 	remote_init(&remote);
 	guard(remote_free, &remote);
-	login_mgr_set(&self->home.login_mgr, &remote, argc - 1, argv + 1);
+	login_mgr_set(&self->home.login_mgr, &remote, NULL, argc - 1, argv + 1);
 
 	// disable log output
 	if (str_compare_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
@@ -221,7 +220,7 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 	if (enter(&e))
 	{
 		// prepare remote
-		login_mgr_set(&self->home.login_mgr, &remote, argc, argv);
+		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
 
 		// create client and connect
 		client = client_create();
@@ -263,7 +262,7 @@ amelie_cmd_login(Amelie* self, int argc, char** argv)
 		unguard();
 	}
 
-	login_mgr_set(&home->login_mgr, &login->remote, argc - 1, argv + 1);
+	login_mgr_set(&home->login_mgr, &login->remote, NULL, argc - 1, argv + 1);
 	home_sync(home);
 }
 
@@ -292,15 +291,13 @@ amelie_cmd_bench(Amelie* self, int argc, char** argv)
 	remote_init(&remote);
 
 	Bench bench;
-	bench_init(&bench);
+	bench_init(&bench, &remote);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// prepare remote
-		login_mgr_set(&self->home.login_mgr, &remote, argc, argv);
-
-		bench_set_remote(&bench, &remote);
+		login_mgr_set(&self->home.login_mgr, &remote, &bench.vars, argc, argv);
 		bench_run(&bench);
 	}
 

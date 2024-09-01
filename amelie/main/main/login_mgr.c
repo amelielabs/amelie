@@ -165,7 +165,9 @@ login_mgr_set_json(Remote* remote, Str* text)
 }
 
 void
-login_mgr_set(LoginMgr* self, Remote* remote, int argc, char** argv)
+login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
+              int       argc,
+              char**    argv)
 {
 	// [path or name] [remote options]
 	if (argc == 0)
@@ -220,10 +222,15 @@ login_mgr_set(LoginMgr* self, Remote* remote, int argc, char** argv)
 			if (str_compare_cstr(&name, remote_nameof(id)))
 				break;
 		if (id == REMOTE_MAX)
+		{
+			// todo: vars
 			error("login: unknown option '%.*s'", str_size(&name),
 			      str_of(&name));
+		}
 
 		remote_set(remote, id, &value);
+
+		(void)vars;
 	}
 
 	// validate uri

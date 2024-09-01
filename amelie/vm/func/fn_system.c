@@ -32,7 +32,7 @@ static void
 fn_config(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = config_list(config(), &self->vm->local->config);
+	auto buf = vars_list(&config()->vars, &self->vm->local->config.vars);
 	value_read(self->result, buf->start, buf);
 }
 
