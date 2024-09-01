@@ -33,3 +33,4 @@ void client_detach(Client*);
 void client_accept(Client*);
 void client_connect(Client*);
 void client_close(Client*);
+void client_execute(Client*, Str*);

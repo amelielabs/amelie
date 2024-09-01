@@ -203,3 +203,27 @@ client_close(Client* self)
 	http_reset(&self->reply);
 	readahead_reset(&self->readahead);
 }
+
+hot void
+client_execute(Client* self, Str* command)
+{
+	auto request = &self->request;
+	auto reply   = &self->reply;
+
+	// request
+	http_write_request(request, "POST /");
+	auto token = remote_get(self->remote, REMOTE_TOKEN);
+	if (! str_empty(token))
+		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
+	http_write(request, "Content-Length", "%d", str_size(command));
+	http_write(request, "Content-Type", "text/plain");
+	http_write_end(request);
+	tcp_write_pair_str(&self->tcp, &request->raw, command);
+
+	// reply
+	http_reset(reply);
+	auto eof = http_read(reply, &self->readahead, false);
+	if (eof)
+		error("unexpected eof");
+	http_read_content(reply, &self->readahead, &reply->content);
+}
