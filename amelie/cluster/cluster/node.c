@@ -66,16 +66,16 @@ node_execute_write(Node* self, Trx* trx, Req* req)
 
 		// replay write
 		if (type == LOG_REPLACE)
-			part_insert(part, &trx->trx, true, &data);
+			part_insert(part, &trx->tr, true, &data);
 		else
-			part_delete_by(part, &trx->trx, &data);
+			part_delete_by(part, &trx->tr, &data);
 	}
 }
 
 hot static void
 node_execute(Node* self, Trx* trx)
 {
-	transaction_begin(&trx->trx);
+	tr_begin(&trx->tr);
 
 	// execute transaction requests
 	for (;;)
@@ -95,7 +95,7 @@ node_execute(Node* self, Trx* trx)
 			{
 				vm_reset(&self->vm);
 				vm_run(&self->vm, trx->local,
-				       &trx->trx,
+				       &trx->tr,
 				        trx->code, trx->code_data,
 				       &req->arg,
 				        trx->cte,

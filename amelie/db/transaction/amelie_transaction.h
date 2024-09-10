@@ -12,7 +12,7 @@
 // transaction
 #include "transaction/log_set.h"
 #include "transaction/log.h"
-#include "transaction/transaction.h"
+#include "transaction/tr.h"
 
 // handle
 #include "transaction/handle.h"

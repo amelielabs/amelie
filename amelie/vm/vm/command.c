@@ -478,7 +478,7 @@ cinsert(Vm* self, Op* op)
 		if (unlikely(! data_is_array(pos)))
 			error("INSERT/REPLACE: array expected, but got %s",
 			      type_to_string(*pos));
-		part_insert(part, self->trx, false, &pos);
+		part_insert(part, self->tr, false, &pos);
 	}
 }
 
@@ -486,7 +486,7 @@ hot void
 cupdate(Vm* self, Op* op)
 {
 	// [cursor]
-	auto trx    = self->trx;
+	auto tr     = self->tr;
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	auto part   = cursor->part;
 	auto it     = cursor->it;
@@ -499,7 +499,7 @@ cupdate(Vm* self, Op* op)
 	case VALUE_ARRAY:
 	{
 		pos = value->data;
-		part_update(part, trx, it, &pos);
+		part_update(part, tr, it, &pos);
 		break;
 	}
 	case VALUE_SET:
@@ -521,7 +521,7 @@ cupdate(Vm* self, Op* op)
 				value_write(ref, buf);
 				pos = buf->start;
 			}
-			part_update(part, trx, it, &pos);
+			part_update(part, tr, it, &pos);
 		}
 		break;
 	}
@@ -539,7 +539,7 @@ cdelete(Vm* self, Op* op)
 {
 	// delete by cursor
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	part_delete(cursor->part, self->trx, cursor->it);
+	part_delete(cursor->part, self->tr, cursor->it);
 }
 
 hot Op*
@@ -566,7 +566,7 @@ cupsert(Vm* self, Op* op)
 		cursor->ref_pos++;
 
 		// insert or get (open iterator in both cases)
-		auto exists = part_upsert(cursor->part, self->trx, cursor->it, &pos);
+		auto exists = part_upsert(cursor->part, self->tr, cursor->it, &pos);
 		if (exists)
 		{
 			// upsert

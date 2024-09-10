@@ -42,15 +42,15 @@ db_free(Db* self)
 static void
 db_create_system_schema(Db* self, const char* schema, bool create)
 {
-	Transaction trx;
-	transaction_init(&trx);
-	guard(transaction_free, &trx);
+	Tr tr;
+	tr_init(&tr);
+	guard(tr_free, &tr);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// begin
-		transaction_begin(&trx);
+		tr_begin(&tr);
 
 		// create system schema
 		Str name;
@@ -61,15 +61,15 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 		schema_config_set_name(config, &name);
 		schema_config_set_system(config, true);
 		schema_config_set_create(config, create);
-		schema_mgr_create(&self->schema_mgr, &trx, config, false);
+		schema_mgr_create(&self->schema_mgr, &tr, config, false);
 
 		// commit
-		transaction_commit(&trx);
+		tr_commit(&tr);
 	}
 
 	if (leave(&e))
 	{
-		transaction_abort(&trx);
+		tr_abort(&tr);
 		rethrow();
 	}
 }

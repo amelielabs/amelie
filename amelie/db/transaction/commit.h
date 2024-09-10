@@ -6,6 +6,6 @@
 // Real-Time SQL Database.
 //
 
-void transaction_begin(Transaction*);
-void transaction_commit(Transaction*);
-void transaction_abort(Transaction*);
+void tr_begin(Tr*);
+void tr_commit(Tr*);
+void tr_abort(Tr*);

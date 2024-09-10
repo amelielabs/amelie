@@ -55,7 +55,7 @@ static LogIf create_if =
 
 bool
 table_index_create(Table*       self,
-                   Transaction* trx,
+                   Tr*          tr,
                    IndexConfig* config,
                    bool         if_not_exists)
 {
@@ -83,7 +83,7 @@ table_index_create(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_CREATE, &create_if,
+	log_handle(&tr->log, LOG_INDEX_CREATE, &create_if,
 	           index,
 	           &self->handle, op);
 	unguard();
@@ -116,10 +116,10 @@ static LogIf drop_if =
 };
 
 void
-table_index_drop(Table*       self,
-                 Transaction* trx,
-                 Str*         name,
-                 bool         if_exists)
+table_index_drop(Table* self,
+                 Tr*    tr,
+                 Str*   name,
+                 bool   if_exists)
 {
 	auto index = table_find_index(self, name, false);
 	if (! index)
@@ -138,7 +138,7 @@ table_index_drop(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_DROP, &drop_if,
+	log_handle(&tr->log, LOG_INDEX_DROP, &drop_if,
 	           index,
 	           &self->handle, op);
 	unguard();
@@ -172,11 +172,11 @@ static LogIf rename_if =
 };
 
 void
-table_index_rename(Table*       self,
-                   Transaction* trx,
-                   Str*         name,
-                   Str*         name_new,
-                   bool         if_exists)
+table_index_rename(Table* self,
+                   Tr*    tr,
+                   Str*   name,
+                   Str*   name_new,
+                   bool   if_exists)
 {
 	auto index = table_find_index(self, name, false);
 	if (! index)
@@ -205,7 +205,7 @@ table_index_rename(Table*       self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_INDEX_RENAME, &rename_if,
+	log_handle(&tr->log, LOG_INDEX_RENAME, &rename_if,
 	           index,
 	           &self->handle, op);
 	unguard();

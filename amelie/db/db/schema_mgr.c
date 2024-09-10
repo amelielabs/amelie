@@ -32,7 +32,7 @@ schema_mgr_free(SchemaMgr* self)
 
 void
 schema_mgr_create(SchemaMgr*    self,
-                  Transaction*  trx,
+                  Tr*           tr,
                   SchemaConfig* config,
                   bool          if_not_exists)
 {
@@ -55,7 +55,7 @@ schema_mgr_create(SchemaMgr*    self,
 	guard_buf(op);
 
 	// update schemas
-	handle_mgr_create(&self->mgr, trx, LOG_SCHEMA_CREATE,
+	handle_mgr_create(&self->mgr, tr, LOG_SCHEMA_CREATE,
 	                  &schema->handle, op);
 
 	unguard();
@@ -63,10 +63,10 @@ schema_mgr_create(SchemaMgr*    self,
 }
 
 void
-schema_mgr_drop(SchemaMgr*   self,
-                Transaction* trx,
-                Str*         name,
-                bool         if_exists)
+schema_mgr_drop(SchemaMgr* self,
+                Tr*        tr,
+                Str*       name,
+                bool       if_exists)
 {
 	auto schema = schema_mgr_find(self, name, false);
 	if (! schema)
@@ -86,7 +86,7 @@ schema_mgr_drop(SchemaMgr*   self,
 	guard_buf(op);
 
 	// drop schema by object
-	handle_mgr_drop(&self->mgr, trx, LOG_SCHEMA_DROP, &schema->handle, op);
+	handle_mgr_drop(&self->mgr, tr, LOG_SCHEMA_DROP, &schema->handle, op);
 	unguard();
 }
 
@@ -117,11 +117,11 @@ static LogIf rename_if =
 };
 
 void
-schema_mgr_rename(SchemaMgr*   self,
-                  Transaction* trx,
-                  Str*         name,
-                  Str*         name_new,
-                  bool         if_exists)
+schema_mgr_rename(SchemaMgr* self,
+                  Tr*        tr,
+                  Str*       name,
+                  Str*       name_new,
+                  bool       if_exists)
 {
 	auto schema = schema_mgr_find(self, name, false);
 	if (! schema)
@@ -146,7 +146,7 @@ schema_mgr_rename(SchemaMgr*   self,
 	guard_buf(op);
 
 	// update schema
-	log_handle(&trx->log, LOG_SCHEMA_RENAME, &rename_if,
+	log_handle(&tr->log, LOG_SCHEMA_RENAME, &rename_if,
 	           NULL,
 	           &schema->handle, op);
 	unguard();

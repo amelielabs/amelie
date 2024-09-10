@@ -176,7 +176,7 @@ executor_wal_write(Executor* self)
 			auto trx = trx_set_get(set, i);
 			if (trx == NULL)
 				continue;
-			wal_batch_add(wal_batch, &trx->trx.log.log_set);
+			wal_batch_add(wal_batch, &trx->tr.log.log_set);
 		}
 		if (wal_batch->header.count > 0)
 		{

@@ -34,7 +34,7 @@ table_mgr_free(TableMgr* self)
 
 bool
 table_mgr_create(TableMgr*    self,
-                 Transaction* trx,
+                 Tr*          tr,
                  TableConfig* config,
                  bool         if_not_exists)
 {
@@ -57,7 +57,7 @@ table_mgr_create(TableMgr*    self,
 	guard_buf(op);
 
 	// update tables
-	handle_mgr_create(&self->mgr, trx, LOG_TABLE_CREATE, &table->handle, op);
+	handle_mgr_create(&self->mgr, tr, LOG_TABLE_CREATE, &table->handle, op);
 
 	unguard();
 	unguard();
@@ -71,19 +71,19 @@ table_mgr_create(TableMgr*    self,
 }
 
 void
-table_mgr_drop_of(TableMgr* self, Transaction* trx, Table* table)
+table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 {
 	// save drop table operation
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
 	guard_buf(op);
 
 	// drop table by object
-	handle_mgr_drop(&self->mgr, trx, LOG_TABLE_DROP, &table->handle, op);
+	handle_mgr_drop(&self->mgr, tr, LOG_TABLE_DROP, &table->handle, op);
 	unguard();
 }
 
 void
-table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
+table_mgr_drop(TableMgr* self, Tr* tr, Str* schema, Str* name,
                bool if_exists)
 {
 	auto table = table_mgr_find(self, schema, name, false);
@@ -94,7 +94,7 @@ table_mgr_drop(TableMgr* self, Transaction* trx, Str* schema, Str* name,
 			      str_of(name));
 		return;
 	}
-	table_mgr_drop_of(self, trx, table);
+	table_mgr_drop_of(self, tr, table);
 }
 
 static void
@@ -126,13 +126,13 @@ static LogIf rename_if =
 };
 
 void
-table_mgr_rename(TableMgr*    self,
-                 Transaction* trx,
-                 Str*         schema,
-                 Str*         name,
-                 Str*         schema_new,
-                 Str*         name_new,
-                 bool         if_exists)
+table_mgr_rename(TableMgr* self,
+                 Tr*       tr,
+                 Str*      schema,
+                 Str*      name,
+                 Str*      schema_new,
+                 Str*      name_new,
+                 bool      if_exists)
 {
 	auto table = table_mgr_find(self, schema, name, false);
 	if (! table)
@@ -153,7 +153,7 @@ table_mgr_rename(TableMgr*    self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_TABLE_RENAME, &rename_if,
+	log_handle(&tr->log, LOG_TABLE_RENAME, &rename_if,
 	           NULL,
 	           &table->handle, op);
 	unguard();
@@ -190,11 +190,11 @@ static LogIf truncate_if =
 };
 
 void
-table_mgr_truncate(TableMgr*    self,
-                   Transaction* trx,
-                   Str*         schema,
-                   Str*         name,
-                   bool         if_exists)
+table_mgr_truncate(TableMgr* self,
+                   Tr*       tr,
+                   Str*      schema,
+                   Str*      name,
+                   bool      if_exists)
 {
 	auto table = table_mgr_find(self, schema, name, false);
 	if (! table)
@@ -210,7 +210,7 @@ table_mgr_truncate(TableMgr*    self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_TABLE_TRUNCATE, &truncate_if,
+	log_handle(&tr->log, LOG_TABLE_TRUNCATE, &truncate_if,
 	           NULL,
 	           &table->handle, op);
 	unguard();
@@ -247,13 +247,13 @@ static LogIf rename_column_if =
 };
 
 void
-table_mgr_column_rename(TableMgr*    self,
-                        Transaction* trx,
-                        Str*         schema,
-                        Str*         name,
-                        Str*         name_column,
-                        Str*         name_column_new,
-                        bool         if_exists)
+table_mgr_column_rename(TableMgr* self,
+                        Tr*       tr,
+                        Str*      schema,
+                        Str*      name,
+                        Str*      name_column,
+                        Str*      name_column_new,
+                        bool      if_exists)
 {
 	// find table
 	auto table = table_mgr_find(self, schema, name, false);
@@ -290,7 +290,7 @@ table_mgr_column_rename(TableMgr*    self,
 	guard_buf(op);
 
 	// update table
-	log_handle(&trx->log, LOG_TABLE_COLUMN_RENAME, &rename_column_if,
+	log_handle(&tr->log, LOG_TABLE_COLUMN_RENAME, &rename_column_if,
 	           column,
 	           &table->handle, op);
 	unguard();
@@ -336,12 +336,12 @@ static LogIf column_if =
 };
 
 Table*
-table_mgr_column_add(TableMgr*    self,
-                     Transaction* trx,
-                     Str*         schema,
-                     Str*         name,
-                     Column*      column,
-                     bool         if_not_exists)
+table_mgr_column_add(TableMgr* self,
+                     Tr*       tr,
+                     Str*      schema,
+                     Str*      name,
+                     Column*   column,
+                     bool      if_not_exists)
 {
 	auto table = table_mgr_find(self, schema, name, true);
 
@@ -371,7 +371,7 @@ table_mgr_column_add(TableMgr*    self,
 	guard_buf(op);
 
 	// update log (old table is still present)
-	log_handle(&trx->log, LOG_TABLE_COLUMN_ADD, &column_if, self,
+	log_handle(&tr->log, LOG_TABLE_COLUMN_ADD, &column_if, self,
 	           &table_new->handle, op);
 	unguard();
 	unguard();
@@ -381,12 +381,12 @@ table_mgr_column_add(TableMgr*    self,
 }
 
 Table*
-table_mgr_column_drop(TableMgr*    self,
-                      Transaction* trx,
-                      Str*         schema,
-                      Str*         name,
-                      Str*         name_column,
-                      bool         if_exists)
+table_mgr_column_drop(TableMgr* self,
+                      Tr*       tr,
+                      Str*      schema,
+                      Str*      name,
+                      Str*      name_column,
+                      bool      if_exists)
 {
 	auto table = table_mgr_find(self, schema, name, true);
 
@@ -425,7 +425,7 @@ table_mgr_column_drop(TableMgr*    self,
 	guard_buf(op);
 
 	// update log (old table is still present)
-	log_handle(&trx->log, LOG_TABLE_COLUMN_DROP, &column_if, self,
+	log_handle(&tr->log, LOG_TABLE_COLUMN_DROP, &column_if, self,
 	           &table_new->handle, op);
 	unguard();
 	unguard();

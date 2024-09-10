@@ -92,17 +92,17 @@ static LogIf create_if =
 };
 
 void
-handle_mgr_create(HandleMgr*   self,
-                  Transaction* trx,
-                  LogCmd       cmd,
-                  Handle*      handle,
-                  Buf*         data)
+handle_mgr_create(HandleMgr* self,
+                  Tr*        tr,
+                  LogCmd     cmd,
+                  Handle*    handle,
+                  Buf*       data)
 {
 	// update handle mgr
 	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, cmd, &create_if, self, handle, data);
+	log_handle(&tr->log, cmd, &create_if, self, handle, data);
 }
 
 static void
@@ -129,15 +129,15 @@ static LogIf drop_if =
 };
 
 void
-handle_mgr_drop(HandleMgr*   self,
-                Transaction* trx,
-                LogCmd       cmd,
-                Handle*      handle,
-                Buf*         data)
+handle_mgr_drop(HandleMgr* self,
+                Tr*        tr,
+                LogCmd     cmd,
+                Handle*    handle,
+                Buf*       data)
 {
 	// update handle mgr
 	handle_mgr_delete(self, handle);
 
 	// update transaction log
-	log_handle(&trx->log, cmd, &drop_if, self, handle, data);
+	log_handle(&tr->log, cmd, &drop_if, self, handle, data);
 }

@@ -26,22 +26,22 @@ recover_init(Recover*   self, Db* db,
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	self->db        = db;
-	transaction_init(&self->trx);
+	tr_init(&self->tr);
 	wal_batch_init(&self->batch);
 }
 
 void
 recover_free(Recover* self)
 {
-	transaction_free(&self->trx);
+	tr_free(&self->tr);
 	wal_batch_free(&self->batch);
 }
 
 hot void
 recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 {
-	auto db  = self->db;
-	auto trx = &self->trx;
+	auto db = self->db;
+	auto tr = &self->tr;
 
 	// [dml, partition]
 	// [ddl]
@@ -63,9 +63,9 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 
 		// replay write
 		if (type == LOG_REPLACE)
-			part_insert(part, trx, true, data);
+			part_insert(part, tr, true, data);
 		else
-			part_delete_by(part, trx, data);
+			part_delete_by(part, tr, data);
 		return;
 	}
 
@@ -75,14 +75,14 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	{
 		auto config = schema_op_create_read(data);
 		guard(schema_config_free, config);
-		schema_mgr_create(&db->schema_mgr, trx, config, false);
+		schema_mgr_create(&db->schema_mgr, tr, config, false);
 		break;
 	}
 	case LOG_SCHEMA_DROP:
 	{
 		Str name;
 		schema_op_drop_read(data, &name);
-		schema_mgr_drop(&db->schema_mgr, trx, &name, true);
+		schema_mgr_drop(&db->schema_mgr, tr, &name, true);
 		break;
 	}
 	case LOG_SCHEMA_RENAME:
@@ -90,14 +90,14 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str name;
 		Str name_new;
 		schema_op_rename_read(data, &name, &name_new);
-		schema_mgr_rename(&db->schema_mgr, trx, &name, &name_new, true);
+		schema_mgr_rename(&db->schema_mgr, tr, &name, &name_new, true);
 		break;
 	}
 	case LOG_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(data);
 		guard(table_config_free, config);
-		table_mgr_create(&db->table_mgr, trx, config, false);
+		table_mgr_create(&db->table_mgr, tr, config, false);
 		break;
 	}
 	case LOG_TABLE_DROP:
@@ -105,7 +105,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema;
 		Str name;
 		table_op_drop_read(data, &schema, &name);
-		table_mgr_drop(&db->table_mgr, trx, &schema, &name, true);
+		table_mgr_drop(&db->table_mgr, tr, &schema, &name, true);
 		break;
 	}
 	case LOG_TABLE_RENAME:
@@ -115,7 +115,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema_new;
 		Str name_new;
 		table_op_rename_read(data, &schema, &name, &schema_new, &name_new);
-		table_mgr_rename(&db->table_mgr, trx, &schema, &name,
+		table_mgr_rename(&db->table_mgr, tr, &schema, &name,
 		                 &schema_new, &name_new, true);
 		break;
 	}
@@ -124,7 +124,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema;
 		Str name;
 		table_op_truncate_read(data, &schema, &name);
-		table_mgr_truncate(&db->table_mgr, trx, &schema, &name, true);
+		table_mgr_truncate(&db->table_mgr, tr, &schema, &name, true);
 		break;
 	}
 	case LOG_TABLE_COLUMN_RENAME:
@@ -134,7 +134,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str name_column;
 		Str name_column_new;
 		table_op_column_rename_read(data, &schema, &name, &name_column, &name_column_new);
-		table_mgr_column_rename(&db->table_mgr, trx, &schema, &name,
+		table_mgr_column_rename(&db->table_mgr, tr, &schema, &name,
 		                        &name_column,
 		                        &name_column_new, true);
 		break;
@@ -146,7 +146,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto column = table_op_column_add_read(data, &schema, &name);
 		guard(column_free, column);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
-		auto table_new = table_mgr_column_add(&db->table_mgr, trx, &schema, &name,
+		auto table_new = table_mgr_column_add(&db->table_mgr, tr, &schema, &name,
 		                                      column, true);
 		// build new table with new column
 		self->iface->build_column_add(self, table, table_new, column);
@@ -159,7 +159,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str name_column;
 		table_op_column_drop_read(data, &schema, &name, &name_column);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
-		auto table_new = table_mgr_column_drop(&db->table_mgr, trx, &schema, &name,
+		auto table_new = table_mgr_column_drop(&db->table_mgr, tr, &schema, &name,
 		                                       &name_column, true);
 		auto column = columns_find(&table->config->columns, &name_column);
 		assert(column);
@@ -175,7 +175,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto config = index_config_read(table_columns(table), &config_pos);
 		guard(index_config_free, config);
-		table_index_create(table, trx, config, false);
+		table_index_create(table, tr, config, false);
 		// build index
 		auto index = table_find_index(table, &config->name, true);
 		self->iface->build_index(self, table, index);
@@ -188,7 +188,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str name;
 		table_op_drop_index_read(data, &table_schema, &table_name, &name);
 		auto table = table_mgr_find(&db->table_mgr, &table_schema, &table_name, true);
-		table_index_drop(table, trx, &name, false);
+		table_index_drop(table, tr, &name, false);
 		break;
 	}
 	case LOG_INDEX_RENAME:
@@ -199,14 +199,14 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str name_new;
 		table_op_rename_index_read(data, &table_schema, &table_name, &name, &name_new);
 		auto table = table_mgr_find(&db->table_mgr, &table_schema, &table_name, true);
-		table_index_rename(table, trx, &name, &name_new, false);
+		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
 	case LOG_VIEW_CREATE:
 	{
 		auto config = view_op_create_read(data);
 		guard(view_config_free, config);
-		view_mgr_create(&db->view_mgr, trx, config, false);
+		view_mgr_create(&db->view_mgr, tr, config, false);
 		break;
 	}
 	case LOG_VIEW_DROP:
@@ -214,7 +214,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema;
 		Str name;
 		view_op_drop_read(data, &schema, &name);
-		view_mgr_drop(&db->view_mgr, trx, &schema, &name, true);
+		view_mgr_drop(&db->view_mgr, tr, &schema, &name, true);
 		break;
 	}
 	case LOG_VIEW_RENAME:
@@ -224,7 +224,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema_new;
 		Str name_new;
 		view_op_rename_read(data, &schema, &name, &schema_new, &name_new);
-		view_mgr_rename(&db->view_mgr, trx, &schema, &name,
+		view_mgr_rename(&db->view_mgr, tr, &schema, &name,
 		                &schema_new, &name_new, true);
 		break;
 	}
@@ -237,14 +237,14 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 void
 recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 {
-	auto trx = &self->trx;
-	transaction_reset(trx);
+	auto tr = &self->tr;
+	tr_reset(tr);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// begin
-		transaction_begin(trx);
+		tr_begin(tr);
 
 		// replay transaction log
 
@@ -260,7 +260,7 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 			auto batch = &self->batch;
 			wal_batch_reset(batch);
 			wal_batch_begin(batch, flags);
-			wal_batch_add(batch, &trx->log.log_set);
+			wal_batch_add(batch, &tr->log.log_set);
 			wal_write(&self->db->wal, batch);
 		} else
 		{
@@ -268,13 +268,13 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 		}
 
 		// commit
-		transaction_commit(trx);
+		tr_commit(tr);
 	}
 
 	if (leave(&e))
 	{
 		info("recover: wal lsn %" PRIu64 ": replay error", write->lsn);
-		transaction_abort(trx);
+		tr_abort(tr);
 		rethrow();
 	}
 }

@@ -18,11 +18,11 @@ struct RecoverIf
 
 struct Recover
 {
-	Transaction trx;
-	WalBatch    batch;
-	RecoverIf*  iface;
-	void*       iface_arg;
-	Db*         db;
+	Tr         tr;
+	WalBatch   batch;
+	RecoverIf* iface;
+	void*      iface_arg;
+	Db*        db;
 };
 
 void recover_init(Recover*, Db*, RecoverIf*, void*);

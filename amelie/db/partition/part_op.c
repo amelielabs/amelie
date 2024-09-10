@@ -81,10 +81,7 @@ part_sync_serial(Part* self, uint8_t* pos_serial)
 }
 
 hot void
-part_insert(Part*        self,
-            Transaction* trx,
-            bool         recover,
-            uint8_t**    pos)
+part_insert(Part* self, Tr* tr, bool recover, uint8_t** pos)
 {
 	auto primary = part_primary(self);
 	auto keys    = index_keys(primary);
@@ -96,8 +93,8 @@ part_insert(Part*        self,
 	guard(row_free, row);
 
 	// ensure transaction log limit
-	if (trx->limit)
-		limit_ensure(trx->limit, row);
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 
 	// sync last serial column value during recover
 	if (pos_serial && recover)
@@ -105,10 +102,10 @@ part_insert(Part*        self,
 
 	// add log record
 	Ref* key, *prev;
-	log_row(&trx->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
+	log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
 	ref_create(key, row, keys);
 	unguard();
-	log_persist(&trx->log, self->config->id);
+	log_persist(&tr->log, self->config->id);
 
 	// update primary index
 	auto exists = index_set(primary, key, prev);
@@ -124,7 +121,7 @@ part_insert(Part*        self,
 		auto keys = index_keys(index);
 
 		// add log record
-		log_row(&trx->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
+		log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
 		ref_create(key, row, keys);
 
 		auto exists = index_set(index, key, prev);
@@ -136,10 +133,7 @@ part_insert(Part*        self,
 }
 
 hot void
-part_update(Part*        self,
-            Transaction* trx,
-            Iterator*    it,
-            uint8_t**    pos)
+part_update(Part* self, Tr* tr, Iterator* it, uint8_t** pos)
 {
 	auto primary = part_primary(self);
 	auto keys = index_keys(primary);
@@ -149,15 +143,15 @@ part_update(Part*        self,
 	guard(row_free, row);
 
 	// ensure transaction log limit
-	if (trx->limit)
-		limit_ensure(trx->limit, row);
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 
 	// add log record
 	Ref* key, *prev;
-	log_row(&trx->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
+	log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
 	ref_create(key, row, keys);
 	unguard();
-	log_persist(&trx->log, self->config->id);
+	log_persist(&tr->log, self->config->id);
 
 	// update primary index
 	index_update(primary, key, prev, it);
@@ -169,7 +163,7 @@ part_update(Part*        self,
 		auto keys = index_keys(index);
 
 		// add log record
-		log_row(&trx->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
+		log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
 		ref_create(key, row, keys);
 
 		// find and replace existing secondary row (keys are not updated)
@@ -181,25 +175,23 @@ part_update(Part*        self,
 }
 
 hot void
-part_delete(Part*        self,
-            Transaction* trx,
-            Iterator*    it)
+part_delete(Part* self, Tr* tr, Iterator* it)
 {
 	auto primary = part_primary(self);
 	auto keys = index_keys(primary);
 	auto row = iterator_at(it);
 
 	// ensure transaction log limit
-	if (trx->limit)
-		limit_ensure(trx->limit, row);
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 
 	// add log record
 	Ref* key, *prev;
-	log_row(&trx->log, LOG_DELETE, &log_if, primary, keys, &key, &prev);
+	log_row(&tr->log, LOG_DELETE, &log_if, primary, keys, &key, &prev);
 
 	// update primary index
 	index_delete(primary, key, prev, it);
-	log_persist(&trx->log, self->config->id);
+	log_persist(&tr->log, self->config->id);
 
 	// secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
@@ -208,7 +200,7 @@ part_delete(Part*        self,
 		auto keys = index_keys(index);
 
 		// add log record
-		log_row(&trx->log, LOG_DELETE, &log_if_secondary, index, keys, &key, &prev);
+		log_row(&tr->log, LOG_DELETE, &log_if_secondary, index, keys, &key, &prev);
 		ref_create(key, row, keys);
 
 		// delete by key
@@ -217,9 +209,7 @@ part_delete(Part*        self,
 }
 
 hot void
-part_delete_by(Part*        self,
-               Transaction* trx,
-               uint8_t**    pos)
+part_delete_by(Part* self, Tr* tr, uint8_t** pos)
 {
 	auto primary = part_primary(self);
 	auto keys = index_keys(primary);
@@ -240,14 +230,11 @@ part_delete_by(Part*        self,
 	if (unlikely(! iterator_open(it, key)))
 		error("delete by key does not match");
 
-	part_delete(self, trx, it);
+	part_delete(self, tr, it);
 }
 
 hot bool
-part_upsert(Part*        self,
-            Transaction* trx,
-            Iterator*    it,
-            uint8_t**    pos)
+part_upsert(Part* self, Tr* tr, Iterator* it, uint8_t** pos)
 {
 	auto primary = part_primary(self);
 	auto keys = index_keys(primary);
@@ -257,12 +244,12 @@ part_upsert(Part*        self,
 	guard(row_free, row);
 
 	// ensure transaction log limit
-	if (trx->limit)
-		limit_ensure(trx->limit, row);
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 
 	// add log record
 	Ref* key, *prev;
-	log_row(&trx->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
+	log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, &key, &prev);
 	ref_create(key, row, keys);
 	unguard();
 
@@ -271,12 +258,12 @@ part_upsert(Part*        self,
 	if (exists)
 	{
 		row_free(row);
-		log_truncate(&trx->log);
+		log_truncate(&tr->log);
 		return true;
 	}
 
 	// insert
-	log_persist(&trx->log, self->config->id);
+	log_persist(&tr->log, self->config->id);
 
 	// update secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
@@ -285,7 +272,7 @@ part_upsert(Part*        self,
 		auto keys = index_keys(index);
 
 		// add log record
-		log_row(&trx->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
+		log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, &key, &prev);
 		ref_create(key, row, keys);
 
 		auto exists = index_set(index, key, prev);

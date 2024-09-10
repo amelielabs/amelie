@@ -58,7 +58,7 @@ trx_list_commit(TrxList* self, Trx* last)
 	list_foreach_safe(&self->list)
 	{
 		auto trx = list_at(Trx, link);
-		transaction_commit(&trx->trx);
+		tr_commit(&trx->tr);
 
 		list_unlink(&trx->link);
 		self->list_count--;
@@ -76,7 +76,7 @@ trx_list_abort(TrxList* self, Trx* last)
 	list_foreach_reverse_safe_from(&self->list, &last->link)
 	{
 		auto trx = list_at(Trx, link);
-		transaction_abort(&trx->trx);
+		tr_abort(&trx->tr);
 
 		list_unlink(&trx->link);
 		self->list_count--;

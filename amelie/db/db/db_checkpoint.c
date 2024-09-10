@@ -49,15 +49,15 @@ enum
 static void
 restore_object(Db* self, int type, uint8_t** pos)
 {
-	Transaction trx;
-	transaction_init(&trx);
-	guard(transaction_free, &trx);
+	Tr tr;
+	tr_init(&tr);
+	guard(tr_free, &tr);
 
 	Exception e;
 	if (enter(&e))
 	{
 		// start transaction
-		transaction_begin(&trx);
+		tr_begin(&tr);
 
 		switch (type) {
 		case RESTORE_SCHEMA:
@@ -67,7 +67,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 			guard(schema_config_free, config);
 
 			// create schema
-			schema_mgr_create(&self->schema_mgr, &trx, config, false);
+			schema_mgr_create(&self->schema_mgr, &tr, config, false);
 			break;
 		}
 		case RESTORE_TABLE:
@@ -77,7 +77,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 			guard(table_config_free, config);
 
 			// create table
-			table_mgr_create(&self->table_mgr, &trx, config, false);
+			table_mgr_create(&self->table_mgr, &tr, config, false);
 			break;
 		}
 		case RESTORE_VIEW:
@@ -87,7 +87,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 			guard(view_config_free, config);
 
 			// create view
-			view_mgr_create(&self->view_mgr, &trx, config, false);
+			view_mgr_create(&self->view_mgr, &tr, config, false);
 			break;
 		}
 		}
@@ -95,12 +95,12 @@ restore_object(Db* self, int type, uint8_t** pos)
 
 	if (leave(&e))
 	{
-		transaction_abort(&trx);
+		tr_abort(&tr);
 		rethrow();
 	}
 
 	// commit
-	transaction_commit(&trx);
+	tr_commit(&tr);
 }
 
 static void

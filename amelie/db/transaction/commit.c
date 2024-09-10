@@ -14,9 +14,9 @@
 #include <amelie_transaction.h>
 
 void
-transaction_begin(Transaction* self)
+tr_begin(Tr* self)
 {
-	if (unlikely(transaction_active(self)))
+	if (unlikely(tr_active(self)))
 		error("transaction is active");
 	self->active  = true;
 	self->aborted = false;
@@ -24,7 +24,7 @@ transaction_begin(Transaction* self)
 }
 
 static inline void
-transaction_end(Transaction* self, bool aborted)
+tr_end(Tr* self, bool aborted)
 {
 	// reset log
 	log_reset(&self->log);
@@ -35,9 +35,9 @@ transaction_end(Transaction* self, bool aborted)
 }
 
 hot void
-transaction_commit(Transaction* self)
+tr_commit(Tr* self)
 {
-	if (unlikely(! transaction_active(self)))
+	if (unlikely(! tr_active(self)))
 		error("transaction is not active");
 
 	auto log = &self->log;
@@ -47,13 +47,13 @@ transaction_commit(Transaction* self)
 		op->iface->commit(log, op);
 	}
 
-	transaction_end(self, false);
+	tr_end(self, false);
 }
 
 void
-transaction_abort(Transaction* self)
+tr_abort(Tr* self)
 {
-	if (unlikely(! transaction_active(self)))
+	if (unlikely(! tr_active(self)))
 		error("transaction is not active");
 
 	auto log = &self->log;
@@ -63,5 +63,5 @@ transaction_abort(Transaction* self)
 		op->iface->abort(log, op);
 	}
 
-	transaction_end(self, true);
+	tr_end(self, true);
 }

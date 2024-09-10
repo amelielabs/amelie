@@ -19,21 +19,21 @@
 #include <amelie_db.h>
 
 void
-cascade_table_drop(Db* self, Transaction* trx, Str* schema, Str* name,
+cascade_table_drop(Db* self, Tr* tr, Str* schema, Str* name,
                    bool if_exists)
 {
-	table_mgr_drop(&self->table_mgr, trx, schema, name, if_exists);
+	table_mgr_drop(&self->table_mgr, tr, schema, name, if_exists);
 }
 
 static void
-cascade_drop(Db* self, Transaction* trx, Str* schema)
+cascade_drop(Db* self, Tr* tr, Str* schema)
 {
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
 		if (str_compare(&table->config->schema, schema))
-			table_mgr_drop_of(&self->table_mgr, trx, table);
+			table_mgr_drop_of(&self->table_mgr, tr, table);
 	}
 
 	// views
@@ -41,20 +41,20 @@ cascade_drop(Db* self, Transaction* trx, Str* schema)
 	{
 		auto view = view_of(list_at(Handle, link));
 		if (str_compare(&view->config->schema, schema))
-			view_mgr_drop(&self->view_mgr, trx, &view->config->schema,
+			view_mgr_drop(&self->view_mgr, tr, &view->config->schema,
 			              &view->config->name, false);
 	}
 }
 
 static void
-cascade_rename(Db* self, Transaction* trx, Str* schema, Str* schema_new)
+cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 {
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
 		if (str_compare(&table->config->schema, schema))
-			table_mgr_rename(&self->table_mgr, trx, &table->config->schema,
+			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
 			                 &table->config->name,
 			                 schema_new,
 			                 &table->config->name, false);
@@ -65,7 +65,7 @@ cascade_rename(Db* self, Transaction* trx, Str* schema, Str* schema_new)
 	{
 		auto view = view_of(list_at(Handle, link));
 		if (str_compare(&view->config->schema, schema))
-			view_mgr_rename(&self->view_mgr, trx, &view->config->schema,
+			view_mgr_rename(&self->view_mgr, tr, &view->config->schema,
 			                &view->config->name,
 			                schema_new,
 			                &view->config->name, false);
@@ -97,11 +97,9 @@ cascade_schema_validate(Db* self, Str* schema)
 }
 
 void
-cascade_schema_drop(Db*          self,
-                    Transaction* trx,
-                    Str*         name,
-                    bool         cascade,
-                    bool         if_exists)
+cascade_schema_drop(Db*  self, Tr* tr, Str* name,
+                    bool cascade,
+                    bool if_exists)
 {
 	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
 	if (! schema)
@@ -119,22 +117,20 @@ cascade_schema_drop(Db*          self,
 	if (cascade)
 	{
 		// drop all dependencies
-		cascade_drop(self, trx, name);
+		cascade_drop(self, tr, name);
 	} else
 	{
 		// ensure no dependencies
 		cascade_schema_validate(self, name);
 	}
 
-	schema_mgr_drop(&self->schema_mgr, trx, name, false);
+	schema_mgr_drop(&self->schema_mgr, tr, name, false);
 }
 
 void
-cascade_schema_rename(Db*           self,
-                      Transaction*  trx,
-                      Str*          name,
-                      Str*          name_new,
-                      bool          if_exists)
+cascade_schema_rename(Db*  self, Tr* tr, Str* name,
+                      Str* name_new,
+                      bool if_exists)
 {
 	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
 	if (! schema)
@@ -150,8 +146,8 @@ cascade_schema_rename(Db*           self,
 		      str_of(name));
 
 	// rename schema on all dependable objects
-	cascade_rename(self, trx, name, name_new);
+	cascade_rename(self, tr, name, name_new);
 
 	// rename schema last
-	schema_mgr_rename(&self->schema_mgr, trx, name, name_new, false);
+	schema_mgr_rename(&self->schema_mgr, tr, name, name_new, false);
 }

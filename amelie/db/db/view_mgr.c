@@ -31,10 +31,10 @@ view_mgr_free(ViewMgr* self)
 }
 
 void
-view_mgr_create(ViewMgr*     self,
-                Transaction* trx,
-                ViewConfig*  config,
-                bool         if_not_exists)
+view_mgr_create(ViewMgr*    self,
+                Tr*         tr,
+                ViewConfig* config,
+                bool        if_not_exists)
 {
 	// make sure view does not exists
 	auto current = view_mgr_find(self, &config->schema, &config->name, false);
@@ -55,18 +55,18 @@ view_mgr_create(ViewMgr*     self,
 	guard_buf(op);
 
 	// update views
-	handle_mgr_create(&self->mgr, trx, LOG_VIEW_CREATE, &view->handle, op);
+	handle_mgr_create(&self->mgr, tr, LOG_VIEW_CREATE, &view->handle, op);
 
 	unguard();
 	unguard();
 }
 
 void
-view_mgr_drop(ViewMgr*     self,
-              Transaction* trx,
-              Str*         schema,
-              Str*         name,
-              bool         if_exists)
+view_mgr_drop(ViewMgr* self,
+              Tr*      tr,
+              Str*     schema,
+              Str*     name,
+              bool     if_exists)
 {
 	auto view = view_mgr_find(self, schema, name, false);
 	if (! view)
@@ -82,7 +82,7 @@ view_mgr_drop(ViewMgr*     self,
 	guard_buf(op);
 
 	// update mgr
-	handle_mgr_drop(&self->mgr, trx, LOG_VIEW_DROP, &view->handle, op);
+	handle_mgr_drop(&self->mgr, tr, LOG_VIEW_DROP, &view->handle, op);
 	unguard();
 }
 
@@ -115,13 +115,13 @@ static LogIf rename_if =
 };
 
 void
-view_mgr_rename(ViewMgr*     self,
-                Transaction* trx,
-                Str*         schema,
-                Str*         name,
-                Str*         schema_new,
-                Str*         name_new,
-                bool         if_exists)
+view_mgr_rename(ViewMgr* self,
+                Tr*      tr,
+                Str*     schema,
+                Str*     name,
+                Str*     schema_new,
+                Str*     name_new,
+                bool     if_exists)
 {
 	auto view = view_mgr_find(self, schema, name, false);
 	if (! view)
@@ -142,7 +142,7 @@ view_mgr_rename(ViewMgr*     self,
 	guard_buf(op);
 
 	// update view
-	log_handle(&trx->log, LOG_VIEW_RENAME, &rename_if,
+	log_handle(&tr->log, LOG_VIEW_RENAME, &rename_if,
 	           NULL,
 	           &view->handle, op);
 	unguard();

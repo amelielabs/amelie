@@ -45,7 +45,7 @@ vm_init(Vm*          self,
 	self->cte          = NULL;
 	self->result       = NULL;
 	self->body         = body;
-	self->trx          = NULL;
+	self->tr           = NULL;
 	self->local        = NULL;
 	self->function_mgr = function_mgr;
 	self->db           = db;
@@ -82,18 +82,18 @@ vm_reset(Vm* self)
 #define op_jmp   goto *ops[(op)->op]
 
 hot void
-vm_run(Vm*          self,
-       Local*       local,
-       Transaction* trx,
-       Code*        code,
-       CodeData*    code_data,
-       Buf*         code_arg,
-       Result*      cte,
-       Value*       result,
-       int          start)
+vm_run(Vm*       self,
+       Local*    local,
+       Tr*       tr,
+       Code*     code,
+       CodeData* code_data,
+       Buf*      code_arg,
+       Result*   cte,
+       Value*    result,
+       int       start)
 {
 	self->local      = local;
-	self->trx        = trx;
+	self->tr         = tr;
 	self->code       = code;
 	self->code_data  = code_data;
 	self->code_arg   = code_arg;

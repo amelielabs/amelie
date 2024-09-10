@@ -11,16 +11,16 @@ typedef struct TrxCache TrxCache;
 
 struct Trx
 {
-	Transaction trx;
-	Code*       code;
-	CodeData*   code_data;
-	Result*     cte;
-	ReqQueue    queue;
-	Route*      route;
-	Local*      local;
-	Channel     src;
-	List        link;
-	TrxCache*   cache;
+	Tr        tr;
+	Code*     code;
+	CodeData* code_data;
+	Result*   cte;
+	ReqQueue  queue;
+	Route*    route;
+	Local*    local;
+	Channel   src;
+	List      link;
+	TrxCache* cache;
 };
 
 static inline Trx*
@@ -33,7 +33,7 @@ trx_allocate(TrxCache* cache)
 	self->local     = NULL;
 	self->route     = NULL;
 	self->cache     = cache;
-	transaction_init(&self->trx);
+	tr_init(&self->tr);
 	req_queue_init(&self->queue);
 	channel_init(&self->src);
 	list_init(&self->link);
@@ -43,7 +43,7 @@ trx_allocate(TrxCache* cache)
 static inline void
 trx_free(Trx* self)
 {
-	transaction_free(&self->trx);
+	tr_free(&self->tr);
 	channel_detach(&self->src);
 	channel_free(&self->src);
 	am_free(self);
@@ -57,7 +57,7 @@ trx_reset(Trx* self)
 	self->code_data = NULL;
 	self->cte       = NULL;
 	self->route     = NULL;
-	transaction_reset(&self->trx);
+	tr_reset(&self->tr);
 	req_queue_reset(&self->queue);
 	// channel reset?
 }
@@ -76,7 +76,7 @@ trx_set(Trx*      self,
 	self->code_data = code_data;
 	self->route     = route;
 	self->cte       = cte;
-	transaction_set_limit(&self->trx, limit);
+	tr_set_limit(&self->tr, limit);
 }
 
 static inline void
