@@ -11,7 +11,8 @@ typedef struct Node Node;
 struct Node
 {
 	Route       route;
-	TrxList     prepared;
+	TrList      prepared;
+	TrCache     cache;
 	Vm          vm;
 	NodeConfig* config;
 	Task        task;

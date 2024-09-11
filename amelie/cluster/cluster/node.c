@@ -34,7 +34,7 @@
 #include <amelie_cluster.h>
 
 hot static void
-node_execute_write(Node* self, Trx* trx, Req* req)
+node_execute_write(Node* self, Tr* tr, Req* req)
 {
 	// execute DML operations
 	auto db = self->vm.db;
@@ -66,21 +66,23 @@ node_execute_write(Node* self, Trx* trx, Req* req)
 
 		// replay write
 		if (type == LOG_REPLACE)
-			part_insert(part, &trx->tr, true, &data);
+			part_insert(part, tr, true, &data);
 		else
-			part_delete_by(part, &trx->tr, &data);
+			part_delete_by(part, tr, &data);
 	}
 }
 
 hot static void
-node_execute(Node* self, Trx* trx)
+node_execute(Node* self, Pipe* pipe)
 {
-	tr_begin(&trx->tr);
+	auto tr = tr_create(&self->cache);
+	tr_begin(tr);
 
-	// execute transaction requests
+	// read pipe and execute requests
+	pipe->tr = tr;
 	for (;;)
 	{
-		auto req = req_queue_get(&trx->queue);
+		auto req = req_queue_pop(&pipe->queue);
 		if (! req)
 			break;
 
@@ -90,105 +92,84 @@ node_execute(Node* self, Trx* trx)
 		{
 			if (req->arg_start)
 			{
-				node_execute_write(self, trx, req);
+				node_execute_write(self, tr, req);
+			} else
+			if (req->code == NULL)
+			{
+				// dummy sync request
 			} else
 			{
+				tr_set_limit(tr, req->limit);
 				vm_reset(&self->vm);
-				vm_run(&self->vm, trx->local,
-				       &trx->tr,
-				        trx->code, trx->code_data,
+				vm_run(&self->vm, req->local,
+				        tr,
+				        req->code, req->code_data,
 				       &req->arg,
-				        trx->cte,
+				        req->cte,
 				       &req->result,
-				        req->op);
+				        req->code_start);
 			}
 		}
 
 		// respond with OK or ERROR
 		Buf* buf;
 		if (leave(&e)) {
-			buf = msg_error(&am_self()->error);
+			buf = msg_error(&am_self->error);
 		} else {
 			buf = msg_begin(MSG_OK);
 			msg_end(buf);
 		}
-		channel_write(&trx->src, buf);
+		channel_write(&pipe->src, buf);
 
 		if (e.triggered)
 			break;
 	}
 
 	// add transaction to the prepared list (even on error)
-	trx_list_add(&self->prepared, trx);
-}
-
-hot static void
-node_commit(Node* self, Trx* last)
-{
-	// commit all prepared transaction till the last one
-	trx_list_commit(&self->prepared, last);
-}
-
-hot static void
-node_abort(Node* self, Trx* last)
-{
-	// abort all prepared transactions starting from the last one
-	trx_list_abort(&self->prepared, last);
-}
-
-static void
-node_rpc(Rpc* rpc, void* arg)
-{
-	Node* self = arg;
-	switch (rpc->id) {
-	case RPC_SYNC:
-		// do nothing, just respond
-		break;
-	case RPC_STOP:
-		unused(self);
-		vm_reset(&self->vm);
-		break;
-	default:
-		break;
-	}
+	tr_list_add(&self->prepared, tr);
 }
 
 static void
 node_main(void* arg)
 {
 	Node* self = arg;
-	for (;;)
+
+	bool stop = false;
+	while (! stop)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
+		auto buf = channel_read(&am_self->channel);
 		auto msg = msg_of(buf);
-		guard(buf_free, buf);
+		guard_buf(buf);
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			node_execute(self, trx_of(buf));
+			node_execute(self, pipe_of(buf));
 			break;
 		case RPC_COMMIT:
-			node_commit(self, trx_of(buf));
+		{
+			// commit all prepared transaction till the last one
+			tr_commit_list(&self->prepared, &self->cache, tr_of(buf));
 			break;
+		}
 		case RPC_ABORT:
-			node_abort(self, trx_of(buf));
+		{
+			// abort all prepared transactions
+			tr_abort_list(&self->prepared, &self->cache);
 			break;
+		}
 		case RPC_BUILD:
 		{
 			auto build = *(Build**)msg->data;
 			build_execute(build, &self->config->id);
 			break;
 		}
-		default:
+		case RPC_STOP:
 		{
-			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, node_rpc, self);
+			vm_reset(&self->vm);
+			stop = true;
 			break;
 		}
 		}
-
-		if (msg->id == RPC_STOP)
-			break;
 	}
 }
 
@@ -198,7 +179,8 @@ node_allocate(NodeConfig* config, Db* db, FunctionMgr* function_mgr)
 	auto self = (Node*)am_malloc(sizeof(Node));
 	self->config = NULL;
 	route_init(&self->route, &self->task.channel);
-	trx_list_init(&self->prepared);
+	tr_list_init(&self->prepared);
+	tr_cache_init(&self->cache);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
 	task_init(&self->task);
@@ -212,6 +194,7 @@ void
 node_free(Node* self)
 {
 	vm_free(&self->vm);
+	tr_cache_free(&self->cache);
 	if (self->config)
 		node_config_free(self->config);
 	am_free(self);
@@ -227,17 +210,22 @@ void
 node_stop(Node* self)
 {
 	// send stop request
-	if (task_active(&self->task))
+	if (task_created(&self->task))
 	{
-		rpc(&self->task.channel, RPC_STOP, 0);
+		auto buf = msg_begin(RPC_STOP);
+		msg_end(buf);
+		channel_write(&self->task.channel, buf);
+
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);
 	}
 }
 
+#if 0
 void
 node_sync(Node* self)
 {
 	rpc(&self->task.channel, RPC_SYNC, 0);
 }
+#endif

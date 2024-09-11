@@ -54,7 +54,6 @@ build_init(Build*       self,
 void
 build_free(Build* self)
 {
-	channel_detach(&self->channel);
 	channel_free(&self->channel);
 }
 
@@ -69,7 +68,7 @@ build_run_first(Build* self)
 	channel_write(route->channel, buf);
 
 	// wait for completion
-	buf = channel_read(&self->channel, -1);
+	buf = channel_read(&self->channel);
 	auto msg = msg_of(buf);
 	guard(buf_free, buf);
 
@@ -96,7 +95,7 @@ build_run_all(Build* self)
 	for (complete = 0; complete < self->cluster->list_count;
 	     complete++)
 	{
-		auto buf = channel_read(&self->channel, -1);
+		auto buf = channel_read(&self->channel);
 		auto msg = msg_of(buf);
 		if (msg->id == MSG_ERROR && !error)
 		{
@@ -115,8 +114,6 @@ build_run_all(Build* self)
 void
 build_run(Build* self)
 {
-	channel_attach(&self->channel);
-
 	// run on first node (for shared table) or use whole cluster
 	if (self->table && self->table->config->shared)
 		build_run_first(self);
@@ -187,7 +184,7 @@ build_execute(Build* self, Uuid* node)
 	}
 	Buf* buf;
 	if (leave(&e)) {
-		buf = msg_error(&am_self()->error);
+		buf = msg_error(&am_self->error);
 	} else {
 		buf = msg_begin(MSG_OK);
 		msg_end(buf);
