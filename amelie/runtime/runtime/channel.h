@@ -30,6 +30,14 @@ channel_free(Channel* self)
 	mutex_free(&self->lock);
 }
 
+static inline void
+channel_reset(Channel* self)
+{
+	mutex_lock(&self->lock);
+	buf_list_free(&self->list);
+	mutex_unlock(&self->lock);
+}
+
 hot static inline void
 channel_write(Channel* self, Buf* buf)
 {

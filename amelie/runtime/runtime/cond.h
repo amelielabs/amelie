@@ -6,9 +6,9 @@
 // Real-Time SQL Database.
 //
 
-typedef struct Status Status;
+typedef struct Cond Cond;
 
-struct Status
+struct Cond
 {
 	Mutex   lock;
 	CondVar cond_var;
@@ -17,7 +17,7 @@ struct Status
 };
 
 static inline void
-status_init(Status* self)
+cond_init(Cond* self)
 {
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
@@ -26,21 +26,21 @@ status_init(Status* self)
 }
 
 static inline void
-status_free(Status* self)
+cond_free(Cond* self)
 {
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
 }
 
 static inline void
-status_reset(Status* self)
+cond_reset(Cond* self)
 {
 	self->signal = false;
 	self->status = 0;
 }
 
 static inline void
-status_set(Status* self, int value)
+cond_signal(Cond* self, int value)
 {
 	mutex_lock(&self->lock);
 	self->signal = true;
@@ -50,7 +50,7 @@ status_set(Status* self, int value)
 }
 
 static inline int
-status_wait(Status* self)
+cond_wait(Cond* self)
 {
 	mutex_lock(&self->lock);
 	while (! self->signal)

@@ -64,7 +64,7 @@ task_init(Task* self)
 	arena_init(&self->arena, 4000);
 	buf_list_init(&self->buf_list);
 	buf_cache_init(&self->buf_cache, 32 * 1024); // 32kb max
-	status_init(&self->status);
+	cond_init(&self->status);
 	thread_init(&self->thread);
 }
 
@@ -76,7 +76,7 @@ task_free(Task* self)
 	buf_list_free(&self->buf_list);
 	buf_cache_free(&self->buf_cache);
 	poller_free(&self->poller);
-	status_free(&self->status);
+	cond_free(&self->status);
 }
 
 bool

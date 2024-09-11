@@ -139,7 +139,7 @@ executor_end(Executor* self, DtrState state)
 		// wakeup
 		if (tr_state == DTR_PREPARE ||
 		    tr_state == DTR_ERROR)
-			dtr_signal(tr);
+			cond_signal(&tr->on_commit, 0);
 	}
 
 	// wakeup next commit leader, if any
@@ -148,7 +148,7 @@ executor_end(Executor* self, DtrState state)
 		auto leader = container_of(self->list.next, Dtr, link);
 		if (leader->state == DTR_PREPARE ||
 		    leader->state == DTR_ERROR)
-			dtr_signal(leader);
+			cond_signal(&leader->on_commit, 0);
 	}
 }
 
@@ -241,7 +241,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 			unguard();
 			spinlock_unlock(&self->lock);
 
-			dtr_wait(tr);
+			cond_wait(&tr->on_commit);
 			continue;
 		}
 

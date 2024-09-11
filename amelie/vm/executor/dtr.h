@@ -29,8 +29,7 @@ struct Dtr
 	CodeData*  code_data;
 	Result     cte;
 	Buf*       error;
-	Mutex      on_commit_lock;
-	CondVar    on_commit;
+	Cond       on_commit;
 	Limit      limit;
 	PipeCache* pipe_cache;
 	ReqCache*  req_cache;
@@ -54,8 +53,7 @@ dtr_init(Dtr* self, Router* router, PipeCache* pipe_cache,
 	self->pipe_cache = pipe_cache;
 	self->router     = router;
 	self->local      = NULL;
-	mutex_init(&self->on_commit_lock);
-	cond_var_init(&self->on_commit);
+	cond_init(&self->on_commit);
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
@@ -90,8 +88,7 @@ dtr_free(Dtr* self)
 	dispatch_free(&self->dispatch);
 	pipe_set_free(&self->set);
 	result_free(&self->cte);
-	cond_var_free(&self->on_commit);
-	mutex_free(&self->on_commit_lock);
+	cond_free(&self->on_commit);
 }
 
 static inline void
@@ -246,20 +243,4 @@ dtr_recv(Dtr* self, int stmt)
 		guard_buf(error);
 		msg_error_rethrow(error);
 	}
-}
-
-hot static inline void
-dtr_signal(Dtr* self)
-{
-	mutex_lock(&self->on_commit_lock);
-	cond_var_signal(&self->on_commit);
-	mutex_unlock(&self->on_commit_lock);
-}
-
-hot static inline void
-dtr_wait(Dtr* self)
-{
-	mutex_lock(&self->on_commit_lock);
-	cond_var_wait(&self->on_commit, &self->on_commit_lock);
-	mutex_unlock(&self->on_commit_lock);
 }
