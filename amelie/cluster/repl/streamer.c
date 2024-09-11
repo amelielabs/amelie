@@ -40,6 +40,7 @@ streamer_collect(Streamer* self)
 		if (wal_cursor_collect(&self->wal_cursor, 256 * 1024, &self->lsn))
 			break;
 
+#if 0
 		// wait for new wal write, client disconnect or cancel
 		Event on_event;
 		event_init(&on_event);
@@ -63,6 +64,7 @@ streamer_collect(Streamer* self)
 
 		if (on_disconnect.signal)
 			return false;
+#endif
 	}
 	return true;
 }
@@ -141,7 +143,6 @@ streamer_connect(Streamer* self)
 		error("replica is outdated");
 	self->lsn = lsn;
 	wal_slot_set(self->wal_slot, lsn);
-	wal_attach(self->wal, self->wal_slot);
 
 	// open cursor to the next record
 	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1);
@@ -155,7 +156,6 @@ streamer_close(Streamer* self)
 {
 	atomic_u32_set(&self->connected, false);
 
-	wal_detach(self->wal, self->wal_slot);
 	wal_cursor_close(&self->wal_cursor);
 	client_close(self->client);
 }
@@ -203,7 +203,7 @@ streamer_process(Streamer* self)
 		// reconnect
 		auto reconnect_interval = var_int_of(&config()->repl_reconnect_ms);
 		info("reconnect in %d ms", reconnect_interval);
-		coroutine_sleep(reconnect_interval);
+		usleep(reconnect_interval * 1000);
 	}
 }
 
@@ -235,29 +235,6 @@ streamer_main(void* arg)
 	info("stop");
 }
 
-static void
-streamer_shutdown(Rpc* rpc, void* arg)
-{
-	unused(rpc);
-	uint64_t* id = arg;
-	coroutine_kill(*id);
-}
-
-static void
-streamer_task_main(void* arg)
-{
-	Streamer* self = arg;
-	uint64_t id = coroutine_create(streamer_main, self);
-	for (;;)
-	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto rpc = rpc_of(buf);
-		guard(buf_free, buf);
-		rpc_execute(rpc, streamer_shutdown, &id);
-		break;
-	}
-}
-
 void
 streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 {
@@ -284,12 +261,12 @@ streamer_start(Streamer* self, Uuid* id, Remote* remote)
 {
 	uuid_to_string(id, self->replica_id, sizeof(self->replica_id));
 	self->remote = remote;
-	task_create(&self->task, "streamer", streamer_task_main, self);
+	task_create(&self->task, "streamer", streamer_main, self);
 }
 
 void
 streamer_stop(Streamer* self)
 {
-	rpc(&self->task.channel, RPC_STOP, 0);
+	task_cancel(&self->task);
 	task_wait(&self->task);
 }

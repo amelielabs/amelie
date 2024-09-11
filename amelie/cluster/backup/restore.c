@@ -226,8 +226,6 @@ restore_write_config(Restore* self)
 void
 restore(Remote* remote)
 {
-	coroutine_set_name(am_self(), "restore");
-
 	Restore restore;
 	restore_init(&restore, remote);
 	guard(restore_free, &restore);

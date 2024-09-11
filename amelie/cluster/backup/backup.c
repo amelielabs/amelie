@@ -35,9 +35,9 @@ void
 backup_init(Backup* self, Db* db)
 {
 	self->checkpoint_snapshot = -1;
-	self->on_complete         = NULL;
 	self->client              = NULL;
 	self->db                  = db;
+	cond_init(&self->on_complete);
 	wal_slot_init(&self->wal_slot);
 	buf_init(&self->state);
 	task_init(&self->task);
@@ -47,11 +47,10 @@ void
 backup_free(Backup* self)
 {
 	auto db = self->db;
-	wal_del(&db->wal, &self->wal_slot);
+	wal_detach(&db->wal, &self->wal_slot);
 	if (self->checkpoint_snapshot != -1)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
-	if (self->on_complete)
-		condition_free(self->on_complete);
+	cond_free(&self->on_complete);
 	buf_free(&self->state);
 	task_free(&self->task);
 }
@@ -143,7 +142,7 @@ backup_prepare(Backup* self)
 
 		// create wal slot
 		wal_slot_set(&self->wal_slot, 0);
-		wal_add(&db->wal, &self->wal_slot);
+		wal_attach(&db->wal, &self->wal_slot);
 
 		// add checkpoint snapshot
 		id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);
@@ -243,7 +242,7 @@ backup_main(void* arg)
 	if (leave(&e))
 	{ }
 
-	condition_signal(self->on_complete);
+	cond_signal(&self->on_complete, 0);
 	info("complete");
 }
 
@@ -254,17 +253,11 @@ backup_run(Backup* self, Client* client)
 	tcp_detach(&client->tcp);
 	self->client = client;
 
-	// prepare on wait condition
-	self->on_complete = condition_create();
-
 	// create backup worker
 	task_create(&self->task, "backup", backup_main, self);
 
 	// wait for backup completion
-	coroutine_cancel_pause(am_self());
-	condition_wait(self->on_complete, -1);
-	coroutine_cancel_resume(am_self());
-
+	cond_wait(&self->on_complete);
 	task_wait(&self->task);
 }
 
