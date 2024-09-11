@@ -16,6 +16,7 @@ poll_read(Fd* fd, int time_ms)
 		error_system();
 	while (! fd->on_read)
 	{
+		cancellation_point();
 		rc = poller_step(poller, NULL, NULL, time_ms);
 		if (unlikely(rc == -1))
 			error_system();
@@ -33,6 +34,7 @@ poll_write(Fd* fd, int time_ms)
 		error_system();
 	while (! fd->on_write)
 	{
+		cancellation_point();
 		rc = poller_step(poller, NULL, NULL, time_ms);
 		if (unlikely(rc == -1))
 			error_system();

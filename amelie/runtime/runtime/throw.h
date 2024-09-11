@@ -33,13 +33,11 @@
 #define error_data() \
 	error_as(ERROR, "data read error")
 
-#if 0
 // cancel
 #define cancellation_point() ({ \
-	if (unlikely(am_self->cancel)) \
+	if (unlikely(atomic_u32_of(&am_self->cancelled))) \
 		error_as(CANCEL, "cancelled"); \
 })
-#endif
 
 // log
 #define info(fmt, ...) \
