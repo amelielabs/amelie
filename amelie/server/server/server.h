@@ -22,6 +22,5 @@ struct Server
 
 void server_init(Server*);
 void server_free(Server*);
-void server_open(Server*);
 void server_start(Server*, ServerEvent, void*);
 void server_stop(Server*);

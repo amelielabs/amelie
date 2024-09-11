@@ -19,9 +19,8 @@ client_create(void)
 {
 	Client* self;
 	self = am_malloc(sizeof(Client));
-	self->coroutine_id = UINT64_MAX;
-	self->host         = NULL;
-	self->arg          = NULL;
+	self->host = NULL;
+	self->arg  = NULL;
 	http_init(&self->request);
 	http_init(&self->reply);
 	tls_context_init(&self->tls_context);
@@ -46,11 +45,11 @@ client_free(Client* self)
 }
 
 void
-client_set_coroutine_name(Client* self)
+client_set_task_name(Client* self)
 {
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(am_self(), "client %s", addr);
+	thread_set_name(&am_self->thread, addr);
 }
 
 void
@@ -67,7 +66,6 @@ client_attach(Client* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
-	self->coroutine_id = am_self()->id;
 }
 
 void
@@ -75,14 +73,13 @@ client_detach(Client* self)
 {
 	if (tcp_connected(&self->tcp))
 		tcp_detach(&self->tcp);
-	self->coroutine_id = UINT64_MAX;
 }
 
 void
 client_accept(Client* self)
 {
 	// new client
-	client_set_coroutine_name(self);
+	client_set_task_name(self);
 
 	// handshake
 	tcp_connect_fd(&self->tcp);
@@ -126,7 +123,7 @@ client_connect_to(Client* self, UriHost* host)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(global()->resolver, str_of(&host->host), host->port, &addr);
+	resolve(str_of(&host->host), host->port, &addr);
 	guard(freeaddrinfo, addr);
 
 	// prepare for https connection

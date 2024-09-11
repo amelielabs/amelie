@@ -10,12 +10,13 @@ typedef struct ServerListen ServerListen;
 
 struct ServerListen
 {
-	Listen           listen;
-	uint64_t         worker;
-	struct addrinfo* addr;
-	ServerConfig*    config;
-	void*            arg;
-	List             link;
+	Listen             listen;
+	struct addrinfo*   addr;
+	Str                addr_name;
+	struct sockaddr_un sa_un;
+	struct sockaddr*   sa;
+	ServerConfig*      config;
+	List               link;
 };
 
 static inline ServerListen*
@@ -23,10 +24,11 @@ server_listen_allocate(ServerConfig* config)
 {
 	ServerListen* self;
 	self = (ServerListen*)am_malloc(sizeof(*self));
-	self->worker = UINT64_MAX;
 	self->addr   = NULL;
+	self->sa     = NULL;
 	self->config = config;
-	self->arg    = NULL;
+	memset(&self->sa_un, 0, sizeof(self->sa_un));
+	str_init(&self->addr_name);
 	listen_init(&self->listen);
 	list_init(&self->link);
 	return self;
@@ -35,5 +37,6 @@ server_listen_allocate(ServerConfig* config)
 static inline void
 server_listen_free(ServerListen* self)
 {
+	str_free(&self->addr_name);
 	am_free(self);
 }

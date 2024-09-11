@@ -18,7 +18,6 @@ struct Client
 	UriHost*   host;
 	Uri        uri;
 	Remote*    remote;
-	uint64_t   coroutine_id;
 	void*      arg;
 	List       link;
 };
@@ -26,7 +25,7 @@ struct Client
 Client*
 client_create(void);
 void client_free(Client*);
-void client_set_coroutine_name(Client*);
+void client_set_task_name(Client*);
 void client_set_remote(Client*, Remote*);
 void client_attach(Client*);
 void client_detach(Client*);
