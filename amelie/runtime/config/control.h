@@ -10,9 +10,10 @@ typedef struct Control Control;
 
 struct Control
 {
-	Channel*  system;
-	void    (*save_config)(void*);
-	void*     arg;
+	void (*save_config)(void*);
+	void (*lock)(void*);
+	void (*unlock)(void*);
+	void*  arg;
 };
 
 static inline void

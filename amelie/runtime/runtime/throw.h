@@ -8,14 +8,14 @@
 
 // enter/leave
 #define enter(exception) \
-	exception_mgr_enter(&am_self()->exception_mgr, exception)
+	exception_mgr_enter(&am_self->exception_mgr, exception)
 
 #define leave(exception) \
-	exception_mgr_leave(&am_self()->exception_mgr, exception)
+	exception_mgr_leave(&am_self->exception_mgr, exception)
 
 // throw
 #define rethrow() \
-	exception_mgr_throw(&am_self()->exception_mgr)
+	exception_mgr_throw(&am_self->exception_mgr)
 
 // errors
 #define error_as(code, fmt, ...) \
@@ -33,11 +33,13 @@
 #define error_data() \
 	error_as(ERROR, "data read error")
 
+#if 0
 // cancel
 #define cancellation_point() ({ \
-	if (unlikely(am_self()->cancel)) \
+	if (unlikely(am_self->cancel)) \
 		error_as(CANCEL, "cancelled"); \
 })
+#endif
 
 // log
 #define info(fmt, ...) \

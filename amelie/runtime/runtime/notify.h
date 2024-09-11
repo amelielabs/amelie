@@ -8,18 +8,15 @@
 
 typedef struct Notify Notify;
 
-typedef void (*NotifyFunction)(void*);
-
 struct Notify
 {
-	volatile int   signaled;
-	Fd             fd;
-	NotifyFunction on_notify;
-	void*          arg;
-	Poller*        poller;
+	volatile int signaled;
+	Fd           fd;
+	Poller*      poller;
 };
 
 void notify_init(Notify*);
-int  notify_open(Notify*, Poller*, NotifyFunction, void*);
+int  notify_open(Notify*, Poller*);
 void notify_close(Notify*);
-void notify_signal(Notify*);
+void notify_read(Notify*);
+void notify_write(Notify*);

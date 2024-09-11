@@ -16,29 +16,28 @@ struct Global
 	TimezoneMgr* timezone_mgr;
 	Random*      random;
 	Logger*      logger;
-	Resolver*    resolver;
 };
 
-#define global() ((Global*)am_task->main_arg_global)
+#define global() ((Global*)am_self->main_arg_global)
 #define config()  global()->config
 
 // control
 static inline void
+control_save_config(void)
+{
+	global()->control->save_config(global()->control->arg);
+}
+
+static inline void
 control_lock(void)
 {
-	rpc(global()->control->system, RPC_LOCK, 0);
+	global()->control->lock(global()->control->arg);
 }
 
 static inline void
 control_unlock(void)
 {
-	rpc(global()->control->system, RPC_UNLOCK, 0);
-}
-
-static inline void
-control_save_config(void)
-{
-	global()->control->save_config(global()->control->arg);
+	global()->control->unlock(global()->control->arg);
 }
 
 // directory

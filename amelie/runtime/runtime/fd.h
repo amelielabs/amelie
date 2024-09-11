@@ -8,21 +8,28 @@
 
 typedef struct Fd Fd;
 
-typedef void (*FdFunction)(Fd*);
-
 struct Fd
 {
-	int        fd;
-	int        mask;
-	FdFunction on_read;
-	void*      on_read_arg;
-	FdFunction on_write;
-	void*      on_write_arg;
+	int  fd;
+	int  mask;
+	bool on_read;
+	bool on_write;
+	List link;
 };
 
 static inline void
 fd_init(Fd* self)
 {
-	memset(self, 0, sizeof(*self));
-	self->fd = -1;
+	self->fd       = -1;
+	self->mask     = 0;
+	self->on_read  = false;
+	self->on_write = false;
+	list_init(&self->link);
+}
+
+static inline void
+fd_reset(Fd* self)
+{
+	self->on_read  = false;
+	self->on_write = false;
 }

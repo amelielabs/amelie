@@ -13,7 +13,7 @@ report(const char* file,
        const char* prefix,
        const char* fmt, ...)
 {
-	if (! am_task->log_write)
+	if (! am_self->log_write)
 		return;
 
 	va_list args;
@@ -22,7 +22,7 @@ report(const char* file,
 	vsnprintf(text, sizeof(text), fmt, args);
 	va_end(args);
 
-	am_task->log_write(am_task->log_write_arg,
+	am_self->log_write(am_self->log_write_arg,
 	                   file,
 	                   function,
 	                   line,
@@ -44,16 +44,15 @@ report_throw(const char* file,
 	const char* prefix = "error: ";
 	if (code == CANCEL)
 		prefix = "";
-	if (am_task->log_write)
-		am_task->log_write(am_task->log_write_arg,
+	if (am_self->log_write)
+		am_self->log_write(am_self->log_write_arg,
 		                   file,
 		                   function,
 		                   line,
 		                   prefix, text);
 
-	auto self = am_self();
-	error_throw(&self->error,
-	            &self->exception_mgr,
+	error_throw(&am_self->error,
+	            &am_self->exception_mgr,
 	            file,
 	            function,
 	            line,

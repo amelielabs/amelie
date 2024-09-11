@@ -63,9 +63,8 @@ msg_error_rethrow(Buf* buf)
 	char sz[1024];
 	snprintf(sz, sizeof(sz), "%.*s", str_size(&text), str_of(&text));
 
-	auto self = am_self();
-	error_throw(&self->error,
-	            &self->exception_mgr,
+	error_throw(&am_self->error,
+	            &am_self->exception_mgr,
 	            source_file,
 	            source_function,
 	            source_line,

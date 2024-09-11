@@ -109,7 +109,7 @@ tcp_attach(Tcp* self)
 {
 	assert(self->poller == NULL);
 	assert(self->fd.fd != -1);
-	auto poller = &am_task->poller;
+	auto poller = &am_self->poller;
 	int rc;
 	rc = poller_add(poller, &self->fd);
 	if (unlikely(rc == -1))
