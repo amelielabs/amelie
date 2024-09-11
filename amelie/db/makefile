@@ -36,7 +36,6 @@ OBJECTS        = \
                  checkpoint/snapshot_cursor.o \
                  checkpoint/checkpoint_mgr.o \
                  checkpoint/checkpoint.o \
-                 checkpoint/checkpointer.o \
                  wal/wal.o \
                  wal/wal_cursor.o \
                  db/schema_mgr.o \

@@ -244,47 +244,26 @@ wal_write(Wal* self, WalBatch* batch)
 }
 
 void
-wal_add(Wal* self, WalSlot* slot)
+wal_attach(Wal* self, WalSlot* slot)
 {
-	assert(! slot->added);
+	assert(! slot->attached);
 	mutex_lock(&self->lock);
 	list_append(&self->slots, &slot->link);
 	self->slots_count++;
-	slot->added = true;
-	mutex_unlock(&self->lock);
-}
-
-void
-wal_del(Wal* self, WalSlot* slot)
-{
-	if (! slot->added)
-		return;
-	mutex_lock(&self->lock);
-	list_unlink(&slot->link);
-	self->slots_count--;
-	slot->added = false;
-	mutex_unlock(&self->lock);
-}
-
-void
-wal_attach(Wal* self, WalSlot* slot)
-{
-	assert(! slot->on_write);
-	auto on_write = condition_create();
-	mutex_lock(&self->lock);
-	slot->on_write = on_write;
+	slot->attached = true;
 	mutex_unlock(&self->lock);
 }
 
 void
 wal_detach(Wal* self, WalSlot* slot)
 {
+	if (! slot->attached)
+		return;
 	mutex_lock(&self->lock);
-	auto on_write = slot->on_write;
-	slot->on_write = NULL;
+	list_unlink(&slot->link);
+	self->slots_count--;
+	slot->attached = false;
 	mutex_unlock(&self->lock);
-	if (on_write)
-		condition_free(on_write);
 }
 
 bool

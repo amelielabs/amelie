@@ -35,8 +35,7 @@ checkpoint_free(Checkpoint* self)
 		for (int i = 0; i < self->workers_count; i++)
 		{
 			auto worker = &self->workers[i];
-			if (worker->on_complete)
-				condition_free(worker->on_complete);
+			notify_close(&worker->on_complete);
 		}
 		am_free(self->workers);
 	}
@@ -61,8 +60,9 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 	{
 		auto worker = &self->workers[i];
 		worker->pid         = -1;
-		worker->on_complete = condition_create();
 		worker->list_count  = 0;
+		notify_init(&worker->on_complete);
+		notify_open(&worker->on_complete, &am_self->poller);
 		list_init(&worker->list);
 	}
 
@@ -127,7 +127,7 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	auto error = checkpoint_worker_main(self, worker);
 
 	// signal waiter process
-	condition_signal(worker->on_complete);
+	notify_write(&worker->on_complete);
 
 	// done
 
@@ -147,9 +147,8 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 static bool
 checkpoint_worker_wait(CheckpointWorker* self)
 {
-	condition_wait(self->on_complete, -1);
-	condition_free(self->on_complete);
-	self->on_complete = NULL;
+	// wait for completion
+	poll_read(&self->on_complete.fd, -1);
 
 	int status = 0;
 	int rc = waitpid(self->pid, &status, 0);
