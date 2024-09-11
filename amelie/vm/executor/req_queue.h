@@ -45,7 +45,7 @@ req_queue_reset(ReqQueue* self)
 }
 
 static inline Req*
-req_queue_get(ReqQueue* self)
+req_queue_pop(ReqQueue* self)
 {
 	mutex_lock(&self->lock);
 	for (;;)
@@ -67,12 +67,11 @@ req_queue_get(ReqQueue* self)
 }
 
 static inline void
-req_queue_add(ReqQueue* self, Req* req, bool shutdown)
+req_queue_add(ReqQueue* self, Req* req)
 {
 	mutex_lock(&self->lock);
 	list_append(&self->list, &req->link_queue);
 	self->list_count++;
-	self->shutdown = shutdown;
 	cond_var_signal(&self->cond_var);
 	mutex_unlock(&self->lock);
 }

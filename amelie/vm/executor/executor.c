@@ -32,125 +32,128 @@ executor_init(Executor* self, Db* db, Router* router)
 	self->router     = router;
 	self->list_count = 0;
 	list_init(&self->list);
-	plan_group_init(&self->group);
+	commit_init(&self->commit);
 	spinlock_init(&self->lock);
 }
 
 void
 executor_free(Executor* self)
 {
-	plan_group_free(&self->group);
+	commit_free(&self->commit);
 	spinlock_free(&self->lock);
 }
 
 hot void
-executor_send(Executor* self, Plan* plan, int stmt, ReqList* list)
+executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 {
-	// create transactions and put requests in the queues
-	plan_send(plan, stmt, list);
-	if (plan->state == PLAN_ACTIVE)
-		return;
+	auto first = !tr->dispatch.sent;
 
-	spinlock_lock(&self->lock);
-	// todo: move msg creation out of lock?
+	// put requests into pipes per nodes
+	dtr_send(tr, stmt, list);
 
-	// add plan to the executor list
-	plan_set_state(plan, PLAN_ACTIVE);
-	list_append(&self->list, &plan->link);
-	self->list_count++;
+	// register transaction and begin execution
+	if (first)
+	{
+		spinlock_lock(&self->lock);
+		guard(spinlock_unlock, &self->lock);
 
-	// send BEGIN to the related nodes
-	trx_set_begin(&plan->set);
-	spinlock_unlock(&self->lock);
+		dtr_set_state(tr, DTR_BEGIN);
+
+		// add transaction to the executor list
+		list_append(&self->list, &tr->link);
+		self->list_count++;
+
+		// send BEGIN to the related nodes
+		pipe_set_begin(&tr->set);
+	}
 }
 
 hot void
-executor_recv(Executor* self, Plan* plan, int stmt)
+executor_recv(Executor* self, Dtr* tr, int stmt)
 {
 	unused(self);
 	// OK or ABORT
-	plan_recv(plan, stmt);
-}
-
-void
-executor_complete(Executor* self, Plan* plan)
-{
-	spinlock_lock(&self->lock);
-	if (plan->state == PLAN_ACTIVE)
-		plan_set_state(plan, PLAN_COMPLETE);
-	spinlock_unlock(&self->lock);
+	dtr_recv(tr, stmt);
 }
 
 hot static void
-executor_begin(Executor* self)
+executor_prepare(Executor* self, bool abort)
 {
-	plan_group_reset(&self->group);
-	plan_group_create(&self->group, self->router->list_count);
+	auto commit = &self->commit;
+	commit_reset(commit);
+	commit_prepare(commit, self->router->list_count);
 
-	// collect completed plans and get a list of last
-	// completed transactions per node
-	list_foreach(&self->list)
+	// get a list of last completed local transactions per node
+	if (unlikely(abort))
 	{
-		auto plan = list_at(Plan, link);
-		if (plan->state != PLAN_COMPLETE)
-			break;
-		if (plan->error)
-			break;
-		plan_group_add(&self->group, plan);
-	}
-}
-
-hot static void
-executor_end(Executor* self, PlanState state)
-{
-	// for each node, send last prepared Trx*
-	if (state == PLAN_COMMIT)	
-	{
-		// commit
-		trx_set_commit(&self->group.set);
-	} else
-	{
-		// abort all currently active plans
-		plan_group_reset(&self->group);
-		plan_group_create(&self->group, self->router->list_count);
-
-		// add plans to the list and collect a list of last
-		// completed transactions per node
+		// abort all currently active transactions
 		list_foreach(&self->list)
 		{
-			auto plan = list_at(Plan, link);
-			plan_group_add(&self->group, plan);
+			auto tr = list_at(Dtr, link);
+			commit_add(commit, tr);
 		}
+	} else
+	{
+		// collect a list of prepared distributed transactions
+		list_foreach(&self->list)
+		{
+			auto tr = list_at(Dtr, link);
+			if (tr->state != DTR_PREPARE)
+				break;
+			commit_add(commit, tr);
+		}
+	}
+}
 
-		trx_set_abort(&self->group.set);
+hot static void
+executor_end(Executor* self, DtrState state)
+{
+	auto commit = &self->commit;
+
+	// for each node, send last prepared Trx*
+	if (state == DTR_COMMIT)
+	{
+		// RPC_COMMIT
+		pipe_set_commit(&commit->set);
+	} else
+	{
+		executor_prepare(self, true);
+
+		// RPC_ABORT
+		pipe_set_abort(&commit->set);
 	}
 
-	// finilize plans
-	list_foreach(&self->group.list)
+	// finilize transactions
+	list_foreach(&commit->list)
 	{
-		auto plan = list_at(Plan, link_group);
+		auto tr = list_at(Dtr, link_commit);
 
-		// update plan state
-		plan_set_state(plan, state);
+		// update state
+		auto tr_state = tr->state;
+		dtr_set_state(tr, state);
 
-		// remove plan from the executor
-		list_unlink(&plan->link);
+		// remove transaction from the executor
+		list_unlink(&tr->link);
 		self->list_count--;
 
 		// wakeup
-		condition_signal(plan->on_commit);
+		if (tr_state == DTR_PREPARE ||
+		    tr_state == DTR_ERROR)
+			dtr_signal(tr);
 	}
 
-	// wakeup next leader, if any
+	// wakeup next commit leader, if any
 	if (self->list_count > 0)
 	{
-		auto leader = container_of(self->list.next, Plan, link);
-		condition_signal(leader->on_commit);
+		auto leader = container_of(self->list.next, Dtr, link);
+		if (leader->state == DTR_PREPARE ||
+		    leader->state == DTR_ERROR)
+			dtr_signal(leader);
 	}
 }
 
 hot static void
-executor_end_lock(Executor* self, PlanState state)
+executor_end_lock(Executor* self, DtrState state)
 {
 	spinlock_lock(&self->lock);
 	guard(spinlock_unlock, &self->lock);
@@ -160,29 +163,31 @@ executor_end_lock(Executor* self, PlanState state)
 hot void
 executor_wal_write(Executor* self)
 {
+	auto commit = &self->commit;
+	auto wal_batch = &commit->wal_batch;
 	auto wal = &self->db->wal;
-	auto wal_batch = &self->group.wal_batch;
 
-	list_foreach(&self->group.list)
+	list_foreach(&commit->list)
 	{
-		auto plan = list_at(Plan, link_group);
-		auto set = &plan->set;
+		auto tr  = list_at(Dtr, link_commit);
+		auto set = &tr->set;
 
 		// wal write (disabled during recovery)
 		wal_batch_reset(wal_batch);
 		wal_batch_begin(wal_batch, 0);
 		for (int i = 0; i < set->set_size; i++)
 		{
-			auto trx = trx_set_get(set, i);
-			if (trx == NULL)
+			auto pipe = pipe_set_get(set, i);
+			if (pipe == NULL)
 				continue;
-			wal_batch_add(wal_batch, &trx->tr.log.log_set);
+			assert(pipe->tr);
+			wal_batch_add(wal_batch, &pipe->tr->log.log_set);
 		}
 		if (wal_batch->header.count > 0)
 		{
-			// unless plan is used for replication writer, respect system
-			// read-only state
-			if (!plan->repl && var_int_of(&config()->read_only))
+			// unless transaction is used for replication writer, respect
+			// system read-only state
+			if (!tr->repl && var_int_of(&config()->read_only))
 				error("system is in read-only mode");
 			wal_write(wal, wal_batch);
 		}
@@ -190,56 +195,68 @@ executor_wal_write(Executor* self)
 }
 
 hot void
-executor_commit(Executor* self, Plan* plan)
+executor_commit(Executor* self, Dtr* tr, Buf* error)
 {
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
 		guard(spinlock_unlock, &self->lock);
 
-		switch (plan->state) {
-		case PLAN_NONE:
-			// non-distributed plan executed on coordinator
-			if (plan->error)
-				msg_error_rethrow(plan->error);
-			return;
-		case PLAN_COMMIT:
+		switch (tr->state) {
+		case DTR_COMMIT:
 			// commited by leader
 			return;
-		case PLAN_ABORT:
+		case DTR_ABORT:
 			// aborted by leader
 			error("transaction conflict, abort");
+			return;
+		case DTR_NONE:
+			// non-distributed transaction
+			if (error)
+				msg_error_rethrow(error);
+			return;
+		case DTR_BEGIN:
+			if (unlikely(error))
+			{
+				dtr_set_state(tr, DTR_ERROR);
+				dtr_set_error(tr, error);
+				dtr_shutdown(tr);
+			} else {
+				dtr_set_state(tr, DTR_PREPARE);
+			}
 			break;
-		case PLAN_COMPLETE:
+		case DTR_PREPARE:
+		case DTR_ERROR:
+			// retry after wakeup
 			break;
 		default:
 			abort();
 			break;
 		}
 
-		// if current plan is commit leader (first plan in the list)
-		if (! list_is_first(&self->list, &plan->link))
+		// if current tr is commit leader (first tr in the list)
+		if (! list_is_first(&self->list, &tr->link))
 		{
 			// wait to become leader or wakeup by leader
 			unguard();
 			spinlock_unlock(&self->lock);
 
-			condition_wait(plan->on_commit, -1);
+			dtr_wait(tr);
 			continue;
 		}
 
 		// leader error
-		if (plan->error)
+		if (tr->state == DTR_ERROR)
 		{
-			executor_end(self, PLAN_ABORT);
-			msg_error_throw(plan->error);
+			executor_end(self, DTR_ABORT);
+			msg_error_throw(tr->error);
 		}
 
 		// wal write and group commit
 
-		// get a list of completed plans (one or more) and a list of
-		// last executed transactions per node
-		executor_begin(self);
+		// get a list of completed distributed transactionn (one or more) and
+		// a list of last executed transactions per node
+		executor_prepare(self, false);
 
 		unguard();
 		spinlock_unlock(&self->lock);
@@ -253,12 +270,12 @@ executor_commit(Executor* self, Plan* plan)
 		if (leave(&e))
 		{
 			// ABORT
-			executor_end_lock(self, PLAN_ABORT);
+			executor_end_lock(self, DTR_ABORT);
 			rethrow();
 		}
 
 		// COMMIT
-		executor_end_lock(self, PLAN_COMMIT);
+		executor_end_lock(self, DTR_COMMIT);
 		break;
 	}
 }

@@ -32,7 +32,7 @@ vm_init(Vm*          self,
         Db*          db,
         Uuid*        node,
         Executor*    executor,
-        Plan*        plan,
+        Dtr*         tr,
         Buf*         body,
         FunctionMgr* function_mgr)
 {
@@ -41,7 +41,7 @@ vm_init(Vm*          self,
 	self->code_arg     = NULL;
 	self->node         = node;
 	self->executor     = executor;
-	self->plan         = plan;
+	self->dtr          = tr;
 	self->cte          = NULL;
 	self->result       = NULL;
 	self->body         = body;
@@ -286,7 +286,7 @@ ccte_set:
 	op_next;
 
 csleep:
-	coroutine_sleep(op->a);
+	usleep(op->a);
 	op_next;
 
 cpush:

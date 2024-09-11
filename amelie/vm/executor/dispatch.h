@@ -12,11 +12,12 @@ typedef struct Dispatch     Dispatch;
 struct DispatchStmt
 {
 	ReqList req_list;
-	Trx*    set[];
+	Pipe*   set[];
 };
 
 struct Dispatch
 {
+	int sent;
 	int stmt_size;
 	int stmt_count;
 	int stmt_last;
@@ -30,24 +31,25 @@ dispatch_stmt(Dispatch* self, int stmt)
 	return (DispatchStmt*)(self->stmt.start + offset);
 }
 
-always_inline static inline Trx*
-dispatch_trx(Dispatch* self, int stmt, int order)
+always_inline static inline Pipe*
+dispatch_pipe(Dispatch* self, int stmt, int order)
 {
 	auto ref = dispatch_stmt(self, stmt);
 	return ref->set[order];
 }
 
 always_inline static inline DispatchStmt*
-dispatch_trx_set(Dispatch* self, int stmt, int order, Trx* trx)
+dispatch_pipe_set(Dispatch* self, int stmt, int order, Pipe* pipe)
 {
 	auto ref = dispatch_stmt(self, stmt);
-	ref->set[order] = trx;
+	ref->set[order] = pipe;
 	return ref;
 }
 
 static inline void
 dispatch_init(Dispatch* self)
 {
+	self->sent       = 0;
 	self->stmt_count = 0;
 	self->stmt_size  = 0;
 	self->stmt_last  = -1;
@@ -62,6 +64,7 @@ dispatch_reset(Dispatch* self, ReqCache* cache)
 		auto stmt = dispatch_stmt(self, i);
 		req_cache_push_list(cache, &stmt->req_list);
 	}
+	self->sent       = 0;
 	self->stmt_count = 0;
 	self->stmt_size  = 0;
 	self->stmt_last  = -1;
@@ -78,7 +81,7 @@ static inline void
 dispatch_create(Dispatch* self, int set_size, int stmt_count, int stmt_last)
 {
 	self->stmt_count = stmt_count;
-	self->stmt_size  = set_size * sizeof(Trx*) + sizeof(DispatchStmt);
+	self->stmt_size  = set_size * sizeof(Pipe*) + sizeof(DispatchStmt);
 	self->stmt_last  = stmt_last;
 	buf_reset(&self->stmt);
 

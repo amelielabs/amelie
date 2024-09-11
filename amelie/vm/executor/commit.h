@@ -6,53 +6,53 @@
 // Real-Time SQL Database.
 //
 
-typedef struct PlanGroup PlanGroup;
+typedef struct Commit Commit;
 
-struct PlanGroup
+struct Commit
 {
-	TrxSet   set;
+	PipeSet  set;
 	int      list_count;
 	List     list;
 	WalBatch wal_batch;
 };
 
 static inline void
-plan_group_init(PlanGroup* self)
+commit_init(Commit* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
-	trx_set_init(&self->set);
+	pipe_set_init(&self->set);
 	wal_batch_init(&self->wal_batch);
 }
 
 static inline void
-plan_group_free(PlanGroup* self)
+commit_free(Commit* self)
 {
-	trx_set_free(&self->set);
+	pipe_set_free(&self->set);
 	wal_batch_free(&self->wal_batch);
 }
 
 static inline void
-plan_group_reset(PlanGroup* self)
+commit_reset(Commit* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
-	trx_set_reset(&self->set);
+	pipe_set_reset(&self->set, NULL);
 	wal_batch_reset(&self->wal_batch);
 }
 
 static inline void
-plan_group_create(PlanGroup* self, int set_size)
+commit_prepare(Commit* self, int set_size)
 {
-	trx_set_create(&self->set, set_size);
+	pipe_set_create(&self->set, set_size);
 }
 
 static inline void
-plan_group_add(PlanGroup* self, Plan* plan)
+commit_add(Commit* self, Dtr* tr)
 {
 	// collect a list of last completed transactions per route
-	trx_set_resolve(&plan->set, &self->set);
+	pipe_set_resolve(&tr->set, &self->set);
 
-	list_append(&self->list, &plan->link_group);
+	list_append(&self->list, &tr->link_commit);
 	self->list_count++;
 }

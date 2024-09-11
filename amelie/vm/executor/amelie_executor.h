@@ -16,14 +16,13 @@
 #include "executor/req_cache.h"
 #include "executor/req_queue.h"
 
-// transaction
-#include "executor/trx.h"
-#include "executor/trx_cache.h"
-#include "executor/trx_list.h"
-#include "executor/trx_set.h"
+// pipe
+#include "executor/pipe.h"
+#include "executor/pipe_cache.h"
+#include "executor/pipe_set.h"
 
 // executor
 #include "executor/dispatch.h"
-#include "executor/plan.h"
-#include "executor/plan_group.h"
+#include "executor/dtr.h"
+#include "executor/commit.h"
 #include "executor/executor.h"
