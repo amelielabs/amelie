@@ -40,16 +40,14 @@ CFLAGS_INCLUDE = -I../runtime \
                  -I../cluster/repl \
                  -I../cluster/cluster \
                  -I. \
-                 -Ifrontend \
                  -Isession \
                  -Isystem \
                  -Imain
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-main.a
 OBJECTS        = \
-                 frontend/frontend.o \
-                 session/explain.o \
                  session/session.o \
+                 session/explain.o \
                  session/utility.o \
                  session/ddl.o \
                  session/primary.o \

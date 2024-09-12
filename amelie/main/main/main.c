@@ -12,7 +12,6 @@ main_init(Main* self)
 {
 	logger_init(&self->logger);
 	random_init(&self->random);
-	resolver_init(&self->resolver);
 	config_init(&self->config);
 	timezone_mgr_init(&self->timezone_mgr);
 
@@ -23,7 +22,6 @@ main_init(Main* self)
 	global->control      = NULL;
 	global->random       = &self->random;
 	global->logger       = &self->logger;
-	global->resolver     = &self->resolver;
 }
 
 void
@@ -60,9 +58,6 @@ main_start(Main* self)
 	// init uuid manager
 	random_open(&self->random);
 
-	// start resolver
-	resolver_start(&self->resolver);
-
 	// prepare default configuration
 	config_prepare(config());
 }
@@ -70,8 +65,7 @@ main_start(Main* self)
 void
 main_stop(Main* self)
 {
-	// stop resolver
-	resolver_stop(&self->resolver);
+	unused(self);
 }
 
 bool

@@ -11,6 +11,9 @@ typedef struct System System;
 struct System
 {
 	Share       share;
+	// system lock
+	Rwlock      lock;
+	SessionMgr  session_mgr;
 	// vm
 	FunctionMgr function_mgr;
 	// repl
@@ -18,9 +21,6 @@ struct System
 	// executor
 	Executor    executor;
 	Cluster     cluster;
-	FrontendMgr frontend_mgr;
-	bool        lock;
-	RpcQueue    lock_queue;
 	// db
 	Db          db;
 	// server

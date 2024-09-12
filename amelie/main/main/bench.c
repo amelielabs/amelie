@@ -7,6 +7,7 @@
 
 #include <amelie_private.h>
 
+#if 0
 static void
 bench_connection(void* arg)
 {
@@ -260,4 +261,24 @@ bench_run(Bench* self)
 	info("writes:       %.2f millions writes (%" PRIu64 ")",
 	     self->writes / 1000000.0,
 	     self->writes);
+}
+#endif
+
+void
+bench_init(Bench* self, Remote* remote)
+{
+	(void)self;
+	(void)remote;
+}
+
+void
+bench_free(Bench* self)
+{
+	(void)self;
+}
+
+void
+bench_run(Bench* self)
+{
+	(void)self;
 }

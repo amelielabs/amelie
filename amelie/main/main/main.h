@@ -12,7 +12,6 @@ struct Main
 {
 	Logger      logger;
 	Random      random;
-	Resolver    resolver;
 	Config      config;
 	TimezoneMgr timezone_mgr;
 	Global      global;
