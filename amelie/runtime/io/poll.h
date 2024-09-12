@@ -9,6 +9,7 @@
 hot static inline void
 poll_read(Fd* fd, int time_ms)
 {
+	cancellation_point();
 	auto poller = &am_self->poller;
 	fd_reset(fd);
 	auto rc = poller_start_read(poller, fd);
@@ -16,8 +17,8 @@ poll_read(Fd* fd, int time_ms)
 		error_system();
 	while (! fd->on_read)
 	{
-		cancellation_point();
 		rc = poller_step(poller, NULL, NULL, time_ms);
+		cancellation_point();
 		if (unlikely(rc == -1))
 			error_system();
 	}
@@ -27,6 +28,7 @@ poll_read(Fd* fd, int time_ms)
 hot static inline void
 poll_write(Fd* fd, int time_ms)
 {
+	cancellation_point();
 	auto poller = &am_self->poller;
 	fd_reset(fd);
 	auto rc = poller_start_write(poller, fd);
@@ -34,8 +36,8 @@ poll_write(Fd* fd, int time_ms)
 		error_system();
 	while (! fd->on_write)
 	{
-		cancellation_point();
 		rc = poller_step(poller, NULL, NULL, time_ms);
+		cancellation_point();
 		if (unlikely(rc == -1))
 			error_system();
 	}

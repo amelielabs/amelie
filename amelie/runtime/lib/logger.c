@@ -96,7 +96,7 @@ logger_write(void*       arg,
 
 	// message
 	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s  %s%s\n",
-	                    am_self->name,
+	                    am_self->thread.name,
 	                    prefix, text);
 
 	// write to the log file
