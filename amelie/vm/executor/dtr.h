@@ -31,8 +31,8 @@ struct Dtr
 	Buf*       error;
 	Cond       on_commit;
 	Limit      limit;
-	PipeCache* pipe_cache;
-	ReqCache*  req_cache;
+	PipeCache  pipe_cache;
+	ReqCache   req_cache;
 	Router*    router;
 	Local*     local;
 	List       link_commit;
@@ -40,24 +40,23 @@ struct Dtr
 };
 
 static inline void
-dtr_init(Dtr* self, Router* router, PipeCache* pipe_cache,
-        ReqCache* req_cache)
+dtr_init(Dtr* self, Router* router)
 {
-	self->state      = DTR_NONE;
-	self->snapshot   = false;
-	self->repl       = false;
-	self->code       = NULL;
-	self->code_data  = NULL;
-	self->error      = NULL;
-	self->req_cache  = req_cache;
-	self->pipe_cache = pipe_cache;
-	self->router     = router;
-	self->local      = NULL;
+	self->state     = DTR_NONE;
+	self->snapshot  = false;
+	self->repl      = false;
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->error     = NULL;
+	self->router    = router;
+	self->local     = NULL;
 	cond_init(&self->on_commit);
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
+	pipe_cache_init(&self->pipe_cache);
+	req_cache_init(&self->req_cache);
 	list_init(&self->link_commit);
 	list_init(&self->link);
 }
@@ -65,8 +64,8 @@ dtr_init(Dtr* self, Router* router, PipeCache* pipe_cache,
 static inline void
 dtr_reset(Dtr* self)
 {
-	dispatch_reset(&self->dispatch, self->req_cache);
-	pipe_set_reset(&self->set, self->pipe_cache);
+	dispatch_reset(&self->dispatch,& self->req_cache);
+	pipe_set_reset(&self->set, &self->pipe_cache);
 	result_reset(&self->cte);
 	limit_reset(&self->limit, var_int_of(&config()->limit_write));
 	if (self->error)
@@ -87,6 +86,8 @@ dtr_free(Dtr* self)
 	dtr_reset(self);
 	dispatch_free(&self->dispatch);
 	pipe_set_free(&self->set);
+	pipe_cache_free(&self->pipe_cache);
+	req_cache_free(&self->req_cache);
 	result_free(&self->cte);
 	cond_free(&self->on_commit);
 }
@@ -158,7 +159,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 		list_foreach(&self->router->list)
 		{
 			auto route = list_at(Route, link);
-			auto pipe = pipe_create(self->pipe_cache, route);
+			auto pipe = pipe_create(&self->pipe_cache, route);
 			pipe_set_set(set, route->order, pipe);
 		}
 	}
@@ -171,7 +172,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 		auto pipe  = pipe_set_get(set, route->order);
 		if (! pipe)
 		{
-			pipe = pipe_create(self->pipe_cache, route);
+			pipe = pipe_create(&self->pipe_cache, route);
 			pipe_set_set(set, route->order, pipe);
 		}
 		req_set(req, self->local,
@@ -205,7 +206,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 			if (! pipe->sent)
 			{
 				auto ref = dispatch_pipe_set(dispatch, stmt, route->order, pipe);
-				Req* req = req_create(self->req_cache);
+				Req* req = req_create(&self->req_cache);
 				req_list_add(&ref->req_list, req);
 				pipe_send(pipe, req);
 				dispatch->sent++;
