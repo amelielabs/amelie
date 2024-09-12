@@ -264,6 +264,9 @@ ctl_node(Session* self)
 	// upgrade to exclusive lock
 	session_lock(self, LOCK_EXCLUSIVE);
 
+	// ensure last operation completed on node
+	cluster_sync(self->share->cluster);
+
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
 	case STMT_CREATE_NODE:
@@ -345,6 +348,10 @@ ctl_checkpoint(Session* self)
 
 	// TODO
 	(void)arg;
+
+	// ensure last operation completed on node
+	cluster_sync(self->share->cluster);
+
 #if 0
 	int workers;
 	if (arg->workers) {

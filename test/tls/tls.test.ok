@@ -32,7 +32,6 @@ show all
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,
-  "frontends": 1,
   "backends": 3,
   "wal": true,
   "wal_rotate_wm": 104857600,

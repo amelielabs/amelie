@@ -163,6 +163,13 @@ node_main(void* arg)
 			build_execute(build, &self->config->id);
 			break;
 		}
+		case RPC_SYNC:
+		{
+			auto rpc = rpc_of(buf);
+			unguard();
+			rpc_done(rpc);
+			break;
+		}
 		case RPC_STOP:
 		{
 			vm_reset(&self->vm);
@@ -220,4 +227,10 @@ node_stop(Node* self)
 		task_free(&self->task);
 		task_init(&self->task);
 	}
+}
+
+void
+node_sync(Node* self)
+{
+	rpc(&self->task, RPC_SYNC, 0);
 }

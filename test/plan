@@ -108,18 +108,23 @@ test push_group_by_expr
 test push_aggregate
 test push_join
 
-## executor
-#directory executor
-#group executor
-#test cte_expr
-#test cte
-#test abort
+# executor
+directory executor
+group executor
+test cte_expr
+test cte
+test abort
 
-## cluster
-#directory cluster
-#group cluster
-#test node
-#test indexate
+# cluster
+directory cluster
+group cluster
+test node
+test indexate
+
+# tls
+directory tls
+group tls
+test tls
 
 ## recovery
 #directory recovery
@@ -127,11 +132,6 @@ test push_join
 #test wal_dml
 #test wal_ddl
 #test checkpoint
-
-## tls
-#directory tls
-#group tls
-#test tls
 
 ## backup
 #directory backup

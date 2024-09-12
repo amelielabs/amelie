@@ -442,6 +442,9 @@ session_execute_ddl(Session* self)
 	Exception e;
 	if (enter(&e))
 	{
+		// ensure last operation completed on nodes
+		cluster_sync(self->share->cluster);
+
 		// begin
 		tr_begin(&tr);
 
