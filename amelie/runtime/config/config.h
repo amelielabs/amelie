@@ -28,7 +28,6 @@ struct Config
 	Var  limit_recv;
 	Var  limit_write;
 	// cluster
-	Var  frontends;
 	Var  backends;
 	// wal
 	Var  wal;

@@ -21,25 +21,6 @@ struct Global
 #define global() ((Global*)am_self->main_arg_global)
 #define config()  global()->config
 
-// control
-static inline void
-control_save_config(void)
-{
-	global()->control->save_config(global()->control->arg);
-}
-
-static inline void
-control_lock(void)
-{
-	global()->control->lock(global()->control->arg);
-}
-
-static inline void
-control_unlock(void)
-{
-	global()->control->unlock(global()->control->arg);
-}
-
 // directory
 static inline const char*
 config_directory(void)
@@ -102,4 +83,29 @@ static inline void
 config_psn_follow(uint64_t value)
 {
 	return var_int_follow(&config()->psn, value);
+}
+
+// control
+static inline void
+control_save_config(void)
+{
+	global()->control->save_config(global()->control->arg);
+}
+
+static inline void
+control_lock_shared(void)
+{
+	global()->control->lock(global()->control->arg, true);
+}
+
+static inline void
+control_lock_exclusive(void)
+{
+	global()->control->lock(global()->control->arg, false);
+}
+
+static inline void
+control_unlock(void)
+{
+	global()->control->unlock(global()->control->arg);
 }

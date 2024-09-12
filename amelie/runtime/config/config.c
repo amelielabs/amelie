@@ -52,7 +52,6 @@ config_prepare(Config* self)
 		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,        1 * 1024 * 1024  },
 		{ "limit_write",             VAR_INT,    VAR_C|VAR_R,             &self->limit_write,             NULL,        0                },
 		// cluster
-		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,        default_fe       },
 		{ "backends",                VAR_INT,    VAR_C|VAR_E,             &self->backends,                NULL,        default_be       },
 		// wal
 		{ "wal",                     VAR_BOOL,   VAR_C,                   &self->wal,                     NULL,        true             },
