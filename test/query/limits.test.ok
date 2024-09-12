@@ -36,7 +36,6 @@ select system.config()
   "limit_send": 1000000,
   "limit_recv": 1048576,
   "limit_write": 10000,
-  "frontends": 1,
   "backends": 1,
   "wal": true,
   "wal_rotate_wm": 104857600,

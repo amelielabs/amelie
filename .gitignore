@@ -1,6 +1,7 @@
 *.o
 *.a
 *.so
+*.test.result
 test/test
 cli/amelie
 cli/t
