@@ -60,7 +60,8 @@ OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_buf.o \
                   runtime/test_msg.o \
                   runtime/test_channel.o \
-                  runtime/test_cancel.o
+                  runtime/test_cancel.o \
+                  runtime/test_rpc.o
 OBJECTS         = suite/suite.o \
                   suite/session.o \
                   test.o

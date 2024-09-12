@@ -52,3 +52,12 @@ unit test_channel_producer_consumer
 
 # test: test cancel
 unit test_cancel
+
+# test: test rpc
+unit test_rpc
+
+# test: test rpc execute
+unit test_rpc_execute
+
+# test: test rpc execute error
+unit test_rpc_execute_error

@@ -42,7 +42,7 @@
 #include "runtime/log.h"
 #include "runtime/error.h"
 
-// ipc
+// task
 #include "runtime/msg_id.h"
 #include "runtime/msg.h"
 #include "runtime/channel.h"
@@ -54,3 +54,6 @@
 #include "runtime/guard.h"
 #include "runtime/runtime.h"
 #include "runtime/runtime_guard.h"
+
+// rpc
+#include "runtime/rpc.h"
