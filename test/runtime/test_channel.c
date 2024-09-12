@@ -21,34 +21,8 @@ test_channel_read_empty(void* arg)
 {
 	Channel channel;
 	channel_init(&channel);
-	channel_attach(&channel);
-
-	auto buf = channel_read(&channel, 0);
+	auto buf = channel_read(&channel);
 	test(buf == NULL);
-
-	channel_detach(&channel);
-	channel_free(&channel);
-}
-
-void
-test_channel(void* arg)
-{
-	Channel channel;
-	channel_init(&channel);
-	channel_attach(&channel);
-
-	uint64_t id;
-	id = coroutine_create(test_channel_main, &channel);
-	test( id != 0 );
-
-	auto buf = channel_read(&channel, -1);
-	test(buf);
-
-	coroutine_wait(id);
-
-	buf_free(buf);
-
-	channel_detach(&channel);
 	channel_free(&channel);
 }
 
@@ -57,53 +31,18 @@ test_channel_task(void *arg)
 {
 	Channel channel;
 	channel_init(&channel);
-	channel_attach(&channel);
 
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_channel_main, &channel);
 
-	auto buf = channel_read(&channel, -1);
+	auto buf = channel_read(&channel);
 	test(buf);
 	buf_free(buf);
 
 	task_wait(&task);
 	task_free(&task);
 
-	channel_detach(&channel);
-	channel_free(&channel);
-}
-
-static void
-test_channel_timeout_main(void *arg)
-{
-	Channel* channel = arg;
-	coroutine_sleep(100);
-	channel_write(channel, buf_end(buf_begin())); 
-}
-
-void
-test_channel_task_timeout(void *arg)
-{
-	Channel channel;
-	channel_init(&channel);
-	channel_attach(&channel);
-
-	Task task;
-	task_init(&task);
-	task_create(&task, "test", test_channel_timeout_main, &channel);
-
-	auto buf = channel_read(&channel, 10);
-	test(buf == NULL);
-
-	buf = channel_read(&channel, -1);
-	test(buf);
-	buf_free(buf);
-
-	task_wait(&task);
-	task_free(&task);
-
-	channel_detach(&channel);
 	channel_free(&channel);
 }
 
@@ -119,25 +58,21 @@ uint64_t consumer_count = 0;
 static void
 test_channel_consumer(void *arg)
 {
-	Condition* on_complete = arg;
-	auto channel = &am_task->channel;
+	Cond* on_complete = arg;
+	auto channel = &am_self->channel;
 	for (;;)
 	{
-		auto buf = channel_read(channel, -1);
+		auto buf = channel_read(channel);
 		auto msg = msg_of(buf);
+		guard_buf(buf);
 		if (msg->id == STOP)
-		{
-			buf_free(buf);
 			break;
-		}
-
 		uint64_t value = *(uint64_t*)msg->data;
 		consumer_sum += value;
 		consumer_count++;
-		buf_free(buf);
 	}
 
-	condition_signal(on_complete);
+	cond_signal(on_complete, 0);
 }
 
 static void
@@ -164,18 +99,18 @@ test_channel_producer(void *arg)
 void
 test_channel_producer_consumer(void *arg)
 {
-	auto event = condition_create();
+	Cond event;
+	cond_init(&event);
 
 	Task consumer;
 	task_init(&consumer);
-	task_create(&consumer, "consumer", test_channel_consumer, event);
+	task_create(&consumer, "consumer", test_channel_consumer, &event);
 
 	Task producer;
 	task_init(&producer);
 	task_create(&producer, "producer", test_channel_producer, &consumer.channel);
 
-	bool timeout = condition_wait(event, -1);
-	test(! timeout);
+	cond_wait(&event);
 	test(consumer_count == 1000);
 
 	task_wait(&producer);
@@ -183,5 +118,5 @@ test_channel_producer_consumer(void *arg)
 	task_wait(&consumer);
 	task_free(&consumer);
 
-	condition_free(event);
+	cond_free(&event);
 }

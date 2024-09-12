@@ -27,12 +27,12 @@ struct Task
 	void*        on_exit_arg;
 	LogFunction  log_write;
 	void*        log_write_arg;
-	atomic_u32   cancelled;
 	Cond         status;
 	Thread       thread;
 };
 
-extern __thread Task* am_self;
+extern __thread Task*      am_self;
+extern __thread atomic_u32 am_cancelled;
 
 void task_init(Task*);
 void task_free(Task*);

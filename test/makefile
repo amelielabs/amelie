@@ -59,14 +59,8 @@ OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_palloc.o \
                   runtime/test_buf.o \
                   runtime/test_msg.o \
-                  runtime/test_coroutine.o \
-                  runtime/test_event.o \
-                  runtime/test_condition.o \
                   runtime/test_channel.o \
-                  runtime/test_rpc.o \
-                  runtime/test_cancel.o \
-                  runtime/test_lock.o \
-                  runtime/test_sleep.o
+                  runtime/test_cancel.o
 OBJECTS         = suite/suite.o \
                   suite/session.o \
                   test.o

@@ -7,12 +7,13 @@
 
 #include <amelie_runtime.h>
 
-__thread Task* am_self;
+__thread Task*      am_self;
+__thread atomic_u32 am_cancelled = 0;
 
 static void
 task_on_sigusr2(int signal)
 {
-	atomic_u32_set(&am_self->cancelled, 1);
+	atomic_u32_set(&am_cancelled, 1);
 	unused(signal);
 }
 
@@ -77,7 +78,6 @@ task_init(Task* self)
 	self->on_exit_arg     = NULL;
 	self->log_write       = NULL;
 	self->log_write_arg   = NULL;
-	self->cancelled       = 0;
 	exception_mgr_init(&self->exception_mgr);
 	error_init(&self->error);
 	channel_init(&self->channel);

@@ -36,7 +36,7 @@ void
 test_task_args_main(void* arg)
 {
 	test( *(int*)arg == 123 );
-	test( *(int*)am_task->main_arg_global == 321 );
+	test( *(int*)am_self->main_arg_global == 321 );
 }
 
 void test_task_args(void)
@@ -61,7 +61,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
-	status_set(&am_task->status, 123);
+	cond_signal(&am_self->status, 123);
 }
 
 void test_task_status(void)
@@ -74,7 +74,7 @@ void test_task_status(void)
 	                         NULL, NULL, NULL, NULL);
 	test(rc == 0);
 
-	test(status_wait(&task.status) == 123);
+	test(cond_wait(&task.status) == 123);
 
 	task_wait(&task);
 	task_free(&task);

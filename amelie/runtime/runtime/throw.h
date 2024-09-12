@@ -35,7 +35,7 @@
 
 // cancel
 #define cancellation_point() ({ \
-	if (unlikely(atomic_u32_of(&am_self->cancelled))) \
+	if (unlikely(atomic_u32_of(&am_cancelled))) \
 		error_as(CANCEL, "cancelled"); \
 })
 
