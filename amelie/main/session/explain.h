@@ -16,7 +16,7 @@ struct Explain
 
 void explain_init(Explain*);
 void explain_reset(Explain*);
-Buf* explain(Explain*, Code*, Code*, CodeData*, Plan*, Buf*, bool);
+Buf* explain(Explain*, Code*, Code*, CodeData*, Dtr*, Buf*, bool);
 
 static inline void
 explain_start(uint64_t* metric)

@@ -32,7 +32,6 @@
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
-#include <amelie_frontend.h>
 #include <amelie_session.h>
 
 static void
@@ -279,7 +278,6 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 	guard(build_free, &build);
 	build_run(&build);
 }
-
 
 static void
 ddl_alter_table(Session* self, Tr* tr)

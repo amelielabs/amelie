@@ -32,7 +32,6 @@
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
-#include <amelie_frontend.h>
 #include <amelie_session.h>
 
 void
@@ -54,13 +53,13 @@ explain(Explain*  self,
         Code*     coordinator,
         Code*     node,
         CodeData* data,
-        Plan*     plan,
+        Dtr*      tr,
         Buf*      body,
         bool      profile)
 {
 	auto buf = buf_begin();
 	encode_map(buf);
-	unused(plan);
+	unused(tr);
 
 	// bytecode
 	encode_raw(buf, "bytecode", 8);

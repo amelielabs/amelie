@@ -165,16 +165,6 @@ cluster_stop(Cluster* self)
 	}
 }
 
-void
-cluster_sync(Cluster* self)
-{
-	list_foreach(&self->list)
-	{
-		auto node = list_at(Node, link);
-		node_sync(node);
-	}
-}
-
 Node*
 cluster_find(Cluster* self, Uuid* uuid)
 {

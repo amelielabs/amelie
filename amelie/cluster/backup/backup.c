@@ -129,7 +129,7 @@ backup_prepare(Backup* self)
 	auto db = self->db;
 
 	// take exclusive lock
-	control_lock();
+	control_lock_exclusive();
 
 	Exception e;
 	if (enter(&e))

@@ -22,7 +22,6 @@ void  cluster_free(Cluster*);
 void  cluster_open(Cluster*, bool);
 void  cluster_start(Cluster*);
 void  cluster_stop(Cluster*);
-void  cluster_sync(Cluster*);
 void  cluster_create(Cluster*, NodeConfig*, bool);
 void  cluster_drop(Cluster*, Uuid*, bool);
 void  cluster_map(Cluster*, PartMap*, Part*);

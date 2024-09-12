@@ -32,82 +32,76 @@
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
-#include <amelie_frontend.h>
 #include <amelie_session.h>
 
 Session*
-session_create(Client* client, Frontend* frontend, Share* share)
+session_create(Client* client, Share* share)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->client    = client;
-	self->frontend  = frontend;
-	self->lock_type = LOCK_NONE;
-	self->lock      = NULL;
-	self->lock_ref  = NULL;
-	self->share     = share;
+	self->client = client;
+	self->lock   = LOCK_NONE;
+	self->share  = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
-	        &self->plan,
+	        &self->tr,
 	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
-	plan_init(&self->plan, &share->cluster->router, &frontend->trx_cache,
-	          &frontend->req_cache);
+	dtr_init(&self->tr, &share->cluster->router);
+	task_init(&self->task);
+	list_init(&self->link);
 	return self;
 }
 
 void
 session_free(Session *self)
 {
-	assert(self->lock_type == LOCK_NONE);
+	assert(self->lock == LOCK_NONE);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
-	plan_free(&self->plan);
+	dtr_free(&self->tr);
 	local_free(&self->local);
+	task_free(&self->task);
 	am_free(self);
 }
 
 void
 session_lock(Session* self, int type)
 {
-	if (self->lock_type == type)
+	if (self->lock == type)
 		return;
 
 	// downgrade or upgrade lock request
-	if (self->lock_type != LOCK_NONE)
+	if (self->lock != LOCK_NONE)
 		session_unlock(self);
 
 	switch (type) {
-	case LOCK:
-		// take shared frontend lock
-		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
+	case LOCK_SHARED:
+		control_lock_shared();
 		break;
 	case LOCK_EXCLUSIVE:
-		control_lock();
+		control_lock_exclusive();
 		break;
 	case LOCK_NONE:
 		break;
 	}
-
-	self->lock_type = type;
+	self->lock = type;
 }
 
 void
 session_unlock(Session* self)
 {
-	switch (self->lock_type) {
-	case LOCK:
-		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
-		break;
+	switch (self->lock) {
+	case LOCK_SHARED:
 	case LOCK_EXCLUSIVE:
 		control_unlock();
 		break;
 	case LOCK_NONE:
 		break;
 	}
-	self->lock_type = LOCK_NONE;
+	self->lock = LOCK_NONE;
 }
 
 static inline void
@@ -116,7 +110,7 @@ session_reset(Session* self)
 	explain_reset(&self->explain);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
-	plan_reset(&self->plan);
+	dtr_reset(&self->tr);
 	palloc_truncate(0);
 }
 
@@ -129,7 +123,7 @@ session_explain(Session* self, bool profile)
 	                   &compiler->code_coordinator,
 	                   &compiler->code_node,
 	                   &compiler->code_data,
-	                   &self->plan,
+	                   &self->tr,
 	                   body,
 	                   profile);
 	guard_buf(buf);
@@ -143,23 +137,23 @@ session_execute_distributed(Session* self)
 	auto compiler = &self->compiler;
 	auto executor = self->share->executor;
 	auto explain  = &self->explain;
-	auto plan     = &self->plan;
+	auto tr       = &self->tr;
 
 	// generate bytecode
 	compiler_emit(compiler);
 
-	// prepare plan
+	// prepare distributed transaction
 	int stmts = compiler->parser.stmt_list.list_count;
 	int last  = -1;
 	if (compiler->last)
 		last = compiler->last->order;
-	plan_create(plan, &self->local, &compiler->code_node,
-	            &compiler->code_data,
-	            stmts, last);
+	dtr_create(tr, &self->local, &compiler->code_node,
+	           &compiler->code_data,
+	           stmts, last);
 
-	// mark plan for distributed snapshot case
+	// set distributed snapshot
 	if (compiler->snapshot)
-		plan_set_snapshot(plan);
+		dtr_set_snapshot(tr);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -182,17 +176,12 @@ session_execute_distributed(Session* self)
 		       &compiler->code_coordinator,
 		       &compiler->code_data,
 		       NULL,
-		       &plan->cte, NULL, 0);
-	}
-	if (leave(&e))
-	{
-		plan_shutdown(plan);
-		auto buf = msg_error(&am_self()->error);
-		plan_set_error(plan, buf);
+		       &tr->cte, NULL, 0);
 	}
 
-	// mark plan as completed
-	executor_complete(executor, plan);
+	Buf* error = NULL;
+	if (leave(&e))
+		error = msg_error(&am_self->error);
 
 	if (profile)
 	{
@@ -201,7 +190,7 @@ session_execute_distributed(Session* self)
 	}
 
 	// coordinate wal write and group commit, handle abort
-	executor_commit(executor, plan);
+	executor_commit(executor, tr, error);
 
 	// explain profile
 	if (profile)
@@ -223,7 +212,7 @@ session_execute(Session* self)
 	local_update_time(&self->local);
 
 	// take shared session lock (catalog access during parsing)
-	session_lock(self, LOCK);
+	session_lock(self, LOCK_SHARED);
 
 	// parse SQL query
 	Str text;
@@ -271,7 +260,8 @@ session_auth(Session* self)
 	auto auth_header = http_find(request, "Authorization", 13);
 	if (auth_header)
 	{
-		auto user = auth(&self->frontend->auth, &auth_header->value);
+		/*auto user = auth(&self->frontend->auth, &auth_header->value);*/
+		User* user = NULL;
 		if (! user)
 		{
 			http_write_reply(reply, 401, "Unauthorized");
@@ -283,7 +273,7 @@ session_auth(Session* self)
 	return true;
 }
 
-hot void
+hot static void
 session_main(Session* self)
 {
 	auto client    = self->client;
@@ -331,7 +321,7 @@ session_main(Session* self)
 		// reply
 		if (leave(&e))
 		{
-			auto error = &am_self()->error;
+			auto error = &am_self->error;
 			buf_reset(body);
 			body_error(body, error);
 			http_write_reply(reply, 400, "Bad Request");
@@ -349,4 +339,49 @@ session_main(Session* self)
 
 		tcp_write_pair(&client->tcp, &reply->raw, body);
 	}
+}
+
+hot static void
+session_task_on_exit(void* arg)
+{
+	Session* self = arg;
+	session_mgr_remove(self->share->session_mgr, self);
+	session_free(self);
+}
+
+hot static void
+session_task_main(void* arg)
+{
+	Session* self = arg;
+
+	task_detach(&self->task);
+	task_set_on_exit(&self->task, session_task_on_exit, self);
+
+	auto client = self->client;
+	Exception e;
+	if (enter(&e))
+	{
+		client_attach(client);
+		client_accept(client);
+
+		session_main(self);
+	}
+	if (leave(&e))
+	{ }
+
+	client_close(client);
+	client_free(client);
+}
+
+void
+session_start(Session* self)
+{
+	task_create(&self->task, "session", session_task_main, self);
+}
+
+void
+session_stop(Session* self)
+{
+	task_cancel(&self->task);
+	task_wait(&self->task);
 }

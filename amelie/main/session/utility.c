@@ -32,7 +32,6 @@
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
-#include <amelie_frontend.h>
 #include <amelie_session.h>
 
 static Buf*
@@ -213,12 +212,6 @@ ctl_user(Session* self)
 		abort();
 		break;
 	}
-
-	// downgrade back to shared lock to avoid deadlocking
-	session_lock(self, LOCK);
-
-	// sync frontends user caches
-	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
 }
 
 static void
@@ -350,6 +343,9 @@ ctl_checkpoint(Session* self)
 	auto arg  = ast_checkpoint_of(stmt->ast);
 	session_unlock(self);
 
+	// TODO
+	(void)arg;
+#if 0
 	int workers;
 	if (arg->workers) {
 		workers = arg->workers->integer;
@@ -359,6 +355,7 @@ ctl_checkpoint(Session* self)
 			workers = 1;
 	}
 	rpc(global()->control->system, RPC_CHECKPOINT, 1, workers);
+#endif
 }
 
 void

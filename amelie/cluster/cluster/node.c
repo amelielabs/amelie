@@ -221,11 +221,3 @@ node_stop(Node* self)
 		task_init(&self->task);
 	}
 }
-
-#if 0
-void
-node_sync(Node* self)
-{
-	rpc(&self->task.channel, RPC_SYNC, 0);
-}
-#endif
