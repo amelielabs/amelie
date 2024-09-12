@@ -55,10 +55,21 @@ session_create(Client* client, Share* share)
 	return self;
 }
 
+static inline void
+session_reset(Session* self)
+{
+	explain_reset(&self->explain);
+	vm_reset(&self->vm);
+	compiler_reset(&self->compiler);
+	dtr_reset(&self->tr);
+	palloc_truncate(0);
+}
+
 void
-session_free(Session *self)
+session_free(Session* self)
 {
 	assert(self->lock == LOCK_NONE);
+	session_reset(self);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	dtr_free(&self->tr);
@@ -102,16 +113,6 @@ session_unlock(Session* self)
 		break;
 	}
 	self->lock = LOCK_NONE;
-}
-
-static inline void
-session_reset(Session* self)
-{
-	explain_reset(&self->explain);
-	vm_reset(&self->vm);
-	compiler_reset(&self->compiler);
-	dtr_reset(&self->tr);
-	palloc_truncate(0);
 }
 
 hot static inline void

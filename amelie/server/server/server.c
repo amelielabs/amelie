@@ -195,7 +195,11 @@ server_main(Server* self)
 		auto rc = poller_step(&am_self->poller, &pending, NULL, -1);
 		cancellation_point();
 		if (rc == -1)
+		{
+			if (errno == EINTR)
+				continue;
 			error_system();
+		}
 		if (rc == 0)
 			continue;
 		list_foreach(&pending)

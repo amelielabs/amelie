@@ -59,6 +59,31 @@ system_unlock(void* arg)
 	rwlock_unlock(&self->lock);
 }
 
+static Buf*
+system_show(void* arg, int type)
+{
+	System* self = arg;
+	Buf* buf = NULL;
+	switch (type) {
+	case CONTROL_SHOW_USERS:
+		buf = user_mgr_list(&self->user_mgr);
+		break;
+	case CONTROL_SHOW_REPL:
+		buf = repl_show(&self->repl);
+		break;
+	case CONTROL_SHOW_REPLICAS:
+		buf = replica_mgr_list(&self->repl.replica_mgr);
+		break;
+	case CONTROL_SHOW_NODES:
+		buf = cluster_list(&self->cluster);
+		break;
+	default:
+		abort();
+		break;
+	}
+	return buf;
+}
+
 System*
 system_create(void)
 {
@@ -69,6 +94,7 @@ system_create(void)
 	control->save_config = system_save_config;
 	control->lock        = system_lock;
 	control->unlock      = system_unlock;
+	control->show        = system_show;
 	control->arg         = self;
 	global()->control    = control;
 
