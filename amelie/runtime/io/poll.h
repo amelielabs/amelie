@@ -19,7 +19,7 @@ poll_read(Fd* fd, int time_ms)
 	{
 		rc = poller_step(poller, NULL, NULL, time_ms);
 		cancellation_point();
-		if (unlikely(rc == -1))
+		if (unlikely(rc == -1 && errno != EINTR))
 			error_system();
 	}
 	poller_stop_read(poller, fd);
@@ -38,7 +38,7 @@ poll_write(Fd* fd, int time_ms)
 	{
 		rc = poller_step(poller, NULL, NULL, time_ms);
 		cancellation_point();
-		if (unlikely(rc == -1))
+		if (unlikely(rc == -1 && errno != EINTR))
 			error_system();
 	}
 	poller_stop_write(poller, fd);

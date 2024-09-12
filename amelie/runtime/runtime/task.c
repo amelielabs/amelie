@@ -11,7 +11,7 @@ __thread Task*      am_self;
 __thread atomic_u32 am_cancelled = 0;
 
 static void
-task_on_sigusr2(int signal)
+task_on_sigterm(int signal)
 {
 	atomic_u32_set(&am_cancelled, 1);
 	unused(signal);
@@ -32,13 +32,13 @@ task_main(void* arg)
 	// set signal used for cancellation, to interrupt syscalls
 	sigset_t mask;
 	sigemptyset(&mask);
-	sigaddset(&mask, SIGUSR2);
+	sigaddset(&mask, SIGTERM);
 	pthread_sigmask(SIG_UNBLOCK, &mask, NULL);
 
 	struct sigaction act;
 	memset(&act, 0, sizeof(act));
-	act.sa_handler = task_on_sigusr2;
-	sigaction(SIGUSR2, &act, NULL);
+	act.sa_handler = task_on_sigterm;
+	sigaction(SIGTERM, &act, NULL);
 
 	// set task name
 	thread_update_name(&self->thread);
@@ -155,7 +155,7 @@ task_detach(Task* self)
 void
 task_cancel(Task* self)
 {
-	thread_kill(&self->thread, SIGUSR2);
+	thread_kill(&self->thread, SIGTERM);
 }
 
 void

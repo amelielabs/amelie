@@ -109,3 +109,9 @@ control_unlock(void)
 {
 	global()->control->unlock(global()->control->arg);
 }
+
+static inline Buf*
+control_show(int type)
+{
+	return global()->control->show(global()->control->arg, type);
+}

@@ -55,8 +55,7 @@ poller_step(Poller* self, List* read, List* write, int time_ms)
 		return 0;
 
 	struct epoll_event* event_list = self->list;
-	int count;
-	count = epoll_wait(self->fd, event_list, self->list_count, time_ms);
+	auto count = epoll_wait(self->fd, event_list, self->list_count, time_ms);
 	if (count <= 0)
 		return count;
 
