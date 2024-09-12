@@ -24,3 +24,4 @@ void server_init(Server*);
 void server_free(Server*);
 void server_start(Server*, ServerEvent, void*);
 void server_stop(Server*);
+void server_main(Server*);

@@ -50,6 +50,7 @@ client_set_task_name(Client* self)
 	char addr[128];
 	tcp_getpeername(&self->tcp, addr, sizeof(addr));
 	thread_set_name(&am_self->thread, addr);
+	thread_update_name(&am_self->thread);
 }
 
 void

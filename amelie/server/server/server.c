@@ -185,7 +185,7 @@ server_accept(Server* self, ServerListen* listen)
 	}
 }
 
-static void
+void
 server_main(Server* self)
 {
 	for (;;)
@@ -193,6 +193,7 @@ server_main(Server* self)
 		List pending;
 		list_init(&pending);
 		auto rc = poller_step(&am_self->poller, &pending, NULL, -1);
+		cancellation_point();
 		if (rc == -1)
 			error_system();
 		if (rc == 0)
@@ -233,9 +234,6 @@ server_start(Server*     self,
 		auto listen = list_at(ServerListen, link);
 		server_listen(listen);
 	}
-
-	// process incoming connection
-	server_main(self);
 }
 
 void
