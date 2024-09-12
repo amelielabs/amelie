@@ -26,6 +26,7 @@ channel_init(Channel* self)
 static inline void
 channel_free(Channel* self)
 {
+	buf_list_free(&self->list);
 	cond_var_free(&self->on_write);
 	mutex_free(&self->lock);
 }

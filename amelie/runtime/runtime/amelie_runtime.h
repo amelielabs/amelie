@@ -16,6 +16,7 @@
 #include "runtime/mutex.h"
 #include "runtime/cond_var.h"
 #include "runtime/cond.h"
+#include "runtime/rwlock.h"
 #include "runtime/thread.h"
 
 // basic data structures

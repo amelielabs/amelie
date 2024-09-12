@@ -13,6 +13,7 @@ typedef void* (*ThreadFunction)(void*);
 struct Thread
 {
 	pthread_t      id;
+	char           name[64];
 	ThreadFunction function;
 	void*          arg;
 };
@@ -21,8 +22,15 @@ static inline void
 thread_init(Thread* self)
 {
 	self->id       = 0;
+	self->name[0]  = 0;
 	self->function = NULL;
 	self->arg      = NULL;
+}
+
+static inline bool
+thread_created(Thread* self)
+{
+	return self->id != 0;
 }
 
 static inline int
@@ -49,11 +57,38 @@ thread_join(Thread* self)
 }
 
 static inline int
-thread_set_name(Thread* self, const char* name)
+thread_detach(Thread* self)
 {
 	int rc;
-	rc = pthread_setname_np(self->id, name);
-	return rc;
+	rc = pthread_detach(self->id);
+	if (rc != 0)
+		return -1;
+	return 0;
+}
+
+static inline int
+thread_kill(Thread* self, int sig)
+{
+	int rc;
+	rc = pthread_kill(self->id, sig);
+	if (rc != 0)
+		return -1;
+	return 0;
+}
+
+static inline void
+thread_set_name(Thread* self, const char* name)
+{
+	snprintf(self->name, sizeof(self->name), "%s", name);
+}
+
+static inline int
+thread_update_name(Thread* self)
+{
+	int rc = pthread_setname_np(self->id, self->name);
+	if (rc != 0)
+		return -1;
+	return 0;
 }
 
 static inline void

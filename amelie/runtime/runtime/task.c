@@ -40,7 +40,7 @@ task_main(void* arg)
 	sigaction(SIGUSR2, &act, NULL);
 
 	// set task name
-	thread_set_name(&self->thread, self->name);
+	thread_update_name(&self->thread);
 
 	// set initial time
 	clock_update(&self->clock);
@@ -62,6 +62,8 @@ task_main(void* arg)
 		}
 	}
 
+	if (self->on_exit)
+		self->on_exit(self->on_exit_arg);
 	return NULL;
 }
 
@@ -71,9 +73,10 @@ task_init(Task* self)
 	self->main            = NULL;
 	self->main_arg        = NULL;
 	self->main_arg_global = NULL;
+	self->on_exit         = NULL;
+	self->on_exit_arg     = NULL;
 	self->log_write       = NULL;
 	self->log_write_arg   = NULL;
-	self->name            = NULL;
 	self->cancelled       = 0;
 	exception_mgr_init(&self->exception_mgr);
 	error_init(&self->error);
@@ -101,7 +104,14 @@ task_free(Task* self)
 bool
 task_created(Task* self)
 {
-	return self->thread.id != 0;
+	return thread_created(&self->thread);
+}
+
+void
+task_set_on_exit(Task* self, TaskFunction func, void* func_arg)
+{
+	self->on_exit     = func;
+	self->on_exit_arg = func_arg;
 }
 
 int
@@ -114,7 +124,6 @@ task_create_nothrow(Task*        self,
                     void*        log_arg)
 {
 	// set arguments
-	self->name            = name;
 	self->main            = main;
 	self->main_arg        = main_arg;
 	self->main_arg_global = main_arg_global;
@@ -126,6 +135,9 @@ task_create_nothrow(Task*        self,
 	if (unlikely(rc == -1))
 		return -1;
 
+	// set task name
+	thread_set_name(&self->thread, name);
+
 	// create task thread
 	rc = thread_create(&self->thread, task_main, self);
 	if (unlikely(rc == -1))
@@ -135,9 +147,15 @@ task_create_nothrow(Task*        self,
 }
 
 void
+task_detach(Task* self)
+{
+	thread_detach(&self->thread);
+}
+
+void
 task_cancel(Task* self)
 {
-	pthread_kill(self->thread.id, SIGUSR2);
+	thread_kill(&self->thread, SIGUSR2);
 }
 
 void
