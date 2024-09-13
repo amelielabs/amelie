@@ -7,59 +7,74 @@
 
 #include <amelie_private.h>
 
-#if 0
 static void
-bench_connection(void* arg)
+bench_main(void* arg)
 {
 	BenchWorker* self = arg;
-	Client* client = NULL;
+	auto bench = self->bench;
+	auto iface = bench->iface;
+
+	List clients;
+	list_init(&clients);
 
 	Exception e;
 	if (enter(&e))
 	{
-		// create client and connect
-		client = client_create();
-		client_set_remote(client, self->bench->remote);
-		client_connect(client);
+		// create clients and connect
+		int count = self->connections;
+		while (count-- > 0)
+		{
+			auto client = client_create();
+			client_set_remote(client, bench->remote);
+			list_append(&clients, &client->link);
+			client_connect(client);
+			auto rc = poller_start_read(&am_self->poller, &client->tcp.fd);
+			if (unlikely(rc == -1))
+				error_system();
+		}
 
-		// process
-		self->bench->iface->main(self, client);
+		// begin
+		list_foreach_safe(&clients)
+		{
+			auto client = list_at(Client, link);
+			iface->send(bench, client);
+		}
+
+		List pending;
+		list_init(&pending);
+		for (;;)
+		{
+			// wait for reply
+			auto rc = poller_step(&am_self->poller, &pending, NULL, -1);
+			cancellation_point();
+			if (unlikely(rc == -1 && errno != EINTR))
+				error_system();
+
+			// recv/send
+			list_foreach(&pending)
+			{
+				auto fd = list_at(Fd, link);
+				auto client = container_of(fd, Client, tcp.fd);
+				iface->recv(bench, client);
+				iface->send(bench, client);
+
+				auto rc = poller_start_read(&am_self->poller, &client->tcp.fd);
+				if (unlikely(rc == -1))
+					error_system();
+			}
+
+		}
 	}
 
 	if (leave(&e))
 	{ }
 
-	if (client)
+	list_foreach_safe(&clients)
 	{
+		auto client = list_at(Client, link);
 		client_close(client);
 		client_free(client);
 	}
-}
-
-static void
-bench_worker_main(void* arg)
-{
-	BenchWorker* self = arg;
-
-	// start connections
-	int connections = self->connections;
-	while (connections-- > 0)
-		coroutine_create(bench_connection, self);
-
-	// wait for stop
-	for (;;)
-	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-		guard(buf_free, buf);
-		if (msg->id == RPC_STOP)
-			break;
-	}
-
-	// wait for completion
-	self->shutdown = true;
-	while (am_task->coroutine_mgr.count > 1)
-		coroutine_yield();
 }
 
 static BenchWorker*
@@ -67,7 +82,6 @@ bench_worker_allocate(Bench* bench, int connections)
 {
 	auto self = (BenchWorker*)am_malloc(sizeof(BenchWorker));
 	self->connections = connections;
-	self->shutdown    = false;
 	self->bench       = bench;
 	task_init(&self->task);
 	list_init(&self->link);
@@ -84,21 +98,13 @@ bench_worker_free(BenchWorker* self)
 static void
 bench_worker_start(BenchWorker* self)
 {
-	task_create(&self->task, "bench", bench_worker_main, self);
-}
-
-static void
-bench_worker_stop_notify(BenchWorker* self)
-{
-	auto buf = msg_create_nothrow(&self->task.buf_cache, RPC_STOP, 0);
-	if (! buf)
-		abort();
-	channel_write(&self->task.channel, buf);
+	task_create(&self->task, "bench", bench_main, self);
 }
 
 static void
 bench_worker_stop(BenchWorker* self)
 {
+	task_cancel(&self->task);
 	task_wait(&self->task);
 }
 
@@ -107,6 +113,7 @@ bench_init(Bench* self, Remote* remote)
 {
 	memset(self, 0, sizeof(*self));
 	self->remote = remote;
+	str_init(&self->command);
 	vars_init(&self->vars);
 	list_init(&self->list);
 	VarDef defs[] =
@@ -131,6 +138,7 @@ bench_free(Bench* self)
 		bench_worker_free(worker);
 	}
 	vars_free(&self->vars);
+	str_free(&self->command);
 }
 
 static void
@@ -226,7 +234,7 @@ bench_run(Bench* self)
 	uint64_t prev_wr = 0;
 	for (auto duration = time; duration > 0; duration--)
 	{
-		coroutine_sleep(1000);
+		sleep(1);
 		auto tx = atomic_u64_of(&self->transactions);
 		auto wr = atomic_u64_of(&self->writes);
 		if (wr > 0)
@@ -241,11 +249,6 @@ bench_run(Bench* self)
 	}
 
 	// stop
-	list_foreach(&self->list)
-	{
-		auto worker = list_at(BenchWorker, link);
-		bench_worker_stop_notify(worker);
-	}
 	list_foreach_safe(&self->list)
 	{
 		auto worker = list_at(BenchWorker, link);
@@ -261,24 +264,4 @@ bench_run(Bench* self)
 	info("writes:       %.2f millions writes (%" PRIu64 ")",
 	     self->writes / 1000000.0,
 	     self->writes);
-}
-#endif
-
-void
-bench_init(Bench* self, Remote* remote)
-{
-	(void)self;
-	(void)remote;
-}
-
-void
-bench_free(Bench* self)
-{
-	(void)self;
-}
-
-void
-bench_run(Bench* self)
-{
-	(void)self;
 }

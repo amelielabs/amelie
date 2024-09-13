@@ -203,12 +203,10 @@ client_close(Client* self)
 }
 
 hot void
-client_execute(Client* self, Str* command)
+client_send(Client* self, Str* command)
 {
-	auto request = &self->request;
-	auto reply   = &self->reply;
-
 	// request
+	auto request = &self->request;
 	http_write_request(request, "POST /");
 	auto token = remote_get(self->remote, REMOTE_TOKEN);
 	if (! str_empty(token))
@@ -217,11 +215,23 @@ client_execute(Client* self, Str* command)
 	http_write(request, "Content-Type", "text/plain");
 	http_write_end(request);
 	tcp_write_pair_str(&self->tcp, &request->raw, command);
+}
 
+hot void
+client_recv(Client* self)
+{
 	// reply
+	auto reply = &self->reply;
 	http_reset(reply);
 	auto eof = http_read(reply, &self->readahead, false);
 	if (eof)
 		error("unexpected eof");
 	http_read_content(reply, &self->readahead, &reply->content);
+}
+
+hot void
+client_execute(Client* self, Str* command)
+{
+	client_send(self, command);
+	client_recv(self);
 }

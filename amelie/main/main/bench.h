@@ -12,14 +12,14 @@ typedef struct Bench       Bench;
 
 struct BenchIf
 {
+	void (*send)(Bench*, Client*);
+	void (*recv)(Bench*, Client*);
 	void (*create)(Bench*, Client*);
-	void (*main)(BenchWorker*, Client*);
 };
 
 struct BenchWorker
 {
 	int    connections;
-	bool   shutdown;
 	Bench* bench;
 	Task   task;
 	List   link;
@@ -37,6 +37,7 @@ struct Bench
 	Var        scale;
 	Var        batch;
 	Vars       vars;
+	Str        command;
 	Remote*    remote;
 	List       list;
 };
