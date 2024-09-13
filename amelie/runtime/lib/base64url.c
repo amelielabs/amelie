@@ -117,7 +117,7 @@ base64url_encode(Buf* self, Str* str)
 hot void
 base64url_decode(Buf* self, Str* str)
 {
-	buf_reserve(self, ((str_size(str)) / 4) * 3);
+	buf_reserve(self, ceil((double)str_size(str) / 4) * 3);
 
 	auto order     = 0;
 	auto out_order = 0;
