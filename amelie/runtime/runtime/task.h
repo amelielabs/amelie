@@ -19,7 +19,7 @@ struct Task
 	Poller       poller;
 	Arena        arena;
 	BufList      buf_list;
-	BufCache     buf_cache;
+	BufMgr*      buf_mgr;
 	TaskFunction main;
 	void*        main_arg;
 	void*        main_arg_global;
@@ -38,7 +38,8 @@ void task_init(Task*);
 void task_free(Task*);
 bool task_created(Task*);
 int  task_create_nothrow(Task*, char*, TaskFunction, void*, void*,
-                         LogFunction, void*);
+                         LogFunction, void*,
+                         BufMgr*);
 void task_set_on_exit(Task*, TaskFunction, void*);
 void task_detach(Task*);
 void task_cancel(Task*);

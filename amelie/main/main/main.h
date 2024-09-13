@@ -14,6 +14,7 @@ struct Main
 	Random      random;
 	Config      config;
 	TimezoneMgr timezone_mgr;
+	BufMgr      buf_mgr;
 	Global      global;
 };
 

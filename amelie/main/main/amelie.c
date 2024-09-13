@@ -461,7 +461,8 @@ amelie_start(Amelie* self, int argc, char** argv)
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", amelie_runner, &args,
 	                         &self->main.global,
-	                         logger_write, &self->main.logger);
+	                         logger_write, &self->main.logger,
+	                         &self->main.buf_mgr);
 	if (unlikely(rc == -1))
 		return AMELIE_ERROR;
 
