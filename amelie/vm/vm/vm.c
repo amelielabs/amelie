@@ -32,7 +32,7 @@ vm_init(Vm*          self,
         Db*          db,
         Uuid*        node,
         Executor*    executor,
-        Plan*        plan,
+        Dtr*         dtr,
         Buf*         body,
         FunctionMgr* function_mgr)
 {
@@ -41,7 +41,7 @@ vm_init(Vm*          self,
 	self->code_arg     = NULL;
 	self->node         = node;
 	self->executor     = executor;
-	self->plan         = plan;
+	self->dtr          = dtr;
 	self->cte          = NULL;
 	self->result       = NULL;
 	self->body         = body;

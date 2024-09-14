@@ -54,13 +54,13 @@ explain(Explain*  self,
         Code*     coordinator,
         Code*     node,
         CodeData* data,
-        Plan*     plan,
+        Dtr*      dtr,
         Buf*      body,
         bool      profile)
 {
 	auto buf = buf_begin();
 	encode_map(buf);
-	unused(plan);
+	unused(dtr);
 
 	// bytecode
 	encode_raw(buf, "bytecode", 8);

@@ -12,7 +12,7 @@ struct Session
 {
 	Vm        vm;
 	Compiler  compiler;
-	Plan      plan;
+	Dtr       dtr;
 	Explain   explain;
 	Client*   client;
 	Local     local;

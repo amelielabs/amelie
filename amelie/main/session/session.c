@@ -49,12 +49,11 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	explain_init(&self->explain);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
-	        &self->plan,
+	        &self->dtr,
 	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
-	plan_init(&self->plan, &share->cluster->router, &frontend->trx_cache,
-	          &frontend->req_cache);
+	dtr_init(&self->dtr, &share->cluster->router);
 	return self;
 }
 
@@ -64,7 +63,7 @@ session_free(Session *self)
 	assert(self->lock_type == LOCK_NONE);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
-	plan_free(&self->plan);
+	dtr_free(&self->dtr);
 	local_free(&self->local);
 	am_free(self);
 }
@@ -116,7 +115,7 @@ session_reset(Session* self)
 	explain_reset(&self->explain);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
-	plan_reset(&self->plan);
+	dtr_reset(&self->dtr);
 	palloc_truncate(0);
 }
 
@@ -129,7 +128,7 @@ session_explain(Session* self, bool profile)
 	                   &compiler->code_coordinator,
 	                   &compiler->code_node,
 	                   &compiler->code_data,
-	                   &self->plan,
+	                   &self->dtr,
 	                   body,
 	                   profile);
 	guard_buf(buf);
@@ -143,23 +142,23 @@ session_execute_distributed(Session* self)
 	auto compiler = &self->compiler;
 	auto executor = self->share->executor;
 	auto explain  = &self->explain;
-	auto plan     = &self->plan;
+	auto dtr      = &self->dtr;
 
 	// generate bytecode
 	compiler_emit(compiler);
 
-	// prepare plan
+	// prepare distributed transaction
 	int stmts = compiler->parser.stmt_list.list_count;
 	int last  = -1;
 	if (compiler->last)
 		last = compiler->last->order;
-	plan_create(plan, &self->local, &compiler->code_node,
-	            &compiler->code_data,
-	            stmts, last);
+	dtr_create(dtr, &self->local, &compiler->code_node,
+	           &compiler->code_data,
+	           stmts, last);
 
-	// mark plan for distributed snapshot case
+	// set distributed snapshot
 	if (compiler->snapshot)
-		plan_set_snapshot(plan);
+		dtr_set_snapshot(dtr);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -182,17 +181,12 @@ session_execute_distributed(Session* self)
 		       &compiler->code_coordinator,
 		       &compiler->code_data,
 		       NULL,
-		       &plan->cte, NULL, 0);
-	}
-	if (leave(&e))
-	{
-		plan_shutdown(plan);
-		auto buf = msg_error(&am_self()->error);
-		plan_set_error(plan, buf);
+		       &dtr->cte, NULL, 0);
 	}
 
-	// mark plan as completed
-	executor_complete(executor, plan);
+	Buf* error = NULL;
+	if (leave(&e))
+		error = msg_error(&am_self()->error);
 
 	if (profile)
 	{
@@ -201,7 +195,7 @@ session_execute_distributed(Session* self)
 	}
 
 	// coordinate wal write and group commit, handle abort
-	executor_commit(executor, plan);
+	executor_commit(executor, dtr, error);
 
 	// explain profile
 	if (profile)

@@ -12,8 +12,6 @@ typedef void (*FrontendEvent)(Frontend*, Client*);
 
 struct Frontend
 {
-	ReqCache      req_cache;
-	TrxCache      trx_cache;
 	LockMgr       lock_mgr;
 	ClientMgr     client_mgr;
 	Auth          auth;

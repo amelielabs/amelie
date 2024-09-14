@@ -130,8 +130,6 @@ frontend_init(Frontend*     self,
 	self->on_connect_arg = on_connect_arg;
 	lock_mgr_init(&self->lock_mgr);
 	client_mgr_init(&self->client_mgr);
-	req_cache_init(&self->req_cache);
-	trx_cache_init(&self->trx_cache);
 	auth_init(&self->auth);
 	task_init(&self->task);
 }
@@ -140,8 +138,6 @@ void
 frontend_free(Frontend* self)
 {
 	client_mgr_free(&self->client_mgr);
-	trx_cache_free(&self->trx_cache);
-	req_cache_free(&self->req_cache);
 	lock_mgr_free(&self->lock_mgr);
 	auth_free(&self->auth);
 }

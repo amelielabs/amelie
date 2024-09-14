@@ -23,6 +23,14 @@ channel_free(Channel* self)
 	spinlock_free(&self->lock);
 }
 
+void
+channel_reset(Channel* self)
+{
+	spinlock_lock(&self->lock);
+	buf_list_free(&self->list);
+	spinlock_unlock(&self->lock);
+}
+
 int
 channel_attach_to(Channel* self, Poller* poller)
 {

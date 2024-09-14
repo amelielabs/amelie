@@ -668,7 +668,7 @@ cmerge_recv(Vm* self, Op* op)
 	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
 
 	// add requests results to the merge
-	auto stmt = dispatch_stmt(&self->plan->dispatch, op->d);
+	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
 	list_foreach(&stmt->req_list.list)
 	{
 		auto req = list_at(Req, link);
@@ -688,7 +688,7 @@ hot void
 cgroup_merge_recv(Vm* self, Op* op)
 {
 	// [group, stmt]
-	auto stmt = dispatch_stmt(&self->plan->dispatch, op->b);
+	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->b);
 	if (unlikely(! stmt->req_list.list_count))
 		error("unexpected group list return");
 	
@@ -722,7 +722,7 @@ hot void
 csend_hash(Vm* self, Op* op)
 {
 	// [stmt, start, table, hash]
-	auto plan  = self->plan;
+	auto dtr   = self->dtr;
 	auto start = op->b;
 	auto table = (Table*)op->c;
 
@@ -732,12 +732,12 @@ csend_hash(Vm* self, Op* op)
 
 	// shard by precomputed key hash
 	auto route = part_map_get(&table->part_list.map, op->d);
-	auto req = req_create(plan->req_cache);
-	req->op    = start;
+	auto req = req_create(&dtr->req_cache);
+	req->code_start = start;
 	req->route = route;
 	req_list_add(&list, req);
 
-	executor_send(self->executor, plan, op->a, &list);
+	executor_send(self->executor, dtr, op->a, &list);
 	unguard();
 }
 
@@ -745,7 +745,7 @@ hot void
 csend(Vm* self, Op* op)
 {
 	// [stmt, start, table, offset]
-	auto plan  = self->plan;
+	auto dtr   = self->dtr;
 	auto start = op->b;
 	auto table = (Table*)op->c;
 	auto keys  = table_keys(table);
@@ -758,7 +758,7 @@ csend(Vm* self, Op* op)
 	auto data_start = code_data_at(self->code_data, 0);
 	auto data       = code_data_at(self->code_data, op->d);
 
-	Req* map[plan->set.set_size];
+	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
 	data_read_array(&data);
@@ -774,8 +774,8 @@ csend(Vm* self, Op* op)
 		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(plan->req_cache);
-			req->op    = start;
+			req = req_create(&dtr->req_cache);
+			req->code_start = start;
 			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
@@ -785,7 +785,7 @@ csend(Vm* self, Op* op)
 		buf_write(&req->arg, &offset, sizeof(offset));
 	}
 
-	executor_send(self->executor, self->plan, op->a, &list);
+	executor_send(self->executor, dtr, op->a, &list);
 	unguard();
 }
 
@@ -798,13 +798,13 @@ csend_first(Vm* self, Op* op)
 	guard(req_list_free, &list);
 
 	// send to the first node
-	auto plan = self->plan;
-	auto req = req_create(plan->req_cache);
-	req->route = router_first(plan->router);
-	req->op    = op->b;
+	auto dtr = self->dtr;
+	auto req = req_create(&dtr->req_cache);
+	req->route = router_first(dtr->router);
+	req->code_start = op->b;
 	req_list_add(&list, req);
 
-	executor_send(self->executor, self->plan, op->a, &list);
+	executor_send(self->executor, dtr, op->a, &list);
 	unguard();
 }
 
@@ -817,17 +817,17 @@ csend_all(Vm* self, Op* op)
 	guard(req_list_free, &list);
 
 	// send to all nodes
-	auto plan = self->plan;
-	list_foreach(&plan->router->list)
+	auto dtr = self->dtr;
+	list_foreach(&dtr->router->list)
 	{
 		auto route = list_at(Route, link);
-		auto req = req_create(plan->req_cache);
+		auto req = req_create(&dtr->req_cache);
 		req->route = route;
-		req->op    = op->b;
+		req->code_start = op->b;
 		req_list_add(&list, req);
 	}
 
-	executor_send(self->executor, self->plan, op->a, &list);
+	executor_send(self->executor, dtr, op->a, &list);
 	unguard();
 }
 
@@ -835,16 +835,16 @@ hot void
 crecv(Vm* self, Op* op)
 {
 	// [stmt]
-	executor_recv(self->executor, self->plan, op->a);
+	executor_recv(self->executor, self->dtr, op->a);
 }
 
 hot void
 crecv_to(Vm* self, Op* op)
 {
 	// [result, stmt]
-	executor_recv(self->executor, self->plan, op->b);
+	executor_recv(self->executor, self->dtr, op->b);
 
-	auto stmt = dispatch_stmt(&self->plan->dispatch, op->b);
+	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->b);
 	auto req  = container_of(list_first(&stmt->req_list.list), Req, link);
 	value_move(reg_at(&self->r, op->a), &req->result);
 }

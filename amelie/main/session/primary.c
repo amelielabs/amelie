@@ -68,7 +68,7 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(self->plan.req_cache);
+			req = req_create(&self->dtr.req_cache);
 			req->arg_start = start;
 			req->route     = route;
 			req_list_add(req_list, req);
@@ -88,9 +88,9 @@ static void
 replay(Session* self, WalWrite* write)
 {
 	auto executor = self->share->executor;
-	auto plan = &self->plan;
-	plan_reset(plan);
-	plan_create(plan, &self->local, NULL, NULL, 1, 0);
+	auto dtr = &self->dtr;
+	dtr_reset(dtr);
+	dtr_create(dtr, &self->local, NULL, NULL, 1, 0);
 
 	ReqList req_list;
 	req_list_init(&req_list);
@@ -101,18 +101,15 @@ replay(Session* self, WalWrite* write)
 	{
 		replay_read(self, write, &req_list);
 
-		executor_send(executor, plan, 0, &req_list);
-		executor_recv(executor, plan, 0);
-	}
-	if (leave(&e))
-	{
-		plan_shutdown(plan);
-		auto buf = msg_error(&am_self()->error);
-		plan_set_error(plan, buf);
+		executor_send(executor, dtr, 0, &req_list);
+		executor_recv(executor, dtr, 0);
 	}
 
-	executor_complete(executor, plan);
-	executor_commit(executor, plan);
+	Buf* error = NULL;
+	if (leave(&e))
+		error = msg_error(&am_self()->error);
+
+	executor_commit(executor, dtr, error);
 }
 
 hot static void
@@ -157,9 +154,9 @@ session_primary(Session* self)
 {
 	auto share = self->share;
 
-	// switch plan to replication state to write wal
+	// switch distributed transaction to replication state to write wal
 	// while in read-only mode
-	plan_set_repl(&self->plan);
+	dtr_set_repl(&self->dtr);
 
 	Recover recover;
 	recover_init(&recover, share->db, &build_if, share->cluster);

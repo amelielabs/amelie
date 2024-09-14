@@ -85,10 +85,10 @@ tr_commit_list(TrList* self, TrCache* cache, Tr* last)
 }
 
 void
-tr_abort_list(TrList* self, TrCache* cache, Tr* last)
+tr_abort_list(TrList* self, TrCache* cache)
 {
 	// abort transactions in the list in reverse
-	list_foreach_reverse_safe_from(&self->list, &last->link)
+	list_foreach_reverse_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
 		tr_abort(tr);

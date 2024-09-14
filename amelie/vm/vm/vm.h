@@ -18,7 +18,7 @@ struct Vm
 	CursorMgr    cursor_mgr;
 	Uuid*        node;
 	Executor*    executor;
-	Plan*        plan;
+	Dtr*         dtr;
 	Result*      cte;
 	Value*       result;
 	Buf*         body;
@@ -29,7 +29,7 @@ struct Vm
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, Uuid*, Executor*, Plan*, Buf*, FunctionMgr*);
+void vm_init(Vm*, Db*, Uuid*, Executor*, Dtr*, Buf*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*,
