@@ -134,18 +134,6 @@ dtr_set_error(Dtr* self, Buf* buf)
 	self->error = buf;
 }
 
-static inline void
-dtr_shutdown(Dtr* self)
-{
-	auto set = &self->set;
-	for (int i = 0; i < set->set_size; i++)
-	{
-		auto pipe = pipe_set_get(set, i);
-		if (pipe)
-			req_queue_shutdown(&pipe->queue);
-	}
-}
-
 hot static inline void
 dtr_send(Dtr* self, int stmt, ReqList* list)
 {
@@ -165,6 +153,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 	}
 
 	// process request list
+	auto is_last = (stmt == dispatch->stmt_last);
 	list_foreach_safe(&list->list)
 	{
 		auto req   = list_at(Req, link);
@@ -187,12 +176,12 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 		req_list_move(list, &ref->req_list, req);
 
 		// add request to the pipe
-		pipe_send(pipe, req);
+		pipe_send(pipe, req, stmt, is_last);
 		dispatch->sent++;
 	}
 
 	// shutdown pipes
-	if (stmt == dispatch->stmt_last)
+	if (is_last)
 	{
 		list_foreach(&self->router->list)
 		{
@@ -201,18 +190,17 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 			if (! pipe)
 				continue;
 
-			// add dummy request to the pipe to sync with recv, if pipe was only
-			// used for snapshotting
-			if (! pipe->sent)
-			{
-				auto ref = dispatch_pipe_set(dispatch, stmt, route->order, pipe);
-				Req* req = req_create(&self->req_cache);
-				req_list_add(&ref->req_list, req);
-				pipe_send(pipe, req);
-				dispatch->sent++;
-			}
+			// pipe already involved in the last stmt
+			// (with shutdown flag above)
+			if (pipe->last_stmt == stmt)
+				continue;;
 
-			pipe_shutdown(pipe);
+			// add dummy request to the pipe to sync with recv to close pipe
+			auto ref = dispatch_pipe_set(dispatch, stmt, route->order, pipe);
+			Req* req = req_create(&self->req_cache);
+			req_list_add(&ref->req_list, req);
+			pipe_send(pipe, req, stmt, true);
+			dispatch->sent++;
 		}
 	}
 }
@@ -243,5 +231,30 @@ dtr_recv(Dtr* self, int stmt)
 	{
 		guard_buf(error);
 		msg_error_rethrow(error);
+	}
+}
+
+hot static inline void
+dtr_shutdown(Dtr* self)
+{
+	auto set = &self->set;
+	auto dispatch = &self->dispatch;
+	for (int i = 0; i < set->set_size; i++)
+	{
+		auto pipe = pipe_set_get(set, i);
+		if (! pipe)
+			continue;
+		if (pipe->state == PIPE_CLOSE)
+			continue;
+
+		// send shutdown request
+		auto ref = dispatch_pipe_set(dispatch, dispatch->stmt_last, pipe->route->order, pipe);
+		Req* req = req_create(&self->req_cache);
+		req_list_add(&ref->req_list, req);
+		pipe_send(pipe, req, dispatch->stmt_last, true);
+		dispatch->sent++;
+
+		// wait for close
+		pipe_close(pipe);
 	}
 }

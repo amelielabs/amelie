@@ -83,8 +83,7 @@ node_execute(Node* self, Pipe* pipe)
 	for (;;)
 	{
 		auto req = req_queue_pop(&pipe->queue);
-		if (! req)
-			break;
+		assert(req);
 
 		// execute request
 		Exception e;
@@ -111,17 +110,26 @@ node_execute(Node* self, Pipe* pipe)
 			}
 		}
 
-		// respond with OK or ERROR
+		// MSG_READY on pipe completion
+		// MSG_ERROR on pipe completion with error
+		// MSG_OK on execution
+		auto is_last = req->shutdown;
 		Buf* buf;
 		if (leave(&e)) {
 			buf = msg_error(&am_self->error);
-		} else {
-			buf = msg_begin(MSG_OK);
+		} else
+		{
+			int id;
+			if (is_last)
+				id = MSG_READY;
+			else
+				id = MSG_OK;
+			buf = msg_begin(id);
 			msg_end(buf);
 		}
 		channel_write(&pipe->src, buf);
 
-		if (e.triggered)
+		if (is_last || e.triggered)
 			break;
 	}
 

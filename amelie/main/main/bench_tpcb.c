@@ -22,7 +22,7 @@ tpcb_send(Client* client,
 
 	buf_printf(buf, "UPDATE __bench.accounts SET abalance = abalance + %d WHERE aid = %d;",
 	           delta, aid);
-	buf_printf(buf, "SELECT XXXabalance FROM __bench.accounts WHERE aid = %d;", aid);
+	buf_printf(buf, "SELECT abalance FROM __bench.accounts WHERE aid = %d;", aid);
 	buf_printf(buf, "UPDATE __bench.tellers SET tbalance = tbalance + %d WHERE tid = %d;",
 	           delta, tid);
 	buf_printf(buf, "UPDATE __bench.branches SET bbalance = bbalance + %d WHERE bid = %d;",
@@ -48,10 +48,17 @@ bench_tpcb_send(Bench* self, Client* client)
 	uint32_t a = *(uint32_t*)(&random);
 	uint32_t b = *(uint32_t*)((uint8_t*)&random + sizeof(uint32_t));
 	uint32_t c = a ^ b;
-	int aid    = (a - 1) / accounts + 1;
-	int bid    = (b - 1) / branches + 1;
-	int tid    = (c - 1) / tellers + 1;
+
+	int aid    = a / accounts;
+	int bid    = b / branches;
+	int tid    = c / tellers;
 	int delta  = -5000 + (c % 10000); // -5000 to 5000
+	if (! aid)
+		aid++;
+	if (! bid)
+		bid++;
+	if (! tid)
+		tid++;
 
 	tpcb_send(client, bid, tid, aid, delta);
 }

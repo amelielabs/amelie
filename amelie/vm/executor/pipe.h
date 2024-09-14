@@ -8,23 +8,31 @@
 
 typedef struct Pipe Pipe;
 
+typedef enum
+{
+	PIPE_OPEN,
+	PIPE_CLOSE
+} PipeState;
+
 struct Pipe
 {
-	ReqQueue queue;
-	Channel  src;
-	Tr*      tr;
-	int      sent;
-	Route*   route;
-	List     link;
+	PipeState state;
+	ReqQueue  queue;
+	Channel   src;
+	Tr*       tr;
+	int       last_stmt;
+	Route*    route;
+	List      link;
 };
 
 static inline Pipe*
 pipe_allocate(void)
 {
 	auto self = (Pipe*)am_malloc(sizeof(Pipe));
-	self->tr    = NULL;
-	self->sent  = 0;
-	self->route = NULL;
+	self->state     = PIPE_OPEN;
+	self->tr        = NULL;
+	self->last_stmt = -1;
+	self->route     = NULL;
 	req_queue_init(&self->queue);
 	channel_init(&self->src);
 	list_init(&self->link);
@@ -42,24 +50,20 @@ pipe_free(Pipe* self)
 static inline void
 pipe_reset(Pipe* self)
 {
-	self->tr    = NULL;
-	self->sent  = 0;
-	self->route = NULL;
+	self->state     = PIPE_OPEN;
+	self->tr        = NULL;
+	self->last_stmt = -1;
+	self->route     = NULL;
 	req_queue_reset(&self->queue);
 	channel_reset(&self->src);
 }
 
 static inline void
-pipe_shutdown(Pipe* self)
+pipe_send(Pipe* self, Req* req, int stmt, bool shutdown)
 {
-	req_queue_shutdown(&self->queue);
-}
-
-static inline void
-pipe_send(Pipe* self, Req* req)
-{
+	req->shutdown = shutdown;
 	req_queue_add(&self->queue, req);
-	self->sent++;
+	self->last_stmt = stmt;
 }
 
 static inline Buf*
@@ -67,10 +71,30 @@ pipe_recv(Pipe* self)
 {
 	auto buf = channel_read(&self->src);
 	auto msg = msg_of(buf);
-	if (msg->id == MSG_ERROR)
-		return buf;
-	buf_free(buf);
-	return NULL;
+	switch (msg->id) {
+	case MSG_OK:
+		buf_free(buf);
+		return NULL;
+	case MSG_READY:
+		buf_free(buf);
+		self->state = PIPE_CLOSE;
+		return NULL;
+	case MSG_ERROR:
+		self->state = PIPE_CLOSE;
+		break;
+	}
+	return buf;
+}
+
+static inline void
+pipe_close(Pipe* self)
+{
+	while (self->state != PIPE_CLOSE)
+	{
+		auto error = pipe_recv(self);
+		if (error)
+			buf_free(error);
+	}
 }
 
 always_inline static inline Pipe*

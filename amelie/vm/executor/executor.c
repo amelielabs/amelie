@@ -180,6 +180,7 @@ executor_wal_write(Executor* self)
 			auto pipe = pipe_set_get(set, i);
 			if (pipe == NULL)
 				continue;
+			assert(pipe->state == PIPE_CLOSE);
 			assert(pipe->tr);
 			wal_batch_add(wal_batch, &pipe->tr->log.log_set);
 		}
@@ -197,6 +198,9 @@ executor_wal_write(Executor* self)
 hot void
 executor_commit(Executor* self, Dtr* tr, Buf* error)
 {
+	if (error)
+		dtr_shutdown(tr);
+
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
@@ -220,7 +224,6 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 			{
 				dtr_set_state(tr, DTR_ERROR);
 				dtr_set_error(tr, error);
-				dtr_shutdown(tr);
 			} else {
 				dtr_set_state(tr, DTR_PREPARE);
 			}

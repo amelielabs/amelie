@@ -28,10 +28,9 @@ void
 config_prepare(Config* self)
 {
 	auto cpus = get_nprocs();
-	auto default_fe = cpus / 3;
-	auto default_be = cpus - default_fe;
-	if (default_fe == 0)
-		default_fe = 1;
+	auto default_be = cpus / 3;
+	if (default_be == 0)
+		default_be = 6;
 
 	VarDef defs[] =
 	{

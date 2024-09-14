@@ -17,6 +17,7 @@ struct Req
 	uint8_t*  arg_start;
 	Value     result;
 	Result*   cte;
+	bool      shutdown;
 	Route*    route;
 	Limit*    limit;
 	Local*    local;
@@ -33,6 +34,7 @@ req_allocate(void)
 	self->code_start = 0;
 	self->arg_start  = NULL;
 	self->cte        = NULL;
+	self->shutdown   = false;
 	self->route      = NULL;
 	self->limit      = NULL;
 	self->local      = NULL;
@@ -59,6 +61,7 @@ req_reset(Req* self)
 	self->code_start = 0;
 	self->arg_start  = NULL;
 	self->cte        = NULL;
+	self->shutdown   = false;
 	self->route      = NULL;
 	self->limit      = NULL;
 	self->local      = NULL;
