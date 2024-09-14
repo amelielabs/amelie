@@ -39,7 +39,8 @@ notify_open(Notify* self, Poller* poller, NotifyFunction callback, void* arg)
 	if (unlikely(rc == -1))
 		return -1;
 	rc = poller_read(poller, &self->fd, notify_on_read, self);
-	if (unlikely(rc == -1)) {
+	if (unlikely(rc == -1))
+	{
 		poller_del(poller, &self->fd);
 		return -1;
 	}
