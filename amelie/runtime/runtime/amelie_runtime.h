@@ -24,11 +24,14 @@
 
 // memory
 #include "runtime/allocator.h"
+#include "runtime/arena.h"
 #include "runtime/str.h"
+
+// buffer manager
 #include "runtime/buf.h"
 #include "runtime/buf_cache.h"
 #include "runtime/buf_list.h"
-#include "runtime/arena.h"
+#include "runtime/buf_mgr.h"
 
 // event loop
 #include "runtime/timer_mgr.h"

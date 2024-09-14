@@ -15,6 +15,7 @@ struct Main
 	Resolver    resolver;
 	Config      config;
 	TimezoneMgr timezone_mgr;
+	BufMgr      buf_mgr;
 	Global      global;
 };
 

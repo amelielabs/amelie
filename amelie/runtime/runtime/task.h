@@ -15,7 +15,7 @@ struct Task
 	Poller         poller;
 	ConditionCache condition_cache;
 	Channel        channel;
-	BufCache       buf_cache;
+	BufMgr*        buf_mgr;
 	MainFunction   main;
 	void*          main_arg;
 	void*          main_arg_global;
@@ -39,6 +39,7 @@ void task_init(Task*);
 void task_free(Task*);
 bool task_active(Task*);
 int  task_create_nothrow(Task*, char*, MainFunction, void*, void*,
-                         LogFunction, void*);
+                         LogFunction, void*,
+                         BufMgr*);
 void task_wait(Task*);
 void task_coroutine_main(void*);

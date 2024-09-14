@@ -461,7 +461,8 @@ amelie_start(Amelie* self, int argc, char** argv)
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", amelie_runner, &args,
 	                         &self->main.global,
-	                         logger_write, &self->main.logger);
+	                         logger_write, &self->main.logger,
+	                         &self->main.buf_mgr);
 	if (unlikely(rc == -1))
 		return AMELIE_ERROR;
 
@@ -473,7 +474,7 @@ amelie_start(Amelie* self, int argc, char** argv)
 void
 amelie_stop(Amelie* self)
 {
-	auto buf = msg_create_nothrow(&self->task.buf_cache, RPC_STOP, 0);
+	auto buf = msg_create_nothrow(&self->main.buf_mgr, RPC_STOP, 0);
 	if (! buf)
 		abort();
 	channel_write(&self->task.channel, buf);

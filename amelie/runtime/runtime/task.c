@@ -167,7 +167,6 @@ task_init(Task* self)
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	condition_cache_init(&self->condition_cache);
-	buf_cache_init(&self->buf_cache, 32 * 1024); // 32kb max
 	channel_init(&self->channel);
 	status_init(&self->status);
 	thread_init(&self->thread);
@@ -183,7 +182,6 @@ task_free(Task* self)
 	channel_free(&self->channel);
 	poller_free(&self->poller);
 	status_free(&self->status);
-	buf_cache_free(&self->buf_cache);
 }
 
 bool
@@ -199,7 +197,8 @@ task_create_nothrow(Task*        self,
                     void*        main_arg,
                     void*        main_arg_global,
                     LogFunction  log,
-                    void*        log_arg)
+                    void*        log_arg,
+                    BufMgr*      buf_mgr)
 {
 	// set arguments
 	self->name            = name;
@@ -208,6 +207,7 @@ task_create_nothrow(Task*        self,
 	self->main_arg_global = main_arg_global;
 	self->log_write       = log;
 	self->log_write_arg   = log_arg;
+	self->buf_mgr         = buf_mgr;
 
 	// prepare poller
 	int rc = poller_create(&self->poller);

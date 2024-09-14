@@ -82,7 +82,7 @@ str_copy(Str* self, Str* src)
 static inline Buf*
 buf_create(void)
 {
-	auto self = buf_create_nothrow(&am_task->buf_cache, 0);
+	auto self = buf_mgr_create_nothrow(am_task->buf_mgr, 0);
 	if (unlikely(self == NULL))
 		error_system();
 	return self;
@@ -306,7 +306,8 @@ task_create(Task*        self,
 	rc = task_create_nothrow(self, name, main, main_arg,
 	                         am_task->main_arg_global,
 	                         am_task->log_write,
-	                         am_task->log_write_arg);
+	                         am_task->log_write_arg,
+	                         am_task->buf_mgr);
 	if (unlikely(rc == -1))
 		error_system();
 }

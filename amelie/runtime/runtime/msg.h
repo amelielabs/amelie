@@ -22,9 +22,9 @@ msg_of(Buf* buf)
 }
 
 static inline Buf*
-msg_create_nothrow(BufCache* cache, int id, int reserve)
+msg_create_nothrow(BufMgr* mgr, int id, int reserve)
 {
-	auto buf = buf_create_nothrow(cache, sizeof(Msg) + reserve);
+	auto buf = buf_mgr_create_nothrow(mgr, sizeof(Msg) + reserve);
 	if (unlikely(buf == NULL))
 		return NULL;
 	auto msg = msg_of(buf);

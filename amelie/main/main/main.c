@@ -15,6 +15,7 @@ main_init(Main* self)
 	resolver_init(&self->resolver);
 	config_init(&self->config);
 	timezone_mgr_init(&self->timezone_mgr);
+	buf_mgr_init(&self->buf_mgr);
 
 	auto global = &self->global;
 	global->config       = &self->config;
@@ -31,6 +32,7 @@ main_free(Main* self)
 {
 	config_free(&self->config);
 	timezone_mgr_free(&self->timezone_mgr);
+	buf_mgr_free(&self->buf_mgr);
 	logger_close(&self->logger);
 	tls_lib_free();
 }
