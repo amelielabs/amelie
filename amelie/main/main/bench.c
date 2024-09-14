@@ -28,9 +28,6 @@ bench_main(void* arg)
 			client_set_remote(client, bench->remote);
 			list_append(&clients, &client->link);
 			client_connect(client);
-			auto rc = poller_start_read(&am_self->poller, &client->tcp.fd);
-			if (unlikely(rc == -1))
-				error_system();
 		}
 
 		// begin
@@ -57,12 +54,7 @@ bench_main(void* arg)
 				auto client = container_of(fd, Client, tcp.fd);
 				iface->recv(bench, client);
 				iface->send(bench, client);
-
-				auto rc = poller_start_read(&am_self->poller, &client->tcp.fd);
-				if (unlikely(rc == -1))
-					error_system();
 			}
-
 		}
 	}
 

@@ -57,6 +57,15 @@ readahead_read(Readahead* self, int size, uint8_t** pos)
 		int rc = tcp_read(self->tcp, &self->buf, self->readahead);
 		if (unlikely(rc == 0))
 			return 0;
+		if (rc == -1)
+		{
+			if (errno == EAGAIN || errno == EINTR)
+			{
+				poll_read(&self->tcp->fd, -1);
+				continue;
+			}
+			error_system();
+		}
 	}
 	return size;
 }

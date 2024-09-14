@@ -114,6 +114,9 @@ tcp_attach(Tcp* self)
 	rc = poller_add(poller, &self->fd);
 	if (unlikely(rc == -1))
 		error_system();
+	rc = poller_start_read(poller, &self->fd);
+	if (unlikely(rc == -1))
+		error_system();
 	self->poller = poller;
 }
 
@@ -240,14 +243,10 @@ tcp_read_socket(Tcp* self, Buf* buf, int size)
 	rc = socket_read(self->fd.fd, buf->position, size);
 	if (rc == -1)
 	{
-#if 0
 		if (! (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
 			error_system();
 		// retry
 		return -1;
-#endif
-		// treat socket errors as eof
-		return 0;
 	}
 
 	// might be zero in case of eof
@@ -258,12 +257,6 @@ tcp_read_socket(Tcp* self, Buf* buf, int size)
 int
 tcp_read(Tcp* self, Buf* buf, int size)
 {
-	bool poll = true;
-	if (tls_is_set(&self->tls) && tls_read_pending(&self->tls))
-		poll = false;
-	if (poll)
-		poll_read(&self->fd, -1);
-
 	buf_reserve(buf, size);
 
 	// read data from socket or tls

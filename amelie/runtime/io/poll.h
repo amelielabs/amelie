@@ -12,17 +12,13 @@ poll_read(Fd* fd, int time_ms)
 	cancellation_point();
 	auto poller = &am_self->poller;
 	fd_reset(fd);
-	auto rc = poller_start_read(poller, fd);
-	if (unlikely(rc == -1))
-		error_system();
 	while (! fd->on_read)
 	{
-		rc = poller_step(poller, NULL, NULL, time_ms);
+		auto rc = poller_step(poller, NULL, NULL, time_ms);
 		cancellation_point();
 		if (unlikely(rc == -1 && errno != EINTR))
 			error_system();
 	}
-	poller_stop_read(poller, fd);
 }
 
 hot static inline void
