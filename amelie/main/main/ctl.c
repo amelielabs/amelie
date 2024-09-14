@@ -243,7 +243,7 @@ ctl_stop(Ctl* self)
 	if (pid == -1)
 		return -1;
 
-	kill(pid, SIGINT);
+	kill(pid, SIGTERM);
 
 	int status;
 	waitpid(pid, &status, WNOHANG);

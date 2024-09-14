@@ -217,7 +217,10 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		case DTR_NONE:
 			// non-distributed transaction
 			if (error)
+			{
+				dtr_set_error(tr, error);
 				msg_error_rethrow(error);
+			}
 			return;
 		case DTR_BEGIN:
 			if (unlikely(error))
