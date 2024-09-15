@@ -20,16 +20,13 @@ part_allocate(PartConfig* config, Serial* serial)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->route         = NULL;
-	self->config        = NULL;
+	self->config        = part_config_copy(config);
 	self->indexes_count = 0;
 	self->serial        = serial;
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
 	hashtable_node_init(&self->link_ht);
-	guard(part_free, self);
-	self->config = part_config_copy(config);
-	unguard();
 	return self;
 }
 

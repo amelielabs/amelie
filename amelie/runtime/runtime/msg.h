@@ -22,11 +22,9 @@ msg_of(Buf* buf)
 }
 
 static inline Buf*
-msg_create_nothrow(BufMgr* mgr, int id, int reserve)
+msg_create_as(BufMgr* mgr, int id, int reserve)
 {
-	auto buf = buf_mgr_create_nothrow(mgr, sizeof(Msg) + reserve);
-	if (unlikely(buf == NULL))
-		return NULL;
+	auto buf = buf_mgr_create(mgr, sizeof(Msg) + reserve);
 	auto msg = msg_of(buf);
 	msg->size = sizeof(Msg);
 	msg->id   = id;
@@ -38,4 +36,10 @@ static inline int
 msg_data_size(Msg* msg)
 {
 	return msg->size - sizeof(Msg);
+}
+
+static inline void
+msg_end(Buf* self)
+{
+	msg_of(self)->size = buf_size(self);
 }

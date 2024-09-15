@@ -32,7 +32,7 @@ login_mgr_open(LoginMgr* self, const char* path)
 
 	Buf buf;
 	buf_init(&buf);
-	guard(buf_free, &buf);
+	guard_buf(&buf);
 	file_import(&buf, "%s", path);
 
 	Str text;
@@ -67,7 +67,7 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	// write a list of remote login_mgr
 	Buf buf;
 	buf_init(&buf);
-	guard(buf_free, &buf);
+	guard_buf(&buf);
 
 	// {}
 	encode_map(&buf);
@@ -82,7 +82,7 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	// convert to json
 	Buf text;
 	buf_init(&text);
-	guard(buf_free, &text);
+	guard_buf(&text);
 	uint8_t* pos = buf.start;
 	json_export_pretty(&text, NULL, &pos);
 

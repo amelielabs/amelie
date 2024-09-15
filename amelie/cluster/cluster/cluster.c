@@ -58,7 +58,9 @@ static inline void
 cluster_save(Cluster* self)
 {
 	// create dump
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
+
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -69,9 +71,6 @@ cluster_save(Cluster* self)
 
 	// update and save state
 	var_data_set_buf(&config()->nodes, buf);
-
-	buf_end(buf);
-	buf_free(buf);
 }
 
 static Node*
@@ -244,7 +243,7 @@ cluster_map(Cluster* self, PartMap* map, Part* part)
 Buf*
 cluster_list(Cluster* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -252,5 +251,5 @@ cluster_list(Cluster* self)
 		node_config_write(node->config, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }

@@ -39,6 +39,12 @@ buf_free_memory(Buf* self)
 		am_free(self);
 }
 
+static inline void
+buf_ref(Buf* self)
+{
+	self->refs++;
+}
+
 static inline int
 buf_capacity(Buf* self)
 {
@@ -69,11 +75,11 @@ buf_reset(Buf* self)
 	self->position = self->start;
 }
 
-static inline int
-buf_reserve_nothrow(Buf* self, int size)
+static inline uint8_t**
+buf_reserve(Buf* self, int size)
 {
 	if (likely(buf_size_unused(self) >= size))
-		return 0;
+		return &self->position;
 
 	int size_actual = buf_size(self) + size;
 	int size_grow = buf_capacity(self)*  2;
@@ -81,15 +87,12 @@ buf_reserve_nothrow(Buf* self, int size)
 		size_grow = size_actual;
 
 	uint8_t* pointer;
-	pointer = am_realloc_nothrow(self->start, size_grow);
-	if (unlikely(pointer == NULL))
-		return -1;
-
+	pointer = am_realloc(self->start, size_grow);
 	self->position = pointer + (self->position - self->start);
 	self->end = pointer + size_grow;
 	self->start = pointer;
 	assert((self->end - self->position) >= size);
-	return 0;
+	return &self->position;
 }
 
 static inline void
@@ -142,4 +145,44 @@ static inline void
 buf_str(Buf* self, Str* str)
 {
 	str_set(str, (char*)self->start, buf_size(self));
+}
+
+static inline void*
+buf_claim(Buf* self, int size)
+{
+	buf_reserve(self, size);
+	auto pos = self->position;
+	buf_advance(self, size);
+	return pos;
+}
+
+static inline void
+buf_write(Buf* self, void* data, int size)
+{
+	buf_reserve(self, size);
+	buf_append(self, data, size);
+}
+
+always_inline hot static inline void
+buf_write_str(Buf* self, Str* str)
+{
+	buf_write(self, str_of(str), str_size(str));
+}
+
+static inline void
+buf_vprintf(Buf* self, const char* fmt, va_list args)
+{
+	char tmp[512];
+	int  tmp_len;
+	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
+	buf_write(self, tmp, tmp_len);
+}
+
+static inline void
+buf_printf(Buf* self, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	buf_vprintf(self, fmt, args);
+	va_end(args);
 }

@@ -16,5 +16,5 @@ struct ContextStack
 };
 
 void context_stack_init(ContextStack*);
-int  context_stack_allocate(ContextStack*, int);
+void context_stack_allocate(ContextStack*, int);
 void context_stack_free(ContextStack*);

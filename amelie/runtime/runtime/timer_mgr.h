@@ -38,7 +38,7 @@ void     timer_mgr_init(TimerMgr*);
 void     timer_mgr_free(TimerMgr*);
 void     timer_mgr_update(TimerMgr*);
 int      timer_mgr_step(TimerMgr*);
-int      timer_mgr_add(TimerMgr*, Timer*);
+void     timer_mgr_add(TimerMgr*, Timer*);
 void     timer_mgr_remove(TimerMgr*, Timer*);
 uint64_t timer_mgr_gettime(void);
 
@@ -96,11 +96,11 @@ timer_init(Timer* self, TimerFunction function, void* arg,
 	self->mgr          = NULL;
 }
 
-static inline int
+static inline void
 timer_start(TimerMgr* self, Timer* timer)
 {
 	timer_mgr_update(self);
-	return timer_mgr_add(self, timer);
+	timer_mgr_add(self, timer);
 }
 
 static inline void

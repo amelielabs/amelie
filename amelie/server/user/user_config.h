@@ -48,10 +48,9 @@ static inline UserConfig*
 user_config_copy(UserConfig* self)
 {
 	auto copy = user_config_allocate();
-	guard(user_config_free, copy);
 	user_config_set_name(copy, &self->name);
 	user_config_set_secret(copy, &self->secret);
-	return unguard();
+	return copy;
 }
 
 static inline void

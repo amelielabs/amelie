@@ -504,8 +504,7 @@ cupdate(Vm* self, Op* op)
 	}
 	case VALUE_SET:
 	{
-		auto buf = buf_begin();
-		buf_end(buf);
+		auto buf = buf_create();
 		guard_buf(buf);
 		auto set = (Set*)value->obj;
 		for (int j = 0; j < set->list_count; j++)
@@ -728,7 +727,6 @@ csend_hash(Vm* self, Op* op)
 
 	ReqList list;
 	req_list_init(&list);
-	guard(req_list_free, &list);
 
 	// shard by precomputed key hash
 	auto route = part_map_get(&table->part_list.map, op->d);
@@ -738,7 +736,6 @@ csend_hash(Vm* self, Op* op)
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
-	unguard();
 }
 
 hot void
@@ -753,7 +750,6 @@ csend(Vm* self, Op* op)
 	// redistribute rows between nodes
 	ReqList list;
 	req_list_init(&list);
-	guard(req_list_free, &list);
 
 	auto data_start = code_data_at(self->code_data, 0);
 	auto data       = code_data_at(self->code_data, op->d);
@@ -786,7 +782,6 @@ csend(Vm* self, Op* op)
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
-	unguard();
 }
 
 hot void
@@ -795,7 +790,6 @@ csend_first(Vm* self, Op* op)
 	// [stmt, start]
 	ReqList list;
 	req_list_init(&list);
-	guard(req_list_free, &list);
 
 	// send to the first node
 	auto dtr = self->dtr;
@@ -805,7 +799,6 @@ csend_first(Vm* self, Op* op)
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
-	unguard();
 }
 
 hot void
@@ -814,7 +807,6 @@ csend_all(Vm* self, Op* op)
 	// [stmt, start]
 	ReqList list;
 	req_list_init(&list);
-	guard(req_list_free, &list);
 
 	// send to all nodes
 	auto dtr = self->dtr;
@@ -828,7 +820,6 @@ csend_all(Vm* self, Op* op)
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
-	unguard();
 }
 
 hot void

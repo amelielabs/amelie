@@ -54,16 +54,14 @@ static inline ArenaPage*
 arena_add_page(Arena* self)
 {
 	ArenaPage* page;
-	page = am_malloc_nothrow(sizeof(ArenaPage) + self->page_size);
-	if (unlikely(page == NULL))
-		return NULL;
+	page = am_malloc(sizeof(ArenaPage) + self->page_size);
 	page->used = 0;
 	page->next = NULL;
 	return page;
 }
 
 hot static inline void*
-arena_allocate_nothrow(Arena* self, int size)
+arena_allocate(Arena* self, int size)
 {
 	if (unlikely(size > self->page_size))
 		return NULL;
@@ -71,8 +69,6 @@ arena_allocate_nothrow(Arena* self, int size)
 	if (unlikely(self->list == NULL || (self->page_size - self->list_tail->used) < size))
 	{
 		page = arena_add_page(self);
-		if (unlikely(page == NULL))
-			return NULL;
 		if (self->list == NULL)
 			self->list = page;
 		else

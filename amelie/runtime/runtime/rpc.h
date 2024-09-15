@@ -87,7 +87,7 @@ rpc(Channel* channel, int id, int argc, ...)
 	auto rpc_ptr = &rpc;
 
 	// do rpc call and wait for completion
-	auto buf = msg_begin(id);
+	auto buf = msg_create(id);
 	buf_write(buf, &rpc_ptr, sizeof(void**));
 	msg_end(buf);
 	channel_write(channel, buf);

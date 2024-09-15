@@ -35,9 +35,7 @@ poller_create(Poller* self)
 
 	// prepare event list
 	int size = sizeof(struct epoll_event) * 1024;
-	self->list = am_malloc_nothrow(size);
-	if (unlikely(self->list == NULL))
-		return -1;
+	self->list = am_malloc(size);
 	memset(self->list, 0, size);
 
 	// create context
@@ -92,9 +90,7 @@ poller_add(Poller* self, Fd* fd)
 	if (count >= self->list_max)
 	{
 		int   list_max = self->list_max*  2;
-		void* list = am_realloc_nothrow(self->list, list_max * sizeof(struct epoll_event));
-		if (unlikely(list == NULL))
-			return -1;
+		void* list = am_realloc(self->list, list_max * sizeof(struct epoll_event));
 		self->list = list;
 		self->list_max = list_max;
 	}
@@ -124,6 +120,16 @@ poller_del(Poller* self, Fd* fd)
 	return 0;
 }
 
+static inline int
+poller_mod(Poller* self, Fd* fd, int mask)
+{
+	fd->mask = mask;
+	struct epoll_event event;
+	event.events = mask;
+	event.data.ptr = fd;
+	return epoll_ctl(self->fd, EPOLL_CTL_MOD, fd->fd, &event);
+}
+
 int
 poller_read(Poller*    self,
             Fd*        fd,
@@ -139,16 +145,7 @@ poller_read(Poller*    self,
 		return 0;
 	fd->on_read     = on_read;
 	fd->on_read_arg = arg;
-	fd->mask        = mask;
-
-	struct epoll_event event;
-	event.events = mask;
-	event.data.ptr = fd;
-	int rc;
-	rc = epoll_ctl(self->fd, EPOLL_CTL_MOD, fd->fd, &event);
-	if (unlikely(rc == -1))
-		return -1;
-	return 0;
+	return poller_mod(self, fd, mask);
 }
 
 int
@@ -166,14 +163,5 @@ poller_write(Poller*    self,
 		return 0;
 	fd->on_write     = on_write;
 	fd->on_write_arg = arg;
-	fd->mask         = mask;
-
-	struct epoll_event event;
-	event.events = mask;
-	event.data.ptr = fd;
-	int rc;
-	rc = epoll_ctl(self->fd, EPOLL_CTL_MOD, fd->fd, &event);
-	if (unlikely(rc == -1))
-		return -1;
-	return 0;
+	return poller_mod(self, fd, mask);
 }

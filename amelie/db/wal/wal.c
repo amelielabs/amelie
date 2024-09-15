@@ -116,7 +116,7 @@ wal_gc(Wal* self, uint64_t min)
 	// remove wal files < min
 	Buf list;
 	buf_init(&list);
-	guard(buf_free, &list);
+	guard_buf(&list);
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);
@@ -308,7 +308,7 @@ wal_show(Wal* self)
 	slots_count = wal_slots(self, &slots_min);
 
 	// map
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 
 	// active
@@ -348,5 +348,5 @@ wal_show(Wal* self)
 	encode_integer(buf, slots_min);
 
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }

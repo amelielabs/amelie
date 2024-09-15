@@ -36,11 +36,10 @@ function_allocate(FunctionDef* def)
 	Function* self = am_malloc(sizeof(Function));
 	self->main    = def->function;
 	self->context = def->context;;
-	guard(am_free, self);
 	str_strdup(&self->schema, def->schema);
 	str_strdup(&self->name, def->name);
 	list_init(&self->link);
-	return unguard();
+	return self;
 }
 
 static inline void

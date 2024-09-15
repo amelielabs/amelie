@@ -124,7 +124,7 @@ node_execute(Node* self, Pipe* pipe)
 				id = MSG_READY;
 			else
 				id = MSG_OK;
-			buf = msg_begin(id);
+			buf = msg_create(id);
 			msg_end(buf);
 		}
 		channel_write(&pipe->src, buf);
@@ -162,7 +162,7 @@ node_main(void* arg)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard(buf_free, buf);
+		guard_buf(buf);
 
 		switch (msg->id) {
 		case RPC_BEGIN:
@@ -203,17 +203,15 @@ Node*
 node_allocate(NodeConfig* config, Db* db, FunctionMgr* function_mgr)
 {
 	auto self = (Node*)am_malloc(sizeof(Node));
-	self->config = NULL;
+	self->config = node_config_copy(config);
 	route_init(&self->route, &self->task.channel);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
-	task_init(&self->task);
-	guard(node_free, self);
-	self->config = node_config_copy(config);
 	self->vm.node = &self->config->id;
-	return unguard();
+	task_init(&self->task);
+	return self;
 }
 
 void

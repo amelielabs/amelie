@@ -48,17 +48,12 @@ view_mgr_create(ViewMgr*    self,
 
 	// allocate view and init
 	auto view = view_allocate(config);
-	guard(view_free, view);
 
 	// save create view operation
 	auto op = view_op_create(config);
-	guard_buf(op);
 
 	// update views
 	handle_mgr_create(&self->mgr, tr, LOG_VIEW_CREATE, &view->handle, op);
-
-	unguard();
-	unguard();
 }
 
 void
@@ -79,11 +74,9 @@ view_mgr_drop(ViewMgr* self,
 
 	// save drop view operation
 	auto op = view_op_drop(&view->config->schema, &view->config->name);
-	guard_buf(op);
 
 	// update mgr
 	handle_mgr_drop(&self->mgr, tr, LOG_VIEW_DROP, &view->handle, op);
-	unguard();
 }
 
 static void
@@ -139,13 +132,11 @@ view_mgr_rename(ViewMgr* self,
 
 	// save rename view operation
 	auto op = view_op_rename(schema, name, schema_new, name_new);
-	guard_buf(op);
 
 	// update view
 	log_handle(&tr->log, LOG_VIEW_RENAME, &rename_if,
 	           NULL,
 	           &view->handle, op);
-	unguard();
 
 	// set new view name
 	if (! str_compare(&view->config->schema, schema_new))
@@ -186,7 +177,7 @@ view_mgr_find(ViewMgr* self, Str* schema, Str* name,
 Buf*
 view_mgr_list(ViewMgr* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
@@ -194,5 +185,5 @@ view_mgr_list(ViewMgr* self)
 		view_config_write(view->config, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }

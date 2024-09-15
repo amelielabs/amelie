@@ -59,11 +59,10 @@ static inline PartConfig*
 part_config_copy(PartConfig* self)
 {
 	auto copy = part_config_allocate();
-	guard(part_config_free, copy);
 	part_config_set_id(copy, self->id);
 	part_config_set_node(copy, &self->node);
 	part_config_set_range(copy, self->min, self->max);
-	return unguard();
+	return copy;
 }
 
 static inline PartConfig*

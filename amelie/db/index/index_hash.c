@@ -92,7 +92,6 @@ index_hash_allocate(IndexConfig* config)
 	auto self = (IndexHash*)am_malloc(sizeof(IndexHash));
 	index_init(&self->index, config);
 	hash_init(&self->hash);
-	guard(index_hash_free, self);
 
 	auto iface = &self->index.iface;
 	iface->set       = index_hash_set;
@@ -106,6 +105,5 @@ index_hash_allocate(IndexConfig* config)
 	iface->free      = index_hash_free;
 
 	hash_create(&self->hash, &config->keys);
-	unguard();
 	return &self->index;
 }

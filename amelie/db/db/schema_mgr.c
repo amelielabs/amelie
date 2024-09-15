@@ -48,18 +48,13 @@ schema_mgr_create(SchemaMgr*    self,
 
 	// allocate schema and init
 	auto schema = schema_allocate(config);
-	guard(schema_free, schema);
 
 	// save create schema operation
 	auto op = schema_op_create(config);
-	guard_buf(op);
 
 	// update schemas
 	handle_mgr_create(&self->mgr, tr, LOG_SCHEMA_CREATE,
 	                  &schema->handle, op);
-
-	unguard();
-	unguard();
 }
 
 void
@@ -83,11 +78,9 @@ schema_mgr_drop(SchemaMgr* self,
 
 	// save drop schema operation
 	auto op = schema_op_drop(&schema->config->name);
-	guard_buf(op);
 
 	// drop schema by object
 	handle_mgr_drop(&self->mgr, tr, LOG_SCHEMA_DROP, &schema->handle, op);
-	unguard();
 }
 
 static void
@@ -143,13 +136,11 @@ schema_mgr_rename(SchemaMgr* self,
 
 	// save schema operation
 	auto op = schema_op_rename(name, name_new);
-	guard_buf(op);
 
 	// update schema
 	log_handle(&tr->log, LOG_SCHEMA_RENAME, &rename_if,
 	           NULL,
 	           &schema->handle, op);
-	unguard();
 
 	// set new name
 	schema_config_set_name(schema->config, name_new);
@@ -187,7 +178,7 @@ schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 Buf*
 schema_mgr_list(SchemaMgr* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
@@ -195,5 +186,5 @@ schema_mgr_list(SchemaMgr* self)
 		schema_config_write(schema->config, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }

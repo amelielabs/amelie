@@ -23,7 +23,7 @@ db_checkpoint_catalog_dump(void* arg)
 {
 	// { schemas, tables, views }
 	Db* self = arg;
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 
 	encode_raw(buf, "schemas", 7);
@@ -36,7 +36,7 @@ db_checkpoint_catalog_dump(void* arg)
 	view_mgr_dump(&self->view_mgr, buf);
 
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 enum

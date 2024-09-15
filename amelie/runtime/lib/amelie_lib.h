@@ -6,6 +6,10 @@
 // Real-Time SQL Database.
 //
 
+// locking
+#include "lib/lock.h"
+#include "lib/resource.h"
+
 // data structures
 #include "lib/rbtree.h"
 #include "lib/hash_table.h"

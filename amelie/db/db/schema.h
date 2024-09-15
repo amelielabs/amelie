@@ -26,15 +26,12 @@ static inline Schema*
 schema_allocate(SchemaConfig* config)
 {
 	Schema* self = am_malloc(sizeof(Schema));
-	self->config = NULL;
-	guard(schema_free, self);
 	self->config = schema_config_copy(config);
-
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, NULL);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)schema_free);
-	return unguard();
+	return self;
 }
 
 static inline Schema*

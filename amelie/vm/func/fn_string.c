@@ -53,7 +53,7 @@ fn_concat(Call* self)
 		size += str_size(&argv[i]->string);
 	}
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	auto pos = buf_reserve(buf, data_size_string(size));
 	data_write_raw(pos, NULL, size);
 	for (int i = 0; i < self->argc; i++)
@@ -64,7 +64,6 @@ fn_concat(Call* self)
 		memcpy(*pos, str_of(&argv[i]->string), at_size);
 		*pos += at_size;
 	}
-	buf_end(buf);
 
 	Str string;
 	uint8_t* pos_str = buf->start;
@@ -82,14 +81,13 @@ fn_lower(Call* self)
 	auto src = str_of(&arg->string);
 	int  src_size = str_size(&arg->string);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	auto pos = buf_reserve(buf, data_size_string(src_size));
 	data_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = tolower(src[i]);
 	*pos += src_size;
-	buf_end(buf);
 
 	Str string;
 	uint8_t* pos_str = buf->start;
@@ -107,14 +105,13 @@ fn_upper(Call* self)
 	auto src = str_of(&arg->string);
 	int  src_size = str_size(&arg->string);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	auto pos = buf_reserve(buf, data_size_string(src_size));
 	data_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = toupper(src[i]);
 	*pos += src_size;
-	buf_end(buf);
 
 	Str string;
 	uint8_t* pos_str = buf->start;
@@ -155,9 +152,8 @@ fn_substr(Call* self)
 
 	Str string;
 	str_set(&string, str_of(src) + pos, count);
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &string);
-	buf_end(buf);
 
 	Str result;
 	uint8_t* pos_str = buf->start;
@@ -222,7 +218,7 @@ fn_replace(Call* self)
 		return;
 	}
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string32(buf, 0);
 
 	auto pos = src->pos;
@@ -249,8 +245,6 @@ fn_replace(Call* self)
 		buf_write(buf, pos, 1);
 		pos++;
 	}
-
-	buf_end(buf);
 
 	// update string size
 	int size = buf_size(buf) - data_size_string32();
@@ -339,10 +333,8 @@ trim(Call* self, bool left, bool right)
 	if (right)
 		str_rtrim(&string, filter, filter_end);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &string);
-	buf_end(buf);
-
 	Str result;
 	uint8_t* pos_str = buf->start;
 	data_read_string(&pos_str, &result);

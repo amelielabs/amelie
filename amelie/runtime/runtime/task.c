@@ -143,8 +143,6 @@ task_main(void* arg)
 	main = coroutine_mgr_create(&self->coroutine_mgr, task_coroutine_main,
 	                            self->main,
 	                            self->main_arg);
-	if (unlikely(main == NULL))
-		return NULL;
 	coroutine_set_name(main, "%s", self->name);
 	self->main_coroutine = main;
 

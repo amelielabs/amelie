@@ -26,15 +26,12 @@ static inline View*
 view_allocate(ViewConfig* config)
 {
 	View* self = am_malloc(sizeof(View));
-	self->config = NULL;
-	guard(view_free, self);
 	self->config = view_config_copy(config);
-
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)view_free);
-	return unguard();
+	return self;
 }
 
 static inline View*

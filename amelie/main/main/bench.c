@@ -50,7 +50,7 @@ bench_worker_main(void* arg)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard(buf_free, buf);
+		guard_buf(buf);
 		if (msg->id == RPC_STOP)
 			break;
 	}
@@ -89,9 +89,7 @@ bench_worker_start(BenchWorker* self)
 static void
 bench_worker_stop_notify(BenchWorker* self)
 {
-	auto buf = msg_create_nothrow(self->task.buf_mgr, RPC_STOP, 0);
-	if (! buf)
-		abort();
+	auto buf = msg_create(RPC_STOP);
 	channel_write(&self->task.channel, buf);
 }
 

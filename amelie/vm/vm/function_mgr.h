@@ -64,7 +64,7 @@ function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 static inline Buf*
 function_mgr_list(FunctionMgr* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -72,5 +72,5 @@ function_mgr_list(FunctionMgr* self)
 		function_write(func, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }

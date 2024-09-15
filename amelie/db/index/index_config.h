@@ -76,13 +76,12 @@ static inline IndexConfig*
 index_config_copy(IndexConfig* self, Columns* columns)
 {
 	auto copy = index_config_allocate(columns);
-	guard(index_config_free, copy);
 	index_config_set_name(copy, &self->name);
 	index_config_set_type(copy, self->type);
 	index_config_set_unique(copy, self->unique);
 	index_config_set_primary(copy, self->primary);
 	keys_copy(&copy->keys, &self->keys);
-	return unguard();
+	return copy;
 }
 
 static inline IndexConfig*

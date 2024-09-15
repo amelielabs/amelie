@@ -34,8 +34,6 @@ static inline void
 id_mgr_add(IdMgr* self, uint64_t id)
 {
 	spinlock_lock(&self->lock);
-	guard(spinlock_unlock, &self->lock);
-
 	buf_reserve(&self->list, sizeof(id));
 
 	auto list = buf_u64(&self->list);
@@ -47,14 +45,13 @@ id_mgr_add(IdMgr* self, uint64_t id)
 
 	self->list_count++;
 	buf_advance(&self->list, sizeof(id));
+	spinlock_unlock(&self->lock);
 }
 
 static inline void
 id_mgr_delete(IdMgr* self, uint64_t id)
 {
 	spinlock_lock(&self->lock);
-	guard(spinlock_unlock, &self->lock);
-
 	auto list = buf_u64(&self->list);
 	for (int i = 0; i < self->list_count; i++)
 	{
@@ -66,17 +63,17 @@ id_mgr_delete(IdMgr* self, uint64_t id)
 		self->list_count--;
 		break;
 	}
+	spinlock_unlock(&self->lock);
 }
 
 static inline int
 id_mgr_copy(IdMgr* self, Buf* dest, uint64_t limit)
 {
-	int count = 0;
 	spinlock_lock(&self->lock);
-	guard(spinlock_unlock, &self->lock);
 
 	// copy <= limit
-	auto list = (uint64_t*)self->list.start;
+	auto list  = (uint64_t*)self->list.start;
+	auto count = 0;
 	for (int i = 0; i < self->list_count; i++)
 	{
 		if (list[i] > limit)
@@ -85,6 +82,7 @@ id_mgr_copy(IdMgr* self, Buf* dest, uint64_t limit)
 		count++;
 	}
 
+	spinlock_unlock(&self->lock);
 	return count;
 }
 
@@ -177,7 +175,6 @@ static inline int
 id_mgr_gc_between(IdMgr* self, Buf* dest, uint64_t id)
 {
 	spinlock_lock(&self->lock);
-	guard(spinlock_unlock, &self->lock);
 
 	auto list = buf_u64(&self->list);
 	int i = 0;
@@ -189,7 +186,10 @@ id_mgr_gc_between(IdMgr* self, Buf* dest, uint64_t id)
 		break;
 	}
 	if (i == 0)
+	{
+		spinlock_unlock(&self->lock);
 		return 0;
+	}
 
 	// copy removed region
 	int size = i * sizeof(uint64_t);
@@ -200,5 +200,7 @@ id_mgr_gc_between(IdMgr* self, Buf* dest, uint64_t id)
 
 	buf_truncate(&self->list, size);
 	self->list_count -= i;
+
+	spinlock_unlock(&self->lock);
 	return i;
 }

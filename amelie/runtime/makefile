@@ -14,6 +14,7 @@ CFLAGS_INCLUDE = -I. \
 CFLAGS         = $(CFLAGS_INCLUDE) $(CFLAGS_OPTS)
 LIB            = libamelie-runtime.a
 OBJECTS        = \
+                 runtime/report.o \
                  runtime/timer_mgr.o \
                  runtime/poller.o \
                  runtime/notify.o \
@@ -21,7 +22,6 @@ OBJECTS        = \
                  runtime/context.o \
                  runtime/channel.o \
                  runtime/task.o \
-                 runtime/report.o \
                  io/vfs.o \
                  io/tls_lib.o \
                  io/tls_context.o \

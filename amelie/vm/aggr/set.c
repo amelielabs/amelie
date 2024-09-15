@@ -92,7 +92,6 @@ set_create(uint8_t* data)
 	self->keys       = NULL;
 	self->keys_count = 0;
 	buf_init(&self->list);
-	guard(set_free, self);
 
 	if (data)
 	{
@@ -106,7 +105,8 @@ set_create(uint8_t* data)
 				data_read_bool(&data, &self->keys[i].asc);
 		}
 	}
-	return unguard();
+
+	return self;
 }
 
 hot void

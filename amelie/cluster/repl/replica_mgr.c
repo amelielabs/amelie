@@ -55,7 +55,9 @@ static inline void
 replica_mgr_save(ReplicaMgr* self)
 {
 	// create dump
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
+
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -66,9 +68,6 @@ replica_mgr_save(ReplicaMgr* self)
 
 	// update and save state
 	var_data_set_buf(&config()->replicas, buf);
-
-	buf_end(buf);
-	buf_free(buf);
 }
 
 void
@@ -173,7 +172,7 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 Buf*
 replica_mgr_list(ReplicaMgr* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -181,7 +180,7 @@ replica_mgr_list(ReplicaMgr* self)
 		replica_status(replica, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 Replica*

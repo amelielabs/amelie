@@ -79,10 +79,8 @@ group_create(int keys_count)
 	self->keys_count = keys_count;
 	list_init(&self->aggrs);
 	hashtable_init(&self->ht);
-
-	guard(group_free, self);
 	hashtable_create(&self->ht, 256);
-	return unguard();
+	return self;
 }
 
 void
@@ -329,12 +327,11 @@ group_read(Group* self, GroupNode* node, Value* result)
 {
 	if (self->keys_count > 1)
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		encode_array(buf);
 		for (int i = 0; i < self->keys_count; i++)
 			value_write(&node->keys[i], buf);
 		encode_array_end(buf);
-		buf_end(buf);
 		value_set_array_buf(result, buf);
 	} else {
 		value_copy(result, &node->keys[0]);

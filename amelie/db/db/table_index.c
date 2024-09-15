@@ -80,13 +80,11 @@ table_index_create(Table*       self,
 	auto op = table_op_create_index(&self->config->schema,
 	                                &self->config->name,
 	                                 config);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_INDEX_CREATE, &create_if,
 	           index,
 	           &self->handle, op);
-	unguard();
 
 	// create index for each partition
 	part_list_index_create(&self->part_list, index);
@@ -135,13 +133,11 @@ table_index_drop(Table* self,
 
 	// save drop index operation
 	auto op = table_op_drop_index(&self->config->schema, &self->config->name, name);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_INDEX_DROP, &drop_if,
 	           index,
 	           &self->handle, op);
-	unguard();
 }
 
 static void
@@ -202,13 +198,11 @@ table_index_rename(Table* self,
 	auto op = table_op_rename_index(&self->config->schema, &self->config->name,
 	                                name,
 	                                name_new);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_INDEX_RENAME, &rename_if,
 	           index,
 	           &self->handle, op);
-	unguard();
 
 	// rename index
 	index_config_set_name(index, name_new);

@@ -57,11 +57,10 @@ static inline Column*
 column_copy(Column* self)
 {
 	auto copy = column_allocate();
-	guard(column_free, copy);
 	column_set_name(copy, &self->name);
 	column_set_type(copy, self->type);
 	constraint_copy(&self->constraint, &copy->constraint);
-	return unguard();
+	return copy;
 }
 
 static inline Column*

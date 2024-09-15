@@ -138,8 +138,7 @@ static Buf*
 test_benchmark_get_buf(void)
 {
 	// map
-	auto buf = buf_begin();
-	encode_map(buf);
+	auto buf = buf_create();
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -170,7 +169,7 @@ test_benchmark_get_buf(void)
 	encode_integer(buf, 0);
 
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 static Buf*

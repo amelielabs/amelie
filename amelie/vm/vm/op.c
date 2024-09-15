@@ -191,9 +191,10 @@ op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
 void
 op_dump(Code* self, CodeData* data, Buf* buf)
 {
-	auto output = buf_begin();
-	encode_map(buf);
+	auto output = buf_create();
+	guard_buf(output);
 
+	encode_map(buf);
 	auto op  = (Op*)self->code.start;
 	auto end = (Op*)self->code.position;
 	for (int pos = 0; op < end; pos++)
@@ -312,7 +313,4 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 	}
 
 	encode_map_end(buf);
-
-	buf_end(output);
-	buf_free(output);
 }

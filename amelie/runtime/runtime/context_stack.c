@@ -12,20 +12,17 @@ void
 context_stack_init(ContextStack* self)
 {
 	self->size        = 0;
-	self->pointer     = 0;
+	self->pointer     = NULL;
 	self->valgrind_id = 0;
 }
 
-int
+void
 context_stack_allocate(ContextStack* self, int size)
 {
 	self->size = size;
-	self->pointer = am_malloc_nothrow(size);
-	if (unlikely(self->pointer == NULL))
-		return -1;
+	self->pointer = am_malloc(size);
 	self->valgrind_id =
 		VALGRIND_STACK_REGISTER(self->pointer, self->pointer + size);
-	return 0;
 }
 
 void

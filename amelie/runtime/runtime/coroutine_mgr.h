@@ -42,7 +42,8 @@ coroutine_mgr_init(CoroutineMgr* self, int stack_size)
 static inline void
 coroutine_mgr_free(CoroutineMgr* self)
 {
-	list_foreach_safe(&self->list_free) {
+	list_foreach_safe(&self->list_free)
+	{
 		auto coro = list_at(Coroutine, link);
 		coroutine_free(coro);
 	}
@@ -131,17 +132,9 @@ coroutine_mgr_create(CoroutineMgr* self,
 		arena_reset(&coro->arena);
 	} else
 	{
-		coro = am_malloc_nothrow(sizeof(Coroutine));
-		if (unlikely(coro == NULL))
-			return NULL;
+		coro = am_malloc(sizeof(Coroutine));
 		coroutine_init(coro, self);
-		int rc;
-		rc = context_stack_allocate(&coro->stack, self->stack_size);
-		if (unlikely(rc == -1))
-		{
-			am_free(coro);
-			return NULL;
-		}
+		context_stack_allocate(&coro->stack, self->stack_size);
 	}
 	coro->id       = self->seq++;
 	coro->main     = main;

@@ -92,7 +92,7 @@ pipe_set_begin(PipeSet* self)
 		auto pipe = pipe_set_get(self, i);
 		if (pipe == NULL)
 			continue;
-		auto buf = msg_begin(RPC_BEGIN);
+		auto buf = msg_create(RPC_BEGIN);
 		buf_write(buf, &pipe, sizeof(void**));
 		msg_end(buf);
 		channel_write(pipe->route->channel, buf);
@@ -109,7 +109,7 @@ pipe_set_commit(PipeSet* self)
 		if (pipe == NULL)
 			continue;
 		assert(pipe->tr);
-		auto buf = msg_begin(RPC_COMMIT);
+		auto buf = msg_create(RPC_COMMIT);
 		buf_write(buf, &pipe->tr, sizeof(void**));
 		msg_end(buf);
 		channel_write(pipe->route->channel, buf);
@@ -124,7 +124,7 @@ pipe_set_abort(PipeSet* self)
 		auto pipe = pipe_set_get(self, i);
 		if (pipe == NULL)
 			continue;
-		auto buf = msg_begin(RPC_ABORT);
+		auto buf = msg_create(RPC_ABORT);
 		msg_end(buf);
 		channel_write(pipe->route->channel, buf);
 	}

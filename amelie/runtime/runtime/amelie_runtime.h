@@ -18,13 +18,21 @@
 #include "runtime/thread.h"
 #include "runtime/status.h"
 
-// basic data structures
+// intrusive list
 #include "runtime/list.h"
 #include "runtime/utils.h"
+
+// exception
+#include "runtime/exception.h"
+#include "runtime/log.h"
+#include "runtime/error.h"
+#include "runtime/report.h"
 
 // memory
 #include "runtime/allocator.h"
 #include "runtime/arena.h"
+
+// string
 #include "runtime/str.h"
 
 // buffer manager
@@ -38,11 +46,6 @@
 #include "runtime/fd.h"
 #include "runtime/poller.h"
 #include "runtime/notify.h"
-
-// exception
-#include "runtime/exception.h"
-#include "runtime/log.h"
-#include "runtime/error.h"
 
 // cooperative multitasking
 #include "runtime/context_stack.h"
@@ -59,7 +62,6 @@
 #include "runtime/condition_cache.h"
 #include "runtime/channel.h"
 #include "runtime/task.h"
-#include "runtime/report.h"
 
 // runtime
 #include "runtime/throw.h"
@@ -70,7 +72,3 @@
 // rpc
 #include "runtime/rpc.h"
 #include "runtime/rpc_queue.h"
-
-// lock
-#include "runtime/lock.h"
-#include "runtime/resource.h"

@@ -87,7 +87,7 @@ backup_prepare_state(Backup* self)
 	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	Buf config_data;
 	buf_init(&config_data);
-	guard(buf_free, &config_data);
+	guard_buf(&config_data);
 	file_import(&config_data, "%s", path);
 	Str config_str;
 	buf_str(&config_data, &config_str);

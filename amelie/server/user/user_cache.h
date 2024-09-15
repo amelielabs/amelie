@@ -90,7 +90,7 @@ user_cache_sync(UserCache* self, UserCache* with)
 static inline Buf*
 user_cache_dump(UserCache* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -98,13 +98,13 @@ user_cache_dump(UserCache* self)
 		user_config_write(user->config, buf, true);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 static inline Buf*
 user_cache_list(UserCache* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
@@ -112,5 +112,5 @@ user_cache_list(UserCache* self)
 		user_config_write(user->config, buf, false);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }

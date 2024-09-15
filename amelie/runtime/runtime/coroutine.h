@@ -14,7 +14,6 @@ struct Coroutine
 	Context      context;
 	ContextStack stack;
 	ExceptionMgr exception_mgr;
-	BufList      buf_list;
 	Error        error;
 	Arena        arena;
 	bool         cancel;
@@ -43,7 +42,6 @@ coroutine_init(Coroutine* self, void* mgr)
 	memset(&self->context, 0, sizeof(self->context));
 	context_stack_init(&self->stack);
 	exception_mgr_init(&self->exception_mgr);
-	buf_list_init(&self->buf_list);
 	error_init(&self->error);
 	arena_init(&self->arena, 4000);
 	list_init(&self->link);
@@ -54,7 +52,6 @@ coroutine_init(Coroutine* self, void* mgr)
 static inline void
 coroutine_free(Coroutine* self)
 {
-	buf_list_free(&self->buf_list);
 	arena_reset(&self->arena);
 	context_stack_free(&self->stack);
 	am_free(self);

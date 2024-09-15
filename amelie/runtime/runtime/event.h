@@ -14,7 +14,6 @@ struct Event
 	Event* parent;
 	Event* parent_signal;
 	bool   signal;
-	Event* next;
 };
 
 static inline void
@@ -24,7 +23,6 @@ event_init(Event* self)
 	self->parent        = NULL;
 	self->parent_signal = NULL;
 	self->signal        = false;
-	self->next          = NULL;
 }
 
 static inline void

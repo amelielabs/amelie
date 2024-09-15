@@ -87,9 +87,8 @@ ctl_show(Session* self)
 			      str_of(name));
 		if (var_is(var, VAR_L))
 			var = vars_find(&self->local.config.vars, name);
-		buf = buf_begin();
+		buf = buf_create();
 		var_encode(var, buf);
-		buf_end(buf);
 	}
 	return buf;
 }

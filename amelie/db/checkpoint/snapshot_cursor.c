@@ -54,7 +54,8 @@ snapshot_cursor_next(SnapshotCursor* self)
 	if (snapshot_cursor_eof(self, sizeof(Msg)))
 		return NULL;
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
 
 	// read header
 	uint32_t size_header = sizeof(Msg);
@@ -67,16 +68,12 @@ snapshot_cursor_next(SnapshotCursor* self)
 
 	// check for eof
 	if (snapshot_cursor_eof(self, size_data))
-	{
-		buf_end(buf);
-		buf_free(buf);
 		return NULL;
-	}
 
 	// read body
 	file_pread_buf(&self->file, buf, size_data, self->file_offset);
 	self->file_offset += size_data;
 
-	buf_end(buf);
+	unguard();
 	return buf;
 }

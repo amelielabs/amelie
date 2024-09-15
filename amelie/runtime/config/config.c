@@ -96,7 +96,7 @@ config_save_to(Config* self, const char* path)
 	// convert to json
 	Buf text;
 	buf_init(&text);
-	guard(buf_free, &text);
+	guard_buf(&text);
 	uint8_t* pos = buf->start;
 	json_export_pretty(&text, NULL, &pos);
 
@@ -117,7 +117,7 @@ config_save(Config* self, const char* path)
 	// remove old saved config, if exists
 	Buf buf;
 	buf_init(&buf);
-	guard(buf_free, &buf);
+	guard_buf(&buf);
 	if (fs_exists("%s.old", path))
 		fs_unlink("%s.old", path);
 
@@ -138,7 +138,7 @@ config_open(Config* self, const char* path)
 	{
 		Buf buf;
 		buf_init(&buf);
-		guard(buf_free, &buf);
+		guard_buf(&buf);
 		file_import(&buf, "%s", path);
 		Str options;
 		str_init(&options);

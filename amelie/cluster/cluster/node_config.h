@@ -38,9 +38,8 @@ static inline NodeConfig*
 node_config_copy(NodeConfig* self)
 {
 	auto copy = node_config_allocate();
-	guard(node_config_free, copy);
 	node_config_set_id(copy, &self->id);
-	return unguard();
+	return copy;
 }
 
 static inline NodeConfig*

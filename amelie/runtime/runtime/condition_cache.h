@@ -24,7 +24,8 @@ condition_cache_init(ConditionCache* self)
 static inline void
 condition_cache_free(ConditionCache* self)
 {
-	list_foreach_safe(&self->list) {
+	list_foreach_safe(&self->list)
+	{
 		auto event = list_at(Condition, link);
 		condition_detach(event);
 		am_free(event);
@@ -35,7 +36,8 @@ static inline Condition*
 condition_cache_pop(ConditionCache* self)
 {
 	Condition* event = NULL;
-	if (unlikely(self->list_count > 0)) {
+	if (unlikely(self->list_count > 0))
+	{
 		auto first = list_pop(&self->list);
 		self->list_count--;
 		event = container_of(first, Condition, link);
@@ -52,7 +54,7 @@ condition_cache_push(ConditionCache* self, Condition* event)
 }
 
 static inline Condition*
-condition_create_nothrow(ConditionCache* self)
+condition_cache_create(ConditionCache* self)
 {
 	auto event = condition_cache_pop(self);
 	if (event)
@@ -60,9 +62,7 @@ condition_create_nothrow(ConditionCache* self)
 		event_init(&event->event);
 		return event;
 	}
-	event = am_malloc_nothrow(sizeof(Condition));
-	if (unlikely(event == NULL))
-		return NULL;
+	event = am_malloc(sizeof(Condition));
 	condition_init(event);
 	return event;
 }

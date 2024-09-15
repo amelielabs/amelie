@@ -33,6 +33,7 @@ buf_cache_free(BufCache* self)
 		auto buf = list_at(Buf, link);
 		buf_free_memory(buf);
 	}
+	list_init(&self->list);
 	spinlock_free(&self->lock);
 }
 
@@ -67,7 +68,7 @@ buf_cache_push(BufCache* self, Buf* buf)
 }
 
 static inline Buf*
-buf_create_nothrow(BufCache* self, int size)
+buf_cache_create(BufCache* self, int size)
 {
 	auto buf = buf_cache_pop(self);
 	if (buf) {
@@ -75,16 +76,10 @@ buf_create_nothrow(BufCache* self, int size)
 		buf_reset(buf);
 	} else
 	{
-		buf = am_malloc_nothrow(sizeof(Buf));
-		if (unlikely(buf == NULL))
-			return NULL;
+		buf = am_malloc(sizeof(Buf));
 		buf_init(buf);
 		buf->cache = self;
 	}
-	if (unlikely(buf_reserve_nothrow(buf, size) == -1))
-	{
-		buf_free_memory(buf);
-		return NULL;
-	}
+	buf_reserve(buf, size);
 	return buf;
 }

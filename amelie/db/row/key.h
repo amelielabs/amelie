@@ -60,11 +60,10 @@ static inline Key*
 key_copy(Key* self)
 {
 	auto copy = key_allocate();
-	guard(key_free, copy);
 	key_set_ref(copy, self->ref);
 	key_set_type(copy, self->type);
 	key_set_path(copy, &self->path);
-	return unguard();
+	return copy;
 }
 
 static inline bool

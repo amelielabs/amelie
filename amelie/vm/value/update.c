@@ -172,22 +172,24 @@ update_set_next(Update* self)
 hot void
 update_set(Value* result, uint8_t* data, Str* path, Value* value)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
 	Update self;
 	update_init(&self, data, path, buf, value);
 	update_set_next(&self);
-	buf_end(buf);
+	unguard();
 	value_set_map_buf(result, buf);
 }
 
 hot void
 update_unset(Value* result, uint8_t* data, Str* path)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
 	Update self;
 	update_init(&self, data, path, buf, NULL);
 	update_unset_next(&self);
-	buf_end(buf);
+	unguard();
 	value_set_map_buf(result, buf);
 }
 
@@ -234,10 +236,11 @@ update_set_array_next(Update* self, int idx)
 hot void
 update_set_array(Value* result, uint8_t* data, int idx, Str* path, Value* value)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
 	Update self;
 	update_init(&self, data, path, buf, value);
 	update_set_array_next(&self, idx);
-	buf_end(buf);
+	unguard();
 	value_set_array_buf(result, buf);
 }

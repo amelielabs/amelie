@@ -31,8 +31,8 @@ buf_mgr_free(BufMgr* self)
 }
 
 static inline Buf*
-buf_mgr_create_nothrow(BufMgr* self, int size)
+buf_mgr_create(BufMgr* self, int size)
 {
 	int next = atomic_u64_inc(&self->seq) % 8;
-	return buf_create_nothrow(&self->cache[next], size);
+	return buf_cache_create(&self->cache[next], size);
 }

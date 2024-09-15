@@ -214,3 +214,24 @@ str_toint(Str* self, int64_t* value)
 	}
 	return 0;
 }
+
+static inline void
+str_strndup(Str* self, const void* string, int size)
+{
+	char* pos = am_malloc(size + 1);
+	memcpy(pos, string, size);
+	pos[size] = 0;
+	str_set_allocated(self, pos, size);
+}
+
+static inline void
+str_strdup(Str* self, const char* string)
+{
+	str_strndup(self, string, strlen(string));
+}
+
+static inline void
+str_copy(Str* self, Str* src)
+{
+	str_strndup(self, str_of(src), str_size(src));
+}

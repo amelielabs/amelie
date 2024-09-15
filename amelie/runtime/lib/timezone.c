@@ -113,40 +113,6 @@ timezone_free(Timezone* self)
 	am_free(self);
 }
 
-#if 0
-hot TimezoneTime*
-timezone_match(Timezone* self, time_t time)
-{
-	if (self->header.timecnt == 0)
-		return &self->times[0];
-	int min = 0;
-	int mid = 0;
-	int max = self->header.timecnt - 1;
-	while (max >= min)
-	{
-		mid = min + ((max - min) >> 1);
-		if (self->transition_times[mid] == time)
-		{
-			min = mid;
-			break;
-		}
-		if (self->transition_times[mid] < time)
-			min = mid + 1;
-		else
-			max = mid - 1;
-	}
-
-	if (min > (int)self->header.timecnt)
-		min = self->header.timecnt;
-
-	if (time > self->transition_times[min])
-		min++;
-
-	auto type = self->transition_types[min - 1];
-	return &self->times[type];
-}
-#endif
-
 hot TimezoneTime*
 timezone_match(Timezone* self, time_t time)
 {

@@ -76,7 +76,7 @@ jwt_encode(JwtEncode* self, Str* header, Str* payload, Str* secret)
 	jwt_encode_validate(self, header, payload);
 
 	// b64url(header).b64url(payload).b64url(hmacsha256(b64url(header).b64url(payload)))
-	auto jwt = buf_begin();
+	auto jwt = buf_create();
 
 	// do baseu64url encoding of header and payload
 	base64url_encode(jwt, header);
@@ -94,5 +94,5 @@ jwt_encode(JwtEncode* self, Str* header, Str* payload, Str* secret)
 	Str digest_str;
 	str_set_u8(&digest_str, digest, 32);
 	base64url_encode(jwt, &digest_str);
-	return buf_end(jwt);
+	return jwt;
 }

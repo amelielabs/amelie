@@ -264,10 +264,8 @@ amelie_cmd_login(Amelie* self, int argc, char** argv)
 	if (! login)
 	{
 		login = login_allocate();
-		guard(login_free, login);
 		remote_set(&login->remote, REMOTE_NAME, &name);
 		login_mgr_add(&home->login_mgr, login);
-		unguard();
 	}
 
 	login_mgr_set(&home->login_mgr, &login->remote, NULL, argc - 1, argv + 1);
@@ -443,9 +441,9 @@ amelie_init(Amelie* self)
 void
 amelie_free(Amelie* self)
 {
+	task_free(&self->task);
 	home_free(&self->home);
 	main_free(&self->main);
-	task_free(&self->task);
 }
 
 AmelieRc
@@ -474,9 +472,7 @@ amelie_start(Amelie* self, int argc, char** argv)
 void
 amelie_stop(Amelie* self)
 {
-	auto buf = msg_create_nothrow(&self->main.buf_mgr, RPC_STOP, 0);
-	if (! buf)
-		abort();
+	auto buf = msg_create_as(&self->main.buf_mgr, RPC_STOP, 0);
 	channel_write(&self->task.channel, buf);
 	task_wait(&self->task);
 }

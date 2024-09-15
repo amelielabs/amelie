@@ -30,17 +30,14 @@ static inline Table*
 table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
 	Table* self = am_malloc(sizeof(Table));
-	self->config = NULL;
+	self->config = table_config_copy(config);
 	serial_init(&self->serial);
 	part_list_init(&self->part_list, part_mgr);
-	guard(table_free, self);
-	self->config = table_config_copy(config);
-
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)table_free);
-	return unguard();
+	return self;
 }
 
 static inline void

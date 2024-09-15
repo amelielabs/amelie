@@ -123,10 +123,8 @@ fn_regexp_substr(Call* self)
 	Str first;
 	str_set(&first, str_of(string) + ovector[0], ovector[1] - ovector[0]);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &first);
-	buf_end(buf);
-
 	Str result;
 	uint8_t* pos_str = buf->start;
 	data_read_string(&pos_str, &result);
@@ -164,7 +162,7 @@ fn_regexp_match(Call* self)
 	}
 	auto ovector = pcre2_get_ovector_pointer(match_data);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	for (int i = 0; i < rc; i++)
 	{
@@ -174,7 +172,6 @@ fn_regexp_match(Call* self)
 		encode_string(buf, &ref);
 	}
 	encode_array_end(buf);
-	buf_end(buf);
 	value_set_array_buf(self->result, buf);
 }
 
@@ -203,7 +200,7 @@ fn_regexp_replace(Call* self)
 	auto string  = &argv[0]->string;
 	auto replace = &argv[2]->string;
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string32(buf, 0);
 	buf_reserve(buf, str_size(string) + str_size(string) / 3);
 	for (;;)
@@ -227,7 +224,6 @@ fn_regexp_replace(Call* self)
 		buf_advance(buf, outlen);
 		break;
 	}
-	buf_end(buf);
 
 	// update string size
 	int size = buf_size(buf) - data_size_string32();

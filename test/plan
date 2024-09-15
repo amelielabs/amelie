@@ -142,6 +142,7 @@ test backup_tls
 # replication
 directory repl
 group repl
+test r
 test replica
 test repl
 test streaming

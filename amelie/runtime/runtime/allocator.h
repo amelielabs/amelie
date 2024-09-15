@@ -7,15 +7,21 @@
 //
 
 static inline void*
-am_malloc_nothrow(size_t size)
+am_malloc(size_t size)
 {
-	return malloc(size);
+	auto ptr = malloc(size);
+	if (unlikely(ptr == NULL))
+		oom();
+	return ptr;
 }
 
 static inline void*
-am_realloc_nothrow(void* pointer, size_t size)
+am_realloc(void* pointer, size_t size)
 {
-	return realloc(pointer, size);
+	auto ptr = realloc(pointer, size);
+	if (unlikely(ptr == NULL))
+		oom();
+	return ptr;
 }
 
 static inline void

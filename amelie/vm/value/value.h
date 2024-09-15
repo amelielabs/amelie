@@ -402,9 +402,8 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = buf_begin();
+			auto buf = buf_create();
 			encode_string(buf, &src->string);
-			buf_end(buf);
 			uint8_t* pos = buf->start;
 			Str string;
 			data_read_string(&pos, &string);
@@ -418,9 +417,8 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = buf_begin();
+			auto buf = buf_create();
 			buf_write(buf, src->data, src->data_size);
-			buf_end(buf);
 			value_set_map_buf(self, buf);
 		}
 		break;
@@ -431,9 +429,8 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = buf_begin();
+			auto buf = buf_create();
 			buf_write(buf, src->data, src->data_size);
-			buf_end(buf);
 			value_set_array_buf(self, buf);
 		}
 		break;
@@ -450,9 +447,8 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		} else
 		{
-			auto buf = buf_begin();
+			auto buf = buf_create();
 			encode_vector(buf, &src->vector);
-			buf_end(buf);
 			uint8_t* pos = buf->start;
 			Vector vector;
 			data_read_vector(&pos, &vector);
@@ -462,9 +458,8 @@ value_copy(Value* self, Value* src)
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		value_write(src, buf);
-		buf_end(buf);
 		value_read(self, buf->start, buf);
 		break;
 	}
@@ -512,9 +507,8 @@ value_copy_ref(Value* self, Value* src)
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		value_write(src, buf);
-		buf_end(buf);
 		value_read(self, buf->start, buf);
 		break;
 	}

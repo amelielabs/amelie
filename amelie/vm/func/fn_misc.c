@@ -72,10 +72,8 @@ fn_random_uuid(Call* self)
 	Str string;
 	str_set(&string, id_sz, sizeof(id_sz) - 1);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &string);
-	buf_end(buf);
-
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
 	data_read_string(&pos_str, &string);
@@ -113,10 +111,8 @@ fn_md5(Call* self)
 	Str string;
 	str_set(&string, digest, sizeof(digest));
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &string);
-	buf_end(buf);
-
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
 	data_read_string(&pos_str, &string);
@@ -136,10 +132,8 @@ fn_sha1(Call* self)
 	Str string;
 	str_set(&string, digest, sizeof(digest));
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_string(buf, &string);
-	buf_end(buf);
-
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
 	data_read_string(&pos_str, &string);
@@ -156,18 +150,16 @@ fn_encode(Call* self)
 
 	if (str_compare_cstr(&argv[1]->string, "base64"))
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		base64_encode(buf, &argv[0]->string);
-		buf_end(buf);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else
 	if (str_compare_cstr(&argv[1]->string, "base64url"))
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		base64url_encode(buf, &argv[0]->string);
-		buf_end(buf);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
@@ -187,18 +179,16 @@ fn_decode(Call* self)
 
 	if (str_compare_cstr(&argv[1]->string, "base64"))
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		base64_decode(buf, &argv[0]->string);
-		buf_end(buf);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else
 	if (str_compare_cstr(&argv[1]->string, "base64url"))
 	{
-		auto buf = buf_begin();
+		auto buf = buf_create();
 		base64url_decode(buf, &argv[0]->string);
-		buf_end(buf);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
@@ -228,11 +218,11 @@ fn_jwt(Call* self)
 	call_validate_arg(self, 2, VALUE_STRING);
 
 	// header
-	Buf* header = NULL;
 	Str  header_str;
+	Buf* header = buf_create();
+	guard_buf(header);
 	if (argv[0]->type == VALUE_MAP)
 	{
-		header = buf_begin();
 		auto pos = argv[0]->data;
 		json_export(header, self->vm->local->timezone, &pos);
 		buf_str(header, &header_str);
@@ -245,11 +235,11 @@ fn_jwt(Call* self)
 	}
 
 	// payload
-	Buf* payload = NULL;
 	Str  payload_str;
+	Buf* payload = buf_create();
+	guard_buf(payload);
 	if (argv[1]->type == VALUE_MAP)
 	{
-		payload = buf_begin();
 		auto pos = argv[1]->data;
 		json_export(payload, self->vm->local->timezone, &pos);
 		buf_str(payload, &payload_str);
@@ -270,18 +260,6 @@ fn_jwt(Call* self)
 	Str string;
 	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
-
-	// cleanup
-	if (header)
-	{
-		buf_end(header);
-		buf_free(header);
-	}
-	if (payload)
-	{
-		buf_end(payload);
-		buf_free(payload);
-	}
 }
 
 FunctionDef fn_misc_def[] =

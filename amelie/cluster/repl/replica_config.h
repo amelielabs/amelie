@@ -47,10 +47,9 @@ static inline ReplicaConfig*
 replica_config_copy(ReplicaConfig* self)
 {
 	auto copy = replica_config_allocate();
-	guard(replica_config_free, copy);
 	replica_config_set_id(copy, &self->id);
 	replica_config_set_remote(copy, &self->remote);
-	return unguard();
+	return copy;
 }
 
 static inline ReplicaConfig*

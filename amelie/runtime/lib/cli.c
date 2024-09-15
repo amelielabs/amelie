@@ -23,7 +23,7 @@ cli_open(char* path)
 }
 
 void
-cli_close(char* path)
+cli_sync(char* path)
 {
 	linenoiseHistorySave(path);
 }

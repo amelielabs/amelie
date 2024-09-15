@@ -16,6 +16,17 @@ struct Replica
 	List           link;
 };
 
+static inline Replica*
+replica_allocate(ReplicaConfig* config, Wal* wal)
+{
+	auto self = (Replica*)am_malloc(sizeof(Replica));
+	self->config = replica_config_copy(config);
+	wal_slot_init(&self->wal_slot);
+	streamer_init(&self->streamer, wal, &self->wal_slot);
+	list_init(&self->link);
+	return self;
+}
+
 static inline void
 replica_free(Replica* self)
 {
@@ -23,19 +34,6 @@ replica_free(Replica* self)
 		replica_config_free(self->config);
 	streamer_free(&self->streamer);
 	am_free(self);
-}
-
-static inline Replica*
-replica_allocate(ReplicaConfig* config, Wal* wal)
-{
-	auto self = (Replica*)am_malloc(sizeof(Replica));
-	self->config = NULL;
-	wal_slot_init(&self->wal_slot);
-	streamer_init(&self->streamer, wal, &self->wal_slot);
-	list_init(&self->link);
-	guard(replica_free, self);
-	self->config = replica_config_copy(config);
-	return unguard();
 }
 
 static inline void

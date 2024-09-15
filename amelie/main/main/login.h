@@ -41,9 +41,8 @@ static inline Login*
 login_copy(Login* self)
 {
 	auto copy = login_allocate();
-	guard(login_free, copy);
 	login_set_remote(copy, &self->remote);
-	return unguard();
+	return copy;
 }
 
 static inline Login*

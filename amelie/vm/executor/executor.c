@@ -55,8 +55,6 @@ executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 	if (first)
 	{
 		spinlock_lock(&self->lock);
-		guard(spinlock_unlock, &self->lock);
-
 		dtr_set_state(tr, DTR_BEGIN);
 
 		// add transaction to the executor list
@@ -65,6 +63,7 @@ executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 
 		// send BEGIN to the related nodes
 		pipe_set_begin(&tr->set);
+		spinlock_unlock(&self->lock);
 	}
 }
 
@@ -156,8 +155,8 @@ hot static void
 executor_end_lock(Executor* self, DtrState state)
 {
 	spinlock_lock(&self->lock);
-	guard(spinlock_unlock, &self->lock);
 	executor_end(self, state);
+	spinlock_unlock(&self->lock);
 }
 
 hot void

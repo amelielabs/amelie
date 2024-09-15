@@ -25,11 +25,8 @@ user_free(User* user)
 static inline User*
 user_allocate(UserConfig* config)
 {
-	User* self;
-	self = am_malloc(sizeof(*self));
-	self->config = NULL;
+	User* self = am_malloc(sizeof(*self));
 	list_init(&self->link);
-	guard(user_free, self);
 	self->config = user_config_copy(config);
-	return unguard();
+	return self;
 }

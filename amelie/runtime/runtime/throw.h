@@ -17,7 +17,7 @@
 #define rethrow() \
 	exception_mgr_throw(&am_self()->exception_mgr)
 
-// errors
+// error
 #define error_as(code, fmt, ...) \
 	report_throw(source_file, \
 	             source_function, \
@@ -38,14 +38,3 @@
 	if (unlikely(am_self()->cancel)) \
 		error_as(CANCEL, "cancelled"); \
 })
-
-// log
-#define info(fmt, ...) \
-	report(source_file, \
-	       source_function, \
-	       source_line, "", fmt, ## __VA_ARGS__)
-
-#define debug(fmt, ...) \
-	report(source_file, \
-	       source_function, \
-	       source_line, "", fmt, ## __VA_ARGS__)

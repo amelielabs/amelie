@@ -12,8 +12,8 @@ static void
 test_channel_main(void *arg)
 {
 	Channel* channel = arg;
-	auto buf = buf_end(buf_begin());
-	channel_write(channel, buf); 
+	auto buf = buf_create();
+	channel_write(channel, buf);
 }
 
 void
@@ -79,7 +79,7 @@ test_channel_timeout_main(void *arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
-	channel_write(channel, buf_end(buf_begin())); 
+	channel_write(channel, buf_create());
 }
 
 void
@@ -149,14 +149,14 @@ test_channel_producer(void *arg)
 	uint64_t i = 0;
 	while (i < 1000)
 	{
-		buf = msg_begin(DATA);
+		buf = msg_create(DATA);
 		buf_write(buf, &i, sizeof(i));
 		msg_end(buf);
 		channel_write(consumer_channel, buf);
 		i++;
 	}
 
-	buf = msg_begin(STOP);
+	buf = msg_create(STOP);
 	msg_end(buf);
 	channel_write(consumer_channel, buf);
 }

@@ -62,12 +62,11 @@ static inline ViewConfig*
 view_config_copy(ViewConfig* self)
 {
 	auto copy = view_config_allocate();
-	guard(view_config_free, copy);
 	view_config_set_schema(copy, &self->schema);
 	view_config_set_name(copy, &self->name);
 	view_config_set_query(copy, &self->query);
 	columns_copy(&copy->columns, &self->columns);
-	return unguard();
+	return copy;
 }
 
 static inline ViewConfig*

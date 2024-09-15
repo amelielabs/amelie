@@ -103,7 +103,6 @@ static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
-	guard(table_config_free, copy);
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_shared(copy, self->shared);
@@ -126,7 +125,7 @@ table_config_copy(TableConfig* self)
 		auto config_copy = part_config_copy(config);
 		table_config_add_partition(copy, config_copy);
 	}
-	return unguard();
+	return copy;
 }
 
 static inline TableConfig*

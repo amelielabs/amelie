@@ -11,7 +11,7 @@
 void
 test_msg(void* arg)
 {
-	auto buf = msg_begin(123);
+	auto buf = msg_create(123);
 	auto msg = msg_of(buf);
 	test(msg->id == 123);
 	test(msg->size == sizeof(Msg));

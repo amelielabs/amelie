@@ -65,13 +65,10 @@ auth_cache_add(AuthCache* self, User* user, Str* digest)
 	node->node.hash = hash_murmur3_32(str_u8(digest), str_size(digest), 0);
 	node->user = user;
 	str_init(&node->digest);
-	guard(auth_cache_node_free, node);
-
 	str_copy(&node->digest, digest);
 
 	hashtable_reserve(&self->ht);
 	hashtable_set(&self->ht, &node->node);
-	unguard();
 }
 
 hot static inline bool

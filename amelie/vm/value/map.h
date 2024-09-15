@@ -12,7 +12,9 @@ value_map(Value* result, Stack* stack, int count)
 	if (unlikely((count % 2) != 0))
 		error("{}: incorrect map size");
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
+
 	encode_map(buf);
 	for (int i = 0; i < count ; i++)
 	{
@@ -26,7 +28,7 @@ value_map(Value* result, Stack* stack, int count)
 	}
 	encode_map_end(buf);
 
-	buf_end(buf);
+	unguard();
 	value_set_map_buf(result, buf);
 }
 

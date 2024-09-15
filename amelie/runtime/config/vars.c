@@ -154,7 +154,7 @@ vars_set_argv(Vars* self, int argc, char** argv)
 Buf*
 vars_list_persistent(Vars* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 	list_foreach(&self->list)
 	{
@@ -165,13 +165,13 @@ vars_list_persistent(Vars* self)
 		var_encode(var, buf);
 	}
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 Buf*
 vars_list(Vars* self, Vars* local)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 	list_foreach(&self->list)
 	{
@@ -184,7 +184,7 @@ vars_list(Vars* self, Vars* local)
 		var_encode(var, buf);
 	}
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 void

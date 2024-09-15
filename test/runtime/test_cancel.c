@@ -125,7 +125,7 @@ test_cancel_channel_pause_main(void* arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
-	channel_write(channel, buf_end(buf_begin())); 
+	channel_write(channel, buf_create());
 }
 
 static void

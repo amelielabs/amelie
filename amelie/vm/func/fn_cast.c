@@ -118,7 +118,9 @@ fn_vector(Call* self)
 	call_validate_arg(self, 0, VALUE_ARRAY);
 
 	uint8_t* pos = arg->data;
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
+
 	buf_reserve(buf, data_size_vector(0));
 	data_write_vector_size(&buf->position, 0);
 
@@ -144,7 +146,6 @@ fn_vector(Call* self)
 		buf_write(buf, &value_flt, sizeof(float));
 		count++;
 	}
-	buf_end(buf);
 
 	// update vector size
 	uint8_t* pos_str = buf->start;
@@ -153,6 +154,8 @@ fn_vector(Call* self)
 	pos_str = buf->start;
 	Vector vector;
 	data_read_vector(&pos_str, &vector);
+
+	unguard();
 	value_set_vector(self->result, &vector, buf);
 }
 

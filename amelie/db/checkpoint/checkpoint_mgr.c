@@ -104,7 +104,7 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 	// read and parse catalog content
 	Buf buf;
 	buf_init(&buf);
-	guard(buf_free, &buf);
+	guard_buf(&buf);
 	file_import(&buf, "%s/%" PRIu64 "/catalog", config_directory(),
 	            checkpoint);
 
@@ -142,7 +142,7 @@ checkpoint_mgr_gc(CheckpointMgr* self)
 	// remove checkpoints < min
 	Buf list;
 	buf_init(&list);
-	guard(buf_free, &list);
+	guard_buf(&list);
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);

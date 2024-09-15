@@ -75,5 +75,5 @@ home_sync(Home* self)
 
 	// save history
 	home_set_path(path, sizeof(path), "history");
-	cli_close(path);
+	cli_sync(path);
 }

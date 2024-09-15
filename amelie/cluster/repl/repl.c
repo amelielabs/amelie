@@ -150,7 +150,7 @@ Buf*
 repl_show(Repl* self)
 {
 	// map
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 
 	// active
@@ -169,5 +169,5 @@ repl_show(Repl* self)
 		encode_string(buf, &config()->repl_primary.string);
 
 	encode_map_end(buf);
-	return buf_end(buf);
+	return buf;
 }

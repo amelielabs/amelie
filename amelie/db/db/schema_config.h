@@ -56,11 +56,10 @@ static inline SchemaConfig*
 schema_config_copy(SchemaConfig* self)
 {
 	auto copy = schema_config_allocate();
-	guard(schema_config_free, copy);
 	schema_config_set_name(copy, &self->name);
 	schema_config_set_system(copy, self->system);
 	schema_config_set_create(copy, self->create);
-	return unguard();
+	return copy;
 }
 
 static inline SchemaConfig*

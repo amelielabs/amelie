@@ -58,7 +58,7 @@ explain(Explain*  self,
         Buf*      body,
         bool      profile)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_map(buf);
 	unused(dtr);
 
@@ -106,6 +106,5 @@ explain(Explain*  self,
 	}
 
 	encode_map_end(buf);
-	buf_end(buf);
 	return buf;
 }

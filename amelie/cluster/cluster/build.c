@@ -63,16 +63,16 @@ build_run_first(Build* self)
 {
 	// ask first node to build related partition
 	auto route = router_first(&self->cluster->router);
-	auto buf = msg_begin(RPC_BUILD);
+	auto buf = msg_create(RPC_BUILD);
 	buf_write(buf, &self, sizeof(Build**));
 	msg_end(buf);
 	channel_write(route->channel, buf);
 
 	// wait for completion
 	buf = channel_read(&self->channel, -1);
-	auto msg = msg_of(buf);
-	guard(buf_free, buf);
+	guard_buf(buf);
 
+	auto msg = msg_of(buf);
 	if (msg->id == MSG_ERROR)
 		msg_error_throw(buf);
 }
@@ -84,7 +84,7 @@ build_run_all(Build* self)
 	list_foreach(&self->cluster->list)
 	{
 		auto node = list_at(Node, link);
-		auto buf = msg_begin(RPC_BUILD);
+		auto buf = msg_create(RPC_BUILD);
 		buf_write(buf, &self, sizeof(Build**));
 		msg_end(buf);
 		channel_write(&node->task.channel, buf);
@@ -189,7 +189,7 @@ build_execute(Build* self, Uuid* node)
 	if (leave(&e)) {
 		buf = msg_error(&am_self()->error);
 	} else {
-		buf = msg_begin(MSG_OK);
+		buf = msg_create(MSG_OK);
 		msg_end(buf);
 	}
 	channel_write(&self->channel, buf);

@@ -207,7 +207,7 @@ restore_write_config(Restore* self)
 	// convert config to json
 	Buf text;
 	buf_init(&text);
-	guard(buf_free, &text);
+	guard_buf(&text);
 	uint8_t* pos = self->config;
 	json_export_pretty(&text, global()->timezone, &pos);
 

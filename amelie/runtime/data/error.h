@@ -9,27 +9,29 @@
 static inline Buf*
 msg_error(Error* e)
 {
-	auto buf = msg_begin(MSG_ERROR);
+	auto buf = msg_create(MSG_ERROR);
 	encode_map(buf);
 	encode_raw(buf, "code", 4);
 	encode_integer(buf, e->code);
 	encode_raw(buf, "msg", 3);
 	encode_raw(buf, e->text, e->text_len);
 	encode_map_end(buf);
-	return msg_end(buf);
+	msg_end(buf);
+	return buf;
 }
 
 static inline Buf*
 msg_error_as(int code, Str* msg)
 {
-	auto buf = msg_begin(MSG_ERROR);
+	auto buf = msg_create(MSG_ERROR);
 	encode_map(buf);
 	encode_raw(buf, "code", 4);
 	encode_integer(buf, code);
 	encode_raw(buf, "msg", 3);
 	encode_string(buf, msg);
 	encode_map_end(buf);
-	return msg_end(buf);
+	msg_end(buf);
+	return buf;
 }
 
 static inline void

@@ -50,17 +50,12 @@ table_mgr_create(TableMgr*    self,
 
 	// allocate table
 	auto table = table_allocate(config, &self->part_mgr);
-	guard(table_free, table);
 
 	// save create table operation
 	auto op = table_op_create(config);
-	guard_buf(op);
 
 	// update tables
 	handle_mgr_create(&self->mgr, tr, LOG_TABLE_CREATE, &table->handle, op);
-
-	unguard();
-	unguard();
 
 	// prepare partitions
 	table_open(table);
@@ -75,11 +70,9 @@ table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 {
 	// save drop table operation
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
-	guard_buf(op);
 
 	// drop table by object
 	handle_mgr_drop(&self->mgr, tr, LOG_TABLE_DROP, &table->handle, op);
-	unguard();
 }
 
 void
@@ -150,13 +143,11 @@ table_mgr_rename(TableMgr* self,
 
 	// save rename table operation
 	auto op = table_op_rename(schema, name, schema_new, name_new);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_TABLE_RENAME, &rename_if,
 	           NULL,
 	           &table->handle, op);
-	unguard();
 
 	// set new table name
 	if (! str_compare(&table->config->schema, schema_new))
@@ -207,13 +198,11 @@ table_mgr_truncate(TableMgr* self,
 
 	// save truncate table operation
 	auto op = table_op_truncate(schema, name);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_TABLE_TRUNCATE, &truncate_if,
 	           NULL,
 	           &table->handle, op);
-	unguard();
 
 	// do nothing (actual truncate will happen on commit)
 }
@@ -287,13 +276,11 @@ table_mgr_column_rename(TableMgr* self,
 
 	// save rename table operation
 	auto op = table_op_column_rename(schema, name, name_column, name_column_new);
-	guard_buf(op);
 
 	// update table
 	log_handle(&tr->log, LOG_TABLE_COLUMN_RENAME, &rename_column_if,
 	           column,
 	           &table->handle, op);
-	unguard();
 
 	// set column name
 	column_set_name(column, name_column_new);
@@ -358,23 +345,17 @@ table_mgr_column_add(TableMgr* self,
 
 	// allocate new table
 	auto table_new = table_allocate(table->config, &self->part_mgr);
-	guard(table_free, table_new);
 
 	// add new column
 	auto column_new = column_copy(column);
-	guard(column_free, column_new);
 	columns_add(&table_new->config->columns, column_new);
-	unguard();
 
 	// save operation
 	auto op = table_op_column_add(schema, name, column);
-	guard_buf(op);
 
 	// update log (old table is still present)
 	log_handle(&tr->log, LOG_TABLE_COLUMN_ADD, &column_if, self,
 	           &table_new->handle, op);
-	unguard();
-	unguard();
 
 	table_open(table_new);
 	return table_new;
@@ -410,7 +391,6 @@ table_mgr_column_drop(TableMgr* self,
 
 	// allocate new table
 	auto table_new = table_allocate(table->config, &self->part_mgr);
-	guard(table_free, table_new);
 
 	// delete and reorder columns and update keys
 	columns_del(&table_new->config->columns, ref->order);
@@ -422,13 +402,10 @@ table_mgr_column_drop(TableMgr* self,
 
 	// save operation
 	auto op = table_op_column_drop(schema, name, name_column);
-	guard_buf(op);
 
 	// update log (old table is still present)
 	log_handle(&tr->log, LOG_TABLE_COLUMN_DROP, &column_if, self,
 	           &table_new->handle, op);
-	unguard();
-	unguard();
 
 	table_open(table_new);
 	return table_new;
@@ -465,7 +442,7 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 Buf*
 table_mgr_list(TableMgr* self)
 {
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
@@ -473,7 +450,7 @@ table_mgr_list(TableMgr* self)
 		table_config_write(table->config, buf);
 	}
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 Part*

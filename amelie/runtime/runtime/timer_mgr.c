@@ -32,7 +32,7 @@ timer_mgr_gettime(void)
 {
 	struct timespec t;
 	clock_gettime(CLOCK_REALTIME_COARSE, &t);
-	return t.tv_sec*  (uint64_t) 1e9 + t.tv_nsec;
+	return t.tv_sec * (uint64_t)1e9 + t.tv_nsec;
 }
 
 void
@@ -92,16 +92,14 @@ timer_mgr_cmp(const void* a_ptr, const void* b_ptr)
 	return -1;
 }
 
-hot int
+hot void
 timer_mgr_add(TimerMgr* self, Timer* timer)
 {
 	int count = self->timers_count + 1;
 	if (self->timers == NULL || count >= self->timers_max)
 	{
 		int   timers_max = self->timers_max * 2;
-		void* timers = am_realloc_nothrow(self->timers, timers_max * sizeof(Timer*));
-		if (unlikely(timers == NULL))
-			return -1;
+		void* timers = am_realloc(self->timers, timers_max * sizeof(Timer*));
 		self->timers = timers;
 		self->timers_max = timers_max;
 	}
@@ -113,7 +111,6 @@ timer_mgr_add(TimerMgr* self, Timer* timer)
 	timer->mgr     = self;
 	qsort(self->timers, count, sizeof(Timer*), timer_mgr_cmp);
 	self->timers_count = count;
-	return 0;
 }
 
 hot void

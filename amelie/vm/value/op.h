@@ -549,7 +549,7 @@ value_cat(Value* result, Value* a, Value* b)
 	if (! (a->type == VALUE_STRING && b->type == VALUE_STRING))
 		error("bad || expression types");
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	uint8_t** pos;
 	pos = buf_reserve(buf, data_size_string(str_size(&a->string) + str_size(&b->string)));
 	data_write_string_cat(pos, str_of(&a->string),
@@ -559,8 +559,6 @@ value_cat(Value* result, Value* a, Value* b)
 	uint8_t* pos_str = buf->start;
 	Str string;
 	data_read_string(&pos_str, &string);
-	buf_end(buf);
-
 	value_set_string(result, &string, buf);
 }
 
@@ -593,7 +591,7 @@ value_length(Value* result, Value* a)
 always_inline hot static inline void
 value_to_string(Value* result, Value* a, Timezone* timezone)
 {
-	auto data = buf_begin();
+	auto data = buf_create();
 	switch (a->type) {
 	case VALUE_STRING:
 		buf_printf(data, "%.*s", str_size(&a->string), str_of(&a->string));
@@ -617,7 +615,6 @@ value_to_string(Value* result, Value* a, Timezone* timezone)
 		body_add(data, a, timezone, false, false);
 		break;
 	}
-	buf_end(data);
 
 	Str string;
 	str_init(&string);
@@ -698,17 +695,22 @@ value_to_native(Value* result, Value* a, Local* local)
 	if (unlikely(a->type != VALUE_STRING))
 		error("native(): string type expected");
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
+	guard_buf(buf);
+
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
 	json_set_time(&json, local->timezone, local->time_us);
 	json_parse(&json, &a->string, buf);
-	buf_end(buf);
 
 	value_read(result, buf->start, buf);
 	if (! result->buf)
 		buf_free(buf);
+
+	unguard();
+	unguard();
+	json_free(&json);
 }
 
 always_inline hot static inline void

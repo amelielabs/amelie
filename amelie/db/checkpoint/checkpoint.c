@@ -187,7 +187,7 @@ checkpoint_create_catalog(Checkpoint* self)
 	// convert catalog to json
 	Buf text;
 	buf_init(&text);
-	guard(buf_free, &text);
+	guard_buf(&text);
 	uint8_t* pos = self->catalog->start;
 	json_export_pretty(&text, global()->timezone, &pos);
 

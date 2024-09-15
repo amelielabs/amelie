@@ -106,7 +106,7 @@ system_free(System* self)
 static void
 system_on_server_connect(Server* server, Client* client)
 {
-	auto buf = msg_begin(MSG_CLIENT);
+	auto buf = msg_create(MSG_CLIENT);
 	buf_write(buf, &client, sizeof(void**));
 	msg_end(buf);
 	System* self = server->on_connect_arg;
@@ -302,7 +302,8 @@ system_main(System* self)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard(buf_free, buf);
+		guard_buf(buf);
+
 		if (msg->id == RPC_STOP)
 			break;
 		auto rpc = rpc_of(buf);

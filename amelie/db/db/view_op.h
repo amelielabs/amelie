@@ -10,37 +10,37 @@ static inline Buf*
 view_op_create(ViewConfig* config)
 {
 	// [config]
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	view_config_write(config, buf);
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 static inline Buf*
 view_op_drop(Str* schema, Str* name)
 {
 	// [schema, name]
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	encode_string(buf, schema);
 	encode_string(buf, name);
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 static inline Buf*
 view_op_rename(Str* schema, Str* name, Str* schema_new, Str* name_new)
 {
 	// [schema, name, schema_new, name_new]
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	encode_string(buf, schema);
 	encode_string(buf, name);
 	encode_string(buf, schema_new);
 	encode_string(buf, name_new);
 	encode_array_end(buf);
-	return buf_end(buf);
+	return buf;
 }
 
 static inline ViewConfig*
@@ -48,9 +48,7 @@ view_op_create_read(uint8_t** pos)
 {
 	data_read_array(pos);
 	auto config = view_config_read(pos);
-	guard(view_config_free, config);
 	data_read_array_end(pos);
-	unguard();
 	return config;
 }
 

@@ -49,12 +49,11 @@ fn_at_timezone(Call* self)
 		error("timestamp(): failed to find timezone '%.*s'",
 		      str_size(name), str_of(name));
 
-	auto data = buf_begin();
+	auto data = buf_create();
 	buf_reserve(data, 128);
 	int size = timestamp_write(argv[0]->integer, timezone,
 	                           (char*)data->position, 128);
 	buf_advance(data, size);
-	buf_end(data);
 
 	Str string;
 	str_init(&string);
@@ -83,7 +82,7 @@ fn_generate_series(Call* self)
 	timestamp_read_value(&ts, argv[0]->integer);
 	uint64_t pos = timestamp_of(&ts, NULL);
 
-	auto buf = buf_begin();
+	auto buf = buf_create();
 	encode_array(buf);
 	while (pos <= end)
 	{
@@ -92,7 +91,6 @@ fn_generate_series(Call* self)
 		pos = timestamp_of(&ts, NULL);
 	}
 	encode_array_end(buf);
-	buf_end(buf);
 	value_set_array_buf(self->result, buf);
 }
 
