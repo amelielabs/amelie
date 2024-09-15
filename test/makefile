@@ -66,7 +66,8 @@ OBJECTS_RUNTIME = runtime/test_task.o \
                   runtime/test_rpc.o \
                   runtime/test_cancel.o \
                   runtime/test_lock.o \
-                  runtime/test_sleep.o
+                  runtime/test_sleep.o \
+                  runtime/test_benchmark.o
 OBJECTS         = suite/suite.o \
                   suite/session.o \
                   test.o

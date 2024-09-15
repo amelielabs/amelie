@@ -118,3 +118,15 @@ unit test_lock_read1
 
 # test: test sleep
 unit test_sleep
+
+## test: test benchmark
+#unit test_benchmark
+
+## test: test benchmark_mutex
+#unit test_benchmark_mutex
+
+## test: test benchmark_buf
+#unit test_benchmark_buf
+
+## test: test benchmark_buf_guard
+#unit test_benchmark_buf_guard
