@@ -20,6 +20,7 @@ OBJECTS        = \
                  runtime/notify.o \
                  runtime/context_stack.o \
                  runtime/context.o \
+                 runtime/bus.o \
                  runtime/channel.o \
                  runtime/task.o \
                  io/vfs.o \

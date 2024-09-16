@@ -98,18 +98,20 @@ test_cancel_pause(void *arg)
 static void
 test_cancel_condition_main(void *arg)
 {
-	Condition* cond = arg;
-	condition_wait(cond, -1);
+	Event* cond = arg;
+	event_wait(cond, -1);
 	test( am_self()->cancel );
 }
 
 void
 test_cancel_condition(void *arg)
 {
-	auto cond = condition_create();
+	Event cond;
+	event_init(&cond);
+	event_attach(&cond);
 
 	uint64_t id;
-	id = coroutine_create(test_cancel_condition_main, cond);
+	id = coroutine_create(test_cancel_condition_main, &cond);
 	test( id != 0 );
 
 	coroutine_sleep(0);
@@ -117,7 +119,7 @@ test_cancel_condition(void *arg)
 	coroutine_kill(id);
 	test(! am_self()->cancel );
 
-	condition_free(cond);
+	event_detach(&cond);
 }
 
 static void

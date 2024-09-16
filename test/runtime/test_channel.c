@@ -119,7 +119,7 @@ uint64_t consumer_count = 0;
 static void
 test_channel_consumer(void *arg)
 {
-	Condition* on_complete = arg;
+	Event* on_complete = arg;
 	auto channel = &am_task->channel;
 	for (;;)
 	{
@@ -137,7 +137,7 @@ test_channel_consumer(void *arg)
 		buf_free(buf);
 	}
 
-	condition_signal(on_complete);
+	event_signal(on_complete);
 }
 
 static void
@@ -164,17 +164,19 @@ test_channel_producer(void *arg)
 void
 test_channel_producer_consumer(void *arg)
 {
-	auto event = condition_create();
+	Event event;
+	event_init(&event);
+	event_attach(&event);
 
 	Task consumer;
 	task_init(&consumer);
-	task_create(&consumer, "consumer", test_channel_consumer, event);
+	task_create(&consumer, "consumer", test_channel_consumer, &event);
 
 	Task producer;
 	task_init(&producer);
 	task_create(&producer, "producer", test_channel_producer, &consumer.channel);
 
-	bool timeout = condition_wait(event, -1);
+	bool timeout = event_wait(&event, -1);
 	test(! timeout);
 	test(consumer_count == 1000);
 
@@ -183,5 +185,5 @@ test_channel_producer_consumer(void *arg)
 	task_wait(&consumer);
 	task_free(&consumer);
 
-	condition_free(event);
+	event_detach(&event);
 }

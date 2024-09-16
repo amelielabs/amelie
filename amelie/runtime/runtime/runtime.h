@@ -56,6 +56,27 @@ msg_create(int id)
 }
 
 // event
+static inline void
+event_attach(Event* self)
+{
+	bus_attach(&am_task->bus, self);
+}
+
+static inline void
+event_detach(Event* self)
+{
+	bus_detach(self);
+}
+
+hot static inline void
+event_signal(Event* self)
+{
+	if (self->bus)
+		bus_signal(self);
+	else
+		event_signal_direct(self);
+}
+
 hot static inline bool
 event_wait(Event* self, int time_ms)
 {
@@ -63,32 +84,6 @@ event_wait(Event* self, int time_ms)
 	bool timedout = wait_event(self, &am_task->timer_mgr, am_self(), time_ms);
 	cancellation_point();
 	return timedout;
-}
-
-// condition
-static inline Condition*
-condition_create(void)
-{
-	auto self = condition_cache_create(&am_task->condition_cache);
-	auto rc   = condition_attach(self, &am_task->poller);
-	if (unlikely(rc == -1))
-	{
-		condition_cache_push(&am_task->condition_cache, self);
-		error_system();
-	}
-	return self;
-}
-
-static inline void
-condition_free(Condition* self)
-{
-	condition_cache_push(&am_task->condition_cache, self);
-}
-
-hot static inline bool
-condition_wait(Condition* self, int time_ms)
-{
-	return event_wait(&self->event, time_ms);
 }
 
 // coroutine

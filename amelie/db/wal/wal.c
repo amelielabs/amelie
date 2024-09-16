@@ -269,10 +269,8 @@ wal_del(Wal* self, WalSlot* slot)
 void
 wal_attach(Wal* self, WalSlot* slot)
 {
-	assert(! slot->on_write);
-	auto on_write = condition_create();
 	mutex_lock(&self->lock);
-	slot->on_write = on_write;
+	event_attach(&slot->on_write);
 	mutex_unlock(&self->lock);
 }
 
@@ -280,11 +278,8 @@ void
 wal_detach(Wal* self, WalSlot* slot)
 {
 	mutex_lock(&self->lock);
-	auto on_write = slot->on_write;
-	slot->on_write = NULL;
+	event_detach(&slot->on_write);
 	mutex_unlock(&self->lock);
-	if (on_write)
-		condition_free(on_write);
 }
 
 bool

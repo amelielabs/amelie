@@ -84,6 +84,7 @@ mainloop(Task* self)
 	auto timer_mgr = &self->timer_mgr;
 	auto poller = &self->poller;
 	auto coroutine_mgr = &self->coroutine_mgr;
+	auto bus = &self->bus;
 
 	// set initial time
 	timer_mgr_update(timer_mgr);
@@ -91,6 +92,9 @@ mainloop(Task* self)
 	// main loop
 	for (;;)
 	{
+		// process pending events
+		bus_step(bus);
+
 		// execute pending coroutines
 		coroutine_mgr_scheduler(coroutine_mgr);
 
@@ -164,7 +168,7 @@ task_init(Task* self)
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
-	condition_cache_init(&self->condition_cache);
+	bus_init(&self->bus);
 	channel_init(&self->channel);
 	cond_init(&self->status);
 	thread_init(&self->thread);
@@ -175,9 +179,10 @@ task_free(Task* self)
 {
 	coroutine_mgr_free(&self->coroutine_mgr);
 	timer_mgr_free(&self->timer_mgr);
-	condition_cache_free(&self->condition_cache);
 	channel_detach(&self->channel);
 	channel_free(&self->channel);
+	bus_close(&self->bus);
+	bus_free(&self->bus);
 	poller_free(&self->poller);
 	cond_free(&self->status);
 }
@@ -212,10 +217,13 @@ task_create_nothrow(Task*        self,
 	if (unlikely(rc == -1))
 		return -1;
 
-	// attach task channel
-	rc = channel_attach_to(&self->channel, &self->poller);
+	// prepare bus
+	rc = bus_open(&self->bus, &self->poller);
 	if (unlikely(rc == -1))
 		return -1;
+
+	// attach task channel
+	channel_attach_to(&self->channel, &self->bus);
 
 	// create task thread
 	rc = thread_create(&self->thread, task_main, self);

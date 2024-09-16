@@ -29,7 +29,7 @@ struct Dtr
 	CodeData*  code_data;
 	Result     cte;
 	Buf*       error;
-	Condition* on_commit;
+	Event      on_commit;
 	Limit      limit;
 	PipeCache  pipe_cache;
 	ReqCache   req_cache;
@@ -47,13 +47,13 @@ dtr_init(Dtr* self, Router* router)
 	self->repl      = false;
 	self->code      = NULL;
 	self->code_data = NULL;
-	self->on_commit = NULL;
 	self->error     = NULL;
 	self->router    = router;
 	self->local     = NULL;
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
+	event_init(&self->on_commit);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
 	pipe_cache_init(&self->pipe_cache);
 	req_cache_init(&self->req_cache);
@@ -89,8 +89,7 @@ dtr_free(Dtr* self)
 	pipe_cache_free(&self->pipe_cache);
 	req_cache_free(&self->req_cache);
 	result_free(&self->cte);
-	if (self->on_commit)
-		condition_free(self->on_commit);
+	event_detach(&self->on_commit);
 }
 
 static inline void
@@ -108,8 +107,8 @@ dtr_create(Dtr*      self,
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, stmt_count, stmt_last);
 	result_create(&self->cte, stmt_count);
-	if (! self->on_commit)
-		self->on_commit = condition_create();
+	if (! event_attached(&self->on_commit))
+		event_attach(&self->on_commit);
 }
 
 static inline void

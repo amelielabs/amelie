@@ -10,13 +10,13 @@ typedef struct Backup Backup;
 
 struct Backup
 {
-	int64_t    checkpoint_snapshot;
-	WalSlot    wal_slot;
-	Buf        state;
-	Client*    client;
-	Condition* on_complete;
-	Task       task;
-	Db*        db;
+	int64_t checkpoint_snapshot;
+	WalSlot wal_slot;
+	Buf     state;
+	Client* client;
+	Event   on_complete;
+	Task    task;
+	Db*     db;
 };
 
 void backup_init(Backup*, Db*);

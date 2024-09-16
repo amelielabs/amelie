@@ -14,6 +14,9 @@ struct Event
 	Event* parent;
 	Event* parent_signal;
 	bool   signal;
+	void*  bus;
+	List   link_ready;
+	List   link;
 };
 
 static inline void
@@ -23,6 +26,9 @@ event_init(Event* self)
 	self->parent        = NULL;
 	self->parent_signal = NULL;
 	self->signal        = false;
+	self->bus           = NULL;
+	list_init(&self->link_ready);
+	list_init(&self->link);
 }
 
 static inline void
@@ -36,4 +42,10 @@ static inline bool
 event_pending(Event* self)
 {
 	return self->signal;
+}
+
+static inline bool
+event_attached(Event* self)
+{
+	return self->bus != NULL;
 }

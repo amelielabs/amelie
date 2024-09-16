@@ -46,7 +46,7 @@ streamer_collect(Streamer* self)
 		Event on_disconnect;
 		event_init(&on_disconnect);
 		event_set_parent(&on_disconnect, &on_event);
-		event_set_parent(&self->wal_slot->on_write->event, &on_event);
+		event_set_parent(&self->wal_slot->on_write, &on_event);
 
 		Exception e;
 		if (enter(&e))
@@ -55,7 +55,7 @@ streamer_collect(Streamer* self)
 			event_wait(&on_event, -1);
 		}
 
-		event_set_parent(&self->wal_slot->on_write->event, NULL);
+		event_set_parent(&self->wal_slot->on_write, NULL);
 		poll_read_stop(&self->client->tcp.fd);
 
 		if (leave(&e))

@@ -10,14 +10,14 @@ typedef struct Rpc Rpc;
 
 struct Rpc
 {
-	int        id;
-	int        argc;
-	intptr_t*  argv;
-	int        rc;
-	Error*     error;
-	Channel*   channel;
-	Condition* cond;
-	List       link;
+	int       id;
+	int       argc;
+	intptr_t* argv;
+	int       rc;
+	Error*    error;
+	Channel*  channel;
+	Event     on_complete;
+	List      link;
 };
 
 always_inline hot static inline Rpc*
@@ -41,7 +41,7 @@ rpc_arg_ptr(Rpc* rpc, int pos)
 always_inline hot static inline void
 rpc_done(Rpc* rpc)
 {
-	condition_signal(rpc->cond);
+	event_signal(&rpc->on_complete);
 }
 
 hot static inline void
@@ -71,7 +71,8 @@ rpc(Channel* channel, int id, int argc, ...)
 	va_end(args);
 
 	// prepare condition
-	auto error = &am_self()->error;
+	auto coro  = am_self();
+	auto error = &coro->error;
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{
@@ -80,20 +81,23 @@ rpc(Channel* channel, int id, int argc, ...)
 		.argv    = argv,
 		.rc      = 0,
 		.error   = error,
-		.channel = channel,
-		.cond    = condition_create()
+		.channel = channel
 	};
 	list_init(&rpc.link);
-	auto rpc_ptr = &rpc;
+	event_init(&rpc.on_complete);
+	event_attach(&rpc.on_complete);
 
 	// do rpc call and wait for completion
+	auto rpc_ptr = &rpc;
 	auto buf = msg_create(id);
 	buf_write(buf, &rpc_ptr, sizeof(void**));
 	msg_end(buf);
 	channel_write(channel, buf);
 
-	condition_wait(rpc.cond, -1);
-	condition_free(rpc.cond);
+	coroutine_cancel_pause(coro);
+	event_wait(&rpc.on_complete, -1);
+	event_detach(&rpc.on_complete);
+	coroutine_cancel_resume(coro);
 
 	if (unlikely(error->code != ERROR_NONE))
 		rethrow();

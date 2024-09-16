@@ -11,14 +11,14 @@ void
 channel_init(Channel* self)
 {
 	buf_list_init(&self->list);
-	condition_init(&self->on_write);
+	event_init(&self->on_write);
 	spinlock_init(&self->lock);
 }
 
 void
 channel_free(Channel* self)
 {
-	assert(! self->on_write.attached);
+	assert(! self->on_write.bus);
 	buf_list_free(&self->list);
 	spinlock_free(&self->lock);
 }
@@ -31,26 +31,22 @@ channel_reset(Channel* self)
 	spinlock_unlock(&self->lock);
 }
 
-int
-channel_attach_to(Channel* self, Poller* poller)
+void
+channel_attach_to(Channel* self, Bus* bus)
 {
-	return condition_attach(&self->on_write, poller);
+	bus_attach(bus, &self->on_write);
 }
 
 void
 channel_attach(Channel* self)
 {
-	if (self->on_write.attached)
-		return;
-	int rc = channel_attach_to(self, &am_task->poller);
-	if (unlikely(rc == -1))
-		error_system();
+	bus_attach(&am_task->bus, &self->on_write);
 }
 
 void
 channel_detach(Channel* self)
 {
-	condition_detach(&self->on_write);
+	bus_detach(&self->on_write);
 }
 
 hot void
@@ -59,7 +55,7 @@ channel_write(Channel* self, Buf* buf)
 	spinlock_lock(&self->lock);
 	buf_list_add(&self->list, buf);
 	spinlock_unlock(&self->lock);
-	condition_signal(&self->on_write);
+	bus_signal(&self->on_write);
 }
 
 static inline Buf*
@@ -74,7 +70,7 @@ channel_pop(Channel* self)
 Buf*
 channel_read(Channel* self, int time_ms)
 {
-	assert(self->on_write.attached);
+	assert(self->on_write.bus);
 
 	// non-blocking
 	if (time_ms == 0)
@@ -85,7 +81,7 @@ channel_read(Channel* self, int time_ms)
 	if (time_ms == -1)
 	{
 		while ((buf = channel_pop(self)) == NULL)
-			condition_wait(&self->on_write, -1);
+			event_wait(&self->on_write, -1);
 		return buf;
 	}
 
@@ -93,6 +89,6 @@ channel_read(Channel* self, int time_ms)
 	buf = channel_pop(self);
 	if (buf)
 		return buf;
-	condition_wait(&self->on_write, time_ms);
+	event_wait(&self->on_write, time_ms);
 	return channel_pop(self);
 }

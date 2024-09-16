@@ -35,9 +35,9 @@ void
 backup_init(Backup* self, Db* db)
 {
 	self->checkpoint_snapshot = -1;
-	self->on_complete         = NULL;
 	self->client              = NULL;
 	self->db                  = db;
+	event_init(&self->on_complete);
 	wal_slot_init(&self->wal_slot);
 	buf_init(&self->state);
 	task_init(&self->task);
@@ -50,8 +50,7 @@ backup_free(Backup* self)
 	wal_del(&db->wal, &self->wal_slot);
 	if (self->checkpoint_snapshot != -1)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
-	if (self->on_complete)
-		condition_free(self->on_complete);
+	event_detach(&self->on_complete);
 	buf_free(&self->state);
 	task_free(&self->task);
 }
@@ -243,7 +242,7 @@ backup_main(void* arg)
 	if (leave(&e))
 	{ }
 
-	condition_signal(self->on_complete);
+	event_signal(&self->on_complete);
 	info("complete");
 }
 
@@ -255,17 +254,16 @@ backup_run(Backup* self, Client* client)
 	self->client = client;
 
 	// prepare on wait condition
-	self->on_complete = condition_create();
+	event_attach(&self->on_complete);
 
 	// create backup worker
 	task_create(&self->task, "backup", backup_main, self);
 
 	// wait for backup completion
 	coroutine_cancel_pause(am_self());
-	condition_wait(self->on_complete, -1);
-	coroutine_cancel_resume(am_self());
-
+	event_wait(&self->on_complete, -1);
 	task_wait(&self->task);
+	coroutine_cancel_resume(am_self());
 }
 
 void

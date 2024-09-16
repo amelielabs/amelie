@@ -7,7 +7,7 @@
 //
 
 hot static inline void
-event_signal(Event* event)
+event_signal_direct(Event* event)
 {
 	event->signal = true;
 	if (event->parent)
@@ -15,7 +15,7 @@ event_signal(Event* event)
 		Event* parent = event->parent;
 		if (parent->parent_signal == NULL)
 			parent->parent_signal = event;
-		event_signal(event->parent);
+		event_signal_direct(event->parent);
 	}
 	if (event->wait)
 		coroutine_resume(event->wait);

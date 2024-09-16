@@ -13,7 +13,7 @@ struct Task
 	CoroutineMgr   coroutine_mgr;
 	TimerMgr       timer_mgr;
 	Poller         poller;
-	ConditionCache condition_cache;
+	Bus            bus;
 	Channel        channel;
 	BufMgr*        buf_mgr;
 	MainFunction   main;
