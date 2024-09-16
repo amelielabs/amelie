@@ -11,7 +11,7 @@
 static int event_value = 0;
 
 static void
-test_event_main(void *arg)
+test_event_main(void* arg)
 {
 	Event *event = arg;
 	event_signal(event);
@@ -19,7 +19,7 @@ test_event_main(void *arg)
 }
 
 void
-test_event(void *arg)
+test_event(void* arg)
 {
 	Event event;
 	event_init(&event);
@@ -36,7 +36,7 @@ test_event(void *arg)
 }
 
 static void
-test_event_timeout_main(void *arg)
+test_event_timeout_main(void* arg)
 {
 	Event *event = arg;
 	coroutine_sleep(100);
@@ -45,7 +45,7 @@ test_event_timeout_main(void *arg)
 }
 
 void
-test_event_timeout(void *arg)
+test_event_timeout(void* arg)
 {
 	event_value = 0;
 
@@ -67,7 +67,7 @@ test_event_timeout(void *arg)
 }
 
 void
-test_event_parent(void *arg)
+test_event_parent(void* arg)
 {
 	event_value = 0;
 

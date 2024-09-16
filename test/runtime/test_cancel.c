@@ -27,7 +27,7 @@ test_cancel_create(void* arg)
 }
 
 static void
-test_cancel_main(void *arg)
+test_cancel_main(void* arg)
 {
 	Event* event = arg;
 	event_wait(event, -1);
@@ -35,7 +35,7 @@ test_cancel_main(void *arg)
 }
 
 void
-test_cancel(void *arg)
+test_cancel(void* arg)
 {
 	Event event;
 	event_init(&event);
@@ -72,7 +72,7 @@ test_cancel_pause_main(void* arg)
 }
 
 void
-test_cancel_pause(void *arg)
+test_cancel_pause(void* arg)
 {
 	Event event;
 	event_init(&event);
@@ -96,7 +96,7 @@ test_cancel_pause(void *arg)
 }
 
 static void
-test_cancel_condition_main(void *arg)
+test_cancel_condition_main(void* arg)
 {
 	Event* cond = arg;
 	event_wait(cond, -1);
@@ -104,7 +104,7 @@ test_cancel_condition_main(void *arg)
 }
 
 void
-test_cancel_condition(void *arg)
+test_cancel_condition(void* arg)
 {
 	Event cond;
 	event_init(&cond);
@@ -138,7 +138,7 @@ test_cancel_channel_pause_canceller(void* arg)
 }
 
 void
-test_cancel_channel_pause(void *arg)
+test_cancel_channel_pause(void* arg)
 {
 	Channel channel;
 	channel_init(&channel);

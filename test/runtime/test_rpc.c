@@ -9,7 +9,7 @@
 #include <amelie_test.h>
 
 static void
-test_rpc_main(void *arg)
+test_rpc_main(void* arg)
 {
 	auto buf = channel_read(&am_task->channel, -1);
 	auto rpc = rpc_of(buf);
@@ -22,7 +22,7 @@ test_rpc_main(void *arg)
 }
 
 void
-test_rpc(void *arg)
+test_rpc(void* arg)
 {
 	Task task;
 	task_init(&task);
@@ -37,7 +37,7 @@ test_rpc(void *arg)
 }
 
 static void
-test_rpc_execute_cb(Rpc* self, void *arg)
+test_rpc_execute_cb(Rpc* self, void* arg)
 {
 	test(self->argc == 1);
 	test(! memcmp(rpc_arg_ptr(self, 0), "hello", 5));
@@ -45,7 +45,7 @@ test_rpc_execute_cb(Rpc* self, void *arg)
 }
 
 static void
-test_rpc_execute_main(void *arg)
+test_rpc_execute_main(void* arg)
 {
 	auto buf = channel_read(&am_task->channel, -1);
 	rpc_execute(rpc_of(buf), test_rpc_execute_cb, NULL);
@@ -53,7 +53,7 @@ test_rpc_execute_main(void *arg)
 }
 
 void
-test_rpc_execute(void *arg)
+test_rpc_execute(void* arg)
 {
 	Task task;
 	task_init(&task);

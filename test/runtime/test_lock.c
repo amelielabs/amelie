@@ -11,7 +11,7 @@
 static bool resource_ro = false;
 
 static void
-test_lock_write_main(void *arg)
+test_lock_write_main(void* arg)
 {
 	Resource* r = arg;
 	auto lock = resource_lock(r, true);
@@ -20,7 +20,7 @@ test_lock_write_main(void *arg)
 }
 
 void
-test_lock_write(void *arg)
+test_lock_write(void* arg)
 {
 	LockCache cache;
 	lock_cache_init(&cache);
@@ -61,7 +61,7 @@ test_lock_write_readers_main(void* arg)
 }
 
 void
-test_lock_write_readers(void *arg)
+test_lock_write_readers(void* arg)
 {
 	LockCache cache;
 	lock_cache_init(&cache);
@@ -100,7 +100,7 @@ test_lock_write_readers(void *arg)
 static bool resource_rw = false;
 
 static void
-test_lock_read0_main(void *arg)
+test_lock_read0_main(void* arg)
 {
 	Resource* r = arg;
 	auto lock = resource_lock(r, false);
@@ -109,7 +109,7 @@ test_lock_read0_main(void *arg)
 }
 
 void
-test_lock_read0(void *arg)
+test_lock_read0(void* arg)
 {
 	LockCache cache;
 	lock_cache_init(&cache);
@@ -139,7 +139,7 @@ test_lock_read0(void *arg)
 }
 
 static void
-test_lock_read1_main(void *arg)
+test_lock_read1_main(void* arg)
 {
 	Resource* r = arg;
 	auto lock = resource_lock(r, true);
@@ -148,7 +148,7 @@ test_lock_read1_main(void *arg)
 }
 
 void
-test_lock_read1(void *arg)
+test_lock_read1(void* arg)
 {
 	LockCache cache;
 	lock_cache_init(&cache);

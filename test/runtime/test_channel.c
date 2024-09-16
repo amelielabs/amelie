@@ -53,7 +53,7 @@ test_channel(void* arg)
 }
 
 void
-test_channel_task(void *arg)
+test_channel_task(void* arg)
 {
 	Channel channel;
 	channel_init(&channel);
@@ -75,7 +75,7 @@ test_channel_task(void *arg)
 }
 
 static void
-test_channel_timeout_main(void *arg)
+test_channel_timeout_main(void* arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
@@ -83,7 +83,7 @@ test_channel_timeout_main(void *arg)
 }
 
 void
-test_channel_task_timeout(void *arg)
+test_channel_task_timeout(void* arg)
 {
 	Channel channel;
 	channel_init(&channel);
@@ -141,7 +141,7 @@ test_channel_consumer(void *arg)
 }
 
 static void
-test_channel_producer(void *arg)
+test_channel_producer(void* arg)
 {
 	Channel* consumer_channel = arg;
 	Buf* buf;
@@ -162,7 +162,7 @@ test_channel_producer(void *arg)
 }
 
 void
-test_channel_producer_consumer(void *arg)
+test_channel_producer_consumer(void* arg)
 {
 	Event event;
 	event_init(&event);

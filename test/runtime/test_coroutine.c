@@ -28,7 +28,7 @@ test_coroutine_create(void* arg)
 }
 
 static void
-test_coroutine_context_switch_main(void *arg)
+test_coroutine_context_switch_main(void* arg)
 {
 	int* csw = arg;
 	while (*csw < 100000)
@@ -39,7 +39,7 @@ test_coroutine_context_switch_main(void *arg)
 }
 
 void
-test_coroutine_context_switch(void *arg)
+test_coroutine_context_switch(void* arg)
 {
 	int csw = 0;
 	uint64_t id;

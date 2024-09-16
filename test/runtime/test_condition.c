@@ -11,7 +11,7 @@
 static int cond_value = 0;
 
 static void
-test_condition_main(void *arg)
+test_condition_main(void* arg)
 {
 	Event* cond = arg;
 	event_signal(cond);
@@ -19,7 +19,7 @@ test_condition_main(void *arg)
 }
 
 void
-test_condition(void *arg)
+test_condition(void* arg)
 {
 	Event cond;
 	event_init(&cond);
@@ -38,7 +38,7 @@ test_condition(void *arg)
 }
 
 void
-test_condition_task(void *arg)
+test_condition_task(void* arg)
 {
 	cond_value = 0;
 
@@ -61,7 +61,7 @@ test_condition_task(void *arg)
 }
 
 static void
-test_condition_timeout_main(void *arg)
+test_condition_timeout_main(void* arg)
 {
 	Event* cond = arg;
 	coroutine_sleep(100);
@@ -70,7 +70,7 @@ test_condition_timeout_main(void *arg)
 }
 
 void
-test_condition_task_timeout(void *arg)
+test_condition_task_timeout(void* arg)
 {
 	cond_value = 0;
 
