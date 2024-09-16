@@ -165,11 +165,20 @@ str_compare_fn(Str* a, Str* b)
 	return rc > 0 ? 1 : -1;
 }
 
+static inline char*
+str_strnchr(Str* self, char token)
+{
+	for (auto pos = self->pos; pos < self->end; pos++)
+		if (*pos == token)
+			return pos;
+	return NULL;
+}
+
 static inline bool
 str_split(Str* self, Str* chunk, char token)
 {
 	str_init(chunk);
-	char* pos = strnchr(str_of(self), str_size(self), token);
+	char* pos = str_strnchr(self, token);
 	if (pos == NULL)
 	{
 		str_set(chunk, str_of(self), str_size(self));

@@ -48,7 +48,7 @@ parse_target_path(Ast* path, Str* schema, Str* name)
 		str_split(&path->string, schema, '.');
 		str_set_str(name, &path->string);
 		str_advance(name, str_size(schema) + 1);
-		if (strnchr(str_of(name), str_size(name), '.'))
+		if (str_strnchr(name, '.'))
 			return false;
 		return true;
 	}

@@ -20,7 +20,6 @@
 
 // intrusive list
 #include "runtime/list.h"
-#include "runtime/utils.h"
 
 // exception
 #include "runtime/exception.h"

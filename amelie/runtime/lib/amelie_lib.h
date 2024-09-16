@@ -14,6 +14,9 @@
 #include "lib/rbtree.h"
 #include "lib/hash_table.h"
 
+// misc
+#include "lib/misc.h"
+
 // hashing
 #include "lib/hash.h"
 #include "lib/random.h"
@@ -28,9 +31,6 @@
 // args
 #include "lib/arg.h"
 
-// cli
-#include "lib/cli.h"
-
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"
@@ -42,3 +42,6 @@
 
 // logger
 #include "lib/logger.h"
+
+// cli
+#include "lib/cli.h"
