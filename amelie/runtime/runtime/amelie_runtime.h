@@ -15,8 +15,8 @@
 #include "runtime/spinlock.h"
 #include "runtime/mutex.h"
 #include "runtime/cond_var.h"
+#include "runtime/cond.h"
 #include "runtime/thread.h"
-#include "runtime/status.h"
 
 // intrusive list
 #include "runtime/list.h"

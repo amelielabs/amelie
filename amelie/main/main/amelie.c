@@ -108,7 +108,7 @@ amelie_cmd_start(Amelie* self, int argc, char** argv)
 		system_start(system, bootstrap);
 
 		// notify amelie_start about start completion
-		status_set(&self->task.status, AMELIE_RUN);
+		cond_signal(&self->task.status, AMELIE_RUN);
 
 		// handle system requests
 		system_main(system);
@@ -427,7 +427,7 @@ amelie_runner(void* arg)
 	AmelieRc rc = AMELIE_COMPLETE;
 	if (e.triggered)
 		rc = AMELIE_ERROR;
-	status_set(&self->task.status, rc);
+	cond_signal(&self->task.status, rc);
 }
 
 void
@@ -465,7 +465,7 @@ amelie_start(Amelie* self, int argc, char** argv)
 		return AMELIE_ERROR;
 
 	// wait for cli task to start
-	rc = status_wait(&self->task.status);
+	rc = cond_wait(&self->task.status);
 	return rc;
 }
 

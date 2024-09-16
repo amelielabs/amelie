@@ -23,7 +23,7 @@ struct Task
 	char*          name;
 	LogFunction    log_write;
 	void*          log_write_arg;
-	Status         status;
+	Cond           status;
 	Thread         thread;
 };
 
