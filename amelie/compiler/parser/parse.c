@@ -390,14 +390,14 @@ parse_cte_args(Parser* self, Stmt* cte)
 		error("WITH name (<)> expected");
 }
 
-hot void
+hot static bool
 parse_cte(Parser* self)
 {
 	auto lex = &self->lex;
 
 	// WITH
 	if (! lex_if(lex, KWITH))
-		return;
+		return false;
 
 	for (;;)
 	{
@@ -438,6 +438,8 @@ parse_cte(Parser* self)
 		if (! lex_if(lex, ','))
 			break;
 	}
+
+	return true;
 }
 
 hot void
@@ -466,21 +468,19 @@ parse(Parser* self, Local* local, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
-	// [WITH name AS ( cte )[, name AS (...)]]
-	parse_cte(self);
 
 	// stmt [; stmt]
 	bool has_utility = false;	
 	for (;;)
 	{
-		// EOF
-		if (lex_if(lex, KEOF))
-			break;
-
 		// ; | EOF
 		lex_if(lex, ';');
 		if (lex_if(lex, KEOF))
 			break;
+
+		// [WITH name AS ( cte )[, name AS (...)]]
+		if (parse_cte(self))
+			continue;
 
 		// stmt (last stmt is main)
 		self->stmt = stmt_allocate(self->db, self->function_mgr,
@@ -500,5 +500,5 @@ parse(Parser* self, Local* local, Str* str)
 
 	// ensure main stmt is not utility when using CTE
 	if (has_utility && self->stmt_list.list_count > 1)
-		error("CTE or multi-statement utility commands are not supported");
+		error("CTE and multi-statement utility commands are not supported");
 }

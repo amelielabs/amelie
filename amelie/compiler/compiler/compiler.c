@@ -455,12 +455,12 @@ compiler_emit(Compiler* self)
 	emit_recv_upto(self, recv_last, stmt_list->list_count);
 
 	// CBODY (for the main statement, if any)
+	compiler_switch_coordinator(self);
 	if (parser->stmt)
 		op1(self, CBODY, parser->stmt->order);
 	else
 		op0(self, CBODY_EMPTY);
 
 	// CRET
-	compiler_switch_coordinator(self);
 	op0(self, CRET);
 }

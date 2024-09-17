@@ -142,5 +142,11 @@ with a as (delete from test returning *) select * from a
 explain with a as (delete from test returning *) select * from a
 drop table test
 
+# test: a(expr), stmt, b(expr), stmt
+create table test (id int primary key)
+insert into test 1,2,3
+with a as (select [1,2,3]); select * from a; with b as (select * from test); select b.*, a.* from b,a
+drop table test
+
 disconnect S0
 close E0
