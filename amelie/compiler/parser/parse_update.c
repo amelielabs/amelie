@@ -77,7 +77,9 @@ parse_update_expr(Stmt* self)
 hot void
 parse_update(Stmt* self)
 {
-	// UPDATE name SET path = expr [, ... ] [WHERE expr]
+	// UPDATE name SET path = expr [, ... ]
+	// [WHERE expr]
+	// [RETURNING expr [INTO cte[(args)]]]
 	auto stmt = ast_update_allocate();
 	self->ast = &stmt->ast;
 
@@ -102,5 +104,11 @@ parse_update(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
+	{
 		stmt->returning = parse_expr(self, NULL);
+
+		// [INTO cte_name[(args)]]
+		if (stmt_if(self, KINTO))
+			parse_cte(self, false);
+	}
 }

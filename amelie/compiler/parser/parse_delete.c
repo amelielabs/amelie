@@ -31,7 +31,9 @@
 hot void
 parse_delete(Stmt* self)
 {
-	// DELETE FROM name [WHERE expr] [RETURNING expr]
+	// DELETE FROM name
+	// [WHERE expr]
+	// [RETURNING expr [INTO cte[(args)]]]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
 
@@ -57,5 +59,11 @@ parse_delete(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
+	{
 		stmt->returning = parse_expr(self, NULL);
+
+		// [INTO cte_name[(args)]]
+		if (stmt_if(self, KINTO))
+			parse_cte(self, false);
+	}
 }

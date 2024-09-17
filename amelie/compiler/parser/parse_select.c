@@ -179,7 +179,9 @@ parse_select_label(Stmt* self, AstSelect* select, Ast* expr)
 hot AstSelect*
 parse_select(Stmt* self)
 {
-	// SELECT [DISTINCT] expr, ... [FROM name, [...]]
+	// SELECT [DISTINCT] expr, ...
+	// [INTO cte[(args)]]
+	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
 	// [ORDER BY]
@@ -229,6 +231,14 @@ parse_select(Stmt* self)
 			auto order = ast_order_allocate(expr, true);
 			ast_list_add(&select->expr_order_by, &order->ast);
 		}
+	}
+
+	// [INTO cte_name[(args)]]
+	if (stmt_if(self, KINTO))
+	{
+		if (level != 0)
+			error("SELECT INTO subqueries are not supported");
+		parse_cte(self, false);
 	}
 
 	// [FROM]

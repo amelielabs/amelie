@@ -354,44 +354,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 	}
 }
 
-hot void
-parse_cte_args(Parser* self, Stmt* cte)
-{
-	// )
-	auto lex = &self->lex;
-	if (lex_if(lex, ')'))
-		return;
-
-	for (;;)
-	{
-		// name
-		auto name = lex_if(lex, KNAME);
-		if (! name)
-			error("WITH name (<name> expected");
-
-		// ensure arg does not exists
-		auto arg = columns_find(&cte->columns, &name->string);
-		if (arg)
-			error("<%.*s> view argument redefined", str_size(&name->string),
-			      str_of(&name->string));
-
-		// add argument
-		arg = column_allocate();
-		columns_add(&cte->columns, arg);
-		column_set_name(arg, &name->string);
-
-		// ,
-		if (! lex_if(lex, ','))
-			break;
-	}
-
-	// )
-	if (! lex_if(lex, ')'))
-		error("WITH name (<)> expected");
-}
-
 hot static bool
-parse_cte(Parser* self)
+parse_with(Parser* self)
 {
 	auto lex = &self->lex;
 
@@ -408,14 +372,8 @@ parse_cte(Parser* self)
 		                         &self->stmt_list);
 		stmt_list_add(&self->stmt_list, cte);
 
-		// name
-		cte->name = lex_if(lex, KNAME);
-		if (! cte->name)
-			error("WITH <name> expected");
-
-		// (args)
-		if (lex_if(lex, '('))
-			parse_cte_args(self, cte);
+		// name [(args)]
+		parse_cte(cte, true);
 
 		// AS
 		if (! lex_if(lex, KAS))
@@ -468,7 +426,6 @@ parse(Parser* self, Local* local, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
-
 	// stmt [; stmt]
 	bool has_utility = false;	
 	for (;;)
@@ -479,7 +436,7 @@ parse(Parser* self, Local* local, Str* str)
 			break;
 
 		// [WITH name AS ( cte )[, name AS (...)]]
-		if (parse_cte(self))
+		if (parse_with(self))
 			continue;
 
 		// stmt (last stmt is main)

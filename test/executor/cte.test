@@ -62,6 +62,13 @@ with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select 
 explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 drop table test
 
+# test: into (expr), into (table), table (pushdown join)
+create table test (id int primary key)
+insert into test 1,2,3
+select [*] into z(id) from [1,2,3]; select * into a(id) from test; select test.* from test join a on test.id = a.id join z on test.id = z.id
+select (select 123 into a)
+drop table test
+
 # test: a(table), b(a)
 create table test (id int primary key)
 insert into test 1,2,3
@@ -124,6 +131,20 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 drop table test
 
+# test: with(insert returning), expr
+create shared table test (id int primary key, data int)
+with a as (insert into test values (2, 0) returning *); select * from a
+explain with a as (insert into test values (2, 0) returning *); select * from a
+# redefine
+with a as (insert into test values (2, 0) returning * into b); select * from a
+drop table test
+
+# test: insert returning into, expr
+create shared table test (id int primary key, data int)
+insert into test values (2, 0) returning * into a; select * from a
+explain insert into test values (2, 0) returning * into a; select * from a
+drop table test
+
 # test: with(update returning), expr
 create shared table test (id int primary key, data int)
 insert into test values (0, 0)
@@ -131,6 +152,15 @@ insert into test values (1, 0)
 insert into test values (2, 0)
 with a as (update test set data = data + 1 returning *) select * from a
 explain with a as (update test set data = data + 1 returning *) select * from a
+drop table test
+
+# test: update returning into, expr
+create shared table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+update test set data = data + 1 returning * into a; select * from a
+explain update test set data = data + 1 returning * into a; select * from a
 drop table test
 
 # test: with(delete returning), expr
@@ -142,10 +172,25 @@ with a as (delete from test returning *) select * from a
 explain with a as (delete from test returning *) select * from a
 drop table test
 
+# test: delete returning into, expr
+create shared table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+delete from test returning * into a; select * from a
+explain delete from test returning * into a; select * from a
+drop table test
+
 # test: a(expr), stmt, b(expr), stmt
 create table test (id int primary key)
 insert into test 1,2,3
 with a as (select [1,2,3]); select * from a; with b as (select * from test); select b.*, a.* from b,a
+drop table test
+
+# test: into a(expr), stmt, into b(expr), stmt
+create table test (id int primary key)
+insert into test 1,2,3
+select [1,2,3] into a; select * from a; select * into b from test; select b.*, a.* from b,a
 drop table test
 
 disconnect S0
