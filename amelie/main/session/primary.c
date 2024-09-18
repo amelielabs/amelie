@@ -90,7 +90,7 @@ replay(Session* self, WalWrite* write)
 	auto executor = self->share->executor;
 	auto dtr = &self->dtr;
 	dtr_reset(dtr);
-	dtr_create(dtr, &self->local, NULL, NULL, 1, 0);
+	dtr_create(dtr, &self->local, NULL, NULL, 1, 0, 1);
 
 	ReqList req_list;
 	req_list_init(&req_list);

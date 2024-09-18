@@ -281,7 +281,7 @@ cbody_empty:
 	op_next;
 
 ccte_set:
-	// [order, result]
+	// [cte_order, result]
 	value_move(result_at(cte, op->a), &r[op->b]);
 	op_next;
 

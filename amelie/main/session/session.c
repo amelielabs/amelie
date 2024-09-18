@@ -150,12 +150,13 @@ session_execute_distributed(Session* self)
 
 	// prepare distributed transaction
 	int stmts = compiler->parser.stmt_list.list_count;
+	int ctes  = compiler->parser.cte_list.list_count;
 	int last  = -1;
 	if (compiler->last)
 		last = compiler->last->order;
 	dtr_create(dtr, &self->local, &compiler->code_node,
 	           &compiler->code_data,
-	           stmts, last);
+	           stmts, last, ctes);
 
 	// set distributed snapshot
 	if (compiler->snapshot)

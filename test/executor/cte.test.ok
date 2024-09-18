@@ -1488,5 +1488,115 @@ select [1,2,3] into a; select * from a; select * into b from test; select b.*, a
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 drop table test
 []
+# test: a(expr), a(expr)
+create table test (id int primary key)
+[]
+insert into test 1,2,3
+[]
+with a as (select [4,5,6]); with a as (select * from test); select * from a
+[[1], [2], [3]]
+explain with a as (select [4,5,6]); with a as (select * from test); select * from a
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 4",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 5",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 6",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "send_all            1      0      0     ",
+      "09": "recv                1      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             0      0      0     ",
+      "14": "set                 0      0      0     ",
+      "15": "cursor_open_cte     0      0      17    ",
+      "16": "jmp                 20     0      0     ",
+      "17": "cursor_read         1      0      0     ",
+      "18": "set_add             0      1      0     ",
+      "19": "cursor_next         0      17     0     ",
+      "20": "cursor_close        0      0      0     ",
+      "21": "cte_set             1      0      0     ",
+      "22": "body                1      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+with a as (select [4,5,6]); with a as (select [1,2,3]); select * from a
+[1, 2, 3]
+drop table test
+[]
+# test: into a(expr), into a(expr)
+create table test (id int primary key)
+[]
+insert into test 1,2,3
+[]
+select [4,5,6] into a; select * into a from test; select * from a
+[[1], [2], [3]]
+explain select [4,5,6] into a; select * into a from test; select * from a
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 4",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 5",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 6",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "send_all            1      0      0     ",
+      "09": "recv                1      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             0      0      0     ",
+      "14": "set                 0      0      0     ",
+      "15": "cursor_open_cte     0      0      17    ",
+      "16": "jmp                 20     0      0     ",
+      "17": "cursor_read         1      0      0     ",
+      "18": "set_add             0      1      0     ",
+      "19": "cursor_next         0      17     0     ",
+      "20": "cursor_close        0      0      0     ",
+      "21": "cte_set             1      0      0     ",
+      "22": "body                1      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select [4,5,6] into a; select [1,2,3] into a; select * from a
+[1, 2, 3]
+drop table test
+[]
 disconnect S0
 close E0

@@ -38,7 +38,7 @@ typedef struct
 } From;
 
 static inline Ast*
-parse_from_analyze(From* self, Stmt** cte, Table** table, View** view)
+parse_from_analyze(From* self, Cte** cte, Table** table, View** view)
 {
 	auto stmt = self->stmt;
 
@@ -56,13 +56,12 @@ parse_from_analyze(From* self, Stmt** cte, Table** table, View** view)
 	}
 
 	// find cte
-	*cte = stmt_list_find(stmt->stmt_list, &name);
+	*cte = cte_list_find(stmt->cte_list, &name);
 	if (*cte)
 	{
-		if (*cte == self->stmt)
+		if ((*cte)->stmt == self->stmt->order)
 			error("<%.*s> recursive CTE are not supported",
-			      str_size(&self->stmt->name->string),
-			      str_of(&self->stmt->name->string));
+			      str_size(&name), str_of(&name));
 		return NULL;
 	}
 
@@ -111,7 +110,7 @@ static inline Target*
 parse_from_add(From* self)
 {
 	auto   stmt  = self->stmt;
-	Stmt*  cte   = NULL;
+	Cte*   cte   = NULL;
 	Table* table = NULL;
 	View*  view  = NULL;
 

@@ -98,7 +98,8 @@ dtr_create(Dtr*      self,
            Code*     code,
            CodeData* code_data,
            int       stmt_count,
-           int       stmt_last)
+           int       stmt_last,
+           int       cte_count)
 {
 	auto set_size = self->router->list_count;
 	self->code      = code;
@@ -106,7 +107,7 @@ dtr_create(Dtr*      self,
 	self->local     = local;
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, stmt_count, stmt_last);
-	result_create(&self->cte, stmt_count);
+	result_create(&self->cte, cte_count);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }

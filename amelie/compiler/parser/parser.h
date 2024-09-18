@@ -20,6 +20,7 @@ struct Parser
 	int          explain;
 	StmtList     stmt_list;
 	Stmt*        stmt;
+	CteList      cte_list;
 	CodeData*    data;
 	Json         json;
 	Lex          lex;

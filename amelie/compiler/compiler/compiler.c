@@ -372,7 +372,7 @@ emit_recv(Compiler* self)
 	}
 
 	// CCTE_SET
-	op2(self, CCTE_SET, stmt->order, r);
+	op2(self, CCTE_SET, stmt->cte->id, r);
 	runpin(self, r);
 }
 
@@ -457,7 +457,7 @@ compiler_emit(Compiler* self)
 	// CBODY (for the main statement, if any)
 	compiler_switch_coordinator(self);
 	if (parser->stmt)
-		op1(self, CBODY, parser->stmt->order);
+		op1(self, CBODY, parser->stmt->cte->id);
 	else
 		op0(self, CBODY_EMPTY);
 

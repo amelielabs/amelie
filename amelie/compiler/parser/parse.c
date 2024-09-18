@@ -90,7 +90,6 @@ parse_stmt_free(Stmt* stmt)
 	default:
 		break;
 	}
-	columns_free(&stmt->columns);
 }
 
 hot static inline void
@@ -369,7 +368,8 @@ parse_with(Parser* self)
 		auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
 		                         &self->lex,
 		                         self->data, &self->json,
-		                         &self->stmt_list);
+		                         &self->stmt_list,
+		                         &self->cte_list);
 		stmt_list_add(&self->stmt_list, cte);
 
 		// name [(args)]
@@ -444,9 +444,15 @@ parse(Parser* self, Local* local, Str* str)
 		                           self->local,
 		                           &self->lex,
 		                           self->data, &self->json,
-		                           &self->stmt_list);
+		                           &self->stmt_list,
+		                           &self->cte_list);
 		stmt_list_add(&self->stmt_list, self->stmt);
 		parse_stmt(self, self->stmt);
+
+		// add nameless cte for the statement, if not used
+		if (! self->stmt->cte)
+			self->stmt->cte = cte_list_add(&self->cte_list, NULL, self->stmt->order);
+
 		if (stmt_is_utility(self->stmt))
 			has_utility = true;
 	}

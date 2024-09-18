@@ -50,8 +50,8 @@ struct Stmt
 	StmtId       id;
 	Ast*         ast;
 	int          order;
-	Ast*         name;
-	Columns      columns;
+	Cte*         cte;
+	CteList*     cte_list;
 	TargetList   target_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
@@ -76,13 +76,15 @@ stmt_allocate(Db*          db,
               Lex*         lex,
               CodeData*    data,
               Json*        json,
-              StmtList*    stmt_list)
+              StmtList*    stmt_list,
+              CteList*     cte_list)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id           = STMT_UNDEF;
 	self->ast          = NULL;
 	self->order        = 0;
-	self->name         = NULL;
+	self->cte          = NULL;
+	self->cte_list     = cte_list;
 	self->stmt_list    = stmt_list;
 	self->data         = data;
 	self->json         = json;
@@ -90,7 +92,6 @@ stmt_allocate(Db*          db,
 	self->function_mgr = function_mgr;
 	self->local        = local;
 	self->db           = db;
-	columns_init(&self->columns);
 	target_list_init(&self->target_list);
 	list_init(&self->link);
 	return self;
@@ -175,20 +176,6 @@ stmt_list_add(StmtList* self, Stmt* stmt)
 	list_append(&self->list, &stmt->link);
 }
 
-static inline Stmt*
-stmt_list_find(StmtList* self, Str* name) 
-{
-	list_foreach(&self->list)
-	{
-		auto stmt = list_at(Stmt, link);
-		if (stmt->name == NULL)
-			continue;
-		if (str_compare(&stmt->name->string, name))
-			return stmt;
-	}
-	return NULL;
-}
-
 static inline int
 stmt_max_cte_order(Stmt* self)
 {
@@ -198,8 +185,8 @@ stmt_max_cte_order(Stmt* self)
 	{
 		if (target->cte)
 		{
-			if (target->cte->order > order)
-				order = target->cte->order;
+			if (target->cte->stmt > order)
+				order = target->cte->stmt;
 		}
 		target = target->next;
 	}

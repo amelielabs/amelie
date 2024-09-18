@@ -29,7 +29,7 @@ struct Target
 	Target*      group_main;
 	Target*      group_redirect;
 	// expression target
-	Stmt*        cte;
+	Cte*         cte;
 	View*        view;
 	Ast*         expr;
 	Ast*         expr_on;

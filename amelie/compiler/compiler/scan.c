@@ -221,7 +221,7 @@ scan_target_expr(Scan* self, Target* target)
 	{
 		// cursor_open_cte
 		_open = op_pos(cp);
-		op3(cp, CCURSOR_OPEN_CTE, target->id, target->cte->order, 0 /* _where */);
+		op3(cp, CCURSOR_OPEN_CTE, target->id, target->cte->id, 0 /* _where */);
 	} else
 	{
 		// expr

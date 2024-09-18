@@ -55,7 +55,7 @@ target_list_add(TargetList* self,
                 Str*        name,
                 Ast*        expr,
                 Table*      table,
-                Stmt*       cte)
+                Cte*        cte)
 {
 	Target* target = palloc(sizeof(Target));
 	target_init(target, table);

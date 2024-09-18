@@ -41,6 +41,7 @@ parser_init(Parser*      self,
 	self->local        = NULL;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
+	cte_list_init(&self->cte_list);
 	lex_init(&self->lex, keywords);
 	json_init(&self->json);
 }
@@ -56,6 +57,7 @@ parser_reset(Parser* self)
 		auto stmt = list_at(Stmt, link);
 		parse_stmt_free(stmt);
 	}
+	cte_list_reset(&self->cte_list);
 	stmt_list_init(&self->stmt_list);
 	lex_reset(&self->lex);
 	json_reset(&self->json);

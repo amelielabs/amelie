@@ -90,6 +90,7 @@ value_reset(Value* self)
 always_inline hot static inline void
 value_move(Value* self, Value* from)
 {
+	value_free(self);
 	*self = *from;
 	value_reset(from);
 }

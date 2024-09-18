@@ -193,5 +193,21 @@ insert into test 1,2,3
 select [1,2,3] into a; select * from a; select * into b from test; select b.*, a.* from b,a
 drop table test
 
+# test: a(expr), a(expr)
+create table test (id int primary key)
+insert into test 1,2,3
+with a as (select [4,5,6]); with a as (select * from test); select * from a
+explain with a as (select [4,5,6]); with a as (select * from test); select * from a
+with a as (select [4,5,6]); with a as (select [1,2,3]); select * from a
+drop table test
+
+# test: into a(expr), into a(expr)
+create table test (id int primary key)
+insert into test 1,2,3
+select [4,5,6] into a; select * into a from test; select * from a
+explain select [4,5,6] into a; select * into a from test; select * from a
+select [4,5,6] into a; select [1,2,3] into a; select * from a
+drop table test
+
 disconnect S0
 close E0
