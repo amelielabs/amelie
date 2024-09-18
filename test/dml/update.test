@@ -251,5 +251,18 @@ update test set data = data + 1 returning *
 select * from test
 drop table test
 
+# test: update returning into
+create table test(id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+explain update test set data = data + 1 returning *
+update test set data = data + 1 returning * into result
+update test set data = data + 1 returning * into result; select * from result
+result := update test set data = data + 1 returning *; select * from result
+result := update test set data = data + 1 returning * into result; select * from result
+select * from test
+drop table test
+
 disconnect S0
 close E0

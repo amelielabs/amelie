@@ -6,7 +6,7 @@ show
 show;
 {"code": 1, "msg": "SHOW <name> expected"}
 show all junk
-{"code": 1, "msg": "unknown command: <junk>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 show 1234
 {"code": 1, "msg": "SHOW <name> expected"}
 # test: show users

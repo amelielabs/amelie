@@ -133,5 +133,11 @@ with config as (select system.config()) select * from config
 select (select * from system.config())
 select * from (select * from system.config())
 
+# test: cte := expr
+uuid := system.config().uuid
+uuid := [system.config().uuid]; select * from uuid
+a := [1]; a := [2]; select * from a
+explain a := [1]; a := [2]; select * from a
+
 disconnect S0
 close E0

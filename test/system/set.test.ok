@@ -14,7 +14,7 @@ set log_enable to
 set log_enable to 0
 {"code": 1, "msg": "SET 'log_enable': variable is read-only"}
 set query_dump to 0 junk
-{"code": 1, "msg": "unknown command: <junk>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: set read-only
 set log_enable to 0 # ro
 {"code": 1, "msg": "SET 'log_enable': variable is read-only"}

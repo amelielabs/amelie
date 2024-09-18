@@ -14,7 +14,7 @@ create user if not 123
 create user if not exists
 {"code": 1, "msg": "CREATE USER <name> expected"}
 create user test abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: create user
 create user test
 []
@@ -35,7 +35,7 @@ create user test2 password 123
 create user test2 password password
 {"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
 create user test2 password "test" abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 create user test2 password "test"
 []
 show users
@@ -58,7 +58,7 @@ drop user if exists
 drop user if exists 123
 {"code": 1, "msg": "DROP USER <name> expected"}
 drop user test abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: drop user
 drop user test
 []
@@ -89,7 +89,7 @@ alter user test2 password 123
 alter user test2 password name
 {"code": 1, "msg": "ALTER USER PASSWORD <value> string expected"}
 alter user test2 password "abc" abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: alter user
 alter user test2 password "abc"
 []

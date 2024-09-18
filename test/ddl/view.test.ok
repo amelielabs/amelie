@@ -183,7 +183,7 @@ drop view if
 drop view if exists
 {"code": 1, "msg": "DROP VIEW <name> expected"}
 drop view test abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: drop view
 create view test () as select 1
 []
@@ -222,7 +222,7 @@ alter view test rename
 alter view test rename to
 {"code": 1, "msg": "ALTER VIEW RENAME <name> expected"}
 alter view test rename asf junk
-{"code": 1, "msg": "unknown command: <junk>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 alter view test rename to abc
 []
 select * from system.views()

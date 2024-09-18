@@ -100,6 +100,18 @@ parse_stmt(Parser* self, Stmt* stmt)
 	if (ast->id == KEOF)
 		return;
 
+	// name[(args)] := stmt | expr
+	bool assign = false;
+	if (ast->id == KNAME)
+	{
+		lex_push(lex, ast);
+		parse_cte(stmt, false);
+		if (! lex_if(lex, KASSIGN))
+			error("name <:=> expected");
+		assign = true;
+		ast = lex_next(lex);
+	}
+
 	switch (ast->id) {
 	case KSHOW:
 		// SHOW name
@@ -342,8 +354,23 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_watch(stmt);
 		break;
 
+	case KEOF:
+		error("unexpected end of statement");
+		break;
+
 	default:
 	{
+		// name := expr
+		if (assign)
+		{
+			// handle as SELECT expr
+			lex_push(lex, ast);
+			stmt->id = STMT_SELECT;
+			auto select = parse_select_expr(stmt);
+			stmt->ast = &select->ast;
+			break;
+		}
+
 		if (ast->id == KNAME)
 			error("unknown command: <%.*s>", str_size(&ast->string),
 			      str_of(&ast->string));
@@ -351,6 +378,9 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 	}
+
+	if (assign && stmt_is_utility(stmt))
+		error(":= cannot be used with utility statements");
 }
 
 hot static bool
@@ -431,7 +461,8 @@ parse(Parser* self, Local* local, Str* str)
 	for (;;)
 	{
 		// ; | EOF
-		lex_if(lex, ';');
+		if (lex_if(lex, ';'))
+			continue;
 		if (lex_if(lex, KEOF))
 			break;
 
@@ -455,6 +486,15 @@ parse(Parser* self, Local* local, Str* str)
 
 		if (stmt_is_utility(self->stmt))
 			has_utility = true;
+
+		// EOF | ;
+		if (lex_if(lex, KEOF))
+			break;
+
+		if (lex_if(lex, ';'))
+			continue;
+
+		error("unexpected token at the end of statement");
 	}
 
 	// ensure EXPLAIN has command

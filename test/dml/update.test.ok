@@ -28,7 +28,7 @@ update test set path =
 update test set path = expr
 {"code": 1, "msg": "<path> column does not exists"}
 update test set id = id expr
-{"code": 1, "msg": "unknown command: <expr>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 drop table test
 []
 # test: update
@@ -733,6 +733,66 @@ update test set data = data + 1 returning *
 [[0, 2], [1, 2], [2, 2]]
 update test set data = data + 1 returning *
 [[0, 3], [1, 3], [2, 3]]
+select * from test
+[[0, 3], [1, 3], [2, 3]]
+drop table test
+[]
+# test: update returning into
+create table test(id int primary key, data int)
+[]
+insert into test values (0, 0)
+[]
+insert into test values (1, 0)
+[]
+insert into test values (2, 0)
+[]
+explain update test set data = data + 1 returning *
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 19     0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "null                1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "cursor_idx          1      0      1     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "add                 3      1      2     ",
+      "12": "push                3      0      0     ",
+      "13": "assign              1      3      1     ",
+      "14": "push                1      0      0     ",
+      "15": "update              0      0      0     ",
+      "16": "cursor_read         1      0      0     ",
+      "17": "set_add             0      1      0     ",
+      "18": "cursor_next         0      5      0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
+update test set data = data + 1 returning * into result
+[[0, 1], [1, 1], [2, 1]]
+update test set data = data + 1 returning * into result; select * from result
+[[0, 2], [1, 2], [2, 2]]
+result := update test set data = data + 1 returning *; select * from result
+[[0, 3], [1, 3], [2, 3]]
+result := update test set data = data + 1 returning * into result; select * from result
+{"code": 1, "msg": "INTO CTE redefined"}
 select * from test
 [[0, 3], [1, 3], [2, 3]]
 drop table test

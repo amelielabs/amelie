@@ -54,7 +54,7 @@ create schema if not 123
 create schema if not exists
 {"code": 1, "msg": "CREATE SCHEMA <name> expected"}
 create schema test abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: create schema
 create schema test
 []
@@ -115,7 +115,7 @@ drop schema if
 drop schema if exists
 {"code": 1, "msg": "DROP SCHEMA <name> expected"}
 drop schema test abc
-{"code": 1, "msg": "unknown command: <abc>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: drop schema
 drop schema test
 []

@@ -31,7 +31,7 @@ alter table test rename
 alter table test rename to
 {"code": 1, "msg": "ALTER TABLE RENAME <name> expected"}
 alter table test rename asf junk
-{"code": 1, "msg": "unknown command: <junk>"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 alter table test rename to abc
 []
 select *.schema, *.name from system.tables()

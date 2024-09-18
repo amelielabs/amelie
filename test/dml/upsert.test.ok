@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 create table test (id int primary key, data int)
 []
 insert into test values(1, 0) 123
-{"code": 1, "msg": "unknown command"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 insert into test values(1, 0) ON
 {"code": 1, "msg": "INSERT VALUES ON <CONFLICT> expected"}
 insert into test values(1, 0) ON 123

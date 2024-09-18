@@ -64,3 +64,4 @@ ast_select_allocate(void)
 }
 
 AstSelect* parse_select(Stmt*);
+AstSelect* parse_select_expr(Stmt*);

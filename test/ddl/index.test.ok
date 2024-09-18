@@ -199,7 +199,7 @@ create table test (id int primary key, a int, b int)
 []
 # test: create index with parsing
 create index i on test (a) 1
-{"code": 1, "msg": "unknown command"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 create index i on test (a) with
 {"code": 1, "msg": "WITH <(> expected"}
 create index i on test (a) with 1

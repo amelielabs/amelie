@@ -682,6 +682,20 @@ insert into test 1,2,3 returning * # on conflict error
 {"code": 1, "msg": "unique key constraint violation"}
 drop table test
 []
+# test: insert returning into
+create table test (id int primary key)
+[]
+insert into test 1,2,3 returning * into result; select * from result
+[[1], [2], [3]]
+drop table test
+[]
+# test: insert returning :=
+create table test (id int primary key)
+[]
+result := insert into test 1,2,3 returning *; select * from result
+[[1], [2], [3]]
+drop table test
+[]
 # test: insert returning (serial)
 create table test (id int primary key serial)
 []

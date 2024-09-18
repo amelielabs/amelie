@@ -751,5 +751,37 @@ select * from (select * from system.config())
   "host": "127.0.0.1",
   "port": 3485
 }], 3145728, 1048576, 0, 1, 3, true, 104857600, false, false, false, "", 3000, "5 min", 3, 0, false, 0, 0]
+# test: cte := expr
+uuid := system.config().uuid
+["00000000-0000-0000-0000-000000000000"]
+uuid := [system.config().uuid]; select * from uuid
+["00000000-0000-0000-0000-000000000000"]
+a := [1]; a := [2]; select * from a
+[2]
+explain a := [1]; a := [2]; select * from a
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "push                0      0      0     ",
+      "02": "array               0      1      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "int                 0      -      0     # 2",
+      "05": "push                0      0      0     ",
+      "06": "array               0      1      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "set                 0      0      0     ",
+      "09": "cursor_open_cte     0      0      11    ",
+      "10": "jmp                 14     0      0     ",
+      "11": "cursor_read         1      0      0     ",
+      "12": "set_add             0      1      0     ",
+      "13": "cursor_next         0      11     0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "cte_set             1      0      0     ",
+      "16": "body                1      0      0     ",
+      "17": "ret                 0      0      0     "
+    }
+  }
+}]
 disconnect S0
 close E0

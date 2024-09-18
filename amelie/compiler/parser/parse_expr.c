@@ -31,7 +31,7 @@
 static const uint8_t priority_value = 99;
 
 static uint8_t
-priority_map[UINT8_MAX] =
+priority_map[KEYWORD_MAX] =
 {
 	// operators:
 	//

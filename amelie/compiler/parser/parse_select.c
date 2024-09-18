@@ -308,3 +308,15 @@ parse_select(Stmt* self)
 
 	return select;
 }
+
+hot AstSelect*
+parse_select_expr(Stmt* self)
+{
+	// SELECT expr
+	auto select = ast_select_allocate();
+	Expr ctx;
+	expr_init(&ctx);
+	select->expr = parse_expr(self, &ctx);
+	select->expr_count++;
+	return select;
+}

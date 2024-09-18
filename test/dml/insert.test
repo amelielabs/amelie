@@ -340,6 +340,16 @@ insert into test 1,2,3 returning *
 insert into test 1,2,3 returning * # on conflict error
 drop table test
 
+# test: insert returning into
+create table test (id int primary key)
+insert into test 1,2,3 returning * into result; select * from result
+drop table test
+
+# test: insert returning :=
+create table test (id int primary key)
+result := insert into test 1,2,3 returning *; select * from result
+drop table test
+
 # test: insert returning (serial)
 create table test (id int primary key serial)
 explain insert into test () values (), (), () returning *

@@ -28,6 +28,7 @@ enum
 	KGTE,
 	KNEQU,
 	KCAT,
+	KASSIGN,
 
 	// name/path
 	KNAME,
@@ -164,7 +165,9 @@ enum
 	KSTOP,
 	KSWITCH,
 	KUSING,
-	KDEBUG
+	KDEBUG,
+
+	KEYWORD_MAX
 };
 
 struct Keyword

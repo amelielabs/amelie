@@ -69,6 +69,12 @@ select [*] into z(id) from [1,2,3]; select * into a(id) from test; select test.*
 select (select 123 into a)
 drop table test
 
+# test: := (expr), := (table), table (pushdown join)
+create table test (id int primary key)
+insert into test 1,2,3
+z(id) := select [*] from [1,2,3]; a(id) := select * from test; select test.* from test join a on test.id = a.id join z on test.id = z.id
+drop table test
+
 # test: a(table), b(a)
 create table test (id int primary key)
 insert into test 1,2,3
@@ -207,6 +213,14 @@ insert into test 1,2,3
 select [4,5,6] into a; select * into a from test; select * from a
 explain select [4,5,6] into a; select * into a from test; select * from a
 select [4,5,6] into a; select [1,2,3] into a; select * from a
+drop table test
+
+# test: := a(expr), := a(expr)
+create table test (id int primary key)
+insert into test 1,2,3
+a := select [4,5,6]; a := select * from test; select * from a
+explain a := select [4,5,6]; a := select * from test; select * from a
+a := select [4,5,6]; a := select [1,2,3]; select * from a
 drop table test
 
 disconnect S0
