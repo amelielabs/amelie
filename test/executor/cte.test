@@ -269,6 +269,25 @@ explain insert into test 15; return 1; insert into test 16;
 explain a := 123; return a
 a := 123; return a
 
+# test: return (cte)
+explain a := select * from test; return a;
+a := select * from test; return a;
+
+explain a := [1,2,3]; return a; return 48
+a := [1,2,3]; return a; return 48
+
+explain a := [1,2,3]; return a; select * from test
+a := [1,2,3]; return a; select * from test
+
+explain a := [1,2,3]; return a; select * from test; select * from test
+a := [1,2,3]; return a; select * from test; select * from test
+
+explain a := [1,2,3]; select * from test; return a;
+a := [1,2,3]; select * from test; return a;
+
+explain return a;
+return a;
+
 drop table test
 
 disconnect S0

@@ -185,6 +185,10 @@ emit_stmt(Compiler* self)
 		break;
 	}
 
+	case STMT_RETURN:
+		// do nothing (coordinator only)
+		return;
+
 	case STMT_WATCH:
 	{
 		// do nothing (coordinator only)
@@ -252,6 +256,10 @@ emit_send(Compiler* self, int start)
 		op2(self, CSEND_FIRST, stmt->order, start);
 		break;
 	}
+
+	case STMT_RETURN:
+		// no targets
+		break;
 
 	case STMT_WATCH:
 		// no targets
@@ -353,6 +361,16 @@ emit_recv(Compiler* self)
 		// CRECV_TO
 		r = op2(self, CRECV_TO, rpin(self), stmt->order);
 		break;
+	}
+
+	case STMT_RETURN:
+	{
+		// RETURN cte_name
+		//
+		// optimized path to avoid cte double copy
+		op1(self, CBODY, stmt->cte->id);
+		op0(self, CRET);
+		return;
 	}
 
 	case STMT_WATCH:

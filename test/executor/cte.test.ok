@@ -2106,15 +2106,206 @@ explain a := 123; return a
     "coordinator": {
       "00": "int                 0      -      0     # 123",
       "01": "cte_set             0      0      0     ",
-      "02": "cte_get             0      0      0     ",
-      "03": "cte_set             1      0      0     ",
-      "04": "body                1      0      0     ",
-      "05": "ret                 0      0      0     "
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
     }
   }
 }]
 a := 123; return a
 [123]
+# test: return (cte)
+explain a := select * from test; return a;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+a := select * from test; return a;
+[[1], [6], [7], [8], [14], [2], [9], [10], [12], [3], [4], [5], [11], [13]]
+explain a := [1,2,3]; return a; return 48
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 3",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     ",
+      "10": "int                 0      -      0     # 48",
+      "11": "cte_set             1      0      0     ",
+      "12": "body                1      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+a := [1,2,3]; return a; return 48
+[1, 2, 3]
+explain a := [1,2,3]; return a; select * from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 3",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     ",
+      "10": "send_all            2      0      0     ",
+      "11": "recv                2      0      0     ",
+      "12": "bool                0      0      0     ",
+      "13": "push                0      0      0     ",
+      "14": "merge_recv          0      -1     -1    ",
+      "15": "cte_set             1      0      0     ",
+      "16": "body                1      0      0     ",
+      "17": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+a := [1,2,3]; return a; select * from test
+[1, 2, 3]
+explain a := [1,2,3]; return a; select * from test; select * from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 3",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     ",
+      "10": "send_all            2      0      0     ",
+      "11": "send_all            3      11     0     ",
+      "12": "recv                2      0      0     ",
+      "13": "bool                0      0      0     ",
+      "14": "push                0      0      0     ",
+      "15": "merge_recv          0      -1     -1    ",
+      "16": "cte_set             1      0      0     ",
+      "17": "recv                3      0      0     ",
+      "18": "bool                0      0      0     ",
+      "19": "push                0      0      0     ",
+      "20": "merge_recv          0      -1     -1    ",
+      "21": "cte_set             2      0      0     ",
+      "22": "body                2      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     ",
+      "11": "set                 0      0      0     ",
+      "12": "int_min             1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "cursor_open         0      20     16    # public.test (primary)",
+      "15": "jmp                 19     0      0     ",
+      "16": "cursor_read         1      0      0     ",
+      "17": "set_add             0      1      0     ",
+      "18": "cursor_next         0      16     0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
+a := [1,2,3]; return a; select * from test; select * from test
+[1, 2, 3]
+explain a := [1,2,3]; select * from test; return a;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "push                0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "push                0      0      0     ",
+      "04": "int                 0      -      0     # 3",
+      "05": "push                0      0      0     ",
+      "06": "array               0      3      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "send_all            1      0      0     ",
+      "09": "recv                1      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             1      0      0     ",
+      "14": "body                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_read         1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+a := [1,2,3]; select * from test; return a;
+[1, 2, 3]
+explain return a;
+{"code": 1, "msg": "<a> cte not found"}
+return a;
+{"code": 1, "msg": "<a> cte not found"}
 drop table test
 []
 disconnect S0

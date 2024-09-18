@@ -42,6 +42,7 @@ typedef enum
 	STMT_UPDATE,
 	STMT_DELETE,
 	STMT_SELECT,
+	STMT_RETURN,
 	STMT_WATCH
 } StmtId;
 
