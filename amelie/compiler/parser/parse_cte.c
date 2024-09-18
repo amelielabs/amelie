@@ -64,7 +64,7 @@ parse_cte_args(Stmt* self, Columns* columns, const char* clause)
 }
 
 void
-parse_cte(Stmt* self, bool with)
+parse_cte(Stmt* self, bool with, bool with_args)
 {
 	const char* clause = with? "WITH": "INTO";
 	if (self->cte)
@@ -92,6 +92,9 @@ parse_cte(Stmt* self, bool with)
 		self->cte = cte_list_add(self->cte_list, name, self->order);
 		columns_ref = &self->cte->columns;
 	}
+
+	if (! with_args)
+		return;
 
 	// (args)
 	if (stmt_if(self, '('))

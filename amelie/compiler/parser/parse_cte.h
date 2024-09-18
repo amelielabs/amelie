@@ -6,4 +6,4 @@
 // Real-Time SQL Database.
 //
 
-void parse_cte(Stmt*, bool);
+void parse_cte(Stmt*, bool, bool);

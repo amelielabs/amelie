@@ -100,16 +100,17 @@ parse_stmt(Parser* self, Stmt* stmt)
 	if (ast->id == KEOF)
 		return;
 
-	// name[(args)] := stmt | expr
+	// cte_name := stmt | expr
 	bool assign = false;
 	if (ast->id == KNAME)
 	{
-		lex_push(lex, ast);
-		parse_cte(stmt, false);
-		if (! lex_if(lex, KASSIGN))
-			error("name <:=> expected");
-		assign = true;
-		ast = lex_next(lex);
+		if (lex_if(lex, KASSIGN))
+		{
+			lex_push(lex, ast);
+			parse_cte(stmt, false, false);
+			assign = true;
+			ast = lex_next(lex);
+		}
 	}
 
 	switch (ast->id) {
@@ -360,21 +361,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	default:
 	{
-		// name := expr
-		if (assign)
-		{
-			// handle as SELECT expr
-			lex_push(lex, ast);
-			stmt->id = STMT_SELECT;
-			auto select = parse_select_expr(stmt);
-			stmt->ast = &select->ast;
-			break;
-		}
-
-		if (ast->id == KNAME)
-			error("unknown command: <%.*s>", str_size(&ast->string),
-			      str_of(&ast->string));
-		error("unknown command");
+		// SELECT expr (by default)
+		lex_push(lex, ast);
+		stmt->id = STMT_SELECT;
+		auto select = parse_select_expr(stmt);
+		stmt->ast = &select->ast;
 		break;
 	}
 	}
@@ -403,7 +394,7 @@ parse_with(Parser* self)
 		stmt_list_add(&self->stmt_list, cte);
 
 		// name [(args)]
-		parse_cte(cte, true);
+		parse_cte(cte, true, true);
 
 		// AS
 		if (! lex_if(lex, KAS))

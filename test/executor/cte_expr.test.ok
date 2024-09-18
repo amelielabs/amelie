@@ -121,7 +121,7 @@ explain with test as (select * from [1,2,3]) select 1
 }]
 # test: cte without stmt
 with test as ()
-{"code": 1, "msg": "unknown command"}
+{"code": 1, "msg": "bad expression"}
 # test: select from cte (expr)
 with test as (select 1) select * from test
 {"code": 1, "msg": "FROM: array, map or data type expected, but got int"}

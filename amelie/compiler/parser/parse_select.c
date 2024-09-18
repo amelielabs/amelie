@@ -180,7 +180,7 @@ hot AstSelect*
 parse_select(Stmt* self)
 {
 	// SELECT [DISTINCT] expr, ...
-	// [INTO cte[(args)]]
+	// [INTO cte]
 	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
@@ -233,12 +233,12 @@ parse_select(Stmt* self)
 		}
 	}
 
-	// [INTO cte_name[(args)]]
+	// [INTO cte_name]
 	if (stmt_if(self, KINTO))
 	{
 		if (level != 0)
 			error("SELECT INTO subqueries are not supported");
-		parse_cte(self, false);
+		parse_cte(self, false, false);
 	}
 
 	// [FROM]

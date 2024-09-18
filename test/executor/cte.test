@@ -62,19 +62,6 @@ with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select 
 explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 drop table test
 
-# test: into (expr), into (table), table (pushdown join)
-create table test (id int primary key)
-insert into test 1,2,3
-select [*] into z(id) from [1,2,3]; select * into a(id) from test; select test.* from test join a on test.id = a.id join z on test.id = z.id
-select (select 123 into a)
-drop table test
-
-# test: := (expr), := (table), table (pushdown join)
-create table test (id int primary key)
-insert into test 1,2,3
-z(id) := select [*] from [1,2,3]; a(id) := select * from test; select test.* from test join a on test.id = a.id join z on test.id = z.id
-drop table test
-
 # test: a(table), b(a)
 create table test (id int primary key)
 insert into test 1,2,3
