@@ -197,6 +197,7 @@ drop table test
 create table test (id int primary key)
 insert into test 1,2,3
 select [1,2,3] into a; select * from a; select * into b from test; select b.*, a.* from b,a
+select [1,2,3] into a; select * from a; select * into b from test; select b
 drop table test
 
 # test: a(expr), a(expr)

@@ -118,6 +118,7 @@ vm_run(Vm*       self,
 		&&cbody,
 		&&cbody_empty,
 		&&ccte_set,
+		&&ccte_get,
 		&&csleep,
 		&&cpush,
 		&&cpop,
@@ -283,6 +284,11 @@ cbody_empty:
 ccte_set:
 	// [cte_order, result]
 	value_move(result_at(cte, op->a), &r[op->b]);
+	op_next;
+
+ccte_get:
+	// [result, cte_order]
+	value_copy(&r[op->a], result_at(cte, op->b));
 	op_next;
 
 csleep:

@@ -30,6 +30,7 @@ enum
 
 	// cte
 	CCTE_SET,
+	CCTE_GET,
 
 	// misc
 	CSLEEP,

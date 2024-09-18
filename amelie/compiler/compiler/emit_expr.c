@@ -402,8 +402,14 @@ hot static inline int
 emit_name(Compiler* self, Target* target, Ast* ast)
 {
 	// SELECT name
-	auto target_list = compiler_target_list(self);
 	auto name = &ast->string;
+
+	// find CTE first
+	auto cte = cte_list_find(&self->parser.cte_list, name);
+	if (cte)
+		return op2(self, CCTE_GET, rpin(self), cte->id);
+
+	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
 		error("<%.*s> name cannot be resolved without FROM clause",
 		      str_size(name), str_of(name));
@@ -486,7 +492,6 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 hot static inline int
 emit_name_compound(Compiler* self, Target* target, Ast* ast)
 {
-	// check if first path is a table name
 	Str name;
 	str_split(&ast->string, &name, '.');
 
@@ -494,10 +499,30 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	str_init(&path);
 	str_set_str(&path, &ast->string);
 
+	// check if first path is a table name
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
+	{
+		// SELECT cte.object.path (without FROM)
+		auto cte = cte_list_find(&self->parser.cte_list, &name);
+		if (cte)
+		{
+			// exclude cte name from the path
+			str_advance(&path, str_size(&name) + 1);
+
+			// cte[path]
+			int l = op2(self, CCTE_GET, rpin(self), cte->id);
+			int r = emit_string(self, &path, false);
+			int rc;
+			rc = op3(self, CIDX, rpin(self), l, r);
+			runpin(self, l);
+			runpin(self, r);
+			return rc;
+		}
+
 		error("<%.*s> name cannot be resolved without FROM clause",
 		      str_size(&name), str_of(&name));
+	}
 
 	auto match = target_list_match(target_list, &name);
 	if (match == NULL)

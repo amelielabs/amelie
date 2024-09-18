@@ -139,5 +139,21 @@ uuid := [system.config().uuid]; select * from uuid
 a := [1]; a := [2]; select * from a
 explain a := [1]; a := [2]; select * from a
 
+# test: select cte
+a := 1; a := 2; select a + 1
+
+a := select * from [1,2,3]; select a
+a := select * from [1,2,3]; select type(a)
+a := select * from [1,2,3] order by * desc; select a
+
+a := 1; b := a; c := a + b
+a := a
+a := a + 1
+select a into a
+
+# test: select cte.path
+a := {"id": 48}; select a
+a := {"id": 48}; select a.id
+
 disconnect S0
 close E0

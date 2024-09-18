@@ -49,6 +49,7 @@ OpDesc ops[] =
 
 	// cte
 	{ CCTE_SET,           "cte_set"           },
+	{ CCTE_GET,           "cte_get"           },
 
 	// misc
 	{ CSLEEP,             "sleep"             },
