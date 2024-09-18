@@ -50,6 +50,7 @@ struct Stmt
 	StmtId       id;
 	Ast*         ast;
 	int          order;
+	bool         ret;
 	Cte*         cte;
 	CteList*     cte_list;
 	TargetList   target_list;
@@ -83,6 +84,7 @@ stmt_allocate(Db*          db,
 	self->id           = STMT_UNDEF;
 	self->ast          = NULL;
 	self->order        = 0;
+	self->ret          = false;
 	self->cte          = NULL;
 	self->cte_list     = cte_list;
 	self->stmt_list    = stmt_list;

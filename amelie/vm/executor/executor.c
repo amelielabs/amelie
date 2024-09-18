@@ -197,8 +197,10 @@ executor_wal_write(Executor* self)
 hot void
 executor_commit(Executor* self, Dtr* tr, Buf* error)
 {
-	if (error)
-		dtr_shutdown(tr);
+	// shutdown pipes if there are any left open,
+	// this can happen because of error or by premature
+	// return statement
+	dtr_shutdown(tr);
 
 	for (;;)
 	{

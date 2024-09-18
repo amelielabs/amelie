@@ -1644,5 +1644,478 @@ a := select [4,5,6]; a := select [1,2,3]; select * from a
 [1, 2, 3]
 drop table test
 []
+create table test (id int primary key)
+[]
+insert into test 1,2,3
+[]
+# test: return (expr)
+1;
+[1]
+explain 1;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+explain select 1;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+select 1;
+[1]
+explain return select 1;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+return select 1;
+[1]
+explain return 1;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+return 1;
+[1]
+explain return 1; 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     ",
+      "04": "int                 0      -      0     # 2",
+      "05": "cte_set             1      0      0     ",
+      "06": "body                1      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+return 1; 2
+[1]
+explain return 1; return 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     ",
+      "04": "int                 0      -      0     # 2",
+      "05": "cte_set             1      0      0     ",
+      "06": "body                1      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+return 1; return 2
+[1]
+explain 1; return 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "cte_set             1      0      0     ",
+      "04": "body                1      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+1; return 2
+[2]
+explain 1; 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "int                 0      -      0     # 2",
+      "03": "cte_set             1      0      0     ",
+      "04": "body                1      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+1; 2
+[2]
+# test: return (table)
+explain return select id from test;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+return select id from test;
+[1, 2, 3]
+explain return select id from test; return select id from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     ",
+      "08": "send_all            1      11     0     ",
+      "09": "recv                1      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             1      0      0     ",
+      "14": "body                1      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     ",
+      "11": "set                 0      0      0     ",
+      "12": "int_min             1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "cursor_open         0      20     16    # public.test (primary)",
+      "15": "jmp                 19     0      0     ",
+      "16": "cursor_idx          1      0      0     ",
+      "17": "set_add             0      1      0     ",
+      "18": "cursor_next         0      16     0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
+return select id from test; return select id from test
+[1, 2, 3]
+explain return select id from test; select id from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     ",
+      "08": "send_all            1      11     0     ",
+      "09": "recv                1      0      0     ",
+      "10": "bool                0      0      0     ",
+      "11": "push                0      0      0     ",
+      "12": "merge_recv          0      -1     -1    ",
+      "13": "cte_set             1      0      0     ",
+      "14": "body                1      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 8      0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "set_add             0      1      0     ",
+      "07": "cursor_next         0      5      0     ",
+      "08": "cursor_close        0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     ",
+      "11": "set                 0      0      0     ",
+      "12": "int_min             1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "cursor_open         0      20     16    # public.test (primary)",
+      "15": "jmp                 19     0      0     ",
+      "16": "cursor_idx          1      0      0     ",
+      "17": "set_add             0      1      0     ",
+      "18": "cursor_next         0      16     0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
+return select id from test; select id from test
+[1, 2, 3]
+explain insert into test 4,5; return select id from test;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send_all            1      2      0     ",
+      "02": "recv                0      0      0     ",
+      "03": "array               0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "recv                1      0      0     ",
+      "06": "bool                0      0      0     ",
+      "07": "push                0      0      0     ",
+      "08": "merge_recv          0      -1     -1    ",
+      "09": "cte_set             1      0      0     ",
+      "10": "body                1      0      0     ",
+      "11": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "set                 0      0      0     ",
+      "03": "int_min             1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      8      7     # public.test (primary)",
+      "06": "jmp                 10     0      0     ",
+      "07": "cursor_idx          1      0      0     ",
+      "08": "set_add             0      1      0     ",
+      "09": "cursor_next         0      7      0     ",
+      "10": "cursor_close        0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test 4,5; return select id from test;
+[1, 2, 3, 4, 5]
+explain insert into test 6,7; insert into test 8, 9
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send                1      2      -     # public.test",
+      "02": "recv                0      0      0     ",
+      "03": "array               0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "recv                1      0      0     ",
+      "06": "array               0      0      0     ",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+explain insert into test 6,7; return insert into test 8, 9
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send                1      2      -     # public.test",
+      "02": "recv                0      0      0     ",
+      "03": "array               0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "recv                1      0      0     ",
+      "06": "array               0      0      0     ",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test 6,7; insert into test 8, 9
+[]
+explain insert into test 10; return insert into test 11; insert into test 12;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send                1      2      -     # public.test",
+      "02": "recv                0      0      0     ",
+      "03": "array               0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "recv                1      0      0     ",
+      "06": "array               0      0      0     ",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     ",
+      "10": "send                2      4      -     # public.test",
+      "11": "recv                2      0      0     ",
+      "12": "array               0      0      0     ",
+      "13": "cte_set             2      0      0     ",
+      "14": "body                2      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "insert              -      0      0     # public.test",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test 10; return insert into test 11; insert into test 12;
+[]
+select * from test
+[[1], [6], [7], [8], [2], [9], [10], [3], [4], [5], [11]]
+explain insert into test 12; insert into test 13; insert into test 14;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send                1      2      -     # public.test",
+      "02": "send                2      4      -     # public.test",
+      "03": "recv                0      0      0     ",
+      "04": "array               0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "recv                1      0      0     ",
+      "07": "array               0      0      0     ",
+      "08": "cte_set             1      0      0     ",
+      "09": "recv                2      0      0     ",
+      "10": "array               0      0      0     ",
+      "11": "cte_set             2      0      0     ",
+      "12": "body                2      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "insert              -      0      0     # public.test",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+explain insert into test 12; insert into test 13; return insert into test 14;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "send                1      2      -     # public.test",
+      "02": "send                2      4      -     # public.test",
+      "03": "recv                0      0      0     ",
+      "04": "array               0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "recv                1      0      0     ",
+      "07": "array               0      0      0     ",
+      "08": "cte_set             1      0      0     ",
+      "09": "recv                2      0      0     ",
+      "10": "array               0      0      0     ",
+      "11": "cte_set             2      0      0     ",
+      "12": "body                2      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "insert              -      0      0     # public.test",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test 12; insert into test 13; insert into test 14;
+[]
+explain insert into test 15; return 1; insert into test 16;
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "array               0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "int                 0      -      0     # 1",
+      "05": "cte_set             1      0      0     ",
+      "06": "body                1      0      0     ",
+      "07": "ret                 0      0      0     ",
+      "08": "send                2      2      -     # public.test",
+      "09": "recv                2      0      0     ",
+      "10": "array               0      0      0     ",
+      "11": "cte_set             2      0      0     ",
+      "12": "body                2      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+explain a := 123; return a
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 123",
+      "01": "cte_set             0      0      0     ",
+      "02": "cte_get             0      0      0     ",
+      "03": "cte_set             1      0      0     ",
+      "04": "body                1      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  }
+}]
+a := 123; return a
+[123]
+drop table test
+[]
 disconnect S0
 close E0

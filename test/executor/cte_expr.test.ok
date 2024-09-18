@@ -33,20 +33,20 @@ with test as (
 {"code": 1, "msg": "WITH name AS (<)> expected"}
 # test: cte without main stmt
 with test as (select 1)
-[]
+[1]
 explain with test as (select 1)
 [{
   "bytecode": {
     "coordinator": {
       "00": "int                 0      -      0     # 1",
       "01": "cte_set             0      0      0     ",
-      "02": "body_empty          0      0      0     ",
+      "02": "body                0      0      0     ",
       "03": "ret                 0      0      0     "
     }
   }
 }]
 with test as (select 1,2,3)
-[]
+[1, 2, 3]
 explain with test as (select 1,2,3)
 [{
   "bytecode": {
@@ -59,13 +59,13 @@ explain with test as (select 1,2,3)
       "05": "push                0      0      0     ",
       "06": "array               0      3      0     ",
       "07": "cte_set             0      0      0     ",
-      "08": "body_empty          0      0      0     ",
+      "08": "body                0      0      0     ",
       "09": "ret                 0      0      0     "
     }
   }
 }]
 with test as (select * from [1,2,3])
-[]
+[1, 2, 3]
 explain with test as (select * from [1,2,3])
 [{
   "bytecode": {
@@ -85,7 +85,7 @@ explain with test as (select * from [1,2,3])
       "12": "cursor_next         0      10     0     ",
       "13": "cursor_close        0      0      0     ",
       "14": "cte_set             0      0      0     ",
-      "15": "body_empty          0      0      0     ",
+      "15": "body                0      0      0     ",
       "16": "ret                 0      0      0     "
     }
   }
@@ -475,7 +475,7 @@ with a as (select [1,2,3]), b 1
 with a as (select [1,2,3]), b as
 {"code": 1, "msg": "WITH name AS <(> expected"}
 with a as (select [1,2,3]), b as (select [3,2,1])
-[]
+[3, 2, 1]
 explain with a as (select [1,2,3]), b as (select [3,2,1])
 [{
   "bytecode": {
@@ -496,7 +496,7 @@ explain with a as (select [1,2,3]), b as (select [3,2,1])
       "13": "push                0      0      0     ",
       "14": "array               0      3      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "body_empty          0      0      0     ",
+      "16": "body                1      0      0     ",
       "17": "ret                 0      0      0     "
     }
   }
@@ -595,7 +595,7 @@ explain with a as (select [1,2,3]), b as (select [3,2,1]) select a.*, b.* from a
 }]
 # test: with a, b(a)
 with a as (select [1,2,3]), b as (select * from a)
-[]
+[1, 2, 3]
 explain with a as (select [1,2,3]), b as (select * from a)
 [{
   "bytecode": {
@@ -616,7 +616,7 @@ explain with a as (select [1,2,3]), b as (select * from a)
       "13": "cursor_next         0      11     0     ",
       "14": "cursor_close        0      0      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "body_empty          0      0      0     ",
+      "16": "body                1      0      0     ",
       "17": "ret                 0      0      0     "
     }
   }

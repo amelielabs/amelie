@@ -100,6 +100,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 	if (ast->id == KEOF)
 		return;
 
+	// RETURN stmt
+	if (ast->id == KRETURN)
+	{
+		stmt->ret = true;
+		ast = lex_next(lex);
+	}
+
 	// cte_name := stmt | expr
 	bool assign = false;
 	if (ast->id == KNAME)
@@ -386,15 +393,16 @@ parse_with(Parser* self)
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
-		auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
-		                         &self->lex,
-		                         self->data, &self->json,
-		                         &self->stmt_list,
-		                         &self->cte_list);
-		stmt_list_add(&self->stmt_list, cte);
+		auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
+		                          &self->lex,
+		                          self->data, &self->json,
+		                          &self->stmt_list,
+		                          &self->cte_list);
+		stmt_list_add(&self->stmt_list, stmt);
+		self->stmt = stmt;
 
 		// name [(args)]
-		parse_cte(cte, true, true);
+		parse_cte(stmt, true, true);
 
 		// AS
 		if (! lex_if(lex, KAS))
@@ -405,8 +413,8 @@ parse_with(Parser* self)
 			error("WITH name AS <(> expected");
 
 		// stmt (cannot be a utility statement)
-		parse_stmt(self, cte);
-		if (stmt_is_utility(cte))
+		parse_stmt(self, stmt);
+		if (stmt_is_utility(stmt))
 			error("CTE must DML or Select");
 
 		// )
@@ -487,6 +495,10 @@ parse(Parser* self, Local* local, Str* str)
 
 		error("unexpected token at the end of statement");
 	}
+
+	// force last statetement as return
+	if (self->stmt)
+		self->stmt->ret = true;
 
 	// ensure EXPLAIN has command
 	if (unlikely(self->explain && !self->stmt_list.list_count))

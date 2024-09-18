@@ -106,7 +106,7 @@ target_list_has(TargetList* self, int state)
 }
 
 static inline bool
-target_list_expr(TargetList* self)
+target_list_is_expr(TargetList* self)
 {
 	return self->state == TARGET_NONE ||
 	       self->state == TARGET_EXPR ||
