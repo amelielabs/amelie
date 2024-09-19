@@ -46,24 +46,6 @@ system_save_config(void* arg)
 	config_save(global()->config, path);
 }
 
-static void
-udf_if_prepare(Udf* self)
-{
-	(void)self;
-}
-
-static void
-udf_if_free(Udf* self)
-{
-	(void)self;
-}
-
-UdfIf udf_if =
-{
-	.prepare = udf_if_prepare,
-	.free    = udf_if_free
-};
-
 System*
 system_create(void)
 {
@@ -87,14 +69,20 @@ system_create(void)
 	executor_init(&self->executor, &self->db, &self->cluster.router);
 	rpc_queue_init(&self->lock_queue);
 
+	// vm
+	function_mgr_init(&self->function_mgr);
+
+	// udf iface argument
+	auto ctx = &self->udf_ctx;
+	ctx->function_mgr = &self->function_mgr;
+	ctx->db = &self->db;
+
 	// db
-	db_init(&self->db, (PartMapper)cluster_map, &self->cluster, &udf_if, NULL);
+	db_init(&self->db, (PartMapper)cluster_map, &self->cluster,
+	        &udf_if, &self->udf_ctx);
 
 	// replication
 	repl_init(&self->repl, &self->db);
-
-	// vm
-	function_mgr_init(&self->function_mgr);
 
 	// prepare shared context (shared between frontends)
 	auto share = &self->share;

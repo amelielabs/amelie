@@ -71,7 +71,8 @@ OBJECTS        = \
                  compiler/emit_upsert.o \
                  compiler/emit_select.o \
                  compiler/emit_watch.o \
-                 compiler/pushdown.o
+                 compiler/pushdown.o \
+                 compiler/udf.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
