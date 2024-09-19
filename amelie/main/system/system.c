@@ -46,6 +46,24 @@ system_save_config(void* arg)
 	config_save(global()->config, path);
 }
 
+static void
+udf_if_prepare(Udf* self)
+{
+	(void)self;
+}
+
+static void
+udf_if_free(Udf* self)
+{
+	(void)self;
+}
+
+UdfIf udf_if =
+{
+	.prepare = udf_if_prepare,
+	.free    = udf_if_free
+};
+
 System*
 system_create(void)
 {
@@ -70,7 +88,7 @@ system_create(void)
 	rpc_queue_init(&self->lock_queue);
 
 	// db
-	db_init(&self->db, (PartMapper)cluster_map, &self->cluster);
+	db_init(&self->db, (PartMapper)cluster_map, &self->cluster, &udf_if, NULL);
 
 	// replication
 	repl_init(&self->repl, &self->db);

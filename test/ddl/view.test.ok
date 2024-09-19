@@ -196,7 +196,7 @@ drop view if exists test
 []
 # test: alter view statement parsing
 alter
-{"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW|FUNCTION> expected"}
 alter view
 {"code": 1, "msg": "ALTER VIEW <name> expected"}
 alter view 123

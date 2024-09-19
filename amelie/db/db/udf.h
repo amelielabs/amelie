@@ -35,11 +35,11 @@ udf_free(Udf* self)
 }
 
 static inline Udf*
-udf_allocate(UdfConfig* config)
+udf_allocate(UdfConfig* config, UdfIf* iface, void* iface_arg)
 {
 	Udf* self = am_malloc(sizeof(Udf));
-	self->iface     = NULL;
-	self->iface_arg = NULL;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
 	self->context   = NULL;
 	self->config    = udf_config_copy(config);
 	handle_init(&self->handle);
@@ -47,15 +47,6 @@ udf_allocate(UdfConfig* config)
 	handle_set_name(&self->handle, &self->config->name);
 	handle_set_free_function(&self->handle, (HandleFree)udf_free);
 	return self;
-}
-
-static inline void
-udf_set_iface(Udf*   self,
-              UdfIf* iface,
-              void*  iface_arg)
-{
-	self->iface     = iface;
-	self->iface_arg = iface_arg;
 }
 
 static inline Udf*

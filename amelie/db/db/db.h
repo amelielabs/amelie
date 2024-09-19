@@ -19,7 +19,7 @@ struct Db
 	Wal           wal;
 };
 
-void db_init(Db*, PartMapper, void*);
+void db_init(Db*, PartMapper, void*, UdfIf*, void*);
 void db_free(Db*);
 void db_open(Db*);
 void db_close(Db*);

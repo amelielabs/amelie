@@ -83,6 +83,7 @@ priority_map[KEYWORD_MAX] =
 	[KCASE]                    = priority_value,
 	[KEXISTS]                  = priority_value,
 	[KRANDOM]                  = priority_value,
+	[KREPLACE]                 = priority_value,
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
@@ -443,6 +444,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KUNSET:
 	case KRANDOM:
 	case KSERIAL:
+	case KREPLACE:
 	{
 		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),

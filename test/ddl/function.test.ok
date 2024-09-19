@@ -1,0 +1,76 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: create function statement parsing
+create function
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create function 123
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create function if
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create function or
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create function or 123
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create or
+{"code": 1, "msg": "CREATE OR <REPLACE> expected"}
+create or replace
+{"code": 1, "msg": "CREATE OR REPLACE <FUNCTION> expected"}
+create or replace 123
+{"code": 1, "msg": "CREATE OR REPLACE <FUNCTION> expected"}
+create or replace function
+{"code": 1, "msg": "CREATE FUNCTION <name> expected"}
+create function test
+{"code": 1, "msg": "CREATE FUNCTION <BEGIN> expected"}
+create function test 123
+{"code": 1, "msg": "CREATE FUNCTION <BEGIN> expected"}
+create function test.test
+{"code": 1, "msg": "CREATE FUNCTION <BEGIN> expected"}
+create function test (
+{"code": 1, "msg": "CREATE FUNCTION (<name> expected"}
+create function test (a
+{"code": 1, "msg": "a <TYPE> expected"}
+create function test (a 1
+{"code": 1, "msg": "a <TYPE> expected"}
+create function test (a int
+{"code": 1, "msg": "CREATE FUNCTION (<)> expected"}
+create function test (a int,
+{"code": 1, "msg": "CREATE FUNCTION (<name> expected"}
+create function test (a int,,
+{"code": 1, "msg": "CREATE FUNCTION (<name> expected"}
+create function test (a int)
+{"code": 1, "msg": "CREATE FUNCTION <BEGIN> expected"}
+create function test (a int) begin
+{"code": 1, "msg": "CREATE FUNCTION BEGIN ... <END> expected"}
+create function test ()
+{"code": 1, "msg": "CREATE FUNCTION <BEGIN> expected"}
+create function test () begin
+{"code": 1, "msg": "CREATE FUNCTION BEGIN ... <END> expected"}
+create function test begin
+{"code": 1, "msg": "CREATE FUNCTION BEGIN ... <END> expected"}
+# test: create function
+create function test begin select 1 end
+[]
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+create function test begin select 1 end
+{"code": 1, "msg": "function 'test': already exists"}
+drop function test
+[]
+create function test begin select 1; return select 1; end
+[]
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1; return select 1;",
+  "columns": []
+}]
+drop function test
+[]
+disconnect S0
+close E0

@@ -19,8 +19,10 @@
 #include <amelie_db.h>
 
 void
-udf_mgr_init(UdfMgr* self)
+udf_mgr_init(UdfMgr* self, UdfIf* iface, void* iface_arg)
 {
+	self->iface = iface;
+	self->iface_arg = iface_arg;
 	handle_mgr_init(&self->mgr);
 }
 
@@ -37,8 +39,8 @@ udf_mgr_create(UdfMgr*    self,
                bool       if_not_exists)
 {
 	// make sure udf does not exists
-	auto current = udf_mgr_find(self, &config->schema, &config->name, false);
-	if (current)
+	auto udf = udf_mgr_find(self, &config->schema, &config->name, false);
+	if (udf)
 	{
 		if (! if_not_exists)
 			error("function '%.*s': already exists", str_size(&config->name),
@@ -47,16 +49,16 @@ udf_mgr_create(UdfMgr*    self,
 	}
 
 	// allocate udf and init
-	auto stmt = udf_allocate(config);
+	udf = udf_allocate(config, self->iface, self->iface_arg);
 
 	// save create operation
 	auto op = udf_op_create(config);
 
 	// update mgr
-	handle_mgr_create(&self->mgr, tr, LOG_UDF_CREATE, &stmt->handle, op);
+	handle_mgr_create(&self->mgr, tr, LOG_UDF_CREATE, &udf->handle, op);
 
 	// prepare function
-	udf_prepare(current);
+	udf_prepare(udf);
 }
 
 void
@@ -66,8 +68,8 @@ udf_mgr_drop(UdfMgr* self,
              Str*    name,
              bool    if_exists)
 {
-	auto stmt = udf_mgr_find(self, schema, name, false);
-	if (! stmt)
+	auto udf = udf_mgr_find(self, schema, name, false);
+	if (! udf)
 	{
 		if (! if_exists)
 			error("function '%.*s': not exists", str_size(name),
@@ -76,10 +78,10 @@ udf_mgr_drop(UdfMgr* self,
 	}
 
 	// save drop operation
-	auto op = udf_op_drop(&stmt->config->schema, &stmt->config->name);
+	auto op = udf_op_drop(&udf->config->schema, &udf->config->name);
 
 	// update mgr
-	handle_mgr_drop(&self->mgr, tr, LOG_UDF_DROP, &stmt->handle, op);
+	handle_mgr_drop(&self->mgr, tr, LOG_UDF_DROP, &udf->handle, op);
 }
 
 static void
@@ -92,15 +94,15 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	auto handle = log_handle_of(self, op);
-	auto stmt = udf_of(handle->handle);
+	auto udf = udf_of(handle->handle);
 	uint8_t* pos = handle->data->start;
 	Str schema;
 	Str name;
 	Str schema_new;
 	Str name_new;
 	udf_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
-	udf_config_set_schema(stmt->config, &schema);
-	udf_config_set_name(stmt->config, &name);
+	udf_config_set_schema(udf->config, &schema);
+	udf_config_set_name(udf->config, &name);
 	buf_free(handle->data);
 }
 
@@ -119,8 +121,8 @@ udf_mgr_rename(UdfMgr* self,
                Str*    name_new,
                bool    if_exists)
 {
-	auto stmt = udf_mgr_find(self, schema, name, false);
-	if (! stmt)
+	auto udf = udf_mgr_find(self, schema, name, false);
+	if (! udf)
 	{
 		if (! if_exists)
 			error("function '%.*s': not exists", str_size(name),
@@ -139,14 +141,14 @@ udf_mgr_rename(UdfMgr* self,
 	// update mgr
 	log_handle(&tr->log, LOG_UDF_RENAME, &rename_if,
 	           NULL,
-	           &stmt->handle, op);
+	           &udf->handle, op);
 
 	// set new name
-	if (! str_compare(&stmt->config->schema, schema_new))
-		udf_config_set_schema(stmt->config, schema_new);
+	if (! str_compare(&udf->config->schema, schema_new))
+		udf_config_set_schema(udf->config, schema_new);
 
-	if (! str_compare(&stmt->config->name, name_new))
-		udf_config_set_name(stmt->config, name_new);
+	if (! str_compare(&udf->config->name, name_new))
+		udf_config_set_name(udf->config, name_new);
 }
 
 void
@@ -156,8 +158,8 @@ udf_mgr_dump(UdfMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto stmt = udf_of(list_at(Handle, link));
-		udf_config_write(stmt->config, buf);
+		auto udf = udf_of(list_at(Handle, link));
+		udf_config_write(udf->config, buf);
 	}
 	encode_array_end(buf);
 }
@@ -169,8 +171,8 @@ udf_mgr_list(UdfMgr* self)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto stmt = udf_of(list_at(Handle, link));
-		udf_config_write(stmt->config, buf);
+		auto udf = udf_of(list_at(Handle, link));
+		udf_config_write(udf->config, buf);
 	}
 	encode_array_end(buf);
 	return buf;

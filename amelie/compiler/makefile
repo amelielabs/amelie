@@ -49,6 +49,7 @@ OBJECTS        = \
                  parser/parse_table.o \
                  parser/parse_index.o \
                  parser/parse_view.o \
+                 parser/parse_function.o \
                  parser/parse_cte.o \
                  parser/parse_expr.o \
                  parser/parse_insert.o \

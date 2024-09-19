@@ -40,7 +40,7 @@ select system from system.schemas() where name = "system"
 [true]
 # test: create schema statement parsing
 create
-{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW|FUNCTION> expected"}
 create schema
 {"code": 1, "msg": "CREATE SCHEMA <name> expected"}
 create schema 123

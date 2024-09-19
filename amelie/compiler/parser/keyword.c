@@ -44,6 +44,7 @@ static Keyword keywords_a[] =
 
 static Keyword keywords_b[] =
 {
+	{ KBEGIN,                 "begin",                 5  },
 	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
 	{ 0,                       NULL,                   0  }
@@ -90,6 +91,7 @@ static Keyword keywords_f[] =
 {
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
+	{ KFUNCTION,              "function",              8  },
 	{ KFOR,                   "for",                   3  },
 	{ 0,                       NULL,                   0  }
 };
@@ -188,6 +190,7 @@ static Keyword keywords_r[] =
 	{ KRIGHT,                 "right",                 5  },
 	{ KRETURN,                "return",                6  },
 	{ KRETURNING,             "returning",             9  },
+	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPLICA,               "replica",               7  },
 	{ KREPL,                  "repl",                  4  },

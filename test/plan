@@ -23,6 +23,7 @@ test table_drop
 test table_alter
 test index
 test view
+test function
 test cascade
 test truncate
 
@@ -64,7 +65,7 @@ test planner
 test lambda
 test limits
 
-# function
+# func
 directory func
 group func
 test func_cast
