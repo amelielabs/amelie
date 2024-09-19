@@ -228,6 +228,32 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_UDF_CREATE:
+	{
+		auto config = udf_op_create_read(data);
+		guard(udf_config_free, config);
+		udf_mgr_create(&db->udf_mgr, tr, config, false);
+		break;
+	}
+	case LOG_UDF_DROP:
+	{
+		Str schema;
+		Str name;
+		udf_op_drop_read(data, &schema, &name);
+		udf_mgr_drop(&db->udf_mgr, tr, &schema, &name, true);
+		break;
+	}
+	case LOG_UDF_RENAME:
+	{
+		Str schema;
+		Str name;
+		Str schema_new;
+		Str name_new;
+		udf_op_rename_read(data, &schema, &name, &schema_new, &name_new);
+		udf_mgr_rename(&db->udf_mgr, tr, &schema, &name,
+		               &schema_new, &name_new, true);
+		break;
+	}
 	default:
 		error("recover: unrecognized operation id: %d", type);
 		break;
