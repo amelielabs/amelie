@@ -35,6 +35,13 @@ code_data_reset(CodeData* self)
 	buf_reset(&self->call);
 }
 
+static inline void
+code_data_copy(CodeData* self, CodeData* from)
+{
+	buf_write(&self->data, from->data.start, buf_size(&from->data));
+	buf_write(&self->call, from->call.start, buf_size(&from->call));
+}
+
 static inline int
 code_data_offset(CodeData* self)
 {

@@ -27,4 +27,5 @@
 #include "compiler/pushdown.h"
 
 // udf
+#include "compiler/executable.h"
 #include "compiler/udf.h"

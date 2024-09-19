@@ -38,5 +38,12 @@ create function test begin select 1; return select 1; end
 show functions
 drop function test
 
+# test: create function (with ddl command)
+create function test begin select 1; show all; end
+show functions
+
+create function test begin show all; end
+show functions
+
 disconnect S0
 close E0

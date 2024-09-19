@@ -33,13 +33,44 @@
 static void
 udf_if_prepare(Udf* self)
 {
-	(void)self;
+	UdfContext* context = self->iface_arg;
+	assert(! self->context);
+
+	// prepare local context
+	Local local;
+	local_init(&local, global());
+	local_update_time(&local);
+	guard(&local_free, &local);
+
+	// compile function
+	Compiler compiler;
+	compiler_init(&compiler, context->db, context->function_mgr);
+	guard(compiler_free, &compiler);
+	compiler_parse(&compiler, &local, &self->config->text);
+
+	// ensure function has no utility/ddl commands
+	auto stmt = compiler_stmt(&compiler);
+	if (stmt && stmt_is_utility(stmt))
+		error("functions cannot contain utility commands");
+
+	// prepare program
+	Program  program;
+	compiler_program(&compiler, &program);
+
+	// create executable context and copy program
+	auto ea = executable_allocate();
+	executable_set(ea, &program);
+	self->context = ea;
 }
 
 static void
 udf_if_free(Udf* self)
 {
-	(void)self;
+	if (self->context)
+	{
+		executable_free(self->context);
+		self->context = NULL;
+	}
 }
 
 UdfIf udf_if =

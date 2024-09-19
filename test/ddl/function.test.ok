@@ -72,5 +72,14 @@ show functions
 }]
 drop function test
 []
+# test: create function (with ddl command)
+create function test begin select 1; show all; end
+{"code": 1, "msg": "CTE and multi-statement utility commands are not supported"}
+show functions
+[]
+create function test begin show all; end
+{"code": 1, "msg": "functions cannot contain utility commands"}
+show functions
+[]
 disconnect S0
 close E0
