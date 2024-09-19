@@ -419,6 +419,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_watch(stmt);
 		break;
 
+	case KEXECUTE:
+	{
+		// EXECUTE function
+		stmt->id = STMT_EXECUTE;
+		parse_execute(stmt);
+		break;
+	}
+
 	case KEOF:
 		error("unexpected end of statement");
 		break;

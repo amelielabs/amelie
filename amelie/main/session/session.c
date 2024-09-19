@@ -121,17 +121,16 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_explain(Session* self, bool profile)
+session_explain(Session* self, Program* program, bool profile)
 {
-	auto compiler = &self->compiler;
-	auto body     = &self->client->reply.content;
-	auto buf = explain(&self->explain,
-	                   &compiler->code_coordinator,
-	                   &compiler->code_node,
-	                   &compiler->code_data,
-	                   &self->dtr,
-	                   body,
-	                   profile);
+	auto body = &self->client->reply.content;
+	auto buf  = explain(&self->explain,
+	                    program->code,
+	                    program->code_node,
+	                    program->code_data,
+	                    &self->dtr,
+	                    body,
+	                    profile);
 	guard_buf(buf);
 	buf_reset(body);
 	body_add_buf(body, buf, self->local.timezone);
@@ -145,18 +144,31 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 
-	// generate bytecode
-	Program program;
-	compiler_emit(compiler);
-	compiler_program(compiler, &program);
+	Program* program;
+	Program  program_compiled;
+
+	auto stmt = compiler_stmt(compiler);
+	if (stmt && stmt->id == STMT_EXECUTE)
+	{
+		// function call
+		auto udf = ast_execute_of(stmt->ast)->udf;
+		auto executable = (Executable*)udf->context;
+		program = &executable->program;
+	} else
+	{
+		// generate bytecode
+		compiler_emit(compiler);
+		compiler_program(compiler, &program_compiled);
+		program = &program_compiled;
+	}
 
 	// prepare distributed transaction
-	dtr_create(dtr, &self->local, &program);
+	dtr_create(dtr, &self->local, program);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
 	{
-		session_explain(self, false);
+		session_explain(self, program, false);
 		return;
 	}
 
@@ -171,8 +183,8 @@ session_execute_distributed(Session* self)
 	{
 		vm_run(&self->vm, &self->local,
 		       NULL,
-		       &compiler->code_coordinator,
-		       &compiler->code_data,
+		       program->code,
+		       program->code_data,
 		       NULL,
 		       &dtr->cte, NULL, 0);
 	}
@@ -194,7 +206,7 @@ session_execute_distributed(Session* self)
 	if (profile)
 	{
 		explain_end(&explain->time_commit_us);
-		session_explain(self, true);
+		session_explain(self, program, true);
 	}
 }
 
@@ -227,7 +239,10 @@ session_execute(Session* self)
 
 	// execute utility, DDL, DML or Query
 	auto stmt = compiler_stmt(compiler);
-	if (stmt && stmt_is_utility(stmt))
+	auto utility = stmt &&
+	               stmt_is_utility(stmt) &&
+	               stmt->id != STMT_EXECUTE;
+	if (utility)
 		session_execute_utility(self);
 	else
 		session_execute_distributed(self);

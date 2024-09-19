@@ -42,7 +42,7 @@ udf_if_prepare(Udf* self)
 	local_update_time(&local);
 	guard(&local_free, &local);
 
-	// compile function
+	// parse statements
 	Compiler compiler;
 	compiler_init(&compiler, context->db, context->function_mgr);
 	guard(compiler_free, &compiler);
@@ -52,6 +52,9 @@ udf_if_prepare(Udf* self)
 	auto stmt = compiler_stmt(&compiler);
 	if (stmt && stmt_is_utility(stmt))
 		error("functions cannot contain utility commands");
+
+	// generate bytecode
+	compiler_emit(&compiler);
 
 	// prepare program
 	Program  program;
