@@ -27,6 +27,12 @@
 #include "db/view_op.h"
 #include "db/view_mgr.h"
 
+// udf
+#include "db/udf_config.h"
+#include "db/udf.h"
+#include "db/udf_op.h"
+#include "db/udf_mgr.h"
+
 // db
 #include "db/db.h"
 #include "db/db_checkpoint.h"
