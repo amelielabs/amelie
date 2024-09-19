@@ -146,21 +146,12 @@ session_execute_distributed(Session* self)
 	auto dtr      = &self->dtr;
 
 	// generate bytecode
+	Program program;
 	compiler_emit(compiler);
+	compiler_program(compiler, &program);
 
 	// prepare distributed transaction
-	int stmts = compiler->parser.stmt_list.list_count;
-	int ctes  = compiler->parser.cte_list.list_count;
-	int last  = -1;
-	if (compiler->last)
-		last = compiler->last->order;
-	dtr_create(dtr, &self->local, &compiler->code_node,
-	           &compiler->code_data,
-	           stmts, last, ctes);
-
-	// set distributed snapshot
-	if (compiler->snapshot)
-		dtr_set_snapshot(dtr);
+	dtr_create(dtr, &self->local, &program);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)

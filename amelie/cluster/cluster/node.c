@@ -93,7 +93,7 @@ node_execute(Node* self, Pipe* pipe)
 			{
 				node_execute_write(self, tr, req);
 			} else
-			if (req->code == NULL)
+			if (req->program == NULL)
 			{
 				// dummy sync request
 			} else
@@ -102,11 +102,12 @@ node_execute(Node* self, Pipe* pipe)
 				vm_reset(&self->vm);
 				vm_run(&self->vm, req->local,
 				        tr,
-				        req->code, req->code_data,
+				        req->program->code_node,
+				        req->program->code_data,
 				       &req->arg,
 				        req->cte,
 				       &req->result,
-				        req->code_start);
+				        req->start);
 			}
 		}
 

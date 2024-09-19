@@ -20,36 +20,30 @@ typedef enum
 
 struct Dtr
 {
-	DtrState   state;
-	PipeSet    set;
-	Dispatch   dispatch;
-	bool       snapshot;
-	bool       repl;
-	Code*      code;
-	CodeData*  code_data;
-	Result     cte;
-	Buf*       error;
-	Event      on_commit;
-	Limit      limit;
-	PipeCache  pipe_cache;
-	ReqCache   req_cache;
-	Router*    router;
-	Local*     local;
-	List       link_commit;
-	List       link;
+	DtrState  state;
+	PipeSet   set;
+	Dispatch  dispatch;
+	Program*  program;
+	Result    cte;
+	Buf*      error;
+	Event     on_commit;
+	Limit     limit;
+	PipeCache pipe_cache;
+	ReqCache  req_cache;
+	Router*   router;
+	Local*    local;
+	List      link_commit;
+	List      link;
 };
 
 static inline void
 dtr_init(Dtr* self, Router* router)
 {
-	self->state     = DTR_NONE;
-	self->snapshot  = false;
-	self->repl      = false;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->error     = NULL;
-	self->router    = router;
-	self->local     = NULL;
+	self->state   = DTR_NONE;
+	self->program = NULL;
+	self->error   = NULL;
+	self->router  = router;
+	self->local   = NULL;
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
@@ -73,9 +67,9 @@ dtr_reset(Dtr* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->state    = DTR_NONE;
-	self->snapshot = false;
-	self->local    = NULL;
+	self->state   = DTR_NONE;
+	self->program = NULL;
+	self->local   = NULL;
 	list_init(&self->link_commit);
 	list_init(&self->link);
 }
@@ -93,21 +87,15 @@ dtr_free(Dtr* self)
 }
 
 static inline void
-dtr_create(Dtr*      self,
-           Local*    local,
-           Code*     code,
-           CodeData* code_data,
-           int       stmt_count,
-           int       stmt_last,
-           int       cte_count)
+dtr_create(Dtr* self, Local* local, Program* program)
 {
+	self->program = program;
+	self->local   = local;
 	auto set_size = self->router->list_count;
-	self->code      = code;
-	self->code_data = code_data;
-	self->local     = local;
 	pipe_set_create(&self->set, set_size);
-	dispatch_create(&self->dispatch, set_size, stmt_count, stmt_last);
-	result_create(&self->cte, cte_count);
+	dispatch_create(&self->dispatch, set_size, program->stmts,
+	                program->stmts_last);
+	result_create(&self->cte, program->ctes);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }
@@ -116,18 +104,6 @@ static inline void
 dtr_set_state(Dtr* self, DtrState state)
 {
 	self->state = state;
-}
-
-static inline void
-dtr_set_snapshot(Dtr* self)
-{
-	self->snapshot = true;
-}
-
-static inline void
-dtr_set_repl(Dtr* self)
-{
-	self->repl = true;
 }
 
 static inline void
@@ -144,7 +120,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 	auto dispatch = &self->dispatch;
 
 	// first send with snapshot
-	if (self->snapshot && !self->dispatch.sent)
+	if (self->program->snapshot && !self->dispatch.sent)
 	{
 		// create pipes for all nodes
 		list_foreach(&self->router->list)
@@ -167,11 +143,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 			pipe = pipe_create(&self->pipe_cache, route);
 			pipe_set_set(set, route->order, pipe);
 		}
-		req_set(req, self->local,
-		        self->code,
-		        self->code_data,
-		        &self->cte,
-		        &self->limit);
+		req_set(req, self->local, self->program, &self->cte, &self->limit);
 
 		// set pipe per statement node order and add request to the
 		// statement list

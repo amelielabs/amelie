@@ -496,3 +496,18 @@ compiler_emit(Compiler* self)
 		op0(self, CRET);
 	}
 }
+
+void
+compiler_program(Compiler* self, Program* program)
+{
+	program->code       = &self->code_coordinator;
+	program->code_node  = &self->code_node;
+	program->code_data  = &self->code_data;
+	program->stmts      = self->parser.stmt_list.list_count;
+	program->stmts_last = -1;
+	program->ctes       = self->parser.cte_list.list_count;
+	program->snapshot   = self->snapshot;
+	program->repl       = false;
+	if (self->last)
+		program->stmts_last = self->last->order;
+}

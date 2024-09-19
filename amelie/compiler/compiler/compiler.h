@@ -27,6 +27,7 @@ void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_parse(Compiler*, Local*, Str*);
 void compiler_emit(Compiler*);
+void compiler_program(Compiler*, Program*);
 
 static inline Stmt*
 compiler_stmt(Compiler* self)

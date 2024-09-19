@@ -89,8 +89,18 @@ replay(Session* self, WalWrite* write)
 {
 	auto executor = self->share->executor;
 	auto dtr = &self->dtr;
+
+	// switch distributed transaction to replication state to write wal
+	// while in read-only mode
+	Program program;
+	program_init(&program);
+	program.stmts      = 1;
+	program.stmts_last = 0;
+	program.ctes       = 1;
+	program.repl       = true;
+
 	dtr_reset(dtr);
-	dtr_create(dtr, &self->local, NULL, NULL, 1, 0, 1);
+	dtr_create(dtr, &self->local, &program);
 
 	ReqList req_list;
 	req_list_init(&req_list);
@@ -153,10 +163,6 @@ hot void
 session_primary(Session* self)
 {
 	auto share = self->share;
-
-	// switch distributed transaction to replication state to write wal
-	// while in read-only mode
-	dtr_set_repl(&self->dtr);
 
 	Recover recover;
 	recover_init(&recover, share->db, &build_if, share->cluster);
