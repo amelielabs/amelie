@@ -64,7 +64,7 @@ path_compare_ast(Ast* a, Ast* b)
 	}
 	if (a->id == KSTRING)
 		return str_compare_fn(&a->string, &b->string);
-	assert(0);
+	// ARGUMENT
 	return 0;
 }
 
@@ -139,6 +139,8 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 	case KTIMESTAMP:
 		if (unlikely(key->type != TYPE_TIMESTAMP))
 			return false;
+		break;
+	case KARGUMENT:
 		break;
 	}
 
@@ -236,7 +238,8 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	{
 		if (expr->r->id == KINT ||
 		    expr->r->id == KSTRING ||
-		    expr->r->id == KTIMESTAMP)
+		    expr->r->id == KTIMESTAMP ||
+		    expr->r->id == KARGUMENT)
 		{
 			*path  = expr->l;
 			*value = expr->r;
@@ -247,7 +250,8 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 	{
 		if (expr->l->id == KINT ||
 		    expr->l->id == KSTRING ||
-		    expr->l->id == KTIMESTAMP)
+		    expr->l->id == KTIMESTAMP ||
+		    expr->l->id == KARGUMENT)
 		{
 			*path  = expr->r;
 			*value = expr->l;
