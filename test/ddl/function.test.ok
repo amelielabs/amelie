@@ -81,5 +81,24 @@ create function test begin show all; end
 {"code": 1, "msg": "functions cannot contain utility commands"}
 show functions
 []
+# test: create function (with arguments)
+create function test (a int) begin return a; end
+[]
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "return a;",
+  "columns": [{
+    "name": "a",
+    "type": 2,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }]
+}]
 disconnect S0
 close E0

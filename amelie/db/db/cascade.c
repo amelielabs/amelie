@@ -28,6 +28,15 @@ cascade_table_drop(Db* self, Tr* tr, Str* schema, Str* name,
 static void
 cascade_drop(Db* self, Tr* tr, Str* schema)
 {
+	// udfs
+	list_foreach_safe(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Handle, link));
+		if (str_compare(&udf->config->schema, schema))
+			udf_mgr_drop(&self->udf_mgr, tr, &udf->config->schema,
+			             &udf->config->name, false);
+	}
+
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{

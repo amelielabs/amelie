@@ -58,7 +58,7 @@ spinlock_free(Spinlock* self)
 	*self = 0;
 }
 
-static inline void
+hot static inline void
 spinlock_lock(Spinlock* self)
 {
 	if (__sync_lock_test_and_set(self, 1) != 0) {

@@ -24,6 +24,7 @@ struct Dtr
 	PipeSet   set;
 	Dispatch  dispatch;
 	Program*  program;
+	Buf*      args;
 	Result    cte;
 	Buf*      error;
 	Event     on_commit;
@@ -41,6 +42,7 @@ dtr_init(Dtr* self, Router* router)
 {
 	self->state   = DTR_NONE;
 	self->program = NULL;
+	self->args    = NULL;
 	self->error   = NULL;
 	self->router  = router;
 	self->local   = NULL;
@@ -69,6 +71,7 @@ dtr_reset(Dtr* self)
 	}
 	self->state   = DTR_NONE;
 	self->program = NULL;
+	self->args    = NULL;
 	self->local   = NULL;
 	list_init(&self->link_commit);
 	list_init(&self->link);
@@ -87,9 +90,10 @@ dtr_free(Dtr* self)
 }
 
 static inline void
-dtr_create(Dtr* self, Local* local, Program* program)
+dtr_create(Dtr* self, Local* local, Program* program, Buf* args)
 {
 	self->program = program;
+	self->args    = args;
 	self->local   = local;
 	auto set_size = self->router->list_count;
 	pipe_set_create(&self->set, set_size);
@@ -143,7 +147,8 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 			pipe = pipe_create(&self->pipe_cache, route);
 			pipe_set_set(set, route->order, pipe);
 		}
-		req_set(req, self->local, self->program, &self->cte, &self->limit);
+		req_set(req, self->local, self->program, self->args,
+		        &self->cte, &self->limit);
 
 		// set pipe per statement node order and add request to the
 		// statement list

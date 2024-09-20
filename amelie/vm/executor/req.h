@@ -12,6 +12,7 @@ struct Req
 {
 	int      start;
 	Program* program;
+	Buf*     args;
 	Buf      arg;
 	uint8_t* arg_start;
 	Value    result;
@@ -30,6 +31,7 @@ req_allocate(void)
 	auto self = (Req*)am_malloc(sizeof(Req));
 	self->start     = 0;
 	self->program   = NULL;
+	self->args      = NULL;
 	self->arg_start = NULL;
 	self->cte       = NULL;
 	self->shutdown  = false;
@@ -56,6 +58,7 @@ req_reset(Req* self)
 {
 	self->start     = 0;
 	self->program   = NULL;
+	self->args      = NULL;
 	self->arg_start = NULL;
 	self->cte       = NULL;
 	self->shutdown  = false;
@@ -72,11 +75,13 @@ static inline void
 req_set(Req*     self,
         Local*   local,
         Program* program,
+        Buf*     args,
         Result*  cte,
         Limit*   limit)
 {
 	self->local   = local;
 	self->program = program;
+	self->args    = args;
 	self->cte     = cte;
 	self->limit   = limit;
 }

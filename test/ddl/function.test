@@ -45,5 +45,9 @@ show functions
 create function test begin show all; end
 show functions
 
+# test: create function (with arguments)
+create function test (a int) begin return a; end
+show functions
+
 disconnect S0
 close E0

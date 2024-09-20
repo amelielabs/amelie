@@ -15,6 +15,7 @@ struct Vm
 	Code*        code;
 	CodeData*    code_data;
 	Buf*         code_arg;
+	Buf*         args;
 	CursorMgr    cursor_mgr;
 	Uuid*        node;
 	Executor*    executor;
@@ -32,5 +33,5 @@ struct Vm
 void vm_init(Vm*, Db*, Uuid*, Executor*, Dtr*, Buf*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*,
+void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Buf*,
             Result*, Value*, int);

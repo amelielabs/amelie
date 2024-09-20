@@ -54,9 +54,9 @@ select false
 select null
 [null]
 select name
-{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+{"code": 1, "msg": "<name> column, CTE or argument not found"}
 select path.to.name
-{"code": 1, "msg": "<path> name cannot be resolved without FROM clause"}
+{"code": 1, "msg": "<path> column, CTE or argument not found"}
 select *
 {"code": 1, "msg": "<*> no FROM clause defined"}
 # test: basic operations
@@ -320,7 +320,7 @@ select 2.8 & 3.4
 select 0[0]
 {"code": 1, "msg": "[]: map or array expected"}
 select name[0]
-{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+{"code": 1, "msg": "<name> column, CTE or argument not found"}
 # test: array
 select []
 []

@@ -100,7 +100,7 @@ replay(Session* self, WalWrite* write)
 	program.repl       = true;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, &self->local, &program);
+	dtr_create(dtr, &self->local, &program, NULL);
 
 	ReqList req_list;
 	req_list_init(&req_list);

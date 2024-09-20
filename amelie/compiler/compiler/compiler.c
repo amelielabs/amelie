@@ -40,6 +40,7 @@ compiler_init(Compiler*    self,
 	self->last     = NULL;
 	self->db       = db;
 	self->code     = &self->code_node;
+	self->args     = NULL;
 	code_init(&self->code_coordinator);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
@@ -61,6 +62,7 @@ void
 compiler_reset(Compiler* self)
 {
 	self->code     = &self->code_node;
+	self->args     = NULL;
 	self->snapshot = false;
 	self->current  = NULL;
 	self->last     = NULL;
@@ -72,8 +74,9 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse(Compiler* self, Local* local, Str* text)
+compiler_parse(Compiler* self, Local* local, Columns* args, Str* text)
 {
+	self->args = args;
 	parse(&self->parser, local, text);
 }
 

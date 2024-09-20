@@ -252,12 +252,14 @@ json_const(Json* self)
 		return;
 	}
 	case 'n':
+	case 'N':
 	{
 		json_keyword(self, "null", 4);
 		encode_null(self->buf);
 		return;
 	}
 	case 't':
+	case 'T':
 	{
 		if (json_is_keyword(self, "true", 4))
 		{
@@ -283,6 +285,7 @@ json_const(Json* self)
 		return;
 	}
 	case 'c':
+	case 'C':
 	{
 		if (json_is_keyword(self, "current_timestamp", 17))
 		{
@@ -296,12 +299,14 @@ json_const(Json* self)
 		break;
 	}
 	case 'f':
+	case 'F':
 	{
 		json_keyword(self, "false", 5);
 		encode_bool(self->buf, false);
 		return;
 	}
 	case 'i':
+	case 'I':
 	{
 		// INTERVAL "string"
 		json_keyword(self, "interval", 8);
@@ -315,6 +320,7 @@ json_const(Json* self)
 		return;
 	}
 	case 'v':
+	case 'V':
 	{
 		// VECTOR []
 		json_keyword(self, "vector", 6);

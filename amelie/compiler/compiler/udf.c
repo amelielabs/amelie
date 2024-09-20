@@ -46,7 +46,8 @@ udf_if_prepare(Udf* self)
 	Compiler compiler;
 	compiler_init(&compiler, context->db, context->function_mgr);
 	guard(compiler_free, &compiler);
-	compiler_parse(&compiler, &local, &self->config->text);
+	compiler_parse(&compiler, &local, &self->config->columns,
+	               &self->config->text);
 
 	// ensure function has no utility/ddl commands
 	auto stmt = compiler_stmt(&compiler);

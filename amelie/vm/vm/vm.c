@@ -39,6 +39,7 @@ vm_init(Vm*          self,
 	self->code         = NULL;
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
+	self->args         = NULL;
 	self->node         = node;
 	self->executor     = executor;
 	self->dtr          = dtr;
@@ -75,6 +76,7 @@ vm_reset(Vm* self)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
+	self->args      = NULL;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -88,17 +90,19 @@ vm_run(Vm*       self,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
+       Buf*      args,
        Result*   cte,
        Value*    result,
        int       start)
 {
-	self->local      = local;
-	self->tr         = tr;
-	self->code       = code;
-	self->code_data  = code_data;
-	self->code_arg   = code_arg;
-	self->cte        = cte;
-	self->result     = result;
+	self->local     = local;
+	self->tr        = tr;
+	self->code      = code;
+	self->code_data = code_data;
+	self->code_arg  = code_arg;
+	self->args      = args;
+	self->cte       = cte;
+	self->result    = result;
 	call_mgr_prepare(&self->call_mgr, code_data);
 
 	const void* ops[] =
@@ -353,7 +357,8 @@ cswap:
 	op_next;
 
 carg:
-	// todo
+	// [result, order]
+	value_read_arg(&r[op->a], self->args, op->b);
 	op_next;
 
 cbor:

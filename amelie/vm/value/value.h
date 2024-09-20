@@ -298,6 +298,17 @@ value_read_ref(Value* self, uint8_t* data, Buf* buf)
 		buf_ref(buf);
 }
 
+hot static inline void
+value_read_arg(Value* self, Buf* args, int order)
+{
+	if (unlikely(! args))
+		error("arguments are not defined");
+	uint8_t* pos = args->start;
+	if (! array_find(&pos, order))
+		error("argument %d is not defined", order);
+	value_read(self, pos, NULL);
+}
+
 always_inline hot static inline void
 value_write(Value* self, Buf* buf)
 {

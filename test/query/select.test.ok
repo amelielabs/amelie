@@ -64,9 +64,9 @@ explain select [1, 2, 3]
 }]
 # test: select name
 select name
-{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+{"code": 1, "msg": "<name> column, CTE or argument not found"}
 select name.name
-{"code": 1, "msg": "<name> name cannot be resolved without FROM clause"}
+{"code": 1, "msg": "<name> column, CTE or argument not found"}
 # test: select star
 select *
 {"code": 1, "msg": "<*> no FROM clause defined"}

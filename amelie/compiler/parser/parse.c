@@ -118,20 +118,20 @@ parse_stmt(Parser* self, Stmt* stmt)
 			auto is_last = ast->id == ';' || ast->id == KEOF;
 			if (is_last)
 			{
-				// cte
-				stmt->id  = STMT_RETURN;
-				stmt->cte = cte_list_find(&self->cte_list, &name->string);
-				if (! stmt->cte)
-					error("<%.*s> cte not found", str_size(&name->string),
-					      str_of(&name->string));
-
-				lex_push(lex, ast);
-				return;
+				auto cte = cte_list_find(&self->cte_list, &name->string);
+				if (cte)
+				{
+					// cte
+					stmt->id  = STMT_RETURN;
+					stmt->cte = cte;
+					lex_push(lex, ast);
+					return;
+				}
 			}
 
 			// handle as expression
-			lex_push(lex, name);
 			lex_push(lex, ast);
+			lex_push(lex, name);
 		}
 
 		ast = lex_next(lex);

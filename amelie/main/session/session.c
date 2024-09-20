@@ -146,6 +146,7 @@ session_execute_distributed(Session* self)
 
 	Program* program;
 	Program  program_compiled;
+	Buf*     args;
 
 	auto stmt = compiler_stmt(compiler);
 	if (stmt && stmt->id == STMT_EXECUTE)
@@ -154,16 +155,18 @@ session_execute_distributed(Session* self)
 		auto udf = ast_execute_of(stmt->ast)->udf;
 		auto executable = (Executable*)udf->context;
 		program = &executable->program;
+		args = &compiler->code_data.data;
 	} else
 	{
 		// generate bytecode
 		compiler_emit(compiler);
 		compiler_program(compiler, &program_compiled);
 		program = &program_compiled;
+		args = NULL;
 	}
 
 	// prepare distributed transaction
-	dtr_create(dtr, &self->local, program);
+	dtr_create(dtr, &self->local, program, args);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -186,6 +189,7 @@ session_execute_distributed(Session* self)
 		       program->code,
 		       program->code_data,
 		       NULL,
+		       args,
 		       &dtr->cte, NULL, 0);
 	}
 
@@ -227,7 +231,7 @@ session_execute(Session* self)
 	// parse SQL query
 	Str text;
 	buf_str(&self->client->request.content, &text);
-	compiler_parse(compiler, &self->local, &text);
+	compiler_parse(compiler, &self->local, NULL, &text);
 
 	if (! compiler->parser.stmt_list.list_count)
 	{

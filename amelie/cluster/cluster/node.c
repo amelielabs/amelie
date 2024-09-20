@@ -105,6 +105,7 @@ node_execute(Node* self, Pipe* pipe)
 				        req->program->code_node,
 				        req->program->code_data,
 				       &req->arg,
+				        req->args,
 				        req->cte,
 				       &req->result,
 				        req->start);

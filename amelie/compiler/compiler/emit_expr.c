@@ -404,21 +404,29 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 	// SELECT name
 	auto name = &ast->string;
 
-	// find CTE first
+	// find function argument
+	if (self->args)
+	{
+		auto arg = columns_find(self->args, name);
+		if (arg)
+			return op2(self, CARG, rpin(self), arg->order);
+	}
+
+	// find CTE
 	auto cte = cte_list_find(&self->parser.cte_list, name);
 	if (cte)
 		return op2(self, CCTE_GET, rpin(self), cte->id);
 
+	// SELECT name FROM
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
-		error("<%.*s> name cannot be resolved without FROM clause",
+		error("<%.*s> column, CTE or argument not found",
 		      str_size(name), str_of(name));
 
 	if (unlikely(target == NULL))
 		error("<%.*s> target column cannot be found",
 		      str_size(name), str_of(name));
 
-	// SELECT name FROM
 	if (target_list->count == 1)
 		return emit_cursor_idx(self, target, name);
 
@@ -499,6 +507,26 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	str_init(&path);
 	str_set_str(&path, &ast->string);
 
+	// check if first path is a function argument
+	if (self->args)
+	{
+		auto arg = columns_find(self->args, &name);
+		if (arg)
+		{
+			// exclude arg name from the path
+			str_advance(&path, str_size(&name) + 1);
+
+			// arg[path]
+			int l = op2(self, CARG, rpin(self), arg->order);
+			int r = emit_string(self, &path, false);
+			int rc;
+			rc = op3(self, CIDX, rpin(self), l, r);
+			runpin(self, l);
+			runpin(self, r);
+			return rc;
+		}
+	}
+
 	// check if first path is a table name
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
@@ -520,7 +548,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 			return rc;
 		}
 
-		error("<%.*s> name cannot be resolved without FROM clause",
+		error("<%.*s> column, CTE or argument not found",
 		      str_size(&name), str_of(&name));
 	}
 

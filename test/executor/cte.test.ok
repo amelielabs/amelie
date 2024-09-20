@@ -2303,9 +2303,9 @@ explain a := [1,2,3]; select * from test; return a;
 a := [1,2,3]; select * from test; return a;
 [1, 2, 3]
 explain return a;
-{"code": 1, "msg": "<a> cte not found"}
+{"code": 1, "msg": "<a> column, CTE or argument not found"}
 return a;
-{"code": 1, "msg": "<a> cte not found"}
+{"code": 1, "msg": "<a> column, CTE or argument not found"}
 drop table test
 []
 disconnect S0
