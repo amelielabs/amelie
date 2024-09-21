@@ -439,6 +439,14 @@ ddl_create_function(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
+	// ensure internal function with the same name does not exists
+	auto func = function_mgr_find(self->share->function_mgr, &arg->config->schema,
+	                              &arg->config->name);
+	if (unlikely(func))
+		error("internal function <%.*s> with the same name exists",
+		      str_size(&func->name),
+		      str_of(&func->name));
+
 	// create function
 	udf_mgr_create(&db->udf_mgr, tr, arg->config, false);
 }
@@ -466,7 +474,13 @@ ddl_alter_function(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// TODO: ensure internal function with the same name does not exists
+	// ensure internal function with the same name does not exists
+	auto func = function_mgr_find(self->share->function_mgr, &arg->schema_new,
+	                              &arg->name_new);
+	if (unlikely(func))
+		error("internal function <%.*s> with the same name exists",
+		      str_size(&func->name),
+		      str_of(&func->name));
 
 	// rename function
 	udf_mgr_rename(&db->udf_mgr, tr, &arg->schema, &arg->name,
