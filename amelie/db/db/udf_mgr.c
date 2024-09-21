@@ -192,3 +192,15 @@ udf_mgr_find(UdfMgr* self, Str* schema, Str* name,
 	}
 	return udf_of(handle);
 }
+
+Udf*
+udf_mgr_find_dep(UdfMgr* self, Str* schema, Str* name)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto udf = udf_of(list_at(Handle, link));
+		if (udf_depends_on(udf, schema, name))
+			return udf;
+	}
+	return NULL;
+}

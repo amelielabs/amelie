@@ -13,6 +13,7 @@ struct UdfIf
 {
 	void (*prepare)(Udf*);
 	void (*free)(Udf*);
+	bool (*depends_on)(Udf*, Str*, Str*);
 };
 
 struct Udf
@@ -65,4 +66,10 @@ static inline void
 udf_prepare(Udf* self)
 {
 	self->iface->prepare(self);
+}
+
+static inline bool
+udf_depends_on(Udf* self, Str* schema, Str* name)
+{
+	return self->iface->depends_on(self, schema, name);
 }

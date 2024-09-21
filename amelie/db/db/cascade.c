@@ -18,13 +18,6 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-void
-cascade_table_drop(Db* self, Tr* tr, Str* schema, Str* name,
-                   bool if_exists)
-{
-	table_mgr_drop(&self->table_mgr, tr, schema, name, if_exists);
-}
-
 static void
 cascade_drop(Db* self, Tr* tr, Str* schema)
 {

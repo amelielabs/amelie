@@ -65,6 +65,13 @@ udf_if_prepare(Udf* self)
 	auto ea = executable_allocate();
 	executable_set(ea, &program);
 	self->context = ea;
+
+	// prepare list of deps
+	list_foreach_safe(&compiler.parser.stmt_list.list)
+	{
+		auto stmt = list_at(Stmt, link);
+		deps_import(&ea->deps, &stmt->target_list);
+	}
 }
 
 static void
@@ -77,8 +84,16 @@ udf_if_free(Udf* self)
 	}
 }
 
+static bool
+udf_if_depends_on(Udf* self, Str* schema, Str* name)
+{
+	Executable* ea = self->context;
+	return deps_find(&ea->deps, schema, name) != NULL;
+}
+
 UdfIf udf_if =
 {
-	.prepare = udf_if_prepare,
-	.free    = udf_if_free
+	.prepare    = udf_if_prepare,
+	.free       = udf_if_free,
+	.depends_on = udf_if_depends_on
 };

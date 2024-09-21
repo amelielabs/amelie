@@ -13,6 +13,7 @@ struct Executable
 	Code     code;
 	Code     code_node;
 	CodeData code_data;
+	Deps     deps;
 	Program  program;
 };
 
@@ -23,6 +24,7 @@ executable_allocate(void)
 	code_init(&self->code);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
+	deps_init(&self->deps);
 	program_init(&self->program);
 	return self;
 }
@@ -33,6 +35,7 @@ executable_free(Executable* self)
 	code_free(&self->code);
 	code_free(&self->code_node);
 	code_data_free(&self->code_data);
+	deps_free(&self->deps);
 	am_free(self);
 }
 
