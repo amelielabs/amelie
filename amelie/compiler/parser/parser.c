@@ -36,6 +36,7 @@ parser_init(Parser*      self,
 {
 	self->explain      = EXPLAIN_NONE;
 	self->stmt         = NULL;
+	self->args         = NULL;
 	self->data         = data;
 	self->function_mgr = function_mgr;
 	self->local        = NULL;
@@ -51,6 +52,7 @@ parser_reset(Parser* self)
 {
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
+	self->args    = NULL;
 	self->local   = NULL;
 	list_foreach_safe(&self->stmt_list.list)
 	{

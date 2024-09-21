@@ -462,7 +462,8 @@ parse_with(Parser* self)
 		                          &self->lex,
 		                          self->data, &self->json,
 		                          &self->stmt_list,
-		                          &self->cte_list);
+		                          &self->cte_list,
+		                           self->args);
 		stmt_list_add(&self->stmt_list, stmt);
 		self->stmt = stmt;
 
@@ -495,9 +496,10 @@ parse_with(Parser* self)
 }
 
 hot void
-parse(Parser* self, Local* local, Str* str)
+parse(Parser* self, Local* local, Columns* args, Str* str)
 {
 	self->local = local;
+	self->args  = args;
 
 	auto lex = &self->lex;
 	lex_start(lex, str);
@@ -540,7 +542,8 @@ parse(Parser* self, Local* local, Str* str)
 		                           &self->lex,
 		                           self->data, &self->json,
 		                           &self->stmt_list,
-		                           &self->cte_list);
+		                           &self->cte_list,
+		                            self->args);
 		stmt_list_add(&self->stmt_list, self->stmt);
 		parse_stmt(self, self->stmt);
 

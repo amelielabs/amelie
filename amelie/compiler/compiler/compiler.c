@@ -77,7 +77,7 @@ void
 compiler_parse(Compiler* self, Local* local, Columns* args, Str* text)
 {
 	self->args = args;
-	parse(&self->parser, local, text);
+	parse(&self->parser, local, args, text);
 }
 
 static void

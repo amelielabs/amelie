@@ -104,7 +104,7 @@ priority_map[KEYWORD_MAX] =
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
-	[KARGUMENT]                = priority_value,
+	[KARG]                     = priority_value,
 	[KNAME]                    = priority_value,
 	[KNAME_COMPOUND]           = priority_value,
 	[KNAME_COMPOUND_STAR]      = priority_value,
@@ -405,6 +405,61 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
+hot static inline bool
+expr_name(Stmt* self, Ast* value, Str* name)
+{
+	// resolve name into argument or cte
+
+	// find function argument
+	if (self->args)
+	{
+		auto arg = columns_find(self->args, name);
+		if (arg)
+		{
+			value->id = KARG;
+			value->integer = arg->order;
+			return true;
+		}
+	}
+
+	// find cte (without columns)
+	//
+	// cte with columns are resolved only as targets
+	// during name emit
+	//
+	auto cte = cte_list_find(self->cte_list, name);
+	if (cte && !cte->columns.list_count)
+	{
+		value->id = KCTE;
+		value->integer = cte->id;
+		return true;
+	}
+
+	return false;
+}
+
+hot static inline void
+expr_name_compound(Stmt* self, Ast* value)
+{
+	// resolve name into argument or cte
+	Str path = value->string;
+	Str name;
+	str_split(&path, &name, '.');
+	if (! expr_name(self, value, &name))
+		return;
+
+	// exclude name from the path
+	str_advance(&path, str_size(&name) + 1);
+
+	// process rest of path as '.' operator
+	auto idx = ast(KNAME);
+	idx->string = path;
+	if (str_strnchr(&path, '.'))
+		idx->id = KNAME_COMPOUND;
+	stmt_push(self, idx);
+	stmt_push(self, ast('.'));
+}
+
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
@@ -530,7 +585,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	// request argument
-	case KARGUMENT:
+	case KARG:
 		break;
 
 	// @, **
@@ -539,16 +594,37 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	// name
+	case KNAME:
+	{
+		// function(expr, ...)
+		if (stmt_if(self,'('))
+		{
+			value = expr_call(self, expr, value, true);
+		} else
+		{
+			// resolve name as argument or cte
+			expr_name(self, value, &value->string);
+		}
+		break;
+	}
+
 	// name.path
 	// name.path.*
-	case KNAME:
 	case KNAME_COMPOUND:
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
+		{
 			value = expr_call(self, expr, value, true);
+		} else
+		{
+			// resolve compound name as argument or cte and
+			// handle as idx operation
+			expr_name_compound(self, value);
+		}
 		break;
 	}
+
 	case KNAME_COMPOUND_STAR:
 	case KNAME_COMPOUND_STAR_STAR:
 		break;

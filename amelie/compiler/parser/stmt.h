@@ -58,6 +58,7 @@ struct Stmt
 	bool         ret;
 	Cte*         cte;
 	CteList*     cte_list;
+	Columns*     args;
 	TargetList   target_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
@@ -83,7 +84,8 @@ stmt_allocate(Db*          db,
               CodeData*    data,
               Json*        json,
               StmtList*    stmt_list,
-              CteList*     cte_list)
+              CteList*     cte_list,
+              Columns*     args)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id           = STMT_UNDEF;
@@ -92,6 +94,7 @@ stmt_allocate(Db*          db,
 	self->ret          = false;
 	self->cte          = NULL;
 	self->cte_list     = cte_list;
+	self->args         = args;
 	self->stmt_list    = stmt_list;
 	self->data         = data;
 	self->json         = json;
