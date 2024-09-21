@@ -104,7 +104,8 @@ priority_map[KEYWORD_MAX] =
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
-	[KARG]                     = priority_value,
+	[KARGID]                   = priority_value,
+	[KCTEID]                   = priority_value,
 	[KNAME]                    = priority_value,
 	[KNAME_COMPOUND]           = priority_value,
 	[KNAME_COMPOUND_STAR]      = priority_value,
@@ -416,7 +417,7 @@ expr_name(Stmt* self, Ast* value, Str* name)
 		auto arg = columns_find(self->args, name);
 		if (arg)
 		{
-			value->id = KARG;
+			value->id = KARGID;
 			value->integer = arg->order;
 			return true;
 		}
@@ -430,8 +431,9 @@ expr_name(Stmt* self, Ast* value, Str* name)
 	auto cte = cte_list_find(self->cte_list, name);
 	if (cte && !cte->columns.list_count)
 	{
-		value->id = KCTE;
+		value->id = KCTEID;
 		value->integer = cte->id;
+		cte_deps_add(&self->cte_deps, cte);
 		return true;
 	}
 
@@ -585,7 +587,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	// request argument
-	case KARG:
+	case KARGID:
 		break;
 
 	// @, **

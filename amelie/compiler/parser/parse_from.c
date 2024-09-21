@@ -161,6 +161,9 @@ parse_from_add(From* self)
 	// set view
 	target->view  = view;
 
+	if (cte)
+		cte_deps_add(&stmt->cte_deps, cte);
+
 	// [USE INDEX (name)]
 	if (stmt_if(stmt, KUSE))
 	{

@@ -140,8 +140,8 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 		if (unlikely(key->type != TYPE_TIMESTAMP))
 			return false;
 		break;
-	case KARG:
-	case KCTE:
+	case KARGID:
+	case KCTEID:
 		break;
 	}
 
@@ -240,8 +240,8 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 		if (expr->r->id == KINT ||
 		    expr->r->id == KSTRING ||
 		    expr->r->id == KTIMESTAMP ||
-		    expr->r->id == KARG ||
-		    expr->r->id == KCTE)
+		    expr->r->id == KARGID ||
+		    expr->r->id == KCTEID)
 		{
 			*path  = expr->l;
 			*value = expr->r;
@@ -253,8 +253,8 @@ path_op_of(Ast* expr, Ast** path, Ast** value)
 		if (expr->l->id == KINT ||
 		    expr->l->id == KSTRING ||
 		    expr->l->id == KTIMESTAMP ||
-		    expr->l->id == KARG ||
-		    expr->r->id == KCTE)
+		    expr->l->id == KARGID ||
+		    expr->r->id == KCTEID)
 		{
 			*path  = expr->r;
 			*value = expr->l;

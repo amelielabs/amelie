@@ -139,7 +139,7 @@ lex_next(Lex* self)
 		if (isdigit(*self->pos))
 		{
 			// $<int>
-			ast->id = KARG;
+			ast->id = KARGID;
 			while (self->pos < self->end && isdigit(*self->pos)) {
 				ast->integer = (ast->integer * 10) + *self->pos - '0';
 				self->pos++;

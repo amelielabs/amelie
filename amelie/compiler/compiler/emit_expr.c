@@ -890,9 +890,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCURRENT_TIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self), self->parser.local->time_us);
 
-	case KARG:
+	case KARGID:
 		return op2(self, CARG, rpin(self), ast->integer);
-	case KCTE:
+	case KCTEID:
 		return op2(self, CCTE_GET, rpin(self), ast->integer);
 
 	// @

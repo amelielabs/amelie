@@ -464,7 +464,7 @@ compiler_emit(Compiler* self)
 		if (stmt_is_expr)
 			recv = stmt->order;
 		else
-			recv = stmt_max_cte_order(stmt);
+			recv = cte_deps_max_stmt(&stmt->cte_deps);
 		if (recv >= 0)
 		{
 			emit_recv_upto(self, recv_last, recv);

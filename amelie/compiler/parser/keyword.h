@@ -19,8 +19,8 @@ enum
 	KSTRING,
 	KINTERVAL,
 	KTIMESTAMP,
-	KARG,
-	KCTE,
+	KARGID,
+	KCTEID,
 
 	// lexer operations
 	KSHL,

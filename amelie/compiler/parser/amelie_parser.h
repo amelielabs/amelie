@@ -19,6 +19,7 @@
 
 // target
 #include "parser/cte.h"
+#include "parser/cte_deps.h"
 #include "parser/target.h"
 #include "parser/target_list.h"
 #include "parser/stmt.h"

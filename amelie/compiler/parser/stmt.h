@@ -58,6 +58,7 @@ struct Stmt
 	bool         ret;
 	Cte*         cte;
 	CteList*     cte_list;
+	CteDeps      cte_deps;
 	Columns*     args;
 	TargetList   target_list;
 	StmtList*    stmt_list;
@@ -102,6 +103,7 @@ stmt_allocate(Db*          db,
 	self->function_mgr = function_mgr;
 	self->local        = local;
 	self->db           = db;
+	cte_deps_init(&self->cte_deps);
 	target_list_init(&self->target_list);
 	list_init(&self->link);
 	return self;
@@ -188,21 +190,4 @@ stmt_list_add(StmtList* self, Stmt* stmt)
 	stmt->order = self->list_count;
 	self->list_count++;
 	list_append(&self->list, &stmt->link);
-}
-
-static inline int
-stmt_max_cte_order(Stmt* self)
-{
-	auto order  = -1;
-	auto target = self->target_list.list;
-	while (target)
-	{
-		if (target->cte)
-		{
-			if (target->cte->stmt > order)
-				order = target->cte->stmt;
-		}
-		target = target->next;
-	}
-	return order;
 }
