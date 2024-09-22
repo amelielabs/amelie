@@ -2308,5 +2308,54 @@ return a;
 {"code": 1, "msg": "<a> column, CTE or argument not found"}
 drop table test
 []
+# test: cte as a key
+create table test (id int primary key)
+[]
+insert into test 1,2,3
+[]
+explain _id := 2; select * from test where id = _id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 2",
+      "01": "cte_set             0      0      0     ",
+      "02": "send_all            1      0      0     ",
+      "03": "recv                1      0      0     ",
+      "04": "bool                0      0      0     ",
+      "05": "push                0      0      0     ",
+      "06": "merge_recv          0      -1     -1    ",
+      "07": "cte_set             1      0      0     ",
+      "08": "body                1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      0      0     ",
+      "01": "int_min             1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 12     0      0     ",
+      "05": "cursor_idx          1      0      0     ",
+      "06": "cte_get             2      0      0     ",
+      "07": "equ                 3      1      2     ",
+      "08": "jntr                11     3      0     ",
+      "09": "cursor_read         1      0      0     ",
+      "10": "set_add             0      1      0     ",
+      "11": "cursor_next         0      5      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
+_id := 1; select * from test where id = _id
+[[1]]
+_id := 2; select * from test where id = _id
+[[2]]
+_id := 3; select * from test where id = _id
+[[3]]
+_id := 0; select * from test where id = _id
+[]
+drop table test
+[]
 disconnect S0
 close E0

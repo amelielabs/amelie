@@ -290,5 +290,18 @@ return a;
 
 drop table test
 
+# test: cte as a key
+create table test (id int primary key)
+insert into test 1,2,3
+
+explain _id := 2; select * from test where id = _id
+
+_id := 1; select * from test where id = _id
+_id := 2; select * from test where id = _id
+_id := 3; select * from test where id = _id
+_id := 0; select * from test where id = _id
+
+drop table test
+
 disconnect S0
 close E0
