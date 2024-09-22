@@ -72,14 +72,8 @@ system_create(void)
 	// vm
 	function_mgr_init(&self->function_mgr);
 
-	// udf iface argument
-	auto ctx = &self->udf_ctx;
-	ctx->function_mgr = &self->function_mgr;
-	ctx->db = &self->db;
-
 	// db
-	db_init(&self->db, (PartMapper)cluster_map, &self->cluster,
-	        &udf_if, &self->udf_ctx);
+	db_init(&self->db, (PartMapper)cluster_map, &self->cluster);
 
 	// replication
 	repl_init(&self->repl, &self->db);

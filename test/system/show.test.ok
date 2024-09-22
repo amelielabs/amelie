@@ -37,9 +37,573 @@ select system.schemas()
 }]
 # test: show functions
 show functions
-[]
+[{
+  "schema": "system",
+  "name": "config"
+}, {
+  "schema": "system",
+  "name": "users"
+}, {
+  "schema": "system",
+  "name": "replicas"
+}, {
+  "schema": "system",
+  "name": "repl"
+}, {
+  "schema": "system",
+  "name": "replication"
+}, {
+  "schema": "system",
+  "name": "nodes"
+}, {
+  "schema": "system",
+  "name": "schemas"
+}, {
+  "schema": "system",
+  "name": "functions"
+}, {
+  "schema": "system",
+  "name": "tables"
+}, {
+  "schema": "system",
+  "name": "views"
+}, {
+  "schema": "system",
+  "name": "wal"
+}, {
+  "schema": "public",
+  "name": "string"
+}, {
+  "schema": "public",
+  "name": "int"
+}, {
+  "schema": "public",
+  "name": "bool"
+}, {
+  "schema": "public",
+  "name": "real"
+}, {
+  "schema": "public",
+  "name": "native"
+}, {
+  "schema": "public",
+  "name": "interval"
+}, {
+  "schema": "public",
+  "name": "timestamp"
+}, {
+  "schema": "public",
+  "name": "vector"
+}, {
+  "schema": "public",
+  "name": "coalesce"
+}, {
+  "schema": "public",
+  "name": "nullif"
+}, {
+  "schema": "public",
+  "name": "append"
+}, {
+  "schema": "public",
+  "name": "push_back"
+}, {
+  "schema": "public",
+  "name": "push"
+}, {
+  "schema": "public",
+  "name": "pop"
+}, {
+  "schema": "public",
+  "name": "pop_back"
+}, {
+  "schema": "public",
+  "name": "put"
+}, {
+  "schema": "public",
+  "name": "remove"
+}, {
+  "schema": "public",
+  "name": "set"
+}, {
+  "schema": "public",
+  "name": "unset"
+}, {
+  "schema": "public",
+  "name": "has"
+}, {
+  "schema": "public",
+  "name": "length"
+}, {
+  "schema": "public",
+  "name": "size"
+}, {
+  "schema": "public",
+  "name": "concat"
+}, {
+  "schema": "public",
+  "name": "lower"
+}, {
+  "schema": "public",
+  "name": "upper"
+}, {
+  "schema": "public",
+  "name": "substr"
+}, {
+  "schema": "public",
+  "name": "strpos"
+}, {
+  "schema": "public",
+  "name": "replace"
+}, {
+  "schema": "public",
+  "name": "ltrim"
+}, {
+  "schema": "public",
+  "name": "rtrim"
+}, {
+  "schema": "public",
+  "name": "trim"
+}, {
+  "schema": "public",
+  "name": "like"
+}, {
+  "schema": "public",
+  "name": "regexp_like"
+}, {
+  "schema": "public",
+  "name": "regexp_substr"
+}, {
+  "schema": "public",
+  "name": "regexp_match"
+}, {
+  "schema": "public",
+  "name": "regexp_replace"
+}, {
+  "schema": "public",
+  "name": "greatest"
+}, {
+  "schema": "public",
+  "name": "least"
+}, {
+  "schema": "public",
+  "name": "abs"
+}, {
+  "schema": "public",
+  "name": "round"
+}, {
+  "schema": "public",
+  "name": "sign"
+}, {
+  "schema": "public",
+  "name": "ceil"
+}, {
+  "schema": "public",
+  "name": "exp"
+}, {
+  "schema": "public",
+  "name": "floor"
+}, {
+  "schema": "public",
+  "name": "mod"
+}, {
+  "schema": "public",
+  "name": "power"
+}, {
+  "schema": "public",
+  "name": "trunc"
+}, {
+  "schema": "public",
+  "name": "pi"
+}, {
+  "schema": "public",
+  "name": "sqrt"
+}, {
+  "schema": "public",
+  "name": "acos"
+}, {
+  "schema": "public",
+  "name": "acosh"
+}, {
+  "schema": "public",
+  "name": "asin"
+}, {
+  "schema": "public",
+  "name": "asinh"
+}, {
+  "schema": "public",
+  "name": "atan"
+}, {
+  "schema": "public",
+  "name": "atanh"
+}, {
+  "schema": "public",
+  "name": "atan2"
+}, {
+  "schema": "public",
+  "name": "cos"
+}, {
+  "schema": "public",
+  "name": "cosh"
+}, {
+  "schema": "public",
+  "name": "sin"
+}, {
+  "schema": "public",
+  "name": "sinh"
+}, {
+  "schema": "public",
+  "name": "tan"
+}, {
+  "schema": "public",
+  "name": "tanh"
+}, {
+  "schema": "public",
+  "name": "ln"
+}, {
+  "schema": "public",
+  "name": "log"
+}, {
+  "schema": "public",
+  "name": "log10"
+}, {
+  "schema": "public",
+  "name": "log2"
+}, {
+  "schema": "public",
+  "name": "error"
+}, {
+  "schema": "public",
+  "name": "type"
+}, {
+  "schema": "public",
+  "name": "random"
+}, {
+  "schema": "public",
+  "name": "random_uuid"
+}, {
+  "schema": "public",
+  "name": "md5"
+}, {
+  "schema": "public",
+  "name": "sha1"
+}, {
+  "schema": "public",
+  "name": "encode"
+}, {
+  "schema": "public",
+  "name": "decode"
+}, {
+  "schema": "public",
+  "name": "serial"
+}, {
+  "schema": "public",
+  "name": "jwt"
+}, {
+  "schema": "public",
+  "name": "now"
+}, {
+  "schema": "public",
+  "name": "at_timezone"
+}, {
+  "schema": "public",
+  "name": "generate_series"
+}, {
+  "schema": "public",
+  "name": "date_bin"
+}, {
+  "schema": "public",
+  "name": "date_trunc"
+}, {
+  "schema": "public",
+  "name": "extract"
+}, {
+  "schema": "public",
+  "name": "cos_distance"
+}]
 select system.functions()
-[]
+[{
+  "schema": "system",
+  "name": "config"
+}, {
+  "schema": "system",
+  "name": "users"
+}, {
+  "schema": "system",
+  "name": "replicas"
+}, {
+  "schema": "system",
+  "name": "repl"
+}, {
+  "schema": "system",
+  "name": "replication"
+}, {
+  "schema": "system",
+  "name": "nodes"
+}, {
+  "schema": "system",
+  "name": "schemas"
+}, {
+  "schema": "system",
+  "name": "functions"
+}, {
+  "schema": "system",
+  "name": "tables"
+}, {
+  "schema": "system",
+  "name": "views"
+}, {
+  "schema": "system",
+  "name": "wal"
+}, {
+  "schema": "public",
+  "name": "string"
+}, {
+  "schema": "public",
+  "name": "int"
+}, {
+  "schema": "public",
+  "name": "bool"
+}, {
+  "schema": "public",
+  "name": "real"
+}, {
+  "schema": "public",
+  "name": "native"
+}, {
+  "schema": "public",
+  "name": "interval"
+}, {
+  "schema": "public",
+  "name": "timestamp"
+}, {
+  "schema": "public",
+  "name": "vector"
+}, {
+  "schema": "public",
+  "name": "coalesce"
+}, {
+  "schema": "public",
+  "name": "nullif"
+}, {
+  "schema": "public",
+  "name": "append"
+}, {
+  "schema": "public",
+  "name": "push_back"
+}, {
+  "schema": "public",
+  "name": "push"
+}, {
+  "schema": "public",
+  "name": "pop"
+}, {
+  "schema": "public",
+  "name": "pop_back"
+}, {
+  "schema": "public",
+  "name": "put"
+}, {
+  "schema": "public",
+  "name": "remove"
+}, {
+  "schema": "public",
+  "name": "set"
+}, {
+  "schema": "public",
+  "name": "unset"
+}, {
+  "schema": "public",
+  "name": "has"
+}, {
+  "schema": "public",
+  "name": "length"
+}, {
+  "schema": "public",
+  "name": "size"
+}, {
+  "schema": "public",
+  "name": "concat"
+}, {
+  "schema": "public",
+  "name": "lower"
+}, {
+  "schema": "public",
+  "name": "upper"
+}, {
+  "schema": "public",
+  "name": "substr"
+}, {
+  "schema": "public",
+  "name": "strpos"
+}, {
+  "schema": "public",
+  "name": "replace"
+}, {
+  "schema": "public",
+  "name": "ltrim"
+}, {
+  "schema": "public",
+  "name": "rtrim"
+}, {
+  "schema": "public",
+  "name": "trim"
+}, {
+  "schema": "public",
+  "name": "like"
+}, {
+  "schema": "public",
+  "name": "regexp_like"
+}, {
+  "schema": "public",
+  "name": "regexp_substr"
+}, {
+  "schema": "public",
+  "name": "regexp_match"
+}, {
+  "schema": "public",
+  "name": "regexp_replace"
+}, {
+  "schema": "public",
+  "name": "greatest"
+}, {
+  "schema": "public",
+  "name": "least"
+}, {
+  "schema": "public",
+  "name": "abs"
+}, {
+  "schema": "public",
+  "name": "round"
+}, {
+  "schema": "public",
+  "name": "sign"
+}, {
+  "schema": "public",
+  "name": "ceil"
+}, {
+  "schema": "public",
+  "name": "exp"
+}, {
+  "schema": "public",
+  "name": "floor"
+}, {
+  "schema": "public",
+  "name": "mod"
+}, {
+  "schema": "public",
+  "name": "power"
+}, {
+  "schema": "public",
+  "name": "trunc"
+}, {
+  "schema": "public",
+  "name": "pi"
+}, {
+  "schema": "public",
+  "name": "sqrt"
+}, {
+  "schema": "public",
+  "name": "acos"
+}, {
+  "schema": "public",
+  "name": "acosh"
+}, {
+  "schema": "public",
+  "name": "asin"
+}, {
+  "schema": "public",
+  "name": "asinh"
+}, {
+  "schema": "public",
+  "name": "atan"
+}, {
+  "schema": "public",
+  "name": "atanh"
+}, {
+  "schema": "public",
+  "name": "atan2"
+}, {
+  "schema": "public",
+  "name": "cos"
+}, {
+  "schema": "public",
+  "name": "cosh"
+}, {
+  "schema": "public",
+  "name": "sin"
+}, {
+  "schema": "public",
+  "name": "sinh"
+}, {
+  "schema": "public",
+  "name": "tan"
+}, {
+  "schema": "public",
+  "name": "tanh"
+}, {
+  "schema": "public",
+  "name": "ln"
+}, {
+  "schema": "public",
+  "name": "log"
+}, {
+  "schema": "public",
+  "name": "log10"
+}, {
+  "schema": "public",
+  "name": "log2"
+}, {
+  "schema": "public",
+  "name": "error"
+}, {
+  "schema": "public",
+  "name": "type"
+}, {
+  "schema": "public",
+  "name": "random"
+}, {
+  "schema": "public",
+  "name": "random_uuid"
+}, {
+  "schema": "public",
+  "name": "md5"
+}, {
+  "schema": "public",
+  "name": "sha1"
+}, {
+  "schema": "public",
+  "name": "encode"
+}, {
+  "schema": "public",
+  "name": "decode"
+}, {
+  "schema": "public",
+  "name": "serial"
+}, {
+  "schema": "public",
+  "name": "jwt"
+}, {
+  "schema": "public",
+  "name": "now"
+}, {
+  "schema": "public",
+  "name": "at_timezone"
+}, {
+  "schema": "public",
+  "name": "generate_series"
+}, {
+  "schema": "public",
+  "name": "date_bin"
+}, {
+  "schema": "public",
+  "name": "date_trunc"
+}, {
+  "schema": "public",
+  "name": "extract"
+}, {
+  "schema": "public",
+  "name": "cos_distance"
+}]
 # test: show tables
 show tables
 []

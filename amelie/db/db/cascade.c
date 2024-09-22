@@ -21,15 +21,6 @@
 static void
 cascade_drop(Db* self, Tr* tr, Str* schema)
 {
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Handle, link));
-		if (str_compare(&udf->config->schema, schema))
-			udf_mgr_drop(&self->udf_mgr, tr, &udf->config->schema,
-			             &udf->config->name, false);
-	}
-
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
@@ -51,17 +42,6 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 static void
 cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 {
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Handle, link));
-		if (str_compare(&udf->config->schema, schema))
-			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->schema,
-			               &udf->config->name,
-			               schema_new,
-			               &udf->config->name, false);
-	}
-
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
@@ -88,16 +68,6 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 static void
 cascade_schema_validate(Db* self, Str* schema)
 {
-	// udfs
-	list_foreach_safe(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Handle, link));
-		if (str_compare(&udf->config->schema, schema))
-			error("function '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
-			      str_of(&udf->config->name),
-			      str_size(schema), str_of(schema));
-	}
-
 	// tables
 	list_foreach(&self->table_mgr.mgr.list)
 	{

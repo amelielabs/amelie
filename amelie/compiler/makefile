@@ -49,8 +49,6 @@ OBJECTS        = \
                  parser/parse_table.o \
                  parser/parse_index.o \
                  parser/parse_view.o \
-                 parser/parse_function.o \
-                 parser/parse_execute.o \
                  parser/parse_cte.o \
                  parser/parse_expr.o \
                  parser/parse_insert.o \
@@ -72,8 +70,7 @@ OBJECTS        = \
                  compiler/emit_upsert.o \
                  compiler/emit_select.o \
                  compiler/emit_watch.o \
-                 compiler/pushdown.o \
-                 compiler/udf.o
+                 compiler/pushdown.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

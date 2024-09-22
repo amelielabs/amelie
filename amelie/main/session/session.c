@@ -144,29 +144,15 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 
-	Program* program;
+	// generate bytecode
 	Program  program_compiled;
-	Buf*     args;
-
-	auto stmt = compiler_stmt(compiler);
-	if (stmt && stmt->id == STMT_EXECUTE)
-	{
-		// function call
-		auto udf = ast_execute_of(stmt->ast)->udf;
-		auto executable = (Executable*)udf->context;
-		program = &executable->program;
-		args = &compiler->code_data.data;
-	} else
-	{
-		// generate bytecode
-		compiler_emit(compiler);
-		compiler_program(compiler, &program_compiled);
-		program = &program_compiled;
-		args = NULL;
-	}
+	Program* program;
+	program = &program_compiled;
+	compiler_emit(compiler);
+	compiler_program(compiler, &program_compiled);
 
 	// prepare distributed transaction
-	dtr_create(dtr, &self->local, program, args);
+	dtr_create(dtr, &self->local, program, NULL);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -189,7 +175,7 @@ session_execute_distributed(Session* self)
 		       program->code,
 		       program->code_data,
 		       NULL,
-		       args,
+		       NULL,
 		       &dtr->cte, NULL, 0);
 	}
 

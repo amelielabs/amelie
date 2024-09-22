@@ -87,13 +87,6 @@ parse_stmt_free(Stmt* stmt)
 			view_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_FUNCTION:
-	{
-		auto ast = ast_function_create_of(stmt->ast);
-		if (ast->config)
-			udf_config_free(ast->config);
-		break;
-	}
 	default:
 		break;
 	}
@@ -203,10 +196,9 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | SHARED | DISTRIBUTED | OR REPLACE]
+		// [UNIQUE | SHARED | DISTRIBUTED]
 		bool unique = false;
 		bool shared = false;
-		bool or_replace = false;
 		auto mod = lex_next(lex);
 		switch (mod->id) {
 		case KUNIQUE:
@@ -236,23 +228,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 			shared = false;
 			break;
 		}
-		case KOR:
-		{
-			if (! stmt_if(stmt, KREPLACE))
-				error("CREATE OR <REPLACE> expected");
-			auto next = stmt_if(stmt, KFUNCTION);
-			if (! next)
-				error("CREATE OR REPLACE <FUNCTION> expected");
-			stmt_push(stmt, next);
-			or_replace = true;
-			break;
-		}
 		default:
 			stmt_push(stmt, mod);
 			break;
 		}
 
-		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW | FUNCTION
+		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -287,20 +268,15 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_CREATE_VIEW;
 			parse_view_create(stmt);
-		} else
-		if (lex_if(lex, KFUNCTION))
-		{
-			stmt->id = STMT_CREATE_FUNCTION;
-			parse_function_create(stmt, or_replace);
 		} else {
-			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW|FUNCTION> expected");
+			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX| VIEW | FUNCTION
+		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX| VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -335,20 +311,15 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_DROP_VIEW;
 			parse_view_drop(stmt);
-		} else
-		if (lex_if(lex, KFUNCTION))
-		{
-			stmt->id = STMT_DROP_FUNCTION;
-			parse_function_drop(stmt);
 		} else {
-			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW|FUNCTION> expected");
+			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | VIEW | FUNCTION
+		// ALTER USER | SCHEMA | TABLE | INDEX | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
@@ -373,13 +344,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_ALTER_VIEW;
 			parse_view_alter(stmt);
-		} else
-		if (lex_if(lex, KFUNCTION))
-		{
-			stmt->id = STMT_ALTER_FUNCTION;
-			parse_function_alter(stmt);
 		} else {
-			error("ALTER <USER|SCHEMA|TABLE|INDEX|VIEW|FUNCTION> expected");
+			error("ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected");
 		}
 		break;
 	}
@@ -418,14 +384,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		stmt->id = STMT_WATCH;
 		parse_watch(stmt);
 		break;
-
-	case KEXECUTE:
-	{
-		// EXECUTE function
-		stmt->id = STMT_EXECUTE;
-		parse_execute(stmt);
-		break;
-	}
 
 	case KEOF:
 		error("unexpected end of statement");

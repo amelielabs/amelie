@@ -25,8 +25,3 @@
 #include "compiler/emit_select.h"
 #include "compiler/emit_watch.h"
 #include "compiler/pushdown.h"
-
-// udf
-#include "compiler/dep.h"
-#include "compiler/executable.h"
-#include "compiler/udf.h"

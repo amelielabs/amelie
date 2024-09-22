@@ -11,39 +11,6 @@ static const int tpcb_branches = 1;
 static const int tpcb_tellers  = 10;
 static const int tpcb_accounts = 100000;
 
-#if 0
-const char tpcb_prepared[] =
-"CREATE FUNCTION __bench.tpcb(_bid int, _tid int, _aid int, _delta int, _ts timestamp) "
-"BEGIN "
-"  UPDATE __bench.accounts SET abalance = abalance + _delta WHERE aid = _aid; "
-"  SELECT abalance from __bench.accounts WHERE aid = _aid; "
-"  UPDATE __bench.tellers SET tbalance = tbalance + _delta WHERE tid = _tid; "
-"  UPDATE __bench.branches SET bbalance = bbalance + _delta WHERE bid = _bid; "
-"END";
-
-/*
-"  INSERT INTO __bench.history (tid, bid, aid, delta, time, filler) VALUES "
-"  (_tid, _bid, _aid, _delta, _ts, '                                                  '); "
-*/
-#endif
-
-#if 0
-hot static inline void
-tpcb_execute(Client* client,
-             int     bid,
-             int     tid,
-             int     aid, int delta)
-{
-	char text[256];
-	snprintf(text, sizeof(text),
-	         "execute __bench.tpcb (%d, %d, %d, %d, current_timestamp)",
-	         bid, tid, aid, delta);
-	Str cmd;
-	str_set_cstr(&cmd, text);
-	client_execute(client, &cmd);
-}
-#endif
-
 hot static inline void
 tpcb_execute(Client* client,
              long    bid,
@@ -90,12 +57,6 @@ bench_tpcb_create(Bench* self, Client* client)
 		str_set_cstr(&str, ddl[i]);
 		client_execute(client, &str);
 	}
-
-#if 0
-	// create function
-	str_set_cstr(&str, tpcb_prepared);
-	client_execute(client, &str);
-#endif
 
 	info("preparing data.");
 

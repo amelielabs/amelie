@@ -84,7 +84,7 @@ static void
 fn_functions(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = udf_mgr_list(&self->vm->db->udf_mgr);
+	auto buf = function_mgr_list(self->vm->function_mgr);
 	value_read(self->result, buf->start, buf);
 }
 

@@ -13,7 +13,6 @@ struct System
 	Share       share;
 	// vm
 	FunctionMgr function_mgr;
-	UdfContext  udf_ctx;
 	// repl
 	Repl        repl;
 	// executor

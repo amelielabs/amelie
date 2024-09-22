@@ -66,7 +66,7 @@ ctl_show(Session* self)
 		buf = schema_mgr_list(&share->db->schema_mgr);
 	else
 	if (str_compare_raw(name, "functions", 9))
-		buf = udf_mgr_list(&share->db->udf_mgr);
+		buf = function_mgr_list(share->function_mgr);
 	else
 	if (str_compare_raw(name, "tables", 6))
 		buf = table_mgr_list(&share->db->table_mgr);

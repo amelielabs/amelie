@@ -411,7 +411,7 @@ expr_name(Stmt* self, Ast* value, Str* name)
 {
 	// resolve name into argument or cte
 
-	// find function argument
+	// find argument
 	if (self->args)
 	{
 		auto arg = columns_find(self->args, name);

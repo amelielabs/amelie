@@ -43,7 +43,6 @@ OBJECTS        = \
                  db/table_mgr.o \
                  db/table_index.o \
                  db/view_mgr.o \
-                 db/udf_mgr.o \
                  db/db.o \
                  db/db_checkpoint.o \
                  db/recover_checkpoint.o \

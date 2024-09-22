@@ -23,7 +23,6 @@ test table_drop
 test table_alter
 test index
 test view
-test function
 test cascade
 test truncate
 

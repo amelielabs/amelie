@@ -40,8 +40,6 @@
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
 #include "parser/parse_view.h"
-#include "parser/parse_function.h"
-#include "parser/parse_execute.h"
 #include "parser/parse_cte.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
