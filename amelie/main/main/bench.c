@@ -108,13 +108,14 @@ bench_init(Bench* self, Remote* remote)
 	list_init(&self->list);
 	VarDef defs[] =
 	{
-		{ "type",    VAR_STRING, VAR_C, &self->type,    "tpcb", 0   },
-		{ "threads", VAR_INT,    VAR_C, &self->threads,  NULL,  4   },
-		{ "clients", VAR_INT,    VAR_C, &self->clients,  NULL,  12  },
-		{ "time",    VAR_INT,    VAR_C, &self->time,     NULL,  10  },
-		{ "scale",   VAR_INT,    VAR_C, &self->scale,    NULL,  1   },
-		{ "batch",   VAR_INT,    VAR_C, &self->batch,    NULL,  500 },
-		{  NULL,     0,          0,     NULL,            NULL,  0   }
+		{ "type",    VAR_STRING, VAR_C, &self->type,    "tpcb", 0    },
+		{ "threads", VAR_INT,    VAR_C, &self->threads,  NULL,  4    },
+		{ "clients", VAR_INT,    VAR_C, &self->clients,  NULL,  12   },
+		{ "time",    VAR_INT,    VAR_C, &self->time,     NULL,  10   },
+		{ "scale",   VAR_INT,    VAR_C, &self->scale,    NULL,  1    },
+		{ "batch",   VAR_INT,    VAR_C, &self->batch,    NULL,  500  },
+		{ "init",    VAR_BOOL,   VAR_C, &self->init,     NULL,  true },
+		{  NULL,     0,          0,     NULL,            NULL,  0    }
 	};
 	vars_define(&self->vars, defs);
 }
@@ -178,6 +179,7 @@ bench_run(Bench* self)
 	auto workers            = var_int_of(&self->threads);
 	auto clients            = var_int_of(&self->clients);
 	auto clients_per_worker = clients / workers;
+	auto init               = var_int_of(&self->init);
 
 	// set benchmark
 	if (str_compare_cstr(type, "tpcb"))
@@ -200,6 +202,7 @@ bench_run(Bench* self)
 	info("threads: %" PRIu64, workers);
 	info("clients: %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
 	info("scale:   %" PRIu64, scale);
+	info("init:    %" PRIu64, init);
 	info("");
 
 	// prepare workers
@@ -210,7 +213,8 @@ bench_run(Bench* self)
 	}
 
 	// prepare tables
-	bench_service(self, true);
+	if (init)
+		bench_service(self, true);
 
 	// begin
 	list_foreach_safe(&self->list)

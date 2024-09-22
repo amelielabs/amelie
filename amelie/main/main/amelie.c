@@ -64,6 +64,7 @@ amelie_usage(void)
 	info("    --clients=int");
 	info("    --time=int");
 	info("    --scale=int");
+	info("    --init=bool");
 	info("");
 }
 

@@ -148,8 +148,8 @@ ddl_drop_table(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_drop_of(stmt->ast);
-	cascade_table_drop(self->share->db, tr, &arg->schema, &arg->name,
-	                   arg->if_exists);
+	table_mgr_drop(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
+	               arg->if_exists);
 }
 
 static void

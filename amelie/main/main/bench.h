@@ -36,6 +36,7 @@ struct Bench
 	Var        time;
 	Var        scale;
 	Var        batch;
+	Var        init;
 	Vars       vars;
 	Remote*    remote;
 	List       list;
