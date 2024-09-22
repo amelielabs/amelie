@@ -295,12 +295,39 @@ create table test (id int primary key)
 insert into test 1,2,3
 
 explain _id := 2; select * from test where id = _id
-
 _id := 1; select * from test where id = _id
 _id := 2; select * from test where id = _id
 _id := 3; select * from test where id = _id
 _id := 0; select * from test where id = _id
+drop table test
 
+# test: into a(expr), a expr, into b(expr)
+create table test (id int primary key)
+insert into test 1,2,3
+explain select * into a from test; select a; select * into b from test; select a
+select * into a from test; select a; select * into b from test; select a
+drop table test
+
+# test: into a(expr), into b(expr), a expr
+create table test (id int primary key)
+insert into test 1,2,3
+explain select * into a from test; select * into b from test; select a
+select * into a from test; select * into b from test; select a
+drop table test
+
+# test: into a(expr), return a, into b(expr)
+create table test (id int primary key)
+insert into test 1,2,3
+explain select * into a from test; return a; select * into b from test; select a
+select * into a from test; return a; select * into b from test; select a
+drop table test
+
+# test: into a(expr), into b(expr), return a
+create table test (id int primary key)
+insert into test 1,2,3
+explain select * into a from test; select * into b from test; return a
+select * into a from test; select * into b from test; return a
+select * into a from test; select * into b from test; return [a,b]
 drop table test
 
 disconnect S0
