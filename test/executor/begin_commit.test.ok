@@ -1,0 +1,52 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
+connect E0 S0 localhost:3485
+# test: begin
+begin
+{"code": 1, "msg": "COMMIT expected at the end of transaction"}
+begin;
+{"code": 1, "msg": "COMMIT expected at the end of transaction"}
+begin;;
+{"code": 1, "msg": "COMMIT expected at the end of transaction"}
+# test: commit
+commit
+{"code": 1, "msg": "unexpected COMMIT operation"}
+# test: begin commit
+begin; select 1
+{"code": 1, "msg": "COMMIT expected at the end of transaction"}
+begin; return 1
+{"code": 1, "msg": "COMMIT expected at the end of transaction"}
+begin commit
+[]
+begin select 1 commit
+{"code": 1, "msg": "unexpected token at the end of statement"}
+begin; commit
+[]
+explain begin; commit
+{"code": 1, "msg": "EXPLAIN without command"}
+explain begin; select 1; commit
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "int                 0      -      0     # 1",
+      "01": "cte_set             0      0      0     ",
+      "02": "body                0      0      0     ",
+      "03": "ret                 0      0      0     "
+    }
+  }
+}]
+begin; error("abort"); commit
+{"code": 1, "msg": "abort"}
+begin; select 1; commit;
+[1]
+begin; select 1; commit;;
+[1]
+begin; select 1; commit;;;
+[1]
+begin; select 1; commit commit
+{"code": 1, "msg": "unexpected statement after COMMIT"}
+begin; select 1; commit; begin
+{"code": 1, "msg": "unexpected statement after COMMIT"}
+begin; select 1; commit; select 1
+{"code": 1, "msg": "unexpected statement after COMMIT"}
+disconnect S0
+close E0

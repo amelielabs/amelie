@@ -113,6 +113,7 @@ directory executor
 group executor
 test cte_expr
 test cte
+test begin_commit
 test abort
 
 # cluster

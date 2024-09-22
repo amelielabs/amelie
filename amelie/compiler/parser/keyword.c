@@ -56,6 +56,7 @@ static Keyword keywords_c[] =
 	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },
+	{ KCOMMIT,                "commit",                6  },
 	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
 	{ KCASCADE,               "cascade",               7  },

@@ -91,6 +91,7 @@ enum
 	KRESET,
 
 	KBEGIN,
+	KCOMMIT,
 
 	KCREATE,
 	KUSER,

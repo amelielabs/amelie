@@ -385,6 +385,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_watch(stmt);
 		break;
 
+	case KBEGIN:
+		break;
+
+	case KCOMMIT:
+		break;
+
 	case KEOF:
 		error("unexpected end of statement");
 		break;
@@ -480,6 +486,10 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
+	// [BEGIN]
+	auto begin  = lex_if(lex, KBEGIN) != NULL;
+	auto commit = false;
+
 	// stmt [; stmt]
 	bool has_utility = false;	
 	for (;;)
@@ -489,6 +499,19 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 			continue;
 		if (lex_if(lex, KEOF))
 			break;
+
+		// BEGIN/COMMIT
+		if (commit)
+			error("unexpected statement after COMMIT");
+		if (lex_if(lex, KBEGIN))
+			error("unexpected BEGIN operation");
+		if (lex_if(lex, KCOMMIT))
+		{
+			if (! begin)
+				error("unexpected COMMIT operation");
+			commit = true;
+			continue;
+		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
 		if (parse_with(self))
@@ -512,15 +535,23 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 		if (stmt_is_utility(self->stmt))
 			has_utility = true;
 
-		// EOF | ;
+
+		// EOF
 		if (lex_if(lex, KEOF))
 			break;
 
-		if (lex_if(lex, ';'))
-			continue;
-
-		error("unexpected token at the end of statement");
+		// ;
+		if (! lex_if(lex, ';'))
+			error("unexpected token at the end of statement");
 	}
+
+	// [COMMIT]
+	if (begin && !commit)
+		error("COMMIT expected at the end of transaction");
+
+	// EOF
+	if (! lex_if(lex, KEOF))
+		error("unexpected token at the end of statement");
 
 	// force last statetement as return
 	if (self->stmt)
