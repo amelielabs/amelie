@@ -807,5 +807,21 @@ a := {"id": 48}; select a
 }]
 a := {"id": 48}; select a.id
 [48]
+# test: with cte, select cte
+with a as ( {"id": 48} ) select a.id
+[48]
+with a as ( {"id": 48} ); select a.id
+[48]
+# test: with cte (columns), select cte
+with a (id) as ( {"id": 48} ); select a.id
+{"code": 1, "msg": "<a> column, CTE or argument not found"}
+with a (id) as ( {"id": 48} ); select * from a
+[48]
+with a (id) as ( {"id": 48} ); select id from a
+{"code": 1, "msg": "[]: array expected, but got int"}
+with a (id) as ( [48] ); select id from a
+{"code": 1, "msg": "[]: array expected, but got int"}
+with a (id) as ( [[48]] ); select id from a
+[48]
 disconnect S0
 close E0

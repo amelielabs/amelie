@@ -155,5 +155,17 @@ select a into a
 a := {"id": 48}; select a
 a := {"id": 48}; select a.id
 
+# test: with cte, select cte
+with a as ( {"id": 48} ) select a.id
+with a as ( {"id": 48} ); select a.id
+
+# test: with cte (columns), select cte
+with a (id) as ( {"id": 48} ); select a.id
+with a (id) as ( {"id": 48} ); select * from a
+
+with a (id) as ( {"id": 48} ); select id from a
+with a (id) as ( [48] ); select id from a
+with a (id) as ( [[48]] ); select id from a
+
 disconnect S0
 close E0
