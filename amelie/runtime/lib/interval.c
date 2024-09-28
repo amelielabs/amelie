@@ -16,8 +16,10 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	case 'm':
 		// minutes
 		// minute
+		// mins
 		// min
-		if (str_compare_raw(type, "min", 3) ||
+		if (str_compare_raw(type, "mins", 4) ||
+		    str_compare_raw(type, "min", 3) ||
 		    str_compare_raw(type, "minutes", 7) ||
 		    str_compare_raw(type, "minute", 6))
 		{

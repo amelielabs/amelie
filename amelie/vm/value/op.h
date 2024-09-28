@@ -666,7 +666,7 @@ value_to_bool(Value* result, Value* a)
 		error("bool(): operation type is not supported");
 		break;
 	}
-	value_set_int(result, value);
+	value_set_bool(result, value);
 }
 
 always_inline hot static inline void
