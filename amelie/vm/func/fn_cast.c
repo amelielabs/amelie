@@ -28,6 +28,16 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
+static void
+fn_type(Call* self)
+{
+	auto arg = self->argv[0];
+	call_validate(self, 1);
+	Str string;
+	str_set_cstr(&string, value_type_to_string(arg->type));
+	value_set_string(self->result, &string, NULL);
+}
+
 hot static void
 fn_string(Call* self)
 {
@@ -161,6 +171,7 @@ fn_vector(Call* self)
 
 FunctionDef fn_cast_def[] =
 {
+	{ "public", "type",      fn_type,      false },
 	{ "public", "string",    fn_string,    false },
 	{ "public", "int",       fn_int,       false },
 	{ "public", "bool",      fn_bool,      false },

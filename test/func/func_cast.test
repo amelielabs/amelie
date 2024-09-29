@@ -3,6 +3,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
+# test: type
+select 1::type
+select "Hi"::type
+select [1,2,3]::type
+select {}::type
+select (select * from [1,2,3])::type
+
 # test: (int) int to int
 select 1::int
 select 1::int(123)

@@ -6,13 +6,6 @@ connect E0 S0 localhost:3485
 # test: error
 select error("error test")
 
-# test: type
-select 1::type
-select "Hi"::type
-select [1,2,3]::type
-select {}::type
-select (select * from [1,2,3])::type
-
 # test: random
 select random()::type
 select public.random()::type

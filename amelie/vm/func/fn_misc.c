@@ -40,16 +40,6 @@ fn_error(Call* self)
 }
 
 static void
-fn_type(Call* self)
-{
-	auto arg = self->argv[0];
-	call_validate(self, 1);
-	Str string;
-	str_set_cstr(&string, value_type_to_string(arg->type));
-	value_set_string(self->result, &string, NULL);
-}
-
-static void
 fn_random(Call* self)
 {
 	call_validate(self, 0);
@@ -265,7 +255,6 @@ fn_jwt(Call* self)
 FunctionDef fn_misc_def[] =
 {
 	{ "public", "error",        fn_error,        false },
-	{ "public", "type",         fn_type,         false },
 	{ "public", "random",       fn_random,       false },
 	{ "public", "random_uuid",  fn_random_uuid,  false },
 	{ "public", "md5",          fn_md5,          false },
