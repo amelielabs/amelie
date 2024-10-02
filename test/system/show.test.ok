@@ -72,6 +72,9 @@ show functions
   "name": "wal"
 }, {
   "schema": "public",
+  "name": "type"
+}, {
+  "schema": "public",
   "name": "string"
 }, {
   "schema": "public",
@@ -271,9 +274,6 @@ show functions
 }, {
   "schema": "public",
   "name": "error"
-}, {
-  "schema": "public",
-  "name": "type"
 }, {
   "schema": "public",
   "name": "random"
@@ -356,6 +356,9 @@ select system.functions()
   "name": "wal"
 }, {
   "schema": "public",
+  "name": "type"
+}, {
+  "schema": "public",
   "name": "string"
 }, {
   "schema": "public",
@@ -555,9 +558,6 @@ select system.functions()
 }, {
   "schema": "public",
   "name": "error"
-}, {
-  "schema": "public",
-  "name": "type"
 }, {
   "schema": "public",
   "name": "random"
