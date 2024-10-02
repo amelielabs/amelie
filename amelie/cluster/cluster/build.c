@@ -83,11 +83,11 @@ build_run_all(Build* self)
 	// ask each node to build related partition
 	list_foreach(&self->cluster->list)
 	{
-		auto node = list_at(Node, link);
+		auto compute = list_at(Compute, link);
 		auto buf = msg_create(RPC_BUILD);
 		buf_write(buf, &self, sizeof(Build**));
 		msg_end(buf);
-		channel_write(&node->task.channel, buf);
+		channel_write(&compute->task.channel, buf);
 	}
 
 	// wait for completion

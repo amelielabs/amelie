@@ -49,7 +49,7 @@ select system.config()
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 2,
+  "lsn": 3,
   "psn": 1
 }]
 # test: limit_recv

@@ -7,7 +7,7 @@ show wal
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -19,14 +19,14 @@ select system.wal()
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1
 }]
 show lsn
-[0]
+[1]
 show all
 [{
   "version": "0.0",
@@ -58,7 +58,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 # test: restart
@@ -72,7 +72,7 @@ show wal
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -84,14 +84,14 @@ select system.wal()
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1
 }]
 show lsn
-[0]
+[1]
 show all
 [{
   "version": "0.0",
@@ -123,14 +123,14 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 # test: create table
 create table test (id int serial primary key, data int default 0)
 []
 show lsn
-[1]
+[2]
 select serial("public", "test")
 [0]
 # test: restart
@@ -140,14 +140,14 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[1]
+[2]
 select serial("public", "test")
 [0]
 # test: insert
 insert into test () values (), (), ()
 []
 show lsn
-[2]
+[3]
 select serial("public", "test")
 [3]
 select * from test
@@ -159,7 +159,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[2]
+[3]
 select serial("public", "test")
 [3]
 select * from test
@@ -168,7 +168,7 @@ select * from test
 update test set data = id
 []
 show lsn
-[3]
+[4]
 select serial("public", "test")
 [3]
 select * from test
@@ -180,7 +180,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[3]
+[4]
 select serial("public", "test")
 [3]
 select * from test
@@ -189,7 +189,7 @@ select * from test
 insert into test values (2, 0) on conflict do update set data = data + 1
 []
 show lsn
-[4]
+[5]
 select serial("public", "test")
 [3]
 select * from test
@@ -201,7 +201,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[4]
+[5]
 select serial("public", "test")
 [3]
 select * from test
@@ -210,7 +210,7 @@ select * from test
 delete from test where id in (0, 1)
 []
 show lsn
-[5]
+[6]
 select serial("public", "test")
 [3]
 select * from test
@@ -222,7 +222,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[5]
+[6]
 select serial("public", "test")
 [3]
 select * from test

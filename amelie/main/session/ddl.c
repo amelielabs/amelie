@@ -71,7 +71,7 @@ ddl_create_partition(TableConfig* table_config, Node* node,
 	auto config = part_config_allocate();
 	auto psn = config_psn_next();
 	part_config_set_id(config, psn);
-	part_config_set_node(config, &node->config->id);
+	part_config_set_node(config, &node->id);
 	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
 }
@@ -107,8 +107,8 @@ ddl_create_table(Session* self, Tr* tr)
 	if (config->shared)
 	{
 		// shared table require only one partition
-		auto node = container_of(list_first(&cluster->list), Node, link);
-		ddl_create_partition(config, node, 0, PARTITION_MAX);
+		auto compute = container_of(list_first(&cluster->list), Compute, link);
+		ddl_create_partition(config, compute->node, 0, PARTITION_MAX);
 	} else
 	{
 		// create partition for each node
@@ -120,18 +120,18 @@ ddl_create_table(Session* self, Tr* tr)
 
 		list_foreach(&cluster->list)
 		{
-			auto node = list_at(Node, link);
+			auto compute = list_at(Compute, link);
 
 			// set partition range
 			int range_step;
-			if (list_is_last(&cluster->list, &node->link))
+			if (list_is_last(&cluster->list, &compute->link))
 				range_step = range_max - range_start;
 			else
 				range_step = range_interval;
 			if ((range_start + range_step) > range_max)
 				range_step = range_max - range_start;
 
-			ddl_create_partition(config, node,
+			ddl_create_partition(config, compute->node,
 			                     range_start,
 			                     range_start + range_step);
 
@@ -425,6 +425,48 @@ ddl_alter_view(Session* self, Tr* tr)
 	                 arg->if_exists);
 }
 
+static void
+ddl_create_node(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_node_create_of(stmt->ast);
+	auto db   = self->share->db;
+
+	auto config = node_config_allocate();
+	guard(node_config_free, config);
+
+	// set or generate node name
+	if (arg->id)
+	{
+		node_config_set_name(config, &arg->id->string);
+	} else
+	{
+		Uuid id;
+		uuid_generate(&id, global()->random);
+
+		char uuid[UUID_SZ];
+		uuid_to_string(&id, uuid, sizeof(uuid));
+
+		Str uuid_str;
+		str_set_cstr(&uuid_str, uuid);
+		node_config_set_name(config, &uuid_str);
+	}
+
+	// create node
+	node_mgr_create(&db->node_mgr, tr, config, arg->if_not_exists);
+}
+
+static void
+ddl_drop_node(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_node_drop_of(stmt->ast);
+	auto db   = self->share->db;
+
+	// drop node
+	node_mgr_drop(&db->node_mgr, tr, &arg->id->string, arg->if_exists);
+}
+
 void
 session_execute_ddl(Session* self)
 {
@@ -484,6 +526,12 @@ session_execute_ddl(Session* self)
 			break;
 		case STMT_ALTER_VIEW:
 			ddl_alter_view(self, &tr);
+			break;
+		case STMT_CREATE_NODE:
+			ddl_create_node(self, &tr);
+			break;
+		case STMT_DROP_NODE:
+			ddl_drop_node(self, &tr);
 			break;
 		case STMT_TRUNCATE:
 			ddl_truncate(self, &tr);

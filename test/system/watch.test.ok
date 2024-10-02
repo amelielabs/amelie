@@ -5,15 +5,15 @@ watch
 {"code": 1, "msg": "bad expression"}
 # test: watch
 show lsn
-[0]
-explain watch system.config().lsn = 0
+[1]
+explain watch system.config().lsn = 1
 [{
   "bytecode": {
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # lsn",
       "02": "idx                 2      0      1     ",
-      "03": "int                 0      -      0     # 0",
+      "03": "int                 0      -      0     # 1",
       "04": "equ                 1      2      0     ",
       "05": "jtr                 8      1      0     ",
       "06": "sleep               1000   0      0     ",
@@ -26,7 +26,7 @@ explain watch system.config().lsn = 0
     }
   }
 }]
-watch system.config().lsn = 0
+watch system.config().lsn = 1
 []
 # test: watch subquery
 explain watch (select 123) = 123

@@ -20030,7 +20030,7 @@ show repl
 }]
 # test: validate
 show lsn
-[10000]
+[10001]
 select count(*) from test
 [9999]
 switch S1
@@ -20068,11 +20068,11 @@ show config
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": true,
-  "lsn": 10000,
+  "lsn": 10001,
   "psn": 3
 }]
 show lsn
-[10000]
+[10001]
 select count(*) from test
 [9999]
 disconnect S1

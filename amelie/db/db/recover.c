@@ -228,6 +228,20 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_NODE_CREATE:
+	{
+		auto config = node_op_create_read(data);
+		guard(node_config_free, config);
+		node_mgr_create(&db->node_mgr, tr, config, false);
+		break;
+	}
+	case LOG_NODE_DROP:
+	{
+		Str name;
+		node_op_drop_read(data, &name);
+		node_mgr_drop(&db->node_mgr, tr, &name, true);
+		break;
+	}
 	default:
 		error("recover: unrecognized operation id: %d", type);
 		break;

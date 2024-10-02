@@ -67,8 +67,7 @@ static void
 fn_nodes(Call* self)
 {
 	call_validate(self, 0);
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_NODES, 1, &buf);
+	auto buf = node_mgr_list(&self->vm->db->node_mgr);
 	value_read(self->result, buf->start, buf);
 }
 

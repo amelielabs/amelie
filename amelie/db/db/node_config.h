@@ -10,7 +10,7 @@ typedef struct NodeConfig NodeConfig;
 
 struct NodeConfig
 {
-	Uuid id;
+	Str name;
 };
 
 static inline NodeConfig*
@@ -18,27 +18,29 @@ node_config_allocate(void)
 {
 	NodeConfig* self;
 	self = am_malloc(sizeof(*self));
-	uuid_init(&self->id);
+	str_init(&self->name);
 	return self;
 }
 
 static inline void
 node_config_free(NodeConfig* self)
 {
+	str_free(&self->name);
 	am_free(self);
 }
 
 static inline void
-node_config_set_id(NodeConfig* self, Uuid* id)
+node_config_set_name(NodeConfig* self, Str* name)
 {
-	self->id = *id;
+	str_free(&self->name);
+	str_copy(&self->name, name);
 }
 
 static inline NodeConfig*
 node_config_copy(NodeConfig* self)
 {
 	auto copy = node_config_allocate();
-	node_config_set_id(copy, &self->id);
+	node_config_set_name(copy, &self->name);
 	return copy;
 }
 
@@ -49,8 +51,8 @@ node_config_read(uint8_t** pos)
 	guard(node_config_free, self);
 	Decode map[] =
 	{
-		{ DECODE_UUID, "id",   &self->id },
-		{ 0,            NULL,  NULL      },
+		{ DECODE_STRING, "name", &self->name },
+		{ 0,              NULL,  NULL        },
 	};
 	decode_map(map, "node", pos);
 	return unguard();
@@ -59,8 +61,12 @@ node_config_read(uint8_t** pos)
 static inline void
 node_config_write(NodeConfig* self, Buf* buf)
 {
+	// map
 	encode_map(buf);
-	encode_raw(buf, "id", 2);
-	encode_uuid(buf, &self->id);
+	
+	// name
+	encode_raw(buf, "name", 4);
+	encode_string(buf, &self->name);
+
 	encode_map_end(buf);
 }

@@ -48,7 +48,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 2,
+  "lsn": 3,
   "psn": 3
 }]
 select count(*) from test

@@ -50,7 +50,7 @@ show replicas
   "uri": "127.0.0.1:3481",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }]
 # test: start primary
 start repl
@@ -64,7 +64,7 @@ create table test (id int primary key)
 insert into test 1,2,3
 []
 show lsn
-[2]
+[3]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
 []
@@ -79,14 +79,14 @@ insert into test 5
 insert into test 6
 []
 show lsn
-[5]
+[6]
 # test: replica lag
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": false,
-  "lsn": 2,
+  "lsn": 3,
   "lag": 3
 }]
 # test: replica disconnected
@@ -108,7 +108,7 @@ show replicas
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": true,
-  "lsn": 5,
+  "lsn": 6,
   "lag": 0
 }]
 # test: restart primary
@@ -135,7 +135,7 @@ show replicas
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": true,
-  "lsn": 8,
+  "lsn": 9,
   "lag": 0
 }]
 # test: ensure replica is read-only
@@ -143,17 +143,17 @@ switch S1
 show read_only
 [true]
 show lsn
-[8]
+[9]
 insert into test 10
 {"code": 1, "msg": "system is in read-only mode"}
 show lsn
-[8]
+[9]
 show psn
 [3]
 create table test2 (id int primary key)
 {"code": 1, "msg": "system is in read-only mode"}
 show lsn
-[8]
+[9]
 show psn
 [3]
 # test: replica read
@@ -166,7 +166,7 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000"
 }]
 show lsn
-[8]
+[9]
 # test: failover (promote replica to primary)
 show repl
 [{
@@ -222,7 +222,7 @@ show replicas
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "127.0.0.1:3480",
   "connected": true,
-  "lsn": 11,
+  "lsn": 12,
   "lag": 0
 }]
 select * from test

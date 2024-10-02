@@ -34,7 +34,7 @@
 #include <amelie_cluster.h>
 
 hot static void
-node_execute_write(Node* self, Tr* tr, Req* req)
+compute_execute_write(Compute* self, Tr* tr, Req* req)
 {
 	// execute DML operations
 	auto db = self->vm.db;
@@ -73,7 +73,7 @@ node_execute_write(Node* self, Tr* tr, Req* req)
 }
 
 hot static void
-node_execute(Node* self, Pipe* pipe)
+compute_execute(Compute* self, Pipe* pipe)
 {
 	auto tr = tr_create(&self->cache);
 	tr_begin(tr);
@@ -91,7 +91,7 @@ node_execute(Node* self, Pipe* pipe)
 		{
 			if (req->arg_start)
 			{
-				node_execute_write(self, tr, req);
+				compute_execute_write(self, tr, req);
 			} else
 			if (req->program == NULL)
 			{
@@ -140,9 +140,9 @@ node_execute(Node* self, Pipe* pipe)
 }
 
 static void
-node_rpc(Rpc* rpc, void* arg)
+compute_rpc(Rpc* rpc, void* arg)
 {
-	Node* self = arg;
+	Compute* self = arg;
 	switch (rpc->id) {
 	case RPC_SYNC:
 		// do nothing, just respond
@@ -157,9 +157,9 @@ node_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-node_main(void* arg)
+compute_main(void* arg)
 {
-	Node* self = arg;
+	Compute* self = arg;
 	for (;;)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
@@ -168,7 +168,7 @@ node_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			node_execute(self, pipe_of(buf));
+			compute_execute(self, pipe_of(buf));
 			break;
 		case RPC_COMMIT:
 		{
@@ -185,13 +185,13 @@ node_main(void* arg)
 		case RPC_BUILD:
 		{
 			auto build = *(Build**)msg->data;
-			build_execute(build, &self->config->id);
+			build_execute(build, &self->node->id);
 			break;
 		}
 		default:
 		{
 			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, node_rpc, self);
+			rpc_execute(rpc, compute_rpc, self);
 			break;
 		}
 		}
@@ -201,39 +201,36 @@ node_main(void* arg)
 	}
 }
 
-Node*
-node_allocate(NodeConfig* config, Db* db, FunctionMgr* function_mgr)
+Compute*
+compute_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 {
-	auto self = (Node*)am_malloc(sizeof(Node));
-	self->config = node_config_copy(config);
-	route_init(&self->route, &self->task.channel);
+	auto self = (Compute*)am_malloc(sizeof(Compute));
+	self->node = node;
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
-	self->vm.node = &self->config->id;
+	self->vm.node = &node->id;
 	task_init(&self->task);
 	return self;
 }
 
 void
-node_free(Node* self)
+compute_free(Compute* self)
 {
 	vm_free(&self->vm);
 	tr_cache_free(&self->cache);
-	if (self->config)
-		node_config_free(self->config);
 	am_free(self);
 }
 
 void
-node_start(Node* self)
+compute_start(Compute* self)
 {
-	task_create(&self->task, "node", node_main, self);
+	task_create(&self->task, "compute", compute_main, self);
 }
 
 void
-node_stop(Node* self)
+compute_stop(Compute* self)
 {
 	// send stop request
 	if (task_active(&self->task))
@@ -246,7 +243,7 @@ node_stop(Node* self)
 }
 
 void
-node_sync(Node* self)
+compute_sync(Compute* self)
 {
 	rpc(&self->task.channel, RPC_SYNC, 0);
 }

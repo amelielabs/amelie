@@ -7,28 +7,28 @@ show checkpoint
 checkpoint
 []
 show checkpoint
-[0]
+[1]
 # test: create table
 create distributed table test (id int primary key serial)
 []
 show lsn
-[1]
+[2]
 # test: checkpoint
 checkpoint
 []
 show lsn
-[1]
+[2]
 show checkpoint
-[1]
+[2]
 # test: restart/recover
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[1]
+[2]
 show checkpoint
-[1]
+[2]
 select * from test
 []
 # test: insert
@@ -42,9 +42,9 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[2]
+[3]
 show checkpoint
-[1]
+[2]
 select serial("public", "test")
 [3]
 select * from test
@@ -53,18 +53,18 @@ select * from test
 checkpoint
 []
 show lsn
-[2]
+[3]
 show checkpoint
-[2]
+[3]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[2]
+[3]
 show checkpoint
-[2]
+[3]
 select serial("public", "test")
 [3]
 select * from test
@@ -75,16 +75,16 @@ create schema test
 alter table public.test rename to test.test
 []
 show lsn
-[4]
+[5]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[4]
+[5]
 show checkpoint
-[2]
+[3]
 show schemas
 [{
   "name": "system",
@@ -107,18 +107,18 @@ select * from test.test
 checkpoint
 []
 show lsn
-[4]
+[5]
 show checkpoint
-[4]
+[5]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[4]
+[5]
 show checkpoint
-[4]
+[5]
 show schemas
 [{
   "name": "system",
@@ -141,7 +141,7 @@ select * from test.test
 create view test_view as select [1,2,3]
 []
 show lsn
-[5]
+[6]
 select * from test_view
 [1, 2, 3]
 # test: restart/recover (checkpoint + wal)
@@ -150,9 +150,9 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[5]
+[6]
 show checkpoint
-[4]
+[5]
 show schemas
 [{
   "name": "system",
@@ -177,18 +177,18 @@ select * from test_view
 checkpoint
 []
 show lsn
-[5]
+[6]
 show checkpoint
-[5]
+[6]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[5]
+[6]
 show checkpoint
-[5]
+[6]
 show schemas
 [{
   "name": "system",
@@ -215,16 +215,16 @@ drop view test_view
 drop table test.test
 []
 show lsn
-[7]
+[8]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[7]
+[8]
 show checkpoint
-[5]
+[6]
 show views
 []
 show tables
@@ -233,18 +233,18 @@ show tables
 checkpoint
 []
 show lsn
-[7]
+[8]
 show checkpoint
-[7]
+[8]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
 show lsn
-[7]
+[8]
 show checkpoint
-[7]
+[8]
 show views
 []
 show tables

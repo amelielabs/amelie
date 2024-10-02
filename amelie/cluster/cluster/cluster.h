@@ -17,14 +17,9 @@ struct Cluster
 	Db*          db;
 };
 
-void  cluster_init(Cluster*, Db*, FunctionMgr*);
-void  cluster_free(Cluster*);
-void  cluster_open(Cluster*, bool);
-void  cluster_start(Cluster*);
-void  cluster_stop(Cluster*);
-void  cluster_sync(Cluster*);
-void  cluster_create(Cluster*, NodeConfig*, bool);
-void  cluster_drop(Cluster*, Uuid*, bool);
-void  cluster_map(Cluster*, PartMap*, Part*);
-Buf*  cluster_list(Cluster*);
-Node* cluster_find(Cluster*, Uuid*);
+void cluster_init(Cluster*, Db*, FunctionMgr*);
+void cluster_free(Cluster*);
+void cluster_sync(Cluster*);
+void cluster_map(Cluster*, PartMap*, Part*);
+
+extern NodeIf cluster_if;

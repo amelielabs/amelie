@@ -27,6 +27,12 @@
 #include "db/view_op.h"
 #include "db/view_mgr.h"
 
+// node
+#include "db/node_config.h"
+#include "db/node.h"
+#include "db/node_op.h"
+#include "db/node_mgr.h"
+
 // db
 #include "db/db.h"
 #include "db/db_checkpoint.h"

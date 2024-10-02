@@ -73,7 +73,8 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, (PartMapper)cluster_map, &self->cluster);
+	db_init(&self->db, (PartMapper)cluster_map, &self->cluster,
+	        &cluster_if, &self->cluster);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -94,9 +95,9 @@ void
 system_free(System* self)
 {
 	repl_free(&self->repl);
-	cluster_free(&self->cluster);
 	executor_free(&self->executor);
 	db_free(&self->db);
+	cluster_free(&self->cluster);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -157,20 +158,18 @@ system_start(System* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// prepare cluster
-	cluster_open(&self->cluster, bootstrap);
-
-	info("cluster: system has %d compute nodes", self->cluster.list_count);
-	info("");
-
-	// create system object and objects from last snapshot
+	// create system object and objects from last snapshot (including nodes)
 	db_open(&self->db);
-
-	// start backend
-	cluster_start(&self->cluster);
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
+
+	// create initial nodes
+	if (bootstrap)
+		cluster_bootstrap(&self->db, var_int_of(&config()->backends));
+
+	info("");
+	info("cluster: system has %d compute nodes", self->cluster.list_count);
 
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
@@ -215,9 +214,6 @@ system_stop(System* self)
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
 
-	// stop cluster
-	cluster_stop(&self->cluster);
-
 	// close db
 	db_close(&self->db);
 }
@@ -243,12 +239,6 @@ system_rpc(Rpc* rpc, void* arg)
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
 		*buf = repl_show(&self->repl);
-		break;
-	}
-	case RPC_SHOW_NODES:
-	{
-		Buf** buf = rpc_arg_ptr(rpc, 0);
-		*buf = cluster_list(&self->cluster);
 		break;
 	}
 	default:

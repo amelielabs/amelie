@@ -6,10 +6,12 @@
 // Real-Time SQL Database.
 //
 
-// node
-#include "cluster/node_config.h"
-#include "cluster/node.h"
+// compute node
+#include "cluster/compute.h"
 
 // cluster
 #include "cluster/cluster.h"
+#include "cluster/cluster_bootstrap.h"
+
+// build
 #include "cluster/build.h"

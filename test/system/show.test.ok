@@ -621,7 +621,7 @@ show wal
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -633,7 +633,7 @@ select system.wal()
   "rotate_wm": 104857600,
   "sync_on_rotate": false,
   "sync_on_write": false,
-  "lsn": 0,
+  "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -671,7 +671,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 # test: show all
@@ -706,7 +706,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 select system.config()
@@ -740,7 +740,7 @@ select system.config()
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 select system.config().directory

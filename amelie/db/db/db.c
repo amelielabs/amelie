@@ -19,11 +19,16 @@
 #include <amelie_db.h>
 
 void
-db_init(Db* self, PartMapper mapper, void* mapper_arg)
+db_init(Db*        self,
+        PartMapper mapper,
+        void*      mapper_arg,
+        NodeIf*    node_iface,
+        void*      node_iface_arg)
 {
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
 	view_mgr_init(&self->view_mgr);
+	node_mgr_init(&self->node_mgr, node_iface, node_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_init(&self->wal);
@@ -33,6 +38,7 @@ void
 db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
+	node_mgr_free(&self->node_mgr);
 	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
@@ -97,6 +103,9 @@ db_close(Db* self)
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
+
+	// free nodes
+	node_mgr_free(&self->node_mgr);
 
 	// todo: wal close?
 }

@@ -22,7 +22,7 @@ show replicas
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }]
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
@@ -33,7 +33,7 @@ select * from system.replicas()
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }]
 # test: drop replica statement parsing
 drop replica
@@ -63,13 +63,13 @@ show replicas
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }]
 disconnect S0
 close E0
@@ -81,13 +81,13 @@ show replicas
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
-  "lag": 0
+  "lag": 1
 }]
 disconnect S0
 close E0

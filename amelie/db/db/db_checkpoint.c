@@ -21,10 +21,13 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { schemas, tables, views }
+	// { nodes, schemas, tables, views }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_map(buf);
+
+	encode_raw(buf, "nodes", 5);
+	node_mgr_dump(&self->node_mgr, buf);
 
 	encode_raw(buf, "schemas", 7);
 	schema_mgr_dump(&self->schema_mgr, buf);
@@ -41,6 +44,7 @@ db_checkpoint_catalog_dump(void* arg)
 
 enum
 {
+	RESTORE_NODE,
 	RESTORE_SCHEMA,
 	RESTORE_TABLE,
 	RESTORE_VIEW
@@ -60,6 +64,16 @@ restore_object(Db* self, int type, uint8_t** pos)
 		tr_begin(&tr);
 
 		switch (type) {
+		case RESTORE_NODE:
+		{
+			// read node config
+			auto config = node_config_read(pos);
+			guard(node_config_free, config);
+
+			// create node
+			node_mgr_create(&self->node_mgr, &tr, config, false);
+			break;
+		}
 		case RESTORE_SCHEMA:
 		{
 			// read schema config
@@ -106,20 +120,27 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { schemas, tables, views }
+	// { nodes, schemas, tables, views }
 	Db* self = arg;
 
-	uint8_t* pos_schemas  = NULL;
-	uint8_t* pos_tables = NULL;
-	uint8_t* pos_views = NULL;
+	uint8_t* pos_nodes   = NULL;
+	uint8_t* pos_schemas = NULL;
+	uint8_t* pos_tables  = NULL;
+	uint8_t* pos_views   = NULL;
 	Decode map[] =
 	{
+		{ DECODE_ARRAY, "nodes",   &pos_nodes   },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
 		{ DECODE_ARRAY, "views",   &pos_views   },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_map(map, "catalog", pos);
+
+	// nodes
+	data_read_array(&pos_nodes);
+	while (! data_read_array_end(&pos_nodes))
+		restore_object(self, RESTORE_NODE, &pos_nodes);
 
 	// schemas
 	data_read_array(&pos_schemas);

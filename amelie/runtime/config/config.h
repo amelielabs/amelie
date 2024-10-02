@@ -48,7 +48,6 @@ struct Config
 	Var  lsn;
 	Var  psn;
 	// state persistent
-	Var  nodes;
 	Var  replicas;
 	Var  users;
 	// testing

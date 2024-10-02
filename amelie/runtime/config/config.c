@@ -72,7 +72,6 @@ config_prepare(Config* self)
 		{ "lsn",                     VAR_INT,    VAR_E,                   &self->lsn,                     NULL,        0                },
 		{ "psn",                     VAR_INT,    VAR_E,                   &self->psn,                     NULL,        0                },
 		// state persistent
-		{ "nodes",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->nodes,                   NULL,        0                },
 		{ "replicas",                VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,        0                },
 		// testing

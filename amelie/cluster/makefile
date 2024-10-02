@@ -48,8 +48,9 @@ OBJECTS        = \
                  repl/replica_mgr.o \
                  repl/primary.o \
                  repl/repl.o \
-                 cluster/node.o \
+                 cluster/compute.o \
                  cluster/cluster.o \
+                 cluster/cluster_bootstrap.o \
                  cluster/build.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)

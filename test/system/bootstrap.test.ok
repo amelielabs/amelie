@@ -32,7 +32,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 # test: ensure uuid recover
@@ -71,7 +71,7 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 0,
   "read_only": false,
-  "lsn": 0,
+  "lsn": 1,
   "psn": 0
 }]
 disconnect S0
