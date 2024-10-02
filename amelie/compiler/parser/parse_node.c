@@ -29,11 +29,13 @@
 #include <amelie_parser.h>
 
 void
-parse_node_create(Stmt* self)
+parse_node_create(Stmt* self, bool compute)
 {
-	// CREATE NODE [IF NOT EXISTS] [id] FOR COMPUTE
+	// CREATE [COMPUTE] NODE [IF NOT EXISTS] [id]
 	auto stmt = ast_node_create_allocate();
 	self->ast = &stmt->ast;
+
+	unused(compute);
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
@@ -41,11 +43,8 @@ parse_node_create(Stmt* self)
 	// id
 	stmt->id = stmt_if(self, KSTRING);
 
-	// FOR COMPUTE
-	if (! stmt_if(self, KFOR))
-		error("CREATE NODE <FOR> expected");
-	if (! stmt_if(self, KCOMPUTE))
-		error("CREATE NODE FOR <COMPUTE> expected");
+	if (stmt->if_not_exists && !stmt->id)
+		error("CREATE NODE IF NOT EXISTS <ID> expected");
 }
 
 void

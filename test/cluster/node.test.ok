@@ -13,40 +13,44 @@ select * from test
 select * from [1,2,3]
 [1, 2, 3]
 # test: create node statement parsing
-create node
-{"code": 1, "msg": "CREATE NODE <FOR> expected"}
+create compute
+{"code": 1, "msg": "CREATE COMPUTE <NODE> expected"}
 create node 1
-{"code": 1, "msg": "CREATE NODE <FOR> expected"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 create node for
-{"code": 1, "msg": "CREATE NODE FOR <COMPUTE> expected"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 create node for 1
-{"code": 1, "msg": "CREATE NODE FOR <COMPUTE> expected"}
+{"code": 1, "msg": "unexpected token at the end of statement"}
 # test: create node id
-create node "" for compute
+create node ""
 {"code": 1, "msg": "failed to parse uuid"}
-create node "00000000-0000-0000-0000-000000000000" for compute
+create compute node "00000000-0000-0000-0000-000000000000"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: create node already exists
-create node "00000000-0000-0000-0000-000000000000" for compute
+create node "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
 # test: create node if not exists
-create node if "00000000-0000-0000-0000-000000000000" for compute
+create node if "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "IF <NOT> EXISTS expected"}
 create node if
 {"code": 1, "msg": "IF <NOT> EXISTS expected"}
 create node if not
 {"code": 1, "msg": "IF NOT <EXISTS> expected"}
 create node if not exists
-{"code": 1, "msg": "CREATE NODE <FOR> expected"}
-create node if not exists "00000000-0000-0000-0000-000000000000" for compute
+{"code": 1, "msg": "CREATE NODE IF NOT EXISTS <ID> expected"}
+create node if not exists "00000000-0000-0000-0000-00000000000Z"
+{"code": 1, "msg": "failed to parse uuid"}
+create node if not exists "  00000000-0000-0000-0000-00000000000  "
+{"code": 1, "msg": "failed to parse uuid"}
+create node if not exists "00000000-0000-0000-0000-000000000000"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: ddl/dml (with one node)
 create table test1 (id int primary key)
@@ -130,7 +134,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }]
 select * from test1
 [[1], [2], [3]]
@@ -150,31 +154,31 @@ drop node if exists "00000000-0000-0000-0000-000000000001"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: drop node with dependency
 drop node "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
 # test: drop node without dependency
-create node "00000000-0000-0000-0000-000000000001" for compute
+create compute node "00000000-0000-0000-0000-000000000001"
 []
-create node "00000000-0000-0000-0000-000000000002" for compute
+create node "00000000-0000-0000-0000-000000000002"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }, {
-  "name": "00000000-0000-0000-0000-000000000001"
+  "id": "00000000-0000-0000-0000-000000000001"
 }, {
-  "name": "00000000-0000-0000-0000-000000000002"
+  "id": "00000000-0000-0000-0000-000000000002"
 }]
 drop node "00000000-0000-0000-0000-000000000001"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }, {
-  "name": "00000000-0000-0000-0000-000000000002"
+  "id": "00000000-0000-0000-0000-000000000002"
 }]
 drop node "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
@@ -292,7 +296,7 @@ drop node "00000000-0000-0000-0000-000000000002"
 []
 show nodes
 [{
-  "name": "00000000-0000-0000-0000-000000000000"
+  "id": "00000000-0000-0000-0000-000000000000"
 }]
 disconnect S0
 close E0

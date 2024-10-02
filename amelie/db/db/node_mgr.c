@@ -39,18 +39,18 @@ node_mgr_create(NodeMgr*    self,
                 bool        if_not_exists)
 {
 	// make sure node does not exists
-	auto current = node_mgr_find(self, &config->name, false);
+	auto current = node_mgr_find(self, &config->id, false);
 	if (current)
 	{
 		if (! if_not_exists)
-			error("node '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
+			error("node '%.*s': already exists", str_size(&config->id),
+			      str_of(&config->id));
 		return;
 	}
 
 	Uuid id;
 	uuid_init(&id);
-	uuid_from_string(&id, &config->name);
+	uuid_from_string(&id, &config->id);
 
 	// allocate node and init
 	auto node = node_allocate(config, &id, self->iface, self->iface_arg);
@@ -68,25 +68,25 @@ node_mgr_create(NodeMgr*    self,
 void
 node_mgr_drop(NodeMgr* self,
               Tr*      tr,
-              Str*     name,
+              Str*     id,
               bool     if_exists)
 {
-	auto node = node_mgr_find(self, name, false);
+	auto node = node_mgr_find(self, id, false);
 	if (! node)
 	{
 		if (! if_exists)
-			error("node '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("node '%.*s': not exists", str_size(id),
+			      str_of(id));
 		return;
 	}
 
 	// ensure node has no dependencies
 	if (node->route.refs > 0)
-		error("node '%.*s': has dependencies", str_size(name),
-		      str_of(name));
+		error("node '%.*s': has dependencies", str_size(id),
+		      str_of(id));
 
 	// save drop node operation
-	auto op = node_op_drop(&node->config->name);
+	auto op = node_op_drop(&node->config->id);
 
 	// update mgr
 	handle_mgr_drop(&self->mgr, tr, LOG_NODE_DROP, &node->handle, op);
@@ -120,14 +120,14 @@ node_mgr_list(NodeMgr* self)
 }
 
 Node*
-node_mgr_find(NodeMgr* self, Str* name, bool error_if_not_exists)
+node_mgr_find(NodeMgr* self, Str* id, bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, NULL, name);
+	auto handle = handle_mgr_get(&self->mgr, NULL, id);
 	if (! handle)
 	{
 		if (error_if_not_exists)
-			error("node '%.*s': not exists", str_size(name),
-			      str_of(name));
+			error("node '%.*s': not exists", str_size(id),
+			      str_of(id));
 		return NULL;
 	}
 	return node_of(handle);

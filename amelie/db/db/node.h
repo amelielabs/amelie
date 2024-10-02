@@ -47,7 +47,7 @@ node_allocate(NodeConfig* config, Uuid* id, NodeIf* iface, void* iface_arg)
 	self->config    = node_config_copy(config);
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, NULL);
-	handle_set_name(&self->handle, &self->config->name);
+	handle_set_name(&self->handle, &self->config->id);
 	handle_set_free_function(&self->handle, (HandleFree)node_free);
 	route_init(&self->route, NULL);
 	return self;

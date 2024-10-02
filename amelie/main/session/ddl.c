@@ -438,7 +438,7 @@ ddl_create_node(Session* self, Tr* tr)
 	// set or generate node name
 	if (arg->id)
 	{
-		node_config_set_name(config, &arg->id->string);
+		node_config_set_id(config, &arg->id->string);
 	} else
 	{
 		Uuid id;
@@ -449,7 +449,7 @@ ddl_create_node(Session* self, Tr* tr)
 
 		Str uuid_str;
 		str_set_cstr(&uuid_str, uuid);
-		node_config_set_name(config, &uuid_str);
+		node_config_set_id(config, &uuid_str);
 	}
 
 	// create node

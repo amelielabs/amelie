@@ -196,9 +196,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | SHARED | DISTRIBUTED]
-		bool unique = false;
-		bool shared = false;
+		// [UNIQUE | SHARED | DISTRIBUTED | COMPUTE]
+		bool unique  = false;
+		bool shared  = false;
+		bool compute = false;
 		auto mod = lex_next(lex);
 		switch (mod->id) {
 		case KUNIQUE:
@@ -228,6 +229,15 @@ parse_stmt(Parser* self, Stmt* stmt)
 			shared = false;
 			break;
 		}
+		case KCOMPUTE:
+		{
+			auto next = stmt_if(stmt, KNODE);
+			if (! next)
+				error("CREATE COMPUTE <NODE> expected");
+			stmt_push(stmt, next);
+			compute = false;
+			break;
+		}
 		default:
 			stmt_push(stmt, mod);
 			break;
@@ -247,7 +257,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		if (lex_if(lex, KNODE))
 		{
 			stmt->id = STMT_CREATE_NODE;
-			parse_node_create(stmt);
+			parse_node_create(stmt, compute);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{

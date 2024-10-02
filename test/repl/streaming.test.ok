@@ -20188,7 +20188,7 @@ select serial("public", "test2")
 [4]
 # test: create node
 switch S0
-create node "00000000-0000-0000-0000-00000000000f" for compute
+create node "00000000-0000-0000-0000-00000000000f"
 []
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn

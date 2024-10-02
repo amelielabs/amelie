@@ -13,25 +13,27 @@ select * from test
 select * from [1,2,3]
 
 # test: create node statement parsing
-create node
+create compute
 create node 1
 create node for
 create node for 1
 
 # test: create node id
-create node "" for compute
-create node "00000000-0000-0000-0000-000000000000" for compute
+create node ""
+create compute node "00000000-0000-0000-0000-000000000000"
 show nodes
 
 # test: create node already exists
-create node "00000000-0000-0000-0000-000000000000" for compute
+create node "00000000-0000-0000-0000-000000000000"
 
 # test: create node if not exists
-create node if "00000000-0000-0000-0000-000000000000" for compute
+create node if "00000000-0000-0000-0000-000000000000"
 create node if
 create node if not
 create node if not exists
-create node if not exists "00000000-0000-0000-0000-000000000000" for compute
+create node if not exists "00000000-0000-0000-0000-00000000000Z"
+create node if not exists "  00000000-0000-0000-0000-00000000000  "
+create node if not exists "00000000-0000-0000-0000-000000000000"
 show nodes
 
 # test: ddl/dml (with one node)
@@ -68,8 +70,8 @@ show nodes
 drop node "00000000-0000-0000-0000-000000000000"
 
 # test: drop node without dependency
-create node "00000000-0000-0000-0000-000000000001" for compute
-create node "00000000-0000-0000-0000-000000000002" for compute
+create compute node "00000000-0000-0000-0000-000000000001"
+create node "00000000-0000-0000-0000-000000000002"
 
 show nodes
 drop node "00000000-0000-0000-0000-000000000001"

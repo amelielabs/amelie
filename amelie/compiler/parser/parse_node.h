@@ -55,5 +55,5 @@ ast_node_drop_allocate(void)
 	return self;
 }
 
-void parse_node_create(Stmt*);
+void parse_node_create(Stmt*, bool);
 void parse_node_drop(Stmt*);

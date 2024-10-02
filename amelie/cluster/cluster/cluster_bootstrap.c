@@ -66,7 +66,7 @@ cluster_bootstrap(Db* db, int backends)
 
 			Str uuid_str;
 			str_set_cstr(&uuid_str, uuid);
-			node_config_set_name(config, &uuid_str);
+			node_config_set_id(config, &uuid_str);
 
 			// create node
 			node_mgr_create(&db->node_mgr, &tr, config, false);
