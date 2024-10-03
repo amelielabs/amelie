@@ -9,7 +9,7 @@ explain select * from test where id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -43,7 +43,7 @@ explain select * from test where id >= 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -88,7 +88,7 @@ explain select * from test where obj.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -137,7 +137,7 @@ explain select * from test where obj.data.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -186,7 +186,7 @@ explain select * from test where test.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -231,7 +231,7 @@ explain select * from test where test.obj.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -280,7 +280,7 @@ explain select * from test where test.obj.data.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -329,7 +329,7 @@ explain select * from test alias where alias.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -374,7 +374,7 @@ explain select * from test alias where alias.obj.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -423,7 +423,7 @@ explain select * from test alias where alias.obj.data.id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -470,7 +470,7 @@ explain select * from test where id > "hello"
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -509,7 +509,7 @@ explain select * from test where id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -550,7 +550,7 @@ explain select * from test where id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -585,7 +585,7 @@ explain select * from test where id > 1 and id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -629,7 +629,7 @@ explain select * from test where id > 2 and id > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -673,7 +673,7 @@ explain select * from test where id > 1 and id > 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -761,7 +761,7 @@ explain select * from test where id < 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -799,7 +799,7 @@ explain select * from test where id <= 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -838,7 +838,7 @@ explain select * from test where id < 1 and id < 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -886,7 +886,7 @@ explain select * from test where id < 2 and id < 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -934,7 +934,7 @@ explain select * from test where id < 1 and id < 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1030,7 +1030,7 @@ explain select * from test where id > 1 and id < 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1077,7 +1077,7 @@ explain select * from test where id >= 1 and id <= 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1182,7 +1182,7 @@ explain select * from test where id > 1 and id < 1 and data = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1282,7 +1282,7 @@ explain select * from test where data = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1468,7 +1468,7 @@ explain select * from test where a > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1505,7 +1505,7 @@ explain select * from test where a > 1 and b > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1551,7 +1551,7 @@ explain select * from test where a > 1 and b < 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1597,7 +1597,7 @@ explain select * from test where a > 1 and b < 1 and a < 10
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1656,7 +1656,7 @@ explain select * from test where a > 1 and b = 10
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1702,7 +1702,7 @@ explain select * from test where a > 1 and b = 10 and b = 20
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1858,7 +1858,7 @@ explain select * from test where a = 1 and b > 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1910,7 +1910,7 @@ explain select * from test where id between 1 and 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1957,7 +1957,7 @@ explain select * from test where data between 1 and 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -2001,7 +2001,7 @@ explain select * from test where id not between 1 and 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

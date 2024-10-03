@@ -28,8 +28,7 @@ part_list_init(PartList* self, PartMgr* mgr)
 void
 part_list_free(PartList* self)
 {
-	// unref routes
-	part_map_unmap(&self->map);
+	// unref routes and free mapping
 	part_map_free(&self->map);
 
 	list_foreach_safe(&self->list)
@@ -51,9 +50,6 @@ part_list_create(PartList* self,
                  List*     indexes)
 {
 	self->shared = shared;
-
-	// prepare partition mapping
-	part_map_create(&self->map);
 
 	list_foreach(parts)
 	{
@@ -77,7 +73,7 @@ part_list_create(PartList* self,
 void
 part_list_map(PartList* self)
 {
-	// register and map partitions
+	// register and create partitions mappings
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);

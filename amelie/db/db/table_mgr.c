@@ -60,7 +60,7 @@ table_mgr_create(TableMgr*    self,
 	// prepare partitions
 	table_open(table);
 
-	// map partition
+	// map partitions
 	part_list_map(&table->part_list);
 	return true;
 }

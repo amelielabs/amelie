@@ -75,7 +75,7 @@ explain select * from test order by data
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

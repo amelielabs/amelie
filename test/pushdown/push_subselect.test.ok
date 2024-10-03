@@ -40,7 +40,7 @@ explain select * from (select * from test)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -78,7 +78,7 @@ explain select * from (select (select 123) from test)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -120,7 +120,7 @@ explain select * from (select (select * from test2) from test)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -173,7 +173,7 @@ explain select (select t.*) from (select * from test) t
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -211,7 +211,7 @@ explain select (select t.*, * from [1,2,3]) from (select * from test) t
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -270,7 +270,7 @@ explain select (select t.*, * from test2) from (select * from test) t
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

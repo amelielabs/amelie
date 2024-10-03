@@ -44,7 +44,7 @@ explain update test set data = data + 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "array               0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -94,7 +94,7 @@ explain update test.test set data = data + 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # test.test",
       "01": "recv                0      0      0     ",
       "02": "array               0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -159,7 +159,7 @@ explain update test set a = a + 1, b = b - 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "array               0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -517,7 +517,7 @@ explain update test set data = data + 1 where id >= 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "array               0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -692,7 +692,7 @@ explain update test set data = data + 1 returning *
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -750,7 +750,7 @@ explain update test set data = data + 1 returning *
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

@@ -90,5 +90,13 @@ drop table test3
 drop node "00000000-0000-0000-0000-000000000002"
 show nodes
 
+# test: create table/create node/select
+create table test4(id int primary key)
+insert into test4 values (1), (2), (3)
+create node
+create node
+select * from test4
+drop table test4
+
 disconnect S0
 close E0

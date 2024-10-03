@@ -804,15 +804,18 @@ csend_first(Vm* self, Op* op)
 hot void
 csend_all(Vm* self, Op* op)
 {
-	// [stmt, start]
+	// [stmt, start, table]
+	auto table = (Table*)op->c;
+
 	ReqList list;
 	req_list_init(&list);
 
-	// send to all nodes
+	// send to all table nodes
 	auto dtr = self->dtr;
-	list_foreach(&dtr->router->list)
+	auto map = &table->part_list.map;
+	for (auto i = 0; i < map->list_count; i++)
 	{
-		auto route = list_at(Route, link);
+		auto route = map->list[i];
 		auto req = req_create(&dtr->req_cache);
 		req->route = route;
 		req->start = op->b;

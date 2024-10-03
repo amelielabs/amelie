@@ -298,5 +298,18 @@ show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
+# test: create table/create node/select
+create table test4(id int primary key)
+[]
+insert into test4 values (1), (2), (3)
+[]
+create node
+[]
+create node
+[]
+select * from test4
+[[1], [2], [3]]
+drop table test4
+[]
 disconnect S0
 close E0

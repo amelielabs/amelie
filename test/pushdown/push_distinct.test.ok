@@ -7,7 +7,7 @@ explain select distinct * from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -49,7 +49,7 @@ explain select distinct * from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -83,7 +83,7 @@ explain select distinct id from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -119,7 +119,7 @@ explain select distinct id, data from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -159,7 +159,7 @@ explain select distinct data from test limit 4
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -194,7 +194,7 @@ explain select distinct data from test limit 0
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -229,7 +229,7 @@ explain select distinct data from test limit 1 offset 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -271,7 +271,7 @@ explain select distinct data from test offset 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -317,7 +317,7 @@ explain select distinct count(*) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set_ordered         1      20     0     ",
@@ -363,7 +363,7 @@ explain select distinct count(*) from test group by id
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set_ordered         1      20     0     ",
@@ -426,7 +426,7 @@ explain select distinct on (*) * from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -459,7 +459,7 @@ explain select * from test order by data
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -490,7 +490,7 @@ explain select distinct on (data) * from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -529,7 +529,7 @@ explain select distinct on (count(*)) * from test group by id
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set_ordered         1      20     0     ",

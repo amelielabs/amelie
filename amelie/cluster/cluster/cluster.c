@@ -75,14 +75,24 @@ cluster_find(Cluster* self, Uuid* id)
 void
 cluster_map(Cluster* self, PartMap* map, Part* part)
 {
-	// map partition range to the node order
+	// find partition by uuid
 	auto compute = cluster_find(self, &part->config->node);
 	if (! compute)
 		error("partition node cannot be found");
-	part->route = &compute->node->route;
+
+	// prepare partition mapping
+	if (! part_map_created(map))
+		part_map_create(map);
+
+	// add route to the mapping if not exists
+	auto route = &compute->node->route;
+	part_map_add(map, route);
+
+	// map partition range to the node order
+	part->route = route;
 	int i = part->config->min;
 	for (; i < part->config->max; i++)
-		part_map_set(map, i, &compute->node->route);
+		part_map_set(map, i, route);
 }
 
 static void

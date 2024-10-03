@@ -296,10 +296,10 @@ emit_send(Compiler* self, int start)
 			op4(self, CSEND_HASH, stmt->order, start, (intptr_t)table, hash);
 		} else
 		{
-			// send to all nodes
+			// send to all table nodes
 
 			// CSEND_ALL
-			op2(self, CSEND_ALL, stmt->order, start);
+			op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
 		}
 	}
 }

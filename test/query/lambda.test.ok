@@ -135,7 +135,7 @@ explain select lambda n([]) = n::append(id) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 2      0      0     ",

@@ -229,6 +229,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		}
 		case CSEND_HASH:
 		case CSEND:
+		case CSEND_ALL:
 		{
 			auto table = (Table*)op->c;
 			op_write(output, op, true, true, false,

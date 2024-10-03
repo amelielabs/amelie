@@ -11,7 +11,7 @@ It was designed as a modern alternative to in-memory NoSQL databases.
 
 Amelie has a unique architecture designed for full parallelization and lock-less transaction execution. It treats local machine CPU cores as if they were distributed system nodes, automatically partitioning, and generating parallel group plans for all types of queries.
 
-### Separate Storage an Compute
+### Separate Storage and Compute
 
 Amelie is designed as an in-memory SQL database with optional storage for large volumes of aggregated historical data (which we plan to introduce in future releases).
 

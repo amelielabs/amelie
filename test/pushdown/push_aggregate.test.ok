@@ -7,7 +7,7 @@ explain select count(*) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -60,7 +60,7 @@ explain select count(*) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -103,7 +103,7 @@ explain select sum(id) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -154,7 +154,7 @@ explain select sum(id) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -212,7 +212,7 @@ explain select avg(id) from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -295,7 +295,7 @@ explain select * from (select count(*) from test)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -343,7 +343,7 @@ explain select id, count(*) from test group by id
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -389,7 +389,7 @@ explain select * from (select id, count(*) from test group by id)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -442,7 +442,7 @@ explain select id, count(*) c from test group by id having c >= 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -496,7 +496,7 @@ explain select data, count(*) from test group by data having count(*) = 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -546,7 +546,7 @@ explain select data from test group by data having count(*) = 2
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set                 1      0      0     ",
@@ -590,7 +590,7 @@ explain select * from test group by data order by count(*)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "group_merge_recv    0      0      0     ",
       "03": "set_ordered         1      20     0     ",
