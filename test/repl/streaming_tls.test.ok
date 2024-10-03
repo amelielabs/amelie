@@ -8,7 +8,7 @@ connect_tls E1 S1 https://localhost:3481 ./tls/ca.crt
 switch S1
 start repl
 []
-promote "00000000-0000-0000-0000-000000000000"
+subscribe "00000000-0000-0000-0000-000000000000"
 []
 switch S0
 create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481" tls_ca "./tls/ca.crt"

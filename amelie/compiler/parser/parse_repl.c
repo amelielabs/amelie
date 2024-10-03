@@ -45,16 +45,21 @@ parse_repl_stop(Stmt* self)
 }
 
 void
-parse_repl_promote(Stmt* self)
+parse_repl_subscribe(Stmt* self)
 {
-	// PROMOTE id | RESET
-	auto stmt = ast_repl_promote_allocate();
+	// SUBSCRIBE id
+	auto stmt = ast_repl_subscribe_allocate();
 	self->ast = &stmt->ast;
-
-	stmt->id = stmt_if(self, KSTRING);
+	stmt->id  = stmt_if(self, KSTRING);
 	if (stmt->id == NULL)
-	{
-		if (! stmt_if(self, KRESET))
-			error("PROMOTE id | RESET expected");
-	}
+		error("SUBSCRIBE <id> expected");
+}
+
+void
+parse_repl_unsubscribe(Stmt* self)
+{
+	// UNSUBSCRIBE
+	auto stmt = ast_repl_subscribe_allocate();
+	self->ast = &stmt->ast;
+	stmt->id  = NULL;
 }

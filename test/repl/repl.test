@@ -20,11 +20,11 @@ show repl
 # test: start replica
 start repl
 
-# test: promote (using self id)
-promote "00000000-0000-0000-0000-000000000001"
+# test: subscribe (using self id)
+subscribe "00000000-0000-0000-0000-000000000001"
 
-# test: promote
-promote "00000000-0000-0000-0000-000000000000"
+# test: subscribe
+subscribe "00000000-0000-0000-0000-000000000000"
 show repl
 show read_only
 
@@ -118,9 +118,9 @@ select * from test
 show repl
 show lsn
 
-# test: failover (promote replica to primary)
+# test: failover (unsubscribe, switch to primary)
 show repl
-promote reset
+unsubscribe
 show repl
 
 # test: drop replica
@@ -128,9 +128,9 @@ switch S0
 drop replica "00000000-0000-0000-0000-000000000001"
 show replicas
 
-# test: promote new primary
+# test: subscribe to new primary
 switch S0
-promote "00000000-0000-0000-0000-000000000001"
+subscribe "00000000-0000-0000-0000-000000000001"
 show repl
 
 # test: create replica

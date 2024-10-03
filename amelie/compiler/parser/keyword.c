@@ -178,7 +178,6 @@ static Keyword keywords_p[] =
 	{ KPROFILE,               "profile",               7  },
 	{ KPASSWORD,              "password",              8  },
 	{ KPRIMARY,               "primary",               7  },
-	{ KPROMOTE,               "promote",               7  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -197,7 +196,6 @@ static Keyword keywords_r[] =
 	{ KREPLICA,               "replica",               7  },
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
-	{ KRESET,                 "reset",                 5  },
 	{ KRANDOM,                "random",                6  },
 	{ 0,                       NULL,                   0  }
 };
@@ -210,6 +208,7 @@ static Keyword keywords_s[] =
 	{ KSUM,                   "sum",                   3  },
 	{ KSTART,                 "start",                 5  },
 	{ KSTOP,                  "stop",                  4  },
+	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSWITCH,                "switch",                6  },
 	{ KSCHEMA,                "schema",                6  },
 	{ KSERIAL,                "serial",                6  },
@@ -238,6 +237,7 @@ static Keyword keywords_u[] =
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
 	{ KURI,                   "uri",                   3  },
+	{ KUNSUBSCRIBE,           "unsubscribe",           11 },
 	{ 0,                       NULL,                   0  }
 };
 

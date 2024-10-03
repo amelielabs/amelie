@@ -6,8 +6,8 @@
 // Real-Time SQL Database.
 //
 
-typedef struct AstReplCtl     AstReplCtl;
-typedef struct AstReplPromote AstReplPromote;
+typedef struct AstReplCtl       AstReplCtl;
+typedef struct AstReplSubscribe AstReplSubscribe;
 
 struct AstReplCtl
 {
@@ -15,7 +15,7 @@ struct AstReplCtl
 	bool start;
 };
 
-struct AstReplPromote
+struct AstReplSubscribe
 {
 	Ast  ast;
 	Ast* id;
@@ -36,21 +36,22 @@ ast_repl_ctl_allocate(bool start)
 	return self;
 }
 
-static inline AstReplPromote*
-ast_repl_promote_of(Ast* ast)
+static inline AstReplSubscribe*
+ast_repl_subscribe_of(Ast* ast)
 {
-	return (AstReplPromote*)ast;
+	return (AstReplSubscribe*)ast;
 }
 
-static inline AstReplPromote*
-ast_repl_promote_allocate(void)
+static inline AstReplSubscribe*
+ast_repl_subscribe_allocate(void)
 {
-	AstReplPromote* self;
-	self = ast_allocate(0, sizeof(AstReplPromote));
+	AstReplSubscribe* self;
+	self = ast_allocate(0, sizeof(AstReplSubscribe));
 	self->id = NULL;
 	return self;
 }
 
 void parse_repl_start(Stmt*);
 void parse_repl_stop(Stmt*);
-void parse_repl_promote(Stmt*);
+void parse_repl_subscribe(Stmt*);
+void parse_repl_unsubscribe(Stmt*);

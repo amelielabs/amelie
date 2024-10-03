@@ -109,7 +109,7 @@ repl_stop(Repl* self)
 }
 
 void
-repl_promote(Repl* self, Str* primary_id)
+repl_subscribe(Repl* self, Str* primary_id)
 {
 	if (! var_int_of(&config()->repl))
 		error("replication: is disabled");

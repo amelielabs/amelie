@@ -156,10 +156,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_set(stmt);
 		break;
 
-	case KPROMOTE:
-		// PROMOTE id | RESET
-		stmt->id = STMT_PROMOTE;
-		parse_repl_promote(stmt);
+	case KSUBSCRIBE:
+		// SUBSCRIBE id
+		stmt->id = STMT_SUBSCRIBE;
+		parse_repl_subscribe(stmt);
+		break;
+
+	case KUNSUBSCRIBE:
+		// UNSUBSCRIBE
+		stmt->id = STMT_UNSUBSCRIBE;
+		parse_repl_unsubscribe(stmt);
 		break;
 
 	case KSTART:

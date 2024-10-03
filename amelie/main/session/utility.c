@@ -282,13 +282,14 @@ ctl_repl(Session* self)
 			repl_stop(repl);
 		break;
 	}
-	case STMT_PROMOTE:
+	case STMT_SUBSCRIBE:
+	case STMT_UNSUBSCRIBE:
 	{
-		auto arg = ast_repl_promote_of(stmt->ast);
+		auto arg = ast_repl_subscribe_of(stmt->ast);
 		Str* primary_id = NULL;
 		if (arg->id)
 			primary_id = &arg->id->string;
-		repl_promote(repl, primary_id);
+		repl_subscribe(repl, primary_id);
 		break;
 	}
 	default:
@@ -341,7 +342,8 @@ session_execute_utility(Session* self)
 		break;
 	case STMT_START_REPL:
 	case STMT_STOP_REPL:
-	case STMT_PROMOTE:
+	case STMT_SUBSCRIBE:
+	case STMT_UNSUBSCRIBE:
 		ctl_repl(self);
 		break;
 	case STMT_CHECKPOINT:
