@@ -255,8 +255,20 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		if (str_empty(user) || str_empty(secret))
 			error("login: both user and secret options are expected");
 
-		// create jwt token
-		auto jwt = jwt_create(user, secret, NULL);
+		// create jwt one-time token
+
+		// set expire timestamp to 30 sec
+		Timestamp expire;
+		timestamp_init(&expire);
+		timestamp_read_value(&expire, time_us());
+		Interval iv;
+		interval_init(&iv);
+		Str str;
+		str_set_cstr(&str, "30 min");
+		interval_read(&iv, &str);
+		timestamp_add(&expire, &iv);
+
+		auto jwt = jwt_create(user, secret, &expire);
 		guard_buf(jwt);
 		Str jwt_str;
 		buf_str(jwt, &jwt_str);

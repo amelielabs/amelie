@@ -121,7 +121,9 @@ jwt_decode_header(JwtDecode* self)
 }
 
 hot static void
-jwt_decode_payload(JwtDecode* self, Str* role)
+jwt_decode_payload(JwtDecode* self, Str* sub,
+                   int64_t*   iat,
+                   int64_t*   exp)
 {
 	// convert payload from base64url
 	buf_reset(&self->data);
@@ -137,17 +139,21 @@ jwt_decode_payload(JwtDecode* self, Str* role)
 	uint8_t* pos = self->json.buf_data.start;
 	Decode map[] =
 	{
-		{ DECODE_STRING_READ, "sub", role },
+		{ DECODE_STRING_READ, "sub", sub  },
+		{ DECODE_INT,         "iat", iat  },
+		{ DECODE_INT,         "exp", exp  },
 		{ 0,                   NULL, NULL },
 	};
 	decode_map(map, "jwt", &pos);
 }
 
 hot void
-jwt_decode_data(JwtDecode* self, Str* role)
+jwt_decode_data(JwtDecode* self, Str* sub,
+                int64_t*   iat,
+                int64_t*   exp)
 {
 	jwt_decode_header(self);
-	jwt_decode_payload(self, role);
+	jwt_decode_payload(self, sub, iat, exp);
 }
 
 hot void

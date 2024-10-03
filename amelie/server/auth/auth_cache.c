@@ -58,17 +58,25 @@ auth_cache_reset(AuthCache* self)
 }
 
 void
-auth_cache_add(AuthCache* self, User* user, Str* digest)
+auth_cache_add(AuthCache* self, User* user, Str* digest,
+               int64_t expire)
 {
 	auto node = (AuthCacheNode*)am_malloc(sizeof(AuthCacheNode));
 	hashtable_node_init(&node->node);
 	node->node.hash = hash_murmur3_32(str_u8(digest), str_size(digest), 0);
-	node->user = user;
+	node->user   = user;
+	node->expire = expire;
 	str_init(&node->digest);
 	str_copy(&node->digest, digest);
 
 	hashtable_reserve(&self->ht);
 	hashtable_set(&self->ht, &node->node);
+}
+
+void
+auth_cache_del(AuthCache* self, AuthCacheNode* node)
+{
+	hashtable_delete(&self->ht, &node->node);
 }
 
 hot static inline bool
@@ -78,12 +86,12 @@ auth_cache_cmp(HashtableNode* node, void* ptr)
 	return str_compare(&at->digest, ptr);
 }
 
-hot User*
+hot AuthCacheNode*
 auth_cache_find(AuthCache* self, Str* digest)
 {
 	auto hash = hash_murmur3_32(str_u8(digest), str_size(digest), 0);
 	auto node = hashtable_get(&self->ht, hash, auth_cache_cmp, digest);
 	if (! node)
 		return NULL;
-	return container_of(node, AuthCacheNode, node)->user;
+	return container_of(node, AuthCacheNode, node);
 }
