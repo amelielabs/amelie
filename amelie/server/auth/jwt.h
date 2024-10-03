@@ -6,5 +6,4 @@
 // Real-Time SQL Database.
 //
 
-Buf*
-jwt_create(Str*, Str*, Timestamp*);
+Buf* jwt_create(Str*, Str*, Timestamp*);

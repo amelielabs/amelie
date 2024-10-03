@@ -249,11 +249,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 			break;
 		}
 
-		// CREATE USER | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
+		// CREATE USER | TOKEN | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
 			parse_user_create(stmt);
+		} else
+		if (lex_if(lex, KTOKEN))
+		{
+			stmt->id = STMT_CREATE_TOKEN;
+			parse_token_create(stmt);
 		} else
 		if (lex_if(lex, KREPLICA))
 		{

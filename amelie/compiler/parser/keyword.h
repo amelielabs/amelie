@@ -95,6 +95,8 @@ enum
 
 	KCREATE,
 	KUSER,
+	KEXPIRE,
+	KTOKEN,
 	KNODE,
 	KURI,
 	KFOR,

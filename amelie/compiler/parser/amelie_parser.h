@@ -33,6 +33,7 @@
 #include "parser/parse_system.h"
 #include "parser/parse_config.h"
 #include "parser/parse_user.h"
+#include "parser/parse_token.h"
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
 #include "parser/parse_node.h"

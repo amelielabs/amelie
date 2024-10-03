@@ -180,6 +180,50 @@ ctl_set(Session* self)
 		control_save_config();
 }
 
+static Buf*
+ctl_token(Session* self)
+{
+	auto user_mgr = self->share->user_mgr;
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg = ast_token_create_of(stmt->ast);
+
+	// find user
+	auto user = user_cache_find(&user_mgr->cache, &arg->user->string);
+	if (! user)
+		error("%.*s: user not found", str_size(&arg->user->string),
+		      str_of(&arg->user->string));
+
+	// ensure user has a password
+	if (str_empty(&user->config->secret))
+		error("%.*s: user has no password", str_size(&arg->user->string),
+		      str_of(&arg->user->string));
+
+	// set expire timestamp
+	Timestamp expire;
+	timestamp_init(&expire);
+	timestamp_read_value(&expire, time_us());
+
+	Interval iv;
+	interval_init(&iv);
+	if (arg->expire) {
+		interval_read(&iv, &arg->expire->string);
+	} else
+	{
+		Str str;
+		str_set_cstr(&str, "1 year");
+		interval_read(&iv, &str);
+	}
+	timestamp_add(&expire, &iv);
+
+	// generate token
+	auto jwt = jwt_create(&user->config->name, &user->config->secret, &expire);
+	guard_buf(jwt);
+
+	auto buf = buf_create();
+	encode_buf(buf, jwt);
+	return buf;
+}
+
 static void
 ctl_user(Session* self)
 {
@@ -330,6 +374,9 @@ session_execute_utility(Session* self)
 		break;
 	case STMT_SET:
 		ctl_set(self);
+		break;
+	case STMT_CREATE_TOKEN:
+		buf = ctl_token(self);
 		break;
 	case STMT_CREATE_USER:
 	case STMT_DROP_USER:

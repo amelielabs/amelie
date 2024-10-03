@@ -42,6 +42,7 @@ OBJECTS        = \
                  parser/lex.o \
                  parser/parse_system.o \
                  parser/parse_user.o \
+                 parser/parse_token.o \
                  parser/parse_replica.o \
                  parser/parse_repl.o \
                  parser/parse_node.o \

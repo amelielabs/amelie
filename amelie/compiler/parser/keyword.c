@@ -86,6 +86,7 @@ static Keyword keywords_e[] =
 	{ KEND,                   "end",                   3  },
 	{ KEXPLAIN,               "explain",               7  },
 	{ KEXISTS,                "exists",                6  },
+	{ KEXPIRE,                "expire",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -225,6 +226,7 @@ static Keyword keywords_t[] =
 	{ KTO,                    "to",                    2  },
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
+	{ KTOKEN,                 "token",                 5  },
 	{ 0,                       NULL,                   0  }
 };
 
