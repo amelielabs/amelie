@@ -303,13 +303,267 @@ create table test4(id int primary key)
 []
 insert into test4 values (1), (2), (3)
 []
-create node
+create node "00000000-0000-0000-0000-000000000003"
 []
-create node
+create node "00000000-0000-0000-0000-000000000004"
 []
 select * from test4
 [[1], [2], [3]]
 drop table test4
+[]
+# test: create table/create node/add column
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}, {
+  "id": "00000000-0000-0000-0000-000000000003"
+}, {
+  "id": "00000000-0000-0000-0000-000000000004"
+}]
+create table test(id int primary key)
+[]
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 1,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 2,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test",
+  "shared": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 6,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 2698
+  }, {
+    "id": 7,
+    "node": "00000000-0000-0000-0000-000000000003",
+    "min": 2698,
+    "max": 5396
+  }, {
+    "id": 8,
+    "node": "00000000-0000-0000-0000-000000000004",
+    "min": 5396,
+    "max": 8096
+  }]
+}]
+insert into test values (1), (2), (3)
+[]
+create node "00000000-0000-0000-0000-000000000005"
+[]
+create node "00000000-0000-0000-0000-000000000006"
+[]
+show nodes
+[{
+  "id": "00000000-0000-0000-0000-000000000000"
+}, {
+  "id": "00000000-0000-0000-0000-000000000003"
+}, {
+  "id": "00000000-0000-0000-0000-000000000004"
+}, {
+  "id": "00000000-0000-0000-0000-000000000005"
+}, {
+  "id": "00000000-0000-0000-0000-000000000006"
+}]
+alter table test add column data int
+[]
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 1,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 2,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 8096
+  }]
+}, {
+  "schema": "public",
+  "name": "test",
+  "shared": false,
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "constraint": {
+      "not_null": true,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }, {
+    "name": "data",
+    "type": 2,
+    "constraint": {
+      "not_null": false,
+      "generated": 0,
+      "modulo": 9223372036854775807,
+      "default": null
+    }
+  }],
+  "indexes": [{
+    "name": "primary",
+    "type": 2,
+    "unique": true,
+    "primary": true,
+    "keys": [{
+      "ref": 0,
+      "type": 2,
+      "path": ""
+    }]
+  }],
+  "partitions": [{
+    "id": 6,
+    "node": "00000000-0000-0000-0000-000000000000",
+    "min": 0,
+    "max": 2698
+  }, {
+    "id": 7,
+    "node": "00000000-0000-0000-0000-000000000003",
+    "min": 2698,
+    "max": 5396
+  }, {
+    "id": 8,
+    "node": "00000000-0000-0000-0000-000000000004",
+    "min": 5396,
+    "max": 8096
+  }]
+}]
+select * from test
+[[1, null], [2, null], [3, null]]
+drop table test
 []
 disconnect S0
 close E0
