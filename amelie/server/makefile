@@ -29,7 +29,8 @@ OBJECTS        = \
                  http/http.o \
                  http/uri.o \
                  client/client.o \
-                 server/server.o
+                 server/server.o \
+                 server/bootstrap.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)
