@@ -348,6 +348,8 @@ select []::length
 [0]
 select [0, [1, 2], 3]::length
 [3]
+select [{}]
+[{}]
 # test: map
 select {}
 [{}]
