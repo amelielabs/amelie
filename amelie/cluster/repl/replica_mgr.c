@@ -115,6 +115,16 @@ replica_mgr_stop(ReplicaMgr* self)
 	}
 }
 
+static void
+replica_mgr_set_ca(ReplicaConfig* config)
+{
+	if (! fs_exists("%s/ca.crt", config_directory_certs()))
+		return;
+	Str name;
+	str_set_cstr(&name, "ca.crt");
+	remote_set_path(&config->remote, REMOTE_FILE_CA, config_directory_certs(), &name);
+}
+
 void
 replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 {
@@ -130,6 +140,12 @@ replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 		return;
 	}
 	replica = replica_allocate(config, &self->db->wal);
+
+	// set default file ca, if not set
+	auto ca = remote_get(&replica->config->remote, REMOTE_FILE_CA);
+	if (! ca)
+		replica_mgr_set_ca(replica->config);
+
 	list_append(&self->list, &replica->link);
 	self->list_count++;
 	replica_mgr_save(self);
