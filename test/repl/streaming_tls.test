@@ -15,7 +15,6 @@ subscribe "00000000-0000-0000-0000-000000000000"
 
 switch S0
 
-# replica will use CA file by default <directory_certs>/ca.crt, if not specified
 create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481"
 #create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481" tls_ca "./tls/ca.crt"
 start repl
