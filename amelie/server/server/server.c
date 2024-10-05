@@ -16,57 +16,17 @@
 #include <amelie_server.h>
 
 static void
-server_listen_main(void* arg)
+server_accept_main(void* arg)
 {
 	ServerListen* listen = arg;
 	ServerConfig* config = listen->config;
-	Server*       self = listen->arg;
+	Server*       self   = listen->arg;
 
-	auto               is_unixsocket = !listen->addr;
-	char               addr_name[PATH_MAX];
-	struct sockaddr_un addr_un;
-	struct sockaddr*   addr;
+	coroutine_set_name(am_self(), "accept %s", str_of(&listen->addr_name));
 
 	Exception e;
 	if (enter(&e))
 	{
-		// set listen address
-		if (is_unixsocket)
-		{
-			auto path = &config->path;
-			memset(&addr_un, 0, sizeof(addr_un));
-			addr_un.sun_family = AF_UNIX;
-			if (*str_of(path) == '/')
-				snprintf(addr_name, sizeof(addr_name), "%.*s",
-				         str_size(path), str_of(path));
-			else
-				snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
-				         config_directory(),
-				         str_size(path), str_of(path));
-			snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
-			// todo: remove old file, if exists
-
-			addr = (struct sockaddr*)&addr_un;
-		} else
-		{
-			addr = listen->addr->ai_addr;
-			socket_getaddrname(addr, addr_name, sizeof(addr_name), true, true);
-		}
-		coroutine_set_name(am_self(), "listen %s", addr_name);
-
-		// bind
-		listen_start(&listen->listen, 4096, addr);
-
-		// change unix socket mode
-		if (is_unixsocket)
-		{
-			auto rc = chmod(addr_name, config->path_mode);
-			if (rc == -1)
-				error_system();
-		}
-
-		info("");
-
 		// process incoming connection
 		for (;;)
 		{
@@ -81,9 +41,10 @@ server_listen_main(void* arg)
 				client = client_create();
 				client->arg = self;
 				client_set_auth(client, config->auth);
+
 				if (config->tls)
 					tcp_set_tls(&client->tcp, &self->tls);
-				tcp_set_fd(&client->tcp, fd, addr->sa_family);
+				tcp_set_fd(&client->tcp, fd);
 				fd = -1;
 
 				// process client
@@ -104,14 +65,76 @@ server_listen_main(void* arg)
 	{ }
 
 	// remove unix socket after use
-	if (is_unixsocket)
-		vfs_unlink(addr_name);
+	if (! listen->addr)
+		vfs_unlink(str_of(&listen->addr_name));
 
 	listen_stop(&listen->listen);
 }
 
 static void
-server_listen_add(Server* self, ServerConfig* config)
+server_accept(Server* self)
+{
+	// start accepting incoming clients
+	list_foreach(&self->listen)
+	{
+		auto listen = list_at(ServerListen, link);
+		listen->arg    = self;
+		listen->worker = coroutine_create(server_accept_main, listen);
+	}
+}
+
+static void
+server_listen(ServerListen* listen)
+{
+	ServerConfig* config = listen->config;
+
+	// start listen for incoming clients
+	auto               is_unixsocket = !listen->addr;
+	char               addr_name[PATH_MAX];
+	struct sockaddr_un addr_un;
+	struct sockaddr*   addr;
+
+	// set listen address
+	if (is_unixsocket)
+	{
+		auto path = &config->path;
+		memset(&addr_un, 0, sizeof(addr_un));
+		addr_un.sun_family = AF_UNIX;
+		if (*str_of(path) == '/')
+			snprintf(addr_name, sizeof(addr_name), "%.*s",
+			         str_size(path), str_of(path));
+		else
+			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
+			         config_directory(),
+			         str_size(path), str_of(path));
+		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
+		vfs_unlink(addr_name);
+		addr = (struct sockaddr*)&addr_un;
+	} else
+	{
+		addr = listen->addr->ai_addr;
+		socket_getaddrname(addr, addr_name, sizeof(addr_name), true, true);
+	}
+
+	// set address name
+	str_strdup(&listen->addr_name, addr_name);
+
+	info("server: listen %s", addr_name);
+
+	// bind
+	listen_start(&listen->listen, 4096, addr);
+
+	// change unix socket mode
+	if (is_unixsocket)
+	{
+		auto rc = chmod(addr_name, config->path_mode);
+		if (rc == -1)
+			error_system();
+	}
+}
+
+static void
+server_add(Server* self, ServerConfig* config)
 {
 	// ensure certificate has been loaded
 	if (config->tls && !tls_context_created(&self->tls))
@@ -145,28 +168,6 @@ server_listen_add(Server* self, ServerConfig* config)
 		listen->addr = ai;
 		list_append(&self->listen, &listen->link);
 		self->listen_count++;
-	}
-}
-
-static void
-server_listen(Server* self)
-{
-	if (! self->config_count)
-		error("server: <listen> is not defined");
-
-	// prepare listen objects according to the config
-	list_foreach(&self->config)
-	{
-		auto config = list_at(ServerConfig, link);
-		server_listen_add(self, config);
-	}
-
-	// start listen for incoming clients
-	list_foreach(&self->listen)
-	{
-		auto listen = list_at(ServerListen, link);
-		listen->arg    = self;
-		listen->worker = coroutine_create(server_listen_main, listen);
 	}
 }
 
@@ -250,11 +251,13 @@ server_init(Server* self)
 void
 server_free(Server* self)
 {
-	list_foreach_safe(&self->listen) {
+	list_foreach_safe(&self->listen)
+	{
 		auto listen = list_at(ServerListen, link);
 		server_listen_free(listen);
 	}
-	list_foreach_safe(&self->config) {
+	list_foreach_safe(&self->config)
+	{
 		auto config = list_at(ServerConfig, link);
 		server_config_free(config);
 	}
@@ -273,14 +276,31 @@ server_start(Server*     self,
 	// read certificates
 	server_configure_tls(self);
 
-	// default listen for unixsocket in the repository
+	// listen for unixsocket in the repository
 	server_configure_unixsocket(self);
 
 	// read listen configuration
 	server_configure(self);
 
-	// listen for incoming clients
-	server_listen(self);
+	if (! self->config_count)
+		error("server: <listen> is not defined");
+
+	// prepare listen objects
+	list_foreach(&self->config)
+	{
+		auto config = list_at(ServerConfig, link);
+		server_add(self, config);
+	}
+
+	// listen for incoming connections
+	list_foreach(&self->listen)
+	{
+		auto listen = list_at(ServerListen, link);
+		server_listen(listen);
+	}
+
+	// accept clients
+	server_accept(self);
 }
 
 void

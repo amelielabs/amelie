@@ -21,7 +21,7 @@ void tcp_init(Tcp*);
 void tcp_free(Tcp*);
 void tcp_close(Tcp*);
 void tcp_set_tls(Tcp*, TlsContext*);
-void tcp_set_fd(Tcp*, int, int);
+void tcp_set_fd(Tcp*, int);
 void tcp_getpeername(Tcp*, char*, int);
 void tcp_getsockname(Tcp*, char*, int);
 void tcp_attach(Tcp*);

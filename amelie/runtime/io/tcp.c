@@ -73,9 +73,18 @@ tcp_socket_init(int fd, int family)
 }
 
 void
-tcp_set_fd(Tcp* self, int fd, int family)
+tcp_set_fd(Tcp* self, int fd)
 {
 	assert(self->poller == NULL);
+
+	struct sockaddr_storage sa;
+	socklen_t salen = sizeof(sa);
+	int rc;
+	rc = socket_getsockname(fd, (struct sockaddr*)&sa, &salen);
+	if (unlikely(rc == -1))
+		error_system();
+
+	int family = ((struct sockaddr*)&sa)->sa_family;
 	tcp_socket_init(fd, family);
 	self->fd.fd = fd;
 }
@@ -86,7 +95,7 @@ tcp_getpeername(Tcp* self, char* buf, int size)
 	struct sockaddr_storage sa;
 	socklen_t salen = sizeof(sa);
 	int rc;
-	rc = socket_getpeername(self->fd.fd, (struct sockaddr *)&sa, &salen);
+	rc = socket_getpeername(self->fd.fd, (struct sockaddr*)&sa, &salen);
 	if (unlikely(rc == -1))
 		error_system();
 	socket_getaddrname((struct sockaddr *)&sa, buf, size, true, true);
@@ -98,10 +107,10 @@ tcp_getsockname(Tcp* self, char* buf, int size)
 	struct sockaddr_storage sa;
 	socklen_t salen = sizeof(sa);
 	int rc;
-	rc = socket_getsockname(self->fd.fd, (struct sockaddr *)&sa, &salen);
+	rc = socket_getsockname(self->fd.fd, (struct sockaddr*)&sa, &salen);
 	if (unlikely(rc == -1))
 		error_system();
-	socket_getaddrname((struct sockaddr *)&sa, buf, size, true, true);
+	socket_getaddrname((struct sockaddr*)&sa, buf, size, true, true);
 }
 
 void
