@@ -38,7 +38,6 @@ config_prepare(Config* self)
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.0",       0                },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,        0                },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,        0                },
-		{ "directory_certs",         VAR_STRING, VAR_C,                   &self->directory_certs,         NULL,        0                },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,        0                },
 		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        NULL,        0                },
 		// log
@@ -47,6 +46,10 @@ config_prepare(Config* self)
 		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,        true             },
 		{ "log_connections",         VAR_BOOL,   VAR_C|VAR_R,             &self->log_connections,         NULL,        true             },
 		// server
+		{ "tls_capath",              VAR_STRING, VAR_C,                   &self->tls_capath,              NULL,        0                },
+		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,        0                },
+		{ "tls_cert",                VAR_STRING, VAR_C,                   &self->tls_cert,                NULL,        0                },
+		{ "tls_key",                 VAR_STRING, VAR_C,                   &self->tls_key,                 NULL,        0                },
 		{ "listen",                  VAR_DATA,   VAR_C,                   &self->listen,                  NULL,        0                },
 		// limits
 		{ "limit_send",              VAR_INT,    VAR_C|VAR_R,             &self->limit_send,              NULL,        3 * 1024 * 1024  },

@@ -208,26 +208,30 @@ server_configure_tls(Server* self)
 {
 	// configure and create server tls context
 	auto remote = &self->tls_remote;
-	if (! fs_exists("%s/server.crt", config_directory_certs()))
-		return;
 
-	info("server: found TLS certificate");
+	// tls_capath
+	if (var_string_is_set(&config()->tls_capath))
+		remote_set_path(remote, REMOTE_PATH_CA, config_directory(),
+		                &config()->tls_capath.string);
 
-	Str name;
-	str_set_cstr(&name, "server.crt");
-	remote_set_path(remote, REMOTE_FILE_CERT, config_directory_certs(), &name);
+	// tls_ca
+	if (var_string_is_set(&config()->tls_ca))
+		remote_set_path(remote, REMOTE_FILE_CA, config_directory(),
+		                &config()->tls_ca.string);
 
-	str_set_cstr(&name, "server.key");
-	remote_set_path(remote, REMOTE_FILE_KEY, config_directory_certs(), &name);
+	// tls_cert
+	if (var_string_is_set(&config()->tls_cert))
+		remote_set_path(remote, REMOTE_FILE_CERT, config_directory(),
+		                &config()->tls_cert.string);
 
-	if (fs_exists("%s/ca.crt", config_directory_certs()))
-	{
-		str_set_cstr(&name, "ca.crt");
-		remote_set_path(remote, REMOTE_FILE_CA, config_directory_certs(), &name);
-	}
+	// tls_key
+	if (var_string_is_set(&config()->tls_key))
+		remote_set_path(remote, REMOTE_FILE_KEY, config_directory(),
+		                &config()->tls_key.string);
 
 	// create tls context
-	tls_context_create(&self->tls, false, remote);
+	if (var_string_is_set(&config()->tls_cert))
+		tls_context_create(&self->tls, false, remote);
 }
 
 void

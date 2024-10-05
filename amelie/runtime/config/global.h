@@ -48,13 +48,6 @@ config_directory(void)
 	return str_of(var_string_of(&config()->directory));
 }
 
-// directory_certs
-static inline const char*
-config_directory_certs(void)
-{
-	return str_of(var_string_of(&config()->directory_certs));
-}
-
 // checkpoint
 static inline uint64_t
 config_checkpoint(void)

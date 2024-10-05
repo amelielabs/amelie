@@ -14,7 +14,6 @@ struct Config
 	Var  version;
 	Var  uuid;
 	Var  directory;
-	Var  directory_certs;
 	Var  timezone;
 	Var  timezone_default;
 	// log
@@ -23,6 +22,10 @@ struct Config
 	Var  log_to_stdout;
 	Var  log_connections;
 	// server
+	Var  tls_capath;
+	Var  tls_ca;
+	Var  tls_cert;
+	Var  tls_key;
 	Var  listen;
 	// limits
 	Var  limit_send;
