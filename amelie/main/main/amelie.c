@@ -206,6 +206,16 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 			error("unexpected eof");
 		http_read_content(reply, &client->readahead, &reply->content);
 
+		// 401 Unauthorized
+		if (str_compare_raw(&reply->options[HTTP_CODE], "401", 3))
+		{
+			auto code = &reply->options[HTTP_CODE];
+			auto msg  = &reply->options[HTTP_MSG];
+			printf("%.*s %.*s\n", str_size(code), str_of(code),
+			       str_size(msg), str_of(msg));
+			break;
+		}
+
 		// print
 		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
 	}

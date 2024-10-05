@@ -39,9 +39,7 @@ server_accept_main(void* arg)
 			{
 				// create new client
 				client = client_create();
-				client->arg = self;
 				client_set_auth(client, config->auth);
-
 				if (config->tls)
 					tcp_set_tls(&client->tcp, &self->tls);
 				tcp_set_fd(&client->tcp, fd);
