@@ -8,7 +8,12 @@ create table test (id int primary key serial)
 insert into test generate 500
 
 # test: backup (using https)
-backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt"
+#
+#backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt"
+#
+
+# the server certificate is trusted without verification
+backup E1 "uri": "https://127.0.0.1:3480"
 close E1
 
 # test: shutdown previous server

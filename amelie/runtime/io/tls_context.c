@@ -103,16 +103,4 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	rc = SSL_CTX_set_cipher_list(ctx, cipher_list);
 	if (rc != 1)
 		tls_lib_error(0, "SSL_CTX_set_cipher_list()");
-
-	if (! self->client)
-	{
-		unsigned char sid[SSL_MAX_SSL_SESSION_ID_LENGTH];
-		if (! RAND_bytes(sid, sizeof(sid)))
-			tls_lib_error(0, "failed to generate session id");
-
-		if (! SSL_CTX_set_session_id_context(ctx, sid, sizeof(sid)))
-			tls_lib_error(0, "SSL_CTX_set_session_id_context()");
-
-		SSL_CTX_set_options(ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
-	}
 }

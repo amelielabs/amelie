@@ -261,18 +261,22 @@ session_auth(Session* self)
 	auto request = &client->request;
 	auto reply   = &client->reply;
 	auto auth_header = http_find(request, "Authorization", 13);
-	if (auth_header)
+	if (! auth_header)
+	{
+		// trusted by the server listen
+		if (! client->auth)
+			return true;
+	} else
 	{
 		auto user = auth(&self->frontend->auth, &auth_header->value);
-		if (! user)
-		{
-			http_write_reply(reply, 401, "Unauthorized");
-			http_write_end(reply);
-			tcp_write_buf(&client->tcp, &reply->raw);
-			return false;
-		}
+		if (likely(user))
+			return true;
 	}
-	return true;
+	// access denied
+	http_write_reply(reply, 401, "Unauthorized");
+	http_write_end(reply);
+	tcp_write_buf(&client->tcp, &reply->raw);
+	return false;
 }
 
 hot void

@@ -21,6 +21,7 @@ client_create(void)
 	self = am_malloc(sizeof(Client));
 	self->coroutine_id = UINT64_MAX;
 	self->host         = NULL;
+	self->auth         = false;
 	self->arg          = NULL;
 	http_init(&self->request);
 	http_init(&self->reply);
@@ -60,6 +61,12 @@ client_set_remote(Client* self, Remote* remote)
 	auto uri = remote_get(remote, REMOTE_URI);
 	if (! str_empty(uri))
 		uri_set(&self->uri, uri);
+}
+
+void
+client_set_auth(Client* self, bool auth)
+{
+	self->auth = auth;
 }
 
 void

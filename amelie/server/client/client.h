@@ -14,6 +14,7 @@ struct Client
 	Http       reply;
 	Readahead  readahead;
 	Tcp        tcp;
+	bool       auth;
 	TlsContext tls_context;
 	UriHost*   host;
 	Uri        uri;
@@ -28,6 +29,7 @@ client_create(void);
 void client_free(Client*);
 void client_set_coroutine_name(Client*);
 void client_set_remote(Client*, Remote*);
+void client_set_auth(Client*, bool);
 void client_attach(Client*);
 void client_detach(Client*);
 void client_accept(Client*);

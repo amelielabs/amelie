@@ -102,7 +102,7 @@ server_config_read(uint8_t** pos)
 			// bool
 			if (! data_is_bool(*pos))
 				error("server: listen[] <auth> must be a bool");
-			data_read_bool(pos, &self->tls);
+			data_read_bool(pos, &self->auth);
 		} else
 		if (str_compare_raw(&name, "tls", 3))
 		{
