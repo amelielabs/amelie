@@ -64,6 +64,9 @@ parse_replica_create(Stmt* self)
 		if (str_strncasecmp(&name->string, "tls_ca", 6))
 			remote_set(&stmt->remote, REMOTE_FILE_CA, &value->string);
 		else
+		if (str_strncasecmp(&name->string, "tls_capath", 10))
+			remote_set(&stmt->remote, REMOTE_PATH_CA, &value->string);
+		else
 		if (str_strncasecmp(&name->string, "tls_cert", 8))
 			remote_set(&stmt->remote, REMOTE_FILE_CERT, &value->string);
 		else

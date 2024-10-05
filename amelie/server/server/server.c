@@ -213,14 +213,17 @@ server_configure_tls(Server* self)
 	info("server: found TLS certificate");
 
 	Str name;
-	str_set_cstr(&name, "ca");
-	remote_set_path(remote, REMOTE_PATH_CA, config_directory_certs(), &name);
-
 	str_set_cstr(&name, "server.crt");
 	remote_set_path(remote, REMOTE_FILE_CERT, config_directory_certs(), &name);
 
 	str_set_cstr(&name, "server.key");
 	remote_set_path(remote, REMOTE_FILE_KEY, config_directory_certs(), &name);
+
+	if (fs_exists("%s/ca.crt", config_directory_certs()))
+	{
+		str_set_cstr(&name, "ca.crt");
+		remote_set_path(remote, REMOTE_FILE_CA, config_directory_certs(), &name);
+	}
 
 	// create tls context
 	tls_context_create(&self->tls, false, remote);

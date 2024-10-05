@@ -59,13 +59,14 @@ replica_config_read(uint8_t** pos)
 	guard(replica_config_free, self);
 	Decode map[] =
 	{
-		{ DECODE_UUID,   "id",       &self->id                                   },
-		{ DECODE_STRING, "uri",      remote_get(&self->remote, REMOTE_URI)       },
-		{ DECODE_STRING, "tls_ca",   remote_get(&self->remote, REMOTE_FILE_CA)   },
-		{ DECODE_STRING, "tls_cert", remote_get(&self->remote, REMOTE_FILE_CERT) },
-		{ DECODE_STRING, "tls_key",  remote_get(&self->remote, REMOTE_FILE_KEY)  },
-		{ DECODE_STRING, "token",    remote_get(&self->remote, REMOTE_TOKEN)     },
-		{ 0,              NULL,      NULL                                        },
+		{ DECODE_UUID,   "id",         &self->id                                   },
+		{ DECODE_STRING, "uri",        remote_get(&self->remote, REMOTE_URI)       },
+		{ DECODE_STRING, "tls_capath", remote_get(&self->remote, REMOTE_PATH_CA)   },
+		{ DECODE_STRING, "tls_ca",     remote_get(&self->remote, REMOTE_FILE_CA)   },
+		{ DECODE_STRING, "tls_cert",   remote_get(&self->remote, REMOTE_FILE_CERT) },
+		{ DECODE_STRING, "tls_key",    remote_get(&self->remote, REMOTE_FILE_KEY)  },
+		{ DECODE_STRING, "token",      remote_get(&self->remote, REMOTE_TOKEN)     },
+		{ 0,              NULL,        NULL                                        },
 	};
 	decode_map(map, "replica", pos);
 	return unguard();
@@ -74,17 +75,34 @@ replica_config_read(uint8_t** pos)
 static inline void
 replica_config_write(ReplicaConfig* self, Buf* buf)
 {
+	// {}
 	encode_map(buf);
+
+	// id
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
+
+	// uri
 	encode_raw(buf, "uri", 3);
 	encode_string(buf, remote_get(&self->remote, REMOTE_URI));
+
+	// tls_capath
+	encode_raw(buf, "tls_capath", 10);
+	encode_string(buf, remote_get(&self->remote, REMOTE_PATH_CA));
+
+	// tls_ca
 	encode_raw(buf, "tls_ca", 6);
 	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_CA));
+
+	// tls_cert
 	encode_raw(buf, "tls_cert", 8);
 	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_CERT));
+
+	// tls_key
 	encode_raw(buf, "tls_key", 7);
 	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_KEY));
+
+	// token
 	encode_raw(buf, "token", 5);
 	encode_string(buf, remote_get(&self->remote, REMOTE_TOKEN));
 	encode_map_end(buf);

@@ -123,10 +123,7 @@ main_bootstrap(Main* self)
 
 	// create certs directory if not exists
 	if (! fs_exists("%s", config_directory_certs()))
-	{
 		fs_mkdir(0755, "%s", config_directory_certs());
-		fs_mkdir(0755, "%s/ca", config_directory_certs());
-	}
 
 	// set default server listen
 	if (! var_data_is_set(&config->listen))
@@ -186,9 +183,6 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	// validate certificate directory
 	if (! fs_exists("%s", config_directory_certs()))
 		error("certificate directory does not exists");
-
-	if (! fs_exists("%s/ca", config_directory_certs()))
-		error("certificate CA directory does not exists");
 
 	return bootstrap;
 }

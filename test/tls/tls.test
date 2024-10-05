@@ -13,7 +13,7 @@ select 1
 disconnect S0
 
 # test: connect (tls using cafile)
-connect_tls E0 S0 https://localhost:3485 ./tls/ca/ca.crt
+connect_tls E0 S0 https://localhost:3485 ./tls/ca.crt
 show all
 
 # test: streaming
