@@ -69,10 +69,12 @@ tls_create(Tls* self, Fd* fd)
 	self->fd = fd;
 
 	// create ssl object
-	SSL *ssl = SSL_new(self->context->ctx);
+	SSL* ssl = SSL_new(self->context->ctx);
 	if (ssl == NULL)
 		tls_lib_error(0, "SSL_new()");
 	self->ssl = ssl;
+
+	SSL_set_options(ssl, SSL_OP_IGNORE_UNEXPECTED_EOF);
 
 	// set server name
 	auto server = remote_get_cstr(self->context->remote, REMOTE_SERVER);
@@ -277,6 +279,9 @@ tls_read(Tls* self, void* buf, int size)
 		return -1;
 	}
 	if (error == SSL_ERROR_ZERO_RETURN)
+		return 0;
+	// treat socket errors as eof
+	if (error == SSL_ERROR_SYSCALL)
 		return 0;
 	tls_error(self, rc, "SSL_read()");
 	return -1;
