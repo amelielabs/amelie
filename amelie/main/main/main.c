@@ -112,6 +112,22 @@ main_bootstrap(Main* self)
 	if (! var_string_is_set(&config->timezone_default))
 		var_string_set(&config->timezone_default, &self->timezone_mgr.system->name);
 
+	// set directory_certs
+	if (! var_string_is_set(&config->directory_certs))
+	{
+		// <directory>/certs
+		char path[PATH_MAX];
+		snprintf(path, sizeof(path), "%s/certs", config_directory());
+		var_string_set_raw(&config->directory_certs, path, strlen(path));
+	}
+
+	// create certs directory if not exists
+	if (! fs_exists("%s", config_directory_certs()))
+	{
+		fs_mkdir(0755, "%s", config_directory_certs());
+		fs_mkdir(0755, "%s/ca", config_directory_certs());
+	}
+
 	// set default server listen
 	if (! var_data_is_set(&config->listen))
 		server_bootstrap();
@@ -166,6 +182,13 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	logger_set_timezone(logger, global()->timezone);
 	if (! var_int_of(&config->log_to_file))
 		logger_close(logger);
+
+	// validate certificate directory
+	if (! fs_exists("%s", config_directory_certs()))
+		error("certificate directory does not exists");
+
+	if (! fs_exists("%s/ca", config_directory_certs()))
+		error("certificate CA directory does not exists");
 
 	return bootstrap;
 }

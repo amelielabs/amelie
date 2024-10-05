@@ -1,14 +1,14 @@
 #
 
 # test: prepare server
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3
-connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "directory_certs": "./tls", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3
+connect_tls E0 S0 https://localhost:3480 ./tls/ca/ca.crt
 
 create table test (id int primary key serial)
 insert into test generate 500
 
 # test: backup (using https)
-backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt"
+backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca/ca.crt"
 close E1
 
 # test: shutdown previous server
@@ -17,7 +17,7 @@ close E0
 
 # test: restore and validate
 open E1
-connect_tls E1 S1 https://localhost:3480 ./tls/ca.crt
+connect_tls E1 S1 https://localhost:3480 ./tls/ca/ca.crt
 show all
 select count(*) from test
 

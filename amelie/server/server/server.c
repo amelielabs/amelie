@@ -44,6 +44,8 @@ server_listen_main(void* arg)
 				         config_directory(),
 				         str_size(path), str_of(path));
 			snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
+			// todo: remove old file, if exists
+
 			addr = (struct sockaddr*)&addr_un;
 		} else
 		{
@@ -63,7 +65,7 @@ server_listen_main(void* arg)
 				error_system();
 		}
 
-		info("start");
+		info("");
 
 		// process incoming connection
 		for (;;)
@@ -79,7 +81,7 @@ server_listen_main(void* arg)
 				client = client_create();
 				client->arg = self;
 				if (config->tls)
-					tcp_set_tls(&client->tcp, &config->tls_context);
+					tcp_set_tls(&client->tcp, &self->tls);
 				tcp_set_fd(&client->tcp, fd, addr->sa_family);
 				fd = -1;
 
@@ -110,6 +112,10 @@ server_listen_main(void* arg)
 static void
 server_listen_add(Server* self, ServerConfig* config)
 {
+	// ensure certificate has been loaded
+	if (config->tls && !tls_context_created(&self->tls))
+		error("server: listen[] <tls> requires a valid server certificate");
+
 	// unix socket
 	if (! str_empty(&config->path))
 	{
@@ -129,22 +135,6 @@ server_listen_add(Server* self, ServerConfig* config)
 
 	// resolve
 	resolve(global()->resolver, host, config->host_port, &config->host_addr);
-
-	// configure and create server tls context
-	if (config->tls)
-	{
-		// validate server tls options
-		auto remote = &config->remote;
-		auto tls_cert = remote_get(remote, REMOTE_FILE_CERT);
-		if (str_empty(tls_cert))
-			error("server: <tls_cert> is not defined");
-		auto tls_key  = remote_get(remote, REMOTE_FILE_KEY);
-		if (str_empty(tls_key))
-			error("server: <tls_key> is not defined");
-
-		// create tls context
-		tls_context_create(&config->tls_context, false, remote);
-	}
 
 	// foreach resolved address
 	struct addrinfo* ai = config->host_addr;
@@ -180,7 +170,18 @@ server_listen(Server* self)
 }
 
 static void
-server_listen_configure(Server* self)
+server_configure_unixsocket(Server* self)
+{
+	// add default unix socket to the repository
+	auto config = server_config_allocate();
+	str_strdup(&config->path, "amelie.sock");
+	config->path_mode = 0700;
+	list_append(&self->config, &config->link);
+	self->config_count++;
+}
+
+static void
+server_configure(Server* self)
 {
 	// listen is not defined or null
 	auto listen = &config()->listen;
@@ -201,6 +202,30 @@ server_listen_configure(Server* self)
 	}
 }
 
+static void
+server_configure_tls(Server* self)
+{
+	// configure and create server tls context
+	auto remote = &self->tls_remote;
+	if (! fs_exists("%s/server.crt", config_directory_certs()))
+		return;
+
+	info("server: found TLS certificate");
+
+	Str name;
+	str_set_cstr(&name, "ca");
+	remote_set_path(remote, REMOTE_PATH_CA, config_directory_certs(), &name);
+
+	str_set_cstr(&name, "server.crt");
+	remote_set_path(remote, REMOTE_FILE_CERT, config_directory_certs(), &name);
+
+	str_set_cstr(&name, "server.key");
+	remote_set_path(remote, REMOTE_FILE_KEY, config_directory_certs(), &name);
+
+	// create tls context
+	tls_context_create(&self->tls, false, remote);
+}
+
 void
 server_init(Server* self)
 {
@@ -208,6 +233,8 @@ server_init(Server* self)
 	self->on_connect_arg = NULL;
 	self->listen_count   = 0;
 	self->config_count   = 0;
+	tls_context_init(&self->tls);
+	remote_init(&self->tls_remote);
 	list_init(&self->listen);
 	list_init(&self->config);
 }
@@ -223,6 +250,8 @@ server_free(Server* self)
 		auto config = list_at(ServerConfig, link);
 		server_config_free(config);
 	}
+	tls_context_free(&self->tls);
+	remote_free(&self->tls_remote);
 }
 
 void
@@ -233,8 +262,16 @@ server_start(Server*     self,
 	self->on_connect     = on_connect;
 	self->on_connect_arg = on_connect_arg;
 
+	// read certificates
+	server_configure_tls(self);
+
+	// default listen for unixsocket in the repository
+	server_configure_unixsocket(self);
+
+	// read listen configuration
+	server_configure(self);
+
 	// listen for incoming clients
-	server_listen_configure(self);
 	server_listen(self);
 }
 

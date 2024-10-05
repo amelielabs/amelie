@@ -15,6 +15,7 @@
 #include <amelie_client.h>
 #include <amelie_server.h>
 
+#if 0
 void
 server_bootstrap(void)
 {
@@ -26,16 +27,6 @@ server_bootstrap(void)
 
 	// []
 	encode_array(&buf);
-
-	// unixsocket
-	encode_map(&buf);
-	// path
-	encode_raw(&buf, "path", 4);
-	encode_raw(&buf, "amelie.sock", 11);
-	// path_mode
-	encode_raw(&buf, "path_mode", 9);
-	encode_raw(&buf, "0700", 4);
-	encode_map_end(&buf);
 
 	// get a list of network interfaces
 	struct ifaddrs *ifap = NULL;
@@ -69,6 +60,19 @@ server_bootstrap(void)
 		if (rc != 0)
 		   error("getnameinfo(): %s", gai_strerror(rc));
 
+		// tls and auto are disabled by default
+
+		// {}
+		encode_map(&buf);
+		// host
+		encode_raw(&buf, "host", 4);
+		encode_cstr(&buf, host);
+		// port
+		encode_raw(&buf, "port", 4);
+		encode_integer(&buf, 3485);
+		encode_map_end(&buf);
+
+#if 0
 		if (ref->ifa_flags & IFF_LOOPBACK)
 		{
 			encode_map(&buf);
@@ -78,6 +82,7 @@ server_bootstrap(void)
 			// port
 			encode_raw(&buf, "port", 4);
 			encode_integer(&buf, 3485);
+
 			encode_map_end(&buf);
 		} else
 		{
@@ -90,7 +95,36 @@ server_bootstrap(void)
 			encode_integer(&buf, 3485);
 			encode_map_end(&buf);
 		}
+#endif
 	}
+
+	encode_array_end(&buf);
+
+	var_data_set_buf(&config()->listen, &buf);
+}
+#endif
+
+void
+server_bootstrap(void)
+{
+	Buf buf;
+	buf_init(&buf);
+	guard_buf(&buf);
+
+	// tls and auto are disabled by default
+
+	// []
+	encode_array(&buf);
+
+	// {}
+	encode_map(&buf);
+	// host
+	encode_raw(&buf, "host", 4);
+	encode_cstr(&buf, "*");
+	// port
+	encode_raw(&buf, "port", 4);
+	encode_integer(&buf, 3485);
+	encode_map_end(&buf);
 
 	encode_array_end(&buf);
 

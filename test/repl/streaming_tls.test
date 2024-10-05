@@ -1,20 +1,20 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }], "backends": 3, "repl_reconnect_ms": 10
-connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "directory_certs": "./tls", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3, "repl_reconnect_ms": 10
+connect_tls E0 S0 https://localhost:3480 ./tls/ca/ca.crt
 
 # test: create replica (backup using https)
-backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt"
+backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca/ca.crt"
 close E1
 
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true, "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key" }]
-connect_tls E1 S1 https://localhost:3481 ./tls/ca.crt
+open E1 "uuid": "00000000-0000-0000-0000-000000000001", "directory_certs": "./tls", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true }], "backends": 3
+connect_tls E1 S1 https://localhost:3481 ./tls/ca/ca.crt
 switch S1
 start repl
 subscribe "00000000-0000-0000-0000-000000000000"
 
 switch S0
-create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481" tls_ca "./tls/ca.crt"
+create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481" tls_ca "./tls/ca/ca.crt"
 start repl
 
 # test: wait for primary connect

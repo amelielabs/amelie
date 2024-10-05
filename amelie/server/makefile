@@ -30,7 +30,7 @@ OBJECTS        = \
                  http/uri.o \
                  client/client.o \
                  server/server.o \
-                 server/bootstrap.o
+                 server/server_bootstrap.o
 $(LIB): clean $(OBJECTS)
 	@$(AR) cr $(LIB) $(OBJECTS)
 	@echo $(AR) $(LIB)

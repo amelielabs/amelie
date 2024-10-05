@@ -12,6 +12,8 @@ typedef void (*ServerEvent)(Server*, Client*);
 
 struct Server
 {
+	TlsContext  tls;
+	Remote      tls_remote;
 	List        listen;
 	int         listen_count;
 	List        config;
