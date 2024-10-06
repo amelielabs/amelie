@@ -71,6 +71,7 @@ priority_map[KEYWORD_MAX] =
 	['/']                      = 10,
 	['%']                      = 10,
 	// 11 (reserved for unary)
+	['~']                      = 11,
 	// 12
 	['[']                      = 12,
 	['.']                      = 12,
@@ -118,7 +119,7 @@ expr_pop(AstStack* ops, AstStack* result)
 {
 	// move operation to result as op(l, r)
 	auto head = ast_pop(ops);
-	if (head->id == KNEG || head->id == KNOT)
+	if (head->id == KNEG || head->id == KNOT || head->id == '~')
 	{
 		// unary
 		head->l = ast_pop(result);
@@ -702,6 +703,10 @@ parse_unary(Stmt*     self, Expr* expr,
 	case '-':
 		// - expr
 		ast->id = KNEG;
+		expr_operator(ops, result, ast, 11);
+		break;
+	case '~':
+		// ~ expr
 		expr_operator(ops, result, ast, 11);
 		break;
 	default:

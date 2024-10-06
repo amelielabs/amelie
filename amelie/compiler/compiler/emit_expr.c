@@ -853,6 +853,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_unary(self, target, ast, CNEG);
 	case KNOT:
 		return emit_unary(self, target, ast, CNOT);
+	case '~':
+		return emit_unary(self, target, ast, CBINV);
 
 	// object
 	case '{':

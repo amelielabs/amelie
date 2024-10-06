@@ -118,6 +118,14 @@ value_bshr(Value* result, Value* a, Value* b)
 }
 
 always_inline hot static inline void
+value_binv(Value* result, Value* a)
+{
+	if (a->type == VALUE_INT)
+		return value_set_int(result, ~a->integer);
+	error("bad ~ expression type");
+}
+
+always_inline hot static inline void
 value_not(Value* result, Value* val)
 {
 	value_set_bool(result, !value_is_true(val));

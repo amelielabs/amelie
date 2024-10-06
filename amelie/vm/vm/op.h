@@ -61,6 +61,7 @@ enum
 	CBXOR,
 	CSHL,
 	CSHR,
+	CBINV,
 
 	CNOT,
 	CEQU,

@@ -92,6 +92,12 @@ select 60 << 2
 [240]
 select 60 >> 2
 [15]
+select ~10
+[-11]
+select 1 | 2
+[3]
+select 3 & ~1
+[2]
 select 0 > 0
 [false]
 select 0 >= 0

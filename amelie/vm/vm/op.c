@@ -80,6 +80,7 @@ OpDesc ops[] =
 	{ CBXOR,              "bxor"              },
 	{ CSHL,               "shl"               },
 	{ CSHR,               "shr"               },
+	{ CBINV,              "binv"              },
 
 	{ CNOT,               "not"               },
 	{ CEQU,               "equ"               },

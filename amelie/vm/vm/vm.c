@@ -143,6 +143,7 @@ vm_run(Vm*       self,
 		&&cbxor,
 		&&cshl,
 		&&cshr,
+		&&cbinv,
 		&&cnot,
 		&&cequ,
 		&&cnequ,
@@ -379,6 +380,10 @@ cshl:
 
 cshr:
 	value_bshr(&r[op->a], &r[op->b], &r[op->c]);
+	op_next;
+
+cbinv:
+	value_binv(&r[op->a], &r[op->b]);
 	op_next;
 
 cnot:

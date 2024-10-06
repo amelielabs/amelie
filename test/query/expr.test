@@ -80,12 +80,16 @@ select 64 / ( 4 + 4 )
 select 64 / 0
 select 64 % 0
 
-# |, #, &, <<, >>
+# |, #, &, <<, >>, ~
 select 60 & 13
 select 60 | 13
 select 60 ^ 13
 select 60 << 2
 select 60 >> 2
+select ~10
+
+select 1 | 2
+select 3 & ~1
 
 # gt, gte, lt, lte
 select 0 > 0
