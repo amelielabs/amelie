@@ -273,7 +273,7 @@ session_auth(Session* self)
 			return true;
 	}
 	// access denied
-	http_write_reply(reply, 401, "Unauthorized");
+	http_write_reply(reply, 403, "Forbidden");
 	http_write_end(reply);
 	tcp_write_buf(&client->tcp, &reply->raw);
 	return false;
