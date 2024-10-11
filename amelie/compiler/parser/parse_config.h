@@ -74,8 +74,11 @@ parse_set(Stmt* self)
 		error("SET name <TO> expected");
 	// value
 	auto value = stmt_next(self);
-	if (value->id != KINT && value->id != KSTRING)
-		error("SET name TO <value> expected string or int");
+	if (value->id != KINT    &&
+	    value->id != KSTRING &&
+	    value->id != KTRUE   &&
+	    value->id != KFALSE)
+		error("SET name TO <value> expected string, int, or bool");
 	auto stmt = ast_set_allocate(name, value);
 	self->ast = &stmt->ast;
 }

@@ -15,6 +15,13 @@ set query_dump to 0 junk
 # test: set read-only
 set log_enable to 0 # ro
 
+# test: set bool
+show test_bool
+set test_bool to "test"
+set test_bool to 1
+set test_bool to true
+show test_bool
+
 # test: set int
 show test_int
 set test_int to "test"
