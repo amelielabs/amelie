@@ -153,8 +153,9 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		// open config file
 		config_open(config, path);
 
-		// redefine options
-		vars_set_argv(&config->vars, argc, argv);
+		// redefine options and update config if necessary
+		if (vars_set_argv(&config->vars, argc, argv))
+			config_save(config, path);
 	}
 
 	// set system timezone

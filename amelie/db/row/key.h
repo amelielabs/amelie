@@ -83,10 +83,10 @@ key_read(uint8_t** pos)
 	str_init(&type);
 	Decode obj[] =
 	{
-		{ DECODE_INT,    "ref",  &self->ref  },
-		{ DECODE_STRING, "type", &type       },
-		{ DECODE_STRING, "path", &self->path },
-		{ 0,              NULL,  NULL        },
+		{ DECODE_INT,         "ref",  &self->ref  },
+		{ DECODE_STRING_READ, "type", &type       },
+		{ DECODE_STRING,      "path", &self->path },
+		{ 0,                   NULL,  NULL        },
 	};
 	decode_obj(obj, "key", pos);
 	self->type = type_read(&type);

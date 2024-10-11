@@ -73,10 +73,10 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",       &self->name  },
-		{ DECODE_STRING, "type",       &type        },
-		{ DECODE_OBJ,    "constraint", &constraints },
-		{ 0,              NULL,        NULL         },
+		{ DECODE_STRING,      "name",       &self->name  },
+		{ DECODE_STRING_READ, "type",       &type        },
+		{ DECODE_OBJ,         "constraint", &constraints },
+		{ 0,                   NULL,        NULL         },
 	};
 	decode_obj(obj, "columns", pos);
 	self->type = type_read(&type);

@@ -71,9 +71,10 @@ vars_find(Vars* self, Str* name)
 	return NULL;
 }
 
-void
+bool
 vars_set_data(Vars* self, uint8_t** pos, bool system)
 {
+	bool update = false;
 	data_read_obj(pos);
 	while (! data_read_obj_end(pos))
 	{
@@ -96,12 +97,17 @@ vars_set_data(Vars* self, uint8_t** pos, bool system)
 			error("option '%.*s': cannot be changed",
 			      str_size(&name), str_of(&name));
 
+		// if config update will be required
+		if (! var_is(var, VAR_E))
+			update = true;
+
 		// set data value based on type
 		var_set_data(var, pos);
 	}
+	return update;
 }
 
-void
+bool
 vars_set(Vars* self, Str* options, bool system)
 {
 	Json json;
@@ -109,12 +115,13 @@ vars_set(Vars* self, Str* options, bool system)
 	guard(json_free, &json);
 	json_parse(&json, options, NULL);
 	uint8_t* pos = json.buf->start;
-	vars_set_data(self, &pos, system);
+	return vars_set_data(self, &pos, system);
 }
 
-void
+bool
 vars_set_argv(Vars* self, int argc, char** argv)
 {
+	bool update = false;
 	for (int i = 0; i < argc; i++)
 	{
 		Str name;
@@ -127,7 +134,8 @@ vars_set_argv(Vars* self, int argc, char** argv)
 		{
 			if (str_empty(&value))
 				error("option 'json': value is not defined");
-			vars_set(self, &value, false);
+			if (vars_set(self, &value, false))
+				update = true;
 			continue;
 		}
 
@@ -146,9 +154,14 @@ vars_set_argv(Vars* self, int argc, char** argv)
 			error("option '%.*s': cannot be changed",
 			      str_size(&name), str_of(&name));
 
+		// if config update will be required
+		if (! var_is(var, VAR_E))
+			update = true;
+
 		// set value based on type
 		var_set(var, &value);
 	}
+	return update;
 }
 
 Buf*
