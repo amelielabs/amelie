@@ -193,9 +193,9 @@ ctl_token(Session* self)
 		error("%.*s: user not found", str_size(&arg->user->string),
 		      str_of(&arg->user->string));
 
-	// ensure user has a password
+	// ensure user has a secret
 	if (str_empty(&user->config->secret))
-		error("%.*s: user has no password", str_size(&arg->user->string),
+		error("%.*s: user has no secret", str_size(&arg->user->string),
 		      str_of(&arg->user->string));
 
 	// set expire timestamp

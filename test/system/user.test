@@ -20,12 +20,12 @@ show users
 create user test
 create user if not exists test
 
-# test: create user password
-create user test2 password
-create user test2 password 123
-create user test2 password password
-create user test2 password "test" abc
-create user test2 password "test"
+# test: create user secret
+create user test2 secret
+create user test2 secret 123
+create user test2 secret secret
+create user test2 secret "test" abc
+create user test2 secret "test"
 show users
 select name from system.users() where name = "test2"
 
@@ -51,21 +51,21 @@ alter user 123
 alter user test
 alter user test2
 alter user test2 passw
-alter user test2 password
-alter user test2 password 123
-alter user test2 password name
-alter user test2 password "abc" abc
+alter user test2 secret
+alter user test2 secret 123
+alter user test2 secret name
+alter user test2 secret "abc" abc
 
 # test: alter user
-alter user test2 password "abc"
+alter user test2 secret "abc"
 show users
 
-# test: alter user unset password
-alter user test2 password ""
+# test: alter user unset secret
+alter user test2 secret ""
 show users
 
-# test: alter user set password
-alter user test2 password "abc"
+# test: alter user set secret
+alter user test2 secret "abc"
 show users
 
 # test: recover

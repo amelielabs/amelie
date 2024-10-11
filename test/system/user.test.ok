@@ -27,16 +27,16 @@ create user test
 {"code": 1, "msg": "user 'test': already exists"}
 create user if not exists test
 []
-# test: create user password
-create user test2 password
-{"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
-create user test2 password 123
-{"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
-create user test2 password password
-{"code": 1, "msg": "CREATE USER PASSWORD <value> string expected"}
-create user test2 password "test" abc
+# test: create user secret
+create user test2 secret
+{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+create user test2 secret 123
+{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+create user test2 secret secret
+{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+create user test2 secret "test" abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
-create user test2 password "test"
+create user test2 secret "test"
 []
 show users
 [{
@@ -77,35 +77,35 @@ alter user
 alter user 123
 {"code": 1, "msg": "ALTER USER <name> expected"}
 alter user test
-{"code": 1, "msg": "ALTER USER <PASSWORD> expected"}
+{"code": 1, "msg": "ALTER USER <SECRET> expected"}
 alter user test2
-{"code": 1, "msg": "ALTER USER <PASSWORD> expected"}
+{"code": 1, "msg": "ALTER USER <SECRET> expected"}
 alter user test2 passw
-{"code": 1, "msg": "ALTER USER <PASSWORD> expected"}
-alter user test2 password
-{"code": 1, "msg": "ALTER USER PASSWORD <value> string expected"}
-alter user test2 password 123
-{"code": 1, "msg": "ALTER USER PASSWORD <value> string expected"}
-alter user test2 password name
-{"code": 1, "msg": "ALTER USER PASSWORD <value> string expected"}
-alter user test2 password "abc" abc
+{"code": 1, "msg": "ALTER USER <SECRET> expected"}
+alter user test2 secret
+{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+alter user test2 secret 123
+{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+alter user test2 secret name
+{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+alter user test2 secret "abc" abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 # test: alter user
-alter user test2 password "abc"
+alter user test2 secret "abc"
 []
 show users
 [{
   "name": "test2"
 }]
-# test: alter user unset password
-alter user test2 password ""
+# test: alter user unset secret
+alter user test2 secret ""
 []
 show users
 [{
   "name": "test2"
 }]
-# test: alter user set password
-alter user test2 password "abc"
+# test: alter user set secret
+alter user test2 secret "abc"
 []
 show users
 [{

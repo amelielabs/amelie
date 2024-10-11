@@ -177,7 +177,6 @@ static Keyword keywords_o[] =
 static Keyword keywords_p[] =
 {
 	{ KPROFILE,               "profile",               7  },
-	{ KPASSWORD,              "password",              8  },
 	{ KPRIMARY,               "primary",               7  },
 	{ 0,                       NULL,                   0  }
 };
@@ -214,6 +213,7 @@ static Keyword keywords_s[] =
 	{ KSCHEMA,                "schema",                6  },
 	{ KSERIAL,                "serial",                6  },
 	{ KSHARED,                "shared",                6  },
+	{ KSECRET,                "secret",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

@@ -30,7 +30,7 @@
 void
 parse_user_create(Stmt* self)
 {
-	// CREATE USER [IF NOT EXISTS] name [PASSWORD value]
+	// CREATE USER [IF NOT EXISTS] name [SECRET value]
 	auto stmt = ast_user_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -45,13 +45,13 @@ parse_user_create(Stmt* self)
 		error("CREATE USER <name> expected");
 	user_config_set_name(stmt->config, &name->string);
 
-	// PASSWORD
-	if (stmt_if(self, KPASSWORD))
+	// [SECRET]
+	if (stmt_if(self, KSECRET))
 	{
 		// value
 		auto value = stmt_if(self, KSTRING);
 		if (! value)
-			error("CREATE USER PASSWORD <value> string expected");
+			error("CREATE USER SECRET <value> string expected");
 		user_config_set_secret(stmt->config, &value->string);
 	}
 }
@@ -75,7 +75,7 @@ parse_user_drop(Stmt* self)
 void
 parse_user_alter(Stmt* self)
 {
-	// ALTER USER name PASSWORD expr
+	// ALTER USER name SECRET expr
 	auto stmt = ast_user_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -87,13 +87,13 @@ parse_user_alter(Stmt* self)
 		error("ALTER USER <name> expected");
 	user_config_set_name(stmt->config, &name->string);
 
-	// PASSWORD
-	if (! stmt_if(self, KPASSWORD))
-		error("ALTER USER <PASSWORD> expected");
+	// SECRET
+	if (! stmt_if(self, KSECRET))
+		error("ALTER USER <SECRET> expected");
 
 	// value
 	auto value = stmt_if(self, KSTRING);
 	if (! value)
-		error("ALTER USER PASSWORD <value> string expected");
+		error("ALTER USER SECRET <value> string expected");
 	user_config_set_secret(stmt->config, &value->string);
 }
