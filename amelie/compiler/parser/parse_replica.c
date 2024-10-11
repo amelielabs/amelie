@@ -53,6 +53,9 @@ parse_replica_create(Stmt* self)
 		if (name->id != KNAME)
 			error("CREATE REPLICA id <option name> expected");
 
+		// [=]
+		stmt_if(self, '=');
+
 		// string
 		auto value = stmt_if(self, KSTRING);
 		if (! stmt->id)
