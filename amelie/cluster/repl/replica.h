@@ -51,7 +51,7 @@ replica_stop(Replica* self)
 static inline void
 replica_status(Replica* self, Buf* buf)
 {
-	encode_map(buf);
+	encode_obj(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -74,5 +74,5 @@ replica_status(Replica* self, Buf* buf)
 	encode_raw(buf, "lag", 3);
 	encode_integer(buf, config_lsn() - lsn);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

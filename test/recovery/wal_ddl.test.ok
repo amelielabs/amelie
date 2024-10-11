@@ -47,7 +47,7 @@ show lsn
 [4]
 select serial("public", "test2")
 [3]
-alter table test2 add column obj map
+alter table test2 add column obj object
 []
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]

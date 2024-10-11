@@ -91,7 +91,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 	guard(index_config_free, self);
 
 	uint8_t* keys = NULL;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",    &self->name    },
 		{ DECODE_INT,    "type",    &self->type    },
@@ -100,7 +100,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 		{ DECODE_ARRAY,  "keys",    &keys          },
 		{ 0,              NULL,     NULL           },
 	};
-	decode_map(map, "index", pos);
+	decode_obj(obj, "index", pos);
 	keys_read(&self->keys, &keys);
 	return unguard();
 }
@@ -108,8 +108,8 @@ index_config_read(Columns* columns, uint8_t** pos)
 static inline void
 index_config_write(IndexConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -131,5 +131,5 @@ index_config_write(IndexConfig* self, Buf* buf)
 	encode_raw(buf, "keys", 4);
 	keys_write(&self->keys, buf);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

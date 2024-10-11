@@ -50,26 +50,26 @@ login_read(uint8_t** pos)
 {
 	auto self = login_allocate();
 	guard(login_free, self);
-	Decode map[REMOTE_MAX + 1];
+	Decode obj[REMOTE_MAX + 1];
 	for (int id = 0; id < REMOTE_MAX; id++)
 	{
-		map[id].flags = DECODE_STRING;
-		map[id].key   = remote_nameof(id);
-		map[id].value = remote_get(&self->remote, id);
+		obj[id].flags = DECODE_STRING;
+		obj[id].key   = remote_nameof(id);
+		obj[id].value = remote_get(&self->remote, id);
 	}
-	memset(&map[REMOTE_MAX], 0, sizeof(Decode));
-	decode_map(map, "login", pos);
+	memset(&obj[REMOTE_MAX], 0, sizeof(Decode));
+	decode_obj(obj, "login", pos);
 	return unguard();
 }
 
 static inline void
 login_write(Login* self, Buf* buf)
 {
-	encode_map(buf);
+	encode_obj(buf);
 	for (int id = 0; id < REMOTE_MAX; id++)
 	{
 		encode_cstr(buf, remote_nameof(id));
 		encode_string(buf, remote_get(&self->remote, id));
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

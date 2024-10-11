@@ -110,14 +110,14 @@ restore_start(Restore* self)
 	json_parse(&json, &text, &self->state_data);
 
 	uint8_t* pos = self->state_data.start;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_INT,   "checkpoint", &self->checkpoint },
 		{ DECODE_ARRAY, "files",      &self->files      },
-		{ DECODE_MAP,   "config",     &self->config     },
+		{ DECODE_OBJ,   "config",     &self->config     },
 		{ 0,             NULL,        NULL              }
 	};
-	decode_map(map, "restore", &pos);
+	decode_obj(obj, "restore", &pos);
 
 	// create checkpoint directory
 	if (self->checkpoint > 0)

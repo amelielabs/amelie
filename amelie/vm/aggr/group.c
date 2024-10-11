@@ -36,9 +36,9 @@ group_free_node(Group* self, GroupNode* node)
 }
 
 static void
-group_free(ValueObj* obj)
+group_free(Store* store)
 {
-	auto self = (Group*)obj;
+	auto self = (Group*)store;
 	if (self->ht.count > 0)
 	{
 		auto index = (GroupNode**)(self->ht.buf.start);
@@ -70,13 +70,13 @@ Group*
 group_create(int keys_count)
 {
 	Group* self = am_malloc(sizeof(Group));
-	self->obj.free   = group_free;
-	self->obj.encode = NULL;
-	self->obj.decode = NULL;
-	self->obj.in     = NULL;
-	self->aggr_size  = 0;
-	self->aggr_count = 0;
-	self->keys_count = keys_count;
+	self->store.free   = group_free;
+	self->store.encode = NULL;
+	self->store.decode = NULL;
+	self->store.in     = NULL;
+	self->aggr_size    = 0;
+	self->aggr_count   = 0;
+	self->keys_count   = keys_count;
 	list_init(&self->aggrs);
 	hashtable_init(&self->ht);
 	hashtable_create(&self->ht, 256);
@@ -156,9 +156,9 @@ group_create_node(GroupKey* key)
 			value_set_string(&node->keys[i], &value->string, NULL);
 			pos += str_size(&value->string);
 			break;
-		case VALUE_MAP:
+		case VALUE_OBJ:
 			memcpy(pos, value->data, value->data_size);
-			value_set_map(&node->keys[i], pos, value->data_size, NULL);
+			value_set_obj(&node->keys[i], pos, value->data_size, NULL);
 			pos += value->data_size;
 			break;
 		case VALUE_ARRAY:
@@ -232,7 +232,7 @@ group_find_or_create(Group* self, Value** target_data)
 			data_size = str_size(&value->string);
 			key.size += data_size;
 			break;
-		case VALUE_MAP:
+		case VALUE_OBJ:
 		case VALUE_ARRAY:
 			data = value->data;
 			data_size = value->data_size;

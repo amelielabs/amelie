@@ -79,12 +79,12 @@ ccursor_open_value(Vm* self, int target, Value* value)
 {
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, target);
 	switch (value->type) {
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	{
-		cursor->type    = CURSOR_MAP;
+		cursor->type    = CURSOR_OBJ;
 		cursor->obj_pos = value->data;
-		data_read_map(&cursor->obj_pos);
-		auto end = data_is_map_end(cursor->obj_pos);
+		data_read_obj(&cursor->obj_pos);
+		auto end = data_is_obj_end(cursor->obj_pos);
 		if (! end)
 		{
 			cursor->ref_key = cursor->obj_pos;
@@ -107,7 +107,7 @@ ccursor_open_value(Vm* self, int target, Value* value)
 	case VALUE_SET:
 	{
 		cursor->type = CURSOR_SET;
-		auto set = (Set*)value->obj;
+		auto set = (Set*)value->store;
 		set_iterator_open(&cursor->set_it, set);
 		if (! set_iterator_has(&cursor->set_it))
 			return false;
@@ -116,7 +116,7 @@ ccursor_open_value(Vm* self, int target, Value* value)
 	case VALUE_MERGE:
 	{
 		cursor->type = CURSOR_MERGE;
-		auto merge = (Merge*)value->obj;
+		auto merge = (Merge*)value->store;
 		merge_iterator_open(&cursor->merge_it, merge);
 		if (! merge_iterator_has(&cursor->merge_it))
 			return false;
@@ -125,14 +125,14 @@ ccursor_open_value(Vm* self, int target, Value* value)
 	case VALUE_GROUP:
 	{
 		cursor->type  = CURSOR_GROUP;
-		cursor->group = (Group*)value->obj;
+		cursor->group = (Group*)value->store;
 		if (cursor->group->ht.count == 0)
 			return false;
 		cursor->group_pos = group_next(cursor->group, -1);
 		break;
 	}
 	default:
-		error("FROM: array, map or data type expected, but got %s",
+		error("FROM: array, object or store expected, but got %s",
 		      value_type_to_string(value->type));
 		break;
 	}
@@ -189,8 +189,8 @@ ccursor_close(Vm* self, Op* op)
 	switch (cursor->type) {
 	case CURSOR_TABLE:
 		break;
+	case CURSOR_OBJ:
 	case CURSOR_ARRAY:
-	case CURSOR_MAP:
 	case CURSOR_SET:
 	case CURSOR_MERGE:
 	case CURSOR_GROUP:
@@ -231,11 +231,11 @@ ccursor_next(Vm* self, Op* op)
 			return ++op;
 		break;
 	}
-	case CURSOR_MAP:
+	case CURSOR_OBJ:
 	{
 		// skip previous value
 		data_skip(&cursor->obj_pos);
-		if (data_read_map_end(&cursor->obj_pos))
+		if (data_read_obj_end(&cursor->obj_pos))
 			return ++op;
 		// set and skip key
 		cursor->ref_key = cursor->obj_pos;
@@ -294,8 +294,8 @@ ccursor_read(Vm* self, Op* op)
 		value_set_array(a, row_data(current), row_size(current), NULL);
 		break;
 	}
+	case CURSOR_OBJ:
 	case CURSOR_ARRAY:
-	case CURSOR_MAP:
 	{
 		value_read(a, cursor->obj_pos, NULL);
 		break;
@@ -348,16 +348,16 @@ ccursor_idx(Vm* self, Op* op)
 		data_buf = NULL;
 		break;
 	}
+	case CURSOR_OBJ:
 	case CURSOR_ARRAY:
-	case CURSOR_MAP:
 		data_buf = reg_at(&self->r, cursor->r)->buf;
 		data     = cursor->obj_pos;
 		break;
 	case CURSOR_SET:
 	{
 		auto value = &set_iterator_at(&cursor->set_it)->value;
-		if (value->type != VALUE_MAP && value->type != VALUE_ARRAY)
-			error("cursor: object expected to be array or map, but got %s",
+		if (value->type != VALUE_OBJ && value->type != VALUE_ARRAY)
+			error("cursor: expected array or object, but got %s",
 			      value_type_to_string(value->type));
 		data     = value->data;
 		data_buf = value->buf;
@@ -366,8 +366,8 @@ ccursor_idx(Vm* self, Op* op)
 	case CURSOR_MERGE:
 	{
 		auto value = &merge_iterator_at(&cursor->merge_it)->value;
-		if (value->type != VALUE_MAP && value->type != VALUE_ARRAY)
-			error("cursor: object expected to be array or map, but got %s",
+		if (value->type != VALUE_OBJ && value->type != VALUE_ARRAY)
+			error("cursor: expected array or object, but got %s",
 			      value_type_to_string(value->type));
 		data     = value->data;
 		data_buf = value->buf;
@@ -399,17 +399,17 @@ ccursor_idx(Vm* self, Op* op)
 	{
 		Str name;
 		code_data_at_string(self->code_data, op->d, &name);
-		if (unlikely(! data_is_map(data)))
+		if (unlikely(! data_is_obj(data)))
 		{
 			if (cursor->type == CURSOR_TABLE && op->c == -1)
 				error("column %.*s: does not exists", str_size(&name), str_of(&name));
 			else
-				error("column %.*s: row or map expected, but got %s",
+				error("column %.*s: row or object expected, but got %s",
 				      str_size(&name), str_of(&name),
 				      type_to_string(*data));
 		}
 
-		if (! map_find_path(&data, &name))
+		if (! obj_find_path(&data, &name))
 		{
 			if (cursor->type == CURSOR_TABLE)
 			{
@@ -495,7 +495,7 @@ cupdate(Vm* self, Op* op)
 	uint8_t* pos;
 	auto value = stack_at(&self->stack, 1);
 	switch (value->type) {
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	case VALUE_ARRAY:
 	{
 		pos = value->data;
@@ -506,12 +506,12 @@ cupdate(Vm* self, Op* op)
 	{
 		auto buf = buf_create();
 		guard_buf(buf);
-		auto set = (Set*)value->obj;
+		auto set = (Set*)value->store;
 		for (int j = 0; j < set->list_count; j++)
 		{
 			auto ref = &set_at(set, j)->value;
 			if (likely(ref->type == VALUE_ARRAY ||
-			           ref->type == VALUE_MAP))
+			           ref->type == VALUE_OBJ))
 			{
 				pos = ref->data;
 			} else
@@ -525,7 +525,7 @@ cupdate(Vm* self, Op* op)
 		break;
 	}
 	default:
-		error("UPDATE: array, map or set expected, but got %s",
+		error("UPDATE: array, object or set expected, but got %s",
 		      value_type_to_string(value->type));
 		break;
 	}
@@ -620,11 +620,11 @@ cmerge(Vm* self, Op* op)
 
 	// create merge object
 	auto merge = merge_create();
-	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
+	value_set_merge(reg_at(&self->r, op->a), &merge->store);
 
 	// add set
 	auto value = reg_at(&self->r, op->b);
-	merge_add(merge, (Set*)value->obj);
+	merge_add(merge, (Set*)value->store);
 	value_reset(value);
 
 	// prepare merge and apply offset
@@ -664,7 +664,7 @@ cmerge_recv(Vm* self, Op* op)
 
 	// create merge object
 	auto merge = merge_create();
-	value_set_merge(reg_at(&self->r, op->a), &merge->obj);
+	value_set_merge(reg_at(&self->r, op->a), &merge->store);
 
 	// add requests results to the merge
 	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
@@ -674,7 +674,7 @@ cmerge_recv(Vm* self, Op* op)
 		auto value = &req->result;
 		if (value->type == VALUE_SET)
 		{
-			merge_add(merge, (Set*)value->obj);
+			merge_add(merge, (Set*)value->store);
 			value_reset(value);
 		}
 	}
@@ -713,7 +713,7 @@ cgroup_merge_recv(Vm* self, Op* op)
 
 	// return merged group
 	auto value = list[0];
-	value_set_group(reg_at(&self->r, op->a), value->obj);
+	value_set_group(reg_at(&self->r, op->a), value->store);
 	value_reset(value);
 }
 

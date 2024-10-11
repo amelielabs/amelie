@@ -31,9 +31,9 @@ set_free_row(Set* self, SetRow* row)
 }
 
 static void
-set_free(ValueObj* obj)
+set_free(Store* store)
 {
-	auto self = (Set*)obj;
+	auto self = (Set*)store;
 	for (int i = 0; i < self->list_count ; i++)
 		set_free_row(self, set_at(self, i));
 	buf_free(&self->list);
@@ -43,9 +43,9 @@ set_free(ValueObj* obj)
 }
 
 static void
-set_encode(ValueObj* obj, Buf* buf)
+set_encode(Store* store, Buf* buf)
 {
-	auto self = (Set*)obj;
+	auto self = (Set*)store;
 	encode_array(buf);
 	int i = 0;
 	for (; i < self->list_count ; i++)
@@ -54,9 +54,9 @@ set_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-set_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
+set_decode(Store* store, Buf* buf, Timezone* timezone)
 {
-	auto self = (Set*)obj;
+	auto self = (Set*)store;
 	int i = 0;
 	for (; i < self->list_count ; i++)
 	{
@@ -67,9 +67,9 @@ set_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
 }
 
 hot static bool
-set_in(ValueObj* obj, Value* value)
+set_in(Store* store, Value* value)
 {
-	auto self = (Set*)obj;
+	auto self = (Set*)store;
 	int i = 0;
 	for (; i < self->list_count ; i++)
 	{
@@ -84,13 +84,13 @@ Set*
 set_create(uint8_t* data)
 {
 	Set* self = am_malloc(sizeof(Set));
-	self->obj.free   = set_free;
-	self->obj.encode = set_encode;
-	self->obj.decode = set_decode;
-	self->obj.in     = set_in;
-	self->list_count = 0;
-	self->keys       = NULL;
-	self->keys_count = 0;
+	self->store.free   = set_free;
+	self->store.encode = set_encode;
+	self->store.decode = set_decode;
+	self->store.in     = set_in;
+	self->list_count   = 0;
+	self->keys         = NULL;
+	self->keys_count   = 0;
 	buf_init(&self->list);
 
 	if (data)

@@ -63,19 +63,19 @@ server_bootstrap(void)
 		// tls and auto are disabled by default
 
 		// {}
-		encode_map(&buf);
+		encode_obj(&buf);
 		// host
 		encode_raw(&buf, "host", 4);
 		encode_cstr(&buf, host);
 		// port
 		encode_raw(&buf, "port", 4);
 		encode_integer(&buf, 3485);
-		encode_map_end(&buf);
+		encode_obj_end(&buf);
 
 #if 0
 		if (ref->ifa_flags & IFF_LOOPBACK)
 		{
-			encode_map(&buf);
+			encode_obj(&buf);
 			// host
 			encode_raw(&buf, "host", 4);
 			encode_cstr(&buf, host);
@@ -83,17 +83,17 @@ server_bootstrap(void)
 			encode_raw(&buf, "port", 4);
 			encode_integer(&buf, 3485);
 
-			encode_map_end(&buf);
+			encode_obj_end(&buf);
 		} else
 		{
-			encode_map(&buf);
+			encode_obj(&buf);
 			// host
 			encode_raw(&buf, "host", 4);
 			encode_cstr(&buf, host);
 			// port
 			encode_raw(&buf, "port", 4);
 			encode_integer(&buf, 3485);
-			encode_map_end(&buf);
+			encode_obj_end(&buf);
 		}
 #endif
 	}
@@ -117,14 +117,14 @@ server_bootstrap(void)
 	encode_array(&buf);
 
 	// {}
-	encode_map(&buf);
+	encode_obj(&buf);
 	// host
 	encode_raw(&buf, "host", 4);
 	encode_cstr(&buf, "*");
 	// port
 	encode_raw(&buf, "port", 4);
 	encode_integer(&buf, 3485);
-	encode_map_end(&buf);
+	encode_obj_end(&buf);
 
 	encode_array_end(&buf);
 

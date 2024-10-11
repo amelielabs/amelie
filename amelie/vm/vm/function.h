@@ -53,8 +53,8 @@ function_free(Function* self)
 static inline void
 function_write(Function* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -64,5 +64,5 @@ function_write(Function* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

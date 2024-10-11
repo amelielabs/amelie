@@ -87,7 +87,7 @@ enum
 	CIDX,
 
 	// object
-	CMAP,
+	COBJ,
 	CARRAY,
 
 	// column

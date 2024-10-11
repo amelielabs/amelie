@@ -18,7 +18,7 @@ enum
 	DECODE_REAL            = 1 << 5,
 	DECODE_NULL            = 1 << 6,
 	DECODE_ARRAY           = 1 << 7,
-	DECODE_MAP             = 1 << 8,
+	DECODE_OBJ             = 1 << 8,
 	DECODE_DATA            = 1 << 9,
 	DECODE_INTERVAL        = 1 << 10,
 	DECODE_INTERVAL_STRING = 1 << 11,
@@ -35,11 +35,11 @@ struct Decode
 };
 
 static inline void
-decode_map(Decode* self, const char* context, uint8_t** pos)
+decode_obj(Decode* self, const char* context, uint8_t** pos)
 {
-	// read map and compare against keys
-	data_read_map(pos);
-	while (! data_read_map_end(pos))
+	// read obj and compare against keys
+	data_read_obj(pos);
+	while (! data_read_obj_end(pos))
 	{
 		Str key;
 		data_read_string(pos, &key);
@@ -166,10 +166,10 @@ decode_map(Decode* self, const char* context, uint8_t** pos)
 				data_skip(pos);
 				break;
 			}
-			case DECODE_MAP:
+			case DECODE_OBJ:
 			{
-				if (unlikely(! data_is_map(*pos)))
-					error("%s: map expected for '%s'", context,
+				if (unlikely(! data_is_obj(*pos)))
+					error("%s: object expected for '%s'", context,
 					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;

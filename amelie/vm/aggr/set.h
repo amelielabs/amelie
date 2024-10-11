@@ -23,11 +23,11 @@ struct SetKey
 
 struct Set
 {
-	ValueObj obj;
-	Buf      list;
-	int      list_count;
-	SetKey*  keys;
-	int      keys_count;
+	Store   store;
+	Buf     list;
+	int     list_count;
+	SetKey* keys;
+	int     keys_count;
 };
 
 static inline SetRow*

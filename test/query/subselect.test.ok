@@ -311,9 +311,9 @@ drop table test
 []
 # test: select from (select const)
 select * from (select 0)
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 select * from (select null)
-{"code": 1, "msg": "FROM: array, map or data type expected, but got null"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got null"}
 # test: select from (select [])
 select * from (select [])
 []
@@ -353,7 +353,7 @@ select * from (select {"a": 1, "b": null})
 select alias.* from (select [1,2,3]) alias
 [1, 2, 3]
 select alias from (select [1,2,3]) alias
-{"code": 1, "msg": "column alias: row or map expected, but got int"}
+{"code": 1, "msg": "column alias: row or object expected, but got int"}
 select alias from (select alias.*) alias
 {"code": 1, "msg": "*: not in active scan"}
 select alias from (select alias) alias
@@ -409,10 +409,10 @@ explain select * from (select * from test)
 select test.* from (select * from test)
 {"code": 1, "msg": "*: not in active scan"}
 select test from (select * from test)
-{"code": 1, "msg": "column test: row or map expected, but got array"}
+{"code": 1, "msg": "column test: row or object expected, but got array"}
 # test: select alias.* from (select from shared)
 select alias from (select * from test) alias
-{"code": 1, "msg": "column alias: row or map expected, but got array"}
+{"code": 1, "msg": "column alias: row or object expected, but got array"}
 select alias.* from (select * from test) alias
 [[1], [2], [3]]
 select alias.* from (select test.* from test) alias
@@ -435,7 +435,7 @@ insert into test {"data": {"id": 3}}
 []
 # test: select target.path from (select from shared)
 select obj from (select * from test)
-{"code": 1, "msg": "column obj: row or map expected, but got array"}
+{"code": 1, "msg": "column obj: row or object expected, but got array"}
 select * from (select * from test) alias
 [[{
   "data": {
@@ -867,7 +867,7 @@ explain select (select * from a)[0]
   }
 }]
 select (select * from a)[0]
-{"code": 1, "msg": "[]: map or array expected"}
+{"code": 1, "msg": "[]: object or array expected"}
 explain select (select a.* from a) + (select b.* from b)
 [{
   "bytecode": {

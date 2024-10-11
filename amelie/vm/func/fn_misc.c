@@ -211,7 +211,7 @@ fn_jwt(Call* self)
 	Str  header_str;
 	Buf* header = buf_create();
 	guard_buf(header);
-	if (argv[0]->type == VALUE_MAP)
+	if (argv[0]->type == VALUE_OBJ)
 	{
 		auto pos = argv[0]->data;
 		json_export(header, self->vm->local->timezone, &pos);
@@ -221,14 +221,14 @@ fn_jwt(Call* self)
 	{
 		header_str = argv[0]->string;
 	} else {
-		error("jwt(): string or map expected");
+		error("jwt(): string or object expected");
 	}
 
 	// payload
 	Str  payload_str;
 	Buf* payload = buf_create();
 	guard_buf(payload);
-	if (argv[1]->type == VALUE_MAP)
+	if (argv[1]->type == VALUE_OBJ)
 	{
 		auto pos = argv[1]->data;
 		json_export(payload, self->vm->local->timezone, &pos);
@@ -238,7 +238,7 @@ fn_jwt(Call* self)
 	{
 		payload_str = argv[1]->string;
 	} else {
-		error("jwt(): string or map expected");
+		error("jwt(): string or object expected");
 	}
 
 	// create jwt using supplied data

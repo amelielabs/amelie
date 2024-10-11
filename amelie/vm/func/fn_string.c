@@ -34,7 +34,7 @@ fn_length(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	if (arg->type == VALUE_SET)
-		value_set_int(self->result, ((Set*)arg->obj)->list_count);
+		value_set_int(self->result, ((Set*)arg->store)->list_count);
 	else
 		value_length(self->result, arg);
 }

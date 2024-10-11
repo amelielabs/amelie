@@ -237,7 +237,7 @@ select [0, [1, 2], 3]::length
 
 select [{}]
 
-# test: map
+# test: object
 select {}
 select {"a"}
 select {"a": 0}

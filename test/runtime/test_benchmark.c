@@ -137,8 +137,9 @@ test_benchmark_mutex(void* arg)
 static Buf*
 test_benchmark_get_buf(void)
 {
-	// map
+	// obj
 	auto buf = buf_create();
+	encode_obj(buf);
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -168,16 +169,18 @@ test_benchmark_get_buf(void)
 	encode_raw(buf, "files", 5);
 	encode_integer(buf, 0);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 
 static Buf*
 test_benchmark_get_buf_guard(void)
 {
-	// map
+	// obj
 	auto buf = buf_create();
 	guard_buf(buf);
+
+	encode_obj(buf);
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -207,7 +210,7 @@ test_benchmark_get_buf_guard(void)
 	encode_raw(buf, "files", 5);
 	encode_integer(buf, 0);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return unguard();
 }
 

@@ -858,7 +858,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 
 	// object
 	case '{':
-		return emit_obj(self, target, ast, CMAP);
+		return emit_obj(self, target, ast, COBJ);
 	case KARRAY:
 		return emit_obj(self, target, ast, CARRAY);
 

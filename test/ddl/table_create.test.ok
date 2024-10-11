@@ -173,8 +173,8 @@ select columns from system.tables() where name = "test"
 }]]
 drop table test
 []
-# test: column map/object
-create table test(id int primary key, a map, b object)
+# test: column object
+create table test(id int primary key, a obj, b object)
 []
 select columns from system.tables() where name = "test"
 [[{
@@ -356,17 +356,17 @@ drop table test
 create table test(id int primary key primary key)
 {"code": 1, "msg": "PRIMARY KEY defined twice"}
 # test: primary key ensure valid type
-create table test(id map primary key)
+create table test(id obj primary key)
 {"code": 1, "msg": "<id> column key can be string, int or timestamp"}
-create table test(id map, primary key(id))
+create table test(id obj, primary key(id))
 {"code": 1, "msg": "<id> column key can be string, int or timestamp"}
 # test: primary key ensure nested key required
-create table test(data map, primary key(data.id))
+create table test(data obj, primary key(data.id))
 {"code": 1, "msg": "data.id <TYPE> expected"}
 # test: primary key ensure valid nested key type
-create table test(data map, primary key(data.id map))
+create table test(data obj, primary key(data.id obj))
 {"code": 1, "msg": "<data> column key can be string, int or timestamp"}
-create table test(data map, primary key(data.id integer))
+create table test(data obj, primary key(data.id integer))
 []
 select indexes[0].keys from system.tables() where name = "test"
 [[{

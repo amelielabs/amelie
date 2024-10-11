@@ -76,7 +76,7 @@ view_config_read(uint8_t** pos)
 	guard(view_config_free, self);
 
 	uint8_t* columns = NULL;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "schema",  &self->schema },
 		{ DECODE_STRING, "name",    &self->name   },
@@ -84,7 +84,7 @@ view_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "columns", &columns      },
 		{ 0,             NULL,       NULL         },
 	};
-	decode_map(map, "view", pos);
+	decode_obj(obj, "view", pos);
 	columns_read(&self->columns, &columns);
 	return unguard();
 }
@@ -92,8 +92,8 @@ view_config_read(uint8_t** pos)
 static inline void
 view_config_write(ViewConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -111,5 +111,5 @@ view_config_write(ViewConfig* self, Buf* buf)
 	encode_raw(buf, "columns", 7);
 	columns_write(&self->columns, buf);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

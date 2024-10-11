@@ -164,7 +164,7 @@ vm_run(Vm*       self,
 		&&cneg,
 		&&ccat,
 		&&cidx,
-		&&cmap,
+		&&cobj,
 		&&carray,
 		&&cassign,
 		&&cset,
@@ -446,7 +446,7 @@ cany:
 cexists:
 	rc = true;
 	if (r[op->b].type == VALUE_SET)
-		rc = ((Set*)r[op->b].obj)->list_count > 0;
+		rc = ((Set*)r[op->b].store)->list_count > 0;
 	value_set_bool(&r[op->a], rc);
 	value_free(&r[op->b]);
 	op_next;
@@ -490,8 +490,8 @@ cidx:
 	value_free(&r[op->c]);
 	op_next;
 
-cmap:
-	value_map(&r[op->a], stack, op->b);
+cobj:
+	value_obj(&r[op->a], stack, op->b);
 	stack_popn(stack, op->b);
 	op_next;
 
@@ -511,20 +511,20 @@ cassign:
 	op_next;
 
 cset:
-	value_set_set(&r[op->a], &set_create(NULL)->obj);
+	value_set_set(&r[op->a], &set_create(NULL)->store);
 	op_next;
 
 cset_ordered:
-	value_set_set(&r[op->a], &set_create(code_data_at(code_data, op->b))->obj);
+	value_set_set(&r[op->a], &set_create(code_data_at(code_data, op->b))->store);
 	op_next;
 
 cset_sort:
-	set_sort((Set*)r[op->a].obj);
+	set_sort((Set*)r[op->a].store);
 	op_next;
 
 cset_add:
 	// [set, value]
-	set = (Set*)r[op->a].obj;
+	set = (Set*)r[op->a].store;
 	set_add_from_stack(set, &r[op->b], stack);
 	value_free(&r[op->b]);
 	if (set->keys_count > 0)
@@ -543,7 +543,7 @@ cmerge_recv:
 
 cgroup:
 	// [group, key_count]
-	value_set_group(&r[op->a], &group_create(op->b)->obj);
+	value_set_group(&r[op->a], &group_create(op->b)->store);
 	op_next;
 
 cgroup_add:
@@ -551,14 +551,14 @@ cgroup_add:
 	c = NULL;
 	if (op->c != -1)
 		c = &r[op->c];
-	group_add((Group*)r[op->a].obj, aggrs[op->b], c);
+	group_add((Group*)r[op->a].store, aggrs[op->b], c);
 	if (c)
 		value_free(c);
 	op_next;
 
 cgroup_write:
 	// get group by keys and aggregate data
-	group = (Group*)r[op->a].obj;
+	group = (Group*)r[op->a].store;
 	group_write(group, stack);
 	stack_popn(stack, group->keys_count + group->aggr_count);
 	op_next;
@@ -566,7 +566,7 @@ cgroup_write:
 cgroup_get:
 	// [result, group, pos]
 	// get current aggregate value by key
-	group = (Group*)r[op->b].obj;
+	group = (Group*)r[op->b].store;
 	group_get(group, stack, op->c, &r[op->a]);
 	stack_popn(stack, group->keys_count);
 	op_next;

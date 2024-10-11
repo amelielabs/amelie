@@ -137,7 +137,7 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_columns    = NULL;
 	uint8_t* pos_indexes    = NULL;
 	uint8_t* pos_partitions = NULL;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "schema",     &self->schema    },
 		{ DECODE_STRING, "name",       &self->name      },
@@ -147,7 +147,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
 		{ 0,              NULL,        NULL             },
 	};
-	decode_map(map, "table", pos);
+	decode_obj(obj, "table", pos);
 
 	// columns
 	columns_read(&self->columns, &pos_columns);
@@ -174,8 +174,8 @@ table_config_read(uint8_t** pos)
 static inline void
 table_config_write(TableConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// schema
 	encode_raw(buf, "schema", 6);
@@ -212,5 +212,5 @@ table_config_write(TableConfig* self, Buf* buf)
 		part_config_write(config, buf);
 	}
 	encode_array_end(buf);
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

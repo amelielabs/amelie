@@ -45,7 +45,7 @@ value_compare(Value* a, Value* b)
 		return 0;
 	case VALUE_STRING:
 		return str_compare_fn(&a->string, &b->string);
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	case VALUE_ARRAY:
 		return data_compare(a->data, b->data);
 	case VALUE_INTERVAL:

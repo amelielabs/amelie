@@ -40,7 +40,7 @@ insert into test2() values (), (), ()
 select * from test2
 show lsn
 select serial("public", "test2")
-alter table test2 add column obj map
+alter table test2 add column obj object
 select * from test2
 select obj from test2
 

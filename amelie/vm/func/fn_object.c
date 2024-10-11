@@ -126,7 +126,7 @@ FunctionDef fn_object_def[] =
 	{ "public", "pop_back",  fn_pop_back, false },
 	{ "public", "put",       fn_put,      false },
 	{ "public", "remove",    fn_remove,   false },
-	// map
+	// object
 	{ "public", "set",       fn_set,      false },
 	{ "public", "unset",     fn_unset,    false },
 	{ "public", "has",       fn_has,      false },

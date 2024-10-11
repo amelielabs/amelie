@@ -52,11 +52,11 @@ server_config_read(uint8_t** pos)
 	auto self = server_config_allocate();
 	guard(server_config_free, self);
 
-	// map
-	if (! data_is_map(*pos))
-		error("server: listen[<{}>] element must be a map"); 
-	data_read_map(pos);
-	while (! data_read_map_end(pos))
+	// obj
+	if (! data_is_obj(*pos))
+		error("server: listen[<{}>] element must be an object");
+	data_read_obj(pos);
+	while (! data_read_obj_end(pos))
 	{
 		// key
 		Str name;

@@ -101,13 +101,13 @@ jwt_decode_header(JwtDecode* self)
 	Str typ;
 	str_init(&typ);
 	uint8_t* pos = self->json.buf_data.start;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING_READ, "alg", &alg },
 		{ DECODE_STRING_READ, "typ", &typ },
 		{ 0,                   NULL, NULL },
 	};
-	decode_map(map, "jwt", &pos);
+	decode_obj(obj, "jwt", &pos);
 
 	// alg
 	if (unlikely(! str_strncasecmp(&alg, "HS256", 5)))
@@ -137,14 +137,14 @@ jwt_decode_payload(JwtDecode* self, Str* sub,
 
 	// decode payload fields
 	uint8_t* pos = self->json.buf_data.start;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING_READ, "sub", sub  },
 		{ DECODE_INT,         "iat", iat  },
 		{ DECODE_INT,         "exp", exp  },
 		{ 0,                   NULL, NULL },
 	};
-	decode_map(map, "jwt", &pos);
+	decode_obj(obj, "jwt", &pos);
 }
 
 hot void

@@ -70,7 +70,7 @@ part_config_read(uint8_t** pos)
 {
 	auto self = part_config_allocate();
 	guard(part_config_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_INT,  "id",   &self->id   },
 		{ DECODE_UUID, "node", &self->node },
@@ -78,15 +78,15 @@ part_config_read(uint8_t** pos)
 		{ DECODE_INT,  "max",  &self->max  },
 		{ 0,            NULL,  NULL        },
 	};
-	decode_map(map, "part", pos);
+	decode_obj(obj, "part", pos);
 	return unguard();
 }
 
 static inline void
 part_config_write(PartConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -104,5 +104,5 @@ part_config_write(PartConfig* self, Buf* buf)
 	encode_raw(buf, "max", 3);
 	encode_integer(buf, self->max);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

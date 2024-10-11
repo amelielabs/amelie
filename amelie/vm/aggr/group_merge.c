@@ -109,10 +109,10 @@ group_merge(Value** list, int list_count)
 	if (list_count <= 1)
 		return;
 
-	auto self = (Group*)list[0]->obj;
+	auto self = (Group*)list[0]->store;
 	for (int i = 1; i < list_count; i++)
 	{
-		auto group = (Group*)list[i]->obj;
+		auto group = (Group*)list[i]->store;
 		if (group->ht.count == 0)
 			continue;
 

@@ -48,7 +48,7 @@ select t.id from (select * as id from test) t
 select t.id from (select * id from test) t
 [1, 2, 3]
 select t.id from (select * from test) t
-{"code": 1, "msg": "column id: row or map expected, but got array"}
+{"code": 1, "msg": "column id: row or object expected, but got array"}
 # test: select from (select {} from shared) label
 select t.id from (select {"id": id} from test) t
 [1, 2, 3]

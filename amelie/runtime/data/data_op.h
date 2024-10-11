@@ -46,12 +46,12 @@ data_skip(uint8_t** pos)
 			break;
 		}
 		case AM_ARRAY:
-		case AM_MAP:
+		case AM_OBJ:
 			*pos += data_size_type();
 			level++;
 			break;
 		case AM_ARRAY_END:
-		case AM_MAP_END:
+		case AM_OBJ_END:
 			*pos += data_size_type();
 			level--;
 			break;
@@ -84,10 +84,10 @@ data_skip(uint8_t** pos)
 }
 
 hot static inline bool
-map_find(uint8_t** pos, const char* name, int64_t name_size)
+obj_find(uint8_t** pos, const char* name, int64_t name_size)
 {
-	data_read_map(pos);
-	while (! data_read_map_end(pos))
+	data_read_obj(pos);
+	while (! data_read_obj_end(pos))
 	{
 		Str key;
 		data_read_string(pos, &key);
@@ -99,7 +99,7 @@ map_find(uint8_t** pos, const char* name, int64_t name_size)
 }
 
 hot static inline bool
-map_find_path(uint8_t** pos, Str* path)
+obj_find_path(uint8_t** pos, Str* path)
 {
 	const char* current = str_of(path);
 	int left = str_size(path);
@@ -114,11 +114,11 @@ map_find_path(uint8_t** pos, Str* path)
 			}
 		}
 		if (size == -1) {
-			if (! map_find(pos, current, left))
+			if (! obj_find(pos, current, left))
 				return false;
 			break;
 		}
-		if (! map_find(pos, current, size))
+		if (! obj_find(pos, current, size))
 			return false;
 		current += (size + 1);
 		left -= (size + 1);
@@ -127,17 +127,17 @@ map_find_path(uint8_t** pos, Str* path)
 }
 
 static inline bool
-map_has(uint8_t* map, Str* path)
+obj_has(uint8_t* obj, Str* path)
 {
-	return map_find_path(&map, path) > 0;
+	return obj_find_path(&obj, path) > 0;
 }
 
 hot static inline int
-map_size(uint8_t* pos)
+obj_size(uint8_t* pos)
 {
 	int count = 0;
-	data_read_map(&pos);
-	while (! data_read_map_end(&pos))
+	data_read_obj(&pos);
+	while (! data_read_obj_end(&pos))
 	{
 		data_skip(&pos);
 		data_skip(&pos);

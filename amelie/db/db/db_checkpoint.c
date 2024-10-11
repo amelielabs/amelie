@@ -24,7 +24,7 @@ db_checkpoint_catalog_dump(void* arg)
 	// { nodes, schemas, tables, views }
 	Db* self = arg;
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 
 	encode_raw(buf, "nodes", 5);
 	node_mgr_dump(&self->node_mgr, buf);
@@ -38,7 +38,7 @@ db_checkpoint_catalog_dump(void* arg)
 	encode_raw(buf, "views", 5);
 	view_mgr_dump(&self->view_mgr, buf);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 
@@ -127,7 +127,7 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
 	uint8_t* pos_views   = NULL;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_ARRAY, "nodes",   &pos_nodes   },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
@@ -135,7 +135,7 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 		{ DECODE_ARRAY, "views",   &pos_views   },
 		{ 0,             NULL,      NULL        },
 	};
-	decode_map(map, "catalog", pos);
+	decode_obj(obj, "catalog", pos);
 
 	// nodes
 	data_read_array(&pos_nodes);

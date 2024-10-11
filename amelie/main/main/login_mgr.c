@@ -46,8 +46,8 @@ login_mgr_open(LoginMgr* self, const char* path)
 
 	// {}
 	uint8_t* pos = json.buf->start;
-	data_read_map(&pos);
-	while (! data_read_map_end(&pos))
+	data_read_obj(&pos);
+	while (! data_read_obj_end(&pos))
 	{
 		// name
 		data_skip(&pos);
@@ -70,14 +70,14 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	guard_buf(&buf);
 
 	// {}
-	encode_map(&buf);
+	encode_obj(&buf);
 	list_foreach(&self->list)
 	{
 		auto login = list_at(Login, link);
 		encode_string(&buf, remote_get(&login->remote, REMOTE_NAME));
 		login_write(login, &buf);
 	}
-	encode_map_end(&buf);
+	encode_obj_end(&buf);
 
 	// convert to json
 	Buf text;
@@ -137,8 +137,8 @@ login_mgr_set_json(Remote* remote, Str* text)
 
 	uint8_t* pos = json.buf->start;
 
-	data_read_map(&pos);
-	while (! data_read_map_end(&pos))
+	data_read_obj(&pos);
+	while (! data_read_obj_end(&pos))
 	{
 		// key
 		Str name;

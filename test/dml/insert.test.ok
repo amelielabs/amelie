@@ -90,7 +90,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "id"
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column obj: does not match data type map"}
+{"code": 1, "msg": "column obj: does not match data type object"}
 insert into test values ( {"id": 48} )
 []
 select * from test
@@ -111,11 +111,11 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "data.id"
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column obj: does not match data type map"}
+{"code": 1, "msg": "column obj: does not match data type object"}
 insert into test values ( {"id": 48} )
 {"code": 1, "msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": []} )
-{"code": 1, "msg": "expected data type 'map', but got 'array'"}
+{"code": 1, "msg": "expected data type 'object', but got 'array'"}
 insert into test values ( {"data": {}} )
 {"code": 1, "msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": {"id": "48"} } )

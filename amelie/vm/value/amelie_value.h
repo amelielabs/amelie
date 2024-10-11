@@ -7,6 +7,7 @@
 //
 
 // value
+#include "value/store.h"
 #include "value/value.h"
 
 // value objects
@@ -14,7 +15,7 @@
 #include "value/stack.h"
 
 // objects
-#include "value/map.h"
+#include "value/obj.h"
 #include "value/array.h"
 #include "value/vector.h"
 #include "value/update.h"

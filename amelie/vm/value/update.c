@@ -76,12 +76,12 @@ update_unset_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! data_is_map(*pos)))
-		error("unset: map expected, but got %s", type_to_string(**pos));
-	data_read_map(pos);
+	if (unlikely(! data_is_obj(*pos)))
+		error("unset: object expected, but got %s", type_to_string(**pos));
+	data_read_obj(pos);
 
-	encode_map(buf);
-	while (! data_read_map_end(pos))
+	encode_obj(buf);
+	while (! data_read_obj_end(pos))
 	{
 		// key
 		Str at;
@@ -106,7 +106,7 @@ update_unset_next(Update* self)
 		data_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }
 
 static inline void
@@ -118,12 +118,12 @@ update_set_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! data_is_map(*pos)))
-		error("set: map expected, but got %s", type_to_string(**pos));
-	data_read_map(pos);
+	if (unlikely(! data_is_obj(*pos)))
+		error("set: object expected, but got %s", type_to_string(**pos));
+	data_read_obj(pos);
 
-	encode_map(buf);
-	while (! data_read_map_end(pos))
+	encode_obj(buf);
+	while (! data_read_obj_end(pos))
 	{
 		// key 
 		Str at;
@@ -166,7 +166,7 @@ update_set_next(Update* self)
 		// value
 		value_write(self->value, buf);
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }
 
 hot void
@@ -178,7 +178,7 @@ update_set(Value* result, uint8_t* data, Str* path, Value* value)
 	update_init(&self, data, path, buf, value);
 	update_set_next(&self);
 	unguard();
-	value_set_map_buf(result, buf);
+	value_set_obj_buf(result, buf);
 }
 
 hot void
@@ -190,7 +190,7 @@ update_unset(Value* result, uint8_t* data, Str* path)
 	update_init(&self, data, path, buf, NULL);
 	update_unset_next(&self);
 	unguard();
-	value_set_map_buf(result, buf);
+	value_set_obj_buf(result, buf);
 }
 
 static inline void

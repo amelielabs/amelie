@@ -67,22 +67,22 @@ schema_config_read(uint8_t** pos)
 {
 	auto self = schema_config_allocate();
 	guard(schema_config_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",       &self->name   },
 		{ DECODE_BOOL,   "system",     &self->system },
 		{ DECODE_BOOL,   "create",     &self->create },
 		{ 0,              NULL,        NULL          },
 	};
-	decode_map(map, "schema", pos);
+	decode_obj(obj, "schema", pos);
 	return unguard();
 }
 
 static inline void
 schema_config_write(SchemaConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -96,5 +96,5 @@ schema_config_write(SchemaConfig* self, Buf* buf)
 	encode_raw(buf, "create", 6);
 	encode_bool(buf, self->create);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

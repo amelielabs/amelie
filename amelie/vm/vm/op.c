@@ -106,7 +106,7 @@ OpDesc ops[] =
 	{ CIDX,               "idx"               },
 
 	// object
-	{ CMAP,               "map"               },
+	{ COBJ,               "obj"               },
 	{ CARRAY,             "array"             },
 
 	// column
@@ -196,7 +196,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 	auto output = buf_create();
 	guard_buf(output);
 
-	encode_map(buf);
+	encode_obj(buf);
 	auto op  = (Op*)self->code.start;
 	auto end = (Op*)self->code.position;
 	for (int pos = 0; op < end; pos++)
@@ -315,5 +315,5 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		op++;
 	}
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

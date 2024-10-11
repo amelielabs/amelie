@@ -7,7 +7,6 @@
 //
 
 // interval
-
 always_inline hot static inline int
 data_size_interval(Interval* iv)
 {
@@ -50,7 +49,6 @@ data_is_interval(uint8_t* data)
 }
 
 // timestamp
-
 always_inline hot static inline int
 data_size_timestamp(uint64_t value)
 {

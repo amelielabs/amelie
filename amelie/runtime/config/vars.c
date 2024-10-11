@@ -74,8 +74,8 @@ vars_find(Vars* self, Str* name)
 void
 vars_set_data(Vars* self, uint8_t** pos, bool system)
 {
-	data_read_map(pos);
-	while (! data_read_map_end(pos))
+	data_read_obj(pos);
+	while (! data_read_obj_end(pos))
 	{
 		// key
 		Str name;
@@ -155,7 +155,7 @@ Buf*
 vars_list_persistent(Vars* self)
 {
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 	list_foreach(&self->list)
 	{
 		auto var = list_at(Var, link);
@@ -164,7 +164,7 @@ vars_list_persistent(Vars* self)
 		encode_string(buf, &var->name);
 		var_encode(var, buf);
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 
@@ -172,7 +172,7 @@ Buf*
 vars_list(Vars* self, Vars* local)
 {
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 	list_foreach(&self->list)
 	{
 		auto var = list_at(Var, link);
@@ -183,7 +183,7 @@ vars_list(Vars* self, Vars* local)
 			var = vars_find(local, &var->name);
 		var_encode(var, buf);
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 

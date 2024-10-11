@@ -14,13 +14,13 @@ select from
 select 1 from
 {"code": 1, "msg": "bad expression"}
 select 1 from "test"
-{"code": 1, "msg": "FROM: array, map or data type expected, but got string"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got string"}
 select 1 from name
 {"code": 1, "msg": "<name> table or view is not found"}
 select 1 from 1 where
 {"code": 1, "msg": "bad expression"}
 select 1 from 1 where null
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 # test: select expr
 select 1
 [1]
@@ -74,13 +74,13 @@ select **
 {"code": 1, "msg": "<**> no FROM clause defined"}
 # test: select from expr
 select * from 1
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 select * from 3.14
-{"code": 1, "msg": "FROM: array, map or data type expected, but got real"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got real"}
 select * from null
-{"code": 1, "msg": "FROM: array, map or data type expected, but got null"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got null"}
 select * from "test"
-{"code": 1, "msg": "FROM: array, map or data type expected, but got string"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got string"}
 select * from []
 []
 # test: select from []
@@ -160,7 +160,7 @@ explain select * from {"a": 1, "b": 2, "c": 3}
       "10": "push                1      0      0     ",
       "11": "int                 1      -      0     # 3",
       "12": "push                1      0      0     ",
-      "13": "map                 1      6      0     ",
+      "13": "obj                 1      6      0     ",
       "14": "cursor_open_expr    0      1      16    ",
       "15": "jmp                 19     0      0     ",
       "16": "cursor_read         2      0      0     ",
@@ -217,7 +217,7 @@ select * from [1, 2, 3] list, [3,2,1] list
 create view test as select 123
 []
 select * from test
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 drop view test
 []
 create view test as select [1,2,3]
@@ -270,7 +270,7 @@ explain select * from test
       "10": "push                1      0      0     ",
       "11": "int                 1      -      0     # 3",
       "12": "push                1      0      0     ",
-      "13": "map                 1      6      0     ",
+      "13": "obj                 1      6      0     ",
       "14": "cursor_open_expr    0      1      16    ",
       "15": "jmp                 19     0      0     ",
       "16": "cursor_read         2      0      0     ",
@@ -362,7 +362,7 @@ explain select * from test list
       "11": "push                2      0      0     ",
       "12": "int                 2      -      0     # 3",
       "13": "push                2      0      0     ",
-      "14": "map                 2      6      0     ",
+      "14": "obj                 2      6      0     ",
       "15": "cursor_open_expr    0      2      17    ",
       "16": "jmp                 20     0      0     ",
       "17": "cursor_read         3      0      0     ",

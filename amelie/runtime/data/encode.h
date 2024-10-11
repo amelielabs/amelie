@@ -7,17 +7,17 @@
 //
 
 always_inline hot static inline void
-encode_map(Buf* self)
+encode_obj(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_map());
-	data_write_map(pos);
+	auto pos = buf_reserve(self, data_size_obj());
+	data_write_obj(pos);
 }
 
 always_inline hot static inline void
-encode_map_end(Buf* self)
+encode_obj_end(Buf* self)
 {
-	auto pos = buf_reserve(self, data_size_map_end());
-	data_write_map_end(pos);
+	auto pos = buf_reserve(self, data_size_obj_end());
+	data_write_obj_end(pos);
 }
 
 always_inline hot static inline void

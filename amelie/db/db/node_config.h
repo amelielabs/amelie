@@ -49,24 +49,24 @@ node_config_read(uint8_t** pos)
 {
 	auto self = node_config_allocate();
 	guard(node_config_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "id",  &self->id },
 		{ 0,              NULL,  NULL     },
 	};
-	decode_map(map, "node", pos);
+	decode_obj(obj, "node", pos);
 	return unguard();
 }
 
 static inline void
 node_config_write(NodeConfig* self, Buf* buf)
 {
-	// map
-	encode_map(buf);
+	// obj
+	encode_obj(buf);
 	
 	// id
 	encode_raw(buf, "id", 2);
 	encode_string(buf, &self->id);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

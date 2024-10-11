@@ -69,14 +69,14 @@ column_read(uint8_t** pos)
 	auto self = column_allocate();
 	guard(column_free, self);
 	uint8_t* constraints = NULL;
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",       &self->name  },
 		{ DECODE_INT,    "type",       &self->type  },
-		{ DECODE_MAP,    "constraint", &constraints },
+		{ DECODE_OBJ,    "constraint", &constraints },
 		{ 0,              NULL,        NULL         },
 	};
-	decode_map(map, "columns", pos);
+	decode_obj(obj, "columns", pos);
 	constraint_read(&self->constraint, &constraints);
 	return unguard();
 }
@@ -84,7 +84,7 @@ column_read(uint8_t** pos)
 static inline void
 column_write(Column* self, Buf* buf)
 {
-	encode_map(buf);
+	encode_obj(buf);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -98,7 +98,7 @@ column_write(Column* self, Buf* buf)
 	encode_raw(buf, "constraint", 10);
 	constraint_write(&self->constraint, buf);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }
 
 hot static inline void

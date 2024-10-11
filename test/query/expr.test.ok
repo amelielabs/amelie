@@ -270,7 +270,7 @@ select "a" + "b"
 select "a" || "b"
 ["ab"]
 select "a"[0]
-{"code": 1, "msg": "[]: map or array expected"}
+{"code": 1, "msg": "[]: object or array expected"}
 select "\"Hello World\""
 ["\"Hello World\""]
 select 1.1 + 1.1
@@ -324,7 +324,7 @@ select not 2.8
 select 2.8 & 3.4
 {"code": 1, "msg": "bad & expression type"}
 select 0[0]
-{"code": 1, "msg": "[]: map or array expected"}
+{"code": 1, "msg": "[]: object or array expected"}
 select name[0]
 {"code": 1, "msg": "<name> column, CTE or argument not found"}
 # test: array
@@ -356,7 +356,7 @@ select [0, [1, 2], 3]::length
 [3]
 select [{}]
 [{}]
-# test: map
+# test: object
 select {}
 [{}]
 select {"a"}

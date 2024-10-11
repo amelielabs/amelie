@@ -31,7 +31,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 	// payload
 	auto payload = buf_create();
 	guard(buf_free, payload);
-	encode_map(payload);
+	encode_obj(payload);
 
 	// sub
 	encode_raw(payload, "sub", 3);
@@ -49,7 +49,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 		auto exp = timestamp_of(expire, NULL) / 1000 / 1000;
 		encode_integer(payload, exp);
 	}
-	encode_map_end(payload);
+	encode_obj_end(payload);
 
 	// convert payload to json
 	auto payload_json = buf_create();

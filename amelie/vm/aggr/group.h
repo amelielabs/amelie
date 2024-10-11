@@ -19,7 +19,7 @@ struct GroupNode
 
 struct Group
 {
-	ValueObj  obj;
+	Store     store;
 	Hashtable ht;
 	List      aggrs;
 	int       aggr_count;

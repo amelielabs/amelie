@@ -38,9 +38,9 @@ explain select * from [1,3,2] order by *
   }
 }]
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, map or data type expected, but got int"}
+{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 select (select * from [1,3,2] order by *)
 [1, 2, 3]
 select * from (select * from [1,3,2] order by *)

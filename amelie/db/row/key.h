@@ -79,21 +79,21 @@ key_read(uint8_t** pos)
 {
 	auto self = key_allocate();
 	guard(key_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_INT,    "ref",  &self->ref  },
 		{ DECODE_INT,    "type", &self->type },
 		{ DECODE_STRING, "path", &self->path },
 		{ 0,              NULL,  NULL        },
 	};
-	decode_map(map, "key", pos);
+	decode_obj(obj, "key", pos);
 	return unguard();
 }
 
 static inline void
 key_write(Key* self, Buf* buf)
 {
-	encode_map(buf);
+	encode_obj(buf);
 
 	// ref
 	encode_raw(buf, "ref", 3);
@@ -107,7 +107,7 @@ key_write(Key* self, Buf* buf)
 	encode_raw(buf, "path", 4);
 	encode_string(buf, &self->path);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }
 
 static inline void
@@ -117,7 +117,7 @@ key_find(Key* self, uint8_t** pos)
 	if (str_empty(&self->path))
 		return;
 
-	if (! map_find_path(pos, &self->path))
+	if (! obj_find_path(pos, &self->path))
 		error("column %.*s: key path <%.*s> is not found",
 		      str_size(&self->column->name),
 		      str_of(&self->column->name),

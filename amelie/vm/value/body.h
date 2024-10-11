@@ -59,7 +59,7 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 	case VALUE_NULL:
 		buf_write(self, "null", 4);
 		break;
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	case VALUE_ARRAY:
 	{
 		uint8_t* pos = value->data;
@@ -103,7 +103,7 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(self, "[", 1);
-		value->obj->decode(value->obj, self, timezone);
+		store_decode(value->store, self, timezone);
 		buf_write(self, "]", 1);
 		break;
 	// VALUE_GROUP

@@ -93,7 +93,7 @@ backup_prepare_state(Backup* self)
 
 	// prepare backup state
 	auto buf = &self->state;
-	encode_map(buf);
+	encode_obj(buf);
 
 	// checkpoint
 	uint64_t checkpoint = config_checkpoint();
@@ -120,7 +120,7 @@ backup_prepare_state(Backup* self)
 	guard(json_free, &json);
 	json_parse(&json, &config_str, buf);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }
 
 static void

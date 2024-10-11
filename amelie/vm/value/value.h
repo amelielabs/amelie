@@ -6,8 +6,7 @@
 // Real-Time SQL Database.
 //
 
-typedef struct ValueObj ValueObj;
-typedef struct Value    Value;
+typedef struct Value Value;
 
 typedef enum
 {
@@ -17,7 +16,7 @@ typedef enum
 	VALUE_REAL,
 	VALUE_NULL,
 	VALUE_STRING,
-	VALUE_MAP,
+	VALUE_OBJ,
 	VALUE_ARRAY,
 	VALUE_INTERVAL,
 	VALUE_TIMESTAMP,
@@ -26,14 +25,6 @@ typedef enum
 	VALUE_MERGE,
 	VALUE_GROUP
 } ValueType;
-
-struct ValueObj
-{
-	void (*free)(ValueObj*);
-	void (*encode)(ValueObj*, Buf*);
-	void (*decode)(ValueObj*, Buf*, Timezone*);
-	bool (*in)(ValueObj*, Value*);
-};
 
 struct Value
 {
@@ -49,7 +40,7 @@ struct Value
 			uint8_t* data;
 			int      data_size;
 		};
-		ValueObj* obj;
+		Store*   store;
 	};
 	Buf* buf;
 };
@@ -75,7 +66,7 @@ value_free(Value* self)
 	if (unlikely(self->type == VALUE_SET   ||
 	             self->type == VALUE_MERGE ||
 	             self->type == VALUE_GROUP))
-		self->obj->free(self->obj);
+		store_free(self->store);
 
 	self->type = VALUE_NONE;
 }
@@ -135,18 +126,18 @@ value_set_string(Value* self, Str* str, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_map(Value* self, uint8_t* data, int data_size, Buf* buf)
+value_set_obj(Value* self, uint8_t* data, int data_size, Buf* buf)
 {
-	self->type      = VALUE_MAP;
+	self->type      = VALUE_OBJ;
 	self->data      = data;
 	self->data_size = data_size;
 	self->buf       = buf;
 }
 
 always_inline hot static inline void
-value_set_map_buf(Value* self, Buf* buf)
+value_set_obj_buf(Value* self, Buf* buf)
 {
-	value_set_map(self, buf->start, buf_size(buf), buf);
+	value_set_obj(self, buf->start, buf_size(buf), buf);
 }
 
 always_inline hot static inline void
@@ -187,27 +178,27 @@ value_set_vector(Value* self, Vector* vector, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_set(Value* self, ValueObj* obj)
+value_set_set(Value* self, Store* store)
 {
-	self->type = VALUE_SET;
-	self->obj  = obj;
-	self->buf  = NULL;
+	self->type  = VALUE_SET;
+	self->store = store;
+	self->buf   = NULL;
 }
 
 always_inline hot static inline void
-value_set_merge(Value* self, ValueObj* obj)
+value_set_merge(Value* self, Store* store)
 {
-	self->type = VALUE_MERGE;
-	self->obj  = obj;
-	self->buf  = NULL;
+	self->type  = VALUE_MERGE;
+	self->store = store;
+	self->buf   = NULL;
 }
 
 always_inline hot static inline void
-value_set_group(Value* self, ValueObj* obj)
+value_set_group(Value* self, Store* store)
 {
-	self->type = VALUE_GROUP;
-	self->obj  = obj;
-	self->buf  = NULL;
+	self->type  = VALUE_GROUP;
+	self->store = store;
+	self->buf   = NULL;
 }
 
 hot static inline void
@@ -249,11 +240,11 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_string(self, &string, buf);
 		break;
 	}
-	case AM_MAP:
+	case AM_OBJ:
 	{
 		uint8_t* end = data;
 		data_skip(&end);
-		value_set_map(self, data, end - data, buf);
+		value_set_obj(self, data, end - data, buf);
 		break;
 	}
 	case AM_ARRAY:
@@ -328,7 +319,7 @@ value_write(Value* self, Buf* buf)
 	case VALUE_NULL:
 		encode_null(buf);
 		break;
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	case VALUE_ARRAY:
 		buf_write(buf, self->data, self->data_size);
 		break;
@@ -343,7 +334,7 @@ value_write(Value* self, Buf* buf)
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
-		self->obj->encode(self->obj, buf);
+		store_encode(self->store, buf);
 		break;
 	// VALUE_GROUP
 	default:
@@ -371,7 +362,7 @@ value_write_data(Value* self, uint8_t** pos)
 	case VALUE_NULL:
 		data_write_null(pos);
 		break;
-	case VALUE_MAP:
+	case VALUE_OBJ:
 	case VALUE_ARRAY:
 		memcpy(*pos, self->data, self->data_size);
 		*pos += self->data_size;
@@ -422,16 +413,16 @@ value_copy(Value* self, Value* src)
 			value_set_string(self, &string, buf);
 		}
 		break;
-	case VALUE_MAP:
+	case VALUE_OBJ:
 		if (src->buf)
 		{
-			value_set_map(self, src->data, src->data_size, src->buf);
+			value_set_obj(self, src->data, src->data_size, src->buf);
 			buf_ref(src->buf);
 		} else
 		{
 			auto buf = buf_create();
 			buf_write(buf, src->data, src->data_size);
-			value_set_map_buf(self, buf);
+			value_set_obj_buf(self, buf);
 		}
 		break;
 	case VALUE_ARRAY:
@@ -501,8 +492,8 @@ value_copy_ref(Value* self, Value* src)
 	case VALUE_STRING:
 		value_set_string(self, &src->string, NULL);
 		break;
-	case VALUE_MAP:
-		value_set_map(self, src->data, src->data_size, NULL);
+	case VALUE_OBJ:
+		value_set_obj(self, src->data, src->data_size, NULL);
 		break;
 	case VALUE_ARRAY:
 		value_set_array(self, src->data, src->data_size, NULL);
@@ -554,8 +545,8 @@ value_type_to_string(ValueType type)
 	case VALUE_STRING:
 		name = "string";
 		break;
-	case VALUE_MAP:
-		name = "map";
+	case VALUE_OBJ:
+		name = "object";
 		break;
 	case VALUE_ARRAY:
 		name = "array";

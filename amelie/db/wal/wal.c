@@ -302,9 +302,9 @@ wal_show(Wal* self)
 	int      slots_count;
 	slots_count = wal_slots(self, &slots_min);
 
-	// map
+	// obj
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -342,6 +342,6 @@ wal_show(Wal* self)
 	encode_raw(buf, "slots_min", 9);
 	encode_integer(buf, slots_min);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }

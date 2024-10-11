@@ -125,7 +125,7 @@ value_all_array_gte(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_equ(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
@@ -138,7 +138,7 @@ value_all_set_equ(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_nequ(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
@@ -151,7 +151,7 @@ value_all_set_nequ(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_lt(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
@@ -164,7 +164,7 @@ value_all_set_lt(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_lte(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
@@ -177,7 +177,7 @@ value_all_set_lte(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_gt(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
@@ -190,7 +190,7 @@ value_all_set_gt(Value* result, Value* a, Value* b)
 hot static inline void
 value_all_set_gte(Value* result, Value* a, Value* b)
 {
-	auto set = (Set*)b->obj;
+	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);

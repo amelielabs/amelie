@@ -92,7 +92,7 @@ hot static inline void
 json_keyword(Json* self, const char* name, int name_size)
 {
 	if (unlikely(! json_is_keyword(self, name, name_size)))
-		error("unexpected token");
+		error("unexpected JSON token");
 	self->pos += name_size;
 }
 
@@ -172,7 +172,7 @@ read_as_double:
 	char* end = NULL;
 	*real = strtod(start, &end);
 	if (errno == ERANGE)
-		error("bad float number token");
+		error("bad float number");
 	self->pos = end;
 	if (minus)
 		*real = -(*real);
@@ -338,7 +338,6 @@ json_const(Json* self)
 	error("unexpected token");
 }
 
-
 hot void
 json_parse(Json* self, Str* text, Buf* buf)
 {
@@ -353,46 +352,46 @@ json_parse(Json* self, Str* text, Buf* buf)
 		self->buf = buf;
 	}
 
-	// array ::=  [ [obj] [, ...] ]
-	// map   ::=  { ["key": obj] [, ...] }
-	// const ::=  int | real  | bool | string | null
-	// obj   ::=  array | map | const
+	// array  ::= [ [value] [, ...] ]
+	// obj    ::= { ["key": value] [, ...] }
+	// const  ::= int | real  | bool | string | null
+	// value  ::= array | obj | const
 
-	// push obj
+	// push expr
 	//
 	// while has stack
 	//
 	//    pop = stack()
 	//    switch pop
-	//      obj:
+	//      elem:
 	//         if [
 	//            if ]
 	//              write []
 	//            push array_next
-	//            push obj
-	//         if {, push map_key
+	//            push elem
+	//         if {, push obj_key
 	//            if }
 	//              write {}
-	//            push map_key
+	//            push obj_key
 	//         if const, push const
 	//         or error
 	//
 	//      array_next:
 	//         if ,
 	//            push array_next
-	//            push obj
+	//            push elem
 	//         if ], end
 	//         or error
 	//
-	//      map_key:
+	//      obj_key:
 	//        if not "key", error
 	//        if not ":", error
-	//        push map_next
-	//        push obj
+	//        push obj_next
+	//        push elem
 	//
-	//      map_next:
+	//      obj_next:
 	//         if ,
-	//            push map_key
+	//            push obj_key
 	//         if }, end
 	//         or error
 	//
@@ -426,14 +425,14 @@ json_parse(Json* self, Str* text, Buf* buf)
 			} else
 			if (next == '{')
 			{
-				encode_map(buf);
+				encode_obj(buf);
 				self->pos++;
 
 				// {}
 				next = json_next(self);
 				if (next == '}')
 				{
-					encode_map_end(buf);
+					encode_obj_end(buf);
 					self->pos++;
 					break;
 				}
@@ -469,12 +468,12 @@ json_parse(Json* self, Str* text, Buf* buf)
 			// "key"
 			Str str;
 			if (! json_string(self, &str))
-				error("map key expected");
+				error("object key expected");
 			encode_string(self->buf, &str);
 			// ':'
 			next = json_next(self);
 			if (next != ':')
-				error("unexpected map token");
+				error("unexpected object token");
 			self->pos++;
 			// value
 			json_push(self, JSON_MAP_NEXT);
@@ -491,11 +490,11 @@ json_parse(Json* self, Str* text, Buf* buf)
 			}
 			if (next == '}')
 			{
-				encode_map_end(buf);
+				encode_obj_end(buf);
 				self->pos++;
 				break;
 			}
-			error("unexpected map token");
+			error("unexpected object token");
 			break;
 		}
 		}

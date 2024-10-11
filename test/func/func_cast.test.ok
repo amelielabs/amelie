@@ -8,7 +8,7 @@ select "Hi"::type
 select [1,2,3]::type
 ["array"]
 select {}::type
-["map"]
+["object"]
 select (select * from [1,2,3])::type
 ["set"]
 # test: (int) int to int
@@ -102,13 +102,11 @@ select '[1,2,3]'::native
 [1, 2, 3]
 select '[1,2,3]'::native::type
 ["array"]
-# test: (native) map to native
-select '{"id":55}'::native
-[{
-  "id": 55
-}]
-select '{"id":55}'::native::type
-["map"]
+# test: (native) obj to native
+select {"id":55}::native
+{"code": 1, "msg": "native(): string type expected"}
+select {"id":55}::native::type
+{"code": 1, "msg": "native(): string type expected"}
 # test: (native) vector to native
 select 'vector [1,2,3]'::native
 [1, 2, 3]

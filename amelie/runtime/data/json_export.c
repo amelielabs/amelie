@@ -71,19 +71,19 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_write(data, "]", 1);
 		break;
 	}
-	case AM_MAP:
+	case AM_OBJ:
 	{
-		data_read_map(pos);
+		data_read_obj(pos);
 		if (pretty)
 		{
 			// {}
-			if (data_read_map_end(pos))
+			if (data_read_obj_end(pos))
 			{
 				buf_write(data, "{}", 2);
 				break;
 			}
 			buf_write(data, "{\n", 2);
-			while (! data_read_map_end(pos))
+			while (! data_read_obj_end(pos))
 			{
 				for (int i = 0; i < deep + 1; i++)
 					buf_write(data, "  ", 2);
@@ -93,7 +93,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (data_is_map_end(*pos))
+				if (data_is_obj_end(*pos))
 					buf_write(data, "\n", 1);
 				else
 					buf_write(data, ",\n", 2);
@@ -104,7 +104,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		} else
 		{
 			buf_write(data, "{", 1);
-			while (! data_read_map_end(pos))
+			while (! data_read_obj_end(pos))
 			{
 				// key
 				json_export_as(data, timezone, pretty, deep + 1, pos);
@@ -112,7 +112,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (! data_is_map_end(*pos))
+				if (! data_is_obj_end(*pos))
 					buf_write(data, ", ", 2);
 			}
 			buf_write(data, "}", 1);

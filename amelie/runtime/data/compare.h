@@ -147,21 +147,21 @@ data_compare(uint8_t* a, uint8_t* b)
 			level--;
 			break;
 		}
-		case AM_MAP:
+		case AM_OBJ:
 		{
-			if (! data_is_map(b))
+			if (! data_is_obj(b))
 				return compare_int64(*a, *b);
-			data_read_map(&a);
-			data_read_map(&b);
+			data_read_obj(&a);
+			data_read_obj(&b);
 			level++;
 			break;
 		}
-		case AM_MAP_END:
+		case AM_OBJ_END:
 		{
-			if (! data_is_map_end(b))
+			if (! data_is_obj_end(b))
 				return compare_int64(*a, *b);
-			data_read_map_end(&a);
-			data_read_map_end(&b);
+			data_read_obj_end(&a);
+			data_read_obj_end(&b);
 			level--;
 			break;
 		}

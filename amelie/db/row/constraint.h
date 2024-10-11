@@ -75,7 +75,7 @@ constraint_copy(Constraint* self, Constraint* copy)
 static inline void
 constraint_read(Constraint* self, uint8_t** pos)
 {
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_BOOL, "not_null",  &self->not_null  },
 		{ DECODE_INT,  "generated", &self->generated },
@@ -83,13 +83,13 @@ constraint_read(Constraint* self, uint8_t** pos)
 		{ DECODE_DATA, "default",   &self->value     },
 		{ 0,            NULL,       NULL             },
 	};
-	decode_map(map, "constraint", pos);
+	decode_obj(obj, "constraint", pos);
 }
 
 static inline void
 constraint_write(Constraint* self, Buf* buf)
 {
-	encode_map(buf);
+	encode_obj(buf);
 
 	// not_null
 	encode_raw(buf, "not_null", 8);
@@ -107,5 +107,5 @@ constraint_write(Constraint* self, Buf* buf)
 	encode_raw(buf, "default", 7);
 	buf_write(buf, self->value.start, buf_size(&self->value));
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

@@ -8,7 +8,7 @@
 
 enum
 {
-	TYPE_MAP,
+	TYPE_OBJ,
 	TYPE_ARRAY,
 	TYPE_INT,
 	TYPE_BOOL,
@@ -23,8 +23,8 @@ hot static inline bool
 type_validate(int type, uint8_t* data)
 {
 	switch (type) {
-	case TYPE_MAP:
-		return data_is_map(data);
+	case TYPE_OBJ:
+		return data_is_obj(data);
 	case TYPE_ARRAY:
 		return data_is_array(data);
 	case TYPE_INT:
@@ -49,7 +49,7 @@ hot static inline const char*
 type_of(int type)
 {
 	switch (type) {
-	case TYPE_MAP:       return "map";
+	case TYPE_OBJ:       return "object";
 	case TYPE_ARRAY:     return "array";
 	case TYPE_INT:       return "int";
 	case TYPE_BOOL:      return "bool";

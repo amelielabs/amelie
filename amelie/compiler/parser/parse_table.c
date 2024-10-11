@@ -60,9 +60,9 @@ parse_type(Stmt* self, Column* column, Str* path)
 		type = TYPE_ARRAY;
 	} else
 	if (str_compare_raw(&ast->string, "object", 6) ||
-	    str_compare_raw(&ast->string, "map", 3))
+	    str_compare_raw(&ast->string, "obj", 3))
 	{
-		type = TYPE_MAP;
+		type = TYPE_OBJ;
 	} else
 	if (str_compare_raw(&ast->string, "timestamp", 9))
 	{

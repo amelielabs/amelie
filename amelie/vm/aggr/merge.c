@@ -21,23 +21,23 @@
 #include <amelie_aggr.h>
 
 static void
-merge_free(ValueObj* obj)
+merge_free(Store* store)
 {
-	auto self = (Merge*)obj;
+	auto self = (Merge*)store;
 	auto list = (Set**)self->list.start;
 	for (int i = 0; i < self->list_count; i++)
 	{
 		auto set = list[i];
-		set->obj.free(&set->obj);
+		store_free(&set->store);
 	}
 	buf_free(&self->list);
 	am_free(self);
 }
 
 static void
-merge_encode(ValueObj* obj, Buf* buf)
+merge_encode(Store* store, Buf* buf)
 {
-	auto self = (Merge*)obj;
+	auto self = (Merge*)store;
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
@@ -57,9 +57,9 @@ merge_encode(ValueObj* obj, Buf* buf)
 }
 
 static void
-merge_decode(ValueObj* obj, Buf* buf, Timezone* timezone)
+merge_decode(Store* store, Buf* buf, Timezone* timezone)
 {
-	auto self = (Merge*)obj;
+	auto self = (Merge*)store;
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
@@ -82,16 +82,16 @@ Merge*
 merge_create(void)
 {
 	Merge* self = am_malloc(sizeof(Merge));
-	self->obj.free   = merge_free;
-	self->obj.encode = merge_encode;
-	self->obj.decode = merge_decode;
-	self->obj.in     = NULL;
-	self->keys       = NULL;
-	self->keys_count = 0;
-	self->list_count = 0;
-	self->limit      = INT64_MAX;
-	self->offset     = 0;
-	self->distinct   = false;
+	self->store.free   = merge_free;
+	self->store.encode = merge_encode;
+	self->store.decode = merge_decode;
+	self->store.in     = NULL;
+	self->keys         = NULL;
+	self->keys_count   = 0;
+	self->list_count   = 0;
+	self->limit        = INT64_MAX;
+	self->offset       = 0;
+	self->distinct     = false;
 	buf_init(&self->list);
 	return self;
 }

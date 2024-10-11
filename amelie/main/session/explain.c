@@ -59,12 +59,12 @@ explain(Explain*  self,
         bool      profile)
 {
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 	unused(dtr);
 
 	// bytecode
 	encode_raw(buf, "bytecode", 8);
-	encode_map(buf);
+	encode_obj(buf);
 
 	// coordinator code
 	encode_raw(buf, "coordinator", 11);
@@ -76,13 +76,13 @@ explain(Explain*  self,
 		encode_raw(buf, "node", 4);
 		op_dump(node, data, buf);
 	}
-	encode_map_end(buf);
+	encode_obj_end(buf);
 
 	// profiler
 	if (profile)
 	{
 		encode_raw(buf, "profiler", 8);
-		encode_map(buf);
+		encode_obj(buf);
 
 		uint64_t time_us = self->time_run_us + self->time_commit_us;
 
@@ -102,9 +102,9 @@ explain(Explain*  self,
 		encode_raw(buf, "sent_total", 10);
 		encode_integer(buf, buf_size(body));
 
-		encode_map_end(buf);
+		encode_obj_end(buf);
 	}
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }

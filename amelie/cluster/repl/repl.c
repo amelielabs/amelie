@@ -149,9 +149,9 @@ repl_subscribe(Repl* self, Str* primary_id)
 Buf*
 repl_show(Repl* self)
 {
-	// map
+	// obj
 	auto buf = buf_create();
-	encode_map(buf);
+	encode_obj(buf);
 
 	// active
 	encode_raw(buf, "active", 6);
@@ -168,6 +168,6 @@ repl_show(Repl* self)
 	else
 		encode_string(buf, &config()->repl_primary.string);
 
-	encode_map_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }

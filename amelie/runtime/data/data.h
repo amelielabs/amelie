@@ -393,62 +393,62 @@ data_is_real(uint8_t* data)
 	return *data == AM_REAL32 || *data == AM_REAL64;
 }
 
-// map
+// obj
 always_inline hot static inline int
-data_size_map(void)
+data_size_obj(void)
 {
 	return data_size_type();
 }
 
 always_inline hot static inline int
-data_size_map_end(void)
+data_size_obj_end(void)
 {
 	return data_size_type();
 }
 
 always_inline hot static inline void
-data_read_map(uint8_t** pos)
+data_read_obj(uint8_t** pos)
 {
-	if (unlikely(**pos != AM_MAP))
-		data_error(*pos, AM_MAP);
+	if (unlikely(**pos != AM_OBJ))
+		data_error(*pos, AM_OBJ);
 	*pos += data_size_type();
 }
 
 always_inline hot static inline bool
-data_read_map_end(uint8_t** pos)
+data_read_obj_end(uint8_t** pos)
 {
-	if (unlikely(**pos != AM_MAP_END))
+	if (unlikely(**pos != AM_OBJ_END))
 		return false;
 	*pos += data_size_type();
 	return true;
 }
 
 always_inline hot static inline void
-data_write_map(uint8_t** pos)
+data_write_obj(uint8_t** pos)
 {
 	uint8_t* data = *pos;
-	*data = AM_MAP;
+	*data = AM_OBJ;
 	*pos += data_size_type();
 }
 
 always_inline hot static inline void
-data_write_map_end(uint8_t** pos)
+data_write_obj_end(uint8_t** pos)
 {
 	uint8_t* data = *pos;
-	*data = AM_MAP_END;
+	*data = AM_OBJ_END;
 	*pos += data_size_type();
 }
 
 always_inline hot static inline bool
-data_is_map(uint8_t* data)
+data_is_obj(uint8_t* data)
 {
-	return *data == AM_MAP;
+	return *data == AM_OBJ;
 }
 
 always_inline hot static inline bool
-data_is_map_end(uint8_t* data)
+data_is_obj_end(uint8_t* data)
 {
-	return *data == AM_MAP_END;
+	return *data == AM_OBJ_END;
 }
 
 // array

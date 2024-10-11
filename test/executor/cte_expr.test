@@ -48,7 +48,7 @@ explain with test as (select [1]) select * from test
 with test as (select [1,2]) select * from test
 explain with test as (select [1,2]) select * from test
 
-# test: select from cte (map)
+# test: select from cte (object)
 with test as (select {"a": 0, "b": 1}) select * from test
 explain with test as (select {"a": 0, "b": 1}) select * from test
 

@@ -68,13 +68,13 @@ user_config_read(uint8_t** pos)
 {
 	auto self = user_config_allocate();
 	guard(user_config_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",   &self->name   },
 		{ DECODE_STRING, "secret", &self->secret },
 		{ 0,              NULL,    NULL          },
 	};
-	decode_map(map, "user", pos);
+	decode_obj(obj, "user", pos);
 	return unguard();
 }
 
@@ -83,16 +83,16 @@ user_config_write(UserConfig* self, Buf* buf, bool safe)
 {
 	if (safe)
 	{
-		encode_map(buf);
+		encode_obj(buf);
 		encode_raw(buf, "name", 4);
 		encode_string(buf, &self->name);
 		encode_raw(buf, "secret", 6);
 		encode_string(buf, &self->secret);
-		encode_map_end(buf);
+		encode_obj_end(buf);
 		return;
 	}
-	encode_map(buf);
+	encode_obj(buf);
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

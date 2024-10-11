@@ -57,7 +57,7 @@ replica_config_read(uint8_t** pos)
 {
 	auto self = replica_config_allocate();
 	guard(replica_config_free, self);
-	Decode map[] =
+	Decode obj[] =
 	{
 		{ DECODE_UUID,   "id",         &self->id                                   },
 		{ DECODE_STRING, "uri",        remote_get(&self->remote, REMOTE_URI)       },
@@ -68,7 +68,7 @@ replica_config_read(uint8_t** pos)
 		{ DECODE_STRING, "token",      remote_get(&self->remote, REMOTE_TOKEN)     },
 		{ 0,              NULL,        NULL                                        },
 	};
-	decode_map(map, "replica", pos);
+	decode_obj(obj, "replica", pos);
 	return unguard();
 }
 
@@ -76,7 +76,7 @@ static inline void
 replica_config_write(ReplicaConfig* self, Buf* buf)
 {
 	// {}
-	encode_map(buf);
+	encode_obj(buf);
 
 	// id
 	encode_raw(buf, "id", 2);
@@ -105,5 +105,5 @@ replica_config_write(ReplicaConfig* self, Buf* buf)
 	// token
 	encode_raw(buf, "token", 5);
 	encode_string(buf, remote_get(&self->remote, REMOTE_TOKEN));
-	encode_map_end(buf);
+	encode_obj_end(buf);
 }

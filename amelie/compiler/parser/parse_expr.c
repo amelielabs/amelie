@@ -150,7 +150,7 @@ expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
 }
 
 static Ast*
-expr_args(Stmt* self, Expr* expr, int endtoken, bool map_separator)
+expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 {
 	int  count = 0;
 	Ast* expr_head = NULL;
@@ -171,7 +171,7 @@ expr_args(Stmt* self, Expr* expr, int endtoken, bool map_separator)
 		count++;
 
 		// :
-		if (map_separator && (count % 2) != 0)
+		if (obj_separator && (count % 2) != 0)
 		{
 			if (! stmt_if(self, ':'))
 				error("{}: {name <:>} expected");
@@ -491,7 +491,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 	}
 
-	// map
+	// object
 	case '{':
 		// { [expr: expr, ... ] }
 		value->l = expr_args(self, expr, '}', true);
