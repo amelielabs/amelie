@@ -121,7 +121,7 @@ select * from system.views()
   "query": "select * from test",
   "columns": [{
     "name": "id",
-    "type": -1,
+    "type": "",
     "constraint": {
       "not_null": false,
       "generated": 0,

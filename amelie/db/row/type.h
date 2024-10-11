@@ -59,5 +59,52 @@ type_of(int type)
 	case TYPE_INTERVAL:  return "interval";
 	case TYPE_VECTOR:    return "vector";
 	}
-	return NULL;
+	return "";
+}
+
+hot static inline int
+type_read(Str* name)
+{
+	int type = -1;
+	if (str_compare_raw(name, "int", 3) ||
+	    str_compare_raw(name, "integer", 7))
+	{
+		type = TYPE_INT;
+	} else
+	if (str_compare_raw(name, "real", 4))
+	{
+		type = TYPE_REAL;
+	} else
+	if (str_compare_raw(name, "bool", 4) ||
+	    str_compare_raw(name, "boolean", 7))
+	{
+		type = TYPE_BOOL;
+	} else
+	if (str_compare_raw(name, "text", 4) ||
+	    str_compare_raw(name, "string", 6))
+	{
+		type = TYPE_STRING;
+	} else
+	if (str_compare_raw(name, "array", 5))
+	{
+		type = TYPE_ARRAY;
+	} else
+	if (str_compare_raw(name, "object", 6) ||
+	    str_compare_raw(name, "obj", 3))
+	{
+		type = TYPE_OBJ;
+	} else
+	if (str_compare_raw(name, "timestamp", 9))
+	{
+		type = TYPE_TIMESTAMP;
+	} else
+	if (str_compare_raw(name, "interval", 8))
+	{
+		type = TYPE_INTERVAL;
+	} else
+	if (str_compare_raw(name, "vector", 6))
+	{
+		type = TYPE_VECTOR;
+	}
+	return type;
 }

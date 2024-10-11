@@ -61,7 +61,7 @@ create table test(id int primary key, id2 integer)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -70,7 +70,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "id2",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -86,7 +86,7 @@ create table test(id int primary key, a bool, b boolean)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -95,7 +95,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 3,
+  "type": "bool",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -104,7 +104,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "b",
-  "type": 3,
+  "type": "bool",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -120,7 +120,7 @@ create table test(id int primary key, a string, b text)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -129,7 +129,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 5,
+  "type": "string",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -138,7 +138,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "b",
-  "type": 5,
+  "type": "string",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -154,7 +154,7 @@ create table test(id int primary key, a real)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -163,7 +163,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 4,
+  "type": "real",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -179,7 +179,7 @@ create table test(id int primary key, a obj, b object)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -188,7 +188,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 0,
+  "type": "object",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -197,7 +197,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "b",
-  "type": 0,
+  "type": "object",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -213,7 +213,7 @@ create table test(id int primary key, a array)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -222,7 +222,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 1,
+  "type": "array",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -238,7 +238,7 @@ create table test(id int primary key, a timestamp)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -247,7 +247,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 6,
+  "type": "timestamp",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -263,7 +263,7 @@ create table test(id int primary key, a interval)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -272,7 +272,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 7,
+  "type": "interval",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -288,7 +288,7 @@ create table test(id int primary key, a vector)
 select columns from system.tables() where name = "test"
 [[{
   "name": "id",
-  "type": 2,
+  "type": "int",
   "constraint": {
     "not_null": true,
     "generated": 0,
@@ -297,7 +297,7 @@ select columns from system.tables() where name = "test"
   }
 }, {
   "name": "a",
-  "type": 8,
+  "type": "vector",
   "constraint": {
     "not_null": false,
     "generated": 0,
@@ -343,11 +343,11 @@ create table if not exists test(id int primary key, primary key(id))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }, {
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -371,7 +371,7 @@ create table test(data obj, primary key(data.id integer))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": "id"
 }]]
 drop table test
@@ -457,7 +457,7 @@ create table test (id int primary key, data int default 1)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -481,7 +481,7 @@ create table test (id int not null primary key)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -492,7 +492,7 @@ create table test (id int primary key, data int)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -503,7 +503,7 @@ create table test (id int, data int, primary key(id))
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -516,7 +516,7 @@ create table test (id int primary key, data int not null)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 insert into test values(1, 1)
@@ -533,7 +533,7 @@ create table test (id int primary key, data int not null default 123)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 insert into test values(1, 1)
@@ -552,7 +552,7 @@ create table test (id int primary key, data int serial)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -563,7 +563,7 @@ create table test (id int serial primary key)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -574,7 +574,7 @@ create table test (id int serial, primary key(id))
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test
@@ -588,7 +588,7 @@ create table test (id int serial primary key, data int serial)
 select indexes[0].keys from system.tables()
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 drop table test

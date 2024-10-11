@@ -64,7 +64,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -79,7 +79,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -95,7 +95,7 @@ show tables
   "shared": true,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -110,7 +110,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -194,7 +194,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -209,7 +209,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -225,7 +225,7 @@ show tables
   "shared": true,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -240,7 +240,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -256,7 +256,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -271,7 +271,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -329,7 +329,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -344,7 +344,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -360,7 +360,7 @@ show tables
   "shared": true,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -375,7 +375,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -391,7 +391,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -406,7 +406,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -454,7 +454,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -469,7 +469,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -485,7 +485,7 @@ show tables
   "shared": true,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -500,7 +500,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],
@@ -516,7 +516,7 @@ show tables
   "shared": false,
   "columns": [{
     "name": "id",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": true,
       "generated": 0,
@@ -525,7 +525,7 @@ show tables
     }
   }, {
     "name": "data",
-    "type": 2,
+    "type": "int",
     "constraint": {
       "not_null": false,
       "generated": 0,
@@ -540,7 +540,7 @@ show tables
     "primary": true,
     "keys": [{
       "ref": 0,
-      "type": 2,
+      "type": "int",
       "path": ""
     }]
   }],

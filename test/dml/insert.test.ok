@@ -63,11 +63,11 @@ create table test (id int, id2 int, primary key (id, id2))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }, {
   "ref": 1,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]]
 insert into test values (123)
@@ -86,7 +86,7 @@ create table test (obj object, primary key (obj.id int))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": "id"
 }]]
 insert into test values (123)
@@ -107,7 +107,7 @@ create table test (obj object, primary key (obj.data.id int))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": "data.id"
 }]]
 insert into test values (123)
@@ -136,11 +136,11 @@ create table test (obj object, primary key (obj.data.id int, obj.id int))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": "data.id"
 }, {
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": "id"
 }]]
 insert into test values ( {"data": {"id": 48} } )

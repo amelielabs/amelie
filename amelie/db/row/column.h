@@ -68,15 +68,18 @@ column_read(uint8_t** pos)
 {
 	auto self = column_allocate();
 	guard(column_free, self);
+	Str type;
+	str_init(&type);
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",       &self->name  },
-		{ DECODE_INT,    "type",       &self->type  },
+		{ DECODE_STRING, "type",       &type        },
 		{ DECODE_OBJ,    "constraint", &constraints },
 		{ 0,              NULL,        NULL         },
 	};
 	decode_obj(obj, "columns", pos);
+	self->type = type_read(&type);
 	constraint_read(&self->constraint, &constraints);
 	return unguard();
 }
@@ -92,7 +95,7 @@ column_write(Column* self, Buf* buf)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
+	encode_cstr(buf, type_of(self->type));
 
 	// constraint
 	encode_raw(buf, "constraint", 10);

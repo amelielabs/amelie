@@ -31,54 +31,15 @@
 int
 parse_type(Stmt* self, Column* column, Str* path)
 {
-	int  type = 0;
 	auto ast  = stmt_next_shadow(self);
 	if (ast->id != KNAME)
 		goto error;
 
-	if (str_compare_raw(&ast->string, "int", 3) ||
-	    str_compare_raw(&ast->string, "integer", 7))
-	{
-		type = TYPE_INT;
-	} else
-	if (str_compare_raw(&ast->string, "real", 4))
-	{
-		type = TYPE_REAL;
-	} else
-	if (str_compare_raw(&ast->string, "bool", 4) ||
-	    str_compare_raw(&ast->string, "boolean", 7))
-	{
-		type = TYPE_BOOL;
-	} else
-	if (str_compare_raw(&ast->string, "text", 4) ||
-	    str_compare_raw(&ast->string, "string", 6))
-	{
-		type = TYPE_STRING;
-	} else
-	if (str_compare_raw(&ast->string, "array", 5))
-	{
-		type = TYPE_ARRAY;
-	} else
-	if (str_compare_raw(&ast->string, "object", 6) ||
-	    str_compare_raw(&ast->string, "obj", 3))
-	{
-		type = TYPE_OBJ;
-	} else
-	if (str_compare_raw(&ast->string, "timestamp", 9))
-	{
-		type = TYPE_TIMESTAMP;
-	} else
-	if (str_compare_raw(&ast->string, "interval", 8))
-	{
-		type = TYPE_INTERVAL;
-	} else
-	if (str_compare_raw(&ast->string, "vector", 6))
-	{
-		type = TYPE_VECTOR;
-	} else {
+	auto type = type_read(&ast->string);
+	if (type == -1)
 		goto error;
-	}
 	return type;
+
 error:
 	if (column && path)
 		error("%.*s.%.*s <TYPE> expected",

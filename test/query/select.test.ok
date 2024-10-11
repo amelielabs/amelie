@@ -190,7 +190,7 @@ create table test (id int primary key serial)
 select * from system.tables()[0].indexes[0].keys
 [{
   "ref": 0,
-  "type": 2,
+  "type": "int",
   "path": ""
 }]
 drop table test

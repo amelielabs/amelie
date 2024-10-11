@@ -452,7 +452,7 @@ select indexes from system.tables()
   "primary": true,
   "keys": [{
     "ref": 0,
-    "type": 2,
+    "type": "int",
     "path": ""
   }]
 }, {
@@ -462,11 +462,11 @@ select indexes from system.tables()
   "primary": false,
   "keys": [{
     "ref": 1,
-    "type": 2,
+    "type": "int",
     "path": ""
   }, {
     "ref": 0,
-    "type": 2,
+    "type": "int",
     "path": ""
   }]
 }]]

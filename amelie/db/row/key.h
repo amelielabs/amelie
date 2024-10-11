@@ -79,14 +79,20 @@ key_read(uint8_t** pos)
 {
 	auto self = key_allocate();
 	guard(key_free, self);
+	Str type;
+	str_init(&type);
 	Decode obj[] =
 	{
 		{ DECODE_INT,    "ref",  &self->ref  },
-		{ DECODE_INT,    "type", &self->type },
+		{ DECODE_STRING, "type", &type       },
 		{ DECODE_STRING, "path", &self->path },
 		{ 0,              NULL,  NULL        },
 	};
 	decode_obj(obj, "key", pos);
+	self->type = type_read(&type);
+	if (self->type == -1)
+		error("key: unknown type %.*s", str_size(&type),
+		      str_of(&type));
 	return unguard();
 }
 
@@ -101,7 +107,7 @@ key_write(Key* self, Buf* buf)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
+	encode_cstr(buf, type_of(self->type));
 
 	// path
 	encode_raw(buf, "path", 4);
