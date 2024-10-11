@@ -85,6 +85,14 @@ repl_open(Repl* self)
 void
 repl_start(Repl* self)
 {
+	// ensure wal is enabled
+	if (! var_int_of(&config()->wal))
+	{
+		info("replication: wal is disabled");
+		repl_stop(self);
+		return;
+	}
+
 	if (var_int_of(&config()->repl))
 		return;
 
