@@ -24,7 +24,6 @@ test table_alter
 test index
 test view
 test cascade
-test truncate
 
 # dml
 directory dml
@@ -33,6 +32,7 @@ test insert
 test update
 test delete
 test upsert
+test truncate
 
 # index
 directory index

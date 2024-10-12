@@ -76,6 +76,7 @@ index_hash_truncate(Index* arg)
 {
 	auto self = index_hash_of(arg);
 	hash_free(&self->hash);
+	hash_create(&self->hash, &arg->config->keys);
 }
 
 static void
