@@ -156,7 +156,8 @@ select {}::set("id", 42)::set("data", {"misc": null}).data.misc
 select set({"a": 0}, "a", 1)
 select set({"a": 0}, "a", {"b": 2})
 select set({"a": 0}, "a", {"b": 2}).a.b
-select set({"a": 0}, "a", {"b": 2})["a.b"]
+select set({"a": 0}, "a", {"b": 2})."a"."b"
+select set({"a": 0}, "a", {"b": 2})["a"]["b"]
 select set({"a": 0}, "b", {"c": 3})
 select set({"a": 0}, "b", [1, 2]).b
 select set({"a": 0}, "b", [1, 2]).b[1]

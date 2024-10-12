@@ -103,6 +103,7 @@ OpDesc ops[] =
 	{ CNEG,               "neg"               },
 	{ CCAT,               "cat"               },
 	{ CIDX,               "idx"               },
+	{ CAT,                "at"                },
 
 	// object
 	{ COBJ,               "obj"               },

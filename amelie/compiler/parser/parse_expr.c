@@ -865,11 +865,15 @@ parse_op(Stmt*     self, Expr* expr,
 	}
 	case '.':
 	{
+		// expr.'key' (handle as expr['key'])
+
 		// expr.name
-		// expr.path.to
+		// expr.name.path
 		auto r = stmt_next_shadow(self);
-		if (r->id == KNAME ||
-			r->id == KNAME_COMPOUND)
+		if (r->id == KSTRING)
+			ast->id = '[';
+		else
+		if (r->id == KNAME || r->id == KNAME_COMPOUND)
 			r->id = KSTRING;
 		else
 			error("bad '.' expression");

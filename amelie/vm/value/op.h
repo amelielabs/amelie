@@ -772,27 +772,34 @@ value_has(Value* result, Value* a, Value* b)
 }
 
 always_inline hot static inline void
+value_at(Value* result, Value* a, Value* b)
+{
+	// obj.name
+	// obj.name.path
+	if (unlikely(a->type != VALUE_OBJ))
+		error(".: object expected");
+	if (unlikely(b->type != VALUE_STRING))
+		error(".: object path must be string");
+	uint8_t* data = a->data;
+	if (! obj_find_path(&data, &b->string))
+		error("<%.*s>: object path not found", str_size(&b->string),
+		      str_of(&b->string));
+	value_read_ref(result, data, a->buf);
+}
+
+always_inline hot static inline void
 value_idx(Value* result, Value* a, Value* b)
 {
 	switch (a->type) {
-	case VALUE_VECTOR:
-	{
-		// vector[idx]
-		if (unlikely(b->type != VALUE_INT))
-			error("[]: vector key type must be int");
-		if (unlikely(b->integer < 0 || b->integer >= a->vector.size))
-			error("[]: vector index  is out of bounds");
-		value_set_real(result, a->vector.value[b->integer]);
-		break;
-	}
 	case VALUE_OBJ:
 	{
-		// obj['path']
+		// obj.'key'
+		// obj['key']
 		if (unlikely(b->type != VALUE_STRING))
-			error("[]: object key type must be string");
+			error("[]: object key must be string");
 		uint8_t* data = a->data;
-		if (! obj_find_path(&data, &b->string))
-			error("<%.*s>: object path not found", str_size(&b->string),
+		if (! obj_find(&data, str_of(&b->string), str_size(&b->string)))
+			error("<%.*s>: object key not found", str_size(&b->string),
 			      str_of(&b->string));
 		value_read_ref(result, data, a->buf);
 		break;
@@ -806,6 +813,16 @@ value_idx(Value* result, Value* a, Value* b)
 		if (! array_find(&data, b->integer))
 			error("<%d>: array index not found", b->integer);
 		value_read_ref(result, data, a->buf);
+		break;
+	}
+	case VALUE_VECTOR:
+	{
+		// vector[idx]
+		if (unlikely(b->type != VALUE_INT))
+			error("[]: vector key type must be int");
+		if (unlikely(b->integer < 0 || b->integer >= a->vector.size))
+			error("[]: vector index  is out of bounds");
+		value_set_real(result, a->vector.value[b->integer]);
 		break;
 	}
 	default:

@@ -24,7 +24,7 @@ explain select system.config().directory::length()
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # directory",
-      "02": "idx                 2      0      1     ",
+      "02": "at                  2      0      1     ",
       "03": "push                2      0      0     ",
       "04": "call                0      -      1     # public.length()",
       "05": "cte_set             0      0      0     ",
@@ -65,7 +65,7 @@ explain select system.config().directory::length
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # directory",
-      "02": "idx                 2      0      1     ",
+      "02": "at                  2      0      1     ",
       "03": "push                2      0      0     ",
       "04": "call                0      -      1     # public.length()",
       "05": "cte_set             0      0      0     ",

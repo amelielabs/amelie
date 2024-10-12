@@ -843,8 +843,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KBETWEEN:
 		return emit_between(self, target, ast);
 
-	// at
+	// at, idx
 	case '.':
+		return emit_operator(self, target, ast, CAT);
 	case '[':
 		return emit_operator(self, target, ast, CIDX);
 

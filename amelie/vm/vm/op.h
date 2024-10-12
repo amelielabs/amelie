@@ -84,6 +84,7 @@ enum
 	CNEG,
 	CCAT,
 	CIDX,
+	CAT,
 
 	// object
 	COBJ,

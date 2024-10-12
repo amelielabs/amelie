@@ -12,7 +12,7 @@ explain watch system.config().lsn = 1
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # lsn",
-      "02": "idx                 2      0      1     ",
+      "02": "at                  2      0      1     ",
       "03": "int                 0      -      0     # 1",
       "04": "equ                 1      2      0     ",
       "05": "jtr                 8      1      0     ",

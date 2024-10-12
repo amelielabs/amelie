@@ -7,7 +7,7 @@ explain select system.config().backends
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # backends",
-      "02": "idx                 2      0      1     ",
+      "02": "at                  2      0      1     ",
       "03": "cte_set             0      2      0     ",
       "04": "body                0      0      0     ",
       "05": "ret                 0      0      0     "

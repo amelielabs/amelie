@@ -163,6 +163,7 @@ vm_run(Vm*       self,
 		&&cneg,
 		&&ccat,
 		&&cidx,
+		&&cat,
 		&&cobj,
 		&&carray,
 		&&cassign,
@@ -481,6 +482,15 @@ cidx:
 	b = &r[op->b];
 	c = &r[op->c];
 	value_idx(a, b, c);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
+	op_next;
+
+cat:
+	a = &r[op->a];
+	b = &r[op->b];
+	c = &r[op->c];
+	value_at(a, b, c);
 	value_free(&r[op->b]);
 	value_free(&r[op->c]);
 	op_next;

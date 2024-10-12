@@ -247,8 +247,10 @@ select {"a": 0, "b": 1}
 select {"a": 123}.a
 select {"a": 123}["a"]
 select {"a": {"b": 777}}.a.b
-select {"a": {"b": 777}}["a.b"]
-select {"a": {"b": 777}}["a" || "." || "b"]
+select {"a": {"b": 777}}.'a'.b
+select {"a": {"b": 777}}.'a'.'b'
+select {"a": {"b": 777}}["a"]["b"]
+select {"a": {"b": 777}}["a"].b
 select {"a": {"b": 777}}::length()
 
 disconnect S0
