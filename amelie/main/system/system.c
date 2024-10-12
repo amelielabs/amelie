@@ -190,7 +190,7 @@ system_start(System* self, bool bootstrap)
 	repl_open(&self->repl);
 
 	// show system options
-	if (var_int_of(&config()->log_options))
+	if (bootstrap || var_int_of(&config()->log_options))
 	{
 		vars_print(&config()->vars);
 		info("");
