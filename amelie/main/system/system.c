@@ -145,9 +145,10 @@ void
 system_start(System* self, bool bootstrap)
 {
 	// hello
+	auto version = &config()->version.string;
 	auto tz = &config()->timezone_default.string;
 	info("");
-	info("amelie.");
+	info("amelie. (%.*s)", str_size(version), str_of(version));
 	info("");
 	info("time: default timezone is '%.*s'", str_size(tz), str_of(tz));
 	info("");
@@ -170,6 +171,7 @@ system_start(System* self, bool bootstrap)
 
 	info("");
 	info("cluster: system has %d compute nodes", self->cluster.list_count);
+	info("");
 
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
@@ -187,9 +189,12 @@ system_start(System* self, bool bootstrap)
 	// prepare replication manager
 	repl_open(&self->repl);
 
-	info("");
-	vars_print(&config()->vars);
-	info("");
+	// show system options
+	if (var_int_of(&config()->log_options))
+	{
+		vars_print(&config()->vars);
+		info("");
+	}
 
 	// start server
 	server_start(&self->server, system_on_server_connect, self);

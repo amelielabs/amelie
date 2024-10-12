@@ -45,6 +45,7 @@ config_prepare(Config* self)
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },
 		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,        true             },
 		{ "log_connections",         VAR_BOOL,   VAR_C|VAR_R,             &self->log_connections,         NULL,        true             },
+		{ "log_options",             VAR_BOOL,   VAR_C|VAR_R,             &self->log_options,             NULL,        false            },
 		// server
 		{ "tls_capath",              VAR_STRING, VAR_C,                   &self->tls_capath,              NULL,        0                },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,        0                },

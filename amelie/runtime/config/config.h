@@ -21,6 +21,7 @@ struct Config
 	Var  log_to_file;
 	Var  log_to_stdout;
 	Var  log_connections;
+	Var  log_options;
 	// server
 	Var  tls_capath;
 	Var  tls_ca;

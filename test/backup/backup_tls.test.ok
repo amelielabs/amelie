@@ -23,6 +23,7 @@ show all
   "log_to_file": true,
   "log_to_stdout": false,
   "log_connections": true,
+  "log_options": true,
   "tls_capath": "",
   "tls_ca": "",
   "tls_cert": "./tls/server.crt",
