@@ -42,9 +42,6 @@ cluster_bootstrap(Db* db, int backends)
 	Tr tr;
 	tr_init(&tr);
 
-	WalBatch wal_batch;
-	wal_batch_init(&wal_batch);
-
 	Exception e;
 	if (enter(&e))
 	{
@@ -72,21 +69,15 @@ cluster_bootstrap(Db* db, int backends)
 			node_mgr_create(&db->node_mgr, &tr, config, false);
 		}
 
-		wal_batch_begin(&wal_batch, WAL_UTILITY);
-		wal_batch_add(&wal_batch, &tr.log.log_set);
-		wal_write(&db->wal, &wal_batch);
-
 		// commit
 		tr_commit(&tr);
 		tr_free(&tr);
-		wal_batch_free(&wal_batch);
 	}
 
 	if (leave(&e))
 	{
 		tr_abort(&tr);
 		tr_free(&tr);
-		wal_batch_free(&wal_batch);
 		rethrow();
 	}
 }

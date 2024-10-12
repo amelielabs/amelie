@@ -179,10 +179,7 @@ wal_open(Wal* self)
 
 	// create log directory
 	if (! fs_exists("%s", path))
-	{
-		info("wal: new directory '%s'", path);
 		fs_mkdir(0755, "%s", path);
-	}
 
 	// read file list
 	wal_recover(self, path);

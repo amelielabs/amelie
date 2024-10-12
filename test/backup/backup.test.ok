@@ -104,7 +104,7 @@ connect E0 S0 localhost:3480
 show lsn
 [4]
 show checkpoint
-[0]
+[1]
 checkpoint
 show lsn
 [4]

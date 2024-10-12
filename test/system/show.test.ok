@@ -642,7 +642,7 @@ select system.wal()
 # test: show config
 show all
 [{
-  "version": "0.0",
+  "version": "1.0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -674,7 +674,7 @@ show all
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint": 0,
+  "checkpoint": 1,
   "read_only": false,
   "lsn": 1,
   "psn": 0
@@ -682,7 +682,7 @@ show all
 # test: show all
 show all
 [{
-  "version": "0.0",
+  "version": "1.0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -714,14 +714,14 @@ show all
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint": 0,
+  "checkpoint": 1,
   "read_only": false,
   "lsn": 1,
   "psn": 0
 }]
 select system.config()
 [{
-  "version": "0.0",
+  "version": "1.0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -753,7 +753,7 @@ select system.config()
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint": 0,
+  "checkpoint": 1,
   "read_only": false,
   "lsn": 1,
   "psn": 0

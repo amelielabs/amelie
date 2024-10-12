@@ -10032,7 +10032,7 @@ select count(*) from test
 switch S1
 show config
 [{
-  "version": "0.0",
+  "version": "1.0.0",
   "uuid": "00000000-0000-0000-0000-000000000001",
   "directory": "_output/E1",
   "timezone": "UTC",
@@ -10065,7 +10065,7 @@ show config
   "repl_reconnect_ms": 10,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint": 0,
+  "checkpoint": 1,
   "read_only": true,
   "lsn": 10001,
   "psn": 3

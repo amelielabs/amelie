@@ -35,7 +35,7 @@ config_prepare(Config* self)
 
 	VarDef defs[] =
 	{
-		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.0",       0                },
+		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "1.0.0",     0                },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,        0                },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,        0                },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,        0                },
@@ -45,7 +45,7 @@ config_prepare(Config* self)
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,        true             },
 		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,        true             },
 		{ "log_connections",         VAR_BOOL,   VAR_C|VAR_R,             &self->log_connections,         NULL,        true             },
-		{ "log_options",             VAR_BOOL,   VAR_C|VAR_R,             &self->log_options,             NULL,        false            },
+		{ "log_options",             VAR_BOOL,   VAR_C|VAR_R,             &self->log_options,             NULL,        true             },
 		// server
 		{ "tls_capath",              VAR_STRING, VAR_C,                   &self->tls_capath,              NULL,        0                },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,        0                },

@@ -141,16 +141,30 @@ system_recover(System* self)
 	recover_wal(&recover);
 }
 
+static void
+system_bootstrap(System* self)
+{
+	// create compute nodes
+	cluster_bootstrap(&self->db, var_int_of(&config()->backends));
+	config_lsn_set(1);
+
+	// create initial checkpoint, mostly to ensure that node
+	// information is persisted (if wal is disabled)
+	Checkpoint cp;
+	checkpoint_init(&cp, &self->db.checkpoint_mgr);
+	guard(checkpoint_free, &cp);
+	checkpoint_begin(&cp, 1, 1);
+	checkpoint_run(&cp);
+	checkpoint_wait(&cp);
+}
+
 void
 system_start(System* self, bool bootstrap)
 {
 	// hello
 	auto version = &config()->version.string;
-	auto tz = &config()->timezone_default.string;
 	info("");
 	info("amelie. (%.*s)", str_size(version), str_of(version));
-	info("");
-	info("time: default timezone is '%.*s'", str_size(tz), str_of(tz));
 	info("");
 
 	// register builtin functions
@@ -165,13 +179,9 @@ system_start(System* self, bool bootstrap)
 	// do parallel recover of snapshots and wal
 	system_recover(self);
 
-	// create initial nodes
+	// do initial deploy
 	if (bootstrap)
-		cluster_bootstrap(&self->db, var_int_of(&config()->backends));
-
-	info("");
-	info("cluster: system has %d compute nodes", self->cluster.list_count);
-	info("");
+		system_bootstrap(self);
 
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
@@ -190,6 +200,7 @@ system_start(System* self, bool bootstrap)
 	repl_open(&self->repl);
 
 	// show system options
+	info("");
 	if (bootstrap || var_int_of(&config()->log_options))
 	{
 		vars_print(&config()->vars);
