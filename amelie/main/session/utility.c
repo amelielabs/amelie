@@ -57,10 +57,10 @@ ctl_show(Session* self)
 	else
 	if (str_compare_raw(name, "repl", 4) ||
 	    str_compare_raw(name, "replication", 11))
-		buf = repl_show(share->repl);
+		buf = repl_status(share->repl);
 	else
 	if (str_compare_raw(name, "wal", 3))
-		buf = wal_show(&share->db->wal);
+		buf = wal_status(&share->db->wal);
 	else
 	if (str_compare_raw(name, "schemas", 7))
 		buf = schema_mgr_list(&share->db->schema_mgr);

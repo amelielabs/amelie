@@ -26,4 +26,4 @@ void repl_open(Repl*);
 void repl_start(Repl*);
 void repl_stop(Repl*);
 void repl_subscribe(Repl*, Str*);
-Buf* repl_show(Repl*);
+Buf* repl_status(Repl*);

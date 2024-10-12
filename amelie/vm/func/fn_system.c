@@ -107,7 +107,7 @@ static void
 fn_wal(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = wal_show(&self->vm->db->wal);
+	auto buf = wal_status(&self->vm->db->wal);
 	value_read(self->result, buf->start, buf);
 }
 

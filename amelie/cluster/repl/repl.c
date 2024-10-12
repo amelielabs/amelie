@@ -155,7 +155,7 @@ repl_subscribe(Repl* self, Str* primary_id)
 }
 
 Buf*
-repl_show(Repl* self)
+repl_status(Repl* self)
 {
 	// obj
 	auto buf = buf_create();

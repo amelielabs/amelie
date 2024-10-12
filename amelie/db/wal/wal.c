@@ -289,7 +289,7 @@ wal_in_range(Wal* self, uint64_t lsn)
 }
 
 Buf*
-wal_show(Wal* self)
+wal_status(Wal* self)
 {
 	int      list_count;
 	uint64_t list_min;

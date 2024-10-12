@@ -254,7 +254,7 @@ system_rpc(Rpc* rpc, void* arg)
 	case RPC_SHOW_REPL:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
-		*buf = repl_show(&self->repl);
+		*buf = repl_status(&self->repl);
 		break;
 	}
 	default:
