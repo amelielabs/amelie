@@ -216,7 +216,7 @@ show checkpoint
 show views
 []
 show tables
-[]
+[{}]
 # test: checkpoint
 checkpoint
 show lsn
@@ -235,6 +235,6 @@ show checkpoint
 show views
 []
 show tables
-[]
+[{}]
 disconnect S0
 close E0

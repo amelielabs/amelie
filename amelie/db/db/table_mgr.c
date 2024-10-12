@@ -443,13 +443,14 @@ Buf*
 table_mgr_list(TableMgr* self)
 {
 	auto buf = buf_create();
-	encode_array(buf);
+	encode_obj(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
+		encode_target(buf, &table->config->schema, &table->config->name);
 		table_config_write(table->config, buf);
 	}
-	encode_array_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 

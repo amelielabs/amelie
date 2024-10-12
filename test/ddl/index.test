@@ -21,22 +21,22 @@ create index i on test ()
 
 # test: create index
 create index i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 
 # test: create index if not exists
 create index i on test (a)
 create index if not exists i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 # test: create index (compound key)
 create index i on test (b, a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 # test: create index (key reuse)
 create index i on test (a, a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 # test: create index (unique)
@@ -46,7 +46,7 @@ create unique index i on test (a)
 drop table test
 create shared table test (id int primary key, a int, b int)
 create unique index i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 drop table test
@@ -67,11 +67,11 @@ create index i on test (a) with (, type = 'tree'
 
 # test: create index with
 create index i on test (a) with (type = 'hash')
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 create index i on test (a) with (type = 'tree')
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 create index i on test (a) with (type = 'unknown')
@@ -80,7 +80,7 @@ create index i on test (a) with (type = 'unknown')
 drop table test
 create shared table test (id int primary key, a int, b int)
 create index i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on test
 
 # test: drop index parsing
@@ -97,9 +97,9 @@ drop index i on public.test
 
 # test: drop index
 create index i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 drop index i on public.test
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 
 # test: drop index if exists
 drop index i on public.test
@@ -125,10 +125,10 @@ alter index i on test rename to
 
 # test: alter index rename
 create index i on test (a)
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 
 alter index i on test rename to j
-select system.tables()[0].indexes
+select system.tables().'public.test'.indexes
 
 # test: alter index rename if exists
 alter index k on test rename to z

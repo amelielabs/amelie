@@ -606,9 +606,9 @@ select system.functions()
 }]
 # test: show tables
 show tables
-[]
+[{}]
 select system.tables()
-[]
+[{}]
 # test: show views
 show views
 []

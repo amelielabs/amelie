@@ -55,67 +55,70 @@ create table test1 (id int primary key)
 create shared table test2 (id int primary key)
 show tables
 [{
-  "schema": "public",
-  "name": "test1",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  "public.test1": {
+    "schema": "public",
+    "name": "test1",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 1,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test2",
-  "shared": true,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "shared": true,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 2,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 2,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
+  }
 }]
 insert into test1 values (1), (2), (3); insert into test2 4,5,6
 select * from test1
@@ -178,103 +181,107 @@ drop node if exists "00000000-0000-0000-0000-000000000001"
 create table test3 (id int primary key)
 show tables
 [{
-  "schema": "public",
-  "name": "test1",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  "public.test1": {
+    "schema": "public",
+    "name": "test1",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 1,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test2",
-  "shared": true,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "shared": true,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 2,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 2,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test3",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test3": {
+    "schema": "public",
+    "name": "test3",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 3,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 4048
+    }, {
+      "id": 4,
+      "node": "00000000-0000-0000-0000-000000000002",
+      "min": 4048,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 3,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 4048
-  }, {
-    "id": 4,
-    "node": "00000000-0000-0000-0000-000000000002",
-    "min": 4048,
-    "max": 8096
-  }]
+  }
 }]
 # test: drop node (after table drop)
 drop node "00000000-0000-0000-0000-000000000002"
@@ -305,108 +312,112 @@ show nodes
 create table test(id int primary key)
 show tables
 [{
-  "schema": "public",
-  "name": "test1",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  "public.test1": {
+    "schema": "public",
+    "name": "test1",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 1,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test2",
-  "shared": true,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "shared": true,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 2,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 2,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test": {
+    "schema": "public",
+    "name": "test",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 6,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 2698
+    }, {
+      "id": 7,
+      "node": "00000000-0000-0000-0000-000000000003",
+      "min": 2698,
+      "max": 5396
+    }, {
+      "id": 8,
+      "node": "00000000-0000-0000-0000-000000000004",
+      "min": 5396,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 6,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 2698
-  }, {
-    "id": 7,
-    "node": "00000000-0000-0000-0000-000000000003",
-    "min": 2698,
-    "max": 5396
-  }, {
-    "id": 8,
-    "node": "00000000-0000-0000-0000-000000000004",
-    "min": 5396,
-    "max": 8096
-  }]
+  }
 }]
 insert into test values (1), (2), (3)
 create node "00000000-0000-0000-0000-000000000005"
@@ -426,117 +437,121 @@ show nodes
 alter table test add column data int
 show tables
 [{
-  "schema": "public",
-  "name": "test1",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  "public.test1": {
+    "schema": "public",
+    "name": "test1",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 1,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test2",
-  "shared": true,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "shared": true,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 2,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 2,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 8096
-  }]
-}, {
-  "schema": "public",
-  "name": "test",
-  "shared": false,
-  "columns": [{
-    "name": "id",
-    "type": "int",
-    "constraint": {
-      "not_null": true,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }, {
-    "name": "data",
-    "type": "int",
-    "constraint": {
-      "not_null": false,
-      "generated": 0,
-      "modulo": 9223372036854775807,
-      "default": null
-    }
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "ref": 0,
+  },
+  "public.test": {
+    "schema": "public",
+    "name": "test",
+    "shared": false,
+    "columns": [{
+      "name": "id",
       "type": "int",
-      "path": ""
+      "constraint": {
+        "not_null": true,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }, {
+      "name": "data",
+      "type": "int",
+      "constraint": {
+        "not_null": false,
+        "generated": 0,
+        "modulo": 9223372036854775807,
+        "default": null
+      }
+    }],
+    "indexes": [{
+      "name": "primary",
+      "type": 2,
+      "unique": true,
+      "primary": true,
+      "keys": [{
+        "ref": 0,
+        "type": "int",
+        "path": ""
+      }]
+    }],
+    "partitions": [{
+      "id": 6,
+      "node": "00000000-0000-0000-0000-000000000000",
+      "min": 0,
+      "max": 2698
+    }, {
+      "id": 7,
+      "node": "00000000-0000-0000-0000-000000000003",
+      "min": 2698,
+      "max": 5396
+    }, {
+      "id": 8,
+      "node": "00000000-0000-0000-0000-000000000004",
+      "min": 5396,
+      "max": 8096
     }]
-  }],
-  "partitions": [{
-    "id": 6,
-    "node": "00000000-0000-0000-0000-000000000000",
-    "min": 0,
-    "max": 2698
-  }, {
-    "id": 7,
-    "node": "00000000-0000-0000-0000-000000000003",
-    "min": 2698,
-    "max": 5396
-  }, {
-    "id": 8,
-    "node": "00000000-0000-0000-0000-000000000004",
-    "min": 5396,
-    "max": 8096
-  }]
+  }
 }]
 select * from test
 [[1, null], [2, null], [3, null]]

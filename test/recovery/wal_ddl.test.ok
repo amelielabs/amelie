@@ -192,7 +192,7 @@ show lsn
 select * from test2
 {"code": 1, "msg": "<test2> table or view is not found"}
 show tables
-[]
+[{}]
 # test: create schema
 create schema test
 show schemas

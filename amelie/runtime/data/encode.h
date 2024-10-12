@@ -62,6 +62,22 @@ encode_string(Buf* self, Str* string)
 }
 
 always_inline hot static inline void
+encode_target(Buf* self, Str* schema, Str* name)
+{
+	//  schema.name
+	auto size = str_size(schema) + 1 + str_size(name);
+	auto size_string = data_size_string(size);
+	auto pos = buf_reserve(self, size_string);
+	data_write_raw(pos, NULL, size);
+	memcpy(*pos, str_of(schema), str_size(schema));
+	*pos += str_size(schema);
+	memcpy(*pos, ".", 1);
+	*pos += 1;
+	memcpy(*pos, str_of(name), str_size(name));
+	*pos += str_size(name);
+}
+
+always_inline hot static inline void
 encode_string32(Buf* self, int size)
 {
 	auto pos = buf_reserve(self, data_size_string32());
