@@ -186,7 +186,6 @@ select ** from system.config()
 ["version", "uuid", "directory", "timezone", "timezone_default", "log_enable", "log_to_file", "log_to_stdout", "log_connections", "tls_capath", "tls_ca", "tls_cert", "tls_key", "listen", "limit_send", "limit_recv", "limit_write", "frontends", "backends", "wal", "wal_rotate_wm", "wal_sync_on_rotate", "wal_sync_on_write", "repl", "repl_primary", "repl_reconnect_ms", "checkpoint_interval", "checkpoint_workers", "checkpoint", "read_only", "lsn", "psn"]
 # test: select from function #2
 create table test (id int primary key serial)
-[]
 select * from system.tables()[0].indexes[0].keys
 [{
   "ref": 0,
@@ -194,7 +193,6 @@ select * from system.tables()[0].indexes[0].keys
   "path": ""
 }]
 drop table test
-[]
 # test: select from expr alias
 select * from [1, 2, 3] list
 [1, 2, 3]
@@ -215,13 +213,10 @@ select * from [1, 2, 3] list, [3,2,1] list
 {"code": 1, "msg": "<list> target is redefined, please use different alias for the target"}
 # test: select from view expr
 create view test as select 123
-[]
 select * from test
 {"code": 1, "msg": "FROM: array, object or store expected, but got int"}
 drop view test
-[]
 create view test as select [1,2,3]
-[]
 explain select * from test
 [{
   "bytecode": {
@@ -249,10 +244,8 @@ explain select * from test
 select * from test
 [1, 2, 3]
 drop view test
-[]
 # test: select from view expr #2
 create view test as select {"a": 1, "b": 2, "c": 3}
-[]
 explain select * from test
 [{
   "bytecode": {
@@ -286,26 +279,19 @@ explain select * from test
 select **, * from test
 [["a", 1], ["b", 2], ["c", 3]]
 drop view test
-[]
 # test: select from view expr alias
 create view test as select {"a": 1, "b": 2, "c": 3}
-[]
 select list.**, list.* from test list
 [["a", 1], ["b", 2], ["c", 3]]
 drop view test
-[]
 # test: select from view expr alias #2
 create schema test
-[]
 create view test.test as select {"a": 1, "b": 2, "c": 3}
-[]
 select list.**, list.* from test.test list
 [["a", 1], ["b", 2], ["c", 3]]
 drop schema test cascade
-[]
 # test: select from view set
 create view test as select * from [1,2,3]
-[]
 explain select * from test
 [{
   "bytecode": {
@@ -340,10 +326,8 @@ explain select * from test
 select * from test
 [1, 2, 3]
 drop view test
-[]
 # test: select from view set #2
 create view test as select * from {"a": 1, "b": 2, "c": 3}
-[]
 explain select * from test list
 [{
   "bytecode": {
@@ -388,10 +372,8 @@ select list.* from test list
 select ** from test list
 {"code": 1, "msg": "**: reference is not defined"}
 drop view test
-[]
 # test: select from view set #3
 create view test as select list.* from {"a": 1, "b": 2, "c": 3} list
-[]
 select * from test list
 {"code": 1, "msg": "<list> target is redefined, please use different alias for the target"}
 select list2.* from test list2
@@ -399,10 +381,8 @@ select list2.* from test list2
 select list2.** from test list2
 {"code": 1, "msg": "**: reference is not defined"}
 drop view test
-[]
 # test: select from view function
 create view test as select * from system.views()
-[]
 select * from test
 [{
   "schema": "public",
@@ -445,16 +425,11 @@ explain select (select ** from test.*) from test
   }
 }]
 drop view test
-[]
 # test: select star from table
 create table test (id int primary key serial)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select * from test
 [{
   "bytecode": {
@@ -488,16 +463,11 @@ select * from test
 select test.* from test
 [[0], [1], [2]]
 drop table test
-[]
 # test: select column from table
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select id, data from test
@@ -535,16 +505,11 @@ explain select id, data from test
 select id, data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select column.path from table
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 select * from test
 [[0, {
   "data": 123
@@ -584,16 +549,11 @@ explain select data.data from test
 select data.data from test
 [123, 123, 123]
 drop table test
-[]
 # test: select column.path from table #2
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 select * from test
 [[0, {
   "data": {
@@ -639,16 +599,11 @@ explain select data.data.data from test
 select data.data.data from test
 [123, 123, 123]
 drop table test
-[]
 # test: select target.column from table
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select test.id, test.data from test
 [{
   "bytecode": {
@@ -684,16 +639,11 @@ explain select test.id, test.data from test
 select test.id, test.data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select target.column.path from table
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 explain select test.data.data from test
 [{
   "bytecode": {
@@ -725,16 +675,11 @@ explain select test.data.data from test
 select test.data.data from test
 [123, 123, 123]
 drop table test
-[]
 # test: select alias.column from table
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select alias.id, alias.data from test alias
@@ -772,16 +717,11 @@ explain select alias.id, alias.data from test alias
 select alias.id, alias.data from test alias
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select alias.column.path from table
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 explain select alias.data.data from test alias
 [{
   "bytecode": {
@@ -813,16 +753,11 @@ explain select alias.data.data from test alias
 select alias.data.data from test alias
 [123, 123, 123]
 drop table test
-[]
 # test: select from schemaless table
 create table test (obj object, primary key(obj.id int))
-[]
 insert into test {"id": 1}
-[]
 insert into test {"id": 2}
-[]
 insert into test {"id": 3}
-[]
 select * from test
 [[{
   "id": 1
@@ -923,6 +858,5 @@ explain select (select **, * from test.*[0]) from test
 select (select **, * from test.*[0]) from test
 [[["id", 1]], [["id", 2]], [["id", 3]]]
 drop table test
-[]
 disconnect S0
 close E0

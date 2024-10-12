@@ -2,9 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: with(table), expr
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
@@ -44,12 +42,9 @@ explain with a as (select * from test) select * from a
   }
 }]
 drop table test
-[]
 # test: with(shared), expr
 create shared table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test) select * from a
 [[1], [2], [3]]
 explain with a as (select * from test) select * from a
@@ -89,12 +84,9 @@ explain with a as (select * from test) select * from a
   }
 }]
 drop table test
-[]
 # test: with(table), table
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
@@ -143,12 +135,9 @@ explain with a as (select * from test) select * from test
   }
 }]
 drop table test
-[]
 # test: with(shared), shared (pushdown)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test) select * from test
 [[1], [2], [3]]
 explain with a as (select * from test) select * from test
@@ -197,12 +186,9 @@ explain with a as (select * from test) select * from test
   }
 }]
 drop table test
-[]
 # test: with(expr), table (pushdown)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [{
   "bytecode": {
@@ -257,12 +243,9 @@ explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
-[]
 # test: with(expr), table (pushdown)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [{
   "bytecode": {
@@ -317,12 +300,9 @@ explain with a as (select * from [5,6,7]) select test.*, a.* from test, a
 with a as (select * from [5,6,7]) select test.*, a.* from test, a
 [[[1], 5], [[1], 6], [[1], 7], [[2], 5], [[2], 6], [[2], 7], [[3], 5], [[3], 6], [[3], 7]]
 drop table test
-[]
 # test: with(table), table (pushdown join)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a (id) as (select * from test) select test.* from test join a on test.id = a.id
 [[1], [2], [3]]
 explain with a (id) as (select * from test) select test.* from test join a on test.id = a.id
@@ -437,12 +417,9 @@ explain with a (id) as (select * from test) select test.* from test join a on te
   }
 }]
 drop table test
-[]
 # test: with (expr), with(table), table (pushdown join)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
 [[1], [2], [3]]
 explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test) select test.* from test join a on test.id = a.id join z on test.id = z.id
@@ -529,12 +506,9 @@ explain with z (id) as (select [*] from [1,2,3]), a (id) as (select * from test)
   }
 }]
 drop table test
-[]
 # test: a(table), b(a)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select * from a) select * from b
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a) select * from b
@@ -582,12 +556,9 @@ explain with a as (select * from test), b as (select * from a) select * from b
   }
 }]
 drop table test
-[]
 # test: a(table), b(expr), c(a)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
@@ -643,12 +614,9 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   }
 }]
 drop table test
-[]
 # test: a(table), b(expr), c(table)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
@@ -713,12 +681,9 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   }
 }]
 drop table test
-[]
 # test: a(table), b(table), c(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
 [1, 2, 3]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
@@ -783,12 +748,9 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   }
 }]
 drop table test
-[]
 # test: a(table), b(table), c(expr), d(table)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
@@ -870,12 +832,9 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   }
 }]
 drop table test
-[]
 # test: a(expr), b(table), c(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
@@ -939,12 +898,9 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
   }
 }]
 drop table test
-[]
 # test: a(expr), b(table), c(table)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
@@ -1009,12 +965,9 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
   }
 }]
 drop table test
-[]
 # test: a(table), b(a), c(table)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
@@ -1079,11 +1032,8 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   }
 }]
 drop table test
-[]
 create shared table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [[1], [2], [3]]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
@@ -1148,10 +1098,8 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   }
 }]
 drop table test
-[]
 # test: with(insert returning), expr
 create shared table test (id int primary key, data int)
-[]
 with a as (insert into test values (2, 0) returning *); select * from a
 [[2, 0]]
 explain with a as (insert into test values (2, 0) returning *); select * from a
@@ -1194,10 +1142,8 @@ explain with a as (insert into test values (2, 0) returning *); select * from a
 with a as (insert into test values (2, 0) returning * into b); select * from a
 {"code": 1, "msg": "INTO CTE redefined"}
 drop table test
-[]
 # test: insert returning into, expr
 create shared table test (id int primary key, data int)
-[]
 insert into test values (2, 0) returning * into a; select * from a
 [[2, 0]]
 explain insert into test values (2, 0) returning * into a; select * from a
@@ -1238,16 +1184,11 @@ explain insert into test values (2, 0) returning * into a; select * from a
   }
 }]
 drop table test
-[]
 # test: with(update returning), expr
 create shared table test (id int primary key, data int)
-[]
 insert into test values (0, 0)
-[]
 insert into test values (1, 0)
-[]
 insert into test values (2, 0)
-[]
 with a as (update test set data = data + 1 returning *) select * from a
 [[0, 1], [1, 1], [2, 1]]
 explain with a as (update test set data = data + 1 returning *) select * from a
@@ -1298,16 +1239,11 @@ explain with a as (update test set data = data + 1 returning *) select * from a
   }
 }]
 drop table test
-[]
 # test: update returning into, expr
 create shared table test (id int primary key, data int)
-[]
 insert into test values (0, 0)
-[]
 insert into test values (1, 0)
-[]
 insert into test values (2, 0)
-[]
 update test set data = data + 1 returning * into a; select * from a
 [[0, 1], [1, 1], [2, 1]]
 explain update test set data = data + 1 returning * into a; select * from a
@@ -1358,16 +1294,11 @@ explain update test set data = data + 1 returning * into a; select * from a
   }
 }]
 drop table test
-[]
 # test: with(delete returning), expr
 create shared table test (id int primary key, data int)
-[]
 insert into test values (0, 0)
-[]
 insert into test values (1, 0)
-[]
 insert into test values (2, 0)
-[]
 with a as (delete from test returning *) select * from a
 [[0, 0], [1, 0], [2, 0]]
 explain with a as (delete from test returning *) select * from a
@@ -1408,16 +1339,11 @@ explain with a as (delete from test returning *) select * from a
   }
 }]
 drop table test
-[]
 # test: delete returning into, expr
 create shared table test (id int primary key, data int)
-[]
 insert into test values (0, 0)
-[]
 insert into test values (1, 0)
-[]
 insert into test values (2, 0)
-[]
 delete from test returning * into a; select * from a
 [[0, 0], [1, 0], [2, 0]]
 explain delete from test returning * into a; select * from a
@@ -1458,32 +1384,23 @@ explain delete from test returning * into a; select * from a
   }
 }]
 drop table test
-[]
 # test: a(expr), stmt, b(expr), stmt
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select [1,2,3]); select * from a; with b as (select * from test); select b.*, a.* from b,a
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 drop table test
-[]
 # test: into a(expr), stmt, into b(expr), stmt
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 select [1,2,3] into a; select * from a; select * into b from test; select b.*, a.* from b,a
 [[[1], 1], [[1], 2], [[1], 3], [[2], 1], [[2], 2], [[2], 3], [[3], 1], [[3], 2], [[3], 3]]
 select [1,2,3] into a; select * from a; select * into b from test; select b
 [[1], [2], [3]]
 drop table test
-[]
 # test: a(expr), a(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 with a as (select [4,5,6]); with a as (select * from test); select * from a
 [[1], [2], [3]]
 explain with a as (select [4,5,6]); with a as (select * from test); select * from a
@@ -1533,12 +1450,9 @@ explain with a as (select [4,5,6]); with a as (select * from test); select * fro
 with a as (select [4,5,6]); with a as (select [1,2,3]); select * from a
 [1, 2, 3]
 drop table test
-[]
 # test: into a(expr), into a(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 select [4,5,6] into a; select * into a from test; select * from a
 [[1], [2], [3]]
 explain select [4,5,6] into a; select * into a from test; select * from a
@@ -1588,12 +1502,9 @@ explain select [4,5,6] into a; select * into a from test; select * from a
 select [4,5,6] into a; select [1,2,3] into a; select * from a
 [1, 2, 3]
 drop table test
-[]
 # test: := a(expr), := a(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 a := select [4,5,6]; a := select * from test; select * from a
 [[1], [2], [3]]
 explain a := select [4,5,6]; a := select * from test; select * from a
@@ -1643,11 +1554,8 @@ explain a := select [4,5,6]; a := select * from test; select * from a
 a := select [4,5,6]; a := select [1,2,3]; select * from a
 [1, 2, 3]
 drop table test
-[]
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 # test: return (expr)
 1;
 [1]
@@ -1901,7 +1809,7 @@ explain insert into test 4,5; return select id from test;
       "00": "send                0      0      -     # public.test",
       "01": "send_all            1      2      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "array               0      0      0     ",
+      "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
       "05": "recv                1      0      0     ",
       "06": "bool                0      0      0     ",
@@ -1937,13 +1845,12 @@ explain insert into test 6,7; insert into test 8, 9
       "00": "send                0      0      -     # public.test",
       "01": "send                1      2      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "array               0      0      0     ",
+      "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
       "05": "recv                1      0      0     ",
-      "06": "array               0      0      0     ",
+      "06": "null                0      0      0     ",
       "07": "cte_set             1      0      0     ",
-      "08": "body                1      0      0     ",
-      "09": "ret                 0      0      0     "
+      "08": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -1960,13 +1867,12 @@ explain insert into test 6,7; return insert into test 8, 9
       "00": "send                0      0      -     # public.test",
       "01": "send                1      2      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "array               0      0      0     ",
+      "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
       "05": "recv                1      0      0     ",
-      "06": "array               0      0      0     ",
+      "06": "null                0      0      0     ",
       "07": "cte_set             1      0      0     ",
-      "08": "body                1      0      0     ",
-      "09": "ret                 0      0      0     "
+      "08": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -1977,7 +1883,6 @@ explain insert into test 6,7; return insert into test 8, 9
   }
 }]
 insert into test 6,7; insert into test 8, 9
-[]
 explain insert into test 10; return insert into test 11; insert into test 12;
 [{
   "bytecode": {
@@ -1985,19 +1890,17 @@ explain insert into test 10; return insert into test 11; insert into test 12;
       "00": "send                0      0      -     # public.test",
       "01": "send                1      2      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "array               0      0      0     ",
+      "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
       "05": "recv                1      0      0     ",
-      "06": "array               0      0      0     ",
+      "06": "null                0      0      0     ",
       "07": "cte_set             1      0      0     ",
-      "08": "body                1      0      0     ",
-      "09": "ret                 0      0      0     ",
-      "10": "send                2      4      -     # public.test",
-      "11": "recv                2      0      0     ",
-      "12": "array               0      0      0     ",
-      "13": "cte_set             2      0      0     ",
-      "14": "body                2      0      0     ",
-      "15": "ret                 0      0      0     "
+      "08": "ret                 0      0      0     ",
+      "09": "send                2      4      -     # public.test",
+      "10": "recv                2      0      0     ",
+      "11": "null                0      0      0     ",
+      "12": "cte_set             2      0      0     ",
+      "13": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -2010,7 +1913,6 @@ explain insert into test 10; return insert into test 11; insert into test 12;
   }
 }]
 insert into test 10; return insert into test 11; insert into test 12;
-[]
 select * from test
 [[1], [6], [7], [8], [2], [9], [10], [3], [4], [5], [11]]
 explain insert into test 12; insert into test 13; insert into test 14;
@@ -2021,16 +1923,15 @@ explain insert into test 12; insert into test 13; insert into test 14;
       "01": "send                1      2      -     # public.test",
       "02": "send                2      4      -     # public.test",
       "03": "recv                0      0      0     ",
-      "04": "array               0      0      0     ",
+      "04": "null                0      0      0     ",
       "05": "cte_set             0      0      0     ",
       "06": "recv                1      0      0     ",
-      "07": "array               0      0      0     ",
+      "07": "null                0      0      0     ",
       "08": "cte_set             1      0      0     ",
       "09": "recv                2      0      0     ",
-      "10": "array               0      0      0     ",
+      "10": "null                0      0      0     ",
       "11": "cte_set             2      0      0     ",
-      "12": "body                2      0      0     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -2050,16 +1951,15 @@ explain insert into test 12; insert into test 13; return insert into test 14;
       "01": "send                1      2      -     # public.test",
       "02": "send                2      4      -     # public.test",
       "03": "recv                0      0      0     ",
-      "04": "array               0      0      0     ",
+      "04": "null                0      0      0     ",
       "05": "cte_set             0      0      0     ",
       "06": "recv                1      0      0     ",
-      "07": "array               0      0      0     ",
+      "07": "null                0      0      0     ",
       "08": "cte_set             1      0      0     ",
       "09": "recv                2      0      0     ",
-      "10": "array               0      0      0     ",
+      "10": "null                0      0      0     ",
       "11": "cte_set             2      0      0     ",
-      "12": "body                2      0      0     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -2072,14 +1972,13 @@ explain insert into test 12; insert into test 13; return insert into test 14;
   }
 }]
 insert into test 12; insert into test 13; insert into test 14;
-[]
 explain insert into test 15; return 1; insert into test 16;
 [{
   "bytecode": {
     "coordinator": {
       "00": "send                0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "int                 0      -      0     # 1",
       "05": "cte_set             1      0      0     ",
@@ -2087,10 +1986,9 @@ explain insert into test 15; return 1; insert into test 16;
       "07": "ret                 0      0      0     ",
       "08": "send                2      2      -     # public.test",
       "09": "recv                2      0      0     ",
-      "10": "array               0      0      0     ",
+      "10": "null                0      0      0     ",
       "11": "cte_set             2      0      0     ",
-      "12": "body                2      0      0     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -2307,12 +2205,9 @@ explain return a;
 return a;
 {"code": 1, "msg": "<a> column, CTE or argument not found"}
 drop table test
-[]
 # test: cte as a key
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain _id := 2; select * from test where id = _id
 [{
   "bytecode": {
@@ -2356,12 +2251,9 @@ _id := 3; select * from test where id = _id
 _id := 0; select * from test where id = _id
 []
 drop table test
-[]
 # test: into a(expr), a expr, into b(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain select * into a from test; select a; select * into b from test; select a
 [{
   "bytecode": {
@@ -2414,12 +2306,9 @@ explain select * into a from test; select a; select * into b from test; select a
 select * into a from test; select a; select * into b from test; select a
 [[1], [2], [3]]
 drop table test
-[]
 # test: into a(expr), into b(expr), a expr
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain select * into a from test; select * into b from test; select a
 [{
   "bytecode": {
@@ -2470,12 +2359,9 @@ explain select * into a from test; select * into b from test; select a
 select * into a from test; select * into b from test; select a
 [[1], [2], [3]]
 drop table test
-[]
 # test: into a(expr), return a, into b(expr)
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain select * into a from test; return a; select * into b from test; select a
 [{
   "bytecode": {
@@ -2528,12 +2414,9 @@ explain select * into a from test; return a; select * into b from test; select a
 select * into a from test; return a; select * into b from test; select a
 [[1], [2], [3]]
 drop table test
-[]
 # test: into a(expr), into b(expr), return a
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 explain select * into a from test; select * into b from test; return a
 [{
   "bytecode": {
@@ -2584,6 +2467,5 @@ select * into a from test; select * into b from test; return a
 select * into a from test; select * into b from test; return [a,b]
 [[[1], [2], [3]], [[1], [2], [3]]]
 drop table test
-[]
 disconnect S0
 close E0

@@ -386,11 +386,9 @@ emit_recv(Compiler* self)
 		break;
 	}
 
-	if (r == -1)
-	{
-		// todo: add empty set?
+	auto has_result = r != -1;
+	if (! has_result)
 		r = op1(self, CNULL, rpin(self));
-	}
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);
@@ -399,7 +397,8 @@ emit_recv(Compiler* self)
 	// RETURN stmt
 	if (stmt->ret)
 	{
-		op1(self, CBODY, stmt->cte->id);
+		if (has_result)
+			op1(self, CBODY, stmt->cte->id);
 		op0(self, CRET);
 	}
 }
@@ -494,10 +493,7 @@ compiler_emit(Compiler* self)
 
 	// no statements (last statement always returns)
 	if (! parser->stmt)
-	{
-		op0(self, CBODY_EMPTY);
 		op0(self, CRET);
-	}
 }
 
 void

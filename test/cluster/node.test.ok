@@ -25,7 +25,6 @@ create node for 1
 create node ""
 {"code": 1, "msg": "failed to parse uuid"}
 create compute node "00000000-0000-0000-0000-000000000000"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -47,16 +46,13 @@ create node if not exists "00000000-0000-0000-0000-00000000000Z"
 create node if not exists "  00000000-0000-0000-0000-00000000000  "
 {"code": 1, "msg": "failed to parse uuid"}
 create node if not exists "00000000-0000-0000-0000-000000000000"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: ddl/dml (with one node)
 create table test1 (id int primary key)
-[]
 create shared table test2 (id int primary key)
-[]
 show tables
 [{
   "schema": "public",
@@ -122,7 +118,6 @@ show tables
   }]
 }]
 insert into test1 values (1), (2), (3); insert into test2 4,5,6
-[]
 select * from test1
 [[1], [2], [3]]
 select * from test2
@@ -151,7 +146,6 @@ drop node ""
 drop node "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -161,9 +155,7 @@ drop node "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
 # test: drop node without dependency
 create compute node "00000000-0000-0000-0000-000000000001"
-[]
 create node "00000000-0000-0000-0000-000000000002"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -173,7 +165,6 @@ show nodes
   "id": "00000000-0000-0000-0000-000000000002"
 }]
 drop node "00000000-0000-0000-0000-000000000001"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -183,10 +174,8 @@ show nodes
 drop node "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
-[]
 # test: ddl (two nodes partitioning)
 create table test3 (id int primary key)
-[]
 show tables
 [{
   "schema": "public",
@@ -291,26 +280,19 @@ show tables
 drop node "00000000-0000-0000-0000-000000000002"
 {"code": 1, "msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
 drop table test3
-[]
 drop node "00000000-0000-0000-0000-000000000002"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: create table/create node/select
 create table test4(id int primary key)
-[]
 insert into test4 values (1), (2), (3)
-[]
 create node "00000000-0000-0000-0000-000000000003"
-[]
 create node "00000000-0000-0000-0000-000000000004"
-[]
 select * from test4
 [[1], [2], [3]]
 drop table test4
-[]
 # test: create table/create node/add column
 show nodes
 [{
@@ -321,7 +303,6 @@ show nodes
   "id": "00000000-0000-0000-0000-000000000004"
 }]
 create table test(id int primary key)
-[]
 show tables
 [{
   "schema": "public",
@@ -428,11 +409,8 @@ show tables
   }]
 }]
 insert into test values (1), (2), (3)
-[]
 create node "00000000-0000-0000-0000-000000000005"
-[]
 create node "00000000-0000-0000-0000-000000000006"
-[]
 show nodes
 [{
   "id": "00000000-0000-0000-0000-000000000000"
@@ -446,7 +424,6 @@ show nodes
   "id": "00000000-0000-0000-0000-000000000006"
 }]
 alter table test add column data int
-[]
 show tables
 [{
   "schema": "public",
@@ -564,6 +541,5 @@ show tables
 select * from test
 [[1, null], [2, null], [3, null]]
 drop table test
-[]
 disconnect S0
 close E0

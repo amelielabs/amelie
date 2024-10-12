@@ -56,13 +56,9 @@ select * from [] where true
 []
 # test: select from table where star
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select * from test where *[0] >= 0
 [{
   "bytecode": {
@@ -100,16 +96,11 @@ explain select * from test where *[0] >= 0
 select * from test where *[0] >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select from table where column
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select * from test where id >= 0
 [{
   "bytecode": {
@@ -145,16 +136,11 @@ explain select * from test where id >= 0
 select * from test where id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select from table where column.path
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 select * from test
 [[0, {
   "data": 123
@@ -204,16 +190,11 @@ select * from test where data.data >= 0
   "data": 123
 }]]
 drop table test
-[]
 # test: select from table where column.path #2
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 insert into test (data) values ({"data": {"data": 123}})
-[]
 select * from test
 [[0, {
   "data": {
@@ -275,16 +256,11 @@ select * from test where data.data.data >= 0
   }
 }]]
 drop table test
-[]
 # test: select from table where target.column
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select * from test where test.id >= 0
 [{
   "bytecode": {
@@ -320,16 +296,11 @@ explain select * from test where test.id >= 0
 select * from test where test.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select from table where target.column.path
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 explain select * from test where test.data.data >= 0
 [{
   "bytecode": {
@@ -371,16 +342,11 @@ select * from test where test.data.data >= 0
   "data": 123
 }]]
 drop table test
-[]
 # test: select from table where alias.column
 create table test (id int primary key serial, data int default 0)
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 insert into test () values ()
-[]
 explain select * from test alias where alias.id >= 0
 [{
   "bytecode": {
@@ -416,16 +382,11 @@ explain select * from test alias where alias.id >= 0
 select * from test alias where alias.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
-[]
 # test: select from table where alias.column.path
 create table test (id int primary key serial, data object)
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 insert into test (data) values ({"data": 123})
-[]
 explain select * from test alias where alias.data.data >= 0
 [{
   "bytecode": {
@@ -467,12 +428,9 @@ select * from test alias where alias.data.data >= 0
   "data": 123
 }]]
 drop table test
-[]
 # test: where true/false
 create table test (id int primary key)
-[]
 insert into test values (1), (2), (3)
-[]
 explain select * from test where true
 [{
   "bytecode": {
@@ -508,12 +466,9 @@ select * from test where true
 select * from test where false
 []
 drop table test
-[]
 # test: where gte
 create table test (id int primary key)
-[]
 insert into test values (1), (2), (3)
-[]
 explain select * from test where id >= 0
 [{
   "bytecode": {
@@ -662,30 +617,21 @@ select * from test where id < 3
 select * from test where id < 8
 [[1], [2], [3]]
 drop table test
-[]
 # test: where point lookup
 create table test (id int primary key)
-[]
 insert into test values (1), (2), (3)
-[]
 select * from test where id = 2
 [[2]]
 drop table test
-[]
 # test: where point lookup nested
 create table test (obj object, primary key(obj.id int))
-[]
 insert into test {"id": 1}
-[]
 insert into test {"id": 2}
-[]
 insert into test {"id": 3}
-[]
 select * from test where obj.id = 2
 [[{
   "id": 2
 }]]
 drop table test
-[]
 disconnect S0
 close E0

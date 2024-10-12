@@ -2,7 +2,6 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: date_bin
 set timezone to 'UTC'
-[]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 ["2020-02-11 15:30:00+00"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17');
@@ -27,13 +26,11 @@ select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', T
 {"code": 1, "msg": "date_bin(): month and year intervals are not supported"}
 # test: date_bin (timezone)
 set timezone to 'Asia/Famagusta'
-[]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 ["2020-02-11 15:30:00+02"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
 ["2020-02-11 15:32:30+02"]
 set timezone to 'UTC'
-[]
 select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
 [["2022-01-01 00:00:00+00", 1], ["2022-01-01 01:00:00+00", 1], ["2022-01-01 02:00:00+00", 1], ["2022-01-01 03:00:00+00", 1], ["2022-01-01 04:00:00+00", 1], ["2022-01-01 05:00:00+00", 1], ["2022-01-01 06:00:00+00", 1], ["2022-01-01 07:00:00+00", 1], ["2022-01-01 08:00:00+00", 1], ["2022-01-01 09:00:00+00", 1], ["2022-01-01 10:00:00+00", 1], ["2022-01-01 11:00:00+00", 1], ["2022-01-01 12:00:00+00", 1], ["2022-01-01 13:00:00+00", 1], ["2022-01-01 14:00:00+00", 1], ["2022-01-01 15:00:00+00", 1], ["2022-01-01 16:00:00+00", 1], ["2022-01-01 17:00:00+00", 1], ["2022-01-01 18:00:00+00", 1], ["2022-01-01 19:00:00+00", 1], ["2022-01-01 20:00:00+00", 1], ["2022-01-01 21:00:00+00", 1], ["2022-01-01 22:00:00+00", 1], ["2022-01-01 23:00:00+00", 1], ["2022-01-02 00:00:00+00", 1]]
 select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin desc
@@ -142,7 +139,6 @@ select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
 ["2001-02-16 20:38:40.123456+00"]
 # test: date_trunc(timestamp day, timezone)
 set timezone to 'UTC'
-[]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 ["2001-02-16 00:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
@@ -152,7 +148,6 @@ select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
 ["2001-02-15 15:00:00+00"]
 set timezone to 'Asia/Famagusta'
-[]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 ["2001-02-16 02:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
@@ -185,7 +180,6 @@ select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
 [16]
 # test: extract(timestamp hour)
 set timezone to 'UTC'
-[]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
 [20]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
@@ -199,11 +193,9 @@ select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
 [20]
 set timezone to 'Asia/Famagusta'
-[]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
 [20]
 set timezone to 'UTC'
-[]
 # test: extract(timestamp minute)
 select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
 [38]

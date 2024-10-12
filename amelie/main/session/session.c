@@ -222,8 +222,6 @@ session_execute(Session* self)
 	if (! compiler->parser.stmt_list.list_count)
 	{
 		session_unlock(self);
-		auto body = &self->client->reply.content;
-		body_empty(body);
 		return;
 	}
 
@@ -337,9 +335,15 @@ session_main(Session* self)
 
 			session_unlock(self);
 		} else {
-			http_write_reply(reply, 200, "OK");
-			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
-			http_write(reply, "Content-Type", "application/json");
+			if (buf_empty(body))
+			{
+				http_write_reply(reply, 204, "No Content");
+			} else
+			{
+				http_write_reply(reply, 200, "OK");
+				http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
+				http_write(reply, "Content-Type", "application/json");
+			}
 			http_write_end(reply);
 		}
 

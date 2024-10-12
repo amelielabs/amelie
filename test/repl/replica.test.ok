@@ -15,7 +15,6 @@ create replica "00000000-0000-0000-0000-000000000000" "localhost"
 {"code": 1, "msg": "CREATE REPLICA id <option name> expected"}
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
-[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000000",
@@ -26,7 +25,6 @@ show replicas
 }]
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
-[]
 select * from system.replicas()
 [{
   "id": "00000000-0000-0000-0000-000000000000",
@@ -44,19 +42,15 @@ drop replica "123"
 {"code": 1, "msg": "failed to parse uuid"}
 # test: drop replica
 drop replica "00000000-0000-0000-0000-000000000000"
-[]
 show replicas
 []
 # test: drop replica if exists
 drop replica if exists "00000000-0000-0000-0000-000000000000"
-[]
 drop replica "00000000-0000-0000-0000-000000000000"
 {"code": 1, "msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
 # test: recover
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
-[]
 create replica "00000000-0000-0000-0000-000000000001" uri "localhost"
-[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000000",

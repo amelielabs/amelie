@@ -23,13 +23,11 @@ show repl
 }]
 # test: start replica
 start repl
-[]
 # test: subscribe (using self id)
 subscribe "00000000-0000-0000-0000-000000000001"
 {"code": 1, "msg": "repl: primary id cannot match this server id"}
 # test: subscribe
 subscribe "00000000-0000-0000-0000-000000000000"
-[]
 show repl
 [{
   "active": true,
@@ -43,7 +41,6 @@ switch S0
 show replicas
 []
 create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
-[]
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -54,15 +51,12 @@ show replicas
 }]
 # test: start primary
 start repl
-[]
 # test: wait for primary connect
 watch system.replicas()[0].connected = true
 []
 # test: write
 create table test (id int primary key)
-[]
 insert into test 1,2,3
-[]
 show lsn
 [3]
 # test: wait replica sync
@@ -73,11 +67,8 @@ disconnect S1
 close E1
 # test: write (replica off)
 insert into test 4
-[]
 insert into test 5
-[]
 insert into test 6
-[]
 show lsn
 [6]
 # test: replica lag
@@ -122,11 +113,8 @@ watch system.replicas()[0].connected = true
 []
 # test: write
 insert into test 7
-[]
 insert into test 8
-[]
 insert into test 9
-[]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
 []
@@ -175,7 +163,6 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000"
 }]
 unsubscribe
-[]
 show repl
 [{
   "active": true,
@@ -185,13 +172,11 @@ show repl
 # test: drop replica
 switch S0
 drop replica "00000000-0000-0000-0000-000000000001"
-[]
 show replicas
 []
 # test: subscribe to new primary
 switch S0
 subscribe "00000000-0000-0000-0000-000000000001"
-[]
 show repl
 [{
   "active": true,
@@ -201,7 +186,6 @@ show repl
 # test: create replica
 switch S1
 create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
-[]
 # test: wait for primary connect
 watch system.replicas()[0].connected = true
 []
@@ -209,11 +193,8 @@ watch system.replicas()[0].lsn = system.config().lsn
 []
 # test: write
 insert into test 10
-[]
 insert into test 11
-[]
 insert into test 12
-[]
 # test: wait replica sync
 watch system.replicas()[0].lsn = system.config().lsn
 []

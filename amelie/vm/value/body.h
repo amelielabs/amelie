@@ -120,13 +120,6 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 }
 
 hot static inline void
-body_empty(Buf* self)
-{
-	body_begin(self);
-	body_end(self);
-}
-
-hot static inline void
 body_add_comma(Buf* self)
 {
 	buf_write(self, ", ", 2);

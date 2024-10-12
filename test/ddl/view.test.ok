@@ -27,7 +27,6 @@ create view test as select
 {"code": 1, "msg": "bad expression"}
 # test: create view
 create view test as select 1
-[]
 show views
 [{
   "schema": "public",
@@ -46,9 +45,7 @@ select * from system.views()
 create view test as select 1
 {"code": 1, "msg": "view 'test': already exists"}
 create view if not exists public.test as select 1
-[]
 drop view test
-[]
 # test: create view schema not exists
 create view test.test as select 1
 {"code": 1, "msg": "schema 'test': not exists"}
@@ -57,9 +54,7 @@ create view system.test as select 1
 {"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: create view schema
 create schema test
-[]
 create view test.test as select 1
-[]
 select * from system.views()
 [{
   "schema": "test",
@@ -70,18 +65,14 @@ select * from system.views()
 drop view test
 {"code": 1, "msg": "view 'test': not exists"}
 drop view test.test
-[]
 drop schema test
-[]
 # test: create view with no arguments
 create view test (
 {"code": 1, "msg": "CREATE VIEW (<name> expected"}
 create view test ()
 {"code": 1, "msg": "CREATE VIEW <AS> expected"}
 create view test () as select 1
-[]
 drop view test
-[]
 # test: create view with arguments
 create view test (a
 {"code": 1, "msg": "CREATE VIEW (<)> expected"}
@@ -90,30 +81,21 @@ create view test (a,
 create view test (a,)
 {"code": 1, "msg": "CREATE VIEW (<name> expected"}
 create view test (a, b) as select 1, 2
-[]
 drop view test
-[]
 # test: create view match select columns
 create view test (a) as select 1, 2
 {"code": 1, "msg": "number of view columns does not match select"}
 # test: create view with conflicting table
 create table test (id int primary key)
-[]
 create view test as select 1
 {"code": 1, "msg": "table <test> with the same name exists"}
 drop table test
-[]
 # test: create view table
 create table test (id int primary key)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 insert into test values (3)
-[]
 create view test_view (id) as select * from test
-[]
 select * from system.views()
 [{
   "schema": "public",
@@ -170,9 +152,7 @@ explain select id from test_view
   }
 }]
 drop view test_view
-[]
 drop table test
-[]
 # test: drop view statement parsing
 drop view
 {"code": 1, "msg": "DROP VIEW <name> expected"}
@@ -186,14 +166,11 @@ drop view test abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 # test: drop view
 create view test () as select 1
-[]
 drop view test
-[]
 select * from system.views()
 []
 # test: drop view if exists
 drop view if exists test
-[]
 # test: alter view statement parsing
 alter
 {"code": 1, "msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected"}
@@ -213,10 +190,8 @@ alter view if exists 123
 alter view test rename test2
 {"code": 1, "msg": "view 'test': not exists"}
 alter view if exists test rename test2
-[]
 # test: alter rename
 create view test as select 1
-[]
 alter view test rename
 {"code": 1, "msg": "ALTER VIEW RENAME <name> expected"}
 alter view test rename to
@@ -224,7 +199,6 @@ alter view test rename to
 alter view test rename asf junk
 {"code": 1, "msg": "unexpected token at the end of statement"}
 alter view test rename to abc
-[]
 select * from system.views()
 [{
   "schema": "public",
@@ -234,18 +208,14 @@ select * from system.views()
 }]
 # test: alter rename view exists
 create view test as select 1
-[]
 alter view abc rename to test
 {"code": 1, "msg": "view 'test': already exists"}
 drop view test
-[]
 # test: alter rename conflicting table exists
 create table test (id int primary key)
-[]
 alter view abc rename to test
 {"code": 1, "msg": "table <test> with the same name exists"}
 drop table test
-[]
 # test: alter rename schema not exists
 alter view abc rename to test.test
 {"code": 1, "msg": "schema 'test': not exists"}
@@ -254,7 +224,6 @@ alter view abc rename to system.test
 {"code": 1, "msg": "system schema <system> cannot be used to create objects"}
 # test: alter rename schema
 alter view abc rename to public.test
-[]
 select * from system.views()
 [{
   "schema": "public",
@@ -263,9 +232,7 @@ select * from system.views()
   "columns": []
 }]
 create schema test
-[]
 alter view public.test rename to test.test
-[]
 select * from system.views()
 [{
   "schema": "test",

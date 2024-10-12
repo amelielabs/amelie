@@ -2,9 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: key column
 create table test (id int primary key, data int default 1)
-[]
 insert into test (id) values (1), (2), (3)
-[]
 explain select * from test where id > 1
 [{
   "bytecode": {
@@ -74,16 +72,11 @@ explain select * from test where id >= 1
 select * from test where id >= 1
 [[1, 1], [2, 1], [3, 1]]
 drop table test
-[]
 # test: key column.path
 create table test (obj object, primary key(obj.id int))
-[]
 insert into test {"id": 1}
-[]
 insert into test {"id": 2}
-[]
 insert into test {"id": 3}
-[]
 explain select * from test where obj.id > 1
 [{
   "bytecode": {
@@ -123,16 +116,11 @@ select * from test where obj.id > 1
   "id": 3
 }]]
 drop table test
-[]
 # test: key column.path.path
 create table test (obj object, primary key(obj.data.id int))
-[]
 insert into test {"data": {"id": 1}}
-[]
 insert into test {"data": {"id": 2}}
-[]
 insert into test {"data": {"id": 3}}
-[]
 explain select * from test where obj.data.id > 1
 [{
   "bytecode": {
@@ -176,12 +164,9 @@ select * from test where obj.data.id > 1
   }
 }]]
 drop table test
-[]
 # test: key target.column
 create table test (id int primary key, data int default 1)
-[]
 insert into test (id) values (1), (2), (3)
-[]
 explain select * from test where test.id > 1
 [{
   "bytecode": {
@@ -217,16 +202,11 @@ explain select * from test where test.id > 1
 select * from test where test.id > 1
 [[2, 1], [3, 1]]
 drop table test
-[]
 # test: key target.column.path
 create table test (obj object, primary key(obj.id int))
-[]
 insert into test {"id": 1}
-[]
 insert into test {"id": 2}
-[]
 insert into test {"id": 3}
-[]
 explain select * from test where test.obj.id > 1
 [{
   "bytecode": {
@@ -266,16 +246,11 @@ select * from test where test.obj.id > 1
   "id": 3
 }]]
 drop table test
-[]
 # test: key target.column.path.path
 create table test (obj object, primary key(obj.data.id int))
-[]
 insert into test {"data": {"id": 1}}
-[]
 insert into test {"data": {"id": 2}}
-[]
 insert into test {"data": {"id": 3}}
-[]
 explain select * from test where test.obj.data.id > 1
 [{
   "bytecode": {
@@ -319,12 +294,9 @@ select * from test where test.obj.data.id > 1
   }
 }]]
 drop table test
-[]
 # test: key alias.column
 create table test (id int primary key, data int default 1)
-[]
 insert into test (id) values (1), (2), (3)
-[]
 explain select * from test alias where alias.id > 1
 [{
   "bytecode": {
@@ -360,16 +332,11 @@ explain select * from test alias where alias.id > 1
 select * from test alias where alias.id > 1
 [[2, 1], [3, 1]]
 drop table test
-[]
 # test: key alias.column.path
 create table test (obj object, primary key(obj.id int))
-[]
 insert into test {"id": 1}
-[]
 insert into test {"id": 2}
-[]
 insert into test {"id": 3}
-[]
 explain select * from test alias where alias.obj.id > 1
 [{
   "bytecode": {
@@ -409,16 +376,11 @@ select * from test alias where alias.obj.id > 1
   "id": 3
 }]]
 drop table test
-[]
 # test: key alias.column.path.path
 create table test (obj object, primary key(obj.data.id int))
-[]
 insert into test {"data": {"id": 1}}
-[]
 insert into test {"data": {"id": 2}}
-[]
 insert into test {"data": {"id": 3}}
-[]
 explain select * from test alias where alias.obj.data.id > 1
 [{
   "bytecode": {
@@ -462,10 +424,8 @@ select * from test alias where alias.obj.data.id > 1
   }
 }]]
 drop table test
-[]
 # test: key column type mismatch
 create table test (id int primary key, data int default 1)
-[]
 explain select * from test where id > "hello"
 [{
   "bytecode": {
@@ -501,10 +461,8 @@ explain select * from test where id > "hello"
 select * from test where id > "hello"
 []
 drop table test
-[]
 # test: key column type mismatch #2
 create table test (id string primary key, data int default 1)
-[]
 explain select * from test where id > 1
 [{
   "bytecode": {
@@ -540,12 +498,9 @@ explain select * from test where id > 1
 select * from test where id > 1
 []
 drop table test
-[]
 # test: key gt (start condition)
 create table test (id int primary key, data int default 1)
-[]
 insert into test (id) values (1), (2), (3)
-[]
 explain select * from test where id > 1
 [{
   "bytecode": {
@@ -1458,12 +1413,9 @@ explain select * from test where id = 1 and id = 2
 select * from test where id = 1 and id = 2
 []
 drop table test
-[]
 # test: key compound gt 1 (start condition)
 create table test (a int, b int, primary key(a, b))
-[]
 insert into test values (1, 1), (2, 2), (3, 3)
-[]
 explain select * from test where a > 1
 [{
   "bytecode": {
@@ -1900,12 +1852,9 @@ explain select * from test where a = 1 and b > 1
 select * from test where a = 1 and b > 1
 []
 drop table test
-[]
 # test: key between
 create table test (id int primary key, data int default 1)
-[]
 insert into test (id) values (1), (2), (3)
-[]
 explain select * from test where id between 1 and 2
 [{
   "bytecode": {
@@ -2042,6 +1991,5 @@ explain select * from test where id not between 1 and 2
 select * from test where id not between 1 and 2
 [[3, 1]]
 drop table test
-[]
 disconnect S0
 close E0

@@ -5,17 +5,14 @@ show checkpoint
 [0]
 # test: checkpoint (no data)
 checkpoint
-[]
 show checkpoint
 [1]
 # test: create table
 create distributed table test (id int primary key serial)
-[]
 show lsn
 [2]
 # test: checkpoint
 checkpoint
-[]
 show lsn
 [2]
 show checkpoint
@@ -33,7 +30,6 @@ select * from test
 []
 # test: insert
 insert into test () values (), (), ()
-[]
 select serial("public", "test")
 [3]
 # test: restart/recover (checkpoint + wal)
@@ -51,7 +47,6 @@ select * from test
 [[0], [1], [2]]
 # test: checkpoint
 checkpoint
-[]
 show lsn
 [3]
 show checkpoint
@@ -71,9 +66,7 @@ select * from test
 [[0], [1], [2]]
 # test: create schema
 create schema test
-[]
 alter table public.test rename to test.test
-[]
 show lsn
 [5]
 # test: restart/recover (checkpoint + wal)
@@ -105,7 +98,6 @@ select * from test.test
 [[0], [1], [2]]
 # test: checkpoint
 checkpoint
-[]
 show lsn
 [5]
 show checkpoint
@@ -139,7 +131,6 @@ select * from test.test
 [[0], [1], [2]]
 # test: create view
 create view test_view as select [1,2,3]
-[]
 show lsn
 [6]
 select * from test_view
@@ -175,7 +166,6 @@ select * from test_view
 [1, 2, 3]
 # test: checkpoint
 checkpoint
-[]
 show lsn
 [6]
 show checkpoint
@@ -211,9 +201,7 @@ select * from test_view
 [1, 2, 3]
 # test: drop
 drop view test_view
-[]
 drop table test.test
-[]
 show lsn
 [8]
 # test: restart/recover (checkpoint + wal)
@@ -231,7 +219,6 @@ show tables
 []
 # test: checkpoint
 checkpoint
-[]
 show lsn
 [8]
 show checkpoint

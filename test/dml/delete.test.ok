@@ -17,59 +17,40 @@ delete from test where true limit
 {"code": 1, "msg": "<test> table or view is not found"}
 # test: delete
 create table test(id int primary key)
-[]
 insert into test values (0)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 select * from test
 [[0], [1], [2]]
 delete from test
-[]
 select * from test
 []
 drop table test
-[]
 # test: delete schema
 create schema test
-[]
 create table test.test(id int primary key, data int)
-[]
 insert into test.test values (0, 3)
-[]
 insert into test.test values (1, 2)
-[]
 insert into test.test values (2, 1)
-[]
 delete from test.test
-[]
 select * from test.test
 []
 drop table test.test
-[]
 drop schema test
-[]
 # test: delete point-lookup
 create table test(id int primary key)
-[]
 insert into test values (0)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 explain delete from test where id = 3
 [{
   "bytecode": {
     "coordinator": {
       "00": "send_hash           0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int                 0      -      0     # 3",
@@ -88,48 +69,35 @@ explain delete from test where id = 3
   }
 }]
 delete from test where id = 3
-[]
 select * from test
 [[0], [1], [2]]
 delete from test where id = 2
-[]
 select * from test
 [[0], [1]]
 delete from test where id = 0
-[]
 select * from test
 [[1]]
 delete from test where id = -1
-[]
 select * from test
 [[1]]
 delete from test where id = 1
-[]
 select * from test
 []
 drop table test
-[]
 # test: delete range scan
 create table test(id int primary key)
-[]
 insert into test values (0)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 select * from test
 [[0], [1], [2]]
 delete from test where id > 3
-[]
 select * from test
 [[0], [1], [2]]
 delete from test where id > 2
-[]
 select * from test
 [[0], [1], [2]]
 delete from test where id >= 2
-[]
 select * from test
 [[0], [1]]
 explain delete from test where id > 0 and id < 1
@@ -138,10 +106,9 @@ explain delete from test where id > 0 and id < 1
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int                 0      -      0     # 0",
@@ -173,137 +140,92 @@ explain delete from test where id > 0 and id < 1
   }
 }]
 delete from test where id > 0 and id < 1
-[]
 select * from test
 [[0], [1]]
 delete from test where id > 0 and id <= 1
-[]
 select * from test
 [[0]]
 delete from test where id >= 0 and id <= 1
-[]
 select * from test
 []
 drop table test
-[]
 # test: delete delete error
 create table test(id int primary key, data int)
-[]
 insert into test values (0, 3)
-[]
 insert into test values (1, 2)
-[]
 insert into test values (2, null)
-[]
 delete from test where data > 0
 {"code": 1, "msg": "bad > expression type"}
 select * from test
 [[0, 3], [1, 2], [2, null]]
 drop table test
-[]
 # test: delete insert delete
 create table test(id int primary key, data int)
-[]
 insert into test values (0, 3)
-[]
 insert into test values (1, 2)
-[]
 insert into test values (2, 0)
-[]
 delete from test
-[]
 select * from test
 []
 insert into test values (0, 3)
-[]
 insert into test values (1, 2)
-[]
 insert into test values (2, 0)
-[]
 select * from test
 [[0, 3], [1, 2], [2, 0]]
 delete from test
-[]
 select * from test
 []
 insert into test values (0, 3)
-[]
 insert into test values (1, 2)
-[]
 insert into test values (2, 0)
-[]
 select * from test
 [[0, 3], [1, 2], [2, 0]]
 drop table test
-[]
 # test: delete secondary index
 create table test (id int primary key, data int)
-[]
 create index i on test (data)
-[]
 insert into test values (0, 2)
-[]
 insert into test values (1, 1)
-[]
 insert into test values (2, 0)
-[]
 delete from test where id = 1
-[]
 select * from test
 [[0, 2], [2, 0]]
 select * from test use index (i)
 [[2, 0], [0, 2]]
 delete from test
-[]
 select * from test
 []
 select * from test use index (i)
 []
 drop table test
-[]
 # test: delete from secondary index
 create table test (obj object, primary key (obj.id int))
-[]
 create index i on test (obj.data int)
-[]
 insert into test {"id": 0, "data": 2}
-[]
 insert into test {"id": 1, "data": 1}
-[]
 insert into test {"id": 2, "data": 0}
-[]
 delete from test use index (i)
 {"code": 1, "msg": "DELETE only primary index supported"}
 drop table test
-[]
 # test: delete returning
 create table test(id int primary key)
-[]
 insert into test values (0)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 delete from test returning *
 [[0], [1], [2]]
 select * from test
 []
 insert into test values (0)
-[]
 insert into test values (1)
-[]
 insert into test values (2)
-[]
 delete from test where id >= 1 returning *
 [[1], [2]]
 select * from test
 [[0]]
 delete from test
-[]
 delete from test returning *
 []
 drop table test
-[]
 disconnect S0
 close E0

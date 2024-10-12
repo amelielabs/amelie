@@ -223,17 +223,13 @@ select interval '1 hour' not between interval '55 minutes' and interval '55 minu
 [true]
 # test: interval column
 create table test (id int primary key, i interval)
-[]
 insert into test values (0, "1 year 1 day 10 hour")
 {"code": 1, "msg": "column i: does not match data type interval"}
 insert into test values (0, "1 year 1 day 10 hour"::interval)
 {"code": 1, "msg": "expected ')'"}
 insert into test values (0, interval "1 year 1 day 10 hour")
-[]
 insert into test values (1, interval "1 year 1 day 11 hour")
-[]
 insert into test values (2, interval "1 year 1 day 12 hour 500 us")
-[]
 select * from test
 [[0, "1 year 1 day 10 hours"], [1, "1 year 1 day 11 hours"], [2, "1 year 1 day 12 hours 500 us"]]
 select * from test where i > "1 year 1 day 10 hour"::interval
@@ -275,7 +271,6 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
 select * from test where i = "1 year 1 day 12 hours 500 us"::interval
 [[2, "1 year 1 day 12 hours 500 us"]]
 drop table test
-[]
 # test: interval column (key)
 create table test (id interval primary key)
 {"code": 1, "msg": "<id> column key can be string, int or timestamp"}

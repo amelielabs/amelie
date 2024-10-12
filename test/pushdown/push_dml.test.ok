@@ -2,17 +2,15 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: shared insert
 create shared table test (id int primary key, data int default 0)
-[]
 explain insert into test (id) values (1), (2), (3)
 [{
   "bytecode": {
     "coordinator": {
       "00": "send                0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -21,7 +19,6 @@ explain insert into test (id) values (1), (2), (3)
   }
 }]
 insert into test (id) values (1), (2), (3)
-[]
 # test: shared delete
 explain delete from test
 [{
@@ -29,10 +26,9 @@ explain delete from test
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int_min             0      0      0     ",
@@ -47,22 +43,19 @@ explain delete from test
   }
 }]
 delete from test
-[]
 select * from test
 []
 # test: shared update
 insert into test (id) values (1), (2), (3)
-[]
 explain update test set data = id
 [{
   "bytecode": {
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int_min             0      0      0     ",
@@ -85,7 +78,6 @@ explain update test set data = id
   }
 }]
 update test set data = id
-[]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 # test: shared upsert
@@ -95,10 +87,9 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "coordinator": {
       "00": "send                0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "cursor_prepare      0      -      0     # public.test",
@@ -121,24 +112,20 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
   }
 }]
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
-[]
 select * from test
 [[1, 2], [2, 3], [3, 4]]
 drop table test
-[]
 # test: table insert
 create table test (id int primary key, data int default 0)
-[]
 explain insert into test (id) values (1), (2), (3)
 [{
   "bytecode": {
     "coordinator": {
       "00": "send                0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -147,7 +134,6 @@ explain insert into test (id) values (1), (2), (3)
   }
 }]
 insert into test (id) values (1), (2), (3)
-[]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
 # test: table delete
@@ -157,10 +143,9 @@ explain delete from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int_min             0      0      0     ",
@@ -175,22 +160,19 @@ explain delete from test
   }
 }]
 delete from test
-[]
 select * from test
 []
 # test: table update
 insert into test (id) values (1), (2), (3)
-[]
 explain update test set data = id
 [{
   "bytecode": {
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "int_min             0      0      0     ",
@@ -213,7 +195,6 @@ explain update test set data = id
   }
 }]
 update test set data = id
-[]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 # test: table upsert
@@ -223,10 +204,9 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "coordinator": {
       "00": "send                0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "array               0      0      0     ",
+      "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     },
     "node": {
       "00": "cursor_prepare      0      -      0     # public.test",
@@ -249,10 +229,8 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
   }
 }]
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
-[]
 select * from test
 [[1, 2], [2, 3], [3, 4]]
 drop table test
-[]
 disconnect S0
 close E0

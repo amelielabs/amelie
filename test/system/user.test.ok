@@ -17,7 +17,6 @@ create user test abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 # test: create user
 create user test
-[]
 show users
 [{
   "name": "test"
@@ -26,7 +25,6 @@ show users
 create user test
 {"code": 1, "msg": "user 'test': already exists"}
 create user if not exists test
-[]
 # test: create user secret
 create user test2 secret
 {"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
@@ -37,7 +35,6 @@ create user test2 secret secret
 create user test2 secret "test" abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 create user test2 secret "test"
-[]
 show users
 [{
   "name": "test"
@@ -61,7 +58,6 @@ drop user test abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 # test: drop user
 drop user test
-[]
 show users
 [{
   "name": "test2"
@@ -70,7 +66,6 @@ show users
 drop user test
 {"code": 1, "msg": "user 'test': not exists"}
 drop user if exists test
-[]
 # test: alter user statment parsing
 alter user
 {"code": 1, "msg": "ALTER USER <name> expected"}
@@ -92,21 +87,18 @@ alter user test2 secret "abc" abc
 {"code": 1, "msg": "unexpected token at the end of statement"}
 # test: alter user
 alter user test2 secret "abc"
-[]
 show users
 [{
   "name": "test2"
 }]
 # test: alter user unset secret
 alter user test2 secret ""
-[]
 show users
 [{
   "name": "test2"
 }]
 # test: alter user set secret
 alter user test2 secret "abc"
-[]
 show users
 [{
   "name": "test2"
@@ -121,7 +113,6 @@ show users
   "name": "test2"
 }]
 drop user test2
-[]
 show users
 []
 disconnect S0

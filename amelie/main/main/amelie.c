@@ -217,7 +217,8 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 		}
 
 		// print
-		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
+		if (! str_compare_raw(&reply->options[HTTP_CODE], "204", 3))
+			printf("%.*s\n", buf_size(&reply->content), reply->content.start);
 	}
 
 	home_sync(&self->home);

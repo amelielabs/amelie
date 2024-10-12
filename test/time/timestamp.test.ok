@@ -275,19 +275,14 @@ select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 
 [false]
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
-[]
 insert into test values (0, "1970-01-01 01:12:59.909090")
 {"code": 1, "msg": "column ts: does not match data type timestamp"}
 insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
 {"code": 1, "msg": "expected ')'"}
 insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
-[]
 insert into test values (1, timestamp "1970-01-01 01:13:00")
-[]
 insert into test values (2, timestamp "1970-01-01 01:13:01")
-[]
 insert into test values (3, timestamp '1970-01-01 01:13:01')
-[]
 select * from test
 [[0, "1970-01-01 01:12:59.909090+00"], [1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
@@ -364,26 +359,17 @@ select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 # test: timestamp current_timestamp column
 insert into test values (4, current_timestamp)
-[]
 select ts::int > 0 from test where id = 4
 [true]
 drop table test
-[]
 # test: timestamp column (key)
 create table test (id timestamp primary key)
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000001")
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000002")
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000003")
-[]
 insert into test values (timestamp "1970-01-01 00:00:02.000000")
-[]
 insert into test values (timestamp "1970-01-01 00:00:03.000000")
-[]
 insert into test values (timestamp "1970-01-01 00:00:04.000000")
-[]
 explain select * from test
 [{
   "bytecode": {
@@ -557,24 +543,15 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
   }
 }]
 drop table test
-[]
 # test: timestamp column (secondary index)
 create table test (id timestamp primary key)
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000001")
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000002")
-[]
 insert into test values (timestamp "1970-01-01 00:00:01.000003")
-[]
 insert into test values (timestamp "1970-01-01 00:00:02.000000")
-[]
 insert into test values (timestamp "1970-01-01 00:00:03.000000")
-[]
 insert into test values (timestamp "1970-01-01 00:00:04.000000")
-[]
 create index i on test (id) with (type = 'hash')
-[]
 select * from test use index (i)
 [["1970-01-01 00:00:01.000001+00"], ["1970-01-01 00:00:03+00"], ["1970-01-01 00:00:02+00"], ["1970-01-01 00:00:01.000002+00"], ["1970-01-01 00:00:04+00"], ["1970-01-01 00:00:01.000003+00"]]
 select * from test where id > timestamp '1970-01-01 00:00:01.000003'
@@ -650,6 +627,5 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 select count(*) from test where id = timestamp '1970-01-01 00:00:01.000003'
 [1]
 drop table test
-[]
 disconnect S0
 close E0

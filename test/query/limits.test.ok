@@ -2,22 +2,16 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: limit_write
 create table test (id int primary key)
-[]
 set limit_write to 1
-[]
 insert into test 123
 {"code": 1, "msg": "transaction log limit reached"}
 set limit_write to 10000
-[]
 drop table test
-[]
 # test: limit_send
 set limit_send to 0
-[]
 select system.config()
 {"code": 1, "msg": "http reply limit reached"}
 set limit_send to 1000000
-[]
 select system.config()
 [{
   "version": "0.0",
@@ -58,7 +52,6 @@ select system.config()
 }]
 # test: limit_recv
 set limit_recv to 0
-[]
 select 1
 {"code": 1, "msg": "http request limit reached"}
 disconnect S0

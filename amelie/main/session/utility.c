@@ -406,9 +406,5 @@ session_execute_utility(Session* self)
 	{
 		guard_buf(buf);
 		body_add_buf(body, buf, self->local.timezone);
-	} else
-	{
-		// []
-		body_empty(body);
 	}
 }

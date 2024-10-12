@@ -136,7 +136,6 @@ show all
 }]
 # test: create table
 create table test (id int serial primary key, data int default 0)
-[]
 show lsn
 [2]
 select serial("public", "test")
@@ -153,7 +152,6 @@ select serial("public", "test")
 [0]
 # test: insert
 insert into test () values (), (), ()
-[]
 show lsn
 [3]
 select serial("public", "test")
@@ -174,7 +172,6 @@ select * from test
 [[0, 0], [1, 0], [2, 0]]
 # test: update
 update test set data = id
-[]
 show lsn
 [4]
 select serial("public", "test")
@@ -195,7 +192,6 @@ select * from test
 [[0, 0], [1, 1], [2, 2]]
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1
-[]
 show lsn
 [5]
 select serial("public", "test")
@@ -216,7 +212,6 @@ select * from test
 [[0, 0], [1, 1], [2, 3]]
 # test: delete
 delete from test where id in (0, 1)
-[]
 show lsn
 [6]
 select serial("public", "test")

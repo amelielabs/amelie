@@ -50,7 +50,6 @@ explain watch (select 123) = 123
 watch (select 123) = 123
 []
 create table test (id int primary key serial)
-[]
 watch select * from test
 {"code": 1, "msg": "WATCH: sub queries are not supported"}
 disconnect S0
