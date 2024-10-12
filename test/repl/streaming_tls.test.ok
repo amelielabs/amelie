@@ -12,7 +12,7 @@ switch S0
 create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481"
 start repl
 # test: wait for primary connect
-watch system.replicas()[0].connected = true
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].connected = true
 []
 # test: write
 create table test (id int primary key)
@@ -10016,7 +10016,7 @@ insert into test 9997
 insert into test 9998
 insert into test 9999
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{

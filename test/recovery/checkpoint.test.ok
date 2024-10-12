@@ -80,17 +80,21 @@ show checkpoint
 [3]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 select serial("test", "test")
 [3]
@@ -113,17 +117,21 @@ show checkpoint
 [5]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 select serial("test", "test")
 [3]
@@ -146,17 +154,21 @@ show checkpoint
 [5]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 select serial("test", "test")
 [3]
@@ -181,17 +193,21 @@ show checkpoint
 [6]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 select serial("test", "test")
 [3]
@@ -214,7 +230,7 @@ show lsn
 show checkpoint
 [6]
 show views
-[]
+[{}]
 show tables
 [{}]
 # test: checkpoint
@@ -233,7 +249,7 @@ show lsn
 show checkpoint
 [8]
 show views
-[]
+[{}]
 show tables
 [{}]
 disconnect S0

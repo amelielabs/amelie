@@ -197,17 +197,21 @@ show tables
 create schema test
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 show lsn
 [13]
@@ -221,33 +225,41 @@ show lsn
 [13]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 # test: alter schema rename
 alter schema test rename to test2
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test2": {
+    "name": "test2",
+    "system": false,
+    "create": true
+  }
 }]
 show lsn
 [14]
@@ -261,17 +273,21 @@ show lsn
 [14]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test2": {
+    "name": "test2",
+    "system": false,
+    "create": true
+  }
 }]
 # test: drop schema
 drop schema test2
@@ -279,13 +295,16 @@ show lsn
 [15]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: restart
 disconnect S0
@@ -297,13 +316,16 @@ show lsn
 [15]
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: create view
 create view test as select [1,2,3]
@@ -311,10 +333,12 @@ show lsn
 [16]
 show views
 [{
-  "schema": "public",
-  "name": "test",
-  "query": "select [1,2,3]",
-  "columns": []
+  "public.test": {
+    "schema": "public",
+    "name": "test",
+    "query": "select [1,2,3]",
+    "columns": []
+  }
 }]
 select * from test
 [1, 2, 3]
@@ -328,10 +352,12 @@ show lsn
 [16]
 show views
 [{
-  "schema": "public",
-  "name": "test",
-  "query": "select [1,2,3]",
-  "columns": []
+  "public.test": {
+    "schema": "public",
+    "name": "test",
+    "query": "select [1,2,3]",
+    "columns": []
+  }
 }]
 select * from test
 [1, 2, 3]
@@ -341,10 +367,12 @@ show lsn
 [17]
 show views
 [{
-  "schema": "public",
-  "name": "test2",
-  "query": "select [1,2,3]",
-  "columns": []
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "query": "select [1,2,3]",
+    "columns": []
+  }
 }]
 select * from test2
 [1, 2, 3]
@@ -358,10 +386,12 @@ show lsn
 [17]
 show views
 [{
-  "schema": "public",
-  "name": "test2",
-  "query": "select [1,2,3]",
-  "columns": []
+  "public.test2": {
+    "schema": "public",
+    "name": "test2",
+    "query": "select [1,2,3]",
+    "columns": []
+  }
 }]
 select * from test2
 [1, 2, 3]
@@ -370,7 +400,7 @@ drop view test2
 show lsn
 [18]
 show views
-[]
+[{}]
 # test: restart
 disconnect S0
 close E0
@@ -380,6 +410,6 @@ connect E0 S0 localhost:3485
 show lsn
 [18]
 show views
-[]
+[{}]
 disconnect S0
 close E0

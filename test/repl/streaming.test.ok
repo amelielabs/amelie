@@ -12,7 +12,7 @@ switch S0
 create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 start repl
 # test: wait for primary connect
-watch system.replicas()[0].connected = true
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].connected = true
 []
 # test: write
 create table test (id int primary key)
@@ -10016,7 +10016,7 @@ insert into test 9997
 insert into test 9998
 insert into test 9999
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10042,7 +10042,7 @@ select count(*) from test
 select count(*) from test use index(i)
 [9999]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10061,7 +10061,7 @@ alter table test add column data int default 1
 select count(data) from test
 [9999]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10080,7 +10080,7 @@ select count(data) from test
 select count(id) from test
 [9999]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10099,7 +10099,7 @@ alter table test rename column id to id2
 select count(id2) from test
 [9999]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10114,7 +10114,7 @@ select count(id2) from test
 switch S0
 truncate public.test
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10136,7 +10136,7 @@ insert into test 7
 insert into test 8
 insert into test 9
 insert into test 10
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10154,7 +10154,7 @@ insert into test2 () values (), (), (), ()
 select serial("public", "test2")
 [4]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{
@@ -10169,7 +10169,7 @@ select serial("public", "test2")
 switch S0
 create node "00000000-0000-0000-0000-00000000000f"
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 []
 show repl
 [{

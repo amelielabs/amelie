@@ -39,20 +39,22 @@ show read_only
 # test: create replica
 switch S0
 show replicas
-[]
+[{}]
 create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 show replicas
 [{
-  "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1:3481",
-  "connected": false,
-  "lsn": 0,
-  "lag": 1
+  "00000000-0000-0000-0000-000000000001": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": false,
+    "lsn": 0,
+    "lag": 1
+  }
 }]
 # test: start primary
 start repl
 # test: wait for primary connect
-watch system.replicas()[0].connected = true
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
 []
 # test: write
 create table test (id int primary key)
@@ -60,7 +62,7 @@ insert into test 1,2,3
 show lsn
 [3]
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
 []
 # test: stop replica
 disconnect S1
@@ -74,33 +76,37 @@ show lsn
 # test: replica lag
 show replicas
 [{
-  "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1:3481",
-  "connected": false,
-  "lsn": 3,
-  "lag": 3
+  "00000000-0000-0000-0000-000000000001": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": false,
+    "lsn": 3,
+    "lag": 3
+  }
 }]
 # test: replica disconnected
 switch S0
-watch system.replicas()[0].connected = false
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = false
 []
 # test: restart replica
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
 connect E1 S1 localhost:3481
 # test: wait for primary reconnect
 switch S0
-watch system.replicas()[0].connected = true
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
 []
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
 []
 show replicas
 [{
-  "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1:3481",
-  "connected": true,
-  "lsn": 6,
-  "lag": 0
+  "00000000-0000-0000-0000-000000000001": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 6,
+    "lag": 0
+  }
 }]
 # test: restart primary
 disconnect S0
@@ -109,22 +115,24 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 # test: wait for primary reconnect
 switch S0
-watch system.replicas()[0].connected = true
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
 []
 # test: write
 insert into test 7
 insert into test 8
 insert into test 9
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
 []
 show replicas
 [{
-  "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1:3481",
-  "connected": true,
-  "lsn": 9,
-  "lag": 0
+  "00000000-0000-0000-0000-000000000001": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 9,
+    "lag": 0
+  }
 }]
 # test: ensure replica is read-only
 switch S1
@@ -173,7 +181,7 @@ show repl
 switch S0
 drop replica "00000000-0000-0000-0000-000000000001"
 show replicas
-[]
+[{}]
 # test: subscribe to new primary
 switch S0
 subscribe "00000000-0000-0000-0000-000000000001"
@@ -187,24 +195,26 @@ show repl
 switch S1
 create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
 # test: wait for primary connect
-watch system.replicas()[0].connected = true
+watch system.replicas()['00000000-0000-0000-0000-000000000000'].connected = true
 []
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()['00000000-0000-0000-0000-000000000000'].lsn = system.config().lsn
 []
 # test: write
 insert into test 10
 insert into test 11
 insert into test 12
 # test: wait replica sync
-watch system.replicas()[0].lsn = system.config().lsn
+watch system.replicas()['00000000-0000-0000-0000-000000000000'].lsn = system.config().lsn
 []
 show replicas
 [{
-  "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "127.0.0.1:3480",
-  "connected": true,
-  "lsn": 12,
-  "lag": 0
+  "00000000-0000-0000-0000-000000000000": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "uri": "127.0.0.1:3480",
+    "connected": true,
+    "lsn": 12,
+    "lag": 0
+  }
 }]
 select * from test
 [[1], [6], [7], [8], [2], [9], [10], [12], [3], [4], [5], [11]]

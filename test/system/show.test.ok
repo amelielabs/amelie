@@ -11,598 +11,794 @@ show 1234
 {"code": 1, "msg": "SHOW <name> expected"}
 # test: show users
 show users
-[]
+[{}]
 select system.users()
-[]
+[{}]
 # test: show schemas
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: show functions
 show functions
 [{
-  "schema": "system",
-  "name": "config"
-}, {
-  "schema": "system",
-  "name": "users"
-}, {
-  "schema": "system",
-  "name": "replicas"
-}, {
-  "schema": "system",
-  "name": "repl"
-}, {
-  "schema": "system",
-  "name": "replication"
-}, {
-  "schema": "system",
-  "name": "nodes"
-}, {
-  "schema": "system",
-  "name": "schemas"
-}, {
-  "schema": "system",
-  "name": "functions"
-}, {
-  "schema": "system",
-  "name": "tables"
-}, {
-  "schema": "system",
-  "name": "views"
-}, {
-  "schema": "system",
-  "name": "wal"
-}, {
-  "schema": "public",
-  "name": "type"
-}, {
-  "schema": "public",
-  "name": "string"
-}, {
-  "schema": "public",
-  "name": "int"
-}, {
-  "schema": "public",
-  "name": "bool"
-}, {
-  "schema": "public",
-  "name": "real"
-}, {
-  "schema": "public",
-  "name": "native"
-}, {
-  "schema": "public",
-  "name": "interval"
-}, {
-  "schema": "public",
-  "name": "timestamp"
-}, {
-  "schema": "public",
-  "name": "vector"
-}, {
-  "schema": "public",
-  "name": "coalesce"
-}, {
-  "schema": "public",
-  "name": "nullif"
-}, {
-  "schema": "public",
-  "name": "append"
-}, {
-  "schema": "public",
-  "name": "push_back"
-}, {
-  "schema": "public",
-  "name": "push"
-}, {
-  "schema": "public",
-  "name": "pop"
-}, {
-  "schema": "public",
-  "name": "pop_back"
-}, {
-  "schema": "public",
-  "name": "put"
-}, {
-  "schema": "public",
-  "name": "remove"
-}, {
-  "schema": "public",
-  "name": "set"
-}, {
-  "schema": "public",
-  "name": "unset"
-}, {
-  "schema": "public",
-  "name": "has"
-}, {
-  "schema": "public",
-  "name": "length"
-}, {
-  "schema": "public",
-  "name": "size"
-}, {
-  "schema": "public",
-  "name": "concat"
-}, {
-  "schema": "public",
-  "name": "lower"
-}, {
-  "schema": "public",
-  "name": "upper"
-}, {
-  "schema": "public",
-  "name": "substr"
-}, {
-  "schema": "public",
-  "name": "strpos"
-}, {
-  "schema": "public",
-  "name": "replace"
-}, {
-  "schema": "public",
-  "name": "ltrim"
-}, {
-  "schema": "public",
-  "name": "rtrim"
-}, {
-  "schema": "public",
-  "name": "trim"
-}, {
-  "schema": "public",
-  "name": "like"
-}, {
-  "schema": "public",
-  "name": "regexp_like"
-}, {
-  "schema": "public",
-  "name": "regexp_substr"
-}, {
-  "schema": "public",
-  "name": "regexp_match"
-}, {
-  "schema": "public",
-  "name": "regexp_replace"
-}, {
-  "schema": "public",
-  "name": "greatest"
-}, {
-  "schema": "public",
-  "name": "least"
-}, {
-  "schema": "public",
-  "name": "abs"
-}, {
-  "schema": "public",
-  "name": "round"
-}, {
-  "schema": "public",
-  "name": "sign"
-}, {
-  "schema": "public",
-  "name": "ceil"
-}, {
-  "schema": "public",
-  "name": "exp"
-}, {
-  "schema": "public",
-  "name": "floor"
-}, {
-  "schema": "public",
-  "name": "mod"
-}, {
-  "schema": "public",
-  "name": "power"
-}, {
-  "schema": "public",
-  "name": "trunc"
-}, {
-  "schema": "public",
-  "name": "pi"
-}, {
-  "schema": "public",
-  "name": "sqrt"
-}, {
-  "schema": "public",
-  "name": "acos"
-}, {
-  "schema": "public",
-  "name": "acosh"
-}, {
-  "schema": "public",
-  "name": "asin"
-}, {
-  "schema": "public",
-  "name": "asinh"
-}, {
-  "schema": "public",
-  "name": "atan"
-}, {
-  "schema": "public",
-  "name": "atanh"
-}, {
-  "schema": "public",
-  "name": "atan2"
-}, {
-  "schema": "public",
-  "name": "cos"
-}, {
-  "schema": "public",
-  "name": "cosh"
-}, {
-  "schema": "public",
-  "name": "sin"
-}, {
-  "schema": "public",
-  "name": "sinh"
-}, {
-  "schema": "public",
-  "name": "tan"
-}, {
-  "schema": "public",
-  "name": "tanh"
-}, {
-  "schema": "public",
-  "name": "ln"
-}, {
-  "schema": "public",
-  "name": "log"
-}, {
-  "schema": "public",
-  "name": "log10"
-}, {
-  "schema": "public",
-  "name": "log2"
-}, {
-  "schema": "public",
-  "name": "error"
-}, {
-  "schema": "public",
-  "name": "random"
-}, {
-  "schema": "public",
-  "name": "random_uuid"
-}, {
-  "schema": "public",
-  "name": "md5"
-}, {
-  "schema": "public",
-  "name": "sha1"
-}, {
-  "schema": "public",
-  "name": "encode"
-}, {
-  "schema": "public",
-  "name": "decode"
-}, {
-  "schema": "public",
-  "name": "serial"
-}, {
-  "schema": "public",
-  "name": "jwt"
-}, {
-  "schema": "public",
-  "name": "now"
-}, {
-  "schema": "public",
-  "name": "at_timezone"
-}, {
-  "schema": "public",
-  "name": "generate_series"
-}, {
-  "schema": "public",
-  "name": "date_bin"
-}, {
-  "schema": "public",
-  "name": "date_trunc"
-}, {
-  "schema": "public",
-  "name": "extract"
-}, {
-  "schema": "public",
-  "name": "cos_distance"
+  "system.config": {
+    "schema": "system",
+    "name": "config"
+  },
+  "system.users": {
+    "schema": "system",
+    "name": "users"
+  },
+  "system.replicas": {
+    "schema": "system",
+    "name": "replicas"
+  },
+  "system.repl": {
+    "schema": "system",
+    "name": "repl"
+  },
+  "system.replication": {
+    "schema": "system",
+    "name": "replication"
+  },
+  "system.nodes": {
+    "schema": "system",
+    "name": "nodes"
+  },
+  "system.schemas": {
+    "schema": "system",
+    "name": "schemas"
+  },
+  "system.functions": {
+    "schema": "system",
+    "name": "functions"
+  },
+  "system.tables": {
+    "schema": "system",
+    "name": "tables"
+  },
+  "system.views": {
+    "schema": "system",
+    "name": "views"
+  },
+  "system.wal": {
+    "schema": "system",
+    "name": "wal"
+  },
+  "public.type": {
+    "schema": "public",
+    "name": "type"
+  },
+  "public.string": {
+    "schema": "public",
+    "name": "string"
+  },
+  "public.int": {
+    "schema": "public",
+    "name": "int"
+  },
+  "public.bool": {
+    "schema": "public",
+    "name": "bool"
+  },
+  "public.real": {
+    "schema": "public",
+    "name": "real"
+  },
+  "public.native": {
+    "schema": "public",
+    "name": "native"
+  },
+  "public.interval": {
+    "schema": "public",
+    "name": "interval"
+  },
+  "public.timestamp": {
+    "schema": "public",
+    "name": "timestamp"
+  },
+  "public.vector": {
+    "schema": "public",
+    "name": "vector"
+  },
+  "public.coalesce": {
+    "schema": "public",
+    "name": "coalesce"
+  },
+  "public.nullif": {
+    "schema": "public",
+    "name": "nullif"
+  },
+  "public.append": {
+    "schema": "public",
+    "name": "append"
+  },
+  "public.push_back": {
+    "schema": "public",
+    "name": "push_back"
+  },
+  "public.push": {
+    "schema": "public",
+    "name": "push"
+  },
+  "public.pop": {
+    "schema": "public",
+    "name": "pop"
+  },
+  "public.pop_back": {
+    "schema": "public",
+    "name": "pop_back"
+  },
+  "public.put": {
+    "schema": "public",
+    "name": "put"
+  },
+  "public.remove": {
+    "schema": "public",
+    "name": "remove"
+  },
+  "public.set": {
+    "schema": "public",
+    "name": "set"
+  },
+  "public.unset": {
+    "schema": "public",
+    "name": "unset"
+  },
+  "public.has": {
+    "schema": "public",
+    "name": "has"
+  },
+  "public.length": {
+    "schema": "public",
+    "name": "length"
+  },
+  "public.size": {
+    "schema": "public",
+    "name": "size"
+  },
+  "public.concat": {
+    "schema": "public",
+    "name": "concat"
+  },
+  "public.lower": {
+    "schema": "public",
+    "name": "lower"
+  },
+  "public.upper": {
+    "schema": "public",
+    "name": "upper"
+  },
+  "public.substr": {
+    "schema": "public",
+    "name": "substr"
+  },
+  "public.strpos": {
+    "schema": "public",
+    "name": "strpos"
+  },
+  "public.replace": {
+    "schema": "public",
+    "name": "replace"
+  },
+  "public.ltrim": {
+    "schema": "public",
+    "name": "ltrim"
+  },
+  "public.rtrim": {
+    "schema": "public",
+    "name": "rtrim"
+  },
+  "public.trim": {
+    "schema": "public",
+    "name": "trim"
+  },
+  "public.like": {
+    "schema": "public",
+    "name": "like"
+  },
+  "public.regexp_like": {
+    "schema": "public",
+    "name": "regexp_like"
+  },
+  "public.regexp_substr": {
+    "schema": "public",
+    "name": "regexp_substr"
+  },
+  "public.regexp_match": {
+    "schema": "public",
+    "name": "regexp_match"
+  },
+  "public.regexp_replace": {
+    "schema": "public",
+    "name": "regexp_replace"
+  },
+  "public.greatest": {
+    "schema": "public",
+    "name": "greatest"
+  },
+  "public.least": {
+    "schema": "public",
+    "name": "least"
+  },
+  "public.abs": {
+    "schema": "public",
+    "name": "abs"
+  },
+  "public.round": {
+    "schema": "public",
+    "name": "round"
+  },
+  "public.sign": {
+    "schema": "public",
+    "name": "sign"
+  },
+  "public.ceil": {
+    "schema": "public",
+    "name": "ceil"
+  },
+  "public.exp": {
+    "schema": "public",
+    "name": "exp"
+  },
+  "public.floor": {
+    "schema": "public",
+    "name": "floor"
+  },
+  "public.mod": {
+    "schema": "public",
+    "name": "mod"
+  },
+  "public.power": {
+    "schema": "public",
+    "name": "power"
+  },
+  "public.trunc": {
+    "schema": "public",
+    "name": "trunc"
+  },
+  "public.pi": {
+    "schema": "public",
+    "name": "pi"
+  },
+  "public.sqrt": {
+    "schema": "public",
+    "name": "sqrt"
+  },
+  "public.acos": {
+    "schema": "public",
+    "name": "acos"
+  },
+  "public.acosh": {
+    "schema": "public",
+    "name": "acosh"
+  },
+  "public.asin": {
+    "schema": "public",
+    "name": "asin"
+  },
+  "public.asinh": {
+    "schema": "public",
+    "name": "asinh"
+  },
+  "public.atan": {
+    "schema": "public",
+    "name": "atan"
+  },
+  "public.atanh": {
+    "schema": "public",
+    "name": "atanh"
+  },
+  "public.atan2": {
+    "schema": "public",
+    "name": "atan2"
+  },
+  "public.cos": {
+    "schema": "public",
+    "name": "cos"
+  },
+  "public.cosh": {
+    "schema": "public",
+    "name": "cosh"
+  },
+  "public.sin": {
+    "schema": "public",
+    "name": "sin"
+  },
+  "public.sinh": {
+    "schema": "public",
+    "name": "sinh"
+  },
+  "public.tan": {
+    "schema": "public",
+    "name": "tan"
+  },
+  "public.tanh": {
+    "schema": "public",
+    "name": "tanh"
+  },
+  "public.ln": {
+    "schema": "public",
+    "name": "ln"
+  },
+  "public.log": {
+    "schema": "public",
+    "name": "log"
+  },
+  "public.log10": {
+    "schema": "public",
+    "name": "log10"
+  },
+  "public.log2": {
+    "schema": "public",
+    "name": "log2"
+  },
+  "public.error": {
+    "schema": "public",
+    "name": "error"
+  },
+  "public.random": {
+    "schema": "public",
+    "name": "random"
+  },
+  "public.random_uuid": {
+    "schema": "public",
+    "name": "random_uuid"
+  },
+  "public.md5": {
+    "schema": "public",
+    "name": "md5"
+  },
+  "public.sha1": {
+    "schema": "public",
+    "name": "sha1"
+  },
+  "public.encode": {
+    "schema": "public",
+    "name": "encode"
+  },
+  "public.decode": {
+    "schema": "public",
+    "name": "decode"
+  },
+  "public.serial": {
+    "schema": "public",
+    "name": "serial"
+  },
+  "public.jwt": {
+    "schema": "public",
+    "name": "jwt"
+  },
+  "public.now": {
+    "schema": "public",
+    "name": "now"
+  },
+  "public.at_timezone": {
+    "schema": "public",
+    "name": "at_timezone"
+  },
+  "public.generate_series": {
+    "schema": "public",
+    "name": "generate_series"
+  },
+  "public.date_bin": {
+    "schema": "public",
+    "name": "date_bin"
+  },
+  "public.date_trunc": {
+    "schema": "public",
+    "name": "date_trunc"
+  },
+  "public.extract": {
+    "schema": "public",
+    "name": "extract"
+  },
+  "public.cos_distance": {
+    "schema": "public",
+    "name": "cos_distance"
+  }
 }]
 select system.functions()
 [{
-  "schema": "system",
-  "name": "config"
-}, {
-  "schema": "system",
-  "name": "users"
-}, {
-  "schema": "system",
-  "name": "replicas"
-}, {
-  "schema": "system",
-  "name": "repl"
-}, {
-  "schema": "system",
-  "name": "replication"
-}, {
-  "schema": "system",
-  "name": "nodes"
-}, {
-  "schema": "system",
-  "name": "schemas"
-}, {
-  "schema": "system",
-  "name": "functions"
-}, {
-  "schema": "system",
-  "name": "tables"
-}, {
-  "schema": "system",
-  "name": "views"
-}, {
-  "schema": "system",
-  "name": "wal"
-}, {
-  "schema": "public",
-  "name": "type"
-}, {
-  "schema": "public",
-  "name": "string"
-}, {
-  "schema": "public",
-  "name": "int"
-}, {
-  "schema": "public",
-  "name": "bool"
-}, {
-  "schema": "public",
-  "name": "real"
-}, {
-  "schema": "public",
-  "name": "native"
-}, {
-  "schema": "public",
-  "name": "interval"
-}, {
-  "schema": "public",
-  "name": "timestamp"
-}, {
-  "schema": "public",
-  "name": "vector"
-}, {
-  "schema": "public",
-  "name": "coalesce"
-}, {
-  "schema": "public",
-  "name": "nullif"
-}, {
-  "schema": "public",
-  "name": "append"
-}, {
-  "schema": "public",
-  "name": "push_back"
-}, {
-  "schema": "public",
-  "name": "push"
-}, {
-  "schema": "public",
-  "name": "pop"
-}, {
-  "schema": "public",
-  "name": "pop_back"
-}, {
-  "schema": "public",
-  "name": "put"
-}, {
-  "schema": "public",
-  "name": "remove"
-}, {
-  "schema": "public",
-  "name": "set"
-}, {
-  "schema": "public",
-  "name": "unset"
-}, {
-  "schema": "public",
-  "name": "has"
-}, {
-  "schema": "public",
-  "name": "length"
-}, {
-  "schema": "public",
-  "name": "size"
-}, {
-  "schema": "public",
-  "name": "concat"
-}, {
-  "schema": "public",
-  "name": "lower"
-}, {
-  "schema": "public",
-  "name": "upper"
-}, {
-  "schema": "public",
-  "name": "substr"
-}, {
-  "schema": "public",
-  "name": "strpos"
-}, {
-  "schema": "public",
-  "name": "replace"
-}, {
-  "schema": "public",
-  "name": "ltrim"
-}, {
-  "schema": "public",
-  "name": "rtrim"
-}, {
-  "schema": "public",
-  "name": "trim"
-}, {
-  "schema": "public",
-  "name": "like"
-}, {
-  "schema": "public",
-  "name": "regexp_like"
-}, {
-  "schema": "public",
-  "name": "regexp_substr"
-}, {
-  "schema": "public",
-  "name": "regexp_match"
-}, {
-  "schema": "public",
-  "name": "regexp_replace"
-}, {
-  "schema": "public",
-  "name": "greatest"
-}, {
-  "schema": "public",
-  "name": "least"
-}, {
-  "schema": "public",
-  "name": "abs"
-}, {
-  "schema": "public",
-  "name": "round"
-}, {
-  "schema": "public",
-  "name": "sign"
-}, {
-  "schema": "public",
-  "name": "ceil"
-}, {
-  "schema": "public",
-  "name": "exp"
-}, {
-  "schema": "public",
-  "name": "floor"
-}, {
-  "schema": "public",
-  "name": "mod"
-}, {
-  "schema": "public",
-  "name": "power"
-}, {
-  "schema": "public",
-  "name": "trunc"
-}, {
-  "schema": "public",
-  "name": "pi"
-}, {
-  "schema": "public",
-  "name": "sqrt"
-}, {
-  "schema": "public",
-  "name": "acos"
-}, {
-  "schema": "public",
-  "name": "acosh"
-}, {
-  "schema": "public",
-  "name": "asin"
-}, {
-  "schema": "public",
-  "name": "asinh"
-}, {
-  "schema": "public",
-  "name": "atan"
-}, {
-  "schema": "public",
-  "name": "atanh"
-}, {
-  "schema": "public",
-  "name": "atan2"
-}, {
-  "schema": "public",
-  "name": "cos"
-}, {
-  "schema": "public",
-  "name": "cosh"
-}, {
-  "schema": "public",
-  "name": "sin"
-}, {
-  "schema": "public",
-  "name": "sinh"
-}, {
-  "schema": "public",
-  "name": "tan"
-}, {
-  "schema": "public",
-  "name": "tanh"
-}, {
-  "schema": "public",
-  "name": "ln"
-}, {
-  "schema": "public",
-  "name": "log"
-}, {
-  "schema": "public",
-  "name": "log10"
-}, {
-  "schema": "public",
-  "name": "log2"
-}, {
-  "schema": "public",
-  "name": "error"
-}, {
-  "schema": "public",
-  "name": "random"
-}, {
-  "schema": "public",
-  "name": "random_uuid"
-}, {
-  "schema": "public",
-  "name": "md5"
-}, {
-  "schema": "public",
-  "name": "sha1"
-}, {
-  "schema": "public",
-  "name": "encode"
-}, {
-  "schema": "public",
-  "name": "decode"
-}, {
-  "schema": "public",
-  "name": "serial"
-}, {
-  "schema": "public",
-  "name": "jwt"
-}, {
-  "schema": "public",
-  "name": "now"
-}, {
-  "schema": "public",
-  "name": "at_timezone"
-}, {
-  "schema": "public",
-  "name": "generate_series"
-}, {
-  "schema": "public",
-  "name": "date_bin"
-}, {
-  "schema": "public",
-  "name": "date_trunc"
-}, {
-  "schema": "public",
-  "name": "extract"
-}, {
-  "schema": "public",
-  "name": "cos_distance"
+  "system.config": {
+    "schema": "system",
+    "name": "config"
+  },
+  "system.users": {
+    "schema": "system",
+    "name": "users"
+  },
+  "system.replicas": {
+    "schema": "system",
+    "name": "replicas"
+  },
+  "system.repl": {
+    "schema": "system",
+    "name": "repl"
+  },
+  "system.replication": {
+    "schema": "system",
+    "name": "replication"
+  },
+  "system.nodes": {
+    "schema": "system",
+    "name": "nodes"
+  },
+  "system.schemas": {
+    "schema": "system",
+    "name": "schemas"
+  },
+  "system.functions": {
+    "schema": "system",
+    "name": "functions"
+  },
+  "system.tables": {
+    "schema": "system",
+    "name": "tables"
+  },
+  "system.views": {
+    "schema": "system",
+    "name": "views"
+  },
+  "system.wal": {
+    "schema": "system",
+    "name": "wal"
+  },
+  "public.type": {
+    "schema": "public",
+    "name": "type"
+  },
+  "public.string": {
+    "schema": "public",
+    "name": "string"
+  },
+  "public.int": {
+    "schema": "public",
+    "name": "int"
+  },
+  "public.bool": {
+    "schema": "public",
+    "name": "bool"
+  },
+  "public.real": {
+    "schema": "public",
+    "name": "real"
+  },
+  "public.native": {
+    "schema": "public",
+    "name": "native"
+  },
+  "public.interval": {
+    "schema": "public",
+    "name": "interval"
+  },
+  "public.timestamp": {
+    "schema": "public",
+    "name": "timestamp"
+  },
+  "public.vector": {
+    "schema": "public",
+    "name": "vector"
+  },
+  "public.coalesce": {
+    "schema": "public",
+    "name": "coalesce"
+  },
+  "public.nullif": {
+    "schema": "public",
+    "name": "nullif"
+  },
+  "public.append": {
+    "schema": "public",
+    "name": "append"
+  },
+  "public.push_back": {
+    "schema": "public",
+    "name": "push_back"
+  },
+  "public.push": {
+    "schema": "public",
+    "name": "push"
+  },
+  "public.pop": {
+    "schema": "public",
+    "name": "pop"
+  },
+  "public.pop_back": {
+    "schema": "public",
+    "name": "pop_back"
+  },
+  "public.put": {
+    "schema": "public",
+    "name": "put"
+  },
+  "public.remove": {
+    "schema": "public",
+    "name": "remove"
+  },
+  "public.set": {
+    "schema": "public",
+    "name": "set"
+  },
+  "public.unset": {
+    "schema": "public",
+    "name": "unset"
+  },
+  "public.has": {
+    "schema": "public",
+    "name": "has"
+  },
+  "public.length": {
+    "schema": "public",
+    "name": "length"
+  },
+  "public.size": {
+    "schema": "public",
+    "name": "size"
+  },
+  "public.concat": {
+    "schema": "public",
+    "name": "concat"
+  },
+  "public.lower": {
+    "schema": "public",
+    "name": "lower"
+  },
+  "public.upper": {
+    "schema": "public",
+    "name": "upper"
+  },
+  "public.substr": {
+    "schema": "public",
+    "name": "substr"
+  },
+  "public.strpos": {
+    "schema": "public",
+    "name": "strpos"
+  },
+  "public.replace": {
+    "schema": "public",
+    "name": "replace"
+  },
+  "public.ltrim": {
+    "schema": "public",
+    "name": "ltrim"
+  },
+  "public.rtrim": {
+    "schema": "public",
+    "name": "rtrim"
+  },
+  "public.trim": {
+    "schema": "public",
+    "name": "trim"
+  },
+  "public.like": {
+    "schema": "public",
+    "name": "like"
+  },
+  "public.regexp_like": {
+    "schema": "public",
+    "name": "regexp_like"
+  },
+  "public.regexp_substr": {
+    "schema": "public",
+    "name": "regexp_substr"
+  },
+  "public.regexp_match": {
+    "schema": "public",
+    "name": "regexp_match"
+  },
+  "public.regexp_replace": {
+    "schema": "public",
+    "name": "regexp_replace"
+  },
+  "public.greatest": {
+    "schema": "public",
+    "name": "greatest"
+  },
+  "public.least": {
+    "schema": "public",
+    "name": "least"
+  },
+  "public.abs": {
+    "schema": "public",
+    "name": "abs"
+  },
+  "public.round": {
+    "schema": "public",
+    "name": "round"
+  },
+  "public.sign": {
+    "schema": "public",
+    "name": "sign"
+  },
+  "public.ceil": {
+    "schema": "public",
+    "name": "ceil"
+  },
+  "public.exp": {
+    "schema": "public",
+    "name": "exp"
+  },
+  "public.floor": {
+    "schema": "public",
+    "name": "floor"
+  },
+  "public.mod": {
+    "schema": "public",
+    "name": "mod"
+  },
+  "public.power": {
+    "schema": "public",
+    "name": "power"
+  },
+  "public.trunc": {
+    "schema": "public",
+    "name": "trunc"
+  },
+  "public.pi": {
+    "schema": "public",
+    "name": "pi"
+  },
+  "public.sqrt": {
+    "schema": "public",
+    "name": "sqrt"
+  },
+  "public.acos": {
+    "schema": "public",
+    "name": "acos"
+  },
+  "public.acosh": {
+    "schema": "public",
+    "name": "acosh"
+  },
+  "public.asin": {
+    "schema": "public",
+    "name": "asin"
+  },
+  "public.asinh": {
+    "schema": "public",
+    "name": "asinh"
+  },
+  "public.atan": {
+    "schema": "public",
+    "name": "atan"
+  },
+  "public.atanh": {
+    "schema": "public",
+    "name": "atanh"
+  },
+  "public.atan2": {
+    "schema": "public",
+    "name": "atan2"
+  },
+  "public.cos": {
+    "schema": "public",
+    "name": "cos"
+  },
+  "public.cosh": {
+    "schema": "public",
+    "name": "cosh"
+  },
+  "public.sin": {
+    "schema": "public",
+    "name": "sin"
+  },
+  "public.sinh": {
+    "schema": "public",
+    "name": "sinh"
+  },
+  "public.tan": {
+    "schema": "public",
+    "name": "tan"
+  },
+  "public.tanh": {
+    "schema": "public",
+    "name": "tanh"
+  },
+  "public.ln": {
+    "schema": "public",
+    "name": "ln"
+  },
+  "public.log": {
+    "schema": "public",
+    "name": "log"
+  },
+  "public.log10": {
+    "schema": "public",
+    "name": "log10"
+  },
+  "public.log2": {
+    "schema": "public",
+    "name": "log2"
+  },
+  "public.error": {
+    "schema": "public",
+    "name": "error"
+  },
+  "public.random": {
+    "schema": "public",
+    "name": "random"
+  },
+  "public.random_uuid": {
+    "schema": "public",
+    "name": "random_uuid"
+  },
+  "public.md5": {
+    "schema": "public",
+    "name": "md5"
+  },
+  "public.sha1": {
+    "schema": "public",
+    "name": "sha1"
+  },
+  "public.encode": {
+    "schema": "public",
+    "name": "encode"
+  },
+  "public.decode": {
+    "schema": "public",
+    "name": "decode"
+  },
+  "public.serial": {
+    "schema": "public",
+    "name": "serial"
+  },
+  "public.jwt": {
+    "schema": "public",
+    "name": "jwt"
+  },
+  "public.now": {
+    "schema": "public",
+    "name": "now"
+  },
+  "public.at_timezone": {
+    "schema": "public",
+    "name": "at_timezone"
+  },
+  "public.generate_series": {
+    "schema": "public",
+    "name": "generate_series"
+  },
+  "public.date_bin": {
+    "schema": "public",
+    "name": "date_bin"
+  },
+  "public.date_trunc": {
+    "schema": "public",
+    "name": "date_trunc"
+  },
+  "public.extract": {
+    "schema": "public",
+    "name": "extract"
+  },
+  "public.cos_distance": {
+    "schema": "public",
+    "name": "cos_distance"
+  }
 }]
 # test: show tables
 show tables
@@ -611,9 +807,9 @@ select system.tables()
 [{}]
 # test: show views
 show views
-[]
+[{}]
 select system.views()
-[]
+[{}]
 # test: show wal
 show wal
 [{

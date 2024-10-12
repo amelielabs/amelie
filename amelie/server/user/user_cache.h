@@ -105,12 +105,13 @@ static inline Buf*
 user_cache_list(UserCache* self)
 {
 	auto buf = buf_create();
-	encode_array(buf);
+	encode_obj(buf);
 	list_foreach(&self->list)
 	{
 		auto user = list_at(User, link);
+		encode_string(buf, &user->config->name);
 		user_config_write(user->config, buf, false);
 	}
-	encode_array_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }

@@ -173,13 +173,14 @@ Buf*
 replica_mgr_list(ReplicaMgr* self)
 {
 	auto buf = buf_create();
-	encode_array(buf);
+	encode_obj(buf);
 	list_foreach(&self->list)
 	{
 		auto replica = list_at(Replica, link);
+		encode_uuid(buf, &replica->config->id);
 		replica_status(replica, buf);
 	}
-	encode_array_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 

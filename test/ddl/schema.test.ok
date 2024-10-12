@@ -3,13 +3,16 @@ connect E0 S0 localhost:3485
 # test: ensure public schema exists
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 select * from system.schemas() where name = "public"
 [{
@@ -22,13 +25,16 @@ select system from system.schemas() where name = "public"
 # test: ensure system schema exists
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 select * from system.schemas() where name = "system"
 [{
@@ -59,31 +65,39 @@ create schema test abc
 create schema test
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 # test: create schema if not exists
 create schema test
@@ -91,17 +105,21 @@ create schema test
 create schema if not exists test
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 # test: drop schema statement parsing
 drop schema
@@ -118,13 +136,16 @@ drop schema test abc
 drop schema test
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: drop schema if exists
 drop schema test
@@ -132,26 +153,32 @@ drop schema test
 drop schema if exists test
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: drop system schema
 drop schema public
 {"code": 1, "msg": "schema 'public': system schema cannot be dropped"}
 show schemas
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: drop schema with dependency
 create schema test
@@ -177,46 +204,58 @@ alter schema test rename "hello"
 create schema test
 select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
 alter schema test rename test2
 select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test2": {
+    "name": "test2",
+    "system": false,
+    "create": true
+  }
 }]
 select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test2": {
+    "name": "test2",
+    "system": false,
+    "create": true
+  }
 }]
 # test: alter schema system
 alter schema public rename _public

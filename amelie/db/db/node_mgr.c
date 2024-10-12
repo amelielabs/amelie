@@ -109,13 +109,14 @@ Buf*
 node_mgr_list(NodeMgr* self)
 {
 	auto buf = buf_create();
-	encode_array(buf);
+	encode_obj(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto node = node_of(list_at(Handle, link));
+		encode_string(buf, &node->config->id);
 		node_config_write(node->config, buf);
 	}
-	encode_array_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
 

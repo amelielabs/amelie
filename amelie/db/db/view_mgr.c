@@ -178,12 +178,13 @@ Buf*
 view_mgr_list(ViewMgr* self)
 {
 	auto buf = buf_create();
-	encode_array(buf);
+	encode_obj(buf);
 	list_foreach(&self->mgr.list)
 	{
 		auto view = view_of(list_at(Handle, link));
+		encode_target(buf, &view->config->schema, &view->config->name);
 		view_config_write(view->config, buf);
 	}
-	encode_array_end(buf);
+	encode_obj_end(buf);
 	return buf;
 }
