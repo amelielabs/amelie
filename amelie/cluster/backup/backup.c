@@ -104,13 +104,14 @@ backup_prepare_state(Backup* self)
 	encode_raw(buf, "files", 5);
 	encode_array(buf);
 
-	// list files for backup (checkpoint and wal)
+	// list files for backup (checkpoint, wal and certs)
 	if (checkpoint > 0)
 	{
 		snprintf(path, sizeof(path), "%" PRIu64, checkpoint);
 		backup_list(buf, path);
 	}
 	backup_list(buf, "wal");
+	backup_list(buf, "certs");
 	encode_array_end(buf);
 
 	// config
