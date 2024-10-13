@@ -226,7 +226,7 @@ compute_free(Compute* self)
 void
 compute_start(Compute* self)
 {
-	task_create(&self->task, "compute", compute_main, self);
+	task_create(&self->task, "node", compute_main, self);
 }
 
 void

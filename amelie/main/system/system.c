@@ -139,6 +139,8 @@ system_recover(System* self)
 	recover_init(&recover, &self->db, &build_if, &self->cluster);
 	guard(recover_free, &recover);
 	recover_wal(&recover);
+
+	info("recover: complete.");
 }
 
 static void

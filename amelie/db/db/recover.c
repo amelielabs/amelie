@@ -311,8 +311,8 @@ recover_wal(Recover* self)
 	wal_cursor_init(&cursor);
 	guard(wal_cursor_close, &cursor);
 
-	int64_t total = 0;
-	int64_t total_writes = 0;
+	uint64_t total = 0;
+	uint64_t last  = 0;
 	wal_cursor_open(&cursor, wal, checkpoint);
 	for (;;)
 	{
@@ -321,12 +321,13 @@ recover_wal(Recover* self)
 		auto write = wal_cursor_at(&cursor);
 		recover_next_write(self, write, false, 0);
 
-		total_writes += write->count;
-		total++;
-		if ((total % 10000) == 0)
-			info("recover: %.1f million records processed",
-			     total_writes / 1000000.0);
+		total += write->count;
+		auto processed = total / 1000000;
+		if (processed > 0 && last < processed)
+		{
+			info("recover: %" PRIu64 " million records processed",
+			     total / 1000000);
+			last = processed;
+		}
 	}
-
-	info("recover: wal complete (%" PRIu64 " records)", total_writes);
 }
