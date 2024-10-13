@@ -90,7 +90,11 @@ primary_main(Primary* self)
 			break;
 
 		// replay write
+		cancel_pause();
+
 		self->replay(self, &request->content);
+
+		cancel_resume();
 
 		// send current state
 		primary_write(self);

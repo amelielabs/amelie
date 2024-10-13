@@ -146,6 +146,18 @@ coroutine_yield(void)
 	event_wait(&on_timer, 0);
 }
 
+static inline void
+cancel_pause(void)
+{
+	coroutine_cancel_pause(am_self());
+}
+
+static inline void
+cancel_resume(void)
+{
+	coroutine_cancel_resume(am_self());
+}
+
 // task
 static inline void
 task_create(Task*        self,

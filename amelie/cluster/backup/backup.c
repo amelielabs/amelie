@@ -260,10 +260,10 @@ backup_run(Backup* self, Client* client)
 	task_create(&self->task, "backup", backup_main, self);
 
 	// wait for backup completion
-	coroutine_cancel_pause(am_self());
+	cancel_pause();
 	event_wait(&self->on_complete, -1);
 	task_wait(&self->task);
-	coroutine_cancel_resume(am_self());
+	cancel_resume();
 }
 
 void

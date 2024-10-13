@@ -94,10 +94,10 @@ rpc(Channel* channel, int id, int argc, ...)
 	msg_end(buf);
 	channel_write(channel, buf);
 
-	coroutine_cancel_pause(coro);
+	cancel_pause();
 	event_wait(&rpc.on_complete, -1);
 	event_detach(&rpc.on_complete);
-	coroutine_cancel_resume(coro);
+	cancel_resume();
 
 	if (unlikely(error->code != ERROR_NONE))
 		rethrow();

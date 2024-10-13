@@ -314,6 +314,8 @@ session_main(Session* self)
 			break;
 		}
 
+		cancel_pause();
+
 		// execute
 		Exception e;
 		if (enter(&e))
@@ -348,5 +350,8 @@ session_main(Session* self)
 		}
 
 		tcp_write_pair(&client->tcp, &reply->raw, body);
+
+		// cancellation point
+		cancel_resume();
 	}
 }
