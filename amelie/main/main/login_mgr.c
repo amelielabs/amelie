@@ -257,14 +257,14 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 
 		// create jwt one-time token
 
-		// set expire timestamp to 30 sec
+		// set expire timestamp to 1 year
 		Timestamp expire;
 		timestamp_init(&expire);
 		timestamp_read_value(&expire, time_us());
 		Interval iv;
 		interval_init(&iv);
 		Str str;
-		str_set_cstr(&str, "30 min");
+		str_set_cstr(&str, "1 year");
 		interval_read(&iv, &str);
 		timestamp_add(&expire, &iv);
 

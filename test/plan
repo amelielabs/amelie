@@ -147,3 +147,4 @@ test replica
 test repl
 test streaming
 test streaming_tls
+test streaming_tls_2
