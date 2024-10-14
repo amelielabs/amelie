@@ -301,36 +301,41 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_CLUSTER}
     ${AMELIE_SOURCES_MAIN})
 
-# static library
+set(AMELIE_SOURCES_CLI
+    ${CMAKE_SOURCE_DIR}/cli/amelie.c)
+
+set(AMELIE_SOURCES_TEST_SUITE
+    ${CMAKE_SOURCE_DIR}/test/suite/suite.c
+    ${CMAKE_SOURCE_DIR}/test/suite/session.c
+    ${CMAKE_SOURCE_DIR}/test/test.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_task.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_exception.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_palloc.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_buf.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_msg.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_coroutine.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_event.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_condition.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_channel.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_rpc.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_cancel.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_lock.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_sleep.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c)
+
+# libamelie.a
 add_library(amelie_static STATIC ${AMELIE_SOURCES})
 set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
-# cli
-add_executable(amelie_cli ${CMAKE_SOURCE_DIR}/cli/amelie.c)
+# amelie
+add_executable(amelie_cli ${AMELIE_SOURCES_CLI})
 target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
 target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
 set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
 
-# test suite
-add_executable(amelie_test
-               ${CMAKE_SOURCE_DIR}/test/suite/suite.c
-               ${CMAKE_SOURCE_DIR}/test/suite/session.c
-               ${CMAKE_SOURCE_DIR}/test/test.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_task.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_exception.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_palloc.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_buf.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_msg.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_coroutine.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_event.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_condition.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_channel.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_rpc.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_cancel.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_lock.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_sleep.c
-               ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c)
+# amelie-test
+add_executable(amelie_test ${AMELIE_SOURCES_TEST_SUITE})
 target_link_libraries(amelie_test ${AMELIE_STATIC_LINK})
 target_link_libraries(amelie_test ${AMELIE_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(amelie_test PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie-test)
