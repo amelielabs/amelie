@@ -3,7 +3,10 @@
 //
 // amelie.
 //
-// Real-Time SQL Database.
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// AGPL-3.0 Licensed.
 //
 
 typedef volatile uint32_t atomic_u32;

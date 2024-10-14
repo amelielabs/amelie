@@ -305,9 +305,6 @@ set(AMELIE_SOURCES_CLI
     ${CMAKE_SOURCE_DIR}/cli/amelie.c)
 
 set(AMELIE_SOURCES_TEST_SUITE
-    ${CMAKE_SOURCE_DIR}/test/suite/suite.c
-    ${CMAKE_SOURCE_DIR}/test/suite/session.c
-    ${CMAKE_SOURCE_DIR}/test/test.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_task.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_exception.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_palloc.c
@@ -321,7 +318,10 @@ set(AMELIE_SOURCES_TEST_SUITE
     ${CMAKE_SOURCE_DIR}/test/runtime/test_cancel.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_lock.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_sleep.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c)
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c
+    ${CMAKE_SOURCE_DIR}/test/suite/suite.c
+    ${CMAKE_SOURCE_DIR}/test/suite/session.c
+    ${CMAKE_SOURCE_DIR}/test/amelie-test.c)
 
 # libamelie.a
 add_library(amelie_static STATIC ${AMELIE_SOURCES})
