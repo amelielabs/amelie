@@ -12,3 +12,5 @@ release:
 	@(cd build && make --no-print-directory)
 clean:
 	@(cd build && make clean --no-print-directory)
+distclean:
+	git clean -f -x -d
