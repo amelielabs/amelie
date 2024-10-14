@@ -154,6 +154,7 @@ static inline void
 target_list_validate(TargetList* self, Target* primary)
 {
 	auto table = primary->table;
+	unused(table);
 	assert(table);
 
 	// SELECT FROM table

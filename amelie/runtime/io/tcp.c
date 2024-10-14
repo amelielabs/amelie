@@ -21,6 +21,7 @@ tcp_init(Tcp* self)
 void
 tcp_free(Tcp* self)
 {
+	unused(self);
 	assert(! self->connected);
 	assert(self->poller == NULL);
 }

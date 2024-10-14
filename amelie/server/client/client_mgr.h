@@ -24,6 +24,7 @@ client_mgr_init(ClientMgr* self)
 static inline void
 client_mgr_free(ClientMgr* self)
 {
+	unused(self);
 	assert(self->list_count == 0);
 }
 

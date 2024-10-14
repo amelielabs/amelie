@@ -47,6 +47,7 @@ void
 cluster_free(Cluster* self)
 {
 	// freed by node_mgr
+	unused(self);
 	assert(! self->list_count);
 }
 
