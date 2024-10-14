@@ -52,15 +52,13 @@ snapshot_reset(Snapshot* self)
 static void
 snapshot_begin(Snapshot* self)
 {
-	// <base>/<lsn>.incomplete/<partition_id>
+	// <base>/<lsn>.incomplete/<partition_id>.part
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
+	         "%s/%" PRIu64 ".incomplete/%" PRIu64 ".part",
 	         config_directory(),
 	         self->lsn,
 	         self->partition);
-
-	info("snapshot: %s begin", path);
 
 	// prepare batch
 	buf_reserve(&self->data, sizeof(Msg) * self->count_batch);
@@ -78,13 +76,12 @@ snapshot_end(Snapshot* self)
 
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/%" PRIu64 ".incomplete/%" PRIu64,
-	         config_directory(),
+	         "%" PRIu64"/%" PRIu64 ".part",
 	         self->lsn,
 	         self->partition);
 
 	double size = self->file.size / 1024 / 1024;
-	info("snapshot: %s complete (%.2f MiB)", path, size);
+	info("%s (%.2f MiB)", path, size);
 }
 
 hot static inline void
@@ -141,7 +138,7 @@ snapshot_create(Snapshot* self, Part* part, uint64_t lsn)
 	Exception e;
 	if (enter(&e))
 	{
-		// create <base>/<lsn>.incomplete/<partition_id>
+		// create <base>/<lsn>.incomplete/<partition_id>.part
 		snapshot_begin(self);
 		snapshot_main(self, part_primary(part));
 		snapshot_end(self);

@@ -132,7 +132,7 @@ wal_gc(Wal* self, uint64_t min)
 			snprintf(path, sizeof(path), "%s/wal/%020" PRIu64 ".wal",
 			         config_directory(),
 			         id_list[i]);
-			info("wal: removing %s", path);
+			info("wal: removing wal/%020" PRIu64 ".wal", id_list[i]);
 			fs_unlink("%s", path);
 		}
 	}

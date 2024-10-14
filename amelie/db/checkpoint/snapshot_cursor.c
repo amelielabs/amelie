@@ -29,9 +29,9 @@ snapshot_cursor_init(SnapshotCursor* self)
 void
 snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t partition)
 {
-	// <base>/<lsn>/<partition>
+	// <base>/<lsn>/<partition>.part
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%" PRIu64 "/%" PRIu64,
+	snprintf(path, sizeof(path), "%s/%" PRIu64 "/%" PRIu64 ".part",
 	         config_directory(),
 	         lsn,
 	         partition);

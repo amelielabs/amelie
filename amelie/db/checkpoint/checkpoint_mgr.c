@@ -108,7 +108,7 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 	Buf buf;
 	buf_init(&buf);
 	guard_buf(&buf);
-	file_import(&buf, "%s/%" PRIu64 "/catalog", config_directory(),
+	file_import(&buf, "%s/%" PRIu64 "/catalog.json", config_directory(),
 	            checkpoint);
 
 	Str catalog_data;

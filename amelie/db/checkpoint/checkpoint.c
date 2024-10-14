@@ -182,9 +182,9 @@ checkpoint_worker_wait(CheckpointWorker* self)
 static void
 checkpoint_create_catalog(Checkpoint* self)
 {
-	// create <base>/<lsn>.incomplete/catalog
+	// create <base>/<lsn>.incomplete/catalog.json
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete/catalog",
+	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete/catalog.json",
 	         config_directory(), self->lsn);
 
 	// convert catalog to json
@@ -209,9 +209,8 @@ checkpoint_run(Checkpoint* self)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete",
 	         config_directory(), self->lsn);
-
-	info("checkpoint %" PRIu64 ": using %d workers", self->lsn,
-	     self->workers_count);
+	info("begin (%d workers)", self->workers_count);
+	info("using checkpoint %" PRIu64, self->lsn);
 
 	fs_mkdir(0755, "%s", path);
 
@@ -248,7 +247,7 @@ checkpoint_wait(Checkpoint* self)
 	if (errors > 0)
 	{
 		fs_rmdir("%s/%" PRIu64 ".incomplete", config_directory(), self->lsn);
-		error("checkpoint %" PRIu64 ": failed", self->lsn);
+		error("%" PRIu64 " failed", self->lsn);
 	}
 
 	// rename as completed
@@ -262,5 +261,5 @@ checkpoint_wait(Checkpoint* self)
 	// register checkpoint
 	checkpoint_mgr_add(self->mgr, self->lsn);
 	var_int_set(&config()->checkpoint, self->lsn);
-	info("checkpoint %" PRIu64 ": complete", self->lsn);
+	info("complete");
 }

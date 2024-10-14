@@ -22,15 +22,11 @@
 #include <amelie_db.h>
 
 hot static void
-recover_partition(Part* self, Table* table)
+recover_partition(Part* self)
 {
 	auto checkpoint = config_checkpoint();
-	info("recover: %.*s.%.*s (partition %" PRIu64 ")",
-	     str_size(&table->config->schema),
-	     str_of(&table->config->schema),
-	     str_size(&table->config->name),
-	     str_of(&table->config->name),
-	     self->config->id);
+	info("recover: %" PRIu64 "/%" PRIu64 ".part",
+	     checkpoint, self->config->id);
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);
@@ -49,13 +45,8 @@ recover_partition(Part* self, Table* table)
 		count++;
 	}
 
-	info("recover: %.*s.%.*s (partition %" PRIu64 ") complete (%" PRIu64 " rows)",
-	     str_size(&table->config->schema),
-	     str_of(&table->config->schema),
-	     str_size(&table->config->name),
-	     str_of(&table->config->name),
-	     self->config->id,
-	     count);
+	info("recover: %" PRIu64 "/%" PRIu64 ".part (%" PRIu64 " rows)",
+	     checkpoint, self->config->id, count);
 }
 
 hot void
@@ -69,7 +60,7 @@ recover_checkpoint(Db* self, Uuid* node)
 			auto part = list_at(Part, link);
 			if (! uuid_compare(&part->config->node, node))
 				continue;
-			recover_partition(part, table);
+			recover_partition(part);
 		}
 	}
 }
