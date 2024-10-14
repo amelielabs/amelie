@@ -81,6 +81,7 @@ int  test_suite_run(TestSuite*);
 static inline void
 test_info(TestSuite* self, const char* fmt, ...)
 {
+	unused(self);
 	va_list args;
 	va_start(args, fmt);
 	vprintf(fmt, args);
@@ -91,6 +92,7 @@ test_info(TestSuite* self, const char* fmt, ...)
 static inline void
 test_error(TestSuite* self, const char* fmt, ...)
 {
+	unused(self);
 	va_list args;
 	va_start(args, fmt);
 	printf("\n");
@@ -114,6 +116,7 @@ test_log(TestSuite* self, const char* fmt, ...)
 static inline int
 test_sh(TestSuite* self, const char* fmt, ...)
 {
+	unused(self);
 	va_list args;
 	va_start(args, fmt);
 	char cmd[PATH_MAX];

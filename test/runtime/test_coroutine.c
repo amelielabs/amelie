@@ -8,18 +8,19 @@
 #include <amelie_private.h>
 #include <amelie_test.h>
 
-static int coroutine_called = -1;
+static uint64_t coroutine_called = -1;
 
 static void
 test_coroutine_main(void* arg)
 {
-	(void)arg;
+	unused(arg);
 	coroutine_called = am_self()->id;
 }
 
 void
 test_coroutine_create(void* arg)
 {
+	unused(arg);
 	uint64_t id;
 	id = coroutine_create(test_coroutine_main, NULL);
 	test( id != 0 );
@@ -41,6 +42,7 @@ test_coroutine_context_switch_main(void* arg)
 void
 test_coroutine_context_switch(void* arg)
 {
+	unused(arg);
 	int csw = 0;
 	uint64_t id;
 	id = coroutine_create(test_coroutine_context_switch_main, &csw);

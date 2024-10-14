@@ -11,6 +11,7 @@
 void
 test_palloc(void* arg)
 {
+	unused(arg);
 	test( palloc_snapshot() == 0 );
 
 	char* a = palloc(5);

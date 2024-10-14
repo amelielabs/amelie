@@ -11,6 +11,7 @@
 void
 test_exception0(void* arg)
 {
+	unused(arg);
 	Exception e;
 	if (enter(&e)) {
 	} else
@@ -23,6 +24,7 @@ test_exception0(void* arg)
 void
 test_exception1(void* arg)
 {
+	unused(arg);
 	Exception e;
 	if (enter(&e)) {
 		error("test");
@@ -50,6 +52,7 @@ nested(void)
 void
 test_exception2(void* arg)
 {
+	unused(arg);
 	Exception e;
 	if (enter(&e)) {
 		nested();
@@ -67,6 +70,7 @@ static void on_guard(void* arg)
 void
 test_guard0(void* arg)
 {
+	unused(arg);
 	// on block exit
 	bool run = false;
 	{
@@ -78,6 +82,7 @@ test_guard0(void* arg)
 void
 test_guard1(void* arg)
 {
+	unused(arg);
 	bool run = false;
 	{
 		guard(on_guard, &run);
@@ -89,6 +94,7 @@ test_guard1(void* arg)
 void
 test_guard2(void* arg)
 {
+	unused(arg);
 	// exception
 	bool run = false;
 	Exception e;
@@ -109,6 +115,7 @@ static void on_guard_int(void* arg)
 void
 test_guard3(void* arg)
 {
+	unused(arg);
 	int run = 0;
 	int i = 0;
 	while (i < 10) {

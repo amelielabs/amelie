@@ -21,6 +21,7 @@ test_condition_main(void* arg)
 void
 test_condition(void* arg)
 {
+	unused(arg);
 	Event cond;
 	event_init(&cond);
 	event_attach(&cond);
@@ -40,6 +41,7 @@ test_condition(void* arg)
 void
 test_condition_task(void* arg)
 {
+	unused(arg);
 	cond_value = 0;
 
 	Event cond;
@@ -72,6 +74,7 @@ test_condition_timeout_main(void* arg)
 void
 test_condition_task_timeout(void* arg)
 {
+	unused(arg);
 	cond_value = 0;
 
 	Event cond;

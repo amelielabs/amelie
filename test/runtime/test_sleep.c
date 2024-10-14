@@ -13,6 +13,7 @@ static int sleep_complete = 0;
 static void
 test_sleep_main(void* arg)
 {
+	unused(arg);
 	coroutine_sleep(rand() % 100);
 	sleep_complete++;
 }
@@ -20,6 +21,7 @@ test_sleep_main(void* arg)
 void
 test_sleep(void* arg)
 {
+	unused(arg);
 	uint64_t id[100];
 
 	int i = 0;

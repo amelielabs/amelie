@@ -2,9 +2,14 @@
 *.a
 *.so
 test/test
-cli/amelie
 cli/t
 cli/core
-test/amelie-test
 test/core
 test/_output
+build/CMakeCache.txt
+build/CMakeFiles
+build/Makefile
+build/cmake_install.cmake
+build/libamelie.a
+build/amelie-test
+build/amelie

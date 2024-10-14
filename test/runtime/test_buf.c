@@ -11,6 +11,7 @@
 void
 test_buf(void* arg)
 {
+	unused(arg);
 	Buf* buf = buf_create();
 	buf_reserve(buf, 5);
 	buf_append(buf, "hello", 5);
@@ -21,6 +22,7 @@ test_buf(void* arg)
 void
 test_buf_reserve(void* arg)
 {
+	unused(arg);
 	Buf* buf = buf_create();
 	buf_reserve(buf, 5);
 	buf_append(buf, "hello", 5);
@@ -33,6 +35,7 @@ test_buf_reserve(void* arg)
 void
 test_buf_write(void* arg)
 {
+	unused(arg);
 	Buf* buf = buf_create();
 	buf_reserve(buf, 5);
 	buf_append(buf, "hello", 5);
@@ -56,6 +59,7 @@ test_buf_write(void* arg)
 void
 test_buf_overwrite(void* arg)
 {
+	unused(arg);
 	Buf* buf = buf_create();
 	buf_reserve(buf, 5);
 	buf_append(buf, "hello", 5);

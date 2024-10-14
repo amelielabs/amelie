@@ -13,12 +13,14 @@ static bool created = false;
 static void
 test_cancel_create_main(void* arg)
 {
+	unused(arg);
 	created = true;
 }
 
 void
 test_cancel_create(void* arg)
 {
+	unused(arg);
 	uint64_t id;
 	id = coroutine_create(test_cancel_create_main, NULL);
 	test( id != 0 );
@@ -37,6 +39,7 @@ test_cancel_main(void* arg)
 void
 test_cancel(void* arg)
 {
+	unused(arg);
 	Event event;
 	event_init(&event);
 
@@ -74,6 +77,7 @@ test_cancel_pause_main(void* arg)
 void
 test_cancel_pause(void* arg)
 {
+	unused(arg);
 	Event event;
 	event_init(&event);
 
@@ -106,6 +110,7 @@ test_cancel_condition_main(void* arg)
 void
 test_cancel_condition(void* arg)
 {
+	unused(arg);
 	Event cond;
 	event_init(&cond);
 	event_attach(&cond);
@@ -140,6 +145,7 @@ test_cancel_channel_pause_canceller(void* arg)
 void
 test_cancel_channel_pause(void* arg)
 {
+	unused(arg);
 	Channel channel;
 	channel_init(&channel);
 	channel_attach(&channel);

@@ -19,6 +19,7 @@ test_channel_main(void *arg)
 void
 test_channel_read_empty(void* arg)
 {
+	unused(arg);
 	Channel channel;
 	channel_init(&channel);
 	channel_attach(&channel);
@@ -33,6 +34,7 @@ test_channel_read_empty(void* arg)
 void
 test_channel(void* arg)
 {
+	unused(arg);
 	Channel channel;
 	channel_init(&channel);
 	channel_attach(&channel);
@@ -55,6 +57,7 @@ test_channel(void* arg)
 void
 test_channel_task(void* arg)
 {
+	unused(arg);
 	Channel channel;
 	channel_init(&channel);
 	channel_attach(&channel);
@@ -85,6 +88,7 @@ test_channel_timeout_main(void* arg)
 void
 test_channel_task_timeout(void* arg)
 {
+	unused(arg);
 	Channel channel;
 	channel_init(&channel);
 	channel_attach(&channel);
@@ -164,6 +168,7 @@ test_channel_producer(void* arg)
 void
 test_channel_producer_consumer(void* arg)
 {
+	unused(arg);
 	Event event;
 	event_init(&event);
 	event_attach(&event);

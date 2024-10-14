@@ -21,6 +21,7 @@ test_event_main(void* arg)
 void
 test_event(void* arg)
 {
+	unused(arg);
 	Event event;
 	event_init(&event);
 
@@ -47,6 +48,7 @@ test_event_timeout_main(void* arg)
 void
 test_event_timeout(void* arg)
 {
+	unused(arg);
 	event_value = 0;
 
 	Event event;
@@ -69,6 +71,7 @@ test_event_timeout(void* arg)
 void
 test_event_parent(void* arg)
 {
+	unused(arg);
 	event_value = 0;
 
 	Event parent;

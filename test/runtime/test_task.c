@@ -13,6 +13,7 @@ static int called = 0;
 void
 test_task_create_main(void* arg)
 {
+	unused(arg);
 	called++;
 }
 
@@ -61,6 +62,7 @@ void test_task_args(void)
 void
 test_task_status_main(void* arg)
 {
+	unused(arg);
 	cond_signal(&am_task->status, 123);
 }
 

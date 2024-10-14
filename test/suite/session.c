@@ -41,6 +41,7 @@ test_session_new(TestSuite* self, TestEnv* env, const char* name)
 void
 test_session_free(TestSuite* self, TestSession* session)
 {
+	unused(self);
 	list_unlink(&session->link);
 	session->env->sessions--;
 	assert(session->env->sessions >= 0);

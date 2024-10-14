@@ -11,6 +11,7 @@
 static void
 test_benchmark_main(void* arg)
 {
+	unused(arg);
 	bool stop = false;
 	while (! stop)
 	{
@@ -25,6 +26,7 @@ test_benchmark_main(void* arg)
 void
 test_benchmark(void* arg)
 {
+	unused(arg);
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_benchmark_main, NULL);
@@ -59,6 +61,7 @@ static CondVar bench_cond2;
 static void
 test_benchmark_mutex_main(void* arg)
 {
+	unused(arg);
 	while (! bench_stop)
 	{
 		mutex_lock(&bench_mutex);
@@ -77,6 +80,7 @@ test_benchmark_mutex_main(void* arg)
 void
 test_benchmark_mutex(void* arg)
 {
+	unused(arg);
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_benchmark_mutex_main, NULL);
@@ -217,6 +221,7 @@ test_benchmark_get_buf_guard(void)
 void
 test_benchmark_buf(void* arg)
 {
+	unused(arg);
 	uint64_t time_us;
 	time_start(&time_us);
 
@@ -237,6 +242,7 @@ test_benchmark_buf(void* arg)
 void
 test_benchmark_buf_guard(void* arg)
 {
+	unused(arg);
 	uint64_t time_us;
 	time_start(&time_us);
 

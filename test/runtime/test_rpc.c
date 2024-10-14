@@ -11,6 +11,7 @@
 static void
 test_rpc_main(void* arg)
 {
+	unused(arg);
 	auto buf = channel_read(&am_task->channel, -1);
 	auto rpc = rpc_of(buf);
 	buf_free(buf);
@@ -24,6 +25,7 @@ test_rpc_main(void* arg)
 void
 test_rpc(void* arg)
 {
+	unused(arg);
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_rpc_main, NULL);
@@ -39,6 +41,7 @@ test_rpc(void* arg)
 static void
 test_rpc_execute_cb(Rpc* self, void* arg)
 {
+	unused(arg);
 	test(self->argc == 1);
 	test(! memcmp(rpc_arg_ptr(self, 0), "hello", 5));
 	self->rc = 123;
@@ -47,6 +50,7 @@ test_rpc_execute_cb(Rpc* self, void* arg)
 static void
 test_rpc_execute_main(void* arg)
 {
+	unused(arg);
 	auto buf = channel_read(&am_task->channel, -1);
 	rpc_execute(rpc_of(buf), test_rpc_execute_cb, NULL);
 	buf_free(buf);
@@ -55,6 +59,7 @@ test_rpc_execute_main(void* arg)
 void
 test_rpc_execute(void* arg)
 {
+	unused(arg);
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_main, NULL);
@@ -70,12 +75,15 @@ test_rpc_execute(void* arg)
 static void
 test_rpc_execute_error_cb(Rpc* rpc, void* arg)
 {
+	unused(arg);
+	unused(rpc);
 	error("test");
 }
 
 static void
 test_rpc_execute_error_main(void* arg)
 {
+	unused(arg);
 	auto buf = channel_read(&am_task->channel, -1);
 	rpc_execute(rpc_of(buf), test_rpc_execute_error_cb, NULL);
 	buf_free(buf);
@@ -84,6 +92,7 @@ test_rpc_execute_error_main(void* arg)
 void
 test_rpc_execute_error(void* arg)
 {
+	unused(arg);
 	Task task;
 	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_error_main, NULL);

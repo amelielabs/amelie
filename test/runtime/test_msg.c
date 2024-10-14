@@ -11,6 +11,7 @@
 void
 test_msg(void* arg)
 {
+	unused(arg);
 	auto buf = msg_create(123);
 	auto msg = msg_of(buf);
 	test(msg->id == 123);
