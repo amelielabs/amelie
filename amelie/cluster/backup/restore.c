@@ -41,6 +41,8 @@ struct Restore
 	int64_t  checkpoint;
 	uint8_t* files;
 	uint8_t* config;
+	int      count_total;
+	int      count;
 	Client*  client;
 	Remote*  remote;
 	Buf      buf;
@@ -51,10 +53,12 @@ struct Restore
 static void
 restore_init(Restore* self, Remote* remote)
 {
-	self->checkpoint = 0;
-	self->files      = NULL;
-	self->config     = NULL;
-	self->remote     = remote;
+	self->checkpoint  = 0;
+	self->files       = NULL;
+	self->config      = NULL;
+	self->count       = 0;
+	self->count_total = 0;
+	self->remote      = remote;
 	buf_init(&self->state_data);
 	buf_init(&self->state);
 	buf_init(&self->buf);
@@ -122,6 +126,8 @@ restore_start(Restore* self)
 	};
 	decode_obj(obj, "restore", &pos);
 
+	self->count_total = array_size(self->files);
+
 	// create checkpoint directory
 	if (self->checkpoint > 0)
 		fs_mkdir(0755, "%s/%" PRIi64, config_directory(),
@@ -132,19 +138,20 @@ restore_start(Restore* self)
 }
 
 static void
-restore_copy_file(Restore* self, Str* name)
+restore_copy_file(Restore* self, Str* name, uint64_t size)
 {
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
 	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
-	// GET /backup/<path>
+	// GET /backup
 	auto request = &client->request;
-	http_write_request(request, "GET /backup/%.*s", str_size(name),
-	                   str_of(name));
+	http_write_request(request, "GET /backup");
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
+	http_write(request, "Amelie-Backup", "%.*s", str_size(name), str_of(name));
+	http_write(request, "Amelie-Backup-Size", "%" PRIu64, size);
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
@@ -162,19 +169,25 @@ restore_copy_file(Restore* self, Str* name)
 	int64_t len;
 	if (str_toint(&content_len->value, &len) == -1)
 		error("failed to parse content-length");
+	if (size != (uint64_t)len)
+		error("response content-length is invalid (size mismatch)");
 
 	// create file
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
 	         str_size(name), str_of(name));
 
-	info("file %.*s (%" PRIu64 " bytes)", str_size(name),
+	self->count++;
+	info("[%3d/%3d] %.*s (%" PRIu64 " bytes)",
+	     self->count,
+	     self->count_total,
+	     str_size(name),
 	     str_of(name), len);
 
 	File file;
 	file_init(&file);
 	guard(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_open_as(&file, path, O_CREAT|O_EXCL|O_RDWR, 0644);
 
 	// read content into file
 	while (len > 0)
@@ -198,9 +211,14 @@ restore_copy(Restore* self)
 	data_read_array(&pos);
 	while (! data_read_array_end(&pos))
 	{
+		// [path, size]
+		data_read_array(&pos);
 		Str name;
 		data_read_string(&pos, &name);
-		restore_copy_file(self, &name);
+		int64_t size;
+		data_read_integer(&pos, &size);
+		data_read_array_end(&pos);
+		restore_copy_file(self, &name, size);
 	}
 }
 
@@ -239,5 +257,5 @@ restore(Remote* remote)
 	restore_copy(&restore);
 	restore_write_config(&restore);
 
-	info("complete.");
+	info("complete");
 }

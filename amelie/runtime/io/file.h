@@ -73,7 +73,7 @@ static inline void
 file_create(File* self, const char* path)
 {
 	// create file
-	file_open_as(self, path, O_CREAT|O_RDWR, 0644);
+	file_open_as(self, path, O_CREAT|O_RDWR|O_EXCL, 0644);
 }
 
 static inline void

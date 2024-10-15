@@ -54,7 +54,7 @@ show wal
   "sync_on_write": false,
   "lsn": 3,
   "lsn_min": 1,
-  "files": 3,
+  "files": 1,
   "slots": 0,
   "slots_min": -1
 }]
@@ -67,7 +67,7 @@ show wal
   "sync_on_write": false,
   "lsn": 4,
   "lsn_min": 1,
-  "files": 4,
+  "files": 2,
   "slots": 0,
   "slots_min": -1
 }]
@@ -92,7 +92,7 @@ show wal
   "sync_on_write": false,
   "lsn": 4,
   "lsn_min": 1,
-  "files": 3,
+  "files": 2,
   "slots": 0,
   "slots_min": -1
 }]

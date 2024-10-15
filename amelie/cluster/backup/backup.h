@@ -13,7 +13,7 @@ typedef struct Backup Backup;
 
 struct Backup
 {
-	int64_t checkpoint_snapshot;
+	bool    snapshot;
 	WalSlot wal_slot;
 	Buf     state;
 	Client* client;

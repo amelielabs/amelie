@@ -29,8 +29,10 @@ struct CheckpointMgr
 	void*         iface_arg;
 };
 
-void checkpoint_mgr_init(CheckpointMgr*, CheckpointIf*, void*);
-void checkpoint_mgr_free(CheckpointMgr*);
-void checkpoint_mgr_open(CheckpointMgr*);
-void checkpoint_mgr_gc(CheckpointMgr*);
-void checkpoint_mgr_add(CheckpointMgr*, uint64_t);
+void     checkpoint_mgr_init(CheckpointMgr*, CheckpointIf*, void*);
+void     checkpoint_mgr_free(CheckpointMgr*);
+void     checkpoint_mgr_open(CheckpointMgr*);
+void     checkpoint_mgr_gc(CheckpointMgr*);
+void     checkpoint_mgr_add(CheckpointMgr*, uint64_t);
+void     checkpoint_mgr_list(CheckpointMgr*, uint64_t, Buf*);
+uint64_t checkpoint_mgr_snapshot(CheckpointMgr*);

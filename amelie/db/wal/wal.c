@@ -87,14 +87,6 @@ wal_swap(Wal* self)
 	}
 }
 
-void
-wal_rotate(Wal* self)
-{
-	mutex_lock(&self->lock);
-	guard(mutex_unlock, &self->lock);
-	wal_swap(self);
-}
-
 static int
 wal_slots(Wal* self, uint64_t* min)
 {
@@ -196,7 +188,7 @@ wal_open(Wal* self)
 		file_seek_to_end(&self->current->file);
 	} else
 	{
-		wal_rotate(self);
+		wal_swap(self);
 	}
 }
 
@@ -280,6 +272,46 @@ wal_detach(Wal* self, WalSlot* slot)
 	mutex_lock(&self->lock);
 	event_detach(&slot->on_write);
 	mutex_unlock(&self->lock);
+}
+
+void
+wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
+{
+	mutex_lock(&self->lock);
+	guard(mutex_unlock, &self->lock);
+
+	spinlock_lock(&self->list.lock);
+	guard(spinlock_unlock, &self->list.lock);
+
+	// create wal slot to ensure listed files exists
+	wal_slot_set(slot, 0);
+	list_append(&self->slots, &slot->link);
+	self->slots_count++;
+	slot->added = true;
+
+	for (int i = 0; i < self->list.list_count; i++)
+	{
+		auto id = buf_u64(&self->list.list)[i];
+		encode_array(buf);
+
+		// path
+		char path[PATH_MAX];
+		snprintf(path, sizeof(path), "wal/%020" PRIu64 ".wal", id);
+		encode_cstr(buf, path);
+
+		// size
+		int64_t size;
+		if (id == self->current->id) {
+			size = self->current->file.size;
+		} else
+		{
+			size = fs_size("%s/wal/%020" PRIu64 ".wal", config_directory(), id);
+			if (size == -1)
+				error_system();
+		}
+		encode_integer(buf, size);
+		encode_array_end(buf);
+	}
 }
 
 bool

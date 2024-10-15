@@ -49,13 +49,7 @@ checkpoint_id_of(const char* name, bool* incomplete)
 		lsn = (lsn * 10) + *name - '0';
 		name++;
 	}
-	if (*name == '.')
-	{
-		if (! strcmp(name, ".incomplete"))
-			*incomplete = true;
-		return -1;
-	}
-	*incomplete = false;
+	*incomplete = (*name == '.') && !strcmp(name, ".incomplete");
 	return lsn;
 }
 
@@ -75,9 +69,8 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 			break;
 		if (entry->d_name[0] == '.')
 			continue;
-		bool    incomplete;
-		int64_t lsn;
-		lsn = checkpoint_id_of(entry->d_name, &incomplete);
+		bool incomplete = false;
+		auto lsn = checkpoint_id_of(entry->d_name, &incomplete);
 		if (lsn == -1)
 			continue;
 		if (incomplete)
@@ -161,4 +154,96 @@ void
 checkpoint_mgr_add(CheckpointMgr* self, uint64_t id)
 {
 	id_mgr_add(&self->list, id);
+}
+
+static inline int64_t
+part_id_of(const char* name)
+{
+	// <part>.part
+	int64_t id = 0;
+	while (*name && *name != '.')
+	{
+		if (unlikely(! isdigit(*name)))
+			return -1;
+		id = (id * 10) + *name - '0';
+		name++;
+	}
+	if (*name != '.')
+		return -1;
+	if (strcmp(name, ".part") != 0)
+		return -1;
+	return id;
+}
+
+void
+checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
+{
+	unused(self);
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%" PRIu64, config_directory(), checkpoint);
+	DIR* dir = opendir(path);
+	if (unlikely(dir == NULL))
+		error_system();
+	guard(fs_opendir_guard, dir);
+
+	// read partitions to create a sorted list
+	IdMgr list;
+	id_mgr_init(&list);
+	guard(id_mgr_free, &list);
+	for (;;)
+	{
+		auto entry = readdir(dir);
+		if (entry == NULL)
+			break;
+		if (! strcmp(entry->d_name, "."))
+			continue;
+		if (! strcmp(entry->d_name, ".."))
+			continue;
+		auto id = part_id_of(entry->d_name);
+		if (id == -1)
+			continue;
+		id_mgr_add(&list, id);
+	}
+
+	// write the list of partitions
+	for (int i = 0; i < list.list_count; i++)
+	{
+		auto id = buf_u64(&list.list)[i];
+		encode_array(buf);
+		// path
+		snprintf(path, sizeof(path), "%" PRIu64 "/%" PRIu64 ".part", checkpoint, id);
+		encode_cstr(buf, path);
+		// size
+		auto size = fs_size("%s/%" PRIu64 "/%" PRIu64 ".part",
+		                    config_directory(),
+		                    checkpoint, id);
+		if (size == -1)
+			error_system();
+		encode_integer(buf, size);
+		encode_array_end(buf);
+	}
+
+	// add catalog.json file last
+	encode_array(buf);
+	// path
+	snprintf(path, sizeof(path), "%" PRIu64 "/catalog.json", checkpoint);
+	encode_cstr(buf, path);
+	// size
+	auto size = fs_size("%s/%" PRIu64 "/catalog.json",
+	                    config_directory(),
+	                    checkpoint);
+	if (size == -1)
+		error_system();
+	encode_integer(buf, size);
+	encode_array_end(buf);
+}
+
+uint64_t
+checkpoint_mgr_snapshot(CheckpointMgr* self)
+{
+	// create snapshot
+	id_mgr_add(&self->list_snapshot, 0);
+
+	// get the last checkpoint id
+	return id_mgr_max(&self->list);
 }

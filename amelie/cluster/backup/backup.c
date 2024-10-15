@@ -37,9 +37,9 @@
 void
 backup_init(Backup* self, Db* db)
 {
-	self->checkpoint_snapshot = -1;
-	self->client              = NULL;
-	self->db                  = db;
+	self->snapshot = false;
+	self->client   = NULL;
+	self->db       = db;
 	event_init(&self->on_complete);
 	wal_slot_init(&self->wal_slot);
 	buf_init(&self->state);
@@ -51,7 +51,7 @@ backup_free(Backup* self)
 {
 	auto db = self->db;
 	wal_del(&db->wal, &self->wal_slot);
-	if (self->checkpoint_snapshot != -1)
+	if (self->snapshot)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	event_detach(&self->on_complete);
 	buf_free(&self->state);
@@ -77,7 +77,15 @@ backup_list(Buf* self, char* name)
 		if (! strcmp(entry->d_name, ".."))
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+		encode_array(self);
+		// path
 		encode_cstr(self, path);
+		// size
+		auto size = fs_size("%s/%s/%s", config_directory(), name, entry->d_name);
+		if (size == -1)
+			error_system();
+		encode_integer(self, size);
+		encode_array_end(self);
 	}
 }
 
@@ -98,8 +106,11 @@ backup_prepare_state(Backup* self)
 	auto buf = &self->state;
 	encode_obj(buf);
 
-	// checkpoint
-	uint64_t checkpoint = config_checkpoint();
+	// add checkpoint snapshot
+	auto db = self->db;
+	uint64_t checkpoint = checkpoint_mgr_snapshot(&db->checkpoint_mgr);
+	self->snapshot = true;
+
 	encode_raw(buf, "checkpoint", 10);
 	encode_integer(buf, checkpoint);
 
@@ -107,13 +118,13 @@ backup_prepare_state(Backup* self)
 	encode_raw(buf, "files", 5);
 	encode_array(buf);
 
-	// list files for backup (checkpoint, wal and certs)
-	if (checkpoint > 0)
-	{
-		snprintf(path, sizeof(path), "%" PRIu64, checkpoint);
-		backup_list(buf, path);
-	}
-	backup_list(buf, "wal");
+	// checkpoint files
+	checkpoint_mgr_list(&db->checkpoint_mgr, checkpoint, buf);
+
+	// create wal snapshot and include wal files
+	wal_snapshot(&db->wal, &self->wal_slot, buf);
+
+	// certs
 	backup_list(buf, "certs");
 	encode_array_end(buf);
 
@@ -130,28 +141,13 @@ backup_prepare_state(Backup* self)
 static void
 backup_prepare(Backup* self)
 {
-	auto db = self->db;
-
 	// take exclusive lock
 	control_lock();
 
+	// create backup state
 	Exception e;
 	if (enter(&e))
-	{
-		// create backup state
 		backup_prepare_state(self);
-
-		// create new wal
-		wal_rotate(&db->wal);
-
-		// create wal slot
-		wal_slot_set(&self->wal_slot, 0);
-		wal_add(&db->wal, &self->wal_slot);
-
-		// add checkpoint snapshot
-		id_mgr_add(&db->checkpoint_mgr.list_snapshot, 0);
-		self->checkpoint_snapshot = 0;
-	}
 
 	control_unlock();
 	if (leave(&e))
@@ -159,40 +155,61 @@ backup_prepare(Backup* self)
 }
 
 static void
-backup_send(Backup* self, Str* url)
+backup_send(Backup* self)
 {
-	// open file (partition or wal file)
-	if (! str_compare_raw_prefix(url, "/backup/", 8))
-		error("backup: unexpected request");
-	str_advance(url, 8);
+	auto client = self->client;
+	auto request = &client->request;
+
+	// validate request uri
+	auto url = &request->options[HTTP_URL];
+	if (! str_compare_raw_prefix(url, "/backup", 7))
+		error("unexpected request");
+
+	// Amelie-Backup
+	auto hdr_path = http_find(request, "Amelie-Backup", 13);
+	if (unlikely(! hdr_path))
+		error("Amelie-Backup field is missing");
+
+	// Amelie-Backup-Size
+	auto hdr_size = http_find(request, "Amelie-Backup-Size", 18);
+	if (unlikely(! hdr_size))
+		error("Amelie-Backup-Size field is missing");
+	int64_t size;
+	if (str_toint(&hdr_size->value, &size) == -1)
+		error("Amelie-Backup-Size field is invalid");
 
 	// todo: validate path
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
-	         str_size(url), str_of(url));
+	         str_size(&hdr_path->value),
+	         str_of(&hdr_path->value));
 	File file;
 	file_init(&file);
 	guard(file_close, &file);
 	file_open(&file, path);
 
-	info("file %.*s (%" PRIu64 " bytes)", str_size(url),
-	     str_of(url), file.size);
+	// requested size must be <= to the current file size
+	if ((int64_t)file.size < size)
+		error("Amelie-Backup-Size field is invalid (file size mismatch)");
+
+	info("%.*s (%" PRIu64 " bytes)", str_size(&hdr_path->value),
+	     str_of(&hdr_path->value), size);
 
 	// prepare and send header
-	auto reply = &self->client->reply;
-	auto tcp   = &self->client->tcp;
+	auto reply = &client->reply;
+	auto tcp   = &client->tcp;
 	http_write_reply(reply, 200, "OK");
-	http_write(reply, "Content-Length", "%" PRIu64, file.size);
+	http_write(reply, "Content-Length", "%" PRIu64, size);
 	http_write(reply, "Content-Type", "application/octet-stream");
 	http_write_end(reply);
 	tcp_write_buf(tcp, &reply->raw);
 
 	// transfer file content
 	auto buf = &reply->content;
-	for (uint64_t size = file.size; size > 0;)
+	while (size > 0)
 	{
 		buf_reset(buf);
-		uint64_t chunk = 256 * 1024;
+		int64_t chunk = 256 * 1024;
 		if (size < chunk)
 			chunk = size;
 		file_read_buf(&file, buf, chunk);
@@ -237,8 +254,7 @@ backup_main(void* arg)
 			if (eof)
 				break;
 			http_read_content(request, readahead, &request->content);
-			auto url = &request->options[HTTP_URL];
-			backup_send(self, url);
+			backup_send(self);
 		}
 	}
 
