@@ -211,10 +211,10 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 		auto id = buf_u64(&list.list)[i];
 		encode_array(buf);
 		// path
-		snprintf(path, sizeof(path), "%" PRIu64 "/%" PRIu64 ".part", checkpoint, id);
+		snprintf(path, sizeof(path), "%" PRIu64 "/%010" PRIu64 ".part", checkpoint, id);
 		encode_cstr(buf, path);
 		// size
-		auto size = fs_size("%s/%" PRIu64 "/%" PRIu64 ".part",
+		auto size = fs_size("%s/%" PRIu64 "/%010" PRIu64 ".part",
 		                    config_directory(),
 		                    checkpoint, id);
 		if (size == -1)

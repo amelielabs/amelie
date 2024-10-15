@@ -55,7 +55,7 @@ snapshot_begin(Snapshot* self)
 	// <base>/<lsn>.incomplete/<partition_id>.part
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/%" PRIu64 ".incomplete/%" PRIu64 ".part",
+	         "%s/%" PRIu64 ".incomplete/%010" PRIu64 ".part",
 	         config_directory(),
 	         self->lsn,
 	         self->partition);
@@ -76,7 +76,7 @@ snapshot_end(Snapshot* self)
 
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%" PRIu64"/%" PRIu64 ".part",
+	         "%" PRIu64"/%010" PRIu64 ".part",
 	         self->lsn,
 	         self->partition);
 
