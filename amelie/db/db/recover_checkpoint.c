@@ -25,8 +25,6 @@ hot static void
 recover_partition(Part* self)
 {
 	auto checkpoint = config_checkpoint();
-	info("recover: %" PRIu64 "/%" PRIu64 ".part",
-	     checkpoint, self->config->id);
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);
@@ -45,8 +43,9 @@ recover_partition(Part* self)
 		count++;
 	}
 
-	info("recover: %" PRIu64 "/%" PRIu64 ".part (%" PRIu64 " rows)",
-	     checkpoint, self->config->id, count);
+	double size = cursor.file.size / 1024 / 1024;
+	info("recover: %" PRIu64 "/%" PRIu64 ".part (%.2f MiB, %" PRIu64 " rows)",
+	     checkpoint, self->config->id, size, count);
 }
 
 hot void
