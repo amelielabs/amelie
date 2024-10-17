@@ -261,6 +261,7 @@ session_auth(Session* self)
 	auto client  = self->client;
 	auto request = &client->request;
 	auto reply   = &client->reply;
+
 	auto auth_header = http_find(request, "Authorization", 13);
 	if (! auth_header)
 	{
@@ -273,6 +274,7 @@ session_auth(Session* self)
 		if (likely(user))
 			return true;
 	}
+
 	// access denied
 	http_write_reply(reply, 403, "Forbidden");
 	http_write_end(reply);
@@ -302,18 +304,23 @@ session_main(Session* self)
 		if (! session_auth(self))
 			break;
 
-		// handle backup
+		// POST /schema/table
 		auto url = &request->options[HTTP_URL];
-		if (unlikely(str_compare_raw(url, "/backup", 7)))
+		if (! str_compare_raw(url, "/", 1))
 		{
-			backup(self->share->db, client);
-			break;
 		}
 
-		// handle primary connection
-		if (unlikely(str_compare_raw(url, "/repl", 5)))
+		// POST /
+
+		// handle backup or primary server connection
+		auto service = http_find(request, "Amelie-Service", 14);
+		if (service)
 		{
-			session_primary(self);
+			if (str_compare_raw(&service->value, "backup", 6))
+				backup(self->share->db, client);
+			else
+			if (str_compare_raw(&service->value, "repl", 4))
+				session_primary(self);
 			break;
 		}
 

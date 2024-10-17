@@ -90,7 +90,7 @@ backup_list(Buf* self, char* name)
 }
 
 static void
-backup_prepare_state(Backup* self)
+backup_prepare(Backup* self)
 {
 	// read config file
 	char path[PATH_MAX];
@@ -139,19 +139,27 @@ backup_prepare_state(Backup* self)
 }
 
 static void
-backup_prepare(Backup* self)
+backup_join(Backup* self)
 {
-	// take exclusive lock
+	// create backup state
 	control_lock();
 
-	// create backup state
 	Exception e;
 	if (enter(&e))
-		backup_prepare_state(self);
+		backup_prepare(self);
 
 	control_unlock();
 	if (leave(&e))
 	{ }
+
+	auto client = self->client;
+	auto reply = &client->reply;
+	body_add_raw(&reply->content, &self->state, global()->timezone);
+	http_write_reply(reply, 200, "OK");
+	http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
+	http_write(reply, "Content-Type", "application/json");
+	http_write_end(reply);
+	tcp_write_pair(&client->tcp, &reply->raw, &reply->content);
 }
 
 static void
@@ -160,23 +168,18 @@ backup_send(Backup* self)
 	auto client = self->client;
 	auto request = &client->request;
 
-	// validate request uri
-	auto url = &request->options[HTTP_URL];
-	if (! str_compare_raw_prefix(url, "/backup", 7))
-		error("unexpected request");
-
-	// Amelie-Backup
-	auto hdr_path = http_find(request, "Amelie-Backup", 13);
+	// Amelie-File
+	auto hdr_path = http_find(request, "Amelie-File", 11);
 	if (unlikely(! hdr_path))
-		error("Amelie-Backup field is missing");
+		error("Amelie-File field is missing");
 
-	// Amelie-Backup-Size
-	auto hdr_size = http_find(request, "Amelie-Backup-Size", 18);
+	// Amelie-File-Size
+	auto hdr_size = http_find(request, "Amelie-File-Size", 16);
 	if (unlikely(! hdr_size))
-		error("Amelie-Backup-Size field is missing");
+		error("Amelie-File-Size field is missing");
 	int64_t size;
 	if (str_toint(&hdr_size->value, &size) == -1)
-		error("Amelie-Backup-Size field is invalid");
+		error("Amelie-File-Size field is invalid");
 
 	// todo: validate path
 	char path[PATH_MAX];
@@ -190,7 +193,7 @@ backup_send(Backup* self)
 
 	// requested size must be <= to the current file size
 	if ((int64_t)file.size < size)
-		error("Amelie-Backup-Size field is invalid (file size mismatch)");
+		error("Amelie-File-Size field is invalid (file size mismatch)");
 
 	info("%.*s (%" PRIu64 " bytes)", str_size(&hdr_path->value),
 	     str_of(&hdr_path->value), size);
@@ -231,18 +234,10 @@ backup_main(void* arg)
 	Exception e;
 	if (enter(&e))
 	{
-		// create backup state
-		backup_prepare(self);
 		tcp_attach(tcp);
 
-		// send backup state
-		auto reply = &client->reply;
-		body_add_raw(&reply->content, &self->state, global()->timezone);
-		http_write_reply(reply, 200, "OK");
-		http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
-		http_write(reply, "Content-Type", "application/json");
-		http_write_end(reply);
-		tcp_write_pair(tcp, &reply->raw, &reply->content);
+		// create and send backup state
+		backup_join(self);
 
 		// process file copy requests (till disconnect)
 		auto request = &client->request;
