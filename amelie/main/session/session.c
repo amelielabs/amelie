@@ -330,11 +330,24 @@ session_main(Session* self)
 		{
 			session_read(self);
 
+			// Content-Type
+			auto type = http_find(request, "Content-Type", 12);
+			if (unlikely(! type))
+				error("Content-Type is missing");
+
 			auto url = &request->options[HTTP_URL];
-			if (str_compare_raw(url, "/", 1))
+			if (str_compare_raw(&type->value, "text/plain", 10))
+			{
+				// POST /
+				if (unlikely(! str_compare_raw(url, "/", 1)))
+					error("unsupported API operation");
+
 				session_execute(self);
-			else
+			} else
+			{
+				// POST /schema/table
 				session_execute_import(self);
+			}
 		}
 
 		// reply
