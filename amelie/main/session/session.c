@@ -297,17 +297,18 @@ session_main(Session* self)
 		if (unlikely(eof))
 			break;
 
+		// POST /schema/table
+		// POST /
+		auto method = &request->options[HTTP_METHOD];
+		if (unlikely(! str_compare_raw(method, "POST", 4)))
+		{
+			client_403(client);
+			break;
+		}
+
 		// authenticate
 		if (! session_auth(self))
 			break;
-
-		// POST /schema/table
-		auto url = &request->options[HTTP_URL];
-		if (! str_compare_raw(url, "/", 1))
-		{
-		}
-
-		// POST /
 
 		// handle backup or primary server connection
 		auto service = http_find(request, "Am-Service", 10);
@@ -328,7 +329,12 @@ session_main(Session* self)
 		if (enter(&e))
 		{
 			session_read(self);
-			session_execute(self);
+
+			auto url = &request->options[HTTP_URL];
+			if (str_compare_raw(url, "/", 1))
+				session_execute(self);
+			else
+				session_execute_import(self);
 		}
 
 		// reply
