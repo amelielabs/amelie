@@ -165,14 +165,14 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 		error("unexpected eof");
 
 	// read content header
-	auto content_len = http_find(reply, "content-length", 14);
+	auto content_len = http_find(reply, "Content-Length", 14);
 	if (! content_len)
-		error("response content-length is missing");
+		error("response Content-Length is missing");
 	int64_t len;
 	if (str_toint(&content_len->value, &len) == -1)
-		error("failed to parse content-length");
+		error("failed to parse Content-Length");
 	if (size != (uint64_t)len)
-		error("response content-length is invalid (size mismatch)");
+		error("response Content-Length is invalid (size mismatch)");
 
 	// create file
 	char path[PATH_MAX];

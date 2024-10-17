@@ -260,7 +260,6 @@ session_auth(Session* self)
 {
 	auto client  = self->client;
 	auto request = &client->request;
-	auto reply   = &client->reply;
 
 	auto auth_header = http_find(request, "Authorization", 13);
 	if (! auth_header)
@@ -275,10 +274,8 @@ session_auth(Session* self)
 			return true;
 	}
 
-	// access denied
-	http_write_reply(reply, 403, "Forbidden");
-	http_write_end(reply);
-	tcp_write_buf(&client->tcp, &reply->raw);
+	// 403 Forbidden
+	client_403(client);
 	return false;
 }
 
@@ -340,26 +337,20 @@ session_main(Session* self)
 			auto error = &am_self()->error;
 			buf_reset(body);
 			body_error(body, error);
-			http_write_reply(reply, 400, "Bad Request");
-			http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
-			http_write(reply, "Content-Type", "application/json");
-			http_write_end(reply);
 
 			session_unlock(self);
-		} else {
-			if (buf_empty(body))
-			{
-				http_write_reply(reply, 204, "No Content");
-			} else
-			{
-				http_write_reply(reply, 200, "OK");
-				http_write(reply, "Content-Length", "%" PRIu64, buf_size(body));
-				http_write(reply, "Content-Type", "application/json");
-			}
-			http_write_end(reply);
-		}
 
-		tcp_write_pair(&client->tcp, &reply->raw, body);
+			// 400 Bad Request
+			client_400(client, body);
+		} else
+		{
+			// 204 No Content
+			// 200 OK
+			if (buf_empty(body))
+				client_204(client);
+			else
+				client_200(client, body);
+		}
 
 		// cancellation point
 		cancel_resume();

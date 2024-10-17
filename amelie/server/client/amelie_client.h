@@ -11,3 +11,4 @@
 
 #include "client/client.h"
 #include "client/client_mgr.h"
+#include "client/client_reply.h"
