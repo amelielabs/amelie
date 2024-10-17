@@ -162,14 +162,56 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_client_main(Amelie* self, Client* client)
+amelie_cmd_client_execute(Client* client, Str* content)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
-	auto name    = remote_get(client->remote, REMOTE_NAME);
 	auto token   = remote_get(client->remote, REMOTE_TOKEN);
-	auto uri     = remote_get(client->remote, REMOTE_URI);
-	auto path    = remote_get(client->remote, REMOTE_PATH);
+
+	if (str_empty(content))
+		return;
+
+	// request
+	http_write_request(request, "POST /");
+	if (! str_empty(token))
+		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
+	http_write(request, "Content-Length", "%d", str_size(content));
+	http_write(request, "Content-Type", "text/plain");
+	http_write_end(request);
+	tcp_write_pair_str(&client->tcp, &request->raw, content);
+
+	// reply
+	http_reset(reply);
+	auto eof = http_read(reply, &client->readahead, false);
+	if (eof)
+		error("unexpected eof");
+	http_read_content(reply, &client->readahead, &reply->content);
+
+	// 403 Forbidden
+	if (str_compare_raw(&reply->options[HTTP_CODE], "403", 3))
+	{
+		auto code = &reply->options[HTTP_CODE];
+		auto msg  = &reply->options[HTTP_MSG];
+		printf("%.*s %.*s\n", str_size(code), str_of(code),
+			   str_size(msg), str_of(msg));
+		return;
+	}
+
+	// print
+	if (! str_compare_raw(&reply->options[HTTP_CODE], "204", 3))
+		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
+}
+
+static void
+amelie_cmd_client_main(Amelie* self, Client* client)
+{
+	auto name = remote_get(client->remote, REMOTE_NAME);
+	auto uri  = remote_get(client->remote, REMOTE_URI);
+	auto path = remote_get(client->remote, REMOTE_PATH);
+
+	Separator sep;
+	separator_init(&sep);
+	guard(separator_free, &sep);
 
 	Str* prompt_str;
 	if (! str_empty(name))
@@ -179,49 +221,41 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 		prompt_str = path;
 	else
 		prompt_str = uri;
-	char prompt[128];
-	snprintf(prompt, sizeof(prompt), "%.*s> ", str_size(prompt_str),
+	char prompt_ss[128];
+	char prompt_ms[128];
+	snprintf(prompt_ss, sizeof(prompt_ss), "%.*s> ", str_size(prompt_str),
 	         str_of(prompt_str));
+	snprintf(prompt_ms, sizeof(prompt_ms), "%.*s- ", str_size(prompt_str),
+	         str_of(prompt_str));
+
+	auto is_terminal = cli_is_terminal();
 	for (;;)
 	{
 		// >
-		Str content;
-		str_init(&content);
-		if (! cli(prompt, &content))
+		Str input;
+		str_init(&input);
+		auto prompt = separator_pending(&sep) ? prompt_ms: prompt_ss;
+		if (! cli(prompt, &input))
 			break;
-		guard(str_free, &content);
-		if (! str_size(&content))
-			continue;
+		guard(str_free, &input);
 
-		// request
-		http_write_request(request, "POST /");
-		if (! str_empty(token))
-			http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-		http_write(request, "Content-Length", "%d", str_size(&content));
-		http_write(request, "Content-Type", "text/plain");
-		http_write_end(request);
-		tcp_write_pair_str(&client->tcp, &request->raw, &content);
-
-		// reply
-		http_reset(reply);
-		auto eof = http_read(reply, &client->readahead, false);
-		if (eof)
-			error("unexpected eof");
-		http_read_content(reply, &client->readahead, &reply->content);
-
-		// 403 Forbidden
-		if (str_compare_raw(&reply->options[HTTP_CODE], "403", 3))
+		// split commands by \n
+		if (is_terminal)
 		{
-			auto code = &reply->options[HTTP_CODE];
-			auto msg  = &reply->options[HTTP_MSG];
-			printf("%.*s %.*s\n", str_size(code), str_of(code),
-			       str_size(msg), str_of(msg));
-			break;
+			amelie_cmd_client_execute(client, &input);
+			continue;
 		}
 
-		// print
-		if (! str_compare_raw(&reply->options[HTTP_CODE], "204", 3))
-			printf("%.*s\n", buf_size(&reply->content), reply->content.start);
+		// pipe mode
+
+		// split commands using ; and begin/commit stmts
+		Str content;
+		separator_write(&sep, &input);
+		while (separator_read(&sep, &content))
+		{
+			amelie_cmd_client_execute(client, &content);
+			separator_advance(&sep);
+		}
 	}
 
 	home_sync(&self->home);

@@ -18,6 +18,12 @@ int   linenoiseHistorySave(const char *filename);
 int   linenoiseHistoryLoad(const char *filename);
 int   linenoiseHistoryAdd(const char *line);
 
+bool
+cli_is_terminal(void)
+{
+	return isatty(STDIN_FILENO);
+}
+
 void
 cli_open(char* path)
 {

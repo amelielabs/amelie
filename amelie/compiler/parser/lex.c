@@ -124,13 +124,17 @@ lex_next(Lex* self)
 		// eof
 		if (unlikely(self->pos == self->end))
 			return ast;
-		if (*self->pos != '#')
-			break;
-		while (self->pos < self->end && *self->pos != '\n')
-			self->pos++;
-		// eof
-		if (self->pos == self->end)
-			return ast;
+		// --
+		if (*self->pos == '-')
+		{
+			if ((self->end - self->pos) >= 2 && (self->pos[1] == '-'))
+			{
+				while (self->pos < self->end && *self->pos != '\n')
+					self->pos++;
+				continue;
+			}
+		}
+		break;
 	}
 
 	// argument

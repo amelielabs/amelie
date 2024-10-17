@@ -10027,9 +10027,11 @@ insert into test values (8, 8)
 insert into test values (9, 9)
 insert into test values (10, 10)
 
-create index i on test (data) # ok
+# ok
+create index i on test (data)
 
-insert into test values (11, 10) # secondary conflict
+# secondary conflict
+insert into test values (11, 10)
 create unique index j on test (data)
 
 insert into test values (12, 10)

@@ -544,7 +544,7 @@ explain insert into test 1,2,3 returning *
 }]
 insert into test 1,2,3 returning *
 [[1], [2], [3]]
-insert into test 1,2,3 returning * # on conflict error
+insert into test 1,2,3 returning *
 {"code": 1, "msg": "unique key constraint violation"}
 drop table test
 # test: insert returning into

@@ -337,7 +337,8 @@ drop table test
 create table test (id int primary key)
 explain insert into test 1,2,3 returning *
 insert into test 1,2,3 returning *
-insert into test 1,2,3 returning * # on conflict error
+# on conflict error
+insert into test 1,2,3 returning *
 drop table test
 
 # test: insert returning into

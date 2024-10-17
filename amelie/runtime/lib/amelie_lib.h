@@ -47,4 +47,5 @@
 #include "lib/logger.h"
 
 // cli
+#include "lib/separator.h"
 #include "lib/cli.h"

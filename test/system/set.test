@@ -13,7 +13,7 @@ set log_enable to 0
 set query_dump to 0 junk
 
 # test: set read-only
-set log_enable to 0 # ro
+set log_enable to 0
 
 # test: set bool
 show test_bool
