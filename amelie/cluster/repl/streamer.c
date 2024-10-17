@@ -83,10 +83,10 @@ streamer_write(Streamer* self, Buf* content)
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
 	http_write(request, "Content-Type", "application/octet-stream");
-	http_write(request, "Amelie-Service", "repl");
-	http_write(request, "Amelie-Id", "%.*s", str_size(id), str_of(id));
+	http_write(request, "Am-Service", "repl");
+	http_write(request, "Am-Id", "%.*s", str_size(id), str_of(id));
 	if (content)
-		http_write(request, "Amelie-Lsn", "%" PRIu64, self->wal_slot->lsn);
+		http_write(request, "Am-Lsn", "%" PRIu64, self->wal_slot->lsn);
 	http_write_end(request);
 
 	if (content)
@@ -109,20 +109,20 @@ streamer_read(Streamer* self)
 	http_read_content(reply, &client->readahead, &reply->content);
 
 	// validate replica id
-	auto hdr_id = http_find(reply, "Amelie-Id", 9);
+	auto hdr_id = http_find(reply, "Am-Id", 5);
 	if (unlikely(! hdr_id))
-		error("replica Amelie-Id field is missing");
+		error("replica Am-Id field is missing");
 	if (unlikely(! str_compare_raw(&hdr_id->value, self->replica_id,
 	             sizeof(self->replica_id) - 1)))
-		error("replica Amelie-Id mismatch");
+		error("replica Am-Id mismatch");
 
 	// validate lsn
-	auto hdr_lsn = http_find(reply, "Amelie-Lsn", 10);
+	auto hdr_lsn = http_find(reply, "Am-Lsn", 6);
 	if (unlikely(! hdr_lsn))
-		error("replica Amelie-Lsn field is missing");
+		error("replica Am-Lsn field is missing");
 	int64_t lsn;
 	if (unlikely(str_toint(&hdr_lsn->value, &lsn) == -1))
-		error("malformed replica Amelie-Lsn field");
+		error("malformed replica Am-Lsn field");
 
 	return lsn;
 }

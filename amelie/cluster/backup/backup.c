@@ -168,18 +168,18 @@ backup_send(Backup* self)
 	auto client = self->client;
 	auto request = &client->request;
 
-	// Amelie-File
-	auto hdr_path = http_find(request, "Amelie-File", 11);
+	// Am-File
+	auto hdr_path = http_find(request, "Am-File", 7);
 	if (unlikely(! hdr_path))
-		error("Amelie-File field is missing");
+		error("Am-File field is missing");
 
-	// Amelie-File-Size
-	auto hdr_size = http_find(request, "Amelie-File-Size", 16);
+	// Am-File-Size
+	auto hdr_size = http_find(request, "Am-File-Size", 12);
 	if (unlikely(! hdr_size))
-		error("Amelie-File-Size field is missing");
+		error("Am-File-Size field is missing");
 	int64_t size;
 	if (str_toint(&hdr_size->value, &size) == -1)
-		error("Amelie-File-Size field is invalid");
+		error("Am-File-Size field is invalid");
 
 	// todo: validate path
 	char path[PATH_MAX];
@@ -193,7 +193,7 @@ backup_send(Backup* self)
 
 	// requested size must be <= to the current file size
 	if ((int64_t)file.size < size)
-		error("Amelie-File-Size field is invalid (file size mismatch)");
+		error("Am-File-Size field is invalid (file size mismatch)");
 
 	info("%.*s (%" PRIu64 " bytes)", str_size(&hdr_path->value),
 	     str_of(&hdr_path->value), size);

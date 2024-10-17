@@ -97,7 +97,7 @@ restore_start(Restore* self)
 	http_write_request(request, "POST /");
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Amelie-Service", "backup");
+	http_write(request, "Am-Service", "backup");
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
@@ -151,9 +151,9 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 	http_write_request(request, "POST /");
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Amelie-Service", "backup");
-	http_write(request, "Amelie-File", "%.*s", str_size(name), str_of(name));
-	http_write(request, "Amelie-FIle-Size", "%" PRIu64, size);
+	http_write(request, "Am-Service", "backup");
+	http_write(request, "Am-File", "%.*s", str_size(name), str_of(name));
+	http_write(request, "Am-FIle-Size", "%" PRIu64, size);
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 

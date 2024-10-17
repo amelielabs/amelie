@@ -313,7 +313,7 @@ session_main(Session* self)
 		// POST /
 
 		// handle backup or primary server connection
-		auto service = http_find(request, "Amelie-Service", 14);
+		auto service = http_find(request, "Am-Service", 10);
 		if (service)
 		{
 			if (str_compare_raw(&service->value, "backup", 6))
