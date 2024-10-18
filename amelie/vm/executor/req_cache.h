@@ -53,10 +53,11 @@ req_cache_push_list(ReqCache* self, ReqList* list)
 }
 
 static inline Req*
-req_create(ReqCache* self)
+req_create(ReqCache* self, ReqType type)
 {
 	auto req = req_cache_pop(self);
 	if (unlikely(! req))
 		req = req_allocate();
+	req->type = type;
 	return req;
 }

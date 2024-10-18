@@ -180,7 +180,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 
 			// add dummy request to the pipe to sync with recv to close pipe
 			auto ref = dispatch_pipe_set(dispatch, stmt, route->order, pipe);
-			Req* req = req_create(&self->req_cache);
+			Req* req = req_create(&self->req_cache, REQ_SHUTDOWN);
 			req_list_add(&ref->req_list, req);
 			pipe_send(pipe, req, stmt, true);
 			dispatch->sent++;
@@ -232,7 +232,7 @@ dtr_shutdown(Dtr* self)
 
 		// send shutdown request
 		auto ref = dispatch_pipe_set(dispatch, dispatch->stmt_last, pipe->route->order, pipe);
-		Req* req = req_create(&self->req_cache);
+		Req* req = req_create(&self->req_cache, REQ_SHUTDOWN);
 		req_list_add(&ref->req_list, req);
 		pipe_send(pipe, req, dispatch->stmt_last, true);
 		dispatch->sent++;

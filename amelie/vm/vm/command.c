@@ -733,7 +733,7 @@ csend_hash(Vm* self, Op* op)
 
 	// shard by precomputed key hash
 	auto route = part_map_get(&table->part_list.map, op->d);
-	auto req = req_create(&dtr->req_cache);
+	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->start = start;
 	req->route = route;
 	req_list_add(&list, req);
@@ -773,7 +773,7 @@ csend(Vm* self, Op* op)
 		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(&dtr->req_cache);
+			req = req_create(&dtr->req_cache, REQ_EXECUTE);
 			req->start = start;
 			req->route = route;
 			req_list_add(&list, req);
@@ -796,7 +796,7 @@ csend_first(Vm* self, Op* op)
 
 	// send to the first node
 	auto dtr = self->dtr;
-	auto req = req_create(&dtr->req_cache);
+	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->route = router_first(dtr->router);
 	req->start = op->b;
 	req_list_add(&list, req);
@@ -819,7 +819,7 @@ csend_all(Vm* self, Op* op)
 	for (auto i = 0; i < map->list_count; i++)
 	{
 		auto route = map->list[i];
-		auto req = req_create(&dtr->req_cache);
+		auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 		req->route = route;
 		req->start = op->b;
 		req_list_add(&list, req);

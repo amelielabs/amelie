@@ -11,8 +11,18 @@
 
 typedef struct Req Req;
 
+typedef enum
+{
+	REQ_UNDEF,
+	REQ_EXECUTE,
+	REQ_IMPORT,
+	REQ_REPLAY,
+	REQ_SHUTDOWN
+} ReqType;
+
 struct Req
 {
+	ReqType  type;
 	int      start;
 	Program* program;
 	Buf*     args;
@@ -32,6 +42,7 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
+	self->type      = REQ_UNDEF;
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;
@@ -59,6 +70,7 @@ req_free(Req* self)
 static inline void
 req_reset(Req* self)
 {
+	self->type      = REQ_UNDEF;
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;

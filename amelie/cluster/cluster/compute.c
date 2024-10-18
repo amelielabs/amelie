@@ -36,8 +36,8 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 
-hot static void
-compute_execute_write(Compute* self, Tr* tr, Req* req)
+static void
+compute_replay(Compute* self, Tr* tr, Req* req)
 {
 	// execute DML operations
 	auto db = self->vm.db;
@@ -75,8 +75,32 @@ compute_execute_write(Compute* self, Tr* tr, Req* req)
 	}
 }
 
+hot static inline void
+compute_import(Compute* self, Tr* tr, Req* req)
+{
+	(void)self;
+	(void)tr;
+	(void)req;
+}
+
+hot static inline void
+compute_execute(Compute* self, Tr* tr, Req* req)
+{
+	tr_set_limit(tr, req->limit);
+	vm_reset(&self->vm);
+	vm_run(&self->vm, req->local,
+	        tr,
+	        req->program->code_node,
+	        req->program->code_data,
+	       &req->arg,
+	        req->args,
+	        req->cte,
+	       &req->result,
+	        req->start);
+}
+
 hot static void
-compute_execute(Compute* self, Pipe* pipe)
+compute_process(Compute* self, Pipe* pipe)
 {
 	auto tr = tr_create(&self->cache);
 	tr_begin(tr);
@@ -92,26 +116,21 @@ compute_execute(Compute* self, Pipe* pipe)
 		Exception e;
 		if (enter(&e))
 		{
-			if (req->arg_start)
-			{
-				compute_execute_write(self, tr, req);
-			} else
-			if (req->program == NULL)
-			{
-				// dummy sync request
-			} else
-			{
-				tr_set_limit(tr, req->limit);
-				vm_reset(&self->vm);
-				vm_run(&self->vm, req->local,
-				        tr,
-				        req->program->code_node,
-				        req->program->code_data,
-				       &req->arg,
-				        req->args,
-				        req->cte,
-				       &req->result,
-				        req->start);
+			switch (req->type) {
+			case REQ_EXECUTE:
+				compute_execute(self, tr, req);
+				break;
+			case REQ_IMPORT:
+				compute_import(self, tr, req);
+				break;
+			case REQ_REPLAY:
+				compute_replay(self, tr, req);
+				break;
+			case REQ_SHUTDOWN:
+				// force shutdown
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -171,7 +190,7 @@ compute_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			compute_execute(self, pipe_of(buf));
+			compute_process(self, pipe_of(buf));
 			break;
 		case RPC_COMMIT:
 		{
