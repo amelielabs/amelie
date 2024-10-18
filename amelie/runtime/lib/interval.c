@@ -21,10 +21,10 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 		// minute
 		// mins
 		// min
-		if (str_compare_raw(type, "mins", 4) ||
-		    str_compare_raw(type, "min", 3) ||
-		    str_compare_raw(type, "minutes", 7) ||
-		    str_compare_raw(type, "minute", 6))
+		if (str_is(type, "mins", 4)    ||
+		    str_is(type, "min", 3)     ||
+		    str_is(type, "minutes", 7) ||
+		    str_is(type, "minute", 6))
 		{
 			self->us += value * 60LL * 1000 * 1000;
 			return;
@@ -32,8 +32,8 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 
 		// month
 		// months
-		if (str_compare_raw(type, "months", 6) ||
-		    str_compare_raw(type, "month", 5))
+		if (str_is(type, "months", 6) ||
+		    str_is(type, "month", 5))
 		{
 			self->m += value;
 			return;
@@ -42,9 +42,9 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 		// milliseconds
 		// millisecond
 		// ms
-		if (str_compare_raw(type, "ms", 2)            ||
-		    str_compare_raw(type, "milliseconds", 12) ||
-		    str_compare_raw(type, "millisecond", 11))
+		if (str_is(type, "ms", 2)            ||
+		    str_is(type, "milliseconds", 12) ||
+		    str_is(type, "millisecond", 11))
 		{
 			self->us += value * 1000LL;
 			return;
@@ -52,8 +52,8 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 
 		// microseconds
 		// microsecond
-		if (str_compare_raw(type, "microseconds", 12) ||
-		    str_compare_raw(type, "microsecond", 11))
+		if (str_is(type, "microseconds", 12) ||
+		    str_is(type, "microsecond", 11))
 		{
 			self->us += value;
 			return;
@@ -61,7 +61,7 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 		break;
 	case 'u':
 		// us
-		if (str_compare_raw(type, "us", 2))
+		if (str_is(type, "us", 2))
 		{
 			self->us += value;
 			return;
@@ -72,10 +72,10 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 		// second
 		// secs
 		// sec
-		if (str_compare_raw(type, "secs", 4)    ||
-		    str_compare_raw(type, "sec", 3)     ||
-		    str_compare_raw(type, "seconds", 7) ||
-		    str_compare_raw(type, "second", 6))
+		if (str_is(type, "secs", 4)    ||
+		    str_is(type, "sec", 3)     ||
+		    str_is(type, "seconds", 7) ||
+		    str_is(type, "second", 6))
 		{
 			self->us += value * 1000LL * 1000;
 			return;
@@ -86,10 +86,10 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 		// hour
 		// hrs	
 		// hr
-		if (str_compare_raw(type, "hrs", 3)   ||
-		    str_compare_raw(type, "hr", 2)    ||
-		    str_compare_raw(type, "hours", 5) ||
-		    str_compare_raw(type, "hour", 4))
+		if (str_is(type, "hrs", 3)   ||
+		    str_is(type, "hr", 2)    ||
+		    str_is(type, "hours", 5) ||
+		    str_is(type, "hour", 4))
 		{
 			self->us += value * 60LL * 60 * 1000 * 1000;
 			return;
@@ -98,8 +98,8 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	case 'd':
 		// days
 		// day
-		if (str_compare_raw(type, "days", 4) ||
-		    str_compare_raw(type, "day", 3))
+		if (str_is(type, "days", 4) ||
+		    str_is(type, "day", 3))
 		{
 			self->d += value;
 			return;
@@ -108,8 +108,8 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	case 'w':
 		// weeks
 		// week
-		if (str_compare_raw(type, "weeks", 5) ||
-		    str_compare_raw(type, "week", 4))
+		if (str_is(type, "weeks", 5) ||
+		    str_is(type, "week", 4))
 		{
 			self->d += value * 7;
 			return;
@@ -118,8 +118,8 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	case 'y':
 		// year
 		// years
-		if (str_compare_raw(type, "years", 5) ||
-		    str_compare_raw(type, "year", 4))
+		if (str_is(type, "years", 5) ||
+		    str_is(type, "year", 4))
 		{
 			self->m += value * 12;
 			return;
@@ -311,55 +311,55 @@ interval_read_field(Str* type)
 	switch (*str_of(type)) {
 	case 'm':
 		// minute
-		if (str_compare_raw(type, "min", 3) ||
-		    str_compare_raw(type, "minute", 6))
+		if (str_is(type, "min", 3) ||
+		    str_is(type, "minute", 6))
 			return INTERVAL_MINUTE;
 
 		// month
-		if (str_compare_raw(type, "month", 5))
+		if (str_is(type, "month", 5))
 			return INTERVAL_MONTH;
 
 		// millisecond
 		// milliseconds
 		// ms
-		if (str_compare_raw(type, "ms", 2) ||
-		    str_compare_raw(type, "milliseconds", 12) ||
-		    str_compare_raw(type, "millisecond", 11))
+		if (str_is(type, "ms", 2)            ||
+		    str_is(type, "milliseconds", 12) ||
+		    str_is(type, "millisecond", 11))
 			return INTERVAL_MILLISECOND;
 
 		// microseconds
 		// microsecond
-		if (str_compare_raw(type, "microseconds", 12) ||
-		    str_compare_raw(type, "microsecond", 11))
+		if (str_is(type, "microseconds", 12) ||
+		    str_is(type, "microsecond", 11))
 			return INTERVAL_MICROSECOND;
 		break;
 	case 'u':
 		// us
-		if (str_compare_raw(type, "us", 2))
+		if (str_is(type, "us", 2))
 			return INTERVAL_MICROSECOND;
 		break;
 	case 's':
 		// second
 		// sec
-		if (str_compare_raw(type, "sec", 3) ||
-		    str_compare_raw(type, "second", 6))
+		if (str_is(type, "sec", 3) ||
+		    str_is(type, "second", 6))
 			return INTERVAL_SECOND;
 		break;
 	case 'h':
 		// hour
 		// hr
-		if (str_compare_raw(type, "hr", 2)    ||
-		    str_compare_raw(type, "hour", 4))
+		if (str_is(type, "hr", 2)    ||
+		    str_is(type, "hour", 4))
 			return INTERVAL_HOUR;
 		break;
 	case 'd':
 		// day
-		if (str_compare_raw(type, "day", 3))
+		if (str_is(type, "day", 3))
 			return INTERVAL_DAY;
 		break;
 	case 'y':
 		// year
-		if (str_compare_raw(type, "year", 4))
+		if (str_is(type, "year", 4))
 			return INTERVAL_YEAR;
 		break;
 	default:

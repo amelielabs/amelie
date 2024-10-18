@@ -246,14 +246,14 @@ session_execute(Session* self)
 	session_lock(self, LOCK);
 
 	auto url = &request->options[HTTP_URL];
-	if (str_compare_raw(url, "/", 1))
+	if (str_is(url, "/", 1))
 	{
 		// POST /
 		auto type = http_find(request, "Content-Type", 12);
 		if (unlikely(! type))
 			error("Content-Type is missing");
 
-		if (! str_compare_raw(&type->value, "text/plain", 10))
+		if (! str_is(&type->value, "text/plain", 10))
 			error("unsupported API operation");
 
 		session_execute_sql(self);
@@ -289,7 +289,7 @@ session_auth(Session* self)
 	// POST /schema/table
 	// POST /
 	auto method = &request->options[HTTP_METHOD];
-	if (unlikely(! str_compare_raw(method, "POST", 4)))
+	if (unlikely(! str_is(method, "POST", 4)))
 		goto forbidden;
 
 	auto auth_header = http_find(request, "Authorization", 13);
@@ -337,10 +337,10 @@ session_main(Session* self)
 		auto service = http_find(request, "Am-Service", 10);
 		if (service)
 		{
-			if (str_compare_raw(&service->value, "backup", 6))
+			if (str_is(&service->value, "backup", 6))
 				backup(self->share->db, client);
 			else
-			if (str_compare_raw(&service->value, "repl", 4))
+			if (str_is(&service->value, "repl", 4))
 				session_primary(self);
 			break;
 		}

@@ -202,7 +202,7 @@ data_read_string_copy(uint8_t** pos, Str* string)
 	char* value;
 	int   value_size;
 	data_read_raw(pos, &value, &value_size);
-	str_strndup(string, value, value_size);
+	str_dup(string, value, value_size);
 }
 
 always_inline hot static inline void

@@ -53,7 +53,7 @@ http_find(Http* self, char* name, int name_size)
 	auto end = (HttpHeader*)self->headers.position;
 	for (; pos < end; pos++)
 	{
-		if (str_strncasecmp(&pos->name, name, name_size))
+		if (str_is_case(&pos->name, name, name_size))
 			return pos;
 	}
 	return NULL;

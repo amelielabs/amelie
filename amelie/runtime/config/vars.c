@@ -133,7 +133,7 @@ vars_set_argv(Vars* self, int argc, char** argv)
 			error("option '%s': failed to parse", argv[i]);
 
 		// --json={}
-		if (str_compare_cstr(&name, "json"))
+		if (str_is_cstr(&name, "json"))
 		{
 			if (str_empty(&value))
 				error("option 'json': value is not defined");
@@ -143,9 +143,9 @@ vars_set_argv(Vars* self, int argc, char** argv)
 		}
 
 		// --daemon (handled by runner)
-		if (str_compare_cstr(&name, "daemon") ||
-		    str_compare_cstr(&name, "daemon=true") ||
-		    str_compare_cstr(&name, "daemon=false"))
+		if (str_is_cstr(&name, "daemon") ||
+		    str_is_cstr(&name, "daemon=true") ||
+		    str_is_cstr(&name, "daemon=false"))
 			continue;
 
 		auto var = vars_find(self, &name);

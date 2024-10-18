@@ -94,7 +94,7 @@ obj_find(uint8_t** pos, const char* name, int64_t name_size)
 	{
 		Str key;
 		data_read_string(pos, &key);
-		if (str_compare_raw(&key, name, name_size))
+		if (str_is(&key, name, name_size))
 			return true;
 		data_skip(pos);
 	}

@@ -66,14 +66,14 @@ server_config_read(uint8_t** pos)
 		data_read_string(pos, &name);
 
 		// value
-		if (str_compare_raw(&name, "path", 4))
+		if (str_is(&name, "path", 4))
 		{
 			// string
 			if (! data_is_string(*pos))
 				error("server: listen[] <path> must be a string");
 			data_read_string_copy(pos, &self->path);
 		} else
-		if (str_compare_raw(&name, "path_mode", 9))
+		if (str_is(&name, "path_mode", 9))
 		{
 			// string
 			if (! data_is_string(*pos))
@@ -86,28 +86,28 @@ server_config_read(uint8_t** pos)
 				error("server: failed to read path_mode");
 			self->path_mode = mode;
 		} else
-		if (str_compare_raw(&name, "host", 4))
+		if (str_is(&name, "host", 4))
 		{
 			// string
 			if (! data_is_string(*pos))
 				error("server: listen[] <host> must be a string");
 			data_read_string_copy(pos, &self->host);
 		} else
-		if (str_compare_raw(&name, "port", 4))
+		if (str_is(&name, "port", 4))
 		{
 			// int
 			if (! data_is_integer(*pos))
 				error("server: listen[] <port> must be an integer");
 			data_read_integer(pos, &self->host_port);
 		} else
-		if (str_compare_raw(&name, "auth", 4))
+		if (str_is(&name, "auth", 4))
 		{
 			// bool
 			if (! data_is_bool(*pos))
 				error("server: listen[] <auth> must be a bool");
 			data_read_bool(pos, &self->auth);
 		} else
-		if (str_compare_raw(&name, "tls", 3))
+		if (str_is(&name, "tls", 3))
 		{
 			// bool
 			if (! data_is_bool(*pos))

@@ -460,7 +460,7 @@ expr_name_compound(Stmt* self, Ast* value)
 	// process rest of path as '.' operator
 	auto idx = ast(KNAME);
 	idx->string = path;
-	if (str_strnchr(&path, '.'))
+	if (str_chr(&path, '.'))
 		idx->id = KNAME_COMPOUND;
 	stmt_push(self, idx);
 	stmt_push(self, ast('.'));

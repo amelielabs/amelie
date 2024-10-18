@@ -58,12 +58,12 @@ jwt_encode_validate(JwtEncode* self, Str* header, Str* payload)
 	decode_obj(obj, "jwt", &pos);
 
 	// alg
-	if (unlikely(! str_strncasecmp(&alg, "HS256", 5)))
+	if (unlikely(! str_is_case(&alg, "HS256", 5)))
 		error("jwt: unsupported header alg field: %.*s", str_size(&alg),
 		      str_of(&alg));
 
 	// type
-	if (unlikely(! str_strncasecmp(&typ, "JWT", 3)))
+	if (unlikely(! str_is_case(&typ, "JWT", 3)))
 		error("jwt: unsupported header type field: %.*s", str_size(&typ),
 		      str_of(&typ));
 

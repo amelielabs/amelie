@@ -118,7 +118,7 @@ server_listen(ServerListen* listen)
 	}
 
 	// set address name
-	str_strdup(&listen->addr_name, addr_name);
+	str_dup_cstr(&listen->addr_name, addr_name);
 
 	info("server: listen %s", addr_name);
 
@@ -177,7 +177,7 @@ server_configure_unixsocket(Server* self)
 {
 	// add default unix socket to the repository
 	auto config = server_config_allocate();
-	str_strdup(&config->path, "amelie.sock");
+	str_dup_cstr(&config->path, "amelie.sock");
 	config->path_mode = 0700;
 	list_append(&self->config, &config->link);
 	self->config_count++;

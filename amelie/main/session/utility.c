@@ -46,39 +46,39 @@ ctl_show(Session* self)
 	auto name  = &arg->expr->string;
 	auto share = self->share;
 	Buf* buf   = NULL;
-	if (str_compare_raw(name, "users", 5))
+	if (str_is(name, "users", 5))
 		buf = user_mgr_list(share->user_mgr);
 	else
-	if (str_compare_raw(name, "replicas", 8))
+	if (str_is(name, "replicas", 8))
 		buf = replica_mgr_list(&share->repl->replica_mgr);
 	else
-	if (str_compare_raw(name, "nodes", 5))
+	if (str_is(name, "nodes", 5))
 		buf = node_mgr_list(&share->db->node_mgr);
 	else
-	if (str_compare_raw(name, "cluster", 7))
+	if (str_is(name, "cluster", 7))
 		buf = node_mgr_list(&share->db->node_mgr);
 	else
-	if (str_compare_raw(name, "repl", 4) ||
-	    str_compare_raw(name, "replication", 11))
+	if (str_is(name, "repl", 4) ||
+	    str_is(name, "replication", 11))
 		buf = repl_status(share->repl);
 	else
-	if (str_compare_raw(name, "wal", 3))
+	if (str_is(name, "wal", 3))
 		buf = wal_status(&share->db->wal);
 	else
-	if (str_compare_raw(name, "schemas", 7))
+	if (str_is(name, "schemas", 7))
 		buf = schema_mgr_list(&share->db->schema_mgr);
 	else
-	if (str_compare_raw(name, "functions", 9))
+	if (str_is(name, "functions", 9))
 		buf = function_mgr_list(share->function_mgr);
 	else
-	if (str_compare_raw(name, "tables", 6))
+	if (str_is(name, "tables", 6))
 		buf = table_mgr_list(&share->db->table_mgr);
 	else
-	if (str_compare_raw(name, "views", 5))
+	if (str_is(name, "views", 5))
 		buf = view_mgr_list(&share->db->view_mgr);
 	else
-	if (str_compare_raw(name, "config", 6) ||
-	    str_compare_raw(name, "all", 3))
+	if (str_is(name, "config", 6) ||
+	    str_is(name, "all", 3))
 		buf = vars_list(&global()->config->vars, &self->local.config.vars);
 	else
 	{

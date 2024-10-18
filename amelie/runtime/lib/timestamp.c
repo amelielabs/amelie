@@ -450,55 +450,55 @@ timestamp_read_field(Str* type)
 	switch (*str_of(type)) {
 	case 'm':
 		// minute
-		if (str_compare_raw(type, "min", 3) ||
-		    str_compare_raw(type, "minute", 6))
+		if (str_is(type, "min", 3) ||
+		    str_is(type, "minute", 6))
 			return TIMESTAMP_MINUTE;
 
 		// month
-		if (str_compare_raw(type, "month", 5))
+		if (str_is(type, "month", 5))
 			return TIMESTAMP_MONTH;
 
 		// millisecond
 		// milliseconds
 		// ms
-		if (str_compare_raw(type, "ms", 2) ||
-		    str_compare_raw(type, "milliseconds", 12) ||
-		    str_compare_raw(type, "millisecond", 11))
+		if (str_is(type, "ms", 2)            ||
+		    str_is(type, "milliseconds", 12) ||
+		    str_is(type, "millisecond", 11))
 			return TIMESTAMP_MILLISECOND;
 
 		// microseconds
 		// microsecond
-		if (str_compare_raw(type, "microseconds", 12) ||
-		    str_compare_raw(type, "microsecond", 11))
+		if (str_is(type, "microseconds", 12) ||
+		    str_is(type, "microsecond", 11))
 			return TIMESTAMP_MICROSECOND;
 		break;
 	case 'u':
 		// us
-		if (str_compare_raw(type, "us", 2))
+		if (str_is(type, "us", 2))
 			return TIMESTAMP_MICROSECOND;
 		break;
 	case 's':
 		// second
 		// sec
-		if (str_compare_raw(type, "sec", 3) ||
-		    str_compare_raw(type, "second", 6))
+		if (str_is(type, "sec", 3) ||
+		    str_is(type, "second", 6))
 			return TIMESTAMP_SECOND;
 		break;
 	case 'h':
 		// hour
 		// hr
-		if (str_compare_raw(type, "hr", 2)    ||
-		    str_compare_raw(type, "hour", 4))
+		if (str_is(type, "hr", 2) ||
+		    str_is(type, "hour", 4))
 			return TIMESTAMP_HOUR;
 		break;
 	case 'd':
 		// day
-		if (str_compare_raw(type, "day", 3))
+		if (str_is(type, "day", 3))
 			return TIMESTAMP_DAY;
 		break;
 	case 'y':
 		// year
-		if (str_compare_raw(type, "year", 4))
+		if (str_is(type, "year", 4))
 			return TIMESTAMP_YEAR;
 		break;
 	default:

@@ -185,13 +185,13 @@ bench_run(Bench* self)
 	auto init               = var_int_of(&self->init);
 
 	// set benchmark
-	if (str_compare_cstr(type, "tpcb"))
+	if (str_is_cstr(type, "tpcb"))
 		self->iface = &bench_tpcb;
 	else
-	if (str_compare_cstr(type, "insert"))
+	if (str_is_cstr(type, "insert"))
 		self->iface = &bench_insert;
 	else
-	if (str_compare_cstr(type, "upsert"))
+	if (str_is_cstr(type, "upsert"))
 		self->iface = &bench_upsert;
 	else
 		error("unknown benchmark type '%.*s'", str_size(type),

@@ -57,8 +57,8 @@ static inline void
 remote_set_path(Remote* self, int id, const char* directory, Str* name)
 {
 	// relative to the cwd
-	auto relative = str_compare_raw_prefix(name, "./", 2) ||
-	                str_compare_raw_prefix(name, "../", 3);
+	auto relative = str_is_prefix(name, "./", 2) ||
+	                str_is_prefix(name, "../", 3);
 
 	// absolute or relative file path
 	if (*str_of(name) == '/' || relative)

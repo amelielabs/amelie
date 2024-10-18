@@ -38,7 +38,7 @@ static inline void
 file_open_as(File* self, const char* path, int flags, int mode)
 {
 	// open or create file
-	str_strdup(&self->path, path);
+	str_dup_cstr(&self->path, path);
 
 	// get file size
 	if (! (flags & O_CREAT))
@@ -130,7 +130,7 @@ static inline void
 file_rename(File* self, const char* path)
 {
 	Str new_path;
-	str_strdup(&new_path, path);
+	str_dup_cstr(&new_path, path);
 	int rc = vfs_rename(str_of(&self->path), str_of(&new_path));
 	if (unlikely(rc == -1))
 	{

@@ -112,7 +112,7 @@ streamer_read(Streamer* self)
 	auto hdr_id = http_find(reply, "Am-Id", 5);
 	if (unlikely(! hdr_id))
 		error("replica Am-Id field is missing");
-	if (unlikely(! str_compare_raw(&hdr_id->value, self->replica_id,
+	if (unlikely(! str_is(&hdr_id->value, self->replica_id,
 	             sizeof(self->replica_id) - 1)))
 		error("replica Am-Id mismatch");
 

@@ -27,9 +27,9 @@ project(amelie C)
 # compiler options
 set(CMAKE_C_COMPILER "clang")
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-	set(CMAKE_C_FLAGS "-Wall -Wextra -fPIC -g -O2")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O2")
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	set(CMAKE_C_FLAGS "-Wall -Wextra -fPIC -g -O0")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0")
 endif()
 
 set_property(GLOBAL PROPERTY TARGET_MESSAGES OFF)

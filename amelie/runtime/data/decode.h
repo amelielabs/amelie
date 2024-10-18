@@ -50,7 +50,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 		bool found = false;
 		for (auto ref = self; ref->key; ref++)
 		{
-			if (! str_compare_cstr(&key, ref->key))
+			if (! str_is_cstr(&key, ref->key))
 				continue;
 
 			switch (ref->flags & ~DECODE_FOUND) {

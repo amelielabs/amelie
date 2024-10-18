@@ -157,7 +157,7 @@ login_mgr_set_json(Remote* remote, Str* text)
 		// find option
 		int id = 0;
 		for (; id < REMOTE_MAX; id++)
-			if (str_compare_cstr(&name, remote_nameof(id)))
+			if (str_is_cstr(&name, remote_nameof(id)))
 				break;
 		if (id == REMOTE_MAX)
 			error("login: unknown option '%.*s'", str_size(&name),
@@ -214,7 +214,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 			      str_of(&name));
 
 		// --json={options}
-		if (str_compare_cstr(&name, "json"))
+		if (str_is_cstr(&name, "json"))
 		{
 			login_mgr_set_json(remote, &value);
 			continue;
@@ -222,7 +222,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 
 		int id = 0;
 		for (; id < REMOTE_MAX; id++)
-			if (str_compare_cstr(&name, remote_nameof(id)))
+			if (str_is_cstr(&name, remote_nameof(id)))
 				break;
 		if (id != REMOTE_MAX)
 		{

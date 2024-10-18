@@ -49,7 +49,7 @@ parse_with(Stmt* self, IndexConfig* index_config)
 		if (! key)
 			error("WITH (<name> expected");
 
-		if (str_compare_raw(&key->string, "type", 4))
+		if (str_is(&key->string, "type", 4))
 		{
 			// =
 			if (! stmt_if(self, '='))
@@ -61,10 +61,10 @@ parse_with(Stmt* self, IndexConfig* index_config)
 				error("WITH (type = <string>) expected");
 
 			// tree | hash
-			if (str_compare_cstr(&value->string, "tree"))
+			if (str_is_cstr(&value->string, "tree"))
 				index_config_set_type(index_config, INDEX_TREE);
 			else
-			if (str_compare_cstr(&value->string, "hash"))
+			if (str_is_cstr(&value->string, "hash"))
 				index_config_set_type(index_config, INDEX_HASH);
 			else
 				error("WITH: unknown primary index type");

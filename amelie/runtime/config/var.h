@@ -139,7 +139,7 @@ var_string_set_raw(Var* self, const char* value, int size)
 {
 	assert(self->type == VAR_STRING);
 	str_free(&self->string);
-	str_strndup(&self->string, value, size);
+	str_dup(&self->string, value, size);
 }
 
 static inline Str*
@@ -162,7 +162,7 @@ var_data_set(Var* self, uint8_t* value, int size)
 {
 	assert(self->type == VAR_DATA);
 	str_free(&self->string);
-	str_strndup(&self->string, value, size);
+	str_dup(&self->string, value, size);
 }
 
 static inline void
@@ -170,7 +170,7 @@ var_data_set_buf(Var* self, Buf* buf)
 {
 	assert(self->type == VAR_DATA);
 	str_free(&self->string);
-	str_strndup(&self->string, buf->start, buf_size(buf));
+	str_dup(&self->string, buf->start, buf_size(buf));
 }
 
 static inline void
@@ -252,10 +252,10 @@ var_set(Var* self, Str* value)
 		bool result = true;
 		if (! str_empty(value))
 		{
-			if (str_compare_cstr(value, "true"))
+			if (str_is_cstr(value, "true"))
 				result = true;
 			else
-			if (str_compare_cstr(value, "false"))
+			if (str_is_cstr(value, "false"))
 				result = false;
 			else
 				error("option '%.*s': bool value expected",

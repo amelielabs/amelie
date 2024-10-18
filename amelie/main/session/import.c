@@ -63,7 +63,7 @@ session_execute_import(Session* self)
 	if (unlikely(! type))
 		error("Content-Type is missing");
 
-	if (! str_compare_raw(&type->value, "application/json", 16))
+	if (! str_is(&type->value, "application/json", 16))
 		error("unsupported API operation");
 
 	(void)body;

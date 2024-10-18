@@ -94,8 +94,8 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 	auto args = ast->r;
 
 	// replace now() with local transaction time
-	if (str_compare_raw(&call->fn->name, "now", 3) &&
-		str_compare_raw(&call->fn->schema, "public", 6))
+	if (str_is(&call->fn->name, "now", 3) &&
+	    str_is(&call->fn->schema, "public", 6))
 	{
 		auto time = self->parser.local->time_us;
 		return op2(self, CTIMESTAMP, rpin(self), time);

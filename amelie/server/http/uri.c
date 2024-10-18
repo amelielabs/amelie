@@ -96,13 +96,13 @@ uri_parse_user(Uri* self)
 	if (sep)
 	{
 		// user:password
-		str_strndup(&self->user, self->pos, sep - self->pos);
+		str_dup(&self->user, self->pos, sep - self->pos);
 		sep++;
-		str_strndup(&self->password, sep, at - sep);
+		str_dup(&self->password, sep, at - sep);
 	} else
 	{
 		// user
-		str_strndup(&self->user, self->pos, at - self->pos);
+		str_dup(&self->user, self->pos, at - self->pos);
 	}
 	self->pos = at + 1;
 }
@@ -155,7 +155,7 @@ uri_parse_host(Uri* self)
 		}
 		if (name_size == 0)
 			uri_error();
-		str_strndup(&host->host, name, name_size);
+		str_dup(&host->host, name, name_size);
 
 		// [:port]
 		if (*self->pos == ':')
@@ -306,7 +306,7 @@ uri_parse_path(Uri* self)
 		self->pos++;
 	path_size = self->pos - path;
 	if (path_size > 0)
-		str_strndup(&self->path, path, path_size);
+		str_dup(&self->path, path, path_size);
 }
 
 static inline void

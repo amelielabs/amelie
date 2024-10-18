@@ -111,42 +111,42 @@ str_u8(Str* self)
 }
 
 static inline bool
-str_strncasecmp(Str* self, const char* string, int size)
-{
-	return str_size(self) == size && !strncasecmp(self->pos, string, size);
-}
-
-static inline bool
-str_compare_raw(Str* self, const void* string, int size)
+str_is(Str* self, const void* string, int size)
 {
 	return str_size(self) == size && !memcmp(self->pos, string, size);
 }
 
 static inline bool
-str_compare_raw_prefix(Str* self, const void* string, int size)
+str_is_prefix(Str* self, const void* string, int size)
 {
 	return str_size(self) >= size && !memcmp(self->pos, string, size);
 }
 
 static inline bool
-str_compare_cstr(Str* self, const void* string)
+str_is_cstr(Str* self, const void* string)
 {
-	return str_compare_raw(self, string, strlen(string));
+	return str_is(self, string, strlen(string));
+}
+
+static inline bool
+str_is_case(Str* self, const char* string, int size)
+{
+	return str_size(self) == size && !strncasecmp(self->pos, string, size);
 }
 
 static inline bool
 str_compare(Str* self, Str* with)
 {
-	return str_compare_raw(self, str_of(with), str_size(with));
+	return str_is(self, str_of(with), str_size(with));
 }
 
 static inline bool
 str_compare_prefix(Str* self, Str* prefix)
 {
-	return str_compare_raw_prefix(self, str_of(prefix), str_size(prefix));
+	return str_is_prefix(self, str_of(prefix), str_size(prefix));
 }
 
-static inline int
+hot static inline int
 str_compare_fn(Str* a, Str* b)
 {
 	register int a_size = str_size(a);
@@ -169,7 +169,7 @@ str_compare_fn(Str* a, Str* b)
 }
 
 static inline char*
-str_strnchr(Str* self, char token)
+str_chr(Str* self, char token)
 {
 	for (auto pos = self->pos; pos < self->end; pos++)
 		if (*pos == token)
@@ -181,7 +181,7 @@ static inline bool
 str_split(Str* self, Str* chunk, char token)
 {
 	str_init(chunk);
-	char* pos = str_strnchr(self, token);
+	char* pos = str_chr(self, token);
 	if (pos == NULL)
 	{
 		str_set(chunk, str_of(self), str_size(self));
@@ -228,7 +228,7 @@ str_toint(Str* self, int64_t* value)
 }
 
 static inline void
-str_strndup(Str* self, const void* string, int size)
+str_dup(Str* self, const void* string, int size)
 {
 	char* pos = am_malloc(size + 1);
 	memcpy(pos, string, size);
@@ -237,13 +237,13 @@ str_strndup(Str* self, const void* string, int size)
 }
 
 static inline void
-str_strdup(Str* self, const char* string)
+str_dup_cstr(Str* self, const char* string)
 {
-	str_strndup(self, string, strlen(string));
+	str_dup(self, string, strlen(string));
 }
 
 static inline void
 str_copy(Str* self, Str* src)
 {
-	str_strndup(self, str_of(src), str_size(src));
+	str_dup(self, str_of(src), str_size(src));
 }

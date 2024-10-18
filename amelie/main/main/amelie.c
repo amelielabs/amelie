@@ -155,7 +155,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 	login_mgr_set(&self->home.login_mgr, &remote, NULL, argc - 1, argv + 1);
 
 	// disable log output
-	if (str_compare_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
+	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
 		logger_set_to_stdout(&self->main.logger, false);
 
 	restore(&remote);
@@ -188,7 +188,7 @@ amelie_cmd_client_execute(Client* client, Str* content)
 	http_read_content(reply, &client->readahead, &reply->content);
 
 	// 403 Forbidden
-	if (str_compare_raw(&reply->options[HTTP_CODE], "403", 3))
+	if (str_is(&reply->options[HTTP_CODE], "403", 3))
 	{
 		auto code = &reply->options[HTTP_CODE];
 		auto msg  = &reply->options[HTTP_MSG];
@@ -198,7 +198,7 @@ amelie_cmd_client_execute(Client* client, Str* content)
 	}
 
 	// print
-	if (! str_compare_raw(&reply->options[HTTP_CODE], "204", 3))
+	if (! str_is(&reply->options[HTTP_CODE], "204", 3))
 		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
 }
 

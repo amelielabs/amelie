@@ -187,10 +187,9 @@ fn_strpos(Call* self)
 	{
 		if ((end - pos) < str_size(substr))
 			break;
-
 		if (*pos == *str_of(substr))
 		{
-			if (str_compare_raw(substr, pos, str_size(substr)))
+			if (str_is(substr, pos, str_size(substr)))
 			{
 				value_set_int(self->result, (pos - src->pos) + 1);
 				return;
@@ -236,7 +235,7 @@ fn_replace(Call* self)
 
 		if (*pos == *str_of(from))
 		{
-			if (str_compare_raw(from, pos, str_size(from)))
+			if (str_is(from, pos, str_size(from)))
 			{
 				if (str_size(to) > 0)
 					buf_write_str(buf, to);

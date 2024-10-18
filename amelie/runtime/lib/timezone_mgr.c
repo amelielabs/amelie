@@ -125,7 +125,7 @@ timezone_cmp(HashtableNode* node, void* ptr)
 {
 	auto tz = container_of(node, Timezone, node);
 	Str* with = ptr;
-	return str_strncasecmp(&tz->name, str_of(with), str_size(with));
+	return str_is_case(&tz->name, str_of(with), str_size(with));
 }
 
 hot Timezone*

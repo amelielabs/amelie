@@ -80,7 +80,7 @@ lex_keyword_match(Lex* self, Str* name)
 		return NULL;
 	auto current = self->keywords[tolower(name->pos[0]) - 'a'];
 	for (; current->name; current++)
-		if (str_strncasecmp(name, current->name, current->name_size))
+		if (str_is_case(name, current->name, current->name_size))
 			return current;
 	return NULL;
 }

@@ -64,22 +64,22 @@ parse_replica_create(Stmt* self)
 		if (! stmt->id)
 			error("CREATE REPLICA id name <string> expected");
 
-		if (str_strncasecmp(&name->string, "uri", 3))
+		if (str_is_case(&name->string, "uri", 3))
 			remote_set(&stmt->remote, REMOTE_URI, &value->string);
 		else
-		if (str_strncasecmp(&name->string, "tls_ca", 6))
+		if (str_is_case(&name->string, "tls_ca", 6))
 			remote_set(&stmt->remote, REMOTE_FILE_CA, &value->string);
 		else
-		if (str_strncasecmp(&name->string, "tls_capath", 10))
+		if (str_is_case(&name->string, "tls_capath", 10))
 			remote_set(&stmt->remote, REMOTE_PATH_CA, &value->string);
 		else
-		if (str_strncasecmp(&name->string, "tls_cert", 8))
+		if (str_is_case(&name->string, "tls_cert", 8))
 			remote_set(&stmt->remote, REMOTE_FILE_CERT, &value->string);
 		else
-		if (str_strncasecmp(&name->string, "tls_key", 7))
+		if (str_is_case(&name->string, "tls_key", 7))
 			remote_set(&stmt->remote, REMOTE_FILE_KEY, &value->string);
 		else
-		if (str_strncasecmp(&name->string, "token", 5))
+		if (str_is_case(&name->string, "token", 5))
 			remote_set(&stmt->remote, REMOTE_TOKEN, &value->string);
 		else
 			error("CREATE REPLICA: unknown option <%.*s>",
