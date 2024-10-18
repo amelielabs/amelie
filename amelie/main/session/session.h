@@ -19,6 +19,7 @@ struct Session
 	Explain   explain;
 	Client*   client;
 	Local     local;
+	Import    import;
 	int       lock_type;
 	Lock*     lock;
 	Lock*     lock_ref;

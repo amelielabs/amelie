@@ -10,9 +10,13 @@
 //
 
 #include "session/share.h"
+
+// import
+#include "session/import.h"
+
+// session
 #include "session/explain.h"
 #include "session/session.h"
-#include "session/import.h"
 #include "session/utility.h"
 #include "session/ddl.h"
 #include "session/primary.h"

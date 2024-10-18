@@ -55,6 +55,13 @@ uri_free(Uri* self)
 	str_free(&self->uri);
 }
 
+void
+uri_reset(Uri* self)
+{
+	uri_free(self);
+	uri_init(self);
+}
+
 static inline void
 uri_error(void)
 {
@@ -343,10 +350,7 @@ uri_parse(Uri* self, Str* spec, bool path_only)
 void
 uri_set(Uri* self, Str* spec, bool path_only)
 {
-	// reset
-	uri_free(self);
-	uri_init(self);
-
+	uri_reset(self);
 	uri_parse(self, spec, path_only);
 }
 

@@ -78,9 +78,17 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 hot static inline void
 compute_import(Compute* self, Tr* tr, Req* req)
 {
-	(void)self;
-	(void)tr;
-	(void)req;
+	// execute batch INSERT
+	for (auto pos = req->arg.start; pos < req->arg.position;)
+	{
+		// row offset
+		int64_t offset;
+		data_read_integer(&pos, &offset);
+		auto data = req->arg_import->start + offset;
+
+		auto part = part_list_match(&req->arg_import_table->part_list, &self->node->id);
+		part_insert(part, tr, false, &data);
+	}
 }
 
 hot static inline void

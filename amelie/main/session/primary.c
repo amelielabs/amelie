@@ -71,7 +71,7 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(&self->dtr.req_cache);
+			req = req_create(&self->dtr.req_cache, REQ_REPLAY);
 			req->arg_start = start;
 			req->route     = route;
 			req_list_add(req_list, req);

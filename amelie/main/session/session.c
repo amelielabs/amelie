@@ -57,6 +57,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router);
+	import_init(&self->import, share, &self->local);
 	return self;
 }
 
@@ -67,6 +68,7 @@ session_reset(Session* self)
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
+	import_reset(&self->import);
 	palloc_truncate(0);
 }
 
@@ -75,6 +77,7 @@ session_free(Session *self)
 {
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
+	import_free(&self->import);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	dtr_free(&self->dtr);
@@ -228,6 +231,15 @@ session_execute_sql(Session* self)
 		session_execute_utility(self);
 	else
 		session_execute_distributed(self);
+}
+
+static void
+session_execute_import(Session* self)
+{
+	auto request = &self->client->request;
+	auto import  = &self->import;
+	import_prepare(import, &self->dtr, request);
+	import_run(import);
 }
 
 static void
