@@ -41,5 +41,30 @@
 void
 session_execute_import(Session* self)
 {
-	(void)self;
+	auto client  = self->client;
+	auto request = &client->request;
+	auto reply   = &client->reply;
+	auto body    = &reply->content;
+
+	// POST /schema/table <&columns=...>
+	Uri uri;
+	uri_init(&uri);
+	guard(uri_free, &uri);
+	auto url = &request->options[HTTP_URL];
+	uri_set(&uri, url, true);
+
+	Str schema;
+	Str name;
+	str_init(&schema);
+	str_init(&name);
+
+	// Content-Type
+	auto type = http_find(request, "Content-Type", 12);
+	if (unlikely(! type))
+		error("Content-Type is missing");
+
+	if (! str_compare_raw(&type->value, "application/json", 16))
+		error("unsupported API operation");
+
+	(void)body;
 }

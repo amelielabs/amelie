@@ -203,19 +203,10 @@ session_execute_distributed(Session* self)
 	}
 }
 
-static void
-session_execute(Session* self)
+hot static void
+session_execute_sql(Session* self)
 {
 	auto compiler = &self->compiler;
-
-	// prepare session state for execution
-	session_reset(self);
-
-	// set transaction time
-	local_update_time(&self->local);
-
-	// take shared session lock (catalog access during parsing)
-	session_lock(self, LOCK);
 
 	// parse SQL query
 	Str text;
@@ -237,6 +228,40 @@ session_execute(Session* self)
 		session_execute_utility(self);
 	else
 		session_execute_distributed(self);
+}
+
+static void
+session_execute(Session* self)
+{
+	auto client  = self->client;
+	auto request = &client->request;
+
+	// prepare session state for execution
+	session_reset(self);
+
+	// set transaction time
+	local_update_time(&self->local);
+
+	// take shared session lock (for catalog access)
+	session_lock(self, LOCK);
+
+	auto url = &request->options[HTTP_URL];
+	if (str_compare_raw(url, "/", 1))
+	{
+		// POST /
+		auto type = http_find(request, "Content-Type", 12);
+		if (unlikely(! type))
+			error("Content-Type is missing");
+
+		if (! str_compare_raw(&type->value, "text/plain", 10))
+			error("unsupported API operation");
+
+		session_execute_sql(self);
+	} else
+	{
+		// POST /schema/table
+		session_execute_import(self);
+	}
 
 	session_unlock(self);
 }
@@ -261,10 +286,16 @@ session_auth(Session* self)
 	auto client  = self->client;
 	auto request = &client->request;
 
+	// POST /schema/table
+	// POST /
+	auto method = &request->options[HTTP_METHOD];
+	if (unlikely(! str_compare_raw(method, "POST", 4)))
+		goto forbidden;
+
 	auto auth_header = http_find(request, "Authorization", 13);
 	if (! auth_header)
 	{
-		// trusted by the server listen
+		// trusted by the server listen configuration
 		if (! client->auth)
 			return true;
 	} else
@@ -274,6 +305,7 @@ session_auth(Session* self)
 			return true;
 	}
 
+forbidden:
 	// 403 Forbidden
 	client_403(client);
 	return false;
@@ -297,15 +329,6 @@ session_main(Session* self)
 		if (unlikely(eof))
 			break;
 
-		// POST /schema/table
-		// POST /
-		auto method = &request->options[HTTP_METHOD];
-		if (unlikely(! str_compare_raw(method, "POST", 4)))
-		{
-			client_403(client);
-			break;
-		}
-
 		// authenticate
 		if (! session_auth(self))
 			break;
@@ -324,30 +347,12 @@ session_main(Session* self)
 
 		cancel_pause();
 
-		// execute
+		// execute request
 		Exception e;
 		if (enter(&e))
 		{
 			session_read(self);
-
-			// Content-Type
-			auto type = http_find(request, "Content-Type", 12);
-			if (unlikely(! type))
-				error("Content-Type is missing");
-
-			auto url = &request->options[HTTP_URL];
-			if (str_compare_raw(&type->value, "text/plain", 10))
-			{
-				// POST /
-				if (unlikely(! str_compare_raw(url, "/", 1)))
-					error("unsupported API operation");
-
-				session_execute(self);
-			} else
-			{
-				// POST /schema/table
-				session_execute_import(self);
-			}
+			session_execute(self);
 		}
 
 		// reply

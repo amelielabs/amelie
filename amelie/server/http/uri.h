@@ -49,6 +49,6 @@ struct Uri
 
 void uri_init(Uri*);
 void uri_free(Uri*);
-void uri_set(Uri*, Str*);
+void uri_set(Uri*, Str*, bool);
 UriArg*
-uri_find(Uri*, const char*, int);
+uri_find(Uri*, Str*);

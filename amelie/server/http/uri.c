@@ -310,20 +310,28 @@ uri_parse_path(Uri* self)
 }
 
 static inline void
-uri_parse(Uri* self, Str* spec)
+uri_parse(Uri* self, Str* spec, bool path_only)
 {
 	// set uri
 	str_copy(&self->uri, spec);
 	self->pos = self->uri.pos;
 
-	// [http://]
-	uri_parse_protocol(self);
+	if (path_only)
+	{
+		// /
+		if (str_empty(spec) || *self->pos != '/')
+			uri_error();
+	} else
+	{
+		// [http://]
+		uri_parse_protocol(self);
 
-	// [user[:password]@]
-	uri_parse_user(self);
+		// [user[:password]@]
+		uri_parse_user(self);
 
-	// hostname[:port] [, ...] [/]
-	uri_parse_host(self);
+		// hostname[:port] [, ...] [/]
+		uri_parse_host(self);
+	}
 
 	// [/path]
 	uri_parse_path(self);
@@ -333,22 +341,22 @@ uri_parse(Uri* self, Str* spec)
 }
 
 void
-uri_set(Uri* self, Str* spec)
+uri_set(Uri* self, Str* spec, bool path_only)
 {
 	// reset
 	uri_free(self);
 	uri_init(self);
 
-	uri_parse(self, spec);
+	uri_parse(self, spec, path_only);
 }
 
 UriArg*
-uri_find(Uri* self, const char* name, int name_size)
+uri_find(Uri* self, Str* name)
 {
 	list_foreach(&self->args)
 	{
 		auto arg = list_at(UriArg, link);
-		if (str_compare_raw(&arg->name, name, name_size))
+		if (str_compare(&arg->name, name))
 			return arg;
 	}
 	return NULL;

@@ -63,7 +63,7 @@ client_set_remote(Client* self, Remote* remote)
 	self->remote = remote;
 	auto uri = remote_get(remote, REMOTE_URI);
 	if (! str_empty(uri))
-		uri_set(&self->uri, uri);
+		uri_set(&self->uri, uri, false);
 }
 
 void
