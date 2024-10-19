@@ -56,8 +56,8 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
-	dtr_init(&self->dtr, &share->cluster->router);
-	import_init(&self->import, share, &self->local);
+	dtr_init(&self->dtr, &share->cluster->router, &self->local);
+	import_init(&self->import, share, &self->dtr);
 	return self;
 }
 
@@ -158,7 +158,7 @@ session_execute_distributed(Session* self)
 	compiler_program(compiler, &program_compiled);
 
 	// prepare distributed transaction
-	dtr_create(dtr, &self->local, program, NULL);
+	dtr_create(dtr, program, NULL);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -238,7 +238,7 @@ session_execute_import(Session* self)
 {
 	auto request = &self->client->request;
 	auto import  = &self->import;
-	import_prepare(import, &self->dtr, request);
+	import_prepare(import, request);
 	import_run(import);
 }
 

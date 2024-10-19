@@ -22,12 +22,11 @@ struct Import
 	Http*   request;
 	Json    json;
 	Uri     uri;
-	Local*  local;
 	Share*  share;
 };
 
-void import_init(Import*, Share*, Local*);
+void import_init(Import*, Share*, Dtr*);
 void import_free(Import*);
 void import_reset(Import*);
-void import_prepare(Import*, Dtr*, Http*);
+void import_prepare(Import*, Http*);
 void import_run(Import*);

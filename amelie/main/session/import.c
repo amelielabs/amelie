@@ -39,14 +39,13 @@
 #include <amelie_session.h>
 
 void
-import_init(Import* self, Share* share, Local* local)
+import_init(Import* self, Share* share, Dtr* dtr)
 {
 	self->table         = NULL;
 	self->columns_has   = false;
 	self->columns_count = 0;
-	self->dtr           = NULL;
+	self->dtr           = dtr;
 	self->request       = NULL;
-	self->local         = local;
 	self->share         = share;
 	buf_init(&self->columns);
 	req_list_init(&self->req_list);
@@ -157,9 +156,8 @@ import_columns(Import* self, Str* value)
 }
 
 void
-import_prepare(Import* self, Dtr* dtr, Http* request)
+import_prepare(Import* self, Http* request)
 {
-	self->dtr     = dtr;
 	self->request = request;
 
 	// POST /schema/table <?columns=...>
@@ -220,7 +218,7 @@ import_value(Import* self, char* pos, char* end, uint32_t* offset)
 	*offset = buf_size(&self->json.buf_data);
 	Str in;
 	str_set(&in, pos, end - pos);
-	json_set_time(&self->json, self->local->timezone, self->local->time_us);
+	json_set_time(&self->json, self->dtr->local->timezone, self->dtr->local->time_us);
 	json_parse(&self->json, &in, NULL);
 	return self->json.pos;
 }
@@ -405,7 +403,7 @@ import_run(Import* self)
 	program.ctes       = 1;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, self->local, &program, NULL);
+	dtr_create(dtr, &program, NULL);
 
 	Exception e;
 	if (enter(&e))

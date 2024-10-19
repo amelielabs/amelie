@@ -41,14 +41,14 @@ struct Dtr
 };
 
 static inline void
-dtr_init(Dtr* self, Router* router)
+dtr_init(Dtr* self, Router* router, Local* local)
 {
 	self->state   = DTR_NONE;
 	self->program = NULL;
 	self->args    = NULL;
 	self->error   = NULL;
 	self->router  = router;
-	self->local   = NULL;
+	self->local   = local;
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
@@ -75,7 +75,6 @@ dtr_reset(Dtr* self)
 	self->state   = DTR_NONE;
 	self->program = NULL;
 	self->args    = NULL;
-	self->local   = NULL;
 	list_init(&self->link_commit);
 	list_init(&self->link);
 }
@@ -93,11 +92,10 @@ dtr_free(Dtr* self)
 }
 
 static inline void
-dtr_create(Dtr* self, Local* local, Program* program, Buf* args)
+dtr_create(Dtr* self, Program* program, Buf* args)
 {
 	self->program = program;
 	self->args    = args;
-	self->local   = local;
 	auto set_size = self->router->list_count;
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, program->stmts,
