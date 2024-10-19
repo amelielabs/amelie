@@ -106,6 +106,7 @@ include_directories("${AMELIE_ROOT}/cluster/cluster")
 # main
 include_directories("${AMELIE_ROOT}/main")
 include_directories("${AMELIE_ROOT}/main/frontend")
+include_directories("${AMELIE_ROOT}/main/import")
 include_directories("${AMELIE_ROOT}/main/session")
 include_directories("${AMELIE_ROOT}/main/system")
 include_directories("${AMELIE_ROOT}/main/main")
@@ -277,7 +278,8 @@ set(AMELIE_SOURCES_CLUSTER
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/frontend/frontend.c
-    ${AMELIE_ROOT}/main/session/import.c
+    ${AMELIE_ROOT}/main/import/import.c
+    ${AMELIE_ROOT}/main/import/import_json.c
     ${AMELIE_ROOT}/main/session/explain.c
     ${AMELIE_ROOT}/main/session/session.c
     ${AMELIE_ROOT}/main/session/utility.c

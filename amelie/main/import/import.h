@@ -13,16 +13,17 @@ typedef struct Import Import;
 
 struct Import
 {
-	Table*  table;
-	Buf     columns;
-	bool    columns_has;
-	int     columns_count;
-	ReqList req_list;
-	Dtr*    dtr;
-	Http*   request;
-	Json    json;
-	Uri     uri;
-	Share*  share;
+	Buf         columns;
+	bool        columns_has;
+	int         columns_count;
+	Table*      table;
+	ReqList     req_list;
+	Dtr*        dtr;
+	Json        json;
+	HttpHeader* content_type;
+	Http*       request;
+	Uri         uri;
+	Share*      share;
 };
 
 void import_init(Import*, Share*, Dtr*);
