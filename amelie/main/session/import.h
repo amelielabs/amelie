@@ -14,6 +14,9 @@ typedef struct Import Import;
 struct Import
 {
 	Table*  table;
+	Buf     columns;
+	bool    columns_has;
+	int     columns_count;
 	ReqList req_list;
 	Dtr*    dtr;
 	Http*   request;

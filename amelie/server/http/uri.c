@@ -289,9 +289,8 @@ uri_parse_args(Uri* self)
 		while (*self->pos && *self->pos != '&')
 			self->pos++;
 		value_size = self->pos - value;
-		if (value_size == 0)
-			uri_error();
-		decode(&arg->value, value, value_size);
+		if (value_size > 0)
+			decode(&arg->value, value, value_size);
 
 		// eof
 		if (! *self->pos)

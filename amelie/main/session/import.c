@@ -41,11 +41,14 @@
 void
 import_init(Import* self, Share* share, Local* local)
 {
-	self->table   = NULL;
-	self->dtr     = NULL;
-	self->request = NULL;
-	self->local   = local;
-	self->share   = share;
+	self->table         = NULL;
+	self->columns_has   = false;
+	self->columns_count = 0;
+	self->dtr           = NULL;
+	self->request       = NULL;
+	self->local         = local;
+	self->share         = share;
+	buf_init(&self->columns);
 	req_list_init(&self->req_list);
 	json_init(&self->json);
 	uri_init(&self->uri);
@@ -54,6 +57,7 @@ import_init(Import* self, Share* share, Local* local)
 void
 import_free(Import* self)
 {
+	buf_free(&self->columns);
 	json_free(&self->json);
 	uri_free(&self->uri);
 }
@@ -61,16 +65,19 @@ import_free(Import* self)
 void
 import_reset(Import* self)
 {
-	self->table   = NULL;
-	self->dtr     = NULL;
-	self->request = NULL;
+	self->table         = NULL;
+	self->columns_has   = false;
+	self->columns_count = 0;
+	self->dtr           = NULL;
+	self->request       = NULL;
+	buf_reset(&self->columns);
 	req_list_init(&self->req_list);
 	json_reset(&self->json);
 	uri_reset(&self->uri);
 }
 
 static inline bool
-import_prepare_target(Str* self, Str* schema, Str* name)
+import_target(Str* self, Str* schema, Str* name)
 {
 	if (unlikely(str_empty(self)))
 		return false;
@@ -103,13 +110,59 @@ import_prepare_target(Str* self, Str* schema, Str* name)
 	return true;
 }
 
+static inline bool
+import_column(char** pos, char* end, Str* name)
+{
+	// name
+	// name [,]
+	auto start = *pos;
+	while (*pos < end && **pos != ',')
+		(*pos)++;
+	str_set(name, start, *pos - start);
+	if (*pos != end)
+		(*pos)++;
+	return !str_empty(name);
+}
+
+static inline void
+import_columns(Import* self, Str* value)
+{
+	self->columns_has = true;
+	if (str_empty(value))
+		return;
+
+	// name[, ...]
+	auto pos = value->pos;
+	auto end = value->end;
+
+	auto columns = table_columns(self->table);
+	Column* last = NULL;
+
+	Str name;
+	while (import_column(&pos, end, &name))
+	{
+		auto column = columns_find(columns, &name);
+		if (! column)
+			error("column '%.*s' does not exists", str_size(&name),
+			      str_of(&name));
+
+		if (last && column->order <= last->order)
+			error("column list must be ordered");
+
+		buf_write(&self->columns, &column, sizeof(void**));
+		self->columns_count++;
+
+		last = column;
+	}
+}
+
 void
 import_prepare(Import* self, Dtr* dtr, Http* request)
 {
 	self->dtr     = dtr;
 	self->request = request;
 
-	// POST /schema/table <&columns=...>
+	// POST /schema/table <?columns=...>
 	auto url = &request->options[HTTP_URL];
 	uri_set(&self->uri, url, true);
 
@@ -118,19 +171,30 @@ import_prepare(Import* self, Dtr* dtr, Http* request)
 	Str name;
 	str_init(&schema);
 	str_init(&name);
-	if (unlikely(! import_prepare_target(&self->uri.path, &schema, &name)))
+	if (unlikely(! import_target(&self->uri.path, &schema, &name)))
 		error("unsupported API target path");
 
 	// find table
 	self->table = table_mgr_find(&self->share->db->table_mgr, &schema, &name, true);
 
-	// validate options
-	Str* columns = NULL;
+	// validate arguments
+	list_foreach(&self->uri.args)
+	{
+		auto arg = list_at(UriArg, link);
 
-	// validate column list
-		// columns must be in order
+		// columns=
+		if (str_is(&arg->name, "columns", 7))
+		{
+			if (unlikely(self->columns_has))
+				error("columns redefined");
 
-	(void)columns;
+			import_columns(self, &arg->value);
+			continue;
+		}
+
+		error("unsupported argument '%.*s'", str_size(&arg->name),
+		      str_of(&arg->name));
+	}
 
 	// validate content type
 	auto type = http_find(request, "Content-Type", 12);
@@ -142,11 +206,23 @@ import_prepare(Import* self, Dtr* dtr, Http* request)
 }
 
 static inline bool
-import_skip_ws(char** pos, char* end)
+import_skip(char** pos, char* end)
 {
 	while (*pos < end && isspace(**pos))
 		(*pos)++;
 	return (*pos == end);
+}
+
+static inline char*
+import_value(Import* self, char* pos, char* end, uint32_t* offset)
+{
+	// read json value
+	*offset = buf_size(&self->json.buf_data);
+	Str in;
+	str_set(&in, pos, end - pos);
+	json_set_time(&self->json, self->local->timezone, self->local->time_us);
+	json_parse(&self->json, &in, NULL);
+	return self->json.pos;
 }
 
 hot static void
@@ -161,22 +237,19 @@ import_main(Import* self)
 	memset(map, 0, sizeof(map));
 
 	// [[value, ...], ...]
-
-	// [
 	char* pos = buf_cstr(&self->request->content);
 	char* end = pos + buf_size(&self->request->content);
-	if (import_skip_ws(&pos, end) || *pos != '[')
+	if (import_skip(&pos, end) || *pos != '[')
 		error("JSON array expected");
 	pos++;
 
+	// prepare column list
+	auto list = (Column**)(self->columns.start);
+	int  list_pos = 0;
 	for (;;)
 	{
-		// set next serial value
-		// uint64_t serial = serial_next(&table->serial);
-		// (void)serial;
-
-		// [
-		if (import_skip_ws(&pos, end) || *pos != '[')
+		// [value, ...]
+		if (import_skip(&pos, end) || *pos != '[')
 			error("JSON array expected");
 		pos++;
 
@@ -184,18 +257,90 @@ import_main(Import* self)
 		uint32_t hash       = 0;
 		encode_array(&self->json.buf_data);
 
+		// reset column list
+		list_pos = 0;
+
+		// set next serial value
+		uint64_t serial = serial_next(&table->serial);
+
 		list_foreach(&columns->list)
 		{
-			auto column = list_at(Column, link);
+			auto     column = list_at(Column, link);
+			auto     separator = false;
+			auto     separator_last = false;
 
-			// read json value
-			uint32_t offset = buf_size(&self->json.buf_data);
-			Str in;
-			str_set(&in, pos, end - pos);
-			json_set_time(&self->json, self->local->timezone, self->local->time_us);
-			json_parse(&self->json, &in, NULL);
-			pos = self->json.pos;
+			uint32_t offset;
+			if (self->columns_has)
+			{
+				if (list_pos < self->columns_count && list[list_pos]->order == column->order)
+				{
+					// parse and encode json value which matches column list
+					pos = import_value(self, pos, end, &offset);
 
+					list_pos++;
+					separator = true;
+				} else
+				{
+					// null or default
+					offset = buf_size(&self->json.buf_data);
+
+					// GENERATED
+					auto cons = &column->constraint;
+					if (cons->generated == GENERATED_SERIAL)
+					{
+						encode_integer(&self->json.buf_data, serial);
+					} else
+					if (cons->generated == GENERATED_RANDOM)
+					{
+						auto value = random_generate(global()->random) % cons->modulo;
+						encode_integer(&self->json.buf_data, value);
+					} else
+					{
+						// use DEFAULT (NULL by default)
+						buf_write(&self->json.buf_data, cons->value.start, buf_size(&cons->value));
+					}
+				}
+
+				// force ] check
+				if (list_pos >= self->columns_count)
+				{
+					separator = true;
+					separator_last = true;
+				}
+
+			} else
+			{
+				// parse and encode json value
+				pos = import_value(self, pos, end, &offset);
+
+				separator = true;
+				separator_last = list_is_last(&columns->list, &column->link);
+			}
+
+			// ] or ,
+			if (separator)
+			{
+				if (unlikely(import_skip(&pos, end)))
+					error("failed to parse JSON array");
+				if (unlikely(*pos != ']' && *pos != ','))
+					error("failed to parse JSON array");
+				if (unlikely((*pos == ']' && !separator_last) ||
+				             (*pos == ',' &&  separator_last)))
+					error("array expected to have %d columns",
+					      columns->list_count);
+				pos++;
+			}
+
+			// ensure NOT NULL constraint
+			if (column->constraint.not_null)
+			{
+				uint8_t* ref = self->json.buf_data.start + offset;
+				if (data_is_null(ref))
+					error("column <%.*s> value cannot be NULL", str_size(&column->name),
+					      str_of(&column->name));
+			}
+
+			// use primary key to calculate hash
 			if (column->key)
 			{
 				list_foreach(&keys->list)
@@ -205,32 +350,16 @@ import_main(Import* self)
 						continue;
 
 					// find key path and validate data type
-					uint8_t* pos_key = self->json.buf_data.start + offset;
-					key_find(key, &pos_key);
+					uint8_t* ref = self->json.buf_data.start + offset;
+					key_find(key, &ref);
 
 					// hash key
-					hash = key_hash(hash, pos_key);
+					hash = key_hash(hash, ref);
 				}
 			}
-
-			if (import_skip_ws(&pos, end))
-				error("failed to parse JSON array");
-
-			// ]
-			if (list_is_last(&columns->list, &column->link))
-			{
-				if (*pos != ']')
-					error("failed to parse JSON array");
-				pos++;
-				encode_array_end(&self->json.buf_data);
-				continue;
-			}
-
-			// ,
-			if (*pos != ',')
-				error("failed to parse JSON array");
-			pos++;
 		}
+
+		encode_array_end(&self->json.buf_data);
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, hash);
@@ -245,11 +374,11 @@ import_main(Import* self)
 			map[route->order] = req;
 		}
 
-		// write u32 offset to req->arg
+		// write offset to req->arg
 		encode_integer(&req->arg, offset_row);
 
 		// ] or ,
-		if (import_skip_ws(&pos, end))
+		if (import_skip(&pos, end))
 			error("failed to parse JSON array");
 		if (*pos == ',') {
 			pos++;
@@ -262,77 +391,6 @@ import_main(Import* self)
 		error("failed to parse JSON array");
 	}
 }
-
-#if 0
-hot static void
-parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
-{
-	auto columns = table_columns(stmt->target->table);
-
-	// (
-	if (! stmt_if(self, '('))
-		error("expected '('");
-
-	// set next serial value
-	uint64_t serial = serial_next(&stmt->target->table->serial);
-
-	// [
-	auto data = &self->data->data;
-	encode_array(data);
-
-	// value, ...
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto offset = code_data_offset(self->data);
-		if (list && list->column->order == column->order)
-		{
-			// parse and encode json value
-			parse_value(self);
-
-			// ,
-			list = list->next;
-			if (list) {
-				if (! stmt_if(self, ','))
-					error("row has incorrect number of columns");
-			}
-
-		} else
-		{
-			// GENERATED
-			auto cons = &column->constraint;
-			if (cons->generated == GENERATED_SERIAL)
-			{
-				encode_integer(data, serial);
-			} else
-			if (cons->generated == GENERATED_RANDOM)
-			{
-				auto value = random_generate(global()->random) % cons->modulo;
-				encode_integer(data, value);
-			} else
-			{
-				// use DEFAULT (NULL by default)
-				buf_write(data, cons->value.start, buf_size(&cons->value));
-			}
-		}
-
-		// ensure NOT NULL constraint
-		if (column->constraint.not_null)
-		{
-			if (data_is_null(code_data_at(self->data, offset)))
-				error("column <%.*s> value cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
-		}
-	}
-
-	// ]
-	encode_array_end(data);
-
-	// )
-	if (! stmt_if(self, ')'))
-		error("expected ')'");
-}
-#endif
 
 void
 import_run(Import* self)
