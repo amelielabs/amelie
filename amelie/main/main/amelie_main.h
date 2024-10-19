@@ -23,6 +23,7 @@
 #include "main/bench_insert.h"
 #include "main/bench_upsert.h"
 #include "main/bench_tpcb.h"
+#include "main/bench_import.h"
 
 // ctl
 #include "main/ctl.h"

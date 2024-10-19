@@ -188,6 +188,9 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "tpcb"))
 		self->iface = &bench_tpcb;
 	else
+	if (str_is_cstr(type, "import"))
+		self->iface = &bench_import;
+	else
 	if (str_is_cstr(type, "insert"))
 		self->iface = &bench_insert;
 	else
