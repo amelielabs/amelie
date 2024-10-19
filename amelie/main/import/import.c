@@ -68,7 +68,6 @@ import_reset(Import* self)
 	self->columns_has   = false;
 	self->columns_count = 0;
 	self->table         = NULL;
-	self->dtr           = NULL;
 	self->request       = NULL;
 	self->content_type  = NULL;
 	buf_reset(&self->columns);
@@ -222,6 +221,9 @@ import_run(Import* self)
 	{
 		if (str_is(&self->content_type->value, "application/json", 16))
 			import_json(self);
+		else
+		if (str_is(&self->content_type->value, "text/csv", 8))
+			import_csv(self);
 		else
 			error("unsupported API operation");
 

@@ -87,6 +87,18 @@ keys_find(Keys* self, Str* name)
 	return NULL;
 }
 
+hot static inline Key*
+keys_find_column(Keys* self, int order)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto key = list_at(Key, link);
+		if (key->ref == order)
+			return key;
+	}
+	return NULL;
+}
+
 static inline void
 keys_copy(Keys* self, Keys* src)
 {

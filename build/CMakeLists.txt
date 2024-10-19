@@ -280,6 +280,7 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/frontend/frontend.c
     ${AMELIE_ROOT}/main/import/import.c
     ${AMELIE_ROOT}/main/import/import_json.c
+    ${AMELIE_ROOT}/main/import/import_csv.c
     ${AMELIE_ROOT}/main/session/explain.c
     ${AMELIE_ROOT}/main/session/session.c
     ${AMELIE_ROOT}/main/session/utility.c
