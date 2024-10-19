@@ -15,7 +15,7 @@ typedef enum
 {
 	REQ_UNDEF,
 	REQ_EXECUTE,
-	REQ_IMPORT,
+	REQ_LOAD,
 	REQ_REPLAY,
 	REQ_SHUTDOWN
 } ReqType;
@@ -28,8 +28,8 @@ struct Req
 	Buf*     args;
 	Buf      arg;
 	uint8_t* arg_start;
-	Buf*     arg_import;
-	Table*   arg_import_table;
+	Buf*     arg_load;
+	Table*   arg_load_table;
 	Value    result;
 	Result*  cte;
 	bool     shutdown;
@@ -44,18 +44,18 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type             = REQ_UNDEF;
-	self->start            = 0;
-	self->program          = NULL;
-	self->args             = NULL;
-	self->arg_start        = NULL;
-	self->arg_import       = NULL;
-	self->arg_import_table = NULL;
-	self->cte              = NULL;
-	self->shutdown         = false;
-	self->route            = NULL;
-	self->limit            = NULL;
-	self->local            = NULL;
+	self->type           = REQ_UNDEF;
+	self->start          = 0;
+	self->program        = NULL;
+	self->args           = NULL;
+	self->arg_start      = NULL;
+	self->arg_load       = NULL;
+	self->arg_load_table = NULL;
+	self->cte            = NULL;
+	self->shutdown       = false;
+	self->route          = NULL;
+	self->limit          = NULL;
+	self->local          = NULL;
 	buf_init(&self->arg);
 	value_init(&self->result);
 	list_init(&self->link_queue);
@@ -74,18 +74,18 @@ req_free(Req* self)
 static inline void
 req_reset(Req* self)
 {
-	self->type             = REQ_UNDEF;
-	self->start            = 0;
-	self->program          = NULL;
-	self->args             = NULL;
-	self->arg_start        = NULL;
-	self->arg_import       = NULL;
-	self->arg_import_table = NULL;
-	self->cte              = NULL;
-	self->shutdown         = false;
-	self->route            = NULL;
-	self->limit            = NULL;
-	self->local            = NULL;
+	self->type           = REQ_UNDEF;
+	self->start          = 0;
+	self->program        = NULL;
+	self->args           = NULL;
+	self->arg_start      = NULL;
+	self->arg_load       = NULL;
+	self->arg_load_table = NULL;
+	self->cte            = NULL;
+	self->shutdown       = false;
+	self->route          = NULL;
+	self->limit          = NULL;
+	self->local          = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 	list_init(&self->link_queue);

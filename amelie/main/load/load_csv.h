@@ -9,4 +9,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void import_csv(Import*);
+void load_csv(Load*);

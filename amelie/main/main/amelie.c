@@ -175,8 +175,8 @@ amelie_cmd_client_execute(Client* client, Str* content)
 	http_write_request(request, "POST /");
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Length", "%d", str_size(content));
 	http_write(request, "Content-Type", "text/plain");
+	http_write(request, "Content-Length", "%d", str_size(content));
 	http_write_end(request);
 	tcp_write_pair_str(&client->tcp, &request->raw, content);
 

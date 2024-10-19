@@ -36,18 +36,18 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_import.h>
+#include <amelie_load.h>
 
 static inline bool
-import_skip(char** pos, char* end)
+load_skip(char** pos, char* end)
 {
 	while (*pos < end && isspace(**pos))
 		(*pos)++;
-	return (*pos == end);
+	return (*pos >= end);
 }
 
 hot static inline char*
-import_value(Import* self, char* pos, char* end, uint32_t* offset)
+load_value(Load* self, char* pos, char* end, uint32_t* offset)
 {
 	// read json value
 	*offset = buf_size(&self->json.buf_data);
@@ -59,17 +59,13 @@ import_value(Import* self, char* pos, char* end, uint32_t* offset)
 }
 
 hot static char*
-import_row(Import* self, char* pos, char* end, uint32_t* hash)
+load_row(Load* self, char* pos, char* end, uint32_t* hash)
 {
 	auto table   = self->table;
 	auto columns = table_columns(table);
 	auto keys    = table_keys(table);
 
-	// [value, ...]
-	if (import_skip(&pos, end) || *pos != '[')
-		error("JSON array expected");
-	pos++;
-
+	// [value[, ...]] CRLF | EOF
 	auto data = &self->json.buf_data;
 	encode_array(data);
 
@@ -92,7 +88,7 @@ import_row(Import* self, char* pos, char* end, uint32_t* hash)
 			if (list_pos < self->columns_count && list[list_pos]->order == column->order)
 			{
 				// parse and encode json value which matches column list
-				pos = import_value(self, pos, end, &offset);
+				pos = load_value(self, pos, end, &offset);
 
 				list_pos++;
 				separator = true;
@@ -128,24 +124,27 @@ import_row(Import* self, char* pos, char* end, uint32_t* hash)
 		} else
 		{
 			// parse and encode json value
-			pos = import_value(self, pos, end, &offset);
+			pos = load_value(self, pos, end, &offset);
 
 			separator = true;
 			separator_last = list_is_last(&columns->list, &column->link);
 		}
 
-		// ] or ,
+		// , or \r\n or eof
 		if (separator)
 		{
-			if (unlikely(import_skip(&pos, end)))
-				error("failed to parse JSON array");
-			if (unlikely(*pos != ']' && *pos != ','))
-				error("failed to parse JSON array");
-			if (unlikely((*pos == ']' && !separator_last) ||
-			             (*pos == ',' &&  separator_last)))
-				error("array expected to have %d columns",
-				      columns->list_count);
-			pos++;
+			if (separator_last)
+			{
+				// next row or eof
+			} else
+			{
+				if (load_skip(&pos, end))
+					error("failed to parse CSV array");
+				if (unlikely(*pos != ','))
+					error("array expected to have %d columns",
+					      columns->list_count);
+				pos++;
+			}
 		}
 
 		// ensure NOT NULL constraint
@@ -180,8 +179,8 @@ import_row(Import* self, char* pos, char* end, uint32_t* hash)
 	return pos;
 }
 
-hot void
-import_json(Import* self)
+void
+load_csv(Load* self)
 {
 	auto dtr   = self->dtr;
 	auto table = self->table;
@@ -189,28 +188,31 @@ import_json(Import* self)
 	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
-	// [[value, ...], ...]
+	// row per line
+
+	// value[, ...] CRLF | EOF
 	char* pos = buf_cstr(&self->request->content);
 	char* end = pos + buf_size(&self->request->content);
-	if (import_skip(&pos, end) || *pos != '[')
-		error("JSON array expected");
-	pos++;
 
 	for (;;)
 	{
-		// [value, ...]
+		// eof
+		if (load_skip(&pos, end))
+			break;
+
+		// [value[, ...]] CRLF | EOF
 		uint32_t offset = buf_size(&self->json.buf_data);
 		uint32_t hash   = 0;
-		pos = import_row(self, pos, end, &hash);
+		pos = load_row(self, pos, end, &hash);
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, hash);
 		auto req = map[route->order];
 		if (req == NULL)
 		{
-			req = req_create(&dtr->req_cache, REQ_IMPORT);
-			req->arg_import = &self->json.buf_data;
-			req->arg_import_table = self->table;
+			req = req_create(&dtr->req_cache, REQ_LOAD);
+			req->arg_load = &self->json.buf_data;
+			req->arg_load_table = self->table;
 			req->route = route;
 			req_list_add(&self->req_list, req);
 			map[route->order] = req;
@@ -218,18 +220,5 @@ import_json(Import* self)
 
 		// write offset to req->arg
 		encode_integer(&req->arg, offset);
-
-		// ] or ,
-		if (import_skip(&pos, end))
-			error("failed to parse JSON array");
-		if (*pos == ',') {
-			pos++;
-			continue;
-		}
-		if (*pos == ']') {
-			pos++;
-			break;
-		}
-		error("failed to parse JSON array");
 	}
 }

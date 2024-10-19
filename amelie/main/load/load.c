@@ -36,10 +36,10 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_import.h>
+#include <amelie_load.h>
 
 void
-import_init(Import* self, Share* share, Dtr* dtr)
+load_init(Load* self, Share* share, Dtr* dtr)
 {
 	self->columns_has   = false;
 	self->columns_count = 0;
@@ -55,7 +55,7 @@ import_init(Import* self, Share* share, Dtr* dtr)
 }
 
 void
-import_free(Import* self)
+load_free(Load* self)
 {
 	buf_free(&self->columns);
 	json_free(&self->json);
@@ -63,7 +63,7 @@ import_free(Import* self)
 }
 
 void
-import_reset(Import* self)
+load_reset(Load* self)
 {
 	self->columns_has   = false;
 	self->columns_count = 0;
@@ -77,7 +77,7 @@ import_reset(Import* self)
 }
 
 static inline bool
-import_target(Str* self, Str* schema, Str* name)
+load_target(Str* self, Str* schema, Str* name)
 {
 	if (unlikely(str_empty(self)))
 		return false;
@@ -111,7 +111,7 @@ import_target(Str* self, Str* schema, Str* name)
 }
 
 static inline bool
-import_column(char** pos, char* end, Str* name)
+load_column(char** pos, char* end, Str* name)
 {
 	// name
 	// name [,]
@@ -125,7 +125,7 @@ import_column(char** pos, char* end, Str* name)
 }
 
 static inline void
-import_columns(Import* self, Str* value)
+load_columns(Load* self, Str* value)
 {
 	self->columns_has = true;
 	if (str_empty(value))
@@ -139,7 +139,7 @@ import_columns(Import* self, Str* value)
 	Column* last = NULL;
 
 	Str name;
-	while (import_column(&pos, end, &name))
+	while (load_column(&pos, end, &name))
 	{
 		auto column = columns_find(columns, &name);
 		if (! column)
@@ -157,7 +157,7 @@ import_columns(Import* self, Str* value)
 }
 
 void
-import_prepare(Import* self, Http* request)
+load_prepare(Load* self, Http* request)
 {
 	self->request = request;
 
@@ -175,7 +175,7 @@ import_prepare(Import* self, Http* request)
 	Str name;
 	str_init(&schema);
 	str_init(&name);
-	if (unlikely(! import_target(&self->uri.path, &schema, &name)))
+	if (unlikely(! load_target(&self->uri.path, &schema, &name)))
 		error("unsupported API target path");
 
 	// find table
@@ -192,7 +192,7 @@ import_prepare(Import* self, Http* request)
 			if (unlikely(self->columns_has))
 				error("columns redefined");
 
-			import_columns(self, &arg->value);
+			load_columns(self, &arg->value);
 			continue;
 		}
 
@@ -202,7 +202,7 @@ import_prepare(Import* self, Http* request)
 }
 
 void
-import_run(Import* self)
+load_run(Load* self)
 {
 	auto executor = self->share->executor;
 	auto dtr = self->dtr;
@@ -220,10 +220,10 @@ import_run(Import* self)
 	if (enter(&e))
 	{
 		if (str_is(&self->content_type->value, "application/json", 16))
-			import_json(self);
+			load_json(self);
 		else
 		if (str_is(&self->content_type->value, "text/csv", 8))
-			import_csv(self);
+			load_csv(self);
 		else
 			error("unsupported API operation");
 

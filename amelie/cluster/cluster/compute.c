@@ -76,7 +76,7 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 }
 
 hot static inline void
-compute_import(Compute* self, Tr* tr, Req* req)
+compute_load(Compute* self, Tr* tr, Req* req)
 {
 	// execute batch INSERT
 	for (auto pos = req->arg.start; pos < req->arg.position;)
@@ -84,9 +84,9 @@ compute_import(Compute* self, Tr* tr, Req* req)
 		// row offset
 		int64_t offset;
 		data_read_integer(&pos, &offset);
-		auto data = req->arg_import->start + offset;
+		auto data = req->arg_load->start + offset;
 
-		auto part = part_list_match(&req->arg_import_table->part_list, &self->node->id);
+		auto part = part_list_match(&req->arg_load_table->part_list, &self->node->id);
 		part_insert(part, tr, false, &data);
 	}
 }
@@ -128,8 +128,8 @@ compute_process(Compute* self, Pipe* pipe)
 			case REQ_EXECUTE:
 				compute_execute(self, tr, req);
 				break;
-			case REQ_IMPORT:
-				compute_import(self, tr, req);
+			case REQ_LOAD:
+				compute_load(self, tr, req);
 				break;
 			case REQ_REPLAY:
 				compute_replay(self, tr, req);

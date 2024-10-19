@@ -9,4 +9,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void import_json(Import*);
+#include "load.h"
+#include "load_json.h"
+#include "load_csv.h"

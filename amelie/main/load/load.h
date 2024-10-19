@@ -9,9 +9,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Import Import;
+typedef struct Load Load;
 
-struct Import
+struct Load
 {
 	Buf         columns;
 	bool        columns_has;
@@ -26,8 +26,8 @@ struct Import
 	Share*      share;
 };
 
-void import_init(Import*, Share*, Dtr*);
-void import_free(Import*);
-void import_reset(Import*);
-void import_prepare(Import*, Http*);
-void import_run(Import*);
+void load_init(Load*, Share*, Dtr*);
+void load_free(Load*);
+void load_reset(Load*);
+void load_prepare(Load*, Http*);
+void load_run(Load*);

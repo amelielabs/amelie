@@ -18,11 +18,11 @@ struct Session
 	Dtr       dtr;
 	Explain   explain;
 	Client*   client;
-	Local     local;
-	Import    import;
 	int       lock_type;
 	Lock*     lock;
 	Lock*     lock_ref;
+	Load      load;
+	Local     local;
 	Frontend* frontend;
 	Share*    share;
 };

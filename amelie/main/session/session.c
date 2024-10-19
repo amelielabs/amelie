@@ -36,7 +36,7 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_import.h>
+#include <amelie_load.h>
 #include <amelie_session.h>
 
 Session*
@@ -58,7 +58,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router, &self->local);
-	import_init(&self->import, share, &self->dtr);
+	load_init(&self->load, share, &self->dtr);
 	return self;
 }
 
@@ -69,7 +69,7 @@ session_reset(Session* self)
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
-	import_reset(&self->import);
+	load_reset(&self->load);
 	palloc_truncate(0);
 }
 
@@ -78,7 +78,7 @@ session_free(Session *self)
 {
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
-	import_free(&self->import);
+	load_free(&self->load);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	dtr_free(&self->dtr);
@@ -235,12 +235,12 @@ session_execute_sql(Session* self)
 }
 
 static void
-session_execute_import(Session* self)
+session_execute_load(Session* self)
 {
 	auto request = &self->client->request;
-	auto import  = &self->import;
-	import_prepare(import, request);
-	import_run(import);
+	auto load    = &self->load;
+	load_prepare(load, request);
+	load_run(load);
 }
 
 static void
@@ -273,7 +273,7 @@ session_execute(Session* self)
 	} else
 	{
 		// POST /schema/table
-		session_execute_import(self);
+		session_execute_load(self);
 	}
 
 	session_unlock(self);
