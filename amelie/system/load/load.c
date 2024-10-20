@@ -219,6 +219,9 @@ load_run(Load* self)
 	Exception e;
 	if (enter(&e))
 	{
+		if (str_is(&self->content_type->value, "application/jsonl", 17))
+			load_jsonl(self);
+		else
 		if (str_is(&self->content_type->value, "application/json", 16))
 			load_json(self);
 		else

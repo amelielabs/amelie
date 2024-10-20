@@ -233,3 +233,43 @@ load_json(Load* self)
 		error("failed to parse JSON array");
 	}
 }
+
+hot void
+load_jsonl(Load* self)
+{
+	auto dtr   = self->dtr;
+	auto table = self->table;
+
+	Req* map[dtr->set.set_size];
+	memset(map, 0, sizeof(map));
+
+	char* pos = buf_cstr(&self->request->content);
+	char* end = pos + buf_size(&self->request->content);
+	for (;;)
+	{
+		// eof
+		if (load_skip(&pos, end))
+			break;
+
+		// [value, ...] <ws>
+		uint32_t offset = buf_size(&self->json.buf_data);
+		uint32_t hash   = 0;
+		pos = load_row(self, pos, end, &hash);
+
+		// map to node
+		auto route = part_map_get(&table->part_list.map, hash);
+		auto req = map[route->order];
+		if (req == NULL)
+		{
+			req = req_create(&dtr->req_cache, REQ_LOAD);
+			req->arg_load = &self->json.buf_data;
+			req->arg_load_table = self->table;
+			req->route = route;
+			req_list_add(&self->req_list, req);
+			map[route->order] = req;
+		}
+
+		// write offset to req->arg
+		encode_integer(&req->arg, offset);
+	}
+}

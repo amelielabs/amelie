@@ -10,3 +10,4 @@
 //
 
 void load_json(Load*);
+void load_jsonl(Load*);
