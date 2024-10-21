@@ -65,10 +65,27 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 	auto columns = table_columns(table);
 	auto keys    = table_keys(table);
 
-	// [value, ...]
-	if (load_skip(&pos, end) || *pos != '[')
+	if (load_skip(&pos, end))
+		error("JSON object expected");
+
+	// [] or {}
+	bool is_object = false;
+	if (*pos == '[')
+	{
+		// [value, ...]
+		pos++;
+	} else
+	if (*pos == '{')
+	{
+		// {}
+		is_object = true;
+
+		// column list has one column or the table has one column
+		if (self->columns_count != 1 && columns->list_count != 1)
+			error("unexpected JSON object");
+	} else {
 		error("JSON array expected");
-	pos++;
+	}
 
 	auto data = &self->json.buf_data;
 	encode_array(data);
@@ -135,7 +152,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 		}
 
 		// ] or ,
-		if (separator)
+		if (!is_object && separator)
 		{
 			if (unlikely(load_skip(&pos, end)))
 				error("failed to parse JSON array");
