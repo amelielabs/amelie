@@ -228,9 +228,6 @@ import_set_format(Import* self, int argc, char** argv)
 	if (str_is_cstr(format, "jsonl"))
 		str_set_cstr(&self->content_type, "application/jsonl");
 	else
-	if (str_is_cstr(format, "json"))
-		str_set_cstr(&self->content_type, "application/json");
-	else
 	if (str_is_cstr(format, "csv"))
 		str_set_cstr(&self->content_type, "text/csv");
 	else
@@ -373,7 +370,10 @@ import_file(Import* self, char* path)
 void
 import_run(Import* self, int argc, char** argv)
 {
-	// todo: validate clients and batch size
+	// validate clients and batch size
+	if (!var_int_of(&self->clients) ||
+	    !var_int_of(&self->batch))
+		error("clients and batch arguments cannot be set to zero");
 
 	// read table name and set path
 	if (argc == 0)
