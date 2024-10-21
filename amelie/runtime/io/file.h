@@ -35,6 +35,20 @@ file_error(File* self, const char* operation)
 }
 
 static inline void
+file_open_stdin(File* self)
+{
+	// open file
+	auto path = "/dev/stdin";
+	str_dup_cstr(&self->path, path);
+	self->size = 0;
+
+	// open
+	self->fd = vfs_open(str_of(&self->path), O_RDONLY, 0);
+	if (unlikely(self->fd == -1))
+		file_error(self, "open");
+}
+
+static inline void
 file_open_as(File* self, const char* path, int flags, int mode)
 {
 	// open or create file
@@ -190,6 +204,15 @@ static inline void
 file_pwrite_buf(File* self, Buf* buf, uint64_t offset)
 {
 	file_pwrite(self, buf->start, buf_size(buf), offset);
+}
+
+static inline int64_t
+file_read_raw(File* self, void* data, int size)
+{
+	int64_t rc = vfs_read_raw(self->fd, data, size);
+	if (unlikely(rc == -1))
+		file_error(self, "read");
+	return rc;
 }
 
 static inline void

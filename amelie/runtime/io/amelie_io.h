@@ -14,6 +14,7 @@
 #include "io/vfs.h"
 #include "io/fs.h"
 #include "io/file.h"
+#include "io/reader.h"
 
 // remote id
 #include "io/remote.h"

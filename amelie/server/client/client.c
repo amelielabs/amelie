@@ -239,7 +239,7 @@ client_execute(Client* self, Str* command)
 }
 
 hot void
-client_import(Client* self, Str* path, Str* content)
+client_import(Client* self, Str* path, Str* content_type, Str* content)
 {
 	auto request = &self->request;
 	auto reply   = &self->reply;
@@ -249,8 +249,8 @@ client_import(Client* self, Str* path, Str* content)
 	auto token = remote_get(self->remote, REMOTE_TOKEN);
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
+	http_write(request, "Content-Type", "%.*s", str_size(content_type), str_of(content_type));
 	http_write(request, "Content-Length", "%d", str_size(content));
-	http_write(request, "Content-Type", "application/json");
 	http_write_end(request);
 	tcp_write_pair_str(&self->tcp, &request->raw, content);
 

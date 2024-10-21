@@ -140,7 +140,7 @@ separator_read(Separator* self, Str* block)
 {
 	//
 	// separate incoming data stream into one or more
-	// statemments by using the ';' symbol as a separator.
+	// statements by using the ';' symbol as a separator.
 	//
 	// request for more data, if ';' is not matched.
 	//

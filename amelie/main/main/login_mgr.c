@@ -167,15 +167,16 @@ login_mgr_set_json(Remote* remote, Str* text)
 	}
 }
 
-void
+int
 login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
               int       argc,
               char**    argv)
 {
-	// [path or name] [remote options]
+	// [path or name] [remote options | options] ...
 	if (argc == 0)
-		return;
+		return 0;
 
+	int arg = 0;
 	if (!strncmp(argv[0], ".", 1) ||
 	    !strncmp(argv[0], "/", 1))
 	{
@@ -185,8 +186,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		Str str;
 		str_set_cstr(&str, path);
 		remote_set(remote, REMOTE_PATH, &str);
-		argc--;
-		argv++;
+		arg = 1;
 	} else
 	if (strncmp(argv[0], "--", 2) != 0)
 	{
@@ -197,17 +197,20 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		if (! match)
 			error("login: login name '%s' not found", argv[0]);
 		remote_copy(remote, &match->remote);
-		argc--;
-		argv++;
+		arg = 1;
 	}
 
-	// --<option>=<value>
-	for (auto i = 0; i < argc; i++)
+	// --<option>=<value> | name
+	for (; arg < argc; arg++)
 	{
+		// stop of first non -- argument
+		if (strncmp(argv[arg], "--", 2) != 0)
+			break;
+
 		Str name;
 		Str value;
-		if (arg_parse(argv[i], &name, &value) == -1)
-			error("login: invalid option '%s'", argv[i]);
+		if (arg_parse(argv[arg], &name, &value) == -1)
+			error("login: invalid option '%s'", argv[arg]);
 
 		if (str_empty(&value))
 			error("login: value is missing for option '%.*s'", str_size(&name),
@@ -281,4 +284,6 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		str_free(user);
 		str_free(secret);
 	}
+
+	return arg;
 }

@@ -25,6 +25,16 @@ bench_import_main(BenchWorker* self, Client* client)
 	auto bench = self->bench;
 	auto batch = var_int_of(&bench->batch);
 
+	// path
+	Str path;
+	str_set_cstr(&path, "/__bench/test?columns=");
+
+	// content type
+	Str content_type;
+	str_set_cstr(&content_type, "application/json");
+
+	// content
+
 	// [[], ...]
 	Buf buf;
 	buf_init(&buf);
@@ -40,12 +50,9 @@ bench_import_main(BenchWorker* self, Client* client)
 	Str content;
 	buf_str(&buf, &content);
 
-	Str path;
-	str_set_cstr(&path, "/__bench/test?columns=");
-
 	while (! self->shutdown)
 	{
-		client_import(client, &path, &content);
+		client_import(client, &path, &content_type, &content);
 
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);

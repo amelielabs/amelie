@@ -19,6 +19,7 @@ enum
 	MSG_SNAPSHOT_ROW,
 
 	// rpc
+	RPC_START,
 	RPC_STOP,
 	RPC_RESOLVE,
 

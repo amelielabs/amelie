@@ -142,6 +142,12 @@ var_string_set_raw(Var* self, const char* value, int size)
 	str_dup(&self->string, value, size);
 }
 
+static inline void
+var_string_set_cstr(Var* self, const char* value)
+{
+	var_string_set_raw(self, value, strlen(value));
+}
+
 static inline Str*
 var_string_of(Var* self)
 {

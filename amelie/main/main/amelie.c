@@ -25,6 +25,7 @@ amelie_usage(void)
 	info("    stop   <path>");
 	info("    backup <path> [login] [client options]");
 	info("    client [login] [client options]");
+	info("    import [login] [client options] [options] table files");
 	info("    bench  [login] [client options] [options]");
 	info("    login  <login> [client options]");
 	info("    logout <login>");
@@ -66,8 +67,15 @@ amelie_usage(void)
 	info("    --threads=int");
 	info("    --clients=int");
 	info("    --time=int");
+	info("    --batch=int");
 	info("    --scale=int");
 	info("    --init=bool");
+	info("");
+	info("  import options:");
+	info("");
+	info("    --format=string");
+	info("    --clients=int");
+	info("    --batch=int");
 	info("");
 }
 
@@ -301,6 +309,40 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 }
 
 static void
+amelie_cmd_import(Amelie* self, int argc, char** argv)
+{
+	// amelie import name
+	auto home = &self->home;
+	home_open(home);
+	var_int_set(&config()->log_connections, false);
+
+	Remote remote;
+	remote_init(&remote);
+
+	Import import;
+	import_init(&import, &remote);
+
+	Exception e;
+	if (enter(&e))
+	{
+		// read arguments
+		auto last = login_mgr_set(&self->home.login_mgr, &remote,
+		                          &import.vars,
+		                           argc,
+		                           argv);
+		argc -= last;
+		argv += last;
+		import_run(&import, argc, argv);
+	}
+
+	if (leave(&e))
+	{ }
+
+	import_free(&import);
+	remote_free(&remote);
+}
+
+static void
 amelie_cmd_login(Amelie* self, int argc, char** argv)
 {
 	// amelie login name [remote options]
@@ -416,6 +458,13 @@ amelie_main(Amelie* self, int argc, char** argv)
 		if (argc <= 2)
 			goto usage;
 		amelie_cmd_client(self, argc - 2, argv + 2);
+	} else
+	if (! strcmp(argv[1], "import"))
+	{
+		// import
+		if (argc <= 2)
+			goto usage;
+		amelie_cmd_import(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "login"))
 	{

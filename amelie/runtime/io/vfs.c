@@ -100,6 +100,17 @@ vfs_truncate(int fd, uint64_t size)
 }
 
 int64_t
+vfs_read_raw(int fd, void* buf, uint64_t size)
+{
+	int r;
+	do {
+		r = read(fd, (char*)buf, size);
+	} while (r == -1 && errno == EINTR);
+
+	return r;
+}
+
+int64_t
 vfs_read(int fd, void* buf, uint64_t size)
 {
 	uint64_t n = 0;

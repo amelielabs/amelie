@@ -21,6 +21,7 @@ int     vfs_flock_unlock(int);
 int     vfs_sync(int);
 int     vfs_sync_file_range(int, uint64_t, uint64_t);
 int     vfs_truncate(int, uint64_t);
+int64_t vfs_read_raw(int, void*, uint64_t);
 int64_t vfs_read(int, void*, uint64_t);
 int64_t vfs_pread(int, uint64_t, void*, uint64_t);
 int64_t vfs_write(int, void*, uint64_t);
