@@ -130,6 +130,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/channel.c
     ${AMELIE_ROOT}/runtime/runtime/task.c
     ${AMELIE_ROOT}/runtime/io/vfs.c
+    ${AMELIE_ROOT}/runtime/io/reader.c
     ${AMELIE_ROOT}/runtime/io/tls_lib.c
     ${AMELIE_ROOT}/runtime/io/tls_context.c
     ${AMELIE_ROOT}/runtime/io/tls.c

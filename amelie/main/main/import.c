@@ -333,7 +333,7 @@ import_file(Import* self, char* path)
 
 	auto reader = &self->reader;
 	reader_reset(reader);
-	reader_open(reader, path);
+	reader_open(reader, path, limit, limit_size);
 
 	// report
 	auto done = reader->offset_file;
@@ -341,7 +341,7 @@ import_file(Import* self, char* path)
 	for (;;)
 	{
 		int  rows = 0;
-		auto buf = reader_read_lines(reader, limit, limit_size, &rows);
+		auto buf = reader_read(reader, &rows);
 		if (! buf)
 			break;
 		guard_buf(buf);
