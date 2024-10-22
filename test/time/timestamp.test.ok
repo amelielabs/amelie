@@ -275,8 +275,6 @@ select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 
 [false]
 # test: timestamp column
 create table test (id int primary key, ts timestamp)
-insert into test values (0, "1970-01-01 01:12:59.909090")
-{"code": 1, "msg": "column ts: does not match data type timestamp"}
 insert into test values (0, "1970-01-01 01:12:59.909090"::timestamp)
 {"code": 1, "msg": "expected ')'"}
 insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
@@ -361,6 +359,12 @@ select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 insert into test values (4, current_timestamp)
 select ts::int > 0 from test where id = 4
 [true]
+drop table test
+# test: timestamp column (auto cast)
+create table test (id int primary key, ts timestamp)
+insert into test values (0, "1970-01-01 01:12:59.909090")
+select * from test
+[[0, "1970-01-01 01:12:59.909090+00"]]
 drop table test
 # test: timestamp column (key)
 create table test (id timestamp primary key)

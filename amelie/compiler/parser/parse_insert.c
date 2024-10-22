@@ -32,7 +32,7 @@
 #include <amelie_parser.h>
 
 hot static inline void
-parse_value(Stmt* self)
+parse_value(Stmt* self, Column* column)
 {
 	// get the begining of current text position
 	auto lex = self->lex;
@@ -48,7 +48,21 @@ parse_value(Stmt* self)
 	Str in;
 	str_set(&in, pos, self->lex->end - pos);
 	json_set_time(self->json, self->local->timezone, self->local->time_us);
-	json_parse(self->json, &in, &self->data->data);
+
+	// try to convert the value to the column type if possible
+	JsonHint hint = JSON_HINT_NONE;
+	switch (column->type) {
+	case TYPE_TIMESTAMP:
+		hint = JSON_HINT_TIMESTAMP;
+		break;
+	case TYPE_INTERVAL:
+		hint = JSON_HINT_INTERVAL;
+		break;
+	case TYPE_VECTOR:
+		hint = JSON_HINT_VECTOR;
+		break;
+	}
+	json_parse_hint(self->json, &in, &self->data->data, hint);
 	self->lex->pos = self->json->pos;
 }
 
@@ -76,7 +90,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		if (list && list->column->order == column->order)
 		{
 			// parse and encode json value
-			parse_value(self);
+			parse_value(self, column);
 
 			// ,
 			list = list->next;
@@ -141,7 +155,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 
 		// parse and encode json value
 		auto offset = code_data_offset(self->data);
-		parse_value(self);
+		parse_value(self, column);
 
 		// ensure NOT NULL constraint
 		if (column->constraint.not_null)
@@ -202,7 +216,7 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 		encode_array(data);
 
 		// parse and encode json value
-		parse_value(self);
+		parse_value(self, columns->index[0]);
 
 		// ]
 		encode_array_end(data);

@@ -47,14 +47,28 @@ load_skip(char** pos, char* end)
 }
 
 hot static inline char*
-load_value(Load* self, char* pos, char* end, uint32_t* offset)
+load_value(Load* self, Column* column, char* pos, char* end, uint32_t* offset)
 {
 	// read json value
 	*offset = buf_size(&self->json.buf_data);
 	Str in;
 	str_set(&in, pos, end - pos);
 	json_set_time(&self->json, self->dtr->local->timezone, self->dtr->local->time_us);
-	json_parse(&self->json, &in, NULL);
+
+	// try to convert the value to the column type if possible
+	JsonHint hint = JSON_HINT_NONE;
+	switch (column->type) {
+	case TYPE_TIMESTAMP:
+		hint = JSON_HINT_TIMESTAMP;
+		break;
+	case TYPE_INTERVAL:
+		hint = JSON_HINT_INTERVAL;
+		break;
+	case TYPE_VECTOR:
+		hint = JSON_HINT_VECTOR;
+		break;
+	}
+	json_parse_hint(&self->json, &in, NULL, hint);
 	return self->json.pos;
 }
 
@@ -109,7 +123,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 			if (list_pos < self->columns_count && list[list_pos]->order == column->order)
 			{
 				// parse and encode json value which matches column list
-				pos = load_value(self, pos, end, &offset);
+				pos = load_value(self, column, pos, end, &offset);
 
 				list_pos++;
 				separator = true;
@@ -145,7 +159,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 		} else
 		{
 			// parse and encode json value
-			pos = load_value(self, pos, end, &offset);
+			pos = load_value(self, column, pos, end, &offset);
 
 			separator = true;
 			separator_last = list_is_last(&columns->list, &column->link);

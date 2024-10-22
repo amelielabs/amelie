@@ -503,3 +503,93 @@ json_parse(Json* self, Str* text, Buf* buf)
 		}
 	}
 }
+
+void
+json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint)
+{
+	if (hint == JSON_HINT_NONE)
+	{
+		json_parse(self, text, buf);
+		return;
+	}
+
+	self->pos = str_of(text);
+	self->end = str_of(text) + str_size(text);
+	if (buf == NULL)
+	{
+		self->buf = &self->buf_data;
+		buf = self->buf;
+	} else
+	{
+		self->buf = buf;
+	}
+
+	switch (hint) {
+	case JSON_HINT_TIMESTAMP:
+	{
+		// timestamp or string
+
+		// TIMESTAMP "string"
+		auto is_timestamp = json_is_keyword(self, "timestamp", 9);
+		if (is_timestamp)
+			self->pos += 9;
+		Str str;
+		if (! json_string(self, &str))
+		{
+			if (is_timestamp)
+				error("TIMESTAMP <string> expected");
+			break;
+		}
+		if (unlikely(! self->tz))
+			error("unexpected operation with timestamp");
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &str);
+		encode_timestamp(self->buf, timestamp_of(&ts, self->tz));
+		return;
+	}
+	case JSON_HINT_INTERVAL:
+	{
+		// interval or string
+
+		// INTERVAL "string"
+		auto is_interval = json_is_keyword(self, "interval", 8);
+		if (is_interval)
+			self->pos += 8;
+		Str str;
+		if (! json_string(self, &str))
+		{
+			if (is_interval)
+				error("INTERVAL <string> expected");
+			break;
+		}
+		Interval iv;
+		interval_init(&iv);
+		interval_read(&iv, &str);
+		encode_interval(self->buf, &iv);
+		return;
+	}
+	case JSON_HINT_VECTOR:
+	{
+		// VECTOR []
+		auto is_vector = json_is_keyword(self, "vector", 6);
+		if (is_vector)
+			self->pos += 6;
+
+		if (json_next(self) != '[')
+		{
+			if (is_vector)
+				error("VECTOR <[> expected");
+			break;
+		}
+
+		// []
+		json_vector(self);
+		return;
+	}
+	default:
+		break;
+	}
+
+	json_parse(self, text, buf);
+}
