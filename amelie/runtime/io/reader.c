@@ -14,11 +14,12 @@
 void
 reader_init(Reader* self)
 {
+	self->read           = NULL;
 	self->readahead_size = 256 * 1024;
-	self->offset      = 0;
-	self->offset_file = 0;
-	self->limit       = 0;
-	self->limit_size  = 0;
+	self->offset         = 0;
+	self->offset_file    = 0;
+	self->limit          = 0;
+	self->limit_size     = 0;
 	buf_init(&self->readahead);
 	file_init(&self->file);
 }
@@ -26,6 +27,7 @@ reader_init(Reader* self)
 void
 reader_reset(Reader* self)
 {
+	self->read        = NULL;
 	self->offset      = 0;
 	self->offset_file = 0;
 	self->limit       = 0;
@@ -41,12 +43,42 @@ reader_free(Reader* self)
 	buf_free(&self->readahead);
 }
 
-void
-reader_open(Reader* self, const char* path, int limit, int limit_size)
+hot static void
+reader_read_line(Reader* self, Str* in, Str* out)
 {
-	self->limit = limit;
+	unused(self);
+	auto pos = in->pos;
+	auto end = in->end;
+	while (pos < end && *pos != '\n')
+		pos++;
+	if (pos == end)
+		return;
+	// including \n
+	str_set(out, in->pos, (pos - in->pos) + 1);
+}
+
+void
+reader_open(Reader* self, ReaderType type, char* path,
+            int     limit,
+            int     limit_size)
+{
+	self->type = type;
+	switch (type) {
+	case READER_LINE:
+		// read rows separated by \n
+		self->read = reader_read_line;
+		break;
+	case READER_VALUE:
+		// read array or object until eof
+		// []...
+		break;
+	case READER_VALUE_ARRAY:
+		// read array or object inside root array
+		// [[]...]
+		break;
+	}
+	self->limit      = limit;
 	self->limit_size = limit_size;
-	buf_reserve(&self->readahead, self->readahead_size);
 	if (path)
 		file_open(&self->file, path);
 	else
@@ -62,64 +94,79 @@ reader_close(Reader* self)
 hot Buf*
 reader_read(Reader* self, int* count)
 {
+	auto readahead = &self->readahead;
 	auto buf = buf_create();
 	guard_buf(buf);
 
-	auto limit = self->limit;
 	*count = 0;
-
 	for (;;)
 	{
-		auto start = self->readahead.start + self->offset;
-		auto pos   = start;
-		auto end   = self->readahead.position;
-
-		while (pos < end && *pos != '\n')
-			pos++;
-
-		int size = pos - start;
-		if (size > 0)
+		Str in =
 		{
-			buf_write(buf, start, size);
-			self->offset += size;
-		}
+			.pos       = (char*)readahead->start + self->offset,
+			.end       = (char*)readahead->position,
+			.allocated = false
+		};
 
-		if (pos == end)
+		Str out;
+		str_init(&out);
+		self->read(self, &in, &out);
+
+		if (likely(! str_empty(&out)))
 		{
-			self->offset = 0;
-			buf_reset(&self->readahead);
+			buf_write_str(buf, &out);
+			self->offset += str_size(&out);
 
-			// readahead
-			auto to_read = file_read_raw(&self->file, self->readahead.start,
-			                              self->readahead_size);
-			buf_advance(&self->readahead, to_read);
-			self->offset_file += to_read;
-
-			// eof
-			if (buf_empty(&self->readahead))
-			{
-				if (! buf_empty(buf))
-					break;
-				return NULL;
-			}
-		} else
-		{
-			// \n
-			self->offset++;
-			pos++;
-
-			// skip empty lines
-			if (! size)
-				continue;
-			buf_write(buf, "\n", 1);
 			(*count)++;
-
-			limit--;
-			if (limit == 0)
+			if ((*count) == self->limit)
 				break;
 			if (buf_size(buf) >= self->limit_size)
 				break;
+			continue;
 		}
+
+		// need more data
+		if (str_empty(&in))
+		{
+			buf_reset(readahead);
+		} else
+		{
+			// move data and truncate readahead
+			int left = str_size(&in);
+			memmove(readahead->start, in.pos, left);
+			readahead->position = readahead->start + left;
+		}
+		self->offset = 0;
+
+		// readahead
+		buf_reserve(readahead, self->readahead_size);
+		auto to_read = file_read_raw(&self->file, readahead->position,
+		                             self->readahead_size);
+		buf_advance(readahead, to_read);
+		self->offset_file += to_read;
+		if (likely(to_read > 0))
+			continue;
+
+		// eof
+		if (buf_empty(readahead))
+		{
+			// done (all data read)
+			if (buf_empty(buf))
+				return NULL;
+
+			// done (with data)
+			break;
+		}
+
+		// data left in the readahead
+		if (self->type == READER_LINE)
+		{
+			buf_write(buf, readahead->start, buf_size(readahead));
+			self->offset += buf_size(readahead);
+			break;
+		}
+
+		error("incomplete JSON value");
 	}
 
 	unguard();

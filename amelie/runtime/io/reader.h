@@ -11,20 +11,31 @@
 
 typedef struct Reader Reader;
 
+typedef void (*ReaderFn)(Reader*, Str*, Str*);
+
+typedef enum
+{
+	READER_LINE,
+	READER_VALUE,
+	READER_VALUE_ARRAY
+} ReaderType;
+
 struct Reader
 {
-	Buf      readahead;
-	int      readahead_size;
-	int      offset;
-	uint64_t offset_file;
-	int      limit;
-	int      limit_size;
-	File     file;
+	ReaderType type;
+	ReaderFn   read;
+	Buf        readahead;
+	int        readahead_size;
+	int        offset;
+	uint64_t   offset_file;
+	int        limit;
+	int        limit_size;
+	File       file;
 };
 
 void reader_init(Reader*);
 void reader_reset(Reader*);
 void reader_free(Reader*);
-void reader_open(Reader*, const char*, int, int);
+void reader_open(Reader*, ReaderType, char*, int, int);
 void reader_close(Reader*);
 Buf* reader_read(Reader*, int*);

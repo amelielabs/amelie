@@ -333,7 +333,7 @@ import_file(Import* self, char* path)
 
 	auto reader = &self->reader;
 	reader_reset(reader);
-	reader_open(reader, path, limit, limit_size);
+	reader_open(reader, READER_LINE, path, limit, limit_size);
 
 	// report
 	auto done = reader->offset_file;
