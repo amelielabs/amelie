@@ -24,6 +24,9 @@ struct Import
 	// stats
 	uint64_t      rows;
 	uint64_t      errors;
+	uint64_t      report_time;
+	uint64_t      report_processed;
+	uint64_t      report_rows;
 	// worker
 	List          clients_list;
 	ImportClient* forward;

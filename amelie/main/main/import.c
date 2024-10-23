@@ -80,10 +80,13 @@ import_client_recv(ImportClient* self, Import* import)
 void
 import_init(Import* self, Remote* remote)
 {
-	self->rows    = 0;
-	self->errors  = 0;
-	self->remote  = remote;
-	self->forward = NULL;
+	self->rows             = 0;
+	self->errors           = 0;
+	self->report_time      = 0;
+	self->report_processed = 0;
+	self->report_rows      = 0;
+	self->remote           = remote;
+	self->forward          = NULL;
 	list_init(&self->clients_list);
 
 	reader_init(&self->reader);
@@ -298,6 +301,20 @@ hot static inline void
 import_report(Import* self, char* path)
 {
 	auto reader = &self->reader;
+	timer_mgr_reset(&am_task->timer_mgr);
+
+	auto     time           = time_us();
+	double   time_diff      = (time - self->report_time) / 1000.0 / 1000.0;
+	uint64_t processed_diff = reader->offset_file - self->report_processed;
+	uint64_t rows_diff      = self->rows - self->report_rows;
+	int      processed_sec  = 0;
+	int      rows_sec       = 0;
+	if (time_diff > 0)
+	{
+		processed_sec = (int)(((double)processed_diff / 1024 / 1024) / time_diff);
+		rows_sec      = (int)(((double)rows_diff) / time_diff);
+	}
+
 	if (path)
 	{
 		auto total_mib = reader->file.size / 1024 / 1024;
@@ -309,18 +326,26 @@ import_report(Import* self, char* path)
 		if (total_mib == 0)
 			percent = 100;
 
-		printf("%.*s %d%% (%d MiB / %d MiB) %" PRIu64 " rows, %" PRIu64 " errors\r",
+		printf("%.*s %d%% (%d MiB / %d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
 		       str_size(&reader->file.path),
 		       str_of(&reader->file.path),
 		       (int)percent, (int)done_mib, (int)total_mib,
-		       self->rows,
+		       processed_sec,
+		       rows_sec,
 		       self->errors);
 	} else
 	{
 		auto done_mib = reader->offset_file / 1024 / 1024;
-		printf("stdin (%d MiB) %" PRIu64 " rows, %" PRIu64 " errors\r",
-		       (int)done_mib, self->rows, self->errors);
+		printf("pipe (%d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
+		       (int)done_mib,
+		       processed_sec,
+		       rows_sec,
+		       self->errors);
 	}
+
+	self->report_time      = time;
+	self->report_processed = reader->offset_file;
+	self->report_rows      = self->rows;
 
 	fflush(stdout);
 }
@@ -350,7 +375,7 @@ import_file(Import* self, char* path)
 		self->rows += rows;
 
 		// report
-		if ((reader->offset_file - done) >= 10 * 1024 * 1024)
+		if ((reader->offset_file - done) >= 100 * 1024 * 1024)
 		{
 			import_report(self, path);
 			done = reader->offset_file;
@@ -393,11 +418,15 @@ import_run(Import* self, int argc, char** argv)
 		// create clients and connect
 		import_connect(self);
 
+		self->report_time = time_us();
+
 		// import files or stdin
 		if (argc > 0)
 		{
 			while (argc > 0)
 			{
+				self->report_processed = 0;
+
 				import_file(self, argv[0]);
 				argc--;
 				argv++;
