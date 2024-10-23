@@ -68,14 +68,6 @@ reader_open(Reader* self, ReaderType type, char* path,
 		// read rows separated by \n
 		self->read = reader_read_line;
 		break;
-	case READER_VALUE:
-		// read array or object until eof
-		// []...
-		break;
-	case READER_VALUE_ARRAY:
-		// read array or object inside root array
-		// [[]...]
-		break;
 	}
 	self->limit      = limit;
 	self->limit_size = limit_size;

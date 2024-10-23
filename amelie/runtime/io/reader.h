@@ -15,9 +15,7 @@ typedef void (*ReaderFn)(Reader*, Str*, Str*);
 
 typedef enum
 {
-	READER_LINE,
-	READER_VALUE,
-	READER_VALUE_ARRAY
+	READER_LINE
 } ReaderType;
 
 struct Reader
