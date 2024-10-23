@@ -136,3 +136,40 @@ test_session_execute(TestSuite* self, TestSession* session, const char* query)
 		test_log(self, "error: %s\n", str);
 	}
 }
+
+void
+test_session_import(TestSuite*  self, TestSession* session,
+                    const char* content_type,
+                    const char* data)
+{
+	auto curl = session->handle;
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(data));
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+
+	char type[256];
+	snprintf(type, sizeof(type), "Content-Type: %s", content_type);
+	auto headers = curl_slist_append(NULL, type);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+	CURLcode code;
+	code = curl_easy_perform(curl);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, session->headers);
+	curl_slist_free_all(headers);
+
+	if (code == CURLE_OK)
+	{
+		/*test_log(self, "\n");*/
+		return;
+	}
+
+	const char* str = curl_easy_strerror(code);
+	if (code == CURLE_HTTP_RETURNED_ERROR)
+	{
+		long http_code = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		test_log(self, "error: HTTP %d (%s)\n", (int)http_code, str);
+	}  else
+	{
+		test_log(self, "error: %s\n", str);
+	}
+}

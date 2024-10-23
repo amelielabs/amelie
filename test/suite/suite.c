@@ -546,6 +546,26 @@ test_suite_disconnect(TestSuite* self, char* arg)
 }
 
 static int
+test_suite_import(TestSuite* self, char* arg)
+{
+	char* type = test_suite_arg(&arg);
+	char* data = arg;
+	if (!type || !data)
+	{
+		test_error(self, "line %d: import <type> <data> expected",
+		           self->current_line);
+		return -1;
+	}
+	if (self->current_session == NULL) {
+		test_error(self, "%d: import: session is not defined",
+		           self->current_line);
+		return -1;
+	}
+	test_session_import(self, self->current_session, type, data);
+	return 0;
+}
+
+static int
 test_suite_switch(TestSuite* self, char* arg)
 {
 	char* name = test_suite_arg(&arg);
@@ -835,6 +855,14 @@ test_suite_execute(TestSuite* self, Test* test, char* options)
 		// disconnect
 		if (strncmp(query, "disconnect", 10) == 0) {
 			rc = test_suite_disconnect(self, query + 10);
+			if (rc == -1)
+				return -1;
+			continue;
+		}
+
+		// import
+		if (strncmp(query, "import", 6) == 0) {
+			rc = test_suite_import(self, query + 6);
 			if (rc == -1)
 				return -1;
 			continue;

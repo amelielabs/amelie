@@ -182,7 +182,7 @@ key_hash(uint32_t hash, uint8_t* pos)
 		data_read_string(&pos, &value);
 		hash = key_hash_string(hash, &value);
 	} else {
-		abort();
+		error("unexpected key type");
 	}
 	return hash;
 }
