@@ -179,6 +179,11 @@ repl_status(Repl* self)
 	else
 		encode_string(buf, &config()->repl_primary.string);
 
+	encode_raw(buf, "replicas", 8);
+	auto replicas = replica_mgr_list(&self->replica_mgr);
+	guard_buf(replicas);
+	buf_write(buf, replicas->start, buf_size(replicas));
+
 	encode_obj_end(buf);
 	return buf;
 }

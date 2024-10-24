@@ -16,6 +16,7 @@ typedef void* (*ThreadFunction)(void*);
 struct Thread
 {
 	pthread_t      id;
+	int            tid;
 	ThreadFunction function;
 	void*          arg;
 };
@@ -24,6 +25,7 @@ static inline void
 thread_init(Thread* self)
 {
 	self->id       = 0;
+	self->tid      = -1;
 	self->function = NULL;
 	self->arg      = NULL;
 }
@@ -31,8 +33,9 @@ thread_init(Thread* self)
 static inline int
 thread_create(Thread* self, ThreadFunction function, void* arg)
 {
+	self->tid      = -1;
 	self->function = function;
-	self->arg = arg;
+	self->arg      = arg;
 	int rc;
 	rc = pthread_create(&self->id, NULL, function, self);
 	if (rc != 0)

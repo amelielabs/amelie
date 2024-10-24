@@ -4,26 +4,28 @@ connect E0 S0 localhost:3485
 show wal
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 select system.wal()
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 show lsn
 [1]
@@ -74,26 +76,28 @@ connect E0 S0 localhost:3485
 show wal
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 select system.wal()
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 show lsn
 [1]

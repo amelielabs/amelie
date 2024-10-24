@@ -136,6 +136,8 @@ task_main(void* arg)
 	Thread* thread = arg;
 	Task* self = thread->arg;
 
+	thread->tid = gettid();
+
 	// set global variable
 	am_task = self;
 

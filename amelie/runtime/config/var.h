@@ -103,6 +103,20 @@ var_int_set_next(Var* self)
 }
 
 static inline void
+var_int_add(Var* self, uint64_t value)
+{
+	assert(self->type == VAR_INT || self->type == VAR_BOOL);
+	atomic_u64_add(&self->integer, value);
+}
+
+static inline void
+var_int_sub(Var* self, uint64_t value)
+{
+	assert(self->type == VAR_INT || self->type == VAR_BOOL);
+	atomic_u64_sub(&self->integer, value);
+}
+
+static inline void
 var_int_follow(Var* self, uint64_t value)
 {
 	assert(self->type == VAR_INT || self->type == VAR_BOOL);

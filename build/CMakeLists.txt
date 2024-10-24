@@ -131,6 +131,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/task.c
     ${AMELIE_ROOT}/runtime/io/vfs.c
     ${AMELIE_ROOT}/runtime/io/reader.c
+    ${AMELIE_ROOT}/runtime/io/os.c
     ${AMELIE_ROOT}/runtime/io/tls_lib.c
     ${AMELIE_ROOT}/runtime/io/tls_context.c
     ${AMELIE_ROOT}/runtime/io/tls.c
@@ -290,7 +291,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/utility.c
     ${AMELIE_ROOT}/system/session/ddl.c
     ${AMELIE_ROOT}/system/session/primary.c
-    ${AMELIE_ROOT}/system/system/system.c)
+    ${AMELIE_ROOT}/system/system/system.c
+    ${AMELIE_ROOT}/system/system/system_status.c)
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/login_mgr.c

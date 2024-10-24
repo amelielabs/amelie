@@ -13,14 +13,16 @@ typedef struct Tcp Tcp;
 
 struct Tcp
 {
-	Fd      fd;
-	bool    connected;
-	bool    eof;
-	Tls     tls;
-	Poller* poller;
+	Fd          fd;
+	Tls         tls;
+	bool        connected;
+	bool        eof;
+	atomic_u64* stat_sent;
+	atomic_u64* stat_recv;
+	Poller*     poller;
 };
 
-void tcp_init(Tcp*);
+void tcp_init(Tcp*, atomic_u64*, atomic_u64*);
 void tcp_free(Tcp*);
 void tcp_close(Tcp*);
 void tcp_set_tls(Tcp*, TlsContext*);

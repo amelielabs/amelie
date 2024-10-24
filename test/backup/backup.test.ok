@@ -49,27 +49,29 @@ show lsn
 show wal
 [{
   "active": true,
-  "rotate_wm": 0,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 3,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 insert into test 4
 show wal
 [{
   "active": true,
-  "rotate_wm": 0,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 1,
+  "writes_bytes": 30,
+  "ops": 1
 }]
 backup E3 "uri": "127.0.0.1:3480"
 close E3
@@ -87,14 +89,15 @@ show lsn
 show wal
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 disconnect S0
 close E3

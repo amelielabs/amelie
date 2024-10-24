@@ -26,3 +26,4 @@ void db_init(Db*, PartMapper, void*, NodeIf*, void*);
 void db_free(Db*);
 void db_open(Db*);
 void db_close(Db*);
+Buf* db_status(Db*);

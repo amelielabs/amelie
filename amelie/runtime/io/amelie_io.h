@@ -18,6 +18,9 @@
 // file reader
 #include "io/reader.h"
 
+// os
+#include "io/os.h"
+
 // remote id
 #include "io/remote.h"
 

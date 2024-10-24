@@ -58,6 +58,13 @@ struct Config
 	// state persistent
 	Var  replicas;
 	Var  users;
+	// stats
+	Var  connections;
+	Var  sent_bytes;
+	Var  recv_bytes;
+	Var  writes;
+	Var  writes_bytes;
+	Var  ops;
 	// testing
 	Var  test_bool;
 	Var  test_int;

@@ -198,6 +198,11 @@ wal_write(Wal* self, WalBatch* batch)
 	mutex_lock(&self->lock);
 	guard(mutex_unlock, &self->lock);
 
+	// update stats
+	var_int_add(&config()->writes, 1);
+	var_int_add(&config()->writes_bytes, batch->header.size);
+	var_int_add(&config()->ops, batch->header.count);
+
 	if (! var_int_of(&config()->wal))
 	{
 		config_lsn_next();
@@ -342,17 +347,9 @@ wal_status(Wal* self)
 	encode_raw(buf, "active", 6);
 	encode_bool(buf, var_int_of(&config()->wal));
 
-	// rotate_wm
-	encode_raw(buf, "rotate_wm", 9);
-	encode_integer(buf, var_int_of(&config()->wal_rotate_wm));
-
-	// sync_on_rotate
-	encode_raw(buf, "sync_on_rotate", 14);
-	encode_bool(buf, var_int_of(&config()->wal_sync_on_rotate));
-
-	// sync_on_write
-	encode_raw(buf, "sync_on_write", 13);
-	encode_bool(buf, var_int_of(&config()->wal_sync_on_write));
+	// checkpoint
+	encode_raw(buf, "checkpoint", 10);
+	encode_integer(buf, config_checkpoint());
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
@@ -373,6 +370,18 @@ wal_status(Wal* self)
 	// slots_min
 	encode_raw(buf, "slots_min", 9);
 	encode_integer(buf, slots_min);
+
+	// writes
+	encode_raw(buf, "writes", 6);
+	encode_integer(buf, var_int_of(&config()->writes));
+
+	// writes_bytes
+	encode_raw(buf, "writes_bytes", 12);
+	encode_integer(buf, var_int_of(&config()->writes_bytes));
+
+	// ops
+	encode_raw(buf, "ops", 3);
+	encode_integer(buf, var_int_of(&config()->ops));
 
 	encode_obj_end(buf);
 	return buf;

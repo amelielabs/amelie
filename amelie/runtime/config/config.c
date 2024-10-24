@@ -82,6 +82,13 @@ config_prepare(Config* self)
 		// state persistent
 		{ "replicas",                VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,        0                },
 		{ "users",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,        0                },
+		// stats
+		{ "connections",             VAR_INT,    VAR_E|VAR_H,             &self->connections,             NULL,        0                },
+		{ "sent_bytes",              VAR_INT,    VAR_E|VAR_H,             &self->sent_bytes,              NULL,        0                },
+		{ "recv_bytes",              VAR_INT,    VAR_E|VAR_H,             &self->recv_bytes,              NULL,        0                },
+		{ "writes",                  VAR_INT,    VAR_E|VAR_H,             &self->writes,                  NULL,        0                },
+		{ "writes_bytes",            VAR_INT,    VAR_E|VAR_H,             &self->writes_bytes,            NULL,        0                },
+		{ "ops",                     VAR_INT,    VAR_E|VAR_H,             &self->ops,                     NULL,        0                },
 		// testing
 		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,       &self->test_bool,               NULL,        false            },
 		{ "test_int",                VAR_INT,    VAR_E|VAR_H|VAR_R,       &self->test_int,                NULL,        0                },

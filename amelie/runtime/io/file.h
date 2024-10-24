@@ -263,3 +263,26 @@ file_import(Buf* buf, const char* fmt, ...)
 	file_open_rdonly(&file, path);
 	file_pread_buf(&file, buf, file.size, 0);
 }
+
+static inline void
+file_import_stream(Buf* buf, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char path[PATH_MAX];
+	vsnprintf(path, sizeof(path), fmt, args);
+	va_end(args);
+
+	File file;
+	file_init(&file);
+	guard(file_close, &file);
+	file_open_rdonly(&file, path);
+	for (;;)
+	{
+		buf_reserve(buf, 16 * 1024);
+		auto rc = file_read_raw(&file, buf->position, 16 * 1024);
+		if (rc == 0)
+			break;
+		buf_advance(buf, rc);
+	}
+}

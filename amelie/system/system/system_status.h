@@ -9,5 +9,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "system/system.h"
-#include "system/system_status.h"
+Buf* system_status(System*);

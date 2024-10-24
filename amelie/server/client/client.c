@@ -31,7 +31,8 @@ client_create(void)
 	tls_context_init(&self->tls_context);
 	readahead_init(&self->readahead, &self->tcp, 16 * 1024);
 	uri_init(&self->uri);
-	tcp_init(&self->tcp);
+	tcp_init(&self->tcp, &config()->sent_bytes.integer,
+	         &config()->recv_bytes.integer);
 	list_init(&self->link);
 	return self;
 }

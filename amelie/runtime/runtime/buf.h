@@ -166,6 +166,12 @@ buf_write(Buf* self, void* data, int size)
 	buf_append(self, data, size);
 }
 
+static inline void
+buf_write_buf(Buf* self, Buf* buf)
+{
+	buf_write(self, buf->start, buf_size(buf));
+}
+
 always_inline hot static inline void
 buf_write_str(Buf* self, Str* str)
 {

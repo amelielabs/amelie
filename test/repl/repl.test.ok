@@ -5,7 +5,8 @@ show repl
 [{
   "active": false,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {}
 }]
 # test: backup replica
 backup E1 "uri": "127.0.0.1:3480"
@@ -19,7 +20,8 @@ show repl
 [{
   "active": false,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {}
 }]
 # test: start replica
 start repl
@@ -32,7 +34,8 @@ show repl
 [{
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000"
+  "primary": "00000000-0000-0000-0000-000000000000",
+  "replicas": {}
 }]
 show read_only
 [true]
@@ -159,7 +162,8 @@ show repl
 [{
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000"
+  "primary": "00000000-0000-0000-0000-000000000000",
+  "replicas": {}
 }]
 show lsn
 [9]
@@ -168,14 +172,16 @@ show repl
 [{
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000000"
+  "primary": "00000000-0000-0000-0000-000000000000",
+  "replicas": {}
 }]
 unsubscribe
 show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {}
 }]
 # test: drop replica
 switch S0
@@ -189,7 +195,8 @@ show repl
 [{
   "active": true,
   "role": "replica",
-  "primary": "00000000-0000-0000-0000-000000000001"
+  "primary": "00000000-0000-0000-0000-000000000001",
+  "replicas": {}
 }]
 # test: create replica
 switch S1

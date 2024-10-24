@@ -114,6 +114,15 @@ fn_wal(Call* self)
 	value_read(self->result, buf->start, buf);
 }
 
+static void
+fn_status(Call* self)
+{
+	call_validate(self, 0);
+	Buf* buf;
+	rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
+	value_read(self->result, buf->start, buf);
+}
+
 FunctionDef fn_system_def[] =
 {
 	{ "system", "config",      fn_config,    false },
@@ -127,5 +136,6 @@ FunctionDef fn_system_def[] =
 	{ "system", "tables",      fn_tables,    false },
 	{ "system", "views",       fn_views,     false },
 	{ "system", "wal",         fn_wal,       false },
+	{ "system", "status",      fn_status,    false },
 	{  NULL,     NULL,         NULL,         false }
 };

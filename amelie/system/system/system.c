@@ -264,6 +264,12 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = repl_status(&self->repl);
 		break;
 	}
+	case RPC_SHOW_STATUS:
+	{
+		Buf** buf = rpc_arg_ptr(rpc, 0);
+		*buf = system_status(self);
+		break;
+	}
 	default:
 		break;
 	}

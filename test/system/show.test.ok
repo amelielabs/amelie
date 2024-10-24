@@ -88,6 +88,10 @@ show functions
     "schema": "system",
     "name": "wal"
   },
+  "system.status": {
+    "schema": "system",
+    "name": "status"
+  },
   "public.type": {
     "schema": "public",
     "name": "type"
@@ -467,6 +471,10 @@ select system.functions()
     "schema": "system",
     "name": "wal"
   },
+  "system.status": {
+    "schema": "system",
+    "name": "status"
+  },
   "public.type": {
     "schema": "public",
     "name": "type"
@@ -814,26 +822,28 @@ select system.views()
 show wal
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 select system.wal()
 [{
   "active": true,
-  "rotate_wm": 104857600,
-  "sync_on_rotate": false,
-  "sync_on_write": false,
+  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
-  "slots_min": -1
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
 }]
 # test: show config
 show all

@@ -10022,7 +10022,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10001,
+      "lag": 0
+    }
+  }
 }]
 # test: validate
 show lsn
@@ -10048,7 +10057,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10002,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(*) from test
@@ -10067,7 +10085,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10003,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(data) from test
@@ -10086,7 +10113,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10004,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(data) from test
@@ -10105,7 +10141,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10005,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(id2) from test
@@ -10120,7 +10165,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10006,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(id2) from test
@@ -10142,7 +10196,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10016,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select count(id2) from test
@@ -10160,7 +10223,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10018,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select serial("public", "test2")
@@ -10175,7 +10247,16 @@ show repl
 [{
   "active": true,
   "role": "primary",
-  "primary": null
+  "primary": null,
+  "replicas": {
+    "00000000-0000-0000-0000-000000000001": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "uri": "127.0.0.1:3481",
+      "connected": true,
+      "lsn": 10019,
+      "lag": 0
+    }
+  }
 }]
 switch S1
 select system.config().backends = 4

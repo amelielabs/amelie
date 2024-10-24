@@ -112,3 +112,47 @@ db_close(Db* self)
 
 	// todo: wal close?
 }
+
+Buf*
+db_status(Db* self)
+{
+	// {}
+	auto buf = buf_create();
+	encode_obj(buf);
+
+	int tables_shared = 0;
+	int tables_distributed = 0;
+	int tables_secondary_indexes = 0;
+	list_foreach(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		if (table->config->shared)
+			tables_shared++;
+		else
+			tables_distributed++;
+		tables_secondary_indexes += (table->config->indexes_count - 1);
+	}
+
+	// schemas
+	encode_raw(buf, "schemas", 7);
+	encode_integer(buf, self->schema_mgr.mgr.list_count);
+
+	// distributed_tables
+	encode_raw(buf, "distributed_tables", 18);
+	encode_integer(buf, tables_distributed);
+
+	// shared_tables
+	encode_raw(buf, "shared_tables", 13);
+	encode_integer(buf, tables_shared);
+
+	// indexes
+	encode_raw(buf, "secondary_indexes", 17);
+	encode_integer(buf, tables_secondary_indexes);
+
+	// views
+	encode_raw(buf, "views", 5);
+	encode_integer(buf, self->view_mgr.mgr.list_count);
+
+	encode_obj_end(buf);
+	return buf;
+}

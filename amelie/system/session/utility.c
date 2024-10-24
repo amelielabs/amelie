@@ -78,6 +78,10 @@ ctl_show(Session* self)
 	if (str_is(name, "views", 5))
 		buf = view_mgr_list(&share->db->view_mgr);
 	else
+	if (str_is(name, "status", 6))
+	{
+		rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
+	} else
 	if (str_is(name, "config", 6) ||
 	    str_is(name, "all", 3))
 		buf = vars_list(&global()->config->vars, &self->local.config.vars);
