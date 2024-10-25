@@ -43,7 +43,8 @@ cli(char* prompt, Str* input)
 	auto line = linenoise(prompt);
 	if (! line)
 		return false;
-	linenoiseHistoryAdd(line);
+	if (cli_is_terminal())
+		linenoiseHistoryAdd(line);
 	str_set_allocated(input, line, strlen(line));
 	return true;
 }
