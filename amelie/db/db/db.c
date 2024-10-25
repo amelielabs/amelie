@@ -5,6 +5,8 @@
 // Real-Time SQL OLTP Database.
 //
 // Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
 // AGPL-3.0 Licensed.
 //
 
@@ -109,8 +111,6 @@ db_close(Db* self)
 
 	// free nodes
 	node_mgr_free(&self->node_mgr);
-
-	// todo: wal close?
 }
 
 Buf*
