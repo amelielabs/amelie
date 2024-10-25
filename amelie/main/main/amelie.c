@@ -536,9 +536,9 @@ usage:
 
 typedef struct
 {
-	int    argc;
-	char** argv;
-	Amelie*   self;
+	int     argc;
+	char**  argv;
+	Amelie* self;
 } AmelieArgs;
 
 static void

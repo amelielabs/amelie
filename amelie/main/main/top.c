@@ -134,7 +134,6 @@ top_init(Top* self, Remote* remote)
 void
 top_free(Top* self)
 {
-	(void)self;
 	json_free(&self->json);
 }
 
@@ -167,7 +166,7 @@ top_request(Client* client, Str* content)
 		auto code = &reply->options[HTTP_CODE];
 		auto msg  = &reply->options[HTTP_MSG];
 		error("%.*s %.*s\n", str_size(code), str_of(code),
-			   str_size(msg), str_of(msg));
+		      str_size(msg), str_of(msg));
 	}
 }
 
@@ -181,7 +180,6 @@ top_update(Top* self, Client* client)
 
 	Str data;
 	buf_str(&client->reply.content, &data);
-
 	json_reset(&self->json);
 	json_parse(&self->json, &data, NULL);
 
