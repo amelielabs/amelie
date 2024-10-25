@@ -4,31 +4,31 @@ create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 # test: select (select from table)
 explain select (select * from test)
-{"code": 1, "msg": "FROM: undefined distributed table"}
+{"msg": "FROM: undefined distributed table"}
 select (select * from test)
-{"code": 1, "msg": "FROM: undefined distributed table"}
+{"msg": "FROM: undefined distributed table"}
 # test: select (select from table) from expr
 explain select (select * from test) from [1,2,3]
-{"code": 1, "msg": "FROM: undefined distributed table"}
+{"msg": "FROM: undefined distributed table"}
 select (select * from test) from [1,2,3]
-{"code": 1, "msg": "FROM: undefined distributed table"}
+{"msg": "FROM: undefined distributed table"}
 # test: select (select from table) from (select from expr)
 explain select (select * from test) from (select * from [1,2,3])
-{"code": 1, "msg": "FROM SELECT: undefined distributed table"}
+{"msg": "FROM SELECT: undefined distributed table"}
 select (select * from test) from (select * from [1,2,3])
-{"code": 1, "msg": "FROM SELECT: undefined distributed table"}
+{"msg": "FROM SELECT: undefined distributed table"}
 # test: select (select from table) from shared
 create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select * from test) from test2
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 select (select * from test) from test2
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: select (select from table) from (select from shared)
 explain select (select * from test) from (select * from test2)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 select (select * from test) from (select * from test2)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 drop table test2
 # test: select from (select from table)
 explain select * from (select * from test)
@@ -157,9 +157,9 @@ select * from (select (select * from test2) from test)
 drop table test2
 # test: select from (select (select from table) from table)
 explain select * from (select (select * from test t) from test)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 select * from (select (select * from test t) from test)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: select (select expr) from (select from table)
 explain select (select t.*) from (select * from test) t
 [{
@@ -308,14 +308,14 @@ select (select t.*, * from test2) from (select * from test) t
 drop table test2
 # test: select (select from table) from (select from table)
 explain select (select t.*, z.* from test z) from (select * from test) t
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 select (select t.*, z.* from test z) from (select * from test) t
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: insert returning (select from table)
 explain insert into test (id) values (4) returning (select * from test t)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 insert into test (id) values (4) returning (select * from test t)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: insert returning (select from shared)
 create shared table test_ (id int primary key)
 insert into test_ 1,2,3

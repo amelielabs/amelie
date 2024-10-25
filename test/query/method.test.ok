@@ -2,20 +2,20 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: method not exist
 select 1 :: name()
-{"code": 1, "msg": "name(): function not found"}
+{"msg": "name(): function not found"}
 select 1 :: schema.name()
-{"code": 1, "msg": "schema.name(): function not found"}
+{"msg": "schema.name(): function not found"}
 select 1 :: schema.name.name()
-{"code": 1, "msg": "schema.name.name(): bad function call"}
+{"msg": "schema.name.name(): bad function call"}
 # test: expr :: method()
 select 1::
-{"code": 1, "msg": "bad '::' expression"}
+{"msg": "bad '::' expression"}
 select 1::()
-{"code": 1, "msg": "bad '::' expression"}
+{"msg": "bad '::' expression"}
 select 1::[]()
-{"code": 1, "msg": "bad '::' expression"}
+{"msg": "bad '::' expression"}
 select 1::length()
-{"code": 1, "msg": "length(): operation type is not supported"}
+{"msg": "length(): operation type is not supported"}
 select "hello"::length()
 [5]
 explain select system.config().directory::length()
@@ -56,9 +56,9 @@ select {}::public.set("a", 1)::public.set("b", 2)
 }]
 # test: expr :: method
 select 1::schema.name
-{"code": 1, "msg": "schema.name(): function not found"}
+{"msg": "schema.name(): function not found"}
 select 1::schema.name.name
-{"code": 1, "msg": "schema.name.name(): bad function call"}
+{"msg": "schema.name.name(): bad function call"}
 explain select system.config().directory::length
 [{
   "bytecode": {

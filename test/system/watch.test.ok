@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: watch parsing
 watch
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 # test: watch
 show lsn
 [1]
@@ -51,6 +51,6 @@ watch (select 123) = 123
 []
 create table test (id int primary key serial)
 watch select * from test
-{"code": 1, "msg": "WATCH: sub queries are not supported"}
+{"msg": "WATCH: sub queries are not supported"}
 disconnect S0
 close E0

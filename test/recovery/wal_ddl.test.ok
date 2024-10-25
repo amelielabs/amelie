@@ -21,7 +21,7 @@ alter table test rename to test2
 show lsn
 [3]
 select serial("public", "test")
-{"code": 1, "msg": "table 'test': not exists"}
+{"msg": "table 'test': not exists"}
 select serial("public", "test2")
 [0]
 # test: restart
@@ -33,7 +33,7 @@ connect E0 S0 localhost:3485
 show lsn
 [3]
 select serial("public", "test")
-{"code": 1, "msg": "table 'test': not exists"}
+{"msg": "table 'test': not exists"}
 select serial("public", "test2")
 [0]
 # test: alter table column add
@@ -66,7 +66,7 @@ alter table test2 rename column data to abc
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
 select data from test2
-{"code": 1, "msg": "column data: does not exists"}
+{"msg": "column data: does not exists"}
 select abc from test2
 [0, 0, 0]
 # test: restart
@@ -80,13 +80,13 @@ show lsn
 select serial("public", "test2")
 [0]
 select data from test2
-{"code": 1, "msg": "column data: does not exists"}
+{"msg": "column data: does not exists"}
 select abc from test2
 [0, 0, 0]
 # test: alter table column drop
 alter table test2 drop column abc
 select abc from test2
-{"code": 1, "msg": "column abc: does not exists"}
+{"msg": "column abc: does not exists"}
 select * from test2
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -138,9 +138,9 @@ select * from test2 use index (i2)
 # test: drop index
 drop index i2 on test2
 select * from test2 use index (i)
-{"code": 1, "msg": "index 'i': not exists"}
+{"msg": "index 'i': not exists"}
 select * from test2 use index (i2)
-{"code": 1, "msg": "index 'i2': not exists"}
+{"msg": "index 'i2': not exists"}
 select * from test2
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -154,9 +154,9 @@ show lsn
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
-{"code": 1, "msg": "index 'i': not exists"}
+{"msg": "index 'i': not exists"}
 select * from test2 use index (i2)
-{"code": 1, "msg": "index 'i2': not exists"}
+{"msg": "index 'i2': not exists"}
 select * from test2
 [[0, null], [1, null], [2, null]]
 # test: truncate
@@ -180,7 +180,7 @@ drop table test2
 show lsn
 [12]
 select serial("public", "test2")
-{"code": 1, "msg": "table 'test2': not exists"}
+{"msg": "table 'test2': not exists"}
 # test: restart
 disconnect S0
 close E0
@@ -190,7 +190,7 @@ connect E0 S0 localhost:3485
 show lsn
 [12]
 select * from test2
-{"code": 1, "msg": "<test2> table or view is not found"}
+{"msg": "<test2> table or view is not found"}
 show tables
 [{}]
 # test: create schema

@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: delete statement parsing
 delete
-{"code": 1, "msg": "DELETE <FROM> expected"}
+{"msg": "DELETE <FROM> expected"}
 delete junk
-{"code": 1, "msg": "DELETE <FROM> expected"}
+{"msg": "DELETE <FROM> expected"}
 delete 1
-{"code": 1, "msg": "DELETE <FROM> expected"}
+{"msg": "DELETE <FROM> expected"}
 delete from 1
-{"code": 1, "msg": "DELETE FROM <table name> expected"}
+{"msg": "DELETE FROM <table name> expected"}
 delete from "name"
-{"code": 1, "msg": "DELETE FROM <table name> expected"}
+{"msg": "DELETE FROM <table name> expected"}
 delete from test junk
-{"code": 1, "msg": "<test> table or view is not found"}
+{"msg": "<test> table or view is not found"}
 delete from test where true limit
-{"code": 1, "msg": "<test> table or view is not found"}
+{"msg": "<test> table or view is not found"}
 # test: delete
 create table test(id int primary key)
 insert into test values (0)
@@ -155,7 +155,7 @@ insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 delete from test where data > 0
-{"code": 1, "msg": "bad > expression type"}
+{"msg": "bad > expression type"}
 select * from test
 [[0, 3], [1, 2], [2, null]]
 drop table test
@@ -205,7 +205,7 @@ insert into test {"id": 0, "data": 2}
 insert into test {"id": 1, "data": 1}
 insert into test {"id": 2, "data": 0}
 delete from test use index (i)
-{"code": 1, "msg": "DELETE only primary index supported"}
+{"msg": "DELETE only primary index supported"}
 drop table test
 # test: delete returning
 create table test(id int primary key)

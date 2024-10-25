@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: error
 select error("error test")
-{"code": 1, "msg": "error test"}
+{"msg": "error test"}
 # test: random
 select random()::type
 ["int"]
@@ -59,7 +59,7 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 ["b180886d94d595bf0b52ea31ec7d4a178cde1926"]
 # test: serial
 select serial("public", "abc")
-{"code": 1, "msg": "table 'abc': not exists"}
+{"msg": "table 'abc': not exists"}
 create table test (id int primary key serial)
 insert into test () values (), (), ()
 select serial("public", "test")

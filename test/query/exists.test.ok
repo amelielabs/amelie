@@ -2,13 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: exists parsing
 select exists
-{"code": 1, "msg": "EXISTS <(> expected"}
+{"msg": "EXISTS <(> expected"}
 select exists 1
-{"code": 1, "msg": "EXISTS <(> expected"}
+{"msg": "EXISTS <(> expected"}
 select exists (
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select exists ()
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 # test: exists (expr)
 select exists (1)
 [true]

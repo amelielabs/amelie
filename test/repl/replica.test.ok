@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 # test: create replica statement parsing
 create replica
-{"code": 1, "msg": "CREATE REPLICA <id> expected"}
+{"msg": "CREATE REPLICA <id> expected"}
 create replica 123
-{"code": 1, "msg": "CREATE REPLICA <id> expected"}
+{"msg": "CREATE REPLICA <id> expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "CREATE REPLICA <uri> is not defined"}
+{"msg": "CREATE REPLICA <uri> is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" 1
-{"code": 1, "msg": "CREATE REPLICA id <option name> expected"}
+{"msg": "CREATE REPLICA id <option name> expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "CREATE REPLICA <uri> is not defined"}
+{"msg": "CREATE REPLICA <uri> is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" "localhost"
-{"code": 1, "msg": "CREATE REPLICA id <option name> expected"}
+{"msg": "CREATE REPLICA id <option name> expected"}
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 show replicas
@@ -37,11 +37,11 @@ select * from system.replicas()
 }]
 # test: drop replica statement parsing
 drop replica
-{"code": 1, "msg": "DROP REPLICA <id> expected"}
+{"msg": "DROP REPLICA <id> expected"}
 drop replica 123
-{"code": 1, "msg": "DROP REPLICA <id> expected"}
+{"msg": "DROP REPLICA <id> expected"}
 drop replica "123"
-{"code": 1, "msg": "failed to parse uuid"}
+{"msg": "failed to parse uuid"}
 # test: drop replica
 drop replica "00000000-0000-0000-0000-000000000000"
 show replicas
@@ -49,7 +49,7 @@ show replicas
 # test: drop replica if exists
 drop replica if exists "00000000-0000-0000-0000-000000000000"
 drop replica "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
+{"msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
 # test: recover
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 create replica "00000000-0000-0000-0000-000000000001" uri "localhost"

@@ -10025,7 +10025,7 @@ insert into test values (10, 10)
 create index i on test (data)
 insert into test values (11, 10)
 create unique index j on test (data)
-{"code": 1, "msg": "index unique constraint violation"}
+{"msg": "index unique constraint violation"}
 insert into test values (12, 10)
 drop table test
 disconnect S0

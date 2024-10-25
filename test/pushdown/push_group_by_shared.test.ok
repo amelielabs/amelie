@@ -120,7 +120,7 @@ select * from test group by data
 [0, 1, 2]
 # test: select from shared group by keys only
 select data from test group by id
-{"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
+{"msg": "<data> only GROUP BY keys can be selected"}
 # test: select from shared group by column
 select id from test group by id
 [0, 1, 2, 3, 4]
@@ -931,7 +931,7 @@ select id from test group by id order by id
 [0, 1, 2, 3, 4]
 # test: select from shared group by order by keys only
 select id from test group by id order by data
-{"code": 1, "msg": "<data> only GROUP BY keys can be selected"}
+{"msg": "<data> only GROUP BY keys can be selected"}
 # test: select from shared group by order by desc
 explain select id from test group by id order by id desc
 [{

@@ -3,7 +3,7 @@ connect E0 S0 localhost:3485
 # test: insert abort by error
 create table test (id int primary key, data int default 0)
 insert into test (id) values (0), (1), (2), (3), (1)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: insert abort by error #2
@@ -12,12 +12,12 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: delete abort
@@ -49,7 +49,7 @@ explain delete from test; select error("abort")
   }
 }]
 delete from test; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: update abort
@@ -89,7 +89,7 @@ explain update test set data = id; select error("abort")
   }
 }]
 update test set data = id; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: upsert abort
@@ -127,14 +127,14 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
   }
 }]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
 # test: shared insert abort by error
 create shared table test (id int primary key, data int default 0)
 insert into test (id) values (0), (1), (2), (3), (1)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 # test: shared insert abort by error #2
@@ -143,12 +143,12 @@ select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared insert abort by error #3
 insert into test (id) values (4), (5), (1), (6)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared insert abort by error #4
 insert into test (id) values (4), (5), (1), (6); select error("abort")
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared delete abort
@@ -180,7 +180,7 @@ explain delete from test; select error("abort")
   }
 }]
 delete from test; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared update abort
@@ -220,7 +220,7 @@ explain update test set data = id; select error("abort")
   }
 }]
 update test set data = id; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 # test: shared upsert abort
@@ -258,7 +258,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
   }
 }]
 insert into test values(1, 0) on conflict do update set data = id; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 drop table test
@@ -383,7 +383,7 @@ explain update a set data = id; update b set data = id; select * from a; select 
   }
 }]
 update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
@@ -462,7 +462,7 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
   }
 }]
 insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 select * from a
 [[0, 0], [1, 0], [2, 0], [3, 0]]
 select * from b
@@ -1498,7 +1498,7 @@ insert into test (id) values ( 3 )
 insert into test (id) values ( 2 )
 insert into test (id) values ( 1 )
 update test set data = null; select error("abort")
-{"code": 1, "msg": "abort"}
+{"msg": "abort"}
 drop table test
 disconnect S0
 close E0

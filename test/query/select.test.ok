@@ -2,25 +2,25 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select statement parsing
 select
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select,
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select null null
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 select null 1
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 select from
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 1 from
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 1 from "test"
-{"code": 1, "msg": "FROM: array, object or store expected, but got string"}
+{"msg": "FROM: array, object or store expected, but got string"}
 select 1 from name
-{"code": 1, "msg": "<name> table or view is not found"}
+{"msg": "<name> table or view is not found"}
 select 1 from 1 where
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 1 from 1 where null
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 # test: select expr
 select 1
 [1]
@@ -64,23 +64,23 @@ explain select [1, 2, 3]
 }]
 # test: select name
 select name
-{"code": 1, "msg": "<name> column, CTE or argument not found"}
+{"msg": "<name> column, CTE or argument not found"}
 select name.name
-{"code": 1, "msg": "<name> column, CTE or argument not found"}
+{"msg": "<name> column, CTE or argument not found"}
 # test: select star
 select *
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 select **
-{"code": 1, "msg": "<**> no FROM clause defined"}
+{"msg": "<**> no FROM clause defined"}
 # test: select from expr
 select * from 1
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 select * from 3.14
-{"code": 1, "msg": "FROM: array, object or store expected, but got real"}
+{"msg": "FROM: array, object or store expected, but got real"}
 select * from null
-{"code": 1, "msg": "FROM: array, object or store expected, but got null"}
+{"msg": "FROM: array, object or store expected, but got null"}
 select * from "test"
-{"code": 1, "msg": "FROM: array, object or store expected, but got string"}
+{"msg": "FROM: array, object or store expected, but got string"}
 select * from []
 []
 # test: select from []
@@ -97,7 +97,7 @@ select * from [1, 2, 3]
 select *, *, * from [1, 2, 3]
 [[1, 1, 1], [2, 2, 2], [3, 3, 3]]
 select ** from [1, 2, 3]
-{"code": 1, "msg": "**: reference is not defined"}
+{"msg": "**: reference is not defined"}
 explain select * from [1, 2, 3]
 [{
   "bytecode": {
@@ -199,7 +199,7 @@ select * from [1, 2, 3] list
 select list.* from [1, 2, 3] list
 [1, 2, 3]
 select list.** from [1, 2, 3] list
-{"code": 1, "msg": "**: reference is not defined"}
+{"msg": "**: reference is not defined"}
 select * from {"a": 1, "b": 2, "c": 3} list
 [1, 2, 3]
 select list.* from {"a": 1, "b": 2, "c": 3} list
@@ -210,11 +210,11 @@ select list.** from ({"a": 1, "b": 2, "c": 3}) list
 ["a", "b", "c"]
 # test: select from expr alias reuse
 select * from [1, 2, 3] list, [3,2,1] list
-{"code": 1, "msg": "<list> target is redefined, please use different alias for the target"}
+{"msg": "<list> target is redefined, please use different alias for the target"}
 # test: select from view expr
 create view test as select 123
 select * from test
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 drop view test
 create view test as select [1,2,3]
 explain select * from test
@@ -370,16 +370,16 @@ select * from test list
 select list.* from test list
 [1, 2, 3]
 select ** from test list
-{"code": 1, "msg": "**: reference is not defined"}
+{"msg": "**: reference is not defined"}
 drop view test
 # test: select from view set #3
 create view test as select list.* from {"a": 1, "b": 2, "c": 3} list
 select * from test list
-{"code": 1, "msg": "<list> target is redefined, please use different alias for the target"}
+{"msg": "<list> target is redefined, please use different alias for the target"}
 select list2.* from test list2
 [1, 2, 3]
 select list2.** from test list2
-{"code": 1, "msg": "**: reference is not defined"}
+{"msg": "**: reference is not defined"}
 drop view test
 # test: select from view function
 create view test as select * from system.views()
@@ -805,7 +805,7 @@ explain select obj.id from test
 select obj.id from test
 [1, 2, 3]
 select obj.data from test
-{"code": 1, "msg": "column obj.data: path not found"}
+{"msg": "column obj.data: path not found"}
 select (select * from test.*) from test
 [[{
   "id": 1

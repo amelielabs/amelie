@@ -5,22 +5,22 @@ import text/plain select 1
 [1]
 # test: POST / (application/json) unsupported
 import application/json [1]
-{"code": 1, "msg": "unsupported API operation"}
+{"msg": "unsupported API operation"}
 disconnect S0
 # test: POST /invalid
 connect E0 S0 http://localhost:3485/abc
 import text/plain select 1
-{"code": 1, "msg": "unsupported API target path"}
+{"msg": "unsupported API target path"}
 disconnect S0
 # test: POST /schema/table (text/plain)
 connect E0 S0 http://localhost:3485/abc/cba/abc
 import text/plain select 1
-{"code": 1, "msg": "table 'cba/abc': not exists"}
+{"msg": "table 'cba/abc': not exists"}
 disconnect S0
 # test: POST /schema/table (text/plain) not exists
 connect E0 S0 http://localhost:3485/public/test
 import text/plain select 1
-{"code": 1, "msg": "table 'test': not exists"}
+{"msg": "table 'test': not exists"}
 disconnect S0
 connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
@@ -30,7 +30,7 @@ disconnect S0
 # test: POST /schema/table (text/plain) unsupported
 connect E0 S0 http://localhost:3485/public/test
 import text/plain select 1
-{"code": 1, "msg": "unsupported API operation"}
+{"msg": "unsupported API operation"}
 disconnect S0
 # test: POST /schema/table (text/csv)
 connect E0 S0 http://localhost:3485/public/test
@@ -59,9 +59,9 @@ disconnect Sx
 connect E0 S0 http://localhost:3485/public/test
 import application/jsonl [7,0,0][8,0,0][9,0,0]
 import application/jsonl [10,0,0][11,
-{"code": 1, "msg": "unexpected end of line"}
+{"msg": "unexpected end of line"}
 import application/jsonl [[10,0,0], [11,0,0]]
-{"code": 1, "msg": "unexpected key type"}
+{"msg": "unexpected key type"}
 import application/jsonl 
 disconnect S0
 connect E0 Sx http://localhost:3485/
@@ -96,11 +96,11 @@ disconnect Sx
 connect E0 S0 http://localhost:3485/public/test
 import application/json [[10,0,0], [11,0,0]]
 import application/json 
-{"code": 1, "msg": "JSON array expected"}
+{"msg": "JSON array expected"}
 import application/json []
-{"code": 1, "msg": "JSON array expected"}
+{"msg": "JSON array expected"}
 import application/json {}
-{"code": 1, "msg": "JSON array expected"}
+{"msg": "JSON array expected"}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test
@@ -112,7 +112,7 @@ import application/json [{"id":7}, {"id":8}]
 disconnect S0
 connect E0 S0 http://localhost:3485/public/test2?columns=obj
 import application/json [{"id":9}{"id":10}]
-{"code": 1, "msg": "failed to parse JSON array"}
+{"msg": "failed to parse JSON array"}
 import application/json [{"id":9}, {"id":10}]
 disconnect S0
 connect E0 Sx http://localhost:3485/

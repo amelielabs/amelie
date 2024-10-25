@@ -2,23 +2,23 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: lambda parsing
 select lambda
-{"code": 1, "msg": "lambda <name> expected"}
+{"msg": "lambda <name> expected"}
 select 1 lambda
-{"code": 1, "msg": "lambda <name> expected"}
+{"msg": "lambda <name> expected"}
 select lambda name
-{"code": 1, "msg": "lambda name <(> expected"}
+{"msg": "lambda name <(> expected"}
 select lambda name -
-{"code": 1, "msg": "lambda name <(> expected"}
+{"msg": "lambda name <(> expected"}
 select lambda name =
-{"code": 1, "msg": "lambda name <(> expected"}
+{"msg": "lambda name <(> expected"}
 select lambda name (
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select lambda name ()
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select lambda name (true)
-{"code": 1, "msg": "lambda name (expr) <=> expected"}
+{"msg": "lambda name (expr) <=> expected"}
 select lambda name (true) =
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 # test: lambda (init)
 select lambda n(false) = true from []
 [false]
@@ -118,7 +118,7 @@ drop table test
 create distributed table test (id int primary key)
 insert into test 1,2,3,4,5
 select lambda n([]) = n::append(id) from test
-{"code": 1, "msg": "operation not supported"}
+{"msg": "operation not supported"}
 explain select lambda n([]) = n::append(id) from test
 [{
   "bytecode": {
@@ -167,13 +167,13 @@ drop table test
 create shared table test (id int primary key)
 insert into test 1,2,3,4,5
 select lambda n(id) = n::append(id) from test
-{"code": 1, "msg": "cursor: cursor is not active"}
+{"msg": "cursor: cursor is not active"}
 select lambda n(id) = 0
-{"code": 1, "msg": "no targets to use with GROUP BY or aggregates"}
+{"msg": "no targets to use with GROUP BY or aggregates"}
 select lambda n(id) = 0 from [1,2,3]
-{"code": 1, "msg": "cursor: cursor is not active"}
+{"msg": "cursor: cursor is not active"}
 select lambda n(*) = 0 from [1,2,3]
-{"code": 1, "msg": "*: not in active scan"}
+{"msg": "*: not in active scan"}
 # test: lambda (subquery)
 select lambda n(select * from test) = n from [1, 2, 3]
 [[[1], [2], [3], [4], [5]]]

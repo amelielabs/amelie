@@ -37,17 +37,17 @@ select * from test
 [[0, 2], [1, 1], [2, 0]]
 # test: from use index
 select * from test use
-{"code": 1, "msg": "USE <INDEX> expected"}
+{"msg": "USE <INDEX> expected"}
 select * from test use 1
-{"code": 1, "msg": "USE <INDEX> expected"}
+{"msg": "USE <INDEX> expected"}
 select * from test use index
-{"code": 1, "msg": "USE INDEX <(> expected"}
+{"msg": "USE INDEX <(> expected"}
 select * from test use index 1
-{"code": 1, "msg": "USE INDEX <(> expected"}
+{"msg": "USE INDEX <(> expected"}
 select * from test use index (
-{"code": 1, "msg": "USE INDEX (<index name> expected"}
+{"msg": "USE INDEX (<index name> expected"}
 select * from test use index (123
-{"code": 1, "msg": "USE INDEX (<index name> expected"}
+{"msg": "USE INDEX (<index name> expected"}
 explain select * from test use index (i)
 [{
   "bytecode": {

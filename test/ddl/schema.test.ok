@@ -46,21 +46,21 @@ select system from system.schemas() where name = "system"
 [true]
 # test: create schema statement parsing
 create
-{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
 create schema
-{"code": 1, "msg": "CREATE SCHEMA <name> expected"}
+{"msg": "CREATE SCHEMA <name> expected"}
 create schema 123
-{"code": 1, "msg": "CREATE SCHEMA <name> expected"}
+{"msg": "CREATE SCHEMA <name> expected"}
 create schema if
-{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+{"msg": "IF <NOT> EXISTS expected"}
 create schema if not
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create schema if not 123
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create schema if not exists
-{"code": 1, "msg": "CREATE SCHEMA <name> expected"}
+{"msg": "CREATE SCHEMA <name> expected"}
 create schema test abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: create schema
 create schema test
 show schemas
@@ -101,7 +101,7 @@ select system.schemas()
 }]
 # test: create schema if not exists
 create schema test
-{"code": 1, "msg": "schema 'test': already exists"}
+{"msg": "schema 'test': already exists"}
 create schema if not exists test
 show schemas
 [{
@@ -123,15 +123,15 @@ show schemas
 }]
 # test: drop schema statement parsing
 drop schema
-{"code": 1, "msg": "DROP SCHEMA <name> expected"}
+{"msg": "DROP SCHEMA <name> expected"}
 drop schema 123
-{"code": 1, "msg": "DROP SCHEMA <name> expected"}
+{"msg": "DROP SCHEMA <name> expected"}
 drop schema if
-{"code": 1, "msg": "IF <EXISTS> expected"}
+{"msg": "IF <EXISTS> expected"}
 drop schema if exists
-{"code": 1, "msg": "DROP SCHEMA <name> expected"}
+{"msg": "DROP SCHEMA <name> expected"}
 drop schema test abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: drop schema
 drop schema test
 show schemas
@@ -149,7 +149,7 @@ show schemas
 }]
 # test: drop schema if exists
 drop schema test
-{"code": 1, "msg": "schema 'test': not exists"}
+{"msg": "schema 'test': not exists"}
 drop schema if exists test
 show schemas
 [{
@@ -166,7 +166,7 @@ show schemas
 }]
 # test: drop system schema
 drop schema public
-{"code": 1, "msg": "schema 'public': system schema cannot be dropped"}
+{"msg": "schema 'public': system schema cannot be dropped"}
 show schemas
 [{
   "system": {
@@ -184,22 +184,22 @@ show schemas
 create schema test
 create table test.test(id int primary key)
 drop schema test
-{"code": 1, "msg": "table 'test' depends on schema 'test"}
+{"msg": "table 'test' depends on schema 'test"}
 drop table test.test
 drop schema test
 # test: alter schema statment parsing
 alter schema
-{"code": 1, "msg": "ALTER SCHEMA <name> expected"}
+{"msg": "ALTER SCHEMA <name> expected"}
 alter schema 123
-{"code": 1, "msg": "ALTER SCHEMA <name> expected"}
+{"msg": "ALTER SCHEMA <name> expected"}
 alter schema test
-{"code": 1, "msg": "ALTER SCHEMA <RENAME> expected"}
+{"msg": "ALTER SCHEMA <RENAME> expected"}
 alter schema test rename
-{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "ALTER SCHEMA RENAME <name> expected"}
 alter schema test rename to
-{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "ALTER SCHEMA RENAME <name> expected"}
 alter schema test rename "hello"
-{"code": 1, "msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "ALTER SCHEMA RENAME <name> expected"}
 # test: alter schema rename
 create schema test
 select system.schemas()
@@ -259,6 +259,6 @@ select system.schemas()
 }]
 # test: alter schema system
 alter schema public rename _public
-{"code": 1, "msg": "schema 'public': system schema cannot be altered"}
+{"msg": "schema 'public': system schema cannot be altered"}
 disconnect S0
 close E0

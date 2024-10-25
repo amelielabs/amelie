@@ -3,29 +3,29 @@ connect E0 S0 localhost:3485
 # test: on conflict parsing
 create table test (id int primary key, data int)
 insert into test values(1, 0) 123
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 insert into test values(1, 0) ON
-{"code": 1, "msg": "INSERT VALUES ON <CONFLICT> expected"}
+{"msg": "INSERT VALUES ON <CONFLICT> expected"}
 insert into test values(1, 0) ON 123
-{"code": 1, "msg": "INSERT VALUES ON <CONFLICT> expected"}
+{"msg": "INSERT VALUES ON <CONFLICT> expected"}
 insert into test values(1, 0) on conflict
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT <DO> expected"}
+{"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict 123
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT <DO> expected"}
+{"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do 123
-{"code": 1, "msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
 insert into test values(1, 0) on conflict do update
-{"code": 1, "msg": "UPDATE <SET> expected"}
+{"msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
-{"code": 1, "msg": "UPDATE name SET <path> expected"}
+{"msg": "UPDATE name SET <path> expected"}
 insert into test values(1, 0) on conflict do update set 123
-{"code": 1, "msg": "UPDATE name SET <path> expected"}
+{"msg": "UPDATE name SET <path> expected"}
 insert into test values(1, 0) on conflict do update set path
-{"code": 1, "msg": "UPDATE name SET path <=> expected"}
+{"msg": "UPDATE name SET path <=> expected"}
 insert into test values(1, 0) on conflict do update set path =
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 drop table test
 # test: on conflict do nothing
 create table test (id int primary key, data int)
@@ -254,7 +254,7 @@ drop table test
 create table test (id int primary key, data int)
 insert into test values (1, 0) on conflict do update set data = data + 1
 select @ from test
-{"code": 1, "msg": "@: reference is not defined"}
+{"msg": "@: reference is not defined"}
 drop table test
 # test: upsert error
 create table test (id int primary key, data int)
@@ -262,7 +262,7 @@ insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data
 select * from test
 [[1, 0], [2, 0], [3, null]]
 insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
-{"code": 1, "msg": "bad + expression types"}
+{"msg": "bad + expression types"}
 select * from test
 [[1, 0], [2, 0], [3, null]]
 drop table test

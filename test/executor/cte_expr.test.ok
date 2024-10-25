@@ -2,35 +2,35 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: cte parsing
 with
-{"code": 1, "msg": "WITH <name> expected"}
+{"msg": "WITH <name> expected"}
 with 1
-{"code": 1, "msg": "WITH <name> expected"}
+{"msg": "WITH <name> expected"}
 with test
-{"code": 1, "msg": "WITH name <AS> expected"}
+{"msg": "WITH name <AS> expected"}
 with test 1
-{"code": 1, "msg": "WITH name <AS> expected"}
+{"msg": "WITH name <AS> expected"}
 with test as
-{"code": 1, "msg": "WITH name AS <(> expected"}
+{"msg": "WITH name AS <(> expected"}
 with test as 1
-{"code": 1, "msg": "WITH name AS <(> expected"}
+{"msg": "WITH name AS <(> expected"}
 with test (
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (1
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (name
-{"code": 1, "msg": "WITH name (<)> expected"}
+{"msg": "WITH name (<)> expected"}
 with test (name,
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (name,,
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (name,)
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (name,
-{"code": 1, "msg": "WITH name (<name> expected"}
+{"msg": "WITH name (<name> expected"}
 with test (name)
-{"code": 1, "msg": "WITH name <AS> expected"}
+{"msg": "WITH name <AS> expected"}
 with test as (
-{"code": 1, "msg": "WITH name AS (<)> expected"}
+{"msg": "WITH name AS (<)> expected"}
 # test: cte without main stmt
 with test as (select 1)
 [1]
@@ -121,10 +121,10 @@ explain with test as (select * from [1,2,3]) select 1
 }]
 # test: cte without stmt
 with test as ()
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 # test: select from cte (expr)
 with test as (select 1) select * from test
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 explain with test as (select 1) select * from test
 [{
   "bytecode": {
@@ -260,7 +260,7 @@ explain with test as (select * from [1,2,3]) select * from test
 }]
 # test: select from cte column
 with test (a) as (select * from [1,2,3]) select a from test
-{"code": 1, "msg": "cursor: expected array or object, but got int"}
+{"msg": "cursor: expected array or object, but got int"}
 explain with test (a) as (select * from [1,2,3]) select a from test
 [{
   "bytecode": {
@@ -419,9 +419,9 @@ explain with test (a, b) as (select [e.*, e.* * 2] from [1,2,3] e) select test.a
 }]
 # test: select from cte column (not exists)
 with test (a) as (select * from [1,2,3]) select b from test
-{"code": 1, "msg": "cursor: expected array or object, but got int"}
+{"msg": "cursor: expected array or object, but got int"}
 with test (a) as (select * from [1,2,3]) select test.b from test
-{"code": 1, "msg": "cursor: expected array or object, but got int"}
+{"msg": "cursor: expected array or object, but got int"}
 # test: select from a,a
 with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
 [[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]
@@ -467,13 +467,13 @@ explain with test as (select * from [1,2,3]) select a.*, b.* from test a, test b
 }]
 # test: with a, b
 with a as (select [1,2,3]),
-{"code": 1, "msg": "WITH <name> expected"}
+{"msg": "WITH <name> expected"}
 with a as (select [1,2,3]), b
-{"code": 1, "msg": "WITH name <AS> expected"}
+{"msg": "WITH name <AS> expected"}
 with a as (select [1,2,3]), b 1
-{"code": 1, "msg": "WITH name <AS> expected"}
+{"msg": "WITH name <AS> expected"}
 with a as (select [1,2,3]), b as
-{"code": 1, "msg": "WITH name AS <(> expected"}
+{"msg": "WITH name AS <(> expected"}
 with a as (select [1,2,3]), b as (select [3,2,1])
 [3, 2, 1]
 explain with a as (select [1,2,3]), b as (select [3,2,1])
@@ -660,18 +660,18 @@ explain with a as (select [1,2,3]), b as (select * from a) select * from b
 with a as (select [1,2,3]) select (select * from a)
 [1, 2, 3]
 with a as (select [1,2,3]) select (select * from a), (select * from a), (select * from a)
-{"code": 1, "msg": "<a> target is redefined, please use different alias for the target"}
+{"msg": "<a> target is redefined, please use different alias for the target"}
 with a as (select [1,2,3]) select (select * from a A), (select * from a B), (select * from a C)
 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
 # test: with a(a) recursive
 with a as (select * from a)
-{"code": 1, "msg": "<a> recursive CTE are not supported"}
+{"msg": "<a> recursive CTE are not supported"}
 # test: with a(b), b
 with a as (select * from b), b as (select [1,2,3])
-{"code": 1, "msg": "<b> table or view is not found"}
+{"msg": "<b> table or view is not found"}
 # test: with (ddl)
 with a as (show all)
-{"code": 1, "msg": "CTE must DML or Select"}
+{"msg": "CTE must DML or Select"}
 # test: multi-stmt (expr)
 select 1;
 [1]
@@ -733,9 +733,9 @@ explain select 1; select 2; select * from [1,2,3]
 }]
 # test: multi-stmt (ddl)
 select 1; show all
-{"code": 1, "msg": "CTE and multi-statement utility commands are not supported"}
+{"msg": "CTE and multi-statement utility commands are not supported"}
 show all; select 1
-{"code": 1, "msg": "CTE and multi-statement utility commands are not supported"}
+{"msg": "CTE and multi-statement utility commands are not supported"}
 with config as (select system.config()) select * from config
 ["1.0.0", "00000000-0000-0000-0000-000000000000", "_output/E0", "UTC", "UTC", true, true, false, true, true, "", "", "", "", [{
   "host": "127.0.0.1",
@@ -795,11 +795,11 @@ a := select * from [1,2,3] order by * desc; select a
 a := 1; b := a; c := a + b
 [2]
 a := a
-{"code": 1, "msg": "operation is not supported"}
+{"msg": "operation is not supported"}
 a := a + 1
-{"code": 1, "msg": "operation is not supported"}
+{"msg": "operation is not supported"}
 select a into a
-{"code": 1, "msg": "<a> column, CTE or argument not found"}
+{"msg": "<a> column, CTE or argument not found"}
 # test: select cte.path
 a := {"id": 48}; select a
 [{
@@ -814,13 +814,13 @@ with a as ( {"id": 48} ); select a.id
 [48]
 # test: with cte (columns), select cte
 with a (id) as ( {"id": 48} ); select a.id
-{"code": 1, "msg": "<a> column, CTE or argument not found"}
+{"msg": "<a> column, CTE or argument not found"}
 with a (id) as ( {"id": 48} ); select * from a
 [48]
 with a (id) as ( {"id": 48} ); select id from a
-{"code": 1, "msg": "[]: array expected, but got int"}
+{"msg": "[]: array expected, but got int"}
 with a (id) as ( [48] ); select id from a
-{"code": 1, "msg": "[]: array expected, but got int"}
+{"msg": "[]: array expected, but got int"}
 with a (id) as ( [[48]] ); select id from a
 [48]
 disconnect S0

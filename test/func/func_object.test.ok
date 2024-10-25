@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: append
 select append(null)
-{"code": 1, "msg": "append(): expected two or more arguments"}
+{"msg": "append(): expected two or more arguments"}
 select append(null, 1)
-{"code": 1, "msg": "append(): array expected"}
+{"msg": "append(): array expected"}
 select []::append(1)
 [1]
 select []::append(1)::append(2)
@@ -34,13 +34,13 @@ select []::append(1)::append(2)::push_back(3)
 [1, 2, 3]
 # test: push
 select push(null)
-{"code": 1, "msg": "push(): expected two or more arguments"}
+{"msg": "push(): expected two or more arguments"}
 select push(null, 0)
-{"code": 1, "msg": "push(): expected array for argument 0, but got null"}
+{"msg": "push(): expected array for argument 0, but got null"}
 select push([], 0)
 [0]
 select []::push()
-{"code": 1, "msg": "push(): expected two or more arguments"}
+{"msg": "push(): expected two or more arguments"}
 select []::push(1)
 [1]
 select []::push(2)::push(1)
@@ -64,9 +64,9 @@ select * from test
 drop table test
 # test: pop
 select pop()
-{"code": 1, "msg": "pop(): expected 1 arguments, but got 0"}
+{"msg": "pop(): expected 1 arguments, but got 0"}
 select pop(null)
-{"code": 1, "msg": "pop(): expected array for argument 0, but got null"}
+{"msg": "pop(): expected array for argument 0, but got null"}
 select pop([])
 []
 select []::pop
@@ -98,9 +98,9 @@ select * from test
 drop table test
 # test: pop_back
 select pop_back()
-{"code": 1, "msg": "pop_back(): expected 1 arguments, but got 0"}
+{"msg": "pop_back(): expected 1 arguments, but got 0"}
 select pop_back(null)
-{"code": 1, "msg": "pop_back(): expected array for argument 0, but got null"}
+{"msg": "pop_back(): expected array for argument 0, but got null"}
 select pop_back([])
 []
 select []::pop_back
@@ -129,11 +129,11 @@ select * from test
 drop table test
 # test: put
 select put(null)
-{"code": 1, "msg": "put(): expected 3 arguments, but got 1"}
+{"msg": "put(): expected 3 arguments, but got 1"}
 select put(null, 0)
-{"code": 1, "msg": "put(): expected 3 arguments, but got 2"}
+{"msg": "put(): expected 3 arguments, but got 2"}
 select put([], 0, 0)
-{"code": 1, "msg": "put: array index 0 is out of bounds"}
+{"msg": "put: array index 0 is out of bounds"}
 select put([1], 0, 0)
 [0]
 select [1,2,3]::put(0, '0')
@@ -145,9 +145,9 @@ select [1,2,3]::put(0, '0')::put(1, '1')
 select [1,2,3]::put(0, '0')::put(2, '1')
 ["0", 2, "1"]
 select [1,2,3]::put(0, '0')::put(3, '1')
-{"code": 1, "msg": "put: array index 3 is out of bounds"}
+{"msg": "put: array index 3 is out of bounds"}
 select [1,2,3]::put(0, '0')::put(-1, '1')
-{"code": 1, "msg": "put: array index -1 is out of bounds"}
+{"msg": "put: array index -1 is out of bounds"}
 # test: put update
 create table test (id int primary key, data array)
 insert into test values (0, [1,2,3])
@@ -157,21 +157,21 @@ select * from test
 drop table test
 # test: remove
 select remove(null)
-{"code": 1, "msg": "remove(): expected 2 arguments, but got 1"}
+{"msg": "remove(): expected 2 arguments, but got 1"}
 select remove(null, 0)
-{"code": 1, "msg": "remove(): expected array for argument 0, but got null"}
+{"msg": "remove(): expected array for argument 0, but got null"}
 select remove([], 0)
-{"code": 1, "msg": "remove: array index 0 is out of bounds"}
+{"msg": "remove: array index 0 is out of bounds"}
 select remove([], 1)
-{"code": 1, "msg": "remove: array index 1 is out of bounds"}
+{"msg": "remove: array index 1 is out of bounds"}
 select remove([1], 0)
 []
 select remove([1], -1)
-{"code": 1, "msg": "remove: array index -1 is out of bounds"}
+{"msg": "remove: array index -1 is out of bounds"}
 select remove([1], -10)
-{"code": 1, "msg": "remove: array index -10 is out of bounds"}
+{"msg": "remove: array index -10 is out of bounds"}
 select remove([1, 2], 3)
-{"code": 1, "msg": "remove: array index 3 is out of bounds"}
+{"msg": "remove: array index 3 is out of bounds"}
 select remove([1, 2], 1)
 [1]
 select remove([1, 2], 1)
@@ -201,7 +201,7 @@ select * from test
 drop table test
 # test: set
 select set(null, "id", 42)
-{"code": 1, "msg": "set(): object expected"}
+{"msg": "set(): object expected"}
 select {}::set("id", 42)
 [{
   "id": 42
@@ -245,11 +245,11 @@ select set({"a": 88}, "a", 34)
   "a": 34
 }]
 select set({"a": 88}, "", 34)
-{"code": 1, "msg": "set: incorrect path"}
+{"msg": "set: incorrect path"}
 select set({"a": 88}, " ", 34)
-{"code": 1, "msg": "set: incorrect path"}
+{"msg": "set: incorrect path"}
 select set({"a": 88}, ".", 34)
-{"code": 1, "msg": "set: incorrect path"}
+{"msg": "set: incorrect path"}
 select set({"a": {"b": 22}}, "a.b", 34)
 [{
   "a": {
@@ -290,7 +290,7 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
 [2]
 select set([], 0, 1)
-{"code": 1, "msg": "set(): object expected"}
+{"msg": "set(): object expected"}
 # test: set update
 create table test (id int primary key, data object)
 insert into test values (0, {})
@@ -332,7 +332,7 @@ select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42
 select unset({}, "a")
 [{}]
 select unset({}, "")
-{"code": 1, "msg": "set: incorrect path"}
+{"msg": "set: incorrect path"}
 select unset({"a": 0}, "a")
 [{}]
 select unset({"a": 0}, "b")
@@ -382,7 +382,7 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
   }
 }]
 select unset([1], 0)
-{"code": 1, "msg": "unset(): object expected"}
+{"msg": "unset(): object expected"}
 # test: unset update
 create table test (id int primary key, data object)
 insert into test values (0, {"a": 1, "b": 2, "c": 3})

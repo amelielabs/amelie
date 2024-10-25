@@ -2,59 +2,59 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create table statement parsing
 create
-{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
 create junk
-{"code": 1, "msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
 create unique
-{"code": 1, "msg": "CREATE UNIQUE <INDEX> expected"}
+{"msg": "CREATE UNIQUE <INDEX> expected"}
 create unique table
-{"code": 1, "msg": "CREATE UNIQUE <INDEX> expected"}
+{"msg": "CREATE UNIQUE <INDEX> expected"}
 create table
-{"code": 1, "msg": "CREATE TABLE <name> expected"}
+{"msg": "CREATE TABLE <name> expected"}
 create table "junk_name"
-{"code": 1, "msg": "CREATE TABLE <name> expected"}
+{"msg": "CREATE TABLE <name> expected"}
 create table if
-{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+{"msg": "IF <NOT> EXISTS expected"}
 create table if not
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create table if not exists
-{"code": 1, "msg": "CREATE TABLE <name> expected"}
+{"msg": "CREATE TABLE <name> expected"}
 create table 1234
-{"code": 1, "msg": "CREATE TABLE <name> expected"}
+{"msg": "CREATE TABLE <name> expected"}
 create table test(
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table test(0
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table test("123"
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table test(name
-{"code": 1, "msg": "name <TYPE> expected"}
+{"msg": "name <TYPE> expected"}
 create table test(name junk_type
-{"code": 1, "msg": "name <TYPE> expected"}
+{"msg": "name <TYPE> expected"}
 create table test(name int
-{"code": 1, "msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int,
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table test(name int,)
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table if not exists 1234
-{"code": 1, "msg": "CREATE TABLE <name> expected"}
+{"msg": "CREATE TABLE <name> expected"}
 create table if not exists test(
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table if not exists test(0
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table if not exists test("123"
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 create table if not exists test(name
-{"code": 1, "msg": "name <TYPE> expected"}
+{"msg": "name <TYPE> expected"}
 create table if not exists test(name junk_type
-{"code": 1, "msg": "name <TYPE> expected"}
+{"msg": "name <TYPE> expected"}
 create table if not exists test(name int
-{"code": 1, "msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int) junk
-{"code": 1, "msg": "primary key is not defined"}
+{"msg": "primary key is not defined"}
 create table test()
-{"code": 1, "msg": "(<name> expected"}
+{"msg": "(<name> expected"}
 # test: column int/integer
 create table test(id int primary key, id2 integer)
 select columns from system.tables() where name = "test"
@@ -291,34 +291,34 @@ select columns from system.tables() where name = "test"
 drop table test
 # test: column redefined
 create table test(id int, id int)
-{"code": 1, "msg": "<id> column redefined"}
+{"msg": "<id> column redefined"}
 # test: primary key is not defined
 create table test(id int)
-{"code": 1, "msg": "primary key is not defined"}
+{"msg": "primary key is not defined"}
 # test: primary key clause parsing
 create table test(primary)
-{"code": 1, "msg": "PRIMARY <KEY> expected"}
+{"msg": "PRIMARY <KEY> expected"}
 create table test(primary key(
-{"code": 1, "msg": "KEY (<name> expected"}
+{"msg": "KEY (<name> expected"}
 create table test(primary key()
-{"code": 1, "msg": "KEY (<name> expected"}
+{"msg": "KEY (<name> expected"}
 create table test(primary key())
-{"code": 1, "msg": "KEY (<name> expected"}
+{"msg": "KEY (<name> expected"}
 create table test(primary key(abc))
-{"code": 1, "msg": "<abc> column does not exists"}
+{"msg": "<abc> column does not exists"}
 create table test(id int, primary key())
-{"code": 1, "msg": "KEY (<name> expected"}
+{"msg": "KEY (<name> expected"}
 create table test(id int, primary key(id, ))
-{"code": 1, "msg": "KEY (<name> expected"}
+{"msg": "KEY (<name> expected"}
 create table test(primary key(id), id int)
-{"code": 1, "msg": "<id> column does not exists"}
+{"msg": "<id> column does not exists"}
 # test: primary key is not found
 create table test(id int, primary key(idd))
-{"code": 1, "msg": "<idd> column does not exists"}
+{"msg": "<idd> column does not exists"}
 # test: primary key redefined
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
-{"code": 1, "msg": "table 'test': already exists"}
+{"msg": "table 'test': already exists"}
 create table if not exists test(id int primary key, primary key(id))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
@@ -333,18 +333,18 @@ select indexes[0].keys from system.tables() where name = "test"
 drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
-{"code": 1, "msg": "PRIMARY KEY defined twice"}
+{"msg": "PRIMARY KEY defined twice"}
 # test: primary key ensure valid type
 create table test(id obj primary key)
-{"code": 1, "msg": "<id> column key can be string, int or timestamp"}
+{"msg": "<id> column key can be string, int or timestamp"}
 create table test(id obj, primary key(id))
-{"code": 1, "msg": "<id> column key can be string, int or timestamp"}
+{"msg": "<id> column key can be string, int or timestamp"}
 # test: primary key ensure nested key required
 create table test(data obj, primary key(data.id))
-{"code": 1, "msg": "data.id <TYPE> expected"}
+{"msg": "data.id <TYPE> expected"}
 # test: primary key ensure valid nested key type
 create table test(data obj, primary key(data.id obj))
-{"code": 1, "msg": "<data> column key can be string, int or timestamp"}
+{"msg": "<data> column key can be string, int or timestamp"}
 create table test(data obj, primary key(data.id integer))
 select indexes[0].keys from system.tables() where name = "test"
 [[{
@@ -355,10 +355,10 @@ select indexes[0].keys from system.tables() where name = "test"
 drop table test
 create table test (id int primary key)
 create table test (id int primary key)
-{"code": 1, "msg": "table 'test': already exists"}
+{"msg": "table 'test': already exists"}
 # test: table create if not exists
 create table test (id int primary key)
-{"code": 1, "msg": "table 'test': already exists"}
+{"msg": "table 'test': already exists"}
 create table if not exists test (id int primary key)
 select name from system.tables() where name = "test"
 ["test"]
@@ -372,7 +372,7 @@ select *.schema from system.tables() where name = "test"
 drop table test
 # test: schema system
 create table system.test (id int primary key)
-{"code": 1, "msg": "system schema <system> cannot be used to create objects"}
+{"msg": "system schema <system> cannot be used to create objects"}
 # test: schema default explicit
 create table public.test (id int primary key)
 select *.schema from system.tables() where name = "test"
@@ -380,7 +380,7 @@ select *.schema from system.tables() where name = "test"
 drop table public.test
 # test: schema non-exists
 create table test.test (id int primary key)
-{"code": 1, "msg": "schema 'test': not exists"}
+{"msg": "schema 'test': not exists"}
 select *.schema from system.tables() where name = "test"
 []
 # test: schema set
@@ -397,7 +397,7 @@ drop schema test
 # test: table create with conflicting view
 create view test as select 1
 create table test (id int primary key)
-{"code": 1, "msg": "view <test> with the same name exists"}
+{"msg": "view <test> with the same name exists"}
 drop view test
 # test: distributed
 create distributed table test (id int primary key)
@@ -426,7 +426,7 @@ create table test (id int default 1, primary key(id))
 drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
-{"code": 1, "msg": "only consts allowed as DEFAULT expression"}
+{"msg": "only consts allowed as DEFAULT expression"}
 # test: constraint not null with key
 create table test (id int not null primary key)
 select indexes[0].keys from system.tables()
@@ -456,7 +456,7 @@ select indexes[0].keys from system.tables()
 drop table test
 # test: constraint not null
 create table test (id int primary key, data int not)
-{"code": 1, "msg": "NOT <NULL> expected"}
+{"msg": "NOT <NULL> expected"}
 create table test (id int primary key, data int not null)
 select indexes[0].keys from system.tables()
 [[{
@@ -466,9 +466,9 @@ select indexes[0].keys from system.tables()
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
-{"code": 1, "msg": "column <data> value cannot be NULL"}
+{"msg": "column <data> value cannot be NULL"}
 insert into test values(null, null)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 drop table test
 # test: constraint not null default
 create table test (id int primary key, data int not null default 123)
@@ -480,7 +480,7 @@ select indexes[0].keys from system.tables()
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
-{"code": 1, "msg": "column <data> value cannot be NULL"}
+{"msg": "column <data> value cannot be NULL"}
 insert into test (id) values(3)
 select * from test
 [[1, 1], [3, 123]]
@@ -514,7 +514,7 @@ select indexes[0].keys from system.tables()
 drop table test
 # test: constraint serial key type
 create table test (id string serial primary key)
-{"code": 1, "msg": "SERIAL column <id> must be integer"}
+{"msg": "SERIAL column <id> must be integer"}
 # test: constraint serial multiple columns
 create table test (id int serial primary key, data int serial)
 select indexes[0].keys from system.tables()
@@ -526,19 +526,19 @@ select indexes[0].keys from system.tables()
 drop table test
 # test: with parsing
 create table test (id int primary key) with
-{"code": 1, "msg": "WITH <(> expected"}
+{"msg": "WITH <(> expected"}
 create table test (id int primary key) with (
-{"code": 1, "msg": "WITH (<name> expected"}
+{"msg": "WITH (<name> expected"}
 create table test (id int primary key) with (,
-{"code": 1, "msg": "WITH (<name> expected"}
+{"msg": "WITH (<name> expected"}
 create table test (id int primary key) with (abc
-{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "WITH: <abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = 10)
-{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "WITH: <abc> unrecognized parameter"}
 create table test (id int primary key) with (abc = "")
-{"code": 1, "msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "WITH: <abc> unrecognized parameter"}
 # test: with
 create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-{"code": 1, "msg": "WITH: <uuid> unrecognized parameter"}
+{"msg": "WITH: <uuid> unrecognized parameter"}
 disconnect S0
 close E0

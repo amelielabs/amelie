@@ -1140,7 +1140,7 @@ explain with a as (insert into test values (2, 0) returning *); select * from a
   }
 }]
 with a as (insert into test values (2, 0) returning * into b); select * from a
-{"code": 1, "msg": "INTO CTE redefined"}
+{"msg": "INTO CTE redefined"}
 drop table test
 # test: insert returning into, expr
 create shared table test (id int primary key, data int)
@@ -2201,9 +2201,9 @@ explain a := [1,2,3]; select * from test; return a;
 a := [1,2,3]; select * from test; return a;
 [1, 2, 3]
 explain return a;
-{"code": 1, "msg": "<a> column, CTE or argument not found"}
+{"msg": "<a> column, CTE or argument not found"}
 return a;
-{"code": 1, "msg": "<a> column, CTE or argument not found"}
+{"msg": "<a> column, CTE or argument not found"}
 drop table test
 # test: cte as a key
 create table test (id int primary key)

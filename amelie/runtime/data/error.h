@@ -14,8 +14,6 @@ msg_error(Error* e)
 {
 	auto buf = msg_create(MSG_ERROR);
 	encode_obj(buf);
-	encode_raw(buf, "code", 4);
-	encode_integer(buf, e->code);
 	encode_raw(buf, "msg", 3);
 	encode_raw(buf, e->text, e->text_len);
 	encode_obj_end(buf);
@@ -24,12 +22,10 @@ msg_error(Error* e)
 }
 
 static inline Buf*
-msg_error_as(int code, Str* msg)
+msg_error_as(Str* msg)
 {
 	auto buf = msg_create(MSG_ERROR);
 	encode_obj(buf);
-	encode_raw(buf, "code", 4);
-	encode_integer(buf, code);
 	encode_raw(buf, "msg", 3);
 	encode_string(buf, msg);
 	encode_obj_end(buf);
@@ -42,9 +38,6 @@ msg_error_throw(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;
 	data_read_obj(&pos);
-	// code
-	data_skip(&pos);
-	data_skip(&pos);
 	// msg
 	data_skip(&pos);
 	Str text;
@@ -57,9 +50,6 @@ msg_error_rethrow(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;
 	data_read_obj(&pos);
-	// code
-	data_skip(&pos);
-	data_skip(&pos);
 	// msg
 	data_skip(&pos);
 	Str text;

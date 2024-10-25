@@ -2,13 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: show statement parsing
 show
-{"code": 1, "msg": "SHOW <name> expected"}
+{"msg": "SHOW <name> expected"}
 show;
-{"code": 1, "msg": "SHOW <name> expected"}
+{"msg": "SHOW <name> expected"}
 show all junk
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 show 1234
-{"code": 1, "msg": "SHOW <name> expected"}
+{"msg": "SHOW <name> expected"}
 # test: show users
 show users
 [{}]
@@ -969,11 +969,11 @@ select system.config().directory
 select system.config()["directory"]
 ["_output/E0"]
 select system.config(123)
-{"code": 1, "msg": "config(): expected 0 arguments, but got 1"}
+{"msg": "config(): expected 0 arguments, but got 1"}
 # test: show name
 show log_enable
 [true]
 show "log_enable"
-{"code": 1, "msg": "SHOW <name> expected"}
+{"msg": "SHOW <name> expected"}
 disconnect S0
 close E0

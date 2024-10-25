@@ -19,9 +19,9 @@ select (select 8 * 8)
 select (select 64 / ( 4 + 4 ))
 [8]
 select (select 64 / 0)
-{"code": 1, "msg": "zero division"}
+{"msg": "zero division"}
 select (select 64 % 0)
-{"code": 1, "msg": "zero division"}
+{"msg": "zero division"}
 select (select 1 + 1) + (select 2)
 [4]
 # test: select (select [])
@@ -76,9 +76,9 @@ select (select {"a": 1, "b": null}).a
 [1]
 # test: select (select *) from expr
 explain select (select *) from [1,2,3]
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 select (select *) from [1,2,3]
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 # test: select (select alias.*) from expr
 explain select (select t.*) from [1,2,3] t
 [{
@@ -107,19 +107,19 @@ explain select (select t.*) from [1,2,3] t
 select (select t.*) from [1,2,3] t
 [1, 2, 3]
 select (select t.*) from [1,2,3]
-{"code": 1, "msg": "<t> target not found"}
+{"msg": "<t> target not found"}
 # test: select (select alias.**) from expr
 select (select t.**) from {"a": 1, "b": 2} t
 ["a", "b"]
 select (select t.**) from {"a": 1, "b": 2}
-{"code": 1, "msg": "<t> target not found"}
+{"msg": "<t> target not found"}
 # test: select (select *) from shared
 create shared table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 select (select *) from test
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 select (select test.*) from test
 [[1], [2], [3]]
 # test: select (select target.*) from shared
@@ -157,9 +157,9 @@ select (select test.*) from test
 select (select t.*) from test t
 [[1], [2], [3]]
 select (select t.*) from test
-{"code": 1, "msg": "<t> target not found"}
+{"msg": "<t> target not found"}
 select (select t) from test t
-{"code": 1, "msg": "<t> target column cannot be found"}
+{"msg": "<t> target column cannot be found"}
 # test: select (select target.column) from shared
 explain select (select test.id) from test
 [{
@@ -192,7 +192,7 @@ explain select (select test.id) from test
 select (select test.id) from test
 [1, 2, 3]
 select (select id) from test
-{"code": 1, "msg": "<id> target column cannot be found"}
+{"msg": "<id> target column cannot be found"}
 # test: select (select alias.column) from shared
 explain select (select t.id) from test t
 [{
@@ -223,7 +223,7 @@ explain select (select t.id) from test t
   }
 }]
 select (select t.id) from test
-{"code": 1, "msg": "<t> target cannot be found"}
+{"msg": "<t> target cannot be found"}
 select (select t.id) from test t
 [1, 2, 3]
 drop table test
@@ -233,7 +233,7 @@ insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
 # test: select (select target.path) from shared
 select (select test) from test
-{"code": 1, "msg": "<test> target column cannot be found"}
+{"msg": "<test> target column cannot be found"}
 select (select test.obj) from test
 [{
   "data": {
@@ -260,7 +260,7 @@ select (select test.obj.data.id) from test
 [1, 2, 3]
 # test: select (select alias.path) from shared
 select (select t) from test t
-{"code": 1, "msg": "<t> target column cannot be found"}
+{"msg": "<t> target column cannot be found"}
 select (select t.obj) from test t
 [{
   "data": {
@@ -301,15 +301,15 @@ select t.obj from test t
   }
 }]
 select (select ** from t.obj) from test t
-{"code": 1, "msg": "<t.obj> table or view is not found"}
+{"msg": "<t.obj> table or view is not found"}
 select (select **, * from (t.obj.data)) from test t
 [[["id", 1]], [["id", 2]], [["id", 3]]]
 drop table test
 # test: select from (select const)
 select * from (select 0)
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 select * from (select null)
-{"code": 1, "msg": "FROM: array, object or store expected, but got null"}
+{"msg": "FROM: array, object or store expected, but got null"}
 # test: select from (select [])
 select * from (select [])
 []
@@ -349,15 +349,15 @@ select * from (select {"a": 1, "b": null})
 select alias.* from (select [1,2,3]) alias
 [1, 2, 3]
 select alias from (select [1,2,3]) alias
-{"code": 1, "msg": "column alias: row or object expected, but got int"}
+{"msg": "column alias: row or object expected, but got int"}
 select alias from (select alias.*) alias
-{"code": 1, "msg": "*: not in active scan"}
+{"msg": "*: not in active scan"}
 select alias from (select alias) alias
-{"code": 1, "msg": "<alias> target column cannot be found"}
+{"msg": "<alias> target column cannot be found"}
 select (select 123 from alias) from (select alias) alias
-{"code": 1, "msg": "<alias> table or view is not found"}
+{"msg": "<alias> table or view is not found"}
 select (select 123 from [1,2,3] alias) from (select alias) alias
-{"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
+{"msg": "<alias> target is redefined, please use different alias for the target"}
 # test: select * from (select from shared)
 create shared table test (id int primary key)
 insert into test values (1)
@@ -399,12 +399,12 @@ explain select * from (select * from test)
 }]
 # test: select target.* from (select from shared)
 select test.* from (select * from test)
-{"code": 1, "msg": "*: not in active scan"}
+{"msg": "*: not in active scan"}
 select test from (select * from test)
-{"code": 1, "msg": "column test: row or object expected, but got array"}
+{"msg": "column test: row or object expected, but got array"}
 # test: select alias.* from (select from shared)
 select alias from (select * from test) alias
-{"code": 1, "msg": "column alias: row or object expected, but got array"}
+{"msg": "column alias: row or object expected, but got array"}
 select alias.* from (select * from test) alias
 [[1], [2], [3]]
 select alias.* from (select test.* from test) alias
@@ -412,7 +412,7 @@ select alias.* from (select test.* from test) alias
 select alias.* from (select x.* from test x) alias
 [[1], [2], [3]]
 select alias.* from (select alias.* from test alias) alias
-{"code": 1, "msg": "<alias> target is redefined, please use different alias for the target"}
+{"msg": "<alias> target is redefined, please use different alias for the target"}
 select alias.* from (select * from test) alias
 [[1], [2], [3]]
 drop table test
@@ -422,7 +422,7 @@ insert into test {"data": {"id": 2}}
 insert into test {"data": {"id": 3}}
 # test: select target.path from (select from shared)
 select obj from (select * from test)
-{"code": 1, "msg": "column obj: row or object expected, but got array"}
+{"msg": "column obj: row or object expected, but got array"}
 select * from (select * from test) alias
 [[{
   "data": {
@@ -472,9 +472,9 @@ drop table test
 create shared table test (id int primary key)
 create view test_view as select [1,2,3]
 explain select (select *) from test_view
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 select (select *) from test_view
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 # test: select (select alias.*) from view
 explain select (select t.*) from test_view t
 [{
@@ -503,14 +503,14 @@ explain select (select t.*) from test_view t
 select (select t.*) from test_view t
 [1, 2, 3]
 select (select t.*) from test_view
-{"code": 1, "msg": "<t> target not found"}
+{"msg": "<t> target not found"}
 # test: select (select alias.**) from view
 drop view test_view
 create view test_view as select {"a": 1, "b": 2}
 select (select t.**) from test_view t
 ["a", "b"]
 select (select t.**) from test_view
-{"code": 1, "msg": "<t> target not found"}
+{"msg": "<t> target not found"}
 select ** from test_view
 ["a", "b"]
 drop view test_view
@@ -592,7 +592,7 @@ select (select * from test where false)
 []
 # test: select (select from shared) from shared
 select (select * from test) from test
-{"code": 1, "msg": "<test> target is redefined, please use different alias for the target"}
+{"msg": "<test> target is redefined, please use different alias for the target"}
 explain select (select i.* from test i) from test
 [{
   "bytecode": {
@@ -829,7 +829,7 @@ explain select (select * from a)[0]
   }
 }]
 select (select * from a)[0]
-{"code": 1, "msg": "[]: object or array expected"}
+{"msg": "[]: object or array expected"}
 explain select (select a.* from a) + (select b.* from b)
 [{
   "bytecode": {
@@ -866,7 +866,7 @@ explain select (select a.* from a) + (select b.* from b)
   }
 }]
 select (select a.* from a) + (select b.* from b)
-{"code": 1, "msg": "bad + expression types"}
+{"msg": "bad + expression types"}
 drop table a
 drop table b
 disconnect S0

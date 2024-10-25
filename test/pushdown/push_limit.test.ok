@@ -85,7 +85,7 @@ explain select * from test limit 0
 select * from test limit 0
 []
 select * from test limit -1
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from table limit offset
 explain select * from test limit 1 offset 0
 [{
@@ -181,7 +181,7 @@ select * from test limit 2 offset 4
 select * from test limit 2 offset 0
 [[0], [1]]
 select * from test limit 1 offset -1
-{"code": 1, "msg": "OFFSET: positive integer value expected"}
+{"msg": "OFFSET: positive integer value expected"}
 # test: select from table limit offset #5
 select * from test limit 0 offset 1
 []
@@ -232,7 +232,7 @@ select * from test offset 4
 select * from test offset 0
 [[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
 select * from test offset -1
-{"code": 1, "msg": "OFFSET: positive integer value expected"}
+{"msg": "OFFSET: positive integer value expected"}
 drop table test
 # test: select from shared limit
 create shared table test (id int primary key serial)
@@ -319,7 +319,7 @@ explain select * from test limit 0
 select * from test limit 0
 []
 select * from test limit -1
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from shared limit offset
 explain select * from test limit 1 offset 0
 [{
@@ -415,7 +415,7 @@ select * from test limit 2 offset 4
 select * from test limit 2 offset 0
 [[0], [1]]
 select * from test limit 1 offset -1
-{"code": 1, "msg": "OFFSET: positive integer value expected"}
+{"msg": "OFFSET: positive integer value expected"}
 # test: select from shared limit offset #5
 select * from test limit 0 offset 1
 []
@@ -466,7 +466,7 @@ select * from test offset 4
 select * from test offset 0
 [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
 select * from test offset -1
-{"code": 1, "msg": "OFFSET: positive integer value expected"}
+{"msg": "OFFSET: positive integer value expected"}
 drop table test
 # test: select from expr limit
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 100
@@ -609,7 +609,7 @@ explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
 []
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit -1
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT/OFFSET: positive integer value expected"}
 # test: select from expr limit offset
 explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
 [{
@@ -836,6 +836,6 @@ select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 4
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset -1
-{"code": 1, "msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT/OFFSET: positive integer value expected"}
 disconnect S0
 close E0

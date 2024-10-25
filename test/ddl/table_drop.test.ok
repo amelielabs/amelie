@@ -2,16 +2,16 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: drop table statement parsing
 drop
-{"code": 1, "msg": "DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
 drop 1
-{"code": 1, "msg": "DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
 drop table "name"
-{"code": 1, "msg": "DROP TABLE <name> expected"}
+{"msg": "DROP TABLE <name> expected"}
 drop table name junk
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: drop non-existing table
 drop table name
-{"code": 1, "msg": "table 'name': not exists"}
+{"msg": "table 'name': not exists"}
 drop table if exists test
 # test: drop table
 create table test(id int primary key)
@@ -44,7 +44,7 @@ create table test.test (id int primary key)
 select name from system.tables() where *.schema = "test" and name = "test"
 ["test"]
 drop table test
-{"code": 1, "msg": "table 'test': not exists"}
+{"msg": "table 'test': not exists"}
 drop table test.test
 drop schema test
 select name from system.tables() where *.schema = "test" and name = "test"

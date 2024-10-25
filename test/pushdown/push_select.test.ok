@@ -223,7 +223,7 @@ select (select (select * from [1,2,3])) from test
 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
 # test: select (select (select from table)) from table
 explain select (select (select * from test t)) from test
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: select (select (select from shared)) from table
 create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
@@ -313,7 +313,7 @@ select * from test where (select * from [1,2,3])
 [[1, 0], [2, 0], [3, 0]]
 # test: select from table where (select from table)
 explain select * from test where (select * from test t)
-{"code": 1, "msg": "subqueries to distributed tables are not supported"}
+{"msg": "subqueries to distributed tables are not supported"}
 # test: select from table where (select from shared)
 explain select * from test where (select * from ref)
 [{

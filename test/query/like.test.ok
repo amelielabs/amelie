@@ -2,16 +2,16 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: like parsing
 select like
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select like 1
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select like like
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 1 like
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 # test: like
 select 1 like 1
-{"code": 1, "msg": "LIKE: arguments expected to be strings"}
+{"msg": "LIKE: arguments expected to be strings"}
 select '' like ''
 [true]
 select '' like '%'
@@ -59,11 +59,11 @@ select '123 %_%_% day' like '%%_%%_%%'
 [true]
 # test: not like
 select not like
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select not
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select not like 20
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 'abcd' like 'abc%d'
 [true]
 select 'abcd' not like 'abc%d'

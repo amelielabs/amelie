@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create user statement parsing
 create user
-{"code": 1, "msg": "CREATE USER <name> expected"}
+{"msg": "CREATE USER <name> expected"}
 create user 123
-{"code": 1, "msg": "CREATE USER <name> expected"}
+{"msg": "CREATE USER <name> expected"}
 create user if
-{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+{"msg": "IF <NOT> EXISTS expected"}
 create user if not
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create user if not 123
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create user if not exists
-{"code": 1, "msg": "CREATE USER <name> expected"}
+{"msg": "CREATE USER <name> expected"}
 create user test abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: create user
 create user test
 show users
@@ -25,17 +25,17 @@ show users
 }]
 # test: create user if not exists
 create user test
-{"code": 1, "msg": "user 'test': already exists"}
+{"msg": "user 'test': already exists"}
 create user if not exists test
 # test: create user secret
 create user test2 secret
-{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "CREATE USER SECRET <value> string expected"}
 create user test2 secret 123
-{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "CREATE USER SECRET <value> string expected"}
 create user test2 secret secret
-{"code": 1, "msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "CREATE USER SECRET <value> string expected"}
 create user test2 secret "test" abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 create user test2 secret "test"
 show users
 [{
@@ -50,17 +50,17 @@ select name from system.users() where name = "test2"
 ["test2"]
 # test: drop user statment parsing
 drop user
-{"code": 1, "msg": "DROP USER <name> expected"}
+{"msg": "DROP USER <name> expected"}
 drop user 123
-{"code": 1, "msg": "DROP USER <name> expected"}
+{"msg": "DROP USER <name> expected"}
 drop user if
-{"code": 1, "msg": "IF <EXISTS> expected"}
+{"msg": "IF <EXISTS> expected"}
 drop user if exists
-{"code": 1, "msg": "DROP USER <name> expected"}
+{"msg": "DROP USER <name> expected"}
 drop user if exists 123
-{"code": 1, "msg": "DROP USER <name> expected"}
+{"msg": "DROP USER <name> expected"}
 drop user test abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: drop user
 drop user test
 show users
@@ -71,27 +71,27 @@ show users
 }]
 # test: drop user if exists
 drop user test
-{"code": 1, "msg": "user 'test': not exists"}
+{"msg": "user 'test': not exists"}
 drop user if exists test
 # test: alter user statment parsing
 alter user
-{"code": 1, "msg": "ALTER USER <name> expected"}
+{"msg": "ALTER USER <name> expected"}
 alter user 123
-{"code": 1, "msg": "ALTER USER <name> expected"}
+{"msg": "ALTER USER <name> expected"}
 alter user test
-{"code": 1, "msg": "ALTER USER <SECRET> expected"}
+{"msg": "ALTER USER <SECRET> expected"}
 alter user test2
-{"code": 1, "msg": "ALTER USER <SECRET> expected"}
+{"msg": "ALTER USER <SECRET> expected"}
 alter user test2 passw
-{"code": 1, "msg": "ALTER USER <SECRET> expected"}
+{"msg": "ALTER USER <SECRET> expected"}
 alter user test2 secret
-{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "ALTER USER SECRET <value> string expected"}
 alter user test2 secret 123
-{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "ALTER USER SECRET <value> string expected"}
 alter user test2 secret name
-{"code": 1, "msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "ALTER USER SECRET <value> string expected"}
 alter user test2 secret "abc" abc
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: alter user
 alter user test2 secret "abc"
 show users

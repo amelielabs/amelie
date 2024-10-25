@@ -27,7 +27,7 @@ show repl
 start repl
 # test: subscribe (using self id)
 subscribe "00000000-0000-0000-0000-000000000001"
-{"code": 1, "msg": "repl: primary id cannot match this server id"}
+{"msg": "repl: primary id cannot match this server id"}
 # test: subscribe
 subscribe "00000000-0000-0000-0000-000000000000"
 show repl
@@ -144,13 +144,13 @@ show read_only
 show lsn
 [9]
 insert into test 10
-{"code": 1, "msg": "system is in read-only mode"}
+{"msg": "system is in read-only mode"}
 show lsn
 [9]
 show psn
 [3]
 create table test2 (id int primary key)
-{"code": 1, "msg": "system is in read-only mode"}
+{"msg": "system is in read-only mode"}
 show lsn
 [9]
 show psn

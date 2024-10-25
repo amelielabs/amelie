@@ -15,8 +15,6 @@ enum
 {
 	ERROR_NONE,
 	ERROR,
-	ERROR_CONFLICT,
-	ERROR_RO,
 	CANCEL
 };
 

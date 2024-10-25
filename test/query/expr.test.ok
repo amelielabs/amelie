@@ -12,7 +12,7 @@ select 123456789012345
 select -20
 [-20]
 select length(0)
-{"code": 1, "msg": "length(): operation type is not supported"}
+{"msg": "length(): operation type is not supported"}
 select 1.0
 [1]
 select 1.1234
@@ -54,11 +54,11 @@ select false
 select null
 [null]
 select name
-{"code": 1, "msg": "<name> column, CTE or argument not found"}
+{"msg": "<name> column, CTE or argument not found"}
 select path.to.name
-{"code": 1, "msg": "<path> column, CTE or argument not found"}
+{"msg": "<path> column, CTE or argument not found"}
 select *
-{"code": 1, "msg": "<*> no FROM clause defined"}
+{"msg": "<*> no FROM clause defined"}
 # test: basic operations
 select 0 + 0
 [0]
@@ -67,11 +67,11 @@ select 2 + 2
 select 32 - 2
 [30]
 select "a" + 0
-{"code": 1, "msg": "bad + expression types"}
+{"msg": "bad + expression types"}
 select 0 + "a"
-{"code": 1, "msg": "bad + expression types"}
+{"msg": "bad + expression types"}
 select 0 || 0
-{"code": 1, "msg": "bad || expression types"}
+{"msg": "bad || expression types"}
 select 2 * 2
 [4]
 select 8 * 8
@@ -79,9 +79,9 @@ select 8 * 8
 select 64 / ( 4 + 4 )
 [8]
 select 64 / 0
-{"code": 1, "msg": "zero division"}
+{"msg": "zero division"}
 select 64 % 0
-{"code": 1, "msg": "zero division"}
+{"msg": "zero division"}
 select 60 & 13
 [12]
 select 60 | 13
@@ -107,7 +107,7 @@ select 0 < 0
 select 0 <= 0
 [true]
 select "a" < 0
-{"code": 1, "msg": "bad < expression type"}
+{"msg": "bad < expression type"}
 select "a" < "b"
 [true]
 select "a" < "a"
@@ -121,17 +121,17 @@ select "a" > "a"
 select "a" >= "a"
 [true]
 select 1 between
-{"code": 1, "msg": "error BETWEEN const value expected"}
+{"msg": "error BETWEEN const value expected"}
 select 1 between and
-{"code": 1, "msg": "error BETWEEN const value expected"}
+{"msg": "error BETWEEN const value expected"}
 select 1 between 0
-{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+{"msg": "BETWEEN expr <AND> expected"}
 select 1 between 0 1
-{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+{"msg": "BETWEEN expr <AND> expected"}
 select 1 between 0 or
-{"code": 1, "msg": "BETWEEN expr <AND> expected"}
+{"msg": "BETWEEN expr <AND> expected"}
 select 1 between 0 and
-{"code": 1, "msg": "error BETWEEN const value expected"}
+{"msg": "error BETWEEN const value expected"}
 select 1 between 0 and 0
 [false]
 select 1 between 0 and 1
@@ -194,7 +194,7 @@ explain select 0.058 not between 0.010 and 0.053
 select -20
 [-20]
 select - "test"
-{"code": 1, "msg": "bad - expression type"}
+{"msg": "bad - expression type"}
 select not 20
 [false]
 select not "test"
@@ -220,9 +220,9 @@ select null = null
 select null <> null
 [false]
 select 1 is
-{"code": 1, "msg": "IS <NULL> expected"}
+{"msg": "IS <NULL> expected"}
 select is
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select 1 is null
 [false]
 select 1 is not null
@@ -266,11 +266,11 @@ select "a" or not "b"
 select not 0 or not 0
 [true]
 select "a" + "b"
-{"code": 1, "msg": "bad + expression types"}
+{"msg": "bad + expression types"}
 select "a" || "b"
 ["ab"]
 select "a"[0]
-{"code": 1, "msg": "[]: object or array expected"}
+{"msg": "[]: object or array expected"}
 select "\"Hello World\""
 ["\"Hello World\""]
 select 1.1 + 1.1
@@ -322,11 +322,11 @@ select 1.1 or 0.0
 select not 2.8
 [false]
 select 2.8 & 3.4
-{"code": 1, "msg": "bad & expression type"}
+{"msg": "bad & expression type"}
 select 0[0]
-{"code": 1, "msg": "[]: object or array expected"}
+{"msg": "[]: object or array expected"}
 select name[0]
-{"code": 1, "msg": "<name> column, CTE or argument not found"}
+{"msg": "<name> column, CTE or argument not found"}
 # test: array
 select []
 []
@@ -335,7 +335,7 @@ select [0, 1, 2]
 select [0, [1, 2], 3]
 [0, [1, 2], 3]
 select [][0]
-{"code": 1, "msg": "<0>: array index not found"}
+{"msg": "<0>: array index not found"}
 select [0, 1, 2][0]
 [0]
 select [0, 1, 2][1]
@@ -343,7 +343,7 @@ select [0, 1, 2][1]
 select [0, 1, 2][2]
 [2]
 select [0, 1, 2][3]
-{"code": 1, "msg": "<3>: array index not found"}
+{"msg": "<3>: array index not found"}
 select [0, [1, 2], 3][1]
 [1, 2]
 select length([])
@@ -360,13 +360,13 @@ select [{}]
 select {}
 [{}]
 select {"a"}
-{"code": 1, "msg": "{}: {name <:>} expected"}
+{"msg": "{}: {name <:>} expected"}
 select {"a": 0}
 [{
   "a": 0
 }]
 select {"a": 0, "b"}
-{"code": 1, "msg": "{}: {name <:>} expected"}
+{"msg": "{}: {name <:>} expected"}
 select {"a": 0, "b": 1}
 [{
   "a": 0,

@@ -2,51 +2,51 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: insert statement parsing
 insert
-{"code": 1, "msg": "INSERT <INTO> expected"}
+{"msg": "INSERT <INTO> expected"}
 insert junk
-{"code": 1, "msg": "INSERT <INTO> expected"}
+{"msg": "INSERT <INTO> expected"}
 insert into
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 insert into "name"
-{"code": 1, "msg": "INSERT INTO <table> expected"}
+{"msg": "INSERT INTO <table> expected"}
 insert into 1
-{"code": 1, "msg": "INSERT INTO <table> expected"}
+{"msg": "INSERT INTO <table> expected"}
 insert into name
-{"code": 1, "msg": "<name> table or view is not found"}
+{"msg": "<name> table or view is not found"}
 create table test (id int primary key)
 insert into test
-{"code": 1, "msg": "unexpected end of line"}
+{"msg": "unexpected end of line"}
 insert into test values
-{"code": 1, "msg": "expected '('"}
+{"msg": "expected '('"}
 insert into test values(
-{"code": 1, "msg": "unexpected end of line"}
+{"msg": "unexpected end of line"}
 insert into test values(,
-{"code": 1, "msg": "unexpected token"}
+{"msg": "unexpected token"}
 insert into test values(123
-{"code": 1, "msg": "expected ')'"}
+{"msg": "expected ')'"}
 insert into test values(123,
-{"code": 1, "msg": "row has incorrect number of columns"}
+{"msg": "row has incorrect number of columns"}
 # test: insert type validate
 insert into test values ("123")
-{"code": 1, "msg": "column id: does not match data type int"}
+{"msg": "column id: does not match data type int"}
 insert into test values (123, 123)
-{"code": 1, "msg": "row has incorrect number of columns"}
+{"msg": "row has incorrect number of columns"}
 select * from test
 []
 # test: insert
 insert into test values (123)
 # test: primary unique key constraint violation
 insert into test values (123)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 # test: insert schema
 drop table test
 create schema test
 create table test.test (id int primary key)
 insert into test values (123)
-{"code": 1, "msg": "<test> table or view is not found"}
+{"msg": "<test> table or view is not found"}
 insert into test.test values (123)
 select * from test
-{"code": 1, "msg": "<test> table or view is not found"}
+{"msg": "<test> table or view is not found"}
 select * from test.test
 [[123]]
 drop table test.test
@@ -63,9 +63,9 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": ""
 }]]
 insert into test values (123)
-{"code": 1, "msg": "unexpected token"}
+{"msg": "unexpected token"}
 insert into test values (1, 2, 3)
-{"code": 1, "msg": "row has incorrect number of columns"}
+{"msg": "row has incorrect number of columns"}
 insert into test values (1, 2)
 select * from test
 [[1, 2]]
@@ -79,7 +79,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "id"
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column obj: does not match data type object"}
+{"msg": "column obj: does not match data type object"}
 insert into test values ( {"id": 48} )
 select * from test
 [[{
@@ -97,15 +97,15 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "data.id"
 }]]
 insert into test values (123)
-{"code": 1, "msg": "column obj: does not match data type object"}
+{"msg": "column obj: does not match data type object"}
 insert into test values ( {"id": 48} )
-{"code": 1, "msg": "column obj: key path <data.id> is not found"}
+{"msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": []} )
-{"code": 1, "msg": "expected data type 'object', but got 'array'"}
+{"msg": "expected data type 'object', but got 'array'"}
 insert into test values ( {"data": {}} )
-{"code": 1, "msg": "column obj: key path <data.id> is not found"}
+{"msg": "column obj: key path <data.id> is not found"}
 insert into test values ( {"data": {"id": "48"} } )
-{"code": 1, "msg": "column obj: key path <data.id> does not match data type int"}
+{"msg": "column obj: key path <data.id> does not match data type int"}
 insert into test values ( {"data": {"id": 48} } )
 select * from test
 [[{
@@ -127,7 +127,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": "id"
 }]]
 insert into test values ( {"data": {"id": 48} } )
-{"code": 1, "msg": "column obj: key path <id> is not found"}
+{"msg": "column obj: key path <id> is not found"}
 insert into test values ( {"data": {"id": 48}, "id": 1 } )
 select * from test
 [[{
@@ -141,7 +141,7 @@ drop table test
 create table test (id string primary key)
 insert into test values ("hello")
 insert into test ("world")
-{"code": 1, "msg": "INSERT INTO name (<column name> expected"}
+{"msg": "INSERT INTO name (<column name> expected"}
 insert into test values ("world")
 insert into test "again"
 select * from test
@@ -150,11 +150,11 @@ drop table test
 # test: insert one column expr #2
 create table test (id string primary key, data int)
 insert into test "again"
-{"code": 1, "msg": "INSERT INTO <VALUES> expected"}
+{"msg": "INSERT INTO <VALUES> expected"}
 insert into test "again", 2
-{"code": 1, "msg": "INSERT INTO <VALUES> expected"}
+{"msg": "INSERT INTO <VALUES> expected"}
 insert into test ("again", 2)
-{"code": 1, "msg": "INSERT INTO name (<column name> expected"}
+{"msg": "INSERT INTO name (<column name> expected"}
 insert into test values ("again", 2)
 select * from test
 [["again", 2]]
@@ -169,7 +169,7 @@ drop table test
 create table test (obj object, primary key(obj.id int))
 insert into test values ({"id": 48})
 insert into test ({"id": 49})
-{"code": 1, "msg": "INSERT INTO name (<column name> expected"}
+{"msg": "INSERT INTO name (<column name> expected"}
 insert into test {"id": 49}
 insert into test {"id": 1}
 insert into test {"id": 2}
@@ -192,11 +192,11 @@ drop table test
 # test: insert list
 create table test (id int primary key, data int)
 insert into test (id, data) values ()
-{"code": 1, "msg": "unexpected token"}
+{"msg": "unexpected token"}
 insert into test (id, data) values (123)
-{"code": 1, "msg": "row has incorrect number of columns"}
+{"msg": "row has incorrect number of columns"}
 insert into test (id, data) values (123, 123, 123)
-{"code": 1, "msg": "expected ')'"}
+{"msg": "expected ')'"}
 insert into test (id, data) values (123, 123)
 select * from test
 [[123, 123]]
@@ -204,16 +204,16 @@ drop table test
 # test: insert list column order
 create table test (id int primary key, data int)
 insert into test (data, id) values (123, 123)
-{"code": 1, "msg": "column list must be in order"}
+{"msg": "column list must be in order"}
 insert into test (data, id, data) values (123, 123)
-{"code": 1, "msg": "column list must be in order"}
+{"msg": "column list must be in order"}
 select * from test
 []
 drop table test
 # test: insert list column reuse
 create table test (id int primary key, data int)
 insert into test (id, id) values (123, 123)
-{"code": 1, "msg": "column list must be in order"}
+{"msg": "column list must be in order"}
 insert into test (id, data) values (123, 123)
 select * from test
 [[123, 123]]
@@ -223,10 +223,10 @@ create table test (id int primary key, data int)
 insert into test (id) values (1)
 insert into test (id, data) values (2, null)
 insert into test (id, data) values (null, null)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 insert into test values (3, null)
 insert into test values (null, null)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 select * from test
 [[1, null], [2, null], [3, null]]
 drop table test
@@ -239,13 +239,13 @@ drop table test
 # test: insert list not null
 create table test (id int primary key, data int not null)
 insert into test (id) values (1)
-{"code": 1, "msg": "column <data> value cannot be NULL"}
+{"msg": "column <data> value cannot be NULL"}
 insert into test (id, data) values (2, null)
-{"code": 1, "msg": "column <data> value cannot be NULL"}
+{"msg": "column <data> value cannot be NULL"}
 insert into test values (3, null)
-{"code": 1, "msg": "column <data> value cannot be NULL"}
+{"msg": "column <data> value cannot be NULL"}
 insert into test values (null, null)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 insert into test (id, data) values (2, 2)
 select * from test
 [[2, 2]]
@@ -253,9 +253,9 @@ drop table test
 # test: insert list not null key
 create table test (id int primary key, data int)
 insert into test (data) values (123)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 insert into test values (null, 123)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -277,7 +277,7 @@ insert into test (data) values (1)
 select * from test
 [[123, 1]]
 insert into test (data) values (1)
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 drop table test
 # test: insert list default key #2
 create table test (id int default 123 primary key)
@@ -285,7 +285,7 @@ insert into test () values ()
 select * from test
 [[123]]
 insert into test () values ()
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 drop table test
 # test: insert serial
 create table test (id int serial primary key)
@@ -321,7 +321,7 @@ drop table test
 # test: insert serial null
 create table test (id int serial primary key, data int)
 insert into test (id, data) values (null, 123)
-{"code": 1, "msg": "column <id> value cannot be NULL"}
+{"msg": "column <id> value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -341,7 +341,7 @@ drop table test
 # test: insert insert error
 create table test (id int primary key)
 insert into test 1,2,3,1
-{"code": 1, "msg": "index 'primary': unique key constraint violation"}
+{"msg": "index 'primary': unique key constraint violation"}
 select * from test
 []
 drop table test
@@ -374,9 +374,9 @@ drop table test
 # test: insert generate
 create table test (id int primary key serial, data int default 0)
 insert into test generate
-{"code": 1, "msg": "GENERATE <count> expected"}
+{"msg": "GENERATE <count> expected"}
 insert into test generate "10"
-{"code": 1, "msg": "GENERATE <count> expected"}
+{"msg": "GENERATE <count> expected"}
 insert into test generate 10
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
@@ -452,7 +452,7 @@ select * from test use index (i)
 drop index i on test
 # test: insert secondary index unique (non shared)
 create unique index i on test (data)
-{"code": 1, "msg": "CREATE UNIQUE INDEX cannot be created on distributed tables"}
+{"msg": "CREATE UNIQUE INDEX cannot be created on distributed tables"}
 # test: insert secondary index (unique)
 drop table test
 create shared table test (id int primary key, data int)
@@ -465,7 +465,7 @@ select * from test
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 insert into test values (3, 0)
-{"code": 1, "msg": "index 'i': unique key constraint violation"}
+{"msg": "index 'i': unique key constraint violation"}
 insert into test values (3, -1)
 select * from test use index (i)
 [[3, -1], [2, 0], [1, 1], [0, 2]]
@@ -545,7 +545,7 @@ explain insert into test 1,2,3 returning *
 insert into test 1,2,3 returning *
 [[1], [2], [3]]
 insert into test 1,2,3 returning *
-{"code": 1, "msg": "unique key constraint violation"}
+{"msg": "unique key constraint violation"}
 drop table test
 # test: insert returning into
 create table test (id int primary key)

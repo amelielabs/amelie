@@ -5,25 +5,25 @@ show nodes
 [{}]
 # test: ddl (without nodes)
 create table test (id int primary key)
-{"code": 1, "msg": "system has no nodes"}
+{"msg": "system has no nodes"}
 create shared table test (id int primary key)
-{"code": 1, "msg": "system has no nodes"}
+{"msg": "system has no nodes"}
 select * from test
-{"code": 1, "msg": "<test> table or view is not found"}
+{"msg": "<test> table or view is not found"}
 select * from [1,2,3]
 [1, 2, 3]
 # test: create node statement parsing
 create compute
-{"code": 1, "msg": "CREATE COMPUTE <NODE> expected"}
+{"msg": "CREATE COMPUTE <NODE> expected"}
 create node 1
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 create node for
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 create node for 1
-{"code": 1, "msg": "unexpected token at the end of statement"}
+{"msg": "unexpected token at the end of statement"}
 # test: create node id
 create node ""
-{"code": 1, "msg": "failed to parse uuid"}
+{"msg": "failed to parse uuid"}
 create compute node "00000000-0000-0000-0000-000000000000"
 show nodes
 [{
@@ -34,20 +34,20 @@ show nodes
 }]
 # test: create node already exists
 create node "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
+{"msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
 # test: create node if not exists
 create node if "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+{"msg": "IF <NOT> EXISTS expected"}
 create node if
-{"code": 1, "msg": "IF <NOT> EXISTS expected"}
+{"msg": "IF <NOT> EXISTS expected"}
 create node if not
-{"code": 1, "msg": "IF NOT <EXISTS> expected"}
+{"msg": "IF NOT <EXISTS> expected"}
 create node if not exists
-{"code": 1, "msg": "CREATE NODE IF NOT EXISTS <ID> expected"}
+{"msg": "CREATE NODE IF NOT EXISTS <ID> expected"}
 create node if not exists "00000000-0000-0000-0000-00000000000Z"
-{"code": 1, "msg": "failed to parse uuid"}
+{"msg": "failed to parse uuid"}
 create node if not exists "  00000000-0000-0000-0000-00000000000  "
-{"code": 1, "msg": "failed to parse uuid"}
+{"msg": "failed to parse uuid"}
 create node if not exists "00000000-0000-0000-0000-000000000000"
 show nodes
 [{
@@ -149,14 +149,14 @@ select * from test2
 [[4], [5], [6]]
 # test: drop node statement parsing
 drop node
-{"code": 1, "msg": "DROP NODE <id> expected"}
+{"msg": "DROP NODE <id> expected"}
 drop node 1
-{"code": 1, "msg": "DROP NODE <id> expected"}
+{"msg": "DROP NODE <id> expected"}
 drop node ""
-{"code": 1, "msg": "node '': not exists"}
+{"msg": "node '': not exists"}
 # test: drop node if exists
 drop node "00000000-0000-0000-0000-000000000001"
-{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
+{"msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
 show nodes
 [{
@@ -167,7 +167,7 @@ show nodes
 }]
 # test: drop node with dependency
 drop node "00000000-0000-0000-0000-000000000000"
-{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
+{"msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
 # test: drop node without dependency
 create compute node "00000000-0000-0000-0000-000000000001"
 create node "00000000-0000-0000-0000-000000000002"
@@ -199,7 +199,7 @@ show nodes
   }
 }]
 drop node "00000000-0000-0000-0000-000000000001"
-{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
+{"msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
 drop node if exists "00000000-0000-0000-0000-000000000001"
 # test: ddl (two nodes partitioning)
 create table test3 (id int primary key)
@@ -309,7 +309,7 @@ show tables
 }]
 # test: drop node (after table drop)
 drop node "00000000-0000-0000-0000-000000000002"
-{"code": 1, "msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
+{"msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
 drop table test3
 drop node "00000000-0000-0000-0000-000000000002"
 show nodes

@@ -7,7 +7,7 @@ show timezone_default
 ["UTC"]
 # test: set unknown timezone
 set timezone to 'mars'
-{"code": 1, "msg": "set 'timezone': unable to find timezone 'mars'"}
+{"msg": "set 'timezone': unable to find timezone 'mars'"}
 show timezone
 ["UTC"]
 select system.config().timezone
@@ -36,7 +36,7 @@ select '2024-07-29 18:40:19'::timestamp('Asia/Famagusta')
 select '2024-07-29 18:40:19'::timestamp
 ["2024-07-29 18:40:19+03"]
 select '2024-07-29 18:40:19'::timestamp('jupiter')
-{"code": 1, "msg": "timestamp(): failed to find timezone 'jupiter'"}
+{"msg": "timestamp(): failed to find timezone 'jupiter'"}
 # test: at_timezone
 select '2024-07-29 18:40:19'::timestamp
 ["2024-07-29 18:40:19+03"]
@@ -47,7 +47,7 @@ select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
 ["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
-{"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
+{"msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: at timezone operator
 select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
 ["2024-07-29 15:40:19+00"]
@@ -56,7 +56,7 @@ select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
 select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
 ["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp at timezone null
-{"code": 1, "msg": "at_timezone(): expected string for argument 1, but got null"}
+{"msg": "at_timezone(): expected string for argument 1, but got null"}
 # test: timestamp column
 create table test (time timestamp primary key)
 # test: timestamp column (localtime)

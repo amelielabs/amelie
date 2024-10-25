@@ -15,14 +15,14 @@ select (select * from [1,2,3])::type
 select 1::int
 [1]
 select 1::int(123)
-{"code": 1, "msg": "int(): expected 1 arguments, but got 2"}
+{"msg": "int(): expected 1 arguments, but got 2"}
 # test: (int) string to int
 select '123'::int
 [123]
 select '1423423423'::int
 [1423423423]
 select '1423abc'::int
-{"code": 1, "msg": "int(): failed to cast string"}
+{"msg": "int(): failed to cast string"}
 # test: (int) real to int
 select 3.14::int
 [3]
@@ -40,7 +40,7 @@ select 1722517792056945::timestamp::int::timestamp
 ["2024-08-01 13:09:52.056945+00"]
 # test: (int) interval to int
 select '1 hour'::interval::int
-{"code": 1, "msg": "int(): operation type is not supported"}
+{"msg": "int(): operation type is not supported"}
 # test: (bool) int to bool
 select 1::bool
 [true]
@@ -91,7 +91,7 @@ select {"id": 42, "data": [1,2,3]}::string
 ["{\"id\": 42, \"data\": [1, 2, 3]}"]
 # test: (native) int to native
 select 1::native
-{"code": 1, "msg": "native(): string type expected"}
+{"msg": "native(): string type expected"}
 # test: (native) string to native
 select '1'::native
 [1]
@@ -104,9 +104,9 @@ select '[1,2,3]'::native::type
 ["array"]
 # test: (native) obj to native
 select {"id":55}::native
-{"code": 1, "msg": "native(): string type expected"}
+{"msg": "native(): string type expected"}
 select {"id":55}::native::type
-{"code": 1, "msg": "native(): string type expected"}
+{"msg": "native(): string type expected"}
 # test: (native) vector to native
 select 'vector [1,2,3]'::native
 [1, 2, 3]
@@ -130,13 +130,13 @@ select [1.0]::vector
 select [1]::vector
 [1]
 select [1, 2.0, "test"]::vector
-{"code": 1, "msg": "vector(): int or real values expected"}
+{"msg": "vector(): int or real values expected"}
 select [1, 2.0, "test"]::vector
-{"code": 1, "msg": "vector(): int or real values expected"}
+{"msg": "vector(): int or real values expected"}
 select [1, 2.0, {}]::vector
-{"code": 1, "msg": "vector(): int or real values expected"}
+{"msg": "vector(): int or real values expected"}
 select [1, 2.0, null]::vector
-{"code": 1, "msg": "vector(): int or real values expected"}
+{"msg": "vector(): int or real values expected"}
 select [1,2,3]::vector
 [1, 2, 3]
 select [1,2,3]::vector::type

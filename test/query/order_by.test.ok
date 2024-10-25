@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: order by []
 select * from [1,3,2] order
-{"code": 1, "msg": "ORDER <BY> expected"}
+{"msg": "ORDER <BY> expected"}
 select * from [1,3,2] order by
-{"code": 1, "msg": "bad expression"}
+{"msg": "bad expression"}
 select * from [1,3,2] order by *
 [1, 2, 3]
 explain select * from [1,3,2] order by *
@@ -38,9 +38,9 @@ explain select * from [1,3,2] order by *
   }
 }]
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 select * from 1 order by *
-{"code": 1, "msg": "FROM: array, object or store expected, but got int"}
+{"msg": "FROM: array, object or store expected, but got int"}
 select (select * from [1,3,2] order by *)
 [1, 2, 3]
 select * from (select * from [1,3,2] order by *)
@@ -115,7 +115,7 @@ select * from test order by data asc
 select * from test order by test.data
 [[1, 1], [3, 2], [2, 3]]
 select * from test order by test
-{"code": 1, "msg": "column test: does not exists"}
+{"msg": "column test: does not exists"}
 # test: order by alias.column
 select * from test alias order by alias.data
 [[1, 1], [3, 2], [2, 3]]

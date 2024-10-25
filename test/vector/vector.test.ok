@@ -8,7 +8,7 @@ select [1,2,3]::vector::type
 select [1,2,3]::vector::length
 [3]
 select ""::vector
-{"code": 1, "msg": "vector(): expected array for argument 0, but got string"}
+{"msg": "vector(): expected array for argument 0, but got string"}
 select [1.0]::vector
 [1]
 select [1.0, 1.1, 1.2]::vector
@@ -25,9 +25,9 @@ select [1.0, 1.1, 1.2]::vector[1]
 select [1.0, 1.1, 1.2]::vector[2]
 [1.2]
 select [1.0, 1.1, 1.2]::vector[3]
-{"code": 1, "msg": "[]: vector index  is out of bounds"}
+{"msg": "[]: vector index  is out of bounds"}
 select [1.0, 1.1, 1.2]::vector[-10]
-{"code": 1, "msg": "[]: vector index  is out of bounds"}
+{"msg": "[]: vector index  is out of bounds"}
 # test: vector eq
 select [1.0, 1.1]::vector = [1.0, 1.1]::vector
 [true]
@@ -75,17 +75,17 @@ select [1.0, 1.1]::vector >= [1.0]::vector
 select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector
 [2, 3.1, 4]
 select [1.0, 2.1, 3]::vector + [1, 1]::vector
-{"code": 1, "msg": "vector sizes mismatch"}
+{"msg": "vector sizes mismatch"}
 # test: vector sub
 select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector
 [0, 1.1, 2]
 select [1.0, 2.1, 3]::vector - [1, 1]::vector
-{"code": 1, "msg": "vector sizes mismatch"}
+{"msg": "vector sizes mismatch"}
 # test: vector mul
 select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector
 [1.5, 3.15, 4.5]
 select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
-{"code": 1, "msg": "vector sizes mismatch"}
+{"msg": "vector sizes mismatch"}
 # test: vector column
 create table test (id int primary key, vec vector)
 insert into test values (0, vector [])
@@ -93,7 +93,7 @@ insert into test values (1, vector [1.0])
 insert into test values (2, vector [1])
 insert into test values (3, vector [1.0, 1.1,])
 insert into test values (4, vector [1.0,)
-{"code": 1, "msg": "VECTOR integer of real value expected"}
+{"msg": "VECTOR integer of real value expected"}
 insert into test values (5, vector [1.0,])
 insert into test values (6, vector [1.0, 1.1])
 insert into test values (7, vector [1.0, 1.1, -2.2, -8])
