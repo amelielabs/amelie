@@ -88,14 +88,12 @@ system_status_process(System* self, Buf* buf)
 	for (; i < fe->workers_count; i++)
 	{
 		workers_id[i] = fe->workers[i].task.thread.tid;
-		info("%d", workers_id[i]);
 		workers_usage[i] = 0;
 	}
 	list_foreach(&be->list)
 	{
 		auto compute = list_at(Compute, link);
 		workers_id[i] = compute->task.thread.tid;
-		info("%d", workers_id[i]);
 		workers_usage[i] = 0;
 		i++;
 	}
@@ -176,13 +174,13 @@ system_status(System* self)
 	guard_buf(db);
 	buf_write(buf, db->start, buf_size(db));
 
-	// net
-	encode_raw(buf, "net", 3);
-	system_status_net(self, buf);
-
 	// process
 	encode_raw(buf, "process", 7);
 	system_status_process(self, buf);
+
+	// net
+	encode_raw(buf, "net", 3);
+	system_status_net(self, buf);
 
 	// wal
 	encode_raw(buf, "wal", 3);

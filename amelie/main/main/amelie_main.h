@@ -28,5 +28,8 @@
 #include "main/bench_tpcb.h"
 #include "main/bench_import.h"
 
+// top
+#include "main/top.h"
+
 // ctl
 #include "main/ctl.h"

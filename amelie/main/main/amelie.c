@@ -26,6 +26,7 @@ amelie_usage(void)
 	info("    backup <path> [login] [client options]");
 	info("    client [login] [client options]");
 	info("    import [login] [client options] [options] table files");
+	info("    top    [login] [client options]");
 	info("    bench  [login] [client options] [options]");
 	info("    login  <login> [client options]");
 	info("    logout <login>");
@@ -406,6 +407,35 @@ amelie_cmd_bench(Amelie* self, int argc, char** argv)
 }
 
 static void
+amelie_cmd_top(Amelie* self, int argc, char** argv)
+{
+	// amelie top name
+	auto home = &self->home;
+	home_open(home);
+	var_int_set(&config()->log_connections, false);
+
+	Remote remote;
+	remote_init(&remote);
+
+	Top top;
+	top_init(&top, &remote);
+
+	Exception e;
+	if (enter(&e))
+	{
+		// prepare remote
+		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
+		top_run(&top);
+	}
+
+	if (leave(&e))
+	{ }
+
+	top_free(&top);
+	remote_free(&remote);
+}
+
+static void
 amelie_main(Amelie* self, int argc, char** argv)
 {
 	// amelie [command] [options]
@@ -486,6 +516,13 @@ amelie_main(Amelie* self, int argc, char** argv)
 		if (argc <= 2)
 			goto usage;
 		amelie_cmd_bench(self, argc - 2, argv + 2);
+	} else
+	if (! strcmp(argv[1], "top"))
+	{
+		// top
+		if (argc <= 2)
+			goto usage;
+		amelie_cmd_top(self, argc - 2, argv + 2);
 	} else
 	{
 		// client by default

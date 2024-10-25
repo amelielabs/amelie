@@ -138,11 +138,11 @@ db_status(Db* self)
 	encode_integer(buf, self->schema_mgr.mgr.list_count);
 
 	// distributed_tables
-	encode_raw(buf, "distributed_tables", 18);
+	encode_raw(buf, "tables", 6);
 	encode_integer(buf, tables_distributed);
 
 	// shared_tables
-	encode_raw(buf, "shared_tables", 13);
+	encode_raw(buf, "tables_shared", 13);
 	encode_integer(buf, tables_shared);
 
 	// indexes

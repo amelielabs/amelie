@@ -304,6 +304,7 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/bench_upsert.c
     ${AMELIE_ROOT}/main/main/bench_tpcb.c
     ${AMELIE_ROOT}/main/main/bench_import.c
+    ${AMELIE_ROOT}/main/main/top.c
     ${AMELIE_ROOT}/main/main/ctl.c)
 
 set(AMELIE_SOURCES
