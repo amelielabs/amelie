@@ -279,7 +279,7 @@ top_draw(Top* self)
 	info("backends:          %-2" PRIi64 " %.*s" PAD PAD,
 	     stats->backends,
 	     buf_size(cpu_be), cpu_be->start);
-	info("memory:            %d MiB virt / %dMib res" PAD,
+	info("memory:            %d MiB virt / %d Mib res" PAD,
 	     (int)(stats->mem_virt / 1024 / 1024),
 	     (int)(stats->mem_resident / 1024 / 1024));
 	info("connections:       %" PRIi64 PAD, stats->connections);

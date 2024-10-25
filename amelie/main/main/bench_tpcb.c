@@ -18,9 +18,9 @@ static const int tpcb_accounts = 100000;
 
 hot static inline void
 tpcb_execute(Client* client,
-             long    bid,
-             long    tid,
-             long    aid, long delta)
+             int     bid,
+             int     tid,
+             int     aid, int delta)
 {
 	auto buf = buf_create();
 	guard_buf(buf);
@@ -127,9 +127,9 @@ bench_tpcb_main(BenchWorker* self, Client* client)
 		uint32_t a = *(uint32_t*)(&random);
 		uint32_t b = *(uint32_t*)((uint8_t*)&random + sizeof(uint32_t));
 		uint32_t c = a ^ b;
-		int aid    = (a - 1) / accounts + 1;
-		int bid    = (b - 1) / branches + 1;
-		int tid    = (c - 1) / tellers + 1;
+		int aid    = a % accounts;
+		int bid    = b % branches;
+		int tid    = c % tellers;
 		int delta  = -5000 + (c % 10000); // -5000 to 5000
 
 		tpcb_execute(client, bid, tid, aid, delta);
