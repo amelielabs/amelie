@@ -28,15 +28,8 @@
 hot static inline void
 group_free_node(Group* self, GroupNode* node)
 {
-	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
-	list_foreach(&self->aggrs)
-	{
-		auto aggr = list_at(Aggr, link);
-		aggr_state_free(aggr, aggr_state);
-		aggr_state += aggr_state_size(aggr);
-	}
-	for (int j = 0; j < self->keys_count; j++)
-		value_free(&node->keys[j]);
+	for (int i = 0; i < self->keys_count + self->aggs_count; i++)
+		value_free(&node->value[i]);
 	am_free(node);
 }
 
@@ -56,17 +49,12 @@ group_free(Store* store)
 		}
 	}
 
-	list_foreach_safe(&self->aggrs)
+	for (int i = 0; i < self->aggs_count; i++)
 	{
-		auto aggr = list_at(Aggr, link);
-		aggr_free(aggr);
+		auto agg = group_agg(self, i);
+		value_free(&agg->value);
 	}
-	list_init(&self->aggrs);
-
-	self->aggr_size  = 0;
-	self->aggr_count = 0;
-	self->keys_count = 0;
-
+	buf_free(&self->aggs);
 	hashtable_free(&self->ht);
 	am_free(self);
 }
@@ -79,22 +67,41 @@ group_create(int keys_count)
 	self->store.encode = NULL;
 	self->store.decode = NULL;
 	self->store.in     = NULL;
-	self->aggr_size    = 0;
-	self->aggr_count   = 0;
+	self->aggs_count   = 0;
 	self->keys_count   = keys_count;
-	list_init(&self->aggrs);
+	buf_init(&self->aggs);
 	hashtable_init(&self->ht);
 	hashtable_create(&self->ht, 256);
 	return self;
 }
 
 void
-group_add(Group* self, AggrIf* iface, Value* init)
+group_add(Group* self, int type, Value* init)
 {
-	auto aggr = aggr_create(iface, init);
-	self->aggr_size += aggr_state_size(aggr);
-	self->aggr_count++;
-	list_append(&self->aggrs, &aggr->link);
+	auto agg = (GroupAgg*)buf_claim(&self->aggs, sizeof(GroupAgg));
+	agg->type = type;
+	agg->type_agg = AGG_UNDEF;
+	switch (type) {
+	case GROUP_COUNT:
+		agg->type_agg = AGG_COUNT;
+		break;
+	case GROUP_MIN:
+		agg->type_agg = AGG_MIN;
+		break;
+	case GROUP_MAX:
+		agg->type_agg = AGG_MAX;
+		break;
+	case GROUP_SUM:
+		agg->type_agg = AGG_SUM;
+		break;
+	case GROUP_AVG:
+		agg->type_agg = AGG_AVG;
+		break;
+	}
+	value_init(&agg->value);
+	if (init)
+		value_copy(&agg->value, init);
+	self->aggs_count++;
 }
 
 typedef struct
@@ -112,7 +119,7 @@ group_cmp(HashtableNode* node, void* ptr)
 	auto ref = container_of(node, GroupNode, node);
 	for (int i = 0; i < key->self->keys_count; i++)
 	{
-		auto a = &ref->keys[i];
+		auto a = &ref->value[i];
 		auto b = key->target_data[i];
 		if (! value_is_equal(a, b))
 			return false;
@@ -128,47 +135,47 @@ group_create_node(GroupKey* key)
 	// resize hash table if necessary
 	hashtable_reserve(&self->ht);
 
-	// [node][values][variable_data][aggr_state]
+	// [node][keys and aggs][variable_data]
 
 	// allocate new node
-	int index_size = sizeof(Value) * self->keys_count;
+	int index_size = sizeof(Value) * (self->keys_count + self->aggs_count);
 	GroupNode* node;
-	node = am_malloc(sizeof(GroupNode) + index_size + key->size + self->aggr_size);
+	node = am_malloc(sizeof(GroupNode) + index_size + key->size);
 	node->node.hash = key->hash;
 
 	// copy keys
-	uint8_t* pos;
-	pos = (uint8_t*)node + sizeof(GroupNode) + index_size;
-	for (int i = 0; i < self->keys_count; i++)
+	auto pos = (uint8_t*)node + sizeof(GroupNode) + index_size;
+	for (auto i = 0; i < self->keys_count; i++)
 	{
 		auto value = key->target_data[i];
-		value_init(&node->keys[i]);
+		auto ref = &node->value[i];
+		value_init(ref);
 		switch (value->type) {
 		case VALUE_INT:
-			value_set_int(&node->keys[i], value->integer);
+			value_set_int(ref, value->integer);
 			break;
 		case VALUE_TIMESTAMP:
-			value_set_timestamp(&node->keys[i], value->integer);
+			value_set_timestamp(ref, value->integer);
 			break;
 		case VALUE_BOOL:
-			value_set_bool(&node->keys[i], value->integer);
+			value_set_bool(ref, value->integer);
 			break;
 		case VALUE_REAL:
-			value_set_real(&node->keys[i], value->real);
+			value_set_real(ref, value->real);
 			break;
 		case VALUE_STRING:
 			memcpy(pos, str_of(&value->string), str_size(&value->string));
-			value_set_string(&node->keys[i], &value->string, NULL);
+			value_set_string(ref, &value->string, NULL);
 			pos += str_size(&value->string);
 			break;
 		case VALUE_OBJ:
 			memcpy(pos, value->data, value->data_size);
-			value_set_obj(&node->keys[i], pos, value->data_size, NULL);
+			value_set_obj(ref, pos, value->data_size, NULL);
 			pos += value->data_size;
 			break;
 		case VALUE_ARRAY:
 			memcpy(pos, value->data, value->data_size);
-			value_set_array(&node->keys[i], pos, value->data_size, NULL);
+			value_set_array(ref, pos, value->data_size, NULL);
 			pos += value->data_size;
 			break;
 		default:
@@ -176,14 +183,17 @@ group_create_node(GroupKey* key)
 			break;
 		}
 	}
-	node->aggr_offset = pos - (uint8_t*)node;
 
-	// create aggr states
-	list_foreach(&self->aggrs)
+	// create aggs
+	for (auto i = 0; i < self->aggs_count; i++)
 	{
-		auto aggr = list_at(Aggr, link);
-		aggr_state_create(aggr, pos);
-		pos += aggr_state_size(aggr);
+		auto agg = group_agg(self, i);
+		auto ref = &node->value[self->keys_count + i];
+		value_init(ref);
+		if (agg->type == GROUP_LAMBDA)
+			value_copy(ref, &agg->value);
+		else
+			value_set_null(ref);
 	}
 
 	// add node to the hash table
@@ -260,24 +270,10 @@ group_find_or_create(Group* self, Value** target_data)
 	return group_create_node(&key);
 }
 
-hot static inline void
-group_write_node(Group* self, GroupNode* node, Value** target_data_aggs)
-{
-	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
-	int i = 0;
-	list_foreach(&self->aggrs)
-	{
-		auto aggr = list_at(Aggr, link);
-		aggr_write(aggr, aggr_state, target_data_aggs[i]);
-		aggr_state += aggr_state_size(aggr);
-		i++;
-	}
-}
-
 hot void
 group_write(Group* self, Stack* stack)
 {
-	int count = self->keys_count + self->aggr_count;
+	int count = self->keys_count + self->aggs_count;
 	Value* data[count];
 	for (int i = 0; i < count; i++)
 		data[i] = stack_at(stack, count - i);
@@ -288,8 +284,26 @@ group_write(Group* self, Stack* stack)
 	// find or create group node, copy group by keys
 	auto node = group_find_or_create(self, target_data);
 
-	// process aggrs
-	group_write_node(self, node, target_data_aggs);
+	// process aggs
+	for (auto i = 0; i < self->aggs_count; i++)
+	{
+		auto agg = group_agg(self, i);
+		auto ref = &node->value[self->keys_count + i];
+		if (agg->type == GROUP_LAMBDA)
+		{
+			if (target_data_aggs[i]->type != VALUE_NULL)
+			{
+				value_free(ref);
+				value_copy(ref, target_data_aggs[i]);
+			}
+		} else {
+			// create and set new aggregation state
+			Agg state;
+			agg_init(&state);
+			value_agg(&state, ref, agg->type_agg, target_data_aggs[i]);
+			value_set_agg(ref, &state);
+		}
+	}
 }
 
 void
@@ -304,41 +318,55 @@ group_get(Group* self, Stack* stack, int pos, Value* value)
 	auto node = group_find_or_create(self, keys);
 
 	// read aggregate value
-	group_read_aggr(self, node, pos, value);
+	value_copy(value, &node->value[self->keys_count + pos]);
 }
 
 void
 group_read_aggr(Group* self, GroupNode* node, int pos, Value* value)
 {
-	Aggr* aggr = NULL;
-	uint8_t* state = (uint8_t*)node + node->aggr_offset;
-	int i = 0;
-	list_foreach(&self->aggrs)
+	auto agg = group_agg(self, pos);
+	auto ref = &node->value[self->keys_count + pos];
+	if (agg->type == GROUP_LAMBDA)
 	{
-		aggr = list_at(Aggr, link);
-		if (i != pos)
+		value_copy(value, ref);
+	} else
+	{
+		// convert VALUE_AGG to VALUE_INT/VALUE_REAL
+		if (ref->type == VALUE_AGG)
 		{
-			state += aggr_state_size(aggr);
-			i++;
-			continue;
+			AggValue aggval;
+			switch (agg_read(&ref->agg, &aggval)) {
+			case AGG_INT:
+				value_set_int(value, aggval.integer);
+				break;
+			case AGG_REAL:
+				value_set_real(value, aggval.real);
+				break;
+			case AGG_NULL:
+				if (agg->type == GROUP_COUNT)
+					value_set_int(value, 0);
+				else
+					value_set_null(value);
+				break;
+			}
+		} else {
+			value_set_null(value);
 		}
-		break;
 	}
-	return aggr_read(aggr, state, value);
 }
 
 void
-group_read(Group* self, GroupNode* node, Value* result)
+group_read_keys(Group* self, GroupNode* node, Value* result)
 {
 	if (self->keys_count > 1)
 	{
 		auto buf = buf_create();
 		encode_array(buf);
 		for (int i = 0; i < self->keys_count; i++)
-			value_write(&node->keys[i], buf);
+			value_write(&node->value[i], buf);
 		encode_array_end(buf);
 		value_set_array_buf(result, buf);
 	} else {
-		value_copy(result, &node->keys[0]);
+		value_copy(result, &node->value[0]);
 	}
 }

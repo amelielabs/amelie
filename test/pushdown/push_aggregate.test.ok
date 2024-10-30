@@ -112,7 +112,7 @@ explain select sum(id) from test
     },
     "node": {
       "00": "group               0      0      0     ",
-      "01": "group_add           0      1      -1    ",
+      "01": "group_add           0      3      -1    ",
       "02": "null                1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "group_write         0      0      0     ",
@@ -131,7 +131,7 @@ explain select sum(id) from test
   }
 }]
 select sum(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -158,7 +158,7 @@ explain select sum(id) from test
     },
     "node": {
       "00": "group               0      0      0     ",
-      "01": "group_add           0      1      -1    ",
+      "01": "group_add           0      3      -1    ",
       "02": "null                1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "group_write         0      0      0     ",
@@ -183,7 +183,7 @@ select sum(data) from test
 # test: select avg from table empty
 delete from test
 select avg(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -210,7 +210,7 @@ explain select avg(id) from test
     },
     "node": {
       "00": "group               0      0      0     ",
-      "01": "group_add           0      2      -1    ",
+      "01": "group_add           0      4      -1    ",
       "02": "null                1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "group_write         0      0      0     ",
@@ -235,7 +235,7 @@ select avg(data) from test
 # test: select min from table empty
 delete from test
 select min(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -249,7 +249,7 @@ select min(data) from test
 # test: select max from table empty
 delete from test
 select max(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -712,7 +712,7 @@ explain select sum(id) from test
     },
     "node": {
       "00": "group               0      0      0     ",
-      "01": "group_add           0      1      -1    ",
+      "01": "group_add           0      3      -1    ",
       "02": "null                1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "group_write         0      0      0     ",
@@ -755,7 +755,7 @@ explain select avg(id) from test
     },
     "node": {
       "00": "group               0      0      0     ",
-      "01": "group_add           0      2      -1    ",
+      "01": "group_add           0      4      -1    ",
       "02": "null                1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "group_write         0      0      0     ",
@@ -780,7 +780,7 @@ select avg(data) from test
 # test: select min from shared empty
 delete from test
 select min(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -794,7 +794,7 @@ select min(data) from test
 # test: select max from shared empty
 delete from test
 select max(id) from test
-[0]
+[null]
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 1)
@@ -1088,7 +1088,7 @@ explain select sum(*) from [0,1,2,3,4]
     "coordinator": {
       "00": "set                 0      0      0     ",
       "01": "group               1      0      0     ",
-      "02": "group_add           1      1      -1    ",
+      "02": "group_add           1      3      -1    ",
       "03": "null                2      0      0     ",
       "04": "push                2      0      0     ",
       "05": "group_write         1      0      0     ",
@@ -1131,7 +1131,7 @@ explain select avg(*) from [0,1,2,3,4]
     "coordinator": {
       "00": "set                 0      0      0     ",
       "01": "group               1      0      0     ",
-      "02": "group_add           1      2      -1    ",
+      "02": "group_add           1      4      -1    ",
       "03": "null                2      0      0     ",
       "04": "push                2      0      0     ",
       "05": "group_write         1      0      0     ",
@@ -1174,7 +1174,7 @@ explain select min(*) from [0,1,2,3,4]
     "coordinator": {
       "00": "set                 0      0      0     ",
       "01": "group               1      0      0     ",
-      "02": "group_add           1      3      -1    ",
+      "02": "group_add           1      1      -1    ",
       "03": "null                2      0      0     ",
       "04": "push                2      0      0     ",
       "05": "group_write         1      0      0     ",
@@ -1217,7 +1217,7 @@ explain select max(*) from [0,1,2,3,4]
     "coordinator": {
       "00": "set                 0      0      0     ",
       "01": "group               1      0      0     ",
-      "02": "group_add           1      4      -1    ",
+      "02": "group_add           1      2      -1    ",
       "03": "null                2      0      0     ",
       "04": "push                2      0      0     ",
       "05": "group_write         1      0      0     ",

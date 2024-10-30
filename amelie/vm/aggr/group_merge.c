@@ -33,8 +33,8 @@ group_node_cmp(HashtableNode* node, void* ptr)
 	auto ref = container_of(node, GroupNode, node);
 	for (int i = 0; i < self->keys_count; i++)
 	{
-		auto a = &ref->keys[i];
-		auto b = &key->keys[i];
+		auto a = &ref->value[i];
+		auto b = &key->value[i];
 		if (! value_is_equal(a, b))
 			return false;
 	}
@@ -61,16 +61,8 @@ group_node_free(void** argv)
 {
 	Group*     self = ((void**)argv)[0];
 	GroupNode* node = ((void**)argv)[1];
-
-	uint8_t* aggr_state = (uint8_t*)node + node->aggr_offset;
-	list_foreach(&self->aggrs)
-	{
-		auto aggr = list_at(Aggr, link);
-		aggr_state_free(aggr, aggr_state);
-		aggr_state += aggr_state_size(aggr);
-	}
-	for (int j = 0; j < self->keys_count; j++)
-		value_free(&node->keys[j]);
+	for (int i = 0; i < self->keys_count + self->aggs_count; i++)
+		value_free(&node->value[i]);
 	am_free(node);
 }
 
@@ -94,15 +86,20 @@ group_merge_node(Group* self, GroupNode* node)
 	}
 
 	// merge aggregate states
-	uint8_t* state_a = (uint8_t*)src  + node->aggr_offset;
-	uint8_t* state_b = (uint8_t*)node + node->aggr_offset;
-	list_foreach(&self->aggrs)
+	for (auto i = 0; i < self->aggs_count; i++)
 	{
-		auto aggr = list_at(Aggr, link);
-		aggr_merge(aggr, state_a, state_b);
-		int state_size = aggr_state_size(aggr);
-		state_a += state_size;
-		state_b += state_size;
+		auto agg     = group_agg(self, i);
+		auto state_a = &src->value[self->keys_count + i];
+		auto state_b = &node->value[self->keys_count + i];
+		if (unlikely(agg->type == GROUP_LAMBDA))
+			error("operation not supported");
+
+		// create and set new aggregation state
+		// a = a x b
+		Agg state;
+		agg_init(&state);
+		value_agg(&state, state_a, agg->type_agg, state_b);
+		value_set_agg(state_a, &state);
 	}
 
 	// free node

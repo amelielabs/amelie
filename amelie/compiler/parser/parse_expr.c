@@ -251,19 +251,19 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	int id;
 	switch (function->id) {
 	case KCOUNT:
-		id = AGGR_COUNT;
+		id = GROUP_COUNT;
 		break;
 	case KSUM:
-		id = AGGR_SUM;
+		id = GROUP_SUM;
 		break;
 	case KAVG:
-		id = AGGR_AVG;
+		id = GROUP_AVG;
 		break;
 	case KMIN:
-		id = AGGR_MIN;
+		id = GROUP_MIN;
 		break;
 	case KMAX:
-		id = AGGR_MAX;
+		id = GROUP_MAX;
 		break;
 	default:
 		abort();
@@ -316,7 +316,7 @@ expr_lambda(Stmt* self, Expr* expr)
 	auto arg = parse_expr(self, expr);
 
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(AGGR_LAMBDA, expr->aggs->count, arg, init);
+	auto aggr = ast_aggr_allocate(GROUP_LAMBDA, expr->aggs->count, arg, init);
 	ast_list_add(expr->aggs, &aggr->ast);
 	aggr->name = name;
 	return &aggr->ast;

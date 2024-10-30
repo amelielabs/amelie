@@ -561,7 +561,7 @@ cgroup_add:
 	c = NULL;
 	if (op->c != -1)
 		c = &r[op->c];
-	group_add((Group*)r[op->a].store, aggrs[op->b], c);
+	group_add((Group*)r[op->a].store, op->b, c);
 	if (c)
 		value_free(c);
 	op_next;
@@ -570,7 +570,7 @@ cgroup_write:
 	// get group by keys and aggregate data
 	group = (Group*)r[op->a].store;
 	group_write(group, stack);
-	stack_popn(stack, group->keys_count + group->aggr_count);
+	stack_popn(stack, group->keys_count + group->aggs_count);
 	op_next;
 
 cgroup_get:
@@ -585,13 +585,14 @@ cgroup_read:
 	// [result, target, pos]
 	cursor = cursor_mgr_of(cursor_mgr, op->b);
 	assert(cursor->type == CURSOR_GROUP);
-	value_copy(&r[op->a], &group_at(cursor->group, cursor->group_pos)->keys[op->c]);
+	value_copy(&r[op->a], &group_at(cursor->group, cursor->group_pos)->value[op->c]);
 	op_next;
 
 cgroup_read_aggr:
 	// [result, target, pos]
 	cursor = cursor_mgr_of(cursor_mgr, op->b);
 	assert(cursor->type == CURSOR_GROUP);
+	group = cursor->group;
 	group_read_aggr(cursor->group, group_at(cursor->group, cursor->group_pos),
 	                op->c, &r[op->a]);
 	op_next;

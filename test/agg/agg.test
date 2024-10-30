@@ -7,6 +7,9 @@ connect E0 S0 localhost:3485
 select agg_count()
 select null::agg_count()
 select 1::agg_count(1)
+
+select null::agg_sum([])
+select null::agg_sum("")
 select null::agg_count([])
 select null::agg_count("")
 

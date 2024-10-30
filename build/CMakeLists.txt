@@ -208,13 +208,6 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/aggr/any.c
     ${AMELIE_ROOT}/vm/aggr/all.c
     ${AMELIE_ROOT}/vm/aggr/merge.c
-    ${AMELIE_ROOT}/vm/aggr/count.c
-    ${AMELIE_ROOT}/vm/aggr/sum.c
-    ${AMELIE_ROOT}/vm/aggr/avg.c
-    ${AMELIE_ROOT}/vm/aggr/min.c
-    ${AMELIE_ROOT}/vm/aggr/max.c
-    ${AMELIE_ROOT}/vm/aggr/lambda.c
-    ${AMELIE_ROOT}/vm/aggr/aggrs.c
     ${AMELIE_ROOT}/vm/aggr/group.c
     ${AMELIE_ROOT}/vm/aggr/group_merge.c
     ${AMELIE_ROOT}/vm/executor/executor.c

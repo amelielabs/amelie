@@ -23,6 +23,7 @@
 #include "value/obj.h"
 #include "value/array.h"
 #include "value/vector.h"
+#include "value/agg.h"
 #include "value/update.h"
 #include "value/row.h"
 #include "value/body.h"

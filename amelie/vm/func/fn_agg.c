@@ -38,43 +38,8 @@ fn_agg(Call* self, int type)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-
-	// get or create state
-	Agg state;
-	if (argv[0]->type == VALUE_AGG)
-		state = argv[0]->agg;
-	else
-	if (argv[0]->type == VALUE_NULL)
-		agg_init(&state);
-	else
-		error("unsupported aggregate state");
-	if (argv[1]->type == VALUE_AGG)
-	{
-		// combine agg states
-		agg_merge(&state, type, &argv[1]->agg);
-	} else
-	{
-		// process next value
-		AggValue value;
-		int      value_type;
-		switch (argv[1]->type) {
-		case VALUE_NULL:
-			value_type = AGG_NULL;
-			break;
-		case VALUE_INT:
-			value_type = AGG_INT;
-			value.integer = argv[1]->integer;
-			break;
-		case VALUE_REAL:
-			value_type = AGG_REAL;
-			value.real = argv[1]->real;
-			break;
-		default:
-			error("unsupported aggregate operation type");
-		}
-		agg_step(&state, type, value_type, &value);
-	}
-	value_set_agg(self->result, &state);
+	self->result->type = VALUE_AGG;
+	value_agg(&self->result->agg, argv[0], type, argv[1]);
 }
 
 hot static void

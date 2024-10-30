@@ -11,34 +11,56 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef struct GroupAgg  GroupAgg;
 typedef struct GroupNode GroupNode;
 typedef struct Group     Group;
+
+enum
+{
+	GROUP_COUNT,
+	GROUP_MIN,
+	GROUP_MAX,
+	GROUP_SUM,
+	GROUP_AVG,
+	GROUP_LAMBDA
+};
+
+struct GroupAgg
+{
+	int   type;
+	int   type_agg;
+	Value value;
+};
 
 struct GroupNode
 {
 	HashtableNode node;
-	uint32_t      aggr_offset;
-	Value         keys[];
-	// aggrs
+	Value         value[];
 };
 
 struct Group
 {
 	Store     store;
 	Hashtable ht;
-	List      aggrs;
-	int       aggr_count;
-	int       aggr_size;
+	Buf       aggs;
+	int       aggs_count;
 	int       keys_count;
 };
 
 Group*
 group_create(int);
-void group_add(Group*, AggrIf*, Value*);
+void group_add(Group*, int, Value*);
 void group_write(Group*, Stack*);
 void group_get(Group*, Stack*, int, Value*);
 void group_read_aggr(Group*, GroupNode*, int, Value*);
-void group_read(Group*, GroupNode*, Value*);
+void group_read_keys(Group*, GroupNode*, Value*);
+
+static inline GroupAgg*
+group_agg(Group* self, int pos)
+{
+	auto aggs = (GroupAgg*)self->aggs.start;
+	return &aggs[pos];
+}
 
 static inline GroupNode*
 group_at(Group* self, int pos)

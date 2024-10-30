@@ -24,16 +24,6 @@
 // result
 #include "aggr/result.h"
 
-// aggregate
-#include "aggr/aggr.h"
-#include "aggr/aggrs.h"
-#include "aggr/count.h"
-#include "aggr/sum.h"
-#include "aggr/avg.h"
-#include "aggr/min.h"
-#include "aggr/max.h"
-#include "aggr/lambda.h"
-
 // group
 #include "aggr/group.h"
 #include "aggr/group_merge.h"

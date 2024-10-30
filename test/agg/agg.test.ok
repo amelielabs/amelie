@@ -7,10 +7,14 @@ select null::agg_count()
 {"msg": "agg_count(): expected 2 arguments, but got 1"}
 select 1::agg_count(1)
 {"msg": "unsupported aggregate state"}
+select null::agg_sum([])
+{"msg": "unsupported aggregate operation type"}
+select null::agg_sum("")
+{"msg": "unsupported aggregate operation type"}
 select null::agg_count([])
-{"msg": "unsupported aggregate operation type"}
+[1]
 select null::agg_count("")
-{"msg": "unsupported aggregate operation type"}
+[1]
 # test: agg_count(int)
 select null::agg_count(1)
 [1]

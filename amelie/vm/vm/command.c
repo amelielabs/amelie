@@ -320,7 +320,7 @@ ccursor_read(Vm* self, Op* op)
 	case CURSOR_GROUP:
 	{
 		auto node = group_at(cursor->group, cursor->group_pos);
-		group_read(cursor->group, node, a);
+		group_read_keys(cursor->group, node, a);
 		break;
 	}
 	default:
