@@ -88,36 +88,6 @@ select null::agg_avg(null)
 # test: agg_avg(merge)
 select null::agg_avg(1)::agg_avg( null::agg_avg(1)::agg_avg(2)::agg_avg(3) )
 
-# test: agg_first(int)
-select null::agg_first(1)
-select null::agg_first(2)::agg_first(1)::agg_first(0)
-select null::agg_first(null)::agg_first(2)::agg_first(1)
-select null::agg_first(null)
-
-# test: agg_first(real)
-select null::agg_first(1.0)
-select null::agg_first(2.0)::agg_first(1.0)::agg_first(0.0)
-select null::agg_first(null)::agg_first(2.0)::agg_first(1.0)
-select null::agg_first(null)
-
-# test: agg_first(merge)
-select null::agg_first(1)::agg_first( null::agg_first(1)::agg_first(2)::agg_first(3) )
-
-# test: agg_last(int)
-select null::agg_last(1)
-select null::agg_last(2)::agg_last(1)::agg_last(0)
-select null::agg_last(null)::agg_last(2)::agg_last(null)
-select null::agg_last(null)
-
-# test: agg_last(real)
-select null::agg_last(1.0)
-select null::agg_last(2.0)::agg_last(1.0)::agg_last(0.0)
-select null::agg_last(null)::agg_last(2.0)::agg_last(null)
-select null::agg_last(null)
-
-# test: agg_last(merge)
-select null::agg_last(1)::agg_last( null::agg_last(1)::agg_last(2)::agg_last(3) )
-
 # test: agg eq
 select null::agg_count(0) = null::agg_count(1)
 select null::agg_count(0) = null::agg_count(null)
@@ -197,24 +167,6 @@ insert into test values (0, 10) on conflict do update set agg = agg::agg_avg(@[1
 select agg::type from test
 select * from test
 insert into test values (0, 20) on conflict do update set agg = agg::agg_avg(@[1])
-select * from test
-drop table test
-
-# test: agg column (first)
-create table test (id int primary key, agg agg(first))
-insert into test values (0, 10) on conflict do update set agg = agg::agg_first(@[1])
-select agg::type from test
-select * from test
-insert into test values (0, 20) on conflict do update set agg = agg::agg_first(@[1])
-select * from test
-drop table test
-
-# test: agg column (last)
-create table test (id int primary key, agg agg(last))
-insert into test values (0, 10) on conflict do update set agg = agg::agg_last(@[1])
-select agg::type from test
-select * from test
-insert into test values (0, 20.5) on conflict do update set agg = agg::agg_last(@[1])
 select * from test
 drop table test
 

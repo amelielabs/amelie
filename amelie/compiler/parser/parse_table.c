@@ -313,12 +313,6 @@ parse_agg(Stmt* self, Column* column)
 	if (str_is(&name->string, "avg", 3))
 		type = AGG_AVG;
 	else
-	if (str_is(&name->string, "first", 5))
-		type = AGG_FIRST;
-	else
-	if (str_is(&name->string, "last", 4))
-		type = AGG_LAST;
-	else
 		error("AGGREGATE '%.*s' is not supported", str_size(&name->string),
 		      str_of(&name->string));
 

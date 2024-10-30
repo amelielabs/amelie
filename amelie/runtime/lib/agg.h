@@ -21,9 +21,7 @@ enum
 	AGG_MIN,
 	AGG_MAX,
 	AGG_SUM,
-	AGG_AVG,
-	AGG_FIRST,
-	AGG_LAST
+	AGG_AVG
 };
 
 enum
@@ -227,17 +225,6 @@ agg_step(Agg* self, int type, int value_type, AggValue* value)
 	case AGG_AVG:
 		agg_step_sum(self, value_type, value);
 		break;
-	case AGG_FIRST:
-		if (self->type == AGG_NULL)
-		{
-			self->type  = value_type;
-			self->value = *value;
-		}
-		break;
-	case AGG_LAST:
-		self->type = value_type;
-		self->value = *value;
-		break;
 	default:
 		abort();
 		break;
@@ -271,17 +258,6 @@ agg_merge(Agg* self, int type, Agg* with)
 	case AGG_SUM:
 	case AGG_AVG:
 		agg_step_sum(self, with->type, &with->value);
-		break;
-	case AGG_FIRST:
-		if (self->type == AGG_NULL)
-		{
-			self->type  = with->type;
-			self->value = with->value;
-		}
-		break;
-	case AGG_LAST:
-		self->type  = with->type;
-		self->value = with->value;
 		break;
 	default:
 		abort();

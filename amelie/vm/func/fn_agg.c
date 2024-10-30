@@ -107,18 +107,6 @@ fn_agg_avg(Call* self)
 	fn_agg(self, AGG_AVG);
 }
 
-hot static void
-fn_agg_first(Call* self)
-{
-	fn_agg(self, AGG_FIRST);
-}
-
-hot static void
-fn_agg_last(Call* self)
-{
-	fn_agg(self, AGG_LAST);
-}
-
 FunctionDef fn_agg_def[] =
 {
 	{ "public", "agg_count", fn_agg_count, false },
@@ -126,7 +114,5 @@ FunctionDef fn_agg_def[] =
 	{ "public", "agg_max",   fn_agg_max,   false },
 	{ "public", "agg_sum",   fn_agg_sum,   false },
 	{ "public", "agg_avg",   fn_agg_avg,   false },
-	{ "public", "agg_first", fn_agg_first, false },
-	{ "public", "agg_last",  fn_agg_last,  false },
 	{  NULL,     NULL,       NULL,         false }
 };
