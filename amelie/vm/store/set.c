@@ -23,7 +23,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_aggr.h>
+#include <amelie_store.h>
 
 static inline void
 set_free_row(Set* self, SetRow* row)

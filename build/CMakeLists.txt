@@ -86,7 +86,7 @@ include_directories("${AMELIE_ROOT}/db/db")
 # vm
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
-include_directories("${AMELIE_ROOT}/vm/aggr")
+include_directories("${AMELIE_ROOT}/vm/store")
 include_directories("${AMELIE_ROOT}/vm/executor")
 include_directories("${AMELIE_ROOT}/vm/vm")
 include_directories("${AMELIE_ROOT}/vm/func")
@@ -204,12 +204,12 @@ set(AMELIE_SOURCES_DB
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
     ${AMELIE_ROOT}/vm/value/like.c
-    ${AMELIE_ROOT}/vm/aggr/set.c
-    ${AMELIE_ROOT}/vm/aggr/any.c
-    ${AMELIE_ROOT}/vm/aggr/all.c
-    ${AMELIE_ROOT}/vm/aggr/merge.c
-    ${AMELIE_ROOT}/vm/aggr/group.c
-    ${AMELIE_ROOT}/vm/aggr/group_merge.c
+    ${AMELIE_ROOT}/vm/store/set.c
+    ${AMELIE_ROOT}/vm/store/any.c
+    ${AMELIE_ROOT}/vm/store/all.c
+    ${AMELIE_ROOT}/vm/store/merge.c
+    ${AMELIE_ROOT}/vm/store/group.c
+    ${AMELIE_ROOT}/vm/store/group_merge.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c

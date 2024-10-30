@@ -27,7 +27,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_aggr.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>

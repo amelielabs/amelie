@@ -23,7 +23,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_aggr.h>
+#include <amelie_store.h>
 
 hot static inline void
 value_all_array_equ(Value* result, Value* a, Value* b)
