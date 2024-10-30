@@ -21,4 +21,5 @@
 #include "func/fn_misc.h"
 #include "func/fn_time.h"
 #include "func/fn_vector.h"
+#include "func/fn_agg.h"
 #include "func/fn.h"

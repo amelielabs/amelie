@@ -245,6 +245,38 @@ json_vector(Json* self)
 }
 
 hot static inline void
+json_agg(Json* self, int type)
+{
+	// int | real | null
+	Agg agg;
+	agg_init(&agg);
+
+	int          value_type;
+	AggValue value;
+	memset(&value, 0, sizeof(value));
+	if (json_is_keyword(self, "null", 4))
+	{
+		self->pos += 4;
+		value_type = AGG_NULL;
+	} else
+	{
+		// int | real
+		auto next = json_next(self);
+		if (likely(isdigit(next) || next == '.' || next == '-'))
+		{
+			if (json_integer_read(self, &value.integer, &value.real))
+				value_type = AGG_INT;
+			else
+				value_type = AGG_REAL;
+		} else {
+			error("integer of real value expected for agg");
+		}
+	}
+	agg_step(&agg, type, value_type, &value);
+	encode_agg(self->buf, &agg);
+}
+
+hot static inline void
 json_const(Json* self)
 {
 	switch (*self->pos) {
@@ -507,7 +539,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 }
 
 void
-json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint)
+json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint, int agg)
 {
 	if (hint == JSON_HINT_NONE)
 	{
@@ -525,6 +557,9 @@ json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint)
 	{
 		self->buf = buf;
 	}
+
+	// skip whitespaces
+	json_next(self);
 
 	switch (hint) {
 	case JSON_HINT_TIMESTAMP:
@@ -587,6 +622,12 @@ json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint)
 
 		// []
 		json_vector(self);
+		return;
+	}
+	case JSON_HINT_AGG:
+	{
+		// int|real|null
+		json_agg(self, agg);
 		return;
 	}
 	default:

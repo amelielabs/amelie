@@ -81,6 +81,12 @@ data_skip(uint8_t** pos)
 			data_read_vector(pos, &vector);
 			break;
 		}
+		case AM_AGG:
+		{
+			Agg agg;
+			data_read_agg(pos, &agg);
+			break;
+		}
 		default:
 			error_data();
 			break;

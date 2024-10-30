@@ -110,6 +110,7 @@ select * from system.views()
       "not_null": false,
       "generated": 0,
       "modulo": 9223372036854775807,
+      "aggregate": 0,
       "default": null
     }
   }]

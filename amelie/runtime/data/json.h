@@ -18,7 +18,8 @@ typedef enum
 	JSON_HINT_NONE,
 	JSON_HINT_TIMESTAMP,
 	JSON_HINT_INTERVAL,
-	JSON_HINT_VECTOR
+	JSON_HINT_VECTOR,
+	JSON_HINT_AGG
 } JsonHint;
 
 struct Json
@@ -37,4 +38,4 @@ void json_free(Json*);
 void json_reset(Json*);
 void json_set_time(Json*, Timezone*, uint64_t);
 void json_parse(Json*, Str*, Buf*);
-void json_parse_hint(Json*, Str*, Buf*, JsonHint);
+void json_parse_hint(Json*, Str*, Buf*, JsonHint, int);

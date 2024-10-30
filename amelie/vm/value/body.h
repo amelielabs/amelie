@@ -105,6 +105,22 @@ body_add(Buf* self, Value* value, Timezone* timezone, bool pretty, bool wrap)
 		buf_write(self, "\"", 1);
 		break;
 	}
+	case VALUE_AGG:
+	{
+		AggValue aggval;
+		switch (agg_read(&value->agg, &aggval)) {
+		case AGG_NULL:
+			buf_write(self, "null", 4);
+			break;
+		case AGG_INT:
+			buf_printf(self, "%" PRIi64, aggval.integer);
+			break;
+		case AGG_REAL:
+			buf_printf(self, "%g", aggval.real);
+			break;
+		}
+		break;
+	}
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(self, "[", 1);

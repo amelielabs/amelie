@@ -52,6 +52,7 @@ parse_value(Stmt* self, Column* column)
 	json_set_time(self->json, self->local->timezone, self->local->time_us);
 
 	// try to convert the value to the column type if possible
+	int      agg  = -1;
 	JsonHint hint = JSON_HINT_NONE;
 	switch (column->type) {
 	case TYPE_TIMESTAMP:
@@ -63,8 +64,12 @@ parse_value(Stmt* self, Column* column)
 	case TYPE_VECTOR:
 		hint = JSON_HINT_VECTOR;
 		break;
+	case TYPE_AGG:
+		agg  = column->constraint.aggregate;
+		hint = JSON_HINT_AGG;
+		break;
 	}
-	json_parse_hint(self->json, &in, &self->data->data, hint);
+	json_parse_hint(self->json, &in, &self->data->data, hint, agg);
 	self->lex->pos = self->json->pos;
 }
 

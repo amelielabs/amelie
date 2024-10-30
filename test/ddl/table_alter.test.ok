@@ -124,6 +124,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 1,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -133,6 +134,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 0
   }
 }]]
@@ -145,6 +147,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 1,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -154,6 +157,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 0
   }
 }]]
@@ -171,6 +175,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -183,6 +188,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -201,6 +207,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 1,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -210,6 +217,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 0
   }
 }]]
@@ -223,6 +231,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 1,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -232,6 +241,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 0
   }
 }]]
@@ -269,6 +279,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -281,6 +292,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -290,6 +302,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -309,6 +322,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -318,6 +332,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -340,6 +355,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -356,6 +372,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -365,6 +382,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 123
   }
 }]]
@@ -386,6 +404,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -395,6 +414,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": 123
   }
 }]]
@@ -416,6 +436,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -425,6 +446,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 1,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -473,6 +495,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -482,6 +505,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -494,6 +518,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -508,6 +533,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -517,6 +543,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -526,6 +553,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -538,6 +566,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -547,6 +576,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -561,6 +591,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -570,6 +601,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -579,6 +611,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -598,6 +631,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -607,6 +641,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -624,6 +659,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -633,6 +669,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -645,6 +682,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -667,6 +705,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -676,6 +715,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -685,6 +725,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -706,6 +747,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -715,6 +757,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -734,6 +777,7 @@ select columns from system.tables()
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -743,6 +787,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -755,6 +800,7 @@ select columns from system.tables()
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]

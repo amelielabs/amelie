@@ -1,0 +1,222 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 2
+connect E0 S0 localhost:3485
+
+# test: agg state
+select agg_count()
+select null::agg_count()
+select 1::agg_count(1)
+select null::agg_count([])
+select null::agg_count("")
+
+# test: agg_count(int)
+select null::agg_count(1)
+select null::agg_count(1)::type
+select null::agg_count(1)::agg_count(2)::agg_count(3)
+select null::agg_count(1)::agg_count(null)::agg_count(3)
+select null::agg_count(null)::agg_count(null)::agg_count(3)
+select null::agg_count(null)
+
+# test: agg_count(real)
+select null::agg_count(1.0)
+select null::agg_count(1.0)::type
+select null::agg_count(1.0)::agg_count(2.0)::agg_count(3.0)
+select null::agg_count(1.0)::agg_count(null)::agg_count(3.0)
+select null::agg_count(null)::agg_count(null)::agg_count(3.0)
+
+# test: agg_count(merge)
+select null::agg_count(1)::agg_count( null::agg_count(1)::agg_count(2)::agg_count(3) )
+
+# test: agg_min(int)
+select null::agg_min(1)
+select null::agg_min(2)::agg_min(1)::agg_min(0)
+select null::agg_min(2)::agg_min(1)::agg_min(null)
+select null::agg_min(null)
+
+# test: agg_min(real)
+select null::agg_min(1.0)
+select null::agg_min(2.0)::agg_min(1.0)::agg_min(0.0)
+select null::agg_min(2.0)::agg_min(1.0)::agg_min(null)
+select null::agg_min(null)
+
+# test: agg_min(merge)
+select null::agg_min(1)::agg_min( null::agg_min(1)::agg_min(2)::agg_min(3) )
+
+# test: agg_max(int)
+select null::agg_max(1)
+select null::agg_max(2)::agg_max(1)::agg_max(0)
+select null::agg_max(null)::agg_max(2)::agg_max(1)
+select null::agg_max(null)
+
+# test: agg_max(real)
+select null::agg_max(1.0)
+select null::agg_max(2.0)::agg_max(1.0)::agg_max(0.0)
+select null::agg_max(null)::agg_max(2.0)::agg_max(1.0)
+select null::agg_max(null)
+
+# test: agg_max(merge)
+select null::agg_max(1)::agg_max( null::agg_max(1)::agg_max(2)::agg_max(3) )
+
+# test: agg_sum(int)
+select null::agg_sum(1)
+select null::agg_sum(2)::agg_sum(1)::agg_sum(0)
+select null::agg_sum(null)::agg_sum(2)::agg_sum(1)
+select null::agg_sum(null)
+
+# test: agg_sum(real)
+select null::agg_sum(1.0)
+select null::agg_sum(2.0)::agg_sum(1.0)::agg_sum(0.0)
+select null::agg_sum(null)::agg_sum(2.0)::agg_sum(1.0)
+select null::agg_sum(null)
+
+# test: agg_sum(merge)
+select null::agg_sum(1)::agg_sum( null::agg_sum(1)::agg_sum(2)::agg_sum(3) )
+
+# test: agg_avg(int)
+select null::agg_avg(1)
+select null::agg_avg(2)::agg_avg(1)::agg_avg(0)
+select null::agg_avg(null)::agg_avg(2)::agg_avg(1)
+select null::agg_avg(null)
+
+# test: agg_avg(real)
+select null::agg_avg(1.0)
+select null::agg_avg(2.0)::agg_avg(1.0)::agg_avg(0.0)
+select null::agg_avg(null)::agg_avg(2.0)::agg_avg(1.0)
+select null::agg_avg(null)
+
+# test: agg_avg(merge)
+select null::agg_avg(1)::agg_avg( null::agg_avg(1)::agg_avg(2)::agg_avg(3) )
+
+# test: agg_first(int)
+select null::agg_first(1)
+select null::agg_first(2)::agg_first(1)::agg_first(0)
+select null::agg_first(null)::agg_first(2)::agg_first(1)
+select null::agg_first(null)
+
+# test: agg_first(real)
+select null::agg_first(1.0)
+select null::agg_first(2.0)::agg_first(1.0)::agg_first(0.0)
+select null::agg_first(null)::agg_first(2.0)::agg_first(1.0)
+select null::agg_first(null)
+
+# test: agg_first(merge)
+select null::agg_first(1)::agg_first( null::agg_first(1)::agg_first(2)::agg_first(3) )
+
+# test: agg_last(int)
+select null::agg_last(1)
+select null::agg_last(2)::agg_last(1)::agg_last(0)
+select null::agg_last(null)::agg_last(2)::agg_last(null)
+select null::agg_last(null)
+
+# test: agg_last(real)
+select null::agg_last(1.0)
+select null::agg_last(2.0)::agg_last(1.0)::agg_last(0.0)
+select null::agg_last(null)::agg_last(2.0)::agg_last(null)
+select null::agg_last(null)
+
+# test: agg_last(merge)
+select null::agg_last(1)::agg_last( null::agg_last(1)::agg_last(2)::agg_last(3) )
+
+# test: agg eq
+select null::agg_count(0) = null::agg_count(1)
+select null::agg_count(0) = null::agg_count(null)
+select null::agg_count(0) = null::agg_count(1)::agg_count(1)
+
+# test: agg lt
+select null::agg_count(0) < null::agg_count(1)
+select null::agg_count(0) < null::agg_count(null)
+select null::agg_count(0) < null::agg_count(1)::agg_count(1)
+
+# test: agg lte
+select null::agg_count(0) <= null::agg_count(1)
+select null::agg_count(0) <= null::agg_count(null)
+select null::agg_count(0) <= null::agg_count(1)::agg_count(1)
+
+# test: agg gt
+select null::agg_count(0) > null::agg_count(1)
+select null::agg_count(0) > null::agg_count(null)
+select null::agg_count(0) > null::agg_count(1)::agg_count(1)
+
+# test: agg gte
+select null::agg_count(0) >= null::agg_count(1)
+select null::agg_count(0) >= null::agg_count(null)
+select null::agg_count(0) >= null::agg_count(1)::agg_count(1)
+
+# test: agg to real
+select null::agg_count(1)::agg_count(1)::real
+select null::agg_count(1)::agg_count(1)::real::type
+
+# test: agg to int
+select null::agg_count(1)::agg_count(1)::int
+select null::agg_count(1)::agg_count(1)::int::type
+
+# test: agg expr
+select null::agg_count(1) + 1
+select null::agg_count(1) + null::agg_count(1)
+
+# test: agg column (count)
+create table test (id int primary key, agg agg(count))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_count(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_count(@[1])
+select * from test
+drop table test
+
+# test: agg column (min)
+create table test (id int primary key, agg agg(min))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_min(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_min(@[1])
+select * from test
+drop table test
+
+# test: agg column (max)
+create table test (id int primary key, agg agg(max))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_max(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_max(@[1])
+select * from test
+drop table test
+
+# test: agg column (sum)
+create table test (id int primary key, agg agg(sum))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_sum(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_sum(@[1])
+select * from test
+drop table test
+
+# test: agg column (avg)
+create table test (id int primary key, agg agg(avg))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_avg(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_avg(@[1])
+select * from test
+drop table test
+
+# test: agg column (first)
+create table test (id int primary key, agg agg(first))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_first(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20) on conflict do update set agg = agg::agg_first(@[1])
+select * from test
+drop table test
+
+# test: agg column (last)
+create table test (id int primary key, agg agg(last))
+insert into test values (0, 10) on conflict do update set agg = agg::agg_last(@[1])
+select agg::type from test
+select * from test
+insert into test values (0, 20.5) on conflict do update set agg = agg::agg_last(@[1])
+select * from test
+drop table test
+
+disconnect S0
+close E0

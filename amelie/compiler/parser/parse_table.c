@@ -286,6 +286,50 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 }
 
 static void
+parse_agg(Stmt* self, Column* column)
+{
+	// (
+	if (! stmt_if(self, '('))
+		error("AGGREGATE <(> expected");
+
+	// name
+	auto name = stmt_next_shadow(self);
+	if (name->id != KNAME)
+		error("AGGREGATE (<type> expected");
+
+	int type;
+	if (str_is(&name->string, "count", 5))
+		type = AGG_COUNT;
+	else
+	if (str_is(&name->string, "min", 3))
+		type = AGG_MIN;
+	else
+	if (str_is(&name->string, "max", 3))
+		type = AGG_MAX;
+	else
+	if (str_is(&name->string, "sum", 3))
+		type = AGG_SUM;
+	else
+	if (str_is(&name->string, "avg", 3))
+		type = AGG_AVG;
+	else
+	if (str_is(&name->string, "first", 5))
+		type = AGG_FIRST;
+	else
+	if (str_is(&name->string, "last", 4))
+		type = AGG_LAST;
+	else
+		error("AGGREGATE '%.*s' is not supported", str_size(&name->string),
+		      str_of(&name->string));
+
+	constraint_set_aggregate(&column->constraint, type);
+
+	// )
+	if (! stmt_if(self, ')'))
+		error("AGGREGATE (type<)> expected");
+}
+
+static void
 parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
 	// (name type [not null | default | serial | primary key], ...,
@@ -325,6 +369,10 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		// type
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
+
+		// (aggregate)
+		if (type == TYPE_AGG)
+			parse_agg(self, column);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM]
 		parse_constraint(self, keys, column);

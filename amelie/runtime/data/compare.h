@@ -199,8 +199,21 @@ data_compare(uint8_t* a, uint8_t* b)
 			Vector a_vector;
 			Vector b_vector;
 			data_read_vector(&a, &a_vector);
-			data_read_vector(&a, &a_vector);
+			data_read_vector(&b, &b_vector);
 			rc = vector_compare(&a_vector, &b_vector);
+			if (rc != 0)
+				return rc;
+			break;
+		}
+		case AM_AGG:
+		{
+			if (! data_is_agg(b))
+				return compare_int64(*a, *b);
+			Agg a_agg;
+			Agg b_agg;
+			data_read_agg(&a, &a_agg);
+			data_read_agg(&b, &b_agg);
+			rc = agg_compare(&a_agg, &b_agg);
 			if (rc != 0)
 				return rc;
 			break;

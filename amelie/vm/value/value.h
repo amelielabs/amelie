@@ -26,6 +26,7 @@ typedef enum
 	VALUE_INTERVAL,
 	VALUE_TIMESTAMP,
 	VALUE_VECTOR,
+	VALUE_AGG,
 	VALUE_SET,
 	VALUE_MERGE,
 	VALUE_GROUP
@@ -41,6 +42,7 @@ struct Value
 		Str      string;
 		Interval interval;
 		Vector   vector;
+		Agg      agg;
 		struct {
 			uint8_t* data;
 			int      data_size;
@@ -183,6 +185,13 @@ value_set_vector(Value* self, Vector* vector, Buf* buf)
 }
 
 always_inline hot static inline void
+value_set_agg(Value* self, Agg* agg)
+{
+	self->type = VALUE_AGG;
+	self->agg  = *agg;
+}
+
+always_inline hot static inline void
 value_set_set(Value* self, Store* store)
 {
 	self->type  = VALUE_SET;
@@ -280,6 +289,13 @@ value_read(Value* self, uint8_t* data, Buf* buf)
 		value_set_vector(self, &vector, buf);
 		break;
 	}
+	case AM_AGG:
+	{
+		Agg agg;
+		data_read_agg(&data, &agg);
+		value_set_agg(self, &agg);
+		break;
+	}
 	default:
 		error_data();
 		break;
@@ -337,6 +353,9 @@ value_write(Value* self, Buf* buf)
 	case VALUE_VECTOR:
 		encode_vector(buf, &self->vector);
 		break;
+	case VALUE_AGG:
+		encode_agg(buf, &self->agg);
+		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 		store_encode(self->store, buf);
@@ -380,6 +399,9 @@ value_write_data(Value* self, uint8_t** pos)
 		break;
 	case VALUE_VECTOR:
 		data_write_vector(pos, &self->vector);
+		break;
+	case VALUE_AGG:
+		data_write_agg(pos, &self->agg);
 		break;
 	default:
 		error("operation is not supported");
@@ -463,6 +485,9 @@ value_copy(Value* self, Value* src)
 			value_set_vector(self, &vector, buf);
 		}
 		break;
+	case VALUE_AGG:
+		value_set_agg(self, &src->agg);
+		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 	{
@@ -511,6 +536,9 @@ value_copy_ref(Value* self, Value* src)
 		break;
 	case VALUE_VECTOR:
 		value_set_vector(self, &src->vector, NULL);
+		break;
+	case VALUE_AGG:
+		value_set_agg(self, &src->agg);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -564,6 +592,9 @@ value_type_to_string(ValueType type)
 		break;
 	case VALUE_VECTOR:
 		name = "vector";
+		break;
+	case VALUE_AGG:
+		name = "aggregate";
 		break;
 	case VALUE_SET:
 		name = "set";

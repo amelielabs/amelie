@@ -65,6 +65,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -74,6 +75,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -88,6 +90,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -97,6 +100,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -106,6 +110,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -120,6 +125,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -129,6 +135,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -138,6 +145,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -152,6 +160,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -161,6 +170,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -175,6 +185,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -184,6 +195,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -193,6 +205,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -207,6 +220,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -216,6 +230,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -230,6 +245,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -239,6 +255,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -253,6 +270,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -262,6 +280,7 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }]]
@@ -276,6 +295,7 @@ select columns from system.tables() where name = "test"
     "not_null": true,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
     "default": null
   }
 }, {
@@ -285,6 +305,50 @@ select columns from system.tables() where name = "test"
     "not_null": false,
     "generated": 0,
     "modulo": 9223372036854775807,
+    "aggregate": 0,
+    "default": null
+  }
+}]]
+drop table test
+# test: column agg
+create table test(id int primary key, a agg)
+{"msg": "AGGREGATE <(> expected"}
+create table test(id int primary key, a agg()
+{"msg": "AGGREGATE (<type> expected"}
+create table test(id int primary key, a agg(hello)
+{"msg": "AGGREGATE 'hello' is not supported"}
+create table test(id int primary key, a agg(hello))
+{"msg": "AGGREGATE 'hello' is not supported"}
+create table test(id int primary key, a agg(count), b aggregate(sum))
+select columns from system.tables() where name = "test"
+[[{
+  "name": "id",
+  "type": "int",
+  "constraint": {
+    "not_null": true,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "aggregate": 0,
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": "aggregate",
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "aggregate": 1,
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": "aggregate",
+  "constraint": {
+    "not_null": false,
+    "generated": 0,
+    "modulo": 9223372036854775807,
+    "aggregate": 4,
     "default": null
   }
 }]]

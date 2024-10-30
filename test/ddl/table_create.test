@@ -77,6 +77,15 @@ create table test(id int primary key, a vector)
 select columns from system.tables() where name = "test"
 drop table test
 
+# test: column agg
+create table test(id int primary key, a agg)
+create table test(id int primary key, a agg()
+create table test(id int primary key, a agg(hello)
+create table test(id int primary key, a agg(hello))
+create table test(id int primary key, a agg(count), b aggregate(sum))
+select columns from system.tables() where name = "test"
+drop table test
+
 # test: column redefined
 create table test(id int, id int)
 

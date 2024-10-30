@@ -423,6 +423,34 @@ show functions
   "public.cos_distance": {
     "schema": "public",
     "name": "cos_distance"
+  },
+  "public.agg_count": {
+    "schema": "public",
+    "name": "agg_count"
+  },
+  "public.agg_min": {
+    "schema": "public",
+    "name": "agg_min"
+  },
+  "public.agg_max": {
+    "schema": "public",
+    "name": "agg_max"
+  },
+  "public.agg_sum": {
+    "schema": "public",
+    "name": "agg_sum"
+  },
+  "public.agg_avg": {
+    "schema": "public",
+    "name": "agg_avg"
+  },
+  "public.agg_first": {
+    "schema": "public",
+    "name": "agg_first"
+  },
+  "public.agg_last": {
+    "schema": "public",
+    "name": "agg_last"
   }
 }]
 select system.functions()
@@ -806,6 +834,34 @@ select system.functions()
   "public.cos_distance": {
     "schema": "public",
     "name": "cos_distance"
+  },
+  "public.agg_count": {
+    "schema": "public",
+    "name": "agg_count"
+  },
+  "public.agg_min": {
+    "schema": "public",
+    "name": "agg_min"
+  },
+  "public.agg_max": {
+    "schema": "public",
+    "name": "agg_max"
+  },
+  "public.agg_sum": {
+    "schema": "public",
+    "name": "agg_sum"
+  },
+  "public.agg_avg": {
+    "schema": "public",
+    "name": "agg_avg"
+  },
+  "public.agg_first": {
+    "schema": "public",
+    "name": "agg_first"
+  },
+  "public.agg_last": {
+    "schema": "public",
+    "name": "agg_last"
   }
 }]
 # test: show tables

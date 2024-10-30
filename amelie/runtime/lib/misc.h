@@ -18,3 +18,11 @@ compare_int64(int64_t a, int64_t b)
 		return 0;
 	return (a > b) ? 1 : -1;
 }
+
+hot static inline int
+compare_real(double a, double b)
+{
+	if (a == b)
+		return 0;
+	return (a > b) ? 1 : -1;
+}

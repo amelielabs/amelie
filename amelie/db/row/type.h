@@ -21,7 +21,8 @@ enum
 	TYPE_STRING,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
-	TYPE_VECTOR
+	TYPE_VECTOR,
+	TYPE_AGG
 };
 
 hot static inline bool
@@ -46,6 +47,8 @@ type_validate(int type, uint8_t* data)
 		return data_is_interval(data);
 	case TYPE_VECTOR:
 		return data_is_vector(data);
+	case TYPE_AGG:
+		return data_is_agg(data);
 	}
 	return false;
 }
@@ -63,6 +66,7 @@ type_of(int type)
 	case TYPE_TIMESTAMP: return "timestamp";
 	case TYPE_INTERVAL:  return "interval";
 	case TYPE_VECTOR:    return "vector";
+	case TYPE_AGG:       return "aggregate";
 	}
 	return "";
 }
@@ -110,6 +114,11 @@ type_read(Str* name)
 	if (str_is(name, "vector", 6))
 	{
 		type = TYPE_VECTOR;
+	} else
+	if (str_is(name, "aggregate", 9) ||
+	    str_is(name, "agg", 3))
+	{
+		type = TYPE_AGG;
 	}
 	return type;
 }

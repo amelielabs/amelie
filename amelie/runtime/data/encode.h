@@ -145,3 +145,10 @@ encode_vector(Buf* self, Vector* vector)
 	auto pos = buf_reserve(self, data_size_vector(vector->size));
 	data_write_vector(pos, vector);
 }
+
+always_inline hot static inline void
+encode_agg(Buf* self, Agg* agg)
+{
+	auto pos = buf_reserve(self, data_size_agg(agg));
+	data_write_agg(pos, agg);
+}

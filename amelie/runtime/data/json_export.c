@@ -159,6 +159,26 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		buf_write(data, "]", 1);
 		break;
 	}
+	case AM_AGG:
+	{
+		Agg agg;
+		data_read_agg(pos, &agg);
+		AggValue value;
+		switch (agg_read(&agg, &value)) {
+		case AGG_NULL:
+			buf_write(data, "null", 4);
+			break;
+		case AGG_INT:
+			buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value.integer);
+			buf_write(data, buf, buf_len);
+			break;
+		case AGG_REAL:
+			buf_len = snprintf(buf, sizeof(buf), "%g", value.real);
+			buf_write(data, buf, buf_len);
+			break;
+		}
+		break;
+	}
 	default:
 		error_data();
 		break;

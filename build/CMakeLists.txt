@@ -231,6 +231,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_misc.c
     ${AMELIE_ROOT}/vm/func/fn_time.c
     ${AMELIE_ROOT}/vm/func/fn_vector.c
+    ${AMELIE_ROOT}/vm/func/fn_agg.c
     ${AMELIE_ROOT}/vm/func/fn.c)
 
 set(AMELIE_SOURCES_COMPILER

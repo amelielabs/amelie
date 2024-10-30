@@ -27,6 +27,7 @@ value_is_true(Value* a)
 	case VALUE_ARRAY:
 	case VALUE_INTERVAL:
 	case VALUE_VECTOR:
+	case VALUE_AGG:
 	case VALUE_STRING:
 	case VALUE_SET:
 	case VALUE_MERGE:
@@ -75,6 +76,10 @@ value_is_equal(Value* a, Value* b)
 	case VALUE_VECTOR:
 		if (b->type == VALUE_VECTOR)
 			return vector_compare(&a->vector, &b->vector) == 0;
+		break;
+	case VALUE_AGG:
+		if (b->type == VALUE_AGG)
+			return agg_compare(&a->agg, &b->agg) == 0;
 		break;
 	default:
 		break;
@@ -189,6 +194,13 @@ value_gte(Value* result, Value* a, Value* b)
 			return value_set_bool(result, rc >= 0);
 		}
 		break;
+	case VALUE_AGG:
+		if (b->type == VALUE_AGG)
+		{
+			int rc = agg_compare(&a->agg, &b->agg);
+			return value_set_bool(result, rc >= 0);
+		}
+		break;
 	default:
 		break;
 	}
@@ -233,6 +245,13 @@ value_gt(Value* result, Value* a, Value* b)
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc > 0);
+		}
+		break;
+	case VALUE_AGG:
+		if (b->type == VALUE_AGG)
+		{
+			int rc = agg_compare(&a->agg, &b->agg);
 			return value_set_bool(result, rc > 0);
 		}
 		break;
@@ -283,6 +302,13 @@ value_lte(Value* result, Value* a, Value* b)
 			return value_set_bool(result, rc <= 0);
 		}
 		break;
+	case VALUE_AGG:
+		if (b->type == VALUE_AGG)
+		{
+			int rc = agg_compare(&a->agg, &b->agg);
+			return value_set_bool(result, rc <= 0);
+		}
+		break;
 	default:
 		break;
 	}
@@ -327,6 +353,13 @@ value_lt(Value* result, Value* a, Value* b)
 		if (b->type == VALUE_VECTOR)
 		{
 			int rc = vector_compare(&a->vector, &b->vector);
+			return value_set_bool(result, rc < 0);
+		}
+		break;
+	case VALUE_AGG:
+		if (b->type == VALUE_AGG)
+		{
+			int rc = agg_compare(&a->agg, &b->agg);
 			return value_set_bool(result, rc < 0);
 		}
 		break;
@@ -652,6 +685,21 @@ value_to_int(Value* result, Value* a)
 		if (str_toint(&a->string, &value) == -1)
 			error("int(): failed to cast string");
 		break;
+	case VALUE_AGG:
+	{
+		AggValue aggval;
+		switch (agg_read(&a->agg, &aggval)) {
+		case AGG_NULL:
+			break;
+		case AGG_INT:
+			value = aggval.integer;
+			break;
+		case AGG_REAL:
+			value = aggval.real;
+			break;
+		}
+		break;
+	}
 	default:
 		error("int(): operation type is not supported");
 		break;
@@ -695,6 +743,21 @@ value_to_real(Value* result, Value* a)
 	case VALUE_TIMESTAMP:
 		value = a->integer;
 		break;
+	case VALUE_AGG:
+	{
+		AggValue aggval;
+		switch (agg_read(&a->agg, &aggval)) {
+		case AGG_NULL:
+			break;
+		case AGG_INT:
+			value = aggval.integer;
+			break;
+		case AGG_REAL:
+			value = aggval.real;
+			break;
+		}
+		break;
+	}
 	default:
 		error("real(): operation type is not supported");
 		break;

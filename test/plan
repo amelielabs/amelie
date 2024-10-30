@@ -90,6 +90,11 @@ directory vector
 group vector
 test vector
 
+# agg
+directory agg
+group agg
+test agg
+
 # pushdown
 directory pushdown
 group pushdown

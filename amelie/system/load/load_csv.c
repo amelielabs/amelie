@@ -58,6 +58,7 @@ load_value(Load* self, Column* column, char* pos, char* end, uint32_t* offset)
 	json_set_time(&self->json, self->dtr->local->timezone, self->dtr->local->time_us);
 
 	// try to convert the value to the column type if possible
+	int      agg  = -1;
 	JsonHint hint = JSON_HINT_NONE;
 	switch (column->type) {
 	case TYPE_TIMESTAMP:
@@ -69,8 +70,12 @@ load_value(Load* self, Column* column, char* pos, char* end, uint32_t* offset)
 	case TYPE_VECTOR:
 		hint = JSON_HINT_VECTOR;
 		break;
+	case TYPE_AGG:
+		agg  = column->constraint.aggregate;
+		hint = JSON_HINT_AGG;
+		break;
 	}
-	json_parse_hint(&self->json, &in, NULL, hint);
+	json_parse_hint(&self->json, &in, NULL, hint, agg);
 	return self->json.pos;
 }
 

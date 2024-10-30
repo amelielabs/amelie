@@ -46,4 +46,5 @@ fn_register(FunctionMgr* mgr)
 	function_mgr_register(mgr, fn_misc_def);
 	function_mgr_register(mgr, fn_time_def);
 	function_mgr_register(mgr, fn_vector_def);
+	function_mgr_register(mgr, fn_agg_def);
 }

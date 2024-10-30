@@ -29,7 +29,8 @@ enum
 	DECODE_INTERVAL_STRING = 1 << 11,
 	DECODE_TS              = 1 << 12,
 	DECODE_TS_STRING       = 1 << 13,
-	DECODE_FOUND           = 1 << 14
+	DECODE_AGG             = 1 << 14,
+	DECODE_FOUND           = 1 << 15
 };
 
 struct Decode
@@ -94,6 +95,15 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 				data_read_string(pos, &str);
 				auto value = (Timestamp*)ref->value;
 				timestamp_read(value, &str);
+				break;
+			}
+			case DECODE_AGG:
+			{
+				if (unlikely(! data_is_agg(*pos)))
+					error("%s: aggregate expected for '%s'",
+					      context, ref->key);
+				auto value = (Agg*)ref->value;
+				data_read_agg(pos, value);
 				break;
 			}
 			case DECODE_UUID:
