@@ -563,6 +563,10 @@ parse_table_alter(Stmt* self)
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
+		// (aggregate)
+		if (type == TYPE_AGG)
+			parse_agg(self, column);
+
 		// [NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED]
 		parse_constraint(self, NULL, column);
 
