@@ -525,6 +525,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// sub-query
 	case KSELECT:
 	{
+		if (expr && !expr->select)
+			error("unexpected subquery");
 		auto select = parse_select(self);
 		value = &select->ast;
 		break;

@@ -73,6 +73,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -106,6 +107,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -219,6 +221,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -252,6 +255,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -285,6 +289,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -363,6 +368,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -396,6 +402,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -429,6 +436,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -502,6 +510,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -535,6 +544,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],
@@ -568,6 +578,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }, {
@@ -578,6 +589,7 @@ show tables
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
+        "as": "",
         "default": null
       }
     }],

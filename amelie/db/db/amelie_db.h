@@ -22,6 +22,7 @@
 #include "db/table.h"
 #include "db/table_op.h"
 #include "db/table_mgr.h"
+#include "db/table_mgr_alter.h"
 
 // index
 #include "db/table_index.h"

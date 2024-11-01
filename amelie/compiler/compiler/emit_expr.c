@@ -333,6 +333,41 @@ emit_between(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
+emit_virtual(Compiler* self, Target* target, Column* column, Str* path)
+{
+	if (unlikely(target->level_virt > 0))
+		error("virtual columns cannot be nested");
+
+	// parse and emit virtual column expression
+	Lex lex;
+	lex_init(&lex, keywords);
+	lex_start(&lex, &column->constraint.as);
+
+	self->current->lex = &lex;
+	Expr expr =
+	{
+		.aggs   = NULL,
+		.select = false
+	};
+	auto ast = parse_expr(self->current, &expr);
+	self->current->lex = &self->parser.lex;
+
+	target->level_virt++;
+	auto l = emit_expr(self, target, ast);
+	target->level_virt--;
+
+	if (str_empty(path))
+		return l;
+
+	// (column expr)[path]
+	auto r = emit_string(self, path, false);
+	auto rc = op3(self, CIDX, rpin(self), l, r);
+	runpin(self, l);
+	runpin(self, r);
+	return rc;
+}
+
+hot static inline int
 emit_cursor_idx(Compiler* self, Target* target, Str* path)
 {
 	int target_id = target->id;
@@ -362,11 +397,12 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 		columns = table_columns(target->table);
 
 	// find column in the target key
-	int column_order = -1;
+	Column* column = NULL;
+	int     column_order = -1;
 	if (columns)
 	{
 		// find column
-		auto column = columns_find(columns, &name);
+		column = columns_find(columns, &name);
 		if (column)
 			column_order = column->order;
 	} else
@@ -392,6 +428,10 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 		else
 			str_init(&ref);
 	}
+
+	// virtual column
+	if (column && column->constraint.generated == GENERATED_VIRTUAL)
+		return emit_virtual(self, target, column, &ref);
 
 	// current[name]
 	// *.name

@@ -247,6 +247,10 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 	if (! table_new)
 		return;
 
+	// generated columns do not modify rows
+	if (arg->column->constraint.generated == GENERATED_VIRTUAL)
+		return;
+
 	// rebuild new table with new column in parallel per node
 	Build build;
 	build_init(&build, BUILD_COLUMN_ADD, self->share->cluster,
@@ -276,6 +280,10 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 
 	auto column = columns_find(&table->config->columns, &arg->column_name);
 	assert(column);
+
+	// generated columns do not modify rows
+	if (column->constraint.generated == GENERATED_VIRTUAL)
+		return;
 
 	// rebuild new table with new column in parallel per node
 	Build build;

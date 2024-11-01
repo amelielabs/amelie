@@ -66,6 +66,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -76,6 +77,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -91,6 +93,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -101,6 +104,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -111,6 +115,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -126,6 +131,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -136,6 +142,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -146,6 +153,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -161,6 +169,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -171,6 +180,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -186,6 +196,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -196,6 +207,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -206,6 +218,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -221,6 +234,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -231,6 +245,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -246,6 +261,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -256,6 +272,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -271,6 +288,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -281,6 +299,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -296,6 +315,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -306,6 +326,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]
@@ -329,6 +350,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -339,6 +361,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 1,
+    "as": "",
     "default": null
   }
 }, {
@@ -349,6 +372,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 4,
+    "as": "",
     "default": null
   }
 }]]
@@ -364,6 +388,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }, {
@@ -374,6 +399,7 @@ select columns from system.tables() where name = "test"
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
+    "as": "",
     "default": null
   }
 }]]

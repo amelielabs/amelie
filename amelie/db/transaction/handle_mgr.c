@@ -107,7 +107,7 @@ handle_mgr_create(HandleMgr* self,
 	handle_mgr_set(self, handle);
 
 	// update transaction log
-	log_handle(&tr->log, cmd, &create_if, self, handle, data);
+	log_handle(&tr->log, cmd, &create_if, self, handle, NULL, data);
 }
 
 static void
@@ -144,5 +144,5 @@ handle_mgr_drop(HandleMgr* self,
 	handle_mgr_delete(self, handle);
 
 	// update transaction log
-	log_handle(&tr->log, cmd, &drop_if, self, handle, data);
+	log_handle(&tr->log, cmd, &drop_if, self, handle, NULL, data);
 }

@@ -15,13 +15,15 @@ typedef struct Expr Expr;
 
 struct Expr
 {
+	bool     select;
 	AstList* aggs;
 };
 
 static inline void
 expr_init(Expr* self)
 {
-	self->aggs = NULL;
+	self->select = true;
+	self->aggs   = NULL;
 }
 
 Ast* parse_expr(Stmt*, Expr*);

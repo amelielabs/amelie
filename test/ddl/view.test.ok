@@ -111,6 +111,7 @@ select * from system.views()
       "generated": 0,
       "modulo": 9223372036854775807,
       "aggregate": 0,
+      "as": "",
       "default": null
     }
   }]

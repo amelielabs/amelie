@@ -141,7 +141,7 @@ view_mgr_rename(ViewMgr* self,
 	// update view
 	log_handle(&tr->log, LOG_VIEW_RENAME, &rename_if,
 	           NULL,
-	           &view->handle, op);
+	           &view->handle, NULL, op);
 
 	// set new view name
 	if (! str_compare(&view->config->schema, schema_new))

@@ -93,6 +93,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
+
+		// skip virtual columns
+		if (column->constraint.generated == GENERATED_VIRTUAL)
+			continue;
+
 		auto offset = code_data_offset(self->data);
 		if (list && list->column->order == column->order)
 		{
@@ -159,6 +164,10 @@ parse_row(Stmt* self, AstInsert* stmt)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
+
+		// skip virtual columns
+		if (column->constraint.generated == GENERATED_VIRTUAL)
+			continue;
 
 		// parse and encode json value
 		auto offset = code_data_offset(self->data);
@@ -255,6 +264,11 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 		auto column = columns_find(columns, &name->string);
 		if (! column)
 			error("<%.*s> column does not exists", str_size(&name->string),
+			      str_of(&name->string));
+
+		// ensure columns is not virtual
+		if (column->constraint.generated == GENERATED_VIRTUAL)
+			error("<%.*s> virtual columns cannot be updated", str_size(&name->string),
 			      str_of(&name->string));
 
 		if (list == NULL) {

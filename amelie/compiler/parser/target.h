@@ -27,6 +27,7 @@ struct Target
 	int          id;
 	int          level;
 	int          level_seq;
+	int          level_virt;
 	Str          name;
 	// group by
 	AstList      group_by;
@@ -58,6 +59,7 @@ target_init(Target* self, Table* table)
 	self->id              = 0;
 	self->level           = -1;
 	self->level_seq       = -1;
+	self->level_virt      = 0;
 	self->group_by_target = NULL;
 	self->group_main      = NULL;
 	self->group_redirect  = NULL;

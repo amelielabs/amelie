@@ -89,7 +89,7 @@ table_index_create(Table*       self,
 	// update table
 	log_handle(&tr->log, LOG_INDEX_CREATE, &create_if,
 	           index,
-	           &self->handle, op);
+	           &self->handle, NULL, op);
 
 	// create index for each partition
 	part_list_index_create(&self->part_list, index);
@@ -142,7 +142,7 @@ table_index_drop(Table* self,
 	// update table
 	log_handle(&tr->log, LOG_INDEX_DROP, &drop_if,
 	           index,
-	           &self->handle, op);
+	           &self->handle, NULL, op);
 }
 
 static void
@@ -207,7 +207,7 @@ table_index_rename(Table* self,
 	// update table
 	log_handle(&tr->log, LOG_INDEX_RENAME, &rename_if,
 	           index,
-	           &self->handle, op);
+	           &self->handle, NULL, op);
 
 	// rename index
 	index_config_set_name(index, name_new);

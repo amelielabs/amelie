@@ -111,6 +111,12 @@ parse_key(Stmt* self, Keys* keys)
 		if (column == NULL)
 			error("KEY (<name> expected");
 
+		// ensure column is not virtual
+		if (column->constraint.generated == GENERATED_VIRTUAL)
+			error("<%.*s> virtual columns cannot be used for indexing",
+			      str_size(&column->name),
+			      str_of(&column->name));
+
 		// [type]
 		int type;
 		if (str_empty(&path))
@@ -273,6 +279,34 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
+		// AS (expr)
+		case KAS:
+		{
+			// (
+			auto lbr = stmt_if(self, '(');
+			if (! lbr)
+				error(" AS <(> expected");
+
+			// expr
+			parse_expr(self, NULL);
+
+			// )
+			auto rbr = stmt_if(self, ')');
+			if (! rbr)
+				error(" AS (expr <)> expected");
+
+			Str as;
+			str_set(&as, lbr->pos, rbr->pos - lbr->pos);
+			str_shrink(&as);
+			as.pos++;
+			str_shrink(&as);
+			if (str_empty(&as))
+				error(" AS expression is missing");
+			constraint_set_as(cons, &as);
+			constraint_set_generated(cons, GENERATED_VIRTUAL);
+			break;
+		}
+
 		default:
 			stmt_push(self, name);
 			done = true;
@@ -368,7 +402,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (type == TYPE_AGG)
 			parse_agg(self, column);
 
-		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM]
+		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, keys, column);
 
 		// ,
@@ -448,19 +482,23 @@ parse_validate_constraints(Columns* columns)
 	{
 		auto column = list_at(Column, link);
 		auto cons = &column->constraint;
-		if (cons->generated == GENERATED_NONE)
+		switch (cons->generated) {
+		case GENERATED_NONE:
 			continue;
-
-		if (cons->generated == GENERATED_SERIAL ||
-		    cons->generated == GENERATED_RANDOM)
-		{
+		case GENERATED_SERIAL:
+		case GENERATED_RANDOM:
 			if (column->type != TYPE_INT)
 				error("SERIAL column <%.*s> must be integer",
 				      str_size(&column->name),
 				      str_of(&column->name));
 			continue;
+		case GENERATED_VIRTUAL:
+			if (column->type != TYPE_ANY)
+				error("AS () column <%.*s> must be of type ANY",
+				      str_size(&column->name),
+				      str_of(&column->name));
+			break;
 		}
-
 		if (column->key)
 			error("generated columns cannot be used with keys");
 	}
@@ -567,7 +605,7 @@ parse_table_alter(Stmt* self)
 		if (type == TYPE_AGG)
 			parse_agg(self, column);
 
-		// [NOT NULL | DEFAULT | SERIAL | RANDOM | GENERATED]
+		// [NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, NULL, column);
 
 		// validate column

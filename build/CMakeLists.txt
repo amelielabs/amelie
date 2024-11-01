@@ -192,6 +192,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/db/schema_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr.c
+    ${AMELIE_ROOT}/db/db/table_mgr_alter.c
     ${AMELIE_ROOT}/db/db/table_index.c
     ${AMELIE_ROOT}/db/db/view_mgr.c
     ${AMELIE_ROOT}/db/db/node_mgr.c
