@@ -47,6 +47,14 @@ insert into test values (0)
 select data from test
 drop table test
 
+# test: virtual column order
+create table test (id int primary key, a any AS ( 42 ), b int)
+insert into test values (0, 1)
+select * from test
+select id, a, b from test
+drop table test
+
+
 ## test: virtual add column
 #create table test (id int primary key)
 #insert into test values (1), (2), (3)

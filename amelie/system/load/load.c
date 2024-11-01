@@ -148,7 +148,7 @@ load_columns(Load* self, Str* value)
 			error("column '%.*s' does not exists", str_size(&name),
 			      str_of(&name));
 
-		if (unlikely(column->constraint.generated == GENERATED_VIRTUAL))
+		if (column_is_virtual(column))
 			error("virtual columns cannot be updated");
 
 		if (last && column->order <= last->order)

@@ -397,7 +397,7 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 		columns = table_columns(target->table);
 
 	// find column in the target key
-	Column* column = NULL;
+	Column* column       = NULL;
 	int     column_order = -1;
 	if (columns)
 	{
@@ -418,7 +418,7 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	}
 
 	// exclude column or label name from the path
-	if (column_order != -1)
+	if (column || column_order >= 0)
 	{
 		// name.path
 		// name
@@ -430,7 +430,7 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	}
 
 	// virtual column
-	if (column && column->constraint.generated == GENERATED_VIRTUAL)
+	if (column && column_is_virtual(column))
 		return emit_virtual(self, target, column, &ref);
 
 	// current[name]

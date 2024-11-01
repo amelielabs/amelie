@@ -127,3 +127,9 @@ column_find(Column* self, uint8_t** pos)
 		      str_of(&self->name),
 		      type_of(self->type));
 }
+
+static inline bool
+column_is_virtual(Column* self)
+{
+	return self->constraint.generated == GENERATED_VIRTUAL;
+}

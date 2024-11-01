@@ -120,13 +120,9 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 
 	list_foreach(&columns->list)
 	{
+		auto column = list_at(Column, link);
 		auto separator = false;
 		auto separator_last = false;
-
-		// skip virtual columns
-		auto column = list_at(Column, link);
-		if (column->constraint.generated == GENERATED_VIRTUAL)
-			continue;
 
 		uint32_t offset;
 		if (self->columns_has)

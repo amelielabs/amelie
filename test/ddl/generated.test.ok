@@ -4,24 +4,24 @@ connect E0 S0 localhost:3485
 create table test (id int primary key, AS
 {"msg": "(<name> expected"}
 create table test (id int primary key, data int AS
-{"msg": " AS <(> expected"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data int AS (
-{"msg": "bad expression"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data int AS (
-{"msg": "bad expression"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data int AS ()
-{"msg": "bad expression"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data int AS ()
-{"msg": "bad expression"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data int AS ())
-{"msg": "bad expression"}
+{"msg": "virtual column <data> must be of type ANY"}
 # test: virtual column type
 create table test (id int primary key, data int AS (0))
-{"msg": "AS () column <data> must be of type ANY"}
+{"msg": "virtual column <data> must be of type ANY"}
 create table test (id int primary key, data any AS (0))
 # test: virtual column insert
 insert into test values (0, 1)
-{"msg": "expected ')'"}
+{"msg": "row has incorrect number of columns"}
 insert into test (id, data) values (0, 1)
 {"msg": "<data> virtual columns cannot be updated"}
 # test: virtual column upsert
@@ -49,6 +49,14 @@ create table test (id int primary key, data any AS ( data ))
 insert into test values (0)
 select data from test
 {"msg": "virtual columns cannot be nested"}
+drop table test
+# test: virtual column order
+create table test (id int primary key, a any AS ( 42 ), b int)
+insert into test values (0, 1)
+select * from test
+[[0, 1]]
+select id, a, b from test
+[[0, 42, 1]]
 drop table test
 disconnect S0
 close E0

@@ -60,7 +60,7 @@ keys_add(Keys* self, Key* key)
 	self->list_count++;
 
 	// set column pointer
-	key->column = columns_of(self->columns, key->ref);
+	key->column = columns_find_by(self->columns, key->ref);
 	key->column->key = true;
 }
 

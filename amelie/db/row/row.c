@@ -30,11 +30,6 @@ row_create(Columns* columns, uint8_t** pos, uint8_t** pos_serial)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-
-		// skip virtual columns
-		if (column->constraint.generated == GENERATED_VIRTUAL)
-			continue;
-
 		if (unlikely(data_is_array_end(*pos)))
 			error("row has incorrect number of columns");
 
@@ -84,11 +79,6 @@ row_create_hash(Keys* keys, uint32_t* hash, uint8_t** pos)
 	list_foreach(&keys->columns->list)
 	{
 		auto column = list_at(Column, link);
-
-		// skip virtual columns
-		if (column->constraint.generated == GENERATED_VIRTUAL)
-			continue;
-
 		if (unlikely(data_is_array_end(*pos)))
 			error("row has incorrect number of columns");
 

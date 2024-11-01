@@ -81,8 +81,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			break;
 		}
 
-		// ensure column is not virtual
-		if (unlikely(column->constraint.generated == GENERATED_VIRTUAL))
+		if (column_is_virtual(column))
 			error("virtual columns cannot be updated");
 
 		// ensure we are not updating a key

@@ -90,6 +90,12 @@ parse_key_column(Stmt* self, Columns* columns, Str* path)
 		error("<%.*s> column does not exists", str_size(&name),
 		      str_of(&name));
 
+	// ensure column is not virtual
+	if (column_is_virtual(column))
+		error("<%.*s> virtual columns cannot be used for indexing",
+		      str_size(&column->name),
+		      str_of(&column->name));
+
 	return column;
 }
 
@@ -110,12 +116,6 @@ parse_key(Stmt* self, Keys* keys)
 		auto column = parse_key_column(self, keys->columns, &path);
 		if (column == NULL)
 			error("KEY (<name> expected");
-
-		// ensure column is not virtual
-		if (column->constraint.generated == GENERATED_VIRTUAL)
-			error("<%.*s> virtual columns cannot be used for indexing",
-			      str_size(&column->name),
-			      str_of(&column->name));
 
 		// [type]
 		int type;
@@ -220,6 +220,12 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		// SERIAL
 		case KSERIAL:
 		{
+			// ensure the column has type INT
+			if (column->type != TYPE_INT)
+				error("SERIAL column <%.*s> must be integer",
+				      str_size(&column->name),
+				      str_of(&column->name));
+
 			constraint_set_generated(cons, GENERATED_SERIAL);
 			break;
 		}
@@ -227,7 +233,14 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		// RANDOM
 		case KRANDOM:
 		{
+			// ensure the column has type INT
+			if (column->type != TYPE_INT)
+				error("RANDOM column <%.*s> must be integer",
+				      str_size(&column->name),
+				      str_of(&column->name));
+
 			constraint_set_generated(cons, GENERATED_RANDOM);
+
 			// [(modulo)]
 			if (stmt_if(self, '('))
 			{
@@ -282,6 +295,18 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		// AS (expr)
 		case KAS:
 		{
+			// ensure the column is not a key
+			if (column->key)
+				error("virtual column <%.*s>  cannot be used as a key",
+				      str_size(&column->name),
+				      str_of(&column->name));
+
+			// ensure the column has type ANY
+			if (column->type != TYPE_ANY)
+				error("virtual column <%.*s> must be of type ANY",
+				      str_size(&column->name),
+				      str_of(&column->name));
+
 			// (
 			auto lbr = stmt_if(self, '(');
 			if (! lbr)
@@ -474,36 +499,6 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 	}
 }
 
-static inline void
-parse_validate_constraints(Columns* columns)
-{
-	// validate constraints
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto cons = &column->constraint;
-		switch (cons->generated) {
-		case GENERATED_NONE:
-			continue;
-		case GENERATED_SERIAL:
-		case GENERATED_RANDOM:
-			if (column->type != TYPE_INT)
-				error("SERIAL column <%.*s> must be integer",
-				      str_size(&column->name),
-				      str_of(&column->name));
-			continue;
-		case GENERATED_VIRTUAL:
-			if (column->type != TYPE_ANY)
-				error("AS () column <%.*s> must be of type ANY",
-				      str_size(&column->name),
-				      str_of(&column->name));
-			break;
-		}
-		if (column->key)
-			error("generated columns cannot be used with keys");
-	}
-}
-
 void
 parse_table_create(Stmt* self, bool shared)
 {
@@ -540,7 +535,6 @@ parse_table_create(Stmt* self, bool shared)
 
 	// (columns)
 	parse_columns(self, &stmt->config->columns, &index_config->keys);
-	parse_validate_constraints(&stmt->config->columns);
 
 	// [WITH]
 	parse_with(self, stmt, index_config);

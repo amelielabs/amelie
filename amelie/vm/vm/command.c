@@ -418,7 +418,7 @@ ccursor_idx(Vm* self, Op* op)
 		{
 			if (cursor->type == CURSOR_TABLE)
 			{
-				auto column = columns_of(table_columns(cursor->table), op->c);
+				auto column = columns_find_by(table_columns(cursor->table), op->c);
 				error("column %.*s.%.*s: path not found",
 				      str_size(&column->name), str_of(&column->name),
 				      str_size(&name), str_of(&name));
