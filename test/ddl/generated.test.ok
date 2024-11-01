@@ -58,5 +58,22 @@ select * from test
 select id, a, b from test
 [[0, 42, 1]]
 drop table test
+# test: virtual add column
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+select * from test
+[[1], [2], [3]]
+alter table test add column data any as (id * 2)
+select * from test
+[[1], [2], [3]]
+select id, data from test
+[[1, 2], [2, 4], [3, 6]]
+# test: virtual drop column
+alter table test drop column data
+select * from test
+[[1], [2], [3]]
+select id, data from test
+{"msg": "column data: does not exists"}
+drop table test
 disconnect S0
 close E0

@@ -23,7 +23,7 @@ import text/plain select 1
 {"msg": "table 'test': not exists"}
 disconnect S0
 connect E0 S0 http://localhost:3485
-create table test (id int primary key, a int, b int)
+create table test (id int primary key, a int, b int, c any as (123))
 create table test2 (obj object, primary key(obj.id int))
 create table test3 (id int primary key, ts timestamp, iv interval, vec vector, agg agg(sum))
 disconnect S0
@@ -50,6 +50,10 @@ import text/csv 5
 disconnect S0
 connect E0 S0 http://localhost:3485/public/test?columns=id,a
 import text/csv 6,0
+disconnect S0
+connect E0 S0 http://localhost:3485/public/test?columns=id,c
+import text/csv 7,0
+{"msg": "virtual columns cannot be updated"}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test

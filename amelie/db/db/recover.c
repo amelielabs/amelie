@@ -153,6 +153,8 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto table_new = table_mgr_column_add(&db->table_mgr, tr, &schema, &name,
 		                                      column, true);
+		if (! table_new)
+			break;
 		// build new table with new column
 		self->iface->build_column_add(self, table, table_new, column);
 		break;
@@ -166,6 +168,8 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto table_new = table_mgr_column_drop(&db->table_mgr, tr, &schema, &name,
 		                                       &name_column, true);
+		if (! table_new)
+			break;
 		auto column = columns_find(&table->config->columns, &name_column);
 		assert(column);
 		// build new table without column
