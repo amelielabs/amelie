@@ -37,9 +37,21 @@ hot static void
 fn_agg(Call* self, int type)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	self->result->type = VALUE_AGG;
-	value_agg(&self->result->agg, argv[0], type, argv[1]);
+	if (likely(self->argc == 2))
+	{
+		self->result->type = VALUE_AGG;
+		value_agg(&self->result->agg, argv[0], type, argv[1]);
+	} else
+	if (self->argc == 1)
+	{
+		self->result->type = VALUE_AGG;
+		Value state;
+		value_init(&state);
+		value_set_null(&state),
+		value_agg(&self->result->agg, &state, type, argv[0]);
+	} else {
+		call_validate(self, 2);
+	}
 }
 
 hot static void

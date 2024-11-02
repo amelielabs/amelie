@@ -5,7 +5,6 @@ connect E0 S0 localhost:3485
 
 # test: agg state
 select agg_count()
-select null::agg_count()
 select 1::agg_count(1)
 
 select null::agg_sum([])
@@ -14,6 +13,7 @@ select null::agg_count([])
 select null::agg_count("")
 
 # test: agg_count(int)
+select agg_count(1)
 select null::agg_count(1)
 select null::agg_count(1)::type
 select null::agg_count(1)::agg_count(2)::agg_count(3)
@@ -22,6 +22,7 @@ select null::agg_count(null)::agg_count(null)::agg_count(3)
 select null::agg_count(null)
 
 # test: agg_count(real)
+select agg_count(1.0)
 select null::agg_count(1.0)
 select null::agg_count(1.0)::type
 select null::agg_count(1.0)::agg_count(2.0)::agg_count(3.0)
@@ -32,12 +33,14 @@ select null::agg_count(null)::agg_count(null)::agg_count(3.0)
 select null::agg_count(1)::agg_count( null::agg_count(1)::agg_count(2)::agg_count(3) )
 
 # test: agg_min(int)
+select agg_min(1)
 select null::agg_min(1)
 select null::agg_min(2)::agg_min(1)::agg_min(0)
 select null::agg_min(2)::agg_min(1)::agg_min(null)
 select null::agg_min(null)
 
 # test: agg_min(real)
+select agg_min(1.0)
 select null::agg_min(1.0)
 select null::agg_min(2.0)::agg_min(1.0)::agg_min(0.0)
 select null::agg_min(2.0)::agg_min(1.0)::agg_min(null)
@@ -47,12 +50,14 @@ select null::agg_min(null)
 select null::agg_min(1)::agg_min( null::agg_min(1)::agg_min(2)::agg_min(3) )
 
 # test: agg_max(int)
+select agg_max(1)
 select null::agg_max(1)
 select null::agg_max(2)::agg_max(1)::agg_max(0)
 select null::agg_max(null)::agg_max(2)::agg_max(1)
 select null::agg_max(null)
 
 # test: agg_max(real)
+select agg_max(1.0)
 select null::agg_max(1.0)
 select null::agg_max(2.0)::agg_max(1.0)::agg_max(0.0)
 select null::agg_max(null)::agg_max(2.0)::agg_max(1.0)
@@ -62,12 +67,14 @@ select null::agg_max(null)
 select null::agg_max(1)::agg_max( null::agg_max(1)::agg_max(2)::agg_max(3) )
 
 # test: agg_sum(int)
+select agg_sum(1)
 select null::agg_sum(1)
 select null::agg_sum(2)::agg_sum(1)::agg_sum(0)
 select null::agg_sum(null)::agg_sum(2)::agg_sum(1)
 select null::agg_sum(null)
 
 # test: agg_sum(real)
+select agg_sum(1.0)
 select null::agg_sum(1.0)
 select null::agg_sum(2.0)::agg_sum(1.0)::agg_sum(0.0)
 select null::agg_sum(null)::agg_sum(2.0)::agg_sum(1.0)
@@ -77,12 +84,14 @@ select null::agg_sum(null)
 select null::agg_sum(1)::agg_sum( null::agg_sum(1)::agg_sum(2)::agg_sum(3) )
 
 # test: agg_avg(int)
+select agg_avg(1)
 select null::agg_avg(1)
 select null::agg_avg(2)::agg_avg(1)::agg_avg(0)
 select null::agg_avg(null)::agg_avg(2)::agg_avg(1)
 select null::agg_avg(null)
 
 # test: agg_avg(real)
+select agg_avg(1.0)
 select null::agg_avg(1.0)
 select null::agg_avg(2.0)::agg_avg(1.0)::agg_avg(0.0)
 select null::agg_avg(null)::agg_avg(2.0)::agg_avg(1.0)
