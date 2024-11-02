@@ -24,7 +24,6 @@ test table_alter
 test index
 test view
 test cascade
-test generated
 
 # dml
 directory dml

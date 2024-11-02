@@ -81,9 +81,6 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			break;
 		}
 
-		if (column_is_virtual(column))
-			error("virtual columns cannot be updated");
-
 		// ensure we are not updating a key
 		if (column->key)
 		{

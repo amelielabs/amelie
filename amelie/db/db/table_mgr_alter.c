@@ -198,34 +198,10 @@ column_add_if_abort(Log* self, LogOp* op)
 	buf_free(handle->data);
 }
 
-static void
-column_add_virtual_if_commit(Log* self, LogOp* op)
-{
-	auto handle = log_handle_of(self, op);
-	buf_free(handle->data);
-}
-
-static void
-column_add_virtual_if_abort(Log* self, LogOp* op)
-{
-	auto handle = log_handle_of(self, op);
-	auto column = (Column*)handle->arg;
-	auto table  = table_of(handle->handle);
-	columns_del(&table->config->columns, column);
-	column_free(column);
-	buf_free(handle->data);
-}
-
 static LogIf column_add_if =
 {
 	.commit = column_add_if_commit,
 	.abort  = column_add_if_abort
-};
-
-static LogIf column_add_virtual_if =
-{
-	.commit = column_add_virtual_if_commit,
-	.abort  = column_add_virtual_if_abort
 };
 
 Table*
@@ -249,22 +225,6 @@ table_mgr_column_add(TableMgr* self,
 		return NULL;
 	}
 
-	// virtual column modify existing table
-	if (column_is_virtual(column))
-	{
-		// add new column to the existing table
-		auto column_new = column_copy(column);
-		columns_add(&table->config->columns, column_new);
-
-		// save operation
-		auto op = table_op_column_add(&table->config->schema, &table->config->name, column);
-
-		// update log
-		log_handle(&tr->log, LOG_TABLE_COLUMN_ADD, &column_add_virtual_if, self,
-		           &table->handle, column_new, op);
-		return NULL;
-	}
-
 	// physical column require a new table
 
 	// allocate new table
@@ -284,31 +244,6 @@ table_mgr_column_add(TableMgr* self,
 	table_open(table_new);
 	return table_new;
 }
-
-static void
-column_drop_virtual_if_commit(Log* self, LogOp* op)
-{
-	auto handle = log_handle_of(self, op);
-	auto column = (Column*)handle->arg;
-	column_free(column);
-	buf_free(handle->data);
-}
-
-static void
-column_drop_virtual_if_abort(Log* self, LogOp* op)
-{
-	auto handle = log_handle_of(self, op);
-	auto column = (Column*)handle->arg;
-	auto table  = table_of(handle->handle);
-	columns_add(&table->config->columns, column);
-	buf_free(handle->data);
-}
-
-static LogIf column_drop_virtual_if =
-{
-	.commit = column_drop_virtual_if_commit,
-	.abort  = column_drop_virtual_if_abort
-};
 
 Table*
 table_mgr_column_drop(TableMgr* self,
@@ -337,22 +272,6 @@ table_mgr_column_drop(TableMgr* self,
 		      str_of(name),
 		      str_size(name_column),
 		      str_of(name_column));
-
-	// virtual column modify existing table
-	if (column_is_virtual(column))
-	{
-		// delete column
-		columns_del(&table->config->columns, column);
-
-		// save operation
-		auto op = table_op_column_drop(&table->config->schema, &table->config->name,
-		                               &column->name);
-
-		// update log (old table is still present)
-		log_handle(&tr->log, LOG_TABLE_COLUMN_DROP, &column_drop_virtual_if, self,
-		           &table->handle, column, op);
-		return NULL;
-	}
 
 	// physical column require new table rebuild
 

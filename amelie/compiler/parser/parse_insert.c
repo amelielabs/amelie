@@ -258,11 +258,6 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 			error("<%.*s> column does not exists", str_size(&name->string),
 			      str_of(&name->string));
 
-		// ensure columns is not virtual
-		if (column_is_virtual(column))
-			error("<%.*s> virtual columns cannot be updated", str_size(&name->string),
-			      str_of(&name->string));
-
 		if (list == NULL) {
 			list = name;
 		} else

@@ -55,23 +55,6 @@ show lsn
 select serial("public", "test2")
 select * from test2
 
-# test: alter table column add virtual
-alter table test2 add column virt any as (123)
-select * from test2
-select virt from test2
-
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-
-# test: validate state
-show lsn
-select serial("public", "test2")
-select * from test2
-select virt from test2
-
 # test: alter table column rename
 alter table test2 rename column data to abc
 select * from test2
@@ -93,23 +76,6 @@ select abc from test2
 # test: alter table column drop
 alter table test2 drop column abc
 select abc from test2
-select * from test2
-
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-
-# test: validate state
-show lsn
-select serial("public", "test2")
-select * from test2
-
-# test: alter table column drop virtual
-select virt from test2
-alter table test2 drop column virt
-select virt from test2
 select * from test2
 
 # test: restart

@@ -90,12 +90,6 @@ parse_key_column(Stmt* self, Columns* columns, Str* path)
 		error("<%.*s> column does not exists", str_size(&name),
 		      str_of(&name));
 
-	// ensure column is not virtual
-	if (column_is_virtual(column))
-		error("<%.*s> virtual columns cannot be used for indexing",
-		      str_size(&column->name),
-		      str_of(&column->name));
-
 	return column;
 }
 
@@ -289,46 +283,6 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			keys_add(keys, key);
 
 			primary_key = true;
-			break;
-		}
-
-		// AS (expr)
-		case KAS:
-		{
-			// ensure the column is not a key
-			if (column->key)
-				error("virtual column <%.*s>  cannot be used as a key",
-				      str_size(&column->name),
-				      str_of(&column->name));
-
-			// ensure the column has type ANY
-			if (column->type != TYPE_ANY)
-				error("virtual column <%.*s> must be of type ANY",
-				      str_size(&column->name),
-				      str_of(&column->name));
-
-			// (
-			auto lbr = stmt_if(self, '(');
-			if (! lbr)
-				error(" AS <(> expected");
-
-			// expr
-			parse_expr(self, NULL);
-
-			// )
-			auto rbr = stmt_if(self, ')');
-			if (! rbr)
-				error(" AS (expr <)> expected");
-
-			Str as;
-			str_set(&as, lbr->pos, rbr->pos - lbr->pos);
-			str_shrink(&as);
-			as.pos++;
-			str_shrink(&as);
-			if (str_empty(&as))
-				error(" AS expression is missing");
-			constraint_set_as(cons, &as);
-			constraint_set_generated(cons, GENERATED_VIRTUAL);
 			break;
 		}
 

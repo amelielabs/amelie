@@ -148,9 +148,6 @@ load_columns(Load* self, Str* value)
 			error("column '%.*s' does not exists", str_size(&name),
 			      str_of(&name));
 
-		if (column_is_virtual(column))
-			error("virtual columns cannot be updated");
-
 		if (last && column->order <= last->order)
 			error("column list must be ordered");
 

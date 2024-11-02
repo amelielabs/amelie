@@ -61,26 +61,6 @@ select serial("public", "test2")
 [0]
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
-# test: alter table column add virtual
-alter table test2 add column virt any as (123)
-select * from test2
-[[0, 0, null], [1, 0, null], [2, 0, null]]
-select virt from test2
-[123, 123, 123]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[6]
-select serial("public", "test2")
-[0]
-select * from test2
-[[0, 0, null], [1, 0, null], [2, 0, null]]
-select virt from test2
-[123, 123, 123]
 # test: alter table column rename
 alter table test2 rename column data to abc
 select * from test2
@@ -96,7 +76,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[7]
+[6]
 select serial("public", "test2")
 [0]
 select data from test2
@@ -116,27 +96,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[8]
-select serial("public", "test2")
-[0]
-select * from test2
-[[0, null], [1, null], [2, null]]
-# test: alter table column drop virtual
-select virt from test2
-[123, 123, 123]
-alter table test2 drop column virt
-select virt from test2
-{"msg": "column virt: does not exists"}
-select * from test2
-[[0, null], [1, null], [2, null]]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[9]
+[7]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -152,7 +112,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[10]
+[8]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -160,7 +120,7 @@ select * from test2 use index (i)
 # test: alter index rename
 alter index i on test2 rename to i2
 show lsn
-[11]
+[9]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -170,7 +130,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[11]
+[9]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i2)
@@ -190,7 +150,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[12]
+[10]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -210,7 +170,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[13]
+[11]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -218,7 +178,7 @@ select * from test2
 # test: drop table
 drop table test2
 show lsn
-[14]
+[12]
 select serial("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -228,7 +188,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[14]
+[12]
 select * from test2
 {"msg": "<test2> table or view is not found"}
 show tables
@@ -254,7 +214,7 @@ show schemas
   }
 }]
 show lsn
-[15]
+[13]
 # test: restart
 disconnect S0
 close E0
@@ -262,7 +222,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[15]
+[13]
 show schemas
 [{
   "system": {
@@ -302,7 +262,7 @@ show schemas
   }
 }]
 show lsn
-[16]
+[14]
 # test: restart
 disconnect S0
 close E0
@@ -310,7 +270,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[16]
+[14]
 show schemas
 [{
   "system": {
@@ -332,7 +292,7 @@ show schemas
 # test: drop schema
 drop schema test2
 show lsn
-[17]
+[15]
 show schemas
 [{
   "system": {
@@ -353,7 +313,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[17]
+[15]
 show schemas
 [{
   "system": {
@@ -370,7 +330,7 @@ show schemas
 # test: create view
 create view test as select [1,2,3]
 show lsn
-[18]
+[16]
 show views
 [{
   "public.test": {
@@ -389,7 +349,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[18]
+[16]
 show views
 [{
   "public.test": {
@@ -404,7 +364,7 @@ select * from test
 # test: alter view rename
 alter view test rename to test2
 show lsn
-[19]
+[17]
 show views
 [{
   "public.test2": {
@@ -423,7 +383,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[19]
+[17]
 show views
 [{
   "public.test2": {
@@ -438,7 +398,7 @@ select * from test2
 # test: drop view
 drop view test2
 show lsn
-[20]
+[18]
 show views
 [{}]
 # test: restart
@@ -448,7 +408,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[20]
+[18]
 show views
 [{}]
 disconnect S0

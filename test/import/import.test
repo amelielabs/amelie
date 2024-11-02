@@ -29,7 +29,7 @@ disconnect S0
 
 # create table
 connect E0 S0 http://localhost:3485
-create table test (id int primary key, a int, b int, c any as (123))
+create table test (id int primary key, a int, b int)
 create table test2 (obj object, primary key(obj.id int))
 create table test3 (id int primary key, ts timestamp, iv interval, vec vector, agg agg(sum))
 disconnect S0
@@ -59,11 +59,6 @@ disconnect S0
 
 connect E0 S0 http://localhost:3485/public/test?columns=id,a
 import text/csv 6,0
-disconnect S0
-
-# error
-connect E0 S0 http://localhost:3485/public/test?columns=id,c
-import text/csv 7,0
 disconnect S0
 
 connect E0 Sx http://localhost:3485/
