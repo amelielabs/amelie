@@ -153,7 +153,7 @@ parse_from_add(From* self)
 		      str_size(&name), str_of(&name));
 
 	target = target_list_add(target_list, self->level, self->level_seq++,
-	                         &name, expr, table, cte);
+	                         &name, expr, NULL, table, cte);
 	if (self->head == NULL)
 		self->head = target;
 	else

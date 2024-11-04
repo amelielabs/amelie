@@ -202,6 +202,7 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 				parse_row_list(self, stmt, list);
 			else
 				parse_row(self, stmt);
+			stmt->rows_count++;
 			if (! stmt_if(self, ','))
 				break;
 		}
@@ -229,6 +230,7 @@ parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
 		// ]
 		encode_array_end(data);
 
+		stmt->rows_count++;
 		if (! stmt_if(self, ','))
 			break;
 	}
@@ -339,6 +341,8 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		// ]
 		encode_array_end(data);
 	}
+
+	stmt->rows_count = count->integer;
 }
 
 hot static inline void
@@ -378,6 +382,49 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected");
 		break;
 	}
+}
+
+hot static void
+parse_generated(Stmt* self, AstInsert* stmt)
+{
+	auto columns = table_columns(stmt->target->table);
+	if (! columns->generated_columns)
+		return;
+
+	// create a target to iterate inserted rows to create new rows
+	// using the generated columns
+	stmt->target_generated =
+			target_list_add(&self->target_list, stmt->target->level, 0,
+			                NULL, NULL, columns, NULL, NULL);
+
+	// parse generated columns expressions
+	auto lex_origin = self->lex;
+	Lex lex;
+	lex_init(&lex, keywords);
+	self->lex = &lex;
+
+	Ast* tail = NULL;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (column->constraint.generated != GENERATED_STORED)
+			continue;
+		lex_init(&lex, keywords);
+		lex_start(&lex, &column->constraint.as);
+		Expr expr =
+		{
+			.aggs   = NULL,
+			.select = false
+		};
+		auto ast = parse_expr(self, &expr);
+		if (! stmt->generated_columns)
+			stmt->generated_columns = ast;
+		else
+			tail->next = ast;
+		tail = ast;
+	}
+
+	self->lex = lex_origin;
 }
 
 hot void
@@ -423,6 +470,9 @@ parse_insert(Stmt* self)
 
 	// ]
 	encode_array_end(data);
+
+	//  create a list of generated columns expressions
+	parse_generated(self, stmt);
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);

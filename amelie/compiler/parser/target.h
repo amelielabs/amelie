@@ -37,6 +37,7 @@ struct Target
 	// expression target
 	Cte*         cte;
 	View*        view;
+	Columns*     expr_columns;
 	Ast*         expr;
 	Ast*         expr_on;
 	int          rexpr;
@@ -65,6 +66,7 @@ target_init(Target* self, Table* table)
 	self->group_redirect  = NULL;
 	self->cte             = NULL;
 	self->view            = NULL;
+	self->expr_columns    = NULL;
 	self->expr            = NULL;
 	self->expr_on         = NULL;
 	self->rexpr           = -1;

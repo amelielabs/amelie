@@ -35,7 +35,6 @@
 hot Op*
 ccursor_open(Vm* self, Op* op)
 {
-	// [target_id, name_offset, _where, point_lookup]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
@@ -479,7 +478,7 @@ cinsert(Vm* self, Op* op)
 	int  list_count = buf_size(self->code_arg) / sizeof(uint32_t);
 	for (int i = 0; i < list_count; i++)
 	{
-		uint8_t* pos = code_data_at(self->code_data, list[i]);
+		uint8_t* pos = self->code_arg_buf->start + list[i];
 		if (unlikely(! data_is_array(pos)))
 			error("INSERT/REPLACE: array expected, but got %s",
 			      type_to_string(*pos));
@@ -560,7 +559,7 @@ cupsert(Vm* self, Op* op)
 	auto list = buf_u32(self->code_arg);
 	while (cursor->ref_pos < cursor->ref_count)
 	{
-		uint8_t* pos = code_data_at(self->code_data, list[cursor->ref_pos]);
+		uint8_t* pos = self->code_arg_buf->start + list[cursor->ref_pos];
 		if (unlikely(! data_is_array(pos)))
 			error("UPSERT: array expected, but got %s",
 			      type_to_string(*pos));
@@ -746,7 +745,7 @@ csend_hash(Vm* self, Op* op)
 hot void
 csend(Vm* self, Op* op)
 {
-	// [stmt, start, table, offset]
+	// [stmt, start, table, rows_offset]
 	auto dtr   = self->dtr;
 	auto start = op->b;
 	auto table = (Table*)op->c;
@@ -777,6 +776,7 @@ csend(Vm* self, Op* op)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
 			req->start = start;
+			req->arg_buf = &self->code_data->data;
 			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
@@ -787,6 +787,67 @@ csend(Vm* self, Op* op)
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
+}
+
+hot void
+csend_generated(Vm* self, Op* op)
+{
+	// [stmt, start, table, rows_offset]
+	auto dtr     = self->dtr;
+	auto start   = op->b;
+	auto table   = (Table*)op->c;
+	auto columns = table_columns(table);
+	auto keys    = table_keys(table);
+
+	ReqList list;
+	req_list_init(&list);
+
+	Req* map[dtr->set.set_size];
+	memset(map, 0, sizeof(map));
+
+	// get the number of inserted rows
+	int rows = stack_at(&self->stack, 1)->integer;
+	int rows_values = rows * columns->generated_columns;
+	stack_popn(&self->stack, 1);
+	auto values = stack_at(&self->stack, rows_values);
+
+	// create new rows by merging inserted rows with generated
+	// columns created on the stack for each row
+	//
+	// [[], ...]
+	auto data = code_data_at(self->code_data, op->d);
+	data_read_array(&data);
+	while (! data_read_array_end(&data))
+	{
+		// generate new row and hash keys
+		uint32_t offset = buf_size(&self->code_data->data_generated);
+		uint32_t hash = value_row_generate(columns,
+		                                   keys,
+		                                   &self->code_data->data_generated,
+		                                   &data,
+		                                   values);
+		// map to node
+		auto route = part_map_get(&table->part_list.map, hash);
+		auto req = map[route->order];
+		if (req == NULL)
+		{
+			req = req_create(&dtr->req_cache, REQ_EXECUTE);
+			req->start = start;
+			req->arg_buf = &self->code_data->data_generated;
+			req->route = route;
+			req_list_add(&list, req);
+			map[route->order] = req;
+		}
+
+		// write u32 offset to req->arg
+		buf_write(&req->arg, &offset, sizeof(offset));
+
+		values += columns->generated_columns;
+	}
+
+	executor_send(self->executor, dtr, op->a, &list);
+
+	stack_popn(&self->stack, rows_values);
 }
 
 hot void

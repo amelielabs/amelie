@@ -16,6 +16,7 @@ typedef struct CodeData CodeData;
 struct CodeData
 {
 	Buf data;
+	Buf data_generated;
 	Buf call;
 };
 
@@ -23,6 +24,7 @@ static inline void
 code_data_init(CodeData* self)
 {
 	buf_init(&self->data);
+	buf_init(&self->data_generated);
 	buf_init(&self->call);
 }
 
@@ -30,6 +32,7 @@ static inline void
 code_data_free(CodeData* self)
 {
 	buf_free(&self->data);
+	buf_free(&self->data_generated);
 	buf_free(&self->call);
 }
 
@@ -37,6 +40,7 @@ static inline void
 code_data_reset(CodeData* self)
 {
 	buf_reset(&self->data);
+	buf_reset(&self->data_generated);
 	buf_reset(&self->call);
 }
 

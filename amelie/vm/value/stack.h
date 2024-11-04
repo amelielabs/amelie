@@ -15,16 +15,16 @@ typedef struct Stack Stack;
 
 struct Stack
 {
-	Value lifo[300];
 	int   size;
 	int   size_max;
+	Value lifo[510];
 };
 
 static inline void
 stack_init(Stack* self)
 {
 	self->size     = 0;
-	self->size_max = 300;
+	self->size_max = 510;
 	memset(self->lifo, 0, sizeof(self->lifo));
 }
 

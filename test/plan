@@ -33,6 +33,7 @@ test update
 test delete
 test upsert
 test truncate
+test generated
 
 # index
 directory index

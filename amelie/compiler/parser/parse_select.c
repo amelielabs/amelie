@@ -303,7 +303,7 @@ parse_select(Stmt* self)
 			error("no targets to use with GROUP BY or aggregates");
 
 		select->target_group =
-			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL, NULL);
+			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL, NULL, NULL);
 
 		select->target_group->group_redirect = select->target_group;
 		select->target_group->group_main     = select->target;

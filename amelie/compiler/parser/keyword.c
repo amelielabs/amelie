@@ -44,6 +44,7 @@ static Keyword keywords_a[] =
 	{ KAVG,                   "avg",                   3  },
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
+	{ KALWAYS,                "always",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -108,6 +109,7 @@ static Keyword keywords_g[] =
 {
 	{ KGROUP,                 "group",                 5  },
 	{ KGENERATE,              "generate",              8  },
+	{ KGENERATED,             "generated",             9  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -219,6 +221,7 @@ static Keyword keywords_s[] =
 	{ KSERIAL,                "serial",                6  },
 	{ KSHARED,                "shared",                6  },
 	{ KSECRET,                "secret",                6  },
+	{ KSTORED,                "stored",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

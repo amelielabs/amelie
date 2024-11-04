@@ -232,8 +232,8 @@ load_csv(Load* self)
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_LOAD);
-			req->arg_load = &self->json.buf_data;
-			req->arg_load_table = self->table;
+			req->arg_buf = &self->json.buf_data;
+			req->arg_table = self->table;
 			req->route = route;
 			req_list_add(&self->req_list, req);
 			map[route->order] = req;

@@ -286,6 +286,51 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
+		// GENERATD ALWAYS AS (expr) [STORED]
+		case KGENERATED:
+		{
+			// ALWAYS
+			if (! stmt_if(self, KALWAYS))
+				error("GENERATED <ALWAYS> expected");
+
+			// AS
+			if (! stmt_if(self, KAS))
+				error("GENERATED ALWAYS <AS> expected");
+
+			// fallthrough
+		}
+
+		// AS (expr) [STORED]
+		case KAS:
+		{
+			// (
+			auto lbr = stmt_if(self, '(');
+			if (! lbr)
+				error("AS <(> expected");
+
+			// expr
+			parse_expr(self, NULL);
+
+			// )
+			auto rbr = stmt_if(self, ')');
+			if (! rbr)
+				error("AS (expr <)> expected");
+
+			// [STORED]
+			stmt_if(self, KSTORED);
+
+			Str as;
+			str_set(&as, lbr->pos, rbr->pos - lbr->pos);
+			str_shrink(&as);
+			as.pos++;
+			str_shrink(&as);
+			if (str_empty(&as))
+				error("AS expression is missing");
+			constraint_set_as(cons, &as);
+			constraint_set_generated(cons, GENERATED_STORED);
+			break;
+		}
+
 		default:
 			stmt_push(self, name);
 			done = true;

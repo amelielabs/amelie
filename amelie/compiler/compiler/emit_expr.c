@@ -360,6 +360,9 @@ emit_cursor_idx(Compiler* self, Target* target, Str* path)
 	else
 	if (target->table)
 		columns = table_columns(target->table);
+	else
+	if (target->expr_columns)
+		columns = target->expr_columns;
 
 	// find column in the target key
 	Column* column       = NULL;

@@ -17,12 +17,14 @@ struct Columns
 {
 	List list;
 	int  list_count;
+	int  generated_columns;
 };
 
 static inline void
 columns_init(Columns* self)
 {
 	self->list_count = 0;
+	self->generated_columns = 0;
 	list_init(&self->list);
 }
 
@@ -42,6 +44,9 @@ columns_add(Columns* self, Column* column)
 	column->order = self->list_count;
 	list_append(&self->list, &column->link);
 	self->list_count++;
+
+	if (column->constraint.generated == GENERATED_STORED)
+		self->generated_columns++;
 }
 
 static inline void

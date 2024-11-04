@@ -44,6 +44,7 @@ OpDesc ops[] =
 	// result
 	{ CSEND_HASH,         "send_hash"         },
 	{ CSEND,              "send"              },
+	{ CSEND_GENERATED,    "send_generated"    },
 	{ CSEND_FIRST,        "send_first"        },
 	{ CSEND_ALL,          "send_all"          },
 	{ CRECV,              "recv"              },
@@ -69,6 +70,7 @@ OpDesc ops[] =
 	{ CINT_MIN,           "int_min"           },
 	{ CREAL,              "real"              },
 	{ CSTRING,            "string"            },
+	{ CDATA,              "data"              },
 	{ CINTERVAL,          "interval"          },
 	{ CTIMESTAMP,         "timestamp"         },
 	{ CSTRING_MIN,        "string_min"        },
@@ -235,6 +237,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		}
 		case CSEND_HASH:
 		case CSEND:
+		case CSEND_GENERATED:
 		case CSEND_ALL:
 		{
 			auto table = (Table*)op->c;

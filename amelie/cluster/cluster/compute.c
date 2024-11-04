@@ -86,9 +86,9 @@ compute_load(Compute* self, Tr* tr, Req* req)
 		// row offset
 		int64_t offset;
 		data_read_integer(&pos, &offset);
-		auto data = req->arg_load->start + offset;
+		auto data = req->arg_buf->start + offset;
 
-		auto part = part_list_match(&req->arg_load_table->part_list, &self->node->id);
+		auto part = part_list_match(&req->arg_table->part_list, &self->node->id);
 		part_insert(part, tr, false, &data);
 	}
 }
@@ -103,6 +103,7 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        req->program->code_node,
 	        req->program->code_data,
 	       &req->arg,
+	        req->arg_buf,
 	        req->args,
 	        req->cte,
 	       &req->result,

@@ -59,16 +59,18 @@ target_list_add(TargetList* self,
                 int         level_seq,
                 Str*        name,
                 Ast*        expr,
+                Columns*    expr_columns,
                 Table*      table,
                 Cte*        cte)
 {
 	Target* target = palloc(sizeof(Target));
 	target_init(target, table);
-	target->id        = self->count;
-	target->level     = level;
-	target->level_seq = level_seq;
-	target->expr      = expr;
-	target->cte       = cte;
+	target->id           = self->count;
+	target->level        = level;
+	target->level_seq    = level_seq;
+	target->expr         = expr;
+	target->expr_columns = expr_columns;
+	target->cte          = cte;
 	if (! name)
 	{
 		str_init(&target->name);
@@ -88,7 +90,7 @@ target_list_add(TargetList* self,
 	self->list_tail = target;
 	self->count++;
 
-	if (expr) {
+	if (expr || expr_columns) {
 		self->state |= TARGET_EXPR;
 	} else
 	if (table)
@@ -141,7 +143,7 @@ target_list_validate_subqueries(TargetList* self, Target* primary)
 			continue;
 
 		// including views and cte
-		if (target->expr || target->cte)
+		if (target->expr || target->expr_columns || target->cte)
 			continue;
 
 		// skip group by targets

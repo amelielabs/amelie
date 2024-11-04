@@ -44,6 +44,7 @@ vm_init(Vm*          self,
 	self->code         = NULL;
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
+	self->code_arg_buf = NULL;
 	self->args         = NULL;
 	self->node         = node;
 	self->executor     = executor;
@@ -95,19 +96,21 @@ vm_run(Vm*       self,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
+       Buf*      code_arg_buf,
        Buf*      args,
        Result*   cte,
        Value*    result,
        int       start)
 {
-	self->local     = local;
-	self->tr        = tr;
-	self->code      = code;
-	self->code_data = code_data;
-	self->code_arg  = code_arg;
-	self->args      = args;
-	self->cte       = cte;
-	self->result    = result;
+	self->local        = local;
+	self->tr           = tr;
+	self->code         = code;
+	self->code_data    = code_data;
+	self->code_arg     = code_arg;
+	self->code_arg_buf = code_arg_buf;
+	self->args         = args;
+	self->cte          = cte;
+	self->result       = result;
 	call_mgr_prepare(&self->call_mgr, code_data);
 
 	const void* ops[] =
@@ -119,6 +122,7 @@ vm_run(Vm*       self,
 		&&cjntr,
 		&&csend_hash,
 		&&csend,
+		&&csend_generated,
 		&&csend_first,
 		&&csend_all,
 		&&crecv,
@@ -136,6 +140,7 @@ vm_run(Vm*       self,
 		&&cint_min,
 		&&creal,
 		&&cstring,
+		&&cdata,
 		&&cinterval,
 		&&ctimestamp,
 		&&cstring_min,
@@ -261,6 +266,10 @@ csend:
 	csend(self, op);
 	op_next;
 
+csend_generated:
+	csend_generated(self, op);
+	op_next;
+
 csend_first:
 	csend_first(self, op);
 	op_next;
@@ -332,6 +341,10 @@ creal:
 cstring:
 	code_data_at_string(code_data, op->b, &string);
 	value_set_string(&r[op->a], &string, NULL);
+	op_next;
+
+cdata:
+	value_read(&r[op->a], code_data_at(code_data, op->b), NULL);
 	op_next;
 
 cinterval:

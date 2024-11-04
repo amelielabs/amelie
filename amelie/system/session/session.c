@@ -185,6 +185,7 @@ session_execute_distributed(Session* self)
 		       program->code_data,
 		       NULL,
 		       NULL,
+		       NULL,
 		       &dtr->cte, NULL, 0);
 	}
 

@@ -215,6 +215,53 @@ emit_stmt(Compiler* self)
 }
 
 static inline void
+emit_send_generated_on_match(Compiler* self, void* arg)
+{
+	AstInsert* insert = arg;
+	// generate and push to the stack each generated
+	// column expression
+	auto expr = insert->generated_columns;
+	while (expr)
+	{
+		// expr
+		int rexpr = emit_expr(self, insert->target_generated, expr);
+		// push
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+		expr = expr->next;
+	}
+}
+
+static inline void
+emit_send_generated(Compiler* self, int start)
+{
+	auto stmt   = self->current;
+	auto insert = ast_insert_of(stmt->ast);
+	auto table  = insert->target->table;
+
+	// cursor_open( insert->rows )
+	auto target = insert->target_generated;
+	target->rexpr = op2(self, CDATA, rpin(self), insert->rows);
+
+	// generate scan over insert rows to create new rows using the
+	// generated columns expressions
+	scan(self, target,
+	     NULL,
+	     NULL,
+	     NULL,
+	     emit_send_generated_on_match,
+	     insert);
+
+	// push the number of inserted rows
+	auto rexpr = op2(self, CINT, rpin(self), insert->rows_count);
+	op1(self, CPUSH, rexpr);
+	runpin(self, rexpr);
+
+	// CSEND_GENERATED
+	op4(self, CSEND_GENERATED, stmt->order, start, (intptr_t)table, insert->rows);
+}
+
+static inline void
 emit_send(Compiler* self, int start)
 {
 	Target* target = NULL;
@@ -223,9 +270,13 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		// CSEND
-		auto table = (intptr_t)insert->target->table;
-		op4(self, CSEND, stmt->order, start, table, insert->rows);
+		auto table = insert->target->table;
+		if (table_columns(table)->generated_columns) {
+			emit_send_generated(self, start);
+		} else {
+			// CSEND
+			op4(self, CSEND, stmt->order, start, (intptr_t)table, insert->rows);
+		}
 		break;
 	}
 	case STMT_UPDATE:
@@ -436,7 +487,7 @@ compiler_emit(Compiler* self)
 	// analyze statements
 	//
 	// find last statement which access a table, mark as required
-	// snapshot if there are two or more statements which access a table
+	// snapshot if there are two or more statements which access the table
 	int count = 0;
 	self->last = analyze_stmts(parser, &count);
 	if (count >= 2)

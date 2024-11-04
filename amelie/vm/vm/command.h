@@ -33,6 +33,7 @@ void cgroup_merge_recv(Vm*, Op*);
 
 void csend_hash(Vm*, Op*);
 void csend(Vm*, Op*);
+void csend_generated(Vm*, Op*);
 void csend_first(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);

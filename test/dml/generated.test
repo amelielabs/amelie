@@ -1,0 +1,108 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: generated column parsing
+create table test (id int primary key, data int always
+create table test (id int primary key, data int generated
+create table test (id int primary key, data int generated 1
+create table test (id int primary key, data int generated always
+create table test (id int primary key, data int generated always 1
+create table test (id int primary key, data int generated always as
+create table test (id int primary key, data int as
+create table test (id int primary key, data int as (
+create table test (id int primary key, data int as ()
+create table test (id int primary key, data int as (1)
+create table test (id int primary key, data int as (1) 1
+create table test (id int primary key, data int as (1) stored
+
+# test: insert (expr)
+create table test (id int primary key, data int as (1 + 1) stored)
+select system.tables()['public.test'].columns[1]
+explain insert into test values (0, null)
+insert into test values (0, null)
+insert into test values (1, null), (2, 42), (3, 43)
+select * from test
+
+# test: insert column list (expr)
+insert into test (id) values (5), (6)
+select * from test
+drop table test
+
+# test: insert (expr, reuse column)
+create table test (id int primary key, data int default 0 as (data + 1) stored not null)
+insert into test values (0, null)
+insert into test values (0, 42)
+select * from test
+
+# test: insert column list default (expr, reuse column)
+insert into test values (1)
+insert into test (id) values (1), (2)
+select * from test
+
+# test: insert column list (expr, reuse column)
+insert into test (id, data) values (3, 777), (4, 777)
+insert into test (id, data) values (5, null)
+select * from test
+drop table test
+
+# test: insert (expr, use other column)
+create table test (id int primary key, data int as (id * 2) stored)
+insert into test values (2, 0), (4, 0)
+select * from test
+drop table test
+
+# test: insert (expr, use other generated column)
+create table test (id int primary key, data int as (777) stored, data2 int as (data))
+insert into test values (1, 0, 0), (2, 0, 0)
+
+# test: insert default (expr, use other generated column)
+insert into test (id) values (3), (4)
+select * from test
+drop table test
+
+# test: insert (expr, type mismatch)
+create table test (id int primary key, data int as ("string") stored)
+insert into test values (0, 0)
+select * from test
+drop table test
+
+# test: insert returning * (expr)
+create table test (id int primary key, data int as (1 + 1) stored)
+insert into test values (0, null) returning *
+insert into test values (1, null) returning *
+drop table test
+
+# test: upsert (expr)
+create table test (id int primary key, data int default 0 as (data + 1) stored not null)
+insert into test values (0, 0)
+explain insert into test (id) values (0) on conflict do update set data = data + 1
+insert into test (id) values (0) on conflict do update set data = data + 1
+select * from test
+
+# test: upsert returning * (expr)
+insert into test (id) values (0) on conflict do update set data = data + 1 returning *
+select * from test
+drop table test
+
+# test: insert generated key (expr)
+create table test (id int primary key as (777) stored)
+insert into test values (null)
+insert into test values (0)
+select * from test
+drop table test
+
+# test: insert generated key (obj path)
+create table test (id int primary key as (obj.id) stored, obj object)
+insert into test values (0, {"id": 48})
+select * from test
+drop table test
+
+# test: insert (subquery)
+create table test (id int primary key as (select 123) stored)
+insert into test values (0)
+drop table test
+
+disconnect S0
+close E0
