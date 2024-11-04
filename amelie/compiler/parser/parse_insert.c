@@ -110,13 +110,13 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		{
 			// GENERATED
 			auto cons = &column->constraint;
-			if (cons->generated == GENERATED_SERIAL)
+			if (cons->serial)
 			{
 				encode_integer(data, serial);
 			} else
-			if (cons->generated == GENERATED_RANDOM)
+			if (cons->random)
 			{
-				auto value = random_generate(global()->random) % cons->modulo;
+				auto value = random_generate(global()->random) % cons->random_modulo;
 				encode_integer(data, value);
 			} else
 			{
@@ -315,13 +315,13 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column = list_at(Column, link);
 			// GENERATED
 			auto cons = &column->constraint;
-			if (cons->generated == GENERATED_SERIAL)
+			if (cons->serial)
 			{
 				encode_integer(data, serial);
 			} else
-			if (cons->generated == GENERATED_RANDOM)
+			if (cons->random)
 			{
-				auto value = random_generate(global()->random) % cons->modulo;
+				auto value = random_generate(global()->random) % cons->random_modulo;
 				encode_integer(data, value);
 			} else
 			{

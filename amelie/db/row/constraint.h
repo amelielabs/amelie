@@ -13,19 +13,13 @@
 
 typedef struct Constraint Constraint;
 
-enum
-{
-	GENERATED_NONE,
-	GENERATED_SERIAL,
-	GENERATED_RANDOM
-};
-
 struct Constraint
 {
 	bool    not_null;
 	bool    not_aggregated;
-	int64_t generated;
-	int64_t modulo;
+	bool    serial;
+	bool    random;
+	int64_t random_modulo;
 	int64_t aggregate;
 	Str     as_stored;
 	Str     as_aggregated;
@@ -37,8 +31,9 @@ constraint_init(Constraint* self)
 {
 	self->not_null       = false;
 	self->not_aggregated = true;
-	self->generated      = GENERATED_NONE;
-	self->modulo         = INT64_MAX;
+	self->serial         = false;
+	self->random         = false;
+	self->random_modulo  = INT64_MAX;
 	self->aggregate      = AGG_UNDEF;
 	str_init(&self->as_stored);
 	str_init(&self->as_aggregated);
@@ -66,15 +61,21 @@ constraint_set_not_aggregated(Constraint* self, bool value)
 }
 
 static inline void
-constraint_set_generated(Constraint* self, int value)
+constraint_set_serial(Constraint* self, bool value)
 {
-	self->generated = value;
+	self->serial = value;
 }
 
 static inline void
-constraint_set_modulo(Constraint* self, int64_t value)
+constraint_set_random(Constraint* self, bool value)
 {
-	self->modulo = value;
+	self->random = value;
+}
+
+static inline void
+constraint_set_random_modulo(Constraint* self, int64_t value)
+{
+	self->random_modulo = value;
 }
 
 static inline void
@@ -109,8 +110,9 @@ constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
 	constraint_set_not_aggregated(copy, self->not_aggregated);
-	constraint_set_generated(copy, self->generated);
-	constraint_set_modulo(copy, self->modulo);
+	constraint_set_serial(copy, self->serial);
+	constraint_set_random(copy, self->random);
+	constraint_set_random_modulo(copy, self->random_modulo);
 	constraint_set_aggregate(copy, self->aggregate);
 	constraint_set_as_stored(copy, &self->as_stored);
 	constraint_set_as_aggregated(copy, &self->as_aggregated);
@@ -124,8 +126,9 @@ constraint_read(Constraint* self, uint8_t** pos)
 	{
 		{ DECODE_BOOL,   "not_null",       &self->not_null       },
 		{ DECODE_BOOL,   "not_aggregated", &self->not_aggregated },
-		{ DECODE_INT,    "generated",      &self->generated      },
-		{ DECODE_INT,    "modulo",         &self->modulo         },
+		{ DECODE_BOOL,   "serial",         &self->serial         },
+		{ DECODE_BOOL,   "random",         &self->random         },
+		{ DECODE_INT,    "random_modulo",  &self->random_modulo  },
 		{ DECODE_INT,    "aggregate",      &self->aggregate      },
 		{ DECODE_STRING, "as_stored",      &self->as_stored      },
 		{ DECODE_STRING, "as_aggregated",  &self->as_aggregated  },
@@ -148,13 +151,17 @@ constraint_write(Constraint* self, Buf* buf)
 	encode_raw(buf, "not_aggregated", 14);
 	encode_bool(buf, self->not_aggregated);
 
-	// generated
-	encode_raw(buf, "generated", 9);
-	encode_integer(buf, self->generated);
+	// serial
+	encode_raw(buf, "serial", 6);
+	encode_bool(buf, self->serial);
 
-	// modulo
-	encode_raw(buf, "modulo", 6);
-	encode_integer(buf, self->modulo);
+	// random
+	encode_raw(buf, "random", 6);
+	encode_bool(buf, self->random);
+
+	// random_modulo
+	encode_raw(buf, "random_modulo", 13);
+	encode_integer(buf, self->random_modulo);
 
 	// aggregate
 	encode_raw(buf, "aggregate", 9);

@@ -220,7 +220,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				      str_size(&column->name),
 				      str_of(&column->name));
 
-			constraint_set_generated(cons, GENERATED_SERIAL);
+			constraint_set_serial(cons, true);
 			break;
 		}
 
@@ -233,7 +233,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				      str_size(&column->name),
 				      str_of(&column->name));
 
-			constraint_set_generated(cons, GENERATED_RANDOM);
+			constraint_set_random(cons, true);
 
 			// [(modulo)]
 			if (stmt_if(self, '('))
@@ -248,7 +248,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 
 				if (value->integer == 0)
 					error("RANDOM modulo value cannot be zero");
-				constraint_set_modulo(cons, value->integer);
+				constraint_set_random_modulo(cons, value->integer);
 			}
 			break;
 		}

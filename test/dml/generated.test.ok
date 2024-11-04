@@ -34,8 +34,9 @@ select system.tables()['public.test'].columns[1]
   "constraint": {
     "not_null": false,
     "not_aggregated": true,
-    "generated": 0,
-    "modulo": 9223372036854775807,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
     "aggregate": 0,
     "as_stored": "1 + 1",
     "as_aggregated": "",

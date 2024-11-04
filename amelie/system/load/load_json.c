@@ -141,13 +141,13 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 
 				// GENERATED
 				auto cons = &column->constraint;
-				if (cons->generated == GENERATED_SERIAL)
+				if (cons->serial)
 				{
 					encode_integer(&self->json.buf_data, serial);
 				} else
-				if (cons->generated == GENERATED_RANDOM)
+				if (cons->random)
 				{
-					auto value = random_generate(global()->random) % cons->modulo;
+					auto value = random_generate(global()->random) % cons->random_modulo;
 					encode_integer(&self->json.buf_data, value);
 				} else
 				{

@@ -50,7 +50,7 @@ row_create(Columns* columns, uint8_t** pos, uint8_t** pos_serial)
 		}
 
 		// return last serial column position
-		if (pos_serial && column->constraint.generated == GENERATED_SERIAL)
+		if (pos_serial && column->constraint.serial)
 			*pos_serial = *pos;
 
 		data_skip(pos);
