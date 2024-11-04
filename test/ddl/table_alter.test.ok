@@ -122,10 +122,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 1,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -133,10 +135,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 0
   }
 }]]
@@ -147,10 +151,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 1,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -158,10 +164,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 0
   }
 }]]
@@ -177,10 +185,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -191,10 +201,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -211,10 +223,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 1,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -222,10 +236,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 0
   }
 }]]
@@ -237,10 +253,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 1,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -248,10 +266,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 0
   }
 }]]
@@ -287,10 +307,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -301,10 +323,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -312,10 +336,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -333,10 +359,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -344,10 +372,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -368,10 +398,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -386,10 +418,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -397,10 +431,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 123
   }
 }]]
@@ -420,10 +456,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -431,10 +469,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": 123
   }
 }]]
@@ -454,10 +494,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -465,10 +507,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 1,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -515,10 +559,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -526,10 +572,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -540,10 +588,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -556,10 +606,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -567,10 +619,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -578,10 +632,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -592,10 +648,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -603,10 +661,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -619,10 +679,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -630,10 +692,12 @@ select columns from system.tables()
   "type": "string",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -641,10 +705,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -662,10 +728,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -673,10 +741,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -692,10 +762,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -703,10 +775,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -717,10 +791,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -741,10 +817,12 @@ select columns from system.tables()
   "type": "string",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -752,10 +830,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -763,10 +843,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -786,10 +868,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -797,10 +881,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -818,10 +904,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -829,10 +917,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -843,10 +933,12 @@ select columns from system.tables()
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]

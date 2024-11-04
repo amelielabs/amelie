@@ -107,7 +107,7 @@ value_row_generate(Columns*  columns,
 
 		// use generated or existing column
 		int offset = buf_size(data);
-		if (column->constraint.generated == GENERATED_STORED)
+		if (! str_empty(&column->constraint.as_stored))
 		{
 			value_write(&values[order], data);
 			order++;

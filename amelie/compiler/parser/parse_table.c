@@ -326,8 +326,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			str_shrink(&as);
 			if (str_empty(&as))
 				error("AS expression is missing");
-			constraint_set_as(cons, &as);
-			constraint_set_generated(cons, GENERATED_STORED);
+			constraint_set_as_stored(cons, &as);
 			break;
 		}
 

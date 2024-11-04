@@ -63,10 +63,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -74,10 +76,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -90,10 +94,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -101,10 +107,12 @@ select columns from system.tables() where name = "test"
   "type": "bool",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -112,10 +120,12 @@ select columns from system.tables() where name = "test"
   "type": "bool",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -128,10 +138,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -139,10 +151,12 @@ select columns from system.tables() where name = "test"
   "type": "string",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -150,10 +164,12 @@ select columns from system.tables() where name = "test"
   "type": "string",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -166,10 +182,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -177,10 +195,12 @@ select columns from system.tables() where name = "test"
   "type": "real",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -193,10 +213,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -204,10 +226,12 @@ select columns from system.tables() where name = "test"
   "type": "object",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -215,10 +239,12 @@ select columns from system.tables() where name = "test"
   "type": "object",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -231,10 +257,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -242,10 +270,12 @@ select columns from system.tables() where name = "test"
   "type": "array",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -258,10 +288,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -269,10 +301,12 @@ select columns from system.tables() where name = "test"
   "type": "timestamp",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -285,10 +319,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -296,10 +332,12 @@ select columns from system.tables() where name = "test"
   "type": "interval",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -312,10 +350,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -323,10 +363,12 @@ select columns from system.tables() where name = "test"
   "type": "vector",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -347,10 +389,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -358,10 +402,12 @@ select columns from system.tables() where name = "test"
   "type": "aggregate",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 1,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -369,10 +415,12 @@ select columns from system.tables() where name = "test"
   "type": "aggregate",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 4,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]
@@ -385,10 +433,12 @@ select columns from system.tables() where name = "test"
   "type": "int",
   "constraint": {
     "not_null": true,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }, {
@@ -396,10 +446,12 @@ select columns from system.tables() where name = "test"
   "type": "any",
   "constraint": {
     "not_null": false,
+    "not_aggregated": true,
     "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "",
+    "as_stored": "",
+    "as_aggregated": "",
     "default": null
   }
 }]]

@@ -33,10 +33,12 @@ select system.tables()['public.test'].columns[1]
   "type": "int",
   "constraint": {
     "not_null": false,
-    "generated": 3,
+    "not_aggregated": true,
+    "generated": 0,
     "modulo": 9223372036854775807,
     "aggregate": 0,
-    "as": "1 + 1",
+    "as_stored": "1 + 1",
+    "as_aggregated": "",
     "default": null
   }
 }]

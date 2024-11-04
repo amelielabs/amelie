@@ -45,7 +45,7 @@ columns_add(Columns* self, Column* column)
 	list_append(&self->list, &column->link);
 	self->list_count++;
 
-	if (column->constraint.generated == GENERATED_STORED)
+	if (! str_empty(&column->constraint.as_stored))
 		self->generated_columns++;
 }
 

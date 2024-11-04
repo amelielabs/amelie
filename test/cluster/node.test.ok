@@ -70,10 +70,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -104,10 +106,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -218,10 +222,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -252,10 +258,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -286,10 +294,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -365,10 +375,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -399,10 +411,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -433,10 +447,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -507,10 +523,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -541,10 +559,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
@@ -575,10 +595,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": true,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }, {
@@ -586,10 +608,12 @@ show tables
       "type": "int",
       "constraint": {
         "not_null": false,
+        "not_aggregated": true,
         "generated": 0,
         "modulo": 9223372036854775807,
         "aggregate": 0,
-        "as": "",
+        "as_stored": "",
+        "as_aggregated": "",
         "default": null
       }
     }],
