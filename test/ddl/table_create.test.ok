@@ -424,7 +424,7 @@ select columns from system.tables() where name = "test"
   "type": "aggregate",
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
+    "not_aggregated": false,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
@@ -438,7 +438,7 @@ select columns from system.tables() where name = "test"
   "type": "aggregate",
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
+    "not_aggregated": false,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
@@ -655,7 +655,7 @@ select indexes[0].keys from system.tables()
 drop table test
 # test: constraint not null
 create table test (id int primary key, data int not)
-{"msg": "NOT <NULL> expected"}
+{"msg": "NOT <NULL | AGGREGATED> expected"}
 create table test (id int primary key, data int not null)
 select indexes[0].keys from system.tables()
 [[{
@@ -683,6 +683,11 @@ insert into test values(2, null)
 insert into test (id) values(3)
 select * from test
 [[1, 1], [3, 123]]
+drop table test
+# test: constraint not aggregated
+create table test (id int primary key, data int not)
+{"msg": "NOT <NULL | AGGREGATED> expected"}
+create table test (id int primary key, data int not aggregated)
 drop table test
 # test: constraint serial
 create table test (id int primary key, data int serial)

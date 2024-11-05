@@ -240,6 +240,11 @@ insert into test (id) values(3)
 select * from test
 drop table test
 
+# test: constraint not aggregated
+create table test (id int primary key, data int not)
+create table test (id int primary key, data int not aggregated)
+drop table test
+
 # test: constraint serial
 create table test (id int primary key, data int serial)
 select indexes[0].keys from system.tables()

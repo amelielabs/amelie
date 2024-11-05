@@ -13,9 +13,9 @@ insert into test values(1, 0) on conflict
 insert into test values(1, 0) on conflict 123
 {"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected"}
 insert into test values(1, 0) on conflict do 123
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected"}
 insert into test values(1, 0) on conflict do update
 {"msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
@@ -73,6 +73,51 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 [[1, 0], [2, 0]]
+drop table test
+# test: on conflict do aggregate (without agg columns)
+create table test (id int primary key, data int)
+explain insert into test values(1, 0) on conflict do nothing
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "null                0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "cursor_prepare      0      -      0     # public.test",
+      "01": "jmp                 2      0      0     ",
+      "02": "upsert              0      2      -1    ",
+      "03": "cursor_close        0      0      0     ",
+      "04": "ret                 0      0      0     "
+    }
+  }
+}]
+explain insert into test values(1, 0) on conflict do aggregate
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send                0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "null                0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "cursor_prepare      0      -      0     # public.test",
+      "01": "jmp                 2      0      0     ",
+      "02": "upsert              0      2      -1    ",
+      "03": "cursor_close        0      0      0     ",
+      "04": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test values(1, 0) on conflict do aggregate
+insert into test values(1, 0) on conflict do aggregate
+select * from test
+[[1, 0]]
 drop table test
 # test: upsert insert
 create table test (id int primary key, data int)

@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: generated column parsing
+# test: as (expr) stored parsing
 create table test (id int primary key, data int always
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 create table test (id int primary key, data int generated
@@ -20,9 +20,9 @@ create table test (id int primary key, data int as (
 create table test (id int primary key, data int as ()
 {"msg": "bad expression"}
 create table test (id int primary key, data int as (1)
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "AS (expr) <STORED or AGGREGATED> expected"}
 create table test (id int primary key, data int as (1) 1
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "AS (expr) <STORED or AGGREGATED> expected"}
 create table test (id int primary key, data int as (1) stored
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 # test: insert (expr)
@@ -106,7 +106,7 @@ select * from test
 [[2, 4], [4, 8]]
 drop table test
 # test: insert (expr, use other generated column)
-create table test (id int primary key, data int as (777) stored, data2 int as (data))
+create table test (id int primary key, data int as (777) stored, data2 int as (data) stored)
 insert into test values (1, 0, 0), (2, 0, 0)
 # test: insert default (expr, use other generated column)
 insert into test (id) values (3), (4)

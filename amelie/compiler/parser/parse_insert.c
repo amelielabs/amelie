@@ -360,12 +360,14 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	if (! stmt_if(self, KDO))
 		error("INSERT VALUES ON CONFLICT <DO> expected");
 
-	// NOTHING | UPDATE
+	// NOTHING | UPDATE | AGGREGATE
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KNOTHING:
+	{
 		stmt->on_conflict = ON_CONFLICT_NOTHING;
 		break;
+	}
 	case KUPDATE:
 	{
 		stmt->on_conflict = ON_CONFLICT_UPDATE;
@@ -378,8 +380,20 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 			stmt->update_where = parse_expr(self, NULL);
 		break;
 	}
+	case KAGGREGATE:
+	{
+		stmt->on_conflict = ON_CONFLICT_UPDATE;
+		// handle insert as upsert and generate
+		//
+		// SET <column> = <aggregated column expression> [, ...]
+		auto columns = table_columns(stmt->target->table);
+		stmt->update_expr = parse_update_aggregated(self, columns);
+		if (! stmt->update_expr)
+			stmt->on_conflict = ON_CONFLICT_NOTHING;
+		break;
+	}
 	default:
-		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE> expected");
+		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected");
 		break;
 	}
 }
@@ -432,7 +446,7 @@ parse_insert(Stmt* self)
 {
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
-	// [ON CONFLICT DO NOTHING | UPDATE]
+	// [ON CONFLICT DO NOTHING | UPDATE | AGGREGATE]
 	// [RETURNING expr [INTO cte]]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;

@@ -269,3 +269,23 @@ agg_merge(Agg* self, int type, Agg* with)
 	else
 		self->div = 0;
 }
+
+static inline const char*
+agg_nameof(int id)
+{
+	switch (id) {
+	case AGG_COUNT:
+		return "count";
+	case AGG_MIN:
+		return "min";
+	case AGG_MAX:
+		return "max";
+	case AGG_SUM:
+		return "sum";
+	case AGG_AVG:
+		return "avg";
+	default:
+		break;
+	}
+	return NULL;
+}

@@ -33,7 +33,12 @@ test update
 test delete
 test upsert
 test truncate
-test generated
+
+# generated
+directory generated
+group generated
+test as_stored
+test as_aggregated
 
 # index
 directory index

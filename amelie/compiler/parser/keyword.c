@@ -45,6 +45,8 @@ static Keyword keywords_a[] =
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
+	{ KAGGREGATE,             "aggregate",             9  },
+	{ KAGGREGATED,            "aggregated",            10 },
 	{ 0,                       NULL,                   0  }
 };
 

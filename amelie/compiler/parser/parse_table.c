@@ -170,12 +170,24 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 	{
 		auto name = stmt_next(self);
 		switch (name->id) {
-		// NOT NULL
+		// NOT NULL | NOT AGGREGATED
 		case KNOT:
 		{
-			if (! stmt_if(self, KNULL))
-				error("NOT <NULL> expected");
-			constraint_set_not_null(cons, true);
+			// NULL
+			if (stmt_if(self, KNULL))
+			{
+				constraint_set_not_null(cons, true);
+				break;
+			}
+
+			// AGGREGATED
+			if (stmt_if(self, KAGGREGATED))
+			{
+				constraint_set_not_aggregated(cons, true);
+				break;
+			}
+
+			error("NOT <NULL | AGGREGATED> expected");
 			break;
 		}
 
@@ -300,7 +312,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			// fallthrough
 		}
 
-		// AS (expr) [STORED]
+		// AS (expr) STORED | AGGREGATED
 		case KAS:
 		{
 			// (
@@ -316,9 +328,6 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			if (! rbr)
 				error("AS (expr <)> expected");
 
-			// [STORED]
-			stmt_if(self, KSTORED);
-
 			Str as;
 			str_set(&as, lbr->pos, rbr->pos - lbr->pos);
 			str_shrink(&as);
@@ -326,7 +335,17 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			str_shrink(&as);
 			if (str_empty(&as))
 				error("AS expression is missing");
-			constraint_set_as_stored(cons, &as);
+
+			// STORED | AGGREGATED
+			if (stmt_if(self, KSTORED)) {
+				constraint_set_as_stored(cons, &as);
+			} else
+			if (stmt_if(self, KAGGREGATED))
+			{
+				constraint_set_as_aggregated(cons, &as);
+				constraint_set_not_aggregated(cons, false);
+			} else
+				error("AS (expr) <STORED or AGGREGATED> expected");
 			break;
 		}
 
@@ -340,6 +359,13 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 	// set DEFAULT NULL by default
 	if (! has_default)
 		encode_null(&cons->value);
+
+	// validate constraints
+	if (!str_empty(&cons->as_aggregated) && column->key)
+		error("AS AGGREGATED cannot be used with keys");
+
+	if (cons->serial && cons->random)
+		error("SERIAL and RANDOM constraints cannot be used together");
 }
 
 static void
@@ -374,6 +400,7 @@ parse_agg(Stmt* self, Column* column)
 		      str_of(&name->string));
 
 	constraint_set_aggregate(&column->constraint, type);
+	constraint_set_not_aggregated(&column->constraint, false);
 
 	// )
 	if (! stmt_if(self, ')'))
@@ -383,7 +410,7 @@ parse_agg(Stmt* self, Column* column)
 static void
 parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
-	// (name type [not null | default | serial | primary key], ...,
+	// (name type [not null | not aggregated | default | serial | primary key | as], ...,
 	//  primary key())
 
 	// (
@@ -425,7 +452,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		if (type == TYPE_AGG)
 			parse_agg(self, column);
 
-		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
+		// [PRIMARY KEY | NOT NULL | NOT AGGREGATED | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, keys, column);
 
 		// ,
@@ -597,7 +624,7 @@ parse_table_alter(Stmt* self)
 		if (type == TYPE_AGG)
 			parse_agg(self, column);
 
-		// [NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
+		// [NOT NULL | NOT AGGREGATED | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, NULL, column);
 
 		// validate column
