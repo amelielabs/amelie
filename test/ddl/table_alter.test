@@ -78,6 +78,19 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 
+# test: set aggregated
+create table test (id int primary key serial, data int default 0)
+select system.tables()['public.test'].aggregated
+alter table test set
+alter table test set x
+alter table test set aggregated
+select system.tables()['public.test'].aggregated
+
+# test: set not aggregated
+alter table test set not aggregated
+select system.tables()['public.test'].aggregated
+drop table test
+
 # test: rename column parsing
 alter table rename
 alter table test rename

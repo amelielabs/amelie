@@ -586,6 +586,7 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
+	// ALTER TABLE [IF EXISTS] [schema.]name SET [NOT] AGGREGATED
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN ADD name type [constraint]
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN DROP name
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN RENAME name TO name
@@ -656,20 +657,34 @@ parse_table_alter(Stmt* self)
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
-		// SERIAL
-		if (! stmt_if(self, KSERIAL))
-			error("ALTER TABLE SET <SERIAL> expected");
+		// SET SERIAL TO value
+		if (stmt_if(self, KSERIAL))
+		{
+			// TO
+			if (! stmt_if(self, KTO))
+				error("ALTER TABLE SET SERIAL <TO> expected");
 
-		// TO
-		if (! stmt_if(self, KTO))
-			error("ALTER TABLE SET SERIAL <TO> expected");
+			// int
+			stmt->serial = stmt_if(self, KINT);
+			if (! stmt->serial)
+				error("ALTER TABLE SET SERIAL TO <integer> expected");
 
-		// int
-		stmt->serial = stmt_if(self, KINT);
-		if (! stmt->serial)
-			error("ALTER TABLE SET SERIAL TO <integer> expected");
+			stmt->type = TABLE_ALTER_SET_SERIAL;
+			return;
+		}
 
-		stmt->type = TABLE_ALTER_SET_SERIAL;
+		// [NOT]
+		auto not = stmt_if(self, KNOT) != NULL;
+
+		// SET [NOT] AGGREGATED
+		if (stmt_if(self, KAGGREGATED))
+		{
+			stmt->type = TABLE_ALTER_SET_AGGREGATED;
+			stmt->aggregated = !not;
+			return;
+		}
+
+		error("ALTER TABLE SET <SERIAL or AGGREGATED> expected");
 		return;
 	}
 
