@@ -199,6 +199,9 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "upsert"))
 		self->iface = &bench_upsert;
 	else
+	if (str_is_cstr(type, "aggregated"))
+		self->iface = &bench_aggregated;
+	else
 		error("unknown benchmark type '%.*s'", str_size(type),
 		      str_of(type));
 
