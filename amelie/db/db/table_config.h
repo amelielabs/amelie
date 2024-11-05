@@ -18,6 +18,7 @@ struct TableConfig
 	Str     schema;
 	Str     name;
 	bool    shared;
+	bool    aggregated;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -31,6 +32,7 @@ table_config_allocate(void)
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
 	self->shared           = false;
+	self->aggregated       = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
 	str_init(&self->schema);
@@ -84,6 +86,12 @@ table_config_set_shared(TableConfig* self, bool value)
 }
 
 static inline void
+table_config_set_aggregated(TableConfig* self, bool value)
+{
+	self->aggregated = value;
+}
+
+static inline void
 table_config_add_partition(TableConfig* self, PartConfig* config)
 {
 	list_append(&self->partitions, &config->link);
@@ -111,6 +119,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_shared(copy, self->shared);
+	table_config_set_aggregated(copy, self->aggregated);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -144,13 +153,14 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_partitions = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "schema",     &self->schema    },
-		{ DECODE_STRING, "name",       &self->name      },
-		{ DECODE_ARRAY,  "columns",    &pos_columns     },
-		{ DECODE_BOOL,   "shared",     &self->shared    },
-		{ DECODE_ARRAY,  "indexes",    &pos_indexes     },
-		{ DECODE_ARRAY,  "partitions", &pos_partitions  },
-		{ 0,              NULL,        NULL             },
+		{ DECODE_STRING, "schema",     &self->schema     },
+		{ DECODE_STRING, "name",       &self->name       },
+		{ DECODE_ARRAY,  "columns",    &pos_columns      },
+		{ DECODE_BOOL,   "shared",     &self->shared     },
+		{ DECODE_BOOL,   "aggregated", &self->aggregated },
+		{ DECODE_ARRAY,  "indexes",    &pos_indexes      },
+		{ DECODE_ARRAY,  "partitions", &pos_partitions   },
+		{ 0,              NULL,        NULL              },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -193,6 +203,10 @@ table_config_write(TableConfig* self, Buf* buf)
 	// shared
 	encode_raw(buf, "shared", 6);
 	encode_bool(buf, self->shared);
+
+	// aggregated
+	encode_raw(buf, "aggregated", 10);
+	encode_bool(buf, self->aggregated);
 
 	// columns
 	encode_raw(buf, "columns", 7);

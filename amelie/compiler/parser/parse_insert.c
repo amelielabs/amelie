@@ -346,11 +346,30 @@ parse_generate(Stmt* self, AstInsert* stmt)
 }
 
 hot static inline void
+parse_on_conflict_aggregate(Stmt* self, AstInsert* stmt)
+{
+	stmt->on_conflict = ON_CONFLICT_UPDATE;
+	// handle insert as upsert and generate
+	//
+	// SET <column> = <aggregated column expression> [, ...]
+	auto columns = table_columns(stmt->target->table);
+	stmt->update_expr = parse_update_aggregated(self, columns);
+	if (! stmt->update_expr)
+		stmt->on_conflict = ON_CONFLICT_NOTHING;
+}
+
+hot static inline void
 parse_on_conflict(Stmt* self, AstInsert* stmt)
 {
 	// ON CONFLICT
 	if (! stmt_if(self, KON))
+	{
+		// if table is aggregated and no explicit ON CONFLICT clause
+		// then handle as ON CONFLICT DO AGGREGATE
+		if (stmt->target->table->config->aggregated)
+			parse_on_conflict_aggregate(self, stmt);
 		return;
+	}
 
 	// CONFLICT
 	if (! stmt_if(self, KCONFLICT))
@@ -382,14 +401,10 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 	case KAGGREGATE:
 	{
-		stmt->on_conflict = ON_CONFLICT_UPDATE;
 		// handle insert as upsert and generate
 		//
 		// SET <column> = <aggregated column expression> [, ...]
-		auto columns = table_columns(stmt->target->table);
-		stmt->update_expr = parse_update_aggregated(self, columns);
-		if (! stmt->update_expr)
-			stmt->on_conflict = ON_CONFLICT_NOTHING;
+		parse_on_conflict_aggregate(self, stmt);
 		break;
 	}
 	default:

@@ -113,5 +113,27 @@ insert into test values (0, 1) on conflict do aggregate
 select * from test
 drop table test
 
+# test: aggregated table
+create aggregated table test (id int primary key, data agg(sum))
+insert into test values (0, 1)
+insert into test values (0, 2)
+insert into test values (0, 3)
+select * from test
+drop table test
+
+create shared aggregated table test (id int primary key, data agg(sum))
+insert into test values (0, 1)
+insert into test values (0, 2)
+insert into test values (0, 3)
+select * from test
+drop table test
+
+create distributed aggregated table test (id int primary key, data agg(sum) as ( agg_sum(id + 0.5) ) stored as ( data::agg_sum(@[1]) ) aggregated )
+insert into test values (0, 0)
+insert into test values (0, 1)
+insert into test values (0, 1)
+select * from test
+drop table test
+
 disconnect S0
 close E0

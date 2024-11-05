@@ -525,9 +525,9 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 }
 
 void
-parse_table_create(Stmt* self, bool shared)
+parse_table_create(Stmt* self, bool shared, bool aggregated)
 {
-	// CREATE [SHARED|DISTRIBUTED] TABLE [IF NOT EXISTS] name (key)
+	// CREATE [SHARED|DISTRIBUTED] [AGGREGATED] TABLE [IF NOT EXISTS] name (key)
 	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
@@ -544,6 +544,7 @@ parse_table_create(Stmt* self, bool shared)
 	// create table config
 	stmt->config = table_config_allocate();
 	table_config_set_shared(stmt->config, shared);
+	table_config_set_aggregated(stmt->config, aggregated);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 

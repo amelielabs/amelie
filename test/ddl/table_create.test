@@ -191,6 +191,19 @@ create shared table test (id int primary key)
 select *.name, *.shared from system.tables()
 drop table test
 
+# test: aggregated
+create aggregated table test (id int primary key)
+select *.name, *.shared, *.aggregated from system.tables()
+drop table test
+
+create distributed aggregated table test (id int primary key)
+select *.name, *.shared, *.aggregated from system.tables()
+drop table test
+
+create shared aggregated table test (id int primary key)
+select *.name, *.shared, *.aggregated from system.tables()
+drop table test
+
 # test: constraint default
 create table test (id int primary key, data int default 1)
 select indexes[0].keys from system.tables()

@@ -65,6 +65,7 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -102,6 +103,7 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -219,6 +221,7 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -256,6 +259,7 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -293,6 +297,7 @@ show tables
     "schema": "public",
     "name": "test3",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -375,6 +380,7 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -412,6 +418,7 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -449,6 +456,7 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -526,6 +534,7 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -563,6 +572,7 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
@@ -600,6 +610,7 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
+    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": "int",
