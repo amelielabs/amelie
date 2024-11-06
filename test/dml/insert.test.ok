@@ -15,20 +15,20 @@ insert into name
 {"msg": "<name> table or view is not found"}
 create table test (id int primary key)
 insert into test
-{"msg": "unexpected end of line"}
+{"msg": "column <id> value expected to be 'int'"}
 insert into test values
 {"msg": "expected '('"}
 insert into test values(
-{"msg": "unexpected end of line"}
+{"msg": "column <id> value expected to be 'int'"}
 insert into test values(,
-{"msg": "unexpected token"}
+{"msg": "column <id> value expected to be 'int'"}
 insert into test values(123
 {"msg": "expected ')'"}
 insert into test values(123,
 {"msg": "row has incorrect number of columns"}
 # test: insert type validate
 insert into test values ("123")
-{"msg": "column id: does not match data type int"}
+{"msg": "column <id> value expected to be 'int'"}
 insert into test values (123, 123)
 {"msg": "row has incorrect number of columns"}
 select * from test
@@ -63,7 +63,7 @@ select indexes[0].keys from system.tables() where name = "test"
   "path": ""
 }]]
 insert into test values (123)
-{"msg": "unexpected token"}
+{"msg": "column <id2> value expected to be 'int'"}
 insert into test values (1, 2, 3)
 {"msg": "row has incorrect number of columns"}
 insert into test values (1, 2)
@@ -192,7 +192,7 @@ drop table test
 # test: insert list
 create table test (id int primary key, data int)
 insert into test (id, data) values ()
-{"msg": "unexpected token"}
+{"msg": "column <id> value expected to be 'int'"}
 insert into test (id, data) values (123)
 {"msg": "row has incorrect number of columns"}
 insert into test (id, data) values (123, 123, 123)

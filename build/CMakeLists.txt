@@ -243,6 +243,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_view.c
     ${AMELIE_ROOT}/compiler/parser/parse_cte.c
     ${AMELIE_ROOT}/compiler/parser/parse_expr.c
+    ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c

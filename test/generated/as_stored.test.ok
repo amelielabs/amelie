@@ -88,7 +88,7 @@ select * from test
 [[0, 43]]
 # test: insert column list default (expr, reuse column)
 insert into test values (1)
-{"msg": "unexpected token"}
+{"msg": "column <data> value expected to be 'int'"}
 insert into test (id) values (1), (2)
 select * from test
 [[0, 43], [1, 1], [2, 1]]

@@ -47,6 +47,7 @@
 #include "parser/parse_index.h"
 #include "parser/parse_view.h"
 #include "parser/parse_cte.h"
+#include "parser/parse_value.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
