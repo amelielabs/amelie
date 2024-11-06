@@ -50,6 +50,7 @@ load_init(Load* self, Share* share, Dtr* dtr)
 	self->request       = NULL;
 	self->content_type  = NULL;
 	self->share         = share;
+	buf_init(&self->data);
 	buf_init(&self->columns);
 	req_list_init(&self->req_list);
 	json_init(&self->json);
@@ -59,6 +60,7 @@ load_init(Load* self, Share* share, Dtr* dtr)
 void
 load_free(Load* self)
 {
+	buf_free(&self->data);
 	buf_free(&self->columns);
 	json_free(&self->json);
 	uri_free(&self->uri);
@@ -72,6 +74,7 @@ load_reset(Load* self)
 	self->table         = NULL;
 	self->request       = NULL;
 	self->content_type  = NULL;
+	buf_reset(&self->data);
 	buf_reset(&self->columns);
 	req_list_init(&self->req_list);
 	json_reset(&self->json);

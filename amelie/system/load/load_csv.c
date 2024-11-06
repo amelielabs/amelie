@@ -51,32 +51,14 @@ load_skip(char** pos, char* end)
 hot static inline char*
 load_value(Load* self, Column* column, char* pos, char* end, uint32_t* offset)
 {
-	// read json value
-	*offset = buf_size(&self->json.buf_data);
+	*offset = buf_size(&self->data);
 	Str in;
 	str_set(&in, pos, end - pos);
-	json_set_time(&self->json, self->dtr->local->timezone, self->dtr->local->time_us);
-
-	// try to convert the value to the column type if possible
-	int      agg  = -1;
-	JsonHint hint = JSON_HINT_NONE;
-	switch (column->type) {
-	case TYPE_TIMESTAMP:
-		hint = JSON_HINT_TIMESTAMP;
-		break;
-	case TYPE_INTERVAL:
-		hint = JSON_HINT_INTERVAL;
-		break;
-	case TYPE_VECTOR:
-		hint = JSON_HINT_VECTOR;
-		break;
-	case TYPE_AGG:
-		agg  = column->constraint.aggregate;
-		hint = JSON_HINT_AGG;
-		break;
-	}
-	json_parse_hint(&self->json, &in, NULL, hint, agg);
-	return self->json.pos;
+	Lex lex;
+	lex_init(&lex, keywords);
+	lex_start(&lex, &in);
+	parse_value_for(&lex, self->dtr->local, &self->json, &self->data, column);
+	return lex.pos;
 }
 
 hot static char*
@@ -87,7 +69,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 	auto keys    = table_keys(table);
 
 	// [value[, ...]] CRLF | EOF
-	auto data = &self->json.buf_data;
+	auto data = &self->data;
 	encode_array(data);
 
 	// prepare column list
@@ -116,22 +98,22 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 			} else
 			{
 				// null or default
-				offset = buf_size(&self->json.buf_data);
+				offset = buf_size(data);
 
 				// GENERATED
 				auto cons = &column->constraint;
 				if (cons->serial)
 				{
-					encode_integer(&self->json.buf_data, serial);
+					encode_integer(data, serial);
 				} else
 				if (cons->random)
 				{
 					auto value = random_generate(global()->random) % cons->random_modulo;
-					encode_integer(&self->json.buf_data, value);
+					encode_integer(data, value);
 				} else
 				{
 					// use DEFAULT (NULL by default)
-					buf_write(&self->json.buf_data, cons->value.start, buf_size(&cons->value));
+					buf_write(data, cons->value.start, buf_size(&cons->value));
 				}
 			}
 
@@ -171,7 +153,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 		// ensure NOT NULL constraint
 		if (column->constraint.not_null)
 		{
-			uint8_t* ref = self->json.buf_data.start + offset;
+			uint8_t* ref = data->start + offset;
 			if (data_is_null(ref))
 				error("column <%.*s> value cannot be NULL", str_size(&column->name),
 				      str_of(&column->name));
@@ -187,7 +169,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 					continue;
 
 				// find key path and validate data type
-				uint8_t* ref = self->json.buf_data.start + offset;
+				uint8_t* ref = data->start + offset;
 				key_find(key, &ref);
 
 				// hash key
@@ -222,7 +204,7 @@ load_csv(Load* self)
 			break;
 
 		// [value[, ...]] CRLF | EOF
-		uint32_t offset = buf_size(&self->json.buf_data);
+		uint32_t offset = buf_size(&self->data);
 		uint32_t hash   = 0;
 		pos = load_row(self, pos, end, &hash);
 
@@ -232,7 +214,7 @@ load_csv(Load* self)
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_LOAD);
-			req->arg_buf = &self->json.buf_data;
+			req->arg_buf = &self->data;
 			req->arg_table = self->table;
 			req->route = route;
 			req_list_add(&self->req_list, req);

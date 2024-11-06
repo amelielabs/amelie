@@ -59,9 +59,9 @@ disconnect Sx
 connect E0 S0 http://localhost:3485/public/test
 import application/jsonl [7,0,0][8,0,0][9,0,0]
 import application/jsonl [10,0,0][11,
-{"msg": "unexpected end of line"}
+{"msg": "column <a> value expected to be 'int'"}
 import application/jsonl [[10,0,0], [11,0,0]]
-{"msg": "unexpected key type"}
+{"msg": "column <id> value expected to be 'int'"}
 import application/jsonl 
 disconnect S0
 connect E0 Sx http://localhost:3485/

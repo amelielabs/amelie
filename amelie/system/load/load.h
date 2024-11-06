@@ -15,6 +15,7 @@ typedef struct Load Load;
 
 struct Load
 {
+	Buf         data;
 	Buf         columns;
 	bool        columns_has;
 	int         columns_count;
