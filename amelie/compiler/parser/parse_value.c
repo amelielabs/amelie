@@ -238,7 +238,6 @@ parse_value_for(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		json_reset(json);
 		Str in;
 		str_set(&in, pos, self->end - pos);
-		json_set_time(json, local->timezone, local->time_us);
 		json_parse(json, &in, data);
 		self->pos = json->pos;
 		return;

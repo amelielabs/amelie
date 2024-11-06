@@ -18,11 +18,9 @@
 void
 json_init(Json* self)
 {
-	self->pos     = NULL;
-	self->end     = NULL;
-	self->buf     = NULL;
-	self->tz      = NULL;
-	self->time_us = 0;
+	self->pos = NULL;
+	self->end = NULL;
+	self->buf = NULL;
 	buf_init(&self->buf_data);
 	buf_init(&self->stack);
 }
@@ -37,20 +35,11 @@ json_free(Json* self)
 void
 json_reset(Json* self)
 {
-	self->pos     = NULL;
-	self->end     = NULL;
-	self->buf     = NULL;
-	self->time_us = 0;
-	self->tz      = NULL;
+	self->pos = NULL;
+	self->end = NULL;
+	self->buf = NULL;
 	buf_reset(&self->buf_data);
 	buf_reset(&self->stack);
-}
-
-void
-json_set_time(Json* self, Timezone* timezone, uint64_t time)
-{
-	self->time_us = time;
-	self->tz      = timezone;
 }
 
 typedef enum
@@ -196,87 +185,6 @@ json_integer(Json* self)
 }
 
 hot static inline void
-json_vector(Json* self)
-{
-	// [int| real[, ...]]
-	auto next = json_next(self);
-	if (next != '[')
-		error("VECTOR <[> expected");
-	self->pos++;
-
-	auto buf    = self->buf;
-	auto offset = buf_size(buf);
-	int  count  = 0;
-	buf_reserve(self->buf, data_size_vector(0));
-	data_write_vector_size(&buf->position, 0);
-	for (;;)
-	{
-		// int | real
-		next = json_next(self);
-		if (likely(isdigit(next) || next == '.' || next == '-'))
-		{
-			int64_t value_int  = 0;
-			double  value_real = 0;
-			float   value;
-			if (json_integer_read(self, &value_int, &value_real))
-				value = value_int;
-			else
-				value = value_real;
-			buf_write(buf, &value, sizeof(float));
-			count++;
-			// ,
-			next = json_next(self);
-			if (next == ',')
-			{
-				self->pos++;
-				continue;
-			}
-		}
-		// ]
-		if (*self->pos == ']')
-		{
-			self->pos++;
-			break;
-		}
-		error("VECTOR integer of real value expected");
-	}
-	uint8_t* pos = buf->start + offset;
-	data_write_vector_size(&pos, count);
-}
-
-hot static inline void
-json_agg(Json* self, int type)
-{
-	// int | real | null
-	Agg agg;
-	agg_init(&agg);
-
-	int          value_type;
-	AggValue value;
-	memset(&value, 0, sizeof(value));
-	if (json_is_keyword(self, "null", 4))
-	{
-		self->pos += 4;
-		value_type = AGG_NULL;
-	} else
-	{
-		// int | real
-		auto next = json_next(self);
-		if (likely(isdigit(next) || next == '.' || next == '-'))
-		{
-			if (json_integer_read(self, &value.integer, &value.real))
-				value_type = AGG_INT;
-			else
-				value_type = AGG_REAL;
-		} else {
-			error("integer of real value expected for agg");
-		}
-	}
-	agg_step(&agg, type, value_type, &value);
-	encode_agg(self->buf, &agg);
-}
-
-hot static inline void
 json_const(Json* self)
 {
 	switch (*self->pos) {
@@ -298,70 +206,15 @@ json_const(Json* self)
 	case 't':
 	case 'T':
 	{
-		if (json_is_keyword(self, "true", 4))
-		{
-			json_keyword(self, "true", 4);
-			encode_bool(self->buf, true);
-		} else
-		if (json_is_keyword(self, "timestamp", 9))
-		{
-			// TIMESTAMP "string"
-			self->pos += 9;
-			Str str;
-			if (! json_string(self, &str))
-				error("TIMESTAMP <string> expected");
-			if (unlikely(! self->tz))
-				error("unexpected operation with timestamp");
-			Timestamp ts;
-			timestamp_init(&ts);
-			timestamp_read(&ts, &str);
-			encode_timestamp(self->buf, timestamp_of(&ts, self->tz));
-		} else {
-			break;
-		}
+		json_keyword(self, "true", 4);
+		encode_bool(self->buf, true);
 		return;
-	}
-	case 'c':
-	case 'C':
-	{
-		if (json_is_keyword(self, "current_timestamp", 17))
-		{
-			auto time = self->time_us;
-			if (time == 0)
-				time = time_us();
-			encode_timestamp(self->buf, time);
-			self->pos += 17;
-			return;
-		}
-		break;
 	}
 	case 'f':
 	case 'F':
 	{
 		json_keyword(self, "false", 5);
 		encode_bool(self->buf, false);
-		return;
-	}
-	case 'i':
-	case 'I':
-	{
-		// INTERVAL "string"
-		json_keyword(self, "interval", 8);
-		Str str;
-		if (! json_string(self, &str))
-			error("INTERVAL <string> expected");
-		Interval iv;
-		interval_init(&iv);
-		interval_read(&iv, &str);
-		encode_interval(self->buf, &iv);
-		return;
-	}
-	case 'v':
-	case 'V':
-	{
-		// VECTOR []
-		json_keyword(self, "vector", 6);
-		json_vector(self);
 		return;
 	}
 	default:
@@ -536,103 +389,4 @@ json_parse(Json* self, Str* text, Buf* buf)
 		}
 		}
 	}
-}
-
-void
-json_parse_hint(Json* self, Str* text, Buf* buf, JsonHint hint, int agg)
-{
-	if (hint == JSON_HINT_NONE)
-	{
-		json_parse(self, text, buf);
-		return;
-	}
-
-	self->pos = str_of(text);
-	self->end = str_of(text) + str_size(text);
-	if (buf == NULL)
-	{
-		self->buf = &self->buf_data;
-		buf = self->buf;
-	} else
-	{
-		self->buf = buf;
-	}
-
-	// skip whitespaces
-	json_next(self);
-
-	switch (hint) {
-	case JSON_HINT_TIMESTAMP:
-	{
-		// timestamp or string
-
-		// TIMESTAMP "string"
-		auto is_timestamp = json_is_keyword(self, "timestamp", 9);
-		if (is_timestamp)
-			self->pos += 9;
-		Str str;
-		if (! json_string(self, &str))
-		{
-			if (is_timestamp)
-				error("TIMESTAMP <string> expected");
-			break;
-		}
-		if (unlikely(! self->tz))
-			error("unexpected operation with timestamp");
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, &str);
-		encode_timestamp(self->buf, timestamp_of(&ts, self->tz));
-		return;
-	}
-	case JSON_HINT_INTERVAL:
-	{
-		// interval or string
-
-		// INTERVAL "string"
-		auto is_interval = json_is_keyword(self, "interval", 8);
-		if (is_interval)
-			self->pos += 8;
-		Str str;
-		if (! json_string(self, &str))
-		{
-			if (is_interval)
-				error("INTERVAL <string> expected");
-			break;
-		}
-		Interval iv;
-		interval_init(&iv);
-		interval_read(&iv, &str);
-		encode_interval(self->buf, &iv);
-		return;
-	}
-	case JSON_HINT_VECTOR:
-	{
-		// VECTOR []
-		auto is_vector = json_is_keyword(self, "vector", 6);
-		if (is_vector)
-			self->pos += 6;
-
-		if (json_next(self) != '[')
-		{
-			if (is_vector)
-				error("VECTOR <[> expected");
-			break;
-		}
-
-		// []
-		json_vector(self);
-		return;
-	}
-	case JSON_HINT_AGG:
-	{
-		// int|real|null
-		json_agg(self, agg);
-		return;
-	}
-	default:
-		break;
-	}
-
-	json_parse(self, text, buf);
 }

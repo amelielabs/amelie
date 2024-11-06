@@ -92,8 +92,9 @@ select {"id":55}::native
 select {"id":55}::native::type
 
 # test: (native) vector to native
-select 'vector [1,2,3]'::native
-select 'vector [1,2,3]'::native::type
+select [1,2,3]::vector::string::native::type
+select [1,2,3]::vector::string::native
+select [1,2,3]::vector::native
 
 # test: (interval) string to interval
 select '1 hour 55 minutes 5 secs'::interval

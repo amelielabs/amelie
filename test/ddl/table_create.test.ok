@@ -449,45 +449,6 @@ select columns from system.tables() where name = "test"
   }
 }]]
 drop table test
-# test: column any
-create table test(id int primary key, data any)
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "data",
-  "type": "any",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}]]
-insert into test values (0, "")
-insert into test values (1, [1,2,3])
-insert into test values (2, {"id":48})
-insert into test values (3, interval '5 sec')
-select data::type from test
-["string", "array", "object", "interval"]
-drop table test
 # test: column redefined
 create table test(id int, id int)
 {"msg": "<id> column redefined"}

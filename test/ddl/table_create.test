@@ -86,16 +86,6 @@ create table test(id int primary key, a agg(count), b aggregate(sum))
 select columns from system.tables() where name = "test"
 drop table test
 
-# test: column any
-create table test(id int primary key, data any)
-select columns from system.tables() where name = "test"
-insert into test values (0, "")
-insert into test values (1, [1,2,3])
-insert into test values (2, {"id":48})
-insert into test values (3, interval '5 sec')
-select data::type from test
-drop table test
-
 # test: column redefined
 create table test(id int, id int)
 

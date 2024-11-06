@@ -179,7 +179,6 @@ select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::t
 
 # test: current_timestamp
 select current_timestamp::int > 0
-select "current_timestamp"::native::int > 0
 
 # test: between
 select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
