@@ -68,7 +68,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 
 		} else
 		{
-			// GENERATED
+			// SERIAL, RANDOM or DEFAULT
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
@@ -273,7 +273,8 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			// GENERATED
+
+			// SERIAL, RANDOM or DEFAULT
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
