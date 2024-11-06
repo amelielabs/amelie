@@ -225,7 +225,6 @@ parse_value_for(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 	}
 	case TYPE_OBJ:
 	case TYPE_ARRAY:
-	case TYPE_ANY:
 	{
 		// parse and encode json value
 		lex_push(self, ast);
