@@ -36,12 +36,7 @@ enum
 	AM_OBJ          = 78,
 	AM_OBJ_END      = 79,
 	AM_ARRAY        = 80,
-	AM_ARRAY_END    = 81,
-
-	AM_INTERVAL     = 82,
-	AM_TIMESTAMP    = 83,
-	AM_VECTOR       = 84,
-	AM_AGG          = 85
+	AM_ARRAY_END    = 81
 };
 
 static inline char*
@@ -64,14 +59,6 @@ type_to_string(int type)
 		return "object";
 	case AM_ARRAY ... AM_ARRAY_END:
 		return "array";
-	case AM_INTERVAL:
-		return "interval";
-	case AM_TIMESTAMP:
-		return "timestamp";
-	case AM_VECTOR:
-		return "vector";
-	case AM_AGG:
-		return "aggregate";
 	}
 	return "<unknown>";
 }

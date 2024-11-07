@@ -124,31 +124,3 @@ encode_uuid(Buf* self, Uuid* uuid)
 	uuid_to_string(uuid, uuid_sz, sizeof(uuid_sz));
 	encode_raw(self, uuid_sz, sizeof(uuid_sz) - 1);
 }
-
-always_inline hot static inline void
-encode_interval(Buf* self, Interval* iv)
-{
-	auto pos = buf_reserve(self, data_size_interval(iv));
-	data_write_interval(pos, iv);
-}
-
-always_inline hot static inline void
-encode_timestamp(Buf* self, uint64_t value)
-{
-	auto pos = buf_reserve(self, data_size_timestamp(value));
-	data_write_timestamp(pos, value);
-}
-
-always_inline hot static inline void
-encode_vector(Buf* self, Vector* vector)
-{
-	auto pos = buf_reserve(self, data_size_vector(vector->size));
-	data_write_vector(pos, vector);
-}
-
-always_inline hot static inline void
-encode_agg(Buf* self, Agg* agg)
-{
-	auto pos = buf_reserve(self, data_size_agg(agg));
-	data_write_agg(pos, agg);
-}

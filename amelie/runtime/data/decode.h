@@ -15,22 +15,17 @@ typedef struct Decode Decode;
 
 enum
 {
-	DECODE_UUID            = 1 << 0,
-	DECODE_STRING          = 1 << 1,
-	DECODE_STRING_READ     = 1 << 2,
-	DECODE_INT             = 1 << 3,
-	DECODE_BOOL            = 1 << 4,
-	DECODE_REAL            = 1 << 5,
-	DECODE_NULL            = 1 << 6,
-	DECODE_ARRAY           = 1 << 7,
-	DECODE_OBJ             = 1 << 8,
-	DECODE_DATA            = 1 << 9,
-	DECODE_INTERVAL        = 1 << 10,
-	DECODE_INTERVAL_STRING = 1 << 11,
-	DECODE_TS              = 1 << 12,
-	DECODE_TS_STRING       = 1 << 13,
-	DECODE_AGG             = 1 << 14,
-	DECODE_FOUND           = 1 << 15
+	DECODE_UUID        = 1 << 0,
+	DECODE_STRING      = 1 << 1,
+	DECODE_STRING_READ = 1 << 2,
+	DECODE_INT         = 1 << 3,
+	DECODE_BOOL        = 1 << 4,
+	DECODE_REAL        = 1 << 5,
+	DECODE_NULL        = 1 << 6,
+	DECODE_ARRAY       = 1 << 7,
+	DECODE_OBJ         = 1 << 8,
+	DECODE_DATA        = 1 << 9,
+	DECODE_FOUND       = 1 << 10
 };
 
 struct Decode
@@ -57,55 +52,6 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 				continue;
 
 			switch (ref->flags & ~DECODE_FOUND) {
-			case DECODE_INTERVAL:
-			{
-				if (unlikely(! data_is_interval(*pos)))
-					error("%s: interval expected for '%s'", context,
-					      ref->key);
-				auto value = (Interval*)ref->value;
-				data_read_interval(pos, value);
-				break;
-			}
-			case DECODE_INTERVAL_STRING:
-			{
-				if (unlikely(! data_is_string(*pos)))
-					error("%s: string expected for '%s'", context,
-					      ref->key);
-				Str str;
-				data_read_string(pos, &str);
-				auto value = (Interval*)ref->value;
-				interval_read(value, &str);
-				break;
-			}
-			case DECODE_TS:
-			{
-				if (unlikely(! data_is_timestamp(*pos)))
-					error("%s: timestamp expected for '%s'",
-					      context, ref->key);
-				auto value = (int64_t*)ref->value;
-				data_read_timestamp(pos, value);
-				break;
-			}
-			case DECODE_TS_STRING:
-			{
-				if (unlikely(! data_is_string(*pos)))
-					error("%s: string expected for '%s'", context,
-					       ref->key);
-				Str str;
-				data_read_string(pos, &str);
-				auto value = (Timestamp*)ref->value;
-				timestamp_read(value, &str);
-				break;
-			}
-			case DECODE_AGG:
-			{
-				if (unlikely(! data_is_agg(*pos)))
-					error("%s: aggregate expected for '%s'",
-					      context, ref->key);
-				auto value = (Agg*)ref->value;
-				data_read_agg(pos, value);
-				break;
-			}
 			case DECODE_UUID:
 			{
 				if (unlikely(! data_is_string(*pos)))

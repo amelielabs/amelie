@@ -60,33 +60,6 @@ data_skip(uint8_t** pos)
 			*pos += data_size_type();
 			level--;
 			break;
-		case AM_INTERVAL:
-		{
-			*pos += data_size_type();
-			int64_t value;
-			data_read_integer(pos, &value);
-			data_read_integer(pos, &value);
-			data_read_integer(pos, &value);
-			break;
-		}
-		case AM_TIMESTAMP:
-		{
-			int64_t value;
-			data_read_timestamp(pos, &value);
-			break;
-		}
-		case AM_VECTOR:
-		{
-			Vector vector;
-			data_read_vector(pos, &vector);
-			break;
-		}
-		case AM_AGG:
-		{
-			Agg agg;
-			data_read_agg(pos, &agg);
-			break;
-		}
 		default:
 			error_data();
 			break;

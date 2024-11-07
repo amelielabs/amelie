@@ -124,61 +124,6 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		}
 		break;
 	}
-	case AM_INTERVAL:
-	{
-		Interval iv;
-		interval_init(&iv);
-		data_read_interval(pos, &iv);
-		buf_len = interval_write(&iv, buf, sizeof(buf));
-		buf_write(data, "\"", 1);
-		buf_write(data, buf, buf_len);
-		buf_write(data, "\"", 1);
-		break;
-	}
-	case AM_TIMESTAMP:
-	{
-		int64_t value;
-		data_read_timestamp(pos, &value);
-		buf_len = timestamp_write(value, timezone, buf, sizeof(buf));
-		buf_write(data, "\"", 1);
-		buf_write(data, buf, buf_len);
-		buf_write(data, "\"", 1);
-		break;
-	}
-	case AM_VECTOR:
-	{
-		Vector vector;
-		data_read_vector(pos, &vector);
-		buf_write(data, "[", 1);
-		for (int i = 0; i < vector.size; i++)
-		{
-			buf_len = snprintf(buf, sizeof(buf), "%g%s", vector.value[i],
-			                   i != vector.size - 1? ", ": "");
-			buf_write(data, buf, buf_len);
-		}
-		buf_write(data, "]", 1);
-		break;
-	}
-	case AM_AGG:
-	{
-		Agg agg;
-		data_read_agg(pos, &agg);
-		AggValue value;
-		switch (agg_read(&agg, &value)) {
-		case AGG_NULL:
-			buf_write(data, "null", 4);
-			break;
-		case AGG_INT:
-			buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value.integer);
-			buf_write(data, buf, buf_len);
-			break;
-		case AGG_REAL:
-			buf_len = snprintf(buf, sizeof(buf), "%g", value.real);
-			buf_write(data, buf, buf_len);
-			break;
-		}
-		break;
-	}
 	default:
 		error_data();
 		break;

@@ -28,22 +28,6 @@ data_compare_integer(uint8_t* a, uint8_t* b)
 }
 
 always_inline hot static inline int
-data_compare_timestamp_read(uint8_t** a, uint8_t** b)
-{
-	int64_t a_value;
-	int64_t b_value;
-	data_read_timestamp(a, &a_value);
-	data_read_timestamp(b, &b_value);
-	return compare_int64(a_value, b_value);
-}
-
-always_inline hot static inline int
-data_compare_timestamp(uint8_t* a, uint8_t* b)
-{
-	return data_compare_timestamp_read(&a, &b);
-}
-
-always_inline hot static inline int
 data_compare_string_read(uint8_t** a, uint8_t** b)
 {
 	char* a_value;
@@ -168,54 +152,6 @@ data_compare(uint8_t* a, uint8_t* b)
 			data_read_obj_end(&a);
 			data_read_obj_end(&b);
 			level--;
-			break;
-		}
-		case AM_INTERVAL:
-		{
-			if (! data_is_interval(b))
-				return compare_int64(*a, *b);
-			Interval a_iv;
-			Interval b_iv;
-			data_read_interval(&a, &a_iv);
-			data_read_interval(&b, &b_iv);
-			rc = interval_compare(&a_iv, &b_iv);
-			if (rc != 0)
-				return rc;
-			break;
-		}
-		case AM_TIMESTAMP:
-		{
-			if (! data_is_timestamp(b))
-				return compare_int64(*a, *b);
-			rc = data_compare_timestamp(a, b);
-			if (rc != 0)
-				return rc;
-			break;
-		}
-		case AM_VECTOR:
-		{
-			if (! data_is_vector(b))
-				return compare_int64(*a, *b);
-			Vector a_vector;
-			Vector b_vector;
-			data_read_vector(&a, &a_vector);
-			data_read_vector(&b, &b_vector);
-			rc = vector_compare(&a_vector, &b_vector);
-			if (rc != 0)
-				return rc;
-			break;
-		}
-		case AM_AGG:
-		{
-			if (! data_is_agg(b))
-				return compare_int64(*a, *b);
-			Agg a_agg;
-			Agg b_agg;
-			data_read_agg(&a, &a_agg);
-			data_read_agg(&b, &b_agg);
-			rc = agg_compare(&a_agg, &b_agg);
-			if (rc != 0)
-				return rc;
 			break;
 		}
 		}
