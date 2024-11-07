@@ -16,8 +16,8 @@ typedef struct Column Column;
 
 struct Column
 {
-	Str        name;
 	int        order;
+	Str        name;
 	int64_t    type;
 	Constraint constraint;
 	bool       key;
@@ -107,23 +107,4 @@ column_write(Column* self, Buf* buf)
 	constraint_write(&self->constraint, buf);
 
 	encode_obj_end(buf);
-}
-
-hot static inline void
-column_find(Column* self, uint8_t** pos)
-{
-	if (unlikely(! data_is_array(*pos)))
-		error("row type expected to be array");
-
-	// find column
-	if (! array_find(pos, self->order))
-		error("column %.*s: is not found", str_size(&self->name),
-		      str_of(&self->name));
-
-	// validate data type
-	if (! type_validate(self->type, *pos))
-		error("column %.*s: does not match data type",
-		      str_size(&self->name),
-		      str_of(&self->name),
-		      type_of(self->type));
 }

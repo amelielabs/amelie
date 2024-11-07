@@ -39,12 +39,6 @@
 #include "lib/interval.h"
 #include "lib/timestamp.h"
 
-// vector
-#include "lib/vector.h"
-
-// partial aggregate
-#include "lib/agg.h"
-
 // logger
 #include "lib/logger.h"
 

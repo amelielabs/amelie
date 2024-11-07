@@ -19,14 +19,6 @@ struct User
 	List        link;
 };
 
-static inline void
-user_free(User* user)
-{
-	if (user->config)
-		user_config_free(user->config);
-	am_free(user);
-}
-
 static inline User*
 user_allocate(UserConfig* config)
 {
@@ -34,4 +26,12 @@ user_allocate(UserConfig* config)
 	list_init(&self->link);
 	self->config = user_config_copy(config);
 	return self;
+}
+
+static inline void
+user_free(User* user)
+{
+	if (user->config)
+		user_config_free(user->config);
+	am_free(user);
 }

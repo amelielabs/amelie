@@ -34,7 +34,7 @@ constraint_init(Constraint* self)
 	self->serial         = false;
 	self->random         = false;
 	self->random_modulo  = INT64_MAX;
-	self->aggregate      = AGG_UNDEF;
+	self->aggregate      = 0;
 	str_init(&self->as_stored);
 	str_init(&self->as_aggregated);
 	buf_init(&self->value);

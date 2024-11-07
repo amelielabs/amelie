@@ -44,9 +44,9 @@ key_free(Key* self)
 }
 
 static inline void
-key_set_ref(Key* self, int ref)
+key_set_ref(Key* self, int value)
 {
-	self->ref = ref;
+	self->ref = value;
 }
 
 static inline void
@@ -119,72 +119,4 @@ key_write(Key* self, Buf* buf)
 	encode_string(buf, &self->path);
 
 	encode_obj_end(buf);
-}
-
-static inline void
-key_find(Key* self, uint8_t** pos)
-{
-	// find by path
-	if (str_empty(&self->path))
-		return;
-
-	if (! obj_find_path(pos, &self->path))
-		error("column %.*s: key path <%.*s> is not found",
-		      str_size(&self->column->name),
-		      str_of(&self->column->name),
-		      str_size(&self->path),
-		      str_of(&self->path));
-
-	// validate data type
-	if (! type_validate(self->type, *pos))
-		error("column %.*s: key path <%.*s> does not match data type %s",
-		      str_size(&self->column->name),
-		      str_of(&self->column->name),
-		      str_size(&self->path),
-		      str_of(&self->path),
-		      type_of(self->type));
-}
-
-hot static inline uint32_t
-key_hash_integer(uint32_t hash, int64_t value)
-{
-	return hash_murmur3_32((uint8_t*)&value, sizeof(value), hash);
-}
-
-hot static inline uint32_t
-key_hash_timestamp(uint32_t hash, int64_t value)
-{
-	return hash_murmur3_32((uint8_t*)&value, sizeof(value), hash);
-}
-
-hot static inline uint32_t
-key_hash_string(uint32_t hash, Str* string)
-{
-	return hash_murmur3_32(str_u8(string), str_size(string), hash);
-}
-
-hot static inline uint32_t
-key_hash(uint32_t hash, uint8_t* pos)
-{
-	if (data_is_integer(pos))
-	{
-		int64_t value;
-		data_read_integer(&pos, &value);
-		hash = key_hash_integer(hash, value);
-	} else
-	if (data_is_timestamp(pos))
-	{
-		int64_t value;
-		data_read_timestamp(&pos, &value);
-		hash = key_hash_timestamp(hash, value);
-	} else
-	if (data_is_string(pos))
-	{
-		Str value;
-		data_read_string(&pos, &value);
-		hash = key_hash_string(hash, &value);
-	} else {
-		error("unexpected key type");
-	}
-	return hash;
 }
