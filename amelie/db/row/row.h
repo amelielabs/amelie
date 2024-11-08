@@ -24,31 +24,6 @@ struct Row
 	};
 } packed;
 
-always_inline hot static inline uint32_t
-row_size(Row* self)
-{
-	if (self->size_factor == 0)
-		return *self->u8;
-	if (self->size_factor == 1)
-		return *self->u16;
-	return *self->u32;
-}
-
-always_inline hot static inline void*
-row_at(Row* self, int column)
-{
-	// column offsets start from 0
-	register uint32_t offset;
-	if (self->size_factor == 0)
-		offset = sizeof(uint8_t) + self->u8[1 + column];
-	else
-	if (self->size_factor == 1)
-		offset = sizeof(uint16_t) + self->u16[1 + column];
-	else
-		offset = sizeof(uint32_t) + self->u32[1 + column];
-	return (uint8_t*)self + sizeof(Row) + offset;
-}
-
 hot static inline Row*
 row_allocate(int columns, int data_size)
 {
@@ -88,6 +63,73 @@ always_inline static inline void
 row_free(Row* self)
 {
 	am_free(self);
+}
+
+always_inline hot static inline uint32_t
+row_size(Row* self)
+{
+	if (self->size_factor == 0)
+		return *self->u8;
+	if (self->size_factor == 1)
+		return *self->u16;
+	return *self->u32;
+}
+
+always_inline hot static inline void*
+row_at(Row* self, int column)
+{
+	// column offsets start from 0
+	register uint32_t offset;
+	if (self->size_factor == 0)
+		offset = sizeof(uint8_t) + self->u8[1 + column];
+	else
+	if (self->size_factor == 1)
+		offset = sizeof(uint16_t) + self->u16[1 + column];
+	else
+		offset = sizeof(uint32_t) + self->u32[1 + column];
+	return (uint8_t*)self + sizeof(Row) + offset;
+}
+
+always_inline hot static inline bool
+row_bool(Row* self, int column)
+{
+	return *(bool*)row_at(self, column);
+}
+
+always_inline hot static inline int8_t
+row_i8(Row* self, int column)
+{
+	return *(int8_t*)row_at(self, column);
+}
+
+always_inline hot static inline int16_t
+row_i16(Row* self, int column)
+{
+	return *(int16_t*)row_at(self, column);
+}
+
+always_inline hot static inline int32_t
+row_i32(Row* self, int column)
+{
+	return *(int32_t*)row_at(self, column);
+}
+
+always_inline hot static inline int64_t
+row_i64(Row* self, int column)
+{
+	return *(int64_t*)row_at(self, column);
+}
+
+always_inline hot static inline float
+row_float(Row* self, int column)
+{
+	return *(float*)row_at(self, column);
+}
+
+always_inline hot static inline double
+row_double(Row* self, int column)
+{
+	return *(double*)row_at(self, column);
 }
 
 #if 0

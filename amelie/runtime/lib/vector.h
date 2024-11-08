@@ -15,17 +15,11 @@ typedef struct Vector Vector;
 
 struct Vector
 {
-	int    size;
-	float* value;
-};
+	uint32_t size;
+	float    value[];
+} packed;
 
-static inline void
-vector_init(Vector* self, int size, float* value)
-{
-	self->size  = size;
-	self->value = value;
-}
-
+void   vector_init(Vector*, int);
 int    vector_compare(Vector*, Vector*);
 void   vector_add(Vector*, Vector*, Vector*);
 void   vector_sub(Vector*, Vector*, Vector*);

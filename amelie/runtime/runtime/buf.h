@@ -174,6 +174,42 @@ buf_write_buf(Buf* self, Buf* buf)
 	buf_write(self, buf->start, buf_size(buf));
 }
 
+static inline void
+buf_write_i8(Buf* self, int8_t value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
+static inline void
+buf_write_i16(Buf* self, int16_t value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
+static inline void
+buf_write_i32(Buf* self, int32_t value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
+static inline void
+buf_write_i64(Buf* self, int64_t value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
+static inline void
+buf_write_float(Buf* self, float value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
+static inline void
+buf_write_double(Buf* self, double value)
+{
+	buf_write(self, &value, sizeof(value));
+}
+
 always_inline hot static inline void
 buf_write_str(Buf* self, Str* str)
 {

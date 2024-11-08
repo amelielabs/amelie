@@ -27,3 +27,6 @@
 // row
 #include "row/row.h"
 #include "row/row_writer.h"
+
+// compare
+#include "row/compare.h"

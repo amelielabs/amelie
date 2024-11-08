@@ -39,6 +39,10 @@
 #include "lib/interval.h"
 #include "lib/timestamp.h"
 
+// types
+#include "lib/agg.h"
+#include "lib/vector.h"
+
 // logger
 #include "lib/logger.h"
 
