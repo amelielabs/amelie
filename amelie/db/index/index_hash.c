@@ -19,39 +19,38 @@
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 
-hot static bool
-index_hash_set(Index* arg, Ref* key, Ref* prev)
+hot static Row*
+index_hash_set(Index* arg, Row* key)
 {
 	auto self = index_hash_of(arg);
-	return hash_set(&self->hash, key, prev);
+	return hash_set(&self->hash, key);
 }
 
-hot static void
-index_hash_update(Index* arg, Ref* key, Ref* prev, Iterator* it)
+hot static Row*
+index_hash_update(Index* arg, Row* key, Iterator* it)
 {
 	unused(arg);
 	auto hash_it = index_hash_iterator_of(it);
-	hash_iterator_replace(&hash_it->iterator, key, prev);
+	return hash_iterator_replace(&hash_it->iterator, key);
 }
 
-hot static void
-index_hash_delete(Index* arg, Ref* key, Ref* prev, Iterator* it)
+hot static Row*
+index_hash_delete(Index* arg, Iterator* it)
 {
-	auto self = index_hash_of(arg);
+	unused(arg);
 	auto hash_it = index_hash_iterator_of(it);
-	memcpy(key, hash_it->iterator.current, self->hash.keys->key_size);
-	hash_iterator_delete(&hash_it->iterator, prev);
+	return hash_iterator_delete(&hash_it->iterator);
 }
 
-hot static bool
-index_hash_delete_by(Index* arg, Ref* key, Ref* prev)
+hot static Row*
+index_hash_delete_by(Index* arg, Row* key)
 {
 	auto self = index_hash_of(arg);
-	return hash_delete(&self->hash, key, prev);
+	return hash_delete(&self->hash, key);
 }
 
 hot static bool
-index_hash_upsert(Index* arg, Ref* key, Iterator* it)
+index_hash_upsert(Index* arg, Row* key, Iterator* it)
 {
 	auto self = index_hash_of(arg);
 	uint64_t pos = 0;	
@@ -62,7 +61,7 @@ index_hash_upsert(Index* arg, Ref* key, Iterator* it)
 }
 
 hot static bool
-index_hash_ingest(Index* arg, Ref* key)
+index_hash_ingest(Index* arg, Row* key)
 {
 	auto self = index_hash_of(arg);
 	uint64_t pos = 0;

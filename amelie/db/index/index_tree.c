@@ -25,39 +25,38 @@ index_tree_of(Index* self)
 	return (IndexTree*)self;
 }
 
-hot static bool
-index_tree_set(Index* arg, Ref* key, Ref* prev)
+hot static Row*
+index_tree_set(Index* arg, Row* key)
 {
 	auto self = index_tree_of(arg);
-	return tree_set(&self->tree, key, prev);
+	return tree_set(&self->tree, key);
 }
 
-hot static void
-index_tree_update(Index* arg, Ref* key, Ref* prev, Iterator* it)
+hot static Row*
+index_tree_update(Index* arg, Row* key, Iterator* it)
 {
 	unused(arg);
 	auto tree_it = index_tree_iterator_of(it);
-	tree_iterator_replace(&tree_it->iterator, key, prev);
+	return tree_iterator_replace(&tree_it->iterator, key);
 }
 
-hot static void
-index_tree_delete(Index* arg, Ref* key, Ref* prev, Iterator* it)
+hot static Row*
+index_tree_delete(Index* arg, Iterator* it)
 {
-	auto self = index_tree_of(arg);
+	unused(arg);
 	auto tree_it = index_tree_iterator_of(it);
-	memcpy(key, tree_it->iterator.current, self->tree.keys->key_size);
-	tree_iterator_delete(&tree_it->iterator, prev);
+	return tree_iterator_delete(&tree_it->iterator);
 }
 
-hot static bool
-index_tree_delete_by(Index* arg, Ref* key, Ref* prev)
+hot static Row*
+index_tree_delete_by(Index* arg, Row* key)
 {
 	auto self = index_tree_of(arg);
-	return tree_unset(&self->tree, key, prev);
+	return tree_unset(&self->tree, key);
 }
 
 hot static bool
-index_tree_upsert(Index* arg, Ref* key, Iterator* it)
+index_tree_upsert(Index* arg, Row* key, Iterator* it)
 {
 	auto self = index_tree_of(arg);
 	TreePos pos;
@@ -68,7 +67,7 @@ index_tree_upsert(Index* arg, Ref* key, Iterator* it)
 }
 
 hot static bool
-index_tree_ingest(Index* arg, Ref* key)
+index_tree_ingest(Index* arg, Row* key)
 {
 	auto self = index_tree_of(arg);
 	TreePos pos;

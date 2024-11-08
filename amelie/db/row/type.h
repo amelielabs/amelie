@@ -116,3 +116,36 @@ type_read(Str* name)
 	}
 	return type;
 }
+
+hot static inline int
+type_size(int type)
+{
+	switch (type) {
+	// fixed types
+	case TYPE_BOOL:
+	case TYPE_INT8:
+		return sizeof(int8_t);
+	case TYPE_INT16:
+		return sizeof(int16_t);
+	case TYPE_INT32:
+		return sizeof(int32_t);
+	case TYPE_INT64:
+		return sizeof(int64_t);
+	case TYPE_FLOAT:
+		return sizeof(float);
+	case TYPE_DOUBLE:
+		return sizeof(double);
+	case TYPE_TIMESTAMP:
+		return sizeof(int64_t);
+	case TYPE_INTERVAL:
+	case TYPE_AGG:
+		// TODO
+		break;
+	// variable types
+	case TYPE_TEXT:
+	case TYPE_JSON:
+	case TYPE_VECTOR:
+		break;
+	}
+	return 0;
+}

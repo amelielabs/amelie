@@ -19,6 +19,7 @@ struct Column
 	int        order;
 	Str        name;
 	int64_t    type;
+	int        type_size;
 	Constraint constraint;
 	bool       key;
 	List       link;
@@ -28,9 +29,10 @@ static inline Column*
 column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
-	self->order = 0;
-	self->key   = false; 
-	self->type  = -1;
+	self->order     = 0;
+	self->key       = false;
+	self->type      = -1;
+	self->type_size = 0;
 	list_init(&self->link);
 	str_init(&self->name);
 	constraint_init(&self->constraint);
@@ -78,13 +80,14 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING,      "name",       &self->name  },
-		{ DECODE_STRING_READ, "type",       &type        },
-		{ DECODE_OBJ,         "constraint", &constraints },
-		{ 0,                   NULL,        NULL         },
+		{ DECODE_STRING,      "name",       &self->name      },
+		{ DECODE_STRING_READ, "type",       &type            },
+		{ DECODE_OBJ,         "constraint", &constraints     },
+		{ 0,                   NULL,        NULL             },
 	};
 	decode_obj(obj, "columns", pos);
 	self->type = type_read(&type);
+	self->type_size = type_size(self->type);
 	constraint_read(&self->constraint, &constraints);
 	return unguard();
 }

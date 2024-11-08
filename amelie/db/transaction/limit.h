@@ -40,7 +40,7 @@ limit_ensure(Limit* self, Row* row)
 		return;
 
 	// in-memory row size
-	int size = sizeof(Row) + (1 + row->size_factor) + row_size(row);
+	int size = row_size(row);
 
 	// this might be slightly inaccurate
 	if (unlikely((atomic_u64_of(&self->log_size) + size) >= self->log_size_limit))

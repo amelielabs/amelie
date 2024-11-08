@@ -132,7 +132,20 @@ row_double(Row* self, int column)
 	return *(double*)row_at(self, column);
 }
 
-#if 0
-Row* row_alter_add(Row*, Buf*);
-Row* row_alter_drop(Row*, int);
-#endif
+hot static inline uint32_t
+row_hash(Row* self, Keys* keys)
+{
+	uint32_t hash = 0;
+	list_foreach(&keys->list)
+	{
+		auto column = list_at(Key, link)->column;
+		// fixed or variable type
+		if (column->type_size > 0) {
+			hash = hash_murmur3_32(row_at(self, column->order), column->type_size, hash);
+		} else {
+			// fixed
+			// TODO
+		}
+	}
+	return hash;
+}

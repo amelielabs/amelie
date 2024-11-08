@@ -16,12 +16,12 @@ typedef struct Index   Index;
 
 struct IndexIf
 {
-	bool      (*set)(Index*, Ref*, Ref*);
-	void      (*update)(Index*, Ref*, Ref*, Iterator*);
-	void      (*delete)(Index*, Ref*, Ref*, Iterator*);
-	bool      (*delete_by)(Index*, Ref*, Ref*);
-	bool      (*upsert)(Index*, Ref*, Iterator*);
-	bool      (*ingest)(Index*, Ref*);
+	Row*      (*set)(Index*, Row*);
+	Row*      (*update)(Index*, Row*, Iterator*);
+	Row*      (*delete)(Index*, Iterator*);
+	Row*      (*delete_by)(Index*, Row*);
+	bool      (*upsert)(Index*, Row*, Iterator*);
+	bool      (*ingest)(Index*, Row*);
 	Iterator* (*iterator)(Index*);
 	void      (*truncate)(Index*);
 	void      (*free)(Index*);
@@ -54,38 +54,38 @@ index_truncate(Index* self)
 	self->iface.truncate(self);
 }
 
+static inline Row*
+index_set(Index* self, Row* key)
+{
+	return self->iface.set(self, key);
+}
+
+static inline Row*
+index_update(Index* self, Row* key, Iterator* it)
+{
+	return self->iface.update(self, key, it);
+}
+
+static inline Row*
+index_delete(Index* self, Iterator* it)
+{
+	return self->iface.delete(self, it);
+}
+
+static inline Row*
+index_delete_by(Index* self, Row* key)
+{
+	return self->iface.delete_by(self, key);
+}
+
 static inline bool
-index_set(Index* self, Ref* key, Ref* prev)
-{
-	return self->iface.set(self, key, prev);
-}
-
-static inline void
-index_update(Index* self, Ref* key, Ref* prev, Iterator* it)
-{
-	self->iface.update(self, key, prev, it);
-}
-
-static inline void
-index_delete(Index* self, Ref* key, Ref* prev, Iterator* it)
-{
-	self->iface.delete(self, key, prev, it);
-}
-
-static inline bool
-index_delete_by(Index* self, Ref* key, Ref* prev)
-{
-	return self->iface.delete_by(self, key, prev);
-}
-
-static inline bool
-index_upsert(Index* self, Ref* key, Iterator* it)
+index_upsert(Index* self, Row* key, Iterator* it)
 {
 	return self->iface.upsert(self, key, it);
 }
 
 static inline bool
-index_ingest(Index* self, Ref* key)
+index_ingest(Index* self, Row* key)
 {
 	return self->iface.ingest(self, key);
 }

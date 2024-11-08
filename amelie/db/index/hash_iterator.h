@@ -15,14 +15,14 @@ typedef struct HashIterator HashIterator;
 
 struct HashIterator
 {
-	Ref*       current;
+	Row*       current;
 	HashStore* current_store;
 	uint64_t   pos;
 	Hash*      hash;
 };
 
 static inline bool
-hash_iterator_open(HashIterator* self, Hash* hash, Ref* key)
+hash_iterator_open(HashIterator* self, Hash* hash, Row* key)
 {
 	self->current       = NULL;
 	self->current_store = NULL;
@@ -55,9 +55,9 @@ hash_iterator_open(HashIterator* self, Hash* hash, Ref* key)
 		self->current = hash_store_next(self->current_store, &self->pos);
 		if (! self->current)
 		{
-			self->pos        = 0;
+			self->pos           = 0;
 			self->current_store = self->hash->prev;
-			self->current    = hash_store_next(self->current_store, &self->pos);
+			self->current       = hash_store_next(self->current_store, &self->pos);
 		}
 	} else
 	{
@@ -72,7 +72,7 @@ hash_iterator_open(HashIterator* self, Hash* hash, Ref* key)
 static inline void
 hash_iterator_open_at(HashIterator* self, Hash* hash, uint64_t pos)
 {
-	self->current       = hash_store_at(hash->current, pos);
+	self->current       = hash->current->rows[pos];
 	self->current_store = hash->current;
 	self->pos           = pos;
 	self->hash          = hash;
@@ -84,7 +84,7 @@ hash_iterator_has(HashIterator* self)
 	return self->current != NULL;
 }
 
-static inline Ref*
+static inline Row*
 hash_iterator_at(HashIterator* self)
 {
 	return self->current;
@@ -112,27 +112,26 @@ hash_iterator_next(HashIterator* self)
 	self->current       = hash_store_next(self->current_store, &self->pos);
 }
 
-static inline void
-hash_iterator_replace(HashIterator* self, Ref* key, Ref* prev)
+static inline Row*
+hash_iterator_replace(HashIterator* self, Row* key)
 {
 	auto current_store = self->current_store;
+	auto prev = current_store->rows[self->pos];
+	current_store->rows[self->pos] = key;
 	self->current = key;
-	auto ref = hash_store_at(current_store, self->pos);
-	hash_store_copy(current_store, prev, ref);
-	hash_store_copy(current_store, ref, key);
+	return prev;
 }
 
-static inline void
-hash_iterator_delete(HashIterator* self, Ref* prev)
+static inline Row*
+hash_iterator_delete(HashIterator* self)
 {
 	auto current_store = self->current_store;
-	auto ref = hash_store_at(current_store, self->pos);
-	hash_store_copy(current_store, prev, ref);
-	ref->row = HT_DELETED;
+	auto prev = current_store->rows[self->pos];
+	current_store->rows[self->pos] = HT_DELETED;
 	current_store->count--;
-
 	// keeping current as is
 	self->current = prev;
+	return prev;
 }
 
 static inline void

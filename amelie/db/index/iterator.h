@@ -13,7 +13,7 @@
 
 typedef struct Iterator Iterator;
 
-typedef bool (*IteratorOpen)(Iterator*, Ref*);
+typedef bool (*IteratorOpen)(Iterator*, Row*);
 typedef bool (*IteratorHas)(Iterator*);
 typedef Row* (*IteratorAt)(Iterator*);
 typedef void (*IteratorNext)(Iterator*);
@@ -29,7 +29,7 @@ struct Iterator
 };
 
 static inline bool
-iterator_open(Iterator* self, Ref* key)
+iterator_open(Iterator* self, Row* key)
 {
 	return self->open(self, key);
 }

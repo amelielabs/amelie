@@ -51,7 +51,7 @@ log_set_add(LogSet* self, int cmd, uint64_t partition, Row* row)
 	encode_integer(&self->meta, partition);
 
 	// row
-	iov_add(&self->iov, row_data(row), row_size(row));
+	iov_add(&self->iov, row, row_size(row));
 }
 
 hot static inline void

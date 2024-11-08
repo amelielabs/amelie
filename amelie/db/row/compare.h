@@ -11,10 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-#if 0
 hot static inline int
 compare(Keys* self, Row* a, Row* b)
 {
+	(void)self;
+	(void)a;
+	(void)b;
+#if 0
 	list_foreach(&self->list)
 	{
 		const auto key = list_at(Key, link);
@@ -34,6 +37,6 @@ compare(Keys* self, Row* a, Row* b)
 			return rc;
 			*/
 	}
+#endif
 	return 0;
 }
-#endif
