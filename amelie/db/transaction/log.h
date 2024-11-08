@@ -61,6 +61,7 @@ struct LogOp
 struct LogRow
 {
 	Row*  row;
+	Row*  row_prev;
 	Keys* keys;
 };
 
@@ -144,13 +145,14 @@ log_truncate(Log* self)
 	buf_truncate(&self->data, buf_size(&self->data) - op->pos);
 }
 
-hot static inline void
+hot static inline LogRow*
 log_row(Log*   self,
         LogCmd cmd,
         LogIf* iface,
         void*  iface_arg,
         Keys*  keys,
-        Row*   row)
+        Row*   row,
+        Row*   row_prev)
 {
 	// op
 	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
@@ -162,8 +164,10 @@ log_row(Log*   self,
 
 	// row data
 	LogRow* ref = buf_claim(&self->data, sizeof(LogRow));
-	ref->keys = keys;
-	ref->row  = row;
+	ref->keys     = keys;
+	ref->row      = row;
+	ref->row_prev = row_prev;
+	return ref;
 }
 
 hot static inline void

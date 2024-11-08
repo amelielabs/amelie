@@ -220,7 +220,7 @@ wal_write(Wal* self, WalBatch* batch)
 		wal_swap(self);
 
 	// write wal file
-		// todo: truncate on error
+	// todo: truncate on error
 
 	// [header][rows meta][rows]
 	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);

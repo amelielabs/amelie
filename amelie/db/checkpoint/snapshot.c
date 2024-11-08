@@ -73,7 +73,6 @@ snapshot_begin(Snapshot* self)
 static void
 snapshot_end(Snapshot* self)
 {
-	// todo: sync?
 	file_close(&self->file);
 
 	char path[PATH_MAX];
@@ -89,17 +88,16 @@ snapshot_end(Snapshot* self)
 hot static inline void
 snapshot_add(Snapshot* self, Row* row)
 {
-	uint8_t* data = row_data(row);
-	int      data_size = row_size(row);
+	int size = row_size(row);
 
 	// MSG_SNAPSHOT_ROW
 	auto msg = (Msg*)self->data.position;
 	msg->id   = MSG_SNAPSHOT_ROW;
-	msg->size = sizeof(Msg) + data_size;
+	msg->size = sizeof(Msg) + size;
 	buf_advance(&self->data, sizeof(Msg));
 
 	iov_add(&self->iov, msg, sizeof(Msg));
-	iov_add(&self->iov, data, data_size);
+	iov_add(&self->iov, row, size);
 
 	self->count++;
 }

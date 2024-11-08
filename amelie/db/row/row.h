@@ -149,3 +149,16 @@ row_hash(Row* self, Keys* keys)
 	}
 	return hash;
 }
+
+hot static inline Row*
+row_copy(Row* self)
+{
+	auto size = row_size(self);
+	auto row  = am_malloc(size);
+	memcpy(row, self, size);
+	return row;
+}
+
+Row* row_copy(Row*);
+Row* row_alter_add(Row*, Buf*);
+Row* row_alter_drop(Row*, int);

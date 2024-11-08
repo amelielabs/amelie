@@ -128,7 +128,7 @@ table_config_copy(TableConfig* self)
 		auto config = list_at(IndexConfig, link);
 		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_add_index(copy, config_copy);
-		keys_set(&config_copy->keys, !primary_keys, ref_size(&config_copy->keys));
+		keys_set_primary(&config_copy->keys, !primary_keys);
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
 	}

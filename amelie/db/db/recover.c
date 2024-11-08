@@ -67,10 +67,12 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 			error("failed to find partition %" PRIu64, partition_id);
 
 		// replay write
+		auto row = row_copy((Row*)(*data));
 		if (type == LOG_REPLACE)
-			part_insert(part, tr, true, data);
+			part_insert(part, tr, true, row);
 		else
-			part_delete_by(part, tr, data);
+			part_delete_by(part, tr, row);
+		*data += row_size(row);
 		return;
 	}
 

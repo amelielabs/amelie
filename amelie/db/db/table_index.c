@@ -78,7 +78,7 @@ table_index_create(Table*       self,
 
 	// save index config copy to table config
 	index = index_config_copy(config, &self->config->columns);
-	keys_set(&index->keys, false, ref_size(&index->keys));
+	keys_set_primary(&index->keys, false);
 	table_config_add_index(self->config, index);
 
 	// save create index operation

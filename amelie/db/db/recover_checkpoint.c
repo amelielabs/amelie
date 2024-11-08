@@ -41,7 +41,8 @@ recover_partition(Part* self)
 			break;
 		guard_buf(buf);
 		auto pos = msg_of(buf)->data;
-		part_ingest(self, &pos);
+		auto row = row_copy((Row*)pos);
+		part_ingest(self, row);
 		count++;
 	}
 
