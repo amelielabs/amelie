@@ -25,3 +25,9 @@ void   vector_add(Vector*, Vector*, Vector*);
 void   vector_sub(Vector*, Vector*, Vector*);
 void   vector_mul(Vector*, Vector*, Vector*);
 double vector_distance(Vector*, Vector*);
+
+static inline int
+vector_size(Vector* self)
+{
+	return sizeof(Vector) + self->size * sizeof(float);
+}

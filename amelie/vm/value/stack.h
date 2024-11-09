@@ -15,68 +15,63 @@ typedef struct Stack Stack;
 
 struct Stack
 {
-	int   size;
-	int   size_max;
-	Value lifo[510];
+	Buf stack;
+	int stack_size;
 };
 
 static inline void
 stack_init(Stack* self)
 {
-	self->size     = 0;
-	self->size_max = 510;
-	memset(self->lifo, 0, sizeof(self->lifo));
+	self->stack_size = 0;
+	buf_init(&self->stack);
 }
 
 always_inline hot static inline int
 stack_head(Stack* self)
 {
-	return self->size;
+	return self->stack_size;
 }
 
 always_inline hot static inline Value*
 stack_at(Stack* self, int pos)
 {
-	return &self->lifo[self->size - pos];
+	return &((Value*)self->stack.start)[self->stack_size - pos];
 }
 
 always_inline hot static inline Value*
 stack_push(Stack* self)
 {
-	if (unlikely(self->size >= self->size_max))
-		error("%s", "stack overflow");
-	return &self->lifo[self->size++];
+	self->stack_size++;
+	return buf_claim(&self->stack, sizeof(Value));
 }
 
 always_inline hot static inline Value*
 stack_pop(Stack* self)
 {
-	assert(self->size > 0);
-	auto value = &self->lifo[self->size - 1];
-	self->size--;
+	assert(self->stack_size > 0);
+	auto value = &((Value*)self->stack.start)[self->stack_size - 1];
+	self->stack_size--;
 	return value;
 }
 
 always_inline hot static inline void
 stack_popn(Stack* self, int n)
 {
-	assert(self->size >= n);
+	assert(self->stack_size >= n);
 	while (n-- > 0)
-	{
-		auto value = stack_pop(self);
-		value_free(value);
-	}
+		value_free(stack_pop(self));
 }
 
 static inline void
 stack_reset(Stack* self)
 {
-	if (self->size > 0)
-		stack_popn(self, self->size);
+	if (self->stack_size > 0)
+		stack_popn(self, self->stack_size);
 }
 
 static inline void
 stack_free(Stack* self)
 {
 	stack_reset(self);
+	buf_free(&self->stack);
 }

@@ -40,9 +40,9 @@ value_agg(Agg* state, Value* value_state, int type, Value* value)
 			aggval_type = AGG_INT;
 			aggval.integer = value->integer;
 			break;
-		case VALUE_REAL:
+		case VALUE_DOUBLE:
 			aggval_type = AGG_REAL;
-			aggval.real = value->real;
+			aggval.real = value->dbl;
 			break;
 		default:
 		{

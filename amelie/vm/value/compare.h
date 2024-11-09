@@ -32,32 +32,32 @@ value_compare(Value* a, Value* b)
 		return (a->type > b->type) ? 1 : -1;
 
 	switch (a->type) {
-	case VALUE_INT:
+	case VALUE_NULL:
+		return 0;
 	case VALUE_BOOL:
+	case VALUE_INT:
 	case VALUE_TIMESTAMP:
 	{
 		if (a->integer == b->integer)
 			return 0;
 		return (a->integer > b->integer) ? 1 : -1;
 	}
-	case VALUE_REAL:
+	case VALUE_DOUBLE:
 	{
-		if (a->real == b->real)
+		if (a->dbl == b->dbl)
 			return 0;
-		return (a->real > b->real) ? 1 : -1;
+		return (a->dbl > b->dbl) ? 1 : -1;
 	}
-	case VALUE_NULL:
-		return 0;
-	case VALUE_STRING:
-		return str_compare_fn(&a->string, &b->string);
-	case VALUE_OBJ:
-	case VALUE_ARRAY:
-		return data_compare(a->data, b->data);
 	case VALUE_INTERVAL:
 		return interval_compare(&a->interval, &b->interval);
 	case VALUE_AGG:
 		return agg_compare(&a->agg, &b->agg);
-	// VALUE_NONE:
+	case VALUE_STRING:
+		return str_compare_fn(&a->string, &b->string);
+	case VALUE_JSON:
+		return data_compare(a->data, b->data);
+	case VALUE_VECTOR:
+		return vector_compare(a->vector, b->vector);
 	// VALUE_SET:
 	// VALUE_MERGE:
 	// VALUE_GROUP:

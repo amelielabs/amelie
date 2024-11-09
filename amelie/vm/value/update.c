@@ -147,7 +147,7 @@ update_set_next(Update* self)
 
 			// replace value
 			assert(! self->found);
-			value_write(self->value, buf);
+			value_encode(self->value, buf);
 			self->found = true;
 			data_skip(pos);
 			continue;
@@ -169,7 +169,7 @@ update_set_next(Update* self)
 		encode_string(buf, &key);
 
 		// value
-		value_write(self->value, buf);
+		value_encode(self->value, buf);
 	}
 	encode_obj_end(buf);
 }
@@ -183,7 +183,7 @@ update_set(Value* result, uint8_t* data, Str* path, Value* value)
 	update_init(&self, data, path, buf, value);
 	update_set_next(&self);
 	unguard();
-	value_set_obj_buf(result, buf);
+	value_set_json_buf(result, buf);
 }
 
 hot void
@@ -195,7 +195,7 @@ update_unset(Value* result, uint8_t* data, Str* path)
 	update_init(&self, data, path, buf, NULL);
 	update_unset_next(&self);
 	unguard();
-	value_set_obj_buf(result, buf);
+	value_set_json_buf(result, buf);
 }
 
 static inline void
@@ -221,7 +221,7 @@ update_set_array_next(Update* self, int idx)
 			} else
 			{
 				// replace value
-				value_write(self->value, buf);
+				value_encode(self->value, buf);
 				assert(! self->found);
 				self->found = true;
 				data_skip(pos);
@@ -247,5 +247,5 @@ update_set_array(Value* result, uint8_t* data, int idx, Str* path, Value* value)
 	update_init(&self, data, path, buf, value);
 	update_set_array_next(&self, idx);
 	unguard();
-	value_set_array_buf(result, buf);
+	value_set_json_buf(result, buf);
 }

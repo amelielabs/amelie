@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 hot static inline void
 value_ref(Keys* self, Ref* row, Stack* stack)
 {
@@ -159,3 +160,4 @@ value_row_generate(Columns*  columns,
 	encode_array_end(data);
 	return hash;
 }
+#endif

@@ -15,21 +15,36 @@ typedef struct Reg Reg;
 
 struct Reg
 {
-	Value r[64];
+	Value* r;
 };
 
 static inline void
 reg_init(Reg* self)
 {
-	memset(self->r, 0, sizeof(self->r));
+	self->r = NULL;
 }
 
 static inline void
 reg_reset(Reg* self)
 {
-	int i = 0;
-	for (; i < 64; i++)
+	if (! self->r)
+		return;
+	for (int i = 0; i < 64; i++)
 		value_free(&self->r[i]);
+}
+
+static inline void
+reg_free(Reg* self)
+{
+	am_free(self->r);
+}
+
+static inline void
+reg_create(Reg* self)
+{
+	int size = sizeof(Value) * 64;
+	self->r = am_malloc(size);
+	memset(self->r, 0, size);
 }
 
 always_inline hot static inline Value*

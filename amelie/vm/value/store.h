@@ -18,7 +18,7 @@ struct Store
 {
 	void (*free)(Store*);
 	void (*encode)(Store*, Buf*);
-	void (*decode)(Store*, Buf*, Timezone*);
+	void (*export)(Store*, Buf*, Timezone*);
 	bool (*in)(Store*, Value*);
 };
 
@@ -35,9 +35,9 @@ store_encode(Store* self, Buf* buf)
 }
 
 static inline void
-store_decode(Store* self, Buf* buf, Timezone* timezone)
+store_export(Store* self, Buf* buf, Timezone* timezone)
 {
-	self->decode(self, buf, timezone);
+	self->export(self, buf, timezone);
 }
 
 static inline bool
