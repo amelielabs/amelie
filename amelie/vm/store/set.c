@@ -54,12 +54,12 @@ set_encode(Store* store, Buf* buf)
 	encode_array(buf);
 	int i = 0;
 	for (; i < self->list_count ; i++)
-		value_write(&set_at(self, i)->value, buf);
+		value_encode(&set_at(self, i)->value, buf);
 	encode_array_end(buf);
 }
 
 static void
-set_decode(Store* store, Buf* buf, Timezone* timezone)
+set_export(Store* store, Buf* buf, Timezone* timezone)
 {
 	auto self = (Set*)store;
 	int i = 0;
@@ -79,7 +79,7 @@ set_in(Store* store, Value* value)
 	for (; i < self->list_count ; i++)
 	{
 		auto at = set_at(self, i);
-		if (value_is_equal(&at->value, value))
+		if (! value_compare(&at->value, value))
 			return true;
 	}
 	return false;
@@ -91,7 +91,7 @@ set_create(uint8_t* data)
 	Set* self = am_malloc(sizeof(Set));
 	self->store.free   = set_free;
 	self->store.encode = set_encode;
-	self->store.decode = set_decode;
+	self->store.export = set_export;
 	self->store.in     = set_in;
 	self->list_count   = 0;
 	self->keys         = NULL;
@@ -156,7 +156,7 @@ set_cmp(const void* p1, const void* p2, void* arg)
 	                   *(SetRow**)p2);
 }
 
-void
+hot void
 set_sort(Set* self)
 {
 	qsort_r(self->list.start, self->list_count, sizeof(SetRow**), set_cmp, self);

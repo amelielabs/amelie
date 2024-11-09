@@ -65,7 +65,7 @@ group_create(int keys_count)
 	Group* self = am_malloc(sizeof(Group));
 	self->store.free   = group_free;
 	self->store.encode = NULL;
-	self->store.decode = NULL;
+	self->store.export = NULL;
 	self->store.in     = NULL;
 	self->aggs_count   = 0;
 	self->keys_count   = keys_count;
@@ -121,7 +121,7 @@ group_cmp(HashtableNode* node, void* ptr)
 	{
 		auto a = &ref->value[i];
 		auto b = key->target_data[i];
-		if (! value_is_equal(a, b))
+		if (value_compare(a, b) != 0)
 			return false;
 	}
 	return true;
@@ -160,22 +160,17 @@ group_create_node(GroupKey* key)
 		case VALUE_BOOL:
 			value_set_bool(ref, value->integer);
 			break;
-		case VALUE_REAL:
-			value_set_real(ref, value->real);
+		case VALUE_DOUBLE:
+			value_set_double(ref, value->dbl);
 			break;
 		case VALUE_STRING:
 			memcpy(pos, str_of(&value->string), str_size(&value->string));
 			value_set_string(ref, &value->string, NULL);
 			pos += str_size(&value->string);
 			break;
-		case VALUE_OBJ:
+		case VALUE_JSON:
 			memcpy(pos, value->data, value->data_size);
-			value_set_obj(ref, pos, value->data_size, NULL);
-			pos += value->data_size;
-			break;
-		case VALUE_ARRAY:
-			memcpy(pos, value->data, value->data_size);
-			value_set_array(ref, pos, value->data_size, NULL);
+			value_set_json(ref, pos, value->data_size, NULL);
 			pos += value->data_size;
 			break;
 		default:
@@ -238,17 +233,16 @@ group_find_or_create(Group* self, Value** target_data)
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;
-		case VALUE_REAL:
-			data = &value->real;
-			data_size = sizeof(value->real);
+		case VALUE_DOUBLE:
+			data = &value->dbl;
+			data_size = sizeof(value->dbl);
 			break;
 		case VALUE_STRING:
 			data = str_of(&value->string);
 			data_size = str_size(&value->string);
 			key.size += data_size;
 			break;
-		case VALUE_OBJ:
-		case VALUE_ARRAY:
+		case VALUE_JSON:
 			data = value->data;
 			data_size = value->data_size;
 			key.size += data_size;
@@ -340,7 +334,7 @@ group_read_aggr(Group* self, GroupNode* node, int pos, Value* value)
 				value_set_int(value, aggval.integer);
 				break;
 			case AGG_REAL:
-				value_set_real(value, aggval.real);
+				value_set_double(value, aggval.real);
 				break;
 			case AGG_NULL:
 				if (agg->type == GROUP_COUNT)
@@ -363,9 +357,9 @@ group_read_keys(Group* self, GroupNode* node, Value* result)
 		auto buf = buf_create();
 		encode_array(buf);
 		for (int i = 0; i < self->keys_count; i++)
-			value_write(&node->value[i], buf);
+			value_encode(&node->value[i], buf);
 		encode_array_end(buf);
-		value_set_array_buf(result, buf);
+		value_set_json_buf(result, buf);
 	} else {
 		value_copy(result, &node->value[0]);
 	}

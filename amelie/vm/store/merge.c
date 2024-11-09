@@ -54,7 +54,7 @@ merge_encode(Store* store, Buf* buf)
 	while (merge_iterator_has(&it))
 	{
 		auto row = merge_iterator_at(&it);
-		value_write(&row->value, buf);
+		value_encode(&row->value, buf);
 		merge_iterator_next(&it);
 		count++;
 	}
@@ -62,7 +62,7 @@ merge_encode(Store* store, Buf* buf)
 }
 
 static void
-merge_decode(Store* store, Buf* buf, Timezone* timezone)
+merge_export(Store* store, Buf* buf, Timezone* timezone)
 {
 	auto self = (Merge*)store;
 	MergeIterator it;
@@ -89,7 +89,7 @@ merge_create(void)
 	Merge* self = am_malloc(sizeof(Merge));
 	self->store.free   = merge_free;
 	self->store.encode = merge_encode;
-	self->store.decode = merge_decode;
+	self->store.export = merge_export;
 	self->store.in     = NULL;
 	self->keys         = NULL;
 	self->keys_count   = 0;

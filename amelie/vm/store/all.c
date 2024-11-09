@@ -25,8 +25,8 @@
 #include <amelie_value.h>
 #include <amelie_store.h>
 
-hot static inline void
-value_all_array_equ(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_equ(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -34,16 +34,16 @@ value_all_array_equ(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		if (! value_is_equal(a, &ref))
-			return;
+		value_decode(&ref, pos, NULL);
+		if (value_compare(a, &ref) != 0)
+			return false;
 		data_skip(&pos);
 	}
-	value_set_bool(result, true);
+	return true;
 }
 
-hot static inline void
-value_all_array_nequ(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_nequ(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -51,16 +51,16 @@ value_all_array_nequ(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		if (value_is_equal(a, &ref))
-			return;
+		value_decode(&ref, pos, NULL);
+		if (! value_compare(a, &ref))
+			return false;
 		data_skip(&pos);
 	}
-	value_set_bool(result, true);
+	return true;
 }
 
-hot static inline void
-value_all_array_lt(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_lt(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -68,16 +68,16 @@ value_all_array_lt(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		value_lt(result, a, &ref);
-		if (! result->integer)
-			return;
+		value_decode(&ref, pos, NULL);
+		if (! (value_compare(a, &ref) < 0))
+			return false;
 		data_skip(&pos);
 	}
+	return true;
 }
 
-hot static inline void
-value_all_array_lte(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_lte(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -85,16 +85,16 @@ value_all_array_lte(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		value_lte(result, a, &ref);
-		if (! result->integer)
-			return;
+		value_decode(&ref, pos, NULL);
+		if (! (value_compare(a, &ref) <= 0))
+			return false;
 		data_skip(&pos);
 	}
+	return true;
 }
 
-hot static inline void
-value_all_array_gt(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_gt(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -102,16 +102,16 @@ value_all_array_gt(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		value_gt(result, a, &ref);
-		if (! result->integer)
-			return;
+		value_decode(&ref, pos, NULL);
+		if (! (value_compare(a, &ref) > 0))
+			return false;
 		data_skip(&pos);
 	}
+	return true;
 }
 
-hot static inline void
-value_all_array_gte(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_array_gte(Value* a, Value* b)
 {
 	auto pos = b->data;
 	data_read_array(&pos);
@@ -119,144 +119,146 @@ value_all_array_gte(Value* result, Value* a, Value* b)
 	{
 		Value ref;
 		value_init(&ref);
-		value_read(&ref, pos, NULL);
-		value_gte(result, a, &ref);
-		if (! result->integer)
-			return;
+		value_decode(&ref, pos, NULL);
+		if (! (value_compare(a, &ref) >= 0))
+			return false;
 		data_skip(&pos);
 	}
+	return true;
 }
 
-hot static inline void
-value_all_set_equ(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_equ(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		if (! value_is_equal(a, &at->value))
-			return;
+		if (value_compare(a, &at->value) != 0)
+			return false;
 	}
-	value_set_bool(result, true);
+	return true;
 }
 
-hot static inline void
-value_all_set_nequ(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_nequ(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		if (value_is_equal(a, &at->value))
-			return;
+		if (! value_compare(a, &at->value))
+			return false;
 	}
-	value_set_bool(result, true);
+	return true;
 }
 
-hot static inline void
-value_all_set_lt(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_lt(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		value_lt(result, a, &at->value);
-		if (! result->integer)
-			return;
+		if (! (value_compare(a, &at->value) < 0))
+			return false;
 	}
+	return true;
 }
 
-hot static inline void
-value_all_set_lte(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_lte(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		value_lte(result, a, &at->value);
-		if (! result->integer)
-			return;
+		if (! (value_compare(a, &at->value) <= 0))
+			return false;
 	}
+	return true;
 }
 
-hot static inline void
-value_all_set_gt(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_gt(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		value_gt(result, a, &at->value);
-		if (! result->integer)
-			return;
+		if (! (value_compare(a, &at->value) > 0))
+			return false;
 	}
+	return true;
 }
 
-hot static inline void
-value_all_set_gte(Value* result, Value* a, Value* b)
+hot static inline bool
+value_all_set_gte(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
 	for (int i = 0; i < set->list_count ; i++)
 	{
 		auto at = set_at(set, i);
-		value_gte(result, a, &at->value);
-		if (! result->integer)
-			return;
+		if (! (value_compare(a, &at->value) >= 0))
+			return false;
 	}
+	return true;
 }
 
 void
 value_all(Value* result, Value* a, Value* b, int op)
 {
-	if (b->type == VALUE_ARRAY)
+	if (b->type == VALUE_JSON && data_is_array(b->data))
 	{
-		value_set_bool(result, false);
+		bool match;
 		switch (op) {
 		case MATCH_EQU:
-			value_all_array_equ(result, a, b);
+			match = value_all_array_equ(a, b);
 			break;
 		case MATCH_NEQU:
-			value_all_array_nequ(result, a, b);
+			match = value_all_array_nequ(a, b);
 			break;
 		case MATCH_LT:
-			value_all_array_lt(result, a, b);
+			match = value_all_array_lt(a, b);
 			break;
 		case MATCH_LTE:
-			value_all_array_lte(result, a, b);
+			match = value_all_array_lte(a, b);
 			break;
 		case MATCH_GT:
-			value_all_array_gt(result, a, b);
+			match = value_all_array_gt(a, b);
 			break;
 		case MATCH_GTE:
-			value_all_array_gte(result, a, b);
+			match = value_all_array_gte(a, b);
 			break;
 		}
+		value_set_bool(result, match);
 	} else
 	if (b->type == VALUE_SET)
 	{
-		value_set_bool(result, false);
+		bool match;
 		switch (op) {
 		case MATCH_EQU:
-			value_all_set_equ(result, a, b);
+			match = value_all_set_equ(a, b);
 			break;
 		case MATCH_NEQU:
-			value_all_set_nequ(result, a, b);
+			match = value_all_set_nequ(a, b);
 			break;
 		case MATCH_LT:
-			value_all_set_lt(result, a, b);
+			match = value_all_set_lt(a, b);
 			break;
 		case MATCH_LTE:
-			value_all_set_lte(result, a, b);
+			match = value_all_set_lte(a, b);
 			break;
 		case MATCH_GT:
-			value_all_set_gt(result, a, b);
+			match = value_all_set_gt(a, b);
 			break;
 		case MATCH_GTE:
-			value_all_set_gte(result, a, b);
+			match = value_all_set_gte(a, b);
 			break;
 		}
+		value_set_bool(result, match);
 	} else
 	{
-		error("ALL: array or result set expected");
+		error("ALL: json array or result set expected");
 	}
 }

@@ -35,7 +35,7 @@ group_node_cmp(HashtableNode* node, void* ptr)
 	{
 		auto a = &ref->value[i];
 		auto b = &key->value[i];
-		if (! value_is_equal(a, b))
+		if (value_compare(a, b) != 0)
 			return false;
 	}
 	return true;
