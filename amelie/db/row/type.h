@@ -25,7 +25,8 @@ enum
 	TYPE_AGG,
 	TYPE_TEXT,
 	TYPE_JSON,
-	TYPE_VECTOR
+	TYPE_VECTOR,
+	TYPE_MAX
 };
 
 hot static inline const char*

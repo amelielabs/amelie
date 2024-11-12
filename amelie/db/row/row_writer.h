@@ -17,6 +17,7 @@ typedef struct RowMeta   RowMeta;
 struct RowMeta
 {
 	uint32_t offset;
+	uint32_t offset_index;
 	uint32_t hash;
 };
 
@@ -58,9 +59,10 @@ hot static inline void
 row_writer_begin(RowWriter* self)
 {
 	auto meta = (RowMeta*)buf_claim(&self->data_meta, sizeof(RowMeta));
-	meta->offset = buf_size(&self->data);
-	meta->hash   = 0;
-	self->current = meta;
+	meta->offset       = buf_size(&self->data);
+	meta->offset_index = buf_size(&self->data_index);
+	meta->hash         = 0;
+	self->current      = meta;
 }
 
 hot static inline Buf*
