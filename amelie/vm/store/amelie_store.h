@@ -12,18 +12,19 @@
 //
 
 // set
+#include "store/set_hash.h"
 #include "store/set.h"
+#include "store/set_compare.h"
 #include "store/set_iterator.h"
-#include "store/any.h"
-#include "store/all.h"
 
 // merge
 #include "store/merge.h"
 #include "store/merge_iterator.h"
+#include "store/merge_agg.h"
+
+// any/all
+#include "store/any.h"
+#include "store/all.h"
 
 // result
 #include "store/result.h"
-
-// group
-#include "store/group.h"
-#include "store/group_merge.h"

@@ -15,7 +15,7 @@ typedef struct MergeIterator MergeIterator;
 
 struct MergeIterator
 {
-	SetRow*      current;
+	Value*       current;
 	SetIterator* current_it;
 	Buf          list;
 	int          list_count;
@@ -57,7 +57,7 @@ merge_iterator_has(MergeIterator* self)
 	return self->current != NULL;
 }
 
-static inline SetRow*
+static inline Value*
 merge_iterator_at(MergeIterator* self)
 {
 	return self->current;
@@ -75,7 +75,7 @@ merge_iterator_step(MergeIterator* self)
 	self->current = NULL;
 
 	SetIterator* min_iterator = NULL;
-	SetRow*      min = NULL;
+	Value*       min = NULL;
 	for (int pos = 0; pos < self->list_count; pos++)
 	{
 		auto current = &list[pos];
@@ -87,13 +87,13 @@ merge_iterator_step(MergeIterator* self)
 		{
 			min_iterator = current;
 			min = row;
-			if (! self->merge->keys)
+			if (! current->set->ordered)
 				break;
 			continue;
 		}
 
 		int rc;
-		rc = set_compare(self->merge->keys, self->merge->keys_count, min, row);
+		rc = set_compare(current->set, min, row);
 		switch (rc) {
 		case 0:
 			break;
@@ -127,6 +127,7 @@ merge_iterator_next(MergeIterator* self)
 	}
 
 	// skip duplicates
+	auto set = self->current_it->set;
 	auto prev = self->current;
 	for (;;)
 	{
@@ -134,7 +135,7 @@ merge_iterator_next(MergeIterator* self)
 		auto at = merge_iterator_at(self);
 		if (unlikely(!at || !prev))
 			break;
-		if (set_compare(self->merge->keys, self->merge->keys_count, prev, at) != 0)
+		if (set_compare(set, prev, at) != 0)
 			break;
 	}
 }
@@ -143,6 +144,8 @@ hot static inline void
 merge_iterator_open(MergeIterator* self, Merge* merge)
 {
 	self->merge = merge;
+	if (! merge->list_count)
+		return;
 
 	// prepare iterators
 	buf_reserve(&self->list, sizeof(SetIterator) * merge->list_count);

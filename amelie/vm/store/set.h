@@ -11,50 +11,70 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SetRow SetRow;
-typedef struct SetKey SetKey;
-typedef struct Set    Set;
-
-struct SetRow
-{
-	Value value;
-	Value keys[];
-};
-
-struct SetKey
-{
-	bool asc;
-};
+typedef struct Set Set;
 
 struct Set
 {
 	Store   store;
-	Buf     list;
-	int     list_count;
-	SetKey* keys;
-	int     keys_count;
+	Buf     set;
+	Buf     set_index;
+	SetHash hash;
+	int     count;
+	int     count_rows;
+	int     count_columns_row;
+	int     count_columns;
+	int     count_keys;
+	bool    ordered;
+	bool*   order;
 };
 
-static inline SetRow*
-set_at(Set* self, int pos)
+always_inline static inline Value*
+set_value(Set* self, int pos)
 {
-	return ((SetRow**)(self->list.start))[pos];
+	return &((Value*)(self->set.start))[pos];
 }
 
-Set* set_create(uint8_t*);
-void set_add(Set*, Value*, Value**);
-void set_add_from_stack(Set*, Value*, Stack*);
+always_inline static inline Value*
+set_row(Set* self, int pos)
+{
+	return set_value(self, self->count_columns_row * pos);
+}
+
+always_inline static inline Value*
+set_row_ordered(Set* self, int pos)
+{
+	return set_row(self, ((uint32_t*)self->set_index.start)[pos]);
+}
+
+always_inline static inline Value*
+set_row_of(Set* self, int pos)
+{
+	if (self->ordered)
+		return set_row_ordered(self, pos);
+	return set_row(self, pos);
+}
+
+always_inline static inline Value*
+set_column(Set* self, int pos, int column)
+{
+	return set_row(self, pos) + column;
+}
+
+always_inline static inline Value*
+set_column_of(Set* self, int pos, int column)
+{
+	return set_row_of(self, pos) + column;
+}
+
+always_inline static inline Value*
+set_key(Set* self, int pos, int key)
+{
+	return set_row(self, pos) + self->count_columns + key;
+}
+
+Set* set_create(int, int, uint8_t*, bool);
 void set_sort(Set*);
-
-hot static inline int
-set_compare(SetKey* keys, int keys_count, SetRow* a, SetRow* b)
-{
-	for (int i = 0; i < keys_count; i++)
-	{
-		auto key = &keys[i];
-		int rc = value_compare(&a->keys[i], &b->keys[i]);
-		if (rc != 0)
-			return (key->asc) ? rc : -rc;
-	}
-	return 0;
-}
+void set_add(Set*, Value*);
+void set_add_from_stack(Set*, Stack*);
+Value*
+set_get_or_add(Set*, Value*);

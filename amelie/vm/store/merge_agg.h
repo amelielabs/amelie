@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void group_merge(Value**, int);
+void merge_agg(Value**, int);

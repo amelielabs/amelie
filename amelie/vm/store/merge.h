@@ -16,15 +16,12 @@ typedef struct Merge Merge;
 struct Merge
 {
 	Store   store;
-	SetKey* keys;
-	int     keys_count;
 	Buf     list;
 	int     list_count;
+	bool    distinct;
 	int64_t limit;
 	int64_t offset;
-	bool    distinct;
 };
 
-Merge* merge_create(void);
+Merge* merge_create(bool, int64_t, int64_t);
 void   merge_add(Merge*, Set*);
-void   merge_open(Merge*, bool, int64_t, int64_t);

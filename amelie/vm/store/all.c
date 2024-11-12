@@ -131,10 +131,10 @@ hot static inline bool
 value_all_set_equ(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (value_compare(a, &at->value) != 0)
+		auto at = set_column(set, row, 0);
+		if (value_compare(a, at) != 0)
 			return false;
 	}
 	return true;
@@ -144,10 +144,10 @@ hot static inline bool
 value_all_set_nequ(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (! value_compare(a, &at->value))
+		auto at = set_column(set, row, 0);
+		if (! value_compare(a, at))
 			return false;
 	}
 	return true;
@@ -157,10 +157,10 @@ hot static inline bool
 value_all_set_lt(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (! (value_compare(a, &at->value) < 0))
+		auto at = set_column(set, row, 0);
+		if (! (value_compare(a, at) < 0))
 			return false;
 	}
 	return true;
@@ -170,10 +170,10 @@ hot static inline bool
 value_all_set_lte(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (! (value_compare(a, &at->value) <= 0))
+		auto at = set_column(set, row, 0);
+		if (! (value_compare(a, at) <= 0))
 			return false;
 	}
 	return true;
@@ -183,10 +183,10 @@ hot static inline bool
 value_all_set_gt(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (! (value_compare(a, &at->value) > 0))
+		auto at = set_column(set, row, 0);
+		if (! (value_compare(a, at) > 0))
 			return false;
 	}
 	return true;
@@ -196,10 +196,10 @@ hot static inline bool
 value_all_set_gte(Value* a, Value* b)
 {
 	auto set = (Set*)b->store;
-	for (int i = 0; i < set->list_count ; i++)
+	for (int row = 0; row < set->count_rows ; row++)
 	{
-		auto at = set_at(set, i);
-		if (! (value_compare(a, &at->value) >= 0))
+		auto at = set_column(set, row, 0);
+		if (! (value_compare(a, at) >= 0))
 			return false;
 	}
 	return true;

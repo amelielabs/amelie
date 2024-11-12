@@ -46,29 +46,29 @@ merge_encode(Store* store, Buf* buf)
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
-
-	// []
+	// [[], ...]
 	encode_array(buf);
 	merge_iterator_open(&it, self);
-	int count = 0;
 	while (merge_iterator_has(&it))
 	{
 		auto row = merge_iterator_at(&it);
-		value_encode(&row->value, buf);
+		auto set = it.current_it->set;
+		encode_array(buf);
+		for (auto col = 0; col < set->count_columns; col++)
+			value_encode(row + col, buf);
+		encode_array_end(buf);
 		merge_iterator_next(&it);
-		count++;
 	}
 	encode_array_end(buf);
 }
 
 static void
-merge_export(Store* store, Buf* buf, Timezone* timezone)
+merge_export(Store* store, Buf* buf, Timezone* tz)
 {
 	auto self = (Merge*)store;
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
-
 	merge_iterator_open(&it, self);
 	auto first = true;
 	while (merge_iterator_has(&it))
@@ -78,25 +78,30 @@ merge_export(Store* store, Buf* buf, Timezone* timezone)
 			body_add_comma(buf);
 		else
 			first = false;
-		body_add(buf, &row->value, timezone, true, true);
+		auto set = it.current_it->set;
+		buf_write(buf, "[", 1);
+		for (auto col = 0; col < set->count_columns; col++)
+		{
+			if (col > 0)
+				body_add_comma(buf);
+			body_add(buf, row + col, tz, true, true);
+		}
+		buf_write(buf, "]", 1);
 		merge_iterator_next(&it);
 	}
 }
 
 Merge*
-merge_create(void)
+merge_create(bool distinct, int64_t limit, int64_t offset)
 {
 	Merge* self = am_malloc(sizeof(Merge));
 	self->store.free   = merge_free;
 	self->store.encode = merge_encode;
 	self->store.export = merge_export;
-	self->store.in     = NULL;
-	self->keys         = NULL;
-	self->keys_count   = 0;
 	self->list_count   = 0;
-	self->limit        = INT64_MAX;
-	self->offset       = 0;
-	self->distinct     = false;
+	self->limit        = limit;
+	self->offset       = offset;
+	self->distinct     = distinct;
 	buf_init(&self->list);
 	return self;
 }
@@ -104,22 +109,7 @@ merge_create(void)
 void
 merge_add(Merge* self, Set* set)
 {
-	// add set iterator
+	// all set properties must match (keys, columns and order)
 	buf_write(&self->list, &set, sizeof(Set**));
 	self->list_count++;
-
-	// set keys
-	if (self->keys == NULL)
-	{
-		self->keys = set->keys;
-		self->keys_count = set->keys_count;
-	}
-}
-
-void
-merge_open(Merge* self, bool distinct, int64_t limit, int64_t offset)
-{
-	self->distinct = distinct;
-	self->limit    = limit;
-	self->offset   = offset;
 }
