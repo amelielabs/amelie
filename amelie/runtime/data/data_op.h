@@ -67,6 +67,14 @@ data_skip(uint8_t** pos)
 	} while (level > 0);
 }
 
+hot static inline int
+data_sizeof(uint8_t* data)
+{
+	auto pos = data;
+	data_skip(&pos);
+	return pos - data;
+}
+
 hot static inline bool
 obj_find(uint8_t** pos, const char* name, int64_t name_size)
 {

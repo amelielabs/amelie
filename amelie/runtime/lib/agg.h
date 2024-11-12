@@ -39,33 +39,35 @@ union AggValue
 
 struct Agg
 {
-	int      type;
+	int      type:4;
+	int      value_type:4;
 	AggValue value;
 	int64_t  div;
 };
 
 static inline void
-agg_init(Agg* self)
+agg_init(Agg* self, int type)
 {
-	self->type = AGG_NULL;
-	self->div  = 0;
+	self->type       = type;
+	self->div        = 0;
+	self->value_type = AGG_NULL;
 	memset(&self->value, 0, sizeof(self->value));
 }
 
 static inline int
 agg_read(Agg* self, AggValue* value)
 {
-	if (self->type == AGG_NULL)
+	if (self->value_type == AGG_NULL)
 		return AGG_NULL;
 	*value = self->value;
 	if (self->div) 
 	{
-		if (self->type == AGG_REAL)
+		if (self->value_type == AGG_REAL)
 			value->real /= self->div;
 		else
 			value->integer /= self->div;
 	}
-	return self->type;
+	return self->value_type;
 }
 
 static inline int
@@ -103,9 +105,9 @@ agg_compare(Agg* a, Agg* b)
 hot static inline void
 agg_step_min(Agg* self, int type, AggValue* value)
 {
-	switch (self->type) {
+	switch (self->value_type) {
 	case AGG_NULL:
-		self->type  = type;
+		self->value_type = type;
 		self->value = *value;
 		break;
 	case AGG_INT:
@@ -117,7 +119,7 @@ agg_step_min(Agg* self, int type, AggValue* value)
 		{
 			if (value->real < (double)self->value.integer)
 			{
-				self->type = AGG_REAL;
+				self->value_type = AGG_REAL;
 				self->value.real = value->real;
 			}
 		}
@@ -127,7 +129,7 @@ agg_step_min(Agg* self, int type, AggValue* value)
 		{
 			if ((double)value->integer < self->value.real)
 			{
-				self->type = AGG_INT;
+				self->value_type = AGG_INT;
 				self->value.integer = value->integer;
 			}
 		} else
@@ -142,9 +144,9 @@ agg_step_min(Agg* self, int type, AggValue* value)
 hot static inline void
 agg_step_max(Agg* self, int type, AggValue* value)
 {
-	switch (self->type) {
+	switch (self->value_type) {
 	case AGG_NULL:
-		self->type  = type;
+		self->value_type = type;
 		self->value = *value;
 		break;
 	case AGG_INT:
@@ -156,7 +158,7 @@ agg_step_max(Agg* self, int type, AggValue* value)
 		{
 			if (value->real > (double)self->value.integer)
 			{
-				self->type = AGG_REAL;
+				self->value_type = AGG_REAL;
 				self->value.real = value->real;
 			}
 		}
@@ -166,7 +168,7 @@ agg_step_max(Agg* self, int type, AggValue* value)
 		{
 			if ((double)value->integer > self->value.real)
 			{
-				self->type = AGG_INT;
+				self->value_type = AGG_INT;
 				self->value.integer = value->integer;
 			}
 		} else
@@ -181,9 +183,9 @@ agg_step_max(Agg* self, int type, AggValue* value)
 hot static inline void
 agg_step_sum(Agg* self, int type, AggValue* value)
 {
-	switch (self->type) {
+	switch (self->value_type) {
 	case AGG_NULL:
-		self->type  = type;
+		self->value_type = type;
 		self->value = *value;
 		break;
 	case AGG_INT:
@@ -191,7 +193,7 @@ agg_step_sum(Agg* self, int type, AggValue* value)
 			self->value.integer += value->integer;
 		} else
 		{
-			self->type = AGG_REAL;
+			self->value_type = AGG_REAL;
 			self->value.real = (double)self->value.integer + value->real;
 		}
 		break;
@@ -205,14 +207,14 @@ agg_step_sum(Agg* self, int type, AggValue* value)
 }
 
 hot static inline void
-agg_step(Agg* self, int type, int value_type, AggValue* value)
+agg_step(Agg* self, int value_type, AggValue* value)
 {
 	if (value_type == AGG_NULL)
 		return;
 
-	switch (type) {
+	switch (self->type) {
 	case AGG_COUNT:
-		self->type = AGG_INT;
+		self->value_type = AGG_INT;
 		self->value.integer++;
 		break;
 	case AGG_MIN:
@@ -230,25 +232,26 @@ agg_step(Agg* self, int type, int value_type, AggValue* value)
 		break;
 	}
 
-	if (type == AGG_AVG)
+	if (self->type == AGG_AVG)
 		self->div++;
 	else
 		self->div = 0;
 }
 
 hot static inline void
-agg_merge(Agg* self, int type, Agg* with)
+agg_merge(Agg* self, Agg* with)
 {
-	if (with->type == AGG_NULL)
+	if (unlikely(self->type != with->type))
+		error("aggregate types mismatch");
+
+	if (with->value_type == AGG_NULL)
 		return;
 
-	switch (type) {
+	switch (self->type) {
 	case AGG_COUNT:
-	{
-		self->type = AGG_INT;
+		self->value_type = AGG_INT;
 		self->value.integer += with->value.integer;
 		break;
-	}
 	case AGG_MIN:
 		agg_step_min(self, with->type, &with->value);
 		break;
@@ -264,7 +267,7 @@ agg_merge(Agg* self, int type, Agg* with)
 		break;
 	}
 
-	if (type == AGG_AVG)
+	if (self->type == AGG_AVG)
 		self->div += with->div;
 	else
 		self->div = 0;
