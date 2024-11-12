@@ -41,6 +41,8 @@
 
 // types
 #include "lib/agg.h"
+#include "lib/agg_int.h"
+#include "lib/agg_double.h"
 #include "lib/vector.h"
 
 // logger
