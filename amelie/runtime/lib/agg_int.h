@@ -33,7 +33,7 @@ agg_int_init(AggInt* self, int type)
 static inline bool
 agg_int_read(AggInt* self, int64_t* value)
 {
-	if (self->type == AGG_COUNT)
+	if (self->type == AGG_INT_COUNT)
 	{
 		*value = self->value;
 		return true;
@@ -41,7 +41,7 @@ agg_int_read(AggInt* self, int64_t* value)
 	if (self->value_null)
 		return false;
 	*value = self->value;
-	if (self->type == AGG_AVG)
+	if (self->type == AGG_INT_AVG)
 		*value /= self->div;
 	return true;
 }
@@ -69,19 +69,19 @@ agg_int_step(AggInt* self, int64_t value)
 		return;
 	}
 	switch (self->type) {
-	case AGG_COUNT:
+	case AGG_INT_COUNT:
 		self->value++;
 		break;
-	case AGG_MIN:
+	case AGG_INT_MIN:
 		if (value < self->value)
 			self->value = value;
 		break;
-	case AGG_MAX:
+	case AGG_INT_MAX:
 		if (value > self->value)
 			self->value = value;
 		break;
-	case AGG_SUM:
-	case AGG_AVG:
+	case AGG_INT_SUM:
+	case AGG_INT_AVG:
 		self->value += value;
 		break;
 	default:
@@ -99,19 +99,19 @@ agg_int_merge(AggInt* self, AggInt* with)
 	if (with->value_null)
 		return;
 	switch (self->type) {
-	case AGG_COUNT:
+	case AGG_INT_COUNT:
 		self->value += with->value;
 		break;
-	case AGG_MIN:
+	case AGG_INT_MIN:
 		if (with->value < self->value)
 			self->value = with->value;
 		break;
-	case AGG_MAX:
+	case AGG_INT_MAX:
 		if (with->value > self->value)
 			self->value = with->value;
 		break;
-	case AGG_SUM:
-	case AGG_AVG:
+	case AGG_INT_SUM:
+	case AGG_INT_AVG:
 		self->value += with->value;
 		break;
 	default:

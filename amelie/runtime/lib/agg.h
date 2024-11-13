@@ -14,26 +14,36 @@
 enum
 {
 	AGG_UNDEF,
-	AGG_COUNT,
-	AGG_MIN,
-	AGG_MAX,
-	AGG_SUM,
-	AGG_AVG
+	AGG_INT_COUNT,
+	AGG_INT_MIN,
+	AGG_INT_MAX,
+	AGG_INT_SUM,
+	AGG_INT_AVG,
+	AGG_DOUBLE_COUNT,
+	AGG_DOUBLE_MIN,
+	AGG_DOUBLE_MAX,
+	AGG_DOUBLE_SUM,
+	AGG_DOUBLE_AVG
 };
 
 static inline const char*
 agg_nameof(int id)
 {
 	switch (id) {
-	case AGG_COUNT:
+	case AGG_INT_COUNT:
+	case AGG_DOUBLE_COUNT:
 		return "count";
-	case AGG_MIN:
+	case AGG_INT_MIN:
+	case AGG_DOUBLE_MIN:
 		return "min";
-	case AGG_MAX:
+	case AGG_INT_MAX:
+	case AGG_DOUBLE_MAX:
 		return "max";
-	case AGG_SUM:
+	case AGG_INT_SUM:
+	case AGG_DOUBLE_SUM:
 		return "sum";
-	case AGG_AVG:
+	case AGG_INT_AVG:
+	case AGG_DOUBLE_AVG:
 		return "avg";
 	default:
 		break;
