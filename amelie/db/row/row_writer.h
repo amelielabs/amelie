@@ -18,6 +18,7 @@ struct RowMeta
 {
 	uint32_t offset;
 	uint32_t offset_index;
+	uint32_t columns;
 	uint32_t hash;
 };
 
@@ -55,12 +56,19 @@ row_writer_reset(RowWriter* self)
 	buf_reset(&self->data_meta);
 }
 
+hot static inline RowMeta*
+row_writer_at(RowWriter* self, int pos)
+{
+	return &((RowMeta*)self->data_meta.start)[pos];
+}
+
 hot static inline void
-row_writer_begin(RowWriter* self)
+row_writer_begin(RowWriter* self, int columns)
 {
 	auto meta = (RowMeta*)buf_claim(&self->data_meta, sizeof(RowMeta));
 	meta->offset       = buf_size(&self->data);
 	meta->offset_index = buf_size(&self->data_index);
+	meta->columns      = columns;
 	meta->hash         = 0;
 	self->current      = meta;
 }
@@ -78,4 +86,21 @@ row_writer_add_hash(RowWriter* self, void* data, int data_size)
 {
 	self->current->hash =
 		hash_murmur3_32(data, data_size, self->current->hash);
+}
+
+hot static inline Row*
+row_writer_create(RowWriter* self, int pos)
+{
+	int  size;
+	auto meta = row_writer_at(self, pos);
+	auto meta_next = meta + 1;
+	if ((uint8_t*)meta_next >= self->data_meta.position)
+		size = buf_size(&self->data) - meta->offset;
+	else
+		size = meta_next->offset - meta->offset;
+	auto col = buf_u32(&self->data_index) + meta->offset_index;
+	auto row = row_allocate(meta->columns, size);
+	for (uint32_t i = 0; i < meta->columns; i++)
+		row_set(row, i, col[i]);
+	return row;
 }

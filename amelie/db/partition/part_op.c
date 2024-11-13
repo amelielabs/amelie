@@ -100,6 +100,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	if (tr->limit)
 		limit_ensure(tr->limit, row);
 
+	// todo
 	/*
 	// sync last serial column value during recover
 	if (pos_serial && recover)
@@ -226,7 +227,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto exists = index_upsert(primary, row, it);
 	if (exists)
 	{
-		row_free(row);
+		// note: original row is not freed
 		log_truncate(&tr->log);
 		return true;
 	}

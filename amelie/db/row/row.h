@@ -131,7 +131,19 @@ row_set_null(Row* self, int column)
 }
 
 always_inline hot static inline void
-row_set(Row* self, int column, uint8_t* pos)
+row_set(Row* self, int column, int offset)
+{
+	if (self->size_factor == 0)
+		self->u8[1 + column]  = offset;
+	else
+	if (self->size_factor == 1)
+		self->u16[1 + column] = offset;
+	else
+		self->u32[1 + column] = offset;
+}
+
+always_inline hot static inline void
+row_set_ptr(Row* self, int column, uint8_t* pos)
 {
 	if (self->size_factor == 0)
 		self->u8[1 + column]  = pos - &self->u8[1];

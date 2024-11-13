@@ -40,9 +40,7 @@
 #include "lib/timestamp.h"
 
 // types
-#include "lib/agg.h"
-#include "lib/agg_int.h"
-#include "lib/agg_double.h"
+#include "lib/avg.h"
 #include "lib/vector.h"
 
 // logger
