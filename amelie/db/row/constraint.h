@@ -20,7 +20,6 @@ struct Constraint
 	bool    serial;
 	bool    random;
 	int64_t random_modulo;
-	int64_t aggregate;
 	Str     as_stored;
 	Str     as_aggregated;
 	Buf     value;
@@ -34,7 +33,6 @@ constraint_init(Constraint* self)
 	self->serial         = false;
 	self->random         = false;
 	self->random_modulo  = INT64_MAX;
-	self->aggregate      = 0;
 	str_init(&self->as_stored);
 	str_init(&self->as_aggregated);
 	buf_init(&self->value);
@@ -79,12 +77,6 @@ constraint_set_random_modulo(Constraint* self, int64_t value)
 }
 
 static inline void
-constraint_set_aggregate(Constraint* self, int64_t value)
-{
-	self->aggregate = value;
-}
-
-static inline void
 constraint_set_as_stored(Constraint* self, Str* value)
 {
 	str_free(&self->as_stored);
@@ -113,7 +105,6 @@ constraint_copy(Constraint* self, Constraint* copy)
 	constraint_set_serial(copy, self->serial);
 	constraint_set_random(copy, self->random);
 	constraint_set_random_modulo(copy, self->random_modulo);
-	constraint_set_aggregate(copy, self->aggregate);
 	constraint_set_as_stored(copy, &self->as_stored);
 	constraint_set_as_aggregated(copy, &self->as_aggregated);
 	constraint_set_default(copy, &self->value);
@@ -129,7 +120,6 @@ constraint_read(Constraint* self, uint8_t** pos)
 		{ DECODE_BOOL,   "serial",         &self->serial         },
 		{ DECODE_BOOL,   "random",         &self->random         },
 		{ DECODE_INT,    "random_modulo",  &self->random_modulo  },
-		{ DECODE_INT,    "aggregate",      &self->aggregate      },
 		{ DECODE_STRING, "as_stored",      &self->as_stored      },
 		{ DECODE_STRING, "as_aggregated",  &self->as_aggregated  },
 		{ DECODE_DATA,   "default",        &self->value          },
@@ -162,10 +152,6 @@ constraint_write(Constraint* self, Buf* buf)
 	// random_modulo
 	encode_raw(buf, "random_modulo", 13);
 	encode_integer(buf, self->random_modulo);
-
-	// aggregate
-	encode_raw(buf, "aggregate", 9);
-	encode_integer(buf, self->aggregate);
 
 	// as_stored
 	encode_raw(buf, "as_stored", 9);

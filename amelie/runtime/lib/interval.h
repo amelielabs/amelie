@@ -15,8 +15,8 @@ typedef struct Interval Interval;
 
 struct Interval
 {
-	int     m;
-	int     d;
+	int32_t m;
+	int32_t d;
 	int64_t us;
 };
 

@@ -22,7 +22,6 @@ enum
 	TYPE_DOUBLE,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
-	TYPE_AGG,
 	TYPE_TEXT,
 	TYPE_JSON,
 	TYPE_VECTOR,
@@ -42,7 +41,6 @@ type_of(int type)
 	case TYPE_DOUBLE:    return "double";
 	case TYPE_TIMESTAMP: return "timestamp";
 	case TYPE_INTERVAL:  return "interval";
-	case TYPE_AGG:       return "aggregate";
 	case TYPE_TEXT:      return "text";
 	case TYPE_JSON:      return "json";
 	case TYPE_VECTOR:    return "vector";
@@ -97,11 +95,6 @@ type_read(Str* name)
 	{
 		type = TYPE_INTERVAL;
 	} else
-	if (str_is(name, "aggregate", 9) ||
-	    str_is(name, "agg", 3))
-	{
-		type = TYPE_AGG;
-	} else
 	if (str_is(name, "text", 4) ||
 	    str_is(name, "string", 6))
 	{
@@ -139,9 +132,7 @@ type_size(int type)
 	case TYPE_TIMESTAMP:
 		return sizeof(int64_t);
 	case TYPE_INTERVAL:
-	case TYPE_AGG:
-		// TODO
-		break;
+		return sizeof(Interval);
 	// variable types
 	case TYPE_TEXT:
 	case TYPE_JSON:
