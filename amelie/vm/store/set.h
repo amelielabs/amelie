@@ -75,6 +75,5 @@ set_key(Set* self, int pos, int key)
 Set* set_create(int, int, uint8_t*, bool);
 void set_sort(Set*);
 void set_add(Set*, Value*);
-void set_add_from_stack(Set*, Stack*);
 Value*
-set_get_or_add(Set*, Value*);
+set_get(Set*, Value*, bool);

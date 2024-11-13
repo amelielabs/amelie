@@ -20,7 +20,9 @@
 // merge
 #include "store/merge.h"
 #include "store/merge_iterator.h"
-#include "store/merge_agg.h"
+
+// aggregate
+#include "store/agg.h"
 
 // any/all
 #include "store/any.h"

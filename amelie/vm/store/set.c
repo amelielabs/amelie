@@ -168,12 +168,6 @@ set_add(Set* self, Value* values)
 	set_add_as(self, false, values);
 }
 
-hot void
-set_add_from_stack(Set* self, Stack* stack)
-{
-	set_add_as(self, false, stack_at(stack, self->count_columns_row));
-}
-
 hot static inline uint32_t
 set_hash(Set* self, Value* keys)
 {
@@ -214,7 +208,7 @@ set_hash(Set* self, Value* keys)
 }
 
 hot static inline SetHashRow*
-set_get(Set* self, uint32_t hash_value, Value* keys)
+set_match(Set* self, uint32_t hash_value, Value* keys)
 {
 	// calculate hash value
 	auto hash = &self->hash;
@@ -237,7 +231,7 @@ set_get(Set* self, uint32_t hash_value, Value* keys)
 }
 
 hot Value*
-set_get_or_add(Set* self, Value* keys)
+set_get(Set* self, Value* keys, bool add_if_not_exists)
 {
 	if (unlikely(self->count_rows >= (self->hash.hash_size / 2)))
 		set_hash_resize(&self->hash);
@@ -246,11 +240,13 @@ set_get_or_add(Set* self, Value* keys)
 	auto hash = set_hash(self, keys);
 
 	// find row in the hashtable
-	auto ref = set_get(self, hash, keys);
+	auto ref = set_match(self, hash, keys);
 
 	// add new row and copy its keys
 	if (ref->row == UINT32_MAX)
 	{
+		if (! add_if_not_exists)
+			return NULL;
 		ref->hash = hash;
 		ref->row  = set_add_as(self, true, keys);
 	}
