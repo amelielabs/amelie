@@ -11,76 +11,77 @@
 // AGPL-3.0 Licensed.
 //
 
-#if 0
-hot static inline void
-value_ref(Keys* self, Ref* row, Stack* stack)
+hot static inline Row*
+value_row_key(Keys* self, Stack* stack)
 {
-	// calculate row size and validate columns
-	int size = data_size_array() + data_size_array_end();
-	list_foreach(&self->list)
-	{
-		auto key   = list_at(Key, link);
-		auto ref   = stack_at(stack, self->list_count - key->order);
-		bool error = false;
-		switch (key->type) {
-		case TYPE_INT:
-		{
-			if (unlikely(ref->type != VALUE_INT)) {
-				error = true;
-				break;
-			}
-			size += data_size_integer(ref->integer);
-			break;
-		}
-		case TYPE_TIMESTAMP:
-		{
-			if (unlikely(ref->type != VALUE_TIMESTAMP)) {
-				error = true;
-				break;
-			}
-			size += data_size_timestamp(ref->integer);
-			break;
-		}
-		case TYPE_STRING:
-			if (unlikely(ref->type != VALUE_STRING)) {
-				error = true;
-				break;
-			}
-			size += data_size_string(str_size(&ref->string));
-			break;
-		}
-		if (unlikely(error))
-			error("column <%.*s>: does not match key data type",
-			      str_size(&key->column->name),
-			      str_of(&key->column->name));
-	}
-
-	row->row = row_allocate(size);
-
-	// copy keys and indexate
-	uint8_t* start = row_data(row->row);
-	uint8_t* pos = start;
-	data_write_array(&pos);
+	int size = 0;
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = stack_at(stack, self->list_count - key->order);
-		row->key[key->order] = pos - start;
 		switch (key->type) {
-		case TYPE_INT:
-			data_write_integer(&pos, ref->integer);
+		case TYPE_INT8:
+		case TYPE_INT16:
+		case TYPE_INT32:
+		case TYPE_INT64:
+		case TYPE_TIMESTAMP:
+			size += key->column->type_size;
+			break;
+		case TYPE_TEXT:
+		{
+			auto ref = stack_at(stack, self->list_count - key->order);
+			size += data_size_string(str_size(&ref->string));
+			break;
+		}
+		}
+	}
+
+	auto     row   = row_allocate(self->columns->list_count, size);
+	uint8_t* pos   = row_data(row);
+	auto     order = 0;
+	list_foreach(&self->columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (! column->key)
+		{
+			row_set_null(row, column->order);
+			continue;
+		}
+		auto ref = stack_at(stack, self->list_count - order);
+		order++;
+
+		// set index to pos
+		row_set_ptr(row, column->order, pos);
+		switch (column->type) {
+		case TYPE_INT8:
+			*(int8_t*)pos = ref->integer;
+			pos += sizeof(int8_t);
+			break;
+		case TYPE_INT16:
+			*(int16_t*)pos = ref->integer;
+			pos += sizeof(int16_t);
+			break;
+		case TYPE_INT32:
+			*(int32_t*)pos = ref->integer;
+			pos += sizeof(int32_t);
+			break;
+		case TYPE_INT64:
+			*(int64_t*)pos = ref->integer;
+			pos += sizeof(int64_t);
 			break;
 		case TYPE_TIMESTAMP:
-			data_write_timestamp(&pos, ref->integer);
+			*(uint64_t*)pos = ref->integer;
+			pos += sizeof(int64_t);
 			break;
-		case TYPE_STRING:
+		case TYPE_TEXT:
 			data_write_string(&pos, &ref->string);
 			break;
 		}
 	}
-	data_write_array_end(&pos);
+
+	return row;
 }
 
+#if 0
 hot static inline uint32_t
 value_row_generate(Columns*  columns,
                    Keys*     keys,

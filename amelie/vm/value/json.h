@@ -31,11 +31,14 @@ value_encode(Value* self, Buf* buf)
 		encode_string(buf, &self->string);
 		break;
 	case VALUE_JSON:
-		buf_write(buf, self->data, self->data_size);
+		buf_write(buf, self->data, data_sizeof(self->data));
 		break;
 	case VALUE_TIMESTAMP:
 		// timezone
 		// todo: encode as string (same as body)
+		break;
+	case VALUE_INTERVAL:
+		// todo: as string (same as body)
 		break;
 	case VALUE_VECTOR:
 	{
@@ -45,17 +48,10 @@ value_encode(Value* self, Buf* buf)
 		encode_array_end(buf);
 		break;
 	}
-	case VALUE_INTERVAL:
-		// todo: as string (same as body)
-		break;
-	case VALUE_AGG:
-		// todo: as value
-		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
 		store_encode(self->store, buf);
 		break;
-	// VALUE_GROUP
 	default:
 		assert(0);
 		break;
@@ -103,12 +99,8 @@ value_decode(Value* self, uint8_t* data, Buf* buf)
 	}
 	case AM_OBJ:
 	case AM_ARRAY:
-	{
-		uint8_t* end = data;
-		data_skip(&end);
-		value_set_json(self, data, end - data, buf);
+		value_set_json(self, data, data_sizeof(data), buf);
 		break;
-	}
 	default:
 		error_data();
 		break;
@@ -160,22 +152,6 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "\"", 1);
 		break;
 	}
-	case VALUE_AGG:
-	{
-		AggValue aggval;
-		switch (agg_read(&self->agg, &aggval)) {
-		case AGG_NULL:
-			buf_write(buf, "null", 4);
-			break;
-		case AGG_INT:
-			buf_printf(buf, "%" PRIi64, aggval.integer);
-			break;
-		case AGG_REAL:
-			buf_printf(buf, "%g", aggval.real);
-			break;
-		}
-		break;
-	}
 	case VALUE_STRING:
 		buf_write(buf, "\"", 1);
 		escape_string_raw(buf, &self->string);
@@ -209,7 +185,6 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		store_export(self->store, buf, tz);
 		buf_write(buf, "]", 1);
 		break;
-	// VALUE_GROUP
 	default:
 		error("operation unsupported");
 		break;

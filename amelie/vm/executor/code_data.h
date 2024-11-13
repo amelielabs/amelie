@@ -71,13 +71,10 @@ code_data_at(CodeData* self, int offset)
 }
 
 static inline double
-code_data_at_real(CodeData* self, int offset)
+code_data_at_double(CodeData* self, int offset)
 {
 	assert(self->data.start != NULL);
-	uint8_t* pos = self->data.start + offset;
-	double value;
-	data_read_real(&pos, &value);
-	return value;
+	return *((double*)self->data.start + offset);
 }
 
 static inline void

@@ -32,6 +32,7 @@
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 
+#if 0
 OpDesc ops[] =
 {
 	// control
@@ -325,3 +326,4 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 
 	encode_obj_end(buf);
 }
+#endif

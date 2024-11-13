@@ -22,13 +22,13 @@ typedef enum
 	VALUE_DOUBLE,
 	VALUE_TIMESTAMP,
 	VALUE_INTERVAL,
-	VALUE_AGG,
 	VALUE_STRING,
 	VALUE_JSON,
 	VALUE_VECTOR,
+	VALUE_AVG,
 	VALUE_SET,
 	VALUE_MERGE,
-	VALUE_GROUP
+	VALUE_MAX
 } ValueType;
 
 struct Value
@@ -36,14 +36,14 @@ struct Value
 	ValueType type;
 	union
 	{
-		int64_t  integer;
-		double   dbl;
-		Str      string;
-		Interval interval;
-		Vector*  vector;
-		Agg      agg;
-		Store*   store;
-		struct {
+		int64_t   integer;
+		double    dbl;
+		Str       string;
+		Interval  interval;
+		Vector*   vector;
+		Avg       avg;
+		Store*    store;
+		union {
 			uint8_t* data;
 			int      data_size;
 		};
@@ -69,9 +69,8 @@ value_free(Value* self)
 		self->buf = NULL;
 	}
 
-	if (unlikely(self->type == VALUE_SET   ||
-	             self->type == VALUE_MERGE ||
-	             self->type == VALUE_GROUP))
+	if (unlikely(self->type == VALUE_SET ||
+	             self->type == VALUE_MERGE))
 		store_free(self->store);
 
 	self->type = VALUE_NONE;
@@ -99,24 +98,24 @@ value_set_null(Value* self)
 }
 
 always_inline hot static inline void
-value_set_bool(Value* self, bool data)
+value_set_bool(Value* self, bool value)
 {
 	self->type    = VALUE_BOOL;
-	self->integer = data;
+	self->integer = value;
 }
 
 always_inline hot static inline void
-value_set_int(Value* self, int64_t data)
+value_set_int(Value* self, int64_t value)
 {
 	self->type    = VALUE_INT;
-	self->integer = data;
+	self->integer = value;
 }
 
 always_inline hot static inline void
-value_set_double(Value* self, double data)
+value_set_double(Value* self, double value)
 {
 	self->type = VALUE_DOUBLE;
-	self->dbl  = data;
+	self->dbl  = value;
 }
 
 always_inline hot static inline void
@@ -127,24 +126,17 @@ value_set_timestamp(Value* self, uint64_t value)
 }
 
 always_inline hot static inline void
-value_set_interval(Value* self, Interval* iv)
+value_set_interval(Value* self, Interval* value)
 {
 	self->type     = VALUE_INTERVAL;
-	self->interval = *iv;
+	self->interval = *value;
 }
 
 always_inline hot static inline void
-value_set_agg(Value* self, Agg* agg)
-{
-	self->type = VALUE_AGG;
-	self->agg  = *agg;
-}
-
-always_inline hot static inline void
-value_set_string(Value* self, Str* str, Buf* buf)
+value_set_string(Value* self, Str* value, Buf* buf)
 {
 	self->type   = VALUE_STRING;
-	self->string = *str;
+	self->string = *value;
 	self->buf    = buf;
 }
 
@@ -164,11 +156,18 @@ value_set_json_buf(Value* self, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_vector(Value* self, Vector* vector, Buf* buf)
+value_set_vector(Value* self, Vector* value, Buf* buf)
 {
 	self->type   = VALUE_VECTOR;
-	self->vector = vector;
+	self->vector = value;
 	self->buf    = buf;
+}
+
+always_inline hot static inline void
+value_set_avg(Value* self, Avg* value)
+{
+	self->type = VALUE_AVG;
+	self->avg  = *value;
 }
 
 always_inline hot static inline void
@@ -188,13 +187,6 @@ always_inline hot static inline void
 value_set_merge(Value* self, Store* store)
 {
 	self->type  = VALUE_MERGE;
-	self->store = store;
-}
-
-always_inline hot static inline void
-value_set_group(Value* self, Store* store)
-{
-	self->type  = VALUE_GROUP;
 	self->store = store;
 }
 
@@ -220,93 +212,26 @@ value_copy(Value* self, Value* src)
 	case VALUE_INTERVAL:
 		value_set_interval(self, &src->interval);
 		break;
-	case VALUE_AGG:
-		value_set_agg(self, &src->agg);
-		break;
 	case VALUE_STRING:
+		value_set_string(self, &src->string, src->buf);
 		if (src->buf)
-		{
-			value_set_string(self, &src->string, src->buf);
 			buf_ref(src->buf);
-		} else
-		{
-			auto buf = buf_create();
-			buf_write_str(buf, &src->string);
-			Str string;
-			buf_str(buf, &string);
-			value_set_string(self, &string, buf);
-		}
 		break;
 	case VALUE_JSON:
+		value_set_json(self, src->data, src->data_size, src->buf);
 		if (src->buf)
-		{
-			value_set_json(self, src->data, src->data_size, src->buf);
 			buf_ref(src->buf);
-		} else
-		{
-			auto buf = buf_create();
-			buf_write(buf, src->data, src->data_size);
-			value_set_json_buf(self, buf);
-		}
 		break;
 	case VALUE_VECTOR:
+		value_set_vector(self, src->vector, src->buf);
 		if (src->buf)
-		{
-			value_set_vector(self, src->vector, src->buf);
 			buf_ref(src->buf);
-		} else
-		{
-			auto buf = buf_create();
-			buf_write(buf, src->vector, vector_size(src->vector));
-			value_set_vector_buf(self, buf);
-		}
+		break;
+	case VALUE_AVG:
+		value_set_avg(self, &src->avg);
 		break;
 	case VALUE_SET:
 	case VALUE_MERGE:
-	case VALUE_GROUP:
-	default:
-		error("operation is not supported");
-		break;
-	}
-}
-
-always_inline hot static inline void
-value_copy_ref(Value* self, Value* src)
-{
-	switch (src->type) {
-	case VALUE_NULL:
-		value_set_null(self);
-		break;
-	case VALUE_BOOL:
-		value_set_bool(self, src->integer);
-		break;
-	case VALUE_INT:
-		value_set_int(self, src->integer);
-		break;
-	case VALUE_DOUBLE:
-		value_set_double(self, src->dbl);
-		break;
-	case VALUE_TIMESTAMP:
-		value_set_timestamp(self, src->integer);
-		break;
-	case VALUE_INTERVAL:
-		value_set_interval(self, &src->interval);
-		break;
-	case VALUE_AGG:
-		value_set_agg(self, &src->agg);
-		break;
-	case VALUE_STRING:
-		value_set_string(self, &src->string, NULL);
-		break;
-	case VALUE_JSON:
-		value_set_json(self, src->data, src->data_size, NULL);
-		break;
-	case VALUE_VECTOR:
-		value_set_vector(self, src->vector, NULL);
-		break;
-	case VALUE_SET:
-	case VALUE_MERGE:
-	case VALUE_GROUP:
 	default:
 		error("operation is not supported");
 		break;
@@ -339,9 +264,6 @@ value_type_to_string(ValueType type)
 	case VALUE_INTERVAL:
 		name = "interval";
 		break;
-	case VALUE_AGG:
-		name = "aggregate";
-		break;
 	case VALUE_STRING:
 		name = "string";
 		break;
@@ -351,14 +273,17 @@ value_type_to_string(ValueType type)
 	case VALUE_VECTOR:
 		name = "vector";
 		break;
+	case VALUE_AVG:
+		name = "avg";
+		break;
 	case VALUE_SET:
 		name = "set";
 		break;
 	case VALUE_MERGE:
 		name = "merge";
 		break;
-	case VALUE_GROUP:
-		name = "group";
+	case VALUE_MAX:
+		abort();
 		break;
 	}
 	return name;

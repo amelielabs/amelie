@@ -26,7 +26,6 @@
 #include "value/update.h"
 
 // values
-#include "value/agg.h"
 #include "value/row.h"
 
 // reply body
@@ -36,6 +35,3 @@
 // operations
 #include "value/like.h"
 #include "value/compare.h"
-#if 0
-#include "value/op.h"
-#endif

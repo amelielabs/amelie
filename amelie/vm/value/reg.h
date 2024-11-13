@@ -40,8 +40,10 @@ reg_free(Reg* self)
 }
 
 static inline void
-reg_create(Reg* self)
+reg_prepare(Reg* self)
 {
+	if (self->r)
+		return;
 	int size = sizeof(Value) * 64;
 	self->r = am_malloc(size);
 	memset(self->r, 0, size);
