@@ -169,12 +169,6 @@ lex_next(Lex* self)
 		if (unlikely(self->pos == self->end))
 			goto symbol;
 		char symbol_next = *self->pos;
-		// **
-		if (symbol == '*' && symbol_next == '*') {
-			self->pos++;
-			ast->id = KSTAR_STAR;
-			return ast;
-		}
 		// ::
 		if (symbol == ':' && symbol_next == ':') {
 			self->pos++;
@@ -293,16 +287,7 @@ reread_as_float:
 				{
 					self->pos++;
 					ast->string.end++;
-
-					// path.**
-					if (self->pos != self->end && *self->pos == '*')
-					{
-						self->pos++;
-						ast->string.end++;
-						ast->id = KNAME_COMPOUND_STAR_STAR;
-					} else {
-						ast->id = KNAME_COMPOUND_STAR;
-					}
+					ast->id = KNAME_COMPOUND_STAR;
 					return ast;
 				}
 				lex_error(self, "bad compound name token");

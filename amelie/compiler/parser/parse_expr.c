@@ -114,9 +114,7 @@ priority_map[KEYWORD_MAX] =
 	[KCTEID]                   = priority_value,
 	[KNAME]                    = priority_value,
 	[KNAME_COMPOUND]           = priority_value,
-	[KNAME_COMPOUND_STAR]      = priority_value,
-	[KNAME_COMPOUND_STAR_STAR] = priority_value,
-	[KSTAR_STAR]               = priority_value
+	[KNAME_COMPOUND_STAR]      = priority_value
 };
 
 hot static inline void
@@ -247,33 +245,10 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		error("%.*s(expr<)> expected", str_size(&function->string),
 		      str_of(&function->string));
 
-	// get aggregate type
-	int id;
-	switch (function->id) {
-	case KCOUNT:
-		id = GROUP_COUNT;
-		break;
-	case KSUM:
-		id = GROUP_SUM;
-		break;
-	case KAVG:
-		id = GROUP_AVG;
-		break;
-	case KMIN:
-		id = GROUP_MIN;
-		break;
-	case KMAX:
-		id = GROUP_MAX;
-		break;
-	default:
-		abort();
-		break;
-	}
-
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(id, expr->aggs->count, arg, NULL);
-	ast_list_add(expr->aggs, &aggr->ast);
-	return &aggr->ast;
+	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL);
+	ast_list_add(expr->aggs, &agg->ast);
+	return &agg->ast;
 }
 
 static inline Ast*
@@ -293,10 +268,10 @@ expr_lambda(Stmt* self, Expr* expr)
 	auto node = expr->aggs->list;
 	for (; node; node = node->next)
 	{
-		auto aggr = ast_aggr_of(node->ast);
-		if (! aggr->name)
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->name)
 			continue;
-		if (str_compare(&aggr->name->string, &name->string))
+		if (str_compare(&agg->name->string, &name->string))
 			error("lambda <%.*s> redefined", str_size(&name->string),
 			      str_of(&name->string));
 	}
@@ -316,10 +291,10 @@ expr_lambda(Stmt* self, Expr* expr)
 	auto arg = parse_expr(self, expr);
 
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(GROUP_LAMBDA, expr->aggs->count, arg, init);
-	ast_list_add(expr->aggs, &aggr->ast);
-	aggr->name = name;
-	return &aggr->ast;
+	auto agg = ast_agg_allocate(NULL, expr->aggs->count, arg, init);
+	ast_list_add(expr->aggs, &agg->ast);
+	agg->name = name;
+	return &agg->ast;
 }
 
 static Ast*
@@ -527,8 +502,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		if (expr && !expr->select)
 			error("unexpected subquery");
+		// TODO
+		/*
 		auto select = parse_select(self);
 		value = &select->ast;
+		*/
 		break;
 	}
 
@@ -598,9 +576,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KARGID:
 		break;
 
-	// @, **
+	// @
 	case '@':
-	case KSTAR_STAR:
 		break;
 
 	// name
@@ -636,7 +613,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	}
 
 	case KNAME_COMPOUND_STAR:
-	case KNAME_COMPOUND_STAR_STAR:
 		break;
 
 	default:
@@ -696,11 +672,6 @@ parse_unary(Stmt*     self, Expr* expr,
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
 		ast->l  = expr_args(self, expr, ']', false);
-		ast_push(result, ast);
-		break;
-	case '*':
-		// *
-		ast->id = KSTAR;
 		ast_push(result, ast);
 		break;
 	case KNOT:

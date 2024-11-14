@@ -27,7 +27,6 @@ struct Target
 	int          id;
 	int          level;
 	int          level_seq;
-	int          level_virt;
 	Str          name;
 	// group by
 	AstList      group_by;
@@ -39,7 +38,6 @@ struct Target
 	View*        view;
 	Columns*     expr_columns;
 	Ast*         expr;
-	Ast*         expr_on;
 	int          rexpr;
 	// target
 	Ast*         select;
@@ -48,6 +46,7 @@ struct Target
 	IndexConfig* index;
 	// join
 	TargetJoin   join;
+	Ast*         join_on;
 	// link
 	Target*      outer;
 	Target*      next_join;
@@ -60,7 +59,6 @@ target_init(Target* self, Table* table)
 	self->id              = 0;
 	self->level           = -1;
 	self->level_seq       = -1;
-	self->level_virt      = 0;
 	self->group_by_target = NULL;
 	self->group_main      = NULL;
 	self->group_redirect  = NULL;
@@ -68,13 +66,13 @@ target_init(Target* self, Table* table)
 	self->view            = NULL;
 	self->expr_columns    = NULL;
 	self->expr            = NULL;
-	self->expr_on         = NULL;
 	self->rexpr           = -1;
 	self->select          = NULL;
 	self->path            = NULL;
 	self->table           = table;
 	self->index           = NULL;
 	self->join            = JOIN_NONE;
+	self->join_on         = NULL;
 	self->outer           = NULL;
 	self->next_join       = NULL;
 	self->next            = NULL;
