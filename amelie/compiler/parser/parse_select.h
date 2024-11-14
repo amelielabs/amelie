@@ -19,7 +19,6 @@ struct AstSelect
 	Ast*    expr;
 	int     expr_count;
 	AstList expr_aggs;
-	AstList expr_labels;
 	Ast*    expr_where;
 	Ast*    expr_having;
 	Ast*    expr_limit;
@@ -29,6 +28,8 @@ struct AstSelect
 	bool    distinct;
 	Ast*    distinct_expr;
 	int     distinct_expr_count;
+	Columns columns;
+	Columns columns_group;
 	Target* target;
 	Target* target_group;
 	void*   on_match;
@@ -61,8 +62,9 @@ ast_select_allocate(void)
 	self->on_match            = NULL;
 	self->rset                = -1;
 	self->rgroup              = -1;
+	columns_init(&self->columns);
+	columns_init(&self->columns_group);
 	ast_list_init(&self->expr_aggs);
-	ast_list_init(&self->expr_labels);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
 	return self;

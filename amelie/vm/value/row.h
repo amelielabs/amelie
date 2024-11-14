@@ -18,7 +18,7 @@ value_row_key(Keys* self, Stack* stack)
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
-		switch (key->type) {
+		switch (key->column->type) {
 		case TYPE_INT8:
 		case TYPE_INT16:
 		case TYPE_INT32:

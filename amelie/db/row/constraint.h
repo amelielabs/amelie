@@ -16,7 +16,6 @@ typedef struct Constraint Constraint;
 struct Constraint
 {
 	bool    not_null;
-	bool    not_aggregated;
 	bool    serial;
 	bool    random;
 	int64_t random_modulo;
@@ -28,11 +27,10 @@ struct Constraint
 static inline void
 constraint_init(Constraint* self)
 {
-	self->not_null       = false;
-	self->not_aggregated = true;
-	self->serial         = false;
-	self->random         = false;
-	self->random_modulo  = INT64_MAX;
+	self->not_null      = false;
+	self->serial        = false;
+	self->random        = false;
+	self->random_modulo = INT64_MAX;
 	str_init(&self->as_stored);
 	str_init(&self->as_aggregated);
 	buf_init(&self->value);
@@ -50,12 +48,6 @@ static inline void
 constraint_set_not_null(Constraint* self, bool value)
 {
 	self->not_null = value;
-}
-
-static inline void
-constraint_set_not_aggregated(Constraint* self, bool value)
-{
-	self->not_aggregated = value;
 }
 
 static inline void
@@ -101,7 +93,6 @@ static inline void
 constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
-	constraint_set_not_aggregated(copy, self->not_aggregated);
 	constraint_set_serial(copy, self->serial);
 	constraint_set_random(copy, self->random);
 	constraint_set_random_modulo(copy, self->random_modulo);
@@ -116,7 +107,6 @@ constraint_read(Constraint* self, uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_BOOL,   "not_null",       &self->not_null       },
-		{ DECODE_BOOL,   "not_aggregated", &self->not_aggregated },
 		{ DECODE_BOOL,   "serial",         &self->serial         },
 		{ DECODE_BOOL,   "random",         &self->random         },
 		{ DECODE_INT,    "random_modulo",  &self->random_modulo  },
@@ -136,10 +126,6 @@ constraint_write(Constraint* self, Buf* buf)
 	// not_null
 	encode_raw(buf, "not_null", 8);
 	encode_bool(buf, self->not_null);
-
-	// not_aggregated
-	encode_raw(buf, "not_aggregated", 14);
-	encode_bool(buf, self->not_aggregated);
 
 	// serial
 	encode_raw(buf, "serial", 6);

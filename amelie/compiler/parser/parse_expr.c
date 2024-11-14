@@ -237,8 +237,9 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	if (! stmt_if(self, '('))
 		error("%.*s<(> expected", str_size(&function->string),
 		      str_of(&function->string));
+
 	// expr
-	auto arg = parse_expr(self, expr);
+	auto arg = parse_expr(self, NULL);
 
 	// )
 	if (! stmt_if(self, ')'))
@@ -502,11 +503,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		if (expr && !expr->select)
 			error("unexpected subquery");
-		// TODO
-		/*
 		auto select = parse_select(self);
 		value = &select->ast;
-		*/
 		break;
 	}
 

@@ -95,6 +95,8 @@ parse_stmt_free(Stmt* stmt)
 	default:
 		break;
 	}
+
+	// TODO: free stmt->select_list
 }
 
 hot static inline void

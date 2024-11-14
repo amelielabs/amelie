@@ -13,7 +13,6 @@
 
 typedef struct FunctionMgr FunctionMgr;
 
-#if 0
 struct FunctionMgr
 {
 	List list;
@@ -81,4 +80,3 @@ function_mgr_list(FunctionMgr* self)
 	encode_obj_end(buf);
 	return buf;
 }
-#endif

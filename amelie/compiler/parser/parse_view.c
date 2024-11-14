@@ -32,6 +32,7 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
+#if 0
 static void
 parse_view_args(Stmt* self, AstViewCreate* stmt)
 {
@@ -156,3 +157,4 @@ parse_view_alter(Stmt* self)
 	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
 		error("ALTER VIEW RENAME <name> expected");
 }
+#endif

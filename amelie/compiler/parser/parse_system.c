@@ -33,7 +33,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-#if 0
 void
 parse_checkpoint(Stmt* self)
 {
@@ -51,4 +50,3 @@ parse_checkpoint(Stmt* self)
 			error("CHECKPOINT WORKERS number must be positive");
 	}
 }
-#endif

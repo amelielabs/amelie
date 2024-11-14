@@ -40,7 +40,6 @@
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
 
-#if 0
 // system
 #include "parser/parse_system.h"
 #include "parser/parse_config.h"
@@ -60,14 +59,14 @@
 
 // dml
 #include "parser/parse_from.h"
+#if 0
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
+#endif
 
 // query
-#include "parser/parse_label.h"
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
-#endif

@@ -65,6 +65,7 @@ struct Stmt
 	CteDeps      cte_deps;
 	Columns*     args;
 	TargetList   target_list;
+	AstList      select_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
 	Json*        json;
@@ -109,6 +110,7 @@ stmt_allocate(Db*          db,
 	self->db           = db;
 	cte_deps_init(&self->cte_deps);
 	target_list_init(&self->target_list);
+	ast_list_init(&self->select_list);
 	list_init(&self->link);
 	return self;
 }

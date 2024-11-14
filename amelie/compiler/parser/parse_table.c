@@ -56,43 +56,6 @@ error:
 	      str_of(&column->name));
 }
 
-static Column*
-parse_key_column(Stmt* self, Columns* columns, Str* path)
-{
-	Column* column = NULL;
-
-	Str     name;
-	str_init(&name);
-
-	auto tk = stmt_next(self);
-	if (tk->id == KNAME)
-	{
-		// column
-		str_set_str(&name, &tk->string);
-
-	} else
-	if (tk->id == KNAME_COMPOUND)
-	{
-		// column.path
-		str_split(&tk->string, &name, '.');
-
-		// exclude column name from the path
-		str_set_str(path, &tk->string);
-		str_advance(path, str_size(&name) + 1);
-
-	} else {
-		return NULL;
-	}
-
-	// find column
-	column = columns_find(columns, &name);
-	if (! column)
-		error("<%.*s> column does not exists", str_size(&name),
-		      str_of(&name));
-
-	return column;
-}
-
 void
 parse_key(Stmt* self, Keys* keys)
 {
@@ -102,27 +65,23 @@ parse_key(Stmt* self, Keys* keys)
 
 	for (;;)
 	{
-		Str path;
-		str_init(&path);
-
 		// (column, ...)
-		// (column.path type, ...)
-		auto column = parse_key_column(self, keys->columns, &path);
-		if (column == NULL)
+		auto name = stmt_next(self);
+		if (name->id != KNAME)
 			error("KEY (<name> expected");
 
-		// [type]
-		int type;
-		if (str_empty(&path))
-			type = column->type;
-		else
-			type = parse_type(self, column, &path);
+		// find column
+		auto column = columns_find(keys->columns, &name->string);
+		if (! column)
+			error("<%.*s> column does not exists", str_size(&name->string),
+			      str_of(&name->string));
 
 		// validate key type
-		if (type != TYPE_INT &&
-		    type != TYPE_STRING &&
-		    type != TYPE_TIMESTAMP)
-			error("<%.*s> column key can be string, int or timestamp",
+		if (column->type != TYPE_INT32 &&
+		    column->type != TYPE_INT64 &&
+		    column->type != TYPE_TEXT  &&
+		    column->type != TYPE_TIMESTAMP)
+			error("<%.*s> column key can be text, int32, int64 or timestamp",
 			      str_size(&column->name),
 			      str_of(&column->name));
 
@@ -132,8 +91,6 @@ parse_key(Stmt* self, Keys* keys)
 		// create key
 		auto key = key_allocate();
 		key_set_ref(key, column->order);
-		key_set_type(key, type);
-		key_set_path(key, &path);
 		keys_add(keys, key);
 
 		// ,
@@ -146,7 +103,7 @@ parse_key(Stmt* self, Keys* keys)
 		error("KEY (<)> expected");
 }
 
-static bool
+static inline bool
 parse_primary_key(Stmt* self)
 {
 	// PRIMARY KEY
@@ -170,7 +127,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 	{
 		auto name = stmt_next(self);
 		switch (name->id) {
-		// NOT NULL | NOT AGGREGATED
+		// NOT NULL
 		case KNOT:
 		{
 			// NULL
@@ -179,15 +136,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				constraint_set_not_null(cons, true);
 				break;
 			}
-
-			// AGGREGATED
-			if (stmt_if(self, KAGGREGATED))
-			{
-				constraint_set_not_aggregated(cons, true);
-				break;
-			}
-
-			error("NOT <NULL | AGGREGATED> expected");
+			error("NOT <NULL> expected");
 			break;
 		}
 
@@ -226,9 +175,9 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		// SERIAL
 		case KSERIAL:
 		{
-			// ensure the column has type INT
-			if (column->type != TYPE_INT)
-				error("SERIAL column <%.*s> must be integer",
+			// ensure the column has type INT64
+			if (column->type != TYPE_INT64)
+				error("SERIAL column <%.*s> must be int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
 
@@ -240,8 +189,8 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KRANDOM:
 		{
 			// ensure the column has type INT
-			if (column->type != TYPE_INT)
-				error("RANDOM column <%.*s> must be integer",
+			if (column->type != TYPE_INT64)
+				error("RANDOM column <%.*s> must be int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
 
@@ -281,17 +230,17 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			constraint_set_not_null(&column->constraint, true);
 
 			// validate key type
-			if (column->type != TYPE_INT &&
-			    column->type != TYPE_STRING &&
+			if (column->type != TYPE_INT32 &&
+			    column->type != TYPE_INT64 &&
+			    column->type != TYPE_TEXT  &&
 			    column->type != TYPE_TIMESTAMP)
-				error("<%.*s> column key can be string, int or timestamp",
+				error("<%.*s> column key can be text, int32, int64 or timestamp",
 				      str_size(&column->name),
 				      str_of(&column->name));
 
 			// create key
 			auto key = key_allocate();
 			key_set_ref(key, column->order);
-			key_set_type(key, column->type);
 			keys_add(keys, key);
 
 			primary_key = true;
@@ -343,7 +292,6 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			if (stmt_if(self, KAGGREGATED))
 			{
 				constraint_set_as_aggregated(cons, &as);
-				constraint_set_not_aggregated(cons, false);
 			} else
 				error("AS (expr) <STORED or AGGREGATED> expected");
 			break;
@@ -369,48 +317,9 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 }
 
 static void
-parse_agg(Stmt* self, Column* column)
-{
-	// (
-	if (! stmt_if(self, '('))
-		error("AGGREGATE <(> expected");
-
-	// name
-	auto name = stmt_next_shadow(self);
-	if (name->id != KNAME)
-		error("AGGREGATE (<type> expected");
-
-	int type;
-	if (str_is(&name->string, "count", 5))
-		type = AGG_COUNT;
-	else
-	if (str_is(&name->string, "min", 3))
-		type = AGG_MIN;
-	else
-	if (str_is(&name->string, "max", 3))
-		type = AGG_MAX;
-	else
-	if (str_is(&name->string, "sum", 3))
-		type = AGG_SUM;
-	else
-	if (str_is(&name->string, "avg", 3))
-		type = AGG_AVG;
-	else
-		error("AGGREGATE '%.*s' is not supported", str_size(&name->string),
-		      str_of(&name->string));
-
-	constraint_set_aggregate(&column->constraint, type);
-	constraint_set_not_aggregated(&column->constraint, false);
-
-	// )
-	if (! stmt_if(self, ')'))
-		error("AGGREGATE (type<)> expected");
-}
-
-static void
 parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
-	// (name type [not null | not aggregated | default | serial | primary key | as], ...,
+	// (name type [not null | default | serial | primary key | as], ...,
 	//  primary key())
 
 	// (
@@ -448,11 +357,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
-		// (aggregate)
-		if (type == TYPE_AGG)
-			parse_agg(self, column);
-
-		// [PRIMARY KEY | NOT NULL | NOT AGGREGATED | DEFAULT | SERIAL | RANDOM | AS]
+		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, keys, column);
 
 		// ,
@@ -586,7 +491,6 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
-	// ALTER TABLE [IF EXISTS] [schema.]name SET [NOT] AGGREGATED
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN ADD name type [constraint]
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN DROP name
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN RENAME name TO name
@@ -622,11 +526,7 @@ parse_table_alter(Stmt* self)
 		int type = parse_type(self, column, NULL);
 		column_set_type(column, type);
 
-		// (aggregate)
-		if (type == TYPE_AGG)
-			parse_agg(self, column);
-
-		// [NOT NULL | NOT AGGREGATED | DEFAULT | SERIAL | RANDOM | AS]
+		// [NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
 		parse_constraint(self, NULL, column);
 
 		// validate column
@@ -673,18 +573,7 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
-		// [NOT]
-		auto not = stmt_if(self, KNOT) != NULL;
-
-		// SET [NOT] AGGREGATED
-		if (stmt_if(self, KAGGREGATED))
-		{
-			stmt->type = TABLE_ALTER_SET_AGGREGATED;
-			stmt->aggregated = !not;
-			return;
-		}
-
-		error("ALTER TABLE SET <SERIAL or AGGREGATED> expected");
+		error("ALTER TABLE SET <SERIAL> expected");
 		return;
 	}
 

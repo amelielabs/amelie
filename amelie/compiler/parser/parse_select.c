@@ -36,35 +36,14 @@
 static inline void
 parse_select_group_by(Stmt* self, AstSelect* select)
 {
+	// GROUP BY expr, ...
+	Expr ctx;
+	expr_init(&ctx);
 	auto list = &select->expr_group_by;
 	for (;;)
 	{
-		auto expr = parse_expr(self, NULL);
-
-		// [AS name]
-		// [name]
-		Ast* label = NULL;
-		if (stmt_if(self, KAS))
-		{
-			label = stmt_if(self, KNAME);
-			if (unlikely(! label))
-				error("AS <label> expected");
-		} else {
-			label = stmt_if(self, KNAME);
-		}
-
-		if (! label)
-		{
-			if (expr->id == KNAME ||
-			    expr->id == KNAME_COMPOUND)
-			{
-				label = expr;
-			} else {
-				// label is required for expressions
-			}
-		}
-
-		auto group = ast_group_allocate(list->count, expr, label);
+		auto expr = parse_expr(self, &ctx);
+		auto group = ast_group_allocate(list->count, expr);
 		ast_list_add(list, &group->ast);
 
 		// ,
@@ -78,10 +57,9 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 static inline void
 parse_select_order_by(Stmt* self, AstSelect* select)
 {
+	// ORDER BY expr, ...
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.aggs = &select->expr_aggs;
-
 	for (;;)
 	{
 		// expr
@@ -124,7 +102,6 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	// (expr, ...)
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.aggs = &select->expr_aggs;
 
 	Ast* expr_prev = NULL;
 	for (;;)
@@ -153,34 +130,6 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	}
 }
 
-static inline void
-parse_select_label(Stmt* self, AstSelect* select, Ast* expr)
-{
-	// [AS name]
-	// [name]
-	Ast* name = NULL;
-	if (stmt_if(self, KAS))
-	{
-		name = stmt_if(self, KNAME);
-		if (unlikely(! name))
-			error("AS <label> expected");
-	} else {
-		name = stmt_if(self, KNAME);
-	}
-	if (! name)
-		return;
-
-	// ensure label does not exists
-	auto label = ast_label_match(&select->expr_labels, &name->string);
-	if (unlikely(label))
-		error("label <%.*s> redefined", str_size(&name->string),
-		      str_of(&name->string));
-
-	// create label
-	label = ast_label_allocate(name, expr, select->expr_count);
-	ast_list_add(&select->expr_labels, &label->ast);
-}
-
 hot AstSelect*
 parse_select(Stmt* self)
 {
@@ -193,6 +142,7 @@ parse_select(Stmt* self)
 	// [LIMIT expr] [OFFSET expr]
 	int level = target_list_next_level(&self->target_list);
 	auto select = ast_select_allocate();
+	ast_list_add(&self->select_list, &select->ast);
 
 	// [DISTINCT]
 	if (stmt_if(self, KDISTINCT))
@@ -201,26 +151,57 @@ parse_select(Stmt* self)
 	// expr, ...
 	Expr ctx;
 	expr_init(&ctx);
+	ctx.select = true;
 	ctx.aggs = &select->expr_aggs;
 
 	Ast* expr_prev = NULL;
 	for (;;)
 	{
+		// TODO: support *
+
 		auto expr = parse_expr(self, &ctx);
 		if (select->expr == NULL)
 			select->expr = expr;
 		else
 			expr_prev->next = expr;
 		expr_prev = expr;
+		select->expr_count++;
 
 		// [AS name]
 		// [name]
-		parse_select_label(self, select, expr);
-		select->expr_count++;
+		Ast* name = NULL;
+		if (stmt_if(self, KAS))
+		{
+			name = stmt_if(self, KNAME);
+			if (unlikely(! name))
+				error("AS <label> expected");
+		} else {
+			name = stmt_if(self, KNAME);
+		}
+
+		// generate column name if not set
+		char name_sz[8];
+		if (! name)
+		{
+			snprintf(name_sz, sizeof(name_sz), "col%d", select->expr_count);	
+			name = ast(KNAME);
+			str_set_cstr(&name->string, name_sz);
+		}
+		
+		// ensure column is not redefined
+		if (unlikely(columns_find(&select->columns, &name->string)))
+			error("SELECT <%*.s> column label is redefined", str_size(&name->string),
+			      str_of(&name->string));
+
+		// add column
+		auto column = column_allocate();
+		column_set_name(column, &name->string);
+		columns_add(&select->columns, column);
 
 		// ,
 		if (stmt_if(self, ','))
 			continue;
+
 		break;
 	}
 
@@ -248,10 +229,7 @@ parse_select(Stmt* self)
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
-	{
 		select->target = parse_from(self, level);
-		select->target->select = &select->ast;
-	}
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
@@ -302,13 +280,14 @@ parse_select(Stmt* self)
 		if (select->target == NULL)
 			error("no targets to use with GROUP BY or aggregates");
 
-		select->target_group =
-			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL, NULL, NULL);
+		auto target = target_allocate();
+		target->type = TARGET_SELECT;
+		target->from_columns = &select->columns_group;
+		target_list_add(&self->target_list, target, level, 0);
 
-		select->target_group->group_redirect = select->target_group;
-		select->target_group->group_main     = select->target;
-		select->target->group_by_target      = select->target_group;
-		select->target->group_by             = select->expr_group_by;
+		select->target_group = target;
+
+		// todo: set keys
 	}
 
 	return select;
@@ -319,6 +298,7 @@ parse_select_expr(Stmt* self)
 {
 	// SELECT expr
 	auto select = ast_select_allocate();
+	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
 	select->expr = parse_expr(self, &ctx);

@@ -22,28 +22,30 @@ typedef enum
 	JOIN_RIGHT
 } TargetJoin;
 
+enum
+{
+	TARGET_NONE         = 0,
+	TARGET_TABLE_SHARED = 1 << 0,
+	TARGET_TABLE        = 1 << 1,
+	TARGET_SELECT       = 1 << 2,
+	TARGET_CTE          = 1 << 3,
+	TARGET_VIEW         = 1 << 4
+};
+
 struct Target
 {
+	int          type;
 	int          id;
 	int          level;
 	int          level_seq;
 	Str          name;
-	// group by
-	AstList      group_by;
-	Target*      group_by_target;
-	Target*      group_main;
-	Target*      group_redirect;
-	// expression target
-	Cte*         cte;
-	View*        view;
-	Columns*     expr_columns;
-	Ast*         expr;
-	int          rexpr;
 	// target
-	Ast*         select;
-	Ast*         path;
-	Table*       table;
-	IndexConfig* index;
+	Table*       from_table;
+	IndexConfig* from_table_index;
+	Ast*         from_select;
+	Cte*         from_cte;
+	View*        from_view;
+	Columns*     from_columns;
 	// join
 	TargetJoin   join;
 	Ast*         join_on;
@@ -53,52 +55,31 @@ struct Target
 	Target*      next;
 };
 
-static inline void
-target_init(Target* self, Table* table)
+static inline Target*
+target_allocate(void)
 {
-	self->id              = 0;
-	self->level           = -1;
-	self->level_seq       = -1;
-	self->group_by_target = NULL;
-	self->group_main      = NULL;
-	self->group_redirect  = NULL;
-	self->cte             = NULL;
-	self->view            = NULL;
-	self->expr_columns    = NULL;
-	self->expr            = NULL;
-	self->rexpr           = -1;
-	self->select          = NULL;
-	self->path            = NULL;
-	self->table           = table;
-	self->index           = NULL;
-	self->join            = JOIN_NONE;
-	self->join_on         = NULL;
-	self->outer           = NULL;
-	self->next_join       = NULL;
-	self->next            = NULL;
+	Target* self = palloc(sizeof(Target));
+	self->type             = TARGET_NONE;
+	self->id               = 0;
+	self->level            = -1;
+	self->level_seq        = -1;
+	self->from_table       = NULL;
+	self->from_table_index = NULL;
+	self->from_select      = NULL;
+	self->from_cte         = NULL;
+	self->from_view        = NULL;
+	self->from_columns     = NULL;
+	self->join             = JOIN_NONE;
+	self->join_on          = NULL;
+	self->outer            = NULL;
+	self->next_join        = NULL;
+	self->next             = NULL;
 	str_init(&self->name);
-	ast_list_init(&self->group_by);
-}
-
-static inline void
-target_group_redirect(Target* self, Target* to)
-{
-	auto target = self;
-	while (target)
-	{
-		target->group_redirect = to;
-		target = target->next_join;
-	}
+	return self;
 }
 
 static inline bool
 target_is_join(Target* self)
 {
 	return self->next_join != NULL;
-}
-
-static inline bool
-target_compare(Target* self, Str* name)
-{
-	return str_compare(&self->name, name);
 }
