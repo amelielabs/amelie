@@ -157,46 +157,56 @@ parse_select(Stmt* self)
 	Ast* expr_prev = NULL;
 	for (;;)
 	{
-		// TODO: support *
-
-		auto expr = parse_expr(self, &ctx);
-		if (select->expr == NULL)
-			select->expr = expr;
-		else
-			expr_prev->next = expr;
-		expr_prev = expr;
-		select->expr_count++;
+		// * or expr
+		auto expr = stmt_if(self, '*');
+		if (! expr)
+			expr = parse_expr(self, &ctx);
 
 		// [AS name]
 		// [name]
-		Ast* name = NULL;
-		if (stmt_if(self, KAS))
+		auto as_has = true;
+		auto as = stmt_if(self, KAS);
+		if (! as)
 		{
-			name = stmt_if(self, KNAME);
-			if (unlikely(! name))
+			as_has = false;
+			as = ast(KAS);
+		}
+
+		// set column name
+		auto name = stmt_if(self, KNAME);
+		if (unlikely(! name))
+		{
+			if (as_has)
 				error("AS <label> expected");
-		} else {
-			name = stmt_if(self, KNAME);
-		}
 
-		// generate column name if not set
-		char name_sz[8];
-		if (! name)
+			if (expr->id == KNAME) {
+				name = expr;
+			} else
+			if (expr->id != '*')
+			{
+				auto name_sz = palloc(8);
+				snprintf(name_sz, 8, "col%d", select->expr_count);
+				name = ast(KNAME);
+				str_set_cstr(&name->string, name_sz);
+			}
+		} else
 		{
-			snprintf(name_sz, sizeof(name_sz), "col%d", select->expr_count);	
-			name = ast(KNAME);
-			str_set_cstr(&name->string, name_sz);
+			// ensure * has no alias
+			if (expr->id == '*')
+				error("<*> cannot have an alias");
 		}
-		
-		// ensure column is not redefined
-		if (unlikely(columns_find(&select->columns, &name->string)))
-			error("SELECT <%*.s> column label is redefined", str_size(&name->string),
-			      str_of(&name->string));
 
-		// add column
-		auto column = column_allocate();
-		column_set_name(column, &name->string);
-		columns_add(&select->columns, column);
+		// add column to the select expression list
+		as->l = expr;
+		as->r = name;
+		if (select->expr == NULL)
+			select->expr = as;
+		else
+			expr_prev->next = as;
+		expr_prev = as;
+		select->expr_count++;
+
+		// columns will be resolved and set during the emit
 
 		// ,
 		if (stmt_if(self, ','))
@@ -284,10 +294,8 @@ parse_select(Stmt* self)
 		target->type = TARGET_SELECT;
 		target->from_columns = &select->columns_group;
 		target_list_add(&self->target_list, target, level, 0);
-
 		select->target_group = target;
-
-		// todo: set keys
+		// group by target columns will be set during compilation
 	}
 
 	return select;

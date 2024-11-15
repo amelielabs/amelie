@@ -151,6 +151,9 @@ parse_from_add(From* self)
 	} else {
 		if (as)
 			error("AS <name> expected ");
+
+		if (target->type == TARGET_SELECT)
+			error("FROM (SELECT) subquery must have an alias");
 	}
 
 	// ensure target does not exists
