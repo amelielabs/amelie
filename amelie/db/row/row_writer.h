@@ -93,10 +93,15 @@ row_writer_set_null(RowWriter* self)
 }
 
 hot static inline void
-row_writer_add_hash(RowWriter* self, void* data, int data_size)
+row_writer_hash(RowWriter* self)
 {
+	// hash last column data
+	auto offset = *(uint32_t*)(self->data_index.position - sizeof(uint32_t));
+	auto size = buf_size(&self->data) - offset;
+	assert(size > 0);
 	self->current->hash =
-		hash_murmur3_32(data, data_size, self->current->hash);
+		hash_murmur3_32(self->data.start + offset, size,
+		                self->current->hash);
 }
 
 hot static inline Row*
