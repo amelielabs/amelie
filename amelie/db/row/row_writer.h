@@ -28,12 +28,14 @@ struct RowWriter
 	Buf      data_index;
 	Buf      data_meta;
 	RowMeta* current;
+	int      rows;
 };
 
 static inline void
 row_writer_init(RowWriter* self)
 {
 	self->current = NULL;
+	self->rows    = 0;
 	buf_init(&self->data);
 	buf_init(&self->data_index);
 	buf_init(&self->data_meta);
@@ -51,6 +53,7 @@ static inline void
 row_writer_reset(RowWriter* self)
 {
 	self->current = NULL;
+	self->rows    = 0;
 	buf_reset(&self->data);
 	buf_reset(&self->data_index);
 	buf_reset(&self->data_meta);
@@ -71,6 +74,7 @@ row_writer_begin(RowWriter* self, int columns)
 	meta->columns      = columns;
 	meta->hash         = 0;
 	self->current      = meta;
+	self->rows++;
 }
 
 hot static inline Buf*
@@ -79,6 +83,13 @@ row_writer_add(RowWriter* self)
 	uint32_t offset = buf_size(&self->data);
 	buf_write(&self->data_index, &offset, sizeof(offset));
 	return &self->data;
+}
+
+hot static inline void
+row_writer_set_null(RowWriter* self)
+{
+	// set last column offset to 0
+	*(uint32_t*)(self->data_index.position - sizeof(uint32_t)) = 0;
 }
 
 hot static inline void
@@ -99,8 +110,34 @@ row_writer_create(RowWriter* self, int pos)
 	else
 		size = meta_next->offset - meta->offset;
 	auto col = buf_u32(&self->data_index) + meta->offset_index;
+
 	auto row = row_allocate(meta->columns, size);
 	for (uint32_t i = 0; i < meta->columns; i++)
-		row_set(row, i, col[i]);
+	{
+		if (row->size_factor == 0)
+		{
+			if (col[i])
+				row->u8[1 + i] = sizeof(Row) + sizeof(uint8_t) * (1 + meta->columns) +
+				                 (col[i] - meta->offset);
+			else
+				row->u8[1 + i] = 0;
+		} else
+		if (row->size_factor == 1)
+		{
+			if (col[i])
+				row->u16[1 + i] = sizeof(Row) + sizeof(uint16_t) * (1 + meta->columns) +
+				                  (col[i] - meta->offset);
+			else
+				row->u16[1 + i] = 0;
+		} else
+		{
+			if (col[i])
+				row->u32[1 + i] = sizeof(Row) + sizeof(uint32_t) * (1 + meta->columns) +
+				                  (col[i] - meta->offset);
+			else
+				row->u32[1 + i] = 0;
+		}
+	}
+	memcpy(row_data(row, meta->columns), self->data.start + meta->offset, size);
 	return row;
 }

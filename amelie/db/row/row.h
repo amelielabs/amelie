@@ -27,6 +27,8 @@ struct Row
 hot static inline Row*
 row_allocate(int columns, int data_size)
 {
+	// [row_header][size + index][data]
+
 	// calculate total size
 	int      size_factor = 0;
 	uint32_t total_base = sizeof(Row) + data_size;
@@ -78,56 +80,31 @@ row_size(Row* self)
 always_inline hot static inline void*
 row_at(Row* self, int column)
 {
-	// column offsets start from 0
 	register uint32_t offset;
 	if (self->size_factor == 0)
-	{
 		offset = self->u8[1 + column];
-		if (offset == 0)
-			return NULL;
-		offset += sizeof(uint8_t);
-	} else
+	else
 	if (self->size_factor == 1)
-	{
 		offset = self->u16[1 + column];
-		if (offset == 0)
-			return NULL;
-		offset += sizeof(uint16_t);
-	} else
-	{
+	else
 		offset = self->u32[1 + column];
-		if (offset == 0)
-			return NULL;
-		offset += sizeof(uint32_t);
-	}
-	return (uint8_t*)self + sizeof(Row) + offset;
+	if (offset == 0)
+		return NULL;
+	return (uint8_t*)self + offset;
 }
 
 always_inline hot static inline void*
-row_data(Row* self)
+row_data(Row* self, int columns)
 {
-	// pointer to the first column data
-	register uint32_t offset;
+	register uint32_t offset = columns + 1;
 	if (self->size_factor == 0)
-		offset = sizeof(uint8_t);
+		offset *= sizeof(uint8_t);
 	else
 	if (self->size_factor == 1)
-		offset = sizeof(uint16_t);
+		offset *= sizeof(uint16_t);
 	else
-		offset = sizeof(uint32_t);
+		offset *= sizeof(uint16_t);
 	return (uint8_t*)self + sizeof(Row) + offset;
-}
-
-always_inline hot static inline void
-row_set_null(Row* self, int column)
-{
-	if (self->size_factor == 0)
-		self->u8[1 + column]  = 0;
-	else
-	if (self->size_factor == 1)
-		self->u16[1 + column] = 0;
-	else
-		self->u32[1 + column] = 0;
 }
 
 always_inline hot static inline void
@@ -143,15 +120,9 @@ row_set(Row* self, int column, int offset)
 }
 
 always_inline hot static inline void
-row_set_ptr(Row* self, int column, uint8_t* pos)
+row_set_null(Row* self, int column)
 {
-	if (self->size_factor == 0)
-		self->u8[1 + column]  = pos - &self->u8[1];
-	else
-	if (self->size_factor == 1)
-		self->u16[1 + column] = pos - (uint8_t*)&self->u16[1];
-	else
-		self->u32[1 + column] = pos - (uint8_t*)&self->u32[1];
+	row_set(self, column, 0);
 }
 
 hot static inline uint32_t
@@ -183,6 +154,5 @@ row_copy(Row* self)
 	return row;
 }
 
-Row* row_copy(Row*);
 Row* row_alter_add(Row*, Buf*);
 Row* row_alter_drop(Row*, int);
