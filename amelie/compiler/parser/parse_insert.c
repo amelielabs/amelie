@@ -386,7 +386,7 @@ parse_insert(Stmt* self)
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
 	// [ON CONFLICT DO NOTHING | UPDATE | AGGREGATE]
-	// [RETURNING expr [INTO cte]]
+	// [RETURNING expr]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 
@@ -444,9 +444,5 @@ parse_insert(Stmt* self)
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)
 			stmt->on_conflict = ON_CONFLICT_ERROR;
-
-		// [INTO cte_name]
-		if (stmt_if(self, KINTO))
-			parse_cte(self, false, false);
 	}
 }

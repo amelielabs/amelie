@@ -62,9 +62,7 @@
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
-#if 0
 #include "parser/parse_delete.h"
-#endif
 
 // query
 #include "parser/parse_order.h"

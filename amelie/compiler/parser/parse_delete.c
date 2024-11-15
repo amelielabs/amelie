@@ -38,7 +38,7 @@ parse_delete(Stmt* self)
 {
 	// DELETE FROM name
 	// [WHERE expr]
-	// [RETURNING expr [INTO cte]]
+	// [RETURNING expr]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
 
@@ -49,13 +49,13 @@ parse_delete(Stmt* self)
 	// table_name, expression or join
 	int level = target_list_next_level(&self->target_list);
 	stmt->target = parse_from(self, level);
-	stmt->table = stmt->target->table;
+	stmt->table = stmt->target->from_table;
 	if (stmt->table == NULL)
 		error("DELETE FROM <table name> expected");
 	if (stmt->target->next_join)
 		error("DELETE FROM JOIN is not supported");
-	if (stmt->target->index)
-		if (table_primary(stmt->table) != stmt->target->index)
+	if (stmt->target->from_table_index)
+		if (table_primary(stmt->table) != stmt->target->from_table_index)
 			error("DELETE only primary index supported");
 
 	// [WHERE]
@@ -64,11 +64,5 @@ parse_delete(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
-	{
 		stmt->returning = parse_expr(self, NULL);
-
-		// [INTO cte_name]
-		if (stmt_if(self, KINTO))
-			parse_cte(self, false, false);
-	}
 }

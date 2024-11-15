@@ -46,16 +46,10 @@ parse_update_expr(Stmt* self)
 	{
 		auto op = ast(KSET);
 
-		// name or path
-		op->l = stmt_next(self);
-		switch (op->l->id) {
-		case KNAME:
-		case KNAME_COMPOUND:
-			break;
-		default:
-			error("UPDATE name SET <path> expected");
-			break;
-		}
+		// name
+		op->l = stmt_if(self, KNAME);
+		if (! op->l)
+			error("UPDATE name SET <name> expected");
 
 		// =
 		if (! stmt_if(self, '='))
@@ -92,7 +86,7 @@ parse_update_aggregated(Stmt* self, Columns* columns)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (column->constraint.not_aggregated)
+		if (str_empty(&column->constraint.as_aggregated))
 			continue;
 
 		// column = <aggregated expr>
@@ -102,33 +96,9 @@ parse_update_aggregated(Stmt* self, Columns* columns)
 		op->l = ast(KNAME);
 		op->l->string = column->name;
 
-		// choose aggregated expr
-		Str* as_expr;
-		Str  as_expr_agg;
-		if (! str_empty(&column->constraint.as_aggregated))
-		{
-			as_expr = &column->constraint.as_aggregated;
-		} else
-		{
-			// automatically generate expression for aggregated types
-			assert(column->type == TYPE_AGG);
-
-			// agg_func(column, @[column_order])
-			auto ptr = palloc(64);
-			auto rc  = snprintf(ptr, 64, "agg_%s(%.*s, @[%d])",
-			                    agg_nameof(column->constraint.aggregate),
-			                    str_size(&column->name),
-			                    str_of(&column->name),
-			                    column->order);
-			if (unlikely(rc <= 0 || rc >= 64))
-				error("aggregated expression is too large");
-			str_set(&as_expr_agg, ptr, rc);
-			as_expr = &as_expr_agg;
-		}
-
 		// parse aggregated expression
 		lex_init(&lex, keywords);
-		lex_start(&lex, as_expr);
+		lex_start(&lex, &column->constraint.as_aggregated);
 		Expr ctx =
 		{
 			.aggs   = NULL,
@@ -153,20 +123,20 @@ parse_update(Stmt* self)
 {
 	// UPDATE name SET path = expr [, ... ]
 	// [WHERE expr]
-	// [RETURNING expr [INTO cte]]
+	// [RETURNING expr]
 	auto stmt = ast_update_allocate();
 	self->ast = &stmt->ast;
 
 	// table_name, expression or join
 	int level = target_list_next_level(&self->target_list);
 	stmt->target = parse_from(self, level);
-	stmt->table = stmt->target->table;
+	stmt->table = stmt->target->from_table;
 	if (stmt->table == NULL)
 		error("UPDATE <table name> expected");
 	if (stmt->target->next_join)
 		error("UPDATE JOIN is not supported");
-	if (stmt->target->index)
-		if (table_primary(stmt->table) != stmt->target->index)
+	if (stmt->target->from_table_index)
+		if (table_primary(stmt->table) != stmt->target->from_table_index)
 			error("UPDATE only primary index supported");
 
 	// SET path = expr [, ... ]
@@ -178,11 +148,5 @@ parse_update(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
-	{
 		stmt->returning = parse_expr(self, NULL);
-
-		// [INTO cte_name]
-		if (stmt_if(self, KINTO))
-			parse_cte(self, false, false);
-	}
 }
