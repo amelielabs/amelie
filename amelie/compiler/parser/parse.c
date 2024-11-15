@@ -96,7 +96,13 @@ parse_stmt_free(Stmt* stmt)
 		break;
 	}
 
-	// TODO: free stmt->select_list
+	// free select statements
+	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
+	{
+		auto select = ast_select_of(ref->ast);
+		columns_free(&select->columns);
+		columns_free(&select->columns_group);
+	}
 }
 
 hot static inline void
@@ -135,19 +141,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 
 		ast = lex_next(lex);
-	}
-
-	// cte_name := stmt | expr
-	bool assign = false;
-	if (ast->id == KNAME)
-	{
-		if (lex_if(lex, KASSIGN))
-		{
-			lex_push(lex, ast);
-			parse_cte(stmt, false, false);
-			assign = true;
-			ast = lex_next(lex);
-		}
 	}
 
 	switch (ast->id) {
@@ -449,9 +442,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 	}
-
-	if (assign && stmt_is_utility(stmt))
-		error(":= cannot be used with utility statements");
 }
 
 hot static bool
@@ -468,7 +458,9 @@ parse_with(Parser* self)
 		// name [(args)] AS ( stmt )[, ...]
 		auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
 		                          &self->lex,
-		                          self->data, &self->json,
+		                          self->data,
+		                          self->row_writer,
+		                          &self->json,
 		                          &self->stmt_list,
 		                          &self->cte_list,
 		                           self->args);
@@ -565,7 +557,9 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 		self->stmt = stmt_allocate(self->db, self->function_mgr,
 		                           self->local,
 		                           &self->lex,
-		                           self->data, &self->json,
+		                           self->data,
+		                           self->row_writer,
+		                           &self->json,
 		                           &self->stmt_list,
 		                           &self->cte_list,
 		                            self->args);

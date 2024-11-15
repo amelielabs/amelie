@@ -83,10 +83,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 				buf_write_i64(column_data, value);
 			} else
 			{
-				// use DEFAULT (NULL by default)
-				is_null = buf_empty(&cons->value);
+				is_null = data_is_null(cons->value.start);
 				if (! is_null)
-					buf_write_buf(column_data, &cons->value);
+				{
+					// TODO: read data based on column type
+				}
 			}
 		}
 
@@ -246,10 +247,11 @@ parse_generate(Stmt* self, AstInsert* stmt)
 				buf_write_i64(column_data, value);
 			} else
 			{
-				// use DEFAULT (NULL by default)
-				is_null = buf_empty(&cons->value);
+				is_null = data_is_null(cons->value.start);
 				if (! is_null)
-					buf_write_buf(column_data, &cons->value);
+				{
+					// TODO: read data based on column type
+				}
 			}
 
 			// set column to null

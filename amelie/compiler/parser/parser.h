@@ -46,7 +46,6 @@ parser_is_profile(Parser* self)
 	return self->explain == (EXPLAIN|EXPLAIN_PROFILE);
 }
 
-/*
 static inline bool
 parser_is_shared_table_dml(Parser* self)
 {
@@ -61,4 +60,3 @@ parser_is_shared_table_dml(Parser* self)
 	}
 	return false;
 }
-*/
