@@ -71,7 +71,7 @@ planner_match(AstPath*     prev_path,
 void
 planner(TargetList* target_list, Target* target, Ast* expr)
 {
-	auto table = target->table;
+	auto table = target->from_table;
 	assert(table);
 	if (target->path)
 		return;
@@ -84,9 +84,9 @@ planner(TargetList* target_list, Target* target, Ast* expr)
 	};
 
 	// FROM USE INDEX (use predefined index)
-	if (target->index)
+	if (target->from_table_index)
 	{
-		path.keys = &target->index->keys;
+		path.keys = &target->from_table_index->keys;
 		target->path = &path_create(&path, expr)->ast;
 		return;
 	}
@@ -107,6 +107,6 @@ planner(TargetList* target_list, Target* target, Ast* expr)
 	}
 
 	// set index and path
-	target->path  = &match_path->ast;
-	target->index = match;
+	target->path = &match_path->ast;
+	target->from_table_index = match;
 }

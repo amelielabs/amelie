@@ -29,6 +29,7 @@ analyze_stmts(Parser* parser, int* count)
 	return last;
 }
 
+#if 0
 static inline uint32_t
 target_lookup_hash(Target* target)
 {
@@ -48,3 +49,4 @@ target_lookup_hash(Target* target)
 	}
 	return hash;
 }
+#endif
