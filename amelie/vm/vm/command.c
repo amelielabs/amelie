@@ -53,7 +53,7 @@ csend(Vm* self, Op* op)
 	uint32_t order_last = op->d + count;
 	for (; order < order_last; order++)
 	{
-		auto row = row_writer_at(self->code_rw, order);
+		auto row = row_data_at(self->code_data_row, order);
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, row->hash);
@@ -61,9 +61,9 @@ csend(Vm* self, Op* op)
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
-			req->start  = op->b;
-			req->arg_rw = self->code_rw;
-			req->route  = route;
+			req->start    = op->b;
+			req->arg_data = self->code_data_row;
+			req->route    = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
 		}
@@ -88,9 +88,9 @@ csend_hash(Vm* self, Op* op)
 	// shard by precomputed key hash
 	auto route = part_map_get(&table->part_list.map, op->d);
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
-	req->start  = op->b;
-	req->arg_rw = NULL;
-	req->route  = route;
+	req->start    = op->b;
+	req->arg_data = NULL;
+	req->route    = route;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -412,7 +412,7 @@ cinsert(Vm* self, Op* op)
 	int  list_count = buf_size(self->code_arg) / sizeof(uint32_t);
 	for (int i = 0; i < list_count; i++)
 	{
-		auto row = row_writer_create(self->code_rw, list[i]);
+		auto row = row_data_create(self->code_data_row, list[i]);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -438,7 +438,7 @@ cupsert(Vm* self, Op* op)
 	auto list = buf_u32(self->code_arg);
 	while (cursor->ref_pos < cursor->ref_count)
 	{
-		auto row = row_writer_create(self->code_rw, list[cursor->ref_pos]);
+		auto row = row_data_create(self->code_data_row, list[cursor->ref_pos]);
 		cursor->ref_pos++;
 
 		// insert or get (open iterator in both cases)

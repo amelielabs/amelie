@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct RowWriter RowWriter;
-typedef struct RowMeta   RowMeta;
+typedef struct RowMeta RowMeta;
+typedef struct RowData RowData;
 
 struct RowMeta
 {
@@ -22,7 +22,7 @@ struct RowMeta
 	uint32_t hash;
 };
 
-struct RowWriter
+struct RowData
 {
 	Buf      data;
 	Buf      data_index;
@@ -32,7 +32,7 @@ struct RowWriter
 };
 
 static inline void
-row_writer_init(RowWriter* self)
+row_data_init(RowData* self)
 {
 	self->current = NULL;
 	self->rows    = 0;
@@ -42,7 +42,7 @@ row_writer_init(RowWriter* self)
 }
 
 static inline void
-row_writer_free(RowWriter* self)
+row_data_free(RowData* self)
 {
 	buf_free(&self->data);
 	buf_free(&self->data_index);
@@ -50,7 +50,7 @@ row_writer_free(RowWriter* self)
 }
 
 static inline void
-row_writer_reset(RowWriter* self)
+row_data_reset(RowData* self)
 {
 	self->current = NULL;
 	self->rows    = 0;
@@ -60,13 +60,13 @@ row_writer_reset(RowWriter* self)
 }
 
 hot static inline RowMeta*
-row_writer_at(RowWriter* self, int pos)
+row_data_at(RowData* self, int pos)
 {
 	return &((RowMeta*)self->data_meta.start)[pos];
 }
 
 hot static inline void
-row_writer_begin(RowWriter* self, int columns)
+row_data_begin(RowData* self, int columns)
 {
 	auto meta = (RowMeta*)buf_claim(&self->data_meta, sizeof(RowMeta));
 	meta->offset       = buf_size(&self->data);
@@ -78,7 +78,7 @@ row_writer_begin(RowWriter* self, int columns)
 }
 
 hot static inline Buf*
-row_writer_add(RowWriter* self)
+row_data_add(RowData* self)
 {
 	uint32_t offset = buf_size(&self->data);
 	buf_write(&self->data_index, &offset, sizeof(offset));
@@ -86,14 +86,14 @@ row_writer_add(RowWriter* self)
 }
 
 hot static inline void
-row_writer_set_null(RowWriter* self)
+row_data_set_null(RowData* self)
 {
 	// set last column offset to 0
 	*(uint32_t*)(self->data_index.position - sizeof(uint32_t)) = 0;
 }
 
 hot static inline void
-row_writer_hash(RowWriter* self)
+row_data_hash(RowData* self)
 {
 	// hash last column data
 	auto offset = *(uint32_t*)(self->data_index.position - sizeof(uint32_t));
@@ -105,10 +105,10 @@ row_writer_hash(RowWriter* self)
 }
 
 hot static inline Row*
-row_writer_create(RowWriter* self, int pos)
+row_data_create(RowData* self, int pos)
 {
 	int  size;
-	auto meta = row_writer_at(self, pos);
+	auto meta = row_data_at(self, pos);
 	auto meta_next = meta + 1;
 	if ((uint8_t*)meta_next >= self->data_meta.position)
 		size = buf_size(&self->data) - meta->offset;

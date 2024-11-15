@@ -42,8 +42,8 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 
 	// begin new row
 	auto columns = table_columns(stmt->target->from_table);
-	auto row_writer = self->row_writer;
-	row_writer_begin(row_writer, columns->list_count);
+	auto row_data = self->data_row;
+	row_data_begin(row_data, columns->list_count);
 
 	// set next serial value
 	uint64_t serial = serial_next(&stmt->target->from_table->serial);
@@ -52,7 +52,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto column_data = row_writer_add(row_writer);
+		auto column_data = row_data_add(row_data);
 		auto is_null = false;
 
 		if (list && list->column->order == column->order)
@@ -99,12 +99,12 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			if (column->constraint.not_null)
 				error("column <%.*s> value cannot be NULL", str_size(&column->name),
 				      str_of(&column->name));
-			row_writer_set_null(row_writer);
+			row_data_set_null(row_data);
 		}
 
 		// hash column if it is a part of the key
 		if (column->key)
-			row_writer_hash(row_writer);
+			row_data_hash(row_data);
 	}
 
 	// )
@@ -121,14 +121,14 @@ parse_row(Stmt* self, AstInsert* stmt)
 
 	// begin new row
 	auto columns = table_columns(stmt->target->from_table);
-	auto row_writer = self->row_writer;
-	row_writer_begin(row_writer, columns->list_count);
+	auto row_data = self->data_row;
+	row_data_begin(row_data, columns->list_count);
 
 	// value, ...
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto column_data = row_writer_add(row_writer);
+		auto column_data = row_data_add(row_data);
 		auto is_null = false;
 
 		// parse column value
@@ -144,12 +144,12 @@ parse_row(Stmt* self, AstInsert* stmt)
 			if (column->constraint.not_null)
 				error("column <%.*s> value cannot be NULL", str_size(&column->name),
 				      str_of(&column->name));
-			row_writer_set_null(row_writer);
+			row_data_set_null(row_data);
 		}
 
 		// hash column if it is a part of the key
 		if (column->key)
-			row_writer_hash(row_writer);
+			row_data_hash(row_data);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -228,13 +228,13 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	if (! count)
 		error("GENERATE <count> expected");
 
-	auto row_writer = self->row_writer;
+	auto row_data = self->data_row;
 	auto table = stmt->target->from_table;
 	auto columns = table_columns(table);
 	for (uint64_t i = 0; i < count->integer; i++)
 	{
 		// begin new row
-		row_writer_begin(row_writer, columns->list_count);
+		row_data_begin(row_data, columns->list_count);
 
 		// set next serial value
 		uint64_t serial = serial_next(&table->serial);
@@ -243,7 +243,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			auto column_data = row_writer_add(row_writer);
+			auto column_data = row_data_add(row_data);
 			auto is_null = false;
 
 			// SERIAL, RANDOM or DEFAULT
@@ -272,12 +272,12 @@ parse_generate(Stmt* self, AstInsert* stmt)
 				if (column->constraint.not_null)
 					error("column <%.*s> value cannot be NULL", str_size(&column->name),
 					      str_of(&column->name));
-				row_writer_set_null(row_writer);
+				row_data_set_null(row_data);
 			}
 
 			// hash column if it is a part of the key
 			if (column->key)
-				row_writer_hash(row_writer);
+				row_data_hash(row_data);
 		}
 	}
 
@@ -418,7 +418,7 @@ parse_insert(Stmt* self)
 		error("INSERT INTO <table> expected");
 
 	// set offset to the first row
-	stmt->rows = self->row_writer->rows;
+	stmt->rows = self->data_row->rows;
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))

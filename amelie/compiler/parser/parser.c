@@ -38,13 +38,13 @@ parser_init(Parser*      self,
             Db*          db,
             FunctionMgr* function_mgr,
             CodeData*    data,
-            RowWriter*   row_writer)
+            RowData*     data_row)
 {
 	self->explain      = EXPLAIN_NONE;
 	self->stmt         = NULL;
 	self->args         = NULL;
 	self->data         = data;
-	self->row_writer   = row_writer;
+	self->data_row     = data_row;
 	self->function_mgr = function_mgr;
 	self->local        = NULL;
 	self->db           = db;

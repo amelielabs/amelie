@@ -26,7 +26,7 @@
 
 // row
 #include "row/row.h"
-#include "row/row_writer.h"
+#include "row/row_data.h"
 
 // compare
 #include "row/compare.h"

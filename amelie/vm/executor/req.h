@@ -24,22 +24,22 @@ typedef enum
 
 struct Req
 {
-	ReqType    type;
-	int        start;
-	Program*   program;
-	Buf*       args;
-	Buf        arg;
-	RowWriter* arg_rw;
-	Table*     arg_table;
-	uint8_t*   arg_start;
-	Value      result;
-	Result*    cte;
-	bool       shutdown;
-	Route*     route;
-	Limit*     limit;
-	Local*     local;
-	List       link_queue;
-	List       link;
+	ReqType  type;
+	int      start;
+	Program* program;
+	Buf*     args;
+	Buf      arg;
+	RowData* arg_data;
+	Table*   arg_table;
+	uint8_t* arg_start;
+	Value    result;
+	Result*  cte;
+	bool     shutdown;
+	Route*   route;
+	Limit*   limit;
+	Local*   local;
+	List     link_queue;
+	List     link;
 };
 
 static inline Req*
@@ -50,7 +50,7 @@ req_allocate(void)
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;
-	self->arg_rw    = NULL;
+	self->arg_data  = NULL;
 	self->arg_start = NULL;
 	self->arg_table = NULL;
 	self->cte       = NULL;
@@ -80,7 +80,7 @@ req_reset(Req* self)
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;
-	self->arg_rw    = NULL;
+	self->arg_data  = NULL;
 	self->arg_start = NULL;
 	self->arg_table = NULL;
 	self->cte       = NULL;

@@ -28,7 +28,7 @@ struct Parser
 	Columns*     args;
 	CteList      cte_list;
 	CodeData*    data;
-	RowWriter*   row_writer;
+	RowData*     data_row;
 	Json         json;
 	Lex          lex;
 	FunctionMgr* function_mgr;
@@ -36,7 +36,7 @@ struct Parser
 	Db*          db;
 };
 
-void parser_init(Parser*, Db*, FunctionMgr*, CodeData*, RowWriter*);
+void parser_init(Parser*, Db*, FunctionMgr*, CodeData*, RowData*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
 
