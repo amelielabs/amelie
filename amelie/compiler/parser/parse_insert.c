@@ -36,28 +36,31 @@
 hot static void
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
-	auto columns = table_columns(stmt->target->table);
-
 	// (
 	if (! stmt_if(self, '('))
 		error("expected '('");
 
-	// set next serial value
-	uint64_t serial = serial_next(&stmt->target->table->serial);
+	// begin new row
+	auto columns = table_columns(stmt->target->from_table);
+	row_writer_begin(self->row_writer, columns->list_count);
 
-	// [
-	auto data = &self->data->data;
-	encode_array(data);
+	// set next serial value
+	uint64_t serial = serial_next(&stmt->target->from_table->serial);
 
 	// value, ...
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto offset = code_data_offset(self->data);
+		auto column_data = row_writer_add(self->row_writer);
+		auto is_null = false;
+
 		if (list && list->column->order == column->order)
 		{
-			// parse and encode json value
-			parse_value(self, column);
+			// parse column value
+			if (stmt_if(self, KNULL))
+				is_null = true;
+			else
+				parse_value(self->lex, self->local, self->json, column_data, column);
 
 			// ,
 			list = list->next;
@@ -72,30 +75,31 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
-				encode_integer(data, serial);
+				buf_write_i64(column_data, serial);
 			} else
 			if (cons->random)
 			{
 				auto value = random_generate(global()->random) % cons->random_modulo;
-				encode_integer(data, value);
+				buf_write_i64(column_data, value);
 			} else
 			{
 				// use DEFAULT (NULL by default)
-				buf_write(data, cons->value.start, buf_size(&cons->value));
+				is_null = buf_empty(&cons->value);
+				if (! is_null)
+					buf_write_buf(column_data, &cons->value);
 			}
 		}
 
-		// ensure NOT NULL constraint
-		if (column->constraint.not_null)
+		// set column to null
+		if (is_null)
 		{
-			if (data_is_null(code_data_at(self->data, offset)))
+			// ensure NOT NULL constraint
+			if (column->constraint.not_null)
 				error("column <%.*s> value cannot be NULL", str_size(&column->name),
 				      str_of(&column->name));
+			row_writer_set_null(self->row_writer);
 		}
 	}
-
-	// ]
-	encode_array_end(data);
 
 	// )
 	if (! stmt_if(self, ')'))
@@ -105,31 +109,35 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 hot static inline void
 parse_row(Stmt* self, AstInsert* stmt)
 {
-	auto columns = table_columns(stmt->target->table);
-
 	// (
 	if (! stmt_if(self, '('))
 		error("expected '('");
 
-	// [
-	auto data = &self->data->data;
-	encode_array(data);
+	// begin new row
+	auto columns = table_columns(stmt->target->from_table);
+	row_writer_begin(self->row_writer, columns->list_count);
 
 	// value, ...
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
+		auto column_data = row_writer_add(self->row_writer);
+		auto is_null = false;
 
-		// parse and encode json value
-		auto offset = code_data_offset(self->data);
-		parse_value(self, column);
+		// parse column value
+		if (stmt_if(self, KNULL))
+			is_null = true;
+		else
+			parse_value(self->lex, self->local, self->json, column_data, column);
 
-		// ensure NOT NULL constraint
-		if (column->constraint.not_null)
+		// set column to null
+		if (is_null)
 		{
-			if (data_is_null(code_data_at(self->data, offset)))
+			// ensure NOT NULL constraint
+			if (column->constraint.not_null)
 				error("column <%.*s> value cannot be NULL", str_size(&column->name),
 				      str_of(&column->name));
+			row_writer_set_null(self->row_writer);
 		}
 
 		// ,
@@ -141,65 +149,15 @@ parse_row(Stmt* self, AstInsert* stmt)
 		}
 	}
 
-	// ]
-	encode_array_end(data);
-
 	// )
 	if (! stmt_if(self, ')'))
 		error("expected ')'");
 }
 
-hot static inline void
-parse_values(Stmt* self, AstInsert* stmt, bool list_in_use, Ast* list)
-{
-	// [VALUES]
-	if (stmt_if(self, KVALUES))
-	{
-		// (value, ...), ...
-		for (;;)
-		{
-			if (list_in_use)
-				parse_row_list(self, stmt, list);
-			else
-				parse_row(self, stmt);
-			stmt->rows_count++;
-			if (! stmt_if(self, ','))
-				break;
-		}
-		return;
-	}
-
-	// one column case
-	auto columns = table_columns(stmt->target->table);
-	if (unlikely(list || columns->list_count > 1))
-		error("INSERT INTO <VALUES> expected");
-
-	// no constraints applied
-	auto data = &self->data->data;
-
-	// value, ...
-	for (;;)
-	{
-		// [
-		encode_array(data);
-
-		// parse and encode json value
-		auto column = columns_find_by(columns, 0);
-		parse_value(self, column);
-
-		// ]
-		encode_array_end(data);
-
-		stmt->rows_count++;
-		if (! stmt_if(self, ','))
-			break;
-	}
-}
-
 hot static inline Ast*
 parse_column_list(Stmt* self, AstInsert* stmt)
 {
-	auto columns = table_columns(stmt->target->table);
+	auto columns = table_columns(stmt->target->from_table);
 
 	// empty column list ()
 	if (unlikely(stmt_if(self, ')')))
@@ -259,48 +217,51 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	if (! count)
 		error("GENERATE <count> expected");
 
-	auto data = &self->data->data;
-	auto columns = table_columns(stmt->target->table);
+	auto table = stmt->target->from_table;
+	auto columns = table_columns(table);
 	for (uint64_t i = 0; i < count->integer; i++)
 	{
-		// set next serial value
-		uint64_t serial = serial_next(&stmt->target->table->serial);
+		// begin new row
+		row_writer_begin(self->row_writer, columns->list_count);
 
-		// [
-		encode_array(data);
+		// set next serial value
+		uint64_t serial = serial_next(&table->serial);
 
 		// value, ...
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
+			auto column_data = row_writer_add(self->row_writer);
+			auto is_null = false;
 
 			// SERIAL, RANDOM or DEFAULT
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
-				encode_integer(data, serial);
+				buf_write_i64(column_data, serial);
 			} else
 			if (cons->random)
 			{
 				auto value = random_generate(global()->random) % cons->random_modulo;
-				encode_integer(data, value);
+				buf_write_i64(column_data, value);
 			} else
 			{
-				// ensure NOT NULL constraint (for DEFAULT value)
-				if (cons->not_null)
-				{
-					if (data_is_null(cons->value.start))
-						error("column <%.*s> value cannot be NULL", str_size(&column->name),
-						      str_of(&column->name));
-				}
-
 				// use DEFAULT (NULL by default)
-				buf_write(data, cons->value.start, buf_size(&cons->value));
+				is_null = buf_empty(&cons->value);
+				if (! is_null)
+					buf_write_buf(column_data, &cons->value);
+			}
+
+			// set column to null
+			if (is_null)
+			{
+				// ensure NOT NULL constraint
+				if (column->constraint.not_null)
+					error("column <%.*s> value cannot be NULL", str_size(&column->name),
+					      str_of(&column->name));
+				row_writer_set_null(self->row_writer);
 			}
 		}
-
-		// ]
-		encode_array_end(data);
 	}
 
 	stmt->rows_count = count->integer;
@@ -313,7 +274,7 @@ parse_on_conflict_aggregate(Stmt* self, AstInsert* stmt)
 	// handle insert as upsert and generate
 	//
 	// SET <column> = <aggregated column expression> [, ...]
-	auto columns = table_columns(stmt->target->table);
+	auto columns = table_columns(stmt->target->from_table);
 	stmt->update_expr = parse_update_aggregated(self, columns);
 	if (! stmt->update_expr)
 		stmt->on_conflict = ON_CONFLICT_NOTHING;
@@ -327,7 +288,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	{
 		// if table is aggregated and no explicit ON CONFLICT clause
 		// then handle as ON CONFLICT DO AGGREGATE
-		if (stmt->target->table->config->aggregated)
+		if (stmt->target->from_table->config->aggregated)
 			parse_on_conflict_aggregate(self, stmt);
 		return;
 	}
@@ -374,10 +335,11 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 }
 
+#if 0
 hot static void
 parse_generated(Stmt* self, AstInsert* stmt)
 {
-	auto columns = table_columns(stmt->target->table);
+	auto columns = table_columns(stmt->target->from_table);
 	if (! columns->generated_columns)
 		return;
 
@@ -416,6 +378,7 @@ parse_generated(Stmt* self, AstInsert* stmt)
 
 	self->lex = lex_origin;
 }
+#endif
 
 hot void
 parse_insert(Stmt* self)
@@ -434,13 +397,11 @@ parse_insert(Stmt* self)
 	// table
 	int level = target_list_next_level(&self->target_list);
 	stmt->target = parse_from(self, level);
-	if (stmt->target->table == NULL || stmt->target->next_join)
+	if (stmt->target->from_table == NULL || stmt->target->next_join)
 		error("INSERT INTO <table> expected");
 
-	// [
-	stmt->rows = code_data_offset(self->data);
-	auto data = &self->data->data;
-	encode_array(data);
+	// set offset to the first row
+	stmt->rows = self->row_writer->rows;
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))
@@ -454,15 +415,24 @@ parse_insert(Stmt* self)
 		if (list_in_use)
 			list = parse_column_list(self, stmt);
 
-		// [VALUES] | expr
-		parse_values(self, stmt, list_in_use, list);
+		// VALUES (value[, ...])[, ...]
+		if (! stmt_if(self, KVALUES))
+			error("INSERT INTO <VALUES> expected");
+		for (;;)
+		{
+			if (list_in_use)
+				parse_row_list(self, stmt, list);
+			else
+				parse_row(self, stmt);
+			stmt->rows_count++;
+			if (! stmt_if(self, ','))
+				break;
+		}
 	}
 
-	// ]
-	encode_array_end(data);
-
+	// TODO
 	//  create a list of generated columns expressions
-	parse_generated(self, stmt);
+	//parse_generated(self, stmt);
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);

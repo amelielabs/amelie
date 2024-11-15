@@ -68,6 +68,7 @@ struct Stmt
 	AstList      select_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
+	RowWriter*   row_writer;
 	Json*        json;
 	Lex*         lex;
 	FunctionMgr* function_mgr;
@@ -88,6 +89,7 @@ stmt_allocate(Db*          db,
               Local*       local,
               Lex*         lex,
               CodeData*    data,
+              RowWriter*   row_writer,
               Json*        json,
               StmtList*    stmt_list,
               CteList*     cte_list,
@@ -103,6 +105,7 @@ stmt_allocate(Db*          db,
 	self->args         = args;
 	self->stmt_list    = stmt_list;
 	self->data         = data;
+	self->row_writer   = row_writer;
 	self->json         = json;
 	self->lex          = lex;
 	self->function_mgr = function_mgr;

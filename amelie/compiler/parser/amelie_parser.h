@@ -60,9 +60,9 @@
 // dml
 #include "parser/parse_from.h"
 #include "parser/parse_value.h"
-#if 0
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
+#if 0
 #include "parser/parse_delete.h"
 #endif
 

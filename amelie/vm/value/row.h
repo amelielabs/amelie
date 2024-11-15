@@ -34,9 +34,9 @@ value_row_key(Keys* self, Stack* stack)
 		}
 		}
 	}
-
-	auto     row   = row_allocate(self->columns->list_count, size);
-	uint8_t* pos   = row_data(row);
+	auto     columns_count = self->columns->list_count;
+	auto     row   = row_allocate(columns_count, size);
+	uint8_t* pos   = row_data(row, columns_count);
 	auto     order = 0;
 	list_foreach(&self->columns->list)
 	{
@@ -50,7 +50,7 @@ value_row_key(Keys* self, Stack* stack)
 		order++;
 
 		// set index to pos
-		row_set_ptr(row, column->order, pos);
+		row_set(row, column->order, pos - (uint8_t*)row);
 		switch (column->type) {
 		case TYPE_INT8:
 			*(int8_t*)pos = ref->integer;

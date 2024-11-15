@@ -117,10 +117,6 @@ parse_vector(Lex* self, Ast* ast, Buf* data, Column* column)
 hot void
 parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 {
-	// null
-	if (lex_if(self, KNULL))
-		return;
-
 	int64_t integer;
 	double  dbl;
 	auto ast = lex_next(self);

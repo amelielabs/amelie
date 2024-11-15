@@ -27,7 +27,7 @@ struct AstInsert
 	Target* target;
 	Target* target_generated;
 	int     rows;
-	int     rows_count;;
+	int     rows_count;
 	int     on_conflict;
 	Ast*    update_expr;
 	Ast*    update_where;
