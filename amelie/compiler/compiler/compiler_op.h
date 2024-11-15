@@ -12,15 +12,21 @@
 //
 
 hot static inline int
-rpin(Compiler* self)
+rpin(Compiler* self, int type)
 {
-	return rmap_pin(&self->map);
+	return rmap_pin(&self->map, type);
 }
 
 static inline void
 runpin(Compiler* self, int r)
 {
 	rmap_unpin(&self->map, r);
+}
+
+hot static inline int
+rtype(Compiler* self, int r)
+{
+	return rmap_at(&self->map, r);
 }
 
 static inline void

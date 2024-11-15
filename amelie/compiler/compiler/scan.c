@@ -55,7 +55,7 @@ scan_key(Scan* self, Target* target)
 	auto cp   = self->compiler;
 	auto path = ast_path_of(target->path);
 
-	list_foreach(&target->index->keys.list)
+	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &path->keys[key->order];
@@ -71,15 +71,18 @@ scan_key(Scan* self, Target* target)
 
 		// set min
 		int rexpr;
-		switch (key->type) {
-		case TYPE_INT:
-			rexpr = op1(cp, CINT_MIN, rpin(cp));
+		switch (key->column->type) {
+		case TYPE_INT8:
+		case TYPE_INT16:
+		case TYPE_INT32:
+		case TYPE_INT64:
+			rexpr = op1(cp, CINT_MIN, rpin(cp, VALUE_INT));
 			break;
 		case TYPE_TIMESTAMP:
-			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp));
+			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp, VALUE_TIMESTAMP));
 			break;
-		case TYPE_STRING:
-			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
+		case TYPE_TEXT:
+			rexpr = op1(cp, CSTRING_MIN, rpin(cp, VALUE_STRING));
 			break;
 		}
 		op1(cp, CPUSH, rexpr);
@@ -93,7 +96,7 @@ scan_stop(Scan* self, Target* target, int _eof)
 	auto cp   = self->compiler;
 	auto path = ast_path_of(target->path);
 
-	list_foreach(&target->index->keys.list)
+	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &path->keys[key->order];
@@ -114,17 +117,17 @@ static inline void
 scan_target(Scan*, Target*);
 
 static inline void
-scan_target_table(Scan* self, Target* target)
+scan_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
-	auto table = target->table;
+	auto table = target->from_table;
 
 	// prepare scan path using where expression per target
 	planner(target_list, target, self->expr_where);
 	auto path = ast_path_of(target->path);
 	auto point_lookup = (path->type == PATH_LOOKUP);
-	auto index = target->index;
+	auto index = target->from_table_index;
 
 	// push cursor keys
 	scan_key(self, target);
@@ -215,29 +218,35 @@ scan_target_table(Scan* self, Target* target)
 }
 
 static inline void
-scan_target_expr(Scan* self, Target* target)
+scan_store(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 
-	// use expression or CTE result for open
-	int _open;
-	int rexpr = -1;
-	if (target->cte)
-	{
-		// cursor_open_cte
-		_open = op_pos(cp);
-		op3(cp, CCURSOR_OPEN_CTE, target->id, target->cte->id, 0 /* _where */);
-	} else
-	{
-		// expr
-		if (target->rexpr != -1)
-			rexpr = target->rexpr;
-		else
-			rexpr = emit_expr(cp, target, target->expr);
-		// cursor_open_expr
-		_open = op_pos(cp);
-		op3(cp, CCURSOR_OPEN_EXPR, target->id, rexpr, 0 /* _where */);
+	// scan over SET or MERGE object
+	//
+	// using target register value to determine the scan object
+	assert(target->r != -1);
+	int op_open;
+	int op_close;
+	int op_next;
+	switch (rtype(cp, target->r)) {
+	case VALUE_SET:
+		op_open  = CCURSOR_SET_OPEN;
+		op_close = CCURSOR_SET_CLOSE;
+		op_next  = CCURSOR_SET_NEXT;
+		break;
+	case VALUE_MERGE:
+		op_open  = CCURSOR_MERGE_OPEN;
+		op_close = CCURSOR_MERGE_CLOSE;
+		op_next  = CCURSOR_MERGE_NEXT;
+		break;
+	default:
+		abort();
 	}
+
+	// open SET or MERGE cursor
+	auto _open = op_pos(cp);
+	op3(cp, op_open, target->id, target->r, 0 /* _where */);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -288,24 +297,25 @@ scan_target_expr(Scan* self, Target* target)
 			code_at(cp->code, _coffset_jmp)->c = _next;
 	}
 
-	// cursor_next
-	op2(cp, CCURSOR_NEXT, target->id, _where);
+	// cursor next
+	op2(cp, op_next, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
-	op1(cp, CCURSOR_CLOSE, target->id);
-	if (rexpr != -1)
-		runpin(cp, rexpr);
+
+	// free cursor object on close, unless it is CTE result
+	op2(cp, op_close, target->id, target->type != TARGET_CTE);
 }
 
 static inline void
 scan_target(Scan* self, Target* target)
 {
-	if (target->table)
-		scan_target_table(self, target);
+	if (target->type == TARGET_TABLE ||
+	    target->type == TARGET_TABLE_SHARED)
+		scan_table(self, target);
 	else
-		scan_target_expr(self, target);
+		scan_store(self, target);
 }
 
 void

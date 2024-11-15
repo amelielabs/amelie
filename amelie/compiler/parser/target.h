@@ -46,6 +46,7 @@ struct Target
 	Cte*         from_cte;
 	View*        from_view;
 	Columns*     from_columns;
+	int          r;
 	// target keys
 	Ast*         path;
 	// join
@@ -71,6 +72,7 @@ target_allocate(void)
 	self->from_cte         = NULL;
 	self->from_view        = NULL;
 	self->from_columns     = NULL;
+	self->r                = -1;
 	self->path             = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
