@@ -225,12 +225,13 @@ parse_select(Stmt* self)
 	{
 		if (select->target == NULL)
 			error("no targets to use with GROUP BY or aggregates");
-
 		auto target = target_allocate();
 		target->type = TARGET_SELECT;
 		target->from_columns = &select->columns_group;
 		target_list_add(&self->target_list, target, level, 0);
 		select->target_group = target;
+		// [aggs, group_by_keys]
+
 		// group by target columns will be set during compilation
 	}
 

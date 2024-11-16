@@ -72,7 +72,6 @@ enum
 	KLAMBDA,
 	KNEG,
 	KARRAY,
-	KSTAR,
 
 	KSET,
 	KUNSET,
