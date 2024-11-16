@@ -43,33 +43,11 @@ emit_string(Compiler* self, Str* string, bool escape)
 		offset = code_data_add_string_unescape(&self->code_data, string);
 	else
 		offset = code_data_add_string(&self->code_data, string);
-	return op2(self, CSTRING, rpin(self), offset);
+	return op2(self, CSTRING, rpin(self, VALUE_STRING), offset);
 }
 
 hot static inline int
-emit_operator(Compiler* self, Target* target, Ast* ast, int op)
-{
-	int l = emit_expr(self, target, ast->l);
-	int r = emit_expr(self, target, ast->r);
-	int rc;
-	rc = op3(self, op, rpin(self), l, r);
-	runpin(self, l);
-	runpin(self, r);
-	return rc;
-}
-
-hot static inline int
-emit_unary(Compiler* self, Target* target, Ast* ast, int op)
-{
-	int l = emit_expr(self, target, ast->l);
-	int rc;
-	rc = op2(self, op, rpin(self), l);
-	runpin(self, l);
-	return rc;
-}
-
-hot static inline int
-emit_obj(Compiler* self, Target* target, Ast* ast, int op)
+emit_json(Compiler* self, Target* target, Ast* ast, int op)
 {
 	auto args = ast->l;
 	assert(args->id == KARGS);
@@ -85,87 +63,241 @@ emit_obj(Compiler* self, Target* target, Ast* ast, int op)
 	}
 
 	// op
-	return op2(self, op, rpin(self), args->integer);
+	return op2(self, op, rpin(self, VALUE_JSON), args->integer);
 }
 
 hot static inline int
-emit_call(Compiler* self, Target* target, Ast* ast)
+emit_column(Compiler* self, Target* target, Str* name)
 {
-	// (function_name, args)
-	auto call = ast_call_of(ast);
-	auto args = ast->r;
+	// find column in the target
+	auto column = columns_find(target->from_columns, name);
+	if (! column)
+		error("<%.*s.%.*s> column not found",
+		      str_size(&target->name), str_of(&target->name),
+		      str_size(name), str_of(name));
 
-	// replace now() with local transaction time
-	if (str_is(&call->fn->name, "now", 3) &&
-	    str_is(&call->fn->schema, "public", 6))
+	// generate cursor read based on the target
+	int r;
+	if (target->type == TARGET_TABLE ||
+	    target->type == TARGET_TABLE_SHARED)
 	{
-		auto time = self->parser.local->time_us;
-		return op2(self, CTIMESTAMP, rpin(self), time);
-	}
-
-	// push arguments
-	auto current = args->l;
-	while (current)
-	{
-		int r = emit_expr(self, target, current);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		current = current->next;
-	}
-
-	// register function call, if it has context
-	Function* fn = call->fn;
-	int call_id = -1;
-	if (fn->context)
-		call_id = code_data_add_call(&self->code_data, fn);
-
-	// CALL
-	return op4(self, CCALL, rpin(self), (intptr_t)fn, args->integer, call_id);
-}
-
-hot static inline int
-emit_call_method(Compiler* self, Target* target, Ast* ast)
-{
-	// expr, method(path, [args])
-	auto expr = ast->l;
-	auto call = ast_call_of(ast->r);
-	auto args = call->ast.r;
-
-	// use expression as the first argument to the call
-	int r = emit_expr(self, target, expr);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	// push the rest of the arguments
-	int argc = 1;
-	if (args)
-	{
-		auto current = args->l;
-		while (current)
-		{
-			r = emit_expr(self, target, current);
-			op1(self, CPUSH, r);
-			runpin(self, r);
-			current = current->next;
+		switch (column->type) {
+		case TYPE_BOOL:
+			r = op3(self, CCURSOR_READB, rpin(self, VALUE_BOOL),
+			        target->id, column->order);
+		case TYPE_INT8:
+			r = op3(self, CCURSOR_READI8, rpin(self, VALUE_INT),
+			        target->id, column->order);
+			break;
+		case TYPE_INT16:
+			r = op3(self, CCURSOR_READI16, rpin(self, VALUE_INT),
+			        target->id, column->order);
+			break;
+		case TYPE_INT32:
+			r = op3(self, CCURSOR_READI32, rpin(self, VALUE_INT),
+			        target->id, column->order);
+			break;
+		case TYPE_INT64:
+			r = op3(self, CCURSOR_READI64, rpin(self, VALUE_INT),
+			        target->id, column->order);
+			break;
+		case TYPE_FLOAT:
+			r = op3(self, CCURSOR_READF, rpin(self, VALUE_DOUBLE),
+			        target->id, column->order);
+			break;
+		case TYPE_DOUBLE:
+			r = op3(self, CCURSOR_READD, rpin(self, VALUE_DOUBLE),
+			        target->id, column->order);
+			break;
+		case TYPE_TIMESTAMP:
+			r = op3(self, CCURSOR_READT, rpin(self, VALUE_TIMESTAMP),
+			        target->id, column->order);
+			break;
+		case TYPE_INTERVAL:
+			r = op3(self, CCURSOR_READL, rpin(self, VALUE_INTERVAL),
+			        target->id, column->order);
+			break;
+		case TYPE_TEXT:
+			r = op3(self, CCURSOR_READS, rpin(self, VALUE_INTERVAL),
+			        target->id, column->order);
+			break;
+		case TYPE_JSON:
+			r = op3(self, CCURSOR_READJ, rpin(self, VALUE_JSON),
+			        target->id, column->order);
+			break;
+		case TYPE_VECTOR:
+			r = op3(self, CCURSOR_READV, rpin(self, VALUE_VECTOR),
+			        target->id, column->order);
+			break;
 		}
-		argc += args->integer;
+	} else
+	{
+		int type;
+		switch (column->type) {
+		case TYPE_BOOL:
+			type = VALUE_BOOL;
+			break;
+		case TYPE_INT8:
+		case TYPE_INT16:
+		case TYPE_INT32:
+		case TYPE_INT64:
+			type = VALUE_INT;
+			break;
+		case TYPE_FLOAT:
+		case TYPE_DOUBLE:
+			type = VALUE_DOUBLE;
+			break;
+		case TYPE_TIMESTAMP:
+			type = VALUE_TIMESTAMP;
+			break;
+		case TYPE_INTERVAL:
+			type = VALUE_INTERVAL;
+			break;
+		case TYPE_TEXT:
+			type = VALUE_STRING;
+			break;
+		case TYPE_JSON:
+			type = VALUE_JSON;
+			break;
+		case TYPE_VECTOR:
+			type = VALUE_VECTOR;
+			break;
+		}
+		assert(target->r != -1);
+		switch (rtype(self, target->r)) {
+		case VALUE_SET:
+			r = op3(self, CCURSOR_SET_READ, rpin(self, type),
+			        target->id, column->order);
+			break;
+		case VALUE_MERGE:
+			r = op3(self, CCURSOR_MERGE_READ, rpin(self, type),
+			        target->id, column->order);
+			break;
+		default:
+			abort();
+		}
+	}
+	return r;
+}
+
+hot static inline int
+emit_name(Compiler* self, Target* target, Ast* ast)
+{
+	// SELECT name
+	auto name = &ast->string;
+
+	// note: arguments and cte (without columns) are
+	// resolved during parsing
+	auto target_list = compiler_target_list(self);
+	if (target_list->count == 0)
+		error("<%.*s> column, CTE or argument not found",
+		      str_size(name), str_of(name));
+
+	if (unlikely(target == NULL))
+		error("<%.*s> target column cannot be found",
+		      str_size(name), str_of(name));
+
+	// SELECT name FROM
+	if (target_list->count == 1 || target_is_join(target))
+		error("<%.*s> column requires explicit target name",
+		      str_size(name), str_of(name));
+
+	// todo: lambda?
+	return emit_column(self, target, name);
+}
+
+hot static inline int
+emit_name_compound(Compiler* self, Target* target, Ast* ast)
+{
+	// note: arguments and cte (without columns) are
+	// resolved during parsing
+	//
+	// cte with columns resolved here as a target only
+	//
+
+	// target.column[.path]
+	// column.path
+	Str name;
+	str_split(&ast->string, &name, '.');
+
+	Str path;
+	str_init(&path);
+	str_set_str(&path, &ast->string);
+
+	// check if the first path is a target name
+	auto target_list = compiler_target_list(self);
+	if (target_list->count == 0)
+		error("<%.*s> column, CTE or argument not found",
+		      str_size(&name), str_of(&name));
+
+	// find target
+	auto match = target_list_match(target_list, &name);
+	if (match)
+	{
+		// target.column
+		target = match;
+
+		// exclude target name from the path
+		str_advance(&path, str_size(&name) + 1);
+
+		if (str_split(&path, &name, '.'))
+			str_advance(&path, str_size(&name) + 1);
 	}
 
-	// register function call, if it has context
-	Function* fn = call->fn;
-	int call_id = -1;
-	if (fn->context)
-		call_id = code_data_add_call(&self->code_data, fn);
+	// column[.path]
+	auto rcolumn = emit_column(self, target, &name);
 
-	// CALL
-	return op4(self, CCALL, rpin(self), (intptr_t)fn, argc, call_id);
+	if (str_empty(&path))
+		return rcolumn;
+
+	// ensure column is a json
+	if (rtype(self, rcolumn) != VALUE_JSON)
+		error("'.': column <%.*s.%.*s> is not a json",
+		      str_size(&target->name), str_of(&target->name),
+		      str_size(&name), str_of(&name));
+
+	// column['path']
+	int rstring = emit_string(self, &path, false);
+	return cast_operator(self, OP_IDX, rcolumn, rstring);
+}
+
+hot static inline int
+emit_aggregate(Compiler* self, Target* target, Ast* ast)
+{
+	// SELECT aggr GROUP BY
+	// SELECT GROUP BY HAVING aggr
+	assert(target->r != -1);
+	assert(rtype(self, target->r) == VALUE_SET);
+
+	auto agg = ast_agg_of(ast);
+	(void)agg;
+	// TODO
+	// todo:
+		// read by cursor
+		// agg types
+		// handle count
+		// handle avg
+#if 0
+	// use main target id
+	return op3(self, CGROUP_READ_AGGR, rpin(self), target->group_redirect->id,
+	           aggr->order);
+#endif
+	return 0;
+}
+
+hot static inline int
+emit_operator(Compiler* self, Target* target, Ast* ast, int op)
+{
+	int l = emit_expr(self, target, ast->l);
+	int r = emit_expr(self, target, ast->r);
+	return cast_operator(self, op, l, r);
 }
 
 hot static inline int
 emit_and(Compiler* self, Target* target, Ast* ast)
 {
 	int rresult;
-	rresult = rpin(self);
+	rresult = rpin(self, VALUE_BOOL);
 
 	// lexpr
 	// jntr _false
@@ -202,7 +334,7 @@ emit_and(Compiler* self, Target* target, Ast* ast)
 	// _false
 	int _false = op_pos(self);
 	op_set_jmp(self, false_jmp, _false);
-	op2(self, CBOOL, rresult, 0);
+	op2(self, CBOOL, rresult, false);
 
 	// jmp _end
 	int end_jmp = op_pos(self);
@@ -211,7 +343,7 @@ emit_and(Compiler* self, Target* target, Ast* ast)
 	// true
 	int rue = op_pos(self);
 	op_set_jmp(self, true_jmp, rue);
-	op2(self, CBOOL, rresult, 1);
+	op2(self, CBOOL, rresult, true);
 
 	// _end
 	int _end = op_pos(self);
@@ -227,7 +359,7 @@ hot static inline int
 emit_or(Compiler* self, Target* target, Ast* ast)
 {
 	int rresult;
-	rresult = rpin(self);
+	rresult = rpin(self, VALUE_BOOL);
 
 	// lexpr
 		// jntr _next
@@ -280,7 +412,7 @@ emit_or(Compiler* self, Target* target, Ast* ast)
 	// _false
 	int _false = op_pos(self);
 	op_set_jmp(self, false_jmp, _false);
-	op2(self, CBOOL, rresult, 0);
+	op2(self, CBOOL, rresult, false);
 
 	// jmp end
 	int end_jmp = op_pos(self);
@@ -290,7 +422,7 @@ emit_or(Compiler* self, Target* target, Ast* ast)
 	int rue = op_pos(self);
 	op_set_jmp(self, true_jmp0, rue);
 	op_set_jmp(self, true_jmp1, rue);
-	op2(self, CBOOL, rresult, 1);
+	op2(self, CBOOL, rresult, true);
 
 	// _end
 	int _end = op_pos(self);
@@ -300,6 +432,79 @@ emit_or(Compiler* self, Target* target, Ast* ast)
 	runpin(self, rl);
 	runpin(self, rr);
 	return rresult;
+}
+
+hot static inline int
+emit_call(Compiler* self, Target* target, Ast* ast)
+{
+	// (function_name, args)
+	auto call = ast_call_of(ast);
+	auto args = ast->r;
+
+	// replace now() with local transaction time
+	if (str_is(&call->fn->name, "now", 3) &&
+	    str_is(&call->fn->schema, "public", 6))
+	{
+		auto time = self->parser.local->time_us;
+		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP), time);
+	}
+
+	// push arguments
+	auto current = args->l;
+	while (current)
+	{
+		int r = emit_expr(self, target, current);
+		op1(self, CPUSH, r);
+		runpin(self, r);
+		current = current->next;
+	}
+
+	// register function call, if it has context
+	Function* fn = call->fn;
+	int call_id = -1;
+	if (fn->context)
+		call_id = code_data_add_call(&self->code_data, fn);
+
+	// CALL
+	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, args->integer, call_id);
+}
+
+hot static inline int
+emit_call_method(Compiler* self, Target* target, Ast* ast)
+{
+	// expr, method(path, [args])
+	auto expr = ast->l;
+	auto call = ast_call_of(ast->r);
+	auto args = call->ast.r;
+
+	// use expression as the first argument to the call
+	int r = emit_expr(self, target, expr);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// push the rest of the arguments
+	int argc = 1;
+	if (args)
+	{
+		auto current = args->l;
+		while (current)
+		{
+			r = emit_expr(self, target, current);
+			op1(self, CPUSH, r);
+			runpin(self, r);
+			current = current->next;
+		}
+		argc += args->integer;
+	}
+
+	// register function call, if it has context
+	Function* fn = call->fn;
+	int call_id = -1;
+	if (fn->context)
+		call_id = code_data_add_call(&self->code_data, fn);
+
+	// CALL
+	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, argc, call_id);
 }
 
 hot static inline int
@@ -333,254 +538,13 @@ emit_between(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
-emit_cursor_idx(Compiler* self, Target* target, Str* path)
-{
-	int target_id = target->id;
-	if (target->group_redirect)
-		target_id = target->group_redirect->id;
-
-	// copy path reference
-	Str ref;
-	str_set_str(&ref, path);
-
-	// get name from the compound path
-	//
-	// name.path
-	//
-	Str  name;
-	bool compound = str_split(&ref, &name, '.');
-
-	// get target columns
-	Columns* columns = NULL;
-	if (target->cte)
-		columns = &target->cte->columns;
-	else
-	if (target->view)
-		columns = view_columns(target->view);
-	else
-	if (target->table)
-		columns = table_columns(target->table);
-	else
-	if (target->expr_columns)
-		columns = target->expr_columns;
-
-	// find column in the target key
-	Column* column       = NULL;
-	int     column_order = -1;
-	if (columns)
-	{
-		// find column
-		column = columns_find(columns, &name);
-		if (column)
-			column_order = column->order;
-	} else
-	{
-		// try to resolve target expr labels
-		if (target->expr && target->expr->id == KSELECT)
-		{
-			auto select = ast_select_of(target->expr);
-			auto label  = ast_label_match(&select->expr_labels, &name);
-			if (label)
-				column_order = label->order;
-		}
-	}
-
-	// exclude column or label name from the path
-	if (column || column_order >= 0)
-	{
-		// name.path
-		// name
-		// exclude name from the path
-		if (compound)
-			str_advance(&ref, str_size(&name) + 1);
-		else
-			str_init(&ref);
-	}
-
-	// current[name]
-	// *.name
-	int offset;
-	if (! str_empty(&ref))
-		offset = code_data_add_string(&self->code_data, &ref);
-	else
-		offset = -1;
-	return op4(self, CCURSOR_IDX, rpin(self), target_id, column_order, offset);
-}
-
-hot static inline int
-emit_name(Compiler* self, Target* target, Ast* ast)
-{
-	// SELECT name
-	auto name = &ast->string;
-
-	// note: arguments and cte (without columns) are
-	// resolved during parsing
-	auto target_list = compiler_target_list(self);
-	if (target_list->count == 0)
-		error("<%.*s> column, CTE or argument not found",
-		      str_size(name), str_of(name));
-
-	if (unlikely(target == NULL))
-		error("<%.*s> target column cannot be found",
-		      str_size(name), str_of(name));
-
-	// SELECT name FROM
-	if (target_list->count == 1)
-		return emit_cursor_idx(self, target, name);
-
-	// GROUP BY / aggregation case
-	if (target_is_join(target))
-		error("<%.*s> path is ambiguous for JOIN",
-		      str_size(name), str_of(name));
-
-	// WHERE
-	if (target->group_redirect == NULL)
-	{
-		// find lambda and read its state
-		if (target->select)
-		{
-			// get lambda aggregate value using current group by key
-			auto select = ast_select_of(target->select);
-			auto lambda = ast_aggr_match(&select->expr_aggs, name);
-			if (lambda)
-			{
-				// group by keys
-				auto node = select->expr_group_by.list;
-				while (node)
-				{
-					auto group = ast_group_of(node->ast);
-					int rexpr = emit_expr(self, select->target, group->expr);
-					op1(self, CPUSH, rexpr);
-					runpin(self, rexpr);
-					node = node->next;
-				}
-				return op3(self, CGROUP_GET, rpin(self), select->rgroup,
-				           lambda->order);
-			}
-		}
-
-		// read cursor
-		return emit_cursor_idx(self, target, name);
-	}
-
-	// SELECT name GROUP BY
-	// SELECT GROUP BY HAVING name
-
-	// name must match
-	//  - expression label
-	//  - group by key label
-	//  - group by key
-
-	// use main target in case of group by target scan
-	auto main = target;
-	if (main->group_main)
-		main = target->group_main;
-
-	// match select label (aggregate or expression)
-	if (main->select)
-	{
-		auto select = ast_select_of(main->select);
-		auto label  = ast_label_match(&select->expr_labels, name);
-		if (label)
-			return emit_expr(self, target, label->expr);
-	}
-
-	// match group by key (group by key label)
-	auto group = ast_group_match(&main->group_by, name);
-	if (group == NULL)
-		error("<%.*s> only GROUP BY keys can be selected",
-		      str_size(name), str_of(name));
-
-	return op3(self, CGROUP_READ, rpin(self), target->group_redirect->id,
-	           group->order);
-}
-
-hot static inline int
-emit_name_compound(Compiler* self, Target* target, Ast* ast)
-{
-	// note: arguments and cte (without columns) are
-	// resolved during parsing
-	//
-	// cte with columns resolved here as a target only
-	//
-	Str name;
-	str_split(&ast->string, &name, '.');
-
-	Str path;
-	str_init(&path);
-	str_set_str(&path, &ast->string);
-
-	// check if first path is a table name
-	auto target_list = compiler_target_list(self);
-	if (target_list->count == 0)
-		error("<%.*s> column, CTE or argument not found",
-		      str_size(&name), str_of(&name));
-
-	auto match = target_list_match(target_list, &name);
-	if (match == NULL)
-	{
-		if (unlikely(! target))
-			error("<%.*s> target cannot be found", str_size(&name),
-			      str_of(&name));
-
-		if (target_is_join(target))
-			error("<%.*s> path is ambiguous for JOIN", str_size(&name),
-			      str_of(&name));
-
-		// use current target if table not found
-		match = target;
-
-		// use full path
-	} else
-	{
-		// exclude table name from the path
-		str_advance(&path, str_size(&name) + 1);
-	}
-
-	if (match->group_redirect == NULL)
-		return emit_cursor_idx(self, match, &path);
-
-	// GROUP BY / aggregation (group by target)
-
-	// SELECT path GROUP BY
-	// SELECT GROUP BY HAVING path
-
-	// match group by list using the outer target
-	auto outer = match->outer;
-	auto group = ast_group_match(&outer->group_by, &ast->string);
-	if (group == NULL)
-		group = ast_group_match(&outer->group_by, &path);
-	if (group == NULL)
-		error("<%.*s> only GROUP BY keys can be selected",
-		      str_size(&name), str_of(&name));
-	return op3(self, CGROUP_READ, rpin(self), match->group_redirect->id,
-	           group->order);
-}
-
-hot static inline int
-emit_aggregate(Compiler* self, Target* target, Ast* ast)
-{
-	auto aggr = ast_aggr_of(ast);
-
-	// target is target->group_target
-	assert(target->group_redirect);
-
-	// SELECT aggr GROUP BY
-	// SELECT GROUP BY HAVING aggr
-
-	// use main target id
-	return op3(self, CGROUP_READ_AGGR, rpin(self), target->group_redirect->id,
-	           aggr->order);
-}
-
-hot static inline int
 emit_case(Compiler* self, Target* target, Ast* ast)
 {
 	auto cs = ast_case_of(ast);
 	// CASE [expr] [WHEN expr THEN expr]
 	//             [ELSE expr]
 	// END
-	int rresult = rpin(self);
+	int rresult = rpin(self, UINT8_MAX);
 
 	// jmp to start
 	int _start_jmp = op_pos(self);
@@ -622,11 +586,9 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 		if (cs->expr)
 		{
 			// WHEN expr = case_expr THEN result
-			int rexpr = emit_expr(self, target, cs->expr);
-			int rwhen = emit_expr(self, target, when->l);
-			rcond = op3(self, CEQU, rpin(self), rexpr, rwhen);
-			runpin(self, rexpr);
-			runpin(self, rwhen);
+			auto rexpr = emit_expr(self, target, cs->expr);
+			auto rwhen = emit_expr(self, target, when->l);
+			rcond = cast_operator(self, OP_EQU, rexpr, rwhen);
 		} else
 		{
 			// WHEN expr THEN result
@@ -639,6 +601,17 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 
 		// THEN expr
 		int rthen = emit_expr(self, target, when->r);
+
+		// set result type to the type of first result
+		if (rtype(self, rresult) == UINT8_MAX) {
+			self->map.map[rresult] = rtype(self, rthen);
+		} else
+		{
+			// ensure then expresssion types match
+			if (rtype(self, rresult) != rtype(self, rthen))
+				error("CASE THEN expr types do not match");
+		}
+
 		op2(self, CSWAP, rresult, rthen);
 		runpin(self, rthen);
 
@@ -654,7 +627,7 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 	if (cs->expr_else)
 		relse = emit_expr(self, target, cs->expr_else);
 	else
-		relse = op1(self, CNULL, rpin(self));
+		relse = op1(self, CNULL, rpin(self, VALUE_NULL));
 	op2(self, CSWAP, rresult, relse);
 	runpin(self, relse);
 
@@ -673,7 +646,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	assert(args->id == KARGS);
 
 	// expr
-	int rresult = op2(self, CBOOL, rpin(self), false);
+	int rresult = op2(self, CBOOL, rpin(self, VALUE_BOOL), false);
 
 	// jmp to start
 	int _start_jmp = op_pos(self);
@@ -702,7 +675,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	{
 		int rexpr = emit_expr(self, target, expr);
 		int r = emit_expr(self, target, current);
-		int rin = op3(self, CIN, rpin(self), rexpr, r);
+		int rin = op3(self, CIN, rpin(self, VALUE_BOOL), rexpr, r);
 		runpin(self, rexpr);
 		runpin(self, r);
 
@@ -727,7 +700,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	if (! ast->integer)
 	{
 		int rc;
-		rc = op2(self, CNOT, rpin(self), rresult);
+		rc = op2(self, CNOT, rpin(self, VALUE_BOOL), rresult);
 		runpin(self, rresult);
 		rresult = rc;
 	}
@@ -763,10 +736,10 @@ emit_match(Compiler* self, Target* target, Ast* ast)
 	int rc;
 	switch (ast->id) {
 	case KANY:
-		rc = op4(self, CANY, rpin(self), a, b, op);
+		rc = op4(self, CANY, rpin(self, VALUE_BOOL), a, b, op);
 		break;
 	case KALL:
-		rc = op4(self, CALL, rpin(self), a, b, op);
+		rc = op4(self, CALL, rpin(self, VALUE_BOOL), a, b, op);
 		break;
 	default:
 		abort();
@@ -801,76 +774,159 @@ emit_at_timezone(Compiler* self, Target* target, Ast* ast)
 	runpin(self, r);
 
 	// CALL
-	return op4(self, CCALL, rpin(self), (intptr_t)fn, 2, -1);
+	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, 2, -1);
 }
 
 hot int
 emit_expr(Compiler* self, Target* target, Ast* ast)
 {
 	switch (ast->id) {
+	// consts
+	case KNULL:
+		return op1(self, CNULL, rpin(self, VALUE_NULL));
+	case KTRUE:
+		return op2(self, CBOOL, rpin(self, VALUE_BOOL), 1);
+	case KFALSE:
+		return op2(self, CBOOL, rpin(self, VALUE_BOOL), 0);
+	case KINT:
+		return op2(self, CINT, rpin(self, VALUE_INT), ast->integer);
+	case KREAL:
+		return op2(self, CDOUBLE, rpin(self, VALUE_DOUBLE),
+		           code_data_add_real(&self->code_data, ast->real));
+	case KSTRING:
+		return emit_string(self, &ast->string, ast->string_escape);
+	case KCURRENT_TIMESTAMP:
+		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP),
+		           self->parser.local->time_us);
+	case KTIMESTAMP:
+		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP), ast->integer);
+	case KINTERVAL:
+	{
+		int offset = code_data_offset(&self->code_data);
+		buf_write(&self->code_data.data, &ast->interval, sizeof(Interval));
+		return op2(self, CINTERVAL, rpin(self, VALUE_INTERVAL), offset);
+	}
+
+	// json
+	case '{':
+		return emit_json(self, target, ast, CJSON_OBJ);
+	case KARRAY:
+		return emit_json(self, target, ast, CJSON_ARRAY);
+
+	// argument
+	case KARGID:
+		return op2(self, CARG, rpin(self, VALUE_JSON), ast->integer);
+#if 0
+	case KCTEID:
+		return op2(self, CCTE_GET, rpin(self), ast->integer);
+	// @
+	case '@':
+		if (target == NULL)
+			error("<@> no FROM clause defined");
+		return op2(self, CREF, rpin(self), target->id);
+#endif
+
+	// column
+	case KNAME:
+		return emit_name(self, target, ast);
+	case KNAME_COMPOUND:
+		return emit_name_compound(self, target, ast);
+
+	// aggregate
+	case KAGGR:
+		return emit_aggregate(self, target, ast);
+
+	// operators
+	case KNEQU:
+	{
+		auto r = emit_operator(self, target, ast, OP_EQU);
+		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		runpin(self, r);
+		return rnot;
+	}
+	case '=':
+		return emit_operator(self, target, ast, OP_EQU);
+	case KGTE:
+		return emit_operator(self, target, ast, OP_GTE);
+	case '>':
+		return emit_operator(self, target, ast, OP_GT);
+	case KLTE:
+		return emit_operator(self, target, ast, OP_LTE);
+	case '<':
+		return emit_operator(self, target, ast, OP_LT);
+	case '+':
+		return emit_operator(self, target, ast, OP_ADD);
+	case '-':
+		return emit_operator(self, target, ast, OP_SUB);
+	case '*':
+		return emit_operator(self, target, ast, OP_MUL);
+	case '/':
+		return emit_operator(self, target, ast, OP_DIV);
+	case '%':
+		return emit_operator(self, target, ast, OP_MOD);
+	case KCAT:
+		return emit_operator(self, target, ast, OP_CAT);
+	case '[':
+		return emit_operator(self, target, ast, OP_IDX);
+	case KLIKE:
+	{
+		auto r = emit_operator(self, target, ast, OP_LIKE);
+		if (ast->integer)
+			return r;
+		// [not]
+		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		runpin(self, r);
+		return rnot;
+	}
+	case '|':
+		return emit_operator(self, target, ast, OP_BOR);
+	case '^':
+		return emit_operator(self, target, ast, OP_BXOR);
+	case '&':
+		return emit_operator(self, target, ast, OP_BAND);
+	case KSHL:
+		return emit_operator(self, target, ast, OP_BSHL);
+	case KSHR:
+		return emit_operator(self, target, ast, OP_BSHR);
+
 	// logic
 	case KOR:
 		return emit_or(self, target, ast);
 	case KAND:
 		return emit_and(self, target, ast);
-
-	// operators
-	case '=':
-		return emit_operator(self, target, ast, CEQU);
-	case KNEQU:
-		return emit_operator(self, target, ast, CNEQU);
-	case KGTE:
-		return emit_operator(self, target, ast, CGTE);
-	case KLTE:
-		return emit_operator(self, target, ast, CLTE);
-	case '>':
-		return emit_operator(self, target, ast, CGT);
-	case '<':
-		return emit_operator(self, target, ast, CLT);
-	case '|':
-		return emit_operator(self, target, ast, CBOR);
-	case '^':
-		return emit_operator(self, target, ast, CBXOR);
-	case '&':
-		return emit_operator(self, target, ast, CBAND);
-	case KSHL:
-		return emit_operator(self, target, ast, CSHL);
-	case KSHR:
-		return emit_operator(self, target, ast, CSHR);
-	case '+':
-		return emit_operator(self, target, ast, CADD);
-	case '-':
-		return emit_operator(self, target, ast, CSUB);
-	case KCAT:
-		return emit_operator(self, target, ast, CCAT);
-	case '*':
-		return emit_operator(self, target, ast, CMUL);
-	case '/':
-		return emit_operator(self, target, ast, CDIV);
-	case '%':
-		return emit_operator(self, target, ast, CMOD);
-	case KBETWEEN:
-		return emit_between(self, target, ast);
-
-	// at, idx
-	case '.':
-		return emit_operator(self, target, ast, CAT);
-	case '[':
-		return emit_operator(self, target, ast, CIDX);
+	case KNOT:
+	{
+		int r = emit_expr(self, target, ast->l);
+		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		runpin(self, r);
+		return rnot;
+	}
 
 	// unary operations
 	case KNEG:
-		return emit_unary(self, target, ast, CNEG);
-	case KNOT:
-		return emit_unary(self, target, ast, CNOT);
+	{
+		int r = emit_expr(self, target, ast->l);
+		int rt = rtype(self, r);
+		int rneg;
+		if (rt == VALUE_INT)
+			rneg = op2(self, CNEGI, rpin(self, VALUE_INT), r);
+		else
+		if (rt == VALUE_DOUBLE)
+			rneg = op2(self, CNEGD, rpin(self, VALUE_DOUBLE), r);
+		else
+			error("'-': unsupported operation type");
+		runpin(self, r);
+		return rneg;
+	}
 	case '~':
-		return emit_unary(self, target, ast, CBINV);
-
-	// object
-	case '{':
-		return emit_obj(self, target, ast, COBJ);
-	case KARRAY:
-		return emit_obj(self, target, ast, CARRAY);
+	{
+		int r = emit_expr(self, target, ast->l);
+		if (rtype(self, r) != VALUE_INT)
+			error("'-': unsupported operation type");
+		auto rinv = op2(self, CBINVI, rpin(self, VALUE_INT), r);
+		runpin(self, r);
+		return rinv;
+	}
 
 	// function/method call
 	case KCALL:
@@ -878,116 +934,19 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KMETHOD:
 		return emit_call_method(self, target, ast);
 
-	// consts
-	case KNULL:
-		return op1(self, CNULL, rpin(self));
-	case KINT:
-		return op2(self, CINT, rpin(self), ast->integer);
-	case KREAL:
-		return op2(self, CREAL, rpin(self), code_data_add_real(&self->code_data, ast->real));
-	case KTRUE:
-		return op2(self, CBOOL, rpin(self), 1);
-	case KFALSE:
-		return op2(self, CBOOL, rpin(self), 0);
-	case KSTRING:
-		return emit_string(self, &ast->string, ast->string_escape);
-	case KINTERVAL:
-	{
-		int offset = code_data_offset(&self->code_data);
-		encode_interval(&self->code_data.data, &ast->interval);
-		return op2(self, CINTERVAL, rpin(self), offset);
-	}
-	case KTIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self), ast->integer);
-	case KCURRENT_TIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self), self->parser.local->time_us);
-
-	case KARGID:
-		return op2(self, CARG, rpin(self), ast->integer);
-	case KCTEID:
-		return op2(self, CCTE_GET, rpin(self), ast->integer);
-
-	// @
-	case '@':
-		if (target == NULL)
-			error("<@> no FROM clause defined");
-		return op2(self, CREF, rpin(self), target->id);
-
-	// **
-	case KSTAR_STAR:
-		if (target == NULL)
-			error("<**> no FROM clause defined");
-		return op2(self, CREF_KEY, rpin(self), target->id);
-
-	// name
-	case KNAME:
-		return emit_name(self, target, ast);
-
-	case KNAME_COMPOUND:
-		return emit_name_compound(self, target, ast);
-
-	case KSTAR:
-	{
-		if (target == NULL)
-			error("<*> no FROM clause defined");
-
-		if (target_is_join(target))
-			error("<*> path is ambiguous for JOIN");
-
-		int target_id = target->id;
-		if (target->group_redirect)
-			target_id = target->group_redirect->id;
-
-		return op2(self, CCURSOR_READ, rpin(self), target_id);
-	}
-
-	case KNAME_COMPOUND_STAR:
-	{
-		// path.*
-		Str name;
-		str_split(&ast->string, &name, '.');
-
-		auto target_list = compiler_target_list(self);
-		auto match = target_list_match(target_list, &name);
-		if (match == NULL)
-			error("<%.*s> target not found", str_size(&name), str_of(&name));
-
-		int target_id = match->id;
-		if (match->group_redirect)
-			target_id = match->group_redirect->id;
-
-		return op2(self, CCURSOR_READ, rpin(self), target_id);
-	}
-
-	case KNAME_COMPOUND_STAR_STAR:
-	{
-		// path.**
-		Str name;
-		str_split(&ast->string, &name, '.');
-
-		auto target_list = compiler_target_list(self);
-		auto match = target_list_match(target_list, &name);
-		if (match == NULL)
-			error("<%.*s> target not found", str_size(&name), str_of(&name));
-
-		int target_id = match->id;
-		if (match->group_redirect)
-			target_id = match->group_redirect->id;
-
-		return op2(self, CREF_KEY, rpin(self), target_id);
-	}
-
+#if 0
 	// sub-query
 	case KSELECT:
 		return emit_select(self, ast);
-
-	// aggregate
-	case KAGGR:
-		return emit_aggregate(self, target, ast);
+#endif
 
 	// case
 	case KCASE:
 		return emit_case(self, target, ast);
+
+	// between
+	case KBETWEEN:
+		return emit_between(self, target, ast);
 
 	// in
 	case KIN:
@@ -1001,8 +960,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// exists
 	case KEXISTS:
 	{
-		int r = emit_expr(self, target, ast->r);
-		int rc = op2(self, CEXISTS, rpin(self), r);
+		auto r = emit_expr(self, target, ast->r);
+		auto rc = op2(self, CEXISTS, rpin(self, VALUE_BOOL), r);
 		runpin(self, r);
 		return rc;
 	}
@@ -1010,25 +969,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// at timezone
 	case KAT:
 		return emit_at_timezone(self, target, ast);
-
-	// like
-	case KLIKE:
-	{
-		int rexpr    = emit_expr(self, target, ast->l);
-		int rpattern = emit_expr(self, target, ast->r);
-		int rresult  = op3(self, CLIKE, rpin(self), rexpr, rpattern);
-		runpin(self, rexpr);
-		runpin(self, rpattern);
-
-		// [not]
-		if (! ast->integer)
-		{
-			int rc = op2(self, CNOT, rpin(self), rresult);
-			runpin(self, rresult);
-			rresult = rc;
-		}
-		return rresult;
-	}
 
 	default:
 		assert(0);
