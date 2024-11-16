@@ -87,9 +87,8 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 static inline void
 parse_select_distinct(Stmt* self, AstSelect* select)
 {
-	select->distinct            = true;
-	select->distinct_expr       = NULL;
-	select->distinct_expr_count = 0;
+	select->distinct      = true;
+	select->distinct_expr = NULL;
 
 	// [ON]
 	if (! stmt_if(self, KON))
@@ -113,7 +112,6 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 		else
 			expr_prev->next = expr;
 		expr_prev = expr;
-		select->distinct_expr_count++;
 
 		// set distinct expr as order by key
 		auto order = ast_order_allocate(expr, true);
@@ -134,7 +132,6 @@ hot AstSelect*
 parse_select(Stmt* self)
 {
 	// SELECT [DISTINCT] expr, ...
-	// [INTO cte]
 	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
@@ -154,72 +151,18 @@ parse_select(Stmt* self)
 	ctx.select = true;
 	ctx.aggs = &select->expr_aggs;
 
-	Ast* expr_prev = NULL;
-	for (;;)
-	{
-		// * or expr
-		auto expr = stmt_if(self, '*');
-		if (! expr)
-			expr = parse_expr(self, &ctx);
+	// * | expr [AS] [name], ...
+	select->expr = parse_returning(self, &ctx);
 
-		// [AS name]
-		// [name]
-		auto as_has = true;
-		auto as = stmt_if(self, KAS);
-		if (! as)
-		{
-			as_has = false;
-			as = ast(KAS);
-		}
-
-		// set column name
-		auto name = stmt_if(self, KNAME);
-		if (unlikely(! name))
-		{
-			if (as_has)
-				error("AS <label> expected");
-
-			if (expr->id == KNAME) {
-				name = expr;
-			} else
-			if (expr->id != '*')
-			{
-				auto name_sz = palloc(8);
-				snprintf(name_sz, 8, "col%d", select->expr_count);
-				name = ast(KNAME);
-				str_set_cstr(&name->string, name_sz);
-			}
-		} else
-		{
-			// ensure * has no alias
-			if (expr->id == '*')
-				error("<*> cannot have an alias");
-		}
-
-		// add column to the select expression list
-		as->l = expr;
-		as->r = name;
-		if (select->expr == NULL)
-			select->expr = as;
-		else
-			expr_prev->next = as;
-		expr_prev = as;
-		select->expr_count++;
-
-		// columns will be resolved and set during the emit
-
-		// ,
-		if (stmt_if(self, ','))
-			continue;
-
-		break;
-	}
-
+	// TODO:
+#if 0
 	// use select expr as distinct expression, if not set
-	if (select->distinct && !select->distinct_expr_count)
+	if (select->distinct && !select->distinct_expr)
 	{
 		select->distinct_expr = select->expr;
-		select->distinct_expr_count = select->expr_count;
+
+		// TODO * must be resolved
+		// TODO expr returned as AS
 
 		// set distinct expressions as order by keys
 		for (auto expr = select->expr; expr; expr = expr->next)
@@ -228,14 +171,7 @@ parse_select(Stmt* self)
 			ast_list_add(&select->expr_order_by, &order->ast);
 		}
 	}
-
-	// [INTO cte_name]
-	if (stmt_if(self, KINTO))
-	{
-		if (level != 0)
-			error("SELECT INTO subqueries are not supported");
-		parse_cte(self, false, false);
-	}
+#endif
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
@@ -309,7 +245,6 @@ parse_select_expr(Stmt* self)
 	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
-	select->expr = parse_expr(self, &ctx);
-	select->expr_count++;
+	select->expr = parse_returning(self, &ctx);
 	return select;
 }

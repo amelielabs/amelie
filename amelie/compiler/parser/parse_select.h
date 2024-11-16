@@ -17,7 +17,6 @@ struct AstSelect
 {
 	Ast     ast;
 	Ast*    expr;
-	int     expr_count;
 	AstList expr_aggs;
 	Ast*    expr_where;
 	Ast*    expr_having;
@@ -27,7 +26,6 @@ struct AstSelect
 	AstList expr_order_by;
 	bool    distinct;
 	Ast*    distinct_expr;
-	int     distinct_expr_count;
 	Columns columns;
 	Columns columns_group;
 	Target* target;
@@ -48,20 +46,18 @@ ast_select_allocate(void)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
-	self->expr                = NULL;
-	self->expr_count          = 0;
-	self->expr_where          = NULL;
-	self->expr_having         = NULL;
-	self->expr_limit          = NULL;
-	self->expr_offset         = NULL;
-	self->distinct            = false;
-	self->distinct_expr       = NULL;
-	self->distinct_expr_count = 0;
-	self->target              = NULL;
-	self->target_group        = NULL;
-	self->on_match            = NULL;
-	self->rset                = -1;
-	self->rgroup              = -1;
+	self->expr          = NULL;
+	self->expr_where    = NULL;
+	self->expr_having   = NULL;
+	self->expr_limit    = NULL;
+	self->expr_offset   = NULL;
+	self->distinct      = false;
+	self->distinct_expr = NULL;
+	self->target        = NULL;
+	self->target_group  = NULL;
+	self->on_match      = NULL;
+	self->rset          = -1;
+	self->rgroup        = -1;
 	columns_init(&self->columns);
 	columns_init(&self->columns_group);
 	ast_list_init(&self->expr_aggs);

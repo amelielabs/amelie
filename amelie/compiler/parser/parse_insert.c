@@ -457,7 +457,7 @@ parse_insert(Stmt* self)
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
 	{
-		stmt->returning = parse_expr(self, NULL);
+		stmt->returning = parse_returning(self, NULL);
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)
 			stmt->on_conflict = ON_CONFLICT_ERROR;

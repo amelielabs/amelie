@@ -36,6 +36,7 @@ ast_agg_allocate(Ast* function, int order, Ast* expr, Ast* expr_init)
 	AstAgg* self;
 	self = ast_allocate(KAGGR, sizeof(AstAgg));
 	self->function  = function;
+	self->id        = -1;
 	self->order     = order;
 	self->expr      = expr;
 	self->expr_init = expr_init;

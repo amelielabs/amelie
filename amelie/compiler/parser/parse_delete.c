@@ -64,5 +64,5 @@ parse_delete(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
-		stmt->returning = parse_expr(self, NULL);
+		stmt->returning = parse_returning(self, NULL);
 }
