@@ -23,16 +23,16 @@ enum
 
 struct AstInsert
 {
-	Ast     ast;
-	Target* target;
-	Target* target_generated;
-	int     rows;
-	int     rows_count;
-	int     on_conflict;
-	Ast*    update_expr;
-	Ast*    update_where;
-	Ast*    generated_columns;
-	Ast*    returning;
+	Ast       ast;
+	Target*   target;
+	Target*   target_generated;
+	int       rows;
+	int       rows_count;
+	int       on_conflict;
+	Ast*      update_expr;
+	Ast*      update_where;
+	Ast*      generated_columns;
+	Returning ret;
 };
 
 static inline AstInsert*

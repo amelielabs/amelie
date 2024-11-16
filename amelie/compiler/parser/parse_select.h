@@ -15,24 +15,24 @@ typedef struct AstSelect AstSelect;
 
 struct AstSelect
 {
-	Ast     ast;
-	Ast*    expr;
-	AstList expr_aggs;
-	Ast*    expr_where;
-	Ast*    expr_having;
-	Ast*    expr_limit;
-	Ast*    expr_offset;
-	AstList expr_group_by;
-	AstList expr_order_by;
-	bool    distinct;
-	Ast*    distinct_expr;
-	Columns columns;
-	Columns columns_group;
-	Target* target;
-	Target* target_group;
-	void*   on_match;
-	int     rset;
-	int     rgroup;
+	Ast       ast;
+	Returning ret;
+	AstList   expr_aggs;
+	Ast*      expr_where;
+	Ast*      expr_having;
+	Ast*      expr_limit;
+	Ast*      expr_offset;
+	AstList   expr_group_by;
+	AstList   expr_order_by;
+	bool      distinct;
+	Ast*      distinct_expr;
+	Columns   columns;
+	Columns   columns_group;
+	Target*   target;
+	Target*   target_group;
+	void*     on_match;
+	int       rset;
+	int       rmerge;
 };
 
 static inline AstSelect*
@@ -46,7 +46,6 @@ ast_select_allocate(void)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
-	self->expr          = NULL;
 	self->expr_where    = NULL;
 	self->expr_having   = NULL;
 	self->expr_limit    = NULL;
@@ -57,7 +56,8 @@ ast_select_allocate(void)
 	self->target_group  = NULL;
 	self->on_match      = NULL;
 	self->rset          = -1;
-	self->rgroup        = -1;
+	self->rmerge        = -1;
+	returning_init(&self->ret);
 	columns_init(&self->columns);
 	columns_init(&self->columns_group);
 	ast_list_init(&self->expr_aggs);

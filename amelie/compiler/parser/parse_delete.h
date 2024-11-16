@@ -15,12 +15,12 @@ typedef struct AstDelete AstDelete;
 
 struct AstDelete
 {
-	Ast     ast;
-	Table*  table;
-	Target* target;
-	Ast*    expr_where;
-	Ast*    returning;
-	int     rset;
+	Ast       ast;
+	Table*    table;
+	Target*   target;
+	Ast*      expr_where;
+	Returning ret;
+	int       rset;
 };
 
 static inline AstDelete*

@@ -145,14 +145,12 @@ parse_select(Stmt* self)
 	if (stmt_if(self, KDISTINCT))
 		parse_select_distinct(self, select);
 
-	// expr, ...
+	// * | expr [AS] [name], ...
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.select = true;
 	ctx.aggs = &select->expr_aggs;
-
-	// * | expr [AS] [name], ...
-	select->expr = parse_returning(self, &ctx);
+	parse_returning(&select->ret, self, &ctx);
 
 	// TODO:
 #if 0
@@ -176,6 +174,9 @@ parse_select(Stmt* self)
 	// [FROM]
 	if (stmt_if(self, KFROM))
 		select->target = parse_from(self, level);
+
+	// create select expressions and resolve *
+	parse_returning_resolve(&select->ret, self, select->target);
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
@@ -241,11 +242,12 @@ parse_select(Stmt* self)
 hot AstSelect*
 parse_select_expr(Stmt* self)
 {
-	// SELECT expr
+	// SELECT expr, ...
 	auto select = ast_select_allocate();
 	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
-	select->expr = parse_returning(self, &ctx);
+	parse_returning(&select->ret, self, &ctx);
+	parse_returning_resolve(&select->ret, self, NULL);
 	return select;
 }

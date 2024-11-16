@@ -11,5 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-Ast* parse_returning(Stmt*, Expr*);
-Ast* parse_returning_resolve(Stmt*, Ast*, Target*);
+typedef struct Returning Returning;
+
+struct Returning
+{
+	Ast* list;
+	Ast* list_tail;
+	int  count;
+};
+
+static inline void
+returning_init(Returning* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+void parse_returning(Returning*, Stmt*, Expr*);
+void parse_returning_resolve(Returning*, Stmt*, Target*);

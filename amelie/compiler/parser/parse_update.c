@@ -148,5 +148,8 @@ parse_update(Stmt* self)
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
-		stmt->returning = parse_returning(self, NULL);
+	{
+		parse_returning(&stmt->ret, self, NULL);
+		parse_returning_resolve(&stmt->ret, self, stmt->target);
+	}
 }

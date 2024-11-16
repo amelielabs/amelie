@@ -33,26 +33,28 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-Ast*
-parse_returning(Stmt* self, Expr* ctx)
+void
+parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 {
-	// expr [AS] [name], ...
-	// *
-	Ast* expr_head = NULL;
-	Ast* expr_prev = NULL;
-	for (auto order = 1;; order++)
+	// * | target.* | expr [AS] [name], ...
+	for (;;)
 	{
-		// * or expr
-		auto expr = stmt_if(self, '*');
-		// todo: target.*
-
-		if (! expr)
-			expr = parse_expr(self, ctx);
+		// target.*, * or expr
+		auto expr = stmt_next(stmt);
+		switch (expr->id) {
+		case '*':
+		case KNAME_COMPOUND_STAR:
+			break;
+		default:
+			stmt_push(stmt, expr);
+			expr = parse_expr(stmt, ctx);
+			break;
+		}
 
 		// [AS name]
 		// [name]
 		auto as_has = true;
-		auto as = stmt_if(self, KAS);
+		auto as = stmt_if(stmt, KAS);
 		if (! as)
 		{
 			as_has = false;
@@ -60,22 +62,13 @@ parse_returning(Stmt* self, Expr* ctx)
 		}
 
 		// set column name
-		auto name = stmt_if(self, KNAME);
+		auto name = stmt_if(stmt, KNAME);
 		if (unlikely(! name))
 		{
 			if (as_has)
 				error("AS <label> expected");
-
-			if (expr->id == KNAME) {
+			if (expr->id == KNAME)
 				name = expr;
-			} else
-			if (expr->id != '*')
-			{
-				auto name_sz = palloc(8);
-				snprintf(name_sz, 8, "col%d", order);
-				name = ast(KNAME);
-				str_set_cstr(&name->string, name_sz);
-			}
 		} else
 		{
 			// ensure * has no alias
@@ -86,46 +79,29 @@ parse_returning(Stmt* self, Expr* ctx)
 		// add column to the select expression list
 		as->l = expr;
 		as->r = name;
-		if (expr_head == NULL)
-			expr_head = as;
+		if (self->list == NULL)
+			self->list = as;
 		else
-			expr_prev->next = as;
-		expr_prev = as;
+			self->list_tail->next = as;
+		self->list_tail = as;
 
 		// ,
-		if (stmt_if(self, ','))
+		if (stmt_if(stmt, ','))
 			continue;
 
 		break;
 	}
-
-	return expr_head;
-}
-
-typedef struct Returning Returning;
-
-struct Returning
-{
-	Ast* expr_head;
-	Ast* expr_prev;
-	int  order;
-};
-
-static inline void
-returning_init(Returning* self)
-{
-	memset(self, 0, sizeof(*self));
 }
 
 static inline void
 returning_add(Returning* self, Ast* as)
 {
-	if (self->expr_head == NULL)
-		self->expr_head = as;
+	if (self->list == NULL)
+		self->list = as;
 	else
-		self->expr_prev->next = as;
-	self->expr_prev = as;
-	self->order++;
+		self->list_tail->next = as;
+	self->list_tail = as;
+	self->count++;
 }
 
 static inline void
@@ -145,45 +121,58 @@ returning_add_target(Returning* self, Target* target)
 		memcpy(name + str_size(&target->name) + 1, column->name.pos,
 		       str_size(&column->name));
 		str_set(&as->l->string, name, size);
+
+		// as
 		as->r = ast(KNAME);
 		as->r->string = column->name;
-
 		returning_add(self, as);
 	}
 }
 
-Ast*
-parse_returning_resolve(Stmt* self, Ast* origin, Target* target)
+void
+parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 {
-	Returning ret;
-	returning_init(&ret);
-	auto as = origin;
-	while (as)
+	// rewrite returning list by resolving all * and target.*
+	auto as = self->list;
+	self->list      = NULL;
+	self->list_tail = NULL;
+	self->count     = 0;
+	for (;;)
 	{
 		auto next = as->next;
-
-		// *
-		if (as->l->id == '*')
+		switch (as->l->id) {
+		case '*':
 		{
+			// *
+			if (unlikely(! target))
+			{
+				if (! stmt->target_list.count)
+					error("'*': no targets defined");
+				if (stmt->target_list.count > 1)
+					error("'*': explicit target name is required");
+				returning_add_target(self, stmt->target_list.list);
+				continue;
+			}
+
 			// import all available columns
 			auto join = target;
 			while (join)
 			{
-				returning_add_target(&ret, join);
+				returning_add_target(self, join);
 				join = target->next_join;
 			}
-			continue;
+			break;
 		}
-
-		// target.*
-		if (as->l->id == KNAME_COMPOUND_STAR)
+		case KNAME_COMPOUND_STAR:
 		{
+			// target.*
+
 			// find target in the target list
 			Str name;
 			str_split(&as->l->string, &name, '.');
 
 			// find target
-			auto match = target_list_match(&self->target_list, &name);
+			auto match = target_list_match(&stmt->target_list, &name);
 			if (! match)
 				error("<%.*s> target not found", str_size(&name), str_of(&name));
 
@@ -191,12 +180,24 @@ parse_returning_resolve(Stmt* self, Ast* origin, Target* target)
 				error("<%.*s> incorrect target column path", str_size(&as->l->string),
 				      str_of(&as->l->string));
 
-			returning_add_target(&ret, target);
-			continue;
+			returning_add_target(self, target);
+			break;
+		}
+		default:
+		{
+			// column has no alias
+			if (as->r == NULL)
+			{
+				auto name_sz = palloc(8);
+				snprintf(name_sz, 8, "col%d", self->count + 1);
+				as->r = ast(KNAME);
+				str_set_cstr(&as->r->string, name_sz);
+			}
+			returning_add(self, as);
+			break;
+		}
 		}
 
-		returning_add(&ret, as);
 		as = next;
 	}
-	return ret.expr_head;
 }
