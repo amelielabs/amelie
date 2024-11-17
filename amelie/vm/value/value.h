@@ -288,3 +288,31 @@ value_type_to_string(ValueType type)
 	}
 	return name;
 }
+
+static inline int
+value_type_to_type(ValueType type)
+{
+	switch (type) {
+	case VALUE_NULL:
+		return 0; // XXX TYPE_NULL;
+	case VALUE_BOOL:
+		return TYPE_BOOL;
+	case VALUE_INT:
+		return TYPE_INT64;
+	case VALUE_DOUBLE:
+		return TYPE_DOUBLE;
+	case VALUE_TIMESTAMP:
+		return TYPE_TIMESTAMP;
+	case VALUE_INTERVAL:
+		return TYPE_INTERVAL;
+	case VALUE_STRING:
+		return TYPE_TEXT;
+	case VALUE_JSON:
+		return TYPE_JSON;
+	case VALUE_VECTOR:
+		return TYPE_VECTOR;
+	default:
+		abort();
+		break;
+	}
+}

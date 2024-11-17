@@ -244,7 +244,7 @@ vm_run(Vm*       self,
 
 		// neg
 		&&cnegi,
-		&&cnegr,
+		&&cnegd,
 
 		// cat
 		&&ccatss,
@@ -286,6 +286,7 @@ vm_run(Vm*       self,
 		&&ccursor_prepare,
 		&&ccursor_close,
 		&&ccursor_next,
+		&&ccursor_readb,
 		&&ccursor_readi8,
 		&&ccursor_readi16,
 		&&ccursor_readi32,
@@ -978,9 +979,9 @@ cnegi:
 		value_set_int(result, -r[op->b].integer);
 	op_next;
 
-cnegr:
+cnegd:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
-		value_set_int(result, -r[op->b].dbl);
+		value_set_double(result, -r[op->b].dbl);
 	op_next;
 
 // cat
@@ -1225,6 +1226,15 @@ ccursor_next:
 	// jmp on success or skip to the next op on eof
 	op = likely(iterator_has(cursor->it)) ? code_at(self->code, op->b) : op + 1;
 	op_jmp;
+
+ccursor_readb:
+	// [result, cursor, column]
+	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	if (likely(ptr))
+		value_set_bool(&r[op->a], *(int8_t*)ptr);
+	else
+		value_set_null(&r[op->a]);
+	op_next;
 
 ccursor_readi8:
 	// [result, cursor, column]

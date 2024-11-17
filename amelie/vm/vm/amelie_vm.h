@@ -24,6 +24,3 @@
 #include "vm/cursor.h"
 #include "vm/vm.h"
 #include "vm/command.h"
-
-// casting
-#include "vm/cast.h"

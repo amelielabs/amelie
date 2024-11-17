@@ -342,6 +342,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 hot Op*
 ccursor_open(Vm* self, Op* op)
 {
+	// [cursor, name_offset, _where, is_point_lookup]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
@@ -523,7 +524,7 @@ cupdate(Vm* self, Op* op)
 hot void
 cdelete(Vm* self, Op* op)
 {
-	// delete by cursor
+	// [cursor]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	part_delete(cursor->part, self->tr, cursor->it);
 }

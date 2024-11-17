@@ -22,6 +22,7 @@ struct FunctionDef
 {
 	const char*  schema;
 	const char*  name;
+	int          ret;
 	FunctionMain function;
 	bool         context;
 };
@@ -30,6 +31,7 @@ struct Function
 {
 	Str          schema;
 	Str          name;
+	int          ret;
 	FunctionMain main;
 	bool         context;
 	List         link;
@@ -40,7 +42,8 @@ function_allocate(FunctionDef* def)
 {
 	Function* self = am_malloc(sizeof(Function));
 	self->main    = def->function;
-	self->context = def->context;;
+	self->context = def->context;
+	self->ret     = def->ret;
 	str_dup_cstr(&self->schema, def->schema);
 	str_dup_cstr(&self->name, def->name);
 	list_init(&self->link);
