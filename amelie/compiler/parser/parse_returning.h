@@ -15,15 +15,31 @@ typedef struct Returning Returning;
 
 struct Returning
 {
-	Ast* list;
-	Ast* list_tail;
-	int  count;
+	Ast*    list;
+	Ast*    list_tail;
+	int     count;
+	Columns columns;
 };
 
 static inline void
 returning_init(Returning* self)
 {
-	memset(self, 0, sizeof(*self));
+	self->list      = NULL;
+	self->list_tail = NULL;
+	self->count     = 0;
+	columns_init(&self->columns);
+}
+
+static inline void
+returning_free(Returning* self)
+{
+	columns_free(&self->columns);
+}
+
+static inline bool
+returning_has(Returning* self)
+{
+	return self->list != NULL;
 }
 
 void parse_returning(Returning*, Stmt*, Expr*);

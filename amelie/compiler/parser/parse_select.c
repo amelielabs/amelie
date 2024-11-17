@@ -60,6 +60,7 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 	// ORDER BY expr, ...
 	Expr ctx;
 	expr_init(&ctx);
+	auto list = &select->expr_order_by;
 	for (;;)
 	{
 		// expr
@@ -73,8 +74,8 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 		if (stmt_if(self, KDESC))
 			asc = false;
 
-		auto order = ast_order_allocate(expr, asc);
-		ast_list_add(&select->expr_order_by, &order->ast);
+		auto order = ast_order_allocate(list->count, expr, asc);
+		ast_list_add(list, &order->ast);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -87,8 +88,7 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 static inline void
 parse_select_distinct(Stmt* self, AstSelect* select)
 {
-	select->distinct      = true;
-	select->distinct_expr = NULL;
+	select->distinct = true;
 
 	// [ON]
 	if (! stmt_if(self, KON))
@@ -98,23 +98,18 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	if (! stmt_if(self, '('))
 		error("DISTINCT <(> expected");
 
+	select->distinct_on = true;
+
 	// (expr, ...)
 	Expr ctx;
 	expr_init(&ctx);
-
-	Ast* expr_prev = NULL;
 	for (;;)
 	{
 		// expr
 		auto expr = parse_expr(self, &ctx);
-		if (select->distinct_expr == NULL)
-			select->distinct_expr = expr;
-		else
-			expr_prev->next = expr;
-		expr_prev = expr;
 
 		// set distinct expr as order by key
-		auto order = ast_order_allocate(expr, true);
+		auto order = ast_order_allocate(select->expr_order_by.count, expr, true);
 		ast_list_add(&select->expr_order_by, &order->ast);
 
 		// ,
@@ -152,31 +147,23 @@ parse_select(Stmt* self)
 	ctx.aggs = &select->expr_aggs;
 	parse_returning(&select->ret, self, &ctx);
 
-	// TODO:
-#if 0
-	// use select expr as distinct expression, if not set
-	if (select->distinct && !select->distinct_expr)
-	{
-		select->distinct_expr = select->expr;
-
-		// TODO * must be resolved
-		// TODO expr returned as AS
-
-		// set distinct expressions as order by keys
-		for (auto expr = select->expr; expr; expr = expr->next)
-		{
-			auto order = ast_order_allocate(expr, true);
-			ast_list_add(&select->expr_order_by, &order->ast);
-		}
-	}
-#endif
-
 	// [FROM]
 	if (stmt_if(self, KFROM))
 		select->target = parse_from(self, level);
 
 	// create select expressions and resolve *
 	parse_returning_resolve(&select->ret, self, select->target);
+
+	// use select expr as distinct expression, if not set
+	if (select->distinct && !select->distinct_on)
+	{
+		// set distinct expressions as order by keys
+		for (auto as = select->ret.list; as; as = as->next)
+		{
+			auto order = ast_order_allocate(select->expr_order_by.count, as->l, true);
+			ast_list_add(&select->expr_order_by, &order->ast);
+		}
+	}
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
@@ -226,6 +213,21 @@ parse_select(Stmt* self)
 	{
 		if (select->target == NULL)
 			error("no targets to use with GROUP BY or aggregates");
+
+		// add at least one group by key
+		auto list = &select->expr_group_by;
+		if (! list->count)
+		{
+			auto expr = ast(KINT);
+			expr->integer = 0;
+			auto group = ast_group_allocate(list->count, expr);
+			ast_list_add(list, &group->ast);
+			select->expr_group_by_has = false;
+		} else {
+			select->expr_group_by_has = true;
+		}
+
+		// create group by target to scan agg set
 		auto target = target_allocate();
 		target->type = TARGET_SELECT;
 		target->from_columns = &select->columns_group;
@@ -233,7 +235,7 @@ parse_select(Stmt* self)
 		select->target_group = target;
 		// [aggs, group_by_keys]
 
-		// group by target columns will be set during compilation
+		// group by target columns will be set during compile
 	}
 
 	return select;

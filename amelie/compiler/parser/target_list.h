@@ -88,7 +88,6 @@ target_list_match(TargetList* self, Str* name)
 	return NULL;
 }
 
-#if 0
 static inline void
 target_list_validate_subqueries(TargetList* self, Target* primary)
 {
@@ -98,25 +97,15 @@ target_list_validate_subqueries(TargetList* self, Target* primary)
 		if (target == primary)
 			continue;
 
-		// including views and cte
-		if (target->expr || target->expr_columns || target->cte)
-			continue;
-
-		// skip group by targets
-		if (target->group_main)
-			continue;
-
-		if (target->table->config->shared)
-			continue;
-
-		error("subqueries to distributed tables are not supported");
+		if (target->type == TARGET_TABLE)
+			error("subqueries to distributed tables are not supported");
 	}
 }
 
 static inline void
 target_list_validate(TargetList* self, Target* primary)
 {
-	auto table = primary->table;
+	auto table = primary->from_table;
 	unused(table);
 	assert(table);
 
@@ -129,7 +118,7 @@ target_list_validate(TargetList* self, Target* primary)
 static inline void
 target_list_validate_dml(TargetList* self, Target* primary)
 {
-	auto table = primary->table;
+	auto table = primary->from_table;
 	assert(table);
 
 	// DELETE table, ...
@@ -139,7 +128,7 @@ target_list_validate_dml(TargetList* self, Target* primary)
 	auto target = primary->next_join;
 	while (target)
 	{
-		if (target->table == table)
+		if (target->from_table == table)
 			error("DML JOIN using the same table are not supported");
 		target = target->next_join;
 	}
@@ -147,4 +136,3 @@ target_list_validate_dml(TargetList* self, Target* primary)
 	// validate supported targets as expression or shared table
 	target_list_validate_subqueries(self, primary);
 }
-#endif

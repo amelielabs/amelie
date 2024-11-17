@@ -231,7 +231,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	auto row_data = self->data_row;
 	auto table = stmt->target->from_table;
 	auto columns = table_columns(table);
-	for (uint64_t i = 0; i < count->integer; i++)
+	for (auto i = 0; i < count->integer; i++)
 	{
 		// begin new row
 		row_data_begin(row_data, columns->list_count);

@@ -239,7 +239,21 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		      str_of(&function->string));
 
 	// expr
-	auto arg = parse_expr(self, NULL);
+	Ast* arg = NULL;
+	if (stmt_if(self, '*'))
+	{
+		// count(*)
+		if (function->id == KCOUNT)
+		{
+			arg = ast(KINT);
+			arg->integer = 1;
+		} else {
+			error("%.*s(*) is not supported", str_size(&function->string),
+			       str_of(&function->string));
+		}
+	} else {
+		arg = parse_expr(self, NULL);
+	}
 
 	// )
 	if (! stmt_if(self, ')'))

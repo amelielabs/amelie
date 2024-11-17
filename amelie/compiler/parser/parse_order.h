@@ -17,6 +17,7 @@ struct AstOrder
 {
 	Ast  ast;
 	Ast* expr;
+	int  order;
 	bool asc;
 };
 
@@ -27,11 +28,12 @@ ast_order_of(Ast* ast)
 }
 
 static inline AstOrder*
-ast_order_allocate(Ast* expr, bool asc)
+ast_order_allocate(int order, Ast* expr, bool asc)
 {
 	AstOrder* self;
 	self = ast_allocate(0, sizeof(AstOrder));
-	self->expr = expr;
-	self->asc  = asc;
+	self->expr  = expr;
+	self->order = order;
+	self->asc   = asc;
 	return self;
 }
