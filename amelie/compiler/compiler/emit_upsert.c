@@ -40,12 +40,12 @@ emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
 	auto target = insert->target;
-	auto table  = target->table;
+	auto table  = target->from_table;
 
 	// create returning set
 	int rset = -1;
-	if (insert->returning)
-		rset = op1(self, CSET, rpin(self));
+	if (returning_has(&insert->ret))
+		rset = op3(self, CSET, rpin(self, VALUE_SET), insert->ret.count, 0);
 
 	// CCLOSE_PREPARE
 	op2(self, CCURSOR_PREPARE, target->id, (intptr_t)table);
@@ -102,7 +102,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		runpin(self, r);
 
 		// CALL
-		r = op4(self, CCALL, rpin(self), (intptr_t)func, 1, -1);
+		r = op4(self, CCALL, rpin(self, func->ret), (intptr_t)func, 1, -1);
 		runpin(self, r);
 		break;
 	}
@@ -114,16 +114,27 @@ emit_upsert(Compiler* self, Ast* ast)
 	int jmp_returning = -1;
 
 	// [RETURNING]
-	if (insert->returning)
+	if (returning_has(&insert->ret))
 	{
 		jmp_returning = op_pos(self);
 
-		// expr
-		int rexpr = emit_expr(self, target, insert->returning);
+		// push expr and prepare returning columns
+		for (auto as = insert->ret.list; as; as = as->next)
+		{
+			// expr
+			int rexpr = emit_expr(self, target, as->l);
+			int rt = rtype(self, rexpr);
+			op1(self, CPUSH, rexpr);
+			runpin(self, rexpr);
+
+			auto column = column_allocate();
+			column_set_name(column, &as->r->string);
+			column_set_type(column, value_type_to_type(rt));
+			columns_add(&insert->ret.columns, column);
+		}
 
 		// add to the returning set
-		op2(self, CSET_ADD, rset, rexpr);
-		runpin(self, rexpr);
+		op1(self, CSET_ADD, rset);
 	}
 
 	// _start:
@@ -138,7 +149,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	op1(self, CCURSOR_CLOSE, target->id);
 
 	// CRESULT (returning)
-	if (insert->returning)
+	if (returning_has(&insert->ret))
 	{
 		op1(self, CRESULT, rset);
 		runpin(self, rset);
