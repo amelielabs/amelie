@@ -13,6 +13,7 @@
 
 void emit_select_on_match(Compiler*, void*);
 void emit_select_on_match_group_target(Compiler*, void*);
+void emit_select_on_match_group_target_empty(Compiler*, AstSelect*);
 void emit_select_on_match_group(Compiler*, void*);
 
 int  emit_select_expr(Compiler*, AstSelect*);

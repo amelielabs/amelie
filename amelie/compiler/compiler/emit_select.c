@@ -204,7 +204,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 	op2(self, CSET_AGG, select->rset_agg, aggs_offset);
 }
 
-static void
+void
 emit_select_on_match_group_target_empty(Compiler* self, AstSelect* select)
 {
 	// process NULL values for the aggregate

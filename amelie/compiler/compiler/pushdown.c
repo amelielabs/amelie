@@ -40,43 +40,12 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 {
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 
-	// create group
-	int rgroup;
-	rgroup = op2(self, CGROUP, rpin(self), select->expr_group_by.count);
-	select->rgroup = rgroup;
-
-	// add aggregates to the group
-	auto node = select->expr_aggs.list;
-	while (node)
-	{
-		auto aggr  = ast_aggr_of(node->ast);
-		int  rexpr = -1;
-		if (aggr->expr_init)
-			rexpr = emit_expr(self, select->target, aggr->expr_init);
-		op3(self, CGROUP_ADD, rgroup, aggr->id, rexpr);
-		node = node->next;
-	}
-
-	// select aggr from [without group by]
-	if (select->expr_group_by.count == 0)
-	{
-		// force create empty record per each aggregate
-		// by processing NULL value
-		node = select->expr_aggs.list;
-		while (node)
-		{
-			int rexpr = op1(self, CNULL, rpin(self));
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
-			node = node->next;
-		}
-		op1(self, CGROUP_WRITE, select->rgroup);
-	}
-
-	// set target
-	auto target_group = select->target_group;
-	assert(target_group != NULL);
-	target_group->rexpr = rgroup;
+	// create agg set
+	int rset;
+	rset = op3(self, CSET, rpin(self, VALUE_SET),
+	           select->expr_aggs.count,
+	           select->expr_group_by.count);
+	select->rset_agg = rset;
 
 	// scan over target and process aggregates per group by key
 	scan(self, select->target,
@@ -86,10 +55,16 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	     emit_select_on_match_group_target,
 	     select);
 
-	// CRESULT (return group)
-	op1(self, CRESULT, select->rgroup);
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
+	// select aggr [without group by]
+	//
+	// force create empty record by processing one NULL value
+	if (! select->expr_group_by_has)
+		emit_select_on_match_group_target_empty(self, select);
+
+	// CRESULT (return agg set)
+	op1(self, CRESULT, select->rset_agg);
+	runpin(self, select->rset_agg);
+	select->rset_agg = -1;
 }
 
 static inline void
@@ -100,7 +75,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	int  offset = emit_select_order_by_data(self, select, &desc);
 
 	// CSET_ORDERED
-	select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
+	select->rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+	                   select->ret.count,
+	                   select->expr_order_by.count,
+	                   offset);
 
 	// push limit as limit = limit + offset if possible
 	Ast* limit = NULL;
@@ -147,7 +125,7 @@ static inline void
 pushdown_limit(Compiler* self, AstSelect* select)
 {
 	// create result set
-	select->rset = op1(self, CSET, rpin(self));
+	select->rset = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
 
 	// push limit as limit = limit + offset
 	Ast* limit = NULL;
@@ -225,15 +203,18 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
 	int offset = emit_select_order_by_data(self, select, NULL);
-	int rset = op2(self, CSET_ORDERED, rpin(self), offset);
+	int rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+	               select->ret.count,
+	               select->expr_order_by.count,
+	               offset);
 	select->rset = rset;
 	select->on_match = emit_select_on_match;
 
-	// redirect each target to the group scan target
+	// scan over agg set
+	//
+	// result will be added to set, safe to apply limit/offset
+	//
 	auto target_group = select->target_group;
-	target_group_redirect(select->target, target_group);
-
-	// scan over created group
 	scan(self,
 	     target_group,
 	     NULL,
@@ -242,14 +223,13 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 	     emit_select_on_match_group,
 	     select);
 
-	target_group_redirect(select->target, NULL);
-
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
+	runpin(self, select->rset_agg);
+	select->rset_agg = -1;
+	target_group->r = -1;
 
 	// no distinct/limit/offset (return set)
 	if (select->distinct    == false &&
-	    select->expr_limit  == NULL &&
+	    select->expr_limit  == NULL  &&
 	    select->expr_offset == NULL)
 	{
 		// CSET_SORT
@@ -264,46 +244,43 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 static int
 pushdown_group_by_recv(Compiler* self, AstSelect* select)
 {
-	// merge all received groups into one
+	// merge all received agg sets into one
 	//
-	// CGROUP_MERGE_RECV
-	auto rgroup = op2(self, CGROUP_MERGE_RECV, rpin(self), self->current->order);
-	select->rgroup = rgroup;
+	// CMERGE_RECV_AGG
+	auto rset_agg = op3(self, CMERGE_RECV_AGG, rpin(self, VALUE_SET),
+	                    self->current->order,
+	                    select->aggs);
+	select->rset_agg = rset_agg;
 
 	auto target_group = select->target_group;
-	target_group->rexpr = rgroup;
+	target_group->r = rset_agg;
 
 	// [ORDER BY]
 	if (select->expr_order_by.count > 0)
 		return pushdown_group_by_recv_order_by(self, select);
 
 	// create set
-	int rset = op1(self, CSET, rpin(self));
+	int rset = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
 	select->rset = rset;
 	select->on_match = emit_select_on_match;
 
-	// redirect each target to the group scan target
-	target_group_redirect(select->target, target_group);
-
-	// scan over created group
+	// scan over agg set
 	//
-	// result will be added to set or send directly,
-	// safe to apply limit/offset
+	// result will be added to set, safe to apply limit/offset
 	//
 	scan(self,
-		 target_group,
-		 select->expr_limit,
-		 select->expr_offset,
-		 select->expr_having,
-		 emit_select_on_match_group,
-		 select);
+	     target_group,
+	     select->expr_limit,
+	     select->expr_offset,
+	     select->expr_having,
+	     emit_select_on_match_group,
+	     select);
 
-	target_group_redirect(select->target, NULL);
+	runpin(self, select->rset_agg);
+	select->rset_agg = -1;
+	target_group->r = -1;
 
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
-
-	// group object freed after scan completed
+	// set freed after scan completed
 	return rset;
 }
 
@@ -329,7 +306,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// distinct/limit/offset
 	
 	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
+	int rdistinct = op2(self, CBOOL, rpin(self, VALUE_BOOL), select->distinct);
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
@@ -344,7 +321,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self), rlimit, roffset,
+	int rmerge = op4(self, CMERGE_RECV, rpin(self, VALUE_MERGE), rlimit, roffset,
 	                 self->current->order);
 
 	if (rlimit != -1)
@@ -366,12 +343,12 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	// create merge object using received sets
 
 	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self), false);
+	int rdistinct = op2(self, CBOOL, rpin(self, VALUE_BOOL), false);
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self), -1, -1,
+	int rmerge = op4(self, CMERGE_RECV, rpin(self, VALUE_MERGE), -1, -1,
 	                 self->current->order);
 	return rmerge;
 }
