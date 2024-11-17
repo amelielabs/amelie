@@ -206,6 +206,12 @@ enum
 	CCURSOR_MERGE_NEXT,
 	CCURSOR_MERGE_READ,
 
+	// aggs
+	CAGG,
+	CCOUNT,
+	CAVGI,
+	CAVGD,
+
 	// functions
 	CCALL,
 

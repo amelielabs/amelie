@@ -76,6 +76,8 @@ emit_column(Compiler* self, Target* target, Str* name)
 		      str_size(&target->name), str_of(&target->name),
 		      str_size(name), str_of(name));
 
+	// TODO: check for columns duplicates?
+
 	// generate cursor read based on the target
 	int r;
 	if (target->type == TARGET_TABLE ||
@@ -269,20 +271,41 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	assert(target->r != -1);
 	assert(rtype(self, target->r) == VALUE_SET);
 
+	// read aggregate value based on the function and type
+	int  agg_op;
+	int  agg_type;
 	auto agg = ast_agg_of(ast);
-	(void)agg;
-	// TODO
-	// todo:
-		// read by cursor
-		// agg types
-		// handle count
-		// handle avg
-#if 0
-	// use main target id
-	return op3(self, CGROUP_READ_AGGR, rpin(self), target->group_redirect->id,
-	           aggr->order);
-#endif
-	return 0;
+	switch (agg->id) {
+	case AGG_INT_COUNT:
+		agg_op   = CCOUNT;
+		agg_type = VALUE_INT;
+		break;
+	case AGG_INT_MIN:
+	case AGG_INT_MAX:
+	case AGG_INT_SUM:
+		agg_op   = CAGG;
+		agg_type = VALUE_INT;
+		break;
+	case AGG_DOUBLE_MIN:
+	case AGG_DOUBLE_MAX:
+	case AGG_DOUBLE_SUM:
+		agg_op   = CAGG;
+		agg_type = VALUE_DOUBLE;
+		break;
+	case AGG_INT_AVG:
+		agg_op   = CAVGI;
+		agg_type = VALUE_INT;
+		break;
+	case AGG_DOUBLE_AVG:
+		agg_op   = CAVGD;
+		agg_type = VALUE_DOUBLE;
+		break;
+	default:
+		abort();
+		break;
+	}
+	return op3(self, agg_op, rpin(self, agg_type), target->id,
+	           agg->order);
 }
 
 hot static inline int
@@ -934,11 +957,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KMETHOD:
 		return emit_call_method(self, target, ast);
 
-#if 0
 	// sub-query
 	case KSELECT:
 		return emit_select(self, ast);
-#endif
 
 	// case
 	case KCASE:

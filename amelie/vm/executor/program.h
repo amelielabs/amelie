@@ -18,6 +18,7 @@ struct Program
 	Code*     code;
 	Code*     code_node;
 	CodeData* code_data;
+	RowData*  code_data_row;
 	int       stmts;
 	int       stmts_last;
 	int       ctes;
