@@ -38,26 +38,21 @@
 int
 emit_select_expr(Compiler* self, AstSelect* select)
 {
-	// expr
-	if (select->expr_count == 1)
-		return emit_expr(self, select->target, select->expr);
-
-	// [expr, ...]
-	auto expr = select->expr;
-	while (expr)
+	// push expr and prepare returning columns
+	for (auto as = select->ret.list; as; as = as->next)
 	{
 		// expr
-		int rexpr = emit_expr(self, select->target, expr);
-		// push
+		int rexpr = emit_expr(self, select->target, as->l);
+		int rt = rtype(self, rexpr);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-		expr = expr->next;
-	}
 
-	// array
-	int rarray = rpin(self);
-	op2(self, CARRAY, rarray, select->expr_count);
-	return rarray;
+		auto column = column_allocate();
+		column_set_name(column, &as->r->string);
+		column_set_type(column, value_type_to_type(rt));
+		columns_add(&select->ret.columns, column);
+	}
+	return select->rset;
 }
 
 void
@@ -65,10 +60,10 @@ emit_select_on_match(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	// expr
-	int rexpr = emit_select_expr(self, select);
+	// push expressions
+	emit_select_expr(self, select);
 
-	// generate order by key (if any)
+	// push order by key (if any)
 	auto node = select->expr_order_by.list;
 	while (node)
 	{
@@ -80,9 +75,8 @@ emit_select_on_match(Compiler* self, void* arg)
 		node = node->next;
 	}
 
-	// add to the set
-	op2(self, CSET_ADD, select->rset, rexpr);
-	runpin(self, rexpr);
+	// add to the returning set
+	op1(self, CSET_ADD, select->rset);
 }
 
 void
@@ -90,31 +84,154 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	// push keys and aggs
+	// create a list of aggs based on type
+	int  aggs_offset = code_data_pos(&self->code_data);
+	int* aggs = buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
+	select->aggs = aggs_offset;
 
-	// group by keys
-	auto node = select->expr_group_by.list;
+	// push aggs
+	auto node = select->expr_aggs.list;
+	while (node)
+	{
+		auto agg = ast_agg_of(node->ast);
+
+		// expr
+		auto rexpr = emit_expr(self, select->target, agg->expr);
+		auto rt = rtype(self, rexpr);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+
+		switch (agg->function->id) {
+		case KCOUNT:
+			agg->id = AGG_INT_COUNT;
+			break;
+		case KMIN:
+			if (rt == VALUE_INT || rt == VALUE_NULL)
+				agg->id = AGG_INT_MIN;
+			else
+			if (rt == VALUE_DOUBLE)
+				agg->id = AGG_DOUBLE_MIN;
+			else
+				error("min(): int or double expected");
+			break;
+		case KMAX:
+			if (rt == VALUE_INT || rt == VALUE_NULL)
+				agg->id = AGG_INT_MAX;
+			else
+			if (rt == VALUE_DOUBLE)
+				agg->id = AGG_DOUBLE_MAX;
+			else
+				error("max(): int or double expected");
+			break;
+		case KSUM:
+			if (rt == VALUE_INT || rt == VALUE_NULL)
+				agg->id = AGG_INT_SUM;
+			else
+			if (rt == VALUE_DOUBLE)
+				agg->id = AGG_DOUBLE_SUM;
+			else
+				error("sum(): int or double expected");
+			break;
+		case KAVG:
+			if (rt == VALUE_INT || rt == VALUE_NULL)
+				agg->id = AGG_INT_AVG;
+			else
+			if (rt == VALUE_DOUBLE)
+				agg->id = AGG_DOUBLE_AVG;
+			else
+				error("avg(): int or double expected");
+			break;
+		}
+		aggs[agg->order] = agg->id;
+
+		// add group target column
+		auto column = column_allocate();
+		auto name_sz = palloc(8);
+		snprintf(name_sz, 8, "agg%d", agg->order + 1);
+		Str name;
+		str_set_cstr(&name, name_sz);
+		column_set_name(column, &name);
+		column_set_type(column, value_type_to_type(rt));
+		columns_add(&select->columns_group, column);
+
+		node = node->next;
+	}
+
+	// push group by keys
+	node = select->expr_group_by.list;
 	while (node)
 	{
 		auto group = ast_group_of(node->ast);
-		int rexpr = emit_expr(self, select->target, group->expr);
+
+		// expr
+		auto rexpr = emit_expr(self, select->target, group->expr);
+		auto rt = rtype(self, rexpr);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
+
+		// add group target key column
+		auto column = column_allocate();
+
+		// resolve column
+		if (group->expr->id == KNAME)
+		{
+			// find column in the target
+			auto name = &group->expr->string;
+			auto ref  = columns_find(select->target->from_columns, name);
+			if (! ref)
+				error("<%.*s.%.*s> column not found",
+				      str_size(&select->target->name), str_of(&select->target->name),
+				      str_size(name), str_of(name));
+			// copy column name and type
+			column_set_name(column, &ref->name);
+			column_set_type(column, ref->type);
+		} else
+		{
+			// generate name
+			auto name_sz = palloc(8);
+			snprintf(name_sz, 8, "_key%d", group->order + 1);
+			Str name;
+			str_set_cstr(&name, name_sz);
+			column_set_name(column, &name);
+			column_set_type(column, value_type_to_type(rt));
+		}
+		columns_add(&select->columns_group, column);
+
 		node = node->next;
 	}
 
-	// aggrs
-	node = select->expr_aggs.list;
+	// CSET_AGG
+	op2(self, CSET_AGG, select->rset_agg, aggs_offset);
+}
+
+static void
+emit_select_on_match_group_target_empty(Compiler* self, AstSelect* select)
+{
+	// process NULL values for the aggregate
+
+	// push aggs
+	auto node = select->expr_aggs.list;
 	while (node)
 	{
-		auto aggr = ast_aggr_of(node->ast);
-		int rexpr = emit_expr(self, select->target, aggr->expr);
+		auto rexpr = op1(self, CNULL, rpin(self, VALUE_NULL));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 		node = node->next;
 	}
 
-	op1(self, CGROUP_WRITE, select->rgroup);
+	// push group by keys
+	node = select->expr_group_by.list;
+	while (node)
+	{
+		auto group = ast_group_of(node->ast);
+		auto rexpr = emit_expr(self, select->target, group->expr);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+		node = node->next;
+	}
+
+	// CSET_AGG
+	op2(self, CSET_AGG, select->rset_agg, select->aggs);
 }
 
 void
@@ -122,7 +239,7 @@ emit_select_on_match_group(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	// add to the set or send
+	// add to the set
 	ScanFunction on_match = select->on_match;	
 	on_match(self, arg);
 }
@@ -130,23 +247,19 @@ emit_select_on_match_group(Compiler* self, void* arg)
 int
 emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 {
-	// write order by key types
-	int  offset = code_data_pos(&self->code_data);
-	auto data = &self->code_data.data;
-
-	// [asc/desc, ..]
-	encode_array(data);
+	// write order by asc/desc flags
+	int  order_offset = code_data_pos(&self->code_data);
+	int* order = buf_claim(&self->code_data.data, sizeof(int) * select->expr_order_by.count);
 	auto node = select->expr_order_by.list;
 	while (node)
 	{
-		auto order = ast_order_of(node->ast);
-		encode_bool(data, order->asc);
-		if (desc && !order->asc)
+		auto ref = ast_order_of(node->ast);
+		order[ref->order] = ref->asc;
+		if (desc && !ref->asc)
 			*desc = true;
 		node = node->next;
 	}
-	encode_array_end(data);
-	return offset;
+	return order_offset;
 }
 
 hot int
@@ -156,7 +269,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 	op1(self, CSET_SORT, select->rset);
 
 	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self), select->distinct);
+	int rdistinct = op2(self, CBOOL, rpin(self, VALUE_BOOL), select->distinct);
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
@@ -171,7 +284,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
 	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self), select->rset,
+	int rmerge = op4(self, CMERGE, rpin(self, VALUE_MERGE), select->rset,
 	                 rlimit, roffset);
 
 	runpin(self, select->rset);
@@ -190,43 +303,12 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
                           Ast*      limit,
                           Ast*      offset)
 {
-	// create group
-	int rgroup;
-	rgroup = op2(self, CGROUP, rpin(self), select->expr_group_by.count);
-	select->rgroup = rgroup;
-
-	// add aggregates to the group
-	auto node = select->expr_aggs.list;
-	while (node)
-	{
-		auto aggr  = ast_aggr_of(node->ast);
-		int  rexpr = -1;
-		if (aggr->expr_init)
-			rexpr = emit_expr(self, select->target, aggr->expr_init);
-		op3(self, CGROUP_ADD, rgroup, aggr->id, rexpr);
-		node = node->next;
-	}
-
-	// select aggr from [without group by]
-	if (select->expr_group_by.count == 0)
-	{
-		// force create empty record per each aggregate
-		// by processing NULL value
-		node = select->expr_aggs.list;
-		while (node)
-		{
-			int rexpr = op1(self, CNULL, rpin(self));
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
-			node = node->next;
-		}
-		op1(self, CGROUP_WRITE, select->rgroup);
-	}
-
-	// set target group
-	auto target_group = select->target_group;
-	assert(target_group != NULL);
-	target_group->rexpr = rgroup;
+	// create agg set
+	int rset;
+	rset = op3(self, CSET, rpin(self, VALUE_SET),
+	           select->expr_aggs.count,
+	           select->expr_group_by.count);
+	select->rset_agg = rset;
 
 	// scan over target and process aggregates per group by key
 	scan(self, select->target,
@@ -236,25 +318,28 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	     emit_select_on_match_group_target,
 	     select);
 
-	// redirect each target to the group scan target
-	target_group_redirect(select->target, target_group);
+	// select aggr [without group by]
+	//
+	// force create empty record by processing one NULL value
+	if (! select->expr_group_by_has)
+		emit_select_on_match_group_target_empty(self, select);
 
 	// scan over created group
 	//
 	// result will be added to set or send directly
 	//
+	select->target_group->r = rset;
 	scan(self,
-	     target_group,
+	     select->target_group,
 	     limit,
 	     offset,
 	     select->expr_having,
 	     emit_select_on_match_group,
 	     select);
 
-	target_group_redirect(select->target, NULL);
-
-	runpin(self, select->rgroup);
-	select->rgroup = -1;
+	runpin(self, select->rset_agg);
+	select->rset_agg = -1;
+	select->target_group->r = -1;
 }
 
 hot static int
@@ -270,8 +355,8 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	int rresult = -1;
 	if (select->expr_order_by.count == 0)
 	{
-		// create data set for nested queries
-		select->rset = op1(self, CSET, rpin(self));
+		// create result set
+		select->rset = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
 		select->on_match = emit_select_on_match;
 		rresult = select->rset;
 
@@ -282,7 +367,10 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	{
 		// write order by key types
 		int offset = emit_select_order_by_data(self, select, NULL);
-		select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
+		select->rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+		                   select->ret.count,
+		                   select->expr_order_by.count,
+		                   offset);
 		select->on_match = emit_select_on_match;
 
 		// generate group by scan
@@ -305,7 +393,11 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 
 	// create ordered set
 	int offset = emit_select_order_by_data(self, select, NULL);
-	select->rset = op2(self, CSET_ORDERED, rpin(self), offset);
+
+	select->rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+	                   select->ret.count,
+	                   select->expr_order_by.count,
+	                   offset);
 	select->on_match = emit_select_on_match;
 
 	// scan for table/expression and joins
@@ -330,9 +422,11 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	// [LIMIT expr] [OFFSET expr]
 	//
 
-	// create data set for nested queries
-	int rresult = op1(self, CSET, rpin(self));
+	// create result set
+	int rresult = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
 	select->rset = rresult;
+
+	// create data set for nested queries
 	select->on_match = emit_select_on_match;
 
 	// scan for table/expression and joins
@@ -344,7 +438,7 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	     select->on_match,
 	     select);
 
-	return rresult;
+	return select->rset;
 }
 
 hot int
@@ -354,8 +448,18 @@ emit_select(Compiler* self, Ast* ast)
 
 	// SELECT expr[, ...]
 	if (select->target == NULL)
-		return emit_select_expr(self, select);
+	{
+		// create result set
+		int rresult = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
+		select->rset = rresult;
 
+		// push expressions
+		emit_select_expr(self, select);
+
+		// add to the returning set
+		op1(self, CSET_ADD, select->rset);
+		return rresult;
+	}
 	//
 	// SELECT expr, ... [FROM name, [...]]
 	// [GROUP BY]
