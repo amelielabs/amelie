@@ -53,8 +53,21 @@ emit_watch(Compiler* self, Ast* ast)
 	op2(self, CJTR, 0 /* _end */, rexpr);
 	runpin(self, rexpr);
 
-	// sleep
-	op1(self, CSLEEP, 1000);
+	// get public.sleep()
+	Str schema;
+	str_set(&schema, "public", 6);
+	Str name;
+	str_set(&name, "sleep", 5);
+	auto func = function_mgr_find(self->parser.function_mgr, &schema, &name);
+	assert(func);
+
+	// call sleep(1000)
+	int r = op2(self, CINT, rpin(self, VALUE_INT), 1000);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// CALL
+	r = op4(self, CCALL, rpin(self, func->ret), (intptr_t)func, 1, -1);
 
 	// jmp _start
 	op1(self, CJMP, _start);
@@ -65,5 +78,5 @@ emit_watch(Compiler* self, Ast* ast)
 
 	// nop
 	op0(self, CNOP);
-	return op2(self, CARRAY, rpin(self), 0);
+	return -1;
 }
