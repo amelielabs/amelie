@@ -468,58 +468,16 @@ cupsert(Vm* self, Op* op)
 	return ++op;
 }
 
-#if 0
 hot void
 cupdate(Vm* self, Op* op)
 {
-	// [cursor]
-	auto tr     = self->tr;
+	// [cursor, order/value count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	auto part   = cursor->part;
-	auto it     = cursor->it;
-
-	// update by cursor
-	uint8_t* pos;
-	auto value = stack_at(&self->stack, 1);
-	switch (value->type) {
-	case VALUE_OBJ:
-	case VALUE_ARRAY:
-	{
-		pos = value->data;
-		part_update(part, tr, it, &pos);
-		break;
-	}
-	case VALUE_SET:
-	{
-		auto buf = buf_create();
-		guard_buf(buf);
-		auto set = (Set*)value->store;
-		for (int j = 0; j < set->list_count; j++)
-		{
-			auto ref = &set_at(set, j)->value;
-			if (likely(ref->type == VALUE_ARRAY ||
-			           ref->type == VALUE_OBJ))
-			{
-				pos = ref->data;
-			} else
-			{
-				buf_reset(buf);
-				value_write(ref, buf);
-				pos = buf->start;
-			}
-			part_update(part, tr, it, &pos);
-		}
-		break;
-	}
-	default:
-		error("UPDATE: array, object or set expected, but got %s",
-		      value_type_to_string(value->type));
-		break;
-	}
-
-	stack_popn(&self->stack, 1);
+	auto row_src = iterator_at(cursor->it);
+	auto row = value_update(table_columns(cursor->table), row_src, &self->stack, op->b);
+	part_update(cursor->part, self->tr, cursor->it, row);
+	stack_popn(&self->stack, op->b * 2);
 }
-#endif
 
 hot void
 cdelete(Vm* self, Op* op)
