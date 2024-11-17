@@ -38,9 +38,7 @@
 hot void
 emit_insert(Compiler* self, Ast* ast)
 {
-	auto insert = ast_insert_of(ast);
-	auto table = insert->target->table;
-
 	// CINSERT
-	op1(self, CINSERT, (intptr_t)table);
+	auto insert = ast_insert_of(ast);
+	op1(self, CINSERT, (intptr_t)insert->target->from_table);
 }

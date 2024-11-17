@@ -47,12 +47,23 @@ emit_delete_on_match_returning(Compiler* self, void* arg)
 {
 	AstDelete* delete = arg;
 
-	// expr
-	int rexpr = emit_expr(self, delete->target, delete->returning);
+	// push expr and prepare returning columns
+	for (auto as = delete->ret.list; as; as = as->next)
+	{
+		// expr
+		int rexpr = emit_expr(self, delete->target, as->l);
+		int rt = rtype(self, rexpr);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+
+		auto column = column_allocate();
+		column_set_name(column, &as->r->string);
+		column_set_type(column, value_type_to_type(rt));
+		columns_add(&delete->ret.columns, column);
+	}
 
 	// add to the returning set
-	op2(self, CSET_ADD, delete->rset, rexpr);
-	runpin(self, rexpr);
+	op1(self, CSET_ADD, delete->rset);
 
 	op1(self, CDELETE, delete->target->id);
 }
@@ -64,7 +75,7 @@ emit_delete(Compiler* self, Ast* ast)
 	auto delete = ast_delete_of(ast);
 
 	// delete by cursor
-	if (! delete->returning)
+	if (! returning_has(&delete->ret))
 	{
 		scan(self, delete->target,
 		     NULL,
@@ -78,7 +89,9 @@ emit_delete(Compiler* self, Ast* ast)
 	// RETURNING expr
 
 	// create returning set
-	delete->rset = op1(self, CSET, rpin(self));
+	delete->rset =
+		op3(self, CSET, rpin(self, VALUE_SET),
+		    delete->ret.count, 0);
 
 	scan(self, delete->target,
 	     NULL,
