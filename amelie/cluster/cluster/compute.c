@@ -69,17 +69,23 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
 
+		auto row = row_copy((Row*)data);
+
 		// replay write
 		if (type == LOG_REPLACE)
-			part_insert(part, tr, true, &data);
+			part_insert(part, tr, true, row);
 		else
-			part_delete_by(part, tr, &data);
+			part_delete_by(part, tr, row);
 	}
 }
 
 hot static inline void
 compute_load(Compute* self, Tr* tr, Req* req)
 {
+	(void)self;
+	(void)tr;
+	(void)req;
+#if 0
 	// execute batch INSERT
 	for (auto pos = req->arg.start; pos < req->arg.position;)
 	{
@@ -91,6 +97,7 @@ compute_load(Compute* self, Tr* tr, Req* req)
 		auto part = part_list_match(&req->arg_table->part_list, &self->node->id);
 		part_insert(part, tr, false, &data);
 	}
+#endif
 }
 
 hot static inline void
@@ -102,8 +109,8 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        tr,
 	        req->program->code_node,
 	        req->program->code_data,
+	        req->program->code_data_row,
 	       &req->arg,
-	        req->arg_buf,
 	        req->args,
 	        req->cte,
 	       &req->result,
