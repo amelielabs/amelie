@@ -69,14 +69,20 @@ emit_json(Compiler* self, Target* target, Ast* ast, int op)
 hot static inline int
 emit_column(Compiler* self, Target* target, Str* name)
 {
-	// find column in the target
-	auto column = columns_find(target->from_columns, name);
+	// find unique column name in the target
+	bool conflict = false;
+	auto column = columns_find_noconflict(target->from_columns, name, &conflict);
 	if (! column)
-		error("<%.*s.%.*s> column not found",
-		      str_size(&target->name), str_of(&target->name),
-		      str_size(name), str_of(name));
-
-	// TODO: check for columns duplicates?
+	{
+		if (conflict)
+			error("<%.*s.%.*s> column name is ambiguous",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(name), str_of(name));
+		else
+			error("<%.*s.%.*s> column not found",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(name), str_of(name));
+	}
 
 	// generate cursor read based on the target
 	int r;

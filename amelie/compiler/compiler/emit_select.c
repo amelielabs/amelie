@@ -176,12 +176,22 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 		if (group->expr->id == KNAME)
 		{
 			// find column in the target
+			auto target = select->target;
 			auto name = &group->expr->string;
-			auto ref  = columns_find(select->target->from_columns, name);
+			bool conflict = false;
+			auto ref  = columns_find_noconflict(target->from_columns, name, &conflict);
 			if (! ref)
-				error("<%.*s.%.*s> column not found",
-				      str_size(&select->target->name), str_of(&select->target->name),
-				      str_size(name), str_of(name));
+			{
+				if (conflict)
+					error("<%.*s.%.*s> column name is ambiguous",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(name), str_of(name));
+				else
+					error("<%.*s.%.*s> column not found",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(name), str_of(name));
+			}
+
 			// copy column name and type
 			column_set_name(column, &ref->name);
 			column_set_type(column, ref->type);
