@@ -40,12 +40,13 @@
 #include <amelie_frontend.h>
 #include <amelie_load.h>
 
+#if 0
 static inline bool
 load_skip(char** pos, char* end)
 {
 	while (*pos < end && isspace(**pos))
 		(*pos)++;
-	return (*pos == end);
+	return (*pos >= end);
 }
 
 hot static inline char*
@@ -68,28 +69,7 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 	auto columns = table_columns(table);
 	auto keys    = table_keys(table);
 
-	if (load_skip(&pos, end))
-		error("JSON object expected");
-
-	// [] or {}
-	bool is_object = false;
-	if (*pos == '[')
-	{
-		// [value, ...]
-		pos++;
-	} else
-	if (*pos == '{')
-	{
-		// {}
-		is_object = true;
-
-		// column list has one column or the table has one column
-		if (self->columns_count != 1 && columns->list_count != 1)
-			error("unexpected JSON object");
-	} else {
-		error("JSON array expected");
-	}
-
+	// [value[, ...]] CRLF | EOF
 	auto data = &self->data;
 	encode_array(data);
 
@@ -154,18 +134,21 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 			separator_last = list_is_last(&columns->list, &column->link);
 		}
 
-		// ] or ,
-		if (!is_object && separator)
+		// , or \r\n or eof
+		if (separator)
 		{
-			if (unlikely(load_skip(&pos, end)))
-				error("failed to parse JSON array");
-			if (unlikely(*pos != ']' && *pos != ','))
-				error("failed to parse JSON array");
-			if (unlikely((*pos == ']' && !separator_last) ||
-			             (*pos == ',' &&  separator_last)))
-				error("array expected to have %d columns",
-				      columns->list_count);
-			pos++;
+			if (separator_last)
+			{
+				// next row or eof
+			} else
+			{
+				if (load_skip(&pos, end))
+					error("failed to parse CSV array");
+				if (unlikely(*pos != ','))
+					error("array expected to have %d columns",
+					      columns->list_count);
+				pos++;
+			}
 		}
 
 		// ensure NOT NULL constraint
@@ -200,8 +183,8 @@ load_row(Load* self, char* pos, char* end, uint32_t* hash)
 	return pos;
 }
 
-hot void
-load_json(Load* self)
+void
+load_csv(Load* self)
 {
 	auto dtr   = self->dtr;
 	auto table = self->table;
@@ -209,69 +192,19 @@ load_json(Load* self)
 	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
-	// [[value, ...], ...]
+	// row per line
+
+	// value[, ...] CRLF | EOF
 	char* pos = buf_cstr(&self->request->content);
 	char* end = pos + buf_size(&self->request->content);
-	if (load_skip(&pos, end) || *pos != '[')
-		error("JSON array expected");
-	pos++;
 
-	for (;;)
-	{
-		// [value, ...]
-		uint32_t offset = buf_size(&self->data);
-		uint32_t hash   = 0;
-		pos = load_row(self, pos, end, &hash);
-
-		// map to node
-		auto route = part_map_get(&table->part_list.map, hash);
-		auto req = map[route->order];
-		if (req == NULL)
-		{
-			req = req_create(&dtr->req_cache, REQ_LOAD);
-			req->arg_buf = &self->data;
-			req->arg_table = self->table;
-			req->route = route;
-			req_list_add(&self->req_list, req);
-			map[route->order] = req;
-		}
-
-		// write offset to req->arg
-		encode_integer(&req->arg, offset);
-
-		// ] or ,
-		if (load_skip(&pos, end))
-			error("failed to parse JSON array");
-		if (*pos == ',') {
-			pos++;
-			continue;
-		}
-		if (*pos == ']') {
-			pos++;
-			break;
-		}
-		error("failed to parse JSON array");
-	}
-}
-
-hot void
-load_jsonl(Load* self)
-{
-	auto dtr   = self->dtr;
-	auto table = self->table;
-
-	Req* map[dtr->set.set_size];
-	memset(map, 0, sizeof(map));
-
-	char* pos = buf_cstr(&self->request->content);
-	char* end = pos + buf_size(&self->request->content);
 	for (;;)
 	{
 		// eof
 		if (load_skip(&pos, end))
 			break;
 
-		// [value, ...] <ws>
+		// [value[, ...]] CRLF | EOF
 		uint32_t offset = buf_size(&self->data);
 		uint32_t hash   = 0;
 		pos = load_row(self, pos, end, &hash);
@@ -293,3 +226,11 @@ load_jsonl(Load* self)
 		encode_integer(&req->arg, offset);
 	}
 }
+#endif
+
+hot void
+load_csv(Load* self)
+{
+	(void)self;
+}
+
