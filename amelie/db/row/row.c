@@ -17,10 +17,14 @@
 #include <amelie_config.h>
 #include <amelie_row.h>
 
-#if 0
 Row*
 row_alter_add(Row* row, Buf* append)
 {
+	(void)row;
+	(void)append;
+	// TODO
+	return NULL;
+#if 0
 	auto self = row_allocate(row_size(row) + buf_size(append));
 	int  offset = row_size(row) - data_size_array_end();
 	memcpy(row_data(self), row_data(row), offset);
@@ -29,11 +33,17 @@ row_alter_add(Row* row, Buf* append)
 	uint8_t* pos = row_data(self) + offset;
 	data_write_array_end(&pos);
 	return self;
+#endif
 }
 
 Row*
 row_alter_drop(Row* row, int order)
 {
+	(void)row;
+	(void)order;
+	// TODO
+	return NULL;
+#if 0
 	uint8_t* start = row_data(row);
 	uint8_t* end   = row_data(row) + row_size(row);
 
@@ -51,5 +61,5 @@ row_alter_drop(Row* row, int order)
 	pos += pos_before - start;
 	memcpy(pos, pos_after, end - pos_after);
 	return self;
-}
 #endif
+}

@@ -206,11 +206,10 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
     ${AMELIE_ROOT}/vm/value/like.c
     ${AMELIE_ROOT}/vm/store/set.c
+    ${AMELIE_ROOT}/vm/store/merge.c
+    ${AMELIE_ROOT}/vm/store/agg.c
     ${AMELIE_ROOT}/vm/store/any.c
     ${AMELIE_ROOT}/vm/store/all.c
-    ${AMELIE_ROOT}/vm/store/merge.c
-    ${AMELIE_ROOT}/vm/store/group.c
-    ${AMELIE_ROOT}/vm/store/group_merge.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c
@@ -225,37 +224,38 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_misc.c
     ${AMELIE_ROOT}/vm/func/fn_time.c
     ${AMELIE_ROOT}/vm/func/fn_vector.c
-    ${AMELIE_ROOT}/vm/func/fn_agg.c
     ${AMELIE_ROOT}/vm/func/fn.c)
 
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
+    ${AMELIE_ROOT}/compiler/parser/parse_expr.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_node.c
+    ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_view.c
     ${AMELIE_ROOT}/compiler/parser/parse_cte.c
-    ${AMELIE_ROOT}/compiler/parser/parse_expr.c
+    ${AMELIE_ROOT}/compiler/parser/parse_from.c
+    ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
-    ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
-    ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/planner/path.c
     ${AMELIE_ROOT}/compiler/planner/planner.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/scan.c
+    ${AMELIE_ROOT}/compiler/compiler/cast.c
     ${AMELIE_ROOT}/compiler/compiler/emit_expr.c
     ${AMELIE_ROOT}/compiler/compiler/emit_insert.c
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c

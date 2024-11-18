@@ -32,7 +32,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-#if 0
 static void
 parse_view_args(Stmt* self, AstViewCreate* stmt)
 {
@@ -107,7 +106,7 @@ parse_view_create(Stmt* self)
 	// ensure column count match
 	auto select = parse_select(self);
 	if (stmt->config->columns.list_count > 0)
-		if (select->expr_count != stmt->config->columns.list_count)
+		if (select->ret.count != stmt->config->columns.list_count)
 			error("number of view columns does not match select");
 
 	Str query;
@@ -157,4 +156,3 @@ parse_view_alter(Stmt* self)
 	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
 		error("ALTER VIEW RENAME <name> expected");
 }
-#endif
