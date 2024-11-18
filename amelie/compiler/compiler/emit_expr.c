@@ -842,10 +842,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KARRAY:
 		return emit_json(self, target, ast, CJSON_ARRAY);
 
+#if 0
 	// argument
 	case KARGID:
 		return op2(self, CARG, rpin(self, VALUE_JSON), ast->integer);
-#if 0
 	case KCTEID:
 		return op2(self, CCTE_GET, rpin(self), ast->integer);
 	// @

@@ -92,6 +92,24 @@ parse_stmt_free(Stmt* stmt)
 			view_config_free(ast->config);
 		break;
 	}
+	case STMT_INSERT:
+	{
+		auto ast = ast_insert_of(stmt->ast);
+		returning_free(&ast->ret);
+		break;
+	}
+	case STMT_DELETE:
+	{
+		auto ast = ast_delete_of(stmt->ast);
+		returning_free(&ast->ret);
+		break;
+	}
+	case STMT_UPDATE:
+	{
+		auto ast = ast_update_of(stmt->ast);
+		returning_free(&ast->ret);
+		break;
+	}
 	default:
 		break;
 	}
@@ -102,6 +120,7 @@ parse_stmt_free(Stmt* stmt)
 		auto select = ast_select_of(ref->ast);
 		columns_free(&select->columns);
 		columns_free(&select->columns_group);
+		returning_free(&select->ret);
 	}
 }
 

@@ -402,6 +402,7 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
+#if 0
 hot static inline bool
 expr_name(Stmt* self, Ast* value, Str* name)
 {
@@ -457,6 +458,7 @@ expr_name_compound(Stmt* self, Ast* value)
 	stmt_push(self, idx);
 	stmt_push(self, ast('.'));
 }
+#endif
 
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
@@ -597,13 +599,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-		{
 			value = expr_call(self, expr, value, true);
-		} else
-		{
-			// resolve name as argument or cte
-			expr_name(self, value, &value->string);
-		}
 		break;
 	}
 
@@ -613,14 +609,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-		{
 			value = expr_call(self, expr, value, true);
-		} else
-		{
-			// resolve compound name as argument or cte and
-			// handle as idx operation
-			expr_name_compound(self, value);
-		}
 		break;
 	}
 

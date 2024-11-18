@@ -78,6 +78,26 @@ columns_find(Columns* self, Str* name)
 }
 
 hot static inline Column*
+columns_find_noconflict(Columns* self, Str* name, bool* conflict)
+{
+	Column* match = NULL;
+	list_foreach(&self->list)
+	{
+		auto column = list_at(Column, link);
+		if (str_compare(&column->name, name))
+		{
+			if (match)
+			{
+				*conflict = true;
+				return NULL;
+			}
+			match = column;
+		}
+	}
+	return match;
+}
+
+hot static inline Column*
 columns_find_by(Columns* self, int order)
 {
 	list_foreach(&self->list)

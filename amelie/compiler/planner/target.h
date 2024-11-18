@@ -29,24 +29,28 @@ analyze_stmts(Parser* parser, int* count)
 	return last;
 }
 
-#if 0
 static inline uint32_t
 target_lookup_hash(Target* target)
 {
 	uint32_t hash = 0;
-	list_foreach(&target->index->keys.list)
+	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
+		auto column = key->column;
 		auto ref = &ast_path_of(target->path)->keys[key->order];
 		assert(ref->start);
-		if (key->type == TYPE_STRING)
-			hash = key_hash_string(hash, &ref->start->string);
-		else
-		if (key->type == TYPE_TIMESTAMP)
-			hash = key_hash_timestamp(hash, ref->start->integer);
-		else
-			hash = key_hash_integer(hash, ref->start->integer);
+		if (column->type == TYPE_TEXT)
+		{
+			hash = hash_murmur3_32((uint8_t*)str_u8(&ref->start->string),
+			                       str_size(&ref->start->string),
+			                       0);
+		} else
+		{
+			// timestamp or int
+			hash = hash_murmur3_32((uint8_t*)&ref->start->integer,
+			                       sizeof(ref->start->integer),
+			                       0);
+		}
 	}
 	return hash;
 }
-#endif

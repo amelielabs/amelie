@@ -49,7 +49,9 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_coordinator);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
-	parser_init(&self->parser, db, function_mgr, &self->code_data);
+	row_data_init(&self->code_data_row);
+	parser_init(&self->parser, db, function_mgr, &self->code_data,
+	            &self->code_data_row);
 	rmap_init(&self->map);
 }
 
@@ -60,6 +62,7 @@ compiler_free(Compiler* self)
 	code_free(&self->code_coordinator);
 	code_free(&self->code_node);
 	code_data_free(&self->code_data);
+	row_data_free(&self->code_data_row);
 	rmap_free(&self->map);
 }
 
@@ -74,6 +77,7 @@ compiler_reset(Compiler* self)
 	code_reset(&self->code_coordinator);
 	code_reset(&self->code_node);
 	code_data_reset(&self->code_data);
+	row_data_reset(&self->code_data_row);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
@@ -88,6 +92,7 @@ compiler_parse(Compiler* self, Local* local, Columns* args, Str* text)
 static void
 emit_stmt(Compiler* self)
 {
+	// generate node code (pushdown)
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
@@ -146,9 +151,9 @@ emit_stmt(Compiler* self)
 
 		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
-			// select from table/shared
+			// select from table
 
 			// validate supported targets as expressions or shared table
 			target_list_validate(&stmt->target_list, select->target);
@@ -162,24 +167,20 @@ emit_stmt(Compiler* self)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select (select from table)
-			if (!select->target || !select->target->expr)
+			if (!select->target || !select->target->from_select)
 				error("FROM: undefined distributed table");
 
 			// select from (select from table)
-			auto from_expr = select->target->expr;
-			if (from_expr->id != KSELECT)
-				error("FROM: undefined distributed table");
-
-			auto from_select = ast_select_of(from_expr);
+			auto from_select = ast_select_of(select->target->from_select);
 			if (from_select->target == NULL ||
-			    from_select->target->table == NULL)
+			    from_select->target->from_table == NULL)
 				error("FROM SELECT: undefined distributed table");
 
 			// validate FROM SELECT targets
 			target_list_validate(&stmt->target_list, from_select->target);
 
 			// generate pushdown as a nested query
-			pushdown(self, from_expr);
+			pushdown(self, &from_select->ast);
 			break;
 		}
 
@@ -214,6 +215,7 @@ emit_stmt(Compiler* self)
 	op0(self, CRET);
 }
 
+#if 0
 static inline void
 emit_send_generated_on_match(Compiler* self, void* arg)
 {
@@ -260,19 +262,21 @@ emit_send_generated(Compiler* self, int start)
 	// CSEND_GENERATED
 	op4(self, CSEND_GENERATED, stmt->order, start, (intptr_t)table, insert->rows);
 }
+#endif
 
 static inline void
 emit_send(Compiler* self, int start)
 {
+	// generate coordinator send code
 	Target* target = NULL;
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		auto table = insert->target->table;
+		auto table = insert->target->from_table;
 		if (table_columns(table)->generated_columns) {
-			emit_send_generated(self, start);
+			; // emit_send_generated(self, start);
 		} else {
 			// CSEND
 			op4(self, CSEND, stmt->order, start, (intptr_t)table, insert->rows);
@@ -293,7 +297,7 @@ emit_send(Compiler* self, int start)
 
 		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
 			target = select->target;
 			break;
@@ -303,9 +307,7 @@ emit_send(Compiler* self, int start)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select from (select from table)
-			auto from_expr = select->target->expr;
-			auto from_select = ast_select_of(from_expr);
-			target = from_select->target;
+			target = ast_select_of(select->target->from_select)->target;
 			break;
 		}
 
@@ -333,7 +335,7 @@ emit_send(Compiler* self, int start)
 	if (! target)
 		return;
 
-	auto table = target->table;
+	auto table = target->from_table;
 	if (table->config->shared)
 	{
 		// send to first node
@@ -369,21 +371,21 @@ emit_recv(Compiler* self)
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		r = pushdown_recv_returning(self, insert->returning != NULL);
+		r = pushdown_recv_returning(self, returning_has(&insert->ret));
 		break;
 	}
 
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
-		r = pushdown_recv_returning(self, update->returning != NULL);
+		r = pushdown_recv_returning(self, returning_has(&update->ret));
 		break;
 	}
 
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
-		r = pushdown_recv_returning(self, delete->returning != NULL);
+		r = pushdown_recv_returning(self, returning_has(&delete->ret));
 		break;
 	}
 
@@ -398,7 +400,7 @@ emit_recv(Compiler* self)
 
 		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
 			r = pushdown_recv(self, stmt->ast);
 			break;
@@ -408,8 +410,7 @@ emit_recv(Compiler* self)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select over returned SET or MERGE object
-			auto from_expr = select->target->expr;
-			select->target->rexpr = pushdown_recv(self, from_expr);
+			select->target->r = pushdown_recv(self, select->target->from_select);
 			r = emit_select(self, stmt->ast);
 			break;
 		}
@@ -417,8 +418,8 @@ emit_recv(Compiler* self)
 		// nested expression or nested shared table targets
 		// (first node only, single result)
 
-		// CRECV_TO
-		r = op2(self, CRECV_TO, rpin(self), stmt->order);
+		// CRECV_TO (note: set or merge received)
+		r = op2(self, CRECV_TO, rpin(self, VALUE_SET), stmt->order);
 		break;
 	}
 
@@ -444,7 +445,7 @@ emit_recv(Compiler* self)
 
 	auto has_result = r != -1;
 	if (! has_result)
-		r = op1(self, CNULL, rpin(self));
+		r = op1(self, CNULL, rpin(self, VALUE_NULL));
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);
@@ -555,14 +556,15 @@ compiler_emit(Compiler* self)
 void
 compiler_program(Compiler* self, Program* program)
 {
-	program->code       = &self->code_coordinator;
-	program->code_node  = &self->code_node;
-	program->code_data  = &self->code_data;
-	program->stmts      = self->parser.stmt_list.list_count;
-	program->stmts_last = -1;
-	program->ctes       = self->parser.cte_list.list_count;
-	program->snapshot   = self->snapshot;
-	program->repl       = false;
+	program->code          = &self->code_coordinator;
+	program->code_node     = &self->code_node;
+	program->code_data     = &self->code_data;
+	program->code_data_row = &self->code_data_row;
+	program->stmts         = self->parser.stmt_list.list_count;
+	program->stmts_last    = -1;
+	program->ctes          = self->parser.cte_list.list_count;
+	program->snapshot      = self->snapshot;
+	program->repl          = false;
 	if (self->last)
 		program->stmts_last = self->last->order;
 }
