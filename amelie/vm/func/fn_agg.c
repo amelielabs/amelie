@@ -33,6 +33,7 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
+#if 0
 hot static void
 fn_agg(Call* self, int type)
 {
@@ -93,3 +94,4 @@ FunctionDef fn_agg_def[] =
 	{ "public", "agg_avg",   fn_agg_avg,   false },
 	{  NULL,     NULL,       NULL,         false }
 };
+#endif

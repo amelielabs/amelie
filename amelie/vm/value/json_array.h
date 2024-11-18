@@ -26,27 +26,27 @@ value_array(Value* result, Stack* stack, int count)
 }
 
 static inline void
-value_array_append(Value*  result, uint8_t* data, int data_size,
-                   int     argc,
-                   Value** argv)
+value_array_append(Value* result, uint8_t* data, int data_size,
+                   int    argc,
+                   Value* argv)
 {
 	auto buf = buf_create();
 	buf_write(buf, data, data_size - data_size_array_end());
 	for (int i = 0; i < argc; i++)
-		value_encode(argv[i], buf);
+		value_encode(&argv[i], buf);
 	encode_array_end(buf);
 	value_set_json_buf(result, buf);
 }
 
 static inline void
-value_array_push(Value*  result, uint8_t* data, int data_size,
-                 int     argc,
-                 Value** argv)
+value_array_push(Value* result, uint8_t* data, int data_size,
+                 int    argc,
+                 Value* argv)
 {
 	auto buf = buf_create();
 	encode_array(buf);
 	for (int i = 0; i < argc; i++)
-		value_encode(argv[i], buf);
+		value_encode(&argv[i], buf);
 	buf_write(buf, data + data_size_array(), data_size - data_size_array());
 	value_set_json_buf(result, buf);
 }

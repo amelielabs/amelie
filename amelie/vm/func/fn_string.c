@@ -38,10 +38,41 @@ fn_length(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	if (arg->type == VALUE_SET)
-		value_set_int(self->result, ((Set*)arg->store)->list_count);
-	else
-		value_length(self->result, arg);
+	if (unlikely(arg.type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	int64_t rc = 0;
+	switch (arg.type) {
+	case VALUE_STRING:
+		rc = str_size(&arg.string);
+		break;
+	case VALUE_JSON:
+		if (data_is_array(arg.data))
+			rc = array_size(arg.data);
+		else
+		if (data_is_obj(arg.data))
+			rc = obj_size(arg.data);
+		else
+		if (data_is_string(arg.data))
+		{
+			uint8_t* pos = arg.data;
+			Str str;
+			data_read_string(&pos, &str);
+			rc = str_size(&str);
+		} else
+			error("length(): unsupport json argument type");
+		break;
+	case VALUE_VECTOR:
+		rc = arg.vector->size;
+		break;
+	default:
+		error("length(%s): operation type is not supported",
+		      value_type_to_string(arg.type));
+		break;
+	}
+	value_set_int(self->result, rc);
 }
 
 static void
@@ -51,11 +82,11 @@ fn_concat(Call* self)
 	int  size = 0;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (argv[i]->type == VALUE_NULL)
+		if (argv[i].type == VALUE_NULL)
 			continue;
-		if (argv[i]->type != VALUE_STRING)
+		if (argv[i].type != VALUE_STRING)
 			error("concat(): string argument expected");
-		size += str_size(&argv[i]->string);
+		size += str_size(&argv[i].string);
 	}
 
 	auto buf = buf_create();
@@ -63,10 +94,10 @@ fn_concat(Call* self)
 	data_write_raw(pos, NULL, size);
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (argv[i]->type == VALUE_NULL)
+		if (argv[i].type == VALUE_NULL)
 			continue;
-		auto at_size = str_size(&argv[i]->string);
-		memcpy(*pos, str_of(&argv[i]->string), at_size);
+		auto at_size = str_size(&argv[i].string);
+		memcpy(*pos, str_of(&argv[i].string), at_size);
 		*pos += at_size;
 	}
 
@@ -81,10 +112,15 @@ fn_lower(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
+	if (unlikely(arg.type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 
-	auto src = str_of(&arg->string);
-	int  src_size = str_size(&arg->string);
+	auto src = str_of(&arg.string);
+	int  src_size = str_size(&arg.string);
 
 	auto buf = buf_create();
 	auto pos = buf_reserve(buf, data_size_string(src_size));
@@ -105,10 +141,15 @@ fn_upper(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
+	if (unlikely(arg.type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 
-	auto src = str_of(&arg->string);
-	int  src_size = str_size(&arg->string);
+	auto src = str_of(&arg.string);
+	int  src_size = str_size(&arg.string);
 
 	auto buf = buf_create();
 	auto pos = buf_reserve(buf, data_size_string(src_size));
@@ -131,11 +172,17 @@ fn_substr(Call* self)
 	if (self->argc < 2 || self->argc > 3)
 		error("substr(): unexpected number of arguments");
 
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+
 	// (string, pos)
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_INT);
-	auto src = &argv[0]->string;
-	auto pos = argv[1]->integer;
+	auto src = &argv[0].string;
+	auto pos = argv[1].integer;
 
 	// position starts from 1
 	if (pos == 0)
@@ -150,7 +197,7 @@ fn_substr(Call* self)
 	if (self->argc == 3)
 	{
 		call_validate_arg(self, 2, VALUE_INT);
-		count = argv[2]->integer;
+		count = argv[2].integer;
 		if ((pos + count) > str_size(src))
 			error("substr(): position is out of bounds");
 	}
@@ -172,11 +219,16 @@ fn_strpos(Call* self)
 	// (string, substring)
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
-	auto src = &argv[0]->string;
-	auto substr = &argv[1]->string;
+	auto src = &argv[0].string;
+	auto substr = &argv[1].string;
 	if (str_size(substr) == 0)
 	{
 		value_set_int(self->result, 0);
@@ -209,13 +261,18 @@ fn_replace(Call* self)
 	// (string, from, to)
 	auto argv = self->argv;
 	call_validate(self, 3);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 	call_validate_arg(self, 2, VALUE_STRING);
 
-	auto src  = &argv[0]->string;
-	auto from = &argv[1]->string;
-	auto to   = &argv[2]->string;
+	auto src  = &argv[0].string;
+	auto from = &argv[1].string;
+	auto to   = &argv[2].string;
 	if (str_size(from) == 0)
 	{
 		error("replace(): invalid from argument");
@@ -315,6 +372,11 @@ trim(Call* self, bool left, bool right)
 	auto argv = self->argv;
 	if (self->argc < 1 || self->argc > 2)
 		error("trim(): unexpected number of arguments");
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 
 	// (string [, filter])
@@ -323,13 +385,13 @@ trim(Call* self, bool left, bool right)
 	if (self->argc == 2)
 	{
 		call_validate_arg(self, 1, VALUE_STRING);
-		filter = str_of(&argv[1]->string);
-		filter_end = filter + str_size(&argv[1]->string);
+		filter = str_of(&argv[1].string);
+		filter_end = filter + str_size(&argv[1].string);
 	} else {
 		filter_end = filter + strlen(filter);
 	}
 
-	auto src = &argv[0]->string;
+	auto src = &argv[0].string;
 	Str string;
 	str_set_str(&string, src);
 	if (left)
@@ -368,24 +430,29 @@ fn_like(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
-	value_like(self->result, argv[0], argv[1]);
+	value_like(self->result, &argv[0], &argv[1]);
 }
 
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length",  fn_length,  false },
-	{ "public", "size",    fn_length,  false },
-	{ "public", "concat",  fn_concat,  false },
-	{ "public", "lower",   fn_lower,   false },
-	{ "public", "upper",   fn_upper,   false },
-	{ "public", "substr",  fn_substr,  false },
-	{ "public", "strpos",  fn_strpos,  false },
-	{ "public", "replace", fn_replace, false },
-	{ "public", "ltrim",   fn_ltrim,   false },
-	{ "public", "rtrim",   fn_rtrim,   false },
-	{ "public", "trim",    fn_trim,    false },
-	{ "public", "like",    fn_like,    false },
-	{  NULL,     NULL,     NULL,       false }
+	{ "public", "length",  VALUE_INT,    fn_length,  false },
+	{ "public", "size",    VALUE_INT,    fn_length,  false },
+	{ "public", "concat",  VALUE_STRING, fn_concat,  false },
+	{ "public", "lower",   VALUE_STRING, fn_lower,   false },
+	{ "public", "upper",   VALUE_STRING, fn_upper,   false },
+	{ "public", "substr",  VALUE_STRING, fn_substr,  false },
+	{ "public", "strpos",  VALUE_INT,    fn_strpos,  false },
+	{ "public", "replace", VALUE_STRING, fn_replace, false },
+	{ "public", "ltrim",   VALUE_STRING, fn_ltrim,   false },
+	{ "public", "rtrim",   VALUE_STRING, fn_rtrim,   false },
+	{ "public", "trim",    VALUE_STRING, fn_trim,    false },
+	{ "public", "like",    VALUE_BOOL,   fn_like,    false },
+	{  NULL,     NULL,     VALUE_NONE,   NULL,       false }
 };

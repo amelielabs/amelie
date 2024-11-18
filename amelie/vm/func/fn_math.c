@@ -33,6 +33,7 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
+#if 0
 static void
 fn_greatest(Call* self)
 {
@@ -628,3 +629,4 @@ FunctionDef fn_math_def[] =
 
 	{  NULL,     NULL,      NULL,        false }
 };
+#endif

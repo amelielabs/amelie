@@ -38,7 +38,7 @@ fn_config(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = vars_list(&config()->vars, &self->vm->local->config.vars);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -47,7 +47,7 @@ fn_users(Call* self)
 	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_USERS, 1, &buf);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -56,7 +56,7 @@ fn_replicas(Call* self)
 	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPLICAS, 1, &buf);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -65,7 +65,7 @@ fn_repl(Call* self)
 	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPL, 1, &buf);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -73,7 +73,7 @@ fn_nodes(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = node_mgr_list(&self->vm->db->node_mgr);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -81,7 +81,7 @@ fn_schemas(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = schema_mgr_list(&self->vm->db->schema_mgr);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -89,7 +89,7 @@ fn_functions(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = function_mgr_list(self->vm->function_mgr);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -97,7 +97,7 @@ fn_tables(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = table_mgr_list(&self->vm->db->table_mgr);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -105,7 +105,7 @@ fn_views(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = view_mgr_list(&self->vm->db->view_mgr);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -113,7 +113,7 @@ fn_wal(Call* self)
 {
 	call_validate(self, 0);
 	auto buf = wal_status(&self->vm->db->wal);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 static void
@@ -122,22 +122,22 @@ fn_status(Call* self)
 	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
-	value_read(self->result, buf->start, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 FunctionDef fn_system_def[] =
 {
-	{ "system", "config",      fn_config,    false },
-	{ "system", "users",       fn_users,     false },
-	{ "system", "replicas",    fn_replicas,  false },
-	{ "system", "repl",        fn_repl,      false },
-	{ "system", "replication", fn_repl,      false },
-	{ "system", "nodes",       fn_nodes,     false },
-	{ "system", "schemas",     fn_schemas,   false },
-	{ "system", "functions",   fn_functions, false },
-	{ "system", "tables",      fn_tables,    false },
-	{ "system", "views",       fn_views,     false },
-	{ "system", "wal",         fn_wal,       false },
-	{ "system", "status",      fn_status,    false },
-	{  NULL,     NULL,         NULL,         false }
+	{ "system", "config",      VALUE_JSON, fn_config,    false },
+	{ "system", "users",       VALUE_JSON, fn_users,     false },
+	{ "system", "replicas",    VALUE_JSON, fn_replicas,  false },
+	{ "system", "repl",        VALUE_JSON, fn_repl,      false },
+	{ "system", "replication", VALUE_JSON, fn_repl,      false },
+	{ "system", "nodes",       VALUE_JSON, fn_nodes,     false },
+	{ "system", "schemas",     VALUE_JSON, fn_schemas,   false },
+	{ "system", "functions",   VALUE_JSON, fn_functions, false },
+	{ "system", "tables",      VALUE_JSON, fn_tables,    false },
+	{ "system", "views",       VALUE_JSON, fn_views,     false },
+	{ "system", "wal",         VALUE_JSON, fn_wal,       false },
+	{ "system", "status",      VALUE_JSON, fn_status,    false },
+	{  NULL,     NULL,         VALUE_NONE, NULL,         false }
 };

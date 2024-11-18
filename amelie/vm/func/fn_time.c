@@ -33,6 +33,7 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
+#if 0
 hot static void
 fn_now(Call* self)
 {
@@ -273,3 +274,4 @@ FunctionDef fn_time_def[] =
 	{ "public", "extract",         fn_extract,         false },
 	{  NULL,     NULL,             NULL,               false }
 };
+#endif

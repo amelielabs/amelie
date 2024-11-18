@@ -35,6 +35,7 @@
 
 #include <openssl/evp.h>
 
+#if 0
 static void
 fn_error(Call* self)
 {
@@ -260,6 +261,7 @@ fn_jwt(Call* self)
 FunctionDef fn_misc_def[] =
 {
 	{ "public", "error",        fn_error,        false },
+	// sleep
 	{ "public", "random",       fn_random,       false },
 	{ "public", "random_uuid",  fn_random_uuid,  false },
 	{ "public", "md5",          fn_md5,          false },
@@ -270,3 +272,4 @@ FunctionDef fn_misc_def[] =
 	{ "public", "jwt",          fn_jwt,          false },
 	{  NULL,     NULL,          NULL,            false }
 };
+#endif

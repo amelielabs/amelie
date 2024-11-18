@@ -77,17 +77,22 @@ fn_regexp_like(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
 		error("regexp_like(): failed to allocate match data");
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	pcre2_match_data_free(match_data);
@@ -103,11 +108,16 @@ fn_regexp_substr(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -115,7 +125,7 @@ fn_regexp_substr(Call* self)
 		error("regexp_substr(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	if (rc <= 0)
@@ -145,11 +155,16 @@ fn_regexp_match(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -157,7 +172,7 @@ fn_regexp_match(Call* self)
 		error("regexp_match(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	if (rc <= 0)
@@ -177,7 +192,7 @@ fn_regexp_match(Call* self)
 		encode_string(buf, &ref);
 	}
 	encode_array_end(buf);
-	value_set_array_buf(self->result, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 hot static void
@@ -189,12 +204,17 @@ fn_regexp_replace(Call* self)
 	// (string, pattern, string)
 	auto argv = self->argv;
 	call_validate(self, 3);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_STRING);
 	call_validate_arg(self, 1, VALUE_STRING);
 	call_validate_arg(self, 2, VALUE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -202,8 +222,8 @@ fn_regexp_replace(Call* self)
 		error("regexp_match(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string  = &argv[0]->string;
-	auto replace = &argv[2]->string;
+	auto string  = &argv[0].string;
+	auto replace = &argv[2].string;
 
 	auto buf = buf_create();
 	encode_string32(buf, 0);
@@ -243,9 +263,9 @@ fn_regexp_replace(Call* self)
 
 FunctionDef fn_regexp_def[] =
 {
-	{ "public", "regexp_like",    fn_regexp_like,     true  },
-	{ "public", "regexp_substr",  fn_regexp_substr,   true  },
-	{ "public", "regexp_match",   fn_regexp_match,    true  },
-	{ "public", "regexp_replace", fn_regexp_replace,  true  },
-	{  NULL,     NULL,            NULL,               false }
+	{ "public", "regexp_like",    VALUE_BOOL,   fn_regexp_like,     true  },
+	{ "public", "regexp_substr",  VALUE_STRING, fn_regexp_substr,   true  },
+	{ "public", "regexp_match",   VALUE_JSON,   fn_regexp_match,    true  },
+	{ "public", "regexp_replace", VALUE_STRING, fn_regexp_replace,  true  },
+	{  NULL,     NULL,            VALUE_NONE,   NULL,               false }
 };

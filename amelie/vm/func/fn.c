@@ -33,35 +33,19 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-hot static void
-fn_coalesce(Call* self)
+void
+fn_register(FunctionMgr* mgr)
 {
-	for (int i = 0; i < self->argc; i++)
-	{
-		if (self->argv[i]->type != VALUE_NULL)
-		{
-			value_copy(self->result, self->argv[i]);
-			return;
-		}
-	}
-	value_set_null(self->result);
+	function_mgr_register(mgr, fn_system_def);
+	function_mgr_register(mgr, fn_cast_def);
+	function_mgr_register(mgr, fn_null_def);
+	function_mgr_register(mgr, fn_object_def);
+	function_mgr_register(mgr, fn_string_def);
+	function_mgr_register(mgr, fn_regexp_def);
+	/*
+	function_mgr_register(mgr, fn_math_def);
+	function_mgr_register(mgr, fn_misc_def);
+	function_mgr_register(mgr, fn_time_def);
+	function_mgr_register(mgr, fn_vector_def);
+	*/
 }
-
-hot static void
-fn_nullif(Call* self)
-{
-	call_validate(self, 2);
-	if (value_is_equal(self->argv[0], self->argv[1]))
-	{
-		value_set_null(self->result);
-		return;
-	}
-	value_copy(self->result, self->argv[0]);
-}
-
-FunctionDef fn_null_def[] =
-{
-	{ "public", "coalesce", fn_coalesce, false },
-	{ "public", "nullif",   fn_nullif,   false },
-	{  NULL,     NULL,      NULL,        false }
-};

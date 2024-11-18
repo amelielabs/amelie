@@ -33,18 +33,23 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-void
-fn_register(FunctionMgr* mgr)
+#if 0
+hot static void
+fn_cos_distance(Call* self)
 {
-	function_mgr_register(mgr, fn_system_def);
-	function_mgr_register(mgr, fn_cast_def);
-	function_mgr_register(mgr, fn_null_def);
-	function_mgr_register(mgr, fn_object_def);
-	function_mgr_register(mgr, fn_string_def);
-	function_mgr_register(mgr, fn_regexp_def);
-	function_mgr_register(mgr, fn_math_def);
-	function_mgr_register(mgr, fn_misc_def);
-	function_mgr_register(mgr, fn_time_def);
-	function_mgr_register(mgr, fn_vector_def);
-	function_mgr_register(mgr, fn_agg_def);
+	auto argv = self->argv;
+	call_validate(self, 2);
+	call_validate_arg(self, 0, VALUE_VECTOR);
+	call_validate_arg(self, 1, VALUE_VECTOR);
+	if (argv[0]->vector.size != argv[1]->vector.size)
+		error("cos_distance(): vector sizes does not match");
+	auto distance = vector_distance(&argv[0]->vector, &argv[1]->vector);
+	value_set_real(self->result, distance);
 }
+
+FunctionDef fn_vector_def[] =
+{
+	{ "public", "cos_distance", fn_cos_distance, false },
+	{  NULL,     NULL,          NULL,            false }
+};
+#endif
