@@ -32,140 +32,230 @@
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 
-#if 0
 OpDesc ops[] =
 {
 	// control
-	{ CRET,               "ret"               },
-	{ CNOP,               "nop"               },
-	{ CJMP,               "jmp"               },
-	{ CJTR,               "jtr"               },
-	{ CJNTR,              "jntr"              },
-
-	// result
-	{ CSEND_HASH,         "send_hash"         },
-	{ CSEND,              "send"              },
-	{ CSEND_GENERATED,    "send_generated"    },
-	{ CSEND_FIRST,        "send_first"        },
-	{ CSEND_ALL,          "send_all"          },
-	{ CRECV,              "recv"              },
-	{ CRECV_TO,           "recv_to"           },
-	{ CRESULT,            "result"            },
-	{ CBODY,              "body"              },
-
-	// cte
-	{ CCTE_SET,           "cte_set"           },
-	{ CCTE_GET,           "cte_get"           },
-
-	// misc
-	{ CSLEEP,             "sleep"             },
+	{ CRET, "cret" },
+	{ CNOP, "cnop" },
+	{ CJMP, "cjmp" },
+	{ CJTR, "cjtr" },
+	{ CJNTR, "cjntr" },
+	{ CSWAP, "cswap" },
 
 	// stack
-	{ CPUSH,              "push"              },
-	{ CPOP,               "pop"               },
+	{ CPUSH, "cpush" },
+	{ CPOP, "cpop" },
 
-	// data
-	{ CNULL,              "null"              },
-	{ CBOOL,              "bool"              },
-	{ CINT,               "int"               },
-	{ CINT_MIN,           "int_min"           },
-	{ CREAL,              "real"              },
-	{ CSTRING,            "string"            },
-	{ CDATA,              "data"              },
-	{ CINTERVAL,          "interval"          },
-	{ CTIMESTAMP,         "timestamp"         },
-	{ CSTRING_MIN,        "string_min"        },
-	{ CTIMESTAMP_MIN,     "timestamp_min"     },
-	{ CSWAP,              "swap"              },
+	// consts
+	{ CNULL, "cnull" },
+	{ CBOOL, "cbool" },
+	{ CINT, "cint" },
+	{ CINT_MIN, "cint_min" },
+	{ CDOUBLE, "cdouble" },
+	{ CSTRING, "cstring" },
+	{ CJSON, "cjson" },
+	{ CJSON_OBJ, "cjson_obj" },
+	{ CJSON_ARRAY, "cjson_array" },
+	{ CINTERVAL, "cinterval" },
+	{ CTIMESTAMP, "ctimestamp" },
+	{ CSTRING_MIN, "cstring_min" },
+	{ CTIMESTAMP_MIN, "ctimestamp_min" },
 
-	// arguments
-	{ CARG,               "arg"               },
+	// argument
+	{ CARG, "carg" },
 
-	// expr
-	{ CBOR,               "bor"               },
-	{ CBAND,              "band"              },
-	{ CBXOR,              "bxor"              },
-	{ CSHL,               "shl"               },
-	{ CSHR,               "shr"               },
-	{ CBINV,              "binv"              },
+	// logical (any)
+	{ CNOT, "cnot" },
 
-	{ CNOT,               "not"               },
-	{ CEQU,               "equ"               },
-	{ CNEQU,              "nequ"              },
-	{ CGTE,               "gte"               },
-	{ CGT,                "gt"                },
-	{ CLTE,               "lte"               },
-	{ CLT,                "lt"                },
-	{ CIN,                "in"                },
-	{ CLIKE,              "like"              },
+	// bitwise operations
+	{ CBORII, "cborii" },
+	{ CBANDII, "cbandii" },
+	{ CBXORII, "cbxorii" },
+	{ CBSHLII, "cbshlii" },
+	{ CBSHRII, "cbshrii" },
+	{ CBINVI, "cbinvi" },
 
-	{ CALL,               "all"               },
-	{ CANY,               "any"               },
-	{ CEXISTS,            "exists"            },
+	// equ
+	{ CEQUII, "cequii" },
+	{ CEQUID, "cequid" },
+	{ CEQUDI, "cequdi" },
+	{ CEQUDD, "cequdd" },
+	{ CEQULL, "cequll" },
+	{ CEQUSS, "cequss" },
+	{ CEQUJJ, "cequjj" },
+	{ CEQUVV, "cequvv" },
 
-	{ CADD,               "add"               },
-	{ CSUB,               "sub"               },
-	{ CMUL,               "mul"               },
-	{ CDIV,               "div"               },
-	{ CMOD,               "mod"               },
-	{ CNEG,               "neg"               },
-	{ CCAT,               "cat"               },
-	{ CIDX,               "idx"               },
-	{ CAT,                "at"                },
+	// gte
+	{ CGTEII, "cgteii" },
+	{ CGTEID, "cgteid" },
+	{ CGTEDI, "cgtedi" },
+	{ CGTEDD, "cgtedd" },
+	{ CGTELL, "cgtell" },
+	{ CGTESS, "cgtess" },
+	{ CGTEVV, "cgtevv" },
 
-	// object
-	{ COBJ,               "obj"               },
-	{ CARRAY,             "array"             },
+	// gt
+	{ CGTII, "cgtii" },
+	{ CGTID, "cgtid" },
+	{ CGTDI, "cgtdi" },
+	{ CGTDD, "cgtdd" },
+	{ CGTLL, "cgtll" },
+	{ CGTSS, "cgtss" },
+	{ CGTVV, "cgtvv" },
 
-	// column
-	{ CASSIGN,            "assign"            },
+	// lte
+	{ CLTEII, "clteii" },
+	{ CLTEID, "clteid" },
+	{ CLTEDI, "cltedi" },
+	{ CLTEDD, "cltedd" },
+	{ CLTELL, "cltell" },
+	{ CLTESS, "cltess" },
+	{ CLTEVV, "cltevv" },
+
+	// lt
+	{ CLTII, "cltii" },
+	{ CLTID, "cltid" },
+	{ CLTDI, "cltdi" },
+	{ CLTDD, "cltdd" },
+	{ CLTLL, "cltll" },
+	{ CLTSS, "cltss" },
+	{ CLTVV, "cltvv" },
+
+	// add
+	{ CADDII, "caddii" },
+	{ CADDID, "caddid" },
+	{ CADDDI, "cadddi" },
+	{ CADDDD, "cadddd" },
+	{ CADDTL, "caddtl" },
+	{ CADDLL, "caddll" },
+	{ CADDLT, "caddlt" },
+	{ CADDVV, "caddvv" },
+
+	// sub
+	{ CSUBII, "csubii" },
+	{ CSUBID, "csubid" },
+	{ CSUBDI, "csubdi" },
+	{ CSUBDD, "csubdd" },
+	{ CSUBTL, "csubtl" },
+	{ CSUBLL, "csubll" },
+	{ CSUBLT, "csublt" },
+	{ CSUBVV, "csubvv" },
+
+	// mul
+	{ CMULII, "cmulii" },
+	{ CMULID, "cmulid" },
+	{ CMULDI, "cmuldi" },
+	{ CMULDD, "cmuldd" },
+	{ CMULVV, "cmulvv" },
+
+	// div
+	{ CDIVII, "cdivii" },
+	{ CDIVID, "cdivid" },
+	{ CDIVDI, "cdivdi" },
+	{ CDIVDD, "cdivdd" },
+
+	// mod
+	{ CMODII, "cmodii" },
+
+	// neg
+	{ CNEGI, "cnegi" },
+	{ CNEGD, "cnegd" },
+
+	// cat
+	{ CCATSS, "ccatss" },
+
+	// idx
+	{ CIDXJS, "cidxjs" },
+	{ CIDXJI, "cidxji" },
+	{ CIDXVI, "cidxvi" },
+
+	// like
+	{ CLIKESS, "clikess" },
+
+	{ CIN, "cin" },
+	{ CALL, "call" },
+	{ CANY, "cany" },
+	{ CEXISTS, "cexists" },
 
 	// set
-	{ CSET,               "set"               },
-	{ CSET_ORDERED,       "set_ordered"       },
-	{ CSET_SORT,          "set_sort"          },
-	{ CSET_ADD,           "set_add"           },
+	{ CSET, "cset" },
+	{ CSET_ORDERED, "cset_ordered" },
+	{ CSET_SORT, "cset_sort" },
+	{ CSET_ADD, "cset_add" },
+	{ CSET_GET, "cset_get" },
+	{ CSET_AGG, "cset_agg" },
 
 	// merge
-	{ CMERGE,             "merge"             },
-	{ CMERGE_RECV,        "merge_recv"        },
-
-	// group
-	{ CGROUP,             "group"             },
-	{ CGROUP_ADD,         "group_add"         },
-	{ CGROUP_WRITE,       "group_write"       },
-	{ CGROUP_GET,         "group_get"         },
-	{ CGROUP_READ,        "group_read"        },
-	{ CGROUP_READ_AGGR,   "group_read_aggr"   },
-	{ CGROUP_MERGE_RECV,  "group_merge_recv"  },
-
-	// ref
-	{ CREF,               "ref"               },
-	{ CREF_KEY,           "ref_key"           },
+	{ CMERGE, "cmerge" },
+	{ CMERGE_RECV, "cmerge_recv" },
+	{ CMERGE_RECV_AGG, "cmerge_recv_agg" },
 
 	// counters
-	{ CCNTR_INIT,         "cntr_init"         },
-	{ CCNTR_GTE,          "cntr_gte"          },
-	{ CCNTR_LTE,          "cntr_lte"          },
+	{ CCNTR_INIT, "ccntr_init" },
+	{ CCNTR_GTE, "ccntr_gte" },
+	{ CCNTR_LTE, "ccntr_lte" },
 
-	// cursor
-	{ CCURSOR_OPEN,       "cursor_open"       },
-	{ CCURSOR_OPEN_EXPR,  "cursor_open_expr"  },
-	{ CCURSOR_OPEN_CTE,   "cursor_open_cte"   },
-	{ CCURSOR_PREPARE,    "cursor_prepare"    },
-	{ CCURSOR_CLOSE,      "cursor_close"      },
-	{ CCURSOR_NEXT,       "cursor_next"       },
-	{ CCURSOR_READ,       "cursor_read"       },
-	{ CCURSOR_IDX,        "cursor_idx"        },
+	// table cursor
+	{ CCURSOR_OPEN, "ccursor_open" },
+	{ CCURSOR_PREPARE, "ccursor_prepare" },
+	{ CCURSOR_CLOSE, "ccursor_close" },
+	{ CCURSOR_NEXT, "ccursor_next" },
+	{ CCURSOR_READB, "ccursor_readb" },
+	{ CCURSOR_READI8, "ccursor_readi8" },
+	{ CCURSOR_READI16, "ccursor_readi16" },
+	{ CCURSOR_READI32, "ccursor_readi32" },
+	{ CCURSOR_READI64, "ccursor_readi64" },
+	{ CCURSOR_READF, "ccursor_readf" },
+	{ CCURSOR_READD, "ccursor_readd" },
+	{ CCURSOR_READT, "ccursor_readt" },
+	{ CCURSOR_READL, "ccursor_readl" },
+	{ CCURSOR_READS, "ccursor_reads" },
+	{ CCURSOR_READJ, "ccursor_readj" },
+	{ CCURSOR_READV, "ccursor_readv" },
+
+	// set cursor
+	{ CCURSOR_SET_OPEN, "ccursor_set_open" },
+	{ CCURSOR_SET_CLOSE, "ccursor_set_close" },
+	{ CCURSOR_SET_NEXT, "ccursor_set_next" },
+	{ CCURSOR_SET_READ, "ccursor_set_read" },
+
+	// merge cursor
+	{ CCURSOR_MERGE_OPEN, "ccursor_merge_open" },
+	{ CCURSOR_MERGE_CLOSE, "ccursor_merge_close" },
+	{ CCURSOR_MERGE_NEXT, "ccursor_merge_next" },
+	{ CCURSOR_MERGE_READ, "ccursor_merge_read" },
+
+	// aggs
+	{ CAGG, "cagg" },
+	{ CCOUNT, "ccount" },
+	{ CAVGI, "cavgi" },
+	{ CAVGD, "cavgd" },
 
 	// functions
-	{ CCALL,              "call"              },
+	{ CCALL, "ccall" },
 
 	// dml
-	{ CINSERT,            "insert"            },
-	{ CUPDATE,            "update"            },
-	{ CDELETE,            "delete"            },
-	{ CUPSERT,            "upsert"            }
+	{ CINSERT, "cinsert" },
+	{ CUPSERT, "cupsert" },
+	{ CUPDATE, "cupdate" },
+	{ CDELETE, "cdelete" },
+
+	// result
+	{ CSEND, "csend" },
+	{ CSEND_HASH, "csend_hash" },
+	{ CSEND_GENERATED, "csend_generated" },
+	{ CSEND_FIRST, "csend_first" },
+	{ CSEND_ALL, "csend_all" },
+	{ CRECV, "crecv" },
+	{ CRECV_TO, "crecv_to" },
+
+	// result
+	{ CRESULT, "cresult" },
+	{ CBODY, "cbody" },
+	{ CCTE_SET, "ccte_set" },
+	{ CCTE_GET, "ccte_get" },
+
+	{ 0, NULL }
 };
 
 static inline void
@@ -230,10 +320,10 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_size(&str), str_of(&str));
 			break;
 		}
-		case CREAL:
+		case CDOUBLE:
 		{
-			double real = code_data_at_real(data, op->b);
-			op_write(output, op, true, true, true, "%g", real);
+			double dbl = code_data_at_double(data, op->b);
+			op_write(output, op, true, true, true, "%g", dbl);
 			break;
 		}
 		case CSEND_HASH:
@@ -292,19 +382,6 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&table->config->name));
 			break;
 		}
-		case CCURSOR_IDX:
-		{
-			if (op->d == -1) {
-				op_write(output, op, true, true, true, NULL);
-			} else
-			{
-				Str name;
-				code_data_at_string(data, op->d, &name);
-				op_write(output, op, true, true, true,
-				         "%.*s", str_size(&name), str_of(&name));
-			}
-			break;
-		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
@@ -326,4 +403,3 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 
 	encode_obj_end(buf);
 }
-#endif

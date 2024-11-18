@@ -96,10 +96,13 @@ csend_hash(Vm* self, Op* op)
 	executor_send(self->executor, dtr, op->a, &list);
 }
 
-#if 0
 hot void
 csend_generated(Vm* self, Op* op)
 {
+	(void)self;
+	(void)op;
+	// TODO
+#if 0
 	// [stmt, start, table, rows_offset]
 	auto dtr     = self->dtr;
 	auto start   = op->b;
@@ -156,8 +159,8 @@ csend_generated(Vm* self, Op* op)
 	executor_send(self->executor, dtr, op->a, &list);
 
 	stack_popn(&self->stack, rows_values);
-}
 #endif
+}
 
 hot void
 csend_first(Vm* self, Op* op)

@@ -237,11 +237,6 @@ enum
 	CCTE_GET
 };
 
-#if 0
-enum
-{
-};
-
 struct OpDesc
 {
 	int   id;
@@ -251,4 +246,3 @@ struct OpDesc
 extern OpDesc ops[];
 
 void op_dump(Code*, CodeData*, Buf*);
-#endif
