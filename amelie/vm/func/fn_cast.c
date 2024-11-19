@@ -209,7 +209,14 @@ fn_json(Call* self)
 		      value_type_to_string(arg.type));
 
 	auto buf = buf_create();
-	value_encode(&arg, self->vm->local->timezone, buf);
+	guard_buf(buf);
+	Json json;
+	json_init(&json);
+	guard(json_free, &json);
+	json_parse(&json, &arg.string, buf);
+	unguard();
+	unguard();
+	json_free(&json);
 	value_set_json_buf(self->result, buf);
 }
 

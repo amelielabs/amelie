@@ -813,7 +813,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return op2(self, CINT, rpin(self, VALUE_INT), ast->integer);
 	case KREAL:
 		return op2(self, CDOUBLE, rpin(self, VALUE_DOUBLE),
-		           code_data_add_real(&self->code_data, ast->real));
+		           code_data_add_double(&self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 	case KCURRENT_TIMESTAMP:

@@ -74,7 +74,7 @@ static inline double
 code_data_at_double(CodeData* self, int offset)
 {
 	assert(self->data.start != NULL);
-	return *((double*)self->data.start + offset);
+	return *(double*)(self->data.start + offset);
 }
 
 static inline void
@@ -116,7 +116,7 @@ code_data_add(CodeData* self, uint8_t* data, int size)
 }
 
 static inline int
-code_data_add_real(CodeData* self, double value)
+code_data_add_double(CodeData* self, double value)
 {
 	int offset = code_data_pos(self);
 	buf_write_double(&self->data, value);

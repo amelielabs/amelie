@@ -967,30 +967,32 @@ ccatss:
 	op_next;
 
 cidxjs:
-	// {}['path']
+	// [result, object, pos]
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
+		// {}['path']
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
 		data = b->data;
 		if (unlikely(! data_is_obj(data)))
 			error("[]: object expected");
-		if (! obj_find(&data, str_of(&c->string), str_size(&c->string)))
-			error("[]: object key <%.*s> not found", str_size(&b->string),
-			      str_of(&b->string));
+		if (! obj_find_path(&data, &c->string))
+			error("[]: object key '%.*s' not found", str_size(&c->string),
+			      str_of(&c->string));
 		value_set_json(a, data, data_sizeof(data), b->buf);
 		if (b->buf)
 			buf_ref(b->buf);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
+		value_free(b);
+		value_free(c);
 	}
 	op_next;
 
 cidxji:
-	// [][pos]
+	// [result, array, pos]
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
+		// [][pos]
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
@@ -998,7 +1000,7 @@ cidxji:
 		if (unlikely(! data_is_array(data)))
 			error("[]: array expected");
 		if (! array_find(&data, c->integer))
-			error("[]: array index <%d> not found", b->integer);
+			error("[]: array index '%d' not found", c->integer);
 		value_set_json(a, data, data_sizeof(data), b->buf);
 		if (b->buf)
 			buf_ref(b->buf);
