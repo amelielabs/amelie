@@ -160,6 +160,31 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 			break;
 		buf_write_double(data, dbl);
 		return;
+	case TYPE_TEXT:
+	{
+		if (likely(ast->id == KSTRING)) {
+			encode_string(data, &ast->string);
+			return;
+		}
+		break;
+	}
+	case TYPE_JSON:
+	{
+		// parse and encode json value
+		lex_push(self, ast);
+		auto pos = self->pos;
+		while (self->backlog)
+		{
+			pos = self->backlog->pos;
+			self->backlog = self->backlog->prev;
+		}
+		json_reset(json);
+		Str in;
+		str_set(&in, pos, self->end - pos);
+		json_parse(json, &in, data);
+		self->pos = json->pos;
+		return;
+	}
 	case TYPE_TIMESTAMP:
 	{
 		// current_timestamp
@@ -201,31 +226,6 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 			return;
 		}
 		break;
-	}
-	case TYPE_TEXT:
-	{
-		if (likely(ast->id == KSTRING)) {
-			encode_string(data, &ast->string);
-			return;
-		}
-		break;
-	}
-	case TYPE_JSON:
-	{
-		// parse and encode json value
-		lex_push(self, ast);
-		auto pos = self->pos;
-		while (self->backlog)
-		{
-			pos = self->backlog->pos;
-			self->backlog = self->backlog->prev;
-		}
-		json_reset(json);
-		Str in;
-		str_set(&in, pos, self->end - pos);
-		json_parse(json, &in, data);
-		self->pos = json->pos;
-		return;
 	}
 	case TYPE_VECTOR:
 	{

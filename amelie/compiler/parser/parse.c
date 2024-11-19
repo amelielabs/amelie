@@ -452,14 +452,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	default:
-	{
-		// SELECT expr (by default)
-		lex_push(lex, ast);
-		stmt->id = STMT_SELECT;
-		auto select = parse_select_expr(stmt);
-		stmt->ast = &select->ast;
+		error("unexpected statement");
 		break;
-	}
 	}
 }
 

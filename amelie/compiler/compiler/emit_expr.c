@@ -117,20 +117,20 @@ emit_column(Compiler* self, Target* target, Str* name)
 			r = op3(self, CCURSOR_READD, rpin(self, VALUE_DOUBLE),
 			        target->id, column->order);
 			break;
-		case TYPE_TIMESTAMP:
-			r = op3(self, CCURSOR_READT, rpin(self, VALUE_TIMESTAMP),
-			        target->id, column->order);
-			break;
-		case TYPE_INTERVAL:
-			r = op3(self, CCURSOR_READL, rpin(self, VALUE_INTERVAL),
-			        target->id, column->order);
-			break;
 		case TYPE_TEXT:
 			r = op3(self, CCURSOR_READS, rpin(self, VALUE_INTERVAL),
 			        target->id, column->order);
 			break;
 		case TYPE_JSON:
 			r = op3(self, CCURSOR_READJ, rpin(self, VALUE_JSON),
+			        target->id, column->order);
+			break;
+		case TYPE_TIMESTAMP:
+			r = op3(self, CCURSOR_READT, rpin(self, VALUE_TIMESTAMP),
+			        target->id, column->order);
+			break;
+		case TYPE_INTERVAL:
+			r = op3(self, CCURSOR_READL, rpin(self, VALUE_INTERVAL),
 			        target->id, column->order);
 			break;
 		case TYPE_VECTOR:
@@ -155,17 +155,17 @@ emit_column(Compiler* self, Target* target, Str* name)
 		case TYPE_DOUBLE:
 			type = VALUE_DOUBLE;
 			break;
-		case TYPE_TIMESTAMP:
-			type = VALUE_TIMESTAMP;
-			break;
-		case TYPE_INTERVAL:
-			type = VALUE_INTERVAL;
-			break;
 		case TYPE_TEXT:
 			type = VALUE_STRING;
 			break;
 		case TYPE_JSON:
 			type = VALUE_JSON;
+			break;
+		case TYPE_TIMESTAMP:
+			type = VALUE_TIMESTAMP;
+			break;
+		case TYPE_INTERVAL:
+			type = VALUE_INTERVAL;
 			break;
 		case TYPE_VECTOR:
 			type = VALUE_VECTOR;
@@ -194,11 +194,9 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 	// SELECT name
 	auto name = &ast->string;
 
-	// note: arguments and cte (without columns) are
-	// resolved during parsing
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
-		error("<%.*s> column, CTE or argument not found",
+		error("<%.*s> column not found",
 		      str_size(name), str_of(name));
 
 	if (unlikely(target == NULL))
@@ -217,12 +215,6 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 hot static inline int
 emit_name_compound(Compiler* self, Target* target, Ast* ast)
 {
-	// note: arguments and cte (without columns) are
-	// resolved during parsing
-	//
-	// cte with columns resolved here as a target only
-	//
-
 	// target.column[.path]
 	// column.path
 	Str name;
@@ -235,7 +227,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 	// check if the first path is a target name
 	auto target_list = compiler_target_list(self);
 	if (target_list->count == 0)
-		error("<%.*s> column, CTE or argument not found",
+		error("<%.*s> column not found",
 		      str_size(&name), str_of(&name));
 
 	// find target
@@ -896,6 +888,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCAT:
 		return emit_operator(self, target, ast, OP_CAT);
 	case '[':
+	case '.':
 		return emit_operator(self, target, ast, OP_IDX);
 	case KLIKE:
 	{

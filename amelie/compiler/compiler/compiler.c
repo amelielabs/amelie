@@ -484,6 +484,7 @@ compiler_emit(Compiler* self)
 	auto parser = &self->parser;
 	auto stmt_list = &parser->stmt_list;
 	assert(stmt_list->list_count > 0);
+	rmap_prepare(&self->map);
 
 	// analyze statements
 	//

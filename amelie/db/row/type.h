@@ -20,10 +20,10 @@ enum
 	TYPE_INT64,
 	TYPE_FLOAT,
 	TYPE_DOUBLE,
-	TYPE_TIMESTAMP,
-	TYPE_INTERVAL,
 	TYPE_TEXT,
 	TYPE_JSON,
+	TYPE_TIMESTAMP,
+	TYPE_INTERVAL,
 	TYPE_VECTOR,
 	TYPE_MAX
 };
@@ -39,10 +39,10 @@ type_of(int type)
 	case TYPE_INT64:     return "int64";
 	case TYPE_FLOAT:     return "float";
 	case TYPE_DOUBLE:    return "double";
-	case TYPE_TIMESTAMP: return "timestamp";
-	case TYPE_INTERVAL:  return "interval";
 	case TYPE_TEXT:      return "text";
 	case TYPE_JSON:      return "json";
+	case TYPE_TIMESTAMP: return "timestamp";
+	case TYPE_INTERVAL:  return "interval";
 	case TYPE_VECTOR:    return "vector";
 	}
 	return "";
@@ -87,14 +87,6 @@ type_read(Str* name)
 	{
 		type = TYPE_DOUBLE;
 	} else
-	if (str_is(name, "timestamp", 9))
-	{
-		type = TYPE_TIMESTAMP;
-	} else
-	if (str_is(name, "interval", 8))
-	{
-		type = TYPE_INTERVAL;
-	} else
 	if (str_is(name, "text", 4) ||
 	    str_is(name, "string", 6))
 	{
@@ -103,6 +95,14 @@ type_read(Str* name)
 	if (str_is(name, "json", 4))
 	{
 		type = TYPE_JSON;
+	} else
+	if (str_is(name, "timestamp", 9))
+	{
+		type = TYPE_TIMESTAMP;
+	} else
+	if (str_is(name, "interval", 8))
+	{
+		type = TYPE_INTERVAL;
 	} else
 	if (str_is(name, "vector", 6))
 	{

@@ -137,7 +137,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
-	for (;;)
+	while (as)
 	{
 		auto next = as->next;
 		switch (as->l->id) {
