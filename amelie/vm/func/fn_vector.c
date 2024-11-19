@@ -33,23 +33,26 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-#if 0
 hot static void
 fn_cos_distance(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
+	if (unlikely(argv[0].type == VALUE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	call_validate_arg(self, 0, VALUE_VECTOR);
 	call_validate_arg(self, 1, VALUE_VECTOR);
-	if (argv[0]->vector.size != argv[1]->vector.size)
+	if (argv[0].vector->size != argv[1].vector->size)
 		error("cos_distance(): vector sizes does not match");
-	auto distance = vector_distance(&argv[0]->vector, &argv[1]->vector);
-	value_set_real(self->result, distance);
+	auto distance = vector_distance(argv[0].vector, argv[1].vector);
+	value_set_double(self->result, distance);
 }
 
 FunctionDef fn_vector_def[] =
 {
-	{ "public", "cos_distance", fn_cos_distance, false },
-	{  NULL,     NULL,          NULL,            false }
+	{ "public", "cos_distance", VALUE_DOUBLE, fn_cos_distance, false },
+	{  NULL,     NULL,          VALUE_NONE,   NULL,            false }
 };
-#endif
