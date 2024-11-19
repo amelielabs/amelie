@@ -153,6 +153,7 @@ enum
 	// like
 	CLIKESS,
 
+	// set operations
 	CIN,
 	CALL,
 	CANY,

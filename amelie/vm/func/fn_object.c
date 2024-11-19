@@ -48,7 +48,8 @@ fn_append(Call* self)
 		error("append(): json array expected");
 	if (unlikely(! data_is_array(argv[0].data)))
 		error("append(): json array expected");
-	value_array_append(self->result, argv[0].data, argv[0].data_size,
+	auto tz = self->vm->local->timezone;
+	value_array_append(self->result, tz, argv[0].data, argv[0].data_size,
 	                   self->argc - 1, &argv[1]);
 }
 
@@ -67,7 +68,8 @@ fn_push(Call* self)
 		error("push(): json array expected");
 	if (unlikely(! data_is_array(argv[0].data)))
 		error("push(): json array expected");
-	value_array_push(self->result, argv[0].data, argv[0].data_size,
+	auto tz = self->vm->local->timezone;
+	value_array_push(self->result, tz, argv[0].data, argv[0].data_size,
 	                 self->argc - 1, &argv[1]);
 }
 
@@ -119,7 +121,8 @@ fn_put(Call* self)
 	if (unlikely(! data_is_array(argv[0].data)))
 		error("put(): json array expected");
 	call_validate_arg(self, 1, VALUE_INT);
-	value_array_put(self->result, argv[0].data, argv[1].integer, &argv[2]);
+	auto tz = self->vm->local->timezone;
+	value_array_put(self->result, tz, argv[0].data, argv[1].integer, &argv[2]);
 }
 
 hot static void
@@ -154,7 +157,8 @@ fn_set(Call* self)
 	if (unlikely(! data_is_obj(argv[0].data)))
 		error("set(): json object expected");
 	call_validate_arg(self, 1, VALUE_STRING);
-	update_set(self->result, argv[0].data, &argv[1].string, &argv[2]);
+	auto tz = self->vm->local->timezone;
+	update_set(self->result, tz, argv[0].data, &argv[1].string, &argv[2]);
 }
 
 hot static void

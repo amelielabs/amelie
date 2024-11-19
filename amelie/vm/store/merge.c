@@ -40,7 +40,7 @@ merge_free(Store* store)
 }
 
 static void
-merge_encode(Store* store, Buf* buf)
+merge_encode(Store* store, Timezone* tz, Buf* buf)
 {
 	auto self = (Merge*)store;
 	MergeIterator it;
@@ -55,7 +55,7 @@ merge_encode(Store* store, Buf* buf)
 		auto set = it.current_it->set;
 		encode_array(buf);
 		for (auto col = 0; col < set->count_columns; col++)
-			value_encode(row + col, buf);
+			value_encode(row + col, tz, buf);
 		encode_array_end(buf);
 		merge_iterator_next(&it);
 	}
@@ -63,7 +63,7 @@ merge_encode(Store* store, Buf* buf)
 }
 
 static void
-merge_export(Store* store, Buf* buf, Timezone* tz)
+merge_export(Store* store, Timezone* tz, Buf* buf)
 {
 	auto self = (Merge*)store;
 	MergeIterator it;
@@ -79,14 +79,16 @@ merge_export(Store* store, Buf* buf, Timezone* tz)
 		else
 			first = false;
 		auto set = it.current_it->set;
-		buf_write(buf, "[", 1);
+		if (set->count_columns > 1)
+			buf_write(buf, "[", 1);
 		for (auto col = 0; col < set->count_columns; col++)
 		{
 			if (col > 0)
 				body_add_comma(buf);
 			body_add(buf, row + col, tz, true, true);
 		}
-		buf_write(buf, "]", 1);
+		if (set->count_columns > 1)
+			buf_write(buf, "]", 1);
 		merge_iterator_next(&it);
 	}
 }

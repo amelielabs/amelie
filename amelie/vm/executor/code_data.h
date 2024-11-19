@@ -116,10 +116,10 @@ code_data_add(CodeData* self, uint8_t* data, int size)
 }
 
 static inline int
-code_data_add_real(CodeData* self, double real)
+code_data_add_real(CodeData* self, double value)
 {
 	int offset = code_data_pos(self);
-	encode_real(&self->data, real);
+	buf_write_double(&self->data, value);
 	return offset;
 }
 

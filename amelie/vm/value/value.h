@@ -20,10 +20,10 @@ typedef enum
 	VALUE_BOOL,
 	VALUE_INT,
 	VALUE_DOUBLE,
-	VALUE_TIMESTAMP,
-	VALUE_INTERVAL,
 	VALUE_STRING,
 	VALUE_JSON,
+	VALUE_TIMESTAMP,
+	VALUE_INTERVAL,
 	VALUE_VECTOR,
 	VALUE_AVG,
 	VALUE_SET,
@@ -43,7 +43,7 @@ struct Value
 		Vector*   vector;
 		Avg       avg;
 		Store*    store;
-		union {
+		struct {
 			uint8_t* data;
 			int      data_size;
 		};
@@ -119,20 +119,6 @@ value_set_double(Value* self, double value)
 }
 
 always_inline hot static inline void
-value_set_timestamp(Value* self, uint64_t value)
-{
-	self->type    = VALUE_TIMESTAMP;
-	self->integer = value;
-}
-
-always_inline hot static inline void
-value_set_interval(Value* self, Interval* value)
-{
-	self->type     = VALUE_INTERVAL;
-	self->interval = *value;
-}
-
-always_inline hot static inline void
 value_set_string(Value* self, Str* value, Buf* buf)
 {
 	self->type   = VALUE_STRING;
@@ -147,6 +133,20 @@ value_set_json(Value* self, uint8_t* data, int data_size, Buf* buf)
 	self->data      = data;
 	self->data_size = data_size;
 	self->buf       = buf;
+}
+
+always_inline hot static inline void
+value_set_timestamp(Value* self, uint64_t value)
+{
+	self->type    = VALUE_TIMESTAMP;
+	self->integer = value;
+}
+
+always_inline hot static inline void
+value_set_interval(Value* self, Interval* value)
+{
+	self->type     = VALUE_INTERVAL;
+	self->interval = *value;
 }
 
 always_inline hot static inline void
@@ -206,12 +206,6 @@ value_copy(Value* self, Value* src)
 	case VALUE_DOUBLE:
 		value_set_double(self, src->dbl);
 		break;
-	case VALUE_TIMESTAMP:
-		value_set_timestamp(self, src->integer);
-		break;
-	case VALUE_INTERVAL:
-		value_set_interval(self, &src->interval);
-		break;
 	case VALUE_STRING:
 		value_set_string(self, &src->string, src->buf);
 		if (src->buf)
@@ -221,6 +215,12 @@ value_copy(Value* self, Value* src)
 		value_set_json(self, src->data, src->data_size, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
+		break;
+	case VALUE_TIMESTAMP:
+		value_set_timestamp(self, src->integer);
+		break;
+	case VALUE_INTERVAL:
+		value_set_interval(self, &src->interval);
 		break;
 	case VALUE_VECTOR:
 		value_set_vector(self, src->vector, src->buf);
@@ -250,7 +250,7 @@ value_type_to_string(ValueType type)
 		name = "null";
 		break;
 	case VALUE_BOOL:
-		name = "int";
+		name = "bool";
 		break;
 	case VALUE_INT:
 		name = "int";
@@ -258,17 +258,17 @@ value_type_to_string(ValueType type)
 	case VALUE_DOUBLE:
 		name = "double";
 		break;
-	case VALUE_TIMESTAMP:
-		name = "timestamp";
-		break;
-	case VALUE_INTERVAL:
-		name = "interval";
-		break;
 	case VALUE_STRING:
 		name = "string";
 		break;
 	case VALUE_JSON:
 		name = "json";
+		break;
+	case VALUE_TIMESTAMP:
+		name = "timestamp";
+		break;
+	case VALUE_INTERVAL:
+		name = "interval";
 		break;
 	case VALUE_VECTOR:
 		name = "vector";
@@ -301,14 +301,14 @@ value_type_to_type(ValueType type)
 		return TYPE_INT64;
 	case VALUE_DOUBLE:
 		return TYPE_DOUBLE;
-	case VALUE_TIMESTAMP:
-		return TYPE_TIMESTAMP;
-	case VALUE_INTERVAL:
-		return TYPE_INTERVAL;
 	case VALUE_STRING:
 		return TYPE_TEXT;
 	case VALUE_JSON:
 		return TYPE_JSON;
+	case VALUE_TIMESTAMP:
+		return TYPE_TIMESTAMP;
+	case VALUE_INTERVAL:
+		return TYPE_INTERVAL;
 	case VALUE_VECTOR:
 		return TYPE_VECTOR;
 	default:

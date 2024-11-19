@@ -48,12 +48,12 @@ value_compare(Value* a, Value* b)
 			return 0;
 		return (a->dbl > b->dbl) ? 1 : -1;
 	}
-	case VALUE_INTERVAL:
-		return interval_compare(&a->interval, &b->interval);
 	case VALUE_STRING:
 		return str_compare_fn(&a->string, &b->string);
 	case VALUE_JSON:
 		return data_compare(a->data, b->data);
+	case VALUE_INTERVAL:
+		return interval_compare(&a->interval, &b->interval);
 	case VALUE_VECTOR:
 		return vector_compare(a->vector, b->vector);
 	// VALUE_AVG
@@ -79,11 +79,11 @@ value_is_true(Value* a)
 		return a->integer > 0;
 	case VALUE_DOUBLE:
 		return a->dbl > 0.0;
-	case VALUE_INTERVAL:
 	case VALUE_STRING:
 		return !str_empty(&a->string);
 	case VALUE_JSON:
 		break;
+	case VALUE_INTERVAL:
 	case VALUE_VECTOR:
 		return a->vector->size > 0;
 	// VALUE_AVG

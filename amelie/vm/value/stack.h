@@ -50,6 +50,7 @@ stack_pop(Stack* self)
 {
 	assert(self->stack_size > 0);
 	auto value = &((Value*)self->stack.start)[self->stack_size - 1];
+	buf_truncate(&self->stack, sizeof(Value));
 	self->stack_size--;
 	return value;
 }

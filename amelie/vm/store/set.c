@@ -39,7 +39,7 @@ set_free(Store* store)
 }
 
 static void
-set_encode(Store* store, Buf* buf)
+set_encode(Store* store, Timezone* tz, Buf* buf)
 {
 	auto self = (Set*)store;
 	encode_array(buf);
@@ -47,28 +47,30 @@ set_encode(Store* store, Buf* buf)
 	{
 		encode_array(buf);
 		for (auto col = 0; col < self->count_columns; col++)
-			value_encode(set_column_of(self, row, col), buf);
+			value_encode(set_column_of(self, row, col), tz, buf);
 		encode_array_end(buf);
 	}
 	encode_array_end(buf);
 }
 
 static void
-set_export(Store* store, Buf* buf, Timezone* tz)
+set_export(Store* store, Timezone* tz, Buf* buf)
 {
 	auto self = (Set*)store;
 	for (auto row = 0; row < self->count_rows; row++)
 	{
 		if (row > 0)
 			body_add_comma(buf);
-		buf_write(buf, "[", 1);
+		if (self->count_columns > 1)
+			buf_write(buf, "[", 1);
 		for (auto col = 0; col < self->count_columns; col++)
 		{
 			if (col > 0)
 				body_add_comma(buf);
 			body_add(buf, set_column_of(self, row, col), tz, true, true);
 		}
-		buf_write(buf, "]", 1);
+		if (self->count_columns > 1)
+			buf_write(buf, "]", 1);
 	}
 }
 

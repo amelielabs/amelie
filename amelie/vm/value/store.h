@@ -17,8 +17,8 @@ typedef struct Value Value;
 struct Store
 {
 	void (*free)(Store*);
-	void (*encode)(Store*, Buf*);
-	void (*export)(Store*, Buf*, Timezone*);
+	void (*encode)(Store*, Timezone*, Buf*);
+	void (*export)(Store*, Timezone*, Buf*);
 };
 
 static inline void
@@ -28,13 +28,13 @@ store_free(Store* self)
 }
 
 static inline void
-store_encode(Store* self, Buf* buf)
+store_encode(Store* self, Timezone* tz, Buf* buf)
 {
-	self->encode(self, buf);
+	self->encode(self, tz, buf);
 }
 
 static inline void
-store_export(Store* self, Buf* buf, Timezone* timezone)
+store_export(Store* self, Timezone* tz, Buf* buf)
 {
-	self->export(self, buf, timezone);
+	self->export(self, tz, buf);
 }

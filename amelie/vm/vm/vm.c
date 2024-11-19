@@ -124,6 +124,8 @@ vm_run(Vm*       self,
 		&&cjtr,
 		&&cjntr,
 		&&cswap,
+
+		// stack
 		&&cpush,
 		&&cpop,
 
@@ -134,16 +136,19 @@ vm_run(Vm*       self,
 		&&cint_min,
 		&&cdouble,
 		&&cstring,
-
 		&&cjson,
 		&&cjson_obj,
 		&&cjson_array,
-
 		&&cinterval,
 		&&ctimestamp,
 		&&cstring_min,
 		&&ctimestamp_min,
+
+		// argument
 		&&carg,
+
+		// logic
+		&&cnot,
 
 		// bitwise operations
 		&&cborii,
@@ -152,9 +157,6 @@ vm_run(Vm*       self,
 		&&cshlii,
 		&&cshrii,
 		&&cbinvi,
-
-		// logic
-		&&cnot,
 
 		// equ
 		&&cequii,
@@ -173,7 +175,6 @@ vm_run(Vm*       self,
 		&&cgtedd,
 		&&cgtell,
 		&&cgtess,
-		&&cgtejj,
 		&&cgtevv,
 
 		// gt
@@ -183,7 +184,6 @@ vm_run(Vm*       self,
 		&&cgtdd,
 		&&cgtll,
 		&&cgtss,
-		&&cgtjj,
 		&&cgtvv,
 
 		// lte
@@ -193,7 +193,6 @@ vm_run(Vm*       self,
 		&&cltedd,
 		&&cltell,
 		&&cltess,
-		&&cltejj,
 		&&cltevv,
 
 		// lt
@@ -203,7 +202,6 @@ vm_run(Vm*       self,
 		&&cltdd,
 		&&cltll,
 		&&cltss,
-		&&cltjj,
 		&&cltvv,
 
 		// add
@@ -401,7 +399,8 @@ cswap:
 	op_next;
 
 cpush:
-	value_move(stack_push(stack), &r[op->a]);
+	*stack_push(stack) = r[op->a];
+	value_reset(&r[op->a]);
 	op_next;
 
 cpop:
@@ -438,18 +437,17 @@ cjson:
 	op_next;
 
 cjson_obj:
-	value_obj(&r[op->a], stack, op->b);
+	value_obj(&r[op->a], local->timezone, stack, op->b);
 	stack_popn(stack, op->b);
 	op_next;
 
 cjson_array:
-	value_array(&r[op->a], stack, op->b);
+	value_array(&r[op->a], local->timezone, stack, op->b);
 	stack_popn(stack, op->b);
 	op_next;
 
 cinterval:
-	// todo: read and set interval value
-	// value_read(&r[op->a], code_data_at(code_data, op->b), NULL);
+	value_set_interval(&r[op->a], (Interval*)code_data_at(code_data, op->b));
 	op_next;
 
 ctimestamp:
@@ -594,15 +592,6 @@ cgtess:
 	}
 	op_next;
 
-cgtejj:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		value_set_bool(&r[op->a], data_compare(r[op->b].data, r[op->c].data) >= 0);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
-	}
-	op_next;
-
 cgtevv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -642,15 +631,6 @@ cgtss:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) > 0);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
-	}
-	op_next;
-
-cgtjj:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		value_set_bool(&r[op->a], data_compare(r[op->b].data, r[op->c].data) > 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -700,15 +680,6 @@ cltess:
 	}
 	op_next;
 
-cltejj:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		value_set_bool(&r[op->a], data_compare(r[op->b].data, r[op->c].data) <= 0);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
-	}
-	op_next;
-
 cltevv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -748,15 +719,6 @@ cltss:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) < 0);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
-	}
-	op_next;
-
-cltjj:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		value_set_bool(&r[op->a], data_compare(r[op->b].data, r[op->c].data) < 0);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -828,7 +790,7 @@ caddvv:
 		buf = buf_create();
 		buf_reserve(buf, vector_size(r[op->b].vector));
 		vector_add((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(result, buf);
+		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -891,7 +853,7 @@ csubvv:
 		buf = buf_create();
 		buf_reserve(buf, vector_size(r[op->b].vector));
 		vector_sub((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(result, buf);
+		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -926,7 +888,7 @@ cmulvv:
 		buf = buf_create();
 		buf_reserve(buf, vector_size(r[op->b].vector));
 		vector_mul((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
-		value_set_vector_buf(result, buf);
+		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -982,12 +944,12 @@ cmodii:
 // neg
 cnegi:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
-		value_set_int(result, -r[op->b].integer);
+		value_set_int(&r[op->a], -r[op->b].integer);
 	op_next;
 
 cnegd:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
-		value_set_double(result, -r[op->b].dbl);
+		value_set_double(&r[op->a], -r[op->b].dbl);
 	op_next;
 
 // cat
@@ -1040,8 +1002,8 @@ cidxji:
 		value_set_json(a, data, data_sizeof(data), b->buf);
 		if (b->buf)
 			buf_ref(b->buf);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
+		value_free(b);
+		value_free(c);
 	}
 	op_next;
 
@@ -1054,9 +1016,9 @@ cidxvi:
 		c = &r[op->c];
 		if (unlikely(c->integer < 0 || c->integer >= b->vector->size))
 			error("[]: vector index is out of bounds");
-		value_set_double(result, b->vector->value[c->integer]);
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
+		value_set_double(a, b->vector->value[c->integer]);
+		value_free(b);
+		value_free(c);
 	}
 	op_next;
 
@@ -1077,10 +1039,10 @@ cin:
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
-		value_set_bool(result, b->type == VALUE_SET ? store_in(b->store, a) :
+		value_set_bool(a, b->type == VALUE_SET ? store_in(b->store, a) :
 		               !value_compare(a, b));
-		value_free(&r[op->b]);
-		value_free(&r[op->c]);
+		value_free(b);
+		value_free(c);
 		*/
 	}
 	op_next;

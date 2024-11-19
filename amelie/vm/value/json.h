@@ -12,7 +12,7 @@
 //
 
 hot static inline void
-value_encode(Value* self, Buf* buf)
+value_encode(Value* self, Timezone* tz, Buf* buf)
 {
 	switch (self->type) {
 	case VALUE_NULL:
@@ -34,12 +34,27 @@ value_encode(Value* self, Buf* buf)
 		buf_write(buf, self->data, data_sizeof(self->data));
 		break;
 	case VALUE_TIMESTAMP:
-		// timezone
-		// todo: encode as string (same as body)
+	{
+		auto offset = buf_size(buf);
+		encode_string32(buf, 0);
+		buf_reserve(buf, 128);
+		int size = timestamp_write(self->integer, tz, (char*)buf->position, 128);
+		buf_advance(buf, size);
+		uint8_t* pos = buf->start + offset;
+		data_write_string32(&pos, size);
 		break;
+	}
 	case VALUE_INTERVAL:
-		// todo: as string (same as body)
+	{
+		auto offset = buf_size(buf);
+		encode_string32(buf, 0);
+		buf_reserve(buf, 256);
+		int size = interval_write(&self->interval, (char*)buf->position, 256);
+		buf_advance(buf, size);
+		uint8_t* pos = buf->start + offset;
+		data_write_string32(&pos, size);
 		break;
+	}
 	case VALUE_VECTOR:
 	{
 		encode_array(buf);
@@ -50,7 +65,7 @@ value_encode(Value* self, Buf* buf)
 	}
 	case VALUE_SET:
 	case VALUE_MERGE:
-		store_encode(self->store, buf);
+		store_encode(self->store, tz, buf);
 		break;
 	default:
 		assert(0);
@@ -134,6 +149,20 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	case VALUE_DOUBLE:
 		buf_printf(buf, "%g", self->dbl);
 		break;
+	case VALUE_STRING:
+		buf_write(buf, "\"", 1);
+		escape_string_raw(buf, &self->string);
+		buf_write(buf, "\"", 1);
+		break;
+	case VALUE_JSON:
+	{
+		uint8_t* pos = self->data;
+		if (pretty)
+			json_export_pretty(buf, tz, &pos);
+		else
+			json_export(buf, tz, &pos);
+		break;
+	}
 	case VALUE_TIMESTAMP:
 	{
 		buf_write(buf, "\"", 1);
@@ -152,20 +181,6 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "\"", 1);
 		break;
 	}
-	case VALUE_STRING:
-		buf_write(buf, "\"", 1);
-		escape_string_raw(buf, &self->string);
-		buf_write(buf, "\"", 1);
-		break;
-	case VALUE_JSON:
-	{
-		uint8_t* pos = self->data;
-		if (pretty)
-			json_export_pretty(buf, tz, &pos);
-		else
-			json_export(buf, tz, &pos);
-		break;
-	}
 	case VALUE_VECTOR:
 	{
 		buf_write(buf, "[", 1);
@@ -182,7 +197,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	case VALUE_SET:
 	case VALUE_MERGE:
 		buf_write(buf, "[", 1);
-		store_export(self->store, buf, tz);
+		store_export(self->store, tz, buf);
 		buf_write(buf, "]", 1);
 		break;
 	default:

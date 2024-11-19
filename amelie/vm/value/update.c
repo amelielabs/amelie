@@ -26,16 +26,21 @@
 
 typedef struct
 {
-	uint8_t* pos;
-	char*    path_pos;
-	char*    path_end;
-	bool     found;
-	Value*   value;
-	Buf*     buf;
+	uint8_t*  pos;
+	char*     path_pos;
+	char*     path_end;
+	bool      found;
+	Value*    value;
+	Buf*      buf;
+	Timezone* tz;
 } Update;
 
 static inline void
-update_init(Update* self, uint8_t* pos, Str* path, Buf* buf, Value* value)
+update_init(Update*  self, Timezone* tz,
+            uint8_t* pos,
+            Str*     path,
+            Buf*     buf,
+            Value*   value)
 {
 	self->pos      = pos;
 	self->path_pos = path->pos;
@@ -43,6 +48,7 @@ update_init(Update* self, uint8_t* pos, Str* path, Buf* buf, Value* value)
 	self->found    = false;
 	self->value    = value;
 	self->buf      = buf;
+	self->tz       = tz;
 }
 
 static inline bool
@@ -147,7 +153,7 @@ update_set_next(Update* self)
 
 			// replace value
 			assert(! self->found);
-			value_encode(self->value, buf);
+			value_encode(self->value, self->tz, buf);
 			self->found = true;
 			data_skip(pos);
 			continue;
@@ -169,18 +175,18 @@ update_set_next(Update* self)
 		encode_string(buf, &key);
 
 		// value
-		value_encode(self->value, buf);
+		value_encode(self->value, self->tz, buf);
 	}
 	encode_obj_end(buf);
 }
 
 hot void
-update_set(Value* result, uint8_t* data, Str* path, Value* value)
+update_set(Value* result, Timezone* tz, uint8_t* data, Str* path, Value* value)
 {
 	auto buf = buf_create();
 	guard_buf(buf);
 	Update self;
-	update_init(&self, data, path, buf, value);
+	update_init(&self, tz, data, path, buf, value);
 	update_set_next(&self);
 	unguard();
 	value_set_json_buf(result, buf);
@@ -192,60 +198,8 @@ update_unset(Value* result, uint8_t* data, Str* path)
 	auto buf = buf_create();
 	guard_buf(buf);
 	Update self;
-	update_init(&self, data, path, buf, NULL);
+	update_init(&self, NULL, data, path, buf, NULL);
 	update_unset_next(&self);
-	unguard();
-	value_set_json_buf(result, buf);
-}
-
-static inline void
-update_set_array_next(Update* self, int idx)
-{
-	auto buf = self->buf;
-	auto pos = &self->pos;
-	if (unlikely(! data_is_array(*pos)))
-		error("set: array expected, but got %s", type_to_string(**pos));
-	data_read_array(pos);
-
-	encode_array(buf);
-	int at = 0;
-	for (; !data_read_array_end(pos); at++)
-	{
-		// replace
-		if (at == idx)
-		{
-			// [idx].path
-			if (update_has(self))
-			{
-				update_set_next(self);
-			} else
-			{
-				// replace value
-				value_encode(self->value, buf);
-				assert(! self->found);
-				self->found = true;
-				data_skip(pos);
-			}
-			continue;
-		}
-
-		uint8_t* start = *pos;
-		data_skip(pos);
-		buf_write(buf, start, *pos - start);
-	}
-	if (idx >= at)
-		error("set: array position is out of bounds");
-	encode_array_end(buf);
-}
-
-hot void
-update_set_array(Value* result, uint8_t* data, int idx, Str* path, Value* value)
-{
-	auto buf = buf_create();
-	guard_buf(buf);
-	Update self;
-	update_init(&self, data, path, buf, value);
-	update_set_array_next(&self, idx);
 	unguard();
 	value_set_json_buf(result, buf);
 }

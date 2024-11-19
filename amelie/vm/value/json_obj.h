@@ -12,7 +12,7 @@
 //
 
 static inline void
-value_obj(Value* result, Stack* stack, int count)
+value_obj(Value* result, Timezone* tz, Stack* stack, int count)
 {
 	if (unlikely((count % 2) != 0))
 		error("{}: incorrect object size");
@@ -29,7 +29,7 @@ value_obj(Value* result, Stack* stack, int count)
 			if (unlikely(ref->type != VALUE_STRING))
 				error("{}: incorrect object key type");
 		}
-		value_encode(ref, buf);
+		value_encode(ref, tz, buf);
 	}
 	encode_obj_end(buf);
 
