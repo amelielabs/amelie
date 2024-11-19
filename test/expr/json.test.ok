@@ -1,6 +1,277 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: json cases
+# test: array []
+select []
+[[]]
+select []::type
+["json"]
+# test: array [null]
+select [null]
+[[null]]
+# test: array [bool]
+select [true]
+[[true]]
+# test: array [int]
+select [123]
+[[123]]
+# test: array [double]
+select [123.321]
+[[123.321]]
+# test: array [string]
+select ['hello world']
+[["hello world"]]
+# test: array [json]
+select [[]]
+[[[]]]
+# test: array [timestamp]
+select [timestamp '1970-01-01 00:00:00']
+[["1970-01-01 00:00:00+00"]]
+# test: array [interval]
+select [interval '1 week 2 weeks 3 weeks']
+[["42 days"]]
+# test: array [vector]
+select [[1,2,3]::vector]
+[[[1, 2, 3]]]
+select [1]
+[[1]]
+select [1, 2, 'string']
+[[1, 2, "string"]]
+select [[1,2,3], 5, [7]]
+[[[1, 2, 3], 5, [7]]]
+explain select [[1,2,3], 5, [7]]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 2",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "int                 1      -      0     # 5",
+      "10": "push                1      0      0     ",
+      "11": "int                 1      -      0     # 7",
+      "12": "push                1      0      0     ",
+      "13": "json_array          1      1      0     ",
+      "14": "push                1      0      0     ",
+      "15": "json_array          1      3      0     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cte_set             0      0      0     ",
+      "19": "body                0      0      0     ",
+      "20": "ret                 0      0      0     "
+    }
+  }
+}]
+select [[]]
+[[[]]]
+select [{}]
+[[{}]]
+# test: array [] operator
+select [][]
+{"msg": "bad expression"}
+select [][0]
+{"msg": "[]: array index '0' not found"}
+select [][1]
+{"msg": "[]: array index '1' not found"}
+select 1[]
+{"msg": "bad expression"}
+select 1[0]
+{"msg": "unsupported operation: <int> [] <int>"}
+select [1][0]
+[1]
+select [1][1]
+{"msg": "[]: array index '1' not found"}
+select [[1,2,3], 5, [7]][0]
+[[1, 2, 3]]
+select [[1,2,3], 5, [7]][1]
+[5]
+select [[1,2,3], 5, [7]][2]
+[[7]]
+select [[1,2,3], 5, [7]][-1]
+{"msg": "[]: array index '-1' not found"}
+select [[1,2,3], 5, [7]][3]
+{"msg": "[]: array index '3' not found"}
+explain select [[1,2,3], 5, [7]][1]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 2",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "int                 1      -      0     # 5",
+      "10": "push                1      0      0     ",
+      "11": "int                 1      -      0     # 7",
+      "12": "push                1      0      0     ",
+      "13": "json_array          1      1      0     ",
+      "14": "push                1      0      0     ",
+      "15": "json_array          1      3      0     ",
+      "16": "int                 2      -      0     # 1",
+      "17": "idxji               3      1      2     ",
+      "18": "push                3      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "cte_set             0      0      0     ",
+      "21": "body                0      0      0     ",
+      "22": "ret                 0      0      0     "
+    }
+  }
+}]
+select [[1,2,3], 5, [7]].0
+{"msg": "bad '.' expression"}
+select [[1,2,3], 5, [7]].'0'
+{"msg": "[]: object expected"}
+# test: object {}
+select {}
+[{}]
+select {}::type
+["json"]
+select {"a"}
+{"msg": "{}: {name <:>} expected"}
+select {"a"
+{"msg": "{}: {name <:>} expected"}
+select {"a":
+{"msg": "bad expression"}
+select {"a":}
+{"msg": "bad expression"}
+select {"a":,}
+{"msg": "bad expression"}
+select {"a": null}
+[{
+  "a": null
+}]
+select {"a": 0, "b"}
+{"msg": "{}: {name <:>} expected"}
+select {"a": 0, "b":}
+{"msg": "bad expression"}
+select {"a": 0, "b": 1}
+[{
+  "a": 0,
+  "b": 1
+}]
+explain select {"a": 0, "b": 1}
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # a",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 0",
+      "04": "push                1      0      0     ",
+      "05": "string              1      2      0     # b",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "json_obj            1      4      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "cte_set             0      0      0     ",
+      "13": "body                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: object {null}
+select {"id": null}
+[{
+  "id": null
+}]
+# test: object {bool}
+select {"id": true}
+[{
+  "id": true
+}]
+# test: object {int}
+select {"id": 123}
+[{
+  "id": 123
+}]
+# test: object {double}
+select {"id": 123.321}
+[{
+  "id": 123.321
+}]
+# test: object {string}
+select {"id": 'hello world'}
+[{
+  "id": "hello world"
+}]
+# test: object {json}
+select {"id":  []}
+[{
+  "id": []
+}]
+select {"id":  [1,2,3]}
+[{
+  "id": [1, 2, 3]
+}]
+# test: object {timestamp}
+select {"id": timestamp '1970-01-01 00:00:00'}
+[{
+  "id": "1970-01-01 00:00:00+00"
+}]
+# test: object {interval}
+select {"id": interval '1 week 2 weeks 3 weeks'}
+[{
+  "id": "42 days"
+}]
+# test: object {vector}
+select {"id": [1,2,3]::vector }
+[{
+  "id": [1, 2, 3]
+}]
+# test: object . operator
+select {"a": 0, "b": 1}.b
+[1]
+select {"a": 0, "b": {"c": 18}}.b
+[{
+  "c": 18
+}]
+select {"a": 0, "b": {"c": 18}}.b.c
+[18]
+explain select {"a": 0, "b": {"c": 18}}.b.c
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # a",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 0",
+      "04": "push                1      0      0     ",
+      "05": "string              1      2      0     # b",
+      "06": "push                1      0      0     ",
+      "07": "string              1      4      0     # c",
+      "08": "push                1      0      0     ",
+      "09": "int                 1      -      0     # 18",
+      "10": "push                1      0      0     ",
+      "11": "json_obj            1      2      0     ",
+      "12": "push                1      0      0     ",
+      "13": "json_obj            1      4      0     ",
+      "14": "string              2      6      0     # b.c",
+      "15": "idxjs               3      1      2     ",
+      "16": "push                3      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cte_set             0      0      0     ",
+      "19": "body                0      0      0     ",
+      "20": "ret                 0      0      0     "
+    }
+  }
+}]
+select {"a": 0, "b": {"c": 18}}.b.c::type
+["json"]
+select {"a": 0, "b": {"c": 18}}.b.c + 1
+{"msg": "unsupported operation: <json> + <int>"}
+select {"a": 0, "b": {"c": 18}}.b.c::int + 1
+[19]
+# test: case 1
 select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}
 [{
   "menu": {
@@ -22,7 +293,7 @@ select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","
 }]
 select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}::string
 ["{\"menu\": {\"id\": \"file\", \"value\": \"File\", \"popup\": {\"menuitem\": [{\"value\": \"New\", \"onclick\": \"CreateNewDoc()\"}, {\"value\": \"Open\", \"onclick\": \"OpenDoc()\"}, {\"value\": \"Close\", \"onclick\": \"CloseDoc()\"}]}}}"]
-select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}::string::native
+select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}::string::json
 [{
   "menu": {
     "id": "file",
@@ -41,11 +312,12 @@ select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","
     }
   }
 }]
-select public.native( public.string( {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}} ) ).menu.popup.menuitem[0]
+select public.json( public.string( {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}} ) ).menu.popup.menuitem[0]
 [{
   "value": "New",
   "onclick": "CreateNewDoc()"
 }]
+# test: case 2
 select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}}
 [{
   "glossary": {
@@ -71,7 +343,7 @@ select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossLis
 }]
 select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}}::string
 ["{\"glossary\": {\"title\": \"example glossary\", \"GlossDiv\": {\"title\": \"S\", \"GlossList\": {\"GlossEntry\": {\"ID\": \"SGML\", \"SortAs\": \"SGML\", \"GlossTerm\": \"Standard Generalized Markup Language\", \"Acronym\": \"SGML\", \"Abbrev\": \"ISO 8879:1986\", \"GlossDef\": {\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\", \"GlossSeeAlso\": [\"GML\", \"XML\"]}, \"GlossSee\": \"markup\"}}}}}"]
-select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}}::string::native
+select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}}::string::json
 [{
   "glossary": {
     "title": "example glossary",
@@ -94,6 +366,7 @@ select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossLis
     }
   }
 }]
+# test: case 3
 select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.cofax.cds.CDSServlet","init-param":{"configGlossary:installationAt":"Philadelphia, PA","configGlossary:adminEmail":"ksm@pobox.com","configGlossary:poweredBy":"Cofax","configGlossary:poweredByIcon":"/images/cofax.gif","configGlossary:staticPath":"/content/static","templateProcessorClass":"org.cofax.WysiwygTemplate","templateLoaderClass":"org.cofax.FilesTemplateLoader","templatePath":"templates","templateOverridePath":"","defaultListTemplate":"listTemplate.htm","defaultFileTemplate":"articleTemplate.htm","useJSP":false,"jspListTemplate":"listTemplate.jsp","jspFileTemplate":"articleTemplate.jsp","cachePackageTagsTrack":2,"cachePackageTagsStore":200.32,"cachePackageTagsRefresh":-2147483648,"cacheTemplatesTrack":100,"cacheTemplatesStore":50,"cacheTemplatesRefresh":15,"cachePagesTrack":0.20,"cachePagesStore":-100,"cachePagesRefresh":-0.10,"cachePagesDirtyRead":10,"searchEngineListTemplate":"forSearchEnginesList.htm","searchEngineFileTemplate":"forSearchEngines.htm","searchEngineRobotsDb":"WEB-INF/robots.db","useDataStore":true,"dataStoreClass":"org.cofax.SqlDataStore","redirectionClass":"org.cofax.SqlRedirection","dataStoreName":"cofax","dataStoreDriver":"com.microsoft.jdbc.sqlserver.SQLServerDriver","dataStoreUrl":"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon","dataStoreUser":"sa","dataStorePassword":"dataStoreTestQuery","dataStoreTestQuery":"SET NOCOUNT ON;select test='test';","dataStoreLogFile":"/usr/local/tomcat/logs/datastore.log","dataStoreInitConns":10,"dataStoreMaxConns":100,"dataStoreConnUsageLimit":100,"dataStoreLogLevel":"debug","maxUrlLength":500}},{"servlet-name":"cofaxEmail","servlet-class":"org.cofax.cds.EmailServlet","init-param":{"mailHost":"mail1","mailHostOverride":"mail2"}},{"servlet-name":"cofaxAdmin","servlet-class":"org.cofax.cds.AdminServlet"},{"servlet-name":"fileServlet","servlet-class":"org.cofax.cds.FileServlet"},{"servlet-name":"cofaxTools","servlet-class":"org.cofax.cms.CofaxToolsServlet","init-param":{"templatePath":"toolstemplates/","log":1,"logLocation":"/usr/local/tomcat/logs/CofaxTools.log","logMaxSize":"","dataLog":1,"dataLogLocation":"/usr/local/tomcat/logs/dataLog.log","dataLogMaxSize":"","removePageCache":"/content/admin/remove?cache=pages&id=","removeTemplateCache":"/content/admin/remove?cache=templates&id=","fileTransferFolder":"/usr/local/tomcat/webapps/content/fileTransferFolder","lookInContext":1,"adminGroupID":4,"betaServer":true}}],"servlet-mapping":{"cofaxCDS":"/","cofaxEmail":"/cofaxutil/aemail/*","cofaxAdmin":"/admin/*","fileServlet":"/static/*","cofaxTools":"/tools/*"},"taglib":{"taglib-uri":"cofax.tld","taglib-location":"/WEB-INF/tlds/cofax.tld"}}}
 [{
   "web-app": {
@@ -191,7 +464,7 @@ select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.co
 }]
 select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.cofax.cds.CDSServlet","init-param":{"configGlossary:installationAt":"Philadelphia, PA","configGlossary:adminEmail":"ksm@pobox.com","configGlossary:poweredBy":"Cofax","configGlossary:poweredByIcon":"/images/cofax.gif","configGlossary:staticPath":"/content/static","templateProcessorClass":"org.cofax.WysiwygTemplate","templateLoaderClass":"org.cofax.FilesTemplateLoader","templatePath":"templates","templateOverridePath":"","defaultListTemplate":"listTemplate.htm","defaultFileTemplate":"articleTemplate.htm","useJSP":false,"jspListTemplate":"listTemplate.jsp","jspFileTemplate":"articleTemplate.jsp","cachePackageTagsTrack":2,"cachePackageTagsStore":200.32,"cachePackageTagsRefresh":-2147483648,"cacheTemplatesTrack":100,"cacheTemplatesStore":50,"cacheTemplatesRefresh":15,"cachePagesTrack":0.20,"cachePagesStore":-100,"cachePagesRefresh":-0.10,"cachePagesDirtyRead":10,"searchEngineListTemplate":"forSearchEnginesList.htm","searchEngineFileTemplate":"forSearchEngines.htm","searchEngineRobotsDb":"WEB-INF/robots.db","useDataStore":true,"dataStoreClass":"org.cofax.SqlDataStore","redirectionClass":"org.cofax.SqlRedirection","dataStoreName":"cofax","dataStoreDriver":"com.microsoft.jdbc.sqlserver.SQLServerDriver","dataStoreUrl":"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon","dataStoreUser":"sa","dataStorePassword":"dataStoreTestQuery","dataStoreTestQuery":"SET NOCOUNT ON;select test='test';","dataStoreLogFile":"/usr/local/tomcat/logs/datastore.log","dataStoreInitConns":10,"dataStoreMaxConns":100,"dataStoreConnUsageLimit":100,"dataStoreLogLevel":"debug","maxUrlLength":500}},{"servlet-name":"cofaxEmail","servlet-class":"org.cofax.cds.EmailServlet","init-param":{"mailHost":"mail1","mailHostOverride":"mail2"}},{"servlet-name":"cofaxAdmin","servlet-class":"org.cofax.cds.AdminServlet"},{"servlet-name":"fileServlet","servlet-class":"org.cofax.cds.FileServlet"},{"servlet-name":"cofaxTools","servlet-class":"org.cofax.cms.CofaxToolsServlet","init-param":{"templatePath":"toolstemplates/","log":1,"logLocation":"/usr/local/tomcat/logs/CofaxTools.log","logMaxSize":"","dataLog":1,"dataLogLocation":"/usr/local/tomcat/logs/dataLog.log","dataLogMaxSize":"","removePageCache":"/content/admin/remove?cache=pages&id=","removeTemplateCache":"/content/admin/remove?cache=templates&id=","fileTransferFolder":"/usr/local/tomcat/webapps/content/fileTransferFolder","lookInContext":1,"adminGroupID":4,"betaServer":true}}],"servlet-mapping":{"cofaxCDS":"/","cofaxEmail":"/cofaxutil/aemail/*","cofaxAdmin":"/admin/*","fileServlet":"/static/*","cofaxTools":"/tools/*"},"taglib":{"taglib-uri":"cofax.tld","taglib-location":"/WEB-INF/tlds/cofax.tld"}}}::string
 ["{\"web-app\": {\"servlet\": [{\"servlet-name\": \"cofaxCDS\", \"servlet-class\": \"org.cofax.cds.CDSServlet\", \"init-param\": {\"configGlossary:installationAt\": \"Philadelphia, PA\", \"configGlossary:adminEmail\": \"ksm@pobox.com\", \"configGlossary:poweredBy\": \"Cofax\", \"configGlossary:poweredByIcon\": \"/images/cofax.gif\", \"configGlossary:staticPath\": \"/content/static\", \"templateProcessorClass\": \"org.cofax.WysiwygTemplate\", \"templateLoaderClass\": \"org.cofax.FilesTemplateLoader\", \"templatePath\": \"templates\", \"templateOverridePath\": \"\", \"defaultListTemplate\": \"listTemplate.htm\", \"defaultFileTemplate\": \"articleTemplate.htm\", \"useJSP\": false, \"jspListTemplate\": \"listTemplate.jsp\", \"jspFileTemplate\": \"articleTemplate.jsp\", \"cachePackageTagsTrack\": 2, \"cachePackageTagsStore\": 200.32, \"cachePackageTagsRefresh\": -2147483648, \"cacheTemplatesTrack\": 100, \"cacheTemplatesStore\": 50, \"cacheTemplatesRefresh\": 15, \"cachePagesTrack\": 0.2, \"cachePagesStore\": -100, \"cachePagesRefresh\": -0.1, \"cachePagesDirtyRead\": 10, \"searchEngineListTemplate\": \"forSearchEnginesList.htm\", \"searchEngineFileTemplate\": \"forSearchEngines.htm\", \"searchEngineRobotsDb\": \"WEB-INF/robots.db\", \"useDataStore\": true, \"dataStoreClass\": \"org.cofax.SqlDataStore\", \"redirectionClass\": \"org.cofax.SqlRedirection\", \"dataStoreName\": \"cofax\", \"dataStoreDriver\": \"com.microsoft.jdbc.sqlserver.SQLServerDriver\", \"dataStoreUrl\": \"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon\", \"dataStoreUser\": \"sa\", \"dataStorePassword\": \"dataStoreTestQuery\", \"dataStoreTestQuery\": \"SET NOCOUNT ON;select test='test';\", \"dataStoreLogFile\": \"/usr/local/tomcat/logs/datastore.log\", \"dataStoreInitConns\": 10, \"dataStoreMaxConns\": 100, \"dataStoreConnUsageLimit\": 100, \"dataStoreLogLevel\": \"debug\", \"maxUrlLength\": 500}}, {\"servlet-name\": \"cofaxEmail\", \"servlet-class\": \"org.cofax.cds.EmailServlet\", \"init-param\": {\"mailHost\": \"mail1\", \"mailHostOverride\": \"mail2\"}}, {\"servlet-name\": \"cofaxAdmin\", \"servlet-class\": \"org.cofax.cds.AdminServlet\"}, {\"servlet-name\": \"fileServlet\", \"servlet-class\": \"org.cofax.cds.FileServlet\"}, {\"servlet-name\": \"cofaxTools\", \"servlet-class\": \"org.cofax.cms.CofaxToolsServlet\", \"init-param\": {\"templatePath\": \"toolstemplates/\", \"log\": 1, \"logLocation\": \"/usr/local/tomcat/logs/CofaxTools.log\", \"logMaxSize\": \"\", \"dataLog\": 1, \"dataLogLocation\": \"/usr/local/tomcat/logs/dataLog.log\", \"dataLogMaxSize\": \"\", \"removePageCache\": \"/content/admin/remove?cache=pages&id=\", \"removeTemplateCache\": \"/content/admin/remove?cache=templates&id=\", \"fileTransferFolder\": \"/usr/local/tomcat/webapps/content/fileTransferFolder\", \"lookInContext\": 1, \"adminGroupID\": 4, \"betaServer\": true}}], \"servlet-mapping\": {\"cofaxCDS\": \"/\", \"cofaxEmail\": \"/cofaxutil/aemail/*\", \"cofaxAdmin\": \"/admin/*\", \"fileServlet\": \"/static/*\", \"cofaxTools\": \"/tools/*\"}, \"taglib\": {\"taglib-uri\": \"cofax.tld\", \"taglib-location\": \"/WEB-INF/tlds/cofax.tld\"}}}"]
-select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.cofax.cds.CDSServlet","init-param":{"configGlossary:installationAt":"Philadelphia, PA","configGlossary:adminEmail":"ksm@pobox.com","configGlossary:poweredBy":"Cofax","configGlossary:poweredByIcon":"/images/cofax.gif","configGlossary:staticPath":"/content/static","templateProcessorClass":"org.cofax.WysiwygTemplate","templateLoaderClass":"org.cofax.FilesTemplateLoader","templatePath":"templates","templateOverridePath":"","defaultListTemplate":"listTemplate.htm","defaultFileTemplate":"articleTemplate.htm","useJSP":false,"jspListTemplate":"listTemplate.jsp","jspFileTemplate":"articleTemplate.jsp","cachePackageTagsTrack":2,"cachePackageTagsStore":200.32,"cachePackageTagsRefresh":-2147483648,"cacheTemplatesTrack":100,"cacheTemplatesStore":50,"cacheTemplatesRefresh":15,"cachePagesTrack":0.20,"cachePagesStore":-100,"cachePagesRefresh":-0.10,"cachePagesDirtyRead":10,"searchEngineListTemplate":"forSearchEnginesList.htm","searchEngineFileTemplate":"forSearchEngines.htm","searchEngineRobotsDb":"WEB-INF/robots.db","useDataStore":true,"dataStoreClass":"org.cofax.SqlDataStore","redirectionClass":"org.cofax.SqlRedirection","dataStoreName":"cofax","dataStoreDriver":"com.microsoft.jdbc.sqlserver.SQLServerDriver","dataStoreUrl":"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon","dataStoreUser":"sa","dataStorePassword":"dataStoreTestQuery","dataStoreTestQuery":"SET NOCOUNT ON;select test='test';","dataStoreLogFile":"/usr/local/tomcat/logs/datastore.log","dataStoreInitConns":10,"dataStoreMaxConns":100,"dataStoreConnUsageLimit":100,"dataStoreLogLevel":"debug","maxUrlLength":500}},{"servlet-name":"cofaxEmail","servlet-class":"org.cofax.cds.EmailServlet","init-param":{"mailHost":"mail1","mailHostOverride":"mail2"}},{"servlet-name":"cofaxAdmin","servlet-class":"org.cofax.cds.AdminServlet"},{"servlet-name":"fileServlet","servlet-class":"org.cofax.cds.FileServlet"},{"servlet-name":"cofaxTools","servlet-class":"org.cofax.cms.CofaxToolsServlet","init-param":{"templatePath":"toolstemplates/","log":1,"logLocation":"/usr/local/tomcat/logs/CofaxTools.log","logMaxSize":"","dataLog":1,"dataLogLocation":"/usr/local/tomcat/logs/dataLog.log","dataLogMaxSize":"","removePageCache":"/content/admin/remove?cache=pages&id=","removeTemplateCache":"/content/admin/remove?cache=templates&id=","fileTransferFolder":"/usr/local/tomcat/webapps/content/fileTransferFolder","lookInContext":1,"adminGroupID":4,"betaServer":true}}],"servlet-mapping":{"cofaxCDS":"/","cofaxEmail":"/cofaxutil/aemail/*","cofaxAdmin":"/admin/*","fileServlet":"/static/*","cofaxTools":"/tools/*"},"taglib":{"taglib-uri":"cofax.tld","taglib-location":"/WEB-INF/tlds/cofax.tld"}}}::string::native
+select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.cofax.cds.CDSServlet","init-param":{"configGlossary:installationAt":"Philadelphia, PA","configGlossary:adminEmail":"ksm@pobox.com","configGlossary:poweredBy":"Cofax","configGlossary:poweredByIcon":"/images/cofax.gif","configGlossary:staticPath":"/content/static","templateProcessorClass":"org.cofax.WysiwygTemplate","templateLoaderClass":"org.cofax.FilesTemplateLoader","templatePath":"templates","templateOverridePath":"","defaultListTemplate":"listTemplate.htm","defaultFileTemplate":"articleTemplate.htm","useJSP":false,"jspListTemplate":"listTemplate.jsp","jspFileTemplate":"articleTemplate.jsp","cachePackageTagsTrack":2,"cachePackageTagsStore":200.32,"cachePackageTagsRefresh":-2147483648,"cacheTemplatesTrack":100,"cacheTemplatesStore":50,"cacheTemplatesRefresh":15,"cachePagesTrack":0.20,"cachePagesStore":-100,"cachePagesRefresh":-0.10,"cachePagesDirtyRead":10,"searchEngineListTemplate":"forSearchEnginesList.htm","searchEngineFileTemplate":"forSearchEngines.htm","searchEngineRobotsDb":"WEB-INF/robots.db","useDataStore":true,"dataStoreClass":"org.cofax.SqlDataStore","redirectionClass":"org.cofax.SqlRedirection","dataStoreName":"cofax","dataStoreDriver":"com.microsoft.jdbc.sqlserver.SQLServerDriver","dataStoreUrl":"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon","dataStoreUser":"sa","dataStorePassword":"dataStoreTestQuery","dataStoreTestQuery":"SET NOCOUNT ON;select test='test';","dataStoreLogFile":"/usr/local/tomcat/logs/datastore.log","dataStoreInitConns":10,"dataStoreMaxConns":100,"dataStoreConnUsageLimit":100,"dataStoreLogLevel":"debug","maxUrlLength":500}},{"servlet-name":"cofaxEmail","servlet-class":"org.cofax.cds.EmailServlet","init-param":{"mailHost":"mail1","mailHostOverride":"mail2"}},{"servlet-name":"cofaxAdmin","servlet-class":"org.cofax.cds.AdminServlet"},{"servlet-name":"fileServlet","servlet-class":"org.cofax.cds.FileServlet"},{"servlet-name":"cofaxTools","servlet-class":"org.cofax.cms.CofaxToolsServlet","init-param":{"templatePath":"toolstemplates/","log":1,"logLocation":"/usr/local/tomcat/logs/CofaxTools.log","logMaxSize":"","dataLog":1,"dataLogLocation":"/usr/local/tomcat/logs/dataLog.log","dataLogMaxSize":"","removePageCache":"/content/admin/remove?cache=pages&id=","removeTemplateCache":"/content/admin/remove?cache=templates&id=","fileTransferFolder":"/usr/local/tomcat/webapps/content/fileTransferFolder","lookInContext":1,"adminGroupID":4,"betaServer":true}}],"servlet-mapping":{"cofaxCDS":"/","cofaxEmail":"/cofaxutil/aemail/*","cofaxAdmin":"/admin/*","fileServlet":"/static/*","cofaxTools":"/tools/*"},"taglib":{"taglib-uri":"cofax.tld","taglib-location":"/WEB-INF/tlds/cofax.tld"}}}::string::json
 [{
   "web-app": {
     "servlet": [{
@@ -286,6 +559,7 @@ select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.co
     }
   }
 }]
+# test: case 4
 select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"petroav","gravatar_id":"","url":"https://api.github.com/users/petroav","avatar_url":"https://avatars.githubusercontent.com/u/665991?"},"repo":{"id":28688495,"name":"petroav/6.828","url":"https://api.github.com/repos/petroav/6.828"},"payload":{"ref":"master","ref_type":"branch","master_branch":"master","description":"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.","pusher_type":"user"},"public":true,"created_at":"2015-01-01T15:00:00Z"}
 [{
   "id": "2489651045",
@@ -314,7 +588,7 @@ select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"pet
 }]
 select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"petroav","gravatar_id":"","url":"https://api.github.com/users/petroav","avatar_url":"https://avatars.githubusercontent.com/u/665991?"},"repo":{"id":28688495,"name":"petroav/6.828","url":"https://api.github.com/repos/petroav/6.828"},"payload":{"ref":"master","ref_type":"branch","master_branch":"master","description":"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.","pusher_type":"user"},"public":true,"created_at":"2015-01-01T15:00:00Z"}::string
 ["{\"id\": \"2489651045\", \"type\": \"CreateEvent\", \"actor\": {\"id\": 665991, \"login\": \"petroav\", \"gravatar_id\": \"\", \"url\": \"https://api.github.com/users/petroav\", \"avatar_url\": \"https://avatars.githubusercontent.com/u/665991?\"}, \"repo\": {\"id\": 28688495, \"name\": \"petroav/6.828\", \"url\": \"https://api.github.com/repos/petroav/6.828\"}, \"payload\": {\"ref\": \"master\", \"ref_type\": \"branch\", \"master_branch\": \"master\", \"description\": \"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.\", \"pusher_type\": \"user\"}, \"public\": true, \"created_at\": \"2015-01-01T15:00:00Z\"}"]
-select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"petroav","gravatar_id":"","url":"https://api.github.com/users/petroav","avatar_url":"https://avatars.githubusercontent.com/u/665991?"},"repo":{"id":28688495,"name":"petroav/6.828","url":"https://api.github.com/repos/petroav/6.828"},"payload":{"ref":"master","ref_type":"branch","master_branch":"master","description":"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.","pusher_type":"user"},"public":true,"created_at":"2015-01-01T15:00:00Z"}::string::native
+select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"petroav","gravatar_id":"","url":"https://api.github.com/users/petroav","avatar_url":"https://avatars.githubusercontent.com/u/665991?"},"repo":{"id":28688495,"name":"petroav/6.828","url":"https://api.github.com/repos/petroav/6.828"},"payload":{"ref":"master","ref_type":"branch","master_branch":"master","description":"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.","pusher_type":"user"},"public":true,"created_at":"2015-01-01T15:00:00Z"}::string::json
 [{
   "id": "2489651045",
   "type": "CreateEvent",
@@ -340,6 +614,7 @@ select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"pet
   "public": true,
   "created_at": "2015-01-01T15:00:00Z"
 }]
+# test: case 5
 select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s3408669","gravatar_id":"","url":"https://api.github.com/users/s3408669","avatar_url":"https://avatars.githubusercontent.com/u/10162972?"},"repo":{"id":12382547,"name":"sheimi/SGit","url":"https://api.github.com/repos/sheimi/SGit"},"payload":{"action":"opened","issue":{"url":"https://api.github.com/repos/sheimi/SGit/issues/131","labels_url":"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}","comments_url":"https://api.github.com/repos/sheimi/SGit/issues/131/comments","events_url":"https://api.github.com/repos/sheimi/SGit/issues/131/events","html_url":"https://github.com/sheimi/SGit/issues/131","id":53221336,"number":131,"title":"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit","user":{"login":"s3408669","id":10162972,"avatar_url":"https://avatars.githubusercontent.com/u/10162972?v=3","gravatar_id":"","url":"https://api.github.com/users/s3408669","html_url":"https://github.com/s3408669","followers_url":"https://api.github.com/users/s3408669/followers","following_url":"https://api.github.com/users/s3408669/following{/other_user}","gists_url":"https://api.github.com/users/s3408669/gists{/gist_id}","starred_url":"https://api.github.com/users/s3408669/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/s3408669/subscriptions","organizations_url":"https://api.github.com/users/s3408669/orgs","repos_url":"https://api.github.com/users/s3408669/repos","events_url":"https://api.github.com/users/s3408669/events{/privacy}","received_events_url":"https://api.github.com/users/s3408669/received_events","type":"User","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"milestone":null,"comments":0,"created_at":"2015-01-01T15:00:09Z","updated_at":"2015-01-01T15:00:09Z","closed_at":null,"body":"Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."}},"public":true,"created_at":"2015-01-01T15:00:10Z"}
 [{
   "id": "2489651126",
@@ -403,7 +678,7 @@ select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s
 }]
 select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s3408669","gravatar_id":"","url":"https://api.github.com/users/s3408669","avatar_url":"https://avatars.githubusercontent.com/u/10162972?"},"repo":{"id":12382547,"name":"sheimi/SGit","url":"https://api.github.com/repos/sheimi/SGit"},"payload":{"action":"opened","issue":{"url":"https://api.github.com/repos/sheimi/SGit/issues/131","labels_url":"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}","comments_url":"https://api.github.com/repos/sheimi/SGit/issues/131/comments","events_url":"https://api.github.com/repos/sheimi/SGit/issues/131/events","html_url":"https://github.com/sheimi/SGit/issues/131","id":53221336,"number":131,"title":"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit","user":{"login":"s3408669","id":10162972,"avatar_url":"https://avatars.githubusercontent.com/u/10162972?v=3","gravatar_id":"","url":"https://api.github.com/users/s3408669","html_url":"https://github.com/s3408669","followers_url":"https://api.github.com/users/s3408669/followers","following_url":"https://api.github.com/users/s3408669/following{/other_user}","gists_url":"https://api.github.com/users/s3408669/gists{/gist_id}","starred_url":"https://api.github.com/users/s3408669/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/s3408669/subscriptions","organizations_url":"https://api.github.com/users/s3408669/orgs","repos_url":"https://api.github.com/users/s3408669/repos","events_url":"https://api.github.com/users/s3408669/events{/privacy}","received_events_url":"https://api.github.com/users/s3408669/received_events","type":"User","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"milestone":null,"comments":0,"created_at":"2015-01-01T15:00:09Z","updated_at":"2015-01-01T15:00:09Z","closed_at":null,"body":"Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."}},"public":true,"created_at":"2015-01-01T15:00:10Z"}::string
 ["{\"id\": \"2489651126\", \"type\": \"IssuesEvent\", \"actor\": {\"id\": 10162972, \"login\": \"s3408669\", \"gravatar_id\": \"\", \"url\": \"https://api.github.com/users/s3408669\", \"avatar_url\": \"https://avatars.githubusercontent.com/u/10162972?\"}, \"repo\": {\"id\": 12382547, \"name\": \"sheimi/SGit\", \"url\": \"https://api.github.com/repos/sheimi/SGit\"}, \"payload\": {\"action\": \"opened\", \"issue\": {\"url\": \"https://api.github.com/repos/sheimi/SGit/issues/131\", \"labels_url\": \"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}\", \"comments_url\": \"https://api.github.com/repos/sheimi/SGit/issues/131/comments\", \"events_url\": \"https://api.github.com/repos/sheimi/SGit/issues/131/events\", \"html_url\": \"https://github.com/sheimi/SGit/issues/131\", \"id\": 53221336, \"number\": 131, \"title\": \"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit\", \"user\": {\"login\": \"s3408669\", \"id\": 10162972, \"avatar_url\": \"https://avatars.githubusercontent.com/u/10162972?v=3\", \"gravatar_id\": \"\", \"url\": \"https://api.github.com/users/s3408669\", \"html_url\": \"https://github.com/s3408669\", \"followers_url\": \"https://api.github.com/users/s3408669/followers\", \"following_url\": \"https://api.github.com/users/s3408669/following{/other_user}\", \"gists_url\": \"https://api.github.com/users/s3408669/gists{/gist_id}\", \"starred_url\": \"https://api.github.com/users/s3408669/starred{/owner}{/repo}\", \"subscriptions_url\": \"https://api.github.com/users/s3408669/subscriptions\", \"organizations_url\": \"https://api.github.com/users/s3408669/orgs\", \"repos_url\": \"https://api.github.com/users/s3408669/repos\", \"events_url\": \"https://api.github.com/users/s3408669/events{/privacy}\", \"received_events_url\": \"https://api.github.com/users/s3408669/received_events\", \"type\": \"User\", \"site_admin\": false}, \"labels\": [], \"state\": \"open\", \"locked\": false, \"assignee\": null, \"milestone\": null, \"comments\": 0, \"created_at\": \"2015-01-01T15:00:09Z\", \"updated_at\": \"2015-01-01T15:00:09Z\", \"closed_at\": null, \"body\": \"Steps to reproduce:\\r\\n- Go to Android/data/me.scheimi.sgit/files/repo.\\r\\n- Remove a repository.\\r\\n- Go back to SGit\\r\\n\\r\\nOutput:\\r\\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \\r\\n- When choose that repo, the toast message shows that \\r\\n\\\"Repositoy not found (there may be something wrong with this repo).\"}}, \"public\": true, \"created_at\": \"2015-01-01T15:00:10Z\"}"]
-select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s3408669","gravatar_id":"","url":"https://api.github.com/users/s3408669","avatar_url":"https://avatars.githubusercontent.com/u/10162972?"},"repo":{"id":12382547,"name":"sheimi/SGit","url":"https://api.github.com/repos/sheimi/SGit"},"payload":{"action":"opened","issue":{"url":"https://api.github.com/repos/sheimi/SGit/issues/131","labels_url":"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}","comments_url":"https://api.github.com/repos/sheimi/SGit/issues/131/comments","events_url":"https://api.github.com/repos/sheimi/SGit/issues/131/events","html_url":"https://github.com/sheimi/SGit/issues/131","id":53221336,"number":131,"title":"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit","user":{"login":"s3408669","id":10162972,"avatar_url":"https://avatars.githubusercontent.com/u/10162972?v=3","gravatar_id":"","url":"https://api.github.com/users/s3408669","html_url":"https://github.com/s3408669","followers_url":"https://api.github.com/users/s3408669/followers","following_url":"https://api.github.com/users/s3408669/following{/other_user}","gists_url":"https://api.github.com/users/s3408669/gists{/gist_id}","starred_url":"https://api.github.com/users/s3408669/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/s3408669/subscriptions","organizations_url":"https://api.github.com/users/s3408669/orgs","repos_url":"https://api.github.com/users/s3408669/repos","events_url":"https://api.github.com/users/s3408669/events{/privacy}","received_events_url":"https://api.github.com/users/s3408669/received_events","type":"User","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"milestone":null,"comments":0,"created_at":"2015-01-01T15:00:09Z","updated_at":"2015-01-01T15:00:09Z","closed_at":null,"body":"Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."}},"public":true,"created_at":"2015-01-01T15:00:10Z"}::string::native
+select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s3408669","gravatar_id":"","url":"https://api.github.com/users/s3408669","avatar_url":"https://avatars.githubusercontent.com/u/10162972?"},"repo":{"id":12382547,"name":"sheimi/SGit","url":"https://api.github.com/repos/sheimi/SGit"},"payload":{"action":"opened","issue":{"url":"https://api.github.com/repos/sheimi/SGit/issues/131","labels_url":"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}","comments_url":"https://api.github.com/repos/sheimi/SGit/issues/131/comments","events_url":"https://api.github.com/repos/sheimi/SGit/issues/131/events","html_url":"https://github.com/sheimi/SGit/issues/131","id":53221336,"number":131,"title":"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit","user":{"login":"s3408669","id":10162972,"avatar_url":"https://avatars.githubusercontent.com/u/10162972?v=3","gravatar_id":"","url":"https://api.github.com/users/s3408669","html_url":"https://github.com/s3408669","followers_url":"https://api.github.com/users/s3408669/followers","following_url":"https://api.github.com/users/s3408669/following{/other_user}","gists_url":"https://api.github.com/users/s3408669/gists{/gist_id}","starred_url":"https://api.github.com/users/s3408669/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/s3408669/subscriptions","organizations_url":"https://api.github.com/users/s3408669/orgs","repos_url":"https://api.github.com/users/s3408669/repos","events_url":"https://api.github.com/users/s3408669/events{/privacy}","received_events_url":"https://api.github.com/users/s3408669/received_events","type":"User","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"milestone":null,"comments":0,"created_at":"2015-01-01T15:00:09Z","updated_at":"2015-01-01T15:00:09Z","closed_at":null,"body":"Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."}},"public":true,"created_at":"2015-01-01T15:00:10Z"}::string::json
 [{
   "id": "2489651126",
   "type": "IssuesEvent",
@@ -464,6 +739,7 @@ select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s
   "public": true,
   "created_at": "2015-01-01T15:00:10Z"
 }]
+# test: case 6
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}
 [{
   "id": "2489660418",
@@ -503,7 +779,7 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 }]
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string
 ["{\"id\": \"2489660418\", \"type\": \"PushEvent\", \"actor\": {\"id\": 250019, \"login\": \"tarekziade\", \"gravatar_id\": \"\", \"url\": \"https://api.github.com/users/tarekziade\", \"avatar_url\": \"https://avatars.githubusercontent.com/u/250019?\"}, \"repo\": {\"id\": 24676502, \"name\": \"tarekziade/foule.es\", \"url\": \"https://api.github.com/repos/tarekziade/foule.es\"}, \"payload\": {\"push_id\": 536868213, \"size\": 1, \"distinct_size\": 1, \"ref\": \"refs/heads/master\", \"head\": \"966cd52661b707db6d8753a016afcce9d788013a\", \"before\": \"84ef2e3eed79b953f533d34831de322758d8af07\", \"commits\": [{\"sha\": \"966cd52661b707db6d8753a016afcce9d788013a\", \"author\": {\"email\": \"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org\", \"name\": \"Tarek Ziade\"}, \"message\": \"simpler non-flash version\\\\\", \"distinct\": true, \"url\": \"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a\"}]}, \"public\": true, \"created_at\": \"2015-01-01T15:20:29Z\"}"]
-select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::native
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::json
 [{
   "id": "2489660418",
   "type": "PushEvent",
