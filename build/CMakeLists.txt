@@ -62,7 +62,7 @@ include_directories("${AMELIE_ROOT}/runtime")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
 include_directories("${AMELIE_ROOT}/runtime/io")
 include_directories("${AMELIE_ROOT}/runtime/lib")
-include_directories("${AMELIE_ROOT}/runtime/data")
+include_directories("${AMELIE_ROOT}/runtime/json")
 include_directories("${AMELIE_ROOT}/runtime/config")
 
 # server
@@ -153,8 +153,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/linenoise.c
     ${AMELIE_ROOT}/runtime/lib/cli.c
-    ${AMELIE_ROOT}/runtime/data/json.c
-    ${AMELIE_ROOT}/runtime/data/json_export.c
+    ${AMELIE_ROOT}/runtime/json/json.c
+    ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/vars.c
     ${AMELIE_ROOT}/runtime/config/config_local.c
     ${AMELIE_ROOT}/runtime/config/config.c)

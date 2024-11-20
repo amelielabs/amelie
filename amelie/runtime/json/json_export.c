@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 
 static void
 json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** pos)
