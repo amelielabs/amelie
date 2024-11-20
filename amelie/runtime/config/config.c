@@ -56,7 +56,7 @@ config_prepare(Config* self)
 		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,        0                },
 		{ "tls_cert",                VAR_STRING, VAR_C,                   &self->tls_cert,                NULL,        0                },
 		{ "tls_key",                 VAR_STRING, VAR_C,                   &self->tls_key,                 NULL,        0                },
-		{ "listen",                  VAR_DATA,   VAR_C,                   &self->listen,                  NULL,        0                },
+		{ "listen",                  VAR_JSON,   VAR_C,                   &self->listen,                  NULL,        0                },
 		// limits
 		{ "limit_send",              VAR_INT,    VAR_C|VAR_R,             &self->limit_send,              NULL,        3 * 1024 * 1024  },
 		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,        1 * 1024 * 1024  },
@@ -82,8 +82,8 @@ config_prepare(Config* self)
 		{ "lsn",                     VAR_INT,    VAR_E,                   &self->lsn,                     NULL,        0                },
 		{ "psn",                     VAR_INT,    VAR_E,                   &self->psn,                     NULL,        0                },
 		// state persistent
-		{ "replicas",                VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,        0                },
-		{ "users",                   VAR_DATA,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,        0                },
+		{ "replicas",                VAR_JSON,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,        0                },
+		{ "users",                   VAR_JSON,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,        0                },
 		// stats
 		{ "connections",             VAR_INT,    VAR_E|VAR_H,             &self->connections,             NULL,        0                },
 		{ "sent_bytes",              VAR_INT,    VAR_E|VAR_H,             &self->sent_bytes,              NULL,        0                },
@@ -95,7 +95,7 @@ config_prepare(Config* self)
 		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,       &self->test_bool,               NULL,        false            },
 		{ "test_int",                VAR_INT,    VAR_E|VAR_H|VAR_R,       &self->test_int,                NULL,        0                },
 		{ "test_string",             VAR_STRING, VAR_E|VAR_H|VAR_R,       &self->test_string,             NULL,        0                },
-		{ "test_data",               VAR_DATA,   VAR_E|VAR_H|VAR_R,       &self->test_data,               NULL,        0                },
+		{ "test_json",               VAR_JSON,   VAR_E|VAR_H|VAR_R,       &self->test_json,               NULL,        0                },
 		{  NULL,                     0,          0,                       NULL,                           NULL,        0                },
 	};
 

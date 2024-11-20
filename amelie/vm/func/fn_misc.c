@@ -72,7 +72,7 @@ fn_random_uuid(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -111,7 +111,7 @@ fn_md5(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -132,7 +132,7 @@ fn_sha1(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 

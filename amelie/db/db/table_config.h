@@ -168,16 +168,16 @@ table_config_read(uint8_t** pos)
 	columns_read(&self->columns, &pos_columns);
 
 	// indexes
-	data_read_array(&pos_indexes);
-	while (! data_read_array_end(&pos_indexes))
+	json_read_array(&pos_indexes);
+	while (! json_read_array_end(&pos_indexes))
 	{
 		auto config = index_config_read(&self->columns, &pos_indexes);
 		table_config_add_index(self, config);
 	}
 
 	// partitions
-	data_read_array(&pos_partitions);
-	while (! data_read_array_end(&pos_partitions))
+	json_read_array(&pos_partitions);
+	while (! json_read_array_end(&pos_partitions))
 	{
 		auto config = part_config_read(&pos_partitions);
 		table_config_add_partition(self, config);

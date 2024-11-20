@@ -105,7 +105,7 @@ server_bootstrap(void)
 
 	encode_array_end(&buf);
 
-	var_data_set_buf(&config()->listen, &buf);
+	var_json_set_buf(&config()->listen, &buf);
 }
 #endif
 
@@ -133,5 +133,5 @@ server_bootstrap(void)
 
 	encode_array_end(&buf);
 
-	var_data_set_buf(&config()->listen, &buf);
+	var_json_set_buf(&config()->listen, &buf);
 }

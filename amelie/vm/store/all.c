@@ -28,16 +28,16 @@
 hot static inline bool
 value_all_array_equ(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (value_compare(a, &ref) != 0)
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -45,16 +45,16 @@ value_all_array_equ(Value* a, Value* b)
 hot static inline bool
 value_all_array_nequ(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (! value_compare(a, &ref))
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -62,16 +62,16 @@ value_all_array_nequ(Value* a, Value* b)
 hot static inline bool
 value_all_array_lt(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (! (value_compare(a, &ref) < 0))
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -79,16 +79,16 @@ value_all_array_lt(Value* a, Value* b)
 hot static inline bool
 value_all_array_lte(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (! (value_compare(a, &ref) <= 0))
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -96,16 +96,16 @@ value_all_array_lte(Value* a, Value* b)
 hot static inline bool
 value_all_array_gt(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (! (value_compare(a, &ref) > 0))
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -113,16 +113,16 @@ value_all_array_gt(Value* a, Value* b)
 hot static inline bool
 value_all_array_gte(Value* a, Value* b)
 {
-	auto pos = b->data;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	auto pos = b->json;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		Value ref;
 		value_init(&ref);
 		value_decode(&ref, pos, NULL);
 		if (! (value_compare(a, &ref) >= 0))
 			return false;
-		data_skip(&pos);
+		json_skip(&pos);
 	}
 	return true;
 }
@@ -208,7 +208,7 @@ value_all_set_gte(Value* a, Value* b)
 void
 value_all(Value* result, Value* a, Value* b, int op)
 {
-	if (b->type == VALUE_JSON && data_is_array(b->data))
+	if (b->type == VALUE_JSON && json_is_array(b->json))
 	{
 		bool match;
 		switch (op) {

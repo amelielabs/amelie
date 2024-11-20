@@ -11,15 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-// data serialization
-#include "json/type.h"
-#include "json/data.h"
-#include "json/data_op.h"
-#include "json/compare.h"
+// json serialization
+#include "json/json.h"
+#include "json/json_op.h"
+#include "json/json_compare.h"
 #include "json/encode.h"
 #include "json/decode.h"
 #include "json/escape.h"
 
-// json
-#include "json/json.h"
+// json parser
+#include "json/json_parser.h"
 #include "json/json_export.h"

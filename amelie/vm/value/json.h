@@ -31,7 +31,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_string(buf, &self->string);
 		break;
 	case VALUE_JSON:
-		buf_write(buf, self->data, data_sizeof(self->data));
+		buf_write(buf, self->json, json_sizeof(self->json));
 		break;
 	case VALUE_TIMESTAMP:
 	{
@@ -41,7 +41,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		int size = timestamp_write(self->integer, tz, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		data_write_string32(&pos, size);
+		json_write_string32(&pos, size);
 		break;
 	}
 	case VALUE_INTERVAL:
@@ -52,7 +52,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		int size = interval_write(&self->interval, (char*)buf->position, 256);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
-		data_write_string32(&pos, size);
+		json_write_string32(&pos, size);
 		break;
 	}
 	case VALUE_VECTOR:
@@ -74,58 +74,58 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 }
 
 hot static inline void
-value_decode(Value* self, uint8_t* data, Buf* buf)
+value_decode(Value* self, uint8_t* json, Buf* buf)
 {
-	switch (*data) {
-	case AM_TRUE:
-	case AM_FALSE:
+	switch (*json) {
+	case JSON_TRUE:
+	case JSON_FALSE:
 	{
 		bool boolean;
-		data_read_bool(&data, &boolean);
+		json_read_bool(&json, &boolean);
 		value_set_bool(self, boolean);
 		break;
 	}
-	case AM_NULL:
+	case JSON_NULL:
 	{
 		value_set_null(self);
 		break;
 	}
-	case AM_REAL32:
-	case AM_REAL64:
+	case JSON_REAL32:
+	case JSON_REAL64:
 	{
 		double real;
-		data_read_real(&data, &real);
+		json_read_real(&json, &real);
 		value_set_double(self, real);
 		break;
 	}
-	case AM_INTV0 ... AM_INT64:
+	case JSON_INTV0 ... JSON_INT64:
 	{
 		int64_t integer;
-		data_read_integer(&data, &integer);
+		json_read_integer(&json, &integer);
 		value_set_int(self, integer);
 		break;
 	}
-	case AM_STRINGV0 ... AM_STRING32:
+	case JSON_STRINGV0 ... JSON_STRING32:
 	{
 		Str string;
-		data_read_string(&data, &string);
+		json_read_string(&json, &string);
 		value_set_string(self, &string, buf);
 		break;
 	}
-	case AM_OBJ:
-	case AM_ARRAY:
-		value_set_json(self, data, data_sizeof(data), buf);
+	case JSON_OBJ:
+	case JSON_ARRAY:
+		value_set_json(self, json, json_sizeof(json), buf);
 		break;
 	default:
-		error_data();
+		json_error_read();
 		break;
 	}
 }
 
 hot static inline void
-value_decode_ref(Value* self, uint8_t* data, Buf* buf)
+value_decode_ref(Value* self, uint8_t* json, Buf* buf)
 {
-	value_decode(self, data, buf);
+	value_decode(self, json, buf);
 	if (self->buf && buf)
 		buf_ref(buf);
 }
@@ -156,7 +156,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		break;
 	case VALUE_JSON:
 	{
-		uint8_t* pos = self->data;
+		uint8_t* pos = self->json;
 		if (pretty)
 			json_export_pretty(buf, tz, &pos);
 		else

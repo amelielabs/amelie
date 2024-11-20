@@ -39,11 +39,11 @@ static inline void
 msg_error_throw(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;
-	data_read_obj(&pos);
+	json_read_obj(&pos);
 	// msg
-	data_skip(&pos);
+	json_skip(&pos);
 	Str text;
-	data_read_string(&pos, &text);
+	json_read_string(&pos, &text);
 	error("%.*s", str_size(&text), str_of(&text));
 }
 
@@ -51,11 +51,11 @@ static inline void
 msg_error_rethrow(Buf* buf)
 {
 	uint8_t* pos = msg_of(buf)->data;
-	data_read_obj(&pos);
+	json_read_obj(&pos);
 	// msg
-	data_skip(&pos);
+	json_skip(&pos);
 	Str text;
-	data_read_string(&pos, &text);
+	json_read_string(&pos, &text);
 
 	char sz[1024];
 	snprintf(sz, sizeof(sz), "%.*s", str_size(&text), str_of(&text));

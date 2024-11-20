@@ -71,7 +71,7 @@ struct Config
 	Var  test_bool;
 	Var  test_int;
 	Var  test_string;
-	Var  test_data;
+	Var  test_json;
 	Vars vars;
 };
 

@@ -123,8 +123,8 @@ static inline void
 columns_read(Columns* self, uint8_t** pos)
 {
 	// []
-	data_read_array(pos);
-	while (! data_read_array_end(pos))
+	json_read_array(pos);
+	while (! json_read_array_end(pos))
 	{
 		auto column = column_read(pos);
 		columns_add(self, column);

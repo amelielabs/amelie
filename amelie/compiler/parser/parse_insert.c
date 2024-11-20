@@ -84,7 +84,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 				buf_write_i64(column_data, value);
 			} else
 			{
-				is_null = data_is_null(cons->value.start);
+				is_null = json_is_null(cons->value.start);
 				if (! is_null)
 				{
 					// TODO: read data based on column type
@@ -258,7 +258,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 				buf_write_i64(column_data, value);
 			} else
 			{
-				is_null = data_is_null(cons->value.start);
+				is_null = json_is_null(cons->value.start);
 				if (! is_null)
 				{
 					// TODO: read data based on column type

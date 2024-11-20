@@ -190,16 +190,16 @@ server_configure(Server* self)
 {
 	// listen is not defined or null
 	auto listen = &config()->listen;
-	if (! var_data_is_set(listen))
+	if (! var_json_is_set(listen))
 		return;
-	auto pos = var_data_of(listen);
-	if (data_is_null(pos))
+	auto pos = var_json_of(listen);
+	if (json_is_null(pos))
 		return;
-	if (! data_is_array(pos))
+	if (! json_is_array(pos))
 		error("server: <listen> option expected to be array or null"); 
 
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		auto config = server_config_read(&pos);
 		list_append(&self->config, &config->link);

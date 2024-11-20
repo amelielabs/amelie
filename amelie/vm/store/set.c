@@ -92,9 +92,9 @@ set_create(int count_columns, int count_keys, uint8_t* order, bool hash)
 	if (order)
 	{
 		self->ordered = true;
-		data_read_array(&order);
+		json_read_array(&order);
 		for (int i = 0; i < count_keys; i++)
-			data_read_bool(&order, &self->order[i]);
+			json_read_bool(&order, &self->order[i]);
 	} else
 	{
 		self->ordered = false;
@@ -197,8 +197,8 @@ set_hash(Set* self, Value* keys)
 			data_size = str_size(&value->string);
 			break;
 		case VALUE_JSON:
-			data = value->data;
-			data_size = value->data_size;
+			data = value->json;
+			data_size = value->json_size;
 			break;
 		case VALUE_NULL:
 		case VALUE_SET:

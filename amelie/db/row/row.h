@@ -138,7 +138,7 @@ row_hash(Row* self, Keys* keys)
 		} else {
 			uint8_t* pos = row_at(self, column->order);
 			Str str;
-			data_read_string(&pos, &str);
+			json_read_string(&pos, &str);
 			hash = hash_murmur3_32(str_u8(&str), str_size(&str), hash);
 		}
 	}

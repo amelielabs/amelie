@@ -38,7 +38,7 @@ value_obj(Value* result, Timezone* tz, Stack* stack, int count)
 }
 
 static inline void
-value_obj_has(Value* result, uint8_t* data, Str* path)
+value_obj_has(Value* result, uint8_t* json, Str* path)
 {
-	value_set_bool(result, obj_has(data, path));
+	value_set_bool(result, json_obj_has(json, path));
 }

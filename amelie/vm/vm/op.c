@@ -357,9 +357,9 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			Str table;
 			Str index;
 			uint8_t* ref = code_data_at(data, op->b);
-			data_read_string(&ref, &schema);
-			data_read_string(&ref, &table);
-			data_read_string(&ref, &index);
+			json_read_string(&ref, &schema);
+			json_read_string(&ref, &table);
+			json_read_string(&ref, &index);
 			op_write(output, op, true, true, true,
 			         "%.*s.%.*s (%.*s%s)",
 			         str_size(&schema),

@@ -531,7 +531,7 @@ parse_table_alter(Stmt* self)
 
 		// validate column
 		auto cons = &stmt->column->constraint;
-		if (cons->not_null && data_is_null(cons->value.start))
+		if (cons->not_null && json_is_null(cons->value.start))
 			error("ALTER TABLE ADD NOT NULL requires DEFAULT value");
 
 		stmt->type = TABLE_ALTER_COLUMN_ADD;

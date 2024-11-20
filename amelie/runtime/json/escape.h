@@ -73,7 +73,7 @@ escape_string(Buf* self, Str* string)
 
 	// update generated string size
 	start = self->start + offset;
-	data_write_string32(&start, new_size);
+	json_write_string32(&start, new_size);
 }
 
 hot static inline void

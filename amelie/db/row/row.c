@@ -26,12 +26,12 @@ row_alter_add(Row* row, Buf* append)
 	return NULL;
 #if 0
 	auto self = row_allocate(row_size(row) + buf_size(append));
-	int  offset = row_size(row) - data_size_array_end();
+	int  offset = row_size(row) - json_size_array_end();
 	memcpy(row_data(self), row_data(row), offset);
 	memcpy(row_data(self) + offset, append->start, buf_size(append));
 	offset += buf_size(append);
 	uint8_t* pos = row_data(self) + offset;
-	data_write_array_end(&pos);
+	json_write_array_end(&pos);
 	return self;
 #endif
 }
@@ -51,7 +51,7 @@ row_alter_drop(Row* row, int order)
 	uint8_t* pos        = start;
 	array_find(&pos, order);
 	uint8_t* pos_before = pos;
-	data_skip(&pos);
+	json_skip(&pos);
 	uint8_t* pos_after  = pos;
 
 	int size = (pos_before - start) + (end - pos_after);

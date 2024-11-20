@@ -24,14 +24,14 @@ compare(Keys* self, Row* a, Row* b)
 		/*
 		int rc;
 		if (key->type == TYPE_INT)
-			rc = data_compare_integer(ref_key(a, key->order),
+			rc = json_compare_integer(ref_key(a, key->order),
 			                          ref_key(b, key->order));
 		else
 		if (key->type == TYPE_TIMESTAMP)
-			rc = data_compare_timestamp(ref_key(a, key->order),
+			rc = json_compare_timestamp(ref_key(a, key->order),
 			                            ref_key(b, key->order));
 		else
-			rc = data_compare_string(ref_key(a, key->order),
+			rc = json_compare_string(ref_key(a, key->order),
 			                         ref_key(b, key->order));
 		if (rc != 0)
 			return rc;

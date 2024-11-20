@@ -177,7 +177,7 @@ ctl_set(Session* self)
 		var_string_set(var, &value->string);
 		break;
 	}
-	case VAR_DATA:
+	case VAR_JSON:
 	{
 		error("SET '%.*s': variable cannot be changed", str_size(name),
 		      str_of(name));

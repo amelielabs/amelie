@@ -53,13 +53,13 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 
 	// type
 	int64_t type;
-	data_read_integer(meta, &type);
+	json_read_integer(meta, &type);
 
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
 		int64_t partition_id;
-		data_read_integer(meta, &partition_id);
+		json_read_integer(meta, &partition_id);
 
 		// find partition by id
 		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);

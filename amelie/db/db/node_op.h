@@ -36,16 +36,16 @@ node_op_drop(Str* name)
 static inline NodeConfig*
 node_op_create_read(uint8_t** pos)
 {
-	data_read_array(pos);
+	json_read_array(pos);
 	auto config = node_config_read(pos);
-	data_read_array_end(pos);
+	json_read_array_end(pos);
 	return config;
 }
 
 static inline void
 node_op_drop_read(uint8_t **pos, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, name);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, name);
+	json_read_array_end(pos);
 }

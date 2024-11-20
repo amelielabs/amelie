@@ -46,10 +46,10 @@ fn_append(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("append(): json array expected");
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("append(): json array expected");
 	auto tz = self->vm->local->timezone;
-	value_array_append(self->result, tz, argv[0].data, argv[0].data_size,
+	value_array_append(self->result, tz, argv[0].json, argv[0].json_size,
 	                   self->argc - 1, &argv[1]);
 }
 
@@ -66,10 +66,10 @@ fn_push(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("push(): json array expected");
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("push(): json array expected");
 	auto tz = self->vm->local->timezone;
-	value_array_push(self->result, tz, argv[0].data, argv[0].data_size,
+	value_array_push(self->result, tz, argv[0].json, argv[0].json_size,
 	                 self->argc - 1, &argv[1]);
 }
 
@@ -85,9 +85,9 @@ fn_pop(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("pop(): json array expected");
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("pop(): json array expected");
-	value_array_pop(self->result, argv[0].data, argv[0].data_size);
+	value_array_pop(self->result, argv[0].json, argv[0].json_size);
 }
 
 hot static void
@@ -102,9 +102,9 @@ fn_pop_back(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("pop_back(): json array expected");
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("pop_back(): json array expected");
-	value_array_pop_back(self->result, argv[0].data);
+	value_array_pop_back(self->result, argv[0].json);
 }
 
 hot static void
@@ -118,11 +118,11 @@ fn_put(Call* self)
 		return;
 	}
 	call_validate_arg(self, 0, VALUE_JSON);
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("put(): json array expected");
 	call_validate_arg(self, 1, VALUE_INT);
 	auto tz = self->vm->local->timezone;
-	value_array_put(self->result, tz, argv[0].data, argv[1].integer, &argv[2]);
+	value_array_put(self->result, tz, argv[0].json, argv[1].integer, &argv[2]);
 }
 
 hot static void
@@ -136,10 +136,10 @@ fn_remove(Call* self)
 		return;
 	}
 	call_validate_arg(self, 0, VALUE_JSON);
-	if (unlikely(! data_is_array(argv[0].data)))
+	if (unlikely(! json_is_array(argv[0].json)))
 		error("remove(): json array expected");
 	call_validate_arg(self, 1, VALUE_INT);
-	value_array_remove(self->result, argv[0].data, argv[1].integer);
+	value_array_remove(self->result, argv[0].json, argv[1].integer);
 }
 
 hot static void
@@ -154,11 +154,11 @@ fn_set(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("set(): json array expected");
-	if (unlikely(! data_is_obj(argv[0].data)))
+	if (unlikely(! json_is_obj(argv[0].json)))
 		error("set(): json object expected");
 	call_validate_arg(self, 1, VALUE_STRING);
 	auto tz = self->vm->local->timezone;
-	update_set(self->result, tz, argv[0].data, &argv[1].string, &argv[2]);
+	update_set(self->result, tz, argv[0].json, &argv[1].string, &argv[2]);
 }
 
 hot static void
@@ -173,10 +173,10 @@ fn_unset(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("unset(): json array expected");
-	if (unlikely(! data_is_obj(argv[0].data)))
+	if (unlikely(! json_is_obj(argv[0].json)))
 		error("unset(): json object expected");
 	call_validate_arg(self, 1, VALUE_STRING);
-	update_unset(self->result, argv[0].data, &argv[1].string);
+	update_unset(self->result, argv[0].json, &argv[1].string);
 }
 
 hot static void
@@ -191,10 +191,10 @@ fn_has(Call* self)
 	}
 	if (unlikely(argv[0].type != VALUE_JSON))
 		error("has(): json array expected");
-	if (unlikely(! data_is_obj(argv[0].data)))
+	if (unlikely(! json_is_obj(argv[0].json)))
 		error("has(): json object expected");
 	call_validate_arg(self, 1, VALUE_STRING);
-	value_obj_has(self->result, argv[0].data, &argv[1].string);
+	value_obj_has(self->result, argv[0].json, &argv[1].string);
 }
 
 FunctionDef fn_object_def[] =

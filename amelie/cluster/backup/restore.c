@@ -129,7 +129,7 @@ restore_start(Restore* self)
 	};
 	decode_obj(obj, "restore", &pos);
 
-	self->count_total = array_size(self->files);
+	self->count_total = json_array_size(self->files);
 
 	// create checkpoint directory
 	if (self->checkpoint > 0)
@@ -212,16 +212,16 @@ static void
 restore_copy(Restore* self)
 {
 	uint8_t* pos = self->files;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		// [path, size]
-		data_read_array(&pos);
+		json_read_array(&pos);
 		Str name;
-		data_read_string(&pos, &name);
+		json_read_string(&pos, &name);
 		int64_t size;
-		data_read_integer(&pos, &size);
-		data_read_array_end(&pos);
+		json_read_integer(&pos, &size);
+		json_read_array_end(&pos);
 		restore_copy_file(self, &name, size);
 	}
 }

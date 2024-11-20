@@ -142,7 +142,7 @@ fn_regexp_substr(Call* self)
 	encode_string(buf, &first);
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -251,13 +251,13 @@ fn_regexp_replace(Call* self)
 	}
 
 	// update string size
-	int size = buf_size(buf) - data_size_string32();
+	int size = buf_size(buf) - json_size_string32();
 	uint8_t* pos_str = buf->start;
-	data_write_string32(&pos_str, size);
+	json_write_string32(&pos_str, size);
 
 	Str result;
 	pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 

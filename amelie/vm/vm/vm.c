@@ -356,7 +356,7 @@ vm_run(Vm*       self,
 	Interval  iv;
 	Vector*   vector;
 	Buf*      buf;
-	uint8_t*  data;
+	uint8_t*  json;
 	void*     ptr;
 	Call      call;
 
@@ -543,7 +543,7 @@ cequss:
 cequjj:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], !data_compare(r[op->b].data, r[op->c].data));
+		value_set_bool(&r[op->a], !json_compare(r[op->b].json, r[op->c].json));
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -978,13 +978,13 @@ cidxjs:
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
-		data = b->data;
-		if (unlikely(! data_is_obj(data)))
+		json = b->json;
+		if (unlikely(! json_is_obj(json)))
 			error("[]: object expected");
-		if (! obj_find_path(&data, &c->string))
+		if (! json_obj_find_path(&json, &c->string))
 			error("[]: object key '%.*s' not found", str_size(&c->string),
 			      str_of(&c->string));
-		value_set_json(a, data, data_sizeof(data), b->buf);
+		value_set_json(a, json, json_sizeof(json), b->buf);
 		if (b->buf)
 			buf_ref(b->buf);
 		value_free(b);
@@ -1000,12 +1000,12 @@ cidxji:
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
-		data = b->data;
-		if (unlikely(! data_is_array(data)))
+		json = b->json;
+		if (unlikely(! json_is_array(json)))
 			error("[]: array expected");
-		if (! array_find(&data, c->integer))
+		if (! json_array_find(&json, c->integer))
 			error("[]: array index '%d' not found", c->integer);
-		value_set_json(a, data, data_sizeof(data), b->buf);
+		value_set_json(a, json, json_sizeof(json), b->buf);
 		if (b->buf)
 			buf_ref(b->buf);
 		value_free(b);
@@ -1279,7 +1279,7 @@ ccursor_reads:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 	{
-		data_read_string((uint8_t**)&ptr, &r[op->a].string);
+		json_read_string((uint8_t**)&ptr, &r[op->a].string);
 		r[op->a].type = VALUE_STRING;
 		r[op->a].buf  = NULL;
 	} else {
@@ -1290,7 +1290,7 @@ ccursor_reads:
 ccursor_readj:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
-		value_set_json(&r[op->a], ptr, data_sizeof(ptr), NULL);
+		value_set_json(&r[op->a], ptr, json_sizeof(ptr), NULL);
 	else
 		value_set_null(&r[op->a]);
 	op_next;

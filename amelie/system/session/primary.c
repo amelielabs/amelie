@@ -59,11 +59,11 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		auto meta_start = meta;
 
 		// type
-		data_skip(&meta);
+		json_skip(&meta);
 
 		// partition id
 		int64_t partition_id;
-		data_read_integer(&meta, &partition_id);
+		json_read_integer(&meta, &partition_id);
 
 		// map each write to route
 		auto table_mgr = &self->share->db->table_mgr;
@@ -86,7 +86,7 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		// [meta offset, data offset]
 		encode_integer(&req->arg, (intptr_t)(meta_start - start));
 		encode_integer(&req->arg, (intptr_t)(data - start));
-		data_skip(&data);
+		json_skip(&data);
 	}
 }
 

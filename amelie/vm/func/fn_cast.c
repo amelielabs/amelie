@@ -90,7 +90,7 @@ fn_int(Call* self)
 	auto arg = &self->argv[0];
 	if (arg->type == VALUE_JSON)
 	{
-		value_decode(self->result, arg->data, NULL);
+		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
 	}
 
@@ -126,7 +126,7 @@ fn_bool(Call* self)
 	auto arg = &self->argv[0];
 	if (arg->type == VALUE_JSON)
 	{
-		value_decode(self->result, arg->data, NULL);
+		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
 	}
 
@@ -164,7 +164,7 @@ fn_double(Call* self)
 	auto arg = &self->argv[0];
 	if (arg->type == VALUE_JSON)
 	{
-		value_decode(self->result, arg->data, NULL);
+		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
 	}
 
@@ -317,29 +317,29 @@ fn_vector(Call* self)
 		error("vector(%s): operation type is not supported",
 		      value_type_to_string(arg.type));
 
-	uint8_t* pos = arg.data;
-	if (! data_is_array(pos))
+	uint8_t* pos = arg.json;
+	if (! json_is_array(pos))
 		error("vector(): json array expected");
 
 	auto buf = buf_create();
 	guard_buf(buf);
 	buf_write_i32(buf, 0);
 
-	data_read_array(&pos);
+	json_read_array(&pos);
 	int count = 0;
-	while (! data_read_array_end(&pos))
+	while (! json_read_array_end(&pos))
 	{
 		float value_flt;
-		if (data_is_real(pos))
+		if (json_is_real(pos))
 		{
 			double value;
-			data_read_real(&pos, &value);
+			json_read_real(&pos, &value);
 			value_flt = value;
 		} else
-		if (data_is_integer(pos))
+		if (json_is_integer(pos))
 		{
 			int64_t value;
-			data_read_integer(&pos, &value);
+			json_read_integer(&pos, &value);
 			value_flt = value;
 		} else {
 			error("vector(): json array int or real values expected");

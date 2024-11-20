@@ -127,8 +127,8 @@ csend_generated(Vm* self, Op* op)
 	//
 	// [[], ...]
 	auto data = code_data_at(self->code_data, op->d);
-	data_read_array(&data);
-	while (! data_read_array_end(&data))
+	json_read_array(&data);
+	while (! json_read_array_end(&data))
 	{
 		// generate new row and hash keys
 		uint32_t offset = buf_size(&self->code_data->data_generated);
@@ -353,9 +353,9 @@ ccursor_open(Vm* self, Op* op)
 	Str name_schema;
 	Str name_table;
 	Str name_index;
-	data_read_string(&pos, &name_schema);
-	data_read_string(&pos, &name_table);
-	data_read_string(&pos, &name_index);
+	json_read_string(&pos, &name_schema);
+	json_read_string(&pos, &name_table);
+	json_read_string(&pos, &name_index);
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);

@@ -29,7 +29,7 @@ value_row_key(Keys* self, Stack* stack)
 		case TYPE_TEXT:
 		{
 			auto ref = stack_at(stack, self->list_count - key->order);
-			size += data_size_string(str_size(&ref->string));
+			size += json_size_string(str_size(&ref->string));
 			break;
 		}
 		}
@@ -73,7 +73,7 @@ value_row_key(Keys* self, Stack* stack)
 			pos += sizeof(int64_t);
 			break;
 		case TYPE_TEXT:
-			data_write_string(&pos, &ref->string);
+			json_write_string(&pos, &ref->string);
 			break;
 		}
 	}
@@ -114,10 +114,10 @@ value_update_prepare(Columns* self, Row* src, Stack* stack, int count)
 
 			switch (column->type) {
 			case TYPE_TEXT:
-				size += data_size_string(str_size(&value->string));
+				size += json_size_string(str_size(&value->string));
 				break;
 			case TYPE_JSON:
-				size += value->data_size;
+				size += value->json_size;
 				break;
 			case TYPE_VECTOR:
 				size += vector_size(value->vector);
@@ -141,7 +141,7 @@ value_update_prepare(Columns* self, Row* src, Stack* stack, int count)
 		case TYPE_JSON:
 		{
 			auto pos_end = pos_src;
-			data_skip(&pos_end);
+			json_skip(&pos_end);
 			size += pos_end - pos_src;
 			break;
 		}
@@ -225,11 +225,11 @@ value_update(Columns* self, Row* src, Stack* stack, int count)
 				pos += sizeof(Interval);
 				break;
 			case TYPE_TEXT:
-				data_write_string(&pos, &value->string);
+				json_write_string(&pos, &value->string);
 				break;
 			case TYPE_JSON:
-				memcpy(pos, value->data, value->data_size);
-				pos += value->data_size;
+				memcpy(pos, value->json, value->json_size);
+				pos += value->json_size;
 				break;
 			case TYPE_VECTOR:
 				memcpy(pos, value->vector, vector_size(value->vector));
@@ -254,7 +254,7 @@ value_update(Columns* self, Row* src, Stack* stack, int count)
 		case TYPE_JSON:
 		{
 			auto pos_end = pos_src;
-			data_skip(&pos_end);
+			json_skip(&pos_end);
 			memcpy(pos, pos_src, pos_end - pos_src);
 			pos += pos_end - pos_src;
 			break;

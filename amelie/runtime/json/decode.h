@@ -39,11 +39,11 @@ static inline void
 decode_obj(Decode* self, const char* context, uint8_t** pos)
 {
 	// read obj and compare against keys
-	data_read_obj(pos);
-	while (! data_read_obj_end(pos))
+	json_read_obj(pos);
+	while (! json_read_obj_end(pos))
 	{
 		Str key;
-		data_read_string(pos, &key);
+		json_read_string(pos, &key);
 
 		bool found = false;
 		for (auto ref = self; ref->key; ref++)
@@ -54,94 +54,94 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 			switch (ref->flags & ~DECODE_FOUND) {
 			case DECODE_UUID:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! json_is_string(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Uuid*)ref->value;
 				Str uuid;
-				data_read_string(pos, &uuid);
+				json_read_string(pos, &uuid);
 				uuid_from_string(value, &uuid);
 				break;
 			}
 			case DECODE_STRING:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! json_is_string(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
 				str_free(value);
-				data_read_string_copy(pos, value);
+				json_read_string_copy(pos, value);
 				break;
 			}
 			case DECODE_STRING_READ:
 			{
-				if (unlikely(! data_is_string(*pos)))
+				if (unlikely(! json_is_string(*pos)))
 					error("%s: string expected for '%s'", context,
 					      ref->key);
 				auto value = (Str*)ref->value;
-				data_read_string(pos, value);
+				json_read_string(pos, value);
 				break;
 			}
 			case DECODE_INT:
 			{
-				if (unlikely(! data_is_integer(*pos)))
+				if (unlikely(! json_is_integer(*pos)))
 					error("%s: integer expected for '%s'", context,
 					      ref->key);
 				auto value = (int64_t*)ref->value;
-				data_read_integer(pos, value);
+				json_read_integer(pos, value);
 				break;
 			}
 			case DECODE_BOOL:
 			{
-				if (unlikely(! data_is_bool(*pos)))
+				if (unlikely(! json_is_bool(*pos)))
 					error("%s: bool expected for '%s'", context,
 					      ref->key);
 				auto value = (bool*)ref->value;
-				data_read_bool(pos, value);
+				json_read_bool(pos, value);
 				break;
 			}
 			case DECODE_REAL:
 			{
-				if (unlikely(! data_is_bool(*pos)))
+				if (unlikely(! json_is_bool(*pos)))
 					error("%s: real expected for '%s'", context,
 					      ref->key);
 				auto value = (double*)ref->value;
-				data_read_real(pos, value);
+				json_read_real(pos, value);
 				break;
 			}
 			case DECODE_NULL:
 			{
-				if (unlikely(! data_is_bool(*pos)))
+				if (unlikely(! json_is_bool(*pos)))
 					error("%s: null expected for '%s'", context,
 					      ref->key);
-				data_read_null(pos);
+				json_read_null(pos);
 				break;
 			}
 			case DECODE_ARRAY:
 			{
-				if (unlikely(! data_is_array(*pos)))
+				if (unlikely(! json_is_array(*pos)))
 					error("%s: array expected for '%s'", context,
 					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
-				data_skip(pos);
+				json_skip(pos);
 				break;
 			}
 			case DECODE_OBJ:
 			{
-				if (unlikely(! data_is_obj(*pos)))
+				if (unlikely(! json_is_obj(*pos)))
 					error("%s: object expected for '%s'", context,
 					      ref->key);
 				auto value = (uint8_t**)ref->value;
 				*value = *pos;
-				data_skip(pos);
+				json_skip(pos);
 				break;
 			}
 			case DECODE_DATA:
 			{
 				auto value = (Buf*)ref->value;
 				auto start = *pos;
-				data_skip(pos);
+				json_skip(pos);
 				buf_write(value, start, *pos - start);
 				break;
 			}
@@ -156,7 +156,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 		}
 
 		if (! found)
-			data_skip(pos);
+			json_skip(pos);
 	}
 
 	// ensure all keys were found

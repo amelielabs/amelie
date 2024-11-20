@@ -21,74 +21,74 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 	char buf[256];
 	int  buf_len;
 	switch (**pos) {
-	case AM_NULL:
-		data_read_null(pos);
+	case JSON_NULL:
+		json_read_null(pos);
 		buf_write(data, "null", 4);
 		break;
-	case AM_TRUE:
-	case AM_FALSE:
+	case JSON_TRUE:
+	case JSON_FALSE:
 	{
 		bool value;
-		data_read_bool(pos, &value);
+		json_read_bool(pos, &value);
 		if (value)
 			buf_write(data, "true", 4);
 		else
 			buf_write(data, "false", 5);
 		break;
 	}
-	case AM_REAL32:
-	case AM_REAL64:
+	case JSON_REAL32:
+	case JSON_REAL64:
 	{
 		double value;
-		data_read_real(pos, &value);
+		json_read_real(pos, &value);
 		buf_len = snprintf(buf, sizeof(buf), "%g", value);
 		buf_write(data, buf, buf_len);
 		break;
 	}
-	case AM_INTV0 ... AM_INT64:
+	case JSON_INTV0 ... JSON_INT64:
 	{
 		int64_t value;
-		data_read_integer(pos, &value);
+		json_read_integer(pos, &value);
 		buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value);
 		buf_write(data, buf, buf_len);
 		break;
 	}
-	case AM_STRINGV0 ... AM_STRING32:
+	case JSON_STRINGV0 ... JSON_STRING32:
 	{
 		Str str;
-		data_read_string(pos, &str);
+		json_read_string(pos, &str);
 		buf_write(data, "\"", 1);
 		escape_string_raw(data, &str);
 		buf_write(data, "\"", 1);
 		break;
 	}
-	case AM_ARRAY:
+	case JSON_ARRAY:
 	{
-		data_read_array(pos);
+		json_read_array(pos);
 		buf_write(data, "[", 1);
-		while (! data_read_array_end(pos))
+		while (! json_read_array_end(pos))
 		{
 			json_export_as(data, timezone, pretty, deep, pos);
 			// ,
-			if (! data_is_array_end(*pos))
+			if (! json_is_array_end(*pos))
 				buf_write(data, ", ", 2);
 		}
 		buf_write(data, "]", 1);
 		break;
 	}
-	case AM_OBJ:
+	case JSON_OBJ:
 	{
-		data_read_obj(pos);
+		json_read_obj(pos);
 		if (pretty)
 		{
 			// {}
-			if (data_read_obj_end(pos))
+			if (json_read_obj_end(pos))
 			{
 				buf_write(data, "{}", 2);
 				break;
 			}
 			buf_write(data, "{\n", 2);
-			while (! data_read_obj_end(pos))
+			while (! json_read_obj_end(pos))
 			{
 				for (int i = 0; i < deep + 1; i++)
 					buf_write(data, "  ", 2);
@@ -98,7 +98,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (data_is_obj_end(*pos))
+				if (json_is_obj_end(*pos))
 					buf_write(data, "\n", 1);
 				else
 					buf_write(data, ",\n", 2);
@@ -109,7 +109,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		} else
 		{
 			buf_write(data, "{", 1);
-			while (! data_read_obj_end(pos))
+			while (! json_read_obj_end(pos))
 			{
 				// key
 				json_export_as(data, timezone, pretty, deep + 1, pos);
@@ -117,7 +117,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 				// value
 				json_export_as(data, timezone, pretty, deep + 1, pos);
 				// ,
-				if (! data_is_obj_end(*pos))
+				if (! json_is_obj_end(*pos))
 					buf_write(data, ", ", 2);
 			}
 			buf_write(data, "}", 1);
@@ -125,7 +125,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		break;
 	}
 	default:
-		error_data();
+		json_error_read();
 		break;
 	}
 }

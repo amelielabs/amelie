@@ -49,22 +49,22 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 
 		// meta_offset
 		int64_t meta_offset;
-		data_read_integer(&pos, &meta_offset);
+		json_read_integer(&pos, &meta_offset);
 
 		// data_offset
 		int64_t data_offset;
-		data_read_integer(&pos, &data_offset);
+		json_read_integer(&pos, &data_offset);
 
 		uint8_t* meta = req->arg_start + meta_offset;
 		uint8_t* data = req->arg_start + data_offset;
 
 		// type
 		int64_t type;
-		data_read_integer(&meta, &type);
+		json_read_integer(&meta, &type);
 
 		// partition
 		int64_t partition_id;
-		data_read_integer(&meta, &partition_id);
+		json_read_integer(&meta, &partition_id);
 		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
@@ -91,7 +91,7 @@ compute_load(Compute* self, Tr* tr, Req* req)
 	{
 		// row offset
 		int64_t offset;
-		data_read_integer(&pos, &offset);
+		json_read_integer(&pos, &offset);
 		auto data = req->arg_buf->start + offset;
 
 		auto part = part_list_match(&req->arg_table->part_list, &self->node->id);

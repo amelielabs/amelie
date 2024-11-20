@@ -49,17 +49,17 @@ fn_length(Call* self)
 		rc = str_size(&arg.string);
 		break;
 	case VALUE_JSON:
-		if (data_is_array(arg.data))
-			rc = array_size(arg.data);
+		if (json_is_array(arg.json))
+			rc = json_array_size(arg.json);
 		else
-		if (data_is_obj(arg.data))
-			rc = obj_size(arg.data);
+		if (json_is_obj(arg.json))
+			rc = json_obj_size(arg.json);
 		else
-		if (data_is_string(arg.data))
+		if (json_is_string(arg.json))
 		{
-			uint8_t* pos = arg.data;
+			uint8_t* pos = arg.json;
 			Str str;
-			data_read_string(&pos, &str);
+			json_read_string(&pos, &str);
 			rc = str_size(&str);
 		} else
 			error("length(): unsupport json argument type");
@@ -90,8 +90,8 @@ fn_concat(Call* self)
 	}
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(size));
-	data_write_raw(pos, NULL, size);
+	auto pos = buf_reserve(buf, json_size_string(size));
+	json_write_raw(pos, NULL, size);
 	for (int i = 0; i < self->argc; i++)
 	{
 		if (argv[i].type == VALUE_NULL)
@@ -103,7 +103,7 @@ fn_concat(Call* self)
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -123,8 +123,8 @@ fn_lower(Call* self)
 	int  src_size = str_size(&arg.string);
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(src_size));
-	data_write_raw(pos, NULL, src_size);
+	auto pos = buf_reserve(buf, json_size_string(src_size));
+	json_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = tolower(src[i]);
@@ -132,7 +132,7 @@ fn_lower(Call* self)
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -152,8 +152,8 @@ fn_upper(Call* self)
 	int  src_size = str_size(&arg.string);
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(src_size));
-	data_write_raw(pos, NULL, src_size);
+	auto pos = buf_reserve(buf, json_size_string(src_size));
+	json_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = toupper(src[i]);
@@ -161,7 +161,7 @@ fn_upper(Call* self)
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -209,7 +209,7 @@ fn_substr(Call* self)
 
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -308,13 +308,13 @@ fn_replace(Call* self)
 	}
 
 	// update string size
-	int size = buf_size(buf) - data_size_string32();
+	int size = buf_size(buf) - json_size_string32();
 	uint8_t* pos_str = buf->start;
-	data_write_string32(&pos_str, size);
+	json_write_string32(&pos_str, size);
 
 	Str string;
 	pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -403,7 +403,7 @@ trim(Call* self, bool left, bool right)
 	encode_string(buf, &string);
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 

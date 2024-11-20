@@ -87,16 +87,16 @@ update_unset_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! data_is_obj(*pos)))
-		error("unset: object expected, but got %s", type_to_string(**pos));
-	data_read_obj(pos);
+	if (unlikely(! json_is_obj(*pos)))
+		error("unset: object expected, but got %s", json_typeof(**pos));
+	json_read_obj(pos);
 
 	encode_obj(buf);
-	while (! data_read_obj_end(pos))
+	while (! json_read_obj_end(pos))
 	{
 		// key
 		Str at;
-		data_read_string(pos, &at);
+		json_read_string(pos, &at);
 
 		// match key
 		if (str_compare(&key, &at))
@@ -107,14 +107,14 @@ update_unset_next(Update* self)
 				update_unset_next(self);
 				continue;
 			}
-			data_skip(pos);
+			json_skip(pos);
 			continue;
 		}
 
 		// copy
 		encode_string(buf, &at);
 		uint8_t* start = *pos;
-		data_skip(pos);
+		json_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
 	encode_obj_end(buf);
@@ -129,16 +129,16 @@ update_set_next(Update* self)
 
 	auto buf = self->buf;
 	auto pos = &self->pos;
-	if (unlikely(! data_is_obj(*pos)))
-		error("set: object expected, but got %s", type_to_string(**pos));
-	data_read_obj(pos);
+	if (unlikely(! json_is_obj(*pos)))
+		error("set: object expected, but got %s", json_typeof(**pos));
+	json_read_obj(pos);
 
 	encode_obj(buf);
-	while (! data_read_obj_end(pos))
+	while (! json_read_obj_end(pos))
 	{
 		// key 
 		Str at;
-		data_read_string(pos, &at);
+		json_read_string(pos, &at);
 		encode_string(buf, &at);
 
 		// match key
@@ -155,13 +155,13 @@ update_set_next(Update* self)
 			assert(! self->found);
 			value_encode(self->value, self->tz, buf);
 			self->found = true;
-			data_skip(pos);
+			json_skip(pos);
 			continue;
 		}
 
 		// value
 		uint8_t* start = *pos;
-		data_skip(pos);
+		json_skip(pos);
 		buf_write(buf, start, *pos - start);
 	}
 
@@ -181,24 +181,24 @@ update_set_next(Update* self)
 }
 
 hot void
-update_set(Value* result, Timezone* tz, uint8_t* data, Str* path, Value* value)
+update_set(Value* result, Timezone* tz, uint8_t* json, Str* path, Value* value)
 {
 	auto buf = buf_create();
 	guard_buf(buf);
 	Update self;
-	update_init(&self, tz, data, path, buf, value);
+	update_init(&self, tz, json, path, buf, value);
 	update_set_next(&self);
 	unguard();
 	value_set_json_buf(result, buf);
 }
 
 hot void
-update_unset(Value* result, uint8_t* data, Str* path)
+update_unset(Value* result, uint8_t* json, Str* path)
 {
 	auto buf = buf_create();
 	guard_buf(buf);
 	Update self;
-	update_init(&self, NULL, data, path, buf, NULL);
+	update_init(&self, NULL, json, path, buf, NULL);
 	update_unset_next(&self);
 	unguard();
 	value_set_json_buf(result, buf);

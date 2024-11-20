@@ -44,8 +44,8 @@ struct Value
 		Avg       avg;
 		Store*    store;
 		struct {
-			uint8_t* data;
-			int      data_size;
+			uint8_t* json;
+			int      json_size;
 		};
 	};
 	Buf* buf;
@@ -127,11 +127,11 @@ value_set_string(Value* self, Str* value, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_json(Value* self, uint8_t* data, int data_size, Buf* buf)
+value_set_json(Value* self, uint8_t* json, int json_size, Buf* buf)
 {
 	self->type      = VALUE_JSON;
-	self->data      = data;
-	self->data_size = data_size;
+	self->json      = json;
+	self->json_size = json_size;
 	self->buf       = buf;
 }
 
@@ -212,7 +212,7 @@ value_copy(Value* self, Value* src)
 			buf_ref(src->buf);
 		break;
 	case VALUE_JSON:
-		value_set_json(self, src->data, src->data_size, src->buf);
+		value_set_json(self, src->json, src->json_size, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
 		break;

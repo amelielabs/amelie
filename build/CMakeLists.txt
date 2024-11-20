@@ -153,7 +153,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/linenoise.c
     ${AMELIE_ROOT}/runtime/lib/cli.c
-    ${AMELIE_ROOT}/runtime/json/json.c
+    ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/vars.c
     ${AMELIE_ROOT}/runtime/config/config_local.c

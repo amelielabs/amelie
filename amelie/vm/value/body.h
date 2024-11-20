@@ -38,7 +38,7 @@ body_add(Buf* self, Value* value, Timezone* tz, bool pretty, bool wrap)
 	wrap = wrap && buf_empty(self);
 	if (wrap)
 	{
-		if (value->type == VALUE_JSON && data_is_array(value->data))
+		if (value->type == VALUE_JSON && json_is_array(value->json))
 			wrap = false;
 		else
 			wrap = (value->type != VALUE_VECTOR &&
@@ -64,7 +64,7 @@ body_add_buf(Buf* self, Buf* buf, Timezone* tz)
 {
 	// wrap body in [] unless returning data is array
 	uint8_t* pos = buf->start;
-	bool wrap = buf_empty(self) && !data_is_array(pos);
+	bool wrap = buf_empty(self) && !json_is_array(pos);
 	if (wrap)
 		body_begin(self);
 	json_export_pretty(self, tz, &pos);
