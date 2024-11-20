@@ -11,7 +11,7 @@ select 1 like
 {"msg": "bad expression"}
 # test: like
 select 1 like 1
-{"msg": "LIKE: arguments expected to be strings"}
+{"msg": "unsupported operation: <int> LIKE <int>"}
 select '' like ''
 [true]
 select '' like '%'

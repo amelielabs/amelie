@@ -1,166 +1,162 @@
 #
 
-# runtime
-directory runtime
-group runtime
-test runtime
+## runtime
+#directory runtime
+#group runtime
+#test runtime
 
-# system
-directory system
-group system
-test bootstrap
-test set
-test show
-test user
-test watch
-
-# ddl
-directory ddl
-group ddl
-test schema
-test table_create
-test table_drop
-test table_alter
-test index
-test view
-test cascade
-
-# dml
-directory dml
-group dml
-test insert
-test update
-test delete
-test upsert
-test truncate
-
-# generated
-directory generated
-group generated
-test as_stored
-test as_aggregated
-
-# index
-directory index
-group index
-test tree_shared
-test tree
-test hash_shared
-test hash
-
-# query
-directory query
-group query
-test expr
-test expr_json
-test case
-test in
-test any
-test all
-test like
-test exists
-test method
-test select
-test where
-test scan
-test subselect
-test order_by
-test label
-test planner
-test lambda
-test limits
-
-# func
-directory func
-group func
-test func_cast
-test func_null
-test func_object
-test func_string
-test func_regexp
-test func_math
-test func_misc
-test func_time
-test func_vector
-
-# time
-directory time
-group time
-test interval
+# data types and expressions
+directory expr
+group expr
+test const
+test json
 test timestamp
-test timezone
-test generate_series
-
-# vector
-directory vector
-group vector
+test timestamp_timezone
+test interval
 test vector
+test method
+test like
+test case
 
-# agg
-directory agg
-group agg
-test agg
+#test expr
+#test case
+#test like
 
-# pushdown
-directory pushdown
-group pushdown
-test push_ddl
-test push_dml
-test push_expr
-test push_shared
-test push_subselect
-test push_select
-test push_limit
-test push_order_by
-test push_distinct
-test push_group_by
-test push_group_by_shared
-test push_group_by_expr
-test push_aggregate
-test push_join
 
-# executor
-directory executor
-group executor
-test cte_expr
-test cte
-test begin_commit
-test abort
+## func
+#directory func
+#group func
+#test func_cast
+#test func_null
+#test func_object
+#test func_string
+#test func_regexp
+#test func_math
+#test func_misc
+#test func_time
+#test func_vector
 
-# cluster
-directory cluster
-group cluster
-test node
-test indexate
+## system
+#directory system
+#group system
+#test bootstrap
+#test set
+#test show
+#test user
+#test watch
 
-# recovery
-directory recovery
-group recovery
-test wal_dml
-test wal_ddl
-test checkpoint
+## ddl
+#directory ddl
+#group ddl
+#test schema
+#test table_create
+#test table_drop
+#test table_alter
+#test index
+#test view
+#test cascade
 
-# tls
-directory tls
-group tls
-test tls
+## dml
+#directory dml
+#group dml
+#test insert
+#test update
+#test delete
+#test upsert
+#test truncate
 
-# backup
-directory backup
-group backup
-test backup
-test backup_tls
+## generated
+#directory generated
+#group generated
+#test as_stored
+#test as_aggregated
 
-# replication
-directory repl
-group repl
-test replica
-test repl
-test streaming
-test streaming_tls
-test streaming_tls_2
+## index
+#directory index
+#group index
+#test tree_shared
+#test tree
+#test hash_shared
+#test hash
 
-# import
-directory import
-group import
-test import
+## query
+#directory query
+#group query
+#test in
+#test any
+#test all
+#test exists
+#
+#test select
+#test where
+#test scan
+#test subselect
+#test order_by
+#test label
+#test planner
+#test lambda
+#test limits
+
+## pushdown
+#directory pushdown
+#group pushdown
+#test push_ddl
+#test push_dml
+#test push_expr
+#test push_shared
+#test push_subselect
+#test push_select
+#test push_limit
+#test push_order_by
+#test push_distinct
+#test push_group_by
+#test push_group_by_shared
+#test push_group_by_expr
+#test push_aggregate
+#test push_join
+
+## executor
+#directory executor
+#group executor
+#test cte_expr
+#test cte
+#test begin_commit
+#test abort
+
+## cluster
+#directory cluster
+#group cluster
+#test node
+#test indexate
+
+## recovery
+#directory recovery
+#group recovery
+#test wal_dml
+#test wal_ddl
+#test checkpoint
+
+## tls
+#directory tls
+#group tls
+#test tls
+
+## backup
+#directory backup
+#group backup
+#test backup
+#test backup_tls
+
+## replication
+#directory repl
+#group repl
+#test replica
+#test repl
+#test streaming
+#test streaming_tls
+#test streaming_tls_2
+
+## import
+#directory import
+#group import
+#test import

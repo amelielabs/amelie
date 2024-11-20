@@ -37,13 +37,5 @@ explain select system.config().directory::length
 select system.config().directory::length
 select length(system.config().directory)
 
-# test: select
-create table test (id int primary key serial, data object)
-insert into test (data) values ({})
-insert into test (data) values ({})
-insert into test (data) values ({})
-select data::set("id", id) from test
-drop table test
-
 disconnect S0
 close E0

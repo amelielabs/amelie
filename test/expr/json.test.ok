@@ -70,6 +70,11 @@ select [[]]
 [[[]]]
 select [{}]
 [[{}]]
+# test: array [set]
+select [ select 123 ]
+[[[123]]]
+select [ select 1, 2 ]
+[[[[1, 2]]]]
 # test: array [] operator
 select [][]
 {"msg": "bad expression"}
@@ -227,6 +232,15 @@ select {"id": interval '1 week 2 weeks 3 weeks'}
 select {"id": [1,2,3]::vector }
 [{
   "id": [1, 2, 3]
+}]
+# test: object {set}
+select {"id": select 123 }
+[{
+  "id": [123]
+}]
+select {"id": select 1, 2 }
+[{
+  "id": [[1, 2]]
 }]
 # test: object . operator
 select {"a": 0, "b": 1}.b

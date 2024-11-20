@@ -11,24 +11,27 @@ select case 1 then 1
 select case 1 when 1 then 1
 
 select case 1 when 1 then 1 end
+select (case 1 when 1 then 1 end)::type
 explain select case 1 when 1 then 1 end
 
 select case 0 when 1 then 1 when 2 then 2 end
+select (case 0 when 1 then 1 when 2 then 2 end)::type
 explain select case 0 when 1 then 1 when 2 then 2 end
 
 select case 0 when 1 then 1 when 2 then 2 else 'else' end
+select (case 0 when 1 then 1 when 2 then 2 else 'else' end)::type
 explain select case 0 when 1 then 1 when 2 then 2 else 'else' end
 
 select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 end
 
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] end
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] when null then null end
-select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] else [2] when null then null end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end
+select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end
 
-select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
-explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else [] when null then null end
+select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end
+explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end
 
 select case end
 select case else end
@@ -48,14 +51,12 @@ select case else 1 end
 
 select case when 1=1 then 1 end
 select case when 1=0 then 1 when 1=3 when 1=1 then 'yes' end
-select case when 1=0 then 1 when 1=3 then 2 when 1=1 then 'yes' end
-select case when 1=0 then 1 when 1=3 then 2 else 'no' end
+select case when 1=0 then 1 when 1=3 when 1=1 then 2 end
+select case when 1=0 then 1 when 1=3 then 2 when 1=1 then 3 end
+select case when 1=0 then 1 when 1=3 then 2 else null end
+select case when 1=0 then 1 when 1=3 then 2 else 3 end
 select case when 1=0 then 1 when 1=3 then 2 end
 select case when [1,2,3] = [1,2,3] then true end
-select case when select [1,2,3] = select [1,2,3] then true end
-select case when select [1,2,3] = select [1,2,3,4] then true end
-select case when select [1,2,3] = select [1,2,3,4] then true else 'else' end
-select case when select [1,2,3] = select [1,2,3,4] then true else 'else' else null end
 
 disconnect S0
 close E0

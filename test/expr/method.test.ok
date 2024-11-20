@@ -1,0 +1,88 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: method not exist
+select 1 :: name()
+{"msg": "name(): function not found"}
+select 1 :: schema.name()
+{"msg": "schema.name(): function not found"}
+select 1 :: schema.name.name()
+{"msg": "schema.name.name(): bad function call"}
+# test: expr :: method()
+select 1::
+{"msg": "bad '::' expression"}
+select 1::()
+{"msg": "bad '::' expression"}
+select 1::[]()
+{"msg": "bad '::' expression"}
+select 1::length()
+{"msg": "length(int): operation type is not supported"}
+select "hello"::length()
+[5]
+explain select system.config().directory::length()
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "call                1      -      0     # system.config()",
+      "02": "string              2      0      0     # directory",
+      "03": "idxjs               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "call                1      -      1     # public.length()",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select system.config().directory::length()
+[10]
+select [null]::put(0, 123)
+[[123]]
+select put([null], 0, 123)
+[[123]]
+# test: expr :: method() :: method()
+select [1]::append(1)::append(2)
+[[1, 1, 2]]
+select [1]::append(1)::append(2)::append(3)
+[[1, 1, 2, 3]]
+select {}::set("a", 1)::set("b", 2)
+[{
+  "a": 1,
+  "b": 2
+}]
+select {}::public.set("a", 1)::public.set("b", 2)
+[{
+  "a": 1,
+  "b": 2
+}]
+# test: expr :: method
+select 1::schema.name
+{"msg": "schema.name(): function not found"}
+select 1::schema.name.name
+{"msg": "schema.name.name(): bad function call"}
+explain select system.config().directory::length
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "call                1      -      0     # system.config()",
+      "02": "string              2      0      0     # directory",
+      "03": "idxjs               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "call                1      -      1     # public.length()",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select system.config().directory::length
+[10]
+select length(system.config().directory)
+[10]
+disconnect S0
+close E0
