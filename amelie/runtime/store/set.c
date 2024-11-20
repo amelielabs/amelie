@@ -73,6 +73,7 @@ Set*
 set_create(int count_columns, int count_keys, uint8_t* order, bool hash)
 {
 	Set* self = am_malloc(sizeof(Set));
+	store_init(&self->store);
 	self->store.free   = set_free;
 	self->store.encode = set_encode;
 	self->store.export = set_export;

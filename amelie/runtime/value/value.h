@@ -230,7 +230,13 @@ value_copy(Value* self, Value* src)
 		value_set_avg(self, &src->avg);
 		break;
 	case VALUE_SET:
+		value_set_set(self, src->store);
+		store_ref(src->store);
+		break;
 	case VALUE_MERGE:
+		value_set_merge(self, src->store);
+		store_ref(src->store);
+		break;
 	default:
 		error("operation is not supported");
 		break;

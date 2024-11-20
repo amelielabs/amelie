@@ -92,6 +92,7 @@ Merge*
 merge_create(bool distinct, int64_t limit, int64_t offset)
 {
 	Merge* self = am_malloc(sizeof(Merge));
+	store_init(&self->store);
 	self->store.free   = merge_free;
 	self->store.encode = merge_encode;
 	self->store.export = merge_export;
