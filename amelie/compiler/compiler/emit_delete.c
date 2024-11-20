@@ -58,7 +58,7 @@ emit_delete_on_match_returning(Compiler* self, void* arg)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, rt);
+		column_set_type(column, rt, value_sizeof_default(rt));
 		columns_add(&delete->ret.columns, column);
 	}
 

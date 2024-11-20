@@ -19,7 +19,7 @@ struct Column
 	int        order;
 	Str        name;
 	int64_t    type;
-	int        type_size;
+	int64_t    type_size;
 	Constraint constraint;
 	bool       key;
 	List       link;
@@ -55,9 +55,10 @@ column_set_name(Column* self, Str* name)
 }
 
 static inline void
-column_set_type(Column* self, int value)
+column_set_type(Column* self, int type, int type_size)
 {
-	self->type = value;
+	self->type = type;
+	self->type_size = type_size;
 }
 
 static inline Column*
@@ -65,7 +66,7 @@ column_copy(Column* self)
 {
 	auto copy = column_allocate();
 	column_set_name(copy, &self->name);
-	column_set_type(copy, self->type);
+	column_set_type(copy, self->type, self->type_size);
 	constraint_copy(&self->constraint, &copy->constraint);
 	return copy;
 }
@@ -80,14 +81,13 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING,      "name",       &self->name      },
-		{ DECODE_STRING_READ, "type",       &type            },
-		{ DECODE_OBJ,         "constraint", &constraints     },
-		{ 0,                   NULL,        NULL             },
+		{ DECODE_STRING, "name",       &self->name      },
+		{ DECODE_INT,    "type",       &self->type      },
+		{ DECODE_INT,    "type_size",  &self->type_size },
+		{ DECODE_OBJ,    "constraint", &constraints     },
+		{ 0,              NULL,        NULL             },
 	};
 	decode_obj(obj, "columns", pos);
-	self->type = type_read(&type);
-	self->type_size = type_size(self->type);
 	constraint_read(&self->constraint, &constraints);
 	return unguard();
 }
@@ -103,7 +103,11 @@ column_write(Column* self, Buf* buf)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_cstr(buf, type_of(self->type));
+	encode_integer(buf, self->type);
+
+	// type_size
+	encode_raw(buf, "type_size", 9);
+	encode_integer(buf, self->type_size);
 
 	// constraint
 	encode_raw(buf, "constraint", 10);

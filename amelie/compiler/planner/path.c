@@ -115,18 +115,15 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 	auto column = key->column;
 	switch (value->id) {
 	case KINT:
-		if (unlikely(column->type != TYPE_INT8 &&
-		             column->type != TYPE_INT16 &&
-		             column->type != TYPE_INT32 &&
-		             column->type != TYPE_INT64))
+		if (unlikely(column->type != VALUE_INT))
 			return false;
 		break;
 	case KSTRING:
-		if (unlikely(column->type != TYPE_TEXT))
+		if (unlikely(column->type != VALUE_STRING))
 			return false;
 		break;
 	case KTIMESTAMP:
-		if (unlikely(column->type != TYPE_TIMESTAMP))
+		if (unlikely(column->type != VALUE_TIMESTAMP))
 			return false;
 		break;
 	}

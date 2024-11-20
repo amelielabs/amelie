@@ -121,7 +121,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 	double  dbl;
 	auto ast = lex_next(self);
 	switch (column->type) {
-	case TYPE_BOOL:
+	case VALUE_BOOL:
 		if (ast->id == KTRUE)
 			buf_write_i8(data, true);
 		else
@@ -130,37 +130,49 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		else
 			break;
 		return;
-	case TYPE_INT8:
-		if (! parse_int(self, ast, &integer))
-			break;
-		buf_write_i8(data, integer);
+	case VALUE_INT:
+	{
+		switch (column->type_size) {
+		case 1:
+			if (! parse_int(self, ast, &integer))
+				break;
+			buf_write_i8(data, integer);
+			return;
+		case 2:
+			if (! parse_int(self, ast, &integer))
+				break;
+			buf_write_i16(data, integer);
+			return;
+		case 4:
+			if (! parse_int(self, ast, &integer))
+				break;
+			buf_write_i32(data, integer);
+			return;
+		case 8:
+			if (! parse_int(self, ast, &integer))
+				break;
+			buf_write_i64(data, integer);
+			return;
+		}
 		return;
-	case TYPE_INT16:
-		if (! parse_int(self, ast, &integer))
-			break;
-		buf_write_i16(data, integer);
+	}
+	case VALUE_DOUBLE:
+	{
+		switch (column->type_size) {
+		case 4:
+			if (! parse_double(self, ast, &dbl))
+				break;
+			buf_write_float(data, dbl);
+			return;
+		case 8:
+			if (! parse_double(self, ast, &dbl))
+				break;
+			buf_write_double(data, dbl);
+			return;
+		}
 		return;
-	case TYPE_INT32:
-		if (! parse_int(self, ast, &integer))
-			break;
-		buf_write_i32(data, integer);
-		return;
-	case TYPE_INT64:
-		if (! parse_int(self, ast, &integer))
-			break;
-		buf_write_i64(data, integer);
-		return;
-	case TYPE_FLOAT:
-		if (! parse_double(self, ast, &dbl))
-			break;
-		buf_write_float(data, dbl);
-		return;
-	case TYPE_DOUBLE:
-		if (! parse_double(self, ast, &dbl))
-			break;
-		buf_write_double(data, dbl);
-		return;
-	case TYPE_TEXT:
+	}
+	case VALUE_STRING:
 	{
 		if (likely(ast->id == KSTRING)) {
 			encode_string(data, &ast->string);
@@ -168,7 +180,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case TYPE_JSON:
+	case VALUE_JSON:
 	{
 		// parse and encode json value
 		lex_push(self, ast);
@@ -185,7 +197,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		self->pos = json->pos;
 		return;
 	}
-	case TYPE_TIMESTAMP:
+	case VALUE_TIMESTAMP:
 	{
 		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
@@ -212,7 +224,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case TYPE_INTERVAL:
+	case VALUE_INTERVAL:
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
@@ -227,7 +239,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case TYPE_VECTOR:
+	case VALUE_VECTOR:
 	{
 		if (! parse_vector(self, ast, data, column))
 			break;
@@ -236,5 +248,5 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 	}
 
 	error("column <%.*s> value expected to be '%s'", str_size(&column->name),
-	      str_of(&column->name), type_of(column->type));
+	      str_of(&column->name), value_typeof(column->type));
 }

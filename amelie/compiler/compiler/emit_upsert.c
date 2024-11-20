@@ -129,7 +129,7 @@ emit_upsert(Compiler* self, Ast* ast)
 
 			auto column = column_allocate();
 			column_set_name(column, &as->r->string);
-			column_set_type(column, rt);
+			column_set_type(column, rt, value_sizeof_default(rt));
 			columns_add(&insert->ret.columns, column);
 		}
 

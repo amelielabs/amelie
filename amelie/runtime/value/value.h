@@ -284,3 +284,23 @@ value_typeof(ValueType type)
 	}
 	return name;
 }
+
+hot static inline int
+value_sizeof_default(ValueType type)
+{
+	switch (type) {
+	case VALUE_BOOL:
+		return sizeof(int8_t);
+	case VALUE_INT:
+	case VALUE_TIMESTAMP:
+		return sizeof(int64_t);
+	case VALUE_DOUBLE:
+		return sizeof(double);
+	case VALUE_INTERVAL:
+		return sizeof(Interval);
+	default:
+		// variable
+		break;
+	}
+	return 0;
+}

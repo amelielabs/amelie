@@ -23,11 +23,11 @@ compare(Keys* self, Row* a, Row* b)
 		const auto key = list_at(Key, link);
 		/*
 		int rc;
-		if (key->type == TYPE_INT)
+		if (key->type == VALUE_INT)
 			rc = json_compare_integer(ref_key(a, key->order),
 			                          ref_key(b, key->order));
 		else
-		if (key->type == TYPE_TIMESTAMP)
+		if (key->type == VALUE_TIMESTAMP)
 			rc = json_compare_timestamp(ref_key(a, key->order),
 			                            ref_key(b, key->order));
 		else

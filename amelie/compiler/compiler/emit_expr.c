@@ -89,96 +89,72 @@ emit_column(Compiler* self, Target* target, Str* name)
 	if (target->type == TARGET_TABLE ||
 	    target->type == TARGET_TABLE_SHARED)
 	{
+		int op;
 		switch (column->type) {
-		case TYPE_BOOL:
-			r = op3(self, CCURSOR_READB, rpin(self, VALUE_BOOL),
-			        target->id, column->order);
-		case TYPE_INT8:
-			r = op3(self, CCURSOR_READI8, rpin(self, VALUE_INT),
-			        target->id, column->order);
+		case VALUE_BOOL:
+			op = CCURSOR_READB;
 			break;
-		case TYPE_INT16:
-			r = op3(self, CCURSOR_READI16, rpin(self, VALUE_INT),
-			        target->id, column->order);
-			break;
-		case TYPE_INT32:
-			r = op3(self, CCURSOR_READI32, rpin(self, VALUE_INT),
-			        target->id, column->order);
-			break;
-		case TYPE_INT64:
-			r = op3(self, CCURSOR_READI64, rpin(self, VALUE_INT),
-			        target->id, column->order);
-			break;
-		case TYPE_FLOAT:
-			r = op3(self, CCURSOR_READF, rpin(self, VALUE_DOUBLE),
-			        target->id, column->order);
-			break;
-		case TYPE_DOUBLE:
-			r = op3(self, CCURSOR_READD, rpin(self, VALUE_DOUBLE),
-			        target->id, column->order);
-			break;
-		case TYPE_TEXT:
-			r = op3(self, CCURSOR_READS, rpin(self, VALUE_INTERVAL),
-			        target->id, column->order);
-			break;
-		case TYPE_JSON:
-			r = op3(self, CCURSOR_READJ, rpin(self, VALUE_JSON),
-			        target->id, column->order);
-			break;
-		case TYPE_TIMESTAMP:
-			r = op3(self, CCURSOR_READT, rpin(self, VALUE_TIMESTAMP),
-			        target->id, column->order);
-			break;
-		case TYPE_INTERVAL:
-			r = op3(self, CCURSOR_READL, rpin(self, VALUE_INTERVAL),
-			        target->id, column->order);
-			break;
-		case TYPE_VECTOR:
-			r = op3(self, CCURSOR_READV, rpin(self, VALUE_VECTOR),
-			        target->id, column->order);
+		case VALUE_INT:
+		{
+			switch (column->type_size) {
+			case 1: op = CCURSOR_READI8;
+				break;
+			case 2: op = CCURSOR_READI16;
+				break;
+			case 4: op = CCURSOR_READI32;
+				break;
+			case 8: op = CCURSOR_READI64;
+				break;
+			default:
+				abort();
+				break;
+			}
 			break;
 		}
+		case VALUE_DOUBLE:
+		{
+			switch (column->type_size) {
+			case 4: op = CCURSOR_READF;
+				break;
+			case 8: op = CCURSOR_READD;
+				break;
+			default:
+				abort();
+				break;
+			}
+			break;
+		}
+		case VALUE_STRING:
+			op = CCURSOR_READS;
+			break;
+		case VALUE_JSON:
+			op = CCURSOR_READJ;
+			break;
+		case VALUE_TIMESTAMP:
+			op = CCURSOR_READT;
+			break;
+		case VALUE_INTERVAL:
+			op = CCURSOR_READL;
+			break;
+		case VALUE_VECTOR:
+			op = CCURSOR_READV;
+			break;
+		default:
+			abort();
+			break;
+		}
+		r = op3(self, op, rpin(self, column->type),
+		        target->id, column->order);
 	} else
 	{
-		int type;
-		switch (column->type) {
-		case TYPE_BOOL:
-			type = VALUE_BOOL;
-			break;
-		case TYPE_INT8:
-		case TYPE_INT16:
-		case TYPE_INT32:
-		case TYPE_INT64:
-			type = VALUE_INT;
-			break;
-		case TYPE_FLOAT:
-		case TYPE_DOUBLE:
-			type = VALUE_DOUBLE;
-			break;
-		case TYPE_TEXT:
-			type = VALUE_STRING;
-			break;
-		case TYPE_JSON:
-			type = VALUE_JSON;
-			break;
-		case TYPE_TIMESTAMP:
-			type = VALUE_TIMESTAMP;
-			break;
-		case TYPE_INTERVAL:
-			type = VALUE_INTERVAL;
-			break;
-		case TYPE_VECTOR:
-			type = VALUE_VECTOR;
-			break;
-		}
 		assert(target->r != -1);
 		switch (rtype(self, target->r)) {
 		case VALUE_SET:
-			r = op3(self, CCURSOR_SET_READ, rpin(self, type),
+			r = op3(self, CCURSOR_SET_READ, rpin(self, column->type),
 			        target->id, column->order);
 			break;
 		case VALUE_MERGE:
-			r = op3(self, CCURSOR_MERGE_READ, rpin(self, type),
+			r = op3(self, CCURSOR_MERGE_READ, rpin(self, column->type),
 			        target->id, column->order);
 			break;
 		default:

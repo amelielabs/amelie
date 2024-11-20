@@ -72,16 +72,13 @@ scan_key(Scan* self, Target* target)
 		// set min
 		int rexpr;
 		switch (key->column->type) {
-		case TYPE_INT8:
-		case TYPE_INT16:
-		case TYPE_INT32:
-		case TYPE_INT64:
+		case VALUE_INT:
 			rexpr = op1(cp, CINT_MIN, rpin(cp, VALUE_INT));
 			break;
-		case TYPE_TIMESTAMP:
+		case VALUE_TIMESTAMP:
 			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp, VALUE_TIMESTAMP));
 			break;
-		case TYPE_TEXT:
+		case VALUE_STRING:
 			rexpr = op1(cp, CSTRING_MIN, rpin(cp, VALUE_STRING));
 			break;
 		}

@@ -15,7 +15,6 @@
 #include "row/serial.h"
 
 // column
-#include "row/type.h"
 #include "row/constraint.h"
 #include "row/column.h"
 #include "row/columns.h"

@@ -49,7 +49,7 @@ emit_select_expr(Compiler* self, AstSelect* select)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, rt);
+		column_set_type(column, rt, value_sizeof_default(rt));
 		columns_add(&select->ret.columns, column);
 	}
 	return select->rset;
@@ -151,7 +151,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		column_set_type(column, rt);
+		column_set_type(column, rt, value_sizeof_default(rt));
 		columns_add(&select->columns_group, column);
 
 		node = node->next;
@@ -194,7 +194,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 
 			// copy column name and type
 			column_set_name(column, &ref->name);
-			column_set_type(column, ref->type);
+			column_set_type(column, ref->type, value_sizeof_default(ref->type));
 		} else
 		{
 			// generate name
@@ -203,7 +203,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 			Str name;
 			str_set_cstr(&name, name_sz);
 			column_set_name(column, &name);
-			column_set_type(column, rt);
+			column_set_type(column, rt, value_sizeof_default(rt));
 		}
 		columns_add(&select->columns_group, column);
 
