@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -112,12 +112,12 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 
 		// ensure that the expression type is compatible
 		// with the column
-		if (unlikely(column->type != value_type_to_type(type)))
+		if (unlikely(column->type != type))
 			error("<%.*s.%.*s> column update expression type '%s' does not match column type '%s'",
 			      str_size(&target->name), str_of(&target->name),
 			      str_size(&column->name), str_of(&column->name),
-			      value_type_to_string(type),
-			      type_of(column->type));
+			      value_typeof(type),
+			      value_typeof(column->type));
 	}
 
 	// UPDATE
@@ -150,7 +150,7 @@ emit_update_on_match_returning(Compiler* self, void* arg)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, value_type_to_type(rt));
+		column_set_type(column, rt);
 		columns_add(&update->ret.columns, column);
 	}
 

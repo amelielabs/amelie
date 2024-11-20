@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -69,7 +69,7 @@ fn_length(Call* self)
 		break;
 	default:
 		error("length(%s): operation type is not supported",
-		      value_type_to_string(arg.type));
+		      value_typeof(arg.type));
 		break;
 	}
 	value_set_int(self->result, rc);
@@ -454,5 +454,5 @@ FunctionDef fn_string_def[] =
 	{ "public", "rtrim",   VALUE_STRING, fn_rtrim,   false },
 	{ "public", "trim",    VALUE_STRING, fn_trim,    false },
 	{ "public", "like",    VALUE_BOOL,   fn_like,    false },
-	{  NULL,     NULL,     VALUE_NONE,   NULL,       false }
+	{  NULL,     NULL,     VALUE_NULL,   NULL,       false }
 };

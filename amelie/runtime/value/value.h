@@ -15,7 +15,6 @@ typedef struct Value Value;
 
 typedef enum
 {
-	VALUE_NONE,
 	VALUE_NULL,
 	VALUE_BOOL,
 	VALUE_INT,
@@ -60,8 +59,12 @@ value_init(Value* self)
 always_inline hot static inline void
 value_free(Value* self)
 {
-	if (self->type == VALUE_NONE)
+	if (self->type == VALUE_NULL)
 		return;
+
+	if (unlikely(self->type == VALUE_SET ||
+	             self->type == VALUE_MERGE))
+		store_free(self->store);
 
 	if (unlikely(self->buf))
 	{
@@ -69,17 +72,13 @@ value_free(Value* self)
 		self->buf = NULL;
 	}
 
-	if (unlikely(self->type == VALUE_SET ||
-	             self->type == VALUE_MERGE))
-		store_free(self->store);
-
-	self->type = VALUE_NONE;
+	self->type = VALUE_NULL;
 }
 
 always_inline hot static inline void
 value_reset(Value* self)
 {
-	self->type = VALUE_NONE;
+	self->type = VALUE_NULL;
 	self->buf  = NULL;
 }
 
@@ -239,13 +238,10 @@ value_copy(Value* self, Value* src)
 }
 
 static inline char*
-value_type_to_string(ValueType type)
+value_typeof(ValueType type)
 {
 	char* name;
 	switch (type) {
-	case VALUE_NONE:
-		name = "none";
-		break;
 	case VALUE_NULL:
 		name = "null";
 		break;
@@ -287,32 +283,4 @@ value_type_to_string(ValueType type)
 		break;
 	}
 	return name;
-}
-
-static inline int
-value_type_to_type(ValueType type)
-{
-	switch (type) {
-	case VALUE_NULL:
-		return 0; // XXX TYPE_NULL;
-	case VALUE_BOOL:
-		return TYPE_BOOL;
-	case VALUE_INT:
-		return TYPE_INT64;
-	case VALUE_DOUBLE:
-		return TYPE_DOUBLE;
-	case VALUE_STRING:
-		return TYPE_TEXT;
-	case VALUE_JSON:
-		return TYPE_JSON;
-	case VALUE_TIMESTAMP:
-		return TYPE_TIMESTAMP;
-	case VALUE_INTERVAL:
-		return TYPE_INTERVAL;
-	case VALUE_VECTOR:
-		return TYPE_VECTOR;
-	default:
-		abort();
-		break;
-	}
 }

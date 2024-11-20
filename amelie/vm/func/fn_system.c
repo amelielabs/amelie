@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -139,5 +139,5 @@ FunctionDef fn_system_def[] =
 	{ "system", "views",       VALUE_JSON, fn_views,     false },
 	{ "system", "wal",         VALUE_JSON, fn_wal,       false },
 	{ "system", "status",      VALUE_JSON, fn_status,    false },
-	{  NULL,     NULL,         VALUE_NONE, NULL,         false }
+	{  NULL,     NULL,         VALUE_NULL, NULL,         false }
 };

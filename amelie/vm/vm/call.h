@@ -45,7 +45,7 @@ call_validate_arg(Call* self, int order, ValueType type)
 	if (unlikely(self->argv[order].type != type))
 		error("%.*s(): expected %s for argument %d, but got %s", str_size(&self->function->name),
 		      str_of(&self->function->name),
-		      value_type_to_string(type),
+		      value_typeof(type),
 		      order,
-		      value_type_to_string(self->argv[order].type));
+		      value_typeof(self->argv[order].type));
 }

@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 hot static inline Row*
 value_row_key(Keys* self, Stack* stack)
 {
@@ -273,6 +274,7 @@ value_update(Columns* self, Row* src, Stack* stack, int count)
 
 	return row;
 }
+#endif
 
 #if 0
 hot static inline uint32_t

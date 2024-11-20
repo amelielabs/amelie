@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -336,11 +336,11 @@ cast_operator(Compiler* self, int op, int l, int r)
 	auto lt   = rtype(self, l);
 	auto rt   = rtype(self, r);
 	auto cast = &cast_op[op][lt][rt];
-	if (unlikely(cast->type == VALUE_NONE))
+	if (unlikely(cast->type == VALUE_NULL))
 	{
 		error("unsupported operation: <%s> %s <%s>",
-		      value_type_to_string(lt), cast_op_names[op],
-		      value_type_to_string(rt));
+		      value_typeof(lt), cast_op_names[op],
+		      value_typeof(rt));
 	}
 	int rc;
 	rc = op3(self, cast->op, rpin(self, cast->type), l, r);
@@ -348,20 +348,3 @@ cast_operator(Compiler* self, int op, int l, int r)
 	runpin(self, r);
 	return rc;
 }
-
-#if 0
-Cast cast_cursor[CURSOR_MAX][TYPE_MAX] =
-{
-	[CURSOR_TABLE][TYPE_INT8]      = { VALUE_INT,       CCURSOR_READI8  },
-	[CURSOR_TABLE][TYPE_INT16]     = { VALUE_INT,       CCURSOR_READI16 },
-	[CURSOR_TABLE][TYPE_INT32]     = { VALUE_INT,       CCURSOR_READI32 },
-	[CURSOR_TABLE][TYPE_INT64]     = { VALUE_INT,       CCURSOR_READI64 },
-	[CURSOR_TABLE][TYPE_FLOAT]     = { VALUE_DOUBLE,    CCURSOR_READF   },
-	[CURSOR_TABLE][TYPE_DOUBLE]    = { VALUE_DOUBLE,    CCURSOR_READD   },
-	[CURSOR_TABLE][TYPE_TIMESTAMP] = { VALUE_TIMESTAMP, CCURSOR_READT   },
-	[CURSOR_TABLE][TYPE_INTERVAL]  = { VALUE_INTERVAL,  CCURSOR_READL   },
-	[CURSOR_TABLE][TYPE_TEXT]      = { VALUE_STRING,    CCURSOR_READS   },
-	[CURSOR_TABLE][TYPE_JSON]      = { VALUE_JSON,      CCURSOR_READJ   },
-	[CURSOR_TABLE][TYPE_VECTOR]    = { VALUE_VECTOR,    CCURSOR_READV   },
-};
-#endif

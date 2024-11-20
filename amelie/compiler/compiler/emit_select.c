@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -49,7 +49,7 @@ emit_select_expr(Compiler* self, AstSelect* select)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, value_type_to_type(rt));
+		column_set_type(column, rt);
 		columns_add(&select->ret.columns, column);
 	}
 	return select->rset;
@@ -151,7 +151,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		column_set_type(column, value_type_to_type(rt));
+		column_set_type(column, rt);
 		columns_add(&select->columns_group, column);
 
 		node = node->next;
@@ -203,7 +203,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 			Str name;
 			str_set_cstr(&name, name_sz);
 			column_set_name(column, &name);
-			column_set_type(column, value_type_to_type(rt));
+			column_set_type(column, rt);
 		}
 		columns_add(&select->columns_group, column);
 

@@ -15,6 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -27,8 +29,6 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -39,7 +39,7 @@ fn_type(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	Str string;
-	str_set_cstr(&string, value_type_to_string(arg.type));
+	str_set_cstr(&string, value_typeof(arg.type));
 	value_set_string(self->result, &string, NULL);
 }
 
@@ -113,7 +113,7 @@ fn_int(Call* self)
 		return;
 	default:
 		error("int(%s): operation type is not supported",
-		      value_type_to_string(arg->type));
+		      value_typeof(arg->type));
 		break;
 	}
 	value_set_int(self->result, value);
@@ -151,7 +151,7 @@ fn_bool(Call* self)
 		return;
 	default:
 		error("bool(%s): operation type is not supported",
-		      value_type_to_string(arg->type));
+		      value_typeof(arg->type));
 		break;
 	}
 	value_set_bool(self->result, value);
@@ -183,7 +183,7 @@ fn_double(Call* self)
 		return;
 	default:
 		error("double(%s): operation type is not supported",
-		      value_type_to_string(arg->type));
+		      value_typeof(arg->type));
 		break;
 	}
 	value_set_double(self->result, value);
@@ -206,7 +206,7 @@ fn_json(Call* self)
 	}
 	if (unlikely(arg.type != VALUE_STRING))
 		error("json(%s): operation type is not supported",
-		      value_type_to_string(arg.type));
+		      value_typeof(arg.type));
 
 	auto buf = buf_create();
 	guard_buf(buf);
@@ -237,7 +237,7 @@ fn_interval(Call* self)
 	}
 	if (unlikely(arg.type != VALUE_STRING))
 		error("interval(%s): operation type is not supported",
-		      value_type_to_string(arg.type));
+		      value_typeof(arg.type));
 	Interval iv;
 	interval_init(&iv);
 	interval_read(&iv, &arg.string);
@@ -294,7 +294,7 @@ fn_timestamp(Call* self)
 	}
 	default:
 		error("timestamp(%s): operation type is not supported",
-		      value_type_to_string(self->argv[0].type));
+		      value_typeof(self->argv[0].type));
 	}
 }
 
@@ -315,7 +315,7 @@ fn_vector(Call* self)
 	}
 	if (unlikely(arg.type != VALUE_JSON))
 		error("vector(%s): operation type is not supported",
-		      value_type_to_string(arg.type));
+		      value_typeof(arg.type));
 
 	uint8_t* pos = arg.json;
 	if (! json_is_array(pos))
@@ -364,5 +364,5 @@ FunctionDef fn_cast_def[] =
 	{ "public", "interval",  VALUE_INTERVAL,  fn_interval,  false },
 	{ "public", "timestamp", VALUE_TIMESTAMP, fn_timestamp, false },
 	{ "public", "vector",    VALUE_VECTOR,    fn_vector,    false },
-	{  NULL,     NULL,       VALUE_NONE,      NULL,         false }
+	{  NULL,     NULL,       VALUE_NULL,      NULL,         false }
 };

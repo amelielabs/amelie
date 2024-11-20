@@ -16,7 +16,7 @@ body_ensure_limit(Buf* self)
 {
 	auto limit = var_int_of(&config()->limit_send);
 	if (unlikely((uint64_t)buf_size(self) >= limit))
-		error("http reply limit reached");
+		error("reply limit reached");
 }
 
 hot static inline void
