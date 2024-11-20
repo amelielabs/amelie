@@ -104,7 +104,7 @@ data_compare(uint8_t* a, uint8_t* b)
 		{
 			if (! data_is_integer(b))
 				return compare_int64(*a, *b);
-			rc = data_compare_integer(a, b);
+			rc = data_compare_integer_read(&a, &b);
 			if (rc != 0)
 				return rc;
 			break;
@@ -113,7 +113,7 @@ data_compare(uint8_t* a, uint8_t* b)
 		{
 			if (! data_is_string(b))
 				return compare_int64(*a, *b);
-			rc = data_compare_string(a, b);
+			rc = data_compare_string_read(&a, &b);
 			if (rc != 0)
 				return rc;
 			break;

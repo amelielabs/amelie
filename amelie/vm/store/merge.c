@@ -53,10 +53,12 @@ merge_encode(Store* store, Timezone* tz, Buf* buf)
 	{
 		auto row = merge_iterator_at(&it);
 		auto set = it.current_it->set;
-		encode_array(buf);
+		if (set->count_columns > 1)
+			encode_array(buf);
 		for (auto col = 0; col < set->count_columns; col++)
 			value_encode(row + col, tz, buf);
-		encode_array_end(buf);
+		if (set->count_columns > 1)
+			encode_array_end(buf);
 		merge_iterator_next(&it);
 	}
 	encode_array_end(buf);

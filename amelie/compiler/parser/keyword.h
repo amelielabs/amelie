@@ -40,6 +40,7 @@ enum
 	KNAME,
 	KNAME_COMPOUND,
 	KNAME_COMPOUND_STAR,
+	KSTAR,
 	KKEYWORD,
 
 	// keywords

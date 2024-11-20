@@ -354,6 +354,7 @@ vm_run(Vm*       self,
 	Set*      set;
 	Timestamp ts;
 	Interval  iv;
+	Vector*   vector;
 	Buf*      buf;
 	uint8_t*  data;
 	void*     ptr;
@@ -785,11 +786,12 @@ caddlt:
 caddvv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->b].vector->size))
+		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		buf_reserve(buf, vector_size(r[op->b].vector));
-		vector_add((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
+		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector_init(vector, r[op->b].vector->size);
+		vector_add(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
@@ -848,11 +850,12 @@ csublt:
 csubvv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->b].vector->size))
+		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		buf_reserve(buf, vector_size(r[op->b].vector));
-		vector_sub((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
+		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector_init(vector, r[op->b].vector->size);
+		vector_sub(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
@@ -883,11 +886,12 @@ cmuldd:
 cmulvv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		if (unlikely(r[op->b].vector->size != r[op->b].vector->size))
+		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		buf_reserve(buf, vector_size(r[op->b].vector));
-		vector_mul((Vector*)buf->start, r[op->b].vector, r[op->c].vector);
+		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector_init(vector, r[op->b].vector->size);
+		vector_mul(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);

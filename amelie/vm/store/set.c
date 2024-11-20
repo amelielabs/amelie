@@ -45,10 +45,12 @@ set_encode(Store* store, Timezone* tz, Buf* buf)
 	encode_array(buf);
 	for (auto row = 0; row < self->count_rows; row++)
 	{
-		encode_array(buf);
+		if (self->count_columns > 1)
+			encode_array(buf);
 		for (auto col = 0; col < self->count_columns; col++)
 			value_encode(set_column_of(self, row, col), tz, buf);
-		encode_array_end(buf);
+		if (self->count_columns > 1)
+			encode_array_end(buf);
 	}
 	encode_array_end(buf);
 }

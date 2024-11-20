@@ -12,7 +12,6 @@
 //
 
 void part_insert(Part*, Tr*, bool, Row*);
-void part_insert(Part*, Tr*, bool, Row*);
 void part_update(Part*, Tr*, Iterator*, Row*);
 void part_delete(Part*, Tr*, Iterator*);
 void part_delete_by(Part*, Tr*, Row*);

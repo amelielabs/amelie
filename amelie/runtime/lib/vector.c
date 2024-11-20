@@ -64,6 +64,7 @@ vector_mul(Vector* result, Vector* a, Vector* b)
 hot double
 vector_distance(Vector* a, Vector* b)
 {
+	assert(a->size == b->size);
 	// calculate consine similarity
 	double ab = 0.0;
 	double a2 = 0.0;

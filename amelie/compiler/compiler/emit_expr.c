@@ -630,7 +630,7 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 		{
 			// ensure then expresssion types match
 			if (rtype(self, rresult) != rtype(self, rthen))
-				error("CASE THEN expr types do not match");
+				error("CASE expr types do not match");
 		}
 
 		op2(self, CSWAP, rresult, rthen);
@@ -646,9 +646,22 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 	// _else
 	int relse;
 	if (cs->expr_else)
+	{
 		relse = emit_expr(self, target, cs->expr_else);
-	else
+
+		// set result type
+		if (rtype(self, rresult) == UINT8_MAX) {
+			self->map.map[rresult] = rtype(self, relse);
+		} else
+		{
+			// ensure then expresssion types match
+			if (rtype(self, rresult) != rtype(self, relse))
+				error("CASE expr types do not match");
+		}
+	} else
+	{
 		relse = op1(self, CNULL, rpin(self, VALUE_NULL));
+	}
 	op2(self, CSWAP, rresult, relse);
 	runpin(self, relse);
 

@@ -43,6 +43,8 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		auto expr = stmt_next(stmt);
 		switch (expr->id) {
 		case '*':
+			expr->id = KSTAR;
+			break;
 		case KNAME_COMPOUND_STAR:
 			break;
 		default:
@@ -141,7 +143,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 	{
 		auto next = as->next;
 		switch (as->l->id) {
-		case '*':
+		case KSTAR:
 		{
 			// *
 			if (unlikely(! target))
