@@ -15,18 +15,18 @@ typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Parser    parser;
-	Rmap      map;
-	Code*     code;
-	Code      code_coordinator;
-	Code      code_node;
-	CodeData  code_data;
-	RowData   code_data_row;
-	Columns*  args;
-	bool      snapshot;
-	Stmt*     current;
-	Stmt*     last;
-	Db*       db;
+	Parser   parser;
+	Rmap     map;
+	Code*    code;
+	Code     code_coordinator;
+	Code     code_node;
+	CodeData code_data;
+	SetCache values_cache;
+	Columns* args;
+	bool     snapshot;
+	Stmt*    current;
+	Stmt*    last;
+	Db*      db;
 };
 
 void compiler_init(Compiler*, Db*, FunctionMgr*);

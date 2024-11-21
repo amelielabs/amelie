@@ -11,5 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create_key(Keys*, Stack*);
-Row* row_update(Row*, Columns*, Stack*, int);
+Row* row_create(Columns*, Value*, int);
+Row* row_create_key(Keys*, Value*);
+Row* row_update(Row*, Columns*, Value*, int);

@@ -49,9 +49,9 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_coordinator);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
-	row_data_init(&self->code_data_row);
+	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, function_mgr, &self->code_data,
-	            &self->code_data_row);
+	            &self->values_cache);
 	rmap_init(&self->map);
 }
 
@@ -62,7 +62,7 @@ compiler_free(Compiler* self)
 	code_free(&self->code_coordinator);
 	code_free(&self->code_node);
 	code_data_free(&self->code_data);
-	row_data_free(&self->code_data_row);
+	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }
 
@@ -77,7 +77,6 @@ compiler_reset(Compiler* self)
 	code_reset(&self->code_coordinator);
 	code_reset(&self->code_node);
 	code_data_reset(&self->code_data);
-	row_data_reset(&self->code_data_row);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
@@ -279,7 +278,9 @@ emit_send(Compiler* self, int start)
 			; // emit_send_generated(self, start);
 		} else {
 			// CSEND
-			op4(self, CSEND, stmt->order, start, (intptr_t)table, insert->rows);
+			op4(self, CSEND, stmt->order, start,
+			    (intptr_t)table,
+			    (intptr_t)insert->values);
 		}
 		break;
 	}
@@ -557,15 +558,14 @@ compiler_emit(Compiler* self)
 void
 compiler_program(Compiler* self, Program* program)
 {
-	program->code          = &self->code_coordinator;
-	program->code_node     = &self->code_node;
-	program->code_data     = &self->code_data;
-	program->code_data_row = &self->code_data_row;
-	program->stmts         = self->parser.stmt_list.list_count;
-	program->stmts_last    = -1;
-	program->ctes          = self->parser.cte_list.list_count;
-	program->snapshot      = self->snapshot;
-	program->repl          = false;
+	program->code       = &self->code_coordinator;
+	program->code_node  = &self->code_node;
+	program->code_data  = &self->code_data;
+	program->stmts      = self->parser.stmt_list.list_count;
+	program->stmts_last = -1;
+	program->ctes       = self->parser.cte_list.list_count;
+	program->snapshot   = self->snapshot;
+	program->repl       = false;
 	if (self->last)
 		program->stmts_last = self->last->order;
 }

@@ -20,7 +20,7 @@ set_compare(Set* self, Value* row_a, Value* row_b)
 		auto key_b = row_b + self->count_columns + i;
 		int rc = value_compare(key_a, key_b);
 		if (rc != 0)
-			return self->order[i] ? rc : -rc;
+			return self->ordered[i] ? rc : -rc;
 	}
 	return 0;
 }
@@ -32,7 +32,7 @@ set_compare_keys(Set* self, Value* key_a, Value* key_b)
 	{
 		int rc = value_compare(&key_a[i], &key_b[i]);
 		if (rc != 0)
-			return self->order[i] ? rc : -rc;
+			return self->ordered[i] ? rc : -rc;
 	}
 	return 0;
 }

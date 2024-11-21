@@ -38,13 +38,13 @@ parser_init(Parser*      self,
             Db*          db,
             FunctionMgr* function_mgr,
             CodeData*    data,
-            RowData*     data_row)
+            SetCache*    values_cache)
 {
 	self->explain      = EXPLAIN_NONE;
 	self->stmt         = NULL;
 	self->args         = NULL;
 	self->data         = data;
-	self->data_row     = data_row;
+	self->values_cache = values_cache;
 	self->function_mgr = function_mgr;
 	self->local        = NULL;
 	self->db           = db;

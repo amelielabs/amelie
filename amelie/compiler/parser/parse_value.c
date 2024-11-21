@@ -34,55 +34,13 @@
 #include <amelie_parser.h>
 
 hot static inline bool
-parse_int(Lex* self, Ast* ast, int64_t* value)
-{
-	auto minus = ast->id == '-';
-	if (minus)
-		ast = lex_next(self);
-	if (likely(ast->id == KINT)) {
-		if (minus)
-			ast->integer = -ast->integer;
-		*value = ast->integer;
-	} else
-	if (ast->id == KREAL) {
-		if (minus)
-			ast->real = -ast->real;
-		*value = ast->real;
-	} else {
-		return false;
-	}
-	return true;
-}
-
-hot static inline bool
-parse_double(Lex* self, Ast* ast, double* value)
-{
-	auto minus = ast->id == '-';
-	if (minus)
-		ast = lex_next(self);
-	if (likely(ast->id == KINT)) {
-		if (minus)
-			ast->integer = -ast->integer;
-		*value = ast->integer;
-	} else
-	if (ast->id == KREAL) {
-		if (minus)
-			ast->real = -ast->real;
-		*value = ast->real;
-	} else {
-		return false;
-	}
-	return true;
-}
-
-hot static inline bool
-parse_vector(Lex* self, Ast* ast, Buf* data, Column* column)
+parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 {
 	// [
 	if (ast->id != '[')
 		return false;
-	auto offset = buf_size(data);
-	buf_write_i32(data, 0);
+	auto buf = buf_create();
+	buf_write_i32(buf, 0);
 
 	// []
 	if (lex_if(self, ']'))
@@ -93,11 +51,26 @@ parse_vector(Lex* self, Ast* ast, Buf* data, Column* column)
 	for (;;)
 	{
 		ast = lex_next(self);
-		double value;
-		if (! parse_double(self, ast, &value))
+
+		// int or float
+		auto  minus = ast->id == '-';
+		if (minus)
+			ast = lex_next(self);
+		float value;
+		if (likely(ast->id == KINT)) {
+			if (minus)
+				ast->integer = -ast->integer;
+			value = ast->integer;
+		} else
+		if (ast->id == KREAL) {
+			if (minus)
+				ast->real = -ast->real;
+			value = ast->real;
+		} else {
 			error("column <%.*s> invalid vector value", str_size(&column->name),
 			      str_of(&column->name));
-		buf_write_float(data, value);
+		}
+		buf_write_float(buf, value);
 		count++;
 
 		// ,
@@ -110,75 +83,73 @@ parse_vector(Lex* self, Ast* ast, Buf* data, Column* column)
 			  str_of(&column->name));
 	}
 
-	*(uint32_t*)(data->start + offset) = count;
+	*buf_u32(buf) = count;
+	value_set_vector_buf(value, buf);
 	return true;
 }
 
-hot void
-parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
+hot int
+parse_value(Lex*    self, Local* local,
+            Json*   json,
+            Column* column,
+            Value*  value)
 {
-	int64_t integer;
-	double  dbl;
 	auto ast = lex_next(self);
+	if (ast->id == KNULL)
+	{
+		value_set_null(value);
+		return 0;
+	}
 	switch (column->type) {
 	case TYPE_BOOL:
-		if (ast->id == KTRUE)
-			buf_write_i8(data, true);
-		else
-		if (ast->id == KFALSE)
-			buf_write_i8(data, false);
-		else
+		if (ast->id != KTRUE && ast->id != KFALSE)
 			break;
-		return;
+		value_set_bool(value, ast->id == KTRUE);
+		return column->type_size;
 	case TYPE_INT:
 	{
-		switch (column->type_size) {
-		case 1:
-			if (! parse_int(self, ast, &integer))
-				break;
-			buf_write_i8(data, integer);
-			return;
-		case 2:
-			if (! parse_int(self, ast, &integer))
-				break;
-			buf_write_i16(data, integer);
-			return;
-		case 4:
-			if (! parse_int(self, ast, &integer))
-				break;
-			buf_write_i32(data, integer);
-			return;
-		case 8:
-			if (! parse_int(self, ast, &integer))
-				break;
-			buf_write_i64(data, integer);
-			return;
+		auto minus = ast->id == '-';
+		if (minus)
+			ast = lex_next(self);
+		if (likely(ast->id == KINT)) {
+			if (minus)
+				ast->integer = -ast->integer;
+			value_set_int(value, ast->integer);
+		} else
+		if (ast->id == KREAL) {
+			if (minus)
+				ast->real = -ast->real;
+			value_set_int(value, ast->real);
+		} else {
+			break;
 		}
-		return;
+		return column->type_size;
 	}
 	case TYPE_DOUBLE:
 	{
-		switch (column->type_size) {
-		case 4:
-			if (! parse_double(self, ast, &dbl))
-				break;
-			buf_write_float(data, dbl);
-			return;
-		case 8:
-			if (! parse_double(self, ast, &dbl))
-				break;
-			buf_write_double(data, dbl);
-			return;
+		auto minus = ast->id == '-';
+		if (minus)
+			ast = lex_next(self);
+		if (likely(ast->id == KINT)) {
+			if (minus)
+				ast->integer = -ast->integer;
+			value_set_double(value, ast->integer);
+		} else
+		if (ast->id == KREAL) {
+			if (minus)
+				ast->real = -ast->real;
+			value_set_double(value, ast->real);
+		} else {
+			break;
 		}
-		return;
+		return column->type_size;
 	}
 	case TYPE_STRING:
 	{
-		if (likely(ast->id == KSTRING)) {
-			encode_string(data, &ast->string);
-			return;
-		}
-		break;
+		if (likely(ast->id != KSTRING))
+			break;
+		value_set_string(value, &ast->string, NULL);
+		return json_size_string(str_size(&ast->string));
 	}
 	case TYPE_JSON:
 	{
@@ -193,60 +164,62 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		json_reset(json);
 		Str in;
 		str_set(&in, pos, self->end - pos);
-		json_parse(json, &in, data);
+		auto buf = buf_create();
+		guard_buf(buf);
+		json_parse(json, &in, buf);
 		self->pos = json->pos;
-		return;
+		unguard();
+		value_set_json_buf(value, buf);
+		return buf_size(buf);
 	}
 	case TYPE_TIMESTAMP:
 	{
-		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
-			buf_write_i64(data, local->time_us);
-			return;
-		}
-
-		// [TIMESTAMP] string
-		if (ast->id == KTIMESTAMP)
-			ast = lex_next(self);
-
-		if (likely(ast->id == KSTRING)) {
-			Timestamp ts;
-			timestamp_init(&ts);
-			timestamp_read(&ts, &ast->string);
-			buf_write_i64(data, timestamp_of(&ts, local->timezone));
-			return;
-		}
-
-		// unixtime
+			// current_timestamp
+			value_set_timestamp(value, local->time_us);
+		} else
 		if (ast->id == KINT) {
-			buf_write_i64(data, ast->integer);
-			return;
+			// unixtime
+			value_set_timestamp(value, ast->integer);
+		} else
+		if (ast->id == KTIMESTAMP)
+		{
+			// [TIMESTAMP] string
+			ast = lex_next(self);
 		}
-		break;
+		if (likely(ast->id != KSTRING))
+			break;
+
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &ast->string);
+		value_set_timestamp(value, timestamp_of(&ts, local->timezone));
+		return column->type_size;
 	}
 	case TYPE_INTERVAL:
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
+		{
 			ast = lex_next(self);
-
-		if (likely(ast->id == KSTRING)) {
-			Interval iv;
-			interval_init(&iv);
-			interval_read(&iv, &ast->string);
-			buf_write(data, &iv, sizeof(iv));
-			return;
 		}
-		break;
+		if (likely(ast->id != KSTRING))
+			break;
+		Interval iv;
+		interval_init(&iv);
+		interval_read(&iv, &ast->string);
+		value_set_interval(value, &iv);
+		return column->type_size;
 	}
 	case TYPE_VECTOR:
 	{
-		if (! parse_vector(self, ast, data, column))
+		if (! parse_vector(self, ast, column, value))
 			break;
-		return;
+		return vector_size(value->vector);
 	}
 	}
 
 	error("column <%.*s> value expected to be '%s'", str_size(&column->name),
 	      str_of(&column->name), type_of(column->type));
+	return 0;
 }

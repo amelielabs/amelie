@@ -41,21 +41,20 @@ vm_init(Vm*          self,
         Buf*         body,
         FunctionMgr* function_mgr)
 {
-	self->code          = NULL;
-	self->code_data     = NULL;
-	self->code_data_row = NULL;
-	self->code_arg      = NULL;
-	self->args          = NULL;
-	self->node          = node;
-	self->executor      = executor;
-	self->dtr           = dtr;
-	self->cte           = NULL;
-	self->result        = NULL;
-	self->body          = body;
-	self->tr            = NULL;
-	self->local         = NULL;
-	self->function_mgr  = function_mgr;
-	self->db            = db;
+	self->code         = NULL;
+	self->code_data    = NULL;
+	self->code_arg     = NULL;
+	self->args         = NULL;
+	self->node         = node;
+	self->executor     = executor;
+	self->dtr          = dtr;
+	self->cte          = NULL;
+	self->result       = NULL;
+	self->body         = body;
+	self->tr           = NULL;
+	self->local        = NULL;
+	self->function_mgr = function_mgr;
+	self->db           = db;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	cursor_mgr_init(&self->cursor_mgr);
@@ -96,22 +95,22 @@ vm_run(Vm*       self,
        Tr*       tr,
        Code*     code,
        CodeData* code_data,
-       RowData*  code_data_row,
+       Set*      code_values,
        Buf*      code_arg,
        Buf*      args,
        Result*   cte,
        Value*    result,
        int       start)
 {
-	self->local         = local;
-	self->tr            = tr;
-	self->code          = code;
-	self->code_data     = code_data;
-	self->code_data_row = code_data_row;
-	self->code_arg      = code_arg;
-	self->args          = args;
-	self->cte           = cte;
-	self->result        = result;
+	self->local       = local;
+	self->tr          = tr;
+	self->code        = code;
+	self->code_data   = code_data;
+	self->code_values = code_values;
+	self->code_arg    = code_arg;
+	self->args        = args;
+	self->cte         = cte;
+	self->result      = result;
 	reg_prepare(&self->r);
 	call_mgr_prepare(&self->call_mgr, code_data);
 
@@ -1084,13 +1083,15 @@ cexists:
 
 cset:
 	// [set, cols, keys]
-	set = set_create(op->b, op->c, NULL, false);
+	set = set_create();
+	set_prepare(set, op->b, op->c, NULL);
 	value_set_set(&r[op->a], &set->store);
 	op_next;
 
 cset_ordered:
 	// [set, cols, keys, order]
-	set = set_create(op->b, op->c, code_data_at(code_data, op->d), false);
+	set = set_create();
+	set_prepare(set, op->b, op->c, (bool*)code_data_at(code_data, op->d));
 	value_set_set(&r[op->a], &set->store);
 	op_next;
 

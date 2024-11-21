@@ -41,6 +41,13 @@ set_hash_free(SetHash* self)
 }
 
 static inline void
+set_hash_reset(SetHash* self)
+{
+	if (self->hash)
+		memset(self->hash, 0xff, sizeof(SetHashRow) * self->hash_size);
+}
+
+static inline void
 set_hash_create(SetHash* self, int size)
 {
 	auto to_allocate = sizeof(SetHashRow) * size;

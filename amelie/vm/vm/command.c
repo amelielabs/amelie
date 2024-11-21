@@ -35,9 +35,10 @@
 hot void
 csend(Vm* self, Op* op)
 {
-	// [stmt, start, table, rows_offset]
-	auto dtr   = self->dtr;
-	auto table = (Table*)op->c;
+	// [stmt, start, table, values*]
+	auto dtr    = self->dtr;
+	auto table  = (Table*)op->c;
+	auto values = (Set*)op->d;
 
 	// redistribute rows between nodes
 	Req* map[dtr->set.set_size];
@@ -45,25 +46,19 @@ csend(Vm* self, Op* op)
 
 	ReqList list;
 	req_list_init(&list);
-
-	// get the number of inserted rows
-	int count = stack_at(&self->stack, 1)->integer;
-	stack_pop(&self->stack);
-	uint32_t order      = op->d;
-	uint32_t order_last = op->d + count;
-	for (; order < order_last; order++)
+	for (auto order = 0; order < values->count_rows; order++)
 	{
-		auto row = row_data_at(self->code_data_row, order);
+		auto row_meta = set_meta(values, order);
 
 		// map to node
-		auto route = part_map_get(&table->part_list.map, row->hash);
-		auto req = map[route->order];
+		auto route = part_map_get(&table->part_list.map, row_meta->hash);
+		auto req   = map[route->order];
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
-			req->start    = op->b;
-			req->arg_data = self->code_data_row;
-			req->route    = route;
+			req->start = op->b;
+			req->arg_values = values;
+			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
 		}
@@ -88,9 +83,8 @@ csend_hash(Vm* self, Op* op)
 	// shard by precomputed key hash
 	auto route = part_map_get(&table->part_list.map, op->d);
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
-	req->start    = op->b;
-	req->arg_data = NULL;
-	req->route    = route;
+	req->start = op->b;
+	req->route = route;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -364,7 +358,7 @@ ccursor_open(Vm* self, Op* op)
 	auto keys  = index_keys(index);
 
 	// create cursor key
-	auto key = row_create_key(keys, &self->stack);
+	auto key = row_create_key(keys, stack_at(&self->stack, keys->list_count));
 	guard(row_free, key);
 	stack_popn(&self->stack, keys->list_count);
 
@@ -408,15 +402,18 @@ cinsert(Vm* self, Op* op)
 	// [table*]
 
 	// find related table partition
-	auto table = (Table*)op->a;
-	auto part  = part_list_match(&table->part_list, self->node);
+	auto table   = (Table*)op->a;
+	auto part    = part_list_match(&table->part_list, self->node);
+	auto columns = table_columns(table);
 
 	// insert
 	auto list       = buf_u32(self->code_arg);
 	int  list_count = buf_size(self->code_arg) / sizeof(uint32_t);
 	for (int i = 0; i < list_count; i++)
 	{
-		auto row = row_data_create(self->code_data_row, list[i]);
+		auto row_meta = set_meta(self->code_values, list[i]);
+		auto row = row_create(columns, set_row(self->code_values, list[i]),
+		                      row_meta->row_size);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -425,7 +422,8 @@ hot Op*
 cupsert(Vm* self, Op* op)
 {
 	// [target_id, _jmp, _jmp_returning]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	auto cursor  = cursor_mgr_of(&self->cursor_mgr, op->a);
+	auto columns = table_columns(cursor->table);
 
 	// first call
 	if (cursor->ref_pos == 0)
@@ -442,7 +440,9 @@ cupsert(Vm* self, Op* op)
 	auto list = buf_u32(self->code_arg);
 	while (cursor->ref_pos < cursor->ref_count)
 	{
-		auto row = row_data_create(self->code_data_row, list[cursor->ref_pos]);
+		auto row_meta = set_meta(self->code_values, list[cursor->ref_pos]);
+		auto row = row_create(columns, set_row(self->code_values, list[cursor->ref_pos]),
+		                      row_meta->row_size);
 		cursor->ref_pos++;
 
 		// insert or get (open iterator in both cases)
@@ -477,7 +477,8 @@ cupdate(Vm* self, Op* op)
 	// [cursor, order/value count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	auto row_src = iterator_at(cursor->it);
-	auto row = row_update(row_src, table_columns(cursor->table), &self->stack, op->b);
+	auto row_values = stack_at(&self->stack, op->b * 2);
+	auto row = row_update(row_src, table_columns(cursor->table), row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->it, row);
 	stack_popn(&self->stack, op->b * 2);
 }

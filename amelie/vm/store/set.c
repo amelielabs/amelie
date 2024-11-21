@@ -33,8 +33,8 @@ set_free(Store* store)
 		value_free(set_value(self, i));
 	buf_free(&self->set);
 	buf_free(&self->set_index);
+	buf_free(&self->set_meta);
 	set_hash_free(&self->hash);
-	am_free(self->order);
 	am_free(self);
 }
 
@@ -77,37 +77,54 @@ set_export(Store* store, Timezone* tz, Buf* buf)
 }
 
 Set*
-set_create(int count_columns, int count_keys, uint8_t* order, bool hash)
+set_create(void)
 {
 	Set* self = am_malloc(sizeof(Set));
 	store_init(&self->store);
 	self->store.free   = set_free;
 	self->store.encode = set_encode;
 	self->store.export = set_export;
+	self->ordered           = NULL;
+	self->count             = 0;
+	self->count_rows        = 0;
+	self->count_columns_row = 0;
+	self->count_columns     = 0;
+	self->count_keys        = 0;
+	buf_init(&self->set);
+	buf_init(&self->set_index);
+	buf_init(&self->set_meta);
+	set_hash_init(&self->hash);
+	list_init(&self->link);
+	return self;
+}
+
+void
+set_prepare(Set*  self, int count_columns, int count_keys,
+            bool* ordered)
+{
+	self->ordered           = ordered;
 	self->count             = 0;
 	self->count_rows        = 0;
 	self->count_columns_row = count_columns + count_keys;
 	self->count_columns     = count_columns;
 	self->count_keys        = count_keys;
-	self->order = am_malloc(sizeof(bool) * count_keys);
-	if (order)
-	{
-		self->ordered = true;
-		json_read_array(&order);
-		for (int i = 0; i < count_keys; i++)
-			json_read_bool(&order, &self->order[i]);
-	} else
-	{
-		self->ordered = false;
-		for (int i = 0; i < count_keys; i++)
-			self->order[i] = true;
-	}
-	buf_init(&self->set);
-	buf_init(&self->set_index);
-	set_hash_init(&self->hash);
-	if (hash)
-		set_hash_create(&self->hash, 256);
-	return self;
+}
+
+void
+set_reset(Set* self)
+{
+	for (auto i = 0; i < self->count; i++)
+		value_free(set_value(self, i));
+	self->ordered           = NULL;
+	self->count             = 0;
+	self->count_rows        = 0;
+	self->count_columns_row = 0;
+	self->count_columns     = 0;
+	self->count_keys        = 0;
+	buf_reset(&self->set);
+	buf_reset(&self->set_index);
+	buf_reset(&self->set_meta);
+	set_hash_reset(&self->hash);
 }
 
 hot static int
@@ -238,6 +255,9 @@ set_match(Set* self, uint32_t hash_value, Value* keys)
 hot Value*
 set_get(Set* self, Value* keys, bool add_if_not_exists)
 {
+	if (unlikely(self->hash.hash))
+		set_hash_create(&self->hash, 256);
+
 	if (unlikely(self->count_rows >= (self->hash.hash_size / 2)))
 		set_hash_resize(&self->hash);
 
@@ -256,4 +276,30 @@ set_get(Set* self, Value* keys, bool add_if_not_exists)
 		ref->row  = set_add_as(self, true, keys);
 	}
 	return set_row(self, ref->row);
+}
+
+Value*
+set_reserve(Set* self, SetMeta** meta)
+{
+	// save row position, if keys are in use
+	uint32_t row = self->count_rows;
+	if (self->ordered)
+		buf_write(&self->set_index, &row, sizeof(row));
+
+	// reserve row meta
+	if (meta)
+	{
+		*meta = buf_claim(&self->set_meta, sizeof(SetMeta));
+		(*meta)->row_size = 0;
+		(*meta)->hash = 0;
+	}
+
+	// reserve row values
+	auto values_size = sizeof(Value) * self->count_columns_row;
+	auto values = (Value*)buf_claim(&self->set, values_size);
+	memset(values, 0, values_size);
+
+	self->count += self->count_columns_row;
+	self->count_rows++;
+	return values;
 }

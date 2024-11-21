@@ -96,6 +96,8 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto ast = ast_insert_of(stmt->ast);
 		returning_free(&ast->ret);
+		if (ast->values)
+			set_cache_push(stmt->values_cache, ast->values);
 		break;
 	}
 	case STMT_DELETE:
@@ -472,7 +474,7 @@ parse_with(Parser* self)
 		auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
 		                          &self->lex,
 		                          self->data,
-		                          self->data_row,
+		                          self->values_cache,
 		                          &self->json,
 		                          &self->stmt_list,
 		                          &self->cte_list,
@@ -571,7 +573,7 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 		                           self->local,
 		                           &self->lex,
 		                           self->data,
-		                           self->data_row,
+		                           self->values_cache,
 		                           &self->json,
 		                           &self->stmt_list,
 		                           &self->cte_list,

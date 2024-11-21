@@ -225,3 +225,22 @@ value_copy(Value* self, Value* src)
 		break;
 	}
 }
+
+static inline uint32_t
+value_hash(Value* self, uint32_t hash)
+{
+	uint8_t* data;
+	int      data_size;
+	if (self->type == TYPE_STRING)
+	{
+		data = str_u8(&self->string);
+		data_size = str_size(&self->string);
+	} else
+	{
+		assert(self->type == TYPE_STRING ||
+		       self->type == TYPE_TIMESTAMP);
+		data = (uint8_t*)&self->integer;
+		data_size = sizeof(self->integer);
+	}
+	return hash_murmur3_32(data, data_size, hash);
+}

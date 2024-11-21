@@ -40,28 +40,27 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	if (! stmt_if(self, '('))
 		error("expected '('");
 
-	// begin new row
-	auto columns = table_columns(stmt->target->from_table);
-	auto row_data = self->data_row;
-	row_data_begin(row_data, columns->list_count);
+	// prepare row
+	SetMeta* row_meta;
+	auto row = set_reserve(stmt->values, &row_meta);
 
 	// set next serial value
 	uint64_t serial = serial_next(&stmt->target->from_table->serial);
 
 	// value, ...
+	auto columns = table_columns(stmt->target->from_table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto column_data = row_data_add(row_data);
-		auto is_null = false;
+		auto column_value = &row[column->order];
 
 		if (list && list->column->order == column->order)
 		{
 			// parse column value
-			if (stmt_if(self, KNULL))
-				is_null = true;
-			else
-				parse_value(self->lex, self->local, self->json, column_data, column);
+			row_meta->row_size +=
+				parse_value(self->lex, self->local, self->json,
+				            column,
+				            column_value);
 
 			// ,
 			list = list->next;
@@ -76,35 +75,34 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
-				buf_write_i64(column_data, serial);
+				value_set_int(column_value, serial);
 			} else
 			if (cons->random)
 			{
 				auto value = random_generate(global()->random) % cons->random_modulo;
-				buf_write_i64(column_data, value);
+				value_set_int(column_value, value);
 			} else
 			{
-				is_null = json_is_null(cons->value.start);
-				if (! is_null)
-				{
-					// TODO: read data based on column type
-				}
+				value_decode(column_value, cons->value.start, NULL);
+			}
+
+			if (column_value->type != TYPE_NULL)
+			{
+				if (column_value->type == TYPE_STRING)
+					row_meta->row_size += json_size_string(str_size(&column_value->string));
+				else
+					row_meta->row_size += column->type_size;
 			}
 		}
 
-		// set column to null
-		if (is_null)
-		{
-			// ensure NOT NULL constraint
-			if (column->constraint.not_null)
-				error("column <%.*s> value cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
-			row_data_set_null(row_data);
-		}
+		// ensure NOT NULL constraint
+		if (column_value->type == TYPE_NULL && column->constraint.not_null)
+			error("column <%.*s> value cannot be NULL", str_size(&column->name),
+			      str_of(&column->name));
 
 		// hash column if it is a part of the key
 		if (column->key)
-			row_data_hash(row_data);
+			row_meta->hash = value_hash(column_value, row_meta->hash);
 	}
 
 	// )
@@ -119,37 +117,31 @@ parse_row(Stmt* self, AstInsert* stmt)
 	if (! stmt_if(self, '('))
 		error("expected '('");
 
-	// begin new row
-	auto columns = table_columns(stmt->target->from_table);
-	auto row_data = self->data_row;
-	row_data_begin(row_data, columns->list_count);
+	// prepare row
+	SetMeta* row_meta;
+	auto row = set_reserve(stmt->values, &row_meta);
 
 	// value, ...
+	auto columns = table_columns(stmt->target->from_table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		auto column_data = row_data_add(row_data);
-		auto is_null = false;
+		auto column_value = &row[column->order];
 
 		// parse column value
-		if (stmt_if(self, KNULL))
-			is_null = true;
-		else
-			parse_value(self->lex, self->local, self->json, column_data, column);
+		row_meta->row_size +=
+			parse_value(self->lex, self->local, self->json,
+			            column,
+			            column_value);
 
-		// set column to null
-		if (is_null)
-		{
-			// ensure NOT NULL constraint
-			if (column->constraint.not_null)
-				error("column <%.*s> value cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
-			row_data_set_null(row_data);
-		}
+		// ensure NOT NULL constraint
+		if (column_value->type == TYPE_NULL && column->constraint.not_null)
+			error("column <%.*s> value cannot be NULL", str_size(&column->name),
+			      str_of(&column->name));
 
 		// hash column if it is a part of the key
 		if (column->key)
-			row_data_hash(row_data);
+			row_meta->hash = value_hash(column_value, row_meta->hash);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -228,13 +220,14 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	if (! count)
 		error("GENERATE <count> expected");
 
-	auto row_data = self->data_row;
 	auto table = stmt->target->from_table;
+
 	auto columns = table_columns(table);
 	for (auto i = 0; i < count->integer; i++)
 	{
-		// begin new row
-		row_data_begin(row_data, columns->list_count);
+		// prepare row
+		SetMeta* row_meta;
+		auto row = set_reserve(stmt->values, &row_meta);
 
 		// set next serial value
 		uint64_t serial = serial_next(&table->serial);
@@ -243,45 +236,40 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			auto column_data = row_data_add(row_data);
-			auto is_null = false;
+			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
 			auto cons = &column->constraint;
 			if (cons->serial)
 			{
-				buf_write_i64(column_data, serial);
+				value_set_int(column_value, serial);
 			} else
 			if (cons->random)
 			{
 				auto value = random_generate(global()->random) % cons->random_modulo;
-				buf_write_i64(column_data, value);
-			} else
-			{
-				is_null = json_is_null(cons->value.start);
-				if (! is_null)
-				{
-					// TODO: read data based on column type
-				}
+				value_set_int(column_value, value);
+			} else {
+				value_decode(column_value, cons->value.start, NULL);
 			}
 
-			// set column to null
-			if (is_null)
+			if (column_value->type != TYPE_NULL)
 			{
-				// ensure NOT NULL constraint
-				if (column->constraint.not_null)
-					error("column <%.*s> value cannot be NULL", str_size(&column->name),
-					      str_of(&column->name));
-				row_data_set_null(row_data);
+				if (column_value->type == TYPE_STRING)
+					row_meta->row_size += json_size_string(str_size(&column_value->string));
+				else
+					row_meta->row_size += column->type_size;
 			}
+
+			// ensure NOT NULL constraint
+			if (column_value->type == TYPE_NULL && column->constraint.not_null)
+				error("column <%.*s> value cannot be NULL", str_size(&column->name),
+				      str_of(&column->name));
 
 			// hash column if it is a part of the key
 			if (column->key)
-				row_data_hash(row_data);
+				row_meta->hash = value_hash(column_value, row_meta->hash);
 		}
 	}
-
-	stmt->rows_count = count->integer;
 }
 
 hot static inline void
@@ -412,13 +400,15 @@ parse_insert(Stmt* self)
 		error("INSERT <INTO> expected");
 
 	// table
-	int level = target_list_next_level(&self->target_list);
+	auto level = target_list_next_level(&self->target_list);
 	stmt->target = parse_from(self, level);
 	if (stmt->target->from_table == NULL || stmt->target->next_join)
 		error("INSERT INTO <table> expected");
+	auto columns = stmt->target->from_columns;
 
-	// set offset to the first row
-	stmt->rows = self->data_row->rows;
+	// prepare values
+	stmt->values = set_cache_create(self->values_cache);
+	set_prepare(stmt->values, columns->list_count, 0, NULL);
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))
@@ -441,7 +431,6 @@ parse_insert(Stmt* self)
 				parse_row_list(self, stmt, list);
 			else
 				parse_row(self, stmt);
-			stmt->rows_count++;
 			if (! stmt_if(self, ','))
 				break;
 		}

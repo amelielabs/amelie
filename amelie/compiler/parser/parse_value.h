@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_value(Lex*, Local*, Json*, Buf*, Column*);
+int parse_value(Lex*, Local*, Json*, Column*, Value*);

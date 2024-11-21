@@ -18,15 +18,13 @@
 // value objects
 #include "value/reg.h"
 #include "value/stack.h"
+#include "value/result.h"
 
 // json
 #include "value/json.h"
 #include "value/json_array.h"
 #include "value/json_obj.h"
 #include "value/update.h"
-
-// row
-#include "value/row.h"
 
 // reply body
 #include "value/error.h"

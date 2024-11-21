@@ -68,7 +68,7 @@ struct Stmt
 	AstList      select_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
-	RowData*     data_row;
+	SetCache*    values_cache;
 	Json*        json;
 	Lex*         lex;
 	FunctionMgr* function_mgr;
@@ -89,7 +89,7 @@ stmt_allocate(Db*          db,
               Local*       local,
               Lex*         lex,
               CodeData*    data,
-              RowData*     data_row,
+              SetCache*    values_cache,
               Json*        json,
               StmtList*    stmt_list,
               CteList*     cte_list,
@@ -105,7 +105,7 @@ stmt_allocate(Db*          db,
 	self->args         = args;
 	self->stmt_list    = stmt_list;
 	self->data         = data;
-	self->data_row     = data_row;
+	self->values_cache = values_cache;
 	self->json         = json;
 	self->lex          = lex;
 	self->function_mgr = function_mgr;

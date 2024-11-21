@@ -258,9 +258,9 @@ int
 emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 {
 	// write order by asc/desc flags
-	int  order_offset = code_data_pos(&self->code_data);
-	int* order = buf_claim(&self->code_data.data, sizeof(int) * select->expr_order_by.count);
-	auto node = select->expr_order_by.list;
+	int   order_offset = code_data_pos(&self->code_data);
+	bool* order = buf_claim(&self->code_data.data, sizeof(bool) * select->expr_order_by.count);
+	auto  node = select->expr_order_by.list;
 	while (node)
 	{
 		auto ref = ast_order_of(node->ast);
