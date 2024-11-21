@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 
@@ -1045,7 +1045,7 @@ cin:
 		a = &r[op->a];
 		b = &r[op->b];
 		c = &r[op->c];
-		value_set_bool(a, b->type == VALUE_SET ? store_in(b->store, a) :
+		value_set_bool(a, b->type == TYPE_SET ? store_in(b->store, a) :
 		               !value_compare(a, b));
 		value_free(b);
 		value_free(c);
@@ -1075,7 +1075,7 @@ cexists:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
 	{
 		rc = true;
-		if (r[op->b].type == VALUE_SET)
+		if (r[op->b].type == TYPE_SET)
 			rc = ((Set*)r[op->b].store)->count_rows > 0;
 		value_set_bool(&r[op->a], rc);
 		value_free(&r[op->b]);
@@ -1141,7 +1141,7 @@ cmerge_recv_agg:
 
 ccntr_init:
 	// [cursor, type, expr]
-	if (unlikely(r[op->c].type != VALUE_INT))
+	if (unlikely(r[op->c].type != TYPE_INT))
 		error("LIMIT/OFFSET: integer type expected");
 	if (unlikely(r[op->c].integer < 0))
 		error("LIMIT/OFFSET: positive integer value expected");
@@ -1280,7 +1280,7 @@ ccursor_reads:
 	if (likely(ptr))
 	{
 		json_read_string((uint8_t**)&ptr, &r[op->a].string);
-		r[op->a].type = VALUE_STRING;
+		r[op->a].type = TYPE_STRING;
 		r[op->a].buf  = NULL;
 	} else {
 		value_set_null(&r[op->a]);
@@ -1375,7 +1375,7 @@ cagg:
 ccount:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(r[op->a].type == VALUE_INT))
+	if (likely(r[op->a].type == TYPE_INT))
 		value_set_int(&r[op->a], c->integer);
 	else
 		value_set_int(&r[op->a], 0);
@@ -1384,7 +1384,7 @@ ccount:
 cavgi:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(c->type == VALUE_INT))
+	if (likely(c->type == TYPE_INT))
 		value_set_int(&r[op->a], avg_int(&c->avg));
 	else
 		value_set_null(&r[op->a]);
@@ -1393,7 +1393,7 @@ cavgi:
 cavgd:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(c->type == VALUE_DOUBLE))
+	if (likely(c->type == TYPE_DOUBLE))
 		value_set_double(&r[op->a], avg_double(&c->avg));
 	else
 		value_set_null(&r[op->a]);

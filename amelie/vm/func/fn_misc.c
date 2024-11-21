@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -41,7 +41,7 @@ fn_error(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 	error("%.*s", str_size(&arg->string), str_of(&arg->string));
 }
 
@@ -99,7 +99,7 @@ fn_md5(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	char digest[32];
 	create_digest(EVP_md5(), &arg->string, digest);
@@ -120,7 +120,7 @@ fn_sha1(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	char digest[40];
 	create_digest(EVP_sha1(), &arg->string, digest);
@@ -141,8 +141,8 @@ fn_encode(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1]->string, "base64"))
 	{
@@ -170,8 +170,8 @@ fn_decode(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1]->string, "base64"))
 	{
@@ -198,8 +198,8 @@ fn_serial(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 	auto table = table_mgr_find(&self->vm->db->table_mgr,
 	                            &argv[0]->string,
 	                            &argv[1]->string, true);
@@ -211,19 +211,19 @@ fn_jwt(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 2, VALUE_STRING);
+	call_validate_arg(self, 2, TYPE_STRING);
 
 	// header
 	Str  header_str;
 	Buf* header = buf_create();
 	guard_buf(header);
-	if (argv[0]->type == VALUE_OBJ)
+	if (argv[0]->type == TYPE_OBJ)
 	{
 		auto pos = argv[0]->data;
 		json_export(header, self->vm->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
-	if (argv[0]->type == VALUE_STRING)
+	if (argv[0]->type == TYPE_STRING)
 	{
 		header_str = argv[0]->string;
 	} else {
@@ -234,13 +234,13 @@ fn_jwt(Call* self)
 	Str  payload_str;
 	Buf* payload = buf_create();
 	guard_buf(payload);
-	if (argv[1]->type == VALUE_OBJ)
+	if (argv[1]->type == TYPE_OBJ)
 	{
 		auto pos = argv[1]->data;
 		json_export(payload, self->vm->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
-	if (argv[1]->type == VALUE_STRING)
+	if (argv[1]->type == TYPE_STRING)
 	{
 		payload_str = argv[1]->string;
 	} else {
@@ -270,6 +270,6 @@ FunctionDef fn_misc_def[] =
 	{ "public", "decode",       fn_decode,       false },
 	{ "public", "serial",       fn_serial,       false },
 	{ "public", "jwt",          fn_jwt,          false },
-	{  NULL,     NULL,          VALUE_NULL,      false }
+	{  NULL,     NULL,          TYPE_NULL,      false }
 };
 #endif

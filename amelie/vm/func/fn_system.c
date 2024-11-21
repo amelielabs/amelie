@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -127,17 +127,17 @@ fn_status(Call* self)
 
 FunctionDef fn_system_def[] =
 {
-	{ "system", "config",      VALUE_JSON, fn_config,    false },
-	{ "system", "users",       VALUE_JSON, fn_users,     false },
-	{ "system", "replicas",    VALUE_JSON, fn_replicas,  false },
-	{ "system", "repl",        VALUE_JSON, fn_repl,      false },
-	{ "system", "replication", VALUE_JSON, fn_repl,      false },
-	{ "system", "nodes",       VALUE_JSON, fn_nodes,     false },
-	{ "system", "schemas",     VALUE_JSON, fn_schemas,   false },
-	{ "system", "functions",   VALUE_JSON, fn_functions, false },
-	{ "system", "tables",      VALUE_JSON, fn_tables,    false },
-	{ "system", "views",       VALUE_JSON, fn_views,     false },
-	{ "system", "wal",         VALUE_JSON, fn_wal,       false },
-	{ "system", "status",      VALUE_JSON, fn_status,    false },
-	{  NULL,     NULL,         VALUE_NULL, NULL,         false }
+	{ "system", "config",      TYPE_JSON, fn_config,    false },
+	{ "system", "users",       TYPE_JSON, fn_users,     false },
+	{ "system", "replicas",    TYPE_JSON, fn_replicas,  false },
+	{ "system", "repl",        TYPE_JSON, fn_repl,      false },
+	{ "system", "replication", TYPE_JSON, fn_repl,      false },
+	{ "system", "nodes",       TYPE_JSON, fn_nodes,     false },
+	{ "system", "schemas",     TYPE_JSON, fn_schemas,   false },
+	{ "system", "functions",   TYPE_JSON, fn_functions, false },
+	{ "system", "tables",      TYPE_JSON, fn_tables,    false },
+	{ "system", "views",       TYPE_JSON, fn_views,     false },
+	{ "system", "wal",         TYPE_JSON, fn_wal,       false },
+	{ "system", "status",      TYPE_JSON, fn_status,    false },
+	{  NULL,     NULL,         TYPE_NULL, NULL,         false }
 };

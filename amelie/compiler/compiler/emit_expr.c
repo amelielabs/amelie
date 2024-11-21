@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -43,7 +43,7 @@ emit_string(Compiler* self, Str* string, bool escape)
 		offset = code_data_add_string_unescape(&self->code_data, string);
 	else
 		offset = code_data_add_string(&self->code_data, string);
-	return op2(self, CSTRING, rpin(self, VALUE_STRING), offset);
+	return op2(self, CSTRING, rpin(self, TYPE_STRING), offset);
 }
 
 hot static inline int
@@ -63,7 +63,7 @@ emit_json(Compiler* self, Target* target, Ast* ast, int op)
 	}
 
 	// op
-	return op2(self, op, rpin(self, VALUE_JSON), args->integer);
+	return op2(self, op, rpin(self, TYPE_JSON), args->integer);
 }
 
 hot static inline int
@@ -91,10 +91,10 @@ emit_column(Compiler* self, Target* target, Str* name)
 	{
 		int op;
 		switch (column->type) {
-		case VALUE_BOOL:
+		case TYPE_BOOL:
 			op = CCURSOR_READB;
 			break;
-		case VALUE_INT:
+		case TYPE_INT:
 		{
 			switch (column->type_size) {
 			case 1: op = CCURSOR_READI8;
@@ -111,7 +111,7 @@ emit_column(Compiler* self, Target* target, Str* name)
 			}
 			break;
 		}
-		case VALUE_DOUBLE:
+		case TYPE_DOUBLE:
 		{
 			switch (column->type_size) {
 			case 4: op = CCURSOR_READF;
@@ -124,19 +124,19 @@ emit_column(Compiler* self, Target* target, Str* name)
 			}
 			break;
 		}
-		case VALUE_STRING:
+		case TYPE_STRING:
 			op = CCURSOR_READS;
 			break;
-		case VALUE_JSON:
+		case TYPE_JSON:
 			op = CCURSOR_READJ;
 			break;
-		case VALUE_TIMESTAMP:
+		case TYPE_TIMESTAMP:
 			op = CCURSOR_READT;
 			break;
-		case VALUE_INTERVAL:
+		case TYPE_INTERVAL:
 			op = CCURSOR_READL;
 			break;
-		case VALUE_VECTOR:
+		case TYPE_VECTOR:
 			op = CCURSOR_READV;
 			break;
 		default:
@@ -149,11 +149,11 @@ emit_column(Compiler* self, Target* target, Str* name)
 	{
 		assert(target->r != -1);
 		switch (rtype(self, target->r)) {
-		case VALUE_SET:
+		case TYPE_SET:
 			r = op3(self, CCURSOR_SET_READ, rpin(self, column->type),
 			        target->id, column->order);
 			break;
-		case VALUE_MERGE:
+		case TYPE_MERGE:
 			r = op3(self, CCURSOR_MERGE_READ, rpin(self, column->type),
 			        target->id, column->order);
 			break;
@@ -227,7 +227,7 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 		return rcolumn;
 
 	// ensure column is a json
-	if (rtype(self, rcolumn) != VALUE_JSON)
+	if (rtype(self, rcolumn) != TYPE_JSON)
 		error("'.': column <%.*s.%.*s> is not a json",
 		      str_size(&target->name), str_of(&target->name),
 		      str_size(&name), str_of(&name));
@@ -243,7 +243,7 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	// SELECT aggr GROUP BY
 	// SELECT GROUP BY HAVING aggr
 	assert(target->r != -1);
-	assert(rtype(self, target->r) == VALUE_SET);
+	assert(rtype(self, target->r) == TYPE_SET);
 
 	// read aggregate value based on the function and type
 	int  agg_op;
@@ -252,27 +252,27 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	switch (agg->id) {
 	case AGG_INT_COUNT:
 		agg_op   = CCOUNT;
-		agg_type = VALUE_INT;
+		agg_type = TYPE_INT;
 		break;
 	case AGG_INT_MIN:
 	case AGG_INT_MAX:
 	case AGG_INT_SUM:
 		agg_op   = CAGG;
-		agg_type = VALUE_INT;
+		agg_type = TYPE_INT;
 		break;
 	case AGG_DOUBLE_MIN:
 	case AGG_DOUBLE_MAX:
 	case AGG_DOUBLE_SUM:
 		agg_op   = CAGG;
-		agg_type = VALUE_DOUBLE;
+		agg_type = TYPE_DOUBLE;
 		break;
 	case AGG_INT_AVG:
 		agg_op   = CAVGI;
-		agg_type = VALUE_INT;
+		agg_type = TYPE_INT;
 		break;
 	case AGG_DOUBLE_AVG:
 		agg_op   = CAVGD;
-		agg_type = VALUE_DOUBLE;
+		agg_type = TYPE_DOUBLE;
 		break;
 	default:
 		abort();
@@ -294,7 +294,7 @@ hot static inline int
 emit_and(Compiler* self, Target* target, Ast* ast)
 {
 	int rresult;
-	rresult = rpin(self, VALUE_BOOL);
+	rresult = rpin(self, TYPE_BOOL);
 
 	// lexpr
 	// jntr _false
@@ -356,7 +356,7 @@ hot static inline int
 emit_or(Compiler* self, Target* target, Ast* ast)
 {
 	int rresult;
-	rresult = rpin(self, VALUE_BOOL);
+	rresult = rpin(self, TYPE_BOOL);
 
 	// lexpr
 		// jntr _next
@@ -443,7 +443,7 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 	    str_is(&call->fn->schema, "public", 6))
 	{
 		auto time = self->parser.local->time_us;
-		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP), time);
+		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP), time);
 	}
 
 	// push arguments
@@ -636,7 +636,7 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 		}
 	} else
 	{
-		relse = op1(self, CNULL, rpin(self, VALUE_NULL));
+		relse = op1(self, CNULL, rpin(self, TYPE_NULL));
 	}
 	op2(self, CSWAP, rresult, relse);
 	runpin(self, relse);
@@ -656,7 +656,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	assert(args->id == KARGS);
 
 	// expr
-	int rresult = op2(self, CBOOL, rpin(self, VALUE_BOOL), false);
+	int rresult = op2(self, CBOOL, rpin(self, TYPE_BOOL), false);
 
 	// jmp to start
 	int _start_jmp = op_pos(self);
@@ -685,7 +685,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	{
 		int rexpr = emit_expr(self, target, expr);
 		int r = emit_expr(self, target, current);
-		int rin = op3(self, CIN, rpin(self, VALUE_BOOL), rexpr, r);
+		int rin = op3(self, CIN, rpin(self, TYPE_BOOL), rexpr, r);
 		runpin(self, rexpr);
 		runpin(self, r);
 
@@ -710,7 +710,7 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	if (! ast->integer)
 	{
 		int rc;
-		rc = op2(self, CNOT, rpin(self, VALUE_BOOL), rresult);
+		rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rresult);
 		runpin(self, rresult);
 		rresult = rc;
 	}
@@ -746,10 +746,10 @@ emit_match(Compiler* self, Target* target, Ast* ast)
 	int rc;
 	switch (ast->id) {
 	case KANY:
-		rc = op4(self, CANY, rpin(self, VALUE_BOOL), a, b, op);
+		rc = op4(self, CANY, rpin(self, TYPE_BOOL), a, b, op);
 		break;
 	case KALL:
-		rc = op4(self, CALL, rpin(self, VALUE_BOOL), a, b, op);
+		rc = op4(self, CALL, rpin(self, TYPE_BOOL), a, b, op);
 		break;
 	default:
 		abort();
@@ -793,28 +793,28 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	switch (ast->id) {
 	// consts
 	case KNULL:
-		return op1(self, CNULL, rpin(self, VALUE_NULL));
+		return op1(self, CNULL, rpin(self, TYPE_NULL));
 	case KTRUE:
-		return op2(self, CBOOL, rpin(self, VALUE_BOOL), 1);
+		return op2(self, CBOOL, rpin(self, TYPE_BOOL), 1);
 	case KFALSE:
-		return op2(self, CBOOL, rpin(self, VALUE_BOOL), 0);
+		return op2(self, CBOOL, rpin(self, TYPE_BOOL), 0);
 	case KINT:
-		return op2(self, CINT, rpin(self, VALUE_INT), ast->integer);
+		return op2(self, CINT, rpin(self, TYPE_INT), ast->integer);
 	case KREAL:
-		return op2(self, CDOUBLE, rpin(self, VALUE_DOUBLE),
+		return op2(self, CDOUBLE, rpin(self, TYPE_DOUBLE),
 		           code_data_add_double(&self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 	case KCURRENT_TIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP),
+		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
 		           self->parser.local->time_us);
 	case KTIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self, VALUE_TIMESTAMP), ast->integer);
+		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP), ast->integer);
 	case KINTERVAL:
 	{
 		int offset = code_data_offset(&self->code_data);
 		buf_write(&self->code_data.data, &ast->interval, sizeof(Interval));
-		return op2(self, CINTERVAL, rpin(self, VALUE_INTERVAL), offset);
+		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
 
 	// json
@@ -826,7 +826,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 #if 0
 	// argument
 	case KARGID:
-		return op2(self, CARG, rpin(self, VALUE_JSON), ast->integer);
+		return op2(self, CARG, rpin(self, TYPE_JSON), ast->integer);
 	case KCTEID:
 		return op2(self, CCTE_GET, rpin(self), ast->integer);
 	// @
@@ -850,7 +850,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KNEQU:
 	{
 		auto r = emit_operator(self, target, ast, OP_EQU);
-		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -885,7 +885,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		if (ast->integer)
 			return r;
 		// [not]
-		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -908,7 +908,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KNOT:
 	{
 		int r = emit_expr(self, target, ast->l);
-		auto rnot = op2(self, CNOT, rpin(self, VALUE_BOOL), r);
+		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -919,11 +919,11 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		int r = emit_expr(self, target, ast->l);
 		int rt = rtype(self, r);
 		int rneg;
-		if (rt == VALUE_INT)
-			rneg = op2(self, CNEGI, rpin(self, VALUE_INT), r);
+		if (rt == TYPE_INT)
+			rneg = op2(self, CNEGI, rpin(self, TYPE_INT), r);
 		else
-		if (rt == VALUE_DOUBLE)
-			rneg = op2(self, CNEGD, rpin(self, VALUE_DOUBLE), r);
+		if (rt == TYPE_DOUBLE)
+			rneg = op2(self, CNEGD, rpin(self, TYPE_DOUBLE), r);
 		else
 			error("'-': unsupported operation type");
 		runpin(self, r);
@@ -932,9 +932,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case '~':
 	{
 		int r = emit_expr(self, target, ast->l);
-		if (rtype(self, r) != VALUE_INT)
+		if (rtype(self, r) != TYPE_INT)
 			error("'-': unsupported operation type");
-		auto rinv = op2(self, CBINVI, rpin(self, VALUE_INT), r);
+		auto rinv = op2(self, CBINVI, rpin(self, TYPE_INT), r);
 		runpin(self, r);
 		return rinv;
 	}
@@ -970,7 +970,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KEXISTS:
 	{
 		auto r = emit_expr(self, target, ast->r);
-		auto rc = op2(self, CEXISTS, rpin(self, VALUE_BOOL), r);
+		auto rc = op2(self, CEXISTS, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rc;
 	}

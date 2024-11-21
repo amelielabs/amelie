@@ -13,26 +13,9 @@
 
 typedef struct Value Value;
 
-typedef enum
-{
-	VALUE_NULL,
-	VALUE_BOOL,
-	VALUE_INT,
-	VALUE_DOUBLE,
-	VALUE_STRING,
-	VALUE_JSON,
-	VALUE_TIMESTAMP,
-	VALUE_INTERVAL,
-	VALUE_VECTOR,
-	VALUE_AVG,
-	VALUE_SET,
-	VALUE_MERGE,
-	VALUE_MAX
-} ValueType;
-
 struct Value
 {
-	ValueType type;
+	Type type;
 	union
 	{
 		int64_t   integer;
@@ -59,11 +42,11 @@ value_init(Value* self)
 always_inline hot static inline void
 value_free(Value* self)
 {
-	if (self->type == VALUE_NULL)
+	if (self->type == TYPE_NULL)
 		return;
 
-	if (unlikely(self->type == VALUE_SET ||
-	             self->type == VALUE_MERGE))
+	if (unlikely(self->type == TYPE_SET ||
+	             self->type == TYPE_MERGE))
 		store_free(self->store);
 
 	if (unlikely(self->buf))
@@ -72,13 +55,13 @@ value_free(Value* self)
 		self->buf = NULL;
 	}
 
-	self->type = VALUE_NULL;
+	self->type = TYPE_NULL;
 }
 
 always_inline hot static inline void
 value_reset(Value* self)
 {
-	self->type = VALUE_NULL;
+	self->type = TYPE_NULL;
 	self->buf  = NULL;
 }
 
@@ -93,34 +76,34 @@ value_move(Value* self, Value* from)
 always_inline hot static inline void
 value_set_null(Value* self)
 {
-	self->type = VALUE_NULL;
+	self->type = TYPE_NULL;
 }
 
 always_inline hot static inline void
 value_set_bool(Value* self, bool value)
 {
-	self->type    = VALUE_BOOL;
+	self->type    = TYPE_BOOL;
 	self->integer = value;
 }
 
 always_inline hot static inline void
 value_set_int(Value* self, int64_t value)
 {
-	self->type    = VALUE_INT;
+	self->type    = TYPE_INT;
 	self->integer = value;
 }
 
 always_inline hot static inline void
 value_set_double(Value* self, double value)
 {
-	self->type = VALUE_DOUBLE;
+	self->type = TYPE_DOUBLE;
 	self->dbl  = value;
 }
 
 always_inline hot static inline void
 value_set_string(Value* self, Str* value, Buf* buf)
 {
-	self->type   = VALUE_STRING;
+	self->type   = TYPE_STRING;
 	self->string = *value;
 	self->buf    = buf;
 }
@@ -128,7 +111,7 @@ value_set_string(Value* self, Str* value, Buf* buf)
 always_inline hot static inline void
 value_set_json(Value* self, uint8_t* json, int json_size, Buf* buf)
 {
-	self->type      = VALUE_JSON;
+	self->type      = TYPE_JSON;
 	self->json      = json;
 	self->json_size = json_size;
 	self->buf       = buf;
@@ -137,14 +120,14 @@ value_set_json(Value* self, uint8_t* json, int json_size, Buf* buf)
 always_inline hot static inline void
 value_set_timestamp(Value* self, uint64_t value)
 {
-	self->type    = VALUE_TIMESTAMP;
+	self->type    = TYPE_TIMESTAMP;
 	self->integer = value;
 }
 
 always_inline hot static inline void
 value_set_interval(Value* self, Interval* value)
 {
-	self->type     = VALUE_INTERVAL;
+	self->type     = TYPE_INTERVAL;
 	self->interval = *value;
 }
 
@@ -157,7 +140,7 @@ value_set_json_buf(Value* self, Buf* buf)
 always_inline hot static inline void
 value_set_vector(Value* self, Vector* value, Buf* buf)
 {
-	self->type   = VALUE_VECTOR;
+	self->type   = TYPE_VECTOR;
 	self->vector = value;
 	self->buf    = buf;
 }
@@ -165,7 +148,7 @@ value_set_vector(Value* self, Vector* value, Buf* buf)
 always_inline hot static inline void
 value_set_avg(Value* self, Avg* value)
 {
-	self->type = VALUE_AVG;
+	self->type = TYPE_AVG;
 	self->avg  = *value;
 }
 
@@ -178,14 +161,14 @@ value_set_vector_buf(Value* self, Buf* buf)
 always_inline hot static inline void
 value_set_set(Value* self, Store* store)
 {
-	self->type  = VALUE_SET;
+	self->type  = TYPE_SET;
 	self->store = store;
 }
 
 always_inline hot static inline void
 value_set_merge(Value* self, Store* store)
 {
-	self->type  = VALUE_MERGE;
+	self->type  = TYPE_MERGE;
 	self->store = store;
 }
 
@@ -193,47 +176,47 @@ always_inline hot static inline void
 value_copy(Value* self, Value* src)
 {
 	switch (src->type) {
-	case VALUE_NULL:
+	case TYPE_NULL:
 		value_set_null(self);
 		break;
-	case VALUE_BOOL:
+	case TYPE_BOOL:
 		value_set_bool(self, src->integer);
 		break;
-	case VALUE_INT:
+	case TYPE_INT:
 		value_set_int(self, src->integer);
 		break;
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		value_set_double(self, src->dbl);
 		break;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		value_set_string(self, &src->string, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
 		break;
-	case VALUE_JSON:
+	case TYPE_JSON:
 		value_set_json(self, src->json, src->json_size, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
 		break;
-	case VALUE_TIMESTAMP:
+	case TYPE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);
 		break;
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 		value_set_interval(self, &src->interval);
 		break;
-	case VALUE_VECTOR:
+	case TYPE_VECTOR:
 		value_set_vector(self, src->vector, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
 		break;
-	case VALUE_AVG:
+	case TYPE_AVG:
 		value_set_avg(self, &src->avg);
 		break;
-	case VALUE_SET:
+	case TYPE_SET:
 		value_set_set(self, src->store);
 		store_ref(src->store);
 		break;
-	case VALUE_MERGE:
+	case TYPE_MERGE:
 		value_set_merge(self, src->store);
 		store_ref(src->store);
 		break;
@@ -241,72 +224,4 @@ value_copy(Value* self, Value* src)
 		error("operation is not supported");
 		break;
 	}
-}
-
-static inline char*
-value_typeof(ValueType type)
-{
-	char* name;
-	switch (type) {
-	case VALUE_NULL:
-		name = "null";
-		break;
-	case VALUE_BOOL:
-		name = "bool";
-		break;
-	case VALUE_INT:
-		name = "int";
-		break;
-	case VALUE_DOUBLE:
-		name = "double";
-		break;
-	case VALUE_STRING:
-		name = "string";
-		break;
-	case VALUE_JSON:
-		name = "json";
-		break;
-	case VALUE_TIMESTAMP:
-		name = "timestamp";
-		break;
-	case VALUE_INTERVAL:
-		name = "interval";
-		break;
-	case VALUE_VECTOR:
-		name = "vector";
-		break;
-	case VALUE_AVG:
-		name = "avg";
-		break;
-	case VALUE_SET:
-		name = "set";
-		break;
-	case VALUE_MERGE:
-		name = "merge";
-		break;
-	case VALUE_MAX:
-		abort();
-		break;
-	}
-	return name;
-}
-
-hot static inline int
-value_sizeof_default(ValueType type)
-{
-	switch (type) {
-	case VALUE_BOOL:
-		return sizeof(int8_t);
-	case VALUE_INT:
-	case VALUE_TIMESTAMP:
-		return sizeof(int64_t);
-	case VALUE_DOUBLE:
-		return sizeof(double);
-	case VALUE_INTERVAL:
-		return sizeof(Interval);
-	default:
-		// variable
-		break;
-	}
-	return 0;
 }

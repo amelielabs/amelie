@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -45,7 +45,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	// create returning set
 	int rset = -1;
 	if (returning_has(&insert->ret))
-		rset = op3(self, CSET, rpin(self, VALUE_SET), insert->ret.count, 0);
+		rset = op3(self, CSET, rpin(self, TYPE_SET), insert->ret.count, 0);
 
 	// CCLOSE_PREPARE
 	op2(self, CCURSOR_PREPARE, target->id, (intptr_t)table);
@@ -129,7 +129,7 @@ emit_upsert(Compiler* self, Ast* ast)
 
 			auto column = column_allocate();
 			column_set_name(column, &as->r->string);
-			column_set_type(column, rt, value_sizeof_default(rt));
+			column_set_type(column, rt, type_sizeof(rt));
 			columns_add(&insert->ret.columns, column);
 		}
 

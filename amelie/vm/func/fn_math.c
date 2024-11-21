@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -40,7 +40,7 @@ fn_greatest(Call* self)
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (self->argv[i]->type == VALUE_NULL)
+		if (self->argv[i]->type == TYPE_NULL)
 			continue;
 		if (max == NULL)
 		{
@@ -64,7 +64,7 @@ fn_least(Call* self)
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (self->argv[i]->type == VALUE_NULL)
+		if (self->argv[i]->type == TYPE_NULL)
 			continue;
 		if (max == NULL)
 		{
@@ -87,10 +87,10 @@ fn_abs(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value_set_int(self->result, llabs(arg->integer));
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value_set_real(self->result, fabs(arg->real));
 	else
 		error("abs(): int or real argument expected");
@@ -101,7 +101,7 @@ fn_round(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_REAL);
+	call_validate_arg(self, 0, TYPE_REAL);
 	value_set_int(self->result, llround(arg->real));
 }
 
@@ -111,7 +111,7 @@ fn_sign(Call* self)
 	auto arg = self->argv[0];
 	int sign = 0;
 	call_validate(self, 1);
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 	{
 		if (arg->integer > 0)
 			sign = 1;
@@ -119,7 +119,7 @@ fn_sign(Call* self)
 		if (arg->integer < 0)
 			sign = -1;
 	} else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 	{
 		if (arg->real > 0.0)
 			sign = 1;
@@ -137,7 +137,7 @@ fn_ceil(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_REAL);
+	call_validate_arg(self, 0, TYPE_REAL);
 	value_set_real(self->result, ceil(arg->real));
 }
 
@@ -146,7 +146,7 @@ fn_exp(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_REAL);
+	call_validate_arg(self, 0, TYPE_REAL);
 	errno = 0;
 	double result = exp(arg->real);
 	if (errno != 0)
@@ -159,7 +159,7 @@ fn_floor(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_REAL);
+	call_validate_arg(self, 0, TYPE_REAL);
 	value_set_real(self->result, floor(arg->real));
 }
 
@@ -168,18 +168,18 @@ fn_mod(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (argv[0]->type == VALUE_INT)
+	if (argv[0]->type == TYPE_INT)
 	{
-		if (argv[1]->type != VALUE_INT)
+		if (argv[1]->type != TYPE_INT)
 			goto error;
 		if (argv[1]->integer == 0)
 			error("mod(): zero division");
 		int64_t result = argv[0]->integer % argv[1]->integer;
 		value_set_int(self->result, result);
 	} else
-	if (argv[0]->type == VALUE_REAL)
+	if (argv[0]->type == TYPE_REAL)
 	{
-		if (argv[1]->type != VALUE_REAL)
+		if (argv[1]->type != TYPE_REAL)
 			goto error;
 		if (argv[1]->real == 0)
 			error("mod(): zero division");
@@ -198,9 +198,9 @@ fn_power(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (argv[0]->type == VALUE_INT)
+	if (argv[0]->type == TYPE_INT)
 	{
-		if (argv[1]->type != VALUE_INT)
+		if (argv[1]->type != TYPE_INT)
 			goto error;
 		errno = 0;
 		double result = pow(argv[0]->integer, argv[1]->integer);
@@ -208,9 +208,9 @@ fn_power(Call* self)
 			error("power(): operation failed");
 		value_set_int(self->result, (int64_t)result);
 	} else
-	if (argv[0]->type == VALUE_REAL)
+	if (argv[0]->type == TYPE_REAL)
 	{
-		if (argv[1]->type != VALUE_REAL)
+		if (argv[1]->type != TYPE_REAL)
 			goto error;
 		errno = 0;
 		double result = pow(argv[0]->real, argv[1]->real);
@@ -230,7 +230,7 @@ fn_trunc(Call* self)
 {
 	auto arg = self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_REAL);
+	call_validate_arg(self, 0, TYPE_REAL);
 	value_set_real(self->result, trunc(arg->real));
 }
 
@@ -247,10 +247,10 @@ fn_sqrt(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("sqrt(): int or real arguments expected");
@@ -267,10 +267,10 @@ fn_acos(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("acos(): int or real arguments expected");
@@ -287,10 +287,10 @@ fn_acosh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("acosh(): int or real arguments expected");
@@ -307,10 +307,10 @@ fn_asin(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("asin(): int or real arguments expected");
@@ -327,10 +327,10 @@ fn_asinh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("asinh(): int or real arguments expected");
@@ -347,10 +347,10 @@ fn_atan(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("atan(): int or real arguments expected");
@@ -367,10 +367,10 @@ fn_atanh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("atanh(): int or real arguments expected");
@@ -388,19 +388,19 @@ fn_atan2(Call* self)
 	call_validate(self, 2);
 
 	double arg1;
-	if (argv[0]->type == VALUE_INT)
+	if (argv[0]->type == TYPE_INT)
 		arg1 = argv[0]->integer;
 	else
-	if (argv[0]->type == VALUE_REAL)
+	if (argv[0]->type == TYPE_REAL)
 		arg1 = argv[0]->real;
 	else
 		error("atan2(): int or real arguments expected");
 
 	double arg2;
-	if (argv[1]->type == VALUE_INT)
+	if (argv[1]->type == TYPE_INT)
 		arg2 = argv[1]->integer;
 	else
-	if (argv[1]->type == VALUE_REAL)
+	if (argv[1]->type == TYPE_REAL)
 		arg2 = argv[1]->real;
 	else
 		error("atan2(): int or real arguments expected");
@@ -418,10 +418,10 @@ fn_cos(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("cos(): int or real arguments expected");
@@ -438,10 +438,10 @@ fn_cosh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("cosh(): int or real arguments expected");
@@ -458,10 +458,10 @@ fn_sin(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("sin(): int or real arguments expected");
@@ -478,10 +478,10 @@ fn_sinh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("sinh(): int or real arguments expected");
@@ -498,10 +498,10 @@ fn_tan(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("tan(): int or real arguments expected");
@@ -518,10 +518,10 @@ fn_tanh(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("tanh(): int or real arguments expected");
@@ -538,10 +538,10 @@ fn_ln(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("ln(): int or real arguments expected");
@@ -558,10 +558,10 @@ fn_log(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("log(): int or real arguments expected");
@@ -578,10 +578,10 @@ fn_log2(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	double value;
-	if (arg->type == VALUE_INT)
+	if (arg->type == TYPE_INT)
 		value = arg->integer;
 	else
-	if (arg->type == VALUE_REAL)
+	if (arg->type == TYPE_REAL)
 		value = arg->real;
 	else
 		error("log2(): int or real arguments expected");

@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -100,7 +100,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		auto column = op->l->column;
 
 		// push column order
-		int rexpr = op2(self, CINT, rpin(self, VALUE_INT), column->order);
+		int rexpr = op2(self, CINT, rpin(self, TYPE_INT), column->order);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
@@ -116,8 +116,8 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			error("<%.*s.%.*s> column update expression type '%s' does not match column type '%s'",
 			      str_size(&target->name), str_of(&target->name),
 			      str_size(&column->name), str_of(&column->name),
-			      value_typeof(type),
-			      value_typeof(column->type));
+			      type_of(type),
+			      type_of(column->type));
 	}
 
 	// UPDATE
@@ -150,7 +150,7 @@ emit_update_on_match_returning(Compiler* self, void* arg)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, rt, value_sizeof_default(rt));
+		column_set_type(column, rt, type_sizeof(rt));
 		columns_add(&update->ret.columns, column);
 	}
 
@@ -180,7 +180,7 @@ emit_update(Compiler* self, Ast* ast)
 
 	// create returning set
 	update->rset =
-		op3(self, CSET, rpin(self, VALUE_SET),
+		op3(self, CSET, rpin(self, TYPE_SET),
 		    update->ret.count, 0);
 
 	scan(self, update->target,

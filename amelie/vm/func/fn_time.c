@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -45,13 +45,13 @@ fn_at_timezone(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_TIMESTAMP);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_TIMESTAMP);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	auto name = &self->argv[1].string;
 	auto timezone = timezone_mgr_find(global()->timezone_mgr, name);
@@ -77,7 +77,7 @@ fn_date_bin(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
 		error("date_bin(): unexpected number of arguments");
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
@@ -87,15 +87,15 @@ fn_date_bin(Call* self)
 	// (timestamp, interval [, timestamp_origin])
 	Interval* iv;
 	uint64_t  timestamp;
-	if (argv[0].type == VALUE_INTERVAL)
+	if (argv[0].type == TYPE_INTERVAL)
 	{
-		call_validate_arg(self, 1, VALUE_TIMESTAMP);
+		call_validate_arg(self, 1, TYPE_TIMESTAMP);
 		iv = &argv[0].interval;
 		timestamp = argv[1].integer;
 	} else
-	if (argv[0].type == VALUE_TIMESTAMP)
+	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		call_validate_arg(self, 1, VALUE_INTERVAL);
+		call_validate_arg(self, 1, TYPE_INTERVAL);
 		timestamp = argv[0].integer;
 		iv = &argv[1].interval;
 	} else {
@@ -105,7 +105,7 @@ fn_date_bin(Call* self)
 	uint64_t origin;
 	if (self->argc == 3)
 	{
-		call_validate_arg(self, 2, VALUE_TIMESTAMP);
+		call_validate_arg(self, 2, TYPE_TIMESTAMP);
 		origin = argv[2].integer;
 	} else
 	{
@@ -131,7 +131,7 @@ fn_date_trunc(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
 		error("date_trunc(): unexpected number of arguments");
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
@@ -142,7 +142,7 @@ fn_date_trunc(Call* self)
 	Timezone* timezone = self->vm->local->timezone;
 	if (self->argc == 3)
 	{
-		call_validate_arg(self, 2, VALUE_STRING);
+		call_validate_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
 		timezone = timezone_mgr_find(global()->timezone_mgr, name);
 		if (! timezone)
@@ -150,9 +150,9 @@ fn_date_trunc(Call* self)
 			      str_size(name), str_of(name));
 	}
 
-	if (argv[0].type == VALUE_STRING)
+	if (argv[0].type == TYPE_STRING)
 	{
-		if (argv[1].type == VALUE_TIMESTAMP)
+		if (argv[1].type == TYPE_TIMESTAMP)
 		{
 			Timestamp ts;
 			timestamp_init(&ts);
@@ -164,9 +164,9 @@ fn_date_trunc(Call* self)
 			error("date_trunc(): invalid arguments");
 		}
 	} else
-	if (argv[0].type == VALUE_TIMESTAMP)
+	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		call_validate_arg(self, 1, VALUE_STRING);
+		call_validate_arg(self, 1, TYPE_STRING);
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read_value(&ts, self->argv[0].integer);
@@ -186,21 +186,21 @@ fn_interval_trunc(Call* self)
 	// (interval, string)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (argv[0].type == VALUE_STRING)
+	if (argv[0].type == TYPE_STRING)
 	{
-		call_validate_arg(self, 2, VALUE_INTERVAL);
+		call_validate_arg(self, 2, TYPE_INTERVAL);
 		Interval iv = argv[1].interval;
 		interval_trunc(&iv, &argv[0].string);
 		value_set_interval(self->result, &iv);
 	} else
-	if (argv[0].type == VALUE_INTERVAL)
+	if (argv[0].type == TYPE_INTERVAL)
 	{
-		call_validate_arg(self, 1, VALUE_STRING);
+		call_validate_arg(self, 1, TYPE_STRING);
 		Interval iv = argv[0].interval;
 		interval_trunc(&iv, &argv[1].string);
 		value_set_interval(self->result, &iv);
@@ -216,7 +216,7 @@ fn_extract(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
 		error("extract(): unexpected number of arguments");
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
@@ -230,7 +230,7 @@ fn_extract(Call* self)
 	Timezone* timezone = self->vm->local->timezone;
 	if (self->argc == 3)
 	{
-		call_validate_arg(self, 2, VALUE_STRING);
+		call_validate_arg(self, 2, TYPE_STRING);
 		auto name = &self->argv[2].string;
 		timezone = timezone_mgr_find(global()->timezone_mgr, name);
 		if (! timezone)
@@ -239,24 +239,24 @@ fn_extract(Call* self)
 	}
 
 	uint64_t value;
-	if (argv[0].type == VALUE_STRING)
+	if (argv[0].type == TYPE_STRING)
 	{
-		if (argv[1].type == VALUE_INTERVAL)
+		if (argv[1].type == TYPE_INTERVAL)
 			value = interval_extract(&argv[1].interval, &argv[0].string);
 		else
-		if (argv[1].type == VALUE_TIMESTAMP)
+		if (argv[1].type == TYPE_TIMESTAMP)
 			value = timestamp_extract(argv[1].integer, timezone, &argv[0].string);
 		else
 			error("extract(): invalid arguments");
 	} else
-	if (argv[0].type == VALUE_INTERVAL)
+	if (argv[0].type == TYPE_INTERVAL)
 	{
-		call_validate_arg(self, 1, VALUE_STRING);
+		call_validate_arg(self, 1, TYPE_STRING);
 		value = interval_extract(&argv[0].interval, &argv[1].string);
 	} else
-	if (argv[0].type == VALUE_TIMESTAMP)
+	if (argv[0].type == TYPE_TIMESTAMP)
 	{
-		call_validate_arg(self, 1, VALUE_STRING);
+		call_validate_arg(self, 1, TYPE_STRING);
 		value = timestamp_extract(argv[0].integer, timezone, &argv[1].string);
 	} else
 	{
@@ -271,9 +271,9 @@ fn_generate_series(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 0, VALUE_TIMESTAMP);
-	call_validate_arg(self, 1, VALUE_TIMESTAMP);
-	call_validate_arg(self, 2, VALUE_INTERVAL);
+	call_validate_arg(self, 0, TYPE_TIMESTAMP);
+	call_validate_arg(self, 1, TYPE_TIMESTAMP);
+	call_validate_arg(self, 2, TYPE_INTERVAL);
 
 	Timestamp ts;
 	timestamp_init(&ts);
@@ -303,11 +303,11 @@ fn_generate_series(Call* self)
 
 FunctionDef fn_time_def[] =
 {
-	{ "public", "now",             VALUE_TIMESTAMP, fn_now,             false },
-	{ "public", "at_timezone",     VALUE_STRING,    fn_at_timezone,     false },
-	{ "public", "date_bin",        VALUE_TIMESTAMP, fn_date_bin,        false },
-	{ "public", "date_trunc",      VALUE_TIMESTAMP, fn_date_trunc,      false },
-	{ "public", "date_trunc",      VALUE_INTERVAL,  fn_interval_trunc,  false },
-	{ "public", "extract",         VALUE_INT,       fn_extract,         false },
-	{  NULL,     NULL,             VALUE_NULL,      NULL,               false }
+	{ "public", "now",             TYPE_TIMESTAMP, fn_now,             false },
+	{ "public", "at_timezone",     TYPE_STRING,    fn_at_timezone,     false },
+	{ "public", "date_bin",        TYPE_TIMESTAMP, fn_date_bin,        false },
+	{ "public", "date_trunc",      TYPE_TIMESTAMP, fn_date_trunc,      false },
+	{ "public", "date_trunc",      TYPE_INTERVAL,  fn_interval_trunc,  false },
+	{ "public", "extract",         TYPE_INT,       fn_extract,         false },
+	{  NULL,     NULL,             TYPE_NULL,      NULL,               false }
 };

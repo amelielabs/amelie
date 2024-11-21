@@ -15,25 +15,25 @@ hot static inline void
 value_encode(Value* self, Timezone* tz, Buf* buf)
 {
 	switch (self->type) {
-	case VALUE_NULL:
+	case TYPE_NULL:
 		encode_null(buf);
 		break;
-	case VALUE_BOOL:
+	case TYPE_BOOL:
 		encode_bool(buf, self->integer);
 		break;
-	case VALUE_INT:
+	case TYPE_INT:
 		encode_integer(buf, self->integer);
 		break;
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		encode_real(buf, self->dbl);
 		break;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		encode_string(buf, &self->string);
 		break;
-	case VALUE_JSON:
+	case TYPE_JSON:
 		buf_write(buf, self->json, json_sizeof(self->json));
 		break;
-	case VALUE_TIMESTAMP:
+	case TYPE_TIMESTAMP:
 	{
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
@@ -44,7 +44,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		json_write_string32(&pos, size);
 		break;
 	}
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 	{
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
@@ -55,7 +55,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		json_write_string32(&pos, size);
 		break;
 	}
-	case VALUE_VECTOR:
+	case TYPE_VECTOR:
 	{
 		encode_array(buf);
 		for (uint32_t i = 0; i < self->vector->size; i++)
@@ -63,8 +63,8 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_array_end(buf);
 		break;
 	}
-	case VALUE_SET:
-	case VALUE_MERGE:
+	case TYPE_SET:
+	case TYPE_MERGE:
 		store_encode(self->store, tz, buf);
 		break;
 	default:
@@ -134,27 +134,27 @@ hot static inline void
 value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 {
 	switch (self->type) {
-	case VALUE_NULL:
+	case TYPE_NULL:
 		buf_write(buf, "null", 4);
 		break;
-	case VALUE_BOOL:
+	case TYPE_BOOL:
 		if (self->integer > 0)
 			buf_write(buf, "true", 4);
 		else
 			buf_write(buf, "false", 5);
 		break;
-	case VALUE_INT:
+	case TYPE_INT:
 		buf_printf(buf, "%" PRIi64, self->integer);
 		break;
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		buf_printf(buf, "%g", self->dbl);
 		break;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		buf_write(buf, "\"", 1);
 		escape_string_raw(buf, &self->string);
 		buf_write(buf, "\"", 1);
 		break;
-	case VALUE_JSON:
+	case TYPE_JSON:
 	{
 		uint8_t* pos = self->json;
 		if (pretty)
@@ -163,7 +163,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 			json_export(buf, tz, &pos);
 		break;
 	}
-	case VALUE_TIMESTAMP:
+	case TYPE_TIMESTAMP:
 	{
 		buf_write(buf, "\"", 1);
 		buf_reserve(buf, 128);
@@ -172,7 +172,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "\"", 1);
 		break;
 	}
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 	{
 		buf_write(buf, "\"", 1);
 		buf_reserve(buf, 512);
@@ -181,7 +181,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "\"", 1);
 		break;
 	}
-	case VALUE_VECTOR:
+	case TYPE_VECTOR:
 	{
 		buf_write(buf, "[", 1);
 		for (uint32_t i = 0; i < self->vector->size; i++)
@@ -194,8 +194,8 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "]", 1);
 		break;
 	}
-	case VALUE_SET:
-	case VALUE_MERGE:
+	case TYPE_SET:
+	case TYPE_MERGE:
 		buf_write(buf, "[", 1);
 		store_export(self->store, tz, buf);
 		buf_write(buf, "]", 1);

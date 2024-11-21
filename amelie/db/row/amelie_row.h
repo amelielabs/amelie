@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// data types
+#include "row/type.h"
+
 // serial
 #include "row/serial.h"
 

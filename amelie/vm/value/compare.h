@@ -32,33 +32,33 @@ value_compare(Value* a, Value* b)
 		return (a->type > b->type) ? 1 : -1;
 
 	switch (a->type) {
-	case VALUE_NULL:
+	case TYPE_NULL:
 		return 0;
-	case VALUE_BOOL:
-	case VALUE_INT:
-	case VALUE_TIMESTAMP:
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 	{
 		if (a->integer == b->integer)
 			return 0;
 		return (a->integer > b->integer) ? 1 : -1;
 	}
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 	{
 		if (a->dbl == b->dbl)
 			return 0;
 		return (a->dbl > b->dbl) ? 1 : -1;
 	}
-	case VALUE_STRING:
+	case TYPE_STRING:
 		return str_compare_fn(&a->string, &b->string);
-	case VALUE_JSON:
+	case TYPE_JSON:
 		return json_compare(a->json, b->json);
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 		return interval_compare(&a->interval, &b->interval);
-	case VALUE_VECTOR:
+	case TYPE_VECTOR:
 		return vector_compare(a->vector, b->vector);
-	// VALUE_AVG
-	// VALUE_SET
-	// VALUE_MERGE
+	// TYPE_AVG
+	// TYPE_SET
+	// TYPE_MERGE
 	default:
 		break;
 	}
@@ -71,24 +71,24 @@ always_inline hot static inline bool
 value_is_true(Value* a)
 {
 	switch (a->type) {
-	case VALUE_NULL:
+	case TYPE_NULL:
 		return false;
-	case VALUE_INT:
-	case VALUE_BOOL:
-	case VALUE_TIMESTAMP:
+	case TYPE_INT:
+	case TYPE_BOOL:
+	case TYPE_TIMESTAMP:
 		return a->integer > 0;
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		return a->dbl > 0.0;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		return !str_empty(&a->string);
-	case VALUE_JSON:
+	case TYPE_JSON:
 		break;
-	case VALUE_INTERVAL:
-	case VALUE_VECTOR:
+	case TYPE_INTERVAL:
+	case TYPE_VECTOR:
 		return a->vector->size > 0;
-	// VALUE_AVG
-	// VALUE_SET
-	// VALUE_MERGE
+	// TYPE_AVG
+	// TYPE_SET
+	// TYPE_MERGE
 	default:
 		break;
 	}
@@ -98,7 +98,7 @@ value_is_true(Value* a)
 always_inline hot static inline bool
 value_is_unary(Value* result, Value* a)
 {
-	if (likely(a->type != VALUE_NULL))
+	if (likely(a->type != TYPE_NULL))
 		return true;
 	value_free(a);
 	value_set_null(result);
@@ -108,7 +108,7 @@ value_is_unary(Value* result, Value* a)
 always_inline hot static inline bool
 value_is(Value* result, Value* a, Value* b)
 {
-	if (unlikely(a->type != VALUE_NULL && b->type != VALUE_NULL))
+	if (unlikely(a->type != TYPE_NULL && b->type != TYPE_NULL))
 		return true;
 	value_free(a);
 	value_free(b);

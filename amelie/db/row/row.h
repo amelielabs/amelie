@@ -154,7 +154,5 @@ row_copy(Row* self)
 	return row;
 }
 
-Row* row_create_key(Keys*, Stack*);
-Row* row_update(Row*, Columns*, Stack*, int);
 Row* row_alter_add(Row*, Buf*);
 Row* row_alter_drop(Row*, int);

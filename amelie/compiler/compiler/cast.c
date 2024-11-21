@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -44,265 +44,265 @@ struct Cast
 };
 
 static Cast
-cast_op[OP_MAX][VALUE_MAX][VALUE_MAX] =
+cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 {
 	[OP_EQU] =
 	{
 		// bool
-		[VALUE_BOOL][VALUE_BOOL]           = { VALUE_BOOL, CEQUII },
-		[VALUE_BOOL][VALUE_INT]            = { VALUE_BOOL, CEQUII },
+		[TYPE_BOOL][TYPE_BOOL]           = { TYPE_BOOL, CEQUII },
+		[TYPE_BOOL][TYPE_INT]            = { TYPE_BOOL, CEQUII },
 
 		// int
-		[VALUE_INT][VALUE_BOOL]            = { VALUE_BOOL, CEQUII },
-		[VALUE_INT][VALUE_INT]             = { VALUE_BOOL, CEQUII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_BOOL, CEQUID },
-		[VALUE_INT][VALUE_TIMESTAMP]       = { VALUE_BOOL, CEQUII },
+		[TYPE_INT][TYPE_BOOL]            = { TYPE_BOOL, CEQUII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CEQUII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CEQUID },
+		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CEQUII },
 
 		// double
-		[VALUE_DOUBLE][VALUE_BOOL]         = { VALUE_BOOL, CEQUDI },
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_BOOL, CEQUDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_BOOL, CEQUDD },
+		[TYPE_DOUBLE][TYPE_BOOL]         = { TYPE_BOOL, CEQUDI },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_BOOL, CEQUDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_BOOL, CEQUDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INT]       = { VALUE_BOOL, CEQUII },
-		[VALUE_TIMESTAMP][VALUE_TIMESTAMP] = { VALUE_BOOL, CEQUII },
+		[TYPE_TIMESTAMP][TYPE_INT]       = { TYPE_BOOL, CEQUII },
+		[TYPE_TIMESTAMP][TYPE_TIMESTAMP] = { TYPE_BOOL, CEQUII },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_BOOL, CEQULL },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CEQULL },
 
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_BOOL, CEQUSS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CEQUSS },
 
 		// json
-		[VALUE_JSON][VALUE_JSON]           = { VALUE_BOOL, CEQUJJ },
+		[TYPE_JSON][TYPE_JSON]           = { TYPE_BOOL, CEQUJJ },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_BOOL, CEQUVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CEQUVV },
 	},
 
 	[OP_GTE] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_BOOL, CGTEII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_BOOL, CGTEID },
-		[VALUE_INT][VALUE_TIMESTAMP]       = { VALUE_BOOL, CGTEII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CGTEII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CGTEID },
+		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CGTEII },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_BOOL, CGTEDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_BOOL, CGTEDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_BOOL, CGTEDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_BOOL, CGTEDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INT]       = { VALUE_BOOL, CGTEII },
-		[VALUE_TIMESTAMP][VALUE_TIMESTAMP] = { VALUE_BOOL, CGTEII },
+		[TYPE_TIMESTAMP][TYPE_INT]       = { TYPE_BOOL, CGTEII },
+		[TYPE_TIMESTAMP][TYPE_TIMESTAMP] = { TYPE_BOOL, CGTEII },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_BOOL, CGTELL },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CGTELL },
 
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_BOOL, CGTESS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CGTESS },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_BOOL, CGTEVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CGTEVV },
 	},
 
 	[OP_GT] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_BOOL, CGTII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_BOOL, CGTID },
-		[VALUE_INT][VALUE_TIMESTAMP]       = { VALUE_BOOL, CGTII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CGTII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CGTID },
+		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CGTII },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_BOOL, CGTDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_BOOL, CGTDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_BOOL, CGTDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_BOOL, CGTDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INT]       = { VALUE_BOOL, CGTII },
-		[VALUE_TIMESTAMP][VALUE_TIMESTAMP] = { VALUE_BOOL, CGTII },
+		[TYPE_TIMESTAMP][TYPE_INT]       = { TYPE_BOOL, CGTII },
+		[TYPE_TIMESTAMP][TYPE_TIMESTAMP] = { TYPE_BOOL, CGTII },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_BOOL, CGTLL },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CGTLL },
 
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_BOOL, CGTSS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CGTSS },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_BOOL, CGTVV }
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CGTVV }
 	},
 
 	[OP_LTE] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_BOOL, CLTEII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_BOOL, CLTEID },
-		[VALUE_INT][VALUE_TIMESTAMP]       = { VALUE_BOOL, CLTEII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CLTEII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CLTEID },
+		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CLTEII },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_BOOL, CLTEDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_BOOL, CLTEDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_BOOL, CLTEDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_BOOL, CLTEDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INT]       = { VALUE_BOOL, CLTEII },
-		[VALUE_TIMESTAMP][VALUE_TIMESTAMP] = { VALUE_BOOL, CLTEII },
+		[TYPE_TIMESTAMP][TYPE_INT]       = { TYPE_BOOL, CLTEII },
+		[TYPE_TIMESTAMP][TYPE_TIMESTAMP] = { TYPE_BOOL, CLTEII },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_BOOL, CLTELL },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CLTELL },
 
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_BOOL, CLTESS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CLTESS },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_BOOL, CLTEVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CLTEVV },
 	},
 
 	[OP_LT] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_BOOL, CLTII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_BOOL, CLTID },
-		[VALUE_INT][VALUE_TIMESTAMP]       = { VALUE_BOOL, CLTII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CLTII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CLTID },
+		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CLTII },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_BOOL, CLTDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_BOOL, CLTDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_BOOL, CLTDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_BOOL, CLTDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INT]       = { VALUE_BOOL, CLTII },
-		[VALUE_TIMESTAMP][VALUE_TIMESTAMP] = { VALUE_BOOL, CLTII },
+		[TYPE_TIMESTAMP][TYPE_INT]       = { TYPE_BOOL, CLTII },
+		[TYPE_TIMESTAMP][TYPE_TIMESTAMP] = { TYPE_BOOL, CLTII },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_BOOL, CLTLL },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CLTLL },
 
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_BOOL, CLTSS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CLTSS },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_BOOL, CLTVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CLTVV },
 	},
 
 	[OP_ADD] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT,       CADDII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_DOUBLE,    CADDID },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CADDII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_DOUBLE,    CADDID },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_DOUBLE,    CADDDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_DOUBLE,    CADDDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_DOUBLE,    CADDDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_DOUBLE,    CADDDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INTERVAL]  = { VALUE_TIMESTAMP, CADDTL },
+		[TYPE_TIMESTAMP][TYPE_INTERVAL]  = { TYPE_TIMESTAMP, CADDTL },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_INTERVAL,  CADDLL },
-		[VALUE_INTERVAL][VALUE_TIMESTAMP]  = { VALUE_TIMESTAMP, CADDLT },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_INTERVAL,  CADDLL },
+		[TYPE_INTERVAL][TYPE_TIMESTAMP]  = { TYPE_TIMESTAMP, CADDLT },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_VECTOR,    CADDVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_VECTOR,    CADDVV },
 	},
 
 	[OP_SUB] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT,       CSUBII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_DOUBLE,    CSUBID },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CSUBII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_DOUBLE,    CSUBID },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_DOUBLE,    CSUBDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_DOUBLE,    CSUBDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_DOUBLE,    CSUBDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_DOUBLE,    CSUBDD },
 
 		// timestamp
-		[VALUE_TIMESTAMP][VALUE_INTERVAL]  = { VALUE_TIMESTAMP, CSUBTL },
+		[TYPE_TIMESTAMP][TYPE_INTERVAL]  = { TYPE_TIMESTAMP, CSUBTL },
 
 		// interval
-		[VALUE_INTERVAL][VALUE_INTERVAL]   = { VALUE_INTERVAL,  CSUBLL },
-		[VALUE_INTERVAL][VALUE_TIMESTAMP]  = { VALUE_TIMESTAMP, CSUBLT },
+		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_INTERVAL,  CSUBLL },
+		[TYPE_INTERVAL][TYPE_TIMESTAMP]  = { TYPE_TIMESTAMP, CSUBLT },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_VECTOR,    CSUBVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_VECTOR,    CSUBVV },
 	},
 
 	[OP_MUL] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT,       CMULII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_DOUBLE,    CMULID },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CMULII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_DOUBLE,    CMULID },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_DOUBLE,    CMULDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_DOUBLE,    CMULDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_DOUBLE,    CMULDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_DOUBLE,    CMULDD },
 
 		// vector
-		[VALUE_VECTOR][VALUE_VECTOR]       = { VALUE_VECTOR,    CMULVV },
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_VECTOR,    CMULVV },
 	},
 
 	[OP_DIV] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT,       CDIVII },
-		[VALUE_INT][VALUE_DOUBLE]          = { VALUE_DOUBLE,    CDIVID },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CDIVII },
+		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_DOUBLE,    CDIVID },
 
 		// double
-		[VALUE_DOUBLE][VALUE_INT]          = { VALUE_DOUBLE,    CDIVDI },
-		[VALUE_DOUBLE][VALUE_DOUBLE]       = { VALUE_DOUBLE,    CDIVDD },
+		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_DOUBLE,    CDIVDI },
+		[TYPE_DOUBLE][TYPE_DOUBLE]       = { TYPE_DOUBLE,    CDIVDD },
 	},
 
 	[OP_MOD] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT,       CMODII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CMODII },
 	},
 
 	[OP_CAT] =
 	{
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_STRING,    CCATSS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_STRING,    CCATSS },
 	},
 
 	[OP_IDX] =
 	{
 		// json
-		[VALUE_JSON][VALUE_STRING]         = { VALUE_JSON,      CIDXJS },
-		[VALUE_JSON][VALUE_INT]            = { VALUE_JSON,      CIDXJI },
+		[TYPE_JSON][TYPE_STRING]         = { TYPE_JSON,      CIDXJS },
+		[TYPE_JSON][TYPE_INT]            = { TYPE_JSON,      CIDXJI },
 
 		// vector
-		[VALUE_VECTOR][VALUE_INT]          = { VALUE_DOUBLE,    CIDXVI },
+		[TYPE_VECTOR][TYPE_INT]          = { TYPE_DOUBLE,    CIDXVI },
 	},
 
 	[OP_LIKE] =
 	{
 		// string
-		[VALUE_STRING][VALUE_STRING]       = { VALUE_STRING,    CLIKESS },
+		[TYPE_STRING][TYPE_STRING]       = { TYPE_STRING,    CLIKESS },
 	},
 
 	[OP_BOR] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT, CBORII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT, CBORII },
 	},
 
 	[OP_BAND] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT, CBANDII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT, CBANDII },
 	},
 
 	[OP_BXOR] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT, CBXORII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT, CBXORII },
 	},
 
 	[OP_BSHL] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT, CBSHLII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT, CBSHLII },
 	},
 
 	[OP_BSHR] =
 	{
 		// int
-		[VALUE_INT][VALUE_INT]             = { VALUE_INT, CBSHRII },
+		[TYPE_INT][TYPE_INT]             = { TYPE_INT, CBSHRII },
 	}
 };
 
@@ -336,11 +336,11 @@ cast_operator(Compiler* self, int op, int l, int r)
 	auto lt   = rtype(self, l);
 	auto rt   = rtype(self, r);
 	auto cast = &cast_op[op][lt][rt];
-	if (unlikely(cast->type == VALUE_NULL))
+	if (unlikely(cast->type == TYPE_NULL))
 	{
 		error("unsupported operation: <%s> %s <%s>",
-		      value_typeof(lt), cast_op_names[op],
-		      value_typeof(rt));
+		      type_of(lt), cast_op_names[op],
+		      type_of(rt));
 	}
 	int rc;
 	rc = op3(self, cast->op, rpin(self, cast->type), l, r);

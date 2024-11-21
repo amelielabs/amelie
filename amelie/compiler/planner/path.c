@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -115,15 +115,15 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 	auto column = key->column;
 	switch (value->id) {
 	case KINT:
-		if (unlikely(column->type != VALUE_INT))
+		if (unlikely(column->type != TYPE_INT))
 			return false;
 		break;
 	case KSTRING:
-		if (unlikely(column->type != VALUE_STRING))
+		if (unlikely(column->type != TYPE_STRING))
 			return false;
 		break;
 	case KTIMESTAMP:
-		if (unlikely(column->type != VALUE_TIMESTAMP))
+		if (unlikely(column->type != TYPE_TIMESTAMP))
 			return false;
 		break;
 	}

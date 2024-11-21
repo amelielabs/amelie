@@ -15,6 +15,13 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
 
@@ -27,12 +34,12 @@ agg_merge_row(Set* self, Value* row, int* aggs)
 	// merge aggregate states
 	for (int col = 0; col < self->count_columns; col++)
 	{
-		if (src[col].type == VALUE_NULL)
+		if (src[col].type == TYPE_NULL)
 		{
 			value_move(&src[col], &row[col]);
 			continue;
 		}
-		if (row[col].type == VALUE_NULL)
+		if (row[col].type == TYPE_NULL)
 			continue;
 
 		switch (aggs[col]) {
@@ -108,12 +115,12 @@ static inline int64_t
 agg_int_of(Value* row, int col, const char* func)
 {
 	int64_t value;
-	if (likely(row[col].type == VALUE_INT ||
-			   row[col].type == VALUE_TIMESTAMP ||
-			   row[col].type == VALUE_BOOL))
+	if (likely(row[col].type == TYPE_INT ||
+			   row[col].type == TYPE_TIMESTAMP ||
+			   row[col].type == TYPE_BOOL))
 		value = row[col].integer;
 	else
-	if (row[col].type == VALUE_DOUBLE)
+	if (row[col].type == TYPE_DOUBLE)
 		value = row[col].dbl;
 	else
 		error("%s(): unexpected value type", func);
@@ -124,12 +131,12 @@ static inline double
 agg_double_of(Value* row, int col, const char* func)
 {
 	double value;
-	if (likely(row[col].type == VALUE_DOUBLE))
+	if (likely(row[col].type == TYPE_DOUBLE))
 		value = row[col].dbl;
 	else
-	if (row[col].type == VALUE_INT ||
-	    row[col].type == VALUE_TIMESTAMP ||
-	    row[col].type == VALUE_BOOL)
+	if (row[col].type == TYPE_INT ||
+	    row[col].type == TYPE_TIMESTAMP ||
+	    row[col].type == TYPE_BOOL)
 		value = row[col].integer;
 	else
 		error("%s(): unexpected value type", func);
@@ -147,13 +154,13 @@ agg_write(Set* self, Value* row, int* aggs)
 	{
 		for (int col = 0; col < self->count_columns; col++)
 		{
-			if (row[col].type == VALUE_NULL)
+			if (row[col].type == TYPE_NULL)
 				continue;
 
 			switch (aggs[col]) {
 			case AGG_INT_COUNT:
 			{
-				if (likely(src[col].type == VALUE_INT))
+				if (likely(src[col].type == TYPE_INT))
 					src[col].integer++;
 				else
 					value_set_int(&src[col], 1);
@@ -162,7 +169,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_INT_MIN:
 			{
 				int64_t value = agg_int_of(row, col, "min");
-				if (likely(src[col].type == VALUE_INT))
+				if (likely(src[col].type == TYPE_INT))
 				{
 					if (value < src[col].integer)
 						src[col].integer = value;
@@ -174,7 +181,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_INT_MAX:
 			{
 				int64_t value = agg_int_of(row, col, "max");
-				if (likely(src[col].type == VALUE_INT))
+				if (likely(src[col].type == TYPE_INT))
 				{
 					if (value > src[col].integer)
 						src[col].integer = value;
@@ -186,7 +193,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_INT_SUM:
 			{
 				int64_t value = agg_int_of(row, col, "sum");
-				if (likely(src[col].type == VALUE_INT))
+				if (likely(src[col].type == TYPE_INT))
 					src[col].integer += value;
 				else
 					value_set_int(&src[col], value);
@@ -195,9 +202,9 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_INT_AVG:
 			{
 				int64_t value = agg_int_of(row, col, "avg");
-				if (unlikely(src[col].type == VALUE_NULL))
+				if (unlikely(src[col].type == TYPE_NULL))
 				{
-					src[col].type = VALUE_AVG;
+					src[col].type = TYPE_AVG;
 					avg_init(&src[col].avg);
 				}
 				avg_add_int(&src[col].avg, value, 1);
@@ -206,7 +213,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_DOUBLE_MIN:
 			{
 				double value = agg_double_of(row, col, "min");
-				if (likely(src[col].type == VALUE_DOUBLE))
+				if (likely(src[col].type == TYPE_DOUBLE))
 				{
 					if (value < src[col].dbl)
 						src[col].dbl = value;
@@ -218,7 +225,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_DOUBLE_MAX:
 			{
 				double value = agg_double_of(row, col, "max");
-				if (likely(src[col].type == VALUE_DOUBLE))
+				if (likely(src[col].type == TYPE_DOUBLE))
 				{
 					if (value > src[col].dbl)
 						src[col].dbl = value;
@@ -230,7 +237,7 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_DOUBLE_SUM:
 			{
 				double value = agg_double_of(row, col, "sum");
-				if (likely(src[col].type == VALUE_DOUBLE))
+				if (likely(src[col].type == TYPE_DOUBLE))
 					src[col].dbl += value;
 				else
 					value_set_double(&src[col], value);
@@ -239,9 +246,9 @@ agg_write(Set* self, Value* row, int* aggs)
 			case AGG_DOUBLE_AVG:
 			{
 				double value = agg_int_of(row, col, "avg");
-				if (unlikely(src[col].type == VALUE_NULL))
+				if (unlikely(src[col].type == TYPE_NULL))
 				{
-					src[col].type = VALUE_AVG;
+					src[col].type = TYPE_AVG;
 					avg_init(&src[col].avg);
 				}
 				avg_add_double(&src[col].avg, value, 1);

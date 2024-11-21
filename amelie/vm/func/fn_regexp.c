@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -77,13 +77,13 @@ fn_regexp_like(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -108,13 +108,13 @@ fn_regexp_substr(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -155,13 +155,13 @@ fn_regexp_match(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -204,14 +204,14 @@ fn_regexp_replace(Call* self)
 	// (string, pattern, string)
 	auto argv = self->argv;
 	call_validate(self, 3);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
-	call_validate_arg(self, 2, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
+	call_validate_arg(self, 2, TYPE_STRING);
 
 	// first call, compile pattern
 	auto pattern = &argv[1].string;
@@ -263,9 +263,9 @@ fn_regexp_replace(Call* self)
 
 FunctionDef fn_regexp_def[] =
 {
-	{ "public", "regexp_like",    VALUE_BOOL,   fn_regexp_like,     true  },
-	{ "public", "regexp_substr",  VALUE_STRING, fn_regexp_substr,   true  },
-	{ "public", "regexp_match",   VALUE_JSON,   fn_regexp_match,    true  },
-	{ "public", "regexp_replace", VALUE_STRING, fn_regexp_replace,  true  },
-	{  NULL,     NULL,            VALUE_NULL,   NULL,               false }
+	{ "public", "regexp_like",    TYPE_BOOL,   fn_regexp_like,     true  },
+	{ "public", "regexp_substr",  TYPE_STRING, fn_regexp_substr,   true  },
+	{ "public", "regexp_match",   TYPE_JSON,   fn_regexp_match,    true  },
+	{ "public", "regexp_replace", TYPE_STRING, fn_regexp_replace,  true  },
+	{  NULL,     NULL,            TYPE_NULL,   NULL,               false }
 };

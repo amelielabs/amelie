@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -72,14 +72,14 @@ scan_key(Scan* self, Target* target)
 		// set min
 		int rexpr;
 		switch (key->column->type) {
-		case VALUE_INT:
-			rexpr = op1(cp, CINT_MIN, rpin(cp, VALUE_INT));
+		case TYPE_INT:
+			rexpr = op1(cp, CINT_MIN, rpin(cp, TYPE_INT));
 			break;
-		case VALUE_TIMESTAMP:
-			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp, VALUE_TIMESTAMP));
+		case TYPE_TIMESTAMP:
+			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp, TYPE_TIMESTAMP));
 			break;
-		case VALUE_STRING:
-			rexpr = op1(cp, CSTRING_MIN, rpin(cp, VALUE_STRING));
+		case TYPE_STRING:
+			rexpr = op1(cp, CSTRING_MIN, rpin(cp, TYPE_STRING));
 			break;
 		}
 		op1(cp, CPUSH, rexpr);
@@ -227,12 +227,12 @@ scan_store(Scan* self, Target* target)
 	int op_close;
 	int op_next;
 	switch (rtype(cp, target->r)) {
-	case VALUE_SET:
+	case TYPE_SET:
 		op_open  = CCURSOR_SET_OPEN;
 		op_close = CCURSOR_SET_CLOSE;
 		op_next  = CCURSOR_SET_NEXT;
 		break;
-	case VALUE_MERGE:
+	case TYPE_MERGE:
 		op_open  = CCURSOR_MERGE_OPEN;
 		op_close = CCURSOR_MERGE_CLOSE;
 		op_next  = CCURSOR_MERGE_NEXT;

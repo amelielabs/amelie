@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 
@@ -234,7 +234,7 @@ cmerge(Vm* self, Op* op)
 	int64_t limit = INT64_MAX;
 	if (op->c != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->c)->type != VALUE_INT))
+		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
 			error("LIMIT: integer type expected");
 		limit = reg_at(&self->r, op->c)->integer;
 		if (unlikely(limit < 0))
@@ -245,7 +245,7 @@ cmerge(Vm* self, Op* op)
 	int64_t offset = 0;
 	if (op->d != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->d)->type != VALUE_INT))
+		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
 			error("OFFSET: integer type expected");
 		offset = reg_at(&self->r, op->d)->integer;
 		if (unlikely(offset < 0))
@@ -275,7 +275,7 @@ cmerge_recv(Vm* self, Op* op)
 	int64_t limit = INT64_MAX;
 	if (op->b != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->b)->type != VALUE_INT))
+		if (unlikely(reg_at(&self->r, op->b)->type != TYPE_INT))
 			error("LIMIT: integer type expected");
 		limit = reg_at(&self->r, op->b)->integer;
 		if (unlikely(limit < 0))
@@ -286,7 +286,7 @@ cmerge_recv(Vm* self, Op* op)
 	int64_t offset = 0;
 	if (op->c != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->c)->type != VALUE_INT))
+		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
 			error("OFFSET: integer type expected");
 		offset = reg_at(&self->r, op->c)->integer;
 		if (unlikely(offset < 0))
@@ -303,7 +303,7 @@ cmerge_recv(Vm* self, Op* op)
 	{
 		auto req = list_at(Req, link);
 		auto value = &req->result;
-		if (value->type == VALUE_SET)
+		if (value->type == TYPE_SET)
 		{
 			merge_add(merge, (Set*)value->store);
 			value_reset(value);
@@ -328,7 +328,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 	{
 		auto req = list_at(Req, link);
 		auto value = &req->result;
-		assert(value->type == VALUE_SET);
+		assert(value->type == TYPE_SET);
 		list[pos++] = value;
 	}
 

@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -39,7 +39,7 @@ fn_type(Call* self)
 	auto arg = self->argv[0];
 	call_validate(self, 1);
 	Str string;
-	str_set_cstr(&string, value_typeof(arg.type));
+	str_set_cstr(&string, type_of(arg.type));
 	value_set_string(self->result, &string, NULL);
 }
 
@@ -48,24 +48,24 @@ fn_string(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = self->argv[0];
-	if (unlikely(arg.type == VALUE_NULL))
+	if (unlikely(arg.type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	auto data = buf_create();
 	switch (arg.type) {
-	case VALUE_STRING:
+	case TYPE_STRING:
 		buf_printf(data, "%.*s", str_size(&arg.string), str_of(&arg.string));
 		break;
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 	{
 		buf_reserve(data, 512);
 		int size = interval_write(&arg.interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
 
-	case VALUE_TIMESTAMP:
+	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
 		int size = timestamp_write(arg.integer, self->vm->local->timezone, (char*)data->position, 128);
@@ -88,7 +88,7 @@ fn_int(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
-	if (arg->type == VALUE_JSON)
+	if (arg->type == TYPE_JSON)
 	{
 		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
@@ -96,24 +96,24 @@ fn_int(Call* self)
 
 	int64_t value = 0;
 	switch (arg->type) {
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		value = arg->dbl;
 		break;
-	case VALUE_BOOL:
-	case VALUE_INT:
-	case VALUE_TIMESTAMP:
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 		value = arg->integer;
 		break;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		if (str_toint(&arg->string, &value) == -1)
 			error("int(): failed to cast string");
 		break;
-	case VALUE_NULL:
+	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
 		error("int(%s): operation type is not supported",
-		      value_typeof(arg->type));
+		      type_of(arg->type));
 		break;
 	}
 	value_set_int(self->result, value);
@@ -124,7 +124,7 @@ fn_bool(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
-	if (arg->type == VALUE_JSON)
+	if (arg->type == TYPE_JSON)
 	{
 		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
@@ -132,26 +132,26 @@ fn_bool(Call* self)
 
 	bool value = false;
 	switch (arg->type) {
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		value = arg->dbl > 0.0;
 		break;
-	case VALUE_BOOL:
-	case VALUE_INT:
-	case VALUE_TIMESTAMP:
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 		value = arg->integer > 0;
 		break;
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 		value = (arg->interval.us + arg->interval.d + arg->interval.m) > 0;
 		break;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		value = str_size(&arg->string) > 0;
 		break;
-	case VALUE_NULL:
+	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
 		error("bool(%s): operation type is not supported",
-		      value_typeof(arg->type));
+		      type_of(arg->type));
 		break;
 	}
 	value_set_bool(self->result, value);
@@ -162,7 +162,7 @@ fn_double(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
-	if (arg->type == VALUE_JSON)
+	if (arg->type == TYPE_JSON)
 	{
 		value_decode(self->result, arg->json, NULL);
 		arg = self->result;
@@ -170,20 +170,20 @@ fn_double(Call* self)
 
 	double value = 0;
 	switch (arg->type) {
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 		value = arg->dbl;
 		break;
-	case VALUE_BOOL:
-	case VALUE_INT:
-	case VALUE_TIMESTAMP:
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 		value = arg->integer;
 		break;
-	case VALUE_NULL:
+	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
 		error("double(%s): operation type is not supported",
-		      value_typeof(arg->type));
+		      type_of(arg->type));
 		break;
 	}
 	value_set_double(self->result, value);
@@ -194,19 +194,19 @@ fn_json(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = self->argv[0];
-	if (unlikely(arg.type == VALUE_NULL))
+	if (unlikely(arg.type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == VALUE_JSON))
+	if (unlikely(arg.type == TYPE_JSON))
 	{
 		value_copy(self->result, &arg);
 		return;
 	}
-	if (unlikely(arg.type != VALUE_STRING))
+	if (unlikely(arg.type != TYPE_STRING))
 		error("json(%s): operation type is not supported",
-		      value_typeof(arg.type));
+		      type_of(arg.type));
 
 	auto buf = buf_create();
 	guard_buf(buf);
@@ -225,19 +225,19 @@ fn_interval(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = self->argv[0];
-	if (unlikely(arg.type == VALUE_NULL))
+	if (unlikely(arg.type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == VALUE_INTERVAL))
+	if (unlikely(arg.type == TYPE_INTERVAL))
 	{
 		value_copy(self->result, &arg);
 		return;
 	}
-	if (unlikely(arg.type != VALUE_STRING))
+	if (unlikely(arg.type != TYPE_STRING))
 		error("interval(%s): operation type is not supported",
-		      value_typeof(arg.type));
+		      type_of(arg.type));
 	Interval iv;
 	interval_init(&iv);
 	interval_read(&iv, &arg.string);
@@ -253,17 +253,17 @@ fn_timestamp(Call* self)
 	// timestamp(string)
 	// timestamp(int)
 	switch (self->argv[0].type) {
-	case VALUE_STRING:
+	case TYPE_STRING:
 	{
 		Timezone* timezone = self->vm->local->timezone;
 		if (self->argc == 2)
 		{
-			if (unlikely(self->argv[1].type == VALUE_NULL))
+			if (unlikely(self->argv[1].type == TYPE_NULL))
 			{
 				value_set_null(self->result);
 				return;
 			}
-			call_validate_arg(self, 1, VALUE_STRING);
+			call_validate_arg(self, 1, TYPE_STRING);
 			auto name = &self->argv[1].string;
 			timezone = timezone_mgr_find(global()->timezone_mgr, name);
 			if (! timezone)
@@ -277,7 +277,7 @@ fn_timestamp(Call* self)
 		value_set_timestamp(self->result, time);
 		break;
 	}
-	case VALUE_INT:
+	case TYPE_INT:
 	{
 		if (self->argc == 2)
 			error("timestamp(): unexpected argument");
@@ -287,14 +287,14 @@ fn_timestamp(Call* self)
 		value_set_timestamp(self->result, timestamp_of(&ts, NULL));
 		break;
 	}
-	case VALUE_NULL:
+	case TYPE_NULL:
 	{
 		value_set_null(self->result);
 		break;
 	}
 	default:
 		error("timestamp(%s): operation type is not supported",
-		      value_typeof(self->argv[0].type));
+		      type_of(self->argv[0].type));
 	}
 }
 
@@ -303,19 +303,19 @@ fn_vector(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = self->argv[0];
-	if (unlikely(arg.type == VALUE_NULL))
+	if (unlikely(arg.type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == VALUE_VECTOR))
+	if (unlikely(arg.type == TYPE_VECTOR))
 	{
 		value_copy(self->result, &arg);
 		return;
 	}
-	if (unlikely(arg.type != VALUE_JSON))
+	if (unlikely(arg.type != TYPE_JSON))
 		error("vector(%s): operation type is not supported",
-		      value_typeof(arg.type));
+		      type_of(arg.type));
 
 	uint8_t* pos = arg.json;
 	if (! json_is_array(pos))
@@ -355,14 +355,14 @@ fn_vector(Call* self)
 
 FunctionDef fn_cast_def[] =
 {
-	{ "public", "type",      VALUE_STRING,    fn_type,      false },
-	{ "public", "string",    VALUE_STRING,    fn_string,    false },
-	{ "public", "int",       VALUE_INT,       fn_int,       false },
-	{ "public", "bool",      VALUE_BOOL,      fn_bool,      false },
-	{ "public", "double",    VALUE_DOUBLE,    fn_double,    false },
-	{ "public", "json",      VALUE_JSON,      fn_json,      false },
-	{ "public", "interval",  VALUE_INTERVAL,  fn_interval,  false },
-	{ "public", "timestamp", VALUE_TIMESTAMP, fn_timestamp, false },
-	{ "public", "vector",    VALUE_VECTOR,    fn_vector,    false },
-	{  NULL,     NULL,       VALUE_NULL,      NULL,         false }
+	{ "public", "type",      TYPE_STRING,    fn_type,      false },
+	{ "public", "string",    TYPE_STRING,    fn_string,    false },
+	{ "public", "int",       TYPE_INT,       fn_int,       false },
+	{ "public", "bool",      TYPE_BOOL,      fn_bool,      false },
+	{ "public", "double",    TYPE_DOUBLE,    fn_double,    false },
+	{ "public", "json",      TYPE_JSON,      fn_json,      false },
+	{ "public", "interval",  TYPE_INTERVAL,  fn_interval,  false },
+	{ "public", "timestamp", TYPE_TIMESTAMP, fn_timestamp, false },
+	{ "public", "vector",    TYPE_VECTOR,    fn_vector,    false },
+	{  NULL,     NULL,       TYPE_NULL,      NULL,         false }
 };

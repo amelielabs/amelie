@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -49,7 +49,7 @@ emit_select_expr(Compiler* self, AstSelect* select)
 
 		auto column = column_allocate();
 		column_set_name(column, &as->r->string);
-		column_set_type(column, rt, value_sizeof_default(rt));
+		column_set_type(column, rt, type_sizeof(rt));
 		columns_add(&select->ret.columns, column);
 	}
 	return select->rset;
@@ -106,37 +106,37 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 			agg->id = AGG_INT_COUNT;
 			break;
 		case KMIN:
-			if (rt == VALUE_INT || rt == VALUE_NULL)
+			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_MIN;
 			else
-			if (rt == VALUE_DOUBLE)
+			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MIN;
 			else
 				error("min(): int or double expected");
 			break;
 		case KMAX:
-			if (rt == VALUE_INT || rt == VALUE_NULL)
+			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_MAX;
 			else
-			if (rt == VALUE_DOUBLE)
+			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MAX;
 			else
 				error("max(): int or double expected");
 			break;
 		case KSUM:
-			if (rt == VALUE_INT || rt == VALUE_NULL)
+			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_SUM;
 			else
-			if (rt == VALUE_DOUBLE)
+			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_SUM;
 			else
 				error("sum(): int or double expected");
 			break;
 		case KAVG:
-			if (rt == VALUE_INT || rt == VALUE_NULL)
+			if (rt == TYPE_INT || rt == TYPE_NULL)
 				agg->id = AGG_INT_AVG;
 			else
-			if (rt == VALUE_DOUBLE)
+			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_AVG;
 			else
 				error("avg(): int or double expected");
@@ -151,7 +151,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		column_set_type(column, rt, value_sizeof_default(rt));
+		column_set_type(column, rt, type_sizeof(rt));
 		columns_add(&select->columns_group, column);
 
 		node = node->next;
@@ -194,7 +194,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 
 			// copy column name and type
 			column_set_name(column, &ref->name);
-			column_set_type(column, ref->type, value_sizeof_default(ref->type));
+			column_set_type(column, ref->type, type_sizeof(ref->type));
 		} else
 		{
 			// generate name
@@ -203,7 +203,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 			Str name;
 			str_set_cstr(&name, name_sz);
 			column_set_name(column, &name);
-			column_set_type(column, rt, value_sizeof_default(rt));
+			column_set_type(column, rt, type_sizeof(rt));
 		}
 		columns_add(&select->columns_group, column);
 
@@ -223,7 +223,7 @@ emit_select_on_match_group_target_empty(Compiler* self, AstSelect* select)
 	auto node = select->expr_aggs.list;
 	while (node)
 	{
-		auto rexpr = op1(self, CNULL, rpin(self, VALUE_NULL));
+		auto rexpr = op1(self, CNULL, rpin(self, TYPE_NULL));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 		node = node->next;
@@ -279,7 +279,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 	op1(self, CSET_SORT, select->rset);
 
 	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self, VALUE_BOOL), select->distinct);
+	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), select->distinct);
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
@@ -294,7 +294,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, select->target, select->expr_offset);
 
 	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self, VALUE_MERGE), select->rset,
+	int rmerge = op4(self, CMERGE, rpin(self, TYPE_MERGE), select->rset,
 	                 rlimit, roffset);
 
 	runpin(self, select->rset);
@@ -315,7 +315,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 {
 	// create agg set
 	int rset;
-	rset = op3(self, CSET, rpin(self, VALUE_SET),
+	rset = op3(self, CSET, rpin(self, TYPE_SET),
 	           select->expr_aggs.count,
 	           select->expr_group_by.count);
 	select->rset_agg = rset;
@@ -366,7 +366,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	if (select->expr_order_by.count == 0)
 	{
 		// create result set
-		select->rset = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
+		select->rset = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
 		select->on_match = emit_select_on_match;
 		rresult = select->rset;
 
@@ -377,7 +377,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	{
 		// write order by key types
 		int offset = emit_select_order_by_data(self, select, NULL);
-		select->rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+		select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
 		                   select->ret.count,
 		                   select->expr_order_by.count,
 		                   offset);
@@ -404,7 +404,7 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	// create ordered set
 	int offset = emit_select_order_by_data(self, select, NULL);
 
-	select->rset = op4(self, CSET_ORDERED, rpin(self, VALUE_SET),
+	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
 	                   select->ret.count,
 	                   select->expr_order_by.count,
 	                   offset);
@@ -433,7 +433,7 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	//
 
 	// create result set
-	int rresult = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
+	int rresult = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
 	select->rset = rresult;
 
 	// create data set for nested queries
@@ -460,7 +460,7 @@ emit_select(Compiler* self, Ast* ast)
 	if (select->target == NULL)
 	{
 		// create result set
-		int rresult = op3(self, CSET, rpin(self, VALUE_SET), select->ret.count, 0);
+		int rresult = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
 		select->rset = rresult;
 
 		// push expressions

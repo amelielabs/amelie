@@ -39,7 +39,7 @@ target_lookup_hash(Target* target)
 		auto column = key->column;
 		auto ref = &ast_path_of(target->path)->keys[key->order];
 		assert(ref->start);
-		if (column->type == VALUE_STRING)
+		if (column->type == TYPE_STRING)
 		{
 			hash = hash_murmur3_32((uint8_t*)str_u8(&ref->start->string),
 			                       str_size(&ref->start->string),

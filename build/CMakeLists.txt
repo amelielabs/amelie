@@ -204,6 +204,7 @@ set(AMELIE_SOURCES_DB
 
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
+    ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
     ${AMELIE_ROOT}/vm/store/set.c
     ${AMELIE_ROOT}/vm/store/merge.c

@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -39,12 +39,12 @@ fn_append(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2)
 		error("append(): expected two or more arguments");
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("append(): json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("append(): json array expected");
@@ -59,12 +59,12 @@ fn_push(Call* self)
 	auto argv = self->argv;
 	if (self->argc < 2)
 		error("push(): expected two or more arguments");
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("push(): json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("push(): json array expected");
@@ -78,12 +78,12 @@ fn_pop(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 1);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("pop(): json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("pop(): json array expected");
@@ -95,12 +95,12 @@ fn_pop_back(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 1);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("pop_back(): json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("pop_back(): json array expected");
@@ -112,15 +112,15 @@ fn_put(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_JSON);
+	call_validate_arg(self, 0, TYPE_JSON);
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("put(): json array expected");
-	call_validate_arg(self, 1, VALUE_INT);
+	call_validate_arg(self, 1, TYPE_INT);
 	auto tz = self->vm->local->timezone;
 	value_array_put(self->result, tz, argv[0].json, argv[1].integer, &argv[2]);
 }
@@ -130,15 +130,15 @@ fn_remove(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_JSON);
+	call_validate_arg(self, 0, TYPE_JSON);
 	if (unlikely(! json_is_array(argv[0].json)))
 		error("remove(): json array expected");
-	call_validate_arg(self, 1, VALUE_INT);
+	call_validate_arg(self, 1, TYPE_INT);
 	value_array_remove(self->result, argv[0].json, argv[1].integer);
 }
 
@@ -147,16 +147,16 @@ fn_set(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("set(): json array expected");
 	if (unlikely(! json_is_obj(argv[0].json)))
 		error("set(): json object expected");
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 	auto tz = self->vm->local->timezone;
 	update_set(self->result, tz, argv[0].json, &argv[1].string, &argv[2]);
 }
@@ -166,16 +166,16 @@ fn_unset(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("unset(): json array expected");
 	if (unlikely(! json_is_obj(argv[0].json)))
 		error("unset(): json object expected");
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 	update_unset(self->result, argv[0].json, &argv[1].string);
 }
 
@@ -184,32 +184,32 @@ fn_has(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(argv[0].type != VALUE_JSON))
+	if (unlikely(argv[0].type != TYPE_JSON))
 		error("has(): json array expected");
 	if (unlikely(! json_is_obj(argv[0].json)))
 		error("has(): json object expected");
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 	value_obj_has(self->result, argv[0].json, &argv[1].string);
 }
 
 FunctionDef fn_object_def[] =
 {
 	// array
-	{ "public", "append",    VALUE_JSON, fn_append,   false },
-	{ "public", "push_back", VALUE_JSON, fn_append,   false },
-	{ "public", "push",      VALUE_JSON, fn_push,     false },
-	{ "public", "pop",       VALUE_JSON, fn_pop,      false },
-	{ "public", "pop_back",  VALUE_JSON, fn_pop_back, false },
-	{ "public", "put",       VALUE_JSON, fn_put,      false },
-	{ "public", "remove",    VALUE_JSON, fn_remove,   false },
+	{ "public", "append",    TYPE_JSON, fn_append,   false },
+	{ "public", "push_back", TYPE_JSON, fn_append,   false },
+	{ "public", "push",      TYPE_JSON, fn_push,     false },
+	{ "public", "pop",       TYPE_JSON, fn_pop,      false },
+	{ "public", "pop_back",  TYPE_JSON, fn_pop_back, false },
+	{ "public", "put",       TYPE_JSON, fn_put,      false },
+	{ "public", "remove",    TYPE_JSON, fn_remove,   false },
 	// object
-	{ "public", "set",       VALUE_JSON, fn_set,      false },
-	{ "public", "unset",     VALUE_JSON, fn_unset,    false },
-	{ "public", "has",       VALUE_BOOL, fn_has,      false },
-	{  NULL,     NULL,       VALUE_NULL, NULL,        false }
+	{ "public", "set",       TYPE_JSON, fn_set,      false },
+	{ "public", "unset",     TYPE_JSON, fn_unset,    false },
+	{ "public", "has",       TYPE_BOOL, fn_has,      false },
+	{  NULL,     NULL,       TYPE_NULL, NULL,        false }
 };

@@ -15,6 +15,13 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
 
@@ -176,26 +183,26 @@ set_hash(Set* self, Value* keys)
 		int   data_size = 0;
 		void* data = NULL;
 		switch (value->type) {
-		case VALUE_INT:
-		case VALUE_BOOL:
-		case VALUE_TIMESTAMP:
+		case TYPE_INT:
+		case TYPE_BOOL:
+		case TYPE_TIMESTAMP:
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;
-		case VALUE_DOUBLE:
+		case TYPE_DOUBLE:
 			data = &value->dbl;
 			data_size = sizeof(value->dbl);
 			break;
-		case VALUE_STRING:
+		case TYPE_STRING:
 			data = str_of(&value->string);
 			data_size = str_size(&value->string);
 			break;
-		case VALUE_JSON:
+		case TYPE_JSON:
 			data = value->json;
 			data_size = value->json_size;
 			break;
-		case VALUE_NULL:
-		case VALUE_SET:
+		case TYPE_NULL:
+		case TYPE_SET:
 		default:
 			error("GROUP BY: unsupported key type");
 			break;

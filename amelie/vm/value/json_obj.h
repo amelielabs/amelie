@@ -26,7 +26,7 @@ value_obj(Value* result, Timezone* tz, Stack* stack, int count)
 		auto ref = stack_at(stack, count - i);
 		if ((i % 2) == 0)
 		{
-			if (unlikely(ref->type != VALUE_STRING))
+			if (unlikely(ref->type != TYPE_STRING))
 				error("{}: incorrect object key type");
 		}
 		value_encode(ref, tz, buf);

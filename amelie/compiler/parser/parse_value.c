@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -121,7 +121,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 	double  dbl;
 	auto ast = lex_next(self);
 	switch (column->type) {
-	case VALUE_BOOL:
+	case TYPE_BOOL:
 		if (ast->id == KTRUE)
 			buf_write_i8(data, true);
 		else
@@ -130,7 +130,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		else
 			break;
 		return;
-	case VALUE_INT:
+	case TYPE_INT:
 	{
 		switch (column->type_size) {
 		case 1:
@@ -156,7 +156,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		return;
 	}
-	case VALUE_DOUBLE:
+	case TYPE_DOUBLE:
 	{
 		switch (column->type_size) {
 		case 4:
@@ -172,7 +172,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		return;
 	}
-	case VALUE_STRING:
+	case TYPE_STRING:
 	{
 		if (likely(ast->id == KSTRING)) {
 			encode_string(data, &ast->string);
@@ -180,7 +180,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case VALUE_JSON:
+	case TYPE_JSON:
 	{
 		// parse and encode json value
 		lex_push(self, ast);
@@ -197,7 +197,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		self->pos = json->pos;
 		return;
 	}
-	case VALUE_TIMESTAMP:
+	case TYPE_TIMESTAMP:
 	{
 		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
@@ -224,7 +224,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case VALUE_INTERVAL:
+	case TYPE_INTERVAL:
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
@@ -239,7 +239,7 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 		}
 		break;
 	}
-	case VALUE_VECTOR:
+	case TYPE_VECTOR:
 	{
 		if (! parse_vector(self, ast, data, column))
 			break;
@@ -248,5 +248,5 @@ parse_value(Lex* self, Local* local, Json* json, Buf* data, Column* column)
 	}
 
 	error("column <%.*s> value expected to be '%s'", str_size(&column->name),
-	      str_of(&column->name), value_typeof(column->type));
+	      str_of(&column->name), type_of(column->type));
 }

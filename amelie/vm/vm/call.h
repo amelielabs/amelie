@@ -40,12 +40,12 @@ call_validate(Call* self, int argc)
 }
 
 static inline void
-call_validate_arg(Call* self, int order, ValueType type)
+call_validate_arg(Call* self, int order, Type type)
 {
 	if (unlikely(self->argv[order].type != type))
 		error("%.*s(): expected %s for argument %d, but got %s", str_size(&self->function->name),
 		      str_of(&self->function->name),
-		      value_typeof(type),
+		      type_of(type),
 		      order,
-		      value_typeof(self->argv[order].type));
+		      type_of(self->argv[order].type));
 }

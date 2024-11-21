@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,82 +27,11 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
-
-hot static inline int
-type_read(Str* name, int* type_size)
-{
-	*type_size = 0;
-	int type = -1;
-	if (str_is(name, "bool", 4) ||
-	    str_is(name, "boolean", 7))
-	{
-		type = VALUE_BOOL;
-		*type_size = sizeof(int8_t);
-	} else
-	if (str_is(name, "int8", 4) ||
-	    str_is(name, "i8", 2))
-	{
-		type = VALUE_INT;
-		*type_size = sizeof(int8_t);
-	} else
-	if (str_is(name, "int16", 5) ||
-	    str_is(name, "i16", 3))
-	{
-		type = VALUE_INT;
-		*type_size = sizeof(int16_t);
-	} else
-	if (str_is(name, "int", 3)     ||
-	    str_is(name, "integer", 7) ||
-	    str_is(name, "int32", 5)   ||
-	    str_is(name, "i32", 3))
-	{
-		type = VALUE_INT;
-		*type_size = sizeof(int32_t);
-	} else
-	if (str_is(name, "int64", 5) ||
-	    str_is(name, "i64", 3))
-	{
-		type = VALUE_INT;
-		*type_size = sizeof(int64_t);
-	} else
-	if (str_is(name, "float", 5))
-	{
-		type = VALUE_DOUBLE;
-		*type_size = sizeof(float);
-	} else
-	if (str_is(name, "double", 6))
-	{
-		type = VALUE_DOUBLE;
-		*type_size = sizeof(double);
-	} else
-	if (str_is(name, "text", 4) ||
-	    str_is(name, "string", 6))
-	{
-		type = VALUE_STRING;
-	} else
-	if (str_is(name, "json", 4))
-	{
-		type = VALUE_JSON;
-	} else
-	if (str_is(name, "timestamp", 9))
-	{
-		type = VALUE_TIMESTAMP;
-		*type_size = sizeof(int64_t);
-	} else
-	if (str_is(name, "interval", 8))
-	{
-		type = VALUE_INTERVAL;
-		*type_size = sizeof(Interval);
-	} else
-	if (str_is(name, "vector", 6))
-	{
-		type = VALUE_VECTOR;
-	}
-	return type;
-}
 
 int
 parse_type(Stmt* self, Column* column, int* type_size)
@@ -145,9 +72,9 @@ parse_key(Stmt* self, Keys* keys)
 			      str_of(&name->string));
 
 		// validate key type
-		if ((column->type != VALUE_INT    && column->type_size >= 4) &&
-		     column->type != VALUE_STRING &&
-		     column->type != VALUE_TIMESTAMP)
+		if ((column->type != TYPE_INT    && column->type_size >= 4) &&
+		     column->type != TYPE_STRING &&
+		     column->type != TYPE_TIMESTAMP)
 			error("<%.*s> column key can be text, int32, int64 or timestamp",
 			      str_size(&column->name),
 			      str_of(&column->name));
@@ -243,7 +170,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KSERIAL:
 		{
 			// ensure the column has type INT64
-			if (column->type != VALUE_INT || column->type_size != 8)
+			if (column->type != TYPE_INT || column->type_size != 8)
 				error("SERIAL column <%.*s> must be int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
@@ -256,7 +183,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KRANDOM:
 		{
 			// ensure the column has type INT
-			if (column->type != VALUE_INT || column->type_size != 8)
+			if (column->type != TYPE_INT || column->type_size != 8)
 				error("RANDOM column <%.*s> must be int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
@@ -297,9 +224,9 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			constraint_set_not_null(&column->constraint, true);
 
 			// validate key type
-			if ((column->type != VALUE_INT    && column->type_size >= 4) &&
-			     column->type != VALUE_STRING &&
-			     column->type != VALUE_TIMESTAMP)
+			if ((column->type != TYPE_INT    && column->type_size >= 4) &&
+			     column->type != TYPE_STRING &&
+			     column->type != TYPE_TIMESTAMP)
 				error("<%.*s> column key can be text, int32, int64 or timestamp",
 				      str_size(&column->name),
 				      str_of(&column->name));

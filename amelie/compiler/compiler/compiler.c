@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -419,7 +419,7 @@ emit_recv(Compiler* self)
 		// (first node only, single result)
 
 		// CRECV_TO (note: set or merge received)
-		r = op2(self, CRECV_TO, rpin(self, VALUE_SET), stmt->order);
+		r = op2(self, CRECV_TO, rpin(self, TYPE_SET), stmt->order);
 		break;
 	}
 
@@ -445,7 +445,7 @@ emit_recv(Compiler* self)
 
 	auto has_result = r != -1;
 	if (! has_result)
-		r = op1(self, CNULL, rpin(self, VALUE_NULL));
+		r = op1(self, CNULL, rpin(self, TYPE_NULL));
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);

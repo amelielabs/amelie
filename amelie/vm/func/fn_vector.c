@@ -15,8 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_value.h>
-#include <amelie_store.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
 #include <amelie_http.h>
@@ -29,6 +27,8 @@
 #include <amelie_checkpoint.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
+#include <amelie_value.h>
+#include <amelie_store.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -38,13 +38,13 @@ fn_cos_distance(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	if (unlikely(argv[0].type == VALUE_NULL))
+	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, VALUE_VECTOR);
-	call_validate_arg(self, 1, VALUE_VECTOR);
+	call_validate_arg(self, 0, TYPE_VECTOR);
+	call_validate_arg(self, 1, TYPE_VECTOR);
 	if (argv[0].vector->size != argv[1].vector->size)
 		error("cos_distance(): vector sizes does not match");
 	auto distance = vector_distance(argv[0].vector, argv[1].vector);
@@ -53,6 +53,6 @@ fn_cos_distance(Call* self)
 
 FunctionDef fn_vector_def[] =
 {
-	{ "public", "cos_distance", VALUE_DOUBLE, fn_cos_distance, false },
-	{  NULL,     NULL,          VALUE_NULL,   NULL,            false }
+	{ "public", "cos_distance", TYPE_DOUBLE, fn_cos_distance, false },
+	{  NULL,     NULL,          TYPE_NULL,   NULL,            false }
 };

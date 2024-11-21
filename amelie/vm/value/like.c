@@ -15,12 +15,19 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
+#include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
 #include <amelie_value.h>
 
 hot void
 value_like(Value* result, Value* str, Value* pattern)
 {
-	if (! (str->type == VALUE_STRING && pattern->type == VALUE_STRING))
+	if (! (str->type == TYPE_STRING && pattern->type == TYPE_STRING))
 		error("LIKE: arguments expected to be strings");
 
 	value_set_bool(result, false);

@@ -38,12 +38,12 @@ body_add(Buf* self, Value* value, Timezone* tz, bool pretty, bool wrap)
 	wrap = wrap && buf_empty(self);
 	if (wrap)
 	{
-		if (value->type == VALUE_JSON && json_is_array(value->json))
+		if (value->type == TYPE_JSON && json_is_array(value->json))
 			wrap = false;
 		else
-			wrap = (value->type != VALUE_VECTOR &&
-			        value->type != VALUE_SET    &&
-			        value->type != VALUE_MERGE);
+			wrap = (value->type != TYPE_VECTOR &&
+			        value->type != TYPE_SET    &&
+			        value->type != TYPE_MERGE);
 	}
 	if (wrap)
 		body_begin(self);
