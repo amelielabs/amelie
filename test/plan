@@ -31,8 +31,8 @@ group functions
 test fn_cast
 #test func_null
 test fn_json
-#test func_string
-#test func_regexp
+test fn_string
+test fn_regexp
 #test func_math
 #test func_misc
 #test func_time
