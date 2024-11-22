@@ -307,7 +307,7 @@ FunctionDef fn_time_def[] =
 	{ "public", "at_timezone",     TYPE_STRING,    fn_at_timezone,     false },
 	{ "public", "date_bin",        TYPE_TIMESTAMP, fn_date_bin,        false },
 	{ "public", "date_trunc",      TYPE_TIMESTAMP, fn_date_trunc,      false },
-	{ "public", "date_trunc",      TYPE_INTERVAL,  fn_interval_trunc,  false },
+	{ "public", "interval_trunc",  TYPE_INTERVAL,  fn_interval_trunc,  false },
 	{ "public", "extract",         TYPE_INT,       fn_extract,         false },
 	{  NULL,     NULL,             TYPE_NULL,      NULL,               false }
 };

@@ -1,70 +1,83 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: date_bin
+# test: date_bin()
 set timezone to 'UTC'
+select date_bin(null, TIMESTAMP '2001-01-01 00:00:00');
+[null]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 ["2020-02-11 15:30:00+00"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17');
 ["2020-02-11 15:30:00+00"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
 ["2020-02-11 15:32:30+00"]
-# test: date_bin (call as a method)
 select TIMESTAMP '2020-02-11 15:44:17'::date_bin(INTERVAL '15 minutes');
 ["2020-02-11 15:30:00+00"]
 select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval);
 ["2020-02-11 15:30:00+00"]
-select *, '2020-02-11 15:44:17'::timestamp::date_bin(*::interval) from ['15 days', '2 hours', '1 hour 30 minutes', '15 minutes', '10 seconds', '100 milliseconds', '250 microseconds']
-[["15 days", "2020-02-06 00:00:00+00"], ["2 hours", "2020-02-11 14:00:00+00"], ["1 hour 30 minutes", "2020-02-11 15:00:00+00"], ["15 minutes", "2020-02-11 15:30:00+00"], ["10 seconds", "2020-02-11 15:44:10+00"], ["100 milliseconds", "2020-02-11 15:44:17+00"], ["250 microseconds", "2020-02-11 15:44:17+00"]]
-# test: date_bin (negative interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 days'::interval)
+["2020-02-06 00:00:00+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('2 hours'::interval)
+["2020-02-11 14:00:00+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('1 hour 30 min'::interval)
+["2020-02-11 15:00:00+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval)
+["2020-02-11 15:30:00+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('10 sec'::interval)
+["2020-02-11 15:44:10+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('100 ms'::interval)
+["2020-02-11 15:44:17+00"]
+select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval)
+["2020-02-11 15:44:17+00"]
+# test: date_bin(negative interval)
 select date_bin(INTERVAL '-15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(): invalid argument"}
-# test: date_bin (month)
+# test: date_bin(month)
 select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(): month and year intervals are not supported"}
-# test: date_bin (year)
+# test: date_bin(year)
 select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(): month and year intervals are not supported"}
-# test: date_bin (timezone)
+# test: date_bin(timezone)
 set timezone to 'Asia/Famagusta'
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 ["2020-02-11 15:30:00+02"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
 ["2020-02-11 15:32:30+02"]
 set timezone to 'UTC'
-select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin
-[["2022-01-01 00:00:00+00", 1], ["2022-01-01 01:00:00+00", 1], ["2022-01-01 02:00:00+00", 1], ["2022-01-01 03:00:00+00", 1], ["2022-01-01 04:00:00+00", 1], ["2022-01-01 05:00:00+00", 1], ["2022-01-01 06:00:00+00", 1], ["2022-01-01 07:00:00+00", 1], ["2022-01-01 08:00:00+00", 1], ["2022-01-01 09:00:00+00", 1], ["2022-01-01 10:00:00+00", 1], ["2022-01-01 11:00:00+00", 1], ["2022-01-01 12:00:00+00", 1], ["2022-01-01 13:00:00+00", 1], ["2022-01-01 14:00:00+00", 1], ["2022-01-01 15:00:00+00", 1], ["2022-01-01 16:00:00+00", 1], ["2022-01-01 17:00:00+00", 1], ["2022-01-01 18:00:00+00", 1], ["2022-01-01 19:00:00+00", 1], ["2022-01-01 20:00:00+00", 1], ["2022-01-01 21:00:00+00", 1], ["2022-01-01 22:00:00+00", 1], ["2022-01-01 23:00:00+00", 1], ["2022-01-02 00:00:00+00", 1]]
-select bin, count(*) from generate_series(timestamp '2022-01-01 00:00:01', timestamp '2022-01-02 00:00:01', interval '1 hour') group by date_bin(*, '1 hour'::interval) bin order by bin desc
-[["2022-01-02 00:00:00+00", 1], ["2022-01-01 23:00:00+00", 1], ["2022-01-01 22:00:00+00", 1], ["2022-01-01 21:00:00+00", 1], ["2022-01-01 20:00:00+00", 1], ["2022-01-01 19:00:00+00", 1], ["2022-01-01 18:00:00+00", 1], ["2022-01-01 17:00:00+00", 1], ["2022-01-01 16:00:00+00", 1], ["2022-01-01 15:00:00+00", 1], ["2022-01-01 14:00:00+00", 1], ["2022-01-01 13:00:00+00", 1], ["2022-01-01 12:00:00+00", 1], ["2022-01-01 11:00:00+00", 1], ["2022-01-01 10:00:00+00", 1], ["2022-01-01 09:00:00+00", 1], ["2022-01-01 08:00:00+00", 1], ["2022-01-01 07:00:00+00", 1], ["2022-01-01 06:00:00+00", 1], ["2022-01-01 05:00:00+00", 1], ["2022-01-01 04:00:00+00", 1], ["2022-01-01 03:00:00+00", 1], ["2022-01-01 02:00:00+00", 1], ["2022-01-01 01:00:00+00", 1], ["2022-01-01 00:00:00+00", 1]]
-# test: date_trunc(interval year)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
+# test: interval_trunc(interval year)
+select interval_trunc(null, 'year')
+[null]
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
 ["12 years"]
-# test: date_trunc(interval month)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
+# test: interval_trunc(interval month)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
 ["12 years 5 months"]
-# test: date_trunc(interval week)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
+# test: interval_trunc(interval week)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
 {"msg": "unknown interval truncate field"}
-# test: date_trunc(interval day)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
+# test: interval_trunc(interval day)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
 ["12 years 5 months 3 days"]
-select '12 years 5 month 3 days 2 hr 47 min 33 sec'::interval::date_trunc('day')
+select '12 years 5 month 3 days 2 hr 47 min 33 sec'::interval::interval_trunc('day')
 ["12 years 5 months 3 days"]
-# test: date_trunc(interval hour)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'hour')
+# test: interval_trunc(interval hour)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'hour')
 ["12 years 5 months 3 days 2 hours"]
-# test: date_trunc(interval minute)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'minute')
+# test: interval_trunc(interval minute)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'minute')
 ["12 years 5 months 3 days 2 hours 47 minutes"]
-# test: date_trunc(interval second)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'sec')
+# test: interval_trunc(interval second)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'sec')
 ["12 years 5 months 3 days 2 hours 47 minutes 33 seconds"]
-# test: date_trunc(interval ms)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'ms')
+# test: interval_trunc(interval ms)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'ms')
 ["12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms"]
-# test: date_trunc(interval us)
-select date_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
+# test: interval_trunc(interval us)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
 ["12 years 5 months 3 days 2 hours 47 minutes 33 seconds 500 ms 400 us"]
 # test: date_trunc(timestamp year)
+select date_trunc(null, TIMESTAMP '2001-01-16 20:38:40');
+[null]
 select date_trunc('year', TIMESTAMP '2001-01-16 20:38:40');
 ["2001-01-01 00:00:00+00"]
 select date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
@@ -116,6 +129,8 @@ select date_trunc('month', TIMESTAMP '2011-12-16 20:38:40');
 ["2011-12-01 00:00:00+00"]
 select date_trunc(TIMESTAMP '2011-12-16 20:38:40', 'month');
 ["2011-12-01 00:00:00+00"]
+select date_trunc(null, 'month');
+[null]
 # test: date_trunc(timestamp week)
 select date_trunc('week', TIMESTAMP '2001-02-16 20:38:40');
 {"msg": "unknown timestamp truncate field"}
@@ -169,6 +184,8 @@ select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
 [2001]
 select public.extract('year', TIMESTAMP '2011-12-16 20:38:40');
 [2011]
+select public.extract(null, TIMESTAMP '2011-12-16 20:38:40');
+[null]
 # test: extract(timestamp month)
 select public.extract('month', TIMESTAMP '2001-01-16 20:38:40');
 [1]
