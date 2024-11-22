@@ -141,7 +141,6 @@ OpDesc ops[] =
 	{ CSUBDD, "subdd" },
 	{ CSUBTL, "subtl" },
 	{ CSUBLL, "subll" },
-	{ CSUBLT, "sublt" },
 	{ CSUBVV, "subvv" },
 
 	// mul

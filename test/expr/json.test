@@ -45,25 +45,6 @@ select [{}]
 select [ select 123 ]
 select [ select 1, 2 ]
 
-# test: array [] operator
-select [][]
-select [][0]
-select [][1]
-select 1[]
-select 1[0]
-select [1][0]
-select [1][1]
-
-select [[1,2,3], 5, [7]][0]
-select [[1,2,3], 5, [7]][1]
-select [[1,2,3], 5, [7]][2]
-select [[1,2,3], 5, [7]][-1]
-select [[1,2,3], 5, [7]][3]
-explain select [[1,2,3], 5, [7]][1]
-
-select [[1,2,3], 5, [7]].0
-select [[1,2,3], 5, [7]].'0'
-
 # test: object {}
 select {}
 select {}::type
@@ -111,15 +92,6 @@ select {"id": [1,2,3]::vector }
 select {"id": select 123 }
 select {"id": select 1, 2 }
 
-# test: object . operator
-select {"a": 0, "b": 1}.b
-select {"a": 0, "b": {"c": 18}}.b
-select {"a": 0, "b": {"c": 18}}.b.c
-explain select {"a": 0, "b": {"c": 18}}.b.c
-select {"a": 0, "b": {"c": 18}}.b.c::type
-select {"a": 0, "b": {"c": 18}}.b.c + 1
-select {"a": 0, "b": {"c": 18}}.b.c::int + 1
-
 # test: case 1
 select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}
 select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}::string
@@ -150,6 +122,89 @@ select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string
 select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::json
+
+# test: json = json
+select [1,2,3] = [1,2,3]
+select [1,2,3] = [1,2,3,4]
+explain select [1,2,3] = [1,2,3,4]
+
+select {"id": 48, "data": 55} = {"id": 48, "data": 55}
+explain select {"id": 48, "data": 55} = {"id": 48, "data": 55}
+select {"id": 48, "data": 55} = {"id": 48}
+
+# test: json = null
+select [1,2,3] = null
+select [null][0] = null
+explain select [null][0] = null
+
+# test: json = unsupported
+select [1,2,3] = [1,2,3]::vector
+
+# test: json <> json
+select [1,2,3] <> [1,2,3]
+select [1,2,3] <> [1,2,3,4]
+explain select [1,2,3] <> [1,2,3,4]
+
+select {"id": 48, "data": 55} <> {"id": 48, "data": 55}
+explain select {"id": 48, "data": 55} <> {"id": 48, "data": 55}
+select {"id": 48, "data": 55} <> {"id": 48}
+
+# test: json <> null
+select [1,2,3] <> null
+select [null][0] <> null
+explain select [null][0] <> null
+
+# test: json <> unsupported
+select [1,2,3] <> [1,2,3]::vector
+
+# test: json [] string
+select {"id":48}.id
+select {"id":48}["id"]
+explain select {"id":48}.id
+explain select {"id":48}["id"]
+
+# test: json . string
+select {"a": 0, "b": 1}.b
+select {"a": 0, "b": {"c": 18}}.b
+select {"a": 0, "b": {"c": 18}}.b.c
+explain select {"a": 0, "b": {"c": 18}}.b.c
+select {"a": 0, "b": {"c": 18}}.b.c::type
+select {"a": 0, "b": {"c": 18}}.b.c + 1
+select {"a": 0, "b": {"c": 18}}.b.c::int + 1
+
+# test: json [] int
+select {"id":48}[1]
+select [1,2,3][0]
+select [1,2,3][1]
+select [1,2,3][2]
+select [1,2,3][3]
+explain select [1,2,3][-1]
+
+select [][]
+select [][0]
+select [][1]
+select 1[]
+select 1[0]
+select [1][0]
+select [1][1]
+
+select [[1,2,3], 5, [7]][0]
+select [[1,2,3], 5, [7]][1]
+select [[1,2,3], 5, [7]][2]
+select [[1,2,3], 5, [7]][-1]
+select [[1,2,3], 5, [7]][3]
+explain select [[1,2,3], 5, [7]][1]
+
+select [[1,2,3], 5, [7]].0
+select [[1,2,3], 5, [7]].'0'
+
+# test: json [] null
+select [1,2,3][null]
+select {"id":48}[null]
+
+# test: json [] unsupported
+select {"id":48}[[]]
+select [1,2,3][[]]
 
 disconnect S0
 close E0

@@ -223,7 +223,6 @@ vm_run(Vm*       self,
 		&&csubdd,
 		&&csubtl,
 		&&csubll,
-		&&csublt,
 		&&csubvv,
 
 		// mul
@@ -480,8 +479,11 @@ cnullop:
 	op_next;
 
 cnot:
-	value_set_bool(&r[op->a], !value_is_true(&r[op->b]));
-	value_free(&r[op->b]);
+	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	{
+		value_set_bool(&r[op->a], !value_is_true(&r[op->b]));
+		value_free(&r[op->b]);
+	}
 	op_next;
 
 cborii:
@@ -543,7 +545,7 @@ cequll:
 cequss:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
-		value_set_bool(&r[op->a], !str_compare(&r[op->b].string, &r[op->c].string));
+		value_set_bool(&r[op->a], !str_compare_fn(&r[op->b].string, &r[op->c].string));
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
@@ -843,16 +845,6 @@ csubll:
 	{
 		interval_sub(&iv, &r[op->b].interval, &r[op->c].interval);
 		value_set_interval(&r[op->a], &iv);
-	}
-	op_next;
-
-csublt:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		timestamp_init(&ts);
-		timestamp_read_value(&ts, r[op->c].integer);
-		timestamp_sub(&ts, &r[op->b].interval);
-		value_set_timestamp(&r[op->a], timestamp_of(&ts, NULL));
 	}
 	op_next;
 

@@ -122,7 +122,6 @@ enum
 	CSUBDD,
 	CSUBTL,
 	CSUBLL,
-	CSUBLT,
 	CSUBVV,
 
 	// mul

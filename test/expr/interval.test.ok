@@ -157,7 +157,326 @@ select '-1 hour 10 minutes 5 seconds'::interval
 ["-49 minutes -55 seconds"]
 select '-1 hour 10 minutes -5 seconds'::interval
 ["-50 minutes -5 seconds"]
-# test: add
+# test: between
+select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
+[true]
+select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
+[false]
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+[true]
+# test: interval = interval
+select '1 hour'::interval = '1 hours'::interval
+[true]
+select '1 hour'::interval = '1 hours 10 seconds'::interval
+[false]
+explain select  '1 hour'::interval = '1 hours 10 seconds'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      7      0     # 1 hours 10 seconds",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "equll               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval = null
+select '1 hour'::interval = null
+[null]
+explain select  '1 hour'::interval = null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval = unsupported
+select '1 hour'::interval = [1,2,3]
+{"msg": "unsupported operation: <interval> = <json>"}
+# test: interval <> interval
+select '1 hour'::interval <> '1 hours'::interval
+[false]
+select '1 hour'::interval <> '1 hours 10 seconds'::interval
+[true]
+explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      7      0     # 1 hours 10 seconds",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "equll               3      1      2     ",
+      "08": "not                 1      3      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             0      0      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval <> null
+select '1 hour'::interval <> null
+[null]
+explain select  '1 hour'::interval <> null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "not                 1      3      0     ",
+      "07": "push                1      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "cte_set             0      0      0     ",
+      "10": "body                0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval <> unsupported
+select '1 hour'::interval <> [1,2,3]
+{"msg": "unsupported operation: <interval> = <json>"}
+# test: interval >= interval
+select '1 hour'::interval >= '1 hour'::interval
+[true]
+select '60 minutes'::interval >= '1 hour'::interval
+[true]
+select '59 minutes'::interval >= '1 hour'::interval
+[false]
+select '61 minutes'::interval >= '1 hour'::interval
+[true]
+explain select '61 minutes'::interval >= '1 hour'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 61 minutes",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      11     0     # 1 hour",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "gtell               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval >= null
+select '1 hour'::interval >= null
+[null]
+explain select '1 hour'::interval >= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval >= unsupported
+select '1 hour'::interval >= null
+[null]
+# test: interval > interval
+select '1 hour'::interval > '1 hour'::interval
+[false]
+select '60 minutes'::interval > '1 hour'::interval
+[false]
+select '59 minutes'::interval > '1 hour'::interval
+[false]
+select '61 minutes'::interval > '1 hour'::interval
+[true]
+explain select '61 minutes'::interval > '1 hour'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 61 minutes",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      11     0     # 1 hour",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "gtll                3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval > null
+select '1 hour'::interval > null
+[null]
+explain select '1 hour'::interval > null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval > unsupported
+select '1 hour'::interval > null
+[null]
+# test: interval <= interval
+select '1 hour'::interval <= '1 hour'::interval
+[true]
+select '60 minutes'::interval <= '1 hour'::interval
+[true]
+select '59 minutes'::interval <= '1 hour'::interval
+[true]
+select '61 minutes'::interval <= '1 hour'::interval
+[false]
+explain select '61 minutes'::interval <= '1 hour'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 61 minutes",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      11     0     # 1 hour",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "ltell               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval <= null
+select '1 hour'::interval <= null
+[null]
+explain select '1 hour'::interval <= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval <= unsupported
+select '1 hour'::interval <= null
+[null]
+# test: interval < interval
+select '1 hour'::interval < '1 hour'::interval
+[false]
+select '60 minutes'::interval < '1 hour'::interval
+[false]
+select '59 minutes'::interval < '1 hour'::interval
+[true]
+select '61 minutes'::interval < '1 hour'::interval
+[false]
+explain select '61 minutes'::interval < '1 hour'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 61 minutes",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      11     0     # 1 hour",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "ltll                3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval < null
+select '1 hour'::interval < null
+[null]
+explain select '1 hour'::interval < null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "null                2      0      0     ",
+      "05": "nullop              3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval < unsupported
+select '1 hour'::interval < null
+[null]
+# test: interval + interval
 select  '1 hour'::interval + '2 hours'::interval
 ["3 hours"]
 select ('1 hour'::interval + '2 hours'::interval)::string
@@ -168,7 +487,56 @@ select  '1 hour'::interval + '-2 hours'::interval
 ["-1 hours"]
 select  '5 days 1 hour'::interval + '-2 hours'::interval
 ["5 days -1 hours"]
-# test: sub
+explain select  '5 days 1 hour'::interval + '-2 hours'::interval
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 5 days 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      14     0     # -2 hours",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.interval()",
+      "07": "addll               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval + timestamp
+select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
+["1970-01-01 01:00:00+00"]
+explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.interval()",
+      "04": "string              2      7      0     # 1970-01-01 00:00:00.000000",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.timestamp()",
+      "07": "addlt               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "body                0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: interval + null
+select '1 hour'::interval + null
+[null]
+# test: interval + unsupported
+select '1 hour'::interval + []
+{"msg": "unsupported operation: <interval> + <json>"}
+# test: interval - interval
 select  '1 hour'::interval - '2 hours'::interval
 ["-1 hours"]
 select  '10 hour'::interval - '2 hours'::interval
@@ -177,49 +545,8 @@ select  '1 year 1 day 10 hour'::interval - '2 hours'::interval
 ["1 year 1 day 8 hours"]
 select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
 ["1 day 8 hours"]
-# test: eq
-select  '1 hour'::interval = '1 hours'::interval
-[true]
-select  '1 hour'::interval = '1 hours 10 seconds'::interval
-[false]
-# test: lte
-select  '1 hour'::interval <= '1 hour'::interval
-[true]
-select  '60 minutes'::interval <= '1 hour'::interval
-[true]
-select  '10 hour'::interval <= '1 hour'::interval
-[false]
-# test: lt
-select  '1 hour'::interval < '1 hour'::interval
-[false]
-select  '60 minutes'::interval < '1 hour'::interval
-[false]
-select  '59 minutes'::interval < '1 hour'::interval
-[true]
-select  '10 hour'::interval < '1 hour'::interval
-[false]
-# test: gte
-select  '1 hour'::interval >= '1 hour'::interval
-[true]
-select  '60 minutes'::interval >= '1 hour'::interval
-[true]
-select  '59 minutes'::interval >= '1 hour'::interval
-[false]
-select  '61 minutes'::interval >= '1 hour'::interval
-[true]
-# test: gt
-select  '1 hour'::interval > '1 hour'::interval
-[false]
-select  '60 minutes'::interval > '1 hour'::interval
-[false]
-select  '61 minutes'::interval > '1 hour'::interval
-[true]
-# test: between
-select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
-[true]
-select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
-[false]
-select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
-[true]
+# test: interval - timestamp
+select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp
+{"msg": "unsupported operation: <interval> - <timestamp>"}
 disconnect S0
 close E0

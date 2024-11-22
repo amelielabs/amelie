@@ -1,0 +1,1109 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: int
+explain select 0
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "body                0      0      0     ",
+      "06": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0
+[0]
+select 1234
+[1234]
+explain select -1234
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1234",
+      "02": "negi                2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+select -1234
+[-1234]
+# test: int limits
+select 4294967295
+[4294967295]
+select -4294967295
+[-4294967295]
+select 9223372036854775807
+[9223372036854775807]
+select -9223372036854775807
+[-9223372036854775807]
+select 18446744073709551615
+[-1]
+# test: int = bool
+select 1 = true
+[true]
+select 1 = false
+[false]
+explain select 1 = true
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "bool                2      1      0     ",
+      "03": "equii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int = int
+select 1 = 1
+[true]
+select 1 = 123
+[false]
+select 1 = 0
+[false]
+explain select 1 = 18
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "int                 2      -      0     # 18",
+      "03": "equii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int = double
+select 1 = 1.0
+[true]
+select 1 = 12.3
+[false]
+select 1 = 0.14
+[false]
+explain select 1 = 1.0000
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1",
+      "03": "equid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int = timestamp
+select 0 = '1970-01-01 00:00:00'::timestamp
+[true]
+explain select 0 = '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "equii               3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0 = current_timestamp
+[false]
+# test: int = null
+select 1 = null
+[null]
+explain select 1 = null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int = unsupported
+select 1 = [1,2,3]
+{"msg": "unsupported operation: <int> = <json>"}
+select 1 = [1,2,3]::vector
+{"msg": "unsupported operation: <int> = <vector>"}
+# test: int <> bool
+select 1 <> true
+[false]
+select 1 <> false
+[true]
+explain select 1 <> true
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "bool                2      1      0     ",
+      "03": "equii               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <> int
+select 1 <> 1
+[false]
+select 1 <> 123
+[true]
+select 1 <> 0
+[true]
+explain select 1 <> 18
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "int                 2      -      0     # 18",
+      "03": "equii               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <> double
+select 1 <> 1.0
+[false]
+select 1 <> 12.3
+[true]
+select 1 <> 0.14
+[true]
+explain select 1 <> 1.0000
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1",
+      "03": "equid               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <> timestamp
+select 0 <> '1970-01-01 00:00:00'::timestamp
+[false]
+explain select 0 <> '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "equii               3      1      2     ",
+      "06": "not                 1      3      0     ",
+      "07": "push                1      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "cte_set             0      0      0     ",
+      "10": "body                0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0 <> current_timestamp
+[true]
+# test: int <> null
+select 1 <> null
+[null]
+explain select 1 <> null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "body                0      0      0     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <> unsupported
+select 1 <> [1,2,3]
+{"msg": "unsupported operation: <int> = <json>"}
+select 1 <> [1,2,3]::vector
+{"msg": "unsupported operation: <int> = <vector>"}
+# test: int >= int
+select 1 >= 0
+[true]
+select 1 >= 1
+[true]
+select 1 >= 2
+[false]
+select -1 >= -0
+[false]
+select -1 >= 0
+[false]
+select -1 >= -10
+[true]
+select -11 >= -10
+[false]
+explain select -1 >= -10
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "negi                2      1      0     ",
+      "03": "int                 1      -      0     # 10",
+      "04": "negi                3      1      0     ",
+      "05": "gteii               1      2      3     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int >= double
+select 1 >= 0.11
+[true]
+select 1 >= 1.11
+[false]
+explain select 1 >= 1.11
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.11",
+      "03": "gteid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int >= timestamp
+select 1 >= current_timestamp
+[false]
+select 0 >= '1970-01-01 00:00:00'::timestamp
+[true]
+explain select 0 >= '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "gteii               3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int >= null
+select 1 >= null
+[null]
+explain select 1 >= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int >= unsupported
+explain select 1 >= []
+{"msg": "unsupported operation: <int> >= <json>"}
+# test: int > int
+select 1 > 0
+[true]
+select 1 > 1
+[false]
+select 1 > 2
+[false]
+select -1 > -0
+[false]
+select -1 > 0
+[false]
+select -1 > -10
+[true]
+select -11 > -10
+[false]
+explain select -1 > -10
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "negi                2      1      0     ",
+      "03": "int                 1      -      0     # 10",
+      "04": "negi                3      1      0     ",
+      "05": "gtii                1      2      3     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int > double
+select 1 > 0.11
+[true]
+select 1 > 1.11
+[false]
+explain select 1 > 1.11
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.11",
+      "03": "gtid                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int > timestamp
+select 1 > current_timestamp
+[false]
+select 0 > '1970-01-01 00:00:00'::timestamp
+[false]
+explain select 0 > '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "gtii                3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int > null
+select 1 > null
+[null]
+explain select 1 > null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int > unsupported
+explain select 1 > []
+{"msg": "unsupported operation: <int> > <json>"}
+# test: int <= int
+select 1 <= 0
+[false]
+select 1 <= 1
+[true]
+select 1 <= 2
+[true]
+select -1 <= -0
+[true]
+select -1 <= 0
+[true]
+select -1 <= -10
+[false]
+select -11 <= -10
+[true]
+explain select -1 <= -10
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "negi                2      1      0     ",
+      "03": "int                 1      -      0     # 10",
+      "04": "negi                3      1      0     ",
+      "05": "lteii               1      2      3     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <= double
+select 1 <= 0.11
+[false]
+select 1 <= 1.11
+[true]
+explain select 1 <= 1.11
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.11",
+      "03": "lteid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <= timestamp
+select 1 <= current_timestamp
+[true]
+select 0 <= '1970-01-01 00:00:00'::timestamp
+[true]
+explain select 0 <= '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "lteii               3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <= null
+select 1 <= null
+[null]
+explain select 1 <= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int <= unsupported
+explain select 1 <= []
+{"msg": "unsupported operation: <int> <= <json>"}
+# test: int < int
+select 1 < 0
+[false]
+select 1 < 1
+[false]
+select 1 < 2
+[true]
+select -1 < -0
+[true]
+select -1 < 0
+[true]
+select -1 < -10
+[false]
+select -11 < -10
+[true]
+explain select -1 < -10
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "negi                2      1      0     ",
+      "03": "int                 1      -      0     # 10",
+      "04": "negi                3      1      0     ",
+      "05": "ltii                1      2      3     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int < double
+select 1 < 0.11
+[false]
+select 1 < 1.11
+[true]
+explain select 1 < 1.11
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.11",
+      "03": "ltid                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int < timestamp
+select 1 < current_timestamp
+[true]
+select 0 < '1970-01-01 00:00:00'::timestamp
+[false]
+explain select 0 < '1970-01-01 00:00:00'::timestamp
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "string              2      0      0     # 1970-01-01 00:00:00",
+      "03": "push                2      0      0     ",
+      "04": "call                2      -      1     # public.timestamp()",
+      "05": "ltii                3      1      2     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "body                0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int < null
+select 1 < null
+[null]
+explain select 1 < null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int < unsupported
+explain select 1 < []
+{"msg": "unsupported operation: <int> < <json>"}
+# test: int + int
+select 1 + 1
+[2]
+explain select 1 + 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "int                 2      -      0     # 1",
+      "03": "addii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 1 + 4294967295
+[4294967296]
+select 1 + -4294967295
+[-4294967294]
+select 1 + 9223372036854775807
+[-9223372036854775808]
+select 1 + -9223372036854775807
+[-9223372036854775806]
+select 1 + 18446744073709551615
+[0]
+select 1 + -18446744073709551615
+[2]
+# test: int + double
+select 1 + 1.5
+[2.5]
+explain select 1 + 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.5",
+      "03": "addid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int + null
+select 1 + null
+[null]
+# test: int + unsupported
+select 1 + []
+{"msg": "unsupported operation: <int> + <json>"}
+# test: int - int
+select 1 - 1
+[0]
+explain select 1 - 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "int                 2      -      0     # 1",
+      "03": "subii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 1 - 4294967295
+[-4294967294]
+select 1 - -4294967295
+[4294967296]
+select 1 - 9223372036854775807
+[-9223372036854775806]
+select 1 - -9223372036854775807
+[-9223372036854775808]
+select 1 - 18446744073709551615
+[2]
+select 1 - -18446744073709551615
+[0]
+# test: int - double
+select 1 - 1.5
+[-0.5]
+explain select 1 - 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "double              2      0      0     # 1.5",
+      "03": "subid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int - null
+select 1 - null
+[null]
+# test: int - unsupported
+select 1 - []
+{"msg": "unsupported operation: <int> - <json>"}
+# test: int * int
+select 2 * 2
+[4]
+explain select 2 * 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 2",
+      "02": "int                 2      -      0     # 2",
+      "03": "mulii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 4 * 4294967295
+[17179869180]
+select 4 * -4294967295
+[-17179869180]
+# test: int * double
+select 2 * 1.5
+[3]
+explain select 2 * 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 2",
+      "02": "double              2      0      0     # 1.5",
+      "03": "mulid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int * null
+select 1 * null
+[null]
+# test: int * unsupported
+select 1 * []
+{"msg": "unsupported operation: <int> * <json>"}
+# test: int / int
+select 2 / 2
+[1]
+explain select 2 / 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 2",
+      "02": "int                 2      -      0     # 2",
+      "03": "divii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 2 / 0
+{"msg": "zero division"}
+select 4 / 4294967295
+[0]
+# test: int / double
+select 35 / 1.5
+[23.3333]
+explain select 35 / 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 35",
+      "02": "double              2      0      0     # 1.5",
+      "03": "divid               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int / null
+select 1 * null
+[null]
+# test: int / unsupported
+select 1 * []
+{"msg": "unsupported operation: <int> * <json>"}
+# test: int % int
+select 8 % 3
+[2]
+explain select 8 % 3
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 8",
+      "02": "int                 2      -      0     # 3",
+      "03": "modii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 8 % 0
+{"msg": "zero division"}
+# test: int % null
+select 1 % null
+[null]
+# test: int % unsupported
+select 1 % []
+{"msg": "unsupported operation: <int> % <json>"}
+# test: int | int
+select 60 | 13
+[61]
+explain select 60 | 13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "int                 2      -      0     # 13",
+      "03": "borii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int | null
+select 60 | null
+[null]
+explain select 60 | null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int | unsupported
+select 60 | []
+{"msg": "unsupported operation: <int> | <json>"}
+# test: int & int
+select 60 & 13
+[12]
+explain select 60 & 13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "int                 2      -      0     # 13",
+      "03": "bandii              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int & null
+select 60 & null
+[null]
+explain select 60 & null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int & unsupported
+select 60 & []
+{"msg": "unsupported operation: <int> & <json>"}
+# test: int ^ int
+select 60 ^ 13
+[49]
+explain select 60 ^ 13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "int                 2      -      0     # 13",
+      "03": "bxorii              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int ^ null
+select 60 ^ null
+[null]
+explain select 60 ^ null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int ^ unsupported
+select 60 ^ []
+{"msg": "unsupported operation: <int> ^ <json>"}
+# test: int << int
+select 60 << 2
+[240]
+explain select 60 << 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "int                 2      -      0     # 2",
+      "03": "bshlii              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int << null
+select 60 << null
+[null]
+# test: int << unsupported
+select 60 << []
+{"msg": "unsupported operation: <int> << <json>"}
+# test: int >> int
+select 60 >> 2
+[15]
+explain select 60 >> 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 60",
+      "02": "int                 2      -      0     # 2",
+      "03": "bshrii              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: int >> null
+select 60 >> null
+[null]
+# test: int >> unsupported
+select 60 >> []
+{"msg": "unsupported operation: <int> >> <json>"}
+# test: ~int
+select ~10
+[-11]
+# test: -int
+select -18
+[-18]
+explain select -18
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 18",
+      "02": "negi                2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+disconnect S0
+close E0

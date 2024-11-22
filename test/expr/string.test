@@ -1,0 +1,108 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: string
+select "hello world"
+explain select "hello world"
+
+select 'hello world'
+select 'hello world'::type
+select ""
+select ''
+select length("hello world")
+select length("")
+select "hello world"::length
+select "hello world"::length()
+
+# test: string = string
+select '1 hour' = '1 hour'
+select '1 hour' = '1 hours'
+explain select '1 hour' = '1 hours'
+
+# test: string = null
+select '1 hour' = null
+
+# test: string = unsupported
+select '1 hour' = [1,2,3]
+
+# test: string <> string
+select '1 hour' <> '1 hour'
+select '1 hour' <> '1 hours'
+explain select '1 hour' <> '1 hours'
+
+# test: string <> null
+select '1 hour' <> null
+
+# test: string <> unsupported
+select '1 hour' <> [1,2,3]
+
+# test: string >= string
+select '1 hour' >= '1 hours'
+select '1 hour' >= '1 hour'
+explain select '1 hour' >= '1 hour'
+
+# test: string >= null
+explain select '1 hour' >= null
+
+# test: string >= unsupported
+explain select '1 hour' >= []
+
+# test: string > string
+select '1 hour' > '1 hours'
+select '1 hour' > '1 hour'
+explain select '1 hour' > '1 hour'
+
+# test: string > null
+explain select '1 hour' > null
+
+# test: string > unsupported
+explain select '1 hour' > []
+
+# test: string <= string
+select '1 hour' <= '1 hours'
+select '1 hour' <= '1 hour'
+explain select '1 hour' <= '1 hour'
+
+# test: string <= null
+explain select '1 hour' <= null
+
+# test: string <= unsupported
+explain select '1 hour' <= []
+
+# test: string < string
+select '1 hour' < '1 hours'
+select '1 hour' < '1 hour'
+explain select '1 hour' < '1 hour'
+
+# test: string < null
+explain select '1 hour' < null
+
+# test: string < unsupported
+explain select '1 hour' < []
+
+# test: string || string
+select "hello " || "world"
+explain select "hello " || "world"
+
+# test: string || null
+select "hello " || null
+
+# test: string || unsupported
+select "hello " || 1
+select "hello " || []
+
+# test: string LIKE string
+select 'abc' like 'abc'
+select 'abc' like 'abcc'
+explain select 'abc' like 'abc'
+
+# test: string LIKE null
+select 'abc' like null
+
+# test: string LIKE unsupported
+select 'abc' like 1
+
+disconnect S0
+close E0

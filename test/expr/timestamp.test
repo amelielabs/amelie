@@ -129,7 +129,105 @@ select ['1970-01-01 01:12:59.909090'::timestamp::string]
 select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp]
 select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
 
-# test: add
+# test: current_timestamp
+select current_timestamp::int > 0
+
+# test: between
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+
+# test: timestamp = int
+select '1970-01-01 00:00:00'::timestamp = 0
+explain select '1970-01-01 00:00:00'::timestamp = 0
+select current_timestamp = 0
+
+# test: timestamp = timestamp
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp = null
+select '1970-01-01 01:12:59.909090'::timestamp = null
+explain select '1970-01-01 01:12:59.909090'::timestamp = null
+
+# test: timestamp = unsupported
+explain select '1970-01-01 01:12:59.909090'::timestamp = [1,2,3]
+
+# test: timestamp <> int
+select '1970-01-01 00:00:00'::timestamp <> 0
+explain select '1970-01-01 00:00:00'::timestamp <> 0
+select current_timestamp <> 0
+
+# test: timestamp <> timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp <> null
+select '1970-01-01 01:12:59.909090'::timestamp <> null
+explain select '1970-01-01 01:12:59.909090'::timestamp <> null
+
+# test: timestamp <> unsupported
+explain select '1970-01-01 01:12:59.909090'::timestamp <> [1,2,3]
+
+# test: timestamp >= int
+select '1970-01-01 00:00:00'::timestamp >= 0
+explain select '1970-01-01 00:00:00'::timestamp >= 0
+select current_timestamp >= 0
+
+# test: timestamp >= timestamp
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp >= null
+select current_timestamp >= null
+
+# test: timestamp >= unsupported
+select current_timestamp >= []
+
+# test: timestamp > timestamp
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp > null
+select current_timestamp > null
+
+# test: timestamp > unsupported
+select current_timestamp > []
+
+# test: timestamp <= timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp <= null
+select current_timestamp <= null
+
+# test: timestamp <= unsupported
+select current_timestamp <= []
+
+# test: timestamp < timestamp
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
+
+# test: timestamp < null
+select current_timestamp < null
+
+# test: timestamp <= unsupported
+select current_timestamp < []
+
+# test: timestamp + interval
 select '1970-01-01 01:12:59.909090'::timestamp + 1
 select '1970-01-01 01:12:59.909090'::timestamp + '1 hour'
 select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval
@@ -139,8 +237,15 @@ select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval
 
 select '1 year'::interval + '1 year'::interval
 select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
+explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
 
-# test: sub
+# test: timestamp + null
+select '1970-01-01 01:12:59.909090'::timestamp + null
+
+# test: timestamp + unsupported
+select '1970-01-01 01:12:59.909090'::timestamp + []
+
+# test: timestamp - timestamp
 select '1970-01-01 01:12:59.909090'::timestamp + 1
 select '1970-01-01 01:12:59.909090'::timestamp - '1 hour'
 select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval
@@ -148,41 +253,13 @@ select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval
 select '1 year'::interval - '1 year'::interval
 select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval
 select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
+explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
 
-# test: eq
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+# test: timestamp - null
+select '1970-01-01 01:12:59.909090'::timestamp - null
 
-# test: lte
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
-
-# test: lt
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
-
-# test: gte
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
-
-# test: gt
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
-
-# test: current_timestamp
-select current_timestamp::int > 0
-
-# test: between
-select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
-select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+# test: timestamp - unsupported
+select '1970-01-01 01:12:59.909090'::timestamp - []
 
 disconnect S0
 close E0
