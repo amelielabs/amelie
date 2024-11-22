@@ -1,133 +1,91 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: append
+# test: append()
 select append(null)
 {"msg": "append(): expected two or more arguments"}
 select append(null, 1)
-{"msg": "append(): array expected"}
+[null]
 select []::append(1)
-[1]
+[[1]]
 select []::append(1)::append(2)
-[1, 2]
+[[1, 2]]
 select []::append(1)::append(2)::append(3)
-[1, 2, 3]
+[[1, 2, 3]]
 select []::append(1, 2)
-[1, 2]
+[[1, 2]]
 select []::append(1, 2, 3)
-[1, 2, 3]
+[[1, 2, 3]]
 select []::append(1, 2, 3)::size
 [3]
-# test: append update
-create table test (id int primary key, data array)
-insert into test values (0, [])
-update test set data = data::append(1)::append(2)
-update test set data = data::append(3, 4, 5)
-select * from test
-[[0, [1, 2, 3, 4, 5]]]
-drop table test
-# test: push_back
+# test: push_back()
 select []::push_back(1)
-[1]
+[[1]]
 select []::push_back(1)::push_back(2)
-[1, 2]
+[[1, 2]]
 select []::append(1)::append(2)::push_back(3)
-[1, 2, 3]
-# test: push
+[[1, 2, 3]]
+# test: push()
 select push(null)
 {"msg": "push(): expected two or more arguments"}
 select push(null, 0)
-{"msg": "push(): expected array for argument 0, but got null"}
+[null]
 select push([], 0)
-[0]
+[[0]]
 select []::push()
 {"msg": "push(): expected two or more arguments"}
 select []::push(1)
-[1]
+[[1]]
 select []::push(2)::push(1)
-[1, 2]
+[[1, 2]]
 select []::push(2)::push(1)::push(0)
-[0, 1, 2]
+[[0, 1, 2]]
 select []::push(1, 2)
-[1, 2]
+[[1, 2]]
 select [3]::push(1, 2)
-[1, 2, 3]
-# test: push update
-create table test (id int primary key, data array)
-insert into test values (0, [])
-update test set data = push(data, 1)
-select * from test
-[[0, [1]]]
-update test set data = data::push(2)::push(1)
-update test set data = data::push(-1, 0)
-select * from test
-[[0, [-1, 0, 1, 2, 1]]]
-drop table test
-# test: pop
+[[1, 2, 3]]
+# test: pop()
 select pop()
 {"msg": "pop(): expected 1 arguments, but got 0"}
 select pop(null)
-{"msg": "pop(): expected array for argument 0, but got null"}
+[null]
 select pop([])
-[]
+[[]]
 select []::pop
-[]
+[[]]
 select [1]::pop
-[]
+[[]]
 select [1,2]::pop
-[2]
+[[2]]
 select [1,2,3]::pop
-[2, 3]
+[[2, 3]]
 select [1,2,3]::pop::pop
-[3]
+[[3]]
 select [1,2,3]::pop::pop::pop
-[]
+[[]]
 select [1,2,3]::pop::pop::pop::pop
-[]
-# test: pop update
-create table test (id int primary key, data array)
-insert into test values (0, [1,2,3,4])
-update test set data = pop(data)
-select * from test
-[[0, [2, 3, 4]]]
-update test set data = data::pop
-select * from test
-[[0, [3, 4]]]
-update test set data = data::pop::pop
-select * from test
-[[0, []]]
-drop table test
-# test: pop_back
+[[]]
+# test: pop_back()
 select pop_back()
 {"msg": "pop_back(): expected 1 arguments, but got 0"}
 select pop_back(null)
-{"msg": "pop_back(): expected array for argument 0, but got null"}
+[null]
 select pop_back([])
-[]
+[[]]
 select []::pop_back
-[]
+[[]]
 select [1]::pop_back
-[]
+[[]]
 select [1,2]::pop_back
-[1]
+[[1]]
 select [1,2,3]::pop_back
-[1, 2]
+[[1, 2]]
 select [1,2,3]::pop_back::pop_back
-[1]
+[[1]]
 select [1,2,3]::pop_back::pop_back::pop_back
-[]
+[[]]
 select [1,2,3]::pop_back::pop_back::pop_back::pop_back
-[]
-# test: pop_back update
-create table test (id int primary key, data array)
-insert into test values (0, [1,2,3,4])
-update test set data = data::pop_back
-select * from test
-[[0, [1, 2, 3]]]
-update test set data = data::pop::pop_back
-select * from test
-[[0, [2]]]
-drop table test
-# test: put
+[[]]
+# test: put()
 select put(null)
 {"msg": "put(): expected 3 arguments, but got 1"}
 select put(null, 0)
@@ -135,37 +93,30 @@ select put(null, 0)
 select put([], 0, 0)
 {"msg": "put: array index 0 is out of bounds"}
 select put([1], 0, 0)
-[0]
+[[0]]
 select [1,2,3]::put(0, '0')
-["0", 2, 3]
+[["0", 2, 3]]
 select [1,2,3]::put(0, '0')::put(1, '1')
-["0", "1", 3]
+[["0", "1", 3]]
 select [1,2,3]::put(0, '0')::put(1, '1')
-["0", "1", 3]
+[["0", "1", 3]]
 select [1,2,3]::put(0, '0')::put(2, '1')
-["0", 2, "1"]
+[["0", 2, "1"]]
 select [1,2,3]::put(0, '0')::put(3, '1')
 {"msg": "put: array index 3 is out of bounds"}
 select [1,2,3]::put(0, '0')::put(-1, '1')
 {"msg": "put: array index -1 is out of bounds"}
-# test: put update
-create table test (id int primary key, data array)
-insert into test values (0, [1,2,3])
-update test set data = data::put(1, null)
-select * from test
-[[0, [1, null, 3]]]
-drop table test
-# test: remove
+# test: remove()
 select remove(null)
 {"msg": "remove(): expected 2 arguments, but got 1"}
 select remove(null, 0)
-{"msg": "remove(): expected array for argument 0, but got null"}
+[null]
 select remove([], 0)
 {"msg": "remove: array index 0 is out of bounds"}
 select remove([], 1)
 {"msg": "remove: array index 1 is out of bounds"}
 select remove([1], 0)
-[]
+[[]]
 select remove([1], -1)
 {"msg": "remove: array index -1 is out of bounds"}
 select remove([1], -10)
@@ -173,35 +124,28 @@ select remove([1], -10)
 select remove([1, 2], 3)
 {"msg": "remove: array index 3 is out of bounds"}
 select remove([1, 2], 1)
-[1]
+[[1]]
 select remove([1, 2], 1)
-[1]
+[[1]]
 select remove([1, 2, 3], 1)
-[1, 3]
+[[1, 3]]
 select remove([1, 2, 3], 0)
-[2, 3]
+[[2, 3]]
 select remove([1, 2, 3], 2)
-[1, 2]
+[[1, 2]]
 select []::append(1)::append(2)::append(3)
-[1, 2, 3]
+[[1, 2, 3]]
 select []::append(1)::append(2)::append(3)::remove(0)
-[2, 3]
+[[2, 3]]
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0)
-[3]
+[[3]]
 select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0)
-[]
+[[]]
 select []::append(1,2,3)::remove(0)::remove(0)::remove(0)
-[]
-# test: remove update
-create table test (id int primary key, data array)
-insert into test values (0, [1,2,3])
-update test set data = data::remove(1)
-select * from test
-[[0, [1, 3]]]
-drop table test
-# test: set
+[[]]
+# test: set()
 select set(null, "id", 42)
-{"msg": "set(): object expected"}
+[null]
 select {}::set("id", 42)
 [{
   "id": 42
@@ -237,7 +181,7 @@ select set({"a": 0}, "b", {"c": 3})
   }
 }]
 select set({"a": 0}, "b", [1, 2]).b
-[1, 2]
+[[1, 2]]
 select set({"a": 0}, "b", [1, 2]).b[1]
 [2]
 select set({"a": 88}, "a", 34)
@@ -290,25 +234,8 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
 [2]
 select set([], 0, 1)
-{"msg": "set(): object expected"}
-# test: set update
-create table test (id int primary key, data object)
-insert into test values (0, {})
-update test set data.misc = 42
-select * from test
-[[0, {
-  "misc": 42
-}]]
-update test set data.data = {"id": id}
-select * from test
-[[0, {
-  "misc": 42,
-  "data": {
-    "id": 0
-  }
-}]]
-drop table test
-# test: unset
+{"msg": "set(): json object expected"}
+# test: unset()
 select {"a": 1, "b": 2, "c": 3}::unset("a")
 [{
   "b": 2,
@@ -382,23 +309,8 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
   }
 }]
 select unset([1], 0)
-{"msg": "unset(): object expected"}
-# test: unset update
-create table test (id int primary key, data object)
-insert into test values (0, {"a": 1, "b": 2, "c": 3})
-update test set data = data::unset("b")
-select * from test
-[[0, {
-  "a": 1,
-  "c": 3
-}]]
-update test set data = data::unset("b"), data = data::unset("c")
-select * from test
-[[0, {
-  "a": 1
-}]]
-drop table test
-# test: has
+{"msg": "unset(): json object expected"}
+# test: has()
 select {}::has("id")
 [false]
 select {"id": null}::has("id")
@@ -413,49 +325,5 @@ select has({"a": {"b": 777}}, "a.b")
 [true]
 select has({"a": {"b": 777}}, "a.c")
 [false]
-# test: has update
-create table test (id int primary key, data object)
-insert into test values (0, {"a": 1, "b": 2, "c": 3})
-insert into test values (1, {"a": 1, "b": 2})
-insert into test values (2, {"a": 1, "c": 3})
-select * from test where data::has("b")
-[[0, {
-  "a": 1,
-  "b": 2,
-  "c": 3
-}], [1, {
-  "a": 1,
-  "b": 2
-}]]
-update test set data = data::set("c", 3) where not data::has("c")
-select * from test
-[[0, {
-  "a": 1,
-  "b": 2,
-  "c": 3
-}], [1, {
-  "a": 1,
-  "b": 2,
-  "c": 3
-}], [2, {
-  "a": 1,
-  "c": 3
-}]]
-delete from test where data::has("b") returning *
-[[0, {
-  "a": 1,
-  "b": 2,
-  "c": 3
-}], [1, {
-  "a": 1,
-  "b": 2,
-  "c": 3
-}]]
-select * from test
-[[2, {
-  "a": 1,
-  "c": 3
-}]]
-drop table test
 disconnect S0
 close E0

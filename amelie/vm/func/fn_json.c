@@ -197,7 +197,7 @@ fn_has(Call* self)
 	value_obj_has(self->result, argv[0].json, &argv[1].string);
 }
 
-FunctionDef fn_object_def[] =
+FunctionDef fn_json_def[] =
 {
 	// array
 	{ "public", "append",    TYPE_JSON, fn_append,   false },

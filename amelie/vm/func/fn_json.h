@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_object_def[];
+extern FunctionDef fn_json_def[];

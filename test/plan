@@ -30,7 +30,7 @@ directory functions
 group functions
 test fn_cast
 #test func_null
-#test func_object
+test fn_json
 #test func_string
 #test func_regexp
 #test func_math

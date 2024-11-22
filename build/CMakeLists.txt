@@ -204,13 +204,13 @@ set(AMELIE_SOURCES_DB
 
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
-    ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
     ${AMELIE_ROOT}/vm/store/set.c
     ${AMELIE_ROOT}/vm/store/merge.c
     ${AMELIE_ROOT}/vm/store/agg.c
     ${AMELIE_ROOT}/vm/store/any.c
     ${AMELIE_ROOT}/vm/store/all.c
+    ${AMELIE_ROOT}/vm/store/row.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c
@@ -218,7 +218,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c
-    ${AMELIE_ROOT}/vm/func/fn_object.c
+    ${AMELIE_ROOT}/vm/func/fn_json.c
     ${AMELIE_ROOT}/vm/func/fn_string.c
     ${AMELIE_ROOT}/vm/func/fn_regexp.c
     ${AMELIE_ROOT}/vm/func/fn_math.c
