@@ -645,6 +645,26 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
+emit_is(Compiler* self, Target* target, Ast* ast)
+{
+	if (!ast->r || ast->r->id != KNULL)
+		error("IS [NOT] <NULL> expected");
+	auto rexpr = emit_expr(self, target, ast->l);
+	auto rresult = op2(self, CIS, rpin(self, TYPE_BOOL), rexpr);
+	runpin(self, rexpr);
+
+	// [not]
+	if (! ast->integer)
+	{
+		int rc;
+		rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rresult);
+		runpin(self, rresult);
+		rresult = rc;
+	}
+	return rresult;
+}
+
+hot static inline int
 emit_in(Compiler* self, Target* target, Ast* ast)
 {
 	auto expr = ast->l;
@@ -952,6 +972,10 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// between
 	case KBETWEEN:
 		return emit_between(self, target, ast);
+
+	// is
+	case KIS:
+		return emit_is(self, target, ast);
 
 	// in
 	case KIN:

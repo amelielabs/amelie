@@ -1,0 +1,24 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: is null
+select is
+select is 1
+select 1 is
+select 1 is
+select 1 is not
+select 1 is 1
+
+explain select 1 is null
+select 1 is null
+select null is null
+
+# test: is not null
+explain select 1 is not null
+select 1 is not null
+select null is not null
+
+disconnect S0
+close E0

@@ -774,20 +774,10 @@ parse_op(Stmt*     self, Expr* expr,
 	}
 	case KIS:
 	{
-		// expr IS NOT NULL
+		// expr IS [NOT] expr
 		auto not = stmt_if(self, KNOT);
-
-		// expr IS NULL
-		auto r = stmt_if(self, KNULL);
-		if (! r)
-			error("IS <NULL> expected");
-
-		// handle IS as = or <> null
-		if (not)
-			ast->id = KNEQU;
-		else
-			ast->id = '=';
-		ast_push(result, r);
+		ast->integer = !not;
+		// right expression must be null
 		break;
 	}
 	case KLIKE:

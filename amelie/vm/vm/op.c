@@ -64,8 +64,9 @@ OpDesc ops[] =
 	// argument
 	{ CARG, "arg" },
 
-	// null operator
+	// null operations
 	{ CNULLOP, "nullop" },
+	{ CIS, "is" },
 
 	// logical (any)
 	{ CNOT, "not" },

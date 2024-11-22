@@ -45,8 +45,9 @@ enum
 	// argument
 	CARG,
 
-	// null operator
+	// null operations
 	CNULLOP,
+	CIS,
 
 	// logical (any)
 	CNOT,

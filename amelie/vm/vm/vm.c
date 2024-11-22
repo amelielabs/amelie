@@ -146,8 +146,9 @@ vm_run(Vm*       self,
 		// argument
 		&&carg,
 
-		// null operator
+		// null operations
 		&&cnullop,
+		&&cis,
 
 		// logic
 		&&cnot,
@@ -476,6 +477,12 @@ cnullop:
 	value_set_null(&r[op->a]);
 	value_free(&r[op->b]);
 	value_free(&r[op->c]);
+	op_next;
+
+cis:
+	// [a, b]
+	value_set_bool(&r[op->a], r[op->b].type == TYPE_NULL);
+	value_free(&r[op->b]);
 	op_next;
 
 cnot:
