@@ -36,7 +36,7 @@ test fn_regexp
 #test func_math
 #test func_misc
 test fn_time
-#test func_vector
+test fn_vector
 
 ## system
 #directory system
