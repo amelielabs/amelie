@@ -1,0 +1,100 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: and
+select and
+{"msg": "bad expression"}
+select 1 and
+{"msg": "bad expression"}
+select true and true
+[true]
+explain select true and true
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "bool                2      1      0     ",
+      "02": "jntr                5      2      0     ",
+      "03": "bool                3      1      0     ",
+      "04": "jtr                 7      3      0     ",
+      "05": "bool                1      0      0     ",
+      "06": "jmp                 8      0      0     ",
+      "07": "bool                1      1      0     ",
+      "08": "nop                 0      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             0      0      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select true and false
+[false]
+select true and 0
+[false]
+select true and []
+[true]
+select true and 1.15
+[true]
+select true and 0.15
+[true]
+# test: and null
+select true and null
+[false]
+# test: or
+select or
+{"msg": "bad expression"}
+select 1 or
+{"msg": "bad expression"}
+select true or true
+[true]
+select false or false
+[false]
+select false or true
+[true]
+explain select false or true
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "bool                2      0      0     ",
+      "02": "jntr                4      2      0     ",
+      "03": "jmp                 9      0      0     ",
+      "04": "bool                3      1      0     ",
+      "05": "jntr                7      3      0     ",
+      "06": "jmp                 9      0      0     ",
+      "07": "bool                1      0      0     ",
+      "08": "jmp                 10     0      0     ",
+      "09": "bool                1      1      0     ",
+      "10": "nop                 0      0      0     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "cte_set             0      0      0     ",
+      "14": "body                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: or null
+select true or null
+[true]
+select false or null
+[false]
+# test: not
+select not true
+[false]
+select not false
+[true]
+select not (not false)
+[false]
+select not []
+{"msg": "bad expression"}
+select not 1
+[false]
+select not 0
+[true]
+# test: not null
+select not null
+[null]
+disconnect S0
+close E0
