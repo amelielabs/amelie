@@ -44,46 +44,6 @@ fn_type(Call* self)
 }
 
 hot static void
-fn_string(Call* self)
-{
-	call_validate(self, 1);
-	auto arg = self->argv[0];
-	if (unlikely(arg.type == TYPE_NULL))
-	{
-		value_set_null(self->result);
-		return;
-	}
-	auto data = buf_create();
-	switch (arg.type) {
-	case TYPE_STRING:
-		buf_printf(data, "%.*s", str_size(&arg.string), str_of(&arg.string));
-		break;
-	case TYPE_INTERVAL:
-	{
-		buf_reserve(data, 512);
-		int size = interval_write(&arg.interval, (char*)data->position, 512);
-		buf_advance(data, size);
-		break;
-
-	case TYPE_TIMESTAMP:
-	{
-		buf_reserve(data, 128);
-		int size = timestamp_write(arg.integer, self->vm->local->timezone, (char*)data->position, 128);
-		buf_advance(data, size);
-		break;
-	}
-	}
-	default:
-		value_export(&arg, self->vm->local->timezone, false, data);
-		break;
-	}
-	Str string;
-	str_init(&string);
-	str_set(&string, (char*)data->start, buf_size(data));
-	value_set_string(self->result, &string, data);
-}
-
-hot static void
 fn_int(Call* self)
 {
 	call_validate(self, 1);
@@ -187,6 +147,46 @@ fn_double(Call* self)
 		break;
 	}
 	value_set_double(self->result, value);
+}
+
+hot static void
+fn_string(Call* self)
+{
+	call_validate(self, 1);
+	auto arg = self->argv[0];
+	if (unlikely(arg.type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	auto data = buf_create();
+	switch (arg.type) {
+	case TYPE_STRING:
+		buf_printf(data, "%.*s", str_size(&arg.string), str_of(&arg.string));
+		break;
+	case TYPE_INTERVAL:
+	{
+		buf_reserve(data, 512);
+		int size = interval_write(&arg.interval, (char*)data->position, 512);
+		buf_advance(data, size);
+		break;
+
+	case TYPE_TIMESTAMP:
+	{
+		buf_reserve(data, 128);
+		int size = timestamp_write(arg.integer, self->vm->local->timezone, (char*)data->position, 128);
+		buf_advance(data, size);
+		break;
+	}
+	}
+	default:
+		value_export(&arg, self->vm->local->timezone, false, data);
+		break;
+	}
+	Str string;
+	str_init(&string);
+	str_set(&string, (char*)data->start, buf_size(data));
+	value_set_string(self->result, &string, data);
 }
 
 hot static void
@@ -356,10 +356,10 @@ fn_vector(Call* self)
 FunctionDef fn_cast_def[] =
 {
 	{ "public", "type",      TYPE_STRING,    fn_type,      false },
-	{ "public", "string",    TYPE_STRING,    fn_string,    false },
 	{ "public", "int",       TYPE_INT,       fn_int,       false },
 	{ "public", "bool",      TYPE_BOOL,      fn_bool,      false },
 	{ "public", "double",    TYPE_DOUBLE,    fn_double,    false },
+	{ "public", "string",    TYPE_STRING,    fn_string,    false },
 	{ "public", "json",      TYPE_JSON,      fn_json,      false },
 	{ "public", "interval",  TYPE_INTERVAL,  fn_interval,  false },
 	{ "public", "timestamp", TYPE_TIMESTAMP, fn_timestamp, false },

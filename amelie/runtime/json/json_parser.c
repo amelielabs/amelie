@@ -60,7 +60,7 @@ hot static inline JsonState
 json_pop(Json* self)
 {
 	if (unlikely(buf_empty(&self->stack)))
-		error("unexpected end of object");
+		error("unexpected end of JSON object");
 	buf_truncate(&self->stack, sizeof(JsonState));
 	return *(JsonState*)self->stack.position;
 }
@@ -108,7 +108,7 @@ json_string_read(Json* self, Str* str, int string_end)
 			break;
 		}
 		if (unlikely(*self->pos == '\n'))
-			error("unterminated string");
+			error("unterminated JSON string");
 		if (*self->pos == '\\') {
 			slash = !slash;
 		} else {
@@ -117,7 +117,7 @@ json_string_read(Json* self, Str* str, int string_end)
 		self->pos++;
 	}
 	if (unlikely(self->pos == self->end))
-		error("unterminated string");
+		error("unterminated JSON string");
 	auto size = self->pos - start;
 	self->pos++;
 	str_set(str, start, size);
@@ -166,7 +166,7 @@ read_as_double:
 	char* end = NULL;
 	*real = strtod(start, &end);
 	if (errno == ERANGE)
-		error("bad float number");
+		error("bad JSON float number");
 	self->pos = end;
 	if (minus)
 		*real = -(*real);
@@ -225,7 +225,7 @@ json_const(Json* self)
 		}
 		break;
 	}
-	error("unexpected token");
+	error("unexpected JSON token");
 }
 
 hot void
@@ -350,7 +350,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 				self->pos++;
 				break;
 			}
-			error("unexpected array token");
+			error("unexpected JSON array token");
 			break;
 		}
 		case JSON_MAP_KEY:
@@ -358,12 +358,12 @@ json_parse(Json* self, Str* text, Buf* buf)
 			// "key"
 			Str str;
 			if (! json_string(self, &str))
-				error("object key expected");
+				error("JSON object key expected");
 			encode_string(self->buf, &str);
 			// ':'
 			next = json_next(self);
 			if (next != ':')
-				error("unexpected object token");
+				error("unexpected JSON object token");
 			self->pos++;
 			// value
 			json_push(self, JSON_MAP_NEXT);
@@ -384,7 +384,7 @@ json_parse(Json* self, Str* text, Buf* buf)
 				self->pos++;
 				break;
 			}
-			error("unexpected object token");
+			error("unexpected JSON object token");
 			break;
 		}
 		}
