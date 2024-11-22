@@ -1,0 +1,99 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: between parsing
+select 1 between
+{"msg": "error BETWEEN const value expected"}
+select 1 between and
+{"msg": "error BETWEEN const value expected"}
+select 1 between 0
+{"msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 1
+{"msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 or
+{"msg": "BETWEEN expr <AND> expected"}
+select 1 between 0 and
+{"msg": "error BETWEEN const value expected"}
+select 1 between 0 and '1'
+{"msg": "unsupported operation: <int> <= <string>"}
+# test: between (int)
+select 1 between 0 and 0
+[false]
+select 1 between 0 and 1
+[true]
+select 1 between 1 and 1
+[true]
+select 1 between 1 and 0
+[false]
+# test: between (double)
+select 0.052 between 0.010 and 0.053
+[true]
+# test: between (timestamp)
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+[true]
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+[false]
+# test: between (interval)
+select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
+[true]
+select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
+[false]
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+[true]
+# test: not between
+select 0.058 between 0.010 and 0.053
+[false]
+explain select 0.058 between 0.010 and 0.053
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              2      0      0     # 0.058",
+      "02": "double              3      8      0     # 0.01",
+      "03": "gtedd               4      2      3     ",
+      "04": "jntr                9      4      0     ",
+      "05": "double              2      16     0     # 0.058",
+      "06": "double              3      24     0     # 0.053",
+      "07": "ltedd               5      2      3     ",
+      "08": "jtr                 11     5      0     ",
+      "09": "bool                1      0      0     ",
+      "10": "jmp                 12     0      0     ",
+      "11": "bool                1      1      0     ",
+      "12": "nop                 0      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "cte_set             0      0      0     ",
+      "16": "body                0      0      0     ",
+      "17": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0.058 not between 0.010 and 0.053
+[true]
+explain select 0.058 not between 0.010 and 0.053
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              2      0      0     # 0.058",
+      "02": "double              3      8      0     # 0.01",
+      "03": "gtedd               4      2      3     ",
+      "04": "jntr                9      4      0     ",
+      "05": "double              2      16     0     # 0.058",
+      "06": "double              3      24     0     # 0.053",
+      "07": "ltedd               5      2      3     ",
+      "08": "jtr                 11     5      0     ",
+      "09": "bool                1      0      0     ",
+      "10": "jmp                 12     0      0     ",
+      "11": "bool                1      1      0     ",
+      "12": "nop                 0      0      0     ",
+      "13": "not                 2      1      0     ",
+      "14": "push                2      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "cte_set             0      0      0     ",
+      "17": "body                0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+disconnect S0
+close E0

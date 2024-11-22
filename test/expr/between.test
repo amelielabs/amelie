@@ -1,0 +1,41 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: between parsing
+select 1 between
+select 1 between and
+select 1 between 0
+select 1 between 0 1
+select 1 between 0 or
+select 1 between 0 and
+select 1 between 0 and '1'
+
+# test: between (int)
+select 1 between 0 and 0
+select 1 between 0 and 1
+select 1 between 1 and 1
+select 1 between 1 and 0
+
+# test: between (double)
+select 0.052 between 0.010 and 0.053
+
+# test: between (timestamp)
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+
+# test: between (interval)
+select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
+select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+
+# test: not between
+select 0.058 between 0.010 and 0.053
+explain select 0.058 between 0.010 and 0.053
+
+select 0.058 not between 0.010 and 0.053
+explain select 0.058 not between 0.010 and 0.053
+
+disconnect S0
+close E0
