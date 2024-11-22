@@ -26,8 +26,8 @@
 #test case
 
 # func
-directory func
-group func
+directory functions
+group functions
 test fn_cast
 #test func_null
 #test func_object
