@@ -330,20 +330,31 @@ cast_op_names[OP_MAX] =
 };
 
 hot int
-cast_operator(Compiler* self, int op, int l, int r)
+cast_operator(Compiler* self, int operator, int l, int r)
 {
-	assert(op < OP_MAX);
-	auto lt   = rtype(self, l);
-	auto rt   = rtype(self, r);
-	auto cast = &cast_op[op][lt][rt];
-	if (unlikely(cast->type == TYPE_NULL))
+	assert(operator < OP_MAX);
+	auto lt = rtype(self, l);
+	auto rt = rtype(self, r);
+	int  op;
+	int  type;
+	if (unlikely(lt == TYPE_NULL || rt == TYPE_NULL))
 	{
-		error("unsupported operation: <%s> %s <%s>",
-		      type_of(lt), cast_op_names[op],
-		      type_of(rt));
+		op   = CNULLOP;
+		type = TYPE_NULL;
+	} else
+	{
+		auto cast = &cast_op[operator][lt][rt];
+		if (unlikely(cast->type == TYPE_NULL))
+		{
+			error("unsupported operation: <%s> %s <%s>",
+			      type_of(lt), cast_op_names[operator],
+			      type_of(rt));
+		}
+		op   = cast->op;
+		type = cast->type;
 	}
 	int rc;
-	rc = op3(self, cast->op, rpin(self, cast->type), l, r);
+	rc = op3(self, op, rpin(self, type), l, r);
 	runpin(self, l);
 	runpin(self, r);
 	return rc;

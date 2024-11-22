@@ -541,7 +541,7 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 	// CASE [expr] [WHEN expr THEN expr]
 	//             [ELSE expr]
 	// END
-	int rresult = rpin(self, UINT8_MAX);
+	int rresult = rpin(self, TYPE_NULL);
 
 	// jmp to start
 	int _start_jmp = op_pos(self);
@@ -600,14 +600,12 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 		int rthen = emit_expr(self, target, when->r);
 
 		// set result type to the type of first result
-		if (rtype(self, rresult) == UINT8_MAX) {
+		if (rtype(self, rresult) == TYPE_NULL)
 			self->map.map[rresult] = rtype(self, rthen);
-		} else
-		{
-			// ensure then expresssion types match
-			if (rtype(self, rresult) != rtype(self, rthen))
-				error("CASE expr types do not match");
-		}
+		else
+		if (rtype(self, rresult) != rtype(self, rthen) &&
+		    rtype(self, rthen) != TYPE_NULL)
+			error("CASE expr types must match");
 
 		op2(self, CSWAP, rresult, rthen);
 		runpin(self, rthen);
@@ -625,15 +623,13 @@ emit_case(Compiler* self, Target* target, Ast* ast)
 	{
 		relse = emit_expr(self, target, cs->expr_else);
 
-		// set result type
-		if (rtype(self, rresult) == UINT8_MAX) {
+		// set result type to the type of first result
+		if (rtype(self, rresult) == TYPE_NULL)
 			self->map.map[rresult] = rtype(self, relse);
-		} else
-		{
-			// ensure then expresssion types match
-			if (rtype(self, rresult) != rtype(self, relse))
-				error("CASE expr types do not match");
-		}
+		else
+		if (rtype(self, rresult) != rtype(self, relse) &&
+		    rtype(self, relse) != TYPE_NULL)
+			error("CASE expr types must match");
 	} else
 	{
 		relse = op1(self, CNULL, rpin(self, TYPE_NULL));

@@ -40,14 +40,14 @@ rmap_prepare(Rmap* self)
 	if (self->map)
 		return;
 	self->map = buf_claim(&self->buf, self->map_max);
-	memset(self->map, TYPE_NULL, self->map_max);
+	memset(self->map, 0xff, self->map_max);
 }
 
 static inline void
 rmap_reset(Rmap* self)
 {
 	if (self->map)
-		memset(self->map, TYPE_NULL, self->map_max);
+		memset(self->map, 0xff, self->map_max);
 }
 
 hot static inline int
@@ -61,7 +61,7 @@ rmap_pin(Rmap* self, int type)
 {
 	for (int r = 0; r < self->map_max; r++)
 	{
-		if (! self->map[r])
+		if (self->map[r] == 0xff)
 		{
 			self->map[r] = type;
 			return r;
@@ -75,5 +75,5 @@ static inline void
 rmap_unpin(Rmap* self, int r)
 {
 	assert(r < 128);
-	self->map[r] = TYPE_NULL;
+	self->map[r] = 0xff;
 }

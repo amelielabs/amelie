@@ -146,6 +146,9 @@ vm_run(Vm*       self,
 		// argument
 		&&carg,
 
+		// null operator
+		&&cnullop,
+
 		// logic
 		&&cnot,
 
@@ -467,6 +470,13 @@ carg:
 	// [result, order]
 	// todo: read array
 	// value_read_arg(&r[op->a], self->args, op->b);
+	op_next;
+
+cnullop:
+	// [a, b, c]
+	value_set_null(&r[op->a]);
+	value_free(&r[op->b]);
+	value_free(&r[op->c]);
 	op_next;
 
 cnot:
