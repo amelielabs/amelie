@@ -171,6 +171,7 @@ explain select {"a": 0, "b": {"c": 18}}.b.c
 select {"a": 0, "b": {"c": 18}}.b.c::type
 select {"a": 0, "b": {"c": 18}}.b.c + 1
 select {"a": 0, "b": {"c": 18}}.b.c::int + 1
+select {"a": 0, "b": {"c": 18}}.'b'.c::int + 1
 
 # test: json [] int
 select {"id":48}[1]

@@ -72,9 +72,10 @@ parse_key(Stmt* self, Keys* keys)
 			      str_of(&name->string));
 
 		// validate key type
-		if ((column->type != TYPE_INT    && column->type_size >= 4) &&
+		if ((column->type != TYPE_INT &&
 		     column->type != TYPE_STRING &&
-		     column->type != TYPE_TIMESTAMP)
+		     column->type != TYPE_TIMESTAMP) ||
+		    (column->type == TYPE_INT && column->type_size < 4))
 			error("<%.*s> column key can be text, int32, int64 or timestamp",
 			      str_size(&column->name),
 			      str_of(&column->name));
@@ -224,9 +225,10 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			constraint_set_not_null(&column->constraint, true);
 
 			// validate key type
-			if ((column->type != TYPE_INT    && column->type_size >= 4) &&
+			if ((column->type != TYPE_INT &&
 			     column->type != TYPE_STRING &&
-			     column->type != TYPE_TIMESTAMP)
+			     column->type != TYPE_TIMESTAMP) ||
+			    (column->type == TYPE_INT && column->type_size < 4))
 				error("<%.*s> column key can be text, int32, int64 or timestamp",
 				      str_size(&column->name),
 				      str_of(&column->name));

@@ -12,7 +12,7 @@ explain watch system.config().lsn::int = 1
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # lsn",
-      "02": "idxjs               2      0      1     ",
+      "02": "dotjs               2      0      1     ",
       "03": "push                2      0      0     ",
       "04": "call                0      -      1     # public.int()",
       "05": "int                 1      -      0     # 1",

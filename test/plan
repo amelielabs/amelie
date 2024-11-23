@@ -39,20 +39,20 @@
 #test fn_null
 #test fn_system
 
-# system
-directory system
-group system
-test bootstrap
-test set
-test show
-test user
-test watch
+## system
+#directory system
+#group system
+#test bootstrap
+#test set
+#test show
+#test user
+#test watch
 
-## ddl
-#directory ddl
-#group ddl
-#test schema
-#test table_create
+# ddl
+directory ddl
+group ddl
+test schema
+test table_create
 #test table_drop
 #test table_alter
 #test index

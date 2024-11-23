@@ -945,7 +945,7 @@ explain select {"id":48}.id
       "04": "push                1      0      0     ",
       "05": "json_obj            1      2      0     ",
       "06": "string              2      3      0     # id",
-      "07": "idxjs               3      1      2     ",
+      "07": "dotjs               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             0      0      0     ",
@@ -1002,7 +1002,7 @@ explain select {"a": 0, "b": {"c": 18}}.b.c
       "12": "push                1      0      0     ",
       "13": "json_obj            1      4      0     ",
       "14": "string              2      6      0     # b.c",
-      "15": "idxjs               3      1      2     ",
+      "15": "dotjs               3      1      2     ",
       "16": "push                3      0      0     ",
       "17": "set_add             0      0      0     ",
       "18": "cte_set             0      0      0     ",
@@ -1016,6 +1016,8 @@ select {"a": 0, "b": {"c": 18}}.b.c::type
 select {"a": 0, "b": {"c": 18}}.b.c + 1
 {"msg": "unsupported operation: <json> + <int>"}
 select {"a": 0, "b": {"c": 18}}.b.c::int + 1
+[19]
+select {"a": 0, "b": {"c": 18}}.'b'.c::int + 1
 [19]
 # test: json [] int
 select {"id":48}[1]
