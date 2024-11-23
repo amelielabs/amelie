@@ -25,6 +25,7 @@ enum
 	OP_MOD,
 	OP_CAT,
 	OP_IDX,
+	OP_DOT,
 	OP_LIKE,
 	OP_BOR,
 	OP_BAND,

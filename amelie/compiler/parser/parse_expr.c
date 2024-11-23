@@ -835,7 +835,6 @@ parse_op(Stmt*     self, Expr* expr,
 	case '.':
 	{
 		// expr.'key' (handle as expr['key'])
-
 		// expr.name
 		// expr.name.path
 		auto r = stmt_next_shadow(self);

@@ -172,6 +172,9 @@ OpDesc ops[] =
 	{ CIDXJI, "idxji" },
 	{ CIDXVI, "idxvi" },
 
+	// dot
+	{ CDOTJS, "dotjs" },
+
 	// like
 	{ CLIKESS, "likess" },
 

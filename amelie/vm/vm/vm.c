@@ -254,6 +254,9 @@ vm_run(Vm*       self,
 		&&cidxji,
 		&&cidxvi,
 
+		// dot
+		&&cdotjs,
+
 		// like
 		&&clikess,
 
@@ -989,7 +992,7 @@ cidxjs:
 		json = b->json;
 		if (unlikely(! json_is_obj(json)))
 			error("[]: object expected");
-		if (! json_obj_find_path(&json, &c->string))
+		if (! json_obj_find(&json, str_of(&c->string), str_size(&c->string)))
 			error("[]: object key '%.*s' not found", str_size(&c->string),
 			      str_of(&c->string));
 		value_set_json(a, json, json_sizeof(json), b->buf);
@@ -1031,6 +1034,28 @@ cidxvi:
 		if (unlikely(c->integer < 0 || c->integer >= b->vector->size))
 			error("[]: vector index is out of bounds");
 		value_set_double(a, b->vector->value[c->integer]);
+		value_free(b);
+		value_free(c);
+	}
+	op_next;
+
+cdotjs:
+	// [result, object, pos]
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		// {}.path
+		a = &r[op->a];
+		b = &r[op->b];
+		c = &r[op->c];
+		json = b->json;
+		if (unlikely(! json_is_obj(json)))
+			error(".: object expected");
+		if (! json_obj_find_path(&json, &c->string))
+			error(".: object key '%.*s' not found", str_size(&c->string),
+			      str_of(&c->string));
+		value_set_json(a, json, json_sizeof(json), b->buf);
+		if (b->buf)
+			buf_ref(b->buf);
 		value_free(b);
 		value_free(c);
 	}

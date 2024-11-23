@@ -268,6 +268,12 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		[TYPE_VECTOR][TYPE_INT]          = { TYPE_DOUBLE,    CIDXVI },
 	},
 
+	[OP_DOT] =
+	{
+		// json
+		[TYPE_JSON][TYPE_STRING]         = { TYPE_JSON,      CDOTJS },
+	},
+
 	[OP_LIKE] =
 	{
 		// string
@@ -320,6 +326,7 @@ cast_op_names[OP_MAX] =
 	[OP_MOD]  = "%",
 	[OP_CAT]  = "||",
 	[OP_IDX]  = "[]",
+	[OP_DOT]  = ".",
 	[OP_LIKE] = "LIKE",
 	[OP_BOR]  = "|",
 	[OP_BAND] = "&",

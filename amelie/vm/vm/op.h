@@ -153,6 +153,9 @@ enum
 	CIDXJI,
 	CIDXVI,
 
+	// dot
+	CDOTJS,
+
 	// like
 	CLIKESS,
 

@@ -928,8 +928,9 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCAT:
 		return emit_operator(self, target, ast, OP_CAT);
 	case '[':
-	case '.':
 		return emit_operator(self, target, ast, OP_IDX);
+	case '.':
+		return emit_operator(self, target, ast, OP_DOT);
 	case KLIKE:
 	{
 		auto r = emit_operator(self, target, ast, OP_LIKE);
