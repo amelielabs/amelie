@@ -53,6 +53,6 @@ fn_cos_distance(Call* self)
 
 FunctionDef fn_vector_def[] =
 {
-	{ "public", "cos_distance", TYPE_DOUBLE, fn_cos_distance, false },
-	{  NULL,     NULL,          TYPE_NULL,   NULL,            false }
+	{ "public", "cos_distance", TYPE_DOUBLE, fn_cos_distance, FN_NONE },
+	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
 };

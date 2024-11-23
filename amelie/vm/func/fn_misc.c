@@ -274,15 +274,15 @@ fn_jwt(Call* self)
 
 FunctionDef fn_misc_def[] =
 {
-	{ "public", "error",        TYPE_NULL,   fn_error,        false },
-	{ "public", "sleep",        TYPE_NULL,   fn_sleep,        false },
-	{ "public", "random",       TYPE_INT,    fn_random,       false },
-	{ "public", "random_uuid",  TYPE_STRING, fn_random_uuid,  false },
-	{ "public", "md5",          TYPE_STRING, fn_md5,          false },
-	{ "public", "sha1",         TYPE_STRING, fn_sha1,         false },
-	{ "public", "encode",       TYPE_STRING, fn_encode,       false },
-	{ "public", "decode",       TYPE_STRING, fn_decode,       false },
-	{ "public", "serial",       TYPE_INT,    fn_serial,       false },
-	{ "public", "jwt",          TYPE_STRING, fn_jwt,          false },
-	{  NULL,     NULL,          TYPE_NULL,   NULL,            false }
+	{ "public", "error",        TYPE_NULL,   fn_error,        FN_NONE },
+	{ "public", "sleep",        TYPE_NULL,   fn_sleep,        FN_NONE },
+	{ "public", "random",       TYPE_INT,    fn_random,       FN_NONE },
+	{ "public", "random_uuid",  TYPE_STRING, fn_random_uuid,  FN_NONE },
+	{ "public", "md5",          TYPE_STRING, fn_md5,          FN_NONE },
+	{ "public", "sha1",         TYPE_STRING, fn_sha1,         FN_NONE },
+	{ "public", "encode",       TYPE_STRING, fn_encode,       FN_NONE },
+	{ "public", "decode",       TYPE_STRING, fn_decode,       FN_NONE },
+	{ "public", "serial",       TYPE_INT,    fn_serial,       FN_NONE },
+	{ "public", "jwt",          TYPE_STRING, fn_jwt,          FN_NONE },
+	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
 };

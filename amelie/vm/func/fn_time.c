@@ -303,11 +303,11 @@ fn_generate_series(Call* self)
 
 FunctionDef fn_time_def[] =
 {
-	{ "public", "now",             TYPE_TIMESTAMP, fn_now,             false },
-	{ "public", "at_timezone",     TYPE_STRING,    fn_at_timezone,     false },
-	{ "public", "date_bin",        TYPE_TIMESTAMP, fn_date_bin,        false },
-	{ "public", "date_trunc",      TYPE_TIMESTAMP, fn_date_trunc,      false },
-	{ "public", "interval_trunc",  TYPE_INTERVAL,  fn_interval_trunc,  false },
-	{ "public", "extract",         TYPE_INT,       fn_extract,         false },
-	{  NULL,     NULL,             TYPE_NULL,      NULL,               false }
+	{ "public", "now",             TYPE_TIMESTAMP, fn_now,             FN_NONE },
+	{ "public", "at_timezone",     TYPE_STRING,    fn_at_timezone,     FN_NONE },
+	{ "public", "date_bin",        TYPE_TIMESTAMP, fn_date_bin,        FN_NONE },
+	{ "public", "date_trunc",      TYPE_TIMESTAMP, fn_date_trunc,      FN_NONE },
+	{ "public", "interval_trunc",  TYPE_INTERVAL,  fn_interval_trunc,  FN_NONE },
+	{ "public", "extract",         TYPE_INT,       fn_extract,         FN_NONE },
+	{  NULL,     NULL,             TYPE_NULL,      NULL,               FN_NONE }
 };

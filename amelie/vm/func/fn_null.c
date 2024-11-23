@@ -33,15 +33,14 @@
 #include <amelie_vm.h>
 #include <amelie_func.h>
 
-#if 0
 hot static void
 fn_coalesce(Call* self)
 {
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (self->argv[i]->type != TYPE_NULL)
+		if (self->argv[i].type != TYPE_NULL)
 		{
-			value_copy(self->result, self->argv[i]);
+			value_copy(self->result, &self->argv[i]);
 			return;
 		}
 	}
@@ -52,18 +51,17 @@ hot static void
 fn_nullif(Call* self)
 {
 	call_validate(self, 2);
-	if (value_is_equal(self->argv[0], self->argv[1]))
+	if (! value_compare(&self->argv[0], &self->argv[1]))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	value_copy(self->result, self->argv[0]);
+	value_copy(self->result, &self->argv[0]);
 }
 
 FunctionDef fn_null_def[] =
 {
-	{ "public", "coalesce", fn_coalesce, false },
-	{ "public", "nullif",   fn_nullif,   false },
-	{  NULL,     NULL,      NULL,        false }
+	{ "public", "coalesce", TYPE_NULL, fn_coalesce, FN_TYPE_DERIVE },
+	{ "public", "nullif",   TYPE_NULL, fn_nullif,   FN_TYPE_DERIVE },
+	{  NULL,     NULL,      TYPE_NULL, NULL,        FN_NONE        }
 };
-#endif

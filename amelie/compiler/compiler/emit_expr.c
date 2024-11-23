@@ -431,6 +431,21 @@ emit_or(Compiler* self, Target* target, Ast* ast)
 	return rresult;
 }
 
+hot static inline void
+emit_call_typederive(Compiler* self, int r, int* type, bool* type_match)
+{
+	auto this = rtype(self, r);
+	if (this == TYPE_NULL)
+		return;
+	if (*type == TYPE_NULL) {
+		*type = this;
+	} else
+	if (*type != this) {
+		*type = this;
+		*type_match = false;
+	}
+}
+
 hot static inline int
 emit_call(Compiler* self, Target* target, Ast* ast)
 {
@@ -438,24 +453,37 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 	auto call = ast_call_of(ast);
 	auto args = ast->r;
 
+	auto fn = call->fn;
+	auto fn_type = fn->ret;
+	bool fn_type_match = true;
+
 	// push arguments
 	auto current = args->l;
 	while (current)
 	{
 		int r = emit_expr(self, target, current);
+		if (fn->flags & FN_TYPE_DERIVE)
+			emit_call_typederive(self, r, &fn_type, &fn_type_match);
 		op1(self, CPUSH, r);
 		runpin(self, r);
 		current = current->next;
 	}
 
+	// ensure that the function has identical types, if type is derived
+	if (fn->flags & FN_TYPE_DERIVE && !fn_type_match)
+		error("%.*s.%.*s(): arguments types mismatch",
+		      str_size(&fn->schema),
+		      str_of(&fn->schema),
+		      str_size(&fn->name),
+		      str_of(&fn->name));
+
 	// register function call, if it has context
-	Function* fn = call->fn;
 	int call_id = -1;
-	if (fn->context)
+	if (fn->flags & FN_CONTEXT)
 		call_id = code_data_add_call(&self->code_data, fn);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, args->integer, call_id);
+	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, args->integer, call_id);
 }
 
 hot static inline int
@@ -466,8 +494,14 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 	auto call = ast_call_of(ast->r);
 	auto args = call->ast.r;
 
+	auto fn = call->fn;
+	auto fn_type = fn->ret;
+	bool fn_type_match = true;
+
 	// use expression as the first argument to the call
 	int r = emit_expr(self, target, expr);
+	if (fn->flags & FN_TYPE_DERIVE)
+		emit_call_typederive(self, r, &fn_type, &fn_type_match);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
@@ -479,6 +513,8 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 		while (current)
 		{
 			r = emit_expr(self, target, current);
+			if (fn->flags & FN_TYPE_DERIVE)
+				emit_call_typederive(self, r, &fn_type, &fn_type_match);
 			op1(self, CPUSH, r);
 			runpin(self, r);
 			current = current->next;
@@ -486,14 +522,21 @@ emit_call_method(Compiler* self, Target* target, Ast* ast)
 		argc += args->integer;
 	}
 
+	// ensure that the function has identical types, if type is derived
+	if (fn->flags & FN_TYPE_DERIVE && !fn_type_match)
+		error("%.*s.%.*s(): arguments types mismatch",
+		      str_size(&fn->schema),
+		      str_of(&fn->schema),
+		      str_size(&fn->name),
+		      str_of(&fn->name));
+
 	// register function call, if it has context
-	Function* fn = call->fn;
 	int call_id = -1;
-	if (fn->context)
+	if (fn->flags & FN_CONTEXT)
 		call_id = code_data_add_call(&self->code_data, fn);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, argc, call_id);
+	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, argc, call_id);
 }
 
 hot static inline int

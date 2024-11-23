@@ -200,16 +200,16 @@ fn_has(Call* self)
 FunctionDef fn_json_def[] =
 {
 	// array
-	{ "public", "append",    TYPE_JSON, fn_append,   false },
-	{ "public", "push_back", TYPE_JSON, fn_append,   false },
-	{ "public", "push",      TYPE_JSON, fn_push,     false },
-	{ "public", "pop",       TYPE_JSON, fn_pop,      false },
-	{ "public", "pop_back",  TYPE_JSON, fn_pop_back, false },
-	{ "public", "put",       TYPE_JSON, fn_put,      false },
-	{ "public", "remove",    TYPE_JSON, fn_remove,   false },
+	{ "public", "append",    TYPE_JSON, fn_append,   FN_NONE },
+	{ "public", "push_back", TYPE_JSON, fn_append,   FN_NONE },
+	{ "public", "push",      TYPE_JSON, fn_push,     FN_NONE },
+	{ "public", "pop",       TYPE_JSON, fn_pop,      FN_NONE },
+	{ "public", "pop_back",  TYPE_JSON, fn_pop_back, FN_NONE },
+	{ "public", "put",       TYPE_JSON, fn_put,      FN_NONE },
+	{ "public", "remove",    TYPE_JSON, fn_remove,   FN_NONE },
 	// object
-	{ "public", "set",       TYPE_JSON, fn_set,      false },
-	{ "public", "unset",     TYPE_JSON, fn_unset,    false },
-	{ "public", "has",       TYPE_BOOL, fn_has,      false },
-	{  NULL,     NULL,       TYPE_NULL, NULL,        false }
+	{ "public", "set",       TYPE_JSON, fn_set,      FN_NONE },
+	{ "public", "unset",     TYPE_JSON, fn_unset,    FN_NONE },
+	{ "public", "has",       TYPE_BOOL, fn_has,      FN_NONE },
+	{  NULL,     NULL,       TYPE_NULL, NULL,        FN_NONE }
 };

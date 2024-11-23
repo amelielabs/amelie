@@ -539,24 +539,21 @@ fn_log2(Call* self)
 	value_set_double(self->result, result);
 }
 
-#if 0
 static void
 fn_greatest(Call* self)
 {
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (self->argv[i]->type == TYPE_NULL)
+		if (self->argv[i].type == TYPE_NULL)
 			continue;
 		if (max == NULL)
 		{
-			max = self->argv[i];
+			max = &self->argv[i];
 			continue;
 		}
-		if (max->type != self->argv[i]->type)
-			error("greatest(): types mismatch");
-		if (value_compare(self->argv[i], max) == 1)
-			max = self->argv[i];
+		if (value_compare(&self->argv[i], max) == 1)
+			max = &self->argv[i];
 	}
 	if (max)
 		value_copy(self->result, max);
@@ -570,17 +567,15 @@ fn_least(Call* self)
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (self->argv[i]->type == TYPE_NULL)
+		if (self->argv[i].type == TYPE_NULL)
 			continue;
 		if (max == NULL)
 		{
-			max = self->argv[i];
+			max = &self->argv[i];
 			continue;
 		}
-		if (max->type != self->argv[i]->type)
-			error("least(): types mismatch");
-		if (value_compare(self->argv[i], max) == -1)
-			max = self->argv[i];
+		if (value_compare(&self->argv[i], max) == -1)
+			max = &self->argv[i];
 	}
 	if (max)
 		value_copy(self->result, max);
@@ -588,40 +583,40 @@ fn_least(Call* self)
 		value_set_null(self->result);
 }
 
-#endif
-
 FunctionDef fn_math_def[] =
 {
-	{ "public", "abs",      TYPE_INT,    fn_abs,      false },
-	{ "public", "fabs",     TYPE_DOUBLE, fn_fabs,     false },
-	{ "public", "round",    TYPE_INT,    fn_round,    false },
-	{ "public", "sign",     TYPE_INT,    fn_sign,     false },
-	{ "public", "ceil",     TYPE_DOUBLE, fn_ceil,     false },
-	{ "public", "exp",      TYPE_DOUBLE, fn_exp,      false },
-	{ "public", "floor",    TYPE_DOUBLE, fn_floor,    false },
-	{ "public", "mod",      TYPE_INT,    fn_mod,      false },
-	{ "public", "fmod",     TYPE_DOUBLE, fn_fmod,     false },
-	{ "public", "pow",      TYPE_INT,    fn_pow,      false },
-	{ "public", "fpow",     TYPE_DOUBLE, fn_fpow,     false },
-	{ "public", "trunc",    TYPE_DOUBLE, fn_trunc,    false },
-	{ "public", "pi",       TYPE_DOUBLE, fn_pi,       false },
-	{ "public", "sqrt",     TYPE_DOUBLE, fn_sqrt,     false },
-	{ "public", "acos",     TYPE_DOUBLE, fn_acos,     false },
-	{ "public", "acosh",    TYPE_DOUBLE, fn_acosh,    false },
-	{ "public", "asin",     TYPE_DOUBLE, fn_asin,     false },
-	{ "public", "asinh",    TYPE_DOUBLE, fn_asinh,    false },
-	{ "public", "atan",     TYPE_DOUBLE, fn_atan,     false },
-	{ "public", "atanh",    TYPE_DOUBLE, fn_atanh,    false },
-	{ "public", "atan2",    TYPE_DOUBLE, fn_atan2,    false },
-	{ "public", "cos",      TYPE_DOUBLE, fn_cos,      false },
-	{ "public", "cosh",     TYPE_DOUBLE, fn_cosh,     false },
-	{ "public", "sin",      TYPE_DOUBLE, fn_sin,      false },
-	{ "public", "sinh",     TYPE_DOUBLE, fn_sinh,     false },
-	{ "public", "tan",      TYPE_DOUBLE, fn_tan,      false },
-	{ "public", "tanh",     TYPE_DOUBLE, fn_tanh,     false },
-	{ "public", "ln",       TYPE_DOUBLE, fn_ln,       false },
-	{ "public", "log",      TYPE_DOUBLE, fn_log,      false },
-	{ "public", "log10",    TYPE_DOUBLE, fn_log,      false },
-	{ "public", "log2",     TYPE_DOUBLE, fn_log2,     false },
-	{  NULL,     NULL,      TYPE_NULL,   NULL,        false }
+	{ "public", "abs",      TYPE_INT,    fn_abs,      FN_NONE        },
+	{ "public", "fabs",     TYPE_DOUBLE, fn_fabs,     FN_NONE        },
+	{ "public", "round",    TYPE_INT,    fn_round,    FN_NONE        },
+	{ "public", "sign",     TYPE_INT,    fn_sign,     FN_NONE        },
+	{ "public", "ceil",     TYPE_DOUBLE, fn_ceil,     FN_NONE        },
+	{ "public", "exp",      TYPE_DOUBLE, fn_exp,      FN_NONE        },
+	{ "public", "floor",    TYPE_DOUBLE, fn_floor,    FN_NONE        },
+	{ "public", "mod",      TYPE_INT,    fn_mod,      FN_NONE        },
+	{ "public", "fmod",     TYPE_DOUBLE, fn_fmod,     FN_NONE        },
+	{ "public", "pow",      TYPE_INT,    fn_pow,      FN_NONE        },
+	{ "public", "fpow",     TYPE_DOUBLE, fn_fpow,     FN_NONE        },
+	{ "public", "trunc",    TYPE_DOUBLE, fn_trunc,    FN_NONE        },
+	{ "public", "pi",       TYPE_DOUBLE, fn_pi,       FN_NONE        },
+	{ "public", "sqrt",     TYPE_DOUBLE, fn_sqrt,     FN_NONE        },
+	{ "public", "acos",     TYPE_DOUBLE, fn_acos,     FN_NONE        },
+	{ "public", "acosh",    TYPE_DOUBLE, fn_acosh,    FN_NONE        },
+	{ "public", "asin",     TYPE_DOUBLE, fn_asin,     FN_NONE        },
+	{ "public", "asinh",    TYPE_DOUBLE, fn_asinh,    FN_NONE        },
+	{ "public", "atan",     TYPE_DOUBLE, fn_atan,     FN_NONE        },
+	{ "public", "atanh",    TYPE_DOUBLE, fn_atanh,    FN_NONE        },
+	{ "public", "atan2",    TYPE_DOUBLE, fn_atan2,    FN_NONE        },
+	{ "public", "cos",      TYPE_DOUBLE, fn_cos,      FN_NONE        },
+	{ "public", "cosh",     TYPE_DOUBLE, fn_cosh,     FN_NONE        },
+	{ "public", "sin",      TYPE_DOUBLE, fn_sin,      FN_NONE        },
+	{ "public", "sinh",     TYPE_DOUBLE, fn_sinh,     FN_NONE        },
+	{ "public", "tan",      TYPE_DOUBLE, fn_tan,      FN_NONE        },
+	{ "public", "tanh",     TYPE_DOUBLE, fn_tanh,     FN_NONE        },
+	{ "public", "ln",       TYPE_DOUBLE, fn_ln,       FN_NONE        },
+	{ "public", "log",      TYPE_DOUBLE, fn_log,      FN_NONE        },
+	{ "public", "log10",    TYPE_DOUBLE, fn_log,      FN_NONE        },
+	{ "public", "log2",     TYPE_DOUBLE, fn_log2,     FN_NONE        },
+	{ "public", "greatest", TYPE_NULL,   fn_greatest, FN_TYPE_DERIVE },
+	{ "public", "least",    TYPE_NULL,   fn_least,    FN_TYPE_DERIVE },
+	{  NULL,     NULL,      TYPE_NULL,   NULL,        FN_NONE        }
 };

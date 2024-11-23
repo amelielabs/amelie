@@ -127,17 +127,17 @@ fn_status(Call* self)
 
 FunctionDef fn_system_def[] =
 {
-	{ "system", "config",      TYPE_JSON, fn_config,    false },
-	{ "system", "users",       TYPE_JSON, fn_users,     false },
-	{ "system", "replicas",    TYPE_JSON, fn_replicas,  false },
-	{ "system", "repl",        TYPE_JSON, fn_repl,      false },
-	{ "system", "replication", TYPE_JSON, fn_repl,      false },
-	{ "system", "nodes",       TYPE_JSON, fn_nodes,     false },
-	{ "system", "schemas",     TYPE_JSON, fn_schemas,   false },
-	{ "system", "functions",   TYPE_JSON, fn_functions, false },
-	{ "system", "tables",      TYPE_JSON, fn_tables,    false },
-	{ "system", "views",       TYPE_JSON, fn_views,     false },
-	{ "system", "wal",         TYPE_JSON, fn_wal,       false },
-	{ "system", "status",      TYPE_JSON, fn_status,    false },
-	{  NULL,     NULL,         TYPE_NULL, NULL,         false }
+	{ "system", "config",      TYPE_JSON, fn_config,    FN_NONE },
+	{ "system", "users",       TYPE_JSON, fn_users,     FN_NONE },
+	{ "system", "replicas",    TYPE_JSON, fn_replicas,  FN_NONE },
+	{ "system", "repl",        TYPE_JSON, fn_repl,      FN_NONE },
+	{ "system", "replication", TYPE_JSON, fn_repl,      FN_NONE },
+	{ "system", "nodes",       TYPE_JSON, fn_nodes,     FN_NONE },
+	{ "system", "schemas",     TYPE_JSON, fn_schemas,   FN_NONE },
+	{ "system", "functions",   TYPE_JSON, fn_functions, FN_NONE },
+	{ "system", "tables",      TYPE_JSON, fn_tables,    FN_NONE },
+	{ "system", "views",       TYPE_JSON, fn_views,     FN_NONE },
+	{ "system", "wal",         TYPE_JSON, fn_wal,       FN_NONE },
+	{ "system", "status",      TYPE_JSON, fn_status,    FN_NONE },
+	{  NULL,     NULL,         TYPE_NULL, NULL,         FN_NONE }
 };

@@ -442,17 +442,17 @@ fn_like(Call* self)
 
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length",  TYPE_INT,    fn_length,  false },
-	{ "public", "size",    TYPE_INT,    fn_length,  false },
-	{ "public", "concat",  TYPE_STRING, fn_concat,  false },
-	{ "public", "lower",   TYPE_STRING, fn_lower,   false },
-	{ "public", "upper",   TYPE_STRING, fn_upper,   false },
-	{ "public", "substr",  TYPE_STRING, fn_substr,  false },
-	{ "public", "strpos",  TYPE_INT,    fn_strpos,  false },
-	{ "public", "replace", TYPE_STRING, fn_replace, false },
-	{ "public", "ltrim",   TYPE_STRING, fn_ltrim,   false },
-	{ "public", "rtrim",   TYPE_STRING, fn_rtrim,   false },
-	{ "public", "trim",    TYPE_STRING, fn_trim,    false },
-	{ "public", "like",    TYPE_BOOL,   fn_like,    false },
-	{  NULL,     NULL,     TYPE_NULL,   NULL,       false }
+	{ "public", "length",  TYPE_INT,    fn_length,  FN_NONE },
+	{ "public", "size",    TYPE_INT,    fn_length,  FN_NONE },
+	{ "public", "concat",  TYPE_STRING, fn_concat,  FN_NONE },
+	{ "public", "lower",   TYPE_STRING, fn_lower,   FN_NONE },
+	{ "public", "upper",   TYPE_STRING, fn_upper,   FN_NONE },
+	{ "public", "substr",  TYPE_STRING, fn_substr,  FN_NONE },
+	{ "public", "strpos",  TYPE_INT,    fn_strpos,  FN_NONE },
+	{ "public", "replace", TYPE_STRING, fn_replace, FN_NONE },
+	{ "public", "ltrim",   TYPE_STRING, fn_ltrim,   FN_NONE },
+	{ "public", "rtrim",   TYPE_STRING, fn_rtrim,   FN_NONE },
+	{ "public", "trim",    TYPE_STRING, fn_trim,    FN_NONE },
+	{ "public", "like",    TYPE_BOOL,   fn_like,    FN_NONE },
+	{  NULL,     NULL,     TYPE_NULL,   NULL,       FN_NONE }
 };

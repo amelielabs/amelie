@@ -263,9 +263,9 @@ fn_regexp_replace(Call* self)
 
 FunctionDef fn_regexp_def[] =
 {
-	{ "public", "regexp_like",    TYPE_BOOL,   fn_regexp_like,     true  },
-	{ "public", "regexp_substr",  TYPE_STRING, fn_regexp_substr,   true  },
-	{ "public", "regexp_match",   TYPE_JSON,   fn_regexp_match,    true  },
-	{ "public", "regexp_replace", TYPE_STRING, fn_regexp_replace,  true  },
-	{  NULL,     NULL,            TYPE_NULL,   NULL,               false }
+	{ "public", "regexp_like",    TYPE_BOOL,   fn_regexp_like,     FN_CONTEXT },
+	{ "public", "regexp_substr",  TYPE_STRING, fn_regexp_substr,   FN_CONTEXT },
+	{ "public", "regexp_match",   TYPE_JSON,   fn_regexp_match,    FN_CONTEXT },
+	{ "public", "regexp_replace", TYPE_STRING, fn_regexp_replace,  FN_CONTEXT },
+	{  NULL,     NULL,            TYPE_NULL,   NULL,               FN_NONE    }
 };

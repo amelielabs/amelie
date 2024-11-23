@@ -166,6 +166,14 @@ select system.functions()
     "schema": "public",
     "name": "vector"
   },
+  "public.coalesce": {
+    "schema": "public",
+    "name": "coalesce"
+  },
+  "public.nullif": {
+    "schema": "public",
+    "name": "nullif"
+  },
   "public.append": {
     "schema": "public",
     "name": "append"
@@ -393,6 +401,14 @@ select system.functions()
   "public.log2": {
     "schema": "public",
     "name": "log2"
+  },
+  "public.greatest": {
+    "schema": "public",
+    "name": "greatest"
+  },
+  "public.least": {
+    "schema": "public",
+    "name": "least"
   },
   "public.error": {
     "schema": "public",

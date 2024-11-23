@@ -3,7 +3,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
-# test: coalesce
+# test: coalesce()
 select coalesce()
 select coalesce(1)
 select coalesce(null)
@@ -12,8 +12,13 @@ select coalesce(1, null)
 select coalesce(1, null, 2)
 select null::coalesce
 select 1::coalesce
+select coalesce('1', null, '2')
 
-# test: nullif
+# type mismatch
+select coalesce(1, null, 2.5)
+select coalesce('1', null, 2.5)
+
+# test: nullif()
 select nullif()
 select nullif(1)
 select nullif(1, 2)
@@ -21,6 +26,11 @@ select nullif(1, null)
 select nullif(null, 1)
 select nullif(1, 1)
 select 1::nullif(1)
+
+# type mismatch
+select nullif(1, '1')
+select nullif(1, '1')
+select nullif(1, 1.5)
 
 disconnect S0
 close E0

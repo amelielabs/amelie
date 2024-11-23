@@ -17,7 +17,6 @@
 #include "func/fn_json.h"
 #include "func/fn_string.h"
 #include "func/fn_regexp.h"
-
 #include "func/fn_math.h"
 #include "func/fn_misc.h"
 #include "func/fn_time.h"

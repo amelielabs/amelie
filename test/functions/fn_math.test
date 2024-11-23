@@ -96,5 +96,26 @@ select log10(1000)
 # test: log2()
 select log2(8)
 
+# test: greatest()
+select greatest()
+select greatest(1)
+select greatest(null)
+select greatest(null, 1)
+select greatest(null, 1, 3)
+select greatest(8, null, 1, 3)
+
+# type mismatch
+select greatest(8, null, '1', 3)
+
+# test: least()
+select least()
+select least(1)
+select least(null)
+select least(null, 1)
+select least(null, 1, 3)
+
+# type mismatch
+select least(8.1, null, 1, 3)
+
 disconnect S0
 close E0

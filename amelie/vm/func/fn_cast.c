@@ -355,14 +355,14 @@ fn_vector(Call* self)
 
 FunctionDef fn_cast_def[] =
 {
-	{ "public", "type",      TYPE_STRING,    fn_type,      false },
-	{ "public", "int",       TYPE_INT,       fn_int,       false },
-	{ "public", "bool",      TYPE_BOOL,      fn_bool,      false },
-	{ "public", "double",    TYPE_DOUBLE,    fn_double,    false },
-	{ "public", "string",    TYPE_STRING,    fn_string,    false },
-	{ "public", "json",      TYPE_JSON,      fn_json,      false },
-	{ "public", "interval",  TYPE_INTERVAL,  fn_interval,  false },
-	{ "public", "timestamp", TYPE_TIMESTAMP, fn_timestamp, false },
-	{ "public", "vector",    TYPE_VECTOR,    fn_vector,    false },
-	{  NULL,     NULL,       TYPE_NULL,      NULL,         false }
+	{ "public", "type",      TYPE_STRING,    fn_type,      FN_NONE },
+	{ "public", "int",       TYPE_INT,       fn_int,       FN_NONE },
+	{ "public", "bool",      TYPE_BOOL,      fn_bool,      FN_NONE },
+	{ "public", "double",    TYPE_DOUBLE,    fn_double,    FN_NONE },
+	{ "public", "string",    TYPE_STRING,    fn_string,    FN_NONE },
+	{ "public", "json",      TYPE_JSON,      fn_json,      FN_NONE },
+	{ "public", "interval",  TYPE_INTERVAL,  fn_interval,  FN_NONE },
+	{ "public", "timestamp", TYPE_TIMESTAMP, fn_timestamp, FN_NONE },
+	{ "public", "vector",    TYPE_VECTOR,    fn_vector,    FN_NONE },
+	{  NULL,     NULL,       TYPE_NULL,      NULL,         FN_NONE }
 };
