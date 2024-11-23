@@ -1,0 +1,490 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: config()
+select system.config()
+[{
+  "version": "1.0.0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "directory": "_output/E0",
+  "timezone": "UTC",
+  "timezone_default": "UTC",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_options": true,
+  "tls_capath": "",
+  "tls_ca": "",
+  "tls_cert": "",
+  "tls_key": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "backends": 1,
+  "wal": true,
+  "wal_rotate_wm": 104857600,
+  "wal_sync_on_rotate": false,
+  "wal_sync_on_write": false,
+  "repl": false,
+  "repl_primary": "",
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint": 1,
+  "read_only": false,
+  "lsn": 1,
+  "psn": 0
+}]
+# test: users()
+select system.users()
+[{}]
+# test: replicas()
+select system.replicas()
+[{}]
+# test: repl()
+select system.repl()
+[{
+  "active": false,
+  "role": "primary",
+  "primary": null,
+  "replicas": {}
+}]
+# test: replication()
+select system.replication()
+[{
+  "active": false,
+  "role": "primary",
+  "primary": null,
+  "replicas": {}
+}]
+# test: nodes()
+select system.nodes()::size
+[1]
+# test: schemas()
+select system.schemas()
+[{
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
+}]
+# test: functions()
+select system.functions()
+[{
+  "system.config": {
+    "schema": "system",
+    "name": "config"
+  },
+  "system.users": {
+    "schema": "system",
+    "name": "users"
+  },
+  "system.replicas": {
+    "schema": "system",
+    "name": "replicas"
+  },
+  "system.repl": {
+    "schema": "system",
+    "name": "repl"
+  },
+  "system.replication": {
+    "schema": "system",
+    "name": "replication"
+  },
+  "system.nodes": {
+    "schema": "system",
+    "name": "nodes"
+  },
+  "system.schemas": {
+    "schema": "system",
+    "name": "schemas"
+  },
+  "system.functions": {
+    "schema": "system",
+    "name": "functions"
+  },
+  "system.tables": {
+    "schema": "system",
+    "name": "tables"
+  },
+  "system.views": {
+    "schema": "system",
+    "name": "views"
+  },
+  "system.wal": {
+    "schema": "system",
+    "name": "wal"
+  },
+  "system.status": {
+    "schema": "system",
+    "name": "status"
+  },
+  "public.type": {
+    "schema": "public",
+    "name": "type"
+  },
+  "public.int": {
+    "schema": "public",
+    "name": "int"
+  },
+  "public.bool": {
+    "schema": "public",
+    "name": "bool"
+  },
+  "public.double": {
+    "schema": "public",
+    "name": "double"
+  },
+  "public.string": {
+    "schema": "public",
+    "name": "string"
+  },
+  "public.json": {
+    "schema": "public",
+    "name": "json"
+  },
+  "public.interval": {
+    "schema": "public",
+    "name": "interval"
+  },
+  "public.timestamp": {
+    "schema": "public",
+    "name": "timestamp"
+  },
+  "public.vector": {
+    "schema": "public",
+    "name": "vector"
+  },
+  "public.append": {
+    "schema": "public",
+    "name": "append"
+  },
+  "public.push_back": {
+    "schema": "public",
+    "name": "push_back"
+  },
+  "public.push": {
+    "schema": "public",
+    "name": "push"
+  },
+  "public.pop": {
+    "schema": "public",
+    "name": "pop"
+  },
+  "public.pop_back": {
+    "schema": "public",
+    "name": "pop_back"
+  },
+  "public.put": {
+    "schema": "public",
+    "name": "put"
+  },
+  "public.remove": {
+    "schema": "public",
+    "name": "remove"
+  },
+  "public.set": {
+    "schema": "public",
+    "name": "set"
+  },
+  "public.unset": {
+    "schema": "public",
+    "name": "unset"
+  },
+  "public.has": {
+    "schema": "public",
+    "name": "has"
+  },
+  "public.length": {
+    "schema": "public",
+    "name": "length"
+  },
+  "public.size": {
+    "schema": "public",
+    "name": "size"
+  },
+  "public.concat": {
+    "schema": "public",
+    "name": "concat"
+  },
+  "public.lower": {
+    "schema": "public",
+    "name": "lower"
+  },
+  "public.upper": {
+    "schema": "public",
+    "name": "upper"
+  },
+  "public.substr": {
+    "schema": "public",
+    "name": "substr"
+  },
+  "public.strpos": {
+    "schema": "public",
+    "name": "strpos"
+  },
+  "public.replace": {
+    "schema": "public",
+    "name": "replace"
+  },
+  "public.ltrim": {
+    "schema": "public",
+    "name": "ltrim"
+  },
+  "public.rtrim": {
+    "schema": "public",
+    "name": "rtrim"
+  },
+  "public.trim": {
+    "schema": "public",
+    "name": "trim"
+  },
+  "public.like": {
+    "schema": "public",
+    "name": "like"
+  },
+  "public.regexp_like": {
+    "schema": "public",
+    "name": "regexp_like"
+  },
+  "public.regexp_substr": {
+    "schema": "public",
+    "name": "regexp_substr"
+  },
+  "public.regexp_match": {
+    "schema": "public",
+    "name": "regexp_match"
+  },
+  "public.regexp_replace": {
+    "schema": "public",
+    "name": "regexp_replace"
+  },
+  "public.abs": {
+    "schema": "public",
+    "name": "abs"
+  },
+  "public.fabs": {
+    "schema": "public",
+    "name": "fabs"
+  },
+  "public.round": {
+    "schema": "public",
+    "name": "round"
+  },
+  "public.sign": {
+    "schema": "public",
+    "name": "sign"
+  },
+  "public.ceil": {
+    "schema": "public",
+    "name": "ceil"
+  },
+  "public.exp": {
+    "schema": "public",
+    "name": "exp"
+  },
+  "public.floor": {
+    "schema": "public",
+    "name": "floor"
+  },
+  "public.mod": {
+    "schema": "public",
+    "name": "mod"
+  },
+  "public.fmod": {
+    "schema": "public",
+    "name": "fmod"
+  },
+  "public.pow": {
+    "schema": "public",
+    "name": "pow"
+  },
+  "public.fpow": {
+    "schema": "public",
+    "name": "fpow"
+  },
+  "public.trunc": {
+    "schema": "public",
+    "name": "trunc"
+  },
+  "public.pi": {
+    "schema": "public",
+    "name": "pi"
+  },
+  "public.sqrt": {
+    "schema": "public",
+    "name": "sqrt"
+  },
+  "public.acos": {
+    "schema": "public",
+    "name": "acos"
+  },
+  "public.acosh": {
+    "schema": "public",
+    "name": "acosh"
+  },
+  "public.asin": {
+    "schema": "public",
+    "name": "asin"
+  },
+  "public.asinh": {
+    "schema": "public",
+    "name": "asinh"
+  },
+  "public.atan": {
+    "schema": "public",
+    "name": "atan"
+  },
+  "public.atanh": {
+    "schema": "public",
+    "name": "atanh"
+  },
+  "public.atan2": {
+    "schema": "public",
+    "name": "atan2"
+  },
+  "public.cos": {
+    "schema": "public",
+    "name": "cos"
+  },
+  "public.cosh": {
+    "schema": "public",
+    "name": "cosh"
+  },
+  "public.sin": {
+    "schema": "public",
+    "name": "sin"
+  },
+  "public.sinh": {
+    "schema": "public",
+    "name": "sinh"
+  },
+  "public.tan": {
+    "schema": "public",
+    "name": "tan"
+  },
+  "public.tanh": {
+    "schema": "public",
+    "name": "tanh"
+  },
+  "public.ln": {
+    "schema": "public",
+    "name": "ln"
+  },
+  "public.log": {
+    "schema": "public",
+    "name": "log"
+  },
+  "public.log10": {
+    "schema": "public",
+    "name": "log10"
+  },
+  "public.log2": {
+    "schema": "public",
+    "name": "log2"
+  },
+  "public.error": {
+    "schema": "public",
+    "name": "error"
+  },
+  "public.sleep": {
+    "schema": "public",
+    "name": "sleep"
+  },
+  "public.random": {
+    "schema": "public",
+    "name": "random"
+  },
+  "public.random_uuid": {
+    "schema": "public",
+    "name": "random_uuid"
+  },
+  "public.md5": {
+    "schema": "public",
+    "name": "md5"
+  },
+  "public.sha1": {
+    "schema": "public",
+    "name": "sha1"
+  },
+  "public.encode": {
+    "schema": "public",
+    "name": "encode"
+  },
+  "public.decode": {
+    "schema": "public",
+    "name": "decode"
+  },
+  "public.serial": {
+    "schema": "public",
+    "name": "serial"
+  },
+  "public.jwt": {
+    "schema": "public",
+    "name": "jwt"
+  },
+  "public.now": {
+    "schema": "public",
+    "name": "now"
+  },
+  "public.at_timezone": {
+    "schema": "public",
+    "name": "at_timezone"
+  },
+  "public.date_bin": {
+    "schema": "public",
+    "name": "date_bin"
+  },
+  "public.date_trunc": {
+    "schema": "public",
+    "name": "date_trunc"
+  },
+  "public.interval_trunc": {
+    "schema": "public",
+    "name": "interval_trunc"
+  },
+  "public.extract": {
+    "schema": "public",
+    "name": "extract"
+  },
+  "public.cos_distance": {
+    "schema": "public",
+    "name": "cos_distance"
+  }
+}]
+# test: tables()
+select system.tables()
+[{}]
+# test: views()
+select system.views()
+[{}]
+# test: wal()
+select system.wal()
+[{
+  "active": true,
+  "checkpoint": 1,
+  "lsn": 1,
+  "lsn_min": 1,
+  "files": 1,
+  "slots": 0,
+  "slots_min": -1,
+  "writes": 0,
+  "writes_bytes": 0,
+  "ops": 0
+}]
+# test: status()
+select system.status()::size
+[9]
+disconnect S0
+close E0

@@ -37,7 +37,7 @@ test fn_time
 test fn_vector
 test fn_math
 #test fn_null
-#test fn_system
+test fn_system
 
 
 ## system
