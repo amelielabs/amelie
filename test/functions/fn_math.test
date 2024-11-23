@@ -3,107 +3,97 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
-# test: greatest
-select greatest()
-select greatest(1)
-select greatest(null)
-select greatest(null, 1)
-select greatest(null, 1, 3)
-select greatest(8, null, 1, 3)
-
-# test: least
-select least()
-select least(1)
-select least(null)
-select least(null, 1)
-select least(null, 1, 3)
-select least(8, null, 1, 3)
-
-# test: abs
+# test: abs()
 #select 13.485::abs
 #select -13.485::abs
 #select 485::abs
 #select -485::abs
-select abs(13.485)
-select abs(-13.485)
 select abs(485)
 select abs(-485)
 
-# test: round
+# test: fabs()
+select fabs(13.485)
+select fabs(-13.485)
+
+# test: round()
 select 13.485::round
 
-# test: sign
+# test: sign()
 select 13.485::sign
 select 485::sign
 select 0::sign
 select -10::sign
 
-# test: ceil
+# test: ceil()
 select 42::ceil
 select 42.2::ceil
 select ceil(-42.8)
 
-# test: floor
+# test: floor()
 select floor(42.8)
 select floor(-42.8)
 
-# test: exp
+# test: exp()
 select exp(1)
 select exp(1.0)
 select 1.0::exp
 
-# test: mod
+# test: mod()
 select mod(9, 4)
-select mod(30.0, 3.6)
 
-# test: pi
+# test: fmod()
+select fmod(30.0, 3.6)
+
+# test: pi()
 select pi()
 
-# test: power
-select power(9, 3)
-select power(9.1, 3.2)
+# test: pow()
+select pow(9, 3)
 
-# test: trunc
+# test: fpow()
+select fpow(9.1, 3.2)
+
+# test: trunc()
 select trunc(42.8)
 select trunc(-48.8023)
 
-# test: sqrt
+# test: sqrt()
 select sqrt(2)
 select sqrt(2.0)
 select sqrt(2.3)
 select sqrt(-2.3)
 
-# test: acos
+# test: acos()
 select acos(1)
 
-# test: acosh
+# test: acosh()
 select acosh(1)
 
-# test: asin
+# test: asin()
 select asin(1)
 
-# test: asinh
+# test: asinh()
 select asinh(1)
 
-# test: atan
+# test: atan()
 select atan(1)
 
-# test: atanh
+# test: atanh()
 select atanh(0.5)
 
-# test: atan2
+# test: atan2()
 select atan2(1, 0)
 
-# test: ln
+# test: ln()
 select ln(2.0)
 
-# test: log
+# test: log()
 select log(1000)
 
-# test: log10
+# test: log10()
 select log10(1000)
 
-# test: log2
+# test: log2()
 select log2(8)
 
 disconnect S0
