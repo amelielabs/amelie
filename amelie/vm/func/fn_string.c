@@ -36,28 +36,28 @@
 hot static void
 fn_length(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	if (unlikely(arg.type == TYPE_NULL))
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	int64_t rc = 0;
-	switch (arg.type) {
+	switch (arg->type) {
 	case TYPE_STRING:
-		rc = str_size(&arg.string);
+		rc = str_size(&arg->string);
 		break;
 	case TYPE_JSON:
-		if (json_is_array(arg.json))
-			rc = json_array_size(arg.json);
+		if (json_is_array(arg->json))
+			rc = json_array_size(arg->json);
 		else
-		if (json_is_obj(arg.json))
-			rc = json_obj_size(arg.json);
+		if (json_is_obj(arg->json))
+			rc = json_obj_size(arg->json);
 		else
-		if (json_is_string(arg.json))
+		if (json_is_string(arg->json))
 		{
-			uint8_t* pos = arg.json;
+			uint8_t* pos = arg->json;
 			Str str;
 			json_read_string(&pos, &str);
 			rc = str_size(&str);
@@ -65,11 +65,11 @@ fn_length(Call* self)
 			error("length(): unsupport json argument type");
 		break;
 	case TYPE_VECTOR:
-		rc = arg.vector->size;
+		rc = arg->vector->size;
 		break;
 	default:
 		error("length(%s): operation type is not supported",
-		      type_of(arg.type));
+		      type_of(arg->type));
 		break;
 	}
 	value_set_int(self->result, rc);
@@ -110,17 +110,17 @@ fn_concat(Call* self)
 static void
 fn_lower(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	if (unlikely(arg.type == TYPE_NULL))
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	call_validate_arg(self, 0, TYPE_STRING);
 
-	auto src = str_of(&arg.string);
-	int  src_size = str_size(&arg.string);
+	auto src = str_of(&arg->string);
+	int  src_size = str_size(&arg->string);
 
 	auto buf = buf_create();
 	auto pos = buf_reserve(buf, json_size_string(src_size));
@@ -139,17 +139,17 @@ fn_lower(Call* self)
 static void
 fn_upper(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	if (unlikely(arg.type == TYPE_NULL))
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	call_validate_arg(self, 0, TYPE_STRING);
 
-	auto src = str_of(&arg.string);
-	int  src_size = str_size(&arg.string);
+	auto src = str_of(&arg->string);
+	int  src_size = str_size(&arg->string);
 
 	auto buf = buf_create();
 	auto pos = buf_reserve(buf, json_size_string(src_size));

@@ -36,10 +36,10 @@
 static void
 fn_type(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
 	Str string;
-	str_set_cstr(&string, type_of(arg.type));
+	str_set_cstr(&string, type_of(arg->type));
 	value_set_string(self->result, &string, NULL);
 }
 
@@ -153,34 +153,34 @@ hot static void
 fn_string(Call* self)
 {
 	call_validate(self, 1);
-	auto arg = self->argv[0];
-	if (unlikely(arg.type == TYPE_NULL))
+	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
 	auto data = buf_create();
-	switch (arg.type) {
+	switch (arg->type) {
 	case TYPE_STRING:
-		buf_printf(data, "%.*s", str_size(&arg.string), str_of(&arg.string));
+		buf_printf(data, "%.*s", str_size(&arg->string), str_of(&arg->string));
 		break;
 	case TYPE_INTERVAL:
 	{
 		buf_reserve(data, 512);
-		int size = interval_write(&arg.interval, (char*)data->position, 512);
+		int size = interval_write(&arg->interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
 
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
-		int size = timestamp_write(arg.integer, self->vm->local->timezone, (char*)data->position, 128);
+		int size = timestamp_write(arg->integer, self->vm->local->timezone, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
 	}
 	default:
-		value_export(&arg, self->vm->local->timezone, false, data);
+		value_export(arg, self->vm->local->timezone, false, data);
 		break;
 	}
 	Str string;
@@ -193,27 +193,27 @@ hot static void
 fn_json(Call* self)
 {
 	call_validate(self, 1);
-	auto arg = self->argv[0];
-	if (unlikely(arg.type == TYPE_NULL))
+	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == TYPE_JSON))
+	if (unlikely(arg->type == TYPE_JSON))
 	{
-		value_copy(self->result, &arg);
+		value_copy(self->result, arg);
 		return;
 	}
-	if (unlikely(arg.type != TYPE_STRING))
+	if (unlikely(arg->type != TYPE_STRING))
 		error("json(%s): operation type is not supported",
-		      type_of(arg.type));
+		      type_of(arg->type));
 
 	auto buf = buf_create();
 	guard_buf(buf);
 	Json json;
 	json_init(&json);
 	guard(json_free, &json);
-	json_parse(&json, &arg.string, buf);
+	json_parse(&json, &arg->string, buf);
 	unguard();
 	unguard();
 	json_free(&json);
@@ -224,23 +224,23 @@ hot static void
 fn_interval(Call* self)
 {
 	call_validate(self, 1);
-	auto arg = self->argv[0];
-	if (unlikely(arg.type == TYPE_NULL))
+	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == TYPE_INTERVAL))
+	if (unlikely(arg->type == TYPE_INTERVAL))
 	{
-		value_copy(self->result, &arg);
+		value_copy(self->result, arg);
 		return;
 	}
-	if (unlikely(arg.type != TYPE_STRING))
+	if (unlikely(arg->type != TYPE_STRING))
 		error("interval(%s): operation type is not supported",
-		      type_of(arg.type));
+		      type_of(arg->type));
 	Interval iv;
 	interval_init(&iv);
-	interval_read(&iv, &arg.string);
+	interval_read(&iv, &arg->string);
 	value_set_interval(self->result, &iv);
 }
 
@@ -302,22 +302,22 @@ hot static void
 fn_vector(Call* self)
 {
 	call_validate(self, 1);
-	auto arg = self->argv[0];
-	if (unlikely(arg.type == TYPE_NULL))
+	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	if (unlikely(arg.type == TYPE_VECTOR))
+	if (unlikely(arg->type == TYPE_VECTOR))
 	{
-		value_copy(self->result, &arg);
+		value_copy(self->result, arg);
 		return;
 	}
-	if (unlikely(arg.type != TYPE_JSON))
+	if (unlikely(arg->type != TYPE_JSON))
 		error("vector(%s): operation type is not supported",
-		      type_of(arg.type));
+		      type_of(arg->type));
 
-	uint8_t* pos = arg.json;
+	uint8_t* pos = arg->json;
 	if (! json_is_array(pos))
 		error("vector(): json array expected");
 

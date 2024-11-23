@@ -5,38 +5,40 @@
 #group runtime
 #test runtime
 
-## data types and expressions
-#directory expr
-#group expr
-#test null
-#test bool
-#test int
-#test double
-#test string
-#test json
-#test timestamp
-#test timestamp_timezone
-#test interval
-#test vector
-#test logic
-#test is
-#test method
-#test like
-#test between
-#test case
+# data types and expressions
+directory expr
+group expr
+test null
+test bool
+test int
+test double
+test string
+test json
+test timestamp
+test timestamp_timezone
+test interval
+test vector
+test logic
+test is
+test method
+test like
+test between
+test case
 
 # func
 directory functions
 group functions
 test fn_cast
-#test func_null
 test fn_json
 test fn_string
 test fn_regexp
-#test func_math
-#test func_misc
+test fn_misc
 test fn_time
 test fn_vector
+#test fn_math
+#test fn_null
+#test fn_system
+
 
 ## system
 #directory system
