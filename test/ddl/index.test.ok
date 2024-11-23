@@ -29,15 +29,13 @@ create index i on test ()
 # test: create index
 create index i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -45,29 +43,23 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 # test: create index if not exists
 create index i on test (a)
 {"msg": "table 'test' index 'i': already exists"}
 create index if not exists i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -75,28 +67,22 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 # test: create index (compound key)
 create index i on test (b, a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -104,32 +90,24 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 2,
-    "type": "int",
-    "path": ""
+    "column": 2
   }, {
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 # test: create index (key reuse)
 create index i on test (a, a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -137,19 +115,13 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
@@ -159,15 +131,13 @@ drop table test
 create shared table test (id int primary key, a int, b int)
 create unique index i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -175,11 +145,9 @@ select system.tables().'public.test'.indexes
   "unique": true,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }]
-}]
+}]]
 drop index i on test
 drop table test
 create table test (id int primary key, a int, b int)
@@ -209,15 +177,13 @@ create index i on test (a) with (, type = 'tree'
 # test: create index with
 create index i on test (a) with (type = 'hash')
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -225,27 +191,21 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 create index i on test (a) with (type = 'tree')
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -253,15 +213,11 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 create index i on test (a) with (type = 'unknown')
 {"msg": "WITH: unknown primary index type"}
@@ -270,15 +226,13 @@ drop table test
 create shared table test (id int primary key, a int, b int)
 create index i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -286,15 +240,11 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on test
 # test: drop index parsing
 drop index
@@ -320,15 +270,13 @@ drop index i on public.test
 # test: drop index
 create index i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -336,28 +284,22 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 drop index i on public.test
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 # test: drop index if exists
 drop index i on public.test
 {"msg": "table 'test' index 'i': not exists"}
@@ -398,15 +340,13 @@ alter index i on test rename to
 # test: alter index rename
 create index i on test (a)
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "i",
@@ -414,26 +354,20 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 alter index i on test rename to j
 select system.tables().'public.test'.indexes
-[{
+[[{
   "name": "primary",
   "type": 2,
   "unique": true,
   "primary": true,
   "keys": [{
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
 }, {
   "name": "j",
@@ -441,15 +375,11 @@ select system.tables().'public.test'.indexes
   "unique": false,
   "primary": false,
   "keys": [{
-    "ref": 1,
-    "type": "int",
-    "path": ""
+    "column": 1
   }, {
-    "ref": 0,
-    "type": "int",
-    "path": ""
+    "column": 0
   }]
-}]
+}]]
 # test: alter index rename if exists
 alter index k on test rename to z
 {"msg": "table 'test' index 'k': not exists"}

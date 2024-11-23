@@ -34,62 +34,62 @@ create table test()
 
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column int8/i8
 create table test(id int primary key, id2 int8, id3 i8)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column int16/i16
 create table test(id int primary key, id2 int16, id3 i16)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column int/integer/int32/i32
 create table test(id int primary key, id2 integer, id3 int32, id4 i32)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column int64/i64
 create table test(id int64 primary key, id2 i64)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column float
 create table test(id int primary key, a float)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column double
 create table test(id int primary key, a double)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column text/string
 create table test(id int primary key, a text, b string)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column json
 create table test(id int primary key, a json, b json)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column timestamp
 create table test(id int primary key, a timestamp)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column interval
 create table test(id int primary key, a interval)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column vector
 create table test(id int primary key, a vector)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: column redefined
@@ -115,7 +115,7 @@ create table test(id int, primary key(idd))
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
 create table if not exists test(id int primary key, primary key(id))
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: primary key redefined #2
@@ -132,13 +132,13 @@ create table test (id int primary key)
 # test: table create if not exists
 create table test (id int primary key)
 create table if not exists test (id int primary key)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 
 # test: schema default
 create table test (id int primary key)
-select system.tables()['public.test'].schema
+select system.tables().'public.test'.schema
 drop table test
 
 # test: schema system
@@ -146,18 +146,18 @@ create table system.test (id int primary key)
 
 # test: schema default explicit
 create table public.test (id int primary key)
-select system.tables()['public.test'].schema
+select system.tables().'public.test'.schema
 drop table public.test
 
 # test: schema non-exists
 create table test.test (id int primary key)
-select system.tables()['test.test'].schema
+select system.tables().'test.test'.schema
 
 # test: schema set
 create table test (id int primary key)
 create schema test
 create table test.test (id int primary key)
-select system.tables()['test.test'].schema
+select system.tables().'test.test'.schema
 drop table test
 drop table test.test
 drop schema test
@@ -169,42 +169,42 @@ drop view test
 
 # test: distributed
 create distributed table test (id int primary key)
-select system.tables()['public.test'].shared
+select system.tables().'public.test'.shared
 drop table test
 
 # test: shared
 create shared table test (id int primary key)
-select system.tables()['public.test'].shared
+select system.tables().'public.test'.shared
 drop table test
 
 # test: aggregated
 create aggregated table test (id int primary key)
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.shared
 drop table test
 
 create distributed aggregated table test (id int primary key)
-select system.tables()['public.test'].shared
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.shared
+select system.tables().'public.test'.aggregated
 drop table test
 
 create shared aggregated table test (id int primary key)
-select system.tables()['public.test'].shared
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.shared
+select system.tables().'public.test'.aggregated
 drop table test
 
 # test: constraint default
 create table test (id int primary key, data int default 1)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint default with key
 create table test (id int default 1 primary key)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id))
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint default expr validate
@@ -212,17 +212,17 @@ create table test (id int primary key, data int default 1 + 1)
 
 # test: constraint not null with key
 create table test (id int not null primary key)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 ## test: constraint not null
@@ -245,17 +245,17 @@ drop table test
 
 # test: constraint serial
 create table test (id int primary key, data int64 serial)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint serial key
 create table test (id int64 serial primary key)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint serial key #2
 create table test (id int64 serial, primary key(id))
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint serial key type
@@ -263,7 +263,7 @@ create table test (id string serial primary key)
 
 # test: constraint serial multiple columns
 create table test (id int64 serial primary key, data int64 serial)
-select system.tables()['public.test'].columns
+select system.tables().'public.test'.columns
 drop table test
 
 # test: with parsing
