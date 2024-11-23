@@ -37,7 +37,7 @@ hot static void
 fn_now(Call* self)
 {
 	call_validate(self, 0);
-	value_set_timestamp(self->result, time_us());
+	value_set_timestamp(self->result, self->vm->local->time_us);
 }
 
 hot static void
