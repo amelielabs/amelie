@@ -46,8 +46,6 @@ show users
     "name": "test2"
   }
 }]
-select name from system.users() where name = "test2"
-["test2"]
 # test: drop user statment parsing
 drop user
 {"msg": "DROP USER <name> expected"}

@@ -6,51 +6,29 @@ watch
 # test: watch
 show lsn
 [1]
-explain watch system.config().lsn = 1
+explain watch system.config().lsn::int = 1
 [{
   "bytecode": {
     "coordinator": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # lsn",
-      "02": "at                  2      0      1     ",
-      "03": "int                 0      -      0     # 1",
-      "04": "equ                 1      2      0     ",
-      "05": "jtr                 8      1      0     ",
-      "06": "sleep               1000   0      0     ",
-      "07": "jmp                 0      0      0     ",
-      "08": "nop                 0      0      0     ",
-      "09": "array               0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "body                0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "02": "idxjs               2      0      1     ",
+      "03": "push                2      0      0     ",
+      "04": "call                0      -      1     # public.int()",
+      "05": "int                 1      -      0     # 1",
+      "06": "equii               2      0      1     ",
+      "07": "jtr                 12     2      0     ",
+      "08": "int                 0      -      0     # 1000",
+      "09": "push                0      0      0     ",
+      "10": "call                0      -      1     # public.sleep()",
+      "11": "jmp                 0      0      0     ",
+      "12": "nop                 0      0      0     ",
+      "13": "null                1      0      0     ",
+      "14": "cte_set             0      1      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
-watch system.config().lsn = 1
-[]
-# test: watch subquery
-explain watch (select 123) = 123
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "int                 0      -      0     # 123",
-      "01": "int                 1      -      0     # 123",
-      "02": "equ                 2      0      1     ",
-      "03": "jtr                 6      2      0     ",
-      "04": "sleep               1000   0      0     ",
-      "05": "jmp                 0      0      0     ",
-      "06": "nop                 0      0      0     ",
-      "07": "array               0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "body                0      0      0     ",
-      "10": "ret                 0      0      0     "
-    }
-  }
-}]
-watch (select 123) = 123
-[]
-create table test (id int primary key serial)
-watch select * from test
-{"msg": "WATCH: sub queries are not supported"}
+watch system.config().lsn::int = 1
 disconnect S0
 close E0

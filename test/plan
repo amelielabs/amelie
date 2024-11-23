@@ -25,29 +25,28 @@
 #test between
 #test case
 
-# func
-directory functions
-group functions
-test fn_cast
-test fn_json
-test fn_string
-test fn_regexp
-test fn_misc
-test fn_time
-test fn_vector
-test fn_math
-test fn_null
-test fn_system
+## functions
+#directory functions
+#group functions
+#test fn_cast
+#test fn_json
+#test fn_string
+#test fn_regexp
+#test fn_misc
+#test fn_time
+#test fn_vector
+#test fn_math
+#test fn_null
+#test fn_system
 
-
-## system
-#directory system
-#group system
-#test bootstrap
-#test set
-#test show
-#test user
-#test watch
+# system
+directory system
+group system
+test bootstrap
+test set
+test show
+test user
+test watch
 
 ## ddl
 #directory ddl

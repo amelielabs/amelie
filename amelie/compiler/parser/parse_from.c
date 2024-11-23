@@ -125,7 +125,7 @@ parse_from_target(From* self)
 		return target;
 	}
 
-	error("<%.*s.%.*s> table or view is not found",
+	error("<%.*s.%.*s> table or view not found",
 	      str_size(&schema), str_of(&schema),
 	      str_size(&name),
 	      str_of(&name));

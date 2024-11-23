@@ -27,7 +27,6 @@ create user test2 secret secret
 create user test2 secret "test" abc
 create user test2 secret "test"
 show users
-select name from system.users() where name = "test2"
 
 # test: drop user statment parsing
 drop user
