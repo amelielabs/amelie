@@ -244,12 +244,16 @@ drop table test
 #drop table test
 
 # test: constraint serial
+create table test (id int primary key, data int serial)
+select system.tables().'public.test'.columns
+drop table test
+
 create table test (id int primary key, data int64 serial)
 select system.tables().'public.test'.columns
 drop table test
 
 # test: constraint serial key
-create table test (id int64 serial primary key)
+create table test (id int serial primary key)
 select system.tables().'public.test'.columns
 drop table test
 
@@ -262,7 +266,7 @@ drop table test
 create table test (id string serial primary key)
 
 # test: constraint serial multiple columns
-create table test (id int64 serial primary key, data int64 serial)
+create table test (id int serial primary key, data int64 serial)
 select system.tables().'public.test'.columns
 drop table test
 

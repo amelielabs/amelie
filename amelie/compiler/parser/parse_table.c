@@ -171,8 +171,8 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KSERIAL:
 		{
 			// ensure the column has type INT64
-			if (column->type != TYPE_INT || column->type_size != 8)
-				error("SERIAL column <%.*s> must be int64",
+			if (column->type != TYPE_INT || column->type_size < 4)
+				error("SERIAL column <%.*s> must be int or int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
 
@@ -184,8 +184,8 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KRANDOM:
 		{
 			// ensure the column has type INT
-			if (column->type != TYPE_INT || column->type_size != 8)
-				error("RANDOM column <%.*s> must be int64",
+			if (column->type != TYPE_INT || column->type_size < 4)
+				error("RANDOM column <%.*s> must be int or int64",
 				      str_size(&column->name),
 				      str_of(&column->name));
 
