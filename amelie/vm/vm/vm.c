@@ -132,7 +132,6 @@ vm_run(Vm*       self,
 		&&cnull,
 		&&cbool,
 		&&cint,
-		&&cint_min,
 		&&cdouble,
 		&&cstring,
 		&&cjson,
@@ -140,8 +139,6 @@ vm_run(Vm*       self,
 		&&cjson_array,
 		&&cinterval,
 		&&ctimestamp,
-		&&cstring_min,
-		&&ctimestamp_min,
 
 		// argument
 		&&carg,
@@ -425,10 +422,6 @@ cint:
 	value_set_int(&r[op->a], op->b);
 	op_next;
 
-cint_min:
-	value_set_int(&r[op->a], INT64_MIN);
-	op_next;
-
 cdouble:
 	value_set_double(&r[op->a], code_data_at_double(code_data, op->b));
 	op_next;
@@ -458,15 +451,6 @@ cinterval:
 
 ctimestamp:
 	value_set_timestamp(&r[op->a], op->b);
-	op_next;
-
-cstring_min:
-	str_set(&string, "", 0);
-	value_set_string(&r[op->a], &string, NULL);
-	op_next;
-
-ctimestamp_min:
-	value_set_timestamp(&r[op->a], 0);
 	op_next;
 
 carg:

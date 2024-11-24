@@ -40,11 +40,16 @@ parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 	if (ast->id != '[')
 		return false;
 	auto buf = buf_create();
+	guard_buf(buf);
 	buf_write_i32(buf, 0);
 
 	// []
 	if (lex_if(self, ']'))
+	{
+		unguard();
+		value_set_vector_buf(value, buf);
 		return true;
+	}
 
 	// [float [, ...]]
 	int count = 0;
@@ -84,6 +89,8 @@ parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 	}
 
 	*buf_u32(buf) = count;
+
+	unguard();
 	value_set_vector_buf(value, buf);
 	return true;
 }
@@ -174,19 +181,21 @@ parse_value(Lex*    self, Local* local,
 	}
 	case TYPE_TIMESTAMP:
 	{
+		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
-			// current_timestamp
 			value_set_timestamp(value, local->time_us);
-		} else
-		if (ast->id == KINT) {
-			// unixtime
-			value_set_timestamp(value, ast->integer);
-		} else
-		if (ast->id == KTIMESTAMP)
-		{
-			// [TIMESTAMP] string
-			ast = lex_next(self);
+			return column->type_size;
 		}
+
+		// unixtime
+		if (ast->id == KINT) {
+			value_set_timestamp(value, ast->integer);
+			return column->type_size;
+		}
+
+		// [TIMESTAMP] string
+		if (ast->id == KTIMESTAMP)
+			ast = lex_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 
@@ -200,9 +209,7 @@ parse_value(Lex*    self, Local* local,
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
-		{
 			ast = lex_next(self);
-		}
 		if (likely(ast->id != KSTRING))
 			break;
 		Interval iv;

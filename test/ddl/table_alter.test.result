@@ -31,8 +31,8 @@ alter table test rename to
 alter table test rename asf junk
 {"msg": "unexpected token at the end of statement"}
 alter table test rename to abc
-select *.schema, *.name from system.tables()
-{"msg": "'*': no targets defined"}
+select system.tables().'public.abc'.name
+["abc"]
 # test: rename table exists
 create table test (id int primary key)
 alter table abc rename to test
@@ -51,16 +51,698 @@ alter table abc rename to system.test
 {"msg": "system schema <system> cannot be used to create objects"}
 # test: rename schema
 alter table abc rename to public.test
-select *.schema, *.name from system.tables()
-{"msg": "'*': no targets defined"}
+select system.tables().'public.test'.name
+["test"]
 create schema test
 alter table public.test rename to test.test
-select *.schema, *.name from system.tables()
-{"msg": "'*': no targets defined"}
+select system.tables().'test.test'.name
+["test"]
 drop table test.test
 # test: set serial
 create table test (id int primary key serial, data int default 0)
-{"msg": "SERIAL column <id> must be int64"}
 insert into test () values ()
-{"msg": "<public.test> table or view not found"}
 insert into test () values ()
+insert into test () values ()
+select * from test
+[[0, 0], [1, 0], [2, 0]]
+alter table test set
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
+alter table test set serial
+{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+alter table test set serial 123
+{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+alter table test set serial =
+{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+alter table test set serial to
+{"msg": "ALTER TABLE SET SERIAL TO <integer> expected"}
+alter table test set serial to "123"
+{"msg": "ALTER TABLE SET SERIAL TO <integer> expected"}
+alter table test set serial to 0
+insert into test () values ()
+{"msg": "index 'primary': unique key constraint violation"}
+insert into test () values ()
+{"msg": "index 'primary': unique key constraint violation"}
+insert into test () values ()
+{"msg": "index 'primary': unique key constraint violation"}
+insert into test () values ()
+select * from test
+[[0, 0], [1, 0], [2, 0], [3, 0]]
+alter table test set serial to 0
+insert into test () values ()
+{"msg": "index 'primary': unique key constraint violation"}
+select * from test
+[[0, 0], [1, 0], [2, 0], [3, 0]]
+drop table test
+# test: set serial if exists
+alter table if exists test set serial to 0
+alter table test set serial to 0
+{"msg": "table 'test': not exists"}
+# test: set aggregated
+create table test (id int primary key serial, data int default 0)
+select system.tables().'public.test'.aggregated
+[false]
+alter table test set
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
+alter table test set x
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
+alter table test set aggregated
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
+select system.tables().'public.test'.aggregated
+[false]
+# test: set not aggregated
+alter table test set not aggregated
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
+select system.tables().'public.test'.aggregated
+[false]
+drop table test
+# test: rename column parsing
+alter table rename
+{"msg": "ALTER TABLE <name> expected"}
+alter table test rename
+{"msg": "ALTER TABLE RENAME <name> expected"}
+alter table test rename column
+{"msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+alter table test rename column 1
+{"msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+alter table test rename column data
+{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data
+{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data to
+{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+alter table test rename column data to 1
+{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+# test: rename column
+create table test (id int primary key serial, data int default 0)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 0
+  }
+}]]
+alter table test rename column data to data2
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data2",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 0
+  }
+}]]
+select data2 from test
+{"msg": "<data2> column requires explicit target name"}
+drop table test
+# test: rename column #2
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+alter table test rename column id to id2
+select system.tables().'public.test'.columns
+[[{
+  "name": "id2",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+select * from test
+[]
+select id2 from test
+{"msg": "<id2> column requires explicit target name"}
+drop table test
+# test: rename column (already exists)
+create table test (id int primary key serial, data int default 0)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 0
+  }
+}]]
+alter table test rename column data to data
+{"msg": "table 'test': column 'data' already exists"}
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 0
+  }
+}]]
+drop table test
+# test: add column parsing
+create table test (id int primary key)
+alter table
+{"msg": "ALTER TABLE <name> expected"}
+alter table test
+{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
+alter table test add
+{"msg": "ALTER TABLE name ADD <COLUMN> expected"}
+alter table test add 1
+{"msg": "ALTER TABLE name ADD <COLUMN> expected"}
+alter table test add column
+{"msg": "(<name> expected"}
+drop table test
+# test: add column already exists
+create table test (id int primary key, data int)
+alter table test add column data int
+{"msg": "table 'test': column 'data' already exists"}
+drop table test
+# test: add column primary key
+create table test (id int primary key)
+alter table test add column data int primary key
+{"msg": "PRIMARY KEY clause is not supported in this command"}
+drop table test
+# test: add column (empty table)
+create table test (id int primary key)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+alter table test add column data int
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+insert into test values (1,1), (2,2), (3,3)
+select data from test
+{"msg": "<data> column requires explicit target name"}
+drop table test
+# test: add column (null by default)
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+alter table test add column data int
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+select data from test
+{"msg": "<data> column requires explicit target name"}
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+{"msg": "<data> column requires explicit target name"}
+drop table test
+# test: add column (not null without default)
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+alter table test add column data int not null
+{"msg": "ALTER TABLE ADD NOT NULL requires DEFAULT value"}
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: add column (default)
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+alter table test add column data int default 123
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 123
+  }
+}]]
+select data from test
+{"msg": "<data> column requires explicit target name"}
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+{"msg": "<data> column requires explicit target name"}
+drop table test
+# test: add column (default not null)
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+alter table test add column data int not null default 123
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 123
+  }
+}]]
+select data from test
+{"msg": "<data> column requires explicit target name"}
+insert into test values (4,4), (5,5), (6,6)
+select data from test
+{"msg": "<data> column requires explicit target name"}
+drop table test
+# test: add column (serial)
+create table test (id int primary key)
+insert into test 1,2,3
+{"msg": "INSERT INTO <VALUES> expected"}
+alter table test add column data int serial
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+select data from test
+{"msg": "<data> column requires explicit target name"}
+insert into test (id) values (4), (5), (6)
+select data from test
+{"msg": "<data> column requires explicit target name"}
+drop table test
+# test: drop column parsing
+create table test (id int primary key)
+alter table
+{"msg": "ALTER TABLE <name> expected"}
+alter table test
+{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
+alter table test drop
+{"msg": "ALTER TABLE name DROP <COLUMN> expected"}
+alter table test drop column
+{"msg": "ALTER TABLE name DROP COLUMN <name> expected"}
+alter table test drop column 1
+{"msg": "ALTER TABLE name DROP COLUMN <name> expected"}
+drop table test
+# test: drop column (not exists)
+create table test (id int primary key)
+alter table test drop column data
+{"msg": "table 'test': column 'data' not exists"}
+drop table test
+# test: drop column (primary key)
+create table test (id int primary key)
+alter table test drop column id
+{"msg": "table 'test': column 'id' is a key"}
+drop table test
+# test: drop column (secondary key)
+create table test (id int primary key, data int)
+create index i on test (data)
+alter table test drop column data
+{"msg": "table 'test': column 'data' is a key"}
+drop table test
+# test: drop column (empty)
+create table test (id int primary key, a int)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+alter table test drop column a
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: drop column (empty, reorder)
+create table test (id int primary key, a int, b int)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+alter table test drop column a
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: drop column
+create table test (id int primary key, a text, b int)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 4,
+  "type_size": 0,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
+select * from test
+[[1, "id", 1], [2, "a", 2], [3, "b", 3]]
+select a from test
+{"msg": "<a> column requires explicit target name"}
+select b from test
+{"msg": "<b> column requires explicit target name"}
+alter table test drop column a

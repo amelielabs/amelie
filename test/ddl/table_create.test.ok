@@ -807,6 +807,81 @@ select system.tables().'public.test'.columns
   }
 }]]
 drop table test
+# test: constraint not null
+create shared table test (id int primary key, data int not)
+{"msg": "NOT <NULL> expected"}
+create shared table test (id int primary key, data int not null)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}]]
+insert into test values(1, 1)
+insert into test values(2, null)
+{"msg": "column <data> value cannot be NULL"}
+insert into test values(null, null)
+{"msg": "column <id> value cannot be NULL"}
+drop table test
+# test: constraint not null default
+create shared table test (id int primary key, data int not null default 123)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_aggregated": "",
+    "default": 123
+  }
+}]]
+insert into test values(1, 1)
+insert into test values(2, null)
+{"msg": "column <data> value cannot be NULL"}
+insert into test (id) values(3)
+select * from test
+[[1, 1], [3, 123]]
+drop table test
 # test: constraint serial
 create table test (id int primary key, data int serial)
 select system.tables().'public.test'.columns

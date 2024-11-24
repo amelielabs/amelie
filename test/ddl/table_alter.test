@@ -25,7 +25,7 @@ alter table test rename
 alter table test rename to
 alter table test rename asf junk
 alter table test rename to abc
-select *.schema, *.name from system.tables()
+select system.tables().'public.abc'.name
 
 # test: rename table exists
 create table test (id int primary key)
@@ -45,10 +45,10 @@ alter table abc rename to system.test
 
 # test: rename schema
 alter table abc rename to public.test
-select *.schema, *.name from system.tables()
+select system.tables().'public.test'.name
 create schema test
 alter table public.test rename to test.test
-select *.schema, *.name from system.tables()
+select system.tables().'test.test'.name
 drop table test.test
 
 # test: set serial
@@ -80,15 +80,15 @@ alter table test set serial to 0
 
 # test: set aggregated
 create table test (id int primary key serial, data int default 0)
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 alter table test set
 alter table test set x
 alter table test set aggregated
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 
 # test: set not aggregated
 alter table test set not aggregated
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 drop table test
 
 # test: rename column parsing
@@ -103,29 +103,28 @@ alter table test rename column data to 1
 
 # test: rename column
 create table test (id int primary key serial, data int default 0)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test rename column data to data2
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select data2 from test
 drop table test
 
 # test: rename column #2
 create table test (id int primary key)
 insert into test 1,2,3
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test rename column id to id2
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select * from test
 select id2 from test
 drop table test
 
 # test: rename column (already exists)
 create table test (id int primary key serial, data int default 0)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test rename column data to data
-select columns from system.tables()
+select system.tables().'public.test'.columns
 drop table test
-
 
 # test: add column parsing
 create table test (id int primary key)
@@ -148,9 +147,9 @@ drop table test
 
 # test: add column (empty table)
 create table test (id int primary key)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test add column data int
-select columns from system.tables()
+select system.tables().'public.test'.columns
 insert into test values (1,1), (2,2), (3,3)
 select data from test
 drop table test
@@ -159,7 +158,7 @@ drop table test
 create table test (id int primary key)
 insert into test 1,2,3
 alter table test add column data int
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select data from test
 insert into test values (4,4), (5,5), (6,6)
 select data from test
@@ -169,14 +168,14 @@ drop table test
 create table test (id int primary key)
 insert into test 1,2,3
 alter table test add column data int not null
-select columns from system.tables()
+select system.tables().'public.test'.columns
 drop table test
 
 # test: add column (default)
 create table test (id int primary key)
 insert into test 1,2,3
 alter table test add column data int default 123
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select data from test
 insert into test values (4,4), (5,5), (6,6)
 select data from test
@@ -186,7 +185,7 @@ drop table test
 create table test (id int primary key)
 insert into test 1,2,3
 alter table test add column data int not null default 123
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select data from test
 insert into test values (4,4), (5,5), (6,6)
 select data from test
@@ -196,7 +195,7 @@ drop table test
 create table test (id int primary key)
 insert into test 1,2,3
 alter table test add column data int serial
-select columns from system.tables()
+select system.tables().'public.test'.columns
 select data from test
 insert into test (id) values (4), (5), (6)
 select data from test
@@ -229,21 +228,21 @@ drop table test
 
 # test: drop column (empty)
 create table test (id int primary key, a int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 drop table test
 
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 drop table test
 
 # test: drop column
 create table test (id int primary key, a text, b int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
 select * from test
@@ -251,15 +250,15 @@ select a from test
 select b from test
 
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 select * from test
 select a from test
 select b from test
 
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test drop column b
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 select * from test
 select id from test
@@ -270,7 +269,7 @@ drop table test
 
 # test: drop column (key order)
 create table test (a text, b int, id int primary key)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3)
 select * from test
@@ -279,16 +278,16 @@ select a from test
 select b from test
 
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 select * from test
 select id from test
 select a from test
 select b from test
 
-select columns from system.tables()
+select system.tables().'public.test'.columns
 alter table test drop column b
-select columns from system.tables()
+select system.tables().'public.test'.columns
 
 select * from test
 select id from test

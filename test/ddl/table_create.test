@@ -225,23 +225,23 @@ create table test (id int, data int, primary key(id))
 select system.tables().'public.test'.columns
 drop table test
 
-## test: constraint not null
-#create table test (id int primary key, data int not)
-#create table test (id int primary key, data int not null)
-#select indexes[0].keys from system.tables()
-#insert into test values(1, 1)
-#insert into test values(2, null)
-#insert into test values(null, null)
-#drop table test
+# test: constraint not null
+create shared table test (id int primary key, data int not)
+create shared table test (id int primary key, data int not null)
+select system.tables().'public.test'.columns
+insert into test values(1, 1)
+insert into test values(2, null)
+insert into test values(null, null)
+drop table test
 
-## test: constraint not null default
-#create table test (id int primary key, data int not null default 123)
-#select indexes[0].keys from system.tables()
-#insert into test values(1, 1)
-#insert into test values(2, null)
-#insert into test (id) values(3)
-#select * from test
-#drop table test
+# test: constraint not null default
+create shared table test (id int primary key, data int not null default 123)
+select system.tables().'public.test'.columns
+insert into test values(1, 1)
+insert into test values(2, null)
+insert into test (id) values(3)
+select * from test
+drop table test
 
 # test: constraint serial
 create table test (id int primary key, data int serial)

@@ -21,14 +21,14 @@ compare(Keys* self, Row* a, Row* b)
 		if (column->type_size == 4)
 		{
 			// int
-			rc = *(int32_t*)row_at(a, column->order) -
-			     *(int32_t*)row_at(b, column->order);
+			rc = compare_int64(*(int32_t*)row_at(a, column->order),
+			                   *(int32_t*)row_at(b, column->order));
 		} else
 		if (column->type_size == 8)
 		{
 			// int64, timestamp
-			rc = *(int64_t*)row_at(a, column->order) -
-			     *(int64_t*)row_at(b, column->order);
+			rc = compare_int64(*(int64_t*)row_at(a, column->order),
+			                   *(int64_t*)row_at(b, column->order));
 		} else
 		{
 			// string

@@ -50,7 +50,6 @@ OpDesc ops[] =
 	{ CNULL, "null" },
 	{ CBOOL, "bool" },
 	{ CINT, "int" },
-	{ CINT_MIN, "int_min" },
 	{ CDOUBLE, "double" },
 	{ CSTRING, "string" },
 	{ CJSON, "json" },
@@ -58,8 +57,6 @@ OpDesc ops[] =
 	{ CJSON_ARRAY, "json_array" },
 	{ CINTERVAL, "interval" },
 	{ CTIMESTAMP, "timestamp" },
-	{ CSTRING_MIN, "string_min" },
-	{ CTIMESTAMP_MIN, "timestamp_min" },
 
 	// argument
 	{ CARG, "arg" },

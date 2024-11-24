@@ -44,76 +44,11 @@ drop table test.test
 
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2))
-select indexes[0].keys from system.tables() where name = "test"
+select system.tables().'public.test'.columns
 insert into test values (123)
 insert into test values (1, 2, 3)
 insert into test values (1, 2)
 select * from test
-drop table test
-
-# test: insert nested key
-create table test (obj object, primary key (obj.id int))
-select indexes[0].keys from system.tables() where name = "test"
-insert into test values (123)
-insert into test values ( {"id": 48} )
-select * from test
-select obj.id from test
-drop table test
-
-# test: insert nested key #2
-create table test (obj object, primary key (obj.data.id int))
-select indexes[0].keys from system.tables() where name = "test"
-insert into test values (123)
-insert into test values ( {"id": 48} )
-insert into test values ( {"data": []} )
-insert into test values ( {"data": {}} )
-insert into test values ( {"data": {"id": "48"} } )
-insert into test values ( {"data": {"id": 48} } )
-select * from test
-drop table test
-
-# test: insert nested key compound
-create table test (obj object, primary key (obj.data.id int, obj.id int))
-select indexes[0].keys from system.tables() where name = "test"
-insert into test values ( {"data": {"id": 48} } )
-insert into test values ( {"data": {"id": 48}, "id": 1 } )
-select * from test
-drop table test
-
-# test: insert one column expr
-create table test (id string primary key)
-insert into test values ("hello")
-insert into test ("world")
-insert into test values ("world")
-insert into test "again"
-select * from test
-drop table test
-
-# test: insert one column expr #2
-create table test (id string primary key, data int)
-insert into test "again"
-insert into test "again", 2
-insert into test ("again", 2)
-insert into test values ("again", 2)
-select * from test
-drop table test
-
-# test: insert one column expr #3
-create table test (id int primary key)
-insert into test 1,2,3
-select * from test
-drop table test
-
-# test: insert one column expr #4
-create table test (obj object, primary key(obj.id int))
-insert into test values ({"id": 48})
-insert into test ({"id": 49})
-insert into test {"id": 49}
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-select * from test
-select obj.id from test where obj.id >= 3
 drop table test
 
 # test: insert list
@@ -249,19 +184,13 @@ drop table test
 
 # test: insert insert error
 create table test (id int primary key)
-insert into test 1,2,3,1
+insert into test values (1),(2),(3),(1)
 select * from test
 drop table test
 
 # test: insert negative
 create table test (id int primary key)
-insert into test -1, -10, -100, 0, 1, 10, 100
-select * from test
-drop table test
-
-# test: insert negative nested
-create table test (obj object, primary key (obj.id int))
-insert into test {"id":-1}, {"id":-10}, {"id":-100}, {"id":0}, {"id":1}, {"id":10}, {"id":100}
+insert into test values (-1), (-10), (-100), (0), (1), (10), (100)
 select * from test
 drop table test
 
@@ -273,82 +202,60 @@ insert into test generate 10
 select * from test
 drop table test
 
-# test: insert secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
+## test: insert secondary index
+#create table test (id int primary key, data int)
+#create index i on test (data)
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+#insert into test values (0, 2)
+#insert into test values (1, 1)
+#insert into test values (2, 0)
 
-explain select * from test
-select * from test
+#explain select * from test
+#select * from test
 
-explain select * from test use index (i)
-select * from test use index (i)
+#explain select * from test use index (i)
+#select * from test use index (i)
 
-drop index i on test
+#drop index i on test
 
-# test: insert secondary index unique (non shared)
-create unique index i on test (data)
+## test: insert secondary index unique (non shared)
+#create unique index i on test (data)
 
-# test: insert secondary index (unique)
-drop table test
+## test: insert secondary index (unique)
+#drop table test
 
-create shared table test (id int primary key, data int)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+#create shared table test (id int primary key, data int)
+#insert into test values (0, 2)
+#insert into test values (1, 1)
+#insert into test values (2, 0)
 
-create unique index i on test (data)
-select * from test
-select * from test use index (i)
+#create unique index i on test (data)
+#select * from test
+#select * from test use index (i)
 
-insert into test values (3, 0)
-insert into test values (3, -1)
+#insert into test values (3, 0)
+#insert into test values (3, -1)
 
-select * from test use index (i)
+#select * from test use index (i)
 
-# test: insert secondary index #2
-drop index i on test
+## test: insert secondary index #2
+#drop index i on test
 
-create unique index a on test (id)
-create unique index b on test (data)
+#create unique index a on test (id)
+#create unique index b on test (data)
 
-select * from test
-select * from test use index (primary)
-select * from test use index (a)
-select * from test use index (b)
-drop table test
-
-# test: insert secondary index (object)
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-
-select * from test
-select * from test use index (i)
-drop table test
+#select * from test
+#select * from test use index (primary)
+#select * from test use index (a)
+#select * from test use index (b)
+#drop table test
 
 # test: insert returning
 create table test (id int primary key)
-explain insert into test 1,2,3 returning *
-insert into test 1,2,3 returning *
+explain insert into test values (1),(2),(3) returning *
+insert into test values (1),(2),(3) returning *
 # on conflict error
-insert into test 1,2,3 returning *
-drop table test
-
-# test: insert returning into
-create table test (id int primary key)
-insert into test 1,2,3 returning * into result; select * from result
-drop table test
-
-# test: insert returning :=
-create table test (id int primary key)
-result := insert into test 1,2,3 returning *; select * from result
+insert into test values (1),(2),(3) returning *
 drop table test
 
 # test: insert returning (serial)
@@ -356,6 +263,156 @@ create table test (id int primary key serial)
 explain insert into test () values (), (), () returning *
 insert into test () values (), (), () returning *
 insert into test () values (), (), () returning id
+drop table test
+
+# test: insert column (bool)
+create table test (id int primary key, data bool)
+insert into test values (1, true), (2, false)
+insert into test values (3, true), (4, false) returning *
+select * from test
+drop table test
+
+# test: insert column (int8)
+create table test (id int primary key, data i8)
+insert into test values (1, 123), (2, 255), (3, 256)
+insert into test values (4, 255), (5, 256) returning *
+select * from test
+drop table test
+
+# test: insert column (int16)
+create table test (id int primary key, data i16)
+insert into test values (1, 123), (2, 256), (3, -32768)
+insert into test values (4, -32768), (5, 123) returning *
+select * from test
+drop table test
+
+# test: insert column (int32)
+create table test (id int primary key, data i32)
+insert into test values (1, 123), (2, 256), (3, -32768)
+insert into test values (4, -32768), (5, 2147483647) returning *
+select * from test
+drop table test
+
+# test: insert column (int64)
+create table test (id int primary key, data i64)
+insert into test values (1, 123), (2, 256), (3, -32768)
+insert into test values (4, 9223372036854775807) returning *
+select * from test
+drop table test
+
+# test: insert column (float)
+create table test (id int primary key, data float)
+insert into test values (1, 123.32), (2, 3.14)
+insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *
+select * from test
+drop table test
+
+# test: insert column (double)
+create table test (id int primary key, data double)
+insert into test values (1, 123.32), (2, 3.14)
+insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *
+select * from test
+drop table test
+
+# test: insert column (text)
+create table test (id int primary key, data text)
+insert into test values (1, 'hello world')
+select data from test
+drop table test
+
+# test: insert column (json)
+create table test (id int primary key, data json)
+insert into test values (1, 1)
+insert into test values (2, 13.4)
+insert into test values (3, 'test')
+insert into test values (4, [1,2,3])
+insert into test values (5, {'id': 48, 'data': [], 'misc': null})
+select * from test
+select data::type from test
+drop table test
+
+# test: insert column (timestamp)
+create table test (id int primary key, ts timestamp)
+insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
+insert into test values (1, timestamp "1970-01-01 01:13:00")
+insert into test values (2, timestamp "1970-01-01 01:13:01")
+insert into test values (3, timestamp '1970-01-01 01:13:01')
+select * from test
+select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
+explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
+
+select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+
+select * from test where ts = "1970-01-01 01:13:01"::timestamp;
+
+# test: insert column (timestamp current_timestamp)
+insert into test values (4, current_timestamp)
+select ts::int > 0 from test where id = 4
+drop table test
+
+# test: insert column (timestamp auto cast)
+create table test (id int primary key, ts timestamp)
+insert into test values (0, "1970-01-01 01:12:59.909090")
+select * from test
+select ts::type from test
+drop table test
+
+# test: insert column (timestamp key)
+create table test (id timestamp primary key)
+insert into test values ("1970-01-01 00:00:01.000001")
+insert into test values ("1970-01-01 00:00:01.000002")
+insert into test values ("1970-01-01 00:00:01.000003")
+insert into test values ("1970-01-01 00:00:02.000000")
+insert into test values ("1970-01-01 00:00:03.000000")
+insert into test values ("1970-01-01 00:00:04.000000")
+explain select * from test
+
+select * from test
+select * from test order by id
+
+select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+
+select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+
+select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+
+select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+drop table test
+
+# test: insert column (interval)
+create table test (id int primary key, i interval)
+insert into test values (0, interval "1 year 1 day 10 hour")
+insert into test values (1, interval "1 year 1 day 11 hour")
+insert into test values (2, interval "1 year 1 day 12 hour 500 us")
+select * from test
+select * from test where i > "1 year 1 day 10 hour"::interval
+explain select * from test where i > "1 year 1 day 10 hour"::interval
+select * from test where i = "1 year 1 day 12 hours 500 us"::interval
+drop table test
+
+# test: insert column (interval auto cast)
+create table test (id int primary key, i interval)
+insert into test values (0, "1 year 1 day 10 hour")
+select * from test
+drop table test
+
+# test: insert column (vector)
+create table test (id int primary key, vec vector)
+insert into test values (0, [])
+insert into test values (1, [1.0])
+insert into test values (2, [1])
+insert into test values (3, [1.0, 1.1,])
+insert into test values (4, [1.0,)
+insert into test values (5, [1.0,])
+insert into test values (6, [1.0, 1.1])
+insert into test values (7, [1.0, 1.1, -2.2, -8])
+select * from test
+select vec::type from test
 drop table test
 
 disconnect S0

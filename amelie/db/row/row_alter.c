@@ -18,10 +18,10 @@
 #include <amelie_row.h>
 
 Row*
-row_alter_add(Row* row, Buf* append)
+row_alter_add(Row* row, Buf* value)
 {
 	(void)row;
-	(void)append;
+	(void)value;
 	// TODO
 	return NULL;
 #if 0

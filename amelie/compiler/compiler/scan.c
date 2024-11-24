@@ -73,14 +73,25 @@ scan_key(Scan* self, Target* target)
 		int rexpr;
 		switch (key->column->type) {
 		case TYPE_INT:
-			rexpr = op1(cp, CINT_MIN, rpin(cp, TYPE_INT));
+		{
+			if (key->column->type_size == 4)
+				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT32_MIN);
+			else
+				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT64_MIN);
 			break;
+		}
 		case TYPE_TIMESTAMP:
-			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp, TYPE_TIMESTAMP));
+		{
+			rexpr = op2(cp, CTIMESTAMP, rpin(cp, TYPE_TIMESTAMP), 0);
 			break;
+		}
 		case TYPE_STRING:
-			rexpr = op1(cp, CSTRING_MIN, rpin(cp, TYPE_STRING));
+		{
+			Str empty;
+			str_init(&empty);
+			rexpr = emit_string(cp, &empty, false);
 			break;
+		}
 		}
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);

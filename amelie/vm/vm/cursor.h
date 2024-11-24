@@ -74,9 +74,13 @@ cursor_reset(Cursor* self)
 	self->r         = 0;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
-	self->ref       = NULL;
 	self->limit     = 0;
 	self->offset    = 0;
+	if (self->ref)
+	{
+		row_free(self->ref);
+		self->ref = NULL;
+	}
 	if (self->it)
 	{
 		iterator_close(self->it);

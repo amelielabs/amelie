@@ -92,15 +92,14 @@ row_at(Row* self, int column)
 always_inline hot static inline void*
 row_data(Row* self, int columns)
 {
-	register uint32_t offset = columns + 1;
-	if (self->size_factor == 0)
-		offset *= sizeof(uint8_t);
-	else
-	if (self->size_factor == 1)
-		offset *= sizeof(uint16_t);
-	else
-		offset *= sizeof(uint16_t);
-	return (uint8_t*)self + sizeof(Row) + offset;
+	return self->data + ((1 + columns) * (self->size_factor + 1));
+}
+
+always_inline hot static inline uint32_t
+row_data_size(Row* self, int columns)
+{
+	return row_size(self) - sizeof(Row) +
+	       ((1 + columns) * (self->size_factor + 1));
 }
 
 always_inline hot static inline void
@@ -149,6 +148,3 @@ row_copy(Row* self)
 	memcpy(row, self, size);
 	return row;
 }
-
-Row* row_alter_add(Row*, Buf*);
-Row* row_alter_drop(Row*, int);

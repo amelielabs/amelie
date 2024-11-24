@@ -28,4 +28,5 @@
 
 // row
 #include "row/row.h"
+#include "row/row_alter.h"
 #include "row/compare.h"

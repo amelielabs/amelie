@@ -189,7 +189,8 @@ parse_from_add(From* self)
 			error("USE INDEX (<index name> expected");
 		if (! stmt_if(stmt, ')'))
 			error("USE INDEX (<)> expected");
-		if (target->type != TARGET_TABLE)
+		if (target->type != TARGET_TABLE &&
+		    target->type != TARGET_TABLE_SHARED)
 			error("USE INDEX expected table target");
 		target->from_table_index =
 			table_find_index(target->from_table, &name->string, true);
