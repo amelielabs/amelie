@@ -34,6 +34,7 @@ ast_delete_allocate(void)
 {
 	AstDelete* self;
 	self = ast_allocate(0, sizeof(AstDelete));
+	returning_init(&self->ret);
 	return self;
 }
 

@@ -14,29 +14,29 @@
 hot static inline int
 compare(Keys* self, Row* a, Row* b)
 {
-	(void)self;
-	(void)a;
-	(void)b;
-#if 0
 	list_foreach(&self->list)
 	{
-		const auto key = list_at(Key, link);
-		/*
-		int rc;
-		if (key->type == VALUE_INT)
-			rc = json_compare_integer(ref_key(a, key->order),
-			                          ref_key(b, key->order));
-		else
-		if (key->type == VALUE_TIMESTAMP)
-			rc = json_compare_timestamp(ref_key(a, key->order),
-			                            ref_key(b, key->order));
-		else
-			rc = json_compare_string(ref_key(a, key->order),
-			                         ref_key(b, key->order));
+		const auto column = list_at(Key, link)->column;
+		int64_t rc;
+		if (column->type_size == 4)
+		{
+			// int
+			rc = *(int32_t*)row_at(a, column->order) -
+			     *(int32_t*)row_at(b, column->order);
+		} else
+		if (column->type_size == 8)
+		{
+			// int64, timestamp
+			rc = *(int64_t*)row_at(a, column->order) -
+			     *(int64_t*)row_at(b, column->order);
+		} else
+		{
+			// string
+			rc = json_compare_string(row_at(a, column->order),
+			                         row_at(b, column->order));
+		}
 		if (rc != 0)
 			return rc;
-			*/
 	}
-#endif
 	return 0;
 }

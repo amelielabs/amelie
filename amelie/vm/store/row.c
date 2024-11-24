@@ -141,6 +141,7 @@ row_create_key(Keys* self, Value* values)
 		auto ref = &values[order];
 		order++;
 
+		row_set(row, column->order, pos - (uint8_t*)row);
 		if (column->type == TYPE_STRING) {
 			json_write_string(&pos, &ref->string);
 		} else

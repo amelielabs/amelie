@@ -218,6 +218,12 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 
 		if (str_split(&path, &name, '.'))
 			str_advance(&path, str_size(&name) + 1);
+		else
+			str_advance(&path, str_size(&name));
+	} else
+	{
+		// exclude column name from the path
+		str_advance(&path, str_size(&name) + 1);
 	}
 
 	// column[.path]

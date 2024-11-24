@@ -237,7 +237,8 @@ value_hash(Value* self, uint32_t hash)
 		data_size = str_size(&self->string);
 	} else
 	{
-		assert(self->type == TYPE_STRING ||
+		assert(self->type == TYPE_INT ||
+		       self->type == TYPE_STRING ||
 		       self->type == TYPE_TIMESTAMP);
 		data = (uint8_t*)&self->integer;
 		data_size = sizeof(self->integer);

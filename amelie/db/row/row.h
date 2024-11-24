@@ -17,11 +17,7 @@ struct Row
 {
 	uint8_t size_factor: 2;
 	uint8_t unused: 6;
-	union {
-		uint8_t  u8[1];
-		uint16_t u16[1];
-		uint32_t u32[1];
-	};
+	uint8_t data[];
 } packed;
 
 hot static inline Row*
@@ -52,12 +48,12 @@ row_allocate(int columns, int data_size)
 
 	// set size
 	if (self->size_factor == 0)
-		*self->u8 = total;
+		*self->data = total;
 	else
 	if (self->size_factor == 1)
-		*self->u16 = total;
+		*(uint16_t*)self->data = total;
 	else
-		*self->u32 = total;
+		*(uint32_t*)self->data = total;
 	return self;
 }
 
@@ -71,10 +67,10 @@ always_inline hot static inline uint32_t
 row_size(Row* self)
 {
 	if (self->size_factor == 0)
-		return *self->u8;
+		return *self->data;
 	if (self->size_factor == 1)
-		return *self->u16;
-	return *self->u32;
+		return *(uint16_t*)self->data;
+	return *(uint32_t*)self->data;
 }
 
 always_inline hot static inline void*
@@ -82,12 +78,12 @@ row_at(Row* self, int column)
 {
 	register uint32_t offset;
 	if (self->size_factor == 0)
-		offset = self->u8[1 + column];
+		offset = self->data[1 + column];
 	else
 	if (self->size_factor == 1)
-		offset = self->u16[1 + column];
+		offset = ((uint16_t*)self->data)[1 + column];
 	else
-		offset = self->u32[1 + column];
+		offset = ((uint32_t*)self->data)[1 + column];
 	if (offset == 0)
 		return NULL;
 	return (uint8_t*)self + offset;
@@ -111,12 +107,12 @@ always_inline hot static inline void
 row_set(Row* self, int column, int offset)
 {
 	if (self->size_factor == 0)
-		self->u8[1 + column]  = offset;
+		self->data[1 + column]  = offset;
 	else
 	if (self->size_factor == 1)
-		self->u16[1 + column] = offset;
+		((uint16_t*)self->data)[1 + column] = offset;
 	else
-		self->u32[1 + column] = offset;
+		((uint32_t*)self->data)[1 + column] = offset;
 }
 
 always_inline hot static inline void

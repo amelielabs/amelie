@@ -45,6 +45,7 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
+	returning_init(&self->ret);
 	return self;
 }
 
