@@ -251,7 +251,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 hot Row*
 row_update(Row* self, Columns* columns, Value* values, int count)
 {
-	// merge source row columns data with columns on stack
+	// merge source row columns data with updated values
 	//
 	// [order, value, order, value, ...]
 	//

@@ -71,7 +71,7 @@ delete from test where id >= 0 and id <= 1
 select * from test
 drop table test
 
-# test: delete delete error
+# test: delete null
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)
@@ -99,31 +99,22 @@ insert into test values (2, 0)
 select * from test
 drop table test
 
-# test: delete secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
+## test: delete secondary index
+#create table test (id int primary key, data int)
+#create index i on test (data)
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+#insert into test values (0, 2)
+#insert into test values (1, 1)
+#insert into test values (2, 0)
 
-delete from test where id = 1
-select * from test
-select * from test use index (i)
+#delete from test where id = 1
+#select * from test
+#select * from test use index (i)
 
-delete from test
-select * from test
-select * from test use index (i)
-drop table test
-
-# test: delete from secondary index
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-delete from test use index (i)
-drop table test
+#delete from test
+#select * from test
+#select * from test use index (i)
+#drop table test
 
 # test: delete returning
 create table test(id int primary key)

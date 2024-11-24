@@ -39,7 +39,7 @@ parse_update_expr(Stmt* self)
 	if (! stmt_if(self, KSET))
 		error("UPDATE <SET> expected");
 
-	// path = expr [, ... ]
+	// column = expr [, ... ]
 	Ast* expr_prev = NULL;
 	Ast* expr = NULL;
 	for (;;)
@@ -53,12 +53,12 @@ parse_update_expr(Stmt* self)
 
 		// =
 		if (! stmt_if(self, '='))
-			error("UPDATE name SET path <=> expected");
+			error("UPDATE name SET column <=> expected");
 
 		// expr
 		op->r = parse_expr(self, NULL);
 
-		// op(path, expr)
+		// op(column, expr)
 		if (expr == NULL)
 			expr = op;
 		else
@@ -106,7 +106,7 @@ parse_update_aggregated(Stmt* self, Columns* columns)
 		};
 		op->r = parse_expr(self, &ctx);
 
-		// op(path, expr)
+		// op(column, expr)
 		if (expr == NULL)
 			expr = op;
 		else
@@ -121,7 +121,7 @@ parse_update_aggregated(Stmt* self, Columns* columns)
 hot void
 parse_update(Stmt* self)
 {
-	// UPDATE name SET path = expr [, ... ]
+	// UPDATE name SET column = expr [, ... ]
 	// [WHERE expr]
 	// [RETURNING expr]
 	auto stmt = ast_update_allocate();
@@ -139,7 +139,7 @@ parse_update(Stmt* self)
 		if (table_primary(stmt->table) != stmt->target->from_table_index)
 			error("UPDATE only primary index supported");
 
-	// SET path = expr [, ... ]
+	// SET column = expr [, ... ]
 	stmt->expr_update = parse_update_expr(self);
 
 	// [WHERE]

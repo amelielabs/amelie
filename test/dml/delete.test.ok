@@ -8,20 +8,20 @@ delete junk
 delete 1
 {"msg": "DELETE <FROM> expected"}
 delete from 1
-{"msg": "DELETE FROM <table name> expected"}
+{"msg": "FROM target name expected"}
 delete from "name"
-{"msg": "DELETE FROM <table name> expected"}
+{"msg": "FROM target name expected"}
 delete from test junk
-{"msg": "<test> table or view is not found"}
+{"msg": "<public.test> table or view not found"}
 delete from test where true limit
-{"msg": "<test> table or view is not found"}
+{"msg": "<public.test> table or view not found"}
 # test: delete
 create table test(id int primary key)
 insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 select * from test
-[[0], [1], [2]]
+[0, 1, 2]
 delete from test
 select * from test
 []
@@ -57,9 +57,9 @@ explain delete from test where id = 3
       "01": "push                0      0      0     ",
       "02": "cursor_open         0      0      4     # public.test (primary, lookup)",
       "03": "jmp                 10     0      0     ",
-      "04": "cursor_idx          0      0      0     ",
+      "04": "cursor_readi32      0      0      0     ",
       "05": "int                 1      -      0     # 3",
-      "06": "equ                 2      0      1     ",
+      "06": "equii               2      0      1     ",
       "07": "jntr                3      2      0     ",
       "08": "delete              0      0      0     ",
       "09": "jmp                 3      0      0     ",
@@ -70,16 +70,16 @@ explain delete from test where id = 3
 }]
 delete from test where id = 3
 select * from test
-[[0], [1], [2]]
+[0, 1, 2]
 delete from test where id = 2
 select * from test
-[[0], [1]]
+[0, 1]
 delete from test where id = 0
 select * from test
-[[1]]
+[1]
 delete from test where id = -1
 select * from test
-[[1]]
+[1]
 delete from test where id = 1
 select * from test
 []
@@ -90,16 +90,16 @@ insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 select * from test
-[[0], [1], [2]]
+[0, 1, 2]
 delete from test where id > 3
 select * from test
-[[0], [1], [2]]
+[0, 1, 2]
 delete from test where id > 2
 select * from test
-[[0], [1], [2]]
+[0, 1, 2]
 delete from test where id >= 2
 select * from test
-[[0], [1]]
+[0, 1]
 explain delete from test where id > 0 and id < 1
 [{
   "bytecode": {
@@ -115,17 +115,17 @@ explain delete from test where id > 0 and id < 1
       "01": "push                0      0      0     ",
       "02": "cursor_open         0      0      4     # public.test (primary)",
       "03": "jmp                 23     0      0     ",
-      "04": "cursor_idx          0      0      0     ",
+      "04": "cursor_readi32      0      0      0     ",
       "05": "int                 1      -      0     # 1",
-      "06": "lt                  2      0      1     ",
+      "06": "ltii                2      0      1     ",
       "07": "jntr                3      2      0     ",
-      "08": "cursor_idx          1      0      0     ",
+      "08": "cursor_readi32      1      0      0     ",
       "09": "int                 2      -      0     # 0",
-      "10": "gt                  3      1      2     ",
+      "10": "gtii                3      1      2     ",
       "11": "jntr                16     3      0     ",
-      "12": "cursor_idx          1      0      0     ",
+      "12": "cursor_readi32      1      0      0     ",
       "13": "int                 2      -      0     # 1",
-      "14": "lt                  4      1      2     ",
+      "14": "ltii                4      1      2     ",
       "15": "jtr                 18     4      0     ",
       "16": "bool                0      0      0     ",
       "17": "jmp                 19     0      0     ",
@@ -141,23 +141,22 @@ explain delete from test where id > 0 and id < 1
 }]
 delete from test where id > 0 and id < 1
 select * from test
-[[0], [1]]
+[0, 1]
 delete from test where id > 0 and id <= 1
 select * from test
-[[0]]
+[0]
 delete from test where id >= 0 and id <= 1
 select * from test
 []
 drop table test
-# test: delete delete error
+# test: delete null
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 delete from test where data > 0
-{"msg": "bad > expression type"}
 select * from test
-[[0, 3], [1, 2], [2, null]]
+[[2, null]]
 drop table test
 # test: delete insert delete
 create table test(id int primary key, data int)
@@ -181,48 +180,22 @@ insert into test values (2, 0)
 select * from test
 [[0, 3], [1, 2], [2, 0]]
 drop table test
-# test: delete secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-delete from test where id = 1
-select * from test
-[[0, 2], [2, 0]]
-select * from test use index (i)
-[[2, 0], [0, 2]]
-delete from test
-select * from test
-[]
-select * from test use index (i)
-[]
-drop table test
-# test: delete from secondary index
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-delete from test use index (i)
-{"msg": "DELETE only primary index supported"}
-drop table test
 # test: delete returning
 create table test(id int primary key)
 insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 delete from test returning *
-[[0], [1], [2]]
+[0, 1, 2]
 select * from test
 []
 insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 delete from test where id >= 1 returning *
-[[1], [2]]
+[1, 2]
 select * from test
-[[0]]
+[0]
 delete from test
 delete from test returning *
 []

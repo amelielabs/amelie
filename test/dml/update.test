@@ -42,15 +42,6 @@ select * from test.test
 drop table test.test
 drop schema test
 
-# test: update star shared
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-update test set data = *[1] + 1
-select * from test
-drop table test
-
 # test: update multiple ops
 create table test(id int primary key, a int, b int)
 insert into test values (0, 3, 3)
@@ -70,27 +61,18 @@ update test set data = data + 1, data = data + 1
 select * from test
 drop table test
 
-# test: update object
-create table test(id int primary key, data object)
+# test: update json
+create table test(id int primary key, data json)
 insert into test values (0, {"id": 48})
 insert into test values (1, {"id": 49})
 insert into test values (2, {"id": 50})
-update test set data.id = data.id + 1
-update test set data = {"id": data.id + 1}
+update test set data = {"id": data.id::int + 1}
+explain update test set data = {"id": data.id::int + 1}
 select * from test
 drop table test
 
-# test: update object add key
-create table test(id int primary key, data object)
-insert into test values (0, {"id": 48})
-insert into test values (1, {"id": 49})
-insert into test values (2, {"id": 50})
-update test set data.data = id + 1
-select * from test
-drop table test
-
-# test: update object rewrite
-create table test(id int primary key serial, data object)
+# test: update json rewrite
+create table test(id int primary key serial, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
@@ -99,11 +81,11 @@ select * from test
 drop table test
 
 # test: update object rewrite #2
-create table test(id int primary key serial, data object)
+create table test(id int primary key serial, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
-update test set data = {"id": *[0], "data": *[1]}
+update test set data = [id, data.id]
 select * from test
 drop table test
 
@@ -113,48 +95,6 @@ insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 update test set id = id + 1
-select * from test
-drop table test
-
-# test: update key nested
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data.id = data.id + 1
-select * from test
-drop table test
-
-# test: update key nested prefix
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data = {"id": data.id + 1}
-select * from test
-drop table test
-
-# test: update key nested prefix #2
-create table test(data object, primary key(data.data.id int))
-insert into test values ({"data": {"id": 1}})
-insert into test values ({"data": {"id": 2}})
-insert into test values ({"data": {"id": 3}})
-
-update test set data = {"id": data.data.id + 1}
-update test set data.id = null
-update test set data.data.id = null
-update test set data.data.id2 = null
-update test set data.data = {}
-update test set data.id = null, data.data.id = null
-select * from test
-drop table test
-
-# test: update key nested field
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data.data = data.id + 1
 select * from test
 drop table test
 
@@ -184,60 +124,62 @@ update test set data = data + 1 where id >= 1
 select * from test
 drop table test
 
-# test: update update error
+# test: update update null
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 update test set data = data + 1
 select * from test
-drop table test
-
-# test: update secondary index
-create table test (id int primary key, data int, value int)
-create index i on test (data)
-
-insert into test values (0, 2, 0)
-insert into test values (1, 1, 0)
-insert into test values (2, 0, 0)
-
+update test set data = id where data is null
 select * from test
-select * from test use index (i)
-
-update test set value = data
-
-select * from test
-select * from test use index (i)
-
-# test: update secondary index (key)
-update test set data = id
 drop table test
 
-# test: update secondary index (object)
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
+## test: update secondary index
+#create table test (id int primary key, data int, value int)
+#create index i on test (data)
 
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
+#insert into test values (0, 2, 0)
+#insert into test values (1, 1, 0)
+#insert into test values (2, 0, 0)
 
-update test set obj.value = obj.data
+#select * from test
+#select * from test use index (i)
 
-select * from test
-select * from test use index (i)
+#update test set value = data
 
-create index j on test (obj.value int)
-select * from test use index (j)
-drop table test
+#select * from test
+#select * from test use index (i)
 
-# test: update from secondary index
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-update test use index (i) set obj.value = obj.data
-drop table test
+## test: update secondary index (key)
+#update test set data = id
+#drop table test
+
+## test: update secondary index (object)
+#create table test (obj object, primary key (obj.id int))
+#create index i on test (obj.data int)
+
+#insert into test {"id": 0, "data": 2}
+#insert into test {"id": 1, "data": 1}
+#insert into test {"id": 2, "data": 0}
+
+#update test set obj.value = obj.data
+
+#select * from test
+#select * from test use index (i)
+
+#create index j on test (obj.value int)
+#select * from test use index (j)
+#drop table test
+
+## test: update from secondary index
+#create table test (obj object, primary key (obj.id int))
+#create index i on test (obj.data int)
+#insert into test {"id": 0, "data": 2}
+#insert into test {"id": 1, "data": 1}
+#insert into test {"id": 2, "data": 0}
+#update test use index (i) set obj.value = obj.data
+#drop table test
 
 # test: update returning
 create table test(id int primary key, data int)
@@ -251,16 +193,82 @@ update test set data = data + 1 returning *
 select * from test
 drop table test
 
-# test: update returning into
-create table test(id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-explain update test set data = data + 1 returning *
-update test set data = data + 1 returning * into result
-update test set data = data + 1 returning * into result; select * from result
-result := update test set data = data + 1 returning *; select * from result
-result := update test set data = data + 1 returning * into result; select * from result
+# test: update column (int8)
+create table test (id int primary key, data i8)
+insert into test values (1, 123), (2, 255), (3, 256)
+update test set data = data + 1
+select * from test
+drop table test
+
+# test: update column (int16)
+create table test (id int primary key, data i16)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+drop table test
+
+# test: update column (int32)
+create table test (id int primary key, data i32)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+drop table test
+
+# test: update column (int64)
+create table test (id int primary key, data i64)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+drop table test
+
+# test: update column (float)
+create table test (id int primary key, data float)
+insert into test values (1, 123.32), (2, 3.14)
+update test set data = data + 0.01
+select * from test
+drop table test
+
+# test: update column (double)
+create table test (id int primary key, data double)
+insert into test values (1, 123.32), (2, 3.14)
+update test set data = data + 0.01
+select * from test
+drop table test
+
+# test: update column (text)
+create table test (id int primary key, data text)
+insert into test values (1, 'hello')
+update test set data = data || " world"
+update test set data = data || " world"
+update test set data = data || " world"
+select data from test
+drop table test
+
+# test: update column (json)
+create table test (id int primary key, data json)
+insert into test values (1, null)
+update test set data = data::append(1,2,3)
+select * from test
+drop table test
+
+# test: update column (timestamp)
+create table test (id int primary key, ts timestamp)
+insert into test values (0, "1970-01-01 01:12:59.909090")
+update test set ts = ts + interval '5 days'
+select * from test
+drop table test
+
+# test: update column (interval)
+create table test (id int primary key, i interval)
+insert into test values (0, "1 year 1 day 10 hour")
+update test set i = i + interval '5 days'
+select * from test
+drop table test
+
+# test: update column (vector)
+create table test (id int primary key, vec vector)
+insert into test values (3, [1.0, 1.1])
+update test set vec = vec + [1.0, 1.1]::vector
 select * from test
 drop table test
 

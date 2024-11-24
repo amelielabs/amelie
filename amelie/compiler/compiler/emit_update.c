@@ -67,12 +67,12 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		Ast* pos = list;
 		while (pos)
 		{
-			if (column->order == pos->integer)
+			if (column == pos->l->column)
 				error("<%.*s.%.*s> column is redefined in UPDATE",
 				      str_size(&target->name), str_of(&target->name),
-				      str_size(name), str_of(name));
+				      str_size(&column->name), str_of(&column->name));
 
-			if (column->order < pos->integer)
+			if (column->order < pos->l->column->order)
 				break;
 
 			prev = pos;
@@ -161,7 +161,7 @@ emit_update_on_match_returning(Compiler* self, void* arg)
 hot void
 emit_update(Compiler* self, Ast* ast)
 {
-	// UPDATE name SET path = expr [, ... ] [WHERE expr]
+	// UPDATE name SET column = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
 
 	// update by cursor
