@@ -217,7 +217,6 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 
 	// add log record
 	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
-	log_persist(&tr->log, self->config->id);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -227,7 +226,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto exists = index_upsert(primary, row, it);
 	if (exists)
 	{
-		// note: original row is not freed
+		row_free(row);
 		log_truncate(&tr->log);
 		return true;
 	}

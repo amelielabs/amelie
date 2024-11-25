@@ -67,7 +67,7 @@ emit_json(Compiler* self, Target* target, Ast* ast, int op)
 }
 
 hot static inline int
-emit_column(Compiler* self, Target* target, Str* name)
+emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 {
 	// find unique column name in the target
 	bool conflict = false;
@@ -83,6 +83,11 @@ emit_column(Compiler* self, Target* target, Str* name)
 			      str_size(&target->name), str_of(&target->name),
 			      str_size(name), str_of(name));
 	}
+
+	// read excluded column
+	if (unlikely(excluded))
+		return op3(self, CEXCLUDED, rpin(self, column->type),
+		           target->id, column->order);
 
 	// generate cursor read based on the target
 	int r;
@@ -185,7 +190,7 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		      str_size(name), str_of(name));
 
 	// todo: lambda?
-	return emit_column(self, target, name);
+	return emit_column(self, target, name, false);
 }
 
 hot static inline int
@@ -206,28 +211,42 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 		error("<%.*s> column not found",
 		      str_size(&name), str_of(&name));
 
-	// find target
-	auto match = target_list_match(target_list, &name);
-	if (match)
+	// excluded.column
+	bool excluded = false;
+	if (unlikely(str_is_case(&name, "excluded", 8)))
 	{
-		// target.column
-		target = match;
-
-		// exclude target name from the path
-		str_advance(&path, str_size(&name) + 1);
-
+		// exclude prefix
+		str_advance(&path, 9);
 		if (str_split(&path, &name, '.'))
 			str_advance(&path, str_size(&name) + 1);
 		else
 			str_advance(&path, str_size(&name));
+		excluded = true;
 	} else
 	{
-		// exclude column name from the path
-		str_advance(&path, str_size(&name) + 1);
+		// find target
+		auto match = target_list_match(target_list, &name);
+		if (match)
+		{
+			// target.column
+			target = match;
+
+			// exclude target name from the path
+			str_advance(&path, str_size(&name) + 1);
+
+			if (str_split(&path, &name, '.'))
+				str_advance(&path, str_size(&name) + 1);
+			else
+				str_advance(&path, str_size(&name));
+		} else
+		{
+			// exclude column name from the path
+			str_advance(&path, str_size(&name) + 1);
+		}
 	}
 
 	// column[.path]
-	auto rcolumn = emit_column(self, target, &name);
+	auto rcolumn = emit_column(self, target, &name, excluded);
 
 	if (str_empty(&path))
 		return rcolumn;
@@ -886,11 +905,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return op2(self, CARG, rpin(self, TYPE_JSON), ast->integer);
 	case KCTEID:
 		return op2(self, CCTE_GET, rpin(self), ast->integer);
-	// @
-	case '@':
-		if (target == NULL)
-			error("<@> no FROM clause defined");
-		return op2(self, CREF, rpin(self), target->id);
 #endif
 
 	// column

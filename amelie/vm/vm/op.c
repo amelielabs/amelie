@@ -60,6 +60,7 @@ OpDesc ops[] =
 
 	// argument
 	{ CARG, "arg" },
+	{ CEXCLUDED, "excluded" },
 
 	// null operations
 	{ CNULLOP, "nullop" },

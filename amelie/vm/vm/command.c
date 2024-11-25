@@ -429,31 +429,23 @@ cupsert(Vm* self, Op* op)
 	if (cursor->ref_pos == 0)
 		cursor->ref_count = buf_size(self->code_arg) / sizeof(uint32_t);
 
-	// free row from previous upsert iteration
-	if (cursor->ref)
-	{
-		row_free(cursor->ref);
-		cursor->ref = NULL;
-	}
-
 	// insert or upsert
 	auto list = buf_u32(self->code_arg);
 	while (cursor->ref_pos < cursor->ref_count)
 	{
-		auto row_meta = set_meta(self->code_values, list[cursor->ref_pos]);
-		auto row = row_create(columns, set_row(self->code_values, list[cursor->ref_pos]),
-		                      row_meta->row_size);
+		// set cursor ref pointer to the current insert row
+		cursor->ref = list[cursor->ref_pos];
 		cursor->ref_pos++;
+
+		auto row_meta = set_meta(self->code_values, cursor->ref);
+		auto row = row_create(columns, set_row(self->code_values, cursor->ref),
+		                      row_meta->row_size);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->it, row);
 		if (exists)
 		{
 			// upsert
-
-			// set cursor ref pointer to the current insert row,
-			// the row will be freed on next iteration
-			cursor->ref = row;
 
 			// execute on where/on conflict logic (and returning after it)
 			return code_at(self->code, op->b);

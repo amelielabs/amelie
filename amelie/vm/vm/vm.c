@@ -142,6 +142,7 @@ vm_run(Vm*       self,
 
 		// argument
 		&&carg,
+		&&cexcluded,
 
 		// null operations
 		&&cnullop,
@@ -457,6 +458,14 @@ carg:
 	// [result, order]
 	// todo: read array
 	// value_read_arg(&r[op->a], self->args, op->b);
+	op_next;
+
+cexcluded:
+	// [result, cursor, order]
+	cursor = cursor_mgr_of(cursor_mgr, op->b);
+	if (unlikely(cursor->ref == -1))
+		error("unexpected EXCLUDED usage");
+	value_copy(&r[op->a], set_column(self->code_values, cursor->ref, op->c));
 	op_next;
 
 cnullop:

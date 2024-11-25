@@ -35,7 +35,7 @@ struct Cursor
 	SetIterator   set_it;
 	MergeIterator merge_it;
 	// upsert state
-	Row*          ref;
+	int           ref;
 	int           ref_pos;
 	int           ref_count;
 	// limit/offset
@@ -56,9 +56,9 @@ cursor_init(Cursor* self)
 	self->part      = NULL;
 	self->it        = NULL;
 	self->r         = 0;
+	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
-	self->ref       = NULL;
 	self->limit     = 0;
 	self->offset    = 0;
 	set_iterator_init(&self->set_it);
@@ -72,15 +72,11 @@ cursor_reset(Cursor* self)
 	self->table     = NULL;
 	self->part      = NULL;
 	self->r         = 0;
+	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
 	self->limit     = 0;
 	self->offset    = 0;
-	if (self->ref)
-	{
-		row_free(self->ref);
-		self->ref = NULL;
-	}
 	if (self->it)
 	{
 		iterator_close(self->it);

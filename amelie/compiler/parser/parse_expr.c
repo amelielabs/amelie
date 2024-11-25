@@ -85,7 +85,6 @@ priority_map[KEYWORD_MAX] =
 	//
 	['(']                      = priority_value,
 	['{']                      = priority_value,
-	['@']                      = priority_value,
 	[KCASE]                    = priority_value,
 	[KEXISTS]                  = priority_value,
 	[KRANDOM]                  = priority_value,
@@ -588,10 +587,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	// request argument
 	case KARGID:
-		break;
-
-	// @
-	case '@':
 		break;
 
 	// name

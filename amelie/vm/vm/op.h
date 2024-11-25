@@ -41,6 +41,7 @@ enum
 
 	// argument
 	CARG,
+	CEXCLUDED,
 
 	// null operations
 	CNULLOP,
