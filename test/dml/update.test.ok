@@ -497,5 +497,24 @@ update test set vec = vec + [1.0, 1.1]::vector
 select * from test
 [[3, [2, 2.2]]]
 drop table test
+# test: update secondary index
+create table test (id int primary key, data int, value int)
+create index i on test (data)
+insert into test values (0, 2, 0)
+insert into test values (1, 1, 0)
+insert into test values (2, 0, 0)
+select * from test
+[[0, 2, 0], [1, 1, 0], [2, 0, 0]]
+select * from test use index (i)
+[[2, 0, 0], [1, 1, 0], [0, 2, 0]]
+update test set value = data
+select * from test
+[[0, 2, 2], [1, 1, 1], [2, 0, 0]]
+select * from test use index (i)
+[[2, 0, 0], [1, 1, 1], [0, 2, 2]]
+# test: update secondary index (key)
+update test set data = id
+{"msg": "<test.data> column used as a part of a key"}
+drop table test
 disconnect S0
 close E0

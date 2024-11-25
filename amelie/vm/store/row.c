@@ -129,7 +129,6 @@ row_create_key(Keys* self, Value* values)
 	auto     columns_count = self->columns->list_count;
 	auto     row   = row_allocate(columns_count, size);
 	uint8_t* pos   = row_data(row, columns_count);
-	auto     order = 0;
 	list_foreach(&self->columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -138,8 +137,14 @@ row_create_key(Keys* self, Value* values)
 			row_set_null(row, column->order);
 			continue;
 		}
-		auto ref = &values[order];
-		order++;
+
+		auto key = keys_find_column(self, column->order);
+		if (! key)
+		{
+			row_set_null(row, column->order);
+			continue;
+		}
+		auto ref = &values[key->order];
 
 		row_set(row, column->order, pos - (uint8_t*)row);
 		if (column->type == TYPE_STRING) {

@@ -51,12 +51,6 @@ key_copy(Key* self)
 	return copy;
 }
 
-static inline bool
-key_compare(Key* self, Key* with)
-{
-	return self->ref != with->ref;
-}
-
 static inline Key*
 key_read(uint8_t** pos)
 {

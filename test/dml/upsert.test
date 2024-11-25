@@ -119,26 +119,6 @@ insert into test generate 10 on conflict do update set data = data + 1
 select * from test
 drop table test
 
-### test: upsert secondary index
-##create table test (id int primary key, data int, value int)
-##create index i on test (data)
-
-##insert into test values (0, 2, 0)
-##insert into test values (1, 1, 0)
-##insert into test values (2, 0, 0)
-
-##select * from test
-##select * from test use index (i)
-
-##insert into test values (0, 2, 0) on conflict do update set value = value + 1
-##select * from test
-##select * from test use index (i)
-
-##insert into test values (3, 2, 0) on conflict do update set value = 10
-##select * from test
-##select * from test use index (i)
-##drop table test
-
 # test: upsert returning
 create table test (id int primary key, data int)
 insert into test values (1, 0)
@@ -174,6 +154,26 @@ explain insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
 select * from test
+drop table test
+
+# test: upsert secondary index
+create table test (id int primary key, data int, value int)
+create index i on test (data)
+
+insert into test values (0, 2, 0)
+insert into test values (1, 1, 0)
+insert into test values (2, 0, 0)
+
+select * from test
+select * from test use index (i)
+
+insert into test values (0, 2, 0) on conflict do update set value = value + 1
+select * from test
+select * from test use index (i)
+
+insert into test values (3, 2, 0) on conflict do update set value = 10
+select * from test
+select * from test use index (i)
 drop table test
 
 disconnect S0

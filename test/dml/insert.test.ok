@@ -770,5 +770,101 @@ select * from test
 select vec::type from test
 ["vector", "vector", "vector", "vector", "vector"]
 drop table test
+# test: insert secondary index
+create table test (id int primary key, data int)
+create index i on test (data)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+insert into test values (3, 0)
+insert into test values (4, 0)
+explain select * from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from test
+[[0, 2], [1, 1], [2, 0], [3, 0], [4, 0]]
+explain select * from test use index (i)
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # -2147483648",
+      "04": "push                1      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (i)",
+      "06": "jmp                 13     0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "cursor_readi32      1      0      1     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "cursor_next         0      7      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from test use index (i)
+[[2, 0], [3, 0], [4, 0], [1, 1], [0, 2]]
+drop index i on test
+drop table test
+# test: insert secondary index (unique)
+create shared table test (id int primary key, data int)
+create unique index i on test (data)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+select * from test
+[[0, 2], [1, 1], [2, 0]]
+select * from test use index (i)
+[[2, 0], [1, 1], [0, 2]]
+insert into test values (3, 0)
+{"msg": "index 'i': unique key constraint violation"}
+insert into test values (3, -1)
+select * from test
+[[0, 2], [1, 1], [2, 0], [3, -1]]
+select * from test use index (i)
+[[3, -1], [2, 0], [1, 1], [0, 2]]
+drop table test
 disconnect S0
 close E0
