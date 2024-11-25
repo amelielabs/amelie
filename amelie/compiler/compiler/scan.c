@@ -313,7 +313,8 @@ scan_store(Scan* self, Target* target)
 	code_at(cp->code, _where_eof)->a = _eof;
 
 	// free cursor object on close, unless it is CTE result
-	op2(cp, op_close, target->id, target->type != TARGET_CTE);
+	auto free_on_close = target->type != TARGET_CTE;
+	op2(cp, op_close, target->id, free_on_close);
 }
 
 static inline void

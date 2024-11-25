@@ -185,7 +185,7 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		      str_size(name), str_of(name));
 
 	// SELECT name FROM
-	if (target_list->count > 1 || target_is_join(target))
+	if (target_is_join(target))
 		error("<%.*s> column requires explicit target name",
 		      str_size(name), str_of(name));
 

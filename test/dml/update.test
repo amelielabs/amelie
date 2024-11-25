@@ -124,7 +124,7 @@ update test set data = data + 1 where id >= 1
 select * from test
 drop table test
 
-# test: update update null
+# test: update null
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)
@@ -132,6 +132,24 @@ insert into test values (2, null)
 update test set data = data + 1
 select * from test
 update test set data = id where data is null
+select * from test
+drop table test
+
+# test: update set null
+create table test(id int primary key, data int)
+insert into test values (0, 1)
+update test set data = data + 1
+select * from test
+update test set data = null
+select * from test
+drop table test
+
+# test: update set null (not null)
+create table test(id int primary key, data int not null)
+insert into test values (0, 1)
+update test set data = data + 1
+select * from test
+update test set data = null
 select * from test
 drop table test
 

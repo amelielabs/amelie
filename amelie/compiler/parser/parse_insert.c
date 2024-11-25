@@ -340,19 +340,18 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 }
 
-#if 0
 hot static void
 parse_generated(Stmt* self, AstInsert* stmt)
 {
 	auto columns = table_columns(stmt->target->from_table);
-	if (! columns->generated_columns)
-		return;
 
 	// create a target to iterate inserted rows to create new rows
 	// using the generated columns
-	stmt->target_generated =
-			target_list_add(&self->target_list, stmt->target->level, 0,
-			                NULL, NULL, columns, NULL, NULL);
+	auto target = target_allocate();
+	target->type         = TARGET_INSERTED;
+	target->from_columns = stmt->target->from_columns;
+	target_list_add(&self->target_list, target, stmt->target->level, 0);
+	stmt->target_generated = target;
 
 	// parse generated columns expressions
 	auto lex_origin = self->lex;
@@ -368,22 +367,27 @@ parse_generated(Stmt* self, AstInsert* stmt)
 			continue;
 		lex_init(&lex, keywords);
 		lex_start(&lex, &column->constraint.as_stored);
-		Expr expr =
+		Expr ctx =
 		{
 			.aggs   = NULL,
 			.select = false
 		};
-		auto ast = parse_expr(self, &expr);
+
+		// op(column, expr)
+		auto op = ast(KSET);
+		op->l = ast(0);
+		op->l->column = column;
+		op->r = parse_expr(self, &ctx);
+
 		if (! stmt->generated_columns)
-			stmt->generated_columns = ast;
+			stmt->generated_columns = op;
 		else
-			tail->next = ast;
-		tail = ast;
+			tail->next = op;
+		tail = op;
 	}
 
 	self->lex = lex_origin;
 }
-#endif
 
 hot void
 parse_insert(Stmt* self)
@@ -436,9 +440,9 @@ parse_insert(Stmt* self)
 		}
 	}
 
-	// TODO
-	//  create a list of generated columns expressions
-	//parse_generated(self, stmt);
+	// create a list of generated columns expressions
+	if (columns->generated_columns)
+		parse_generated(self, stmt);
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);

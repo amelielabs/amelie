@@ -112,7 +112,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 
 		// ensure that the expression type is compatible
 		// with the column
-		if (unlikely(column->type != type))
+		if (unlikely(type != TYPE_NULL && column->type != type))
 			error("<%.*s.%.*s> column update expression type '%s' does not match column type '%s'",
 			      str_size(&target->name), str_of(&target->name),
 			      str_size(&column->name), str_of(&column->name),

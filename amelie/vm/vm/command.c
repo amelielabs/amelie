@@ -93,67 +93,51 @@ csend_hash(Vm* self, Op* op)
 hot void
 csend_generated(Vm* self, Op* op)
 {
-	(void)self;
-	(void)op;
-	// TODO
-#if 0
-	// [stmt, start, table, rows_offset]
+	// [stmt, start, table, values*]
 	auto dtr     = self->dtr;
-	auto start   = op->b;
 	auto table   = (Table*)op->c;
+	auto values  = (Set*)op->d;
 	auto columns = table_columns(table);
-	auto keys    = table_keys(table);
 
-	ReqList list;
-	req_list_init(&list);
-
+	// apply generated columns and redistribute rows between nodes
 	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
-	// get the number of inserted rows
-	int rows = stack_at(&self->stack, 1)->integer;
-	int rows_values = rows * columns->generated_columns;
-	stack_popn(&self->stack, 1);
-	auto values = stack_at(&self->stack, rows_values);
+	auto count = values->count_rows * columns->generated_columns;
+	auto pos = stack_at(&self->stack, count);
 
-	// create new rows by merging inserted rows with generated
-	// columns created on the stack for each row
-	//
-	// [[], ...]
-	auto data = code_data_at(self->code_data, op->d);
-	json_read_array(&data);
-	while (! json_read_array_end(&data))
+	ReqList list;
+	req_list_init(&list);
+	for (auto order = 0; order < values->count_rows; order++)
 	{
-		// generate new row and hash keys
-		uint32_t offset = buf_size(&self->code_data->data_generated);
-		uint32_t hash = value_row_generate(columns,
-		                                   keys,
-		                                   &self->code_data->data_generated,
-		                                   &data,
-		                                   values);
+		// apply generated columns and recalculate row meta
+		auto row_meta = set_meta(values, order);
+		row_meta->row_size = 0;
+		row_meta->hash = 0;
+		row_update_values(columns, set_row(values, order), pos, row_meta);
+		pos += columns->generated_columns;
+
 		// map to node
-		auto route = part_map_get(&table->part_list.map, hash);
-		auto req = map[route->order];
+		auto route = part_map_get(&table->part_list.map, row_meta->hash);
+		auto req   = map[route->order];
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
-			req->start = start;
-			req->arg_buf = &self->code_data->data_generated;
+			req->start = op->b;
+			req->arg_values = values;
 			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
 		}
 
-		// write u32 offset to req->arg
-		buf_write(&req->arg, &offset, sizeof(offset));
-
-		values += columns->generated_columns;
+		// write u32 row position to the req->arg
+		buf_write(&req->arg, &order, sizeof(order));
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
 
-	stack_popn(&self->stack, rows_values);
-#endif
+	// todo: optimize
+	stack_popn(&self->stack, count);
 }
 
 hot void

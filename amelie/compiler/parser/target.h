@@ -29,7 +29,8 @@ enum
 	TARGET_TABLE        = 1 << 1,
 	TARGET_SELECT       = 1 << 2,
 	TARGET_CTE          = 1 << 3,
-	TARGET_VIEW         = 1 << 4
+	TARGET_INSERTED     = 1 << 4,
+	TARGET_VIEW         = 1 << 5
 };
 
 struct Target

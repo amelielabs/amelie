@@ -379,84 +379,54 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 	return row;
 }
 
-#if 0
-hot static inline uint32_t
-value_row_generate(Columns*  columns,
-                   Keys*     keys,
-                   Buf*      data,
-                   uint8_t** pos,
-                   Value*    values)
+static inline int
+row_column_size(Column* column, Value* value)
 {
-	// [
-	if (unlikely(! data_is_array(*pos)))
-		error("row type expected to be array");
-	data_read_array(pos);
-	encode_array(data);
+	// null
+	if (value->type == TYPE_NULL)
+		return 0;
+	int size;
+	switch (column->type) {
+	case TYPE_STRING:
+		size = json_size_string(str_size(&value->string));
+		break;
+	case TYPE_JSON:
+		size = value->json_size;
+		break;
+	case TYPE_VECTOR:
+		size = vector_size(value->vector);
+		break;
+	default:
+		// fixed types
+		size = column->type_size;
+		break;
+	}
+	return size;
+}
 
-	uint32_t hash = 0;
+hot void
+row_update_values(Columns* columns,
+                  Value*   row,
+                  Value*   values,
+                  SetMeta* meta)
+{
+	// replace generated columns with new values and
+	// update row meta
 	int order = 0;
 	list_foreach(&columns->list)
 	{
-		auto column = list_at(Column, link);
-		if (unlikely(data_is_array_end(*pos)))
-			error("row has incorrect number of columns");
-
-		// skip column data
-		auto at = *pos;
-		data_skip(pos);
-
-		// use generated or existing column
-		int offset = buf_size(data);
-		if (! str_empty(&column->constraint.as_stored))
-		{
-			value_write(&values[order], data);
+		Value* value;
+		auto column  = list_at(Column, link);
+		auto replace = !str_empty(&column->constraint.as_stored);
+		if (replace) {
+			value_move(&row[column->order], &values[order]);
+			value = &row[column->order];
 			order++;
-		} else
-		{
-			// copy
-			buf_write(data, at, *pos - at);
+		} else {
+			value = &row[column->order];
 		}
-
-		// validate column data type
-		auto pos_new = data->start + offset;
-		if (data_is_null(pos_new))
-		{
-			// NOT NULL constraint
-			if (unlikely(column->constraint.not_null))
-				error("column %.*s: cannot be null",
-				      str_size(&column->name),
-				      str_of(&column->name));
-		} else
-		if (unlikely(! type_validate(column->type, pos_new))) {
-			error("column %.*s: does not match data type %s",
-			      str_size(&column->name),
-			      str_of(&column->name),
-			      type_of(column->type));
-		}
-
-		// indexate keys per column
+		meta->row_size += row_column_size(column, value);
 		if (column->key)
-		{
-			list_foreach(&keys->list)
-			{
-				auto key = list_at(Key, link);
-				if (key->column != column)
-					continue;
-
-				// find key path and validate data type
-				uint8_t* pos_key = pos_new;
-				key_find(key, &pos_key);
-
-				// hash key
-				hash = key_hash(hash, pos_key);
-			}
-		}
+			meta->hash = value_hash(value, meta->hash);
 	}
-
-	// ]
-	if (unlikely(! data_read_array_end(pos)))
-		error("row has incorrect number of columns");
-	encode_array_end(data);
-	return hash;
 }
-#endif

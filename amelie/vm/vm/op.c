@@ -184,6 +184,7 @@ OpDesc ops[] =
 	// set
 	{ CSET, "set" },
 	{ CSET_ORDERED, "set_ordered" },
+	{ CSET_PTR, "set_ptr" },
 	{ CSET_SORT, "set_sort" },
 	{ CSET_ADD, "set_add" },
 	{ CSET_GET, "set_get" },
@@ -330,6 +331,9 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			op_write(output, op, true, true, true, "%g", dbl);
 			break;
 		}
+		case CSET_PTR:
+			op_write(output, op, true, false, true, NULL);
+			break;
 		case CSEND_HASH:
 		case CSEND:
 		case CSEND_GENERATED:

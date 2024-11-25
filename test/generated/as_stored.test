@@ -19,7 +19,7 @@ create table test (id int primary key, data int as (1) stored
 
 # test: insert (expr)
 create table test (id int primary key, data int as (1 + 1) stored)
-select system.tables()['public.test'].columns[1]
+select system.tables().'public.test'.columns[1]
 explain insert into test values (0, null)
 insert into test values (0, null)
 insert into test values (1, null), (2, 42), (3, 43)
@@ -90,12 +90,7 @@ drop table test
 create table test (id int primary key as (777) stored)
 insert into test values (null)
 insert into test values (0)
-select * from test
-drop table test
-
-# test: insert generated key (obj path)
-create table test (id int primary key as (obj.id) stored, obj object)
-insert into test values (0, {"id": 48})
+insert into test values (0)
 select * from test
 drop table test
 

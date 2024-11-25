@@ -214,22 +214,33 @@ emit_stmt(Compiler* self)
 	op0(self, CRET);
 }
 
-#if 0
 static inline void
 emit_send_generated_on_match(Compiler* self, void* arg)
 {
 	AstInsert* insert = arg;
 	// generate and push to the stack each generated
 	// column expression
-	auto expr = insert->generated_columns;
-	while (expr)
+	auto op = insert->generated_columns;
+	for (; op; op = op->next)
 	{
+		auto column = op->l->column;
+
 		// expr
-		int rexpr = emit_expr(self, insert->target_generated, expr);
+		int rexpr = emit_expr(self, insert->target_generated, op->r);
+		int type = rtype(self, rexpr);
+
+		// ensure that the expression type is compatible
+		// with the column
+		if (unlikely(type != TYPE_NULL && column->type != type))
+			error("<%.*s.%.*s> column generated expression type '%s' does not match column type '%s'",
+			      str_size(&insert->target->name), str_of(&insert->target->name),
+			      str_size(&column->name), str_of(&column->name),
+			      type_of(type),
+			      type_of(column->type));
+
 		// push
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-		expr = expr->next;
 	}
 }
 
@@ -238,11 +249,12 @@ emit_send_generated(Compiler* self, int start)
 {
 	auto stmt   = self->current;
 	auto insert = ast_insert_of(stmt->ast);
-	auto table  = insert->target->table;
+	auto table  = insert->target->from_table;
 
-	// cursor_open( insert->rows )
+	// cursor_open( insert->values )
 	auto target = insert->target_generated;
-	target->rexpr = op2(self, CDATA, rpin(self), insert->rows);
+	target->r = op2(self, CSET_PTR, rpin(self, TYPE_SET),
+	                (intptr_t)insert->values);
 
 	// generate scan over insert rows to create new rows using the
 	// generated columns expressions
@@ -253,15 +265,11 @@ emit_send_generated(Compiler* self, int start)
 	     emit_send_generated_on_match,
 	     insert);
 
-	// push the number of inserted rows
-	auto rexpr = op2(self, CINT, rpin(self), insert->rows_count);
-	op1(self, CPUSH, rexpr);
-	runpin(self, rexpr);
-
 	// CSEND_GENERATED
-	op4(self, CSEND_GENERATED, stmt->order, start, (intptr_t)table, insert->rows);
+	op4(self, CSEND_GENERATED, stmt->order, start,
+	    (intptr_t)table,
+	    (intptr_t)insert->values);
 }
-#endif
 
 static inline void
 emit_send(Compiler* self, int start)
@@ -275,7 +283,8 @@ emit_send(Compiler* self, int start)
 		auto insert = ast_insert_of(stmt->ast);
 		auto table = insert->target->from_table;
 		if (table_columns(table)->generated_columns) {
-			; // emit_send_generated(self, start);
+			// CSEND_GENERATED
+			emit_send_generated(self, start);
 		} else {
 			// CSEND
 			op4(self, CSEND, stmt->order, start,

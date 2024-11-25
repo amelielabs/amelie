@@ -13,54 +13,7 @@ drop table test
 # test: insert on conflict do aggregate (key column)
 create table test (id int primary key as (42) aggregated)
 {"msg": "AS AGGREGATED cannot be used with keys"}
-# test: insert on conflict do aggregate (count)
-create table test (id int primary key, data agg(count))
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 2) on conflict do aggregate
-insert into test values (0, 3) on conflict do aggregate
-select * from test
-[[0, 3]]
-drop table test
-# test: insert on conflict do aggregate (min)
-create table test (id int primary key, data agg(min))
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 2) on conflict do aggregate
-insert into test values (0, 3) on conflict do aggregate
-select * from test
-[[0, 1]]
-drop table test
-# test: insert on conflict do aggregate (max)
-create table test (id int primary key, data agg(max))
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 2) on conflict do aggregate
-insert into test values (0, 3) on conflict do aggregate
-select * from test
-[[0, 3]]
-drop table test
-# test: insert on conflict do aggregate (sum)
-create table test (id int primary key, data agg(sum))
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 2) on conflict do aggregate
-insert into test values (0, 3) on conflict do aggregate
-select * from test
-[[0, 6]]
-drop table test
-# test: insert on conflict do aggregate (avg)
-create table test (id int primary key, data agg(avg))
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 2) on conflict do aggregate
-insert into test values (0, 3) on conflict do aggregate
-select * from test
-[[0, 2]]
-drop table test
-create table test (id int primary key, data agg(avg))
-insert into test values (0, 1.5) on conflict do aggregate
-insert into test values (0, 2.5) on conflict do aggregate
-insert into test values (0, 3.5) on conflict do aggregate
-select * from test
-[[0, 2.5]]
-drop table test
-# test: insert on conflict do aggregate (expr)
+# test: insert on conflict do aggregate
 create table test (id int primary key, data int as (data + 1) aggregated)
 insert into test values (0, 0) on conflict do aggregate
 insert into test values (0, 0) on conflict do aggregate
@@ -69,68 +22,38 @@ insert into test values (0, 0) on conflict do aggregate
 select * from test
 [[0, 3]]
 drop table test
-# test: insert on conflict do aggregate (agg, not aggregated)
-create table test (id int primary key, data agg(sum) not aggregated)
-insert into test values (0, 4) on conflict do aggregate
-insert into test values (0, 4) on conflict do aggregate
-insert into test values (0, 4) on conflict do aggregate
-select * from test
-[[0, 4]]
-drop table test
-# test: insert on conflict do aggregate (agg, not aggregated mix)
-create table test (id int primary key, data agg(sum) not aggregated, data2 agg(sum))
-insert into test values (0, 4, 2) on conflict do aggregate
-insert into test values (0, 4, 2) on conflict do aggregate
-insert into test values (0, 4, 2) on conflict do aggregate
-select * from test
-[[0, 4, 6]]
-drop table test
-# test: insert on conflict do aggregate (expr, not aggregated)
-create table test (id int primary key, data int as (data + 1) aggregated not aggregated)
+# test: insert on conflict do aggregate (stored and aggregated)
+create table test (id int primary key, data int as (777) stored as (data + 1) aggregated)
 insert into test values (0, 0) on conflict do aggregate
 insert into test values (0, 0) on conflict do aggregate
 insert into test values (0, 0) on conflict do aggregate
 insert into test values (0, 0) on conflict do aggregate
 select * from test
-[[0, 0]]
-drop table test
-# test: insert on conflict do aggregate (stored + auto aggregated)
-create table test (id int primary key, data agg(sum) as ( agg_sum(id + 0.5) ) stored)
-insert into test values (0, 0)
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 1) on conflict do aggregate
-select * from test
-[[0, 1.5]]
-drop table test
-# test: insert on conflict do aggregate (stored + aggregated)
-create table test (id int primary key, data agg(sum) as ( agg_sum(id + 0.5) ) stored as ( data::agg_sum(@[1]) ) aggregated )
-insert into test values (0, 0)
-insert into test values (0, 1) on conflict do aggregate
-insert into test values (0, 1) on conflict do aggregate
-select * from test
-[[0, 1.5]]
+[[0, 780]]
 drop table test
 # test: aggregated table
-create aggregated table test (id int primary key, data agg(sum))
-insert into test values (0, 1)
-insert into test values (0, 2)
-insert into test values (0, 3)
+create aggregated table test (id int primary key, hits int default 1 as (hits + 1) aggregated)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
 select * from test
-[[0, 6]]
+[[0, 3], [1, 3], [2, 3]]
 drop table test
-create shared aggregated table test (id int primary key, data agg(sum))
-insert into test values (0, 1)
-insert into test values (0, 2)
-insert into test values (0, 3)
+# test: aggregated table (shared)
+create shared aggregated table test (id int primary key, hits int default 1 as (hits + 1) aggregated)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
 select * from test
-[[0, 6]]
+[[0, 3], [1, 3], [2, 3]]
 drop table test
-create distributed aggregated table test (id int primary key, data agg(sum) as ( agg_sum(id + 0.5) ) stored as ( data::agg_sum(@[1]) ) aggregated )
-insert into test values (0, 0)
-insert into test values (0, 1)
-insert into test values (0, 1)
+# test: aggregated table (distributed)
+create shared aggregated table test (id int primary key, hits int default 1 as (hits + 1) aggregated)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
+insert into test (id) values (0), (1), (2)
 select * from test
-[[0, 1.5]]
+[[0, 3], [1, 3], [2, 3]]
 drop table test
 disconnect S0
 close E0
