@@ -293,6 +293,14 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
 select * from test
 [[1, 48, null]]
 drop table test
+# test: upsert excluded (no target)
+create table test (id int primary key)
+select excluded.id from test
+[]
+insert into test values (1)
+select excluded.id from test
+{"msg": "unexpected EXCLUDED usage"}
+drop table test
 # test: upsert null
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1

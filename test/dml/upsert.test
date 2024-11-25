@@ -98,6 +98,8 @@ drop table test
 # test: upsert excluded (no target)
 create table test (id int primary key)
 select excluded.id from test
+insert into test values (1)
+select excluded.id from test
 drop table test
 
 # test: upsert null
