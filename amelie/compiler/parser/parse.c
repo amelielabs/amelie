@@ -457,6 +457,9 @@ parse_stmt(Parser* self, Stmt* stmt)
 		error("unexpected statement");
 		break;
 	}
+
+	// resolve select targets
+	parse_select_resolve(stmt);
 }
 
 hot static bool

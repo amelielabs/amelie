@@ -51,10 +51,12 @@ parse_from_target(From* self)
 	// FROM (SELECT)
 	if (stmt_if(stmt, '('))
 	{
+		if (! stmt_if(stmt, KSELECT))
+			error("FROM (<SELECT> expected");
 		auto select = parse_select(stmt);
 		if (! select->target)
 			error("FROM (SELECT) subquery has no target");
-		if (stmt_if(stmt, ')'))
+		if (! stmt_if(stmt, ')'))
 			error("FROM (SELECT ... <)> expected");
 		target->type         = TARGET_SELECT;
 		target->from_select  = &select->ast;

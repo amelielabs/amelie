@@ -139,9 +139,9 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
-	while (as)
+	for (Ast* next = NULL; as; as = next)
 	{
-		auto next = as->next;
+		next = as->next;
 		switch (as->l->id) {
 		case KSTAR:
 		{
@@ -182,7 +182,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 				error("<%.*s> incorrect target column path", str_size(&as->l->string),
 				      str_of(&as->l->string));
 
-			returning_add_target(self, target);
+			returning_add_target(self, match);
 			break;
 		}
 		default:
@@ -199,7 +199,5 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 			break;
 		}
 		}
-
-		as = next;
 	}
 }

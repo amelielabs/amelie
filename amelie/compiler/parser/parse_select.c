@@ -151,20 +151,6 @@ parse_select(Stmt* self)
 	if (stmt_if(self, KFROM))
 		select->target = parse_from(self, level);
 
-	// create select expressions and resolve *
-	parse_returning_resolve(&select->ret, self, select->target);
-
-	// use select expr as distinct expression, if not set
-	if (select->distinct && !select->distinct_on)
-	{
-		// set distinct expressions as order by keys
-		for (auto as = select->ret.list; as; as = as->next)
-		{
-			auto order = ast_order_allocate(select->expr_order_by.count, as->l, true);
-			ast_list_add(&select->expr_order_by, &order->ast);
-		}
-	}
-
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
 		select->expr_where = parse_expr(self, NULL);
@@ -252,4 +238,28 @@ parse_select_expr(Stmt* self)
 	parse_returning(&select->ret, self, &ctx);
 	parse_returning_resolve(&select->ret, self, NULL);
 	return select;
+}
+
+void
+parse_select_resolve(Stmt* self)
+{
+	// resolve selects backwards
+	for (auto ref = self->select_list.list_tail; ref; ref = ref->prev)
+	{
+		auto select = ast_select_of(ref->ast);
+
+		// create select expressions and resolve *
+		parse_returning_resolve(&select->ret, self, select->target);
+
+		// use select expr as distinct expression, if not set
+		if (select->distinct && !select->distinct_on)
+		{
+			// set distinct expressions as order by keys
+			for (auto as = select->ret.list; as; as = as->next)
+			{
+				auto order = ast_order_allocate(select->expr_order_by.count, as->l, true);
+				ast_list_add(&select->expr_order_by, &order->ast);
+			}
+		}
+	}
 }

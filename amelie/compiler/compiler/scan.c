@@ -233,7 +233,13 @@ scan_store(Scan* self, Target* target)
 	// scan over SET or MERGE object
 	//
 	// using target register value to determine the scan object
-	assert(target->r != -1);
+	if (target->r == -1)
+	{
+		assert(target->type == TARGET_SELECT);
+		assert(target->from_select);
+		target->r = emit_expr(cp, target, target->from_select);
+	}
+
 	int op_open;
 	int op_close;
 	int op_next;

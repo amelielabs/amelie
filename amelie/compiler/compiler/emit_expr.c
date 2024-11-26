@@ -243,6 +243,10 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 			// exclude column name from the path
 			str_advance(&path, str_size(&name) + 1);
 		}
+
+		if (! target)
+			error("<%.*s> target not found", str_size(&name),
+			      str_of(&name));
 	}
 
 	// column[.path]
