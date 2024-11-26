@@ -3,6 +3,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
+# test: from use index
 create table test (id int primary key, data int)
 create index i on test (data)
 
@@ -13,7 +14,6 @@ insert into test values (2, 0)
 explain select * from test
 select * from test
 
-# test: from use index
 select * from test use
 select * from test use 1
 select * from test use index
@@ -74,7 +74,7 @@ select * from test where data > 1
 explain select * from test where data = 1
 select * from test where data = 1
 
-select indexes from system.tables()
+select system.tables().'public.test'.indexes
 explain select * from test where data = 1 and id = 1
 select * from test where data = 1 and id = 1
 

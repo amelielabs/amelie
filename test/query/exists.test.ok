@@ -13,17 +13,17 @@ select exists ()
 select exists (1)
 [true]
 select exists (null)
-[true]
+[null]
 select exists (false)
 [true]
 select exists ([])
 [true]
 # test: exists (set)
-select exists (select * from [])
+create shared table test (id int primary key, data int)
+insert into test values (1, 0), (2, 0)
+select exists (select * from test)
+[true]
+select exists (select * from test where false)
 [false]
-select exists (select * from [1])
-[true]
-select exists (select * from [1,2,3])
-[true]
 disconnect S0
 close E0

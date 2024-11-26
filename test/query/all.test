@@ -11,60 +11,34 @@ select 1 = all
 select 1 = all (
 select 1 = all ()
 
-# test: = all(array)
-select 1 = all()
-select 1 = all([0])
-select 1 = all([0, 1])
-select 1 = all([1])
-select 1 = all([1, 1])
-select not (1 = all([1, 1]))
+# test: = all
+create shared table test (id int primary key)
+select 1 = all(select id from test)
+insert into test values (1)
+select 1 = all(select id from test)
+insert into test values (2)
+select 1 = all(select id from test)
+select not (1 = all(select id from test))
 
-# test: >= all(array)
-select 1 >= all([0, 1])
-select 1 >= all([2])
-select 1 >= all([1, 2])
+# test: >= all
+select 1 >= all(select id from test)
+select 0 >= all(select id from test)
+select 3 >= all(select id from test)
 
-# test: > all(array)
-select 1 > all([0, 1])
-select 1 > all([0, 2])
-select 1 > all([2])
-select 1 > all([-1, 0])
+## test: > all
+select 1 > all(select id from test)
+select 0 > all(select id from test)
+select 3 > all(select id from test)
 
-# test: < all(array)
-select 1 < all([0, 1])
-select 1 < all([-1, 0])
-select 1 < all([2])
+# test: <= all
+select 1 <= all(select id from test)
+select 0 <= all(select id from test)
+select 3 <= all(select id from test)
 
-# test: <= all(array)
-select 1 <= all([0, 1])
-select 1 <= all([2])
-select 1 <= all([0])
-
-# test: = all(set)
-select 1 = all()
-select 1 = all(select 1)
-select 1 = all(select * from [2, 1])
-select 1 = all(select * from [1, 1])
-select not (1 = all(select * from [1, 1]))
-
-# test: >= all(set)
-select 1 >= all(select * from [0, 1])
-select 1 >= all(select * from [2])
-
-# test: > all(set)
-select 1 > all(select * from [0, -1])
-select 1 > all(select * from [0, 1])
-select 1 > all(select * from [2])
-
-# test: < all(set)
-select 1 < all(select * from [0, 1])
-select 1 < all(select * from [2])
-select 1 < all(select * from [0])
-
-# test: <= all(set)
-select 1 <= all(select * from [0, 1])
-select 1 <= all(select * from [2])
-select 1 <= all(select * from [0])
+## test: < all
+select 1 < all(select id from test)
+select 0 < all(select id from test)
+select 3 < all(select id from test)
 
 disconnect S0
 close E0

@@ -320,6 +320,9 @@ tree_unset_by(Tree* self, TreePos* pos)
 Row*
 tree_unset(Tree* self, Row* key)
 {
+	if (unlikely(! self->count_pages))
+		return NULL;
+
 	// search page
 	TreePos pos;
 	pos.page = tree_search_page(self, key);

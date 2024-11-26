@@ -13,85 +13,43 @@ select 1 = all (
 {"msg": "bad expression"}
 select 1 = all ()
 {"msg": "bad expression"}
-# test: = all(array)
-select 1 = all()
-{"msg": "bad expression"}
-select 1 = all([0])
-[false]
-select 1 = all([0, 1])
-[false]
-select 1 = all([1])
+# test: = all
+create shared table test (id int primary key)
+select 1 = all(select id from test)
 [true]
-select 1 = all([1, 1])
+insert into test values (1)
+select 1 = all(select id from test)
 [true]
-select not (1 = all([1, 1]))
+insert into test values (2)
+select 1 = all(select id from test)
 [false]
-# test: >= all(array)
-select 1 >= all([0, 1])
+select not (1 = all(select id from test))
 [true]
-select 1 >= all([2])
+# test: >= all
+select 1 >= all(select id from test)
 [false]
-select 1 >= all([1, 2])
+select 0 >= all(select id from test)
 [false]
-# test: > all(array)
-select 1 > all([0, 1])
-[false]
-select 1 > all([0, 2])
-[false]
-select 1 > all([2])
-[false]
-select 1 > all([-1, 0])
+select 3 >= all(select id from test)
 [true]
-# test: < all(array)
-select 1 < all([0, 1])
+select 1 > all(select id from test)
 [false]
-select 1 < all([-1, 0])
+select 0 > all(select id from test)
 [false]
-select 1 < all([2])
+select 3 > all(select id from test)
 [true]
-# test: <= all(array)
-select 1 <= all([0, 1])
-[false]
-select 1 <= all([2])
+# test: <= all
+select 1 <= all(select id from test)
 [true]
-select 1 <= all([0])
-[false]
-# test: = all(set)
-select 1 = all()
-{"msg": "bad expression"}
-select 1 = all(select 1)
-{"msg": "ALL: array or result set expected"}
-select 1 = all(select * from [2, 1])
-[false]
-select 1 = all(select * from [1, 1])
+select 0 <= all(select id from test)
 [true]
-select not (1 = all(select * from [1, 1]))
+select 3 <= all(select id from test)
 [false]
-# test: >= all(set)
-select 1 >= all(select * from [0, 1])
+select 1 < all(select id from test)
+[false]
+select 0 < all(select id from test)
 [true]
-select 1 >= all(select * from [2])
-[false]
-# test: > all(set)
-select 1 > all(select * from [0, -1])
-[true]
-select 1 > all(select * from [0, 1])
-[false]
-select 1 > all(select * from [2])
-[false]
-# test: < all(set)
-select 1 < all(select * from [0, 1])
-[false]
-select 1 < all(select * from [2])
-[true]
-select 1 < all(select * from [0])
-[false]
-# test: <= all(set)
-select 1 <= all(select * from [0, 1])
-[false]
-select 1 <= all(select * from [2])
-[true]
-select 1 <= all(select * from [0])
+select 3 < all(select id from test)
 [false]
 disconnect S0
 close E0
