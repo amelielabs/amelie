@@ -27,8 +27,6 @@ struct AstSelect
 	AstList   expr_order_by;
 	bool      distinct;
 	bool      distinct_on;
-	Columns   columns;
-	Columns   columns_group;
 	Target*   target;
 	Target*   target_group;
 	void*     on_match;
@@ -62,8 +60,6 @@ ast_select_allocate(void)
 	self->rset_agg          = -1;
 	self->aggs              = -1;
 	returning_init(&self->ret);
-	columns_init(&self->columns);
-	columns_init(&self->columns_group);
 	ast_list_init(&self->expr_aggs);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);

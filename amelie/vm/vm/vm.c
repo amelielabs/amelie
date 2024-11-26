@@ -1344,6 +1344,7 @@ ccursor_set_open:
 	// [cursor, set, _on_success]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->type = CURSOR_SET;
+	cursor->r = op->b;
 	set_iterator_open(&cursor->set_it, (Set*)r[op->b].store);
 	// jmp on success or skip to the next op on eof
 	op = likely(set_iterator_has(&cursor->set_it)) ? code_at(self->code, op->c) : op + 1;
@@ -1352,9 +1353,9 @@ ccursor_set_open:
 ccursor_set_close:
 	// [cursor, free]
 	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	cursor_reset(cursor);
 	if (op->b)
 		value_free(&r[cursor->r]);
+	cursor_reset(cursor);
 	op_next;
 
 ccursor_set_next:
@@ -1376,6 +1377,7 @@ ccursor_merge_open:
 	// [cursor, merge, _on_success]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->type = CURSOR_MERGE;
+	cursor->r = op->b;
 	merge_iterator_open(&cursor->merge_it, (Merge*)r[op->b].store);
 	// jmp on success or skip to the next op on eof
 	op = likely(merge_iterator_has(&cursor->merge_it)) ? code_at(self->code, op->c) : op + 1;
@@ -1384,9 +1386,9 @@ ccursor_merge_open:
 ccursor_merge_close:
 	// [cursor, free]
 	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	cursor_reset(cursor);
 	if (op->b)
 		value_free(&r[cursor->r]);
+	cursor_reset(cursor);
 	op_next;
 
 ccursor_merge_next:

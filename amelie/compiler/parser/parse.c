@@ -120,8 +120,6 @@ parse_stmt_free(Stmt* stmt)
 	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
 	{
 		auto select = ast_select_of(ref->ast);
-		columns_free(&select->columns);
-		columns_free(&select->columns_group);
 		returning_free(&select->ret);
 	}
 }

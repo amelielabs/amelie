@@ -118,19 +118,16 @@ emit_upsert(Compiler* self, Ast* ast)
 	{
 		jmp_returning = op_pos(self);
 
-		// push expr and prepare returning columns
+		// push expr and set column type
 		for (auto as = insert->ret.list; as; as = as->next)
 		{
+			auto column = as->r->column;
 			// expr
 			int rexpr = emit_expr(self, target, as->l);
 			int rt = rtype(self, rexpr);
+			column_set_type(column, rt, type_sizeof(rt));
 			op1(self, CPUSH, rexpr);
 			runpin(self, rexpr);
-
-			auto column = column_allocate();
-			column_set_name(column, &as->r->string);
-			column_set_type(column, rt, type_sizeof(rt));
-			columns_add(&insert->ret.columns, column);
 		}
 
 		// add to the returning set

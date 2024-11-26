@@ -70,7 +70,10 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			if (as_has)
 				error("AS <label> expected");
 			if (expr->id == KNAME)
-				name = expr;
+			{
+				name = ast(KNAME);
+				name->string = expr->string;
+			}
 		} else
 		{
 			// ensure * has no alias
@@ -98,6 +101,13 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 static inline void
 returning_add(Returning* self, Ast* as)
 {
+	// add new column use it instead of name
+	auto column = column_allocate();
+	column_set_name(column, &as->r->string);
+	columns_add(&self->columns, column);
+	as->r->id = 0;
+	as->r->column = column;
+
 	if (self->list == NULL)
 		self->list = as;
 	else

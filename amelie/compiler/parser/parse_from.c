@@ -60,7 +60,7 @@ parse_from_target(From* self)
 			error("FROM (SELECT ... <)> expected");
 		target->type         = TARGET_SELECT;
 		target->from_select  = &select->ast;
-		target->from_columns = &select->columns;
+		target->from_columns = &select->ret.columns;
 		return target;
 	}
 

@@ -41,16 +41,13 @@ emit_select_expr(Compiler* self, AstSelect* select)
 	// push expr and prepare returning columns
 	for (auto as = select->ret.list; as; as = as->next)
 	{
+		auto column = as->r->column;
 		// expr
 		int rexpr = emit_expr(self, select->target, as->l);
 		int rt = rtype(self, rexpr);
+		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-
-		auto column = column_allocate();
-		column_set_name(column, &as->r->string);
-		column_set_type(column, rt, type_sizeof(rt));
-		columns_add(&select->ret.columns, column);
 	}
 	return select->rset;
 }
@@ -84,6 +81,9 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
+	(void)select;
+	(void)self;;
+#if 0
 	// create a list of aggs based on type
 	int  aggs_offset = code_data_pos(&self->code_data);
 	int* aggs = buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
@@ -212,6 +212,7 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 
 	// CSET_AGG
 	op2(self, CSET_AGG, select->rset_agg, aggs_offset);
+#endif
 }
 
 void

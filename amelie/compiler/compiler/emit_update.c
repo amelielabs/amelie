@@ -139,19 +139,17 @@ emit_update_on_match_returning(Compiler* self, void* arg)
 	// update by cursor
 	emit_update_target(self, update->target, update->expr_update);
 
-	// push expr and prepare returning columns
+	// push expr and set column type
 	for (auto as = update->ret.list; as; as = as->next)
 	{
+		auto column = as->r->column;
+
 		// expr
 		int rexpr = emit_expr(self, update->target, as->l);
 		int rt = rtype(self, rexpr);
+		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-
-		auto column = column_allocate();
-		column_set_name(column, &as->r->string);
-		column_set_type(column, rt, type_sizeof(rt));
-		columns_add(&update->ret.columns, column);
 	}
 
 	// add to the returning set
