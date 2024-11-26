@@ -257,9 +257,9 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 		      str_size(&target->name), str_of(&target->name),
 		      str_size(&name), str_of(&name));
 
-	// column['path']
+	// column.path
 	int rstring = emit_string(self, &path, false);
-	return cast_operator(self, OP_IDX, rcolumn, rstring);
+	return cast_operator(self, OP_DOT, rcolumn, rstring);
 }
 
 hot static inline int

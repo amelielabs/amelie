@@ -17,21 +17,24 @@ explain select * from test where id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gtii                3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -51,118 +54,29 @@ explain select * from test where id >= 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gteii               3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
 select * from test where id >= 1
 [[1, 1], [2, 1], [3, 1]]
-drop table test
-# test: key column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test where obj.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where obj.id > 1
-[[{
-  "id": 2
-}], [{
-  "id": 3
-}]]
-drop table test
-# test: key column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test where obj.data.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # data.id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where obj.data.id > 1
-[[{
-  "data": {
-    "id": 2
-  }
-}], [{
-  "data": {
-    "id": 3
-  }
-}]]
 drop table test
 # test: key target.column
 create table test (id int primary key, data int default 1)
@@ -181,118 +95,29 @@ explain select * from test where test.id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gtii                3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
 select * from test where test.id > 1
 [[2, 1], [3, 1]]
-drop table test
-# test: key target.column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test where test.obj.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where test.obj.id > 1
-[[{
-  "id": 2
-}], [{
-  "id": 3
-}]]
-drop table test
-# test: key target.column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test where test.obj.data.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # data.id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where test.obj.data.id > 1
-[[{
-  "data": {
-    "id": 2
-  }
-}], [{
-  "data": {
-    "id": 3
-  }
-}]]
 drop table test
 # test: key alias.column
 create table test (id int primary key, data int default 1)
@@ -311,192 +136,43 @@ explain select * from test alias where alias.id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gtii                3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
 select * from test alias where alias.id > 1
 [[2, 1], [3, 1]]
 drop table test
-# test: key alias.column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test alias where alias.obj.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test alias where alias.obj.id > 1
-[[{
-  "id": 2
-}], [{
-  "id": 3
-}]]
-drop table test
-# test: key alias.column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test alias where alias.obj.data.id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     # data.id",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test alias where alias.obj.data.id > 1
-[[{
-  "data": {
-    "id": 2
-  }
-}], [{
-  "data": {
-    "id": 3
-  }
-}]]
-drop table test
 # test: key column type mismatch
 create table test (id int primary key, data int default 1)
 explain select * from test where id > "hello"
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
-      "06": "string              2      20     0     # hello",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
+{"msg": "unsupported operation: <int> > <string>"}
 select * from test where id > "hello"
-[]
+{"msg": "unsupported operation: <int> > <string>"}
 drop table test
 # test: key column type mismatch #2
 create table test (id string primary key, data int default 1)
 explain select * from test where id > 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "string_min          1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
-      "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
-    }
-  }
-}]
+{"msg": "unsupported operation: <string> > <int>"}
 select * from test where id > 1
-[]
+{"msg": "unsupported operation: <string> > <int>"}
 drop table test
 # test: key gt (start condition)
 create table test (id int primary key, data int default 1)
@@ -515,21 +191,24 @@ explain select * from test where id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "gt                  3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gtii                3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -550,30 +229,33 @@ explain select * from test where id > 1 and id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "gt                  4      2      3     ",
+      "07": "gtii                4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gt                  5      2      3     ",
+      "11": "gtii                5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
-      "17": "jntr                20     1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "cursor_next         0      5      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "17": "jntr                23     1      0     ",
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "cursor_next         0      5      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -594,30 +276,33 @@ explain select * from test where id > 2 and id > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 2",
-      "07": "gt                  4      2      3     ",
+      "07": "gtii                4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gt                  5      2      3     ",
+      "11": "gtii                5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
-      "17": "jntr                20     1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "cursor_next         0      5      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "17": "jntr                23     1      0     ",
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "cursor_next         0      5      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -638,30 +323,33 @@ explain select * from test where id > 1 and id > 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "gt                  4      2      3     ",
+      "07": "gtii                4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 2",
-      "11": "gt                  5      2      3     ",
+      "11": "gtii                5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
-      "17": "jntr                20     1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "cursor_next         0      5      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "17": "jntr                23     1      0     ",
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "cursor_next         0      5      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -682,30 +370,33 @@ explain select * from test where id > 1 and id = 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "gt                  4      2      3     ",
+      "07": "gtii                4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 2",
-      "11": "equ                 5      2      3     ",
+      "11": "equii               5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
       "17": "jntr                4      1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "jmp                 4      0      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "jmp                 4      0      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -726,25 +417,28 @@ explain select * from test where id < 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 16     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 19     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          1      0      0     ",
+      "09": "cursor_readi32      1      0      0     ",
       "10": "int                 2      -      0     # 1",
-      "11": "lt                  3      1      2     ",
-      "12": "jntr                15     3      0     ",
-      "13": "cursor_read         1      0      0     ",
-      "14": "set_add             0      1      0     ",
-      "15": "cursor_next         0      5      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "11": "ltii                3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "cursor_readi32      1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "cursor_readi32      1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cursor_next         0      5      0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
@@ -764,25 +458,28 @@ explain select * from test where id <= 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 16     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 19     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 2",
-      "07": "lte                 3      1      2     ",
+      "07": "lteii               3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          1      0      0     ",
+      "09": "cursor_readi32      1      0      0     ",
       "10": "int                 2      -      0     # 2",
-      "11": "lte                 3      1      2     ",
-      "12": "jntr                15     3      0     ",
-      "13": "cursor_read         1      0      0     ",
-      "14": "set_add             0      1      0     ",
-      "15": "cursor_next         0      5      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "11": "lteii               3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "cursor_readi32      1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "cursor_readi32      1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cursor_next         0      5      0     ",
+      "19": "cursor_close        0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
@@ -803,34 +500,37 @@ explain select * from test where id < 1 and id < 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "lt                  4      2      3     ",
+      "11": "ltii                4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 1",
-      "15": "lt                  5      2      3     ",
+      "15": "ltii                5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -851,34 +551,37 @@ explain select * from test where id < 2 and id < 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 2",
-      "11": "lt                  4      2      3     ",
+      "11": "ltii                4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 1",
-      "15": "lt                  5      2      3     ",
+      "15": "ltii                5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -899,34 +602,37 @@ explain select * from test where id < 1 and id < 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "lt                  4      2      3     ",
+      "11": "ltii                4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 2",
-      "15": "lt                  5      2      3     ",
+      "15": "ltii                5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -947,34 +653,37 @@ explain select * from test where id < 1 and id = 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "lt                  4      2      3     ",
+      "11": "ltii                4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 2",
-      "15": "equ                 5      2      3     ",
+      "15": "equii               5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
       "21": "jntr                4      1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "jmp                 4      0      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "jmp                 4      0      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -995,34 +704,37 @@ explain select * from test where id > 1 and id < 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gt                  4      2      3     ",
+      "11": "gtii                4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 1",
-      "15": "lt                  5      2      3     ",
+      "15": "ltii                5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -1042,34 +754,37 @@ explain select * from test where id >= 1 and id <= 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 2",
-      "07": "lte                 3      1      2     ",
+      "07": "lteii               3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gte                 4      2      3     ",
+      "11": "gteii               4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 2",
-      "15": "lte                 5      2      3     ",
+      "15": "lteii               5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -1090,26 +805,26 @@ explain select * from test where id > 1 and id < 1 and id = 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 34     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 37     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gt                  4      2      3     ",
+      "11": "gtii                4      2      3     ",
       "12": "jntr                26     4      0     ",
-      "13": "cursor_idx          3      0      0     ",
+      "13": "cursor_readi32      3      0      0     ",
       "14": "int                 5      -      0     # 1",
-      "15": "lt                  6      3      5     ",
+      "15": "ltii                6      3      5     ",
       "16": "jntr                21     6      0     ",
-      "17": "cursor_idx          3      0      0     ",
+      "17": "cursor_readi32      3      0      0     ",
       "18": "int                 5      -      0     # 1",
-      "19": "equ                 7      3      5     ",
+      "19": "equii               7      3      5     ",
       "20": "jtr                 23     7      0     ",
       "21": "bool                2      0      0     ",
       "22": "jmp                 24     0      0     ",
@@ -1121,12 +836,15 @@ explain select * from test where id > 1 and id < 1 and id = 1
       "28": "bool                1      1      0     ",
       "29": "nop                 0      0      0     ",
       "30": "jntr                4      1      0     ",
-      "31": "cursor_read         1      0      0     ",
-      "32": "set_add             0      1      0     ",
-      "33": "jmp                 4      0      0     ",
-      "34": "cursor_close        0      0      0     ",
-      "35": "result              0      0      0     ",
-      "36": "ret                 0      0      0     "
+      "31": "cursor_readi32      1      0      0     ",
+      "32": "push                1      0      0     ",
+      "33": "cursor_readi32      1      0      1     ",
+      "34": "push                1      0      0     ",
+      "35": "set_add             0      0      0     ",
+      "36": "jmp                 4      0      0     ",
+      "37": "cursor_close        0      0      0     ",
+      "38": "result              0      0      0     ",
+      "39": "ret                 0      0      0     "
     }
   }
 }]
@@ -1147,26 +865,26 @@ explain select * from test where id > 1 and id < 1 and data = 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 34     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 37     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gt                  4      2      3     ",
+      "11": "gtii                4      2      3     ",
       "12": "jntr                26     4      0     ",
-      "13": "cursor_idx          3      0      0     ",
+      "13": "cursor_readi32      3      0      0     ",
       "14": "int                 5      -      0     # 1",
-      "15": "lt                  6      3      5     ",
+      "15": "ltii                6      3      5     ",
       "16": "jntr                21     6      0     ",
-      "17": "cursor_idx          3      0      1     ",
+      "17": "cursor_readi32      3      0      1     ",
       "18": "int                 5      -      0     # 1",
-      "19": "equ                 7      3      5     ",
+      "19": "equii               7      3      5     ",
       "20": "jtr                 23     7      0     ",
       "21": "bool                2      0      0     ",
       "22": "jmp                 24     0      0     ",
@@ -1177,13 +895,16 @@ explain select * from test where id > 1 and id < 1 and data = 1
       "27": "jmp                 29     0      0     ",
       "28": "bool                1      1      0     ",
       "29": "nop                 0      0      0     ",
-      "30": "jntr                33     1      0     ",
-      "31": "cursor_read         1      0      0     ",
-      "32": "set_add             0      1      0     ",
-      "33": "cursor_next         0      5      0     ",
-      "34": "cursor_close        0      0      0     ",
-      "35": "result              0      0      0     ",
-      "36": "ret                 0      0      0     "
+      "30": "jntr                36     1      0     ",
+      "31": "cursor_readi32      1      0      0     ",
+      "32": "push                1      0      0     ",
+      "33": "cursor_readi32      1      0      1     ",
+      "34": "push                1      0      0     ",
+      "35": "set_add             0      0      0     ",
+      "36": "cursor_next         0      5      0     ",
+      "37": "cursor_close        0      0      0     ",
+      "38": "result              0      0      0     ",
+      "39": "ret                 0      0      0     "
     }
   }
 }]
@@ -1204,21 +925,24 @@ explain select * from test where id = 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "equ                 3      1      2     ",
+      "07": "equii               3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "jmp                 4      0      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "jmp                 4      0      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -1247,21 +971,24 @@ explain select * from test where data = 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      1     ",
+      "04": "jmp                 15     0      0     ",
+      "05": "cursor_readi32      1      0      1     ",
       "06": "int                 2      -      0     # 1",
-      "07": "equ                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "equii               3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "cursor_readi32      1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cursor_next         0      5      0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -1282,30 +1009,33 @@ explain select * from test where id = 1 and id > 0
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "equ                 4      2      3     ",
+      "07": "equii               4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 0",
-      "11": "gt                  5      2      3     ",
+      "11": "gtii                5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
       "17": "jntr                4      1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "jmp                 4      0      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "jmp                 4      0      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -1326,26 +1056,26 @@ explain select * from test where id = 1 and id > 0 and id < 10
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 34     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 37     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 10",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "equ                 4      2      3     ",
+      "11": "equii               4      2      3     ",
       "12": "jntr                26     4      0     ",
-      "13": "cursor_idx          3      0      0     ",
+      "13": "cursor_readi32      3      0      0     ",
       "14": "int                 5      -      0     # 0",
-      "15": "gt                  6      3      5     ",
+      "15": "gtii                6      3      5     ",
       "16": "jntr                21     6      0     ",
-      "17": "cursor_idx          3      0      0     ",
+      "17": "cursor_readi32      3      0      0     ",
       "18": "int                 5      -      0     # 10",
-      "19": "lt                  7      3      5     ",
+      "19": "ltii                7      3      5     ",
       "20": "jtr                 23     7      0     ",
       "21": "bool                2      0      0     ",
       "22": "jmp                 24     0      0     ",
@@ -1357,12 +1087,15 @@ explain select * from test where id = 1 and id > 0 and id < 10
       "28": "bool                1      1      0     ",
       "29": "nop                 0      0      0     ",
       "30": "jntr                4      1      0     ",
-      "31": "cursor_read         1      0      0     ",
-      "32": "set_add             0      1      0     ",
-      "33": "jmp                 4      0      0     ",
-      "34": "cursor_close        0      0      0     ",
-      "35": "result              0      0      0     ",
-      "36": "ret                 0      0      0     "
+      "31": "cursor_readi32      1      0      0     ",
+      "32": "push                1      0      0     ",
+      "33": "cursor_readi32      1      0      1     ",
+      "34": "push                1      0      0     ",
+      "35": "set_add             0      0      0     ",
+      "36": "jmp                 4      0      0     ",
+      "37": "cursor_close        0      0      0     ",
+      "38": "result              0      0      0     ",
+      "39": "ret                 0      0      0     "
     }
   }
 }]
@@ -1383,30 +1116,33 @@ explain select * from test where id = 1 and id = 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary, lookup)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "equ                 4      2      3     ",
+      "07": "equii               4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 2",
-      "11": "equ                 5      2      3     ",
+      "11": "equii               5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
       "17": "jntr                4      1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "jmp                 4      0      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "jmp                 4      0      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -1430,23 +1166,26 @@ explain select * from test where a > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "int_min             1      0      0     ",
+      "03": "int                 1      -      0     # -2147483648",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 14     0      0     ",
-      "07": "cursor_idx          1      0      0     ",
+      "06": "jmp                 17     0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
       "08": "int                 2      -      0     # 1",
-      "09": "gt                  3      1      2     ",
-      "10": "jntr                13     3      0     ",
-      "11": "cursor_read         1      0      0     ",
-      "12": "set_add             0      1      0     ",
-      "13": "cursor_next         0      7      0     ",
-      "14": "cursor_close        0      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "09": "gtii                3      1      2     ",
+      "10": "jntr                16     3      0     ",
+      "11": "cursor_readi32      1      0      0     ",
+      "12": "push                1      0      0     ",
+      "13": "cursor_readi32      1      0      1     ",
+      "14": "push                1      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "cursor_next         0      7      0     ",
+      "17": "cursor_close        0      0      0     ",
+      "18": "result              0      0      0     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]
@@ -1467,32 +1206,35 @@ explain select * from test where a > 1 and b > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 23     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 26     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "gt                  4      2      3     ",
+      "09": "gtii                4      2      3     ",
       "10": "jntr                15     4      0     ",
-      "11": "cursor_idx          2      0      1     ",
+      "11": "cursor_readi32      2      0      1     ",
       "12": "int                 3      -      0     # 1",
-      "13": "gt                  5      2      3     ",
+      "13": "gtii                5      2      3     ",
       "14": "jtr                 17     5      0     ",
       "15": "bool                1      0      0     ",
       "16": "jmp                 18     0      0     ",
       "17": "bool                1      1      0     ",
       "18": "nop                 0      0      0     ",
-      "19": "jntr                22     1      0     ",
-      "20": "cursor_read         1      0      0     ",
-      "21": "set_add             0      1      0     ",
-      "22": "cursor_next         0      7      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "19": "jntr                25     1      0     ",
+      "20": "cursor_readi32      1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "cursor_readi32      1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "cursor_next         0      7      0     ",
+      "26": "cursor_close        0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
@@ -1513,32 +1255,35 @@ explain select * from test where a > 1 and b < 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "int_min             1      0      0     ",
+      "03": "int                 1      -      0     # -2147483648",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 23     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 26     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "gt                  4      2      3     ",
+      "09": "gtii                4      2      3     ",
       "10": "jntr                15     4      0     ",
-      "11": "cursor_idx          2      0      1     ",
+      "11": "cursor_readi32      2      0      1     ",
       "12": "int                 3      -      0     # 1",
-      "13": "lt                  5      2      3     ",
+      "13": "ltii                5      2      3     ",
       "14": "jtr                 17     5      0     ",
       "15": "bool                1      0      0     ",
       "16": "jmp                 18     0      0     ",
       "17": "bool                1      1      0     ",
       "18": "nop                 0      0      0     ",
-      "19": "jntr                22     1      0     ",
-      "20": "cursor_read         1      0      0     ",
-      "21": "set_add             0      1      0     ",
-      "22": "cursor_next         0      7      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "19": "jntr                25     1      0     ",
+      "20": "cursor_readi32      1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "cursor_readi32      1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "cursor_next         0      7      0     ",
+      "26": "cursor_close        0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
@@ -1559,28 +1304,28 @@ explain select * from test where a > 1 and b < 1 and a < 10
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "int_min             1      0      0     ",
+      "03": "int                 1      -      0     # -2147483648",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 36     0      0     ",
-      "07": "cursor_idx          1      0      0     ",
+      "06": "jmp                 39     0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
       "08": "int                 2      -      0     # 10",
-      "09": "lt                  3      1      2     ",
+      "09": "ltii                3      1      2     ",
       "10": "jntr                6      3      0     ",
-      "11": "cursor_idx          2      0      0     ",
+      "11": "cursor_readi32      2      0      0     ",
       "12": "int                 3      -      0     # 1",
-      "13": "gt                  4      2      3     ",
+      "13": "gtii                4      2      3     ",
       "14": "jntr                28     4      0     ",
-      "15": "cursor_idx          3      0      1     ",
+      "15": "cursor_readi32      3      0      1     ",
       "16": "int                 5      -      0     # 1",
-      "17": "lt                  6      3      5     ",
+      "17": "ltii                6      3      5     ",
       "18": "jntr                23     6      0     ",
-      "19": "cursor_idx          3      0      0     ",
+      "19": "cursor_readi32      3      0      0     ",
       "20": "int                 5      -      0     # 10",
-      "21": "lt                  7      3      5     ",
+      "21": "ltii                7      3      5     ",
       "22": "jtr                 25     7      0     ",
       "23": "bool                2      0      0     ",
       "24": "jmp                 26     0      0     ",
@@ -1591,13 +1336,16 @@ explain select * from test where a > 1 and b < 1 and a < 10
       "29": "jmp                 31     0      0     ",
       "30": "bool                1      1      0     ",
       "31": "nop                 0      0      0     ",
-      "32": "jntr                35     1      0     ",
-      "33": "cursor_read         1      0      0     ",
-      "34": "set_add             0      1      0     ",
-      "35": "cursor_next         0      7      0     ",
-      "36": "cursor_close        0      0      0     ",
-      "37": "result              0      0      0     ",
-      "38": "ret                 0      0      0     "
+      "32": "jntr                38     1      0     ",
+      "33": "cursor_readi32      1      0      0     ",
+      "34": "push                1      0      0     ",
+      "35": "cursor_readi32      1      0      1     ",
+      "36": "push                1      0      0     ",
+      "37": "set_add             0      0      0     ",
+      "38": "cursor_next         0      7      0     ",
+      "39": "cursor_close        0      0      0     ",
+      "40": "result              0      0      0     ",
+      "41": "ret                 0      0      0     "
     }
   }
 }]
@@ -1618,32 +1366,35 @@ explain select * from test where a > 1 and b = 10
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 10",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 23     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 26     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "gt                  4      2      3     ",
+      "09": "gtii                4      2      3     ",
       "10": "jntr                15     4      0     ",
-      "11": "cursor_idx          2      0      1     ",
+      "11": "cursor_readi32      2      0      1     ",
       "12": "int                 3      -      0     # 10",
-      "13": "equ                 5      2      3     ",
+      "13": "equii               5      2      3     ",
       "14": "jtr                 17     5      0     ",
       "15": "bool                1      0      0     ",
       "16": "jmp                 18     0      0     ",
       "17": "bool                1      1      0     ",
       "18": "nop                 0      0      0     ",
-      "19": "jntr                22     1      0     ",
-      "20": "cursor_read         1      0      0     ",
-      "21": "set_add             0      1      0     ",
-      "22": "cursor_next         0      7      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "19": "jntr                25     1      0     ",
+      "20": "cursor_readi32      1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "cursor_readi32      1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "cursor_next         0      7      0     ",
+      "26": "cursor_close        0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
@@ -1664,24 +1415,24 @@ explain select * from test where a > 1 and b = 10 and b = 20
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 10",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 32     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 35     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "gt                  4      2      3     ",
+      "09": "gtii                4      2      3     ",
       "10": "jntr                24     4      0     ",
-      "11": "cursor_idx          3      0      1     ",
+      "11": "cursor_readi32      3      0      1     ",
       "12": "int                 5      -      0     # 10",
-      "13": "equ                 6      3      5     ",
+      "13": "equii               6      3      5     ",
       "14": "jntr                19     6      0     ",
-      "15": "cursor_idx          3      0      1     ",
+      "15": "cursor_readi32      3      0      1     ",
       "16": "int                 5      -      0     # 20",
-      "17": "equ                 7      3      5     ",
+      "17": "equii               7      3      5     ",
       "18": "jtr                 21     7      0     ",
       "19": "bool                2      0      0     ",
       "20": "jmp                 22     0      0     ",
@@ -1692,13 +1443,16 @@ explain select * from test where a > 1 and b = 10 and b = 20
       "25": "jmp                 27     0      0     ",
       "26": "bool                1      1      0     ",
       "27": "nop                 0      0      0     ",
-      "28": "jntr                31     1      0     ",
-      "29": "cursor_read         1      0      0     ",
-      "30": "set_add             0      1      0     ",
-      "31": "cursor_next         0      7      0     ",
-      "32": "cursor_close        0      0      0     ",
-      "33": "result              0      0      0     ",
-      "34": "ret                 0      0      0     "
+      "28": "jntr                34     1      0     ",
+      "29": "cursor_readi32      1      0      0     ",
+      "30": "push                1      0      0     ",
+      "31": "cursor_readi32      1      0      1     ",
+      "32": "push                1      0      0     ",
+      "33": "set_add             0      0      0     ",
+      "34": "cursor_next         0      7      0     ",
+      "35": "cursor_close        0      0      0     ",
+      "36": "result              0      0      0     ",
+      "37": "ret                 0      0      0     "
     }
   }
 }]
@@ -1719,24 +1473,24 @@ explain select * from test where a > 1 and b = 10 and a = 20
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 20",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 10",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary, lookup)",
-      "06": "jmp                 32     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 35     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "gt                  4      2      3     ",
+      "09": "gtii                4      2      3     ",
       "10": "jntr                24     4      0     ",
-      "11": "cursor_idx          3      0      1     ",
+      "11": "cursor_readi32      3      0      1     ",
       "12": "int                 5      -      0     # 10",
-      "13": "equ                 6      3      5     ",
+      "13": "equii               6      3      5     ",
       "14": "jntr                19     6      0     ",
-      "15": "cursor_idx          3      0      0     ",
+      "15": "cursor_readi32      3      0      0     ",
       "16": "int                 5      -      0     # 20",
-      "17": "equ                 7      3      5     ",
+      "17": "equii               7      3      5     ",
       "18": "jtr                 21     7      0     ",
       "19": "bool                2      0      0     ",
       "20": "jmp                 22     0      0     ",
@@ -1748,12 +1502,15 @@ explain select * from test where a > 1 and b = 10 and a = 20
       "26": "bool                1      1      0     ",
       "27": "nop                 0      0      0     ",
       "28": "jntr                6      1      0     ",
-      "29": "cursor_read         1      0      0     ",
-      "30": "set_add             0      1      0     ",
-      "31": "jmp                 6      0      0     ",
-      "32": "cursor_close        0      0      0     ",
-      "33": "result              0      0      0     ",
-      "34": "ret                 0      0      0     "
+      "29": "cursor_readi32      1      0      0     ",
+      "30": "push                1      0      0     ",
+      "31": "cursor_readi32      1      0      1     ",
+      "32": "push                1      0      0     ",
+      "33": "set_add             0      0      0     ",
+      "34": "jmp                 6      0      0     ",
+      "35": "cursor_close        0      0      0     ",
+      "36": "result              0      0      0     ",
+      "37": "ret                 0      0      0     "
     }
   }
 }]
@@ -1774,32 +1531,35 @@ explain select * from test where a = 1 and b = 10
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 10",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary, lookup)",
-      "06": "jmp                 23     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 26     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "equ                 4      2      3     ",
+      "09": "equii               4      2      3     ",
       "10": "jntr                15     4      0     ",
-      "11": "cursor_idx          2      0      1     ",
+      "11": "cursor_readi32      2      0      1     ",
       "12": "int                 3      -      0     # 10",
-      "13": "equ                 5      2      3     ",
+      "13": "equii               5      2      3     ",
       "14": "jtr                 17     5      0     ",
       "15": "bool                1      0      0     ",
       "16": "jmp                 18     0      0     ",
       "17": "bool                1      1      0     ",
       "18": "nop                 0      0      0     ",
       "19": "jntr                6      1      0     ",
-      "20": "cursor_read         1      0      0     ",
-      "21": "set_add             0      1      0     ",
-      "22": "jmp                 6      0      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "20": "cursor_readi32      1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "cursor_readi32      1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "jmp                 6      0      0     ",
+      "26": "cursor_close        0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
@@ -1820,32 +1580,35 @@ explain select * from test where a = 1 and b > 1
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "push                1      0      0     ",
       "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 23     0      0     ",
-      "07": "cursor_idx          2      0      0     ",
+      "06": "jmp                 26     0      0     ",
+      "07": "cursor_readi32      2      0      0     ",
       "08": "int                 3      -      0     # 1",
-      "09": "equ                 4      2      3     ",
+      "09": "equii               4      2      3     ",
       "10": "jntr                15     4      0     ",
-      "11": "cursor_idx          2      0      1     ",
+      "11": "cursor_readi32      2      0      1     ",
       "12": "int                 3      -      0     # 1",
-      "13": "gt                  5      2      3     ",
+      "13": "gtii                5      2      3     ",
       "14": "jtr                 17     5      0     ",
       "15": "bool                1      0      0     ",
       "16": "jmp                 18     0      0     ",
       "17": "bool                1      1      0     ",
       "18": "nop                 0      0      0     ",
-      "19": "jntr                22     1      0     ",
-      "20": "cursor_read         1      0      0     ",
-      "21": "set_add             0      1      0     ",
-      "22": "cursor_next         0      7      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "19": "jntr                25     1      0     ",
+      "20": "cursor_readi32      1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "cursor_readi32      1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "cursor_next         0      7      0     ",
+      "26": "cursor_close        0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
@@ -1869,34 +1632,37 @@ explain select * from test where id between 1 and 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 25     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "04": "jmp                 28     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
       "06": "int                 2      -      0     # 2",
-      "07": "lte                 3      1      2     ",
+      "07": "lteii               3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 1",
-      "11": "gte                 4      2      3     ",
+      "11": "gteii               4      2      3     ",
       "12": "jntr                17     4      0     ",
-      "13": "cursor_idx          2      0      0     ",
+      "13": "cursor_readi32      2      0      0     ",
       "14": "int                 3      -      0     # 2",
-      "15": "lte                 5      2      3     ",
+      "15": "lteii               5      2      3     ",
       "16": "jtr                 19     5      0     ",
       "17": "bool                1      0      0     ",
       "18": "jmp                 20     0      0     ",
       "19": "bool                1      1      0     ",
       "20": "nop                 0      0      0     ",
-      "21": "jntr                24     1      0     ",
-      "22": "cursor_read         1      0      0     ",
-      "23": "set_add             0      1      0     ",
-      "24": "cursor_next         0      5      0     ",
-      "25": "cursor_close        0      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "21": "jntr                27     1      0     ",
+      "22": "cursor_readi32      1      0      0     ",
+      "23": "push                1      0      0     ",
+      "24": "cursor_readi32      1      0      1     ",
+      "25": "push                1      0      0     ",
+      "26": "set_add             0      0      0     ",
+      "27": "cursor_next         0      5      0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "result              0      0      0     ",
+      "30": "ret                 0      0      0     "
     }
   }
 }]
@@ -1916,30 +1682,33 @@ explain select * from test where data between 1 and 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 21     0      0     ",
-      "05": "cursor_idx          2      0      1     ",
+      "04": "jmp                 24     0      0     ",
+      "05": "cursor_readi32      2      0      1     ",
       "06": "int                 3      -      0     # 1",
-      "07": "gte                 4      2      3     ",
+      "07": "gteii               4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      1     ",
+      "09": "cursor_readi32      2      0      1     ",
       "10": "int                 3      -      0     # 2",
-      "11": "lte                 5      2      3     ",
+      "11": "lteii               5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
-      "17": "jntr                20     1      0     ",
-      "18": "cursor_read         1      0      0     ",
-      "19": "set_add             0      1      0     ",
-      "20": "cursor_next         0      5      0     ",
-      "21": "cursor_close        0      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "17": "jntr                23     1      0     ",
+      "18": "cursor_readi32      1      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "cursor_readi32      1      0      1     ",
+      "21": "push                1      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "cursor_next         0      5      0     ",
+      "24": "cursor_close        0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -1960,31 +1729,34 @@ explain select * from test where id not between 1 and 2
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 22     0      0     ",
-      "05": "cursor_idx          2      0      0     ",
+      "04": "jmp                 25     0      0     ",
+      "05": "cursor_readi32      2      0      0     ",
       "06": "int                 3      -      0     # 1",
-      "07": "gte                 4      2      3     ",
+      "07": "gteii               4      2      3     ",
       "08": "jntr                13     4      0     ",
-      "09": "cursor_idx          2      0      0     ",
+      "09": "cursor_readi32      2      0      0     ",
       "10": "int                 3      -      0     # 2",
-      "11": "lte                 5      2      3     ",
+      "11": "lteii               5      2      3     ",
       "12": "jtr                 15     5      0     ",
       "13": "bool                1      0      0     ",
       "14": "jmp                 16     0      0     ",
       "15": "bool                1      1      0     ",
       "16": "nop                 0      0      0     ",
       "17": "not                 2      1      0     ",
-      "18": "jntr                21     2      0     ",
-      "19": "cursor_read         1      0      0     ",
-      "20": "set_add             0      1      0     ",
-      "21": "cursor_next         0      5      0     ",
-      "22": "cursor_close        0      0      0     ",
-      "23": "result              0      0      0     ",
-      "24": "ret                 0      0      0     "
+      "18": "jntr                24     2      0     ",
+      "19": "cursor_readi32      1      0      0     ",
+      "20": "push                1      0      0     ",
+      "21": "cursor_readi32      1      0      1     ",
+      "22": "push                1      0      0     ",
+      "23": "set_add             0      0      0     ",
+      "24": "cursor_next         0      5      0     ",
+      "25": "cursor_close        0      0      0     ",
+      "26": "result              0      0      0     ",
+      "27": "ret                 0      0      0     "
     }
   }
 }]

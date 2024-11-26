@@ -278,7 +278,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
       "04": "cursor_readi32      0      0      1     ",
       "05": "excluded            1      0      2     ",
       "06": "string              2      0      0     # id",
-      "07": "idxjs               3      1      2     ",
+      "07": "dotjs               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "call                1      -      1     # public.int()",
       "10": "addii               2      0      1     ",

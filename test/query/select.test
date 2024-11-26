@@ -22,133 +22,32 @@ select [1, 2]
 select {}
 select null
 select null, null
-
 explain select 1
 explain select [1, 2, 3]
 
 # test: select name
 select name
 select name.name
+select name.name.name
 
-# test: select star
+# test: select *
 select *
-select **
+select *, *
 
-# test: select from expr
-select * from 1
-select * from 3.14
-select * from null
-select * from "test"
-select * from []
-
-# test: select from []
-select * from []
-select * from [null]
-select * from [1]
-select * from [1, 2]
-select * from [1, 2, 3]
-select *, *, * from [1, 2, 3]
-select ** from [1, 2, 3]
-explain select * from [1, 2, 3]
-select * from [1, [2, [3]]]
-
-select test.* from ([{"id": 1}, {"id": 2}, {"id": 3}]) test
-select (select **, * from test.*) from ([{"id": 1}, {"id": 2}, {"id": 3}]) test
-
-# test: select from {}
-select * from {}
-select * from {"a": 1}
-select * from {"a": 1, "b": 2}
-select * from {"a": 1, "b": 2, "c": 3}
-explain select * from {"a": 1, "b": 2, "c": 3}
-select **, * from {"a": 1, "b": 2, "c": 3}
-select **, * from {"a": 1, "b": {"c": 3}}
-select *, * from {"a": 1, "b": 2, "c": 3}
-
-# test: select from function
-select ** from system.config()
-
-# test: select from function #2
-create table test (id int primary key serial)
-select * from system.tables().'public.test'.indexes[0].keys
-drop table test
-
-# test: select from expr alias
-select * from [1, 2, 3] list
-select list.* from [1, 2, 3] list
-select list.** from [1, 2, 3] list
-
-select * from {"a": 1, "b": 2, "c": 3} list
-select list.* from {"a": 1, "b": 2, "c": 3} list
-select list.* from ({"a": 1, "b": 2, "c": 3}) list
-select list.** from ({"a": 1, "b": 2, "c": 3}) list
-
-# test: select from expr alias reuse
-select * from [1, 2, 3] list, [3,2,1] list
-
-# test: select from view expr
-create view test as select 123
-select * from test
-drop view test
-
-create view test as select [1,2,3]
-explain select * from test
-select * from test
-drop view test
-
-# test: select from view expr #2
-create view test as select {"a": 1, "b": 2, "c": 3}
-explain select * from test
-select **, * from test
-drop view test
-
-# test: select from view expr alias
-create view test as select {"a": 1, "b": 2, "c": 3}
-select list.**, list.* from test list
-drop view test
-
-# test: select from view expr alias #2
-create schema test
-create view test.test as select {"a": 1, "b": 2, "c": 3}
-select list.**, list.* from test.test list
-drop schema test cascade
-
-# test: select from view set
-create view test as select * from [1,2,3]
-explain select * from test
-select * from test
-drop view test
-
-# test: select from view set #2
-create view test as select * from {"a": 1, "b": 2, "c": 3}
-explain select * from test list
-select * from test list
-select list.* from test list
-select ** from test list
-drop view test
-
-# test: select from view set #3
-create view test as select list.* from {"a": 1, "b": 2, "c": 3} list
-select * from test list
-select list2.* from test list2
-select list2.** from test list2
-drop view test
-
-# test: select from view function
-create view test as select * from system.views()
-select * from test
-select (select ** from test.*) from test
-explain select (select ** from test.*) from test
-drop view test
-
-# test: select star from table
+# test: select * from table
 create table test (id int primary key serial)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
 explain select * from test
 select * from test
+
+# test: select *, * from table
+select *, * from test
+
+# test: select target.* from table
 select test.* from test
+select test.*, *, test.* from test
 drop table test
 
 # test: select column from table
@@ -162,7 +61,7 @@ select id, data from test
 drop table test
 
 # test: select column.path from table
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -172,7 +71,7 @@ select data.data from test
 drop table test
 
 # test: select column.path from table #2
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -191,12 +90,14 @@ select test.id, test.data from test
 drop table test
 
 # test: select target.column.path from table
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 explain select test.data.data from test
 select test.data.data from test
+select test.data.data, * from test
+select test.data.data, *, test.* from test
 drop table test
 
 # test: select alias.column from table
@@ -210,27 +111,23 @@ select alias.id, alias.data from test alias
 drop table test
 
 # test: select alias.column.path from table
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 explain select alias.data.data from test alias
 select alias.data.data from test alias
+select alias.data['data'] from test alias
 drop table test
 
-# test: select from schemaless table
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
+# test: select alias.* from table
+create table test (id int primary key serial, data int default 0)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
 select * from test
-select obj from test
-explain select obj.id from test
-select obj.id from test
-select obj.data from test
-select (select * from test.*) from test
-explain select (select **, * from test.*[0]) from test
-select (select **, * from test.*[0]) from test
+explain select alias.id, alias.data from test alias
+select alias.id, alias.* from test alias
 drop table test
 
 disconnect S0

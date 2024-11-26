@@ -16,24 +16,6 @@ explain select * from test where id >= 1
 select * from test where id >= 1
 drop table test
 
-# test: key column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test where obj.id > 1
-select * from test where obj.id > 1
-drop table test
-
-# test: key column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test where obj.data.id > 1
-select * from test where obj.data.id > 1
-drop table test
-
 # test: key target.column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
@@ -41,47 +23,11 @@ explain select * from test where test.id > 1
 select * from test where test.id > 1
 drop table test
 
-# test: key target.column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test where test.obj.id > 1
-select * from test where test.obj.id > 1
-drop table test
-
-# test: key target.column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test where test.obj.data.id > 1
-select * from test where test.obj.data.id > 1
-drop table test
-
 # test: key alias.column
 create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 explain select * from test alias where alias.id > 1
 select * from test alias where alias.id > 1
-drop table test
-
-# test: key alias.column.path
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-explain select * from test alias where alias.obj.id > 1
-select * from test alias where alias.obj.id > 1
-drop table test
-
-# test: key alias.column.path.path
-create table test (obj object, primary key(obj.data.id int))
-insert into test {"data": {"id": 1}}
-insert into test {"data": {"id": 2}}
-insert into test {"data": {"id": 3}}
-explain select * from test alias where alias.obj.data.id > 1
-select * from test alias where alias.obj.data.id > 1
 drop table test
 
 # test: key column type mismatch

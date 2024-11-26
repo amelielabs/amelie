@@ -185,7 +185,7 @@ explain update test set data = {"id": data.id::int + 1}
       "07": "push                0      0      0     ",
       "08": "cursor_readj        0      0      1     ",
       "09": "string              1      23     0     # id",
-      "10": "idxjs               2      0      1     ",
+      "10": "dotjs               2      0      1     ",
       "11": "push                2      0      0     ",
       "12": "call                0      -      1     # public.int()",
       "13": "int                 1      -      0     # 1",
