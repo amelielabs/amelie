@@ -112,8 +112,7 @@ priority_map[KEYWORD_MAX] =
 	[KARGID]                   = priority_value,
 	[KCTEID]                   = priority_value,
 	[KNAME]                    = priority_value,
-	[KNAME_COMPOUND]           = priority_value,
-	[KNAME_COMPOUND_STAR]      = priority_value
+	[KNAME_COMPOUND]           = priority_value
 };
 
 hot static inline void
@@ -607,9 +606,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			value = expr_call(self, expr, value, true);
 		break;
 	}
-
-	case KNAME_COMPOUND_STAR:
-		break;
 
 	default:
 		abort();

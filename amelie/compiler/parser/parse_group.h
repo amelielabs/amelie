@@ -15,9 +15,10 @@ typedef struct AstGroup AstGroup;
 
 struct AstGroup
 {
-	Ast  ast;
-	int  order;
-	Ast* expr;
+	Ast     ast;
+	int     order;
+	Ast*    expr;
+	Column* column;
 };
 
 static inline AstGroup*
@@ -31,7 +32,8 @@ ast_group_allocate(int order, Ast* expr)
 {
 	AstGroup* self;
 	self = ast_allocate(0, sizeof(AstGroup));
-	self->order = order;
-	self->expr  = expr;
+	self->order  = order;
+	self->expr   = expr;
+	self->column = NULL;
 	return self;
 }

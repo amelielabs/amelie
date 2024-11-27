@@ -81,9 +81,6 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	(void)select;
-	(void)self;;
-#if 0
 	// create a list of aggs based on type
 	int  aggs_offset = code_data_pos(&self->code_data);
 	int* aggs = buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
@@ -91,13 +88,14 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 
 	// push aggs
 	auto node = select->expr_aggs.list;
-	while (node)
+	for (; node; node = node->next)
 	{
 		auto agg = ast_agg_of(node->ast);
 
 		// expr
 		auto rexpr = emit_expr(self, select->target, agg->expr);
 		auto rt = rtype(self, rexpr);
+		column_set_type(agg->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
@@ -143,76 +141,24 @@ emit_select_on_match_group_target(Compiler* self, void* arg)
 			break;
 		}
 		aggs[agg->order] = agg->id;
-
-		// add group target column
-		auto column = column_allocate();
-		auto name_sz = palloc(8);
-		snprintf(name_sz, 8, "agg%d", agg->order + 1);
-		Str name;
-		str_set_cstr(&name, name_sz);
-		column_set_name(column, &name);
-		column_set_type(column, rt, type_sizeof(rt));
-		columns_add(&select->columns_group, column);
-
-		node = node->next;
 	}
 
 	// push group by keys
 	node = select->expr_group_by.list;
-	while (node)
+	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
 
 		// expr
 		auto rexpr = emit_expr(self, select->target, group->expr);
 		auto rt = rtype(self, rexpr);
+		column_set_type(group->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-
-		// add group target key column
-		auto column = column_allocate();
-
-		// resolve column
-		if (group->expr->id == KNAME)
-		{
-			// find column in the target
-			auto target = select->target;
-			auto name = &group->expr->string;
-			bool conflict = false;
-			auto ref  = columns_find_noconflict(target->from_columns, name, &conflict);
-			if (! ref)
-			{
-				if (conflict)
-					error("<%.*s.%.*s> column name is ambiguous",
-					      str_size(&target->name), str_of(&target->name),
-					      str_size(name), str_of(name));
-				else
-					error("<%.*s.%.*s> column not found",
-					      str_size(&target->name), str_of(&target->name),
-					      str_size(name), str_of(name));
-			}
-
-			// copy column name and type
-			column_set_name(column, &ref->name);
-			column_set_type(column, ref->type, type_sizeof(ref->type));
-		} else
-		{
-			// generate name
-			auto name_sz = palloc(8);
-			snprintf(name_sz, 8, "_key%d", group->order + 1);
-			Str name;
-			str_set_cstr(&name, name_sz);
-			column_set_name(column, &name);
-			column_set_type(column, rt, type_sizeof(rt));
-		}
-		columns_add(&select->columns_group, column);
-
-		node = node->next;
 	}
 
 	// CSET_AGG
 	op2(self, CSET_AGG, select->rset_agg, aggs_offset);
-#endif
 }
 
 void
@@ -224,7 +170,10 @@ emit_select_on_match_group_target_empty(Compiler* self, AstSelect* select)
 	auto node = select->expr_aggs.list;
 	while (node)
 	{
+		auto agg = ast_agg_of(node->ast);
 		auto rexpr = op1(self, CNULL, rpin(self, TYPE_NULL));
+		auto rt = rtype(self, rexpr);
+		column_set_type(agg->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 		node = node->next;
@@ -236,6 +185,8 @@ emit_select_on_match_group_target_empty(Compiler* self, AstSelect* select)
 	{
 		auto group = ast_group_of(node->ast);
 		auto rexpr = emit_expr(self, select->target, group->expr);
+		auto rt = rtype(self, rexpr);
+		column_set_type(group->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 		node = node->next;
@@ -252,7 +203,12 @@ emit_select_on_match_group(Compiler* self, void* arg)
 
 	// add to the set
 	ScanFunction on_match = select->on_match;	
+
+	// switch to group by target to redirect names from the primary target
+	// to group by target
+	select->target->redirect = select->target_group;
 	on_match(self, arg);
+	select->target->redirect = NULL;
 }
 
 int

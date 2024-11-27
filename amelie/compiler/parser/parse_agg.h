@@ -15,13 +15,14 @@ typedef struct AstAgg AstAgg;
 
 struct AstAgg
 {
-	Ast  ast;
-	int  id;
-	int  order;
-	Ast* function;
-	Ast* expr;
-	Ast* expr_init;
-	Ast* name;
+	Ast     ast;
+	int     id;
+	int     order;
+	Ast*    function;
+	Ast*    expr;
+	Ast*    expr_init;
+	Ast*    name;
+	Column* column;
 };
 
 static inline AstAgg*
@@ -41,6 +42,7 @@ ast_agg_allocate(Ast* function, int order, Ast* expr, Ast* expr_init)
 	self->expr      = expr;
 	self->expr_init = expr_init;
 	self->name      = NULL;
+	self->column    = NULL;
 	return self;
 }
 

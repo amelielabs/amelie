@@ -121,6 +121,7 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto select = ast_select_of(ref->ast);
 		returning_free(&select->ret);
+		columns_free(&select->target_group_columns);
 	}
 }
 

@@ -216,11 +216,13 @@ parse_select(Stmt* self)
 		// create group by target to scan agg set
 		auto target = target_allocate();
 		target->type = TARGET_SELECT;
+		target->name = select->target->name;
+		target->from_columns = &select->target_group_columns;
 		target_list_add(&self->target_list, target, level, 0);
 		select->target_group = target;
-		// [aggs, group_by_keys]
 
-		// group by target columns will be set during compile
+		// group by target columns will be created
+		// during resolve
 	}
 
 	return select;
@@ -237,6 +239,73 @@ parse_select_expr(Stmt* self)
 	parse_returning(&select->ret, self, &ctx);
 	parse_returning_resolve(&select->ret, self, NULL);
 	return select;
+}
+
+static void
+parse_select_resolve_group_by(AstSelect* select)
+{
+	// create columns for the group by target, actual column
+	// types will be set during emit
+	//
+	// [aggs, group_by_keys]
+	//
+
+	// add columns for aggs
+	auto node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+
+		// add group target column
+		auto column = column_allocate();
+		auto name_sz = palloc(8);
+		snprintf(name_sz, 8, "_agg%d", agg->order + 1);
+		Str name;
+		str_set_cstr(&name, name_sz);
+		column_set_name(column, &name);
+		columns_add(&select->target_group_columns, column);
+		agg->column = column;
+	}
+
+	// add columns for keys
+	node = select->expr_group_by.list;
+	for (; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+
+		// find column in the target
+		Str name;
+		if (group->expr->id == KNAME)
+		{
+			auto target = select->target;
+			auto column = &group->expr->string;
+			bool conflict = false;
+			auto ref = columns_find_noconflict(target->from_columns, column, &conflict);
+			if (! ref)
+			{
+				if (conflict)
+					error("<%.*s.%.*s> column name is ambiguous",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(column), str_of(column));
+				else
+					error("<%.*s.%.*s> column not found",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(column), str_of(column));
+			}
+			name = *column;
+		} else
+		{
+			// generate name
+			auto name_sz = palloc(8);
+			snprintf(name_sz, 8, "_key%d", group->order + 1);
+			str_set_cstr(&name, name_sz);
+		}
+
+		auto column = column_allocate();
+		column_set_name(column, &name);
+		columns_add(&select->target_group_columns, column);
+		group->column = column;
+	}
 }
 
 void
@@ -260,5 +329,9 @@ parse_select_resolve(Stmt* self)
 				ast_list_add(&select->expr_order_by, &order->ast);
 			}
 		}
+
+		// create group by keys
+		if (select->target_group)
+			parse_select_resolve_group_by(select);
 	}
 }

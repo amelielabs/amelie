@@ -127,7 +127,6 @@ merge_iterator_next(MergeIterator* self)
 	}
 
 	// skip duplicates
-	auto set = self->current_it->set;
 	auto prev = self->current;
 	for (;;)
 	{
@@ -135,7 +134,7 @@ merge_iterator_next(MergeIterator* self)
 		auto at = merge_iterator_at(self);
 		if (unlikely(!at || !prev))
 			break;
-		if (set_compare(set, prev, at) != 0)
+		if (set_compare(self->current_it->set, prev, at) != 0)
 			break;
 	}
 }

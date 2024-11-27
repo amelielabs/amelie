@@ -54,6 +54,7 @@ struct Target
 	TargetJoin   join;
 	Ast*         join_on;
 	// link
+	Target*      redirect;
 	Target*      outer;
 	Target*      next_join;
 	Target*      next;
@@ -77,6 +78,7 @@ target_allocate(void)
 	self->path             = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
+	self->redirect         = NULL;
 	self->outer            = NULL;
 	self->next_join        = NULL;
 	self->next             = NULL;

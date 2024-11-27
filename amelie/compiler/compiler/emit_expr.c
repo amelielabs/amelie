@@ -69,19 +69,33 @@ emit_json(Compiler* self, Target* target, Ast* ast, int op)
 hot static inline int
 emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 {
+	// redirect to group by target
+	auto target_origin = target;
+	if (target->redirect)
+		target = target->redirect;
+
 	// find unique column name in the target
 	bool conflict = false;
 	auto column = columns_find_noconflict(target->from_columns, name, &conflict);
 	if (! column)
 	{
 		if (conflict)
+		{
 			error("<%.*s.%.*s> column name is ambiguous",
 			      str_size(&target->name), str_of(&target->name),
 			      str_size(name), str_of(name));
-		else
-			error("<%.*s.%.*s> column not found",
-			      str_size(&target->name), str_of(&target->name),
-			      str_size(name), str_of(name));
+		} else
+		{
+			if (target_origin == target)
+				error("<%.*s.%.*s> column not found",
+				      str_size(&target->name), str_of(&target->name),
+				      str_size(name), str_of(name));
+			else
+				error("<%.*s.%.*s> column must appear in the GROUP BY clause "
+				      "or be used in an aggregate function",
+				      str_size(&target->name), str_of(&target->name),
+				      str_size(name), str_of(name));
+		}
 	}
 
 	// read excluded column
@@ -271,6 +285,14 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 {
 	// SELECT aggr GROUP BY
 	// SELECT GROUP BY HAVING aggr
+
+	// called during group by result set scan
+	//
+	// redirect to the group by target
+	//
+	assert(target->redirect);
+	target = target->redirect;
+
 	assert(target->r != -1);
 	assert(rtype(self, target->r) == TYPE_SET);
 

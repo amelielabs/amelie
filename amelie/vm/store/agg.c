@@ -152,109 +152,106 @@ agg_write(Set* self, Value* row, int* aggs)
 	// process aggregates values
 	for (int col = 0; col < self->count_columns; col++)
 	{
-		for (int col = 0; col < self->count_columns; col++)
-		{
-			if (row[col].type == TYPE_NULL)
-				continue;
+		if (row[col].type == TYPE_NULL)
+			continue;
 
-			switch (aggs[col]) {
-			case AGG_INT_COUNT:
+		switch (aggs[col]) {
+		case AGG_INT_COUNT:
+		{
+			if (likely(src[col].type == TYPE_INT))
+				src[col].integer++;
+			else
+				value_set_int(&src[col], 1);
+			break;
+		}
+		case AGG_INT_MIN:
+		{
+			int64_t value = agg_int_of(row, col, "min");
+			if (likely(src[col].type == TYPE_INT))
 			{
-				if (likely(src[col].type == TYPE_INT))
-					src[col].integer++;
-				else
-					value_set_int(&src[col], 1);
-				break;
+				if (value < src[col].integer)
+					src[col].integer = value;
+			} else {
+				value_set_int(&src[col], value);
 			}
-			case AGG_INT_MIN:
+			break;
+		}
+		case AGG_INT_MAX:
+		{
+			int64_t value = agg_int_of(row, col, "max");
+			if (likely(src[col].type == TYPE_INT))
 			{
-				int64_t value = agg_int_of(row, col, "min");
-				if (likely(src[col].type == TYPE_INT))
-				{
-					if (value < src[col].integer)
-						src[col].integer = value;
-				} else {
-					value_set_int(&src[col], value);
-				}
-				break;
+				if (value > src[col].integer)
+					src[col].integer = value;
+			} else {
+				value_set_int(&src[col], value);
 			}
-			case AGG_INT_MAX:
+			break;
+		}
+		case AGG_INT_SUM:
+		{
+			int64_t value = agg_int_of(row, col, "sum");
+			if (likely(src[col].type == TYPE_INT))
+				src[col].integer += value;
+			else
+				value_set_int(&src[col], value);
+			break;
+		}
+		case AGG_INT_AVG:
+		{
+			int64_t value = agg_int_of(row, col, "avg");
+			if (unlikely(src[col].type == TYPE_NULL))
 			{
-				int64_t value = agg_int_of(row, col, "max");
-				if (likely(src[col].type == TYPE_INT))
-				{
-					if (value > src[col].integer)
-						src[col].integer = value;
-				} else {
-					value_set_int(&src[col], value);
-				}
-				break;
+				src[col].type = TYPE_AVG;
+				avg_init(&src[col].avg);
 			}
-			case AGG_INT_SUM:
+			avg_add_int(&src[col].avg, value, 1);
+			break;
+		}
+		case AGG_DOUBLE_MIN:
+		{
+			double value = agg_double_of(row, col, "min");
+			if (likely(src[col].type == TYPE_DOUBLE))
 			{
-				int64_t value = agg_int_of(row, col, "sum");
-				if (likely(src[col].type == TYPE_INT))
-					src[col].integer += value;
-				else
-					value_set_int(&src[col], value);
-				break;
+				if (value < src[col].dbl)
+					src[col].dbl = value;
+			} else {
+				value_set_double(&src[col], value);
 			}
-			case AGG_INT_AVG:
+			break;
+		}
+		case AGG_DOUBLE_MAX:
+		{
+			double value = agg_double_of(row, col, "max");
+			if (likely(src[col].type == TYPE_DOUBLE))
 			{
-				int64_t value = agg_int_of(row, col, "avg");
-				if (unlikely(src[col].type == TYPE_NULL))
-				{
-					src[col].type = TYPE_AVG;
-					avg_init(&src[col].avg);
-				}
-				avg_add_int(&src[col].avg, value, 1);
-				break;
+				if (value > src[col].dbl)
+					src[col].dbl = value;
+			} else {
+				value_set_double(&src[col], value);
 			}
-			case AGG_DOUBLE_MIN:
+			break;
+		}
+		case AGG_DOUBLE_SUM:
+		{
+			double value = agg_double_of(row, col, "sum");
+			if (likely(src[col].type == TYPE_DOUBLE))
+				src[col].dbl += value;
+			else
+				value_set_double(&src[col], value);
+			break;
+		}
+		case AGG_DOUBLE_AVG:
+		{
+			double value = agg_int_of(row, col, "avg");
+			if (unlikely(src[col].type == TYPE_NULL))
 			{
-				double value = agg_double_of(row, col, "min");
-				if (likely(src[col].type == TYPE_DOUBLE))
-				{
-					if (value < src[col].dbl)
-						src[col].dbl = value;
-				} else {
-					value_set_double(&src[col], value);
-				}
-				break;
+				src[col].type = TYPE_AVG;
+				avg_init(&src[col].avg);
 			}
-			case AGG_DOUBLE_MAX:
-			{
-				double value = agg_double_of(row, col, "max");
-				if (likely(src[col].type == TYPE_DOUBLE))
-				{
-					if (value > src[col].dbl)
-						src[col].dbl = value;
-				} else {
-					value_set_double(&src[col], value);
-				}
-				break;
-			}
-			case AGG_DOUBLE_SUM:
-			{
-				double value = agg_double_of(row, col, "sum");
-				if (likely(src[col].type == TYPE_DOUBLE))
-					src[col].dbl += value;
-				else
-					value_set_double(&src[col], value);
-				break;
-			}
-			case AGG_DOUBLE_AVG:
-			{
-				double value = agg_int_of(row, col, "avg");
-				if (unlikely(src[col].type == TYPE_NULL))
-				{
-					src[col].type = TYPE_AVG;
-					avg_init(&src[col].avg);
-				}
-				avg_add_double(&src[col].avg, value, 1);
-				break;
-			}
-			}
+			avg_add_double(&src[col].avg, value, 1);
+			break;
+		}
 		}
 	}
 }

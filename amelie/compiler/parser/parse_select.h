@@ -29,6 +29,7 @@ struct AstSelect
 	bool      distinct_on;
 	Target*   target;
 	Target*   target_group;
+	Columns   target_group_columns;
 	void*     on_match;
 	int       rset;
 	int       rset_agg;
@@ -63,6 +64,7 @@ ast_select_allocate(void)
 	ast_list_init(&self->expr_aggs);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
+	columns_init(&self->target_group_columns);
 	return self;
 }
 

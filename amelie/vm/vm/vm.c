@@ -1426,7 +1426,7 @@ cagg:
 ccount:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(r[op->a].type == TYPE_INT))
+	if (likely(c->type == TYPE_INT))
 		value_set_int(&r[op->a], c->integer);
 	else
 		value_set_int(&r[op->a], 0);

@@ -255,7 +255,7 @@ set_match(Set* self, uint32_t hash_value, Value* keys)
 hot Value*
 set_get(Set* self, Value* keys, bool add_if_not_exists)
 {
-	if (unlikely(self->hash.hash))
+	if (unlikely(! self->hash.hash))
 		set_hash_create(&self->hash, 256);
 
 	if (unlikely(self->count_rows >= (self->hash.hash_size / 2)))
