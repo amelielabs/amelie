@@ -12,19 +12,14 @@ explain select true and true
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "bool                2      1      0     ",
-      "02": "jntr                5      2      0     ",
-      "03": "bool                3      1      0     ",
-      "04": "jtr                 7      3      0     ",
-      "05": "bool                1      0      0     ",
-      "06": "jmp                 8      0      0     ",
-      "07": "bool                1      1      0     ",
-      "08": "nop                 0      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "cte_set             0      0      0     ",
-      "12": "body                0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "01": "bool                1      1      0     ",
+      "02": "bool                2      1      0     ",
+      "03": "and                 3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -39,8 +34,12 @@ select true and 1.15
 select true and 0.15
 [true]
 # test: and null
+select null and null
+[null]
 select true and null
-[false]
+[null]
+select false and null
+[null]
 # test: or
 select or
 {"msg": "bad expression"}
@@ -57,25 +56,20 @@ explain select false or true
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "bool                2      0      0     ",
-      "02": "jntr                4      2      0     ",
-      "03": "jmp                 9      0      0     ",
-      "04": "bool                3      1      0     ",
-      "05": "jntr                7      3      0     ",
-      "06": "jmp                 9      0      0     ",
-      "07": "bool                1      0      0     ",
-      "08": "jmp                 10     0      0     ",
-      "09": "bool                1      1      0     ",
-      "10": "nop                 0      0      0     ",
-      "11": "push                1      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "cte_set             0      0      0     ",
-      "14": "body                0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "bool                1      0      0     ",
+      "02": "bool                2      1      0     ",
+      "03": "or                  3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "body                0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
 # test: or null
+select null or null
+[null]
 select true or null
 [true]
 select false or null

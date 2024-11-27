@@ -48,6 +48,8 @@ enum
 	CIS,
 
 	// logical (any)
+	CAND,
+	COR,
 	CNOT,
 
 	// bitwise operations

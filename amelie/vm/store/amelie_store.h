@@ -25,9 +25,10 @@
 // aggregate
 #include "store/agg.h"
 
-// any/all
+// any/all/in
 #include "store/any.h"
 #include "store/all.h"
+#include "store/in.h"
 
 // row
 #include "store/row.h"

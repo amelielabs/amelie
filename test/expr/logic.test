@@ -16,7 +16,9 @@ select true and 1.15
 select true and 0.15
 
 # test: and null
+select null and null
 select true and null
+select false and null
 
 # test: or
 select or
@@ -28,11 +30,9 @@ select false or true
 explain select false or true
 
 # test: or null
+select null or null
 select true or null
-# true
-
 select false or null
-# null
 
 # test: not
 select not true

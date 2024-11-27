@@ -67,6 +67,8 @@ OpDesc ops[] =
 	{ CIS, "is" },
 
 	// logical (any)
+	{ CAND, "and" },
+	{ COR, "or" },
 	{ CNOT, "not" },
 
 	// bitwise operations

@@ -319,147 +319,6 @@ emit_operator(Compiler* self, Target* target, Ast* ast, int op)
 	return cast_operator(self, op, l, r);
 }
 
-hot static inline int
-emit_and(Compiler* self, Target* target, Ast* ast)
-{
-	int rresult;
-	rresult = rpin(self, TYPE_BOOL);
-
-	// lexpr
-	// jntr _false
-
-	// rexpr
-	// jtr true
-
-	// _false
-		// set false
-		// jmp end
-
-	// true 
-		// set true
-
-	// _end
-		// nop
-
-	// lexpr
-	int rl;
-	rl = emit_expr(self, target, ast->l);
-
-	// jntr _false
-	int false_jmp = op_pos(self);
-	op2(self, CJNTR, 0 /* _false */, rl);
-
-	// rexpr
-	int rr;
-	rr = emit_expr(self, target, ast->r);
-
-	// jtr true
-	int true_jmp = op_pos(self);
-	op2(self, CJTR, 0 /* true */, rr);
-
-	// _false
-	int _false = op_pos(self);
-	op_set_jmp(self, false_jmp, _false);
-	op2(self, CBOOL, rresult, false);
-
-	// jmp _end
-	int end_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _end */);
-
-	// true
-	int rue = op_pos(self);
-	op_set_jmp(self, true_jmp, rue);
-	op2(self, CBOOL, rresult, true);
-
-	// _end
-	int _end = op_pos(self);
-	op_set_jmp(self, end_jmp, _end);
-	op0(self, CNOP);
-
-	runpin(self, rl);
-	runpin(self, rr);
-	return rresult;
-}
-
-hot static inline int
-emit_or(Compiler* self, Target* target, Ast* ast)
-{
-	int rresult;
-	rresult = rpin(self, TYPE_BOOL);
-
-	// lexpr
-		// jntr _next
-		// jmp true
-
-	// _next
-
-	// rexpr
-		// jntr _false
-		// jmp true
-
-	// _false
-		// set false
-		// jmp end
-
-	// true
-		// set true
-
-	// _end
-		// nop
-
-	// lexpr
-	int rl;
-	rl = emit_expr(self, target, ast->l);
-
-	// jntr _next
-	int next_jmp = op_pos(self);
-	op2(self, CJNTR, 0 /* _next */, rl);
-
-	// jmp true
-	int true_jmp0 = op_pos(self);
-	op1(self, CJMP, 0 /* true */);
-
-	// _next
-	int _next = op_pos(self);
-	op_set_jmp(self, next_jmp, _next);
-
-	// rexpr
-	int rr;
-	rr = emit_expr(self, target, ast->r);
-
-	// jntr _false
-	int false_jmp = op_pos(self);
-	op2(self, CJNTR, 0 /* _false */, rr);
-
-	// jmp true
-	int true_jmp1 = op_pos(self);
-	op1(self, CJMP, 0 /* true */);
-
-	// _false
-	int _false = op_pos(self);
-	op_set_jmp(self, false_jmp, _false);
-	op2(self, CBOOL, rresult, false);
-
-	// jmp end
-	int end_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _end */);
-
-	// true
-	int rue = op_pos(self);
-	op_set_jmp(self, true_jmp0, rue);
-	op_set_jmp(self, true_jmp1, rue);
-	op2(self, CBOOL, rresult, true);
-
-	// _end
-	int _end = op_pos(self);
-	op_set_jmp(self, end_jmp, _end);
-	op0(self, CNOP);
-
-	runpin(self, rl);
-	runpin(self, rr);
-	return rresult;
-}
-
 hot static inline void
 emit_call_typederive(Compiler* self, int r, int* type, bool* type_match)
 {
@@ -977,10 +836,18 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_operator(self, target, ast, OP_BSHR);
 
 	// logic
-	case KOR:
-		return emit_or(self, target, ast);
 	case KAND:
-		return emit_and(self, target, ast);
+	case KOR:
+	{
+		int l = emit_expr(self, target, ast->l);
+		int r = emit_expr(self, target, ast->r);
+		int rc;
+		rc = op3(self, ast->id == KAND? CAND: COR,
+		         rpin(self, TYPE_BOOL), l, r);
+		runpin(self, l);
+		runpin(self, r);
+		return rc;
+	}
 	case KNOT:
 	{
 		int r = emit_expr(self, target, ast->l);

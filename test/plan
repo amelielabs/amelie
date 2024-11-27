@@ -5,48 +5,48 @@
 #group runtime
 #test runtime
 
-## data types and expressions
-#directory expr
-#group expr
-#test null
-#test bool
-#test int
-#test double
-#test string
-#test json
-#test timestamp
-#test timestamp_timezone
-#test interval
-#test vector
-#test logic
-#test is
-#test method
-#test like
-#test between
-#test case
+# data types and expressions
+directory expr
+group expr
+test null
+test bool
+test int
+test double
+test string
+test json
+test timestamp
+test timestamp_timezone
+test interval
+test vector
+test logic
+test is
+test method
+test like
+test between
+test case
 
-## functions
-#directory functions
-#group functions
-#test fn_cast
-#test fn_json
-#test fn_string
-#test fn_regexp
-#test fn_misc
-#test fn_time
-#test fn_vector
-#test fn_math
-#test fn_null
-#test fn_system
+# functions
+directory functions
+group functions
+test fn_cast
+test fn_json
+test fn_string
+test fn_regexp
+test fn_misc
+test fn_time
+test fn_vector
+test fn_math
+test fn_null
+test fn_system
 
-## system
-#directory system
-#group system
-#test bootstrap
-#test set
-#test show
-#test user
-#test watch
+# system
+directory system
+group system
+test bootstrap
+test set
+test show
+test user
+test watch
 
 # ddl
 directory ddl
@@ -59,44 +59,35 @@ test index
 #test view
 test cascade
 
-## dml
-#directory dml
-#group dml
-#test insert
-#test update
-#test delete
-#test upsert
-#test truncate
+# dml
+directory dml
+group dml
+test insert
+test update
+test delete
+test upsert
+test truncate
 
-## generated
-#directory generated
-#group generated
-#test as_stored
-#test as_aggregated
+# generated
+directory generated
+group generated
+test as_stored
+test as_aggregated
 
-## index
-#directory index
-#group index
-#test tree_shared
-#test tree
-#test hash_shared
-#test hash
-
-## query
-#directory query
-#group query
-#test in
+# query
+directory query
+group query
+test select
+test where
+test scan
+test planner
+test subselect
+test as
+test order_by
+test exists
 #test any
 #test all
-#test exists
-#
-#test select
-#test where
-#test scan
-#test subselect
-#test order_by
-#test label
-#test planner
+#test in
 #test lambda
 #test limits
 
@@ -117,6 +108,14 @@ test cascade
 #test push_group_by_expr
 #test push_aggregate
 #test push_join
+
+## index
+#directory index
+#group index
+#test tree_shared
+#test tree
+#test hash_shared
+#test hash
 
 ## executor
 #directory executor

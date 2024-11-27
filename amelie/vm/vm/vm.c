@@ -149,6 +149,8 @@ vm_run(Vm*       self,
 		&&cis,
 
 		// logic
+		&&cand,
+		&&cor,
 		&&cnot,
 
 		// bitwise operations
@@ -480,6 +482,27 @@ cis:
 	// [a, b]
 	value_set_bool(&r[op->a], r[op->b].type == TYPE_NULL);
 	value_free(&r[op->b]);
+	op_next;
+
+cand:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		value_set_bool(&r[op->a], value_is_true(&r[op->b]) && value_is_true(&r[op->c]));
+		value_free(&r[op->b]);
+		value_free(&r[op->c]);
+	}
+	op_next;
+
+cor:
+	a = &r[op->a];
+	b = &r[op->b];
+	c = &r[op->c];
+	if (unlikely(b->type == TYPE_NULL && c->type == TYPE_NULL))
+		value_set_null(a);
+	else
+		value_set_bool(a, value_is_true(b) || value_is_true(c));
+	value_free(b);
+	value_free(c);
 	op_next;
 
 cnot:
