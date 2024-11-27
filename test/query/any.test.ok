@@ -1,28 +1,123 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
+# test: any parsing
+select any
+{"msg": "bad expression"}
+select any
+{"msg": "bad expression"}
+select = any
+{"msg": "bad expression"}
+select 1 = any
+{"msg": "ANY|ALL <(> expected"}
+select 1 = any (
+{"msg": "bad expression"}
+select 1 = any ()
+{"msg": "bad expression"}
+# test: = any ([])
+select 1 = any([])
+[false]
+select 1 = any([null])
+[null]
+select 1 = any([1])
+[true]
+select 1 = any([1, 2])
+[true]
+select 1 = any([1, 2, null])
+[true]
+select 0 = any([1, 2, null])
+[null]
+# test: >= any ([])
+select 1 >= any([1,2])
+[true]
+select 0 >= any([1,2])
+[false]
+select 1 >= any([1,2, null])
+[true]
+select 0 >= any([1,2, null])
+[null]
+# test: > any ([])
+select 1 > any([1,2])
+[false]
+select 0 > any([1,2])
+[false]
+select 1 > any([1,2, null])
+[null]
+select 0 > any([1,2, null])
+[null]
+select 3 > any([1,2])
+[true]
+select 3 > any([1,2, null])
+[true]
+# test: <= any ([])
+select 1 <= any([1,2])
+[true]
+select 0 <= any([1,2])
+[true]
+select 3 <= any([1,2])
+[false]
+select 1 <= any([1,2, null])
+[true]
+select 1 <= any([1,2, null])
+[true]
+# test: < any ([])
+select 1 < any([1,2])
+[true]
+select 0 < any([1,2])
+[true]
+select 3 < any([1,2])
+[false]
+select 1 < any([1,2, null])
+[true]
+select 3 < any([1,2, null])
+[null]
 # test: = any
-create shared table test (id int primary key)
+create shared table test (id int primary key, data int)
 select 1 = any(select id from test)
 [false]
-insert into test values (1)
+insert into test values (1, 1)
 select 1 = any(select id from test)
 [true]
-insert into test values (2)
+insert into test values (2, null)
 select 1 = any(select id from test)
 [true]
 select not (1 = any(select id from test))
 [false]
+select null = any(select id from test)
+[null]
+select 1 = any(select id from test)
+[true]
+select 3 = any(select id from test)
+[false]
+select 3 = any(select data from test)
+[null]
 # test: >= any
 select 1 >= any(select id from test)
 [true]
 select 0 >= any(select id from test)
 [false]
+select null >= any(select id from test)
+[null]
+select 1 >= any(select id from test)
+[true]
+select 3 >= any(select id from test)
+[true]
+select 0 >= any(select data from test)
+[null]
+# test: > any
 select 1 > any(select id from test)
 [false]
 select 0 > any(select id from test)
 [false]
 select 3 > any(select id from test)
 [true]
+select null > any(select id from test)
+[null]
+select 1 > any(select id from test)
+[false]
+select 3 > any(select id from test)
+[true]
+select 0 > any(select data from test)
+[null]
 # test: <= any
 select 1 <= any(select id from test)
 [true]
@@ -30,11 +125,28 @@ select 0 <= any(select id from test)
 [true]
 select 3 <= any(select id from test)
 [false]
+select null <= any(select id from test)
+[null]
+select 1 <= any(select id from test)
+[true]
+select 3 <= any(select id from test)
+[false]
+select 3 <= any(select data from test)
+[null]
+# test: < any
 select 1 < any(select id from test)
 [true]
 select 0 < any(select id from test)
 [true]
 select 3 < any(select id from test)
 [false]
+select null < any(select id from test)
+[null]
+select 1 < any(select id from test)
+[true]
+select 3 < any(select id from test)
+[false]
+select 3 < any(select data from test)
+[null]
 disconnect S0
 close E0

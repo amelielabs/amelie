@@ -25,5 +25,6 @@ select exists (select * from test)
 [true]
 select exists (select * from test where false)
 [false]
+drop table test
 disconnect S0
 close E0

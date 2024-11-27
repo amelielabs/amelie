@@ -11,34 +11,104 @@ select 1 = all
 select 1 = all (
 select 1 = all ()
 
+# test: = all ([])
+select 1 = all([])
+select 1 = all([null])
+select 1 = all([1])
+select 1 = all([1, 2])
+select 1 = all([1, 1])
+select 1 = all([1, 2, null])
+select 1 = all([1, 1, null])
+select 0 = all([1, 2, null])
+select 0 = all([1, 1, null])
+
+# test: >= all ([])
+select 1 >= all([1,2])
+select 0 >= all([1,2])
+select 1 >= all([1,2, null])
+select 0 >= all([1,2, null])
+select 3 >= all([1,2])
+select 3 >= all([1,2, null])
+
+# test: > all ([])
+select 1 > all([1,2])
+select 0 > all([1,2])
+select 1 > all([1,2, null])
+select 0 > all([1,2, null])
+select 3 > all([1,2])
+select 3 > all([1,2, null])
+
+# test: <= all ([])
+select 1 <= all([1,2])
+select 0 <= all([1,2])
+select 3 <= all([1,2])
+select 1 <= all([1,2, null])
+select 3 <= all([1,2, null])
+
+# test: < all ([])
+select 1 < all([1,2])
+select 0 < all([1,2])
+select 3 < all([1,2])
+select 1 < all([1,2, null])
+select 3 < all([1,2, null])
+
 # test: = all
-create shared table test (id int primary key)
+create shared table test (id int primary key, data int)
 select 1 = all(select id from test)
-insert into test values (1)
+insert into test values (1, 1)
 select 1 = all(select id from test)
-insert into test values (2)
+insert into test values (2, null)
 select 1 = all(select id from test)
 select not (1 = all(select id from test))
+
+select null = all(select id from test)
+select 1 = all(select id from test)
+select 3 = all(select id from test)
+select 3 = all(select data from test)
 
 # test: >= all
 select 1 >= all(select id from test)
 select 0 >= all(select id from test)
-select 3 >= all(select id from test)
 
-## test: > all
+select null >= all(select id from test)
+select 1 >= all(select id from test)
+select 3 >= all(select id from test)
+select 0 >= all(select data from test)
+select 3 >= all(select data from test)
+
+# test: > all
 select 1 > all(select id from test)
 select 0 > all(select id from test)
 select 3 > all(select id from test)
+
+select null > all(select id from test)
+select 1 > all(select id from test)
+select 3 > all(select id from test)
+select 0 > all(select data from test)
+select 3 > all(select data from test)
 
 # test: <= all
 select 1 <= all(select id from test)
 select 0 <= all(select id from test)
 select 3 <= all(select id from test)
 
-## test: < all
+select null <= all(select id from test)
+select 1 <= all(select id from test)
+select 3 <= all(select id from test)
+select 3 <= all(select data from test)
+select 0 <= all(select data from test)
+
+# test: < all
 select 1 < all(select id from test)
 select 0 < all(select id from test)
 select 3 < all(select id from test)
+select 0 < all(select data from test)
+
+select null < all(select id from test)
+select 1 < all(select id from test)
+select 0 < all(select id from test)
+select 3 < all(select data from test)
+select 0 < all(select data from test)
 
 disconnect S0
 close E0

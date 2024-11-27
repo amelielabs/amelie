@@ -20,6 +20,7 @@ create shared table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0)
 select exists (select * from test)
 select exists (select * from test where false)
+drop table test
 
 disconnect S0
 close E0
