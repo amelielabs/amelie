@@ -1088,19 +1088,9 @@ clikess:
 	op_next;
 
 cin:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-	{
-		// todo
-		/*
-		a = &r[op->a];
-		b = &r[op->b];
-		c = &r[op->c];
-		value_set_bool(a, b->type == TYPE_SET ? store_in(b->store, a) :
-		               !value_compare(a, b));
-		value_free(b);
-		value_free(c);
-		*/
-	}
+	// [result, value, count]
+	value_in(&r[op->a], &r[op->b], stack_at(stack, op->c), op->c);
+	stack_popn(stack, op->c);
 	op_next;
 
 call:

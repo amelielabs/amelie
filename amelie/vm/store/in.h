@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void value_in(Value*, Value*, Value*);
+void value_in(Value*, Value*, Value*, int);

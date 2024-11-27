@@ -20,12 +20,14 @@ explain select 1 in ()
 [{
   "bytecode": {
     "coordinator": {
-      "00": "bool                0      0      0     ",
-      "01": "jmp                 3      0      0     ",
-      "02": "jmp                 3      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "body                0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "in                  2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "body                0      0      0     ",
+      "07": "ret                 0      0      0     "
     }
   }
 }]
@@ -40,32 +42,94 @@ select 1 in (1)
 [true]
 select 1 in (0)
 [false]
-# test: in (select)
-select 1 in (select 1)
+# test: in null
+select null in (3, 1, 2)
+[null]
+select 1 in (null, 1, 2)
 [true]
-select 1 in (select 0)
-[false]
-select 1 in (select * from [1,2,3])
+select 1 in (3, null, 2)
+[null]
+select 1 in (3, 1, null)
 [true]
-select 1 in (select * from [3,2,1])
-[true]
-select 0 in (select * from [3,2,1])
-[false]
 # test: in (select from table)
 create shared table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1), (2), (3)
 select 1 in (select * from test)
-[false]
+[true]
 select 1 in (select id from test)
 [true]
 select 0 in (select id from test)
 [false]
 drop table test
-# test: in (cte)
-with q as (select * from [1,2,3]) select 1 in (*) from q
-[true, false, false]
-with q as (select * from [1,2,3]) select * from q where * in (2,4)
-[2]
+# test: in (select null from table)
+create shared table test (id int primary key, data int)
+insert into test values (1, 1), (2, 2)
+select 1 in (select * from test)
+{"msg": "IN: subquery must return one column"}
+select 1 in (select data from test)
+[true]
+select 3 in (select data from test)
+[false]
+insert into test values (3, null)
+select 1 in (select data from test)
+[true]
+select 3 in (select data from test)
+[null]
+drop table test
+# test: in (value, select from table, ...)
+create shared table test (id int primary key)
+insert into test values (1), (2), (3)
+select 1 in (0, select * from test)
+[true]
+select 1 in (1, select * from test)
+[true]
+select 0 in ((select * from test), 0)
+[true]
+select 0 in (3,5, (select * from test), 0)
+[true]
+explain select 0 in (3,5, (select * from test), 0)
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "int                 2      -      0     # 3",
+      "03": "push                2      0      0     ",
+      "04": "int                 2      -      0     # 5",
+      "05": "push                2      0      0     ",
+      "06": "set                 2      1      0     ",
+      "07": "int                 3      -      0     # -2147483648",
+      "08": "push                3      0      0     ",
+      "09": "cursor_open         0      0      11    # public.test (primary)",
+      "10": "jmp                 15     0      0     ",
+      "11": "cursor_readi32      3      0      0     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             2      0      0     ",
+      "14": "cursor_next         0      11     0     ",
+      "15": "cursor_close        0      0      0     ",
+      "16": "push                2      0      0     ",
+      "17": "int                 2      -      0     # 0",
+      "18": "push                2      0      0     ",
+      "19": "in                  2      1      4     ",
+      "20": "push                2      0      0     ",
+      "21": "set_add             0      0      0     ",
+      "22": "result              0      0      0     ",
+      "23": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0 in (3,5, (select * from test))
+[false]
+select 0 in (3,5, (select * from test), null)
+[null]
+drop table test
 # test: not in
 select 1 not in (3, 1, 2)
 [false]
@@ -79,29 +143,5 @@ select 1 not in (0)
 [true]
 select 1 not in (0,2,3)
 [true]
-# test: not in (select)
-select 1 not in (select 1)
-[false]
-select 1 not in (select 0)
-[true]
-select 1 not in (select * from [1,2,3])
-[false]
-select 1 not in (select * from [3,2,1])
-[false]
-select 1 not in (select * from [3,2,4,0])
-[true]
-# test: not in (select from table)
-create shared table test (id int primary key)
-insert into test 1,2,3
-select 1 not in (select * from test)
-[true]
-select 0 not in (select id from test)
-[true]
-drop table test
-# test: not in (cte)
-with q as (select * from [1,2,3]) select 1 not in (*) from q
-[false, true, true]
-with q as (select * from [1,2,3]) select * from q where * not in (2,4)
-[1, 3]
 disconnect S0
 close E0

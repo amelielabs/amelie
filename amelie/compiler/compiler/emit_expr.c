@@ -594,66 +594,31 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	auto args = ast->r;
 	assert(args->id == KARGS);
 
-	// expr
-	int rresult = op2(self, CBOOL, rpin(self, TYPE_BOOL), false);
+	// expr [NOT] IN (value, ...)
+	int rexpr = emit_expr(self, target, expr);
 
-	// jmp to start
-	int _start_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _start */);
-
-	// _stop_jmp
-	int _stop_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _stop */);
-
-	// foreach arg
-
-		// expr
-		// in
-		// jntr _next
-		// set result to true
-		// jmp _stop
-
-	// _stop
-
-	// _start
-	int _start = op_pos(self);
-	op_set_jmp(self, _start_jmp, _start);
-
+	// push values
 	auto current = args->l;
 	while (current)
 	{
-		int rexpr = emit_expr(self, target, expr);
 		int r = emit_expr(self, target, current);
-		int rin = op3(self, CIN, rpin(self, TYPE_BOOL), rexpr, r);
-		runpin(self, rexpr);
+		op1(self, CPUSH, r);
 		runpin(self, r);
-
-		// jntr _next
-		int _next_jntr = op_pos(self);
-		op2(self, CJNTR, 0 /* _next */, rin);
-		op2(self, CBOOL, rresult, true);
-		op1(self, CJMP, _stop_jmp);
-
-		// _next
-		op_at(self, _next_jntr)->a = op_pos(self);
-
-		runpin(self, rin);
 		current = current->next;
 	}
 
-	// _stop
-	int _stop = op_pos(self);
-	op_set_jmp(self, _stop_jmp, _stop);
+	// IN
+	int rin = op3(self, CIN, rpin(self, TYPE_BOOL), rexpr, args->integer);
+	runpin(self, rexpr);
 
 	// [not]
 	if (! ast->integer)
 	{
-		int rc;
-		rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rresult);
-		runpin(self, rresult);
-		rresult = rc;
+		auto rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rin);
+		runpin(self, rin);
+		rin = rc;
 	}
-	return rresult;
+	return rin;
 }
 
 hot static inline int

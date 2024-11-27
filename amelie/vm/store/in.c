@@ -25,62 +25,55 @@
 #include <amelie_value.h>
 #include <amelie_store.h>
 
-#if 0
 void
-value_in(Value* result, Value* store, Value* value)
+value_in(Value* result, Value* value, Value* in, int count)
 {
-	if (unlikely(store->type == TYPE_NULL))
+	if (unlikely(value->type == TYPE_NULL))
 	{
 		value_set_null(result);
 		return;
 	}
-	if (unlikely(store->type != TYPE_SET))
-		error("IN: subquery expected");
 
-	auto set = (Set*)store->store;
-	if (unlikely(set->count_columns > 1))
-		error("IN: subquery must return one column");
-
-	for (int row = 0; row < set->count_rows ; row++)
+	auto has_null = false;
+	for (int i = 0; i < count; i++)
 	{
-		auto at = set_column(set, row, 0);
-		if (unlikely(at->type == TYPE_NULL))
+		if (in[i].type == TYPE_NULL)
 		{
-			value_set_null(result);
-			return;
+			has_null = true;
+			continue;
 		}
-		if (! value_compare(at, value))
+
+		if (in[i].type == TYPE_SET)
+		{
+			auto set = (Set*)in[i].store;
+			if (set->count_columns > 1)
+				error("IN: subquery must return one column");
+			for (int row = 0; row < set->count_rows ; row++)
+			{
+				auto at = set_column(set, row, 0);
+				if (at->type == TYPE_NULL)
+				{
+					has_null = true;
+					continue;
+				}
+				if (! value_compare(at, value))
+				{
+					value_set_bool(result, true);
+					return;
+				}
+			}
+			continue;
+		}
+
+		if (! value_compare(&in[i], value))
 		{
 			value_set_bool(result, true);
 			return;
 		}
 	}
 
-	value_set_bool(result, false);
-}
-#endif
-
-/*
-	bool in = false;
-	if (b->type == VALUE_SET)
-		in = store_in(b->store, a);
+	if (has_null)
+		value_set_null(result);
 	else
-		in = value_is_equal(a, b);
-	return value_set_bool(result, in);
-	*/
-
-/*
-hot static bool
-set_in(Store* store, Value* value)
-{
-	auto self = (Set*)store;
-	int i = 0;
-	for (; i < self->list_count ; i++)
-	{
-		auto at = set_at(self, i);
-		if (value_is_equal(&at->value, value))
-			return true;
-	}
-	return false;
+		value_set_bool(result, false);
 }
-*/
