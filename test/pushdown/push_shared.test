@@ -5,15 +5,15 @@ connect E0 S0 localhost:3485
 
 # test: select from shared
 create shared table test (id int primary key, data int default 0)
-select *.name, *.shared from system.tables()
+select system.tables().'public.test'.shared
 insert into test (id) values (1), (2), (3)
 
 explain select * from test
 select * from test
 
 # test: select from (select from shared)
-explain select * from (select * from test)
-select * from (select * from test)
+explain select * from (select * from test) t
+select * from (select * from test) t
 
 # test: select (select expr) from shared
 explain select (select test.*) from test
@@ -23,13 +23,6 @@ select (select test.*) from test
 explain select (select * from test)
 select (select * from test)
 
-# test: select (select from shared) from expr
-explain select (select a.*, * from test) from [1,2,3] a
-select (select a.*, * from test) from [1,2,3] a
-
-explain select (select a.*, id from test) from [1,2,3] a
-select (select a.*, id from test) from [1,2,3] a
-
 # test: select (select from shared) from shared
 explain select (select a.*, id from test) from test a
 select (select a.*, id from test) from test a
@@ -37,24 +30,9 @@ select (select a.*, id from test) from test a
 explain select (select a.id, id from test) from test a
 select (select a.id, id from test) from test a
 
-# test: select (select from shared) from (select from expr)
-explain select (select a.*, id from test) from (select * from [1,2,3]) a
-select (select a.*, id from test) from (select * from [1,2,3]) a
-
 # test: select (select from shared) from (select from shared)
 explain select (select a.*, id from test) from (select * from test t) a
 select (select a.*, id from test) from (select * from test t) a
-
-explain select (select a.*[0], id from test) from (select * from test t) a
-select (select a.*[0], id from test) from (select * from test t) a
-
-# test: select from shared, expr
-explain select test.*, t.* from test, [1,2,3] t
-select test.*, t.* from test, [1,2,3] t
-
-# test: select from expr, shared
-explain select test.*, t.* from [1,2,3] t, test
-select test.*, t.* from [1,2,3] t, test
 
 # test: select from shared, shared
 explain select test.*, t.* from test, test t

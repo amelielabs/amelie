@@ -2,8 +2,8 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select from shared
 create shared table test (id int primary key, data int default 0)
-select *.name, *.shared from system.tables()
-[["test", true]]
+select system.tables().'public.test'.shared
+[true]
 insert into test (id) values (1), (2), (3)
 explain select * from test
 [{
@@ -19,24 +19,27 @@ explain select * from test
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 8      0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "set_add             0      1      0     ",
-      "07": "cursor_next         0      5      0     ",
-      "08": "cursor_close        0      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
 # test: select from (select from shared)
-explain select * from (select * from test)
+explain select * from (select * from test) t
 [{
   "bytecode": {
     "coordinator": {
@@ -47,28 +50,34 @@ explain select * from (select * from test)
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "set                 1      0      0     ",
-      "02": "int_min             2      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "set                 1      2      0     ",
+      "02": "int                 2      -      0     # -2147483648",
       "03": "push                2      0      0     ",
       "04": "cursor_open         0      0      6     # public.test (primary)",
-      "05": "jmp                 9      0      0     ",
-      "06": "cursor_read         2      0      0     ",
-      "07": "set_add             1      2      0     ",
-      "08": "cursor_next         0      6      0     ",
-      "09": "cursor_close        0      0      0     ",
-      "10": "cursor_open_expr    1      1      12    ",
-      "11": "jmp                 15     0      0     ",
-      "12": "cursor_read         2      1      0     ",
-      "13": "set_add             0      2      0     ",
-      "14": "cursor_next         1      12     0     ",
-      "15": "cursor_close        1      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_readi32      2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "cursor_readi32      2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "cursor_set_open     1      1      15    ",
+      "14": "jmp                 21     0      0     ",
+      "15": "cursor_set_read     2      1      0     ",
+      "16": "push                2      0      0     ",
+      "17": "cursor_set_read     2      1      1     ",
+      "18": "push                2      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "cursor_set_next     1      15     0     ",
+      "21": "cursor_set_close    1      1      0     ",
+      "22": "result              0      0      0     ",
+      "23": "ret                 0      0      0     "
     }
   }
 }]
-select * from (select * from test)
+select * from (select * from test) t
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select expr) from shared
 explain select (select test.*) from test
@@ -85,22 +94,28 @@ explain select (select test.*) from test
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 8      0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "set_add             0      1      0     ",
-      "07": "cursor_next         0      5      0     ",
-      "08": "cursor_close        0      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "04": "jmp                 14     0      0     ",
+      "05": "set                 1      2      0     ",
+      "06": "cursor_readi32      2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "cursor_readi32      2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "cursor_next         0      5      0     ",
+      "14": "cursor_close        0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
 select (select test.*) from test
-[[1, 0], [2, 0], [3, 0]]
+[[[1, 0]], [[2, 0]], [[3, 0]]]
 # test: select (select from shared)
 explain select (select * from test)
 [{
@@ -113,111 +128,28 @@ explain select (select * from test)
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 8      0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "set_add             0      1      0     ",
-      "07": "cursor_next         0      5      0     ",
-      "08": "cursor_close        0      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      2      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "cursor_open         0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_readi32      2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "cursor_readi32      2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "cursor_next         0      6      0     ",
+      "12": "cursor_close        0      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
 select (select * from test)
-[[1, 0], [2, 0], [3, 0]]
-# test: select (select from shared) from expr
-explain select (select a.*, * from test) from [1,2,3] a
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "push                1      0      0     ",
-      "07": "array               1      3      0     ",
-      "08": "cursor_open_expr    1      1      10    ",
-      "09": "jmp                 25     0      0     ",
-      "10": "set                 2      0      0     ",
-      "11": "int_min             3      0      0     ",
-      "12": "push                3      0      0     ",
-      "13": "cursor_open         0      0      15    # public.test (primary)",
-      "14": "jmp                 22     0      0     ",
-      "15": "cursor_read         3      1      0     ",
-      "16": "push                3      0      0     ",
-      "17": "cursor_read         3      0      0     ",
-      "18": "push                3      0      0     ",
-      "19": "array               3      2      0     ",
-      "20": "set_add             2      3      0     ",
-      "21": "cursor_next         0      15     0     ",
-      "22": "cursor_close        0      0      0     ",
-      "23": "set_add             0      2      0     ",
-      "24": "cursor_next         1      10     0     ",
-      "25": "cursor_close        1      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
-    }
-  }
-}]
-select (select a.*, * from test) from [1,2,3] a
-[[[1, [1, 0]], [1, [2, 0]], [1, [3, 0]]], [[2, [1, 0]], [2, [2, 0]], [2, [3, 0]]], [[3, [1, 0]], [3, [2, 0]], [3, [3, 0]]]]
-explain select (select a.*, id from test) from [1,2,3] a
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "push                1      0      0     ",
-      "07": "array               1      3      0     ",
-      "08": "cursor_open_expr    1      1      10    ",
-      "09": "jmp                 25     0      0     ",
-      "10": "set                 2      0      0     ",
-      "11": "int_min             3      0      0     ",
-      "12": "push                3      0      0     ",
-      "13": "cursor_open         0      0      15    # public.test (primary)",
-      "14": "jmp                 22     0      0     ",
-      "15": "cursor_read         3      1      0     ",
-      "16": "push                3      0      0     ",
-      "17": "cursor_idx          3      0      0     ",
-      "18": "push                3      0      0     ",
-      "19": "array               3      2      0     ",
-      "20": "set_add             2      3      0     ",
-      "21": "cursor_next         0      15     0     ",
-      "22": "cursor_close        0      0      0     ",
-      "23": "set_add             0      2      0     ",
-      "24": "cursor_next         1      10     0     ",
-      "25": "cursor_close        1      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
-    }
-  }
-}]
-select (select a.*, id from test) from [1,2,3] a
-[[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
+[[[1, 0], [2, 0], [3, 0]]]
 # test: select (select from shared) from shared
 explain select (select a.*, id from test) from test a
 [{
@@ -233,34 +165,36 @@ explain select (select a.*, id from test) from test a
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         1      0      5     # public.test (primary)",
-      "04": "jmp                 20     0      0     ",
-      "05": "set                 1      0      0     ",
-      "06": "int_min             2      0      0     ",
+      "04": "jmp                 22     0      0     ",
+      "05": "set                 1      3      0     ",
+      "06": "int                 2      -      0     # -2147483648",
       "07": "push                2      0      0     ",
       "08": "cursor_open         0      20     10    # public.test (primary)",
-      "09": "jmp                 17     0      0     ",
-      "10": "cursor_read         2      1      0     ",
+      "09": "jmp                 18     0      0     ",
+      "10": "cursor_readi32      2      1      0     ",
       "11": "push                2      0      0     ",
-      "12": "cursor_idx          2      0      0     ",
+      "12": "cursor_readi32      2      1      1     ",
       "13": "push                2      0      0     ",
-      "14": "array               2      2      0     ",
-      "15": "set_add             1      2      0     ",
-      "16": "cursor_next         0      10     0     ",
-      "17": "cursor_close        0      0      0     ",
-      "18": "set_add             0      1      0     ",
-      "19": "cursor_next         1      5      0     ",
-      "20": "cursor_close        1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "14": "cursor_readi32      2      0      0     ",
+      "15": "push                2      0      0     ",
+      "16": "set_add             1      0      0     ",
+      "17": "cursor_next         0      10     0     ",
+      "18": "cursor_close        0      0      0     ",
+      "19": "push                1      0      0     ",
+      "20": "set_add             0      0      0     ",
+      "21": "cursor_next         1      5      0     ",
+      "22": "cursor_close        1      0      0     ",
+      "23": "result              0      0      0     ",
+      "24": "ret                 0      0      0     "
     }
   }
 }]
 select (select a.*, id from test) from test a
-[[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
+[[[1, 0, 1], [1, 0, 2], [1, 0, 3]], [[2, 0, 1], [2, 0, 2], [2, 0, 3]], [[3, 0, 1], [3, 0, 2], [3, 0, 3]]]
 explain select (select a.id, id from test) from test a
 [{
   "bytecode": {
@@ -275,25 +209,25 @@ explain select (select a.id, id from test) from test a
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         1      0      5     # public.test (primary)",
       "04": "jmp                 20     0      0     ",
-      "05": "set                 1      0      0     ",
-      "06": "int_min             2      0      0     ",
+      "05": "set                 1      2      0     ",
+      "06": "int                 2      -      0     # -2147483648",
       "07": "push                2      0      0     ",
       "08": "cursor_open         0      20     10    # public.test (primary)",
-      "09": "jmp                 17     0      0     ",
-      "10": "cursor_idx          2      1      0     ",
+      "09": "jmp                 16     0      0     ",
+      "10": "cursor_readi32      2      1      0     ",
       "11": "push                2      0      0     ",
-      "12": "cursor_idx          2      0      0     ",
+      "12": "cursor_readi32      2      0      0     ",
       "13": "push                2      0      0     ",
-      "14": "array               2      2      0     ",
-      "15": "set_add             1      2      0     ",
-      "16": "cursor_next         0      10     0     ",
-      "17": "cursor_close        0      0      0     ",
-      "18": "set_add             0      1      0     ",
+      "14": "set_add             1      0      0     ",
+      "15": "cursor_next         0      10     0     ",
+      "16": "cursor_close        0      0      0     ",
+      "17": "push                1      0      0     ",
+      "18": "set_add             0      0      0     ",
       "19": "cursor_next         1      5      0     ",
       "20": "cursor_close        1      0      0     ",
       "21": "result              0      0      0     ",
@@ -302,58 +236,6 @@ explain select (select a.id, id from test) from test a
   }
 }]
 select (select a.id, id from test) from test a
-[[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select (select from shared) from (select from expr)
-explain select (select a.*, id from test) from (select * from [1,2,3]) a
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "set                 1      0      0     ",
-      "02": "int                 2      -      0     # 1",
-      "03": "push                2      0      0     ",
-      "04": "int                 2      -      0     # 2",
-      "05": "push                2      0      0     ",
-      "06": "int                 2      -      0     # 3",
-      "07": "push                2      0      0     ",
-      "08": "array               2      3      0     ",
-      "09": "cursor_open_expr    1      2      11    ",
-      "10": "jmp                 14     0      0     ",
-      "11": "cursor_read         3      1      0     ",
-      "12": "set_add             1      3      0     ",
-      "13": "cursor_next         1      11     0     ",
-      "14": "cursor_close        1      0      0     ",
-      "15": "cursor_open_expr    2      1      17    ",
-      "16": "jmp                 32     0      0     ",
-      "17": "set                 2      0      0     ",
-      "18": "int_min             3      0      0     ",
-      "19": "push                3      0      0     ",
-      "20": "cursor_open         0      0      22    # public.test (primary)",
-      "21": "jmp                 29     0      0     ",
-      "22": "cursor_read         3      2      0     ",
-      "23": "push                3      0      0     ",
-      "24": "cursor_idx          3      0      0     ",
-      "25": "push                3      0      0     ",
-      "26": "array               3      2      0     ",
-      "27": "set_add             2      3      0     ",
-      "28": "cursor_next         0      22     0     ",
-      "29": "cursor_close        0      0      0     ",
-      "30": "set_add             0      2      0     ",
-      "31": "cursor_next         2      17     0     ",
-      "32": "cursor_close        2      0      0     ",
-      "33": "result              0      0      0     ",
-      "34": "ret                 0      0      0     "
-    }
-  }
-}]
-select (select a.*, id from test) from (select * from [1,2,3]) a
 [[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
 # test: select (select from shared) from (select from shared)
 explain select (select a.*, id from test) from (select * from test t) a
@@ -367,178 +249,46 @@ explain select (select a.*, id from test) from (select * from test t) a
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "set                 1      0      0     ",
-      "02": "int_min             2      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      2      0     ",
+      "02": "int                 2      -      0     # -2147483648",
       "03": "push                2      0      0     ",
       "04": "cursor_open         1      0      6     # public.test (primary)",
-      "05": "jmp                 9      0      0     ",
-      "06": "cursor_read         2      1      0     ",
-      "07": "set_add             1      2      0     ",
-      "08": "cursor_next         1      6      0     ",
-      "09": "cursor_close        1      0      0     ",
-      "10": "cursor_open_expr    2      1      12    ",
-      "11": "jmp                 27     0      0     ",
-      "12": "set                 2      0      0     ",
-      "13": "int_min             3      0      0     ",
-      "14": "push                3      0      0     ",
-      "15": "cursor_open         0      20     17    # public.test (primary)",
-      "16": "jmp                 24     0      0     ",
-      "17": "cursor_read         3      2      0     ",
-      "18": "push                3      0      0     ",
-      "19": "cursor_idx          3      0      0     ",
-      "20": "push                3      0      0     ",
-      "21": "array               3      2      0     ",
-      "22": "set_add             2      3      0     ",
-      "23": "cursor_next         0      17     0     ",
-      "24": "cursor_close        0      0      0     ",
-      "25": "set_add             0      2      0     ",
-      "26": "cursor_next         2      12     0     ",
-      "27": "cursor_close        2      0      0     ",
-      "28": "result              0      0      0     ",
-      "29": "ret                 0      0      0     "
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_readi32      2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "cursor_readi32      2      1      1     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "cursor_next         1      6      0     ",
+      "12": "cursor_close        1      0      0     ",
+      "13": "cursor_set_open     2      1      15    ",
+      "14": "jmp                 32     0      0     ",
+      "15": "set                 2      3      0     ",
+      "16": "int                 3      -      0     # -2147483648",
+      "17": "push                3      0      0     ",
+      "18": "cursor_open         0      20     20    # public.test (primary)",
+      "19": "jmp                 28     0      0     ",
+      "20": "cursor_set_read     3      2      0     ",
+      "21": "push                3      0      0     ",
+      "22": "cursor_set_read     3      2      1     ",
+      "23": "push                3      0      0     ",
+      "24": "cursor_readi32      3      0      0     ",
+      "25": "push                3      0      0     ",
+      "26": "set_add             2      0      0     ",
+      "27": "cursor_next         0      20     0     ",
+      "28": "cursor_close        0      0      0     ",
+      "29": "push                2      0      0     ",
+      "30": "set_add             0      0      0     ",
+      "31": "cursor_set_next     2      15     0     ",
+      "32": "cursor_set_close    2      1      0     ",
+      "33": "result              0      0      0     ",
+      "34": "ret                 0      0      0     "
     }
   }
 }]
 select (select a.*, id from test) from (select * from test t) a
-[[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3]], [[[2, 0], 1], [[2, 0], 2], [[2, 0], 3]], [[[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]]
-explain select (select a.*[0], id from test) from (select * from test t) a
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "set                 1      0      0     ",
-      "02": "int_min             2      0      0     ",
-      "03": "push                2      0      0     ",
-      "04": "cursor_open         1      0      6     # public.test (primary)",
-      "05": "jmp                 9      0      0     ",
-      "06": "cursor_read         2      1      0     ",
-      "07": "set_add             1      2      0     ",
-      "08": "cursor_next         1      6      0     ",
-      "09": "cursor_close        1      0      0     ",
-      "10": "cursor_open_expr    2      1      12    ",
-      "11": "jmp                 29     0      0     ",
-      "12": "set                 2      0      0     ",
-      "13": "int_min             3      0      0     ",
-      "14": "push                3      0      0     ",
-      "15": "cursor_open         0      20     17    # public.test (primary)",
-      "16": "jmp                 26     0      0     ",
-      "17": "cursor_read         3      2      0     ",
-      "18": "int                 4      -      0     # 0",
-      "19": "idx                 5      3      4     ",
-      "20": "push                5      0      0     ",
-      "21": "cursor_idx          3      0      0     ",
-      "22": "push                3      0      0     ",
-      "23": "array               3      2      0     ",
-      "24": "set_add             2      3      0     ",
-      "25": "cursor_next         0      17     0     ",
-      "26": "cursor_close        0      0      0     ",
-      "27": "set_add             0      2      0     ",
-      "28": "cursor_next         2      12     0     ",
-      "29": "cursor_close        2      0      0     ",
-      "30": "result              0      0      0     ",
-      "31": "ret                 0      0      0     "
-    }
-  }
-}]
-select (select a.*[0], id from test) from (select * from test t) a
-[[[1, 1], [1, 2], [1, 3]], [[2, 1], [2, 2], [2, 3]], [[3, 1], [3, 2], [3, 3]]]
-# test: select from shared, expr
-explain select test.*, t.* from test, [1,2,3] t
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 23     0      0     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 2",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 3",
-      "10": "push                1      0      0     ",
-      "11": "array               1      3      0     ",
-      "12": "cursor_open_expr    1      1      14    ",
-      "13": "jmp                 21     0      0     ",
-      "14": "cursor_read         2      0      0     ",
-      "15": "push                2      0      0     ",
-      "16": "cursor_read         2      1      0     ",
-      "17": "push                2      0      0     ",
-      "18": "array               2      2      0     ",
-      "19": "set_add             0      2      0     ",
-      "20": "cursor_next         1      14     0     ",
-      "21": "cursor_close        1      0      0     ",
-      "22": "cursor_next         0      5      0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
-    }
-  }
-}]
-select test.*, t.* from test, [1,2,3] t
-[[[1, 0], 1], [[1, 0], 2], [[1, 0], 3], [[2, 0], 1], [[2, 0], 2], [[2, 0], 3], [[3, 0], 1], [[3, 0], 2], [[3, 0], 3]]
-# test: select from expr, shared
-explain select test.*, t.* from [1,2,3] t, test
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "push                1      0      0     ",
-      "07": "array               1      3      0     ",
-      "08": "cursor_open_expr    0      1      10    ",
-      "09": "jmp                 23     0      0     ",
-      "10": "int_min             2      0      0     ",
-      "11": "push                2      0      0     ",
-      "12": "cursor_open         1      0      14    # public.test (primary)",
-      "13": "jmp                 21     0      0     ",
-      "14": "cursor_read         2      1      0     ",
-      "15": "push                2      0      0     ",
-      "16": "cursor_read         2      0      0     ",
-      "17": "push                2      0      0     ",
-      "18": "array               2      2      0     ",
-      "19": "set_add             0      2      0     ",
-      "20": "cursor_next         1      14     0     ",
-      "21": "cursor_close        1      0      0     ",
-      "22": "cursor_next         0      10     0     ",
-      "23": "cursor_close        0      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
-    }
-  }
-}]
-select test.*, t.* from [1,2,3] t, test
-[[[1, 0], 1], [[2, 0], 1], [[3, 0], 1], [[1, 0], 2], [[2, 0], 2], [[3, 0], 2], [[1, 0], 3], [[2, 0], 3], [[3, 0], 3]]
+[[[1, 0, 1], [1, 0, 2], [1, 0, 3]], [[2, 0, 1], [2, 0, 2], [2, 0, 3]], [[3, 0, 1], [3, 0, 2], [3, 0, 3]]]
 # test: select from shared, shared
 explain select test.*, t.* from test, test t
 [{
@@ -554,32 +304,35 @@ explain select test.*, t.* from test, test t
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      4      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 18     0      0     ",
-      "05": "int_min             1      0      0     ",
+      "04": "jmp                 21     0      0     ",
+      "05": "int                 1      -      0     # -2147483648",
       "06": "push                1      0      0     ",
       "07": "cursor_open         1      20     9     # public.test (primary)",
-      "08": "jmp                 16     0      0     ",
-      "09": "cursor_read         1      0      0     ",
+      "08": "jmp                 19     0      0     ",
+      "09": "cursor_readi32      1      0      0     ",
       "10": "push                1      0      0     ",
-      "11": "cursor_read         1      1      0     ",
+      "11": "cursor_readi32      1      0      1     ",
       "12": "push                1      0      0     ",
-      "13": "array               1      2      0     ",
-      "14": "set_add             0      1      0     ",
-      "15": "cursor_next         1      9      0     ",
-      "16": "cursor_close        1      0      0     ",
-      "17": "cursor_next         0      5      0     ",
-      "18": "cursor_close        0      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "13": "cursor_readi32      1      1      0     ",
+      "14": "push                1      0      0     ",
+      "15": "cursor_readi32      1      1      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cursor_next         1      9      0     ",
+      "19": "cursor_close        1      0      0     ",
+      "20": "cursor_next         0      5      0     ",
+      "21": "cursor_close        0      0      0     ",
+      "22": "result              0      0      0     ",
+      "23": "ret                 0      0      0     "
     }
   }
 }]
 select test.*, t.* from test, test t
-[[[1, 0], [1, 0]], [[1, 0], [2, 0]], [[1, 0], [3, 0]], [[2, 0], [1, 0]], [[2, 0], [2, 0]], [[2, 0], [3, 0]], [[3, 0], [1, 0]], [[3, 0], [2, 0]], [[3, 0], [3, 0]]]
+[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 drop table test
 disconnect S0
 close E0

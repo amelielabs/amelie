@@ -10,14 +10,6 @@ insert into test (id) values (1), (2), (3)
 explain select (select * from test)
 select (select * from test)
 
-# test: select (select from table) from expr
-explain select (select * from test) from [1,2,3]
-select (select * from test) from [1,2,3]
-
-# test: select (select from table) from (select from expr)
-explain select (select * from test) from (select * from [1,2,3])
-select (select * from test) from (select * from [1,2,3])
-
 # test: select (select from table) from shared
 create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
@@ -25,36 +17,28 @@ explain select (select * from test) from test2
 select (select * from test) from test2
 
 # test: select (select from table) from (select from shared)
-explain select (select * from test) from (select * from test2)
-select (select * from test) from (select * from test2)
+explain select (select * from test) from (select * from test2) t
+select (select * from test) from (select * from test2) t
 drop table test2
 
 # test: select from (select from table)
-explain select * from (select * from test)
-select * from (select * from test)
-
-# test: select from (select (select expr) from table)
-explain select * from (select (select 123) from test)
-select * from (select (select 123) from test)
+explain select * from (select * from test) t
+select * from (select * from test) t
 
 # test: select from (select (select from shared) from table)
 create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
-explain select * from (select (select * from test2) from test)
-select * from (select (select * from test2) from test)
+explain select * from (select (select * from test2) from test) t
+select * from (select (select * from test2) from test) t
 drop table test2
 
 # test: select from (select (select from table) from table)
-explain select * from (select (select * from test t) from test)
-select * from (select (select * from test t) from test)
+explain select * from (select (select * from test t) from test) g
+select * from (select (select * from test t) from test) g
 
 # test: select (select expr) from (select from table)
 explain select (select t.*) from (select * from test) t
 select (select t.*) from (select * from test) t
-
-# test: select (select from expr) from (select from table)
-explain select (select t.*, * from [1,2,3]) from (select * from test) t
-select (select t.*, * from [1,2,3]) from (select * from test) t
 
 # test: select (select from shared) from (select from table)
 create shared table test2 (id int primary key)
@@ -73,14 +57,13 @@ insert into test (id) values (4) returning (select * from test t)
 
 # test: insert returning (select from shared)
 create shared table test_ (id int primary key)
-insert into test_ 1,2,3
+insert into test_ values (1),(2),(3)
 insert into test (id) values (5) returning (select * from test_)
 drop table test_
 
 # test: insert returning (select from expr)
-insert into test (id) values (6) returning [*, (select * from [1,2,3])]
-insert into test (id) values (7) returning (select test.id + * from [1,2,3])
-
+insert into test (id) values (6) returning *, select [1,2,3]
+insert into test (id) values (7) returning id, select [1,2,3]
 drop table test
 
 disconnect S0
