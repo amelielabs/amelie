@@ -163,6 +163,10 @@ select (select test.*) from test
 [[[1, 0]], [[2, 0]], [[3, 0]]]
 # test: select (select (select expr)) from table
 explain select (select (select (test.*))) from test
+{"msg": "bad expression"}
+select (select (select (test.*))) from test
+{"msg": "bad expression"}
+explain select (select (select test.*)) from test
 [{
   "bytecode": {
     "coordinator": {
@@ -199,7 +203,7 @@ explain select (select (select (test.*))) from test
     }
   }
 }]
-select (select (select (test.*))) from test
+select (select (select test.*)) from test
 [[[[1, 0]]], [[[2, 0]]], [[[3, 0]]]]
 # test: select (select (select from table)) from table
 explain select (select (select * from test t)) from test

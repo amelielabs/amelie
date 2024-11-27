@@ -32,6 +32,9 @@ select (select test.*) from test
 explain select (select (select (test.*))) from test
 select (select (select (test.*))) from test
 
+explain select (select (select test.*)) from test
+select (select (select test.*)) from test
+
 # test: select (select (select from table)) from table
 explain select (select (select * from test t)) from test
 
