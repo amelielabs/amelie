@@ -240,27 +240,9 @@ scan_store(Scan* self, Target* target)
 		target->r = emit_expr(cp, target, target->from_select);
 	}
 
-	int op_open;
-	int op_close;
-	int op_next;
-	switch (rtype(cp, target->r)) {
-	case TYPE_SET:
-		op_open  = CCURSOR_SET_OPEN;
-		op_close = CCURSOR_SET_CLOSE;
-		op_next  = CCURSOR_SET_NEXT;
-		break;
-	case TYPE_MERGE:
-		op_open  = CCURSOR_MERGE_OPEN;
-		op_close = CCURSOR_MERGE_CLOSE;
-		op_next  = CCURSOR_MERGE_NEXT;
-		break;
-	default:
-		abort();
-	}
-
 	// open SET or MERGE cursor
 	auto _open = op_pos(cp);
-	op3(cp, op_open, target->id, target->r, 0 /* _where */);
+	op3(cp, CSTORE_OPEN, target->id, target->r, 0 /* _where */);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -312,7 +294,7 @@ scan_store(Scan* self, Target* target)
 	}
 
 	// cursor next
-	op2(cp, op_next, target->id, _where);
+	op2(cp, CSTORE_NEXT, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
@@ -320,7 +302,7 @@ scan_store(Scan* self, Target* target)
 
 	// free cursor object on close, unless it is CTE result
 	auto free_on_close = target->type != TARGET_CTE;
-	op2(cp, op_close, target->id, free_on_close);
+	op2(cp, CSTORE_CLOSE, target->id, free_on_close);
 }
 
 static inline void

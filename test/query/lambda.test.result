@@ -1,0 +1,105 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 2
+connect E0 S0 localhost:3485
+# test: lambda parsing
+select lambda
+{"msg": "lambda <name> expected"}
+select 1 lambda
+{"msg": "lambda <name> expected"}
+select lambda name
+{"msg": "lambda name <(> expected"}
+select lambda name -
+{"msg": "lambda name <(> expected"}
+select lambda name =
+{"msg": "lambda name <(> expected"}
+select lambda name (
+{"msg": "bad expression"}
+select lambda name ()
+{"msg": "bad expression"}
+select lambda name (true)
+{"msg": "lambda name (expr) <=> expected"}
+select lambda name (true) =
+{"msg": "bad expression"}
+# test: lambda (init)
+select lambda n(false) = true from []
+{"msg": "FROM target name expected"}
+select lambda n(false) = true from [1]
+{"msg": "FROM target name expected"}
+select lambda n(null) = * from [1,2,3]
+{"msg": "bad expression"}
+# test: lambda (state access)
+explain select lambda n(123) = n from [1,2,3]
+{"msg": "FROM target name expected"}
+select lambda n(123) = n from [1,2,3]
+{"msg": "FROM target name expected"}
+select lambda n([]) = n::append(*) from [1,2,3]
+{"msg": "bad expression"}
+select lambda n([]) = n::append(*)::append(n) from [1,2,3]
+{"msg": "bad expression"}
+select lambda n([]) = n::append(*)::append(n::string) from [1,2,3]
+{"msg": "bad expression"}
+select * from (select lambda n([]) = n::append(*) from [1,2,3])
+{"msg": "bad expression"}
+select lambda obj({}) = obj::set(*, [*]) from ["a", "b", "c"]
+{"msg": "bad expression"}
+select lambda obj({}) = obj::set("key_" || *::string, *) from [1,2,3]
+{"msg": "bad expression"}
+# test: lambda (crosss state access)
+select lambda i([]) = i::append(*), lambda j([]) = j::append(i) from [1,2,3]
+{"msg": "bad expression"}
+# test: lambda (label)
+select (lambda n([]) = n::append(*)) as N from [1,2,3]
+{"msg": "bad expression"}
+# test: lambda (group by)
+select *, lambda n(0) = n + 1 from [1,2,2,3] group by *
+{"msg": "FROM target name expected"}
+select *, lambda n([]) = n::append(*) from [1,2,2,3] group by *
+{"msg": "bad expression"}
+# test: lambda (shared table)
+create shared table test (id int primary key)
+insert into test 1,2,3,4,5
+{"msg": "INSERT INTO <VALUES> expected"}
+select lambda n([]) = n::append(id) from test
+{"msg": "<test.n> column not found"}
+drop table test
+create shared table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 1)
+insert into test values (2, 2)
+insert into test values (3, 1)
+insert into test values (4, 3)
+select lambda n([]) = n::append(data) from test
+{"msg": "<test.n> column not found"}
+select data, lambda n([]) = n::append(id) from test group by data
+{"msg": "<test.n> column not found"}
+drop table test
+# test: lambda (distributed table)
+create distributed table test (id int primary key)
+insert into test 1,2,3,4,5
+{"msg": "INSERT INTO <VALUES> expected"}
+select lambda n([]) = n::append(id) from test
+{"msg": "<test.n> column not found"}
+explain select lambda n([]) = n::append(id) from test
+{"msg": "<test.n> column not found"}
+drop table test
+# test: lambda (init exceptions)
+create shared table test (id int primary key)
+insert into test 1,2,3,4,5
+{"msg": "INSERT INTO <VALUES> expected"}
+select lambda n(id) = n::append(id) from test
+{"msg": "<test.n> column not found"}
+select lambda n(id) = 0
+{"msg": "no targets to use with GROUP BY or aggregates"}
+select lambda n(id) = 0 from [1,2,3]
+{"msg": "FROM target name expected"}
+select lambda n(*) = 0 from [1,2,3]
+{"msg": "bad expression"}
+# test: lambda (subquery)
+select lambda n(select * from test) = n from [1, 2, 3]
+{"msg": "FROM target name expected"}
+select lambda n(select * from test) = n::append(*) from [1, 2, 3]
+{"msg": "bad expression"}
+select lambda n(select id from test) = n::append(*) from [6, 7, 8]
+{"msg": "bad expression"}
+drop table test
+disconnect S0
+close E0

@@ -167,18 +167,8 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 	} else
 	{
 		assert(target->r != -1);
-		switch (rtype(self, target->r)) {
-		case TYPE_SET:
-			r = op3(self, CCURSOR_SET_READ, rpin(self, column->type),
-			        target->id, column->order);
-			break;
-		case TYPE_MERGE:
-			r = op3(self, CCURSOR_MERGE_READ, rpin(self, column->type),
-			        target->id, column->order);
-			break;
-		default:
-			abort();
-		}
+		r = op3(self, CSTORE_READ, rpin(self, column->type),
+		        target->id, column->order);
 	}
 	return r;
 }

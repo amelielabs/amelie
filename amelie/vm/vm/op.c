@@ -220,17 +220,11 @@ OpDesc ops[] =
 	{ CCURSOR_READJ, "cursor_readj" },
 	{ CCURSOR_READV, "cursor_readv" },
 
-	// set cursor
-	{ CCURSOR_SET_OPEN, "cursor_set_open" },
-	{ CCURSOR_SET_CLOSE, "cursor_set_close" },
-	{ CCURSOR_SET_NEXT, "cursor_set_next" },
-	{ CCURSOR_SET_READ, "cursor_set_read" },
-
-	// merge cursor
-	{ CCURSOR_MERGE_OPEN, "cursor_merge_open" },
-	{ CCURSOR_MERGE_CLOSE, "cursor_merge_close" },
-	{ CCURSOR_MERGE_NEXT, "cursor_merge_next" },
-	{ CCURSOR_MERGE_READ, "cursor_merge_read" },
+	// store cursor
+	{ CSTORE_OPEN, "store_open" },
+	{ CSTORE_CLOSE, "store_open" },
+	{ CSTORE_NEXT, "store_next" },
+	{ CSTORE_READ, "store_read" },
 
 	// aggs
 	{ CAGG, "agg" },

@@ -16,14 +16,6 @@ typedef struct Stmt   Stmt;
 
 typedef enum
 {
-	JOIN_NONE,
-	JOIN_INNER,
-	JOIN_LEFT,
-	JOIN_RIGHT
-} TargetJoin;
-
-enum
-{
 	TARGET_NONE         = 0,
 	TARGET_TABLE_SHARED = 1 << 0,
 	TARGET_TABLE        = 1 << 1,
@@ -31,11 +23,19 @@ enum
 	TARGET_CTE          = 1 << 3,
 	TARGET_INSERTED     = 1 << 4,
 	TARGET_VIEW         = 1 << 5
-};
+} TargetType;
+
+typedef enum
+{
+	JOIN_NONE,
+	JOIN_INNER,
+	JOIN_LEFT,
+	JOIN_RIGHT
+} TargetJoin;
 
 struct Target
 {
-	int          type;
+	TargetType   type;
 	int          id;
 	int          level;
 	int          level_seq;
