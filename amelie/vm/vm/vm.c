@@ -1435,7 +1435,7 @@ ccount:
 cavgi:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(c->type == TYPE_INT))
+	if (likely(c->type == TYPE_AVG))
 		value_set_int(&r[op->a], avg_int(&c->avg));
 	else
 		value_set_null(&r[op->a]);
@@ -1444,7 +1444,7 @@ cavgi:
 cavgd:
 	// [result, cursor, column]
 	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
-	if (likely(c->type == TYPE_DOUBLE))
+	if (likely(c->type == TYPE_AVG))
 		value_set_double(&r[op->a], avg_double(&c->avg));
 	else
 		value_set_null(&r[op->a]);

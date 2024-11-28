@@ -283,15 +283,15 @@ emit_name_compound(Compiler* self, Target* target, Ast* ast)
 hot static inline int
 emit_aggregate(Compiler* self, Target* target, Ast* ast)
 {
-	// SELECT aggr GROUP BY
-	// SELECT GROUP BY HAVING aggr
+	// SELECT agg GROUP BY
+	// SELECT GROUP BY HAVING agg
 
 	// called during group by result set scan
 	//
 	// redirect to the group by target
 	//
-	assert(target->redirect);
-	target = target->redirect;
+	if (target->redirect)
+		target = target->redirect;
 
 	assert(target->r != -1);
 	assert(rtype(self, target->r) == TYPE_SET);

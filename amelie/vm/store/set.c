@@ -219,6 +219,7 @@ set_hash(Set* self, Value* keys)
 			data_size = value->json_size;
 			break;
 		case TYPE_NULL:
+			break;
 		case TYPE_SET:
 		default:
 			error("GROUP BY: unsupported key type");
