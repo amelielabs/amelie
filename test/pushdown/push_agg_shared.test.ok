@@ -1,0 +1,1167 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
+connect E0 S0 localhost:3485
+# test: select count(*) from table empty
+create shared table test_empty (id int primary key, data int, data2 double)
+create shared table test_null (id int primary key, data int, data2 double)
+insert into test_null values (0, null, null)
+create shared table test (id int primary key, data int, data2 double)
+insert into test values (0, 0, 0.0)
+insert into test values (1, 0, 0.0)
+insert into test values (2, 1, 1.0)
+insert into test values (3, 1, 1.0)
+insert into test values (4, 2  2.0)
+insert into test values (5, null, null)
+insert into test values (6, 3, 3.1)
+explain select count(*) from test_empty
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      26    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_empty (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      26     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      26     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select count(*) from test_empty
+[0]
+# test: select count(*) from table
+select * from test
+[[0, 0, 0], [1, 0, 0], [2, 1, 1], [3, 1, 1], [4, 2, 2], [5, null, null], [6, 3, 3.1]]
+explain select count(*) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select count(*) from test
+[7]
+# test: select count(column) from table
+explain select count(id) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select count(id) from test
+[7]
+# test: select count(null) from table
+explain select count(data) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select count(data) from test
+[6]
+explain select count(data) from test_null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      25    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_null (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      25     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      25     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select count(data) from test_null
+[0]
+# test: select count(any) from table
+select count('string') from test_null
+[1]
+select count([]) from test_null
+[1]
+# test: select sum(column int) from table empty
+explain select sum(id) from test_empty
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      26    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_empty (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      26     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      26     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select sum(id) from test_empty
+[null]
+# test: select sum(column int) from table
+explain select sum(id) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select sum(id) from test
+[21]
+select sum(data) from test
+[7]
+# test: select sum(column double) from table empty
+explain select sum(data2) from test_empty
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      26    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_empty (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readd        1      0      2     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      26     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      26     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select sum(data2) from test_empty
+[null]
+# test: select sum(column double) from table
+explain select sum(data2) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readd        1      0      2     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select sum(data2) from test_empty
+[null]
+# test: select sum(any) from table
+explain select sum('string') from test
+{"msg": "sum(): int or double expected"}
+select sum('string') from test
+{"msg": "sum(): int or double expected"}
+# test: select sum(null) from table
+explain select sum(data) from test_null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      25    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_null (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      25     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      25     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select sum(data) from test_null
+[null]
+# test: select avg(column int) from table empty
+select avg(id) from test_empty
+[null]
+# test: select avg(column int) from table
+explain select avg(id) from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "avgi                2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readi32      1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      20     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select avg(id) from test
+[3]
+select avg(data) from test
+[1]
+# test: select avg(column double) from table empty
+select avg(data2) from test_empty
+[null]
+# test: select avg(column int) from table
+select avg(data2) from test
+[1.16667]
+# test: select avg(any) from table
+explain select avg('string') from test
+{"msg": "avg(): int or double expected"}
+select avg('string') from test
+{"msg": "avg(): int or double expected"}
+# test: select avg(null) from table
+explain select avg(data2) from test_null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      25    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "avgd                2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_null (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readd        1      0      2     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      25     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      25     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select avg(data2) from test_null
+[null]
+# test: select min(column int) from table empty
+select min(id) from test_empty
+[null]
+# test: select min(column int) from table
+select min(id) from test
+[0]
+select min(data) from test
+[0]
+# test: select min(column double) from table empty
+select min(data2) from test_empty
+[null]
+# test: select min(column double) from table
+select min(data2) from test
+[0]
+# test: select min(null) from table
+explain select min(data2) from test_null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      25    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_null (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readd        1      0      2     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      25     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      25     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select min(data2) from test_null
+[null]
+# test: select max(column int) from table empty
+select max(id) from test_empty
+[null]
+# test: select max(column int) from table
+select max(id) from test
+[6]
+select max(data) from test
+[3]
+# test: select max(column double) from table empty
+select max(data2) from test_empty
+[null]
+# test: select max(column double) from table
+select max(data2) from test
+[3.1]
+# test: select max(null) from table
+explain select max(data2) from test_null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      25    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "agg                 2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "cursor_set_next     1      6      0     ",
+      "10": "cursor_set_close    1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "body                0      0      0     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test_null (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "cursor_readd        1      0      2     ",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 0",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      25     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "null                1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "int                 1      -      0     # 0",
+      "15": "push                1      0      0     ",
+      "16": "set_agg             0      25     0     ",
+      "17": "result              0      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+select max(data2) from test_null
+[null]
+# test: select count(*), min(column), max(column) from table
+select count(*), min(id), max(id) from test
+[[7, 0, 6]]
+select count(*), min(id), max(id), avg(id) from test
+[[7, 0, 6, 3]]
+# test: select from (select agg from table)
+explain select * from (select count(*) from test) t
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      1      0     ",
+      "02": "set                 2      1      1     ",
+      "03": "int                 3      -      0     # -2147483648",
+      "04": "push                3      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary)",
+      "06": "jmp                 13     0      0     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "push                3      0      0     ",
+      "09": "int                 3      -      0     # 0",
+      "10": "push                3      0      0     ",
+      "11": "set_agg             2      20     0     ",
+      "12": "cursor_next         0      7      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "null                3      0      0     ",
+      "15": "push                3      0      0     ",
+      "16": "int                 3      -      0     # 0",
+      "17": "push                3      0      0     ",
+      "18": "set_agg             2      20     0     ",
+      "19": "cursor_set_open     1      2      21    ",
+      "20": "jmp                 25     0      0     ",
+      "21": "count               3      1      0     ",
+      "22": "push                3      0      0     ",
+      "23": "set_add             1      0      0     ",
+      "24": "cursor_set_next     1      21     0     ",
+      "25": "cursor_set_close    1      1      0     ",
+      "26": "cursor_set_open     2      1      28    ",
+      "27": "jmp                 32     0      0     ",
+      "28": "cursor_set_read     2      2      0     ",
+      "29": "push                2      0      0     ",
+      "30": "set_add             0      0      0     ",
+      "31": "cursor_set_next     2      28     0     ",
+      "32": "cursor_set_close    2      1      0     ",
+      "33": "result              0      0      0     ",
+      "34": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from (select count(*) from test) t
+[7]
+# test: select agg from table group by
+explain select id, count(*) from test group by id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_set_read     2      1      1     ",
+      "07": "push                2      0      0     ",
+      "08": "count               2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "cursor_set_next     1      6      0     ",
+      "12": "cursor_set_close    1      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "body                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select id, count(*) from test group by id
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
+select data, count(*) from test group by data
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+select data2, count(*) from test group by data2
+[[0, 2], [1, 2], [2, 1], [null, 1], [3.1, 1]]
+select data, count(*) from test_empty group by data
+[]
+select data, count(*) from test_null group by data
+[[null, 1]]
+# test: select from (select agg from table group by)
+explain select * from (select id, count(*) from test group by id) t
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "set                 1      2      0     ",
+      "02": "set                 2      1      1     ",
+      "03": "int                 3      -      0     # -2147483648",
+      "04": "push                3      0      0     ",
+      "05": "cursor_open         0      0      7     # public.test (primary)",
+      "06": "jmp                 13     0      0     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "push                3      0      0     ",
+      "09": "cursor_readi32      3      0      0     ",
+      "10": "push                3      0      0     ",
+      "11": "set_agg             2      20     0     ",
+      "12": "cursor_next         0      7      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "cursor_set_open     1      2      16    ",
+      "15": "jmp                 22     0      0     ",
+      "16": "cursor_set_read     3      1      1     ",
+      "17": "push                3      0      0     ",
+      "18": "count               3      1      0     ",
+      "19": "push                3      0      0     ",
+      "20": "set_add             1      0      0     ",
+      "21": "cursor_set_next     1      16     0     ",
+      "22": "cursor_set_close    1      1      0     ",
+      "23": "cursor_set_open     2      1      25    ",
+      "24": "jmp                 31     0      0     ",
+      "25": "cursor_set_read     2      2      0     ",
+      "26": "push                2      0      0     ",
+      "27": "cursor_set_read     2      2      1     ",
+      "28": "push                2      0      0     ",
+      "29": "set_add             0      0      0     ",
+      "30": "cursor_set_next     2      25     0     ",
+      "31": "cursor_set_close    2      1      0     ",
+      "32": "result              0      0      0     ",
+      "33": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from (select id, count(*) from test group by id) t
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
+select * from (select data, count(*) from test group by data) t
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+select * from (select data, count(*) from test_empty group by data) t
+[]
+select * from (select data, count(*) from test_null group by data) t
+[[null, 1]]
+# test: select from table having agg
+explain select * from test having count(id) > 0
+{"msg": "unexpected token at the end of statement"}
+select * from test having count(id) > 0
+{"msg": "unexpected token at the end of statement"}
+# test: select from table group by having agg
+explain select id from test group by id having count(*) > 0
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 14     0      0     ",
+      "06": "count               2      1      0     ",
+      "07": "int                 3      -      0     # 0",
+      "08": "gtii                4      2      3     ",
+      "09": "jntr                13     4      0     ",
+      "10": "cursor_set_read     2      1      1     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "cursor_set_next     1      6      0     ",
+      "14": "cursor_set_close    1      1      0     ",
+      "15": "cte_set             0      1      0     ",
+      "16": "body                0      0      0     ",
+      "17": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select id from test group by id having count(*) > 0
+[0, 1, 2, 3, 4, 5, 6]
+explain select id, count(*) from test group by id having count(*) > 0
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 16     0      0     ",
+      "06": "count               2      1      1     ",
+      "07": "int                 3      -      0     # 0",
+      "08": "gtii                4      2      3     ",
+      "09": "jntr                15     4      0     ",
+      "10": "cursor_set_read     2      1      2     ",
+      "11": "push                2      0      0     ",
+      "12": "count               2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             1      0      0     ",
+      "15": "cursor_set_next     1      6      0     ",
+      "16": "cursor_set_close    1      1      0     ",
+      "17": "cte_set             0      1      0     ",
+      "18": "body                0      0      0     ",
+      "19": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 13     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "cursor_readi32      1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_agg             0      20     0     ",
+      "12": "cursor_next         0      5      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+select id, count(*) from test group by id having count(*) > 0
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
+explain select data, count(*) from test group by data having count(*) > 0
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 16     0      0     ",
+      "06": "count               2      1      1     ",
+      "07": "int                 3      -      0     # 0",
+      "08": "gtii                4      2      3     ",
+      "09": "jntr                15     4      0     ",
+      "10": "cursor_set_read     2      1      2     ",
+      "11": "push                2      0      0     ",
+      "12": "count               2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             1      0      0     ",
+      "15": "cursor_set_next     1      6      0     ",
+      "16": "cursor_set_close    1      1      0     ",
+      "17": "cte_set             0      1      0     ",
+      "18": "body                0      0      0     ",
+      "19": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 13     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "cursor_readi32      1      0      1     ",
+      "10": "push                1      0      0     ",
+      "11": "set_agg             0      20     0     ",
+      "12": "cursor_next         0      5      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+select data, count(*) from test group by data having count(*) > 0
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+explain select data, count(*) from test group by data having count(*) > 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 16     0      0     ",
+      "06": "count               2      1      1     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "gtii                4      2      3     ",
+      "09": "jntr                15     4      0     ",
+      "10": "cursor_set_read     2      1      2     ",
+      "11": "push                2      0      0     ",
+      "12": "count               2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             1      0      0     ",
+      "15": "cursor_set_next     1      6      0     ",
+      "16": "cursor_set_close    1      1      0     ",
+      "17": "cte_set             0      1      0     ",
+      "18": "body                0      0      0     ",
+      "19": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 13     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "cursor_readi32      1      0      1     ",
+      "10": "push                1      0      0     ",
+      "11": "set_agg             0      20     0     ",
+      "12": "cursor_next         0      5      0     ",
+      "13": "cursor_close        0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+select data, count(*) from test group by data having count(*) > 1
+[[0, 2], [1, 2]]
+explain select data, count(*) as c from test group by data having c > 1
+{"msg": "<test.c> column not found"}
+select data, count(*) as c from test group by data having c > 1
+{"msg": "<test.c> column not found"}
+explain select * from test group by data order by count(*)
+{"msg": "unexpected aggregate function usage"}
+# test: select agg from table group by order by
+explain select id, count(*) from test group by id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 12     0      0     ",
+      "06": "cursor_set_read     2      1      1     ",
+      "07": "push                2      0      0     ",
+      "08": "count               2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "cursor_set_next     1      6      0     ",
+      "12": "cursor_set_close    1      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "body                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select id, count(*) from test group by id
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
+explain select id, count(*) from test group by id order by id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set_ordered         1      2      1     ",
+      "04": "cursor_set_open     1      0      6     ",
+      "05": "jmp                 14     0      0     ",
+      "06": "cursor_set_read     2      1      1     ",
+      "07": "push                2      0      0     ",
+      "08": "count               2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "cursor_set_read     2      1      1     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "cursor_set_next     1      6      0     ",
+      "14": "cursor_set_close    1      1      0     ",
+      "15": "set_sort            1      0      0     ",
+      "16": "cte_set             0      1      0     ",
+      "17": "body                0      0      0     ",
+      "18": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "cursor_open         0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "cursor_readi32      1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_agg             0      20     0     ",
+      "10": "cursor_next         0      5      0     ",
+      "11": "cursor_close        0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+select id, count(*) from test group by id order by id
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
+select id, count(*) from test group by id order by data
+{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+# test: select agg from table group by having order by
+select id, count(*) from test group by id having id >= 3 and id < 6 order by id
+[[3, 1], [4, 1], [5, 1]]
+# test: select distinct from table group by
+select data, count(*) from test group by data order by data
+[[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
+select count(*) from test group by data order by data
+[1, 2, 2, 1, 1]
+select distinct data, count(*) from test group by data
+[[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
+select distinct count(*) from test group by data
+[1, 2]
+explain select distinct on (count(*)) data from test group by data
+{"msg": "unexpected aggregate function usage"}
+drop table test
+drop table test_empty
+drop table test_null
+disconnect S0
+close E0

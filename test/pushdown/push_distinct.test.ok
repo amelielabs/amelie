@@ -340,7 +340,6 @@ select distinct on (123,)
 {"msg": "bad expression"}
 select distinct on (123,)
 {"msg": "bad expression"}
-# test: select distinct on from table
 explain select * from test order by data
 [{
   "bytecode": {
