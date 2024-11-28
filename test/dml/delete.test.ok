@@ -55,15 +55,15 @@ explain delete from test where id = 3
     "node": {
       "00": "int                 0      -      0     # 3",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary, lookup)",
+      "02": "table_open          0      0      4     # public.test (primary, lookup)",
       "03": "jmp                 10     0      0     ",
-      "04": "cursor_readi32      0      0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 3",
       "06": "equii               2      0      1     ",
       "07": "jntr                3      2      0     ",
       "08": "delete              0      0      0     ",
       "09": "jmp                 3      0      0     ",
-      "10": "cursor_close        0      0      0     ",
+      "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
   }
@@ -113,23 +113,23 @@ explain delete from test where id > 0 and id < 1
     "node": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary)",
+      "02": "table_open          0      0      4     # public.test (primary)",
       "03": "jmp                 18     0      0     ",
-      "04": "cursor_readi32      0      0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 1",
       "06": "ltii                2      0      1     ",
       "07": "jntr                3      2      0     ",
-      "08": "cursor_readi32      0      0      0     ",
+      "08": "table_readi32       0      0      0     ",
       "09": "int                 1      -      0     # 0",
       "10": "gtii                2      0      1     ",
-      "11": "cursor_readi32      0      0      0     ",
+      "11": "table_readi32       0      0      0     ",
       "12": "int                 1      -      0     # 1",
       "13": "ltii                3      0      1     ",
       "14": "and                 0      2      3     ",
       "15": "jntr                17     0      0     ",
       "16": "delete              0      0      0     ",
-      "17": "cursor_next         0      4      0     ",
-      "18": "cursor_close        0      0      0     ",
+      "17": "table_next          0      4      0     ",
+      "18": "table_close         0      0      0     ",
       "19": "ret                 0      0      0     "
     }
   }

@@ -111,18 +111,18 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 		int op;
 		switch (column->type) {
 		case TYPE_BOOL:
-			op = CCURSOR_READB;
+			op = CTABLE_READB;
 			break;
 		case TYPE_INT:
 		{
 			switch (column->type_size) {
-			case 1: op = CCURSOR_READI8;
+			case 1: op = CTABLE_READI8;
 				break;
-			case 2: op = CCURSOR_READI16;
+			case 2: op = CTABLE_READI16;
 				break;
-			case 4: op = CCURSOR_READI32;
+			case 4: op = CTABLE_READI32;
 				break;
-			case 8: op = CCURSOR_READI64;
+			case 8: op = CTABLE_READI64;
 				break;
 			default:
 				abort();
@@ -133,9 +133,9 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 		case TYPE_DOUBLE:
 		{
 			switch (column->type_size) {
-			case 4: op = CCURSOR_READF;
+			case 4: op = CTABLE_READF;
 				break;
-			case 8: op = CCURSOR_READD;
+			case 8: op = CTABLE_READD;
 				break;
 			default:
 				abort();
@@ -144,19 +144,19 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 			break;
 		}
 		case TYPE_STRING:
-			op = CCURSOR_READS;
+			op = CTABLE_READS;
 			break;
 		case TYPE_JSON:
-			op = CCURSOR_READJ;
+			op = CTABLE_READJ;
 			break;
 		case TYPE_TIMESTAMP:
-			op = CCURSOR_READT;
+			op = CTABLE_READT;
 			break;
 		case TYPE_INTERVAL:
-			op = CCURSOR_READL;
+			op = CTABLE_READL;
 			break;
 		case TYPE_VECTOR:
-			op = CCURSOR_READV;
+			op = CTABLE_READV;
 			break;
 		default:
 			abort();

@@ -203,22 +203,22 @@ OpDesc ops[] =
 	{ CCNTR_LTE, "cntr_lte" },
 
 	// table cursor
-	{ CCURSOR_OPEN, "cursor_open" },
-	{ CCURSOR_PREPARE, "cursor_prepare" },
-	{ CCURSOR_CLOSE, "cursor_close" },
-	{ CCURSOR_NEXT, "cursor_next" },
-	{ CCURSOR_READB, "cursor_readb" },
-	{ CCURSOR_READI8, "cursor_readi8" },
-	{ CCURSOR_READI16, "cursor_readi16" },
-	{ CCURSOR_READI32, "cursor_readi32" },
-	{ CCURSOR_READI64, "cursor_readi64" },
-	{ CCURSOR_READF, "cursor_readf" },
-	{ CCURSOR_READD, "cursor_readd" },
-	{ CCURSOR_READT, "cursor_readt" },
-	{ CCURSOR_READL, "cursor_readl" },
-	{ CCURSOR_READS, "cursor_reads" },
-	{ CCURSOR_READJ, "cursor_readj" },
-	{ CCURSOR_READV, "cursor_readv" },
+	{ CTABLE_OPEN, "table_open" },
+	{ CTABLE_PREPARE, "table_prepare" },
+	{ CTABLE_CLOSE, "table_close" },
+	{ CTABLE_NEXT, "table_next" },
+	{ CTABLE_READB, "table_readb" },
+	{ CTABLE_READI8, "table_readi8" },
+	{ CTABLE_READI16, "table_readi16" },
+	{ CTABLE_READI32, "table_readi32" },
+	{ CTABLE_READI64, "table_readi64" },
+	{ CTABLE_READF, "table_readf" },
+	{ CTABLE_READD, "table_readd" },
+	{ CTABLE_READT, "table_readt" },
+	{ CTABLE_READL, "table_readl" },
+	{ CTABLE_READS, "table_reads" },
+	{ CTABLE_READJ, "table_readj" },
+	{ CTABLE_READV, "table_readv" },
 
 	// store cursor
 	{ CSTORE_OPEN, "store_open" },
@@ -355,7 +355,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&table->config->name));
 			break;
 		}
-		case CCURSOR_OPEN:
+		case CTABLE_OPEN:
 		{
 			Str schema;
 			Str table;
@@ -375,7 +375,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         op->d ? ", lookup": "");
 			break;
 		}
-		case CCURSOR_PREPARE:
+		case CTABLE_PREPARE:
 		{
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, true,

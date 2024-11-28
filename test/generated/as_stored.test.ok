@@ -147,17 +147,17 @@ explain insert into test (id) values (0) on conflict do update set data = data +
       "13": "ret                 0      0      0     "
     },
     "node": {
-      "00": "cursor_prepare      0      -      0     # public.test",
+      "00": "table_prepare       0      -      0     # public.test",
       "01": "jmp                 9      0      0     ",
       "02": "int                 0      -      0     # 1",
       "03": "push                0      0      0     ",
-      "04": "cursor_readi32      0      0      1     ",
+      "04": "table_readi32       0      0      1     ",
       "05": "int                 1      -      0     # 1",
       "06": "addii               2      0      1     ",
       "07": "push                2      0      0     ",
       "08": "update              0      1      0     ",
       "09": "upsert              0      2      -1    ",
-      "10": "cursor_close        0      0      0     ",
+      "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
   }

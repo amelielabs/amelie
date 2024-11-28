@@ -251,7 +251,7 @@ emit_send_generated(Compiler* self, int start)
 	auto insert = ast_insert_of(stmt->ast);
 	auto table  = insert->target->from_table;
 
-	// cursor_open( insert->values )
+	// store_open( insert->values )
 	auto target = insert->target_generated;
 	target->r = op2(self, CSET_PTR, rpin(self, TYPE_SET),
 	                (intptr_t)insert->values);

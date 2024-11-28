@@ -286,22 +286,22 @@ vm_run(Vm*       self,
 		&&ccntr_lte,
 
 		// table cursor
-		&&ccursor_open,
-		&&ccursor_prepare,
-		&&ccursor_close,
-		&&ccursor_next,
-		&&ccursor_readb,
-		&&ccursor_readi8,
-		&&ccursor_readi16,
-		&&ccursor_readi32,
-		&&ccursor_readi64,
-		&&ccursor_readf,
-		&&ccursor_readd,
-		&&ccursor_readt,
-		&&ccursor_readl,
-		&&ccursor_reads,
-		&&ccursor_readj,
-		&&ccursor_readv,
+		&&ctable_open,
+		&&ctable_prepare,
+		&&ctable_close,
+		&&ctable_next,
+		&&ctable_readb,
+		&&ctable_readi8,
+		&&ctable_readi16,
+		&&ctable_readi32,
+		&&ctable_readi64,
+		&&ctable_readf,
+		&&ctable_readd,
+		&&ctable_readt,
+		&&ctable_readl,
+		&&ctable_reads,
+		&&ctable_readj,
+		&&ctable_readv,
 
 		// store cursor
 		&&cstore_open,
@@ -1224,19 +1224,19 @@ ccntr_lte:
 	op_next;
 
 // table cursor
-ccursor_open:
-	op = ccursor_open(self, op);
+ctable_open:
+	op = ctable_open(self, op);
 	op_jmp;
 
-ccursor_prepare:
-	ccursor_prepare(self, op);
+ctable_prepare:
+	ctable_prepare(self, op);
 	op_next;
 
-ccursor_close:
+ctable_close:
 	cursor_reset(cursor_mgr_of(cursor_mgr, op->a));
 	op_next;
 
-ccursor_next:
+ctable_next:
 	// [target_id, _on_success]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	iterator_next(cursor->it);
@@ -1244,7 +1244,7 @@ ccursor_next:
 	op = likely(iterator_has(cursor->it)) ? code_at(self->code, op->b) : op + 1;
 	op_jmp;
 
-ccursor_readb:
+ctable_readb:
 	// [result, cursor, column]
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
@@ -1253,7 +1253,7 @@ ccursor_readb:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readi8:
+ctable_readi8:
 	// [result, cursor, column]
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
@@ -1262,7 +1262,7 @@ ccursor_readi8:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readi16:
+ctable_readi16:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int16_t*)ptr);
@@ -1270,7 +1270,7 @@ ccursor_readi16:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readi32:
+ctable_readi32:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int32_t*)ptr);
@@ -1278,7 +1278,7 @@ ccursor_readi32:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readi64:
+ctable_readi64:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int64_t*)ptr);
@@ -1286,7 +1286,7 @@ ccursor_readi64:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readf:
+ctable_readf:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(float*)ptr);
@@ -1294,7 +1294,7 @@ ccursor_readf:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readd:
+ctable_readd:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(double*)ptr);
@@ -1302,7 +1302,7 @@ ccursor_readd:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readt:
+ctable_readt:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_timestamp(&r[op->a], *(int64_t*)ptr);
@@ -1310,7 +1310,7 @@ ccursor_readt:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readl:
+ctable_readl:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_interval(&r[op->a], (Interval*)ptr);
@@ -1318,7 +1318,7 @@ ccursor_readl:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_reads:
+ctable_reads:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 	{
@@ -1330,7 +1330,7 @@ ccursor_reads:
 	}
 	op_next;
 
-ccursor_readj:
+ctable_readj:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_json(&r[op->a], ptr, json_sizeof(ptr), NULL);
@@ -1338,7 +1338,7 @@ ccursor_readj:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ccursor_readv:
+ctable_readv:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_vector(&r[op->a], (Vector*)ptr, NULL);

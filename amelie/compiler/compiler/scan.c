@@ -146,9 +146,9 @@ scan_table(Scan* self, Target* target)
 	encode_string(&cp->code_data.data, &table->config->name);
 	encode_string(&cp->code_data.data, &index->name);
 
-	// cursor_open
+	// table_open
 	int _open = op_pos(cp);
-	op4(cp, CCURSOR_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
+	op4(cp, CTABLE_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -211,18 +211,18 @@ scan_table(Scan* self, Target* target)
 			code_at(cp->code, _coffset_jmp)->c = _next;
 	}
 
-	// cursor_next
+	// table_next
 
 	// do not iterate further for point-lookups on unique index
 	if (point_lookup && index->unique)
 		op1(cp, CJMP, _where_eof);
 	else
-		op2(cp, CCURSOR_NEXT, target->id, _where);
+		op2(cp, CTABLE_NEXT, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
-	op1(cp, CCURSOR_CLOSE, target->id);
+	op1(cp, CTABLE_CLOSE, target->id);
 }
 
 static inline void

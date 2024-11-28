@@ -23,8 +23,8 @@ void cmerge(Vm*, Op*);
 void cmerge_recv(Vm*, Op*);
 void cmerge_recv_agg(Vm*, Op*);
 
-Op*  ccursor_open(Vm*, Op*);
-void ccursor_prepare(Vm*, Op*);
+Op*  ctable_open(Vm*, Op*);
+void ctable_prepare(Vm*, Op*);
 
 void cinsert(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);

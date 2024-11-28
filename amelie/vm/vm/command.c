@@ -321,7 +321,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 }
 
 hot Op*
-ccursor_open(Vm* self, Op* op)
+ctable_open(Vm* self, Op* op)
 {
 	// [cursor, name_offset, _where, is_point_lookup]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
@@ -365,7 +365,7 @@ ccursor_open(Vm* self, Op* op)
 }
 
 hot void
-ccursor_prepare(Vm* self, Op* op)
+ctable_prepare(Vm* self, Op* op)
 {
 	// [target_id, table*]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
