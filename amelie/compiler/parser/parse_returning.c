@@ -124,8 +124,17 @@ returning_add_target(Returning* self, Target* target)
 	{
 		auto column = list_at(Column, link);
 		auto as = ast(KAS);
-		// target.column AS column, ...
+		// target.order AS column, ...
 		as->l = ast(KNAME_COMPOUND);
+		/*
+		auto name_size_reserve = str_size(&target->name) + 1 + 4;
+		auto name = palloc(name_size_reserve);
+		auto name_size =
+			snprintf(name, name_size_reserve, "%.*s.%d",
+			         str_size(&target->name),
+			         str_of(&target->name), column->order);
+		str_set(&as->l->string, name, name_size);
+		*/
 		auto size = str_size(&target->name) + 1 + str_size(&column->name);
 		auto name = palloc(size);
 		memcpy(name, target->name.pos, str_size(&target->name));

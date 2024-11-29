@@ -74,12 +74,28 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 	if (target->redirect)
 		target = target->redirect;
 
-	// find unique column name in the target
-	bool conflict = false;
-	auto column = columns_find_noconflict(target->from_columns, name, &conflict);
+	// target.column_order or target.column_name
+	bool    column_conflict = false;
+	Column* column = NULL;
+	if (unlikely(isdigit(*str_of(name))))
+	{
+		// find column name by order
+		int64_t order;
+		if (str_toint(name, &order) == -1)
+			error("<%.*s.%.*s> column order is invalid",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(name), str_of(name));
+
+		column = columns_find_by(target->from_columns, order);
+	} else
+	{
+		// find unique column name in the target
+		column = columns_find_noconflict(target->from_columns, name, &column_conflict);
+	}
+
 	if (! column)
 	{
-		if (conflict)
+		if (column_conflict)
 		{
 			error("<%.*s.%.*s> column name is ambiguous",
 			      str_size(&target->name), str_of(&target->name),

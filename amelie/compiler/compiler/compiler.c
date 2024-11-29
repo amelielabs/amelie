@@ -459,6 +459,7 @@ emit_recv(Compiler* self)
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);
+	stmt->cte->type = rtype(self, r);
 	runpin(self, r);
 
 	// RETURN stmt

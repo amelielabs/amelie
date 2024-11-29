@@ -81,7 +81,7 @@ parse_from_target(From* self)
 			      str_size(&name), str_of(&name));
 		target->type         = TARGET_CTE;
 		target->from_cte     = cte;
-		target->from_columns = &cte->columns;
+		target->from_columns = cte->columns;
 		str_set_str(&target->name, &cte->name->string);
 		// add cte dependency
 		cte_deps_add(&stmt->cte_deps, cte);

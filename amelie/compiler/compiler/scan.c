@@ -235,9 +235,19 @@ scan_store(Scan* self, Target* target)
 	// using target register value to determine the scan object
 	if (target->r == -1)
 	{
-		assert(target->type == TARGET_SELECT);
-		assert(target->from_select);
-		target->r = emit_expr(cp, target, target->from_select);
+		if (target->type == TARGET_SELECT)
+		{
+			assert(target->from_select);
+			target->r = emit_expr(cp, target, target->from_select);
+		} else
+		if (target->type == TARGET_CTE)
+		{
+			auto cte = target->from_cte;
+			assert(cte->type == TYPE_SET || cte->type == TYPE_MERGE);
+			target->r = op2(cp, CCTE_GET, rpin(cp, cte->type), cte->stmt);
+		} else {
+			assert(false);
+		}
 	}
 
 	// open SET or MERGE cursor

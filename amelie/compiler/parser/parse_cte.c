@@ -34,29 +34,34 @@
 #include <amelie_parser.h>
 
 static void
-parse_cte_args(Stmt* self, Columns* columns, const char* clause)
+parse_cte_args(Stmt* self, Cte* cte)
 {
 	// )
 	if (stmt_if(self, ')'))
 		return;
 
+	Ast* args_tail = NULL;
 	for (;;)
 	{
 		// name
 		auto name = stmt_if(self, KNAME);
 		if (! name)
-			error("%s name (<name> expected", clause);
+			error("WITH name (<name> expected");
 
-		// ensure arg does not exists
-		auto arg = columns_find(columns, &name->string);
-		if (arg)
-			error("<%.*s> cte argument redefined", str_size(&name->string),
-			      str_of(&name->string));
+		// ensure argument is unique
+		for (auto at = cte->args; at; at = at->next) {
+			if (str_compare(&at->string, &name->string))
+				error("WITH name (<%.*s> argument redefined", str_size(&at->string),
+				      str_of(&at->string));
+		}
 
-		// add argument
-		arg = column_allocate();
-		columns_add(columns, arg);
-		column_set_name(arg, &name->string);
+		// add argument to the list
+		if (cte->args == NULL)
+			cte->args = name;
+		else
+			args_tail->next = name;
+		args_tail = name;
+		cte->args_count++;
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -65,43 +70,32 @@ parse_cte_args(Stmt* self, Columns* columns, const char* clause)
 
 	// )
 	if (! stmt_if(self, ')'))
-		error("%s name (<)> expected", clause);
+		error("WITH name (<)> expected");
 }
 
-void
+Cte*
 parse_cte(Stmt* self, bool with, bool with_args)
 {
-	const char* clause = with? "WITH": "INTO";
-	if (self->cte)
-		error("%s CTE redefined", clause);
+	unused(with);
 
 	// name [(args)]
 	auto name = stmt_if(self, KNAME);
 	if (! name)
-		error("%s <name> expected", clause);
-
-	Columns* columns_ref;
-	Columns  columns;
-	columns_init(&columns);
-	guard(columns_free, &columns);
+		error("WITH <name> expected");
 
 	// reuse existing cte variable (columns are not compared)
-	self->cte = cte_list_find(self->cte_list, &name->string);
-	if (self->cte)
-	{
-		// columns are ignored on reused
-		columns_ref = &columns;
-	} else
-	{
-		// add new cte definition
-		self->cte = cte_list_add(self->cte_list, name, self->order);
-		columns_ref = &self->cte->columns;
-	}
+	auto cte = cte_list_find(self->cte_list, &name->string);
+	if (cte)
+		error("CTE <%.*s> redefined", str_size(&name->string),
+		      str_of(&name->string));
 
+	cte = cte_list_add(self->cte_list, name, self->order);
 	if (! with_args)
-		return;
+		return cte;
 
 	// (args)
 	if (stmt_if(self, '('))
-		parse_cte_args(self, columns_ref, clause);
+		parse_cte_args(self, cte);
+
+	return cte;
 }

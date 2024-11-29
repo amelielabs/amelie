@@ -485,7 +485,8 @@ parse_with(Parser* self)
 		self->stmt = stmt;
 
 		// name [(args)]
-		parse_cte(stmt, true, true);
+		auto cte = parse_cte(stmt, true, true);
+		stmt->cte = cte;
 
 		// AS
 		if (! lex_if(lex, KAS))
@@ -495,10 +496,33 @@ parse_with(Parser* self)
 		if (! lex_if(lex, '('))
 			error("WITH name AS <(> expected");
 
-		// stmt (cannot be a utility statement)
+		// parse stmt (cannot be a utility statement)
 		parse_stmt(self, stmt);
-		if (stmt_is_utility(stmt))
-			error("CTE must DML or Select");
+
+		// set cte returning columns
+		Returning* ret;
+		switch (stmt->id) {
+		case STMT_INSERT:
+			ret = &ast_insert_of(stmt->ast)->ret;
+			break;
+		case STMT_UPDATE:
+			ret = &ast_update_of(stmt->ast)->ret;
+			break;
+		case STMT_DELETE:
+			ret = &ast_delete_of(stmt->ast)->ret;
+			break;
+		case STMT_SELECT:
+			ret = &ast_select_of(stmt->ast)->ret;
+			break;
+		default:
+			error("CTE statement must be DML or SELECT");
+			break;
+		}
+		cte->columns = &ret->columns;
+
+		// ensure that arguments count match
+		if (cte->args_count > 0 && cte->args_count != cte->columns->list_count)
+			error("CTE arguments count must mismatch the returning arguments count");
 
 		// )
 		if (! lex_if(lex, ')'))
