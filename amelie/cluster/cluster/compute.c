@@ -69,13 +69,16 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
 
-		auto row = row_copy((Row*)data);
-
 		// replay write
+		auto row = (Row*)data;
 		if (type == LOG_REPLACE)
-			part_insert(part, tr, true, row);
-		else
+		{
+			auto copy = row_copy(row);
+			part_insert(part, tr, true, copy);
+		} else
+		{
 			part_delete_by(part, tr, row);
+		}
 	}
 }
 

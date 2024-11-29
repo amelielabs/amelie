@@ -86,7 +86,7 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		// [meta offset, data offset]
 		encode_integer(&req->arg, (intptr_t)(meta_start - start));
 		encode_integer(&req->arg, (intptr_t)(data - start));
-		json_skip(&data);
+		data += row_size((Row*)data);
 	}
 }
 

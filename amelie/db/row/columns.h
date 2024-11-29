@@ -15,9 +15,10 @@ typedef struct Columns Columns;
 
 struct Columns
 {
-	List list;
-	int  list_count;
-	int  generated_columns;
+	List    list;
+	int     list_count;
+	int     generated_columns;
+	Column* serial;
 };
 
 static inline void
@@ -25,6 +26,7 @@ columns_init(Columns* self)
 {
 	self->list_count = 0;
 	self->generated_columns = 0;
+	self->serial = NULL;
 	list_init(&self->list);
 }
 
@@ -47,6 +49,10 @@ columns_add(Columns* self, Column* column)
 
 	if (! str_empty(&column->constraint.as_stored))
 		self->generated_columns++;
+
+	// save order of the first serial column
+	if (column->constraint.serial && !self->serial)
+		self->serial = column;
 }
 
 static inline void
@@ -56,12 +62,17 @@ columns_del(Columns* self, Column* column)
 	self->list_count--;
 	assert(self->list_count >= 0);
 
+	if (self->serial == column)
+		self->serial = NULL;
+
 	// reorder columns
 	int order = 0;
 	list_foreach(&self->list)
 	{
 		auto column = list_at(Column, link);
 		column->order = order++;
+		if (column->constraint.serial && !self->serial)
+			self->serial = column;
 	}
 }
 

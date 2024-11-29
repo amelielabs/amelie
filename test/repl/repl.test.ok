@@ -57,23 +57,21 @@ show replicas
 # test: start primary
 start repl
 # test: wait for primary connect
-watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
-[]
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected::bool = true
 # test: write
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 show lsn
 [3]
 # test: wait replica sync
 watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
-[]
 # test: stop replica
 disconnect S1
 close E1
 # test: write (replica off)
-insert into test 4
-insert into test 5
-insert into test 6
+insert into test values (4)
+insert into test values (5)
+insert into test values (6)
 show lsn
 [6]
 # test: replica lag
@@ -89,18 +87,15 @@ show replicas
 }]
 # test: replica disconnected
 switch S0
-watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = false
-[]
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected::bool = false
 # test: restart replica
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
 connect E1 S1 localhost:3481
 # test: wait for primary reconnect
 switch S0
-watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
-[]
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected::bool = true
 # test: wait replica sync
 watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
-[]
 show replicas
 [{
   "00000000-0000-0000-0000-000000000001": {
@@ -118,15 +113,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 # test: wait for primary reconnect
 switch S0
-watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected = true
-[]
+watch system.replicas()['00000000-0000-0000-0000-000000000001'].connected::bool = true
 # test: write
-insert into test 7
-insert into test 8
-insert into test 9
+insert into test values (7)
+insert into test values (8)
+insert into test values (9)
 # test: wait replica sync
 watch system.replicas()['00000000-0000-0000-0000-000000000001'].lsn = system.config().lsn
-[]
 show replicas
 [{
   "00000000-0000-0000-0000-000000000001": {
@@ -143,7 +136,7 @@ show read_only
 [true]
 show lsn
 [9]
-insert into test 10
+insert into test values (10)
 {"msg": "system is in read-only mode"}
 show lsn
 [9]
@@ -157,7 +150,7 @@ show psn
 [3]
 # test: replica read
 select * from test
-[[1], [6], [7], [8], [2], [9], [3], [4], [5]]
+[1, 6, 7, 8, 2, 9, 3, 4, 5]
 show repl
 [{
   "active": true,
@@ -202,17 +195,14 @@ show repl
 switch S1
 create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
 # test: wait for primary connect
-watch system.replicas()['00000000-0000-0000-0000-000000000000'].connected = true
-[]
+watch system.replicas()['00000000-0000-0000-0000-000000000000'].connected::bool = true
 watch system.replicas()['00000000-0000-0000-0000-000000000000'].lsn = system.config().lsn
-[]
 # test: write
-insert into test 10
-insert into test 11
-insert into test 12
+insert into test values (10)
+insert into test values (11)
+insert into test values (12)
 # test: wait replica sync
 watch system.replicas()['00000000-0000-0000-0000-000000000000'].lsn = system.config().lsn
-[]
 show replicas
 [{
   "00000000-0000-0000-0000-000000000000": {
@@ -224,7 +214,7 @@ show replicas
   }
 }]
 select * from test
-[[1], [6], [7], [8], [2], [9], [10], [12], [3], [4], [5], [11]]
+[1, 6, 7, 8, 2, 9, 10, 12, 3, 4, 5, 11]
 disconnect S1
 close E1
 disconnect S0

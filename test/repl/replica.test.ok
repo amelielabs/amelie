@@ -27,13 +27,15 @@ show replicas
 }]
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
-select * from system.replicas()
+select system.replicas()
 [{
-  "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "localhost",
-  "connected": false,
-  "lsn": 0,
-  "lag": 1
+  "00000000-0000-0000-0000-000000000000": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "uri": "localhost",
+    "connected": false,
+    "lsn": 0,
+    "lag": 1
+  }
 }]
 # test: drop replica statement parsing
 drop replica

@@ -23,7 +23,7 @@ close E1
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
 connect E0 S0 localhost:3480
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 show lsn
 [3]
 backup E2 "uri": "127.0.0.1:3480"
@@ -36,7 +36,7 @@ connect E2 S0 localhost:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
-[[1], [2], [3]]
+[1, 2, 3]
 show lsn
 [3]
 disconnect S0
@@ -59,7 +59,7 @@ show wal
   "writes_bytes": 0,
   "ops": 0
 }]
-insert into test 4
+insert into test values (4)
 show wal
 [{
   "active": true,
@@ -70,7 +70,7 @@ show wal
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 30,
+  "writes_bytes": 34,
   "ops": 1
 }]
 backup E3 "uri": "127.0.0.1:3480"
@@ -83,7 +83,7 @@ connect E3 S0 localhost:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
-[[1], [2], [3], [4]]
+[1, 2, 3, 4]
 show lsn
 [4]
 show wal
@@ -125,13 +125,13 @@ show lsn
 show checkpoint
 [4]
 select * from test
-[[1], [2], [3], [4]]
+[1, 2, 3, 4]
 disconnect S0
 close E4
 # test: backup checkpoint with wal
 open E0
 connect E0 S0 localhost:3480
-insert into test 5,6,7
+insert into test values (5),(6),(7)
 show lsn
 [5]
 show checkpoint
@@ -148,6 +148,6 @@ show lsn
 show checkpoint
 [4]
 select * from test
-[[1], [6], [7], [2], [3], [4], [5]]
+[1, 6, 7, 2, 3, 4, 5]
 disconnect S0
 close E5

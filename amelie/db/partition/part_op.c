@@ -75,15 +75,19 @@ static LogIf log_if_secondary =
 	.abort  = log_if_secondary_abort
 };
 
-#if 0
 static inline void
-part_sync_serial(Part* self, uint8_t* pos_serial)
+part_sync_serial(Part* self, Row* row, Columns* columns)
 {
+	// use first serial column to sync the serial sequence
+	if (! columns->serial)
+		return;
 	int64_t value;
-	data_read_integer(&pos_serial, &value);
+	if (columns->serial->type_size == 4)
+		value = *(int32_t*)row_at(row, columns->serial->order);
+	else
+		value = *(int64_t*)row_at(row, columns->serial->order);
 	serial_sync(self->serial, value);
 }
-#endif
 
 hot void
 part_insert(Part* self, Tr* tr, bool recover, Row* row)
@@ -100,12 +104,9 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	if (tr->limit)
 		limit_ensure(tr->limit, row);
 
-	// todo
-	/*
 	// sync last serial column value during recover
-	if (pos_serial && recover)
-		part_sync_serial(self, pos_serial);
-	*/
+	if (recover)
+		part_sync_serial(self, row, keys->columns);
 
 	// update primary index
 	op->row_prev = index_set(primary, row);
@@ -268,12 +269,10 @@ hot void
 part_ingest(Part* self, Row* row)
 {
 	auto primary = part_primary(self);
+	auto keys    = index_keys(primary);
 
-	/*
 	// sync last serial column value during recover
-	if (pos_serial)
-		part_sync_serial(self, pos_serial);
-	*/
+	part_sync_serial(self, row, keys->columns);
 
 	// update primary index
 	index_ingest(primary, row);
