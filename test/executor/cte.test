@@ -3,12 +3,110 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 
-# test: with(table), expr
+# test: cte parsing
+with
+with 1
+with test
+with test 1
+with test as
+with test as 1
+with test (
+with test (1
+with test (name
+with test (name,
+with test (name,,
+with test (name,)
+with test (name,
+with test (name)
+with test as (
+
+# test: with () (no stmt)
+with test as ()
+
+# test: with(select expr) (no main stmt)
+with test as (select 1)
+explain with test as (select 1)
+
+with test as (select 1,2,3)
+explain with test as (select 1,2,3)
+
+# test: with(select expr), select expr (cte not used)
+with test as (select 1) select 2
+
+# test: with(select expr), select * from cte
+with a as (select 1) select * from a
+with a as (select 1, 2) select * from a
+with a as (select 1, 2, 3) select * from a
+
+# test: with(select expr as), select * from cte
+with a as (select 1 as a) select * from a
+with a as (select 1 as a, 2 as b) select * from a
+
+# test: with(select expr as), select column from cte
+with a as (select 1 as a) select a from a
+with a as (select 1 as a, 2 as b) select a, b from a
+
+# test: with(select expr as), select target.column from cte
+with a as (select 1 as a, 2 as b) select a.a, a.b from a
+
+# test: with(select * from table) (no main stmt)
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-with a as (select * from test) select * from a
-explain with a as (select * from test) select * from a
+explain with a as (select * from test)
+with a as (select * from test)
 drop table test
+
+# test: with(select * from table) select expr (cte not used)
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select * from test) select 2
+with a as (select * from test) select 2
+drop table test
+
+# test: with(select * from table), select * from cte
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select * from test) select * from a
+with a as (select * from test) select * from a
+drop table test
+
+# test: with(select * from table), select column from cte
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select * from test) select id from a
+with a as (select * from test) select id from a
+drop table test
+
+# test: with(select * from table), select target.column from cte
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select * from test) select a.id from a
+with a as (select * from test) select a.id from a
+drop table test
+
+# test: with(select column from table), select column from cte
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select id from test) select id from a
+with a as (select id from test) select id from a
+drop table test
+
+# test: with(select column as from table), select column from cte
+create table test (id int primary key)
+insert into test values (1),(2),(3)
+explain with a as (select id as x from test) select id from a
+explain with a as (select id as x from test) select x from a
+with a as (select id as x from test) select x from a
+drop table test
+
+## test: with(select column, column table), select * from cte (same name)
+#create table test (id int primary key)
+#insert into test values (1),(2),(3)
+#with a as (select id, id from test) select * from a
+#with a as (select id, id as x from test) select * from a
+#drop table test
+
+
 
 ## test: with(shared), expr
 #create shared table test (id int primary key)
