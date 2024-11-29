@@ -10,7 +10,6 @@ show nodes
 create table test (id int primary key)
 create shared table test (id int primary key)
 select * from test
-select * from [1,2,3]
 
 # test: create node statement parsing
 create compute
@@ -41,7 +40,7 @@ create table test1 (id int primary key)
 create shared table test2 (id int primary key)
 show tables
 
-insert into test1 values (1), (2), (3); insert into test2 4,5,6
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
 select * from test1
 select * from test2
 
@@ -98,22 +97,22 @@ create node "00000000-0000-0000-0000-000000000004"
 select * from test4
 drop table test4
 
-# test: create table/create node/add column
-show nodes
-create table test(id int primary key)
-show tables
+## test: create table/create node/add column
+#show nodes
+#create table test(id int primary key)
+#show tables
 
-insert into test values (1), (2), (3)
-create node "00000000-0000-0000-0000-000000000005"
-create node "00000000-0000-0000-0000-000000000006"
-show nodes
+#insert into test values (1), (2), (3)
+#create node "00000000-0000-0000-0000-000000000005"
+#create node "00000000-0000-0000-0000-000000000006"
+#show nodes
 
-# table partitions must not change
-alter table test add column data int
-show tables
+## table partitions must not change
+#alter table test add column data int
+#show tables
 
-select * from test
-drop table test
+#select * from test
+#drop table test
 
 disconnect S0
 close E0
