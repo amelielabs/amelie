@@ -228,10 +228,7 @@ session_execute_sql(Session* self)
 
 	// execute utility, DDL, DML or Query
 	auto stmt = compiler_stmt(compiler);
-	auto utility = stmt &&
-	               stmt_is_utility(stmt) &&
-	               stmt->id != STMT_EXECUTE;
-	if (utility)
+	if (stmt && stmt_is_utility(stmt))
 		session_execute_utility(self);
 	else
 		session_execute_distributed(self);

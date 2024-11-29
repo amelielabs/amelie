@@ -22,7 +22,6 @@ struct Cte
 	int      args_count;
 	Columns* columns;
 	int      stmt;
-	int      type;
 	Cte*     next;
 };
 
@@ -56,7 +55,6 @@ cte_list_add(CteList* self, Ast* name, int stmt)
 	cte->args       = NULL;
 	cte->args_count = 0;
 	cte->stmt       = stmt;
-	cte->type       = TYPE_NULL;
 	cte->next       = NULL;
 	cte->columns    = NULL;
 	if (self->list == NULL)

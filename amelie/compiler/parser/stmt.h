@@ -49,8 +49,6 @@ typedef enum
 	STMT_UPDATE,
 	STMT_DELETE,
 	STMT_SELECT,
-	STMT_RETURN,
-	STMT_EXECUTE,
 	STMT_WATCH
 } StmtId;
 
@@ -177,7 +175,6 @@ stmt_is_utility(Stmt* self)
 	case STMT_ALTER_INDEX:
 	case STMT_ALTER_VIEW:
 	case STMT_TRUNCATE:
-	case STMT_EXECUTE:
 		return true;
 	default:
 		break;

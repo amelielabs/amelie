@@ -193,10 +193,6 @@ emit_stmt(Compiler* self)
 		break;
 	}
 
-	case STMT_RETURN:
-		// do nothing (coordinator only)
-		return;
-
 	case STMT_WATCH:
 	{
 		// do nothing (coordinator only)
@@ -328,10 +324,6 @@ emit_send(Compiler* self, int start)
 		break;
 	}
 
-	case STMT_RETURN:
-		// no targets
-		break;
-
 	case STMT_WATCH:
 		// no targets
 		break;
@@ -433,16 +425,6 @@ emit_recv(Compiler* self)
 		break;
 	}
 
-	case STMT_RETURN:
-	{
-		// RETURN cte_name
-		//
-		// optimized path to avoid cte double copy
-		op1(self, CBODY, stmt->cte->id);
-		op0(self, CRET);
-		return;
-	}
-
 	case STMT_WATCH:
 		// no targets (coordinator only)
 		r = emit_watch(self, stmt->ast);
@@ -459,10 +441,9 @@ emit_recv(Compiler* self)
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);
-	stmt->cte->type = rtype(self, r);
 	runpin(self, r);
 
-	// RETURN stmt
+	// statement returns
 	if (stmt->ret)
 	{
 		if (has_result)

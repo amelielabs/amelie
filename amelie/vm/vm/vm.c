@@ -1371,10 +1371,9 @@ cstore_open:
 	op_jmp;
 
 cstore_close:
-	// [cursor, free]
+	// [cursor]
 	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	if (op->b)
-		value_free(&r[cursor->r]);
+	value_free(&r[cursor->r]);
 	cursor_reset(cursor);
 	op_next;
 

@@ -16,10 +16,10 @@ typedef struct Value Value;
 
 struct Store
 {
-	void (*free)(Store*);
-	void (*encode)(Store*, Timezone*, Buf*);
-	void (*export)(Store*, Timezone*, Buf*);
-	int   refs;
+	void       (*free)(Store*);
+	void       (*encode)(Store*, Timezone*, Buf*);
+	void       (*export)(Store*, Timezone*, Buf*);
+	atomic_u32 refs;
 };
 
 static inline void
@@ -31,16 +31,18 @@ store_init(Store* self)
 static inline void
 store_free(Store* self)
 {
-	self->refs--;
-	if (self->refs >= 0)
+	if (atomic_u32_of(&self->refs) == 0)
+	{
+		self->free(self);
 		return;
-	self->free(self);
+	}
+	atomic_u32_dec(&self->refs);
 }
 
 static inline void
 store_ref(Store* self)
 {
-	self->refs++;
+	atomic_u32_inc(&self->refs);
 }
 
 static inline void

@@ -133,36 +133,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 	if (ast->id == KEOF)
 		return;
 
-	// RETURN cte_name | stmt
-	if (ast->id == KRETURN)
-	{
-		stmt->ret = true;
-		auto name = stmt_if(stmt, KNAME);
-		if (name)
-		{
-			ast = lex_next(lex);
-			auto is_last = ast->id == ';' || ast->id == KEOF;
-			if (is_last)
-			{
-				auto cte = cte_list_find(&self->cte_list, &name->string);
-				if (cte)
-				{
-					// cte
-					stmt->id  = STMT_RETURN;
-					stmt->cte = cte;
-					lex_push(lex, ast);
-					return;
-				}
-			}
-
-			// handle as expression
-			lex_push(lex, ast);
-			lex_push(lex, name);
-		}
-
-		ast = lex_next(lex);
-	}
-
 	switch (ast->id) {
 	case KSHOW:
 		// SHOW name

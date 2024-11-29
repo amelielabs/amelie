@@ -88,7 +88,6 @@ static Keyword keywords_d[] =
 
 static Keyword keywords_e[] =
 {
-	{ KEXECUTE,               "execute",               7  },
 	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
@@ -198,7 +197,6 @@ static Keyword keywords_q[] =
 static Keyword keywords_r[] =
 {
 	{ KRIGHT,                 "right",                 5  },
-	{ KRETURN,                "return",                6  },
 	{ KRETURNING,             "returning",             9  },
 	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },

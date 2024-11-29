@@ -243,8 +243,8 @@ scan_store(Scan* self, Target* target)
 		if (target->type == TARGET_CTE)
 		{
 			auto cte = target->from_cte;
-			assert(cte->type == TYPE_SET || cte->type == TYPE_MERGE);
-			target->r = op2(cp, CCTE_GET, rpin(cp, cte->type), cte->stmt);
+			// todo: type might be TYPE_MERGE
+			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_SET), cte->stmt);
 		} else {
 			assert(false);
 		}
@@ -310,9 +310,8 @@ scan_store(Scan* self, Target* target)
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
 
-	// free cursor object on close, unless it is CTE result
-	auto free_on_close = target->type != TARGET_CTE;
-	op2(cp, CSTORE_CLOSE, target->id, free_on_close);
+	// STORE_CLOSE
+	op2(cp, CSTORE_CLOSE, target->id, true);
 }
 
 static inline void
