@@ -78,10 +78,10 @@ select (select t.data.data) from test t
 select (select t.data.data.id) from test t
 drop table test
 
-# test: select from (select const)
-select * from (select 0)
-select * from (select null)
-select * from (select 1, 2)
+# test: select from (select expr)
+select * from (select 0) t
+select * from (select null) t
+select * from (select 1, 2) t
 
 # test: select * from (select from shared)
 create shared table test (id int primary key)

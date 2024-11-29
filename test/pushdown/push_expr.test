@@ -1,0 +1,27 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
+connect E0 S0 localhost:3485
+
+# test: select * from (select expr)
+explain select * from (select 1) t
+select * from (select 1) t
+
+explain select * from (select 1, 2) t
+select * from (select 1, 2) t
+
+# test: select column from (select expr as)
+explain select x from (select 1 as x) t
+select x from (select 1 as x) t
+
+explain select a, b from (select 1 as a, 2 as b) t
+select a, b from (select 1 as a, 2 as b) t
+
+# test: select * from (select expr as) (conflict)
+explain select * from (select 1 as a, 2 as a) t
+
+# test: select column from (select expr as) (conflict)
+explain select a from (select 1 as a, 2 as a) t
+
+disconnect S0
+close E0

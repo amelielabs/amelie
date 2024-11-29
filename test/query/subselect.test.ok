@@ -251,13 +251,13 @@ select (select t.data.data) from test t
 select (select t.data.data.id) from test t
 [[1], [2], [3]]
 drop table test
-# test: select from (select const)
-select * from (select 0)
-{"msg": "FROM (SELECT) subquery has no target"}
-select * from (select null)
-{"msg": "FROM (SELECT) subquery has no target"}
-select * from (select 1, 2)
-{"msg": "FROM (SELECT) subquery has no target"}
+# test: select from (select expr)
+select * from (select 0) t
+[0]
+select * from (select null) t
+[null]
+select * from (select 1, 2) t
+[[1, 2]]
 # test: select * from (select from shared)
 create shared table test (id int primary key)
 insert into test values (1)
