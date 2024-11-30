@@ -727,6 +727,22 @@ drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
 {"msg": "only consts allowed as DEFAULT expression"}
+# test: constraint default (type not supported)
+create table test (id int primary key, data json default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data vector default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data timestamp default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data interval default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+# test: constraint default (type validate)
+create table test (id int primary key, data int default 'string')
+{"msg": "column <data> DEFAULT value type does not match column type"}
+create table test (id int primary key, data int default 3.4)
+{"msg": "column <data> DEFAULT value type does not match column type"}
+create table test (id int primary key, data string default 1)
+{"msg": "column <data> DEFAULT value type does not match column type"}
 # test: constraint not null with key
 create table test (id int not null primary key)
 select system.tables().'public.test'.columns

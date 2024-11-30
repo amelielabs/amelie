@@ -139,24 +139,42 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		case KDEFAULT:
 		{
 			buf_reset(&cons->value);
+
+			// ensure column can have default value
+			if (column->type == TYPE_TIMESTAMP ||
+			    column->type == TYPE_INTERVAL  ||
+			    column->type == TYPE_JSON      ||
+			    column->type == TYPE_VECTOR)
+			{
+				error("DEFAULT for column <%.*s> is not supported",
+				      str_size(&column->name), str_of(&column->name));
+			}
+
 			auto expr = parse_expr(self, NULL);
+			bool type_match;
 			switch (expr->id) {
 			case KNULL:
+				type_match = true;
 				encode_null(&cons->value);
 				break;
 			case KREAL:
+				type_match = column->type == TYPE_DOUBLE;
 				encode_real(&cons->value, expr->real);
 				break;
 			case KINT:
+				type_match = column->type == TYPE_INT || column->type == TYPE_DOUBLE;
 				encode_integer(&cons->value, expr->integer);
 				break;
 			case KSTRING:
+				type_match = column->type == TYPE_STRING;
 				encode_string(&cons->value, &expr->string);
 				break;
 			case KTRUE:
+				type_match = column->type == TYPE_BOOL;
 				encode_bool(&cons->value, true);
 				break;
 			case KFALSE:
+				type_match = column->type == TYPE_BOOL;
 				encode_bool(&cons->value, false);
 				break;
 			default:
@@ -164,6 +182,9 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				break;
 			}
 			has_default = true;
+			if (! type_match)
+				error("column <%.*s> DEFAULT value type does not match column type",
+				      str_size(&column->name), str_of(&column->name));
 			break;
 		}
 
@@ -172,8 +193,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		{
 			// ensure the column has type INT64
 			if (column->type != TYPE_INT || column->type_size < 4)
-				error("SERIAL column <%.*s> must be int or int64",
-				      str_size(&column->name),
+				error("SERIAL column <%.*s> must be int or int64", str_size(&column->name),
 				      str_of(&column->name));
 
 			constraint_set_serial(cons, true);
@@ -186,8 +206,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			// ensure the column has type INT
 			if (column->type != TYPE_INT || column->type_size < 4)
 				error("RANDOM column <%.*s> must be int or int64",
-				      str_size(&column->name),
-				      str_of(&column->name));
+				      str_size(&column->name), str_of(&column->name));
 
 			constraint_set_random(cons, true);
 

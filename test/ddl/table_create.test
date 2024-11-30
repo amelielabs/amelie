@@ -210,6 +210,17 @@ drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
 
+# test: constraint default (type not supported)
+create table test (id int primary key, data json default 1)
+create table test (id int primary key, data vector default 1)
+create table test (id int primary key, data timestamp default 1)
+create table test (id int primary key, data interval default 1)
+
+# test: constraint default (type validate)
+create table test (id int primary key, data int default 'string')
+create table test (id int primary key, data int default 3.4)
+create table test (id int primary key, data string default 1)
+
 # test: constraint not null with key
 create table test (id int not null primary key)
 select system.tables().'public.test'.columns
