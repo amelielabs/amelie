@@ -201,7 +201,7 @@ insert into test values (2, 0) on conflict do update set data = data + 1
 show lsn
 [5]
 select serial("public", "test")
-[3]
+[4]
 select * from test
 [[0, 0], [1, 1], [2, 3]]
 # test: restart

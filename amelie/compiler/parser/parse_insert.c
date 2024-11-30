@@ -33,6 +33,35 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
+hot static inline void
+parse_default(Column*  column,
+              Value*   column_value,
+              SetMeta* row_meta,
+              uint64_t serial)
+{
+	// SERIAL, RANDOM or DEFAULT
+	auto cons = &column->constraint;
+	if (cons->serial)
+	{
+		value_set_int(column_value, serial);
+	} else
+	if (cons->random)
+	{
+		auto value = random_generate(global()->random) % cons->random_modulo;
+		value_set_int(column_value, value);
+	} else
+	{
+		value_decode(column_value, cons->value.start, NULL);
+	}
+	if (column_value->type == TYPE_NULL)
+		return;
+
+	if (column_value->type == TYPE_STRING)
+		row_meta->row_size += json_size_string(str_size(&column_value->string));
+	else
+		row_meta->row_size += column->type_size;
+}
+
 hot static void
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
@@ -54,7 +83,9 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		auto column = list_at(Column, link);
 		auto column_value = &row[column->order];
 
-		if (list && list->column->order == column->order)
+		// DEFAULT | value
+		auto is_default = stmt_if(self, KDEFAULT);
+		if (!is_default && list && list->column->order == column->order)
 		{
 			// parse column value
 			row_meta->row_size +=
@@ -72,27 +103,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			auto cons = &column->constraint;
-			if (cons->serial)
-			{
-				value_set_int(column_value, serial);
-			} else
-			if (cons->random)
-			{
-				auto value = random_generate(global()->random) % cons->random_modulo;
-				value_set_int(column_value, value);
-			} else
-			{
-				value_decode(column_value, cons->value.start, NULL);
-			}
-
-			if (column_value->type != TYPE_NULL)
-			{
-				if (column_value->type == TYPE_STRING)
-					row_meta->row_size += json_size_string(str_size(&column_value->string));
-				else
-					row_meta->row_size += column->type_size;
-			}
+			parse_default(column, column_value, row_meta, serial);
 		}
 
 		// ensure NOT NULL constraint
@@ -121,6 +132,8 @@ parse_row(Stmt* self, AstInsert* stmt)
 	SetMeta* row_meta;
 	auto row = set_reserve(stmt->values, &row_meta);
 
+	uint64_t serial = serial_next(&stmt->target->from_table->serial);
+
 	// value, ...
 	auto columns = table_columns(stmt->target->from_table);
 	list_foreach(&columns->list)
@@ -128,11 +141,20 @@ parse_row(Stmt* self, AstInsert* stmt)
 		auto column = list_at(Column, link);
 		auto column_value = &row[column->order];
 
-		// parse column value
-		row_meta->row_size +=
-			parse_value(self->lex, self->local, self->json,
-			            column,
-			            column_value);
+		// DEFAULT | value
+		auto is_default = stmt_if(self, KDEFAULT);
+		if (! is_default)
+		{
+			// parse column value
+			row_meta->row_size +=
+				parse_value(self->lex, self->local, self->json,
+				            column,
+				            column_value);
+		} else
+		{
+			// SERIAL, RANDOM or DEFAULT
+			parse_default(column, column_value, row_meta, serial);
+		}
 
 		// ensure NOT NULL constraint
 		if (column_value->type == TYPE_NULL && column->constraint.not_null)
@@ -239,26 +261,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
-			auto cons = &column->constraint;
-			if (cons->serial)
-			{
-				value_set_int(column_value, serial);
-			} else
-			if (cons->random)
-			{
-				auto value = random_generate(global()->random) % cons->random_modulo;
-				value_set_int(column_value, value);
-			} else {
-				value_decode(column_value, cons->value.start, NULL);
-			}
-
-			if (column_value->type != TYPE_NULL)
-			{
-				if (column_value->type == TYPE_STRING)
-					row_meta->row_size += json_size_string(str_size(&column_value->string));
-				else
-					row_meta->row_size += column->type_size;
-			}
+			parse_default(column, column_value, row_meta, serial);
 
 			// ensure NOT NULL constraint
 			if (column_value->type == TYPE_NULL && column->constraint.not_null)

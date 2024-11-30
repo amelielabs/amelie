@@ -133,6 +133,30 @@ select * from test
 insert into test () values ()
 drop table test
 
+# test: insert list default (keyword)
+create table test (id int primary key, data int default 123)
+insert into test (id) values (DEFAULT)
+select * from test
+drop table test
+
+# test: insert list default (keyword) #2
+create table test (id int primary key, data int default 123)
+insert into test (id, data) values (1, DEFAULT)
+select * from test
+drop table test
+
+# test: insert default (keyword)
+create table test (id int primary key, data int default 123)
+insert into test values (DEFAULT, DEFAULT)
+select * from test
+drop table test
+
+# test: insert default (keyword) #2
+create table test (id int primary key, data int default 123)
+insert into test values (1, DEFAULT)
+select * from test
+drop table test
+
 # test: insert serial
 create table test (id int serial primary key)
 insert into test () values ()
