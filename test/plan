@@ -1,63 +1,63 @@
 #
 
-## runtime
-#directory runtime
-#group runtime
-#test runtime
+# runtime
+directory runtime
+group runtime
+test runtime
 
-## data types and expressions
-#directory expr
-#group expr
-#test null
-#test bool
-#test int
-#test double
-#test string
-#test json
-#test timestamp
-#test timestamp_timezone
-#test interval
-#test vector
-#test logic
-#test is
-#test method
-#test like
-#test between
-#test case
+# data types and expressions
+directory expr
+group expr
+test null
+test bool
+test int
+test double
+test string
+test json
+test timestamp
+test timestamp_timezone
+test interval
+test vector
+test logic
+test is
+test method
+test like
+test between
+test case
 
-## functions
-#directory functions
-#group functions
-#test fn_cast
-#test fn_json
-#test fn_string
-#test fn_regexp
-#test fn_misc
-#test fn_time
-#test fn_vector
-#test fn_math
-#test fn_null
-#test fn_system
+# functions
+directory functions
+group functions
+test fn_cast
+test fn_json
+test fn_string
+test fn_regexp
+test fn_misc
+test fn_time
+test fn_vector
+test fn_math
+test fn_null
+test fn_system
 
-## system
-#directory system
-#group system
-#test bootstrap
-#test set
-#test show
-#test user
-#test watch
+# system
+directory system
+group system
+test bootstrap
+test set
+test show
+test user
+test watch
 
-## ddl
-#directory ddl
-#group ddl
-#test schema
-#test table_create
-#test table_drop
-##test table_alter
-#test index
-##test view
-#test cascade
+# ddl
+directory ddl
+group ddl
+test schema
+test table_create
+test table_drop
+test table_alter
+test index
+#test view
+test cascade
 
 # dml
 directory dml
@@ -96,6 +96,7 @@ directory pushdown
 group pushdown
 test push_ddl
 test push_dml
+test push_expr
 test push_shared
 test push_subselect
 test push_select
@@ -107,6 +108,7 @@ test push_group_by_shared
 test push_agg
 test push_agg_shared
 test push_join
+test push_cte
 
 # index
 directory index
@@ -119,43 +121,41 @@ test hash
 # executor
 directory executor
 group executor
-#test cte_expr
-#test cte
-#test begin_commit
-#test abort
+test begin_commit
+test abort
 
-## cluster
-#directory cluster
-#group cluster
-#test node
-#test indexate
+# cluster
+directory cluster
+group cluster
+test node
+test indexate
 
-## recovery
-#directory recovery
-#group recovery
-#test wal_dml
-#test wal_ddl
-#test checkpoint
+# recovery
+directory recovery
+group recovery
+test wal_dml
+test wal_ddl
+test checkpoint
 
-## tls
-#directory tls
-#group tls
-#test tls
+# tls
+directory tls
+group tls
+test tls
 
-## backup
-#directory backup
-#group backup
-#test backup
-#test backup_tls
+# backup
+directory backup
+group backup
+test backup
+test backup_tls
 
-## replication
-#directory repl
-#group repl
-#test replica
-#test repl
-#test streaming
-#test streaming_tls
-#test streaming_tls_2
+# replication
+directory repl
+group repl
+test replica
+test repl
+test streaming
+test streaming_tls
+test streaming_tls_2
 
 ## import
 #directory import

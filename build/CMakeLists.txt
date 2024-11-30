@@ -173,7 +173,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/server_bootstrap.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/row/row.c
+    ${AMELIE_ROOT}/db/row/row_alter.c
     ${AMELIE_ROOT}/db/transaction/handle_mgr.c
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/index/tree.c
@@ -210,6 +210,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/store/agg.c
     ${AMELIE_ROOT}/vm/store/any.c
     ${AMELIE_ROOT}/vm/store/all.c
+    ${AMELIE_ROOT}/vm/store/in.c
     ${AMELIE_ROOT}/vm/store/row.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c

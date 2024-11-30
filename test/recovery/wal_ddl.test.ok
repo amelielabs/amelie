@@ -58,7 +58,7 @@ show lsn
 [5]
 select serial("public", "test2")
 [3]
-alter table test2 add column obj object
+alter table test2 add column obj json
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
 select obj from test2
@@ -80,7 +80,7 @@ alter table test2 rename column data to abc
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
 select data from test2
-{"msg": "column data: does not exists"}
+{"msg": "<test2.data> column not found"}
 select abc from test2
 [0, 0, 0]
 # test: restart
@@ -94,13 +94,13 @@ show lsn
 select serial("public", "test2")
 [0]
 select data from test2
-{"msg": "column data: does not exists"}
+{"msg": "<test2.data> column not found"}
 select abc from test2
 [0, 0, 0]
 # test: alter table column drop
 alter table test2 drop column abc
 select abc from test2
-{"msg": "column abc: does not exists"}
+{"msg": "<test2.abc> column not found"}
 select * from test2
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -204,7 +204,7 @@ connect E0 S0 localhost:3485
 show lsn
 [13]
 select * from test2
-{"msg": "<test2> table or view is not found"}
+{"msg": "<public.test2> table or view not found"}
 show tables
 [{}]
 # test: create schema
@@ -341,89 +341,5 @@ show schemas
     "create": true
   }
 }]
-# test: create view
-create view test as select [1,2,3]
-show lsn
-[17]
-show views
-[{
-  "public.test": {
-    "schema": "public",
-    "name": "test",
-    "query": "select [1,2,3]",
-    "columns": []
-  }
-}]
-select * from test
-[1, 2, 3]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[17]
-show views
-[{
-  "public.test": {
-    "schema": "public",
-    "name": "test",
-    "query": "select [1,2,3]",
-    "columns": []
-  }
-}]
-select * from test
-[1, 2, 3]
-# test: alter view rename
-alter view test rename to test2
-show lsn
-[18]
-show views
-[{
-  "public.test2": {
-    "schema": "public",
-    "name": "test2",
-    "query": "select [1,2,3]",
-    "columns": []
-  }
-}]
-select * from test2
-[1, 2, 3]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[18]
-show views
-[{
-  "public.test2": {
-    "schema": "public",
-    "name": "test2",
-    "query": "select [1,2,3]",
-    "columns": []
-  }
-}]
-select * from test2
-[1, 2, 3]
-# test: drop view
-drop view test2
-show lsn
-[19]
-show views
-[{}]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[19]
-show views
-[{}]
 disconnect S0
 close E0

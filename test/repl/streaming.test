@@ -10097,16 +10097,16 @@ switch S1
 select count(id2) from test
 
 switch S0
-insert into test 1
-insert into test 2
-insert into test 3
-insert into test 4
-insert into test 5
-insert into test 6
-insert into test 7
-insert into test 8
-insert into test 9
-insert into test 10
+insert into test values (1)
+insert into test values (2)
+insert into test values (3)
+insert into test values (4)
+insert into test values (5)
+insert into test values (6)
+insert into test values (7)
+insert into test values (8)
+insert into test values (9)
+insert into test values (10)
 watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
 show repl
 
@@ -10135,7 +10135,7 @@ watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.con
 show repl
 
 switch S1
-select system.config().backends = 4
+select system.config().backends::int = 4
 
 disconnect S1
 close E1
