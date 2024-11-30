@@ -12,3 +12,4 @@
 //
 
 int parse_value(Lex*, Local*, Json*, Column*, Value*);
+int parse_value_default(Column*, Value*, uint64_t);

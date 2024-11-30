@@ -230,3 +230,31 @@ parse_value(Lex*    self, Local* local,
 	      str_of(&column->name), type_of(column->type));
 	return 0;
 }
+
+hot int
+parse_value_default(Column*  column,
+                    Value*   column_value,
+                    uint64_t serial)
+{
+	// SERIAL, RANDOM or DEFAULT
+	auto cons = &column->constraint;
+	if (cons->serial)
+	{
+		value_set_int(column_value, serial);
+	} else
+	if (cons->random)
+	{
+		auto value = random_generate(global()->random) % cons->random_modulo;
+		value_set_int(column_value, value);
+	} else
+	{
+		value_decode(column_value, cons->value.start, NULL);
+	}
+	if (column_value->type == TYPE_NULL)
+		return 0;
+
+	if (column_value->type == TYPE_STRING)
+		return json_size_string(str_size(&column_value->string));
+
+	return column->type_size;
+}
