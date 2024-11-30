@@ -723,6 +723,55 @@ explain with a as (select * from test) select test.* from test join a on test.id
 with a as (select * from test) select test.* from test join a on test.id = a.id
 [1, 2, 3]
 drop table test
+# test: with (columns) as (select expr), select * from cte
+explain with z (a,b,c) as (select 4,5,6) select * from z
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      3      0     ",
+      "01": "int                 1      -      0     # 4",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 5",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 6",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "set                 0      3      0     ",
+      "10": "cte_get             1      0      0     ",
+      "11": "store_open          0      1      13    ",
+      "12": "jmp                 21     0      0     ",
+      "13": "store_read          2      0      0     ",
+      "14": "push                2      0      0     ",
+      "15": "store_read          2      0      1     ",
+      "16": "push                2      0      0     ",
+      "17": "store_read          2      0      2     ",
+      "18": "push                2      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "store_next          0      13     0     ",
+      "21": "store_open          0      1      0     ",
+      "22": "cte_set             1      0      0     ",
+      "23": "body                1      0      0     ",
+      "24": "ret                 0      0      0     "
+    }
+  }
+}]
+with z (a,b,c) as (select 4,5,6) select * from z
+[[4, 5, 6]]
+# test: with (columns) as (select expr), select column from cte
+with z (a,b,c) as (select 4,5,6) select a,b,c from z
+[[4, 5, 6]]
+# test: with (columns) as (select expr), select target.column from cte
+with z (a,b,c) as (select 4,5,6) select z.a, z.b, z.c from z
+[[4, 5, 6]]
+# test: with (columns) as (select expr), select column from cte group by
+with z as (select 4 as a,5,6) select a from z group by a
+[4]
+with z (a,b,c) as (select 4,5,6) select a from z group by a
+[4]
+# test: with (columns) as (select expr), select * from cte (redefined)
+explain with z (a,a) as (select 4,5,6) select * from z
+{"msg": "WITH name (<a> argument redefined"}
 # test: a(table), b(a)
 create table test (id int primary key)
 insert into test values (1),(2),(3)

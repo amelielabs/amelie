@@ -400,64 +400,6 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
-#if 0
-hot static inline bool
-expr_name(Stmt* self, Ast* value, Str* name)
-{
-	// resolve name into argument or cte
-
-	// find argument
-	if (self->args)
-	{
-		auto arg = columns_find(self->args, name);
-		if (arg)
-		{
-			value->id = KARGID;
-			value->integer = arg->order;
-			return true;
-		}
-	}
-
-	// find cte (without columns)
-	//
-	// cte with columns are resolved only as targets
-	// during name emit
-	//
-	auto cte = cte_list_find(self->cte_list, name);
-	if (cte && !cte->columns.list_count)
-	{
-		value->id = KCTEID;
-		value->integer = cte->id;
-		cte_deps_add(&self->cte_deps, cte);
-		return true;
-	}
-
-	return false;
-}
-
-hot static inline void
-expr_name_compound(Stmt* self, Ast* value)
-{
-	// resolve name into argument or cte
-	Str path = value->string;
-	Str name;
-	str_split(&path, &name, '.');
-	if (! expr_name(self, value, &name))
-		return;
-
-	// exclude name from the path
-	str_advance(&path, str_size(&name) + 1);
-
-	// process rest of path as '.' operator
-	auto idx = ast(KNAME);
-	idx->string = path;
-	if (str_chr(&path, '.'))
-		idx->id = KNAME_COMPOUND;
-	stmt_push(self, idx);
-	stmt_push(self, ast('.'));
-}
-#endif
-
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {

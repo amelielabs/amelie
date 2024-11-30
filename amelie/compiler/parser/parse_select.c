@@ -277,10 +277,17 @@ parse_select_resolve_group_by(AstSelect* select)
 		Str name;
 		if (group->expr->id == KNAME)
 		{
-			auto target = select->target;
-			auto column = &group->expr->string;
+			auto target  = select->target;
+			auto columns = target->from_columns;
+			auto cte     = target->from_cte;
+			auto column  = &group->expr->string;
+
+			// use CTE arguments, if defined
+			if (target->type == TARGET_CTE && cte->args.list_count > 0)
+				columns = &cte->args;
+
 			bool conflict = false;
-			auto ref = columns_find_noconflict(target->from_columns, column, &conflict);
+			auto ref = columns_find_noconflict(columns, column, &conflict);
 			if (! ref)
 			{
 				if (conflict)

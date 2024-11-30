@@ -18,9 +18,8 @@ struct Cte
 {
 	int      id;
 	Ast*     name;
-	Ast*     args;
-	int      args_count;
 	Columns* columns;
+	Columns  args;
 	int      stmt;
 	Cte*     next;
 };
@@ -41,8 +40,16 @@ cte_list_init(CteList* self)
 }
 
 static inline void
+cte_list_free(CteList* self)
+{
+	for (auto cte = self->list; cte; cte = cte->next)
+		columns_free(&cte->args);
+}
+
+static inline void
 cte_list_reset(CteList* self)
 {
+	cte_list_free(self);
 	cte_list_init(self);
 }
 
@@ -50,13 +57,12 @@ static inline Cte*
 cte_list_add(CteList* self, Ast* name, int stmt)
 {
 	Cte* cte = palloc(sizeof(Cte));
-	cte->id         = self->list_count;
-	cte->name       = name;
-	cte->args       = NULL;
-	cte->args_count = 0;
-	cte->stmt       = stmt;
-	cte->next       = NULL;
-	cte->columns    = NULL;
+	cte->id      = self->list_count;
+	cte->name    = name;
+	cte->stmt    = stmt;
+	cte->next    = NULL;
+	cte->columns = NULL;
+	columns_init(&cte->args);
 	if (self->list == NULL)
 		self->list = cte;
 	else

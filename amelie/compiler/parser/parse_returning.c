@@ -120,7 +120,14 @@ static inline void
 returning_add_target(Returning* self, Target* target)
 {
 	// import all available columns into the expression list
-	list_foreach(&target->from_columns->list)
+	Columns* columns = target->from_columns;
+
+	// use CTE arguments, if they are defined
+	auto cte = target->from_cte;
+	if (target->type == TARGET_CTE && cte->args.list_count > 0)
+		columns = &cte->args;
+
+	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		auto as = ast(KAS);

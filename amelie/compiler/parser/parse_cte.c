@@ -40,7 +40,6 @@ parse_cte_args(Stmt* self, Cte* cte)
 	if (stmt_if(self, ')'))
 		return;
 
-	Ast* args_tail = NULL;
 	for (;;)
 	{
 		// name
@@ -49,19 +48,15 @@ parse_cte_args(Stmt* self, Cte* cte)
 			error("WITH name (<name> expected");
 
 		// ensure argument is unique
-		for (auto at = cte->args; at; at = at->next) {
-			if (str_compare(&at->string, &name->string))
-				error("WITH name (<%.*s> argument redefined", str_size(&at->string),
-				      str_of(&at->string));
-		}
+		auto arg = columns_find(&cte->args, &name->string);
+		if (arg)
+			error("WITH name (<%.*s> argument redefined", str_size(&name->string),
+			      str_of(&name->string));
 
 		// add argument to the list
-		if (cte->args == NULL)
-			cte->args = name;
-		else
-			args_tail->next = name;
-		args_tail = name;
-		cte->args_count++;
+		arg = column_allocate();
+		column_set_name(arg, &name->string);
+		columns_add(&cte->args, arg);
 
 		// ,
 		if (! stmt_if(self, ','))

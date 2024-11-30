@@ -89,8 +89,18 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 		column = columns_find_by(target->from_columns, order);
 	} else
 	{
-		// find unique column name in the target
-		column = columns_find_noconflict(target->from_columns, name, &column_conflict);
+		auto cte = target->from_cte;
+		if (target->type == TARGET_CTE && cte->args.list_count > 0)
+		{
+			// find column in the CTE arguments list, redirect to the CTE statement
+			auto arg = columns_find(&cte->args, name);
+			if (arg)
+				column = columns_find_by(target->from_columns, arg->order);
+		} else
+		{
+			// find unique column name in the target
+			column = columns_find_noconflict(target->from_columns, name, &column_conflict);
+		}
 	}
 
 	if (! column)
@@ -209,7 +219,6 @@ emit_name(Compiler* self, Target* target, Ast* ast)
 		error("<%.*s> column requires explicit target name",
 		      str_size(name), str_of(name));
 
-	// todo: lambda?
 	return emit_column(self, target, name, false);
 }
 
@@ -754,14 +763,6 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_json(self, target, ast, CJSON_OBJ);
 	case KARRAY:
 		return emit_json(self, target, ast, CJSON_ARRAY);
-
-#if 0
-	// argument
-	case KARGID:
-		return op2(self, CARG, rpin(self, TYPE_JSON), ast->integer);
-	case KCTEID:
-		return op2(self, CCTE_GET, rpin(self), ast->integer);
-#endif
 
 	// column
 	case KNAME:

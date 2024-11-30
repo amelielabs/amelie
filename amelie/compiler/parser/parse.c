@@ -491,7 +491,8 @@ parse_with(Parser* self)
 		cte->columns = &ret->columns;
 
 		// ensure that arguments count match
-		if (cte->args_count > 0 && cte->args_count != cte->columns->list_count)
+		if (cte->args.list_count > 0 &&
+		    cte->args.list_count != cte->columns->list_count)
 			error("CTE arguments count must mismatch the returning arguments count");
 
 		// )
