@@ -31,8 +31,8 @@ alter table test rename to
 alter table test rename asf junk
 {"msg": "unexpected token at the end of statement"}
 alter table test rename to abc
-select *.schema, *.name from system.tables()
-[["public", "abc"]]
+select system.tables().'public.abc'.name
+["abc"]
 # test: rename table exists
 create table test (id int primary key)
 alter table abc rename to test
@@ -51,12 +51,12 @@ alter table abc rename to system.test
 {"msg": "system schema <system> cannot be used to create objects"}
 # test: rename schema
 alter table abc rename to public.test
-select *.schema, *.name from system.tables()
-[["public", "test"]]
+select system.tables().'public.test'.name
+["test"]
 create schema test
 alter table public.test rename to test.test
-select *.schema, *.name from system.tables()
-[["test", "test"]]
+select system.tables().'test.test'.name
+["test"]
 drop table test.test
 # test: set serial
 create table test (id int primary key serial, data int default 0)
@@ -99,18 +99,18 @@ alter table test set serial to 0
 {"msg": "table 'test': not exists"}
 # test: set aggregated
 create table test (id int primary key serial, data int default 0)
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 [false]
 alter table test set
 {"msg": "ALTER TABLE SET <SERIAL or AGGREGATED> expected"}
 alter table test set x
 {"msg": "ALTER TABLE SET <SERIAL or AGGREGATED> expected"}
 alter table test set aggregated
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 [true]
 # test: set not aggregated
 alter table test set not aggregated
-select system.tables()['public.test'].aggregated
+select system.tables().'public.test'.aggregated
 [false]
 drop table test
 # test: rename column parsing
@@ -132,62 +132,58 @@ alter table test rename column data to 1
 {"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
 # test: rename column
 create table test (id int primary key serial, data int default 0)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": true,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": 0
   }
 }]]
 alter table test rename column data to data2
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": true,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data2",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": 0
@@ -198,72 +194,68 @@ select data2 from test
 drop table test
 # test: rename column #2
 create table test (id int primary key)
-insert into test 1,2,3
-select columns from system.tables()
+insert into test values (1),(2),(3)
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test rename column id to id2
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id2",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 select * from test
-[[1], [2], [3]]
+[1, 2, 3]
 select id2 from test
 [1, 2, 3]
 drop table test
 # test: rename column (already exists)
 create table test (id int primary key serial, data int default 0)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": true,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": 0
@@ -271,31 +263,29 @@ select columns from system.tables()
 }]]
 alter table test rename column data to data
 {"msg": "table 'test': column 'data' already exists"}
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": true,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": 0
@@ -327,48 +317,45 @@ alter table test add column data int primary key
 drop table test
 # test: add column (empty table)
 create table test (id int primary key)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test add column data int
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -380,33 +367,31 @@ select data from test
 drop table test
 # test: add column (null by default)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -418,22 +403,21 @@ insert into test values (4,4), (5,5), (6,6)
 select data from test
 [null, null, null, 4, 5, 6]
 drop table test
-# test: add column (not null without default)
+# test: add column (not null without default) (not supported)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int not null
-{"msg": "ALTER TABLE ADD NOT NULL requires DEFAULT value"}
-select columns from system.tables()
+{"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -442,113 +426,93 @@ select columns from system.tables()
 drop table test
 # test: add column (default)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int default 123
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": 123
   }
 }]]
 select data from test
-[123, 123, 123]
+[null, null, null]
 insert into test values (4,4), (5,5), (6,6)
 select data from test
-[123, 123, 123, 4, 5, 6]
+[null, null, null, 4, 5, 6]
+insert into test (id) values (7), (8), (9)
+select data from test
+[null, null, null, 4, 5, 6, 123, 123, 123]
 drop table test
-# test: add column (default not null)
+# test: add column (default not null) (not supported)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int not null default 123
-select columns from system.tables()
+{"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
-}, {
-  "name": "data",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": 123
-  }
 }]]
-select data from test
-[123, 123, 123]
-insert into test values (4,4), (5,5), (6,6)
-select data from test
-[123, 123, 123, 4, 5, 6]
 drop table test
 # test: add column (serial)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int serial
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "data",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": true,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -591,48 +555,45 @@ alter table test drop column data
 drop table test
 # test: drop column (empty)
 create table test (id int primary key, a int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -641,76 +602,71 @@ select columns from system.tables()
 drop table test
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -719,45 +675,42 @@ select columns from system.tables()
 drop table test
 # test: drop column
 create table test (id int primary key, a text, b int)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "string",
+  "type": 4,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -771,31 +724,29 @@ select a from test
 select b from test
 [1, 2, 3]
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -804,106 +755,100 @@ select columns from system.tables()
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 select a from test
-{"msg": "column a: does not exists"}
+{"msg": "<test.a> column not found"}
 select b from test
 [1, 2, 3]
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test drop column b
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 select * from test
-[[1], [2], [3]]
+[1, 2, 3]
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "column a: does not exists"}
+{"msg": "<test.a> column not found"}
 select b from test
-{"msg": "column b: does not exists"}
+{"msg": "<test.b> column not found"}
 drop table test
 # test: drop column (key order)
 create table test (a text, b int, id int primary key)
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "a",
-  "type": "string",
+  "type": 4,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -919,31 +864,29 @@ select a from test
 select b from test
 [1, 2, 3]
 alter table test drop column a
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
@@ -954,64 +897,61 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "column a: does not exists"}
+{"msg": "<test.a> column not found"}
 select b from test
 [1, 2, 3]
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "b",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }, {
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 alter table test drop column b
-select columns from system.tables()
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
     "as_aggregated": "",
     "default": null
   }
 }]]
 select * from test
-[[1], [2], [3]]
+[1, 2, 3]
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "column a: does not exists"}
+{"msg": "<test.a> column not found"}
 select b from test
-{"msg": "column b: does not exists"}
+{"msg": "<test.b> column not found"}
 drop table test
 disconnect S0
 close E0

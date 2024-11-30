@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_alter_add(Row*, Buf*);
-Row* row_alter_drop(Row*, int);
+Row* row_alter_add(Row*, Columns*);
+Row* row_alter_drop(Row*, Columns*, Column*);

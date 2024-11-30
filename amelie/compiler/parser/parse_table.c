@@ -487,6 +487,7 @@ parse_table_alter(Stmt* self)
 {
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
+	// ALTER TABLE [IF EXISTS] [schema.]name SET [NOT] AGGREGATED
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN ADD name type [constraint]
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN DROP name
 	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN RENAME name TO name
@@ -528,8 +529,8 @@ parse_table_alter(Stmt* self)
 
 		// validate column
 		auto cons = &stmt->column->constraint;
-		if (cons->not_null && json_is_null(cons->value.start))
-			error("ALTER TABLE ADD NOT NULL requires DEFAULT value");
+		if (cons->not_null)
+			error("ALTER TABLE ADD NOT NULL currently not supported");
 
 		stmt->type = TABLE_ALTER_COLUMN_ADD;
 		return;
@@ -570,7 +571,18 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
-		error("ALTER TABLE SET <SERIAL> expected");
+		// [NOT]
+		auto not = stmt_if(self, KNOT) != NULL;
+
+		// SET [NOT] AGGREGATED
+		if (stmt_if(self, KAGGREGATED))
+		{
+			stmt->type = TABLE_ALTER_SET_AGGREGATED;
+			stmt->aggregated = !not;
+			return;
+		}
+
+		error("ALTER TABLE SET <SERIAL or AGGREGATED> expected");
 		return;
 	}
 

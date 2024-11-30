@@ -38,16 +38,18 @@ hot static void
 part_build_column_add(PartBuild* self, Iterator* it)
 {
 	// build partition with a new column based on the other partition
-	auto primary = part_primary(self->part_dest);
+	auto primary = part_primary(self->part);
+	auto primary_columns = index_keys(primary)->columns;
+	auto primary_dest = part_primary(self->part_dest);
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto origin = iterator_at(it);
 
-		// allocate row based on original row with a new column data
-		auto row = row_alter_add(origin, &self->column->constraint.value);
+		// allocate row based on original row with a new column
+		auto row = row_alter_add(origin, primary_columns);
 
 		// update primary index
-		index_ingest(primary, row);
+		index_ingest(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
@@ -58,16 +60,18 @@ hot static void
 part_build_column_drop(PartBuild* self, Iterator* it)
 {
 	// build partition without a column based on the other partition
-	auto primary = part_primary(self->part_dest);
+	auto primary = part_primary(self->part);
+	auto primary_columns = index_keys(primary)->columns;
+	auto primary_dest = part_primary(self->part_dest);
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row without a column
-		auto row = row_alter_drop(origin, self->column->order);
+		auto row = row_alter_drop(origin, primary_columns, self->column);
 
 		// update primary index
-		index_ingest(primary, row);
+		index_ingest(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);

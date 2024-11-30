@@ -111,7 +111,7 @@ drop table test
 
 # test: rename column #2
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 select system.tables().'public.test'.columns
 alter table test rename column id to id2
 select system.tables().'public.test'.columns
@@ -156,7 +156,7 @@ drop table test
 
 # test: add column (null by default)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int
 select system.tables().'public.test'.columns
 select data from test
@@ -164,36 +164,35 @@ insert into test values (4,4), (5,5), (6,6)
 select data from test
 drop table test
 
-# test: add column (not null without default)
+# test: add column (not null without default) (not supported)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int not null
 select system.tables().'public.test'.columns
 drop table test
 
 # test: add column (default)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int default 123
 select system.tables().'public.test'.columns
 select data from test
 insert into test values (4,4), (5,5), (6,6)
 select data from test
+insert into test (id) values (7), (8), (9)
+select data from test
 drop table test
 
-# test: add column (default not null)
+# test: add column (default not null) (not supported)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int not null default 123
 select system.tables().'public.test'.columns
-select data from test
-insert into test values (4,4), (5,5), (6,6)
-select data from test
 drop table test
 
 # test: add column (serial)
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 alter table test add column data int serial
 select system.tables().'public.test'.columns
 select data from test
