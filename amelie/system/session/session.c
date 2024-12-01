@@ -206,64 +206,17 @@ session_execute_distributed(Session* self)
 	}
 }
 
-/*
-hot static void
-session_execute_sql(Session* self)
-{
-	auto compiler = &self->compiler;
-
-	// parse SQL query
-	Str text;
-	buf_str(&self->client->request.content, &text);
-	compiler_parse(compiler, &self->local, NULL, &text);
-
-	if (! compiler->parser.stmt_list.list_count)
-	{
-		session_unlock(self);
-		return;
-	}
-
-	// execute utility, DDL, DML or Query
-	auto stmt = compiler_stmt(compiler);
-	if (stmt && stmt_is_utility(stmt))
-		session_execute_utility(self);
-	else
-		session_execute_distributed(self);
-}
-*/
-
-hot static void
-session_execute(Session* self)
-{
-	auto compiler = &self->compiler;
-	if (! compiler->parser.stmt_list.list_count)
-		return;
-
-	// execute utility, DDL, DML or Query
-	auto stmt = compiler_stmt(compiler);
-	if (stmt && stmt_is_utility(stmt))
-		session_execute_utility(self);
-	else
-		session_execute_distributed(self);
-}
-
 static void
-session_process(Session* self)
+session_execute(Session* self)
 {
 	auto request  = &self->client->request;
 	auto compiler = &self->compiler;
 
-	// prepare session state for execution
-	session_reset(self);
-
 	// set transaction time
 	local_update_time(&self->local);
 
-	// take shared session lock (for catalog access)
-	session_lock(self, LOCK);
-
+	// POST /schema/table <?columns=...>
 	// POST /
-	// POST /schema/table
 	auto type = http_find(request, "Content-Type", 12);
 	if (unlikely(! type))
 		error("Content-Type is missing");
@@ -276,26 +229,36 @@ session_process(Session* self)
 		if (unlikely(! str_is(url, "/", 1)))
 			error("unsupported API operation");
 
-		// parse SQL query
-		compiler_parse(compiler, &self->local, NULL, &text);
+		// parse SQL
+		compiler_parse_sql(compiler, &self->local, &text);
 	} else
 	if (str_is(&type->value, "text/csv", 8))
 	{
+		// parse CSV
+		auto url = &request->options[HTTP_URL];
+		compiler_parse_csv(compiler, &self->local, &text, url);
 	} else
 	if (str_is(&type->value, "application/jsonl", 17))
 	{
+		// parse JSONL
 	} else
 	if (str_is(&type->value, "application/json", 16))
 	{
+		// parse JSON
 	} else
 	{
 		error("unsupported API operation");
 	}
 
 	// execute utility, DDL, DML or Query
-	session_execute(self);
-
-	session_unlock(self);
+	if (compiler->parser.stmt_list.list_count > 0)
+	{
+		auto stmt = compiler_stmt(compiler);
+		if (stmt && stmt_is_utility(stmt))
+			session_execute_utility(self);
+		else
+			session_execute_distributed(self);
+	}
 }
 
 hot static inline void
@@ -379,12 +342,24 @@ session_main(Session* self)
 
 		cancel_pause();
 
-		// execute request
+		// execute request based on the content-type
 		Exception e;
 		if (enter(&e))
 		{
+			// prepare session state for execution
+			session_reset(self);
+
+			// read content
 			session_read(self);
-			session_process(self);
+
+			// take shared session lock (for catalog access)
+			session_lock(self, LOCK);
+
+			// parse and execute request
+			session_execute(self);
+
+			// done
+			session_unlock(self);
 		}
 
 		// reply

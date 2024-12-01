@@ -82,10 +82,17 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse(Compiler* self, Local* local, Columns* args, Str* text)
+compiler_parse_sql(Compiler* self, Local* local, Str* text)
 {
-	self->args = args;
-	parse(&self->parser, local, args, text);
+	self->args = NULL;
+	parse_sql(&self->parser, local, NULL, text);
+}
+
+void
+compiler_parse_csv(Compiler* self, Local* local, Str* text, Str* uri)
+{
+	self->args = NULL;
+	parse_csv(&self->parser, local, NULL, text, uri);
 }
 
 static void

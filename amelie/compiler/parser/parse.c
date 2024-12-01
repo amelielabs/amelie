@@ -508,7 +508,7 @@ parse_with(Parser* self)
 }
 
 hot void
-parse(Parser* self, Local* local, Columns* args, Str* str)
+parse_sql(Parser* self, Local* local, Columns* args, Str* str)
 {
 	self->local = local;
 	self->args  = args;
@@ -614,4 +614,16 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 	// ensure main stmt is not utility when using CTE
 	if (has_utility && self->stmt_list.list_count > 1)
 		error("CTE and multi-statement utility commands are not supported");
+}
+
+hot void
+parse_csv(Parser* self, Local* local, Columns* args, Str* str, Str* uri)
+{
+	self->local = local;
+	self->args  = args;
+
+	auto lex = &self->lex;
+	lex_start(lex, str);
+
+	(void)uri;
 }
