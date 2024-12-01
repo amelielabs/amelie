@@ -66,7 +66,6 @@
 #include "parser/parse_returning.h"
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
-#include "parser/parse_insert_csv.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
 
@@ -74,3 +73,6 @@
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
+
+// import
+#include "parser/parse_import.h"

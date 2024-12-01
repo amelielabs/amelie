@@ -508,10 +508,10 @@ parse_with(Parser* self)
 }
 
 hot void
-parse_sql(Parser* self, Str* str)
+parse(Parser* self, Str* str)
 {
 	auto lex = &self->lex;
-	lex_start(lex, str);
+	lex_start(&self->lex, str);
 
 	// [EXPLAIN]
 	if (lex_if(lex, KEXPLAIN))
@@ -611,39 +611,4 @@ parse_sql(Parser* self, Str* str)
 	// ensure main stmt is not utility when using CTE
 	if (has_utility && self->stmt_list.list_count > 1)
 		error("CTE and multi-statement utility commands are not supported");
-}
-
-hot void
-parse_csv(Parser* self, Str* str, Str* uri)
-{
-	lex_start(&self->lex, str);
-	uri_set(&self->uri, uri, true);
-
-	// parse endpoint path and arguments
-	Endpoint endpoint;
-	endpoint_init(&endpoint, &self->uri);
-	parse_endpoint(&endpoint, self->db);
-
-	if (unlikely(lex_if(&self->lex, KEOF)))
-		return;
-
-	// prepare insert stmt
-	auto stmt = stmt_allocate(self->db, self->function_mgr,
-	                          self->local,
-	                          &self->lex,
-	                           self->data,
-	                           self->values_cache,
-	                          &self->json,
-	                          &self->stmt_list,
-	                          &self->cte_list,
-	                           self->args);
-	stmt_list_add(&self->stmt_list, stmt);
-	self->stmt = stmt;
-
-	stmt->id  = STMT_INSERT;
-	stmt->ret = true;
-	stmt->cte = cte_list_add(&self->cte_list, NULL, self->stmt->order);
-
-	// parse CSV values as INSERT stmt
-	parse_insert_csv(stmt, &endpoint);
 }

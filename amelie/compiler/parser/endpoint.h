@@ -13,18 +13,27 @@
 
 typedef struct Endpoint Endpoint;
 
+typedef enum
+{
+	ENDPOINT_CSV,
+	ENDPOINT_JSONL,
+	ENDPOINT_JSON
+} EndpointType;
+
 struct Endpoint
 {
-	Ast*   columns;
-	int    columns_count;
-	bool   columns_has;
-	Table* table;
-	Uri*   uri;
+	EndpointType type;
+	Ast*         columns;
+	int          columns_count;
+	bool         columns_has;
+	Table*       table;
+	Uri*         uri;
 };
 
 static inline void
-endpoint_init(Endpoint* self, Uri* uri)
+endpoint_init(Endpoint* self, Uri* uri, EndpointType type)
 {
+	self->type          = type;
 	self->columns       = NULL;
 	self->columns_count = 0;
 	self->columns_has   = false;

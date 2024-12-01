@@ -248,11 +248,11 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
-    ${AMELIE_ROOT}/compiler/parser/parse_insert_csv.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
+    ${AMELIE_ROOT}/compiler/parser/parse_import.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/planner/path.c
     ${AMELIE_ROOT}/compiler/planner/planner.c

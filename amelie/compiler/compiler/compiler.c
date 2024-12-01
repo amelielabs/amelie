@@ -83,15 +83,16 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse_sql(Compiler* self, Str* text)
+compiler_parse(Compiler* self, Str* text)
 {
-	parse_sql(&self->parser, text);
+	parse(&self->parser, text);
 }
 
 void
-compiler_parse_csv(Compiler* self, Str* text, Str* uri)
+compiler_parse_import(Compiler*    self, Str* text, Str* uri,
+                      EndpointType type)
 {
-	parse_csv(&self->parser, text, uri);
+	parse_import(&self->parser, text, uri, type);
 }
 
 static void

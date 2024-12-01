@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_insert_csv(Stmt*, Endpoint*);
+void parse_import(Parser*, Str*, Str*, EndpointType);

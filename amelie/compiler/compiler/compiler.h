@@ -32,8 +32,8 @@ struct Compiler
 void compiler_init(Compiler*, Db*, Local*, FunctionMgr*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
-void compiler_parse_sql(Compiler*, Str*);
-void compiler_parse_csv(Compiler*, Str*, Str*);
+void compiler_parse(Compiler*, Str*);
+void compiler_parse_import(Compiler*, Str*, Str*, EndpointType);
 void compiler_emit(Compiler*);
 void compiler_program(Compiler*, Program*);
 

@@ -12,5 +12,4 @@
 //
 
 void parse_stmt_free(Stmt*);
-void parse_sql(Parser*, Str*);
-void parse_csv(Parser*, Str*, Str*);
+void parse(Parser*, Str*);

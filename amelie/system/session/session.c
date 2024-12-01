@@ -220,31 +220,32 @@ session_execute(Session* self)
 	auto type = http_find(request, "Content-Type", 12);
 	if (unlikely(! type))
 		error("Content-Type is missing");
+	auto url = &request->options[HTTP_URL];
 
 	Str text;
 	buf_str(&request->content, &text);
 	if (str_is(&type->value, "text/plain", 10))
 	{
-		auto url = &request->options[HTTP_URL];
 		if (unlikely(! str_is(url, "/", 1)))
 			error("unsupported API operation");
 
 		// parse SQL
-		compiler_parse_sql(compiler, &text);
+		compiler_parse(compiler, &text);
 	} else
 	if (str_is(&type->value, "text/csv", 8))
 	{
 		// parse CSV
-		auto url = &request->options[HTTP_URL];
-		compiler_parse_csv(compiler, &text, url);
+		compiler_parse_import(compiler, &text, url, ENDPOINT_CSV);
 	} else
 	if (str_is(&type->value, "application/jsonl", 17))
 	{
 		// parse JSONL
+		compiler_parse_import(compiler, &text, url, ENDPOINT_JSONL);
 	} else
 	if (str_is(&type->value, "application/json", 16))
 	{
 		// parse JSON
+		compiler_parse_import(compiler, &text, url, ENDPOINT_JSON);
 	} else
 	{
 		error("unsupported API operation");
