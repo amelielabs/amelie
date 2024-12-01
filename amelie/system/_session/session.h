@@ -23,6 +23,7 @@ struct Session
 	int       lock_type;
 	Lock*     lock;
 	Lock*     lock_ref;
+	Load      load;
 	Local     local;
 	Frontend* frontend;
 	Share*    share;

@@ -38,6 +38,7 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
+#include <amelie_load.h>
 #include <amelie_session.h>
 
 Session*
@@ -59,6 +60,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router, &self->local);
+	load_init(&self->load, share, &self->dtr);
 	return self;
 }
 
@@ -69,6 +71,7 @@ session_reset(Session* self)
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
+	load_reset(&self->load);
 	palloc_truncate(0);
 }
 
@@ -77,6 +80,7 @@ session_free(Session *self)
 {
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
+	load_free(&self->load);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	dtr_free(&self->dtr);
@@ -206,7 +210,6 @@ session_execute_distributed(Session* self)
 	}
 }
 
-/*
 hot static void
 session_execute_sql(Session* self)
 {
@@ -230,28 +233,21 @@ session_execute_sql(Session* self)
 	else
 		session_execute_distributed(self);
 }
-*/
 
-hot static void
-session_execute(Session* self)
+static void
+session_execute_load(Session* self)
 {
-	auto compiler = &self->compiler;
-	if (! compiler->parser.stmt_list.list_count)
-		return;
-
-	// execute utility, DDL, DML or Query
-	auto stmt = compiler_stmt(compiler);
-	if (stmt && stmt_is_utility(stmt))
-		session_execute_utility(self);
-	else
-		session_execute_distributed(self);
+	auto request = &self->client->request;
+	auto load    = &self->load;
+	load_prepare(load, request);
+	load_run(load);
 }
 
 static void
-session_process(Session* self)
+session_execute(Session* self)
 {
-	auto request  = &self->client->request;
-	auto compiler = &self->compiler;
+	auto client  = self->client;
+	auto request = &client->request;
 
 	// prepare session state for execution
 	session_reset(self);
@@ -262,38 +258,23 @@ session_process(Session* self)
 	// take shared session lock (for catalog access)
 	session_lock(self, LOCK);
 
-	// POST /
-	// POST /schema/table
-	auto type = http_find(request, "Content-Type", 12);
-	if (unlikely(! type))
-		error("Content-Type is missing");
-
-	Str text;
-	buf_str(&request->content, &text);
-	if (str_is(&type->value, "text/plain", 10))
+	auto url = &request->options[HTTP_URL];
+	if (str_is(url, "/", 1))
 	{
-		auto url = &request->options[HTTP_URL];
-		if (unlikely(! str_is(url, "/", 1)))
+		// POST /
+		auto type = http_find(request, "Content-Type", 12);
+		if (unlikely(! type))
+			error("Content-Type is missing");
+
+		if (! str_is(&type->value, "text/plain", 10))
 			error("unsupported API operation");
 
-		// parse SQL query
-		compiler_parse(compiler, &self->local, NULL, &text);
-	} else
-	if (str_is(&type->value, "text/csv", 8))
-	{
-	} else
-	if (str_is(&type->value, "application/jsonl", 17))
-	{
-	} else
-	if (str_is(&type->value, "application/json", 16))
-	{
+		session_execute_sql(self);
 	} else
 	{
-		error("unsupported API operation");
+		// POST /schema/table
+		session_execute_load(self);
 	}
-
-	// execute utility, DDL, DML or Query
-	session_execute(self);
 
 	session_unlock(self);
 }
@@ -384,7 +365,7 @@ session_main(Session* self)
 		if (enter(&e))
 		{
 			session_read(self);
-			session_process(self);
+			session_execute(self);
 		}
 
 		// reply

@@ -38,6 +38,7 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
+#include <amelie_load.h>
 #include <amelie_session.h>
 
 static Buf*
