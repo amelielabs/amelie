@@ -248,9 +248,10 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	}
 }
 
-hot static inline void
-parse_on_conflict_aggregate(Stmt* self, AstInsert* stmt)
+hot void
+parse_aggregated(Stmt* self)
 {
+	auto stmt = ast_insert_of(self->ast);
 	stmt->on_conflict = ON_CONFLICT_UPDATE;
 	// handle insert as upsert and generate
 	//
@@ -270,7 +271,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		// if table is aggregated and no explicit ON CONFLICT clause
 		// then handle as ON CONFLICT DO AGGREGATE
 		if (stmt->target->from_table->config->aggregated)
-			parse_on_conflict_aggregate(self, stmt);
+			parse_aggregated(self);
 		return;
 	}
 
@@ -307,7 +308,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		// handle insert as upsert and generate
 		//
 		// SET <column> = <aggregated column expression> [, ...]
-		parse_on_conflict_aggregate(self, stmt);
+		parse_aggregated(self);
 		break;
 	}
 	default:
@@ -316,9 +317,10 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 }
 
-hot static void
-parse_generated(Stmt* self, AstInsert* stmt)
+hot void
+parse_generated(Stmt* self)
 {
+	auto stmt = ast_insert_of(self->ast);
 	auto columns = table_columns(stmt->target->from_table);
 
 	// create a target to iterate inserted rows to create new rows
@@ -418,7 +420,7 @@ parse_insert(Stmt* self)
 
 	// create a list of generated columns expressions
 	if (columns->generated_columns)
-		parse_generated(self, stmt);
+		parse_generated(self);
 
 	// ON CONFLICT
 	parse_on_conflict(self, stmt);

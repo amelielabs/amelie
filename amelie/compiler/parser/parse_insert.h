@@ -50,3 +50,5 @@ ast_insert_allocate(void)
 }
 
 void parse_insert(Stmt*);
+void parse_generated(Stmt*);
+void parse_aggregated(Stmt*);

@@ -36,6 +36,7 @@
 void
 parser_init(Parser*      self,
             Db*          db,
+            Local*       local,
             FunctionMgr* function_mgr,
             CodeData*    data,
             SetCache*    values_cache)
@@ -46,11 +47,12 @@ parser_init(Parser*      self,
 	self->data         = data;
 	self->values_cache = values_cache;
 	self->function_mgr = function_mgr;
-	self->local        = NULL;
+	self->local        = local;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
 	cte_list_init(&self->cte_list);
 	lex_init(&self->lex, keywords);
+	uri_init(&self->uri);
 	json_init(&self->json);
 }
 
@@ -60,7 +62,6 @@ parser_reset(Parser* self)
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
 	self->args    = NULL;
-	self->local   = NULL;
 	list_foreach_safe(&self->stmt_list.list)
 	{
 		auto stmt = list_at(Stmt, link);
@@ -69,6 +70,7 @@ parser_reset(Parser* self)
 	cte_list_reset(&self->cte_list);
 	stmt_list_init(&self->stmt_list);
 	lex_reset(&self->lex);
+	uri_reset(&self->uri);
 	json_reset(&self->json);
 }
 
@@ -76,5 +78,6 @@ void
 parser_free(Parser* self)
 {
 	parser_reset(self);
+	uri_free(&self->uri);
 	json_free(&self->json);
 }

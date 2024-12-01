@@ -230,6 +230,7 @@ set(AMELIE_SOURCES_VM
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
+    ${AMELIE_ROOT}/compiler/parser/parse_endpoint.c
     ${AMELIE_ROOT}/compiler/parser/parse_expr.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
@@ -247,6 +248,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
+    ${AMELIE_ROOT}/compiler/parser/parse_insert_csv.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c

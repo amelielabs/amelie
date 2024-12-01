@@ -508,11 +508,8 @@ parse_with(Parser* self)
 }
 
 hot void
-parse_sql(Parser* self, Local* local, Columns* args, Str* str)
+parse_sql(Parser* self, Str* str)
 {
-	self->local = local;
-	self->args  = args;
-
 	auto lex = &self->lex;
 	lex_start(lex, str);
 
@@ -617,13 +614,36 @@ parse_sql(Parser* self, Local* local, Columns* args, Str* str)
 }
 
 hot void
-parse_csv(Parser* self, Local* local, Columns* args, Str* str, Str* uri)
+parse_csv(Parser* self, Str* str, Str* uri)
 {
-	self->local = local;
-	self->args  = args;
+	lex_start(&self->lex, str);
+	uri_set(&self->uri, uri, true);
 
-	auto lex = &self->lex;
-	lex_start(lex, str);
+	// parse endpoint path and arguments
+	Endpoint endpoint;
+	endpoint_init(&endpoint, &self->uri);
+	parse_endpoint(&endpoint, self->db);
 
-	(void)uri;
+	if (unlikely(lex_if(&self->lex, KEOF)))
+		return;
+
+	// prepare insert stmt
+	auto stmt = stmt_allocate(self->db, self->function_mgr,
+	                          self->local,
+	                          &self->lex,
+	                           self->data,
+	                           self->values_cache,
+	                          &self->json,
+	                          &self->stmt_list,
+	                          &self->cte_list,
+	                           self->args);
+	stmt_list_add(&self->stmt_list, stmt);
+	self->stmt = stmt;
+
+	stmt->id  = STMT_INSERT;
+	stmt->ret = true;
+	stmt->cte = cte_list_add(&self->cte_list, NULL, self->stmt->order);
+
+	// parse CSV values as INSERT stmt
+	parse_insert_csv(stmt, &endpoint);
 }

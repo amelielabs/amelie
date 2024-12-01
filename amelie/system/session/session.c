@@ -57,7 +57,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        &self->dtr,
 	        &client->reply.content,
 	        share->function_mgr);
-	compiler_init(&self->compiler, share->db, share->function_mgr);
+	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router, &self->local);
 	return self;
 }
@@ -230,13 +230,13 @@ session_execute(Session* self)
 			error("unsupported API operation");
 
 		// parse SQL
-		compiler_parse_sql(compiler, &self->local, &text);
+		compiler_parse_sql(compiler, &text);
 	} else
 	if (str_is(&type->value, "text/csv", 8))
 	{
 		// parse CSV
 		auto url = &request->options[HTTP_URL];
-		compiler_parse_csv(compiler, &self->local, &text, url);
+		compiler_parse_csv(compiler, &text, url);
 	} else
 	if (str_is(&type->value, "application/jsonl", 17))
 	{

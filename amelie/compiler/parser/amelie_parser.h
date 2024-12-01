@@ -27,11 +27,15 @@
 #include "parser/cte_deps.h"
 #include "parser/target.h"
 #include "parser/target_list.h"
+#include "parser/endpoint.h"
 #include "parser/stmt.h"
 
 // parser
 #include "parser/parser.h"
 #include "parser/parse.h"
+
+// endpoint
+#include "parser/parse_endpoint.h"
 
 // expr
 #include "parser/parse_target.h"
@@ -62,6 +66,7 @@
 #include "parser/parse_returning.h"
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
+#include "parser/parse_insert_csv.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
 

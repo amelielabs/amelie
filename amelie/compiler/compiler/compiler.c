@@ -38,6 +38,7 @@
 void
 compiler_init(Compiler*    self,
               Db*          db,
+              Local*       local,
               FunctionMgr* function_mgr)
 {
 	self->snapshot = false;
@@ -50,7 +51,7 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
 	set_cache_init(&self->values_cache);
-	parser_init(&self->parser, db, function_mgr, &self->code_data,
+	parser_init(&self->parser, db, local, function_mgr, &self->code_data,
 	            &self->values_cache);
 	rmap_init(&self->map);
 }
@@ -82,17 +83,15 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse_sql(Compiler* self, Local* local, Str* text)
+compiler_parse_sql(Compiler* self, Str* text)
 {
-	self->args = NULL;
-	parse_sql(&self->parser, local, NULL, text);
+	parse_sql(&self->parser, text);
 }
 
 void
-compiler_parse_csv(Compiler* self, Local* local, Str* text, Str* uri)
+compiler_parse_csv(Compiler* self, Str* text, Str* uri)
 {
-	self->args = NULL;
-	parse_csv(&self->parser, local, NULL, text, uri);
+	parse_csv(&self->parser, text, uri);
 }
 
 static void
