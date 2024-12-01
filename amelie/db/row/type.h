@@ -101,68 +101,71 @@ type_read(Str* name, int* type_size)
 {
 	*type_size = 0;
 	int type = -1;
-	if (str_is(name, "bool", 4) ||
-	    str_is(name, "boolean", 7))
+	if (str_is_case(name, "bool", 4) ||
+	    str_is_case(name, "boolean", 7))
 	{
 		type = TYPE_BOOL;
 		*type_size = sizeof(int8_t);
 	} else
-	if (str_is(name, "int8", 4) ||
-	    str_is(name, "i8", 2))
+	if (str_is_case(name, "int8", 4) ||
+	    str_is_case(name, "i8", 2)   ||
+	    str_is_case(name, "tinyint", 7))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int8_t);
 	} else
-	if (str_is(name, "int16", 5) ||
-	    str_is(name, "i16", 3))
+	if (str_is_case(name, "int16", 5) ||
+	    str_is_case(name, "i16", 3)   ||
+	    str_is_case(name, "smallint", 8))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int16_t);
 	} else
-	if (str_is(name, "int", 3)     ||
-	    str_is(name, "integer", 7) ||
-	    str_is(name, "int32", 5)   ||
-	    str_is(name, "i32", 3))
+	if (str_is_case(name, "int", 3)     ||
+	    str_is_case(name, "integer", 7) ||
+	    str_is_case(name, "int32", 5)   ||
+	    str_is_case(name, "i32", 3))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int32_t);
 	} else
-	if (str_is(name, "int64", 5) ||
-	    str_is(name, "i64", 3))
+	if (str_is_case(name, "int64", 5) ||
+	    str_is_case(name, "i64", 3)   ||
+	    str_is_case(name, "bigint", 6))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int64_t);
 	} else
-	if (str_is(name, "float", 5))
+	if (str_is_case(name, "float", 5))
 	{
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(float);
 	} else
-	if (str_is(name, "double", 6))
+	if (str_is_case(name, "double", 6))
 	{
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(double);
 	} else
-	if (str_is(name, "text", 4) ||
-	    str_is(name, "string", 6))
+	if (str_is_case(name, "text", 4) ||
+	    str_is_case(name, "string", 6))
 	{
 		type = TYPE_STRING;
 	} else
-	if (str_is(name, "json", 4))
+	if (str_is_case(name, "json", 4))
 	{
 		type = TYPE_JSON;
 	} else
-	if (str_is(name, "timestamp", 9))
+	if (str_is_case(name, "timestamp", 9))
 	{
 		type = TYPE_TIMESTAMP;
 		*type_size = sizeof(int64_t);
 	} else
-	if (str_is(name, "interval", 8))
+	if (str_is_case(name, "interval", 8))
 	{
 		type = TYPE_INTERVAL;
 		*type_size = sizeof(Interval);
 	} else
-	if (str_is(name, "vector", 6))
+	if (str_is_case(name, "vector", 6))
 	{
 		type = TYPE_VECTOR;
 	}

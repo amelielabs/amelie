@@ -327,8 +327,6 @@ reread_as_float:
 				}
 				break;
 			}
-			if (*self->pos == '\n')
-				lex_error(self, "unterminated string");
 			if (*self->pos == '\\') {
 				slash = !slash;
 				escape = true;

@@ -99,13 +99,23 @@ parse_insert_csv(Stmt* self, Endpoint* endpoint)
 				column_separator = list != NULL;
 			} else
 			{
-				// todo: set null if , or EOL
-
 				// parse column value
-				row_meta->row_size +=
-					parse_value(self->lex, self->local, self->json,
-					            column,
-					            column_value);
+
+				// todo: comma or EOL
+
+				// null
+				auto comma = stmt_if(self, ',');
+				if (comma)
+				{
+					value_set_null(column_value);
+					stmt_push(self, comma);
+				} else
+				{
+					row_meta->row_size +=
+						parse_value(self->lex, self->local, self->json,
+						            column,
+						            column_value);
+				}
 
 				column_separator = !list_is_last(&columns->list, &column->link);
 			}
