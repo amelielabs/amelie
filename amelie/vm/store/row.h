@@ -14,4 +14,4 @@
 Row* row_create(Columns*, Value*, int);
 Row* row_create_key(Keys*, Value*);
 Row* row_update(Row*, Columns*, Value*, int);
-void row_update_values(Columns*, Value*, Value*, SetMeta*);
+void row_update_values(Columns*, Keys*, Value*, Value*, SetMeta*);

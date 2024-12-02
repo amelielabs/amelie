@@ -411,6 +411,7 @@ row_column_size(Column* column, Value* value)
 
 hot void
 row_update_values(Columns* columns,
+                  Keys*    keys,
                   Value*   row,
                   Value*   values,
                   SetMeta* meta)
@@ -431,7 +432,7 @@ row_update_values(Columns* columns,
 			value = &row[column->order];
 		}
 		meta->row_size += row_column_size(column, value);
-		if (column->key)
+		if (column->key && keys_find_column(keys, column->order))
 			meta->hash = value_hash(value, meta->hash);
 	}
 }

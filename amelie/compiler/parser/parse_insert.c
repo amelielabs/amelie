@@ -36,6 +36,8 @@
 hot static void
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
+	auto table = stmt->target->from_table;
+
 	// (
 	if (! stmt_if(self, '('))
 		error("expected '('");
@@ -45,10 +47,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	auto row = set_reserve(stmt->values, &row_meta);
 
 	// set next serial value
-	uint64_t serial = serial_next(&stmt->target->from_table->serial);
+	uint64_t serial = serial_next(&table->serial);
 
 	// value, ...
-	auto columns = table_columns(stmt->target->from_table);
+	auto columns = table_columns(table);
+	auto keys = table_keys(table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -84,7 +87,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			      str_of(&column->name));
 
 		// hash column if it is a part of the key
-		if (column->key)
+		if (column->key && keys_find_column(keys, column->order))
 			row_meta->hash = value_hash(column_value, row_meta->hash);
 	}
 
@@ -96,6 +99,8 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 hot static inline void
 parse_row(Stmt* self, AstInsert* stmt)
 {
+	auto table = stmt->target->from_table;
+
 	// (
 	if (! stmt_if(self, '('))
 		error("expected '('");
@@ -104,10 +109,11 @@ parse_row(Stmt* self, AstInsert* stmt)
 	SetMeta* row_meta;
 	auto row = set_reserve(stmt->values, &row_meta);
 
-	uint64_t serial = serial_next(&stmt->target->from_table->serial);
+	uint64_t serial = serial_next(&table->serial);
 
 	// value, ...
-	auto columns = table_columns(stmt->target->from_table);
+	auto columns = table_columns(table);
+	auto keys = table_keys(table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -135,7 +141,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 			      str_of(&column->name));
 
 		// hash column if it is a part of the key
-		if (column->key)
+		if (column->key && keys_find_column(keys, column->order))
 			row_meta->hash = value_hash(column_value, row_meta->hash);
 
 		// ,
@@ -209,15 +215,15 @@ hot static inline void
 parse_generate(Stmt* self, AstInsert* stmt)
 {
 	// insert into () values (), ...
+	auto table = stmt->target->from_table;
 
 	// GENERATE count
 	auto count = stmt_if(self, KINT);
 	if (! count)
 		error("GENERATE <count> expected");
 
-	auto table = stmt->target->from_table;
-
 	auto columns = table_columns(table);
+	auto keys = table_keys(table);
 	for (auto i = 0; i < count->integer; i++)
 	{
 		// prepare row
@@ -242,7 +248,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 				      str_of(&column->name));
 
 			// hash column if it is a part of the key
-			if (column->key)
+			if (column->key && keys_find_column(keys, column->order))
 				row_meta->hash = value_hash(column_value, row_meta->hash);
 		}
 	}

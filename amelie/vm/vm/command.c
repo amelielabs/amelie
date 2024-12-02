@@ -98,6 +98,7 @@ csend_generated(Vm* self, Op* op)
 	auto table   = (Table*)op->c;
 	auto values  = (Set*)op->d;
 	auto columns = table_columns(table);
+	auto keys    = table_keys(table);
 
 	// apply generated columns and redistribute rows between nodes
 	Req* map[dtr->set.set_size];
@@ -114,7 +115,7 @@ csend_generated(Vm* self, Op* op)
 		auto row_meta = set_meta(values, order);
 		row_meta->row_size = 0;
 		row_meta->hash = 0;
-		row_update_values(columns, set_row(values, order), pos, row_meta);
+		row_update_values(columns, keys, set_row(values, order), pos, row_meta);
 		pos += columns->generated_columns;
 
 		// map to node

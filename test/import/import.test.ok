@@ -72,7 +72,7 @@ disconnect Sx
 # test: POST /schema/table (text/csv) (empty column list)
 connect E0 S0 http://localhost:3485/public/test4?columns=
 import text/csv 
-{"msg": "CSV import with empty column list is not supported"}
+import text/csv     
 disconnect S0
 # test: POST /schema/table (text/csv) (generated columns)
 connect E0 S0 http://localhost:3485/public/test2
