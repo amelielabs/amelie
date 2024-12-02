@@ -273,6 +273,7 @@ vm_run(Vm*       self,
 		&&cset_sort,
 		&&cset_add,
 		&&cset_get,
+		&&cset_result,
 		&&cset_agg,
 
 		// set merge
@@ -1106,14 +1107,12 @@ cany:
 	op_next;
 
 cexists:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
-	{
-		rc = true;
-		if (r[op->b].type == TYPE_SET)
-			rc = ((Set*)r[op->b].store)->count_rows > 0;
-		value_set_bool(&r[op->a], rc);
-		value_free(&r[op->b]);
-	}
+	// [result, set]
+	rc = false;
+	if (r[op->b].type == TYPE_SET)
+		rc = ((Set*)r[op->b].store)->count_rows > 0;
+	value_set_bool(&r[op->a], rc);
+	value_free(&r[op->b]);
 	op_next;
 
 cset:
@@ -1156,7 +1155,17 @@ cset_get:
 		value_copy(&r[op->a], a);
 	else
 		value_set_null(&r[op->a]);
-	// todo
+	op_next;
+
+cset_result:
+	// [result, set]
+	set = (Set*)r[op->b].store;
+	// return first row column and free set
+	if (! set->count_rows)
+		value_set_null(&r[op->a]);
+	else
+		value_move(&r[op->a], set_column(set, 0, 0));
+	value_free(&r[op->b]);
 	op_next;
 
 cset_agg:

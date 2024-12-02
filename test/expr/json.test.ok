@@ -72,9 +72,9 @@ select [{}]
 [[{}]]
 # test: array [set]
 select [ select 123 ]
-[[[123]]]
+[[123]]
 select [ select 1, 2 ]
-[[[[1, 2]]]]
+{"msg": "subquery must return only one column"}
 # test: object {}
 select {}
 [{}]
@@ -177,12 +177,10 @@ select {"id": [1,2,3]::vector }
 # test: object {set}
 select {"id": select 123 }
 [{
-  "id": [123]
+  "id": 123
 }]
 select {"id": select 1, 2 }
-[{
-  "id": [[1, 2]]
-}]
+{"msg": "subquery must return only one column"}
 # test: case 1
 select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}
 [{

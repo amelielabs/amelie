@@ -172,6 +172,7 @@ enum
 	CSET_SORT,
 	CSET_ADD,
 	CSET_GET,
+	CSET_RESULT,
 	CSET_AGG,
 
 	// merge

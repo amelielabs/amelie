@@ -66,6 +66,7 @@ insert into test (data) values({"data": {"id": 1}})
 insert into test (data) values({"data": {"id": 2}})
 insert into test (data) values({"data": {"id": 3}})
 
+select (select *) from test
 select (select test) from test
 select (select test.data) from test
 select (select test.data.data) from test
@@ -117,6 +118,7 @@ insert into test (obj) values({"data": {"id": 3}})
 select obj from (select * from test)
 select * from (select * from test) alias
 
+select * from (select * from test) alias
 select obj from (select * from test) alias
 select alias.* from (select * from test) alias
 select alias.obj.data from (select * from test) alias
@@ -135,10 +137,13 @@ select (select * from test)
 # test: select (select from shared) no result
 select (select * from test where false)
 
-# test: select (select from shared) from shared
+# test: select (select from shared) from shared (more then one result)
 select (select * from test) from test
 select (select * from test t) from test
-explain select (select i.* from test i) from test
+
+# test: select (select from shared) from shared (one result)
+select (select * from test t limit 1) from test
+explain select (select i.* from test i limit 1) from test
 
 # test: select (select from shared) from shared #2
 explain select (select i.* from test i where test.id = i.id) from test
@@ -151,9 +156,12 @@ create shared table b (id int primary key serial, data int default 1)
 insert into a () values (), (), ()
 insert into b () values (), (), ()
 
-explain select (select * from b where a.id = b.id) from a
 select (select * from b where a.id = b.id) from a
-select (select a.*, b.* from b where a.id = b.id) from a
+select (select a.* from b where a.id = b.id) from a
+select (select b.* from b where a.id = b.id)::type from a
+
+select (select a.id from b where a.id = b.id) from a
+select (select b.id from b where a.id = b.id)::type from a
 
 # test: select from table where (select from shared)
 explain select * from a where (select true from b where a.id = b.id)
@@ -162,22 +170,6 @@ select * from a where (select true from b where a.id = b.id)
 drop table a
 drop table b
 drop table test
-
-# test: select set operations (unsupported)
-create shared table a (id int primary key serial, data int default 0)
-create shared table b (id int primary key serial, data int default 1)
-
-explain select length(select * from a)
-select length(select * from a)
-
-explain select (select * from a)[0]
-select (select * from a)[0]
-
-explain select (select a.* from a) + (select b.* from b)
-select (select a.* from a) + (select b.* from b)
-
-drop table a
-drop table b
 
 disconnect S0
 close E0

@@ -238,7 +238,7 @@ scan_store(Scan* self, Target* target)
 		if (target->type == TARGET_SELECT)
 		{
 			assert(target->from_select);
-			target->r = emit_expr(cp, target, target->from_select);
+			target->r = emit_select(cp, target->from_select);
 		} else
 		if (target->type == TARGET_CTE)
 		{

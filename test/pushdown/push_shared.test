@@ -16,27 +16,39 @@ explain select * from (select * from test) t
 select * from (select * from test) t
 
 # test: select (select expr) from shared
-explain select (select test.*) from test
 select (select test.*) from test
 
+explain select (select test.id) from test
+select (select test.id) from test
+
 # test: select (select from shared)
-explain select (select * from test)
 select (select * from test)
 
+explain select (select id from test)
+select (select id from test)
+select (select id from test limit 1)
+
 # test: select (select from shared) from shared
-explain select (select a.*, id from test) from test a
 select (select a.*, id from test) from test a
 
 explain select (select a.id, id from test) from test a
 select (select a.id, id from test) from test a
 
+select (select a.id from test) from test a
+select (select a.id from test limit 1) from test a
+
 # test: select (select from shared) from (select from shared)
-explain select (select a.*, id from test) from (select * from test t) a
 select (select a.*, id from test) from (select * from test t) a
 
+explain select (select a.id, id from test) from (select * from test t) a
+select (select a.id from test) from (select * from test t) a
+select (select a.id from test limit 1) from (select * from test t) a
+
 # test: select from shared, shared
-explain select test.*, t.* from test, test t
 select test.*, t.* from test, test t
+
+explain select test.id, t.id from test, test t
+select test.id, t.id from test, test t
 
 drop table test
 

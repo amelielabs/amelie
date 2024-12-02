@@ -638,7 +638,11 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	auto current = args->l;
 	while (current)
 	{
-		int r = emit_expr(self, target, current);
+		int r;
+		if (current->id == KSELECT)
+			r = emit_select(self, current);
+		else
+			r = emit_expr(self, target, current);
 		op1(self, CPUSH, r);
 		runpin(self, r);
 		current = current->next;
@@ -665,7 +669,11 @@ emit_match(Compiler* self, Target* target, Ast* ast)
 	//  a         op .
 	//               b
 	int a = emit_expr(self, target, ast->l);
-	int b = emit_expr(self, target, ast->r->r);
+	int b;
+	if (ast->r->r->id == KSELECT)
+		b = emit_select(self, ast->r->r);
+	else
+		b = emit_expr(self, target, ast->r->r);
 	int op;
 	switch (ast->r->id) {
 	case '=':   op = MATCH_EQU;
@@ -884,7 +892,18 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 
 	// sub-query
 	case KSELECT:
-		return emit_select(self, ast);
+	{
+		// ensure that subquery returns one column
+		auto select = ast_select_of(ast);
+		auto columns = &select->ret.columns;
+		if (columns->list_count > 1)
+			error("subquery must return only one column");
+		auto r = emit_select(self, ast);
+		// return first column of the first row and free the set
+		auto rresult = op2(self, CSET_RESULT, rpin(self, columns_first(columns)->type), r);
+		runpin(self, r);
+		return rresult;
+	}
 
 	// case
 	case KCASE:
@@ -910,7 +929,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// exists
 	case KEXISTS:
 	{
-		auto r = emit_expr(self, target, ast->r);
+		auto r = emit_select(self, ast->r);
 		auto rc = op2(self, CEXISTS, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rc;

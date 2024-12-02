@@ -408,7 +408,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case '(':
 		// ()
 		value = parse_expr(self, expr);
-		if (! stmt_if(self,')'))
+		if (! stmt_if(self, ')'))
 			error("(): ')' expected");
 		break;
 
@@ -420,10 +420,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// exists
 	case KEXISTS:
 	{
-		if (! stmt_if(self,'('))
+		if (! stmt_if(self, '('))
 			error("EXISTS <(> expected");
-		value->r = parse_expr(self, expr);
-		if (! stmt_if(self,')'))
+		if (! stmt_if(self, KSELECT))
+			error("EXISTS (<SELECT> expected");
+		value->r = &parse_select(self)->ast;
+		if (! stmt_if(self, ')'))
 			error("EXISTS (<)> expected");
 		break;
 	}

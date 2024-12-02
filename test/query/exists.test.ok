@@ -6,25 +6,65 @@ select exists
 select exists 1
 {"msg": "EXISTS <(> expected"}
 select exists (
-{"msg": "bad expression"}
+{"msg": "EXISTS (<SELECT> expected"}
 select exists ()
-{"msg": "bad expression"}
-# test: exists (expr)
+{"msg": "EXISTS (<SELECT> expected"}
 select exists (1)
-[true]
+{"msg": "EXISTS (<SELECT> expected"}
 select exists (null)
-[null]
+{"msg": "EXISTS (<SELECT> expected"}
 select exists (false)
-[true]
+{"msg": "EXISTS (<SELECT> expected"}
 select exists ([])
-[true]
-# test: exists (set)
+{"msg": "EXISTS (<SELECT> expected"}
+# test: exists (select)
 create shared table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0)
+select exists (select true from test limit 1)
+[true]
+select exists (select true from test where false)
+[false]
+# test: exists (select expr)
+select exists (select null)
+[true]
+# test: exists (select) (more then one result)
+select exists (select true from test)
+[true]
+explain select exists (select true from test where false)
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv_to             0      0      0     ",
+      "02": "cte_set             0      0      0     ",
+      "03": "body                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      1      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 12     0      0     ",
+      "06": "bool                2      0      0     ",
+      "07": "jntr                11     2      0     ",
+      "08": "bool                2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "table_next          0      6      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "exists              2      1      0     ",
+      "14": "push                2      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: exists (select) (more then one column)
 select exists (select * from test)
 [true]
-select exists (select * from test where false)
-[false]
 drop table test
 disconnect S0
 close E0

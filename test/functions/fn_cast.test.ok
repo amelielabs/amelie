@@ -10,7 +10,7 @@ select [1,2,3]::type
 select {}::type
 ["json"]
 select (select 1)::type
-["set"]
+["int"]
 select null::type
 ["null"]
 # test: int(null)

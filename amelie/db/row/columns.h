@@ -120,6 +120,12 @@ columns_find_by(Columns* self, int order)
 	return NULL;
 }
 
+hot static inline Column*
+columns_first(Columns* self)
+{
+	return container_of(self->list.next, Column, link);
+}
+
 static inline void
 columns_copy(Columns* self, Columns* src)
 {

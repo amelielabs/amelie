@@ -2,33 +2,33 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select (select const)
 select (select 0)
-[[0]]
+[0]
 select (select 1234)
-[[1234]]
+[1234]
 select (select null)
-[[null]]
+[null]
 select (select "hello")
-[["hello"]]
+["hello"]
 # test: select (select expr)
 select (select 1 + 1)
-[[2]]
+[2]
 select (select 2 * 2)
-[[4]]
+[4]
 select (select 8 * 8)
-[[64]]
+[64]
 select (select 64 / ( 4 + 4 ))
-[[8]]
+[8]
 select (select 64 / 0)
 {"msg": "zero division"}
 select (select 64 % 0)
 {"msg": "zero division"}
 # test: select (select [])
 select (select [])
-[[[]]]
+[[]]
 select (select [1])
-[[[1]]]
+[[1]]
 select (select [1,2,3])
-[[[1, 2, 3]]]
+[[1, 2, 3]]
 # test: select (select function())
 select system.schemas()
 [{
@@ -44,7 +44,7 @@ select system.schemas()
   }
 }]
 select (select system.schemas())
-[[{
+[{
   "system": {
     "name": "system",
     "system": true,
@@ -55,26 +55,26 @@ select (select system.schemas())
     "system": true,
     "create": true
   }
-}]]
+}]
 # test: select (select {})
 select (select {})
-[[{}]]
+[{}]
 select (select {"a": 1})
-[[{
+[{
   "a": 1
-}]]
+}]
 select (select {"a": 1, "b": null})
-[[{
+[{
   "a": 1,
   "b": null
-}]]
+}]
 # test: select (select *) from shared
 create shared table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 select (select *) from test
-[[1], [2], [3]]
+[1, 2, 3]
 # test: select (select target.*) from shared
 explain select (select test.*) from test
 [{
@@ -94,25 +94,26 @@ explain select (select test.*) from test
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
+      "04": "jmp                 13     0      0     ",
       "05": "set                 1      1      0     ",
       "06": "table_readi32       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      5      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      5      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
 select (select test.*) from test
-[[1], [2], [3]]
+[1, 2, 3]
 # test: select (select alias.*) from shared
 select (select t.*) from test t
-[[1], [2], [3]]
+[1, 2, 3]
 select (select t.*) from test
 {"msg": "<t> target not found"}
 select (select t) from test t
@@ -136,22 +137,23 @@ explain select (select test.id) from test
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
+      "04": "jmp                 13     0      0     ",
       "05": "set                 1      1      0     ",
       "06": "table_readi32       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      5      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      5      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
 select (select test.id) from test
-[[1], [2], [3]]
+[1, 2, 3]
 select (select id) from test
 {"msg": "<id> target column cannot be found"}
 # test: select (select alias.column) from shared
@@ -173,83 +175,86 @@ explain select (select t.id) from test t
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
+      "04": "jmp                 13     0      0     ",
       "05": "set                 1      1      0     ",
       "06": "table_readi32       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      5      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      5      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
 select (select t.id) from test
 {"msg": "<t> target not found"}
 select (select t.id) from test t
-[[1], [2], [3]]
+[1, 2, 3]
 drop table test
 # test: select (select target.path) from shared
 create shared table test (id int primary key serial, data json)
 insert into test (data) values({"data": {"id": 1}})
 insert into test (data) values({"data": {"id": 2}})
 insert into test (data) values({"data": {"id": 3}})
+select (select *) from test
+{"msg": "subquery must return only one column"}
 select (select test) from test
 {"msg": "<test> target column cannot be found"}
 select (select test.data) from test
-[[{
+[{
   "data": {
     "id": 1
   }
-}], [{
+}, {
   "data": {
     "id": 2
   }
-}], [{
+}, {
   "data": {
     "id": 3
   }
-}]]
+}]
 select (select test.data.data) from test
-[[{
+[{
   "id": 1
-}], [{
+}, {
   "id": 2
-}], [{
+}, {
   "id": 3
-}]]
+}]
 select (select test.data.data.id) from test
-[[1], [2], [3]]
+[1, 2, 3]
 # test: select (select alias.path) from shared
 select (select t) from test t
 {"msg": "<t> target column cannot be found"}
 select (select t.data) from test t
-[[{
+[{
   "data": {
     "id": 1
   }
-}], [{
+}, {
   "data": {
     "id": 2
   }
-}], [{
+}, {
   "data": {
     "id": 3
   }
-}]]
+}]
 select (select t.data.data) from test t
-[[{
+[{
   "id": 1
-}], [{
+}, {
   "id": 2
-}], [{
+}, {
   "id": 3
-}]]
+}]
 select (select t.data.data.id) from test t
-[[1], [2], [3]]
+[1, 2, 3]
 drop table test
 # test: select from (select expr)
 select * from (select 0) t
@@ -343,6 +348,20 @@ select * from (select * from test) alias
     "id": 3
   }
 }]]
+select * from (select * from test) alias
+[[0, {
+  "data": {
+    "id": 1
+  }
+}], [1, {
+  "data": {
+    "id": 2
+  }
+}], [2, {
+  "data": {
+    "id": 3
+  }
+}]]
 select obj from (select * from test) alias
 [{
   "data": {
@@ -409,24 +428,28 @@ explain select (select * from test)
       "08": "set_add             1      0      0     ",
       "09": "table_next          0      6      0     ",
       "10": "table_close         0      0      0     ",
-      "11": "push                1      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "11": "set_result          2      1      0     ",
+      "12": "push                2      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
 select (select * from test)
-[[1, 2, 3]]
+[1]
 # test: select (select from shared) no result
 select (select * from test where false)
-[[]]
-# test: select (select from shared) from shared
+[null]
+# test: select (select from shared) from shared (more then one result)
 select (select * from test) from test
 {"msg": "<test> target is redefined, please use different alias for the target"}
 select (select * from test t) from test
-[[1, 2, 3], [1, 2, 3], [1, 2, 3]]
-explain select (select i.* from test i) from test
+[1, 1, 1]
+# test: select (select from shared) from shared (one result)
+select (select * from test t limit 1) from test
+[1, 1, 1]
+explain select (select i.* from test i limit 1) from test
 [{
   "bytecode": {
     "coordinator": {
@@ -444,23 +467,27 @@ explain select (select i.* from test i) from test
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          1      0      5     # public.test (primary)",
-      "04": "jmp                 18     0      0     ",
+      "04": "jmp                 22     0      0     ",
       "05": "set                 1      1      0     ",
-      "06": "int                 2      -      0     # -2147483648",
-      "07": "push                2      0      0     ",
-      "08": "table_open          0      20     10    # public.test (primary)",
-      "09": "jmp                 14     0      0     ",
-      "10": "table_readi32       2      0      0     ",
-      "11": "push                2      0      0     ",
-      "12": "set_add             1      0      0     ",
-      "13": "table_next          0      10     0     ",
-      "14": "table_close         0      0      0     ",
-      "15": "push                1      0      0     ",
-      "16": "set_add             0      0      0     ",
-      "17": "table_next          1      5      0     ",
-      "18": "table_close         1      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "06": "int                 2      -      0     # 1",
+      "07": "cntr_init           0      0      2     ",
+      "08": "int                 2      -      0     # -2147483648",
+      "09": "push                2      0      0     ",
+      "10": "table_open          0      20     12    # public.test (primary)",
+      "11": "jmp                 17     0      0     ",
+      "12": "cntr_lte            0      0      11    ",
+      "13": "table_readi32       2      0      0     ",
+      "14": "push                2      0      0     ",
+      "15": "set_add             1      0      0     ",
+      "16": "table_next          0      12     0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "set_result          2      1      0     ",
+      "19": "push                2      0      0     ",
+      "20": "set_add             0      0      0     ",
+      "21": "table_next          1      5      0     ",
+      "22": "table_close         1      0      0     ",
+      "23": "result              0      0      0     ",
+      "24": "ret                 0      0      0     "
     }
   }
 }]
@@ -483,7 +510,7 @@ explain select (select i.* from test i where test.id = i.id) from test
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          1      0      5     # public.test (primary)",
-      "04": "jmp                 22     0      0     ",
+      "04": "jmp                 23     0      0     ",
       "05": "set                 1      1      0     ",
       "06": "int                 2      -      0     # -2147483648",
       "07": "push                2      0      0     ",
@@ -498,70 +525,33 @@ explain select (select i.* from test i where test.id = i.id) from test
       "16": "set_add             1      0      0     ",
       "17": "table_next          0      10     0     ",
       "18": "table_close         0      0      0     ",
-      "19": "push                1      0      0     ",
-      "20": "set_add             0      0      0     ",
-      "21": "table_next          1      5      0     ",
-      "22": "table_close         1      0      0     ",
-      "23": "result              0      0      0     ",
-      "24": "ret                 0      0      0     "
+      "19": "set_result          2      1      0     ",
+      "20": "push                2      0      0     ",
+      "21": "set_add             0      0      0     ",
+      "22": "table_next          1      5      0     ",
+      "23": "table_close         1      0      0     ",
+      "24": "result              0      0      0     ",
+      "25": "ret                 0      0      0     "
     }
   }
 }]
 select (select i.* from test i where test.id = i.id) from test
-[[1], [2], [3]]
+[1, 2, 3]
 # test: select (select from shared) from shared #3
 create shared table a (id int primary key serial, data int default 0)
 create shared table b (id int primary key serial, data int default 1)
 insert into a () values (), (), ()
 insert into b () values (), (), ()
-explain select (select * from b where a.id = b.id) from a
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          1      0      5     # public.a (primary)",
-      "04": "jmp                 24     0      0     ",
-      "05": "set                 1      2      0     ",
-      "06": "int                 2      -      0     # -2147483648",
-      "07": "push                2      0      0     ",
-      "08": "table_open          0      17     10    # public.b (primary)",
-      "09": "jmp                 20     0      0     ",
-      "10": "table_readi32       2      1      0     ",
-      "11": "table_readi32       3      0      0     ",
-      "12": "equii               4      2      3     ",
-      "13": "jntr                19     4      0     ",
-      "14": "table_readi32       2      0      0     ",
-      "15": "push                2      0      0     ",
-      "16": "table_readi32       2      0      1     ",
-      "17": "push                2      0      0     ",
-      "18": "set_add             1      0      0     ",
-      "19": "table_next          0      10     0     ",
-      "20": "table_close         0      0      0     ",
-      "21": "push                1      0      0     ",
-      "22": "set_add             0      0      0     ",
-      "23": "table_next          1      5      0     ",
-      "24": "table_close         1      0      0     ",
-      "25": "result              0      0      0     ",
-      "26": "ret                 0      0      0     "
-    }
-  }
-}]
 select (select * from b where a.id = b.id) from a
-[[[0, 1]], [[1, 1]], [[2, 1]]]
-select (select a.*, b.* from b where a.id = b.id) from a
-[[[0, 0, 0, 1]], [[1, 0, 1, 1]], [[2, 0, 2, 1]]]
+{"msg": "subquery must return only one column"}
+select (select a.* from b where a.id = b.id) from a
+{"msg": "subquery must return only one column"}
+select (select b.* from b where a.id = b.id)::type from a
+{"msg": "subquery must return only one column"}
+select (select a.id from b where a.id = b.id) from a
+[0, 1, 2]
+select (select b.id from b where a.id = b.id)::type from a
+["int", "int", "int"]
 # test: select from table where (select from shared)
 explain select * from a where (select true from b where a.id = b.id)
 [{
@@ -581,7 +571,7 @@ explain select * from a where (select true from b where a.id = b.id)
       "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      5     # public.a (primary)",
-      "04": "jmp                 26     0      0     ",
+      "04": "jmp                 27     0      0     ",
       "05": "set                 1      1      0     ",
       "06": "int                 2      -      0     # -2147483648",
       "07": "push                2      0      0     ",
@@ -596,16 +586,17 @@ explain select * from a where (select true from b where a.id = b.id)
       "16": "set_add             1      0      0     ",
       "17": "table_next          1      10     0     ",
       "18": "table_close         1      0      0     ",
-      "19": "jntr                25     1      0     ",
-      "20": "table_readi32       1      0      0     ",
-      "21": "push                1      0      0     ",
-      "22": "table_readi32       1      0      1     ",
-      "23": "push                1      0      0     ",
-      "24": "set_add             0      0      0     ",
-      "25": "table_next          0      5      0     ",
-      "26": "table_close         0      0      0     ",
-      "27": "result              0      0      0     ",
-      "28": "ret                 0      0      0     "
+      "19": "set_result          2      1      0     ",
+      "20": "jntr                26     2      0     ",
+      "21": "table_readi32       1      0      0     ",
+      "22": "push                1      0      0     ",
+      "23": "table_readi32       1      0      1     ",
+      "24": "push                1      0      0     ",
+      "25": "set_add             0      0      0     ",
+      "26": "table_next          0      5      0     ",
+      "27": "table_close         0      0      0     ",
+      "28": "result              0      0      0     ",
+      "29": "ret                 0      0      0     "
     }
   }
 }]
@@ -614,53 +605,5 @@ select * from a where (select true from b where a.id = b.id)
 drop table a
 drop table b
 drop table test
-# test: select set operations (unsupported)
-create shared table a (id int primary key serial, data int default 0)
-create shared table b (id int primary key serial, data int default 1)
-explain select length(select * from a)
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "body                0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      1      0     ",
-      "01": "set                 1      2      0     ",
-      "02": "int                 2      -      0     # -2147483648",
-      "03": "push                2      0      0     ",
-      "04": "table_open          0      0      6     # public.a (primary)",
-      "05": "jmp                 12     0      0     ",
-      "06": "table_readi32       2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "table_readi32       2      0      1     ",
-      "09": "push                2      0      0     ",
-      "10": "set_add             1      0      0     ",
-      "11": "table_next          0      6      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "push                1      0      0     ",
-      "14": "call                1      -      1     # public.length()",
-      "15": "push                1      0      0     ",
-      "16": "set_add             0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
-    }
-  }
-}]
-select length(select * from a)
-{"msg": "length(set): operation type is not supported"}
-explain select (select * from a)[0]
-{"msg": "unsupported operation: <set> [] <int>"}
-select (select * from a)[0]
-{"msg": "unsupported operation: <set> [] <int>"}
-explain select (select a.* from a) + (select b.* from b)
-{"msg": "unsupported operation: <set> + <set>"}
-select (select a.* from a) + (select b.* from b)
-{"msg": "unsupported operation: <set> + <set>"}
-drop table a
-drop table b
 disconnect S0
 close E0
