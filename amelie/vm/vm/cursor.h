@@ -38,9 +38,6 @@ struct Cursor
 	int           ref;
 	int           ref_pos;
 	int           ref_count;
-	// limit/offset
-	int64_t       limit;
-	int64_t       offset;
 };
 
 struct CursorMgr
@@ -59,8 +56,6 @@ cursor_init(Cursor* self)
 	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
-	self->limit     = 0;
-	self->offset    = 0;
 	set_iterator_init(&self->set_it);
 	merge_iterator_init(&self->merge_it);
 }
@@ -75,8 +70,6 @@ cursor_reset(Cursor* self)
 	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
-	self->limit     = 0;
-	self->offset    = 0;
 	if (self->it)
 	{
 		iterator_close(self->it);

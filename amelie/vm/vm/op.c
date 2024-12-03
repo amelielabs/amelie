@@ -40,6 +40,8 @@ OpDesc ops[] =
 	{ CJMP, "jmp" },
 	{ CJTR, "jtr" },
 	{ CJNTR, "jntr" },
+	{ CJGTED, "cjgted" },
+	{ CJLTD, "cjltd" },
 	{ CSWAP, "swap" },
 
 	// stack
@@ -197,11 +199,6 @@ OpDesc ops[] =
 	{ CMERGE, "merge" },
 	{ CMERGE_RECV, "merge_recv" },
 	{ CMERGE_RECV_AGG, "merge_recv_agg" },
-
-	// counters
-	{ CCNTR_INIT, "cntr_init" },
-	{ CCNTR_GTE, "cntr_gte" },
-	{ CCNTR_LTE, "cntr_lte" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },

@@ -243,12 +243,20 @@ emit_select_merge(Compiler* self, AstSelect* select)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
+	{
 		rlimit = emit_expr(self, select->target, select->expr_limit);
+		if (rtype(self, rlimit) != TYPE_INT)
+			error("LIMIT: integer type expected");
+	}
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
+	{
 		roffset = emit_expr(self, select->target, select->expr_offset);
+		if (rtype(self, roffset) != TYPE_INT)
+			error("OFFSET: integer type expected");
+	}
 
 	// CMERGE
 	int rmerge = op4(self, CMERGE, rpin(self, TYPE_MERGE), select->rset,

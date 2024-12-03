@@ -38,12 +38,10 @@
 typedef struct
 {
 	Target*      target;
-	Ast*         expr_limit;
-	Ast*         expr_offset;
 	Ast*         expr_where;
-	int          coffset;
-	int          climit;
-	int          climit_eof;
+	int          roffset;
+	int          rlimit;
+	int          eof;
 	ScanFunction on_match;
 	void*        on_match_arg;
 	Compiler*    compiler;
@@ -154,9 +152,9 @@ scan_table(Scan* self, Target* target)
 	int _where_eof = op_pos(cp);
 	op1(cp, CJMP, 0 /* _eof */);
 
-	// get outer target eof for limit expression
-	if (self->climit_eof == -1)
-		self->climit_eof = _where_eof;
+	// get outer target eof (for limit)
+	if (self->eof == -1)
+		self->eof = _where_eof;
 
 	// _where:
 	int _where = op_pos(cp);
@@ -185,14 +183,14 @@ scan_table(Scan* self, Target* target)
 		}
 
 		// offset/limit counters
-		int _coffset_jmp;
-		if (self->expr_offset)
+		int _offset_jmp;
+		if (self->roffset != -1)
 		{
-			_coffset_jmp = op_pos(cp);
-			op3(cp, CCNTR_GTE, target->id, 1 /* type */, 0 /* _next */);
+			_offset_jmp = op_pos(cp);
+			op2(cp, CJGTED, self->roffset, 0 /* _next */);
 		}
-		if (self->expr_limit)
-			op3(cp, CCNTR_LTE, target->id, 0 /* type */, self->climit_eof);
+		if (self->rlimit != -1)
+			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / expr against current cursor position
 		self->on_match(cp, self->on_match_arg);
@@ -207,8 +205,8 @@ scan_table(Scan* self, Target* target)
 			else
 				code_at(cp->code, _where_jntr)->a = _next;
 		}
-		if (self->expr_offset)
-			code_at(cp->code, _coffset_jmp)->c = _next;
+		if (self->roffset != -1)
+			code_at(cp->code, _offset_jmp)->b = _next;
 	}
 
 	// table_next
@@ -258,9 +256,9 @@ scan_store(Scan* self, Target* target)
 	int _where_eof = op_pos(cp);
 	op1(cp, CJMP, 0 /* _eof */);
 
-	// get outer target eof for limit expression
-	if (self->climit_eof == -1)
-		self->climit_eof = _where_eof;
+	// get outer target eof (for limit)
+	if (self->eof == -1)
+		self->eof = _where_eof;
 
 	// _where:
 	int _where = op_pos(cp);
@@ -282,14 +280,14 @@ scan_store(Scan* self, Target* target)
 		}
 
 		// offset/limit counters
-		int _coffset_jmp;
-		if (self->expr_offset)
+		int _offset_jmp;
+		if (self->roffset != -1)
 		{
-			_coffset_jmp = op_pos(cp);
-			op3(cp, CCNTR_GTE, target->id, 1 /* type */, 0 /* _next */);
+			_offset_jmp = op_pos(cp);
+			op2(cp, CJGTED, self->roffset, 0 /* _next */);
 		}
-		if (self->expr_limit)
-			op3(cp, CCNTR_LTE, target->id, 0 /* type */, self->climit_eof);
+		if (self->rlimit != -1)
+			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / select_expr
 		self->on_match(cp, self->on_match_arg);
@@ -299,8 +297,8 @@ scan_store(Scan* self, Target* target)
 		if (self->expr_where)
 			code_at(cp->code, _where_jntr)->a = _next;
 
-		if (self->expr_offset)
-			code_at(cp->code, _coffset_jmp)->c = _next;
+		if (self->roffset != -1)
+			code_at(cp->code, _offset_jmp)->b = _next;
 	}
 
 	// cursor next
@@ -336,12 +334,10 @@ scan(Compiler*    compiler,
 	Scan self =
 	{
 		.target       = target,
-		.expr_limit   = expr_limit,
-		.expr_offset  = expr_offset,
 		.expr_where   = expr_where,
-		.coffset      = -1,
-		.climit       = -1,
-		.climit_eof   = -1,
+		.roffset      = -1,
+		.rlimit       = -1,
+		.eof          = -1,
 		.on_match     = on_match,
 		.on_match_arg = on_match_arg,
 		.compiler     = compiler
@@ -350,22 +346,23 @@ scan(Compiler*    compiler,
 	// offset
 	if (expr_offset)
 	{
-		int roffset;
-		roffset = emit_expr(compiler, target, expr_offset);
-		self.coffset = op_pos(compiler);
-		op3(compiler, CCNTR_INIT, target->id, 1, roffset);
-		runpin(compiler, roffset);
+		self.roffset = emit_expr(compiler, target, expr_offset);
+		if (rtype(compiler, self.roffset) != TYPE_INT)
+			error("OFFSET: integer type expected");
 	}
 
 	// limit
 	if (expr_limit)
 	{
-		int rlimit;
-		rlimit = emit_expr(compiler, target, expr_limit);
-		self.climit = op_pos(compiler);
-		op3(compiler, CCNTR_INIT, target->id, 0, rlimit);
-		runpin(compiler, rlimit);
+		self.rlimit = emit_expr(compiler, target, expr_limit);
+		if (rtype(compiler, self.rlimit) != TYPE_INT)
+			error("LIMIT: integer type expected");
 	}
 
 	scan_target(&self, target);
+
+	if (self.roffset != -1)
+		runpin(compiler, self.roffset);
+	if (self.rlimit != -1)
+		runpin(compiler, self.rlimit);
 }

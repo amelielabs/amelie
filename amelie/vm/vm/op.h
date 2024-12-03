@@ -21,6 +21,8 @@ enum
 	CJMP,
 	CJTR,
 	CJNTR,
+	CJGTED,
+	CJLTD,
 	CSWAP,
 
 	// stack
@@ -179,11 +181,6 @@ enum
 	CMERGE,
 	CMERGE_RECV,
 	CMERGE_RECV_AGG,
-
-	// counters
-	CCNTR_INIT,
-	CCNTR_GTE,
-	CCNTR_LTE,
 
 	// table cursor
 	CTABLE_OPEN,

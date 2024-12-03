@@ -119,6 +119,23 @@ select * from test offset 3
 select * from test offset 4
 select * from test offset 0
 select * from test offset -1
+
+# test: select from shared, shared limit
+select test.id, t.id from test, test t
+select test.id, t.id from test, test t limit 1
+select test.id, t.id from test, test t limit 2
+select test.id, t.id from test, test t limit 3
+select test.id, t.id from test, test t limit 4
+select test.id, t.id from test, test t limit 0
+select test.id, t.id from test, test t limit -1
+
+# test: select from shared, shared limit offset
+select test.id, t.id from test, test t limit 1 offset 0
+select test.id, t.id from test, test t limit 1 offset 1
+select test.id, t.id from test, test t limit 1 offset 2
+select test.id, t.id from test, test t limit 1 offset 3
+select test.id, t.id from test, test t limit 1 offset 4
+select test.id, t.id from test, test t limit 1 offset -1
 drop table test
 
 disconnect S0

@@ -122,6 +122,8 @@ vm_run(Vm*       self,
 		&&cjmp,
 		&&cjtr,
 		&&cjntr,
+		&&cjgted,
+		&&cjltd,
 		&&cswap,
 
 		// stack
@@ -281,11 +283,6 @@ vm_run(Vm*       self,
 		&&cmerge_recv,
 		&&cmerge_recv_agg,
 
-		// cursor
-		&&ccntr_init,
-		&&ccntr_gte,
-		&&ccntr_lte,
-
 		// table cursor
 		&&ctable_open,
 		&&ctable_prepare,
@@ -390,6 +387,24 @@ cjntr:
 	if (! rc)
 	{
 		op = code_at(code, op->a);
+		op_jmp;
+	}
+	op_next;
+
+cjgted:
+	// [value, jmp]
+	if (--r[op->a].integer >= 0)
+	{
+		op = code_at(code, op->b);
+		op_jmp;
+	}
+	op_next;
+
+cjltd:
+	// [value, jmp]
+	if (--r[op->a].integer < 0)
+	{
+		op = code_at(code, op->b);
 		op_jmp;
 	}
 	op_next;
@@ -1189,47 +1204,6 @@ cmerge_recv:
 cmerge_recv_agg:
 	// [set, stmt]
 	cmerge_recv_agg(self, op);
-	op_next;
-
-ccntr_init:
-	// [cursor, type, expr]
-	if (unlikely(r[op->c].type != TYPE_INT))
-		error("LIMIT/OFFSET: integer type expected");
-	if (unlikely(r[op->c].integer < 0))
-		error("LIMIT/OFFSET: positive integer value expected");
-	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	if (op->b == 0)
-		cursor->limit = r[op->c].integer;
-	else
-		cursor->offset = r[op->c].integer;
-	op_next;
-
-ccntr_gte:
-	// [cursor, type, jmp]
-	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	if (op->b == 0)
-		rc = --cursor->limit;
-	else
-		rc = --cursor->offset;
-	if (rc >= 0)
-	{
-		op = code_at(code, op->c);
-		op_jmp;
-	}
-	op_next;
-
-ccntr_lte:
-	// [cursor, type, jmp]
-	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	if (op->b == 0)
-		rc = --cursor->limit;
-	else
-		rc = --cursor->offset;
-	if (rc < 0)
-	{
-		op = code_at(code, op->c);
-		op_jmp;
-	}
 	op_next;
 
 // table cursor

@@ -313,12 +313,20 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
+	{
 		rlimit = emit_expr(self, select->target, select->expr_limit);
+		if (rtype(self, rlimit) != TYPE_INT)
+			error("LIMIT: integer type expected");
+	}
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
+	{
 		roffset = emit_expr(self, select->target, select->expr_offset);
+		if (rtype(self, roffset) != TYPE_INT)
+			error("OFFSET: integer type expected");
+	}
 
 	// CMERGE_RECV
 	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_MERGE), rlimit, roffset,
