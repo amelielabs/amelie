@@ -38,7 +38,6 @@ vm_init(Vm*          self,
         Uuid*        node,
         Executor*    executor,
         Dtr*         dtr,
-        Buf*         body,
         FunctionMgr* function_mgr)
 {
 	self->code         = NULL;
@@ -50,7 +49,7 @@ vm_init(Vm*          self,
 	self->dtr          = dtr;
 	self->cte          = NULL;
 	self->result       = NULL;
-	self->body         = body;
+	self->body         = NULL;
 	self->tr           = NULL;
 	self->local        = NULL;
 	self->function_mgr = function_mgr;
@@ -100,6 +99,7 @@ vm_run(Vm*       self,
        Buf*      args,
        Result*   cte,
        Value*    result,
+       Body*     body,
        int       start)
 {
 	self->local       = local;
@@ -111,6 +111,7 @@ vm_run(Vm*       self,
 	self->args        = args;
 	self->cte         = cte;
 	self->result      = result;
+	self->body        = body;
 	reg_prepare(&self->r);
 	call_mgr_prepare(&self->call_mgr, code_data);
 
@@ -1490,7 +1491,7 @@ cresult:
 
 cbody:
 	// [order]
-	body_add(self->body, result_at(cte, op->a), local->timezone, true, true);
+	body_write(self->body, result_at(cte, op->a));
 	op_next;
 
 ccte_set:

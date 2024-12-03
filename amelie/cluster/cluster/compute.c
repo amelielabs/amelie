@@ -117,6 +117,7 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        req->args,
 	        req->cte,
 	       &req->result,
+	        NULL,
 	        req->start);
 }
 
@@ -252,7 +253,7 @@ compute_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
-	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
+	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
 	self->vm.node = &node->id;
 	task_init(&self->task);
 	return self;

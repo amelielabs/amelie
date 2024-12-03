@@ -63,12 +63,10 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_array_end(buf);
 		break;
 	}
-	case TYPE_SET:
-	case TYPE_MERGE:
-		store_encode(self->store, tz, buf);
-		break;
+	// TYPE_SET
+	// TYPE_MERGE
 	default:
-		assert(0);
+		error("operation unsupported");
 		break;
 	}
 }
@@ -194,12 +192,8 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "]", 1);
 		break;
 	}
-	case TYPE_SET:
-	case TYPE_MERGE:
-		buf_write(buf, "[", 1);
-		store_export(self->store, tz, buf);
-		buf_write(buf, "]", 1);
-		break;
+	// TYPE_SET
+	// TYPE_MERGE
 	default:
 		error("operation unsupported");
 		break;

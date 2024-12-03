@@ -156,7 +156,8 @@ backup_join(Backup* self)
 
 	auto client = self->client;
 	auto reply = &client->reply;
-	body_add_raw(&reply->content, &self->state, global()->timezone);
+	uint8_t* pos = self->state.start;
+	json_export_pretty(&reply->content, global()->timezone, &pos);
 	http_write_reply(reply, 200, "OK");
 	http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
 	http_write(reply, "Content-Type", "application/json");

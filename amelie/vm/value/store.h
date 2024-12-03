@@ -17,8 +17,6 @@ typedef struct Value Value;
 struct Store
 {
 	void       (*free)(Store*);
-	void       (*encode)(Store*, Timezone*, Buf*);
-	void       (*export)(Store*, Timezone*, Buf*);
 	atomic_u32 refs;
 };
 
@@ -43,16 +41,4 @@ static inline void
 store_ref(Store* self)
 {
 	atomic_u32_inc(&self->refs);
-}
-
-static inline void
-store_encode(Store* self, Timezone* tz, Buf* buf)
-{
-	self->encode(self, tz, buf);
-}
-
-static inline void
-store_export(Store* self, Timezone* tz, Buf* buf)
-{
-	self->export(self, tz, buf);
 }

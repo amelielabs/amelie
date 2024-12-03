@@ -39,74 +39,16 @@ merge_free(Store* store)
 	am_free(self);
 }
 
-static void
-merge_encode(Store* store, Timezone* tz, Buf* buf)
-{
-	auto self = (Merge*)store;
-	MergeIterator it;
-	merge_iterator_init(&it);
-	guard(merge_iterator_free, &it);
-	// [[], ...]
-	encode_array(buf);
-	merge_iterator_open(&it, self);
-	while (merge_iterator_has(&it))
-	{
-		auto row = merge_iterator_at(&it);
-		auto set = it.current_it->set;
-		if (set->count_columns > 1)
-			encode_array(buf);
-		for (auto col = 0; col < set->count_columns; col++)
-			value_encode(row + col, tz, buf);
-		if (set->count_columns > 1)
-			encode_array_end(buf);
-		merge_iterator_next(&it);
-	}
-	encode_array_end(buf);
-}
-
-static void
-merge_export(Store* store, Timezone* tz, Buf* buf)
-{
-	auto self = (Merge*)store;
-	MergeIterator it;
-	merge_iterator_init(&it);
-	guard(merge_iterator_free, &it);
-	merge_iterator_open(&it, self);
-	auto first = true;
-	while (merge_iterator_has(&it))
-	{
-		auto row = merge_iterator_at(&it);
-		if (! first)
-			body_add_comma(buf);
-		else
-			first = false;
-		auto set = it.current_it->set;
-		if (set->count_columns > 1)
-			buf_write(buf, "[", 1);
-		for (auto col = 0; col < set->count_columns; col++)
-		{
-			if (col > 0)
-				body_add_comma(buf);
-			body_add(buf, row + col, tz, true, true);
-		}
-		if (set->count_columns > 1)
-			buf_write(buf, "]", 1);
-		merge_iterator_next(&it);
-	}
-}
-
 Merge*
 merge_create(bool distinct, int64_t limit, int64_t offset)
 {
 	Merge* self = am_malloc(sizeof(Merge));
 	store_init(&self->store);
-	self->store.free   = merge_free;
-	self->store.encode = merge_encode;
-	self->store.export = merge_export;
-	self->list_count   = 0;
-	self->limit        = limit;
-	self->offset       = offset;
-	self->distinct     = distinct;
+	self->store.free = merge_free;
+	self->list_count = 0;
+	self->limit      = limit;
+	self->offset     = offset;
+	self->distinct   = distinct;
 	buf_init(&self->list);
 	return self;
 }

@@ -17,6 +17,7 @@
 #include "executor/program.h"
 
 // request
+#include "executor/error.h"
 #include "executor/req.h"
 #include "executor/req_list.h"
 #include "executor/req_cache.h"

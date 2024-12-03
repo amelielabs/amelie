@@ -19,6 +19,7 @@ struct Session
 	Compiler  compiler;
 	Dtr       dtr;
 	Explain   explain;
+	Body      body;
 	Client*   client;
 	int       lock_type;
 	Lock*     lock;

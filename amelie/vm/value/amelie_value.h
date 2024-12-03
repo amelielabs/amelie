@@ -26,10 +26,6 @@
 #include "value/json_obj.h"
 #include "value/update.h"
 
-// reply body
-#include "value/error.h"
-#include "value/body.h"
-
 // row
 #include "value/row.h"
 

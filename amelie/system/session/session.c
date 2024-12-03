@@ -52,10 +52,10 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->share     = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
+	body_init(&self->body, &self->local, &client->reply.content);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
 	        &self->dtr,
-	        &client->reply.content,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router, &self->local);
@@ -65,10 +65,11 @@ session_create(Client* client, Frontend* frontend, Share* share)
 static inline void
 session_reset(Session* self)
 {
-	explain_reset(&self->explain);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
+	explain_reset(&self->explain);
+	body_reset(&self->body);
 	palloc_truncate(0);
 }
 
@@ -128,17 +129,13 @@ session_unlock(Session* self)
 hot static inline void
 session_explain(Session* self, Program* program, bool profile)
 {
-	auto body = &self->client->reply.content;
-	auto buf  = explain(&self->explain,
-	                    program->code,
-	                    program->code_node,
-	                    program->code_data,
-	                    &self->dtr,
-	                    body,
-	                    profile);
-	guard_buf(buf);
-	buf_reset(body);
-	body_add_buf(body, buf, self->local.timezone);
+	explain(&self->explain,
+	        program->code,
+	        program->code_node,
+	        program->code_data,
+	        &self->dtr,
+	        &self->body,
+	        profile);
 }
 
 hot static inline void
@@ -182,7 +179,9 @@ session_execute_distributed(Session* self)
 		       NULL,
 		       NULL,
 		       NULL,
-		       &dtr->cte, NULL, 0);
+		       &dtr->cte,
+		       NULL,
+		       &self->body, 0);
 	}
 
 	Buf* error = NULL;
@@ -313,13 +312,11 @@ session_main(Session* self)
 	auto client    = self->client;
 	auto readahead = &client->readahead;
 	auto request   = &client->request;
-	auto reply     = &client->reply;
-	auto body      = &reply->content;
+	auto body      = &self->body;
 
 	for (;;)
 	{
 		// read request header
-		http_reset(reply);
 		http_reset(request);
 		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
@@ -366,22 +363,21 @@ session_main(Session* self)
 		// reply
 		if (leave(&e))
 		{
-			auto error = &am_self()->error;
-			buf_reset(body);
-			body_error(body, error);
+			body_reset(body);
+			body_write_error(body, &am_self()->error);
 
 			session_unlock(self);
 
 			// 400 Bad Request
-			client_400(client, body);
+			client_400(client, body->buf);
 		} else
 		{
 			// 204 No Content
 			// 200 OK
-			if (buf_empty(body))
+			if (buf_empty(body->buf))
 				client_204(client);
 			else
-				client_200(client, body);
+				client_200(client, body->buf);
 		}
 
 		// cancellation point

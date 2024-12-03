@@ -54,16 +54,18 @@ explain_reset(Explain* self)
 	self->time_commit_us = 0;
 }
 
-Buf*
+void
 explain(Explain*  self,
         Code*     coordinator,
         Code*     node,
         CodeData* data,
         Dtr*      dtr,
-        Buf*      body,
+        Body*     body,
         bool      profile)
 {
 	auto buf = buf_create();
+	guard_buf(buf);
+
 	encode_obj(buf);
 	unused(dtr);
 
@@ -105,11 +107,14 @@ explain(Explain*  self,
 
 		// sent_total
 		encode_raw(buf, "sent_total", 10);
-		encode_integer(buf, buf_size(body));
+		encode_integer(buf, buf_size(body->buf));
 
 		encode_obj_end(buf);
 	}
 
 	encode_obj_end(buf);
-	return buf;
+
+	// set new body
+	body_reset(body);
+	body_write_json(body, buf, true);
 }
