@@ -35,7 +35,7 @@ explain select case 1 when 1 then 1 end
       "13": "push                1      0      0     ",
       "14": "set_add             0      0      0     ",
       "15": "cte_set             0      0      0     ",
-      "16": "body                0      0      0     ",
+      "16": "body                -      0      0     ",
       "17": "ret                 0      0      0     "
     }
   }
@@ -71,7 +71,7 @@ explain select case 0 when 1 then 1 when 2 then 2 end
       "20": "push                1      0      0     ",
       "21": "set_add             0      0      0     ",
       "22": "cte_set             0      0      0     ",
-      "23": "body                0      0      0     ",
+      "23": "body                -      0      0     ",
       "24": "ret                 0      0      0     "
     }
   }
@@ -142,7 +142,7 @@ explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when nul
       "39": "push                1      0      0     ",
       "40": "set_add             0      0      0     ",
       "41": "cte_set             0      0      0     ",
-      "42": "body                0      0      0     ",
+      "42": "body                -      0      0     ",
       "43": "ret                 0      0      0     "
     }
   }
@@ -182,7 +182,7 @@ explain select case when 1 then 1 end
       "11": "push                1      0      0     ",
       "12": "set_add             0      0      0     ",
       "13": "cte_set             0      0      0     ",
-      "14": "body                0      0      0     ",
+      "14": "body                -      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }

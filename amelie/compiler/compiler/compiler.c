@@ -374,32 +374,39 @@ emit_send(Compiler* self, int start)
 static inline void
 emit_recv(Compiler* self)
 {
+	Returning* ret = NULL;
 	int r = -1;
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		r = pushdown_recv_returning(self, returning_has(&insert->ret));
+		ret = &insert->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
-		r = pushdown_recv_returning(self, returning_has(&update->ret));
+		ret = &update->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
-		r = pushdown_recv_returning(self, returning_has(&delete->ret));
+		ret = &delete->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_SELECT:
 	{
+		auto select = ast_select_of(stmt->ast);
+		ret = &select->ret;
+
 		// no targets or all targets are expressions
 		if (target_list_is_expr(&stmt->target_list))
 		{
@@ -408,7 +415,6 @@ emit_recv(Compiler* self)
 		}
 
 		// direct query from distributed or shared table
-		auto select = ast_select_of(stmt->ast);
 		if (select->target && select->target->from_table)
 		{
 			r = pushdown_recv(self, stmt->ast);
@@ -454,7 +460,7 @@ emit_recv(Compiler* self)
 	if (stmt->ret)
 	{
 		if (has_result)
-			op1(self, CBODY, stmt->cte->id);
+			op2(self, CBODY, (intptr_t)&ret->columns, stmt->cte->id);
 		op0(self, CRET);
 	}
 }

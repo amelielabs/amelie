@@ -21,6 +21,6 @@ struct Body
 
 void body_init(Body*, Local*, Buf*);
 void body_reset(Body*);
-void body_write(Body*, Value*);
+void body_write(Body*, Columns*, Value*);
 void body_write_json(Body*, Buf*, bool);
 void body_write_error(Body*, Error*);

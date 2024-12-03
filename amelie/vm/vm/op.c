@@ -395,6 +395,9 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
+		case CBODY:
+			op_write(output, op, false, true, true, NULL);
+			break;
 		default:
 			op_write(output, op, true, true, true, NULL);
 			break;

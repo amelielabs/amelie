@@ -34,8 +34,11 @@ body_ensure_limit(Body* self)
 }
 
 hot static inline void
-body_add_set(Body* self, Set* set)
+body_write_set(Body* self, Columns* columns, Set* set)
 {
+	(void)columns;
+	assert(set->count_columns == columns->list_count);
+
 	auto buf = self->buf;
 	for (auto row = 0; row < set->count_rows; row++)
 	{
@@ -58,8 +61,9 @@ body_add_set(Body* self, Set* set)
 }
 
 hot static inline void
-body_add_merge(Body* self, Merge* merge)
+body_write_merge(Body* self, Columns* columns, Merge* merge)
 {
+
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
@@ -76,6 +80,8 @@ body_add_merge(Body* self, Merge* merge)
 		auto set = it.current_it->set;
 		if (set->count_columns > 1)
 			buf_write(buf, "[", 1);
+
+		assert(set->count_columns == columns->list_count);
 
 		for (auto col = 0; col < set->count_columns; col++)
 		{
@@ -104,17 +110,17 @@ body_reset(Body* self)
 }
 
 hot void
-body_write(Body* self, Value* value)
+body_write(Body* self, Columns* columns, Value* value)
 {
 	// [
 	buf_write(self->buf, "[", 1);
 
 	// {}, ...
 	if (value->type == TYPE_SET)
-		body_add_set(self, (Set*)value->store);
+		body_write_set(self, columns, (Set*)value->store);
 	else
 	if (value->type == TYPE_MERGE)
-		body_add_merge(self, (Merge*)value->store);
+		body_write_merge(self, columns, (Merge*)value->store);
 	else
 		error("operation unsupported");
 

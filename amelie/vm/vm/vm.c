@@ -1490,8 +1490,8 @@ cresult:
 	op_next;
 
 cbody:
-	// [order]
-	body_write(self->body, result_at(cte, op->a));
+	// [columns*, order]
+	body_write(self->body, (Columns*)op->a, result_at(cte, op->b));
 	op_next;
 
 ccte_set:

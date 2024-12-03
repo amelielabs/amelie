@@ -16,7 +16,7 @@ explain select * from test limit 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
@@ -66,7 +66,7 @@ explain select * from test limit 0
       "04": "int                 0      -      0     # 0",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
@@ -104,7 +104,7 @@ explain select * from test limit 1 offset 0
       "05": "int                 1      -      0     # 0",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "body                -      0      0     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
@@ -147,7 +147,7 @@ explain select * from test limit 1 offset 1
       "05": "int                 1      -      0     # 1",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "body                -      0      0     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
@@ -213,7 +213,7 @@ explain select * from test offset 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
@@ -261,7 +261,7 @@ explain select * from test limit 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
@@ -306,7 +306,7 @@ explain select * from test limit 0
       "04": "int                 0      -      0     # 0",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
@@ -344,7 +344,7 @@ explain select * from test limit 1 offset 0
       "05": "int                 1      -      0     # 0",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "body                -      0      0     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
@@ -382,7 +382,7 @@ explain select * from test limit 1 offset 1
       "05": "int                 1      -      0     # 1",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "body                -      0      0     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
@@ -448,7 +448,7 @@ explain select * from test offset 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "body                -      0      0     ",
       "08": "ret                 0      0      0     "
     },
     "node": {

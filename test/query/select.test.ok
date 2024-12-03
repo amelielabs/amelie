@@ -43,7 +43,7 @@ explain select 1
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
       "04": "cte_set             0      0      0     ",
-      "05": "body                0      0      0     ",
+      "05": "body                -      0      0     ",
       "06": "ret                 0      0      0     "
     }
   }
@@ -63,7 +63,7 @@ explain select [1, 2, 3]
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             0      0      0     ",
-      "11": "body                0      0      0     ",
+      "11": "body                -      0      0     ",
       "12": "ret                 0      0      0     "
     }
   }
@@ -95,7 +95,7 @@ explain select * from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -142,7 +142,7 @@ explain select id, data from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -189,7 +189,7 @@ explain select data.data from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -242,7 +242,7 @@ explain select data.data.data from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -281,7 +281,7 @@ explain select test.id, test.data from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -320,7 +320,7 @@ explain select test.data.data from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -383,7 +383,7 @@ explain select alias.id, alias.data from test alias
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -422,7 +422,7 @@ explain select alias.data.data from test alias
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -465,7 +465,7 @@ explain select alias.id, alias.data from test alias
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "body                -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
