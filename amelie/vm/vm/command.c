@@ -113,9 +113,10 @@ csend_generated(Vm* self, Op* op)
 	{
 		// apply generated columns and recalculate row meta
 		auto row_meta = set_meta(values, order);
-		row_meta->row_size = 0;
 		row_meta->hash = 0;
-		row_update_values(columns, keys, set_row(values, order), pos, row_meta);
+		row_meta->row_size =
+			row_update_values(columns, keys, set_row(values, order),
+			                  pos, &row_meta->hash);
 		pos += columns->generated_columns;
 
 		// map to node

@@ -30,6 +30,9 @@
 #include "value/error.h"
 #include "value/body.h"
 
+// row
+#include "value/row.h"
+
 // operations
 #include "value/like.h"
 #include "value/compare.h"

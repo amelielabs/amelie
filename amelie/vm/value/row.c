@@ -23,7 +23,6 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_store.h>
 
 hot Row*
 row_create(Columns* columns, Value* values, int size)
@@ -409,15 +408,16 @@ row_column_size(Column* column, Value* value)
 	return size;
 }
 
-hot void
-row_update_values(Columns* columns,
-                  Keys*    keys,
-                  Value*   row,
-                  Value*   values,
-                  SetMeta* meta)
+hot int
+row_update_values(Columns*  columns,
+                  Keys*     keys,
+                  Value*    row,
+                  Value*    values,
+                  uint32_t* hash)
 {
 	// replace generated columns with new values and
 	// update row meta
+	int size  = 0;
 	int order = 0;
 	list_foreach(&columns->list)
 	{
@@ -431,8 +431,9 @@ row_update_values(Columns* columns,
 		} else {
 			value = &row[column->order];
 		}
-		meta->row_size += row_column_size(column, value);
+		size += row_column_size(column, value);
 		if (column->key && keys_find_column(keys, column->order))
-			meta->hash = value_hash(value, meta->hash);
+			*hash = value_hash(value, *hash);
 	}
+	return size;
 }
