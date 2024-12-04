@@ -511,6 +511,7 @@ parse_with(Parser* self)
 hot void
 parse(Parser* self, Str* str)
 {
+	// prepare parser
 	auto lex = &self->lex;
 	lex_start(&self->lex, str);
 

@@ -397,7 +397,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		}
 		case CCONTENT:
-			op_write(output, op, false, true, true, NULL);
+			op_write(output, op, true, false, false, NULL);
 			break;
 		default:
 			op_write(output, op, true, true, true, NULL);

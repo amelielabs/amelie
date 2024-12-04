@@ -19,6 +19,7 @@ struct Returning
 	Ast*    list_tail;
 	int     count;
 	Columns columns;
+	Str     format;
 };
 
 static inline void
@@ -28,6 +29,7 @@ returning_init(Returning* self)
 	self->list_tail = NULL;
 	self->count     = 0;
 	columns_init(&self->columns);
+	str_init(&self->format);
 }
 
 static inline void

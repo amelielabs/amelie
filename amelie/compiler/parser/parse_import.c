@@ -180,6 +180,7 @@ parse_import_json(Stmt* self, Endpoint* endpoint)
 hot void
 parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 {
+	// prepare parser
 	lex_start(&self->lex, str);
 
 	// parse uri and get the argument list

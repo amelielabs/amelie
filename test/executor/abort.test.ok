@@ -36,7 +36,7 @@ explain delete from test; select error("abort")
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -71,7 +71,7 @@ explain update test set data = id; select error("abort")
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -110,7 +110,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -168,7 +168,7 @@ explain delete from test; select error("abort")
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -203,7 +203,7 @@ explain update test set data = id; select error("abort")
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -242,7 +242,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -326,7 +326,7 @@ explain update a set data = id; update b set data = id; select * from a; select 
       "24": "push                1      0      0     ",
       "25": "set_add             0      0      0     ",
       "26": "cte_set             4      0      0     ",
-      "27": "content             -      4      0     ",
+      "27": "content             4      -      -     ",
       "28": "ret                 0      0      0     "
     },
     "node": {
@@ -417,7 +417,7 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
       "18": "push                1      0      0     ",
       "19": "set_add             0      0      0     ",
       "20": "cte_set             3      0      0     ",
-      "21": "content             -      3      0     ",
+      "21": "content             3      -      -     ",
       "22": "ret                 0      0      0     "
     },
     "node": {

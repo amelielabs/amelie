@@ -77,7 +77,7 @@ content_json_row_obj(Content* self, Columns* columns, Value* row)
 		return;
 	}
 
-	buf_write(buf, "{ ", 2);
+	buf_write(buf, "{", 1);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -133,7 +133,7 @@ content_json_merge(Content* self, Columns* columns, Merge* merge)
 
 	// {}, ..
 	auto buf = self->content;
-	if (self->fmt.opt_array)
+	if (self->fmt.opt_obj)
 	{
 		auto first = true;
 		for (merge_iterator_open(&it, merge); merge_iterator_has(&it);

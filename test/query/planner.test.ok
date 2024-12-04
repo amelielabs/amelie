@@ -16,7 +16,7 @@ explain select * from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -61,7 +61,7 @@ explain select * from test use index (i)
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -105,7 +105,7 @@ explain select * from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -141,7 +141,7 @@ explain select * from test where data = 2
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -178,7 +178,7 @@ explain select * from test where id = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -217,7 +217,7 @@ explain select * from test where id = 1 and data = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -260,7 +260,7 @@ explain select * from test where data = 1 and id = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -310,7 +310,7 @@ explain select * from test where id = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -347,7 +347,7 @@ explain select * from test where id > 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -384,7 +384,7 @@ explain select * from test where data > 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -422,7 +422,7 @@ explain select * from test where data = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -479,7 +479,7 @@ explain select * from test where data = 1 and id = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -523,7 +523,7 @@ explain select * from test where id = 1 and data = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -574,7 +574,7 @@ explain select * from test where id > 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -611,7 +611,7 @@ explain select * from test where data > 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -651,7 +651,7 @@ explain select * from test where data < 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -694,7 +694,7 @@ explain select * from test where id < 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -735,7 +735,7 @@ explain select * from test where id < 1 and data < 2
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {

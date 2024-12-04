@@ -13,7 +13,7 @@ explain select * from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -47,7 +47,7 @@ explain select * from test where id > 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -89,7 +89,7 @@ explain select * from test where id = 1
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -138,7 +138,7 @@ explain select (select (select (test.id))) from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -177,7 +177,7 @@ explain select (select (select test.id)) from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -222,7 +222,7 @@ explain select (select (select id from ref)) from test
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -273,7 +273,7 @@ explain select * from test where (select id from ref)
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {

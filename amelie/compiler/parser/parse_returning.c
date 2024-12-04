@@ -37,6 +37,9 @@
 void
 parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 {
+	// set returning format
+	self->format = config()->format.string;
+
 	// * | target.* | expr [AS] [name], ...
 	for (;;)
 	{
@@ -96,6 +99,15 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			continue;
 
 		break;
+	}
+
+	// [FORMAT type]
+	if (stmt_if(stmt, KFORMAT))
+	{
+		auto type = stmt_if(stmt, KSTRING);
+		if (! type)
+			error("FORMAT <string> expected");
+		self->format = type->string;
 	}
 }
 

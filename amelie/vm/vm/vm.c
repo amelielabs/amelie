@@ -1491,10 +1491,9 @@ cresult:
 	op_next;
 
 ccontent:
-	// [columns*, order]
-	content_write(self->content, &config()->format.string,
-	              (Columns*)op->a,
-	              result_at(cte, op->b));
+	// [cte, columns*, format*]
+	content_write(self->content, (Str*)op->c, (Columns*)op->b,
+	              result_at(cte, op->a));
 	op_next;
 
 ccte_set:

@@ -104,6 +104,7 @@ static Keyword keywords_f[] =
 	{ KFROM,                  "from",                  4  },
 	{ KFUNCTION,              "function",              8  },
 	{ KFOR,                   "for",                   3  },
+	{ KFORMAT,                "format",                6  },
 	{ 0,                       NULL,                   0  }
 };
 

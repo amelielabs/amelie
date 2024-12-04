@@ -46,7 +46,7 @@ explain with test as (select 1)
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
       "04": "cte_set             0      0      0     ",
-      "05": "content             -      0      0     ",
+      "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
   }
@@ -66,7 +66,7 @@ explain with test as (select 1,2,3)
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "content             -      0      0     ",
+      "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -107,7 +107,7 @@ explain with a as (select * from test)
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "content             -      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -147,7 +147,7 @@ explain with a as (select * from test) select 2
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             1      0      0     ",
-      "11": "content             -      1      0     ",
+      "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
     "node": {
@@ -192,7 +192,7 @@ explain with a as (select * from test) select * from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -237,7 +237,7 @@ explain with a as (select * from test) select id from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -282,7 +282,7 @@ explain with a as (select * from test) select a.id from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -327,7 +327,7 @@ explain with a as (select id from test) select id from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -374,7 +374,7 @@ explain with a as (select id as x from test) select x from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -429,7 +429,7 @@ explain with a as (select * from test) select * from a
       "13": "store_next          0      10     0     ",
       "14": "store_open          0      1      0     ",
       "15": "cte_set             1      0      0     ",
-      "16": "content             -      1      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -470,7 +470,7 @@ explain with a as (select * from test) select * from test
       "09": "push                0      0      0     ",
       "10": "merge_recv          0      -1     -1    ",
       "11": "cte_set             1      0      0     ",
-      "12": "content             -      1      0     ",
+      "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -523,7 +523,7 @@ explain with a as (select * from test) select * from test
       "09": "push                0      0      0     ",
       "10": "merge_recv          0      -1     -1    ",
       "11": "cte_set             1      0      0     ",
-      "12": "content             -      1      0     ",
+      "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -579,7 +579,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "14": "push                0      0      0     ",
       "15": "merge_recv          0      -1     -1    ",
       "16": "cte_set             1      0      0     ",
-      "17": "content             -      1      0     ",
+      "17": "content             1      -      -     ",
       "18": "ret                 0      0      0     "
     },
     "node": {
@@ -632,7 +632,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "14": "push                0      0      0     ",
       "15": "merge_recv          0      -1     -1    ",
       "16": "cte_set             1      0      0     ",
-      "17": "content             -      1      0     ",
+      "17": "content             1      -      -     ",
       "18": "ret                 0      0      0     "
     },
     "node": {
@@ -680,7 +680,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
       "09": "push                0      0      0     ",
       "10": "merge_recv          0      -1     -1    ",
       "11": "cte_set             1      0      0     ",
-      "12": "content             -      1      0     ",
+      "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -751,7 +751,7 @@ explain with z (a,b,c) as (select 4,5,6) select * from z
       "20": "store_next          0      13     0     ",
       "21": "store_open          0      1      0     ",
       "22": "cte_set             1      0      0     ",
-      "23": "content             -      1      0     ",
+      "23": "content             1      -      -     ",
       "24": "ret                 0      0      0     "
     }
   }
@@ -807,7 +807,7 @@ explain with a as (select * from test), b as (select * from a) select * from b
       "23": "store_next          0      20     0     ",
       "24": "store_open          0      1      0     ",
       "25": "cte_set             2      0      0     ",
-      "26": "content             -      2      0     ",
+      "26": "content             2      -      -     ",
       "27": "ret                 0      0      0     "
     },
     "node": {
@@ -873,7 +873,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "34": "store_next          0      31     0     ",
       "35": "store_open          0      1      0     ",
       "36": "cte_set             3      0      0     ",
-      "37": "content             -      3      0     ",
+      "37": "content             3      -      -     ",
       "38": "ret                 0      0      0     "
     },
     "node": {
@@ -935,7 +935,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "30": "store_next          0      27     0     ",
       "31": "store_open          0      1      0     ",
       "32": "cte_set             3      0      0     ",
-      "33": "content             -      3      0     ",
+      "33": "content             3      -      -     ",
       "34": "ret                 0      0      0     "
     },
     "node": {
@@ -1009,7 +1009,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "30": "store_next          0      27     0     ",
       "31": "store_open          0      1      0     ",
       "32": "cte_set             3      0      0     ",
-      "33": "content             -      3      0     ",
+      "33": "content             3      -      -     ",
       "34": "ret                 0      0      0     "
     },
     "node": {
@@ -1089,7 +1089,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "36": "store_next          0      33     0     ",
       "37": "store_open          0      1      0     ",
       "38": "cte_set             4      0      0     ",
-      "39": "content             -      4      0     ",
+      "39": "content             4      -      -     ",
       "40": "ret                 0      0      0     "
     },
     "node": {
@@ -1187,7 +1187,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
       "42": "store_next          0      32     0     ",
       "43": "store_open          0      1      0     ",
       "44": "cte_set             3      0      0     ",
-      "45": "content             -      3      0     ",
+      "45": "content             3      -      -     ",
       "46": "ret                 0      0      0     "
     },
     "node": {
@@ -1249,7 +1249,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "30": "store_next          0      27     0     ",
       "31": "store_open          0      1      0     ",
       "32": "cte_set             3      0      0     ",
-      "33": "content             -      3      0     ",
+      "33": "content             3      -      -     ",
       "34": "ret                 0      0      0     "
     },
     "node": {
@@ -1322,7 +1322,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "29": "store_next          0      26     0     ",
       "30": "store_open          0      1      0     ",
       "31": "cte_set             3      0      0     ",
-      "32": "content             -      3      0     ",
+      "32": "content             3      -      -     ",
       "33": "ret                 0      0      0     "
     },
     "node": {
@@ -1394,7 +1394,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "29": "store_next          0      26     0     ",
       "30": "store_open          0      1      0     ",
       "31": "cte_set             3      0      0     ",
-      "32": "content             -      3      0     ",
+      "32": "content             3      -      -     ",
       "33": "ret                 0      0      0     "
     },
     "node": {
@@ -1464,7 +1464,7 @@ explain with a as (insert into test values (2, 0) returning *); select * from a
       "15": "store_next          0      10     0     ",
       "16": "store_open          0      1      0     ",
       "17": "cte_set             1      0      0     ",
-      "18": "content             -      1      0     ",
+      "18": "content             1      -      -     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -1516,7 +1516,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
       "15": "store_next          0      10     0     ",
       "16": "store_open          0      1      0     ",
       "17": "cte_set             1      0      0     ",
-      "18": "content             -      1      0     ",
+      "18": "content             1      -      -     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -1574,7 +1574,7 @@ explain with a as (delete from test returning *) select * from a
       "15": "store_next          0      10     0     ",
       "16": "store_open          0      1      0     ",
       "17": "cte_set             1      0      0     ",
-      "18": "content             -      1      0     ",
+      "18": "content             1      -      -     ",
       "19": "ret                 0      0      0     "
     },
     "node": {

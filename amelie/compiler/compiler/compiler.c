@@ -462,7 +462,9 @@ emit_recv(Compiler* self)
 	{
 		// create content using cte result
 		if (has_result)
-			op2(self, CCONTENT, (intptr_t)&ret->columns, stmt->cte->id);
+			op3(self, CCONTENT, stmt->cte->id,
+			    (intptr_t)&ret->columns,
+			    (intptr_t)&ret->format);
 		op0(self, CRET);
 	}
 }
