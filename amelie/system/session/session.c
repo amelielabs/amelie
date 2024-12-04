@@ -224,7 +224,8 @@ session_execute(Session* self)
 
 	Str text;
 	buf_str(&request->content, &text);
-	if (str_is(&type->value, "text/plain", 10))
+	if (str_is(&type->value, "text/plain", 10) ||
+	    str_is(&type->value, "application/sql", 15))
 	{
 		if (unlikely(! str_is(url, "/", 1)))
 			error("unsupported API operation");

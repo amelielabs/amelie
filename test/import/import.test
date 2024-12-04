@@ -4,9 +4,10 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 
 # test: POST / (text/plain)
 connect E0 S0 localhost:3485
-
-# supported
 import text/plain select 1
+
+# test: POST / (application/sql)
+import application/sql select 1
 
 # test: POST / (application/json) unsupported
 import application/json [1]
