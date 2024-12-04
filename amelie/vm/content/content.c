@@ -81,27 +81,22 @@ content_write(Content* self, Str* spec, Columns* columns, Value* value)
 }
 
 void
-content_write_json(Content* self, Buf* content, bool wrap)
+content_write_json(Content* self, Str* spec, Str* name, Buf* buf)
 {
-	// wrap content in [] unless returning data is array
-	auto buf = self->content;
-	
-	// [
-	uint8_t* pos = content->start;
-	wrap = wrap && buf_empty(buf) && !json_is_array(pos);
-	if (wrap)
-		buf_write(buf, "[", 1);
+	Value value;
+	value_set_json_buf(&value, buf);
 
-	// {}
-	json_export_pretty(buf, self->local->timezone, &pos);
+	// prepare columns
+	Columns columns;
+	columns_init(&columns);
+	guard(columns_free, &columns);
+	auto column = column_allocate();
+	column_set_name(column, name);
+	column_set_type(column, TYPE_JSON, 0);
+	columns_add(&columns, column);
 
-	// ]
-	if (wrap)
-		buf_write(buf, "]", 1);
-	content_ensure_limit(self);
-
-	// json
-	self->content_type = &content_type[0];
+	// write content
+	content_write(self, spec, &columns, &value);
 }
 
 void

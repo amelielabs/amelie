@@ -41,7 +41,7 @@
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 
-static void
+static Buf*
 ctl_show(Session* self)
 {
 	auto stmt  = compiler_stmt(&self->compiler);
@@ -100,11 +100,7 @@ ctl_show(Session* self)
 		buf = buf_create();
 		var_encode(var, buf);
 	}
-	guard_buf(buf);
-
-	// write content
-	content_write_json(&self->content, &config()->format.string,
-	                   name, buf);
+	return buf;
 }
 
 static void
@@ -194,7 +190,7 @@ ctl_set(Session* self)
 		control_save_config();
 }
 
-static void
+static Buf*
 ctl_token(Session* self)
 {
 	auto user_mgr = self->share->user_mgr;
@@ -232,14 +228,10 @@ ctl_token(Session* self)
 	// generate token
 	auto jwt = jwt_create(&user->config->name, &user->config->secret, &expire);
 	guard_buf(jwt);
+
 	auto buf = buf_create();
 	encode_buf(buf, jwt);
-
-	// write content
-	Str name;
-	str_set(&name, "token", 5);
-	content_write_json(&self->content, &config()->format.string,
-	                   &name, buf);
+	return buf;
 }
 
 static void
@@ -383,16 +375,17 @@ ctl_checkpoint(Session* self)
 void
 session_execute_utility(Session* self)
 {
+	Buf* buf  = NULL;
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
 	case STMT_SHOW:
-		ctl_show(self);
+		buf = ctl_show(self);
 		break;
 	case STMT_SET:
 		ctl_set(self);
 		break;
 	case STMT_CREATE_TOKEN:
-		ctl_token(self);
+		buf = ctl_token(self);
 		break;
 	case STMT_CREATE_USER:
 	case STMT_DROP_USER:
@@ -412,8 +405,15 @@ session_execute_utility(Session* self)
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self);
 		break;
+
 	default:
 		session_execute_ddl(self);
 		break;
+	}
+
+	if (buf)
+	{
+		guard_buf(buf);
+		content_write_json(&self->content, buf, true);
 	}
 }

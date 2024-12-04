@@ -117,5 +117,7 @@ explain(Explain*  self,
 
 	// set new content
 	content_reset(content);
-	content_write_json(content, buf, true);
+	Str name;
+	str_set(&name, "explain", 7);
+	content_write_json(content, &config()->format.string, &name, buf);
 }

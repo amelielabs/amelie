@@ -163,6 +163,15 @@ content_json_merge(Content* self, Columns* columns, Merge* merge)
 	}
 }
 
+static inline void
+content_json_value(Content* self, Columns* columns, Value* value)
+{
+	if (self->fmt.opt_obj)
+		content_json_row_obj(self, columns, value);
+	else
+		content_json_row_array(self, columns, value);
+}
+
 void
 content_json(Content* self, Columns* columns, Value* value)
 {
@@ -176,6 +185,9 @@ content_json(Content* self, Columns* columns, Value* value)
 	else
 	if (value->type == TYPE_MERGE)
 		content_json_merge(self, columns, (Merge*)value->store);
+	else
+	if (value->type == TYPE_JSON)
+		content_json_value(self, columns, value);
 	else
 		error("operation unsupported");
 
