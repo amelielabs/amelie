@@ -30,7 +30,7 @@ hot static inline void
 content_ensure_limit(Content* self)
 {
 	auto limit = var_int_of(&config()->limit_send);
-	if (unlikely((uint64_t)buf_size(self->buf) >= limit))
+	if (unlikely((uint64_t)buf_size(self->content) >= limit))
 		error("reply limit reached");
 }
 
@@ -39,7 +39,7 @@ content_write_set_obj(Content* self, Columns* columns, Set* set)
 {
 	assert(set->count_columns == columns->list_count);
 
-	auto buf = self->buf;
+	auto buf = self->content;
 	for (auto row = 0; row < set->count_rows; row++)
 	{
 		if (row > 0)
@@ -81,7 +81,7 @@ content_write_set_array(Content* self, Columns* columns, Set* set)
 	(void)columns;
 	assert(set->count_columns == columns->list_count);
 
-	auto buf = self->buf;
+	auto buf = self->content;
 	for (auto row = 0; row < set->count_rows; row++)
 	{
 		if (row > 0)
@@ -109,7 +109,7 @@ content_write_merge_obj(Content* self, Columns* columns, Merge* merge)
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
 	auto first = true;
-	auto buf = self->buf;
+	auto buf = self->content;
 	for (merge_iterator_open(&it, merge);
 	     merge_iterator_has(&it);
 	     merge_iterator_next(&it))
@@ -157,7 +157,7 @@ content_write_merge_array(Content* self, Columns* columns, Merge* merge)
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
 	auto first = true;
-	auto buf = self->buf;
+	auto buf = self->content;
 	for (merge_iterator_open(&it, merge);
 	     merge_iterator_has(&it);
 	     merge_iterator_next(&it))
@@ -185,23 +185,26 @@ content_write_merge_array(Content* self, Columns* columns, Merge* merge)
 }
 
 void
-content_init(Content* self, Local* local, Buf* buf)
+content_init(Content* self, Local* local, Buf* content)
 {
-	self->buf   = buf;
-	self->local = local;
+	self->content = content;
+	self->local   = local;
+	str_init(&self->content_type);
 }
 
 void
 content_reset(Content* self)
 {
-	buf_reset(self->buf);
+	buf_reset(self->content);
+	str_init(&self->content_type);
 }
 
 hot void
 content_write(Content* self, Columns* columns, Value* value)
 {
 	// [
-	buf_write(self->buf, "[", 1);
+	auto buf = self->content;
+	buf_write(buf, "[", 1);
 
 	(void)content_write_set_obj;
 	(void)content_write_merge_obj;
@@ -216,27 +219,34 @@ content_write(Content* self, Columns* columns, Value* value)
 		error("operation unsupported");
 
 	// ]
-	buf_write(self->buf, "]", 1);
+	buf_write(buf, "]", 1);
+
+	// set content type
+	str_set(&self->content_type, "application/json", 16);
 }
 
 void
-content_write_json(Content* self, Buf* buf, bool wrap)
+content_write_json(Content* self, Buf* content, bool wrap)
 {
 	// wrap content in [] unless returning data is array
+	auto buf = self->content;
 	
 	// [
-	uint8_t* pos = buf->start;
-	wrap = wrap && buf_empty(self->buf) && !json_is_array(pos);
+	uint8_t* pos = content->start;
+	wrap = wrap && buf_empty(buf) && !json_is_array(pos);
 	if (wrap)
-		buf_write(self->buf, "[", 1);
+		buf_write(buf, "[", 1);
 
 	// {}
-	json_export_pretty(self->buf, self->local->timezone, &pos);
+	json_export_pretty(buf, self->local->timezone, &pos);
 
 	// ]
 	if (wrap)
-		buf_write(self->buf, "]", 1);
+		buf_write(buf, "]", 1);
 	content_ensure_limit(self);
+
+	// set content type
+	str_set(&self->content_type, "application/json", 16);
 }
 
 void
@@ -251,5 +261,8 @@ content_write_error(Content* self, Error* error)
 	encode_obj_end(buf);
 
 	uint8_t* pos = buf->start;
-	json_export(self->buf, NULL, &pos);
+	json_export(self->content, NULL, &pos);
+
+	// set content type
+	str_set(&self->content_type, "application/json", 16);
 }

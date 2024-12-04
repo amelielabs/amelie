@@ -108,7 +108,7 @@ explain(Explain*  self,
 
 		// sent_total
 		encode_raw(buf, "sent_total", 10);
-		encode_integer(buf, buf_size(content->buf));
+		encode_integer(buf, buf_size(content->content));
 
 		encode_obj_end(buf);
 	}

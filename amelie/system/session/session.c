@@ -370,15 +370,15 @@ session_main(Session* self)
 			session_unlock(self);
 
 			// 400 Bad Request
-			client_400(client, content->buf);
+			client_400(client, content->content, &content->content_type);
 		} else
 		{
 			// 204 No Content
 			// 200 OK
-			if (buf_empty(content->buf))
+			if (buf_empty(content->content))
 				client_204(client);
 			else
-				client_200(client, content->buf);
+				client_200(client, content->content, &content->content_type);
 		}
 
 		// cancellation point

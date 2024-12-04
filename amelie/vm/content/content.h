@@ -15,7 +15,8 @@ typedef struct Content Content;
 
 struct Content
 {
-	Buf*   buf;
+	Buf*   content;
+	Str    content_type;
 	Local* local;
 };
 
