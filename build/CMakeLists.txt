@@ -213,6 +213,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/store/all.c
     ${AMELIE_ROOT}/vm/store/in.c
     ${AMELIE_ROOT}/vm/content/content.c
+    ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c

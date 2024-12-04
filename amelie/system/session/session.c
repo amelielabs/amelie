@@ -365,12 +365,12 @@ session_main(Session* self)
 		if (leave(&e))
 		{
 			content_reset(content);
-			content_write_error(content, &am_self()->error);
+			content_write_json_error(content, &am_self()->error);
 
 			session_unlock(self);
 
 			// 400 Bad Request
-			client_400(client, content->content, &content->content_type);
+			client_400(client, content->content, content->content_type->mime);
 		} else
 		{
 			// 204 No Content
@@ -378,7 +378,7 @@ session_main(Session* self)
 			if (buf_empty(content->content))
 				client_204(client);
 			else
-				client_200(client, content->content, &content->content_type);
+				client_200(client, content->content, content->content_type->mime);
 		}
 
 		// cancellation point

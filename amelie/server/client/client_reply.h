@@ -12,13 +12,12 @@
 //
 
 static inline void
-client_200(Client* self, Buf* content, Str* content_type)
+client_200(Client* self, Buf* content, char* mime)
 {
 	auto reply = &self->reply;
 	http_write_reply(reply, 200, "OK");
 	http_write(reply, "Content-Length", "%" PRIu64, buf_size(content));
-	http_write(reply, "Content-Type", "%.*s",
-	           str_size(content_type), str_of(content_type));
+	http_write(reply, "Content-Type", "%s", mime);
 	http_write_end(reply);
 	tcp_write_pair(&self->tcp, &reply->raw, content);
 }
@@ -33,13 +32,12 @@ client_204(Client* self)
 }
 
 static inline void
-client_400(Client* self, Buf* content, Str* content_type)
+client_400(Client* self, Buf* content, char* mime)
 {
 	auto reply = &self->reply;
 	http_write_reply(reply, 400, "Bad Request");
 	http_write(reply, "Content-Length", "%" PRIu64, buf_size(content));
-	http_write(reply, "Content-Type", "%.*s",
-	           str_size(content_type), str_of(content_type));
+	http_write(reply, "Content-Type", "%s", mime);
 	http_write_end(reply);
 	tcp_write_pair(&self->tcp, &reply->raw, content);
 }

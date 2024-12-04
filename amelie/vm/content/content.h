@@ -11,17 +11,38 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Content Content;
+typedef struct ContentType ContentType;
+typedef struct Content     Content;
+
+typedef void (*ContentFn)(Content*, Columns*, Value*);
+
+struct ContentType
+{
+	char*     name;
+	int       name_size;
+	char*     mime;
+	int       mime_size;
+	ContentFn fn;
+};
 
 struct Content
 {
-	Buf*   content;
-	Str    content_type;
-	Local* local;
+	Buf*         content;
+	ContentFmt   fmt;
+	ContentType* content_type;
+	Local*       local;
 };
 
 void content_init(Content*, Local*, Buf*);
 void content_reset(Content*);
-void content_write(Content*, Columns*, Value*);
+void content_write(Content*, Str*, Columns*, Value*);
 void content_write_json(Content*, Buf*, bool);
-void content_write_error(Content*, Error*);
+void content_write_json_error(Content*, Error*);
+
+hot static inline void
+content_ensure_limit(Content* self)
+{
+	auto limit = var_int_of(&config()->limit_send);
+	if (unlikely((uint64_t)buf_size(self->content) >= limit))
+		error("reply limit reached");
+}

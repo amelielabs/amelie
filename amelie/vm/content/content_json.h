@@ -11,6 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "content/content_fmt.h"
-#include "content/content.h"
-#include "content/content_json.h"
+void content_json(Content*, Columns*, Value*);

@@ -18,6 +18,7 @@ show all
   "directory": "_output/E0",
   "timezone": "UTC",
   "timezone_default": "UTC",
+  "format": "json-pretty",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

@@ -26,203 +26,58 @@
 #include <amelie_store.h>
 #include <amelie_content.h>
 
-hot static inline void
-content_ensure_limit(Content* self)
+static ContentType content_type[] =
 {
-	auto limit = var_int_of(&config()->limit_send);
-	if (unlikely((uint64_t)buf_size(self->content) >= limit))
-		error("reply limit reached");
-}
-
-hot static inline void
-content_write_set_obj(Content* self, Columns* columns, Set* set)
-{
-	assert(set->count_columns == columns->list_count);
-
-	auto buf = self->content;
-	for (auto row = 0; row < set->count_rows; row++)
-	{
-		if (row > 0)
-			buf_write(buf, ", ", 2);
-
-		buf_write(buf, "{\n", 2);
-
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-
-			if (column->order > 0)
-				buf_write(buf, ",\n", 2);
-
-			// key:
-			buf_write(buf, "  \"", 3);
-			buf_write_str(buf, &column->name);
-			buf_write(buf, "\": ", 3);
-
-			// value
-			auto value = set_column_of(set, row, column->order);
-			if (value->type == TYPE_JSON && json_is_obj(value->json))
-			{
-				uint8_t* pos = value->json;
-				json_export_as(buf, self->local->timezone, true, 1, &pos);
-			} else {
-				value_export(value, self->local->timezone, true, buf);
-			}
-			content_ensure_limit(self);
-		}
-
-		buf_write(buf, "\n}", 2);
-	}
-}
-
-hot static inline void
-content_write_set_array(Content* self, Columns* columns, Set* set)
-{
-	(void)columns;
-	assert(set->count_columns == columns->list_count);
-
-	auto buf = self->content;
-	for (auto row = 0; row < set->count_rows; row++)
-	{
-		if (row > 0)
-			buf_write(buf, ", ", 2);
-		if (set->count_columns > 1)
-			buf_write(buf, "[", 1);
-		for (auto col = 0; col < set->count_columns; col++)
-		{
-			if (col > 0)
-				buf_write(buf, ", ", 2);
-			value_export(set_column_of(set, row, col),
-			             self->local->timezone,
-			             true, buf);
-			content_ensure_limit(self);
-		}
-		if (set->count_columns > 1)
-			buf_write(buf, "]", 1);
-	}
-}
-
-hot static inline void
-content_write_merge_obj(Content* self, Columns* columns, Merge* merge)
-{
-	MergeIterator it;
-	merge_iterator_init(&it);
-	guard(merge_iterator_free, &it);
-	auto first = true;
-	auto buf = self->content;
-	for (merge_iterator_open(&it, merge);
-	     merge_iterator_has(&it);
-	     merge_iterator_next(&it))
-	{
-		auto row = merge_iterator_at(&it);
-		if (! first)
-			buf_write(buf, ", ", 2);
-		else
-			first = false;
-		auto set = it.current_it->set;
-		assert(set->count_columns == columns->list_count);
-
-		buf_write(buf, "{\n", 2);
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-			if (column->order > 0)
-				buf_write(buf, ",\n", 2);
-
-			// key:
-			buf_write(buf, "  \"", 3);
-			buf_write_str(buf, &column->name);
-			buf_write(buf, "\": ", 3);
-
-			// value
-			auto value = row + column->order;
-			if (value->type == TYPE_JSON && json_is_obj(value->json))
-			{
-				uint8_t* pos = value->json;
-				json_export_as(buf, self->local->timezone, true, 1, &pos);
-			} else {
-				value_export(value, self->local->timezone, true, buf);
-			}
-
-			content_ensure_limit(self);
-		}
-		buf_write(buf, "\n}", 2);
-	}
-}
-
-hot static inline void
-content_write_merge_array(Content* self, Columns* columns, Merge* merge)
-{
-	MergeIterator it;
-	merge_iterator_init(&it);
-	guard(merge_iterator_free, &it);
-	auto first = true;
-	auto buf = self->content;
-	for (merge_iterator_open(&it, merge);
-	     merge_iterator_has(&it);
-	     merge_iterator_next(&it))
-	{
-		auto row = merge_iterator_at(&it);
-		if (! first)
-			buf_write(buf, ", ", 2);
-		else
-			first = false;
-		auto set = it.current_it->set;
-		assert(set->count_columns == columns->list_count);
-
-		if (set->count_columns > 1)
-			buf_write(buf, "[", 1);
-		for (auto col = 0; col < set->count_columns; col++)
-		{
-			if (col > 0)
-				buf_write(buf, ", ", 2);
-			value_export(row + col, self->local->timezone, true, buf);
-			content_ensure_limit(self);
-		}
-		if (set->count_columns > 1)
-			buf_write(buf, "]", 1);
-	}
-}
+	{ "json", 4, "application/json", 16, content_json },
+	{  NULL,  0,  NULL,              0,  NULL         },
+};
 
 void
 content_init(Content* self, Local* local, Buf* content)
 {
-	self->content = content;
-	self->local   = local;
-	str_init(&self->content_type);
+	self->content      = content;
+	self->content_type = NULL;
+	self->local        = local;
+	content_fmt_init(&self->fmt);
 }
 
 void
 content_reset(Content* self)
 {
+	self->content_type = NULL;
 	buf_reset(self->content);
-	str_init(&self->content_type);
 }
 
-hot void
-content_write(Content* self, Columns* columns, Value* value)
+static void
+content_set_type(Content* self, Str* spec)
 {
-	// [
-	auto buf = self->content;
-	buf_write(buf, "[", 1);
+	// read format and set options
+	auto fmt = &self->fmt;
+	content_fmt_read(fmt, spec);
 
-	(void)content_write_set_obj;
-	(void)content_write_merge_obj;
+	// find and set the content type
+	for (auto i = 0; content_type[i].name; i++)
+	{
+		auto type = &content_type[i];
+		if (str_is_case(&fmt->name, type->name, type->name_size))
+		{
+			self->content_type = type;
+			break;
+		}
+	}
+	if (! self->content_type)
+		error("unrecognized format type '%.*s'", str_size(&fmt->name),
+		      str_of(&fmt->name));
+}
 
-	// {}, ...
-	if (value->type == TYPE_SET)
-		content_write_set_array(self, columns, (Set*)value->store);
-	else
-	if (value->type == TYPE_MERGE)
-		content_write_merge_array(self, columns, (Merge*)value->store);
-	else
-		error("operation unsupported");
-
-	// ]
-	buf_write(buf, "]", 1);
-
+void
+content_write(Content* self, Str* spec, Columns* columns, Value* value)
+{
 	// set content type
-	str_set(&self->content_type, "application/json", 16);
+	content_set_type(self, spec);
+
+	// create content
+	self->content_type->fn(self, columns, value);
 }
 
 void
@@ -245,12 +100,12 @@ content_write_json(Content* self, Buf* content, bool wrap)
 		buf_write(buf, "]", 1);
 	content_ensure_limit(self);
 
-	// set content type
-	str_set(&self->content_type, "application/json", 16);
+	// json
+	self->content_type = &content_type[0];
 }
 
 void
-content_write_error(Content* self, Error* error)
+content_write_json_error(Content* self, Error* error)
 {
 	// {}
 	auto buf = buf_create();
@@ -263,6 +118,6 @@ content_write_error(Content* self, Error* error)
 	uint8_t* pos = buf->start;
 	json_export(self->content, NULL, &pos);
 
-	// set content type
-	str_set(&self->content_type, "application/json", 16);
+	// json
+	self->content_type = &content_type[0];
 }
