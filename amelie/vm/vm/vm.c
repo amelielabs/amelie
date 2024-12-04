@@ -50,7 +50,7 @@ vm_init(Vm*          self,
 	self->dtr          = dtr;
 	self->cte          = NULL;
 	self->result       = NULL;
-	self->body         = NULL;
+	self->content      = NULL;
 	self->tr           = NULL;
 	self->local        = NULL;
 	self->function_mgr = function_mgr;
@@ -100,7 +100,7 @@ vm_run(Vm*       self,
        Buf*      args,
        Result*   cte,
        Value*    result,
-       Body*     body,
+       Content*  content,
        int       start)
 {
 	self->local       = local;
@@ -112,7 +112,7 @@ vm_run(Vm*       self,
 	self->args        = args;
 	self->cte         = cte;
 	self->result      = result;
-	self->body        = body;
+	self->content     = content;
 	reg_prepare(&self->r);
 	call_mgr_prepare(&self->call_mgr, code_data);
 
@@ -335,7 +335,7 @@ vm_run(Vm*       self,
 
 		// result
 		&&cresult,
-		&&cbody,
+		&&ccontent,
 		&&ccte_set,
 		&&ccte_get
 	};
@@ -1490,9 +1490,9 @@ cresult:
 	value_move(self->result, &r[op->a]);
 	op_next;
 
-cbody:
+ccontent:
 	// [columns*, order]
-	body_write(self->body, (Columns*)op->a, result_at(cte, op->b));
+	content_write(self->content, (Columns*)op->a, result_at(cte, op->b));
 	op_next;
 
 ccte_set:

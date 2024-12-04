@@ -25,7 +25,7 @@ explain select * from test group by id
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -74,7 +74,7 @@ explain select id from test group by id
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -116,7 +116,7 @@ explain select * from (select id from test group by id) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -174,7 +174,7 @@ explain select id from test group by id limit 1
       "11": "store_next          1      7      0     ",
       "12": "store_open          1      1      0     ",
       "13": "cte_set             0      1      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     },
     "node": {
@@ -220,7 +220,7 @@ explain select id from test group by id limit 1 offset 1
       "13": "store_next          1      8      0     ",
       "14": "store_open          1      1      0     ",
       "15": "cte_set             0      1      0     ",
-      "16": "body                -      0      0     ",
+      "16": "content             -      0      0     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -266,7 +266,7 @@ explain select id from test group by id offset 1
       "11": "store_next          1      7      0     ",
       "12": "store_open          1      1      0     ",
       "13": "cte_set             0      1      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     },
     "node": {
@@ -301,7 +301,7 @@ explain select * from (select id from test group by id limit 1) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -354,7 +354,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -409,7 +409,7 @@ explain select * from (select id from test group by id offset 1) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -475,7 +475,7 @@ explain select id from test group by id having id >= 3
       "13": "store_next          1      6      0     ",
       "14": "store_open          1      1      0     ",
       "15": "cte_set             0      1      0     ",
-      "16": "body                -      0      0     ",
+      "16": "content             -      0      0     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -533,7 +533,7 @@ explain select id from test group by id having id >= 1 limit 1
       "15": "store_next          1      7      0     ",
       "16": "store_open          1      1      0     ",
       "17": "cte_set             0      1      0     ",
-      "18": "body                -      0      0     ",
+      "18": "content             -      0      0     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -581,7 +581,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
       "17": "store_next          1      8      0     ",
       "18": "store_open          1      1      0     ",
       "19": "cte_set             0      1      0     ",
-      "20": "body                -      0      0     ",
+      "20": "content             -      0      0     ",
       "21": "ret                 0      0      0     "
     },
     "node": {
@@ -629,7 +629,7 @@ explain select id from test group by id having id >= 1 offset 1
       "15": "store_next          1      7      0     ",
       "16": "store_open          1      1      0     ",
       "17": "cte_set             0      1      0     ",
-      "18": "body                -      0      0     ",
+      "18": "content             -      0      0     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -662,7 +662,7 @@ explain select * from (select id from test group by id having id >= 3) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -711,7 +711,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -764,7 +764,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -821,7 +821,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -888,7 +888,7 @@ explain select id from test group by id order by id
       "12": "store_open          1      1      0     ",
       "13": "set_sort            1      0      0     ",
       "14": "cte_set             0      1      0     ",
-      "15": "body                -      0      0     ",
+      "15": "content             -      0      0     ",
       "16": "ret                 0      0      0     "
     },
     "node": {
@@ -932,7 +932,7 @@ explain select id from test group by id order by id desc
       "12": "store_open          1      1      0     ",
       "13": "set_sort            1      0      0     ",
       "14": "cte_set             0      1      0     ",
-      "15": "body                -      0      0     ",
+      "15": "content             -      0      0     ",
       "16": "ret                 0      0      0     "
     },
     "node": {
@@ -961,7 +961,7 @@ explain select * from (select id from test group by id order by id desc) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1028,7 +1028,7 @@ explain select id from test group by id order by id asc limit 1
       "16": "int                 0      -      0     # 1",
       "17": "merge               2      1      0     ",
       "18": "cte_set             0      2      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     },
     "node": {
@@ -1078,7 +1078,7 @@ explain select id from test group by id order by id asc limit 1 offset 1
       "17": "int                 2      -      0     # 1",
       "18": "merge               3      1      0     ",
       "19": "cte_set             0      3      0     ",
-      "20": "body                -      0      0     ",
+      "20": "content             -      0      0     ",
       "21": "ret                 0      0      0     "
     },
     "node": {
@@ -1127,7 +1127,7 @@ explain select id from test group by id order by id asc offset 1
       "16": "int                 0      -      0     # 1",
       "17": "merge               2      1      -1    ",
       "18": "cte_set             0      2      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     },
     "node": {
@@ -1176,7 +1176,7 @@ explain select id from test group by id order by id desc limit 1
       "16": "int                 0      -      0     # 1",
       "17": "merge               2      1      0     ",
       "18": "cte_set             0      2      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     },
     "node": {
@@ -1226,7 +1226,7 @@ explain select id from test group by id order by id desc limit 1 offset 1
       "17": "int                 2      -      0     # 1",
       "18": "merge               3      1      0     ",
       "19": "cte_set             0      3      0     ",
-      "20": "body                -      0      0     ",
+      "20": "content             -      0      0     ",
       "21": "ret                 0      0      0     "
     },
     "node": {
@@ -1275,7 +1275,7 @@ explain select id from test group by id order by id desc offset 1
       "16": "int                 0      -      0     # 1",
       "17": "merge               2      1      -1    ",
       "18": "cte_set             0      2      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     },
     "node": {
@@ -1310,7 +1310,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1368,7 +1368,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1425,7 +1425,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1483,7 +1483,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1541,7 +1541,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1598,7 +1598,7 @@ explain select * from (select id from test group by id order by id desc offset 1
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1672,7 +1672,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "16": "store_open          1      1      0     ",
       "17": "set_sort            1      0      0     ",
       "18": "cte_set             0      1      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     },
     "node": {
@@ -1725,7 +1725,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "20": "int                 0      -      0     # 1",
       "21": "merge               2      1      0     ",
       "22": "cte_set             0      2      0     ",
-      "23": "body                -      0      0     ",
+      "23": "content             -      0      0     ",
       "24": "ret                 0      0      0     "
     },
     "node": {
@@ -1779,7 +1779,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "21": "int                 2      -      0     # 1",
       "22": "merge               3      1      0     ",
       "23": "cte_set             0      3      0     ",
-      "24": "body                -      0      0     ",
+      "24": "content             -      0      0     ",
       "25": "ret                 0      0      0     "
     },
     "node": {
@@ -1832,7 +1832,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "20": "int                 0      -      0     # 1",
       "21": "merge               2      1      -1    ",
       "22": "cte_set             0      2      0     ",
-      "23": "body                -      0      0     ",
+      "23": "content             -      0      0     ",
       "24": "ret                 0      0      0     "
     },
     "node": {
@@ -1865,7 +1865,7 @@ explain select * from (select data from test where data > 0 group by data having
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1924,7 +1924,7 @@ explain select * from (select data from test where data > 0 group by data having
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -1984,7 +1984,7 @@ explain select * from (select data from test where data > 0 group by data having
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -2044,7 +2044,7 @@ explain select * from (select data from test where data > 0 group by data having
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -2105,7 +2105,7 @@ explain select * from (select data from test where data > 0 group by data having
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -2168,7 +2168,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -2228,7 +2228,7 @@ explain select count(*) from (select count(*) from test group by id) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {

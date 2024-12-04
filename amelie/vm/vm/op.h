@@ -232,7 +232,7 @@ enum
 
 	// result
 	CRESULT,
-	CBODY,
+	CCONTENT,
 	CCTE_SET,
 	CCTE_GET
 };

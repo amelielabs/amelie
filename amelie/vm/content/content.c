@@ -27,7 +27,7 @@
 #include <amelie_content.h>
 
 hot static inline void
-body_ensure_limit(Body* self)
+content_ensure_limit(Content* self)
 {
 	auto limit = var_int_of(&config()->limit_send);
 	if (unlikely((uint64_t)buf_size(self->buf) >= limit))
@@ -35,7 +35,7 @@ body_ensure_limit(Body* self)
 }
 
 hot static inline void
-body_write_set_obj(Body* self, Columns* columns, Set* set)
+content_write_set_obj(Content* self, Columns* columns, Set* set)
 {
 	assert(set->count_columns == columns->list_count);
 
@@ -68,7 +68,7 @@ body_write_set_obj(Body* self, Columns* columns, Set* set)
 			} else {
 				value_export(value, self->local->timezone, true, buf);
 			}
-			body_ensure_limit(self);
+			content_ensure_limit(self);
 		}
 
 		buf_write(buf, "\n}", 2);
@@ -76,7 +76,7 @@ body_write_set_obj(Body* self, Columns* columns, Set* set)
 }
 
 hot static inline void
-body_write_set_array(Body* self, Columns* columns, Set* set)
+content_write_set_array(Content* self, Columns* columns, Set* set)
 {
 	(void)columns;
 	assert(set->count_columns == columns->list_count);
@@ -95,7 +95,7 @@ body_write_set_array(Body* self, Columns* columns, Set* set)
 			value_export(set_column_of(set, row, col),
 			             self->local->timezone,
 			             true, buf);
-			body_ensure_limit(self);
+			content_ensure_limit(self);
 		}
 		if (set->count_columns > 1)
 			buf_write(buf, "]", 1);
@@ -103,7 +103,7 @@ body_write_set_array(Body* self, Columns* columns, Set* set)
 }
 
 hot static inline void
-body_write_merge_obj(Body* self, Columns* columns, Merge* merge)
+content_write_merge_obj(Content* self, Columns* columns, Merge* merge)
 {
 	MergeIterator it;
 	merge_iterator_init(&it);
@@ -144,14 +144,14 @@ body_write_merge_obj(Body* self, Columns* columns, Merge* merge)
 				value_export(value, self->local->timezone, true, buf);
 			}
 
-			body_ensure_limit(self);
+			content_ensure_limit(self);
 		}
 		buf_write(buf, "\n}", 2);
 	}
 }
 
 hot static inline void
-body_write_merge_array(Body* self, Columns* columns, Merge* merge)
+content_write_merge_array(Content* self, Columns* columns, Merge* merge)
 {
 	MergeIterator it;
 	merge_iterator_init(&it);
@@ -177,7 +177,7 @@ body_write_merge_array(Body* self, Columns* columns, Merge* merge)
 			if (col > 0)
 				buf_write(buf, ", ", 2);
 			value_export(row + col, self->local->timezone, true, buf);
-			body_ensure_limit(self);
+			content_ensure_limit(self);
 		}
 		if (set->count_columns > 1)
 			buf_write(buf, "]", 1);
@@ -185,33 +185,33 @@ body_write_merge_array(Body* self, Columns* columns, Merge* merge)
 }
 
 void
-body_init(Body* self, Local* local, Buf* buf)
+content_init(Content* self, Local* local, Buf* buf)
 {
 	self->buf   = buf;
 	self->local = local;
 }
 
 void
-body_reset(Body* self)
+content_reset(Content* self)
 {
 	buf_reset(self->buf);
 }
 
 hot void
-body_write(Body* self, Columns* columns, Value* value)
+content_write(Content* self, Columns* columns, Value* value)
 {
 	// [
 	buf_write(self->buf, "[", 1);
 
-	(void)body_write_set_obj;
-	(void)body_write_merge_obj;
+	(void)content_write_set_obj;
+	(void)content_write_merge_obj;
 
 	// {}, ...
 	if (value->type == TYPE_SET)
-		body_write_set_array(self, columns, (Set*)value->store);
+		content_write_set_array(self, columns, (Set*)value->store);
 	else
 	if (value->type == TYPE_MERGE)
-		body_write_merge_array(self, columns, (Merge*)value->store);
+		content_write_merge_array(self, columns, (Merge*)value->store);
 	else
 		error("operation unsupported");
 
@@ -220,9 +220,9 @@ body_write(Body* self, Columns* columns, Value* value)
 }
 
 void
-body_write_json(Body* self, Buf* buf, bool wrap)
+content_write_json(Content* self, Buf* buf, bool wrap)
 {
-	// wrap body in [] unless returning data is array
+	// wrap content in [] unless returning data is array
 	
 	// [
 	uint8_t* pos = buf->start;
@@ -236,11 +236,11 @@ body_write_json(Body* self, Buf* buf, bool wrap)
 	// ]
 	if (wrap)
 		buf_write(self->buf, "]", 1);
-	body_ensure_limit(self);
+	content_ensure_limit(self);
 }
 
 void
-body_write_error(Body* self, Error* error)
+content_write_error(Content* self, Error* error)
 {
 	// {}
 	auto buf = buf_create();

@@ -375,7 +375,6 @@ ctl_checkpoint(Session* self)
 void
 session_execute_utility(Session* self)
 {
-	auto body = &self->body;
 	Buf* buf  = NULL;
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
@@ -415,6 +414,6 @@ session_execute_utility(Session* self)
 	if (buf)
 	{
 		guard_buf(buf);
-		body_write_json(body, buf, true);
+		content_write_json(&self->content, buf, true);
 	}
 }

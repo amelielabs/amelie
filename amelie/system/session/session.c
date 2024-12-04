@@ -53,7 +53,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->share     = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
-	body_init(&self->body, &self->local, &client->reply.content);
+	content_init(&self->content, &self->local, &client->reply.content);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
 	        &self->dtr,
@@ -70,7 +70,7 @@ session_reset(Session* self)
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
-	body_reset(&self->body);
+	content_reset(&self->content);
 	palloc_truncate(0);
 }
 
@@ -135,7 +135,7 @@ session_explain(Session* self, Program* program, bool profile)
 	        program->code_node,
 	        program->code_data,
 	        &self->dtr,
-	        &self->body,
+	        &self->content,
 	        profile);
 }
 
@@ -182,7 +182,7 @@ session_execute_distributed(Session* self)
 		       NULL,
 		       &dtr->cte,
 		       NULL,
-		       &self->body, 0);
+		       &self->content, 0);
 	}
 
 	Buf* error = NULL;
@@ -313,7 +313,7 @@ session_main(Session* self)
 	auto client    = self->client;
 	auto readahead = &client->readahead;
 	auto request   = &client->request;
-	auto body      = &self->body;
+	auto content   = &self->content;
 
 	for (;;)
 	{
@@ -364,21 +364,21 @@ session_main(Session* self)
 		// reply
 		if (leave(&e))
 		{
-			body_reset(body);
-			body_write_error(body, &am_self()->error);
+			content_reset(content);
+			content_write_error(content, &am_self()->error);
 
 			session_unlock(self);
 
 			// 400 Bad Request
-			client_400(client, body->buf);
+			client_400(client, content->buf);
 		} else
 		{
 			// 204 No Content
 			// 200 OK
-			if (buf_empty(body->buf))
+			if (buf_empty(content->buf))
 				client_204(client);
 			else
-				client_200(client, body->buf);
+				client_200(client, content->buf);
 		}
 
 		// cancellation point

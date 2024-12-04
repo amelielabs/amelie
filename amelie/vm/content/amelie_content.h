@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "content/body.h"
+#include "content/content.h"

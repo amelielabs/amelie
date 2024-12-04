@@ -61,7 +61,7 @@ explain select [[1,2,3], 5, [7]]
       "16": "push                1      0      0     ",
       "17": "set_add             0      0      0     ",
       "18": "cte_set             0      0      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     }
   }
@@ -120,7 +120,7 @@ explain select {"a": 0, "b": 1}
       "10": "push                1      0      0     ",
       "11": "set_add             0      0      0     ",
       "12": "cte_set             0      0      0     ",
-      "13": "body                -      0      0     ",
+      "13": "content             -      0      0     ",
       "14": "ret                 0      0      0     "
     }
   }
@@ -756,7 +756,7 @@ explain select [1,2,3] = [1,2,3,4]
       "18": "push                3      0      0     ",
       "19": "set_add             0      0      0     ",
       "20": "cte_set             0      0      0     ",
-      "21": "body                -      0      0     ",
+      "21": "content             -      0      0     ",
       "22": "ret                 0      0      0     "
     }
   }
@@ -790,7 +790,7 @@ explain select {"id": 48, "data": 55} = {"id": 48, "data": 55}
       "20": "push                3      0      0     ",
       "21": "set_add             0      0      0     ",
       "22": "cte_set             0      0      0     ",
-      "23": "body                -      0      0     ",
+      "23": "content             -      0      0     ",
       "24": "ret                 0      0      0     "
     }
   }
@@ -817,7 +817,7 @@ explain select [null][0] = null
       "08": "push                2      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             0      0      0     ",
-      "11": "body                -      0      0     ",
+      "11": "content             -      0      0     ",
       "12": "ret                 0      0      0     "
     }
   }
@@ -856,7 +856,7 @@ explain select [1,2,3] <> [1,2,3,4]
       "19": "push                1      0      0     ",
       "20": "set_add             0      0      0     ",
       "21": "cte_set             0      0      0     ",
-      "22": "body                -      0      0     ",
+      "22": "content             -      0      0     ",
       "23": "ret                 0      0      0     "
     }
   }
@@ -891,7 +891,7 @@ explain select {"id": 48, "data": 55} <> {"id": 48, "data": 55}
       "21": "push                1      0      0     ",
       "22": "set_add             0      0      0     ",
       "23": "cte_set             0      0      0     ",
-      "24": "body                -      0      0     ",
+      "24": "content             -      0      0     ",
       "25": "ret                 0      0      0     "
     }
   }
@@ -919,7 +919,7 @@ explain select [null][0] <> null
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "cte_set             0      0      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     }
   }
@@ -947,7 +947,7 @@ explain select {"id":48}.id
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             0      0      0     ",
-      "11": "body                -      0      0     ",
+      "11": "content             -      0      0     ",
       "12": "ret                 0      0      0     "
     }
   }
@@ -967,7 +967,7 @@ explain select {"id":48}["id"]
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "cte_set             0      0      0     ",
-      "11": "body                -      0      0     ",
+      "11": "content             -      0      0     ",
       "12": "ret                 0      0      0     "
     }
   }
@@ -1004,7 +1004,7 @@ explain select {"a": 0, "b": {"c": 18}}.b.c
       "16": "push                3      0      0     ",
       "17": "set_add             0      0      0     ",
       "18": "cte_set             0      0      0     ",
-      "19": "body                -      0      0     ",
+      "19": "content             -      0      0     ",
       "20": "ret                 0      0      0     "
     }
   }
@@ -1046,7 +1046,7 @@ explain select [1,2,3][-1]
       "11": "push                2      0      0     ",
       "12": "set_add             0      0      0     ",
       "13": "cte_set             0      0      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }
@@ -1100,7 +1100,7 @@ explain select [[1,2,3], 5, [7]][1]
       "18": "push                3      0      0     ",
       "19": "set_add             0      0      0     ",
       "20": "cte_set             0      0      0     ",
-      "21": "body                -      0      0     ",
+      "21": "content             -      0      0     ",
       "22": "ret                 0      0      0     "
     }
   }

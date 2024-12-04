@@ -251,7 +251,7 @@ OpDesc ops[] =
 
 	// result
 	{ CRESULT, "result" },
-	{ CBODY, "body" },
+	{ CCONTENT, "content" },
 	{ CCTE_SET, "cte_set" },
 	{ CCTE_GET, "cte_get" },
 
@@ -396,7 +396,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
-		case CBODY:
+		case CCONTENT:
 			op_write(output, op, false, true, true, NULL);
 			break;
 		default:

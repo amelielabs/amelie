@@ -28,7 +28,7 @@ explain select count(*) from test_empty
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -75,7 +75,7 @@ explain select count(*) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -120,7 +120,7 @@ explain select count(id) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -165,7 +165,7 @@ explain select count(data) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -209,7 +209,7 @@ explain select count(data) from test_null
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -259,7 +259,7 @@ explain select sum(id) from test_empty
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -304,7 +304,7 @@ explain select sum(id) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -351,7 +351,7 @@ explain select sum(data2) from test_empty
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -396,7 +396,7 @@ explain select sum(data2) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -446,7 +446,7 @@ explain select sum(data) from test_null
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -494,7 +494,7 @@ explain select avg(id) from test
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -552,7 +552,7 @@ explain select avg(data2) from test_null
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -611,7 +611,7 @@ explain select min(data2) from test_null
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -670,7 +670,7 @@ explain select max(data2) from test_null
       "09": "store_next          1      6      0     ",
       "10": "store_open          1      1      0     ",
       "11": "cte_set             0      1      0     ",
-      "12": "body                -      0      0     ",
+      "12": "content             -      0      0     ",
       "13": "ret                 0      0      0     "
     },
     "node": {
@@ -711,7 +711,7 @@ explain select * from (select count(*) from test) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -774,7 +774,7 @@ explain select id, count(*) from test group by id
       "11": "store_next          1      6      0     ",
       "12": "store_open          1      1      0     ",
       "13": "cte_set             0      1      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     },
     "node": {
@@ -813,7 +813,7 @@ explain select * from (select id, count(*) from test group by id) t
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
-      "03": "body                -      0      0     ",
+      "03": "content             -      0      0     ",
       "04": "ret                 0      0      0     "
     },
     "node": {
@@ -888,7 +888,7 @@ explain select id from test group by id having count(*) > 0
       "13": "store_next          1      6      0     ",
       "14": "store_open          1      1      0     ",
       "15": "cte_set             0      1      0     ",
-      "16": "body                -      0      0     ",
+      "16": "content             -      0      0     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -933,7 +933,7 @@ explain select id, count(*) from test group by id having count(*) > 0
       "15": "store_next          1      6      0     ",
       "16": "store_open          1      1      0     ",
       "17": "cte_set             0      1      0     ",
-      "18": "body                -      0      0     ",
+      "18": "content             -      0      0     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -980,7 +980,7 @@ explain select data, count(*) from test group by data having count(*) > 0
       "15": "store_next          1      6      0     ",
       "16": "store_open          1      1      0     ",
       "17": "cte_set             0      1      0     ",
-      "18": "body                -      0      0     ",
+      "18": "content             -      0      0     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -1027,7 +1027,7 @@ explain select data, count(*) from test group by data having count(*) > 1
       "15": "store_next          1      6      0     ",
       "16": "store_open          1      1      0     ",
       "17": "cte_set             0      1      0     ",
-      "18": "body                -      0      0     ",
+      "18": "content             -      0      0     ",
       "19": "ret                 0      0      0     "
     },
     "node": {
@@ -1077,7 +1077,7 @@ explain select id, count(*) from test group by id
       "11": "store_next          1      6      0     ",
       "12": "store_open          1      1      0     ",
       "13": "cte_set             0      1      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     },
     "node": {
@@ -1121,7 +1121,7 @@ explain select id, count(*) from test group by id order by id
       "14": "store_open          1      1      0     ",
       "15": "set_sort            1      0      0     ",
       "16": "cte_set             0      1      0     ",
-      "17": "body                -      0      0     ",
+      "17": "content             -      0      0     ",
       "18": "ret                 0      0      0     "
     },
     "node": {

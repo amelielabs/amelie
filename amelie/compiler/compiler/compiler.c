@@ -460,8 +460,9 @@ emit_recv(Compiler* self)
 	// statement returns
 	if (stmt->ret)
 	{
+		// create content using cte result
 		if (has_result)
-			op2(self, CBODY, (intptr_t)&ret->columns, stmt->cte->id);
+			op2(self, CCONTENT, (intptr_t)&ret->columns, stmt->cte->id);
 		op0(self, CRET);
 	}
 }

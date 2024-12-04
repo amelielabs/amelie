@@ -10,7 +10,7 @@ explain select 0
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
       "04": "cte_set             0      0      0     ",
-      "05": "body                -      0      0     ",
+      "05": "content             -      0      0     ",
       "06": "ret                 0      0      0     "
     }
   }
@@ -29,7 +29,7 @@ explain select -1234
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     }
   }
@@ -63,7 +63,7 @@ explain select 1 = true
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -86,7 +86,7 @@ explain select 1 = 18
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -109,7 +109,7 @@ explain select 1 = 1.0000
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -130,7 +130,7 @@ explain select 0 = '1970-01-01 00:00:00'::timestamp
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -151,7 +151,7 @@ explain select 1 = null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -178,7 +178,7 @@ explain select 1 <> true
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "cte_set             0      0      0     ",
-      "08": "body                -      0      0     ",
+      "08": "content             -      0      0     ",
       "09": "ret                 0      0      0     "
     }
   }
@@ -202,7 +202,7 @@ explain select 1 <> 18
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "cte_set             0      0      0     ",
-      "08": "body                -      0      0     ",
+      "08": "content             -      0      0     ",
       "09": "ret                 0      0      0     "
     }
   }
@@ -226,7 +226,7 @@ explain select 1 <> 1.0000
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "cte_set             0      0      0     ",
-      "08": "body                -      0      0     ",
+      "08": "content             -      0      0     ",
       "09": "ret                 0      0      0     "
     }
   }
@@ -248,7 +248,7 @@ explain select 0 <> '1970-01-01 00:00:00'::timestamp
       "07": "push                1      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "cte_set             0      0      0     ",
-      "10": "body                -      0      0     ",
+      "10": "content             -      0      0     ",
       "11": "ret                 0      0      0     "
     }
   }
@@ -270,7 +270,7 @@ explain select 1 <> null
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "cte_set             0      0      0     ",
-      "08": "body                -      0      0     ",
+      "08": "content             -      0      0     ",
       "09": "ret                 0      0      0     "
     }
   }
@@ -308,7 +308,7 @@ explain select -1 >= -10
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -329,7 +329,7 @@ explain select 1 >= 1.11
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -352,7 +352,7 @@ explain select 0 >= '1970-01-01 00:00:00'::timestamp
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -371,7 +371,7 @@ explain select 1 >= null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -407,7 +407,7 @@ explain select -1 > -10
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -428,7 +428,7 @@ explain select 1 > 1.11
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -451,7 +451,7 @@ explain select 0 > '1970-01-01 00:00:00'::timestamp
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -470,7 +470,7 @@ explain select 1 > null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -506,7 +506,7 @@ explain select -1 <= -10
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -527,7 +527,7 @@ explain select 1 <= 1.11
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -550,7 +550,7 @@ explain select 0 <= '1970-01-01 00:00:00'::timestamp
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -569,7 +569,7 @@ explain select 1 <= null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -605,7 +605,7 @@ explain select -1 < -10
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -626,7 +626,7 @@ explain select 1 < 1.11
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -649,7 +649,7 @@ explain select 0 < '1970-01-01 00:00:00'::timestamp
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
       "08": "cte_set             0      0      0     ",
-      "09": "body                -      0      0     ",
+      "09": "content             -      0      0     ",
       "10": "ret                 0      0      0     "
     }
   }
@@ -668,7 +668,7 @@ explain select 1 < null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -690,7 +690,7 @@ explain select 1 + 1
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -721,7 +721,7 @@ explain select 1 + 1.5
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -746,7 +746,7 @@ explain select 1 - 1
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -777,7 +777,7 @@ explain select 1 - 1.5
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -802,7 +802,7 @@ explain select 2 * 2
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -825,7 +825,7 @@ explain select 2 * 1.5
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -850,7 +850,7 @@ explain select 2 / 2
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -873,7 +873,7 @@ explain select 35 / 1.5
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -898,7 +898,7 @@ explain select 8 % 3
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -925,7 +925,7 @@ explain select 60 | 13
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -944,7 +944,7 @@ explain select 60 | null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -966,7 +966,7 @@ explain select 60 & 13
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -985,7 +985,7 @@ explain select 60 & null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -1007,7 +1007,7 @@ explain select 60 ^ 13
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -1026,7 +1026,7 @@ explain select 60 ^ null
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -1048,7 +1048,7 @@ explain select 60 << 2
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -1073,7 +1073,7 @@ explain select 60 >> 2
       "04": "push                3      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "cte_set             0      0      0     ",
-      "07": "body                -      0      0     ",
+      "07": "content             -      0      0     ",
       "08": "ret                 0      0      0     "
     }
   }
@@ -1100,7 +1100,7 @@ explain select -18
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     }
   }

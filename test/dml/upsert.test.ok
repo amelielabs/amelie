@@ -333,7 +333,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -381,7 +381,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -421,7 +421,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
@@ -468,7 +468,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                -      0      0     ",
+      "06": "content             -      0      0     ",
       "07": "ret                 0      0      0     "
     },
     "node": {

@@ -41,7 +41,7 @@ explain select * from (select * from test) t
       "13": "store_next          1      8      0     ",
       "14": "store_open          1      1      0     ",
       "15": "cte_set             0      1      0     ",
-      "16": "body                -      0      0     ",
+      "16": "content             -      0      0     ",
       "17": "ret                 0      0      0     "
     },
     "node": {
@@ -85,7 +85,7 @@ explain select * from (select (select id from test2) from test) t
       "11": "store_next          2      8      0     ",
       "12": "store_open          2      1      0     ",
       "13": "cte_set             0      1      0     ",
-      "14": "body                -      0      0     ",
+      "14": "content             -      0      0     ",
       "15": "ret                 0      0      0     "
     },
     "node": {
@@ -158,7 +158,7 @@ explain select (select t.id from test2) from (select * from test) t
       "21": "store_next          2      8      0     ",
       "22": "store_open          2      1      0     ",
       "23": "cte_set             0      1      0     ",
-      "24": "body                -      0      0     ",
+      "24": "content             -      0      0     ",
       "25": "ret                 0      0      0     "
     },
     "node": {
