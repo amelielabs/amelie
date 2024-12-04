@@ -64,7 +64,7 @@ content_json_row_obj(Content* self, Columns* columns, Value* row)
 
 			// value
 			auto value = row + column->order;
-			if (value->type == TYPE_JSON && json_is_obj(value->json))
+			if (value->type == TYPE_JSON)
 			{
 				uint8_t* pos = value->json;
 				json_export_as(buf, self->local->timezone, true, 1, &pos);
