@@ -15,7 +15,7 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 
-static void
+void
 json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** pos)
 {
 	char buf[256];

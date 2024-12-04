@@ -87,6 +87,7 @@ include_directories("${AMELIE_ROOT}/db/db")
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
 include_directories("${AMELIE_ROOT}/vm/store")
+include_directories("${AMELIE_ROOT}/vm/content")
 include_directories("${AMELIE_ROOT}/vm/executor")
 include_directories("${AMELIE_ROOT}/vm/vm")
 include_directories("${AMELIE_ROOT}/vm/func")
@@ -211,7 +212,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/store/any.c
     ${AMELIE_ROOT}/vm/store/all.c
     ${AMELIE_ROOT}/vm/store/in.c
-    ${AMELIE_ROOT}/vm/store/body.c
+    ${AMELIE_ROOT}/vm/content/body.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c

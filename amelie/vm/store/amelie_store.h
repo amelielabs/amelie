@@ -29,6 +29,3 @@
 #include "store/any.h"
 #include "store/all.h"
 #include "store/in.h"
-
-// body
-#include "store/body.h"

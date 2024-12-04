@@ -24,6 +24,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 
 hot static inline void
 body_ensure_limit(Body* self)
@@ -34,7 +35,48 @@ body_ensure_limit(Body* self)
 }
 
 hot static inline void
-body_write_set(Body* self, Columns* columns, Set* set)
+body_write_set_obj(Body* self, Columns* columns, Set* set)
+{
+	assert(set->count_columns == columns->list_count);
+
+	auto buf = self->buf;
+	for (auto row = 0; row < set->count_rows; row++)
+	{
+		if (row > 0)
+			buf_write(buf, ", ", 2);
+
+		buf_write(buf, "{\n", 2);
+
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+
+			if (column->order > 0)
+				buf_write(buf, ",\n", 2);
+
+			// key:
+			buf_write(buf, "  \"", 3);
+			buf_write_str(buf, &column->name);
+			buf_write(buf, "\": ", 3);
+
+			// value
+			auto value = set_column_of(set, row, column->order);
+			if (value->type == TYPE_JSON && json_is_obj(value->json))
+			{
+				uint8_t* pos = value->json;
+				json_export_as(buf, self->local->timezone, true, 1, &pos);
+			} else {
+				value_export(value, self->local->timezone, true, buf);
+			}
+			body_ensure_limit(self);
+		}
+
+		buf_write(buf, "\n}", 2);
+	}
+}
+
+hot static inline void
+body_write_set_array(Body* self, Columns* columns, Set* set)
 {
 	(void)columns;
 	assert(set->count_columns == columns->list_count);
@@ -61,16 +103,16 @@ body_write_set(Body* self, Columns* columns, Set* set)
 }
 
 hot static inline void
-body_write_merge(Body* self, Columns* columns, Merge* merge)
+body_write_merge_obj(Body* self, Columns* columns, Merge* merge)
 {
-
 	MergeIterator it;
 	merge_iterator_init(&it);
 	guard(merge_iterator_free, &it);
-	merge_iterator_open(&it, merge);
 	auto first = true;
 	auto buf = self->buf;
-	while (merge_iterator_has(&it))
+	for (merge_iterator_open(&it, merge);
+	     merge_iterator_has(&it);
+	     merge_iterator_next(&it))
 	{
 		auto row = merge_iterator_at(&it);
 		if (! first)
@@ -78,11 +120,58 @@ body_write_merge(Body* self, Columns* columns, Merge* merge)
 		else
 			first = false;
 		auto set = it.current_it->set;
-		if (set->count_columns > 1)
-			buf_write(buf, "[", 1);
-
 		assert(set->count_columns == columns->list_count);
 
+		buf_write(buf, "{\n", 2);
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+			if (column->order > 0)
+				buf_write(buf, ",\n", 2);
+
+			// key:
+			buf_write(buf, "  \"", 3);
+			buf_write_str(buf, &column->name);
+			buf_write(buf, "\": ", 3);
+
+			// value
+			auto value = row + column->order;
+			if (value->type == TYPE_JSON && json_is_obj(value->json))
+			{
+				uint8_t* pos = value->json;
+				json_export_as(buf, self->local->timezone, true, 1, &pos);
+			} else {
+				value_export(value, self->local->timezone, true, buf);
+			}
+
+			body_ensure_limit(self);
+		}
+		buf_write(buf, "\n}", 2);
+	}
+}
+
+hot static inline void
+body_write_merge_array(Body* self, Columns* columns, Merge* merge)
+{
+	MergeIterator it;
+	merge_iterator_init(&it);
+	guard(merge_iterator_free, &it);
+	auto first = true;
+	auto buf = self->buf;
+	for (merge_iterator_open(&it, merge);
+	     merge_iterator_has(&it);
+	     merge_iterator_next(&it))
+	{
+		auto row = merge_iterator_at(&it);
+		if (! first)
+			buf_write(buf, ", ", 2);
+		else
+			first = false;
+		auto set = it.current_it->set;
+		assert(set->count_columns == columns->list_count);
+
+		if (set->count_columns > 1)
+			buf_write(buf, "[", 1);
 		for (auto col = 0; col < set->count_columns; col++)
 		{
 			if (col > 0)
@@ -92,7 +181,6 @@ body_write_merge(Body* self, Columns* columns, Merge* merge)
 		}
 		if (set->count_columns > 1)
 			buf_write(buf, "]", 1);
-		merge_iterator_next(&it);
 	}
 }
 
@@ -115,12 +203,15 @@ body_write(Body* self, Columns* columns, Value* value)
 	// [
 	buf_write(self->buf, "[", 1);
 
+	(void)body_write_set_obj;
+	(void)body_write_merge_obj;
+
 	// {}, ...
 	if (value->type == TYPE_SET)
-		body_write_set(self, columns, (Set*)value->store);
+		body_write_set_array(self, columns, (Set*)value->store);
 	else
 	if (value->type == TYPE_MERGE)
-		body_write_merge(self, columns, (Merge*)value->store);
+		body_write_merge_array(self, columns, (Merge*)value->store);
 	else
 		error("operation unsupported");
 

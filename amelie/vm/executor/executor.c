@@ -28,6 +28,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 
 void
