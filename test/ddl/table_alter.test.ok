@@ -66,7 +66,7 @@ insert into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 alter table test set
-{"msg": "ALTER TABLE SET <SERIAL or AGGREGATED> expected"}
+{"msg": "ALTER TABLE SET <SERIAL> expected"}
 alter table test set serial
 {"msg": "ALTER TABLE SET SERIAL <TO> expected"}
 alter table test set serial 123
@@ -97,22 +97,6 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 {"msg": "table 'test': not exists"}
-# test: set aggregated
-create table test (id int primary key serial, data int default 0)
-select system.tables().'public.test'.aggregated
-[false]
-alter table test set
-{"msg": "ALTER TABLE SET <SERIAL or AGGREGATED> expected"}
-alter table test set x
-{"msg": "ALTER TABLE SET <SERIAL or AGGREGATED> expected"}
-alter table test set aggregated
-select system.tables().'public.test'.aggregated
-[true]
-# test: set not aggregated
-alter table test set not aggregated
-select system.tables().'public.test'.aggregated
-[false]
-drop table test
 # test: rename column parsing
 alter table rename
 {"msg": "ALTER TABLE <name> expected"}
@@ -143,7 +127,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -156,7 +140,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": 0
   }
 }]]
@@ -172,7 +156,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -185,7 +169,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": 0
   }
 }]]
@@ -206,7 +190,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -222,7 +206,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -244,7 +228,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -257,7 +241,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": 0
   }
 }]]
@@ -274,7 +258,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -287,7 +271,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": 0
   }
 }]]
@@ -328,7 +312,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -344,7 +328,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -357,7 +341,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -380,7 +364,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -393,7 +377,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -419,7 +403,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -439,7 +423,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -452,7 +436,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": 123
   }
 }]]
@@ -481,7 +465,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -501,7 +485,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -514,7 +498,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -566,7 +550,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -579,7 +563,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -595,7 +579,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -613,7 +597,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -626,7 +610,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -639,7 +623,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -655,7 +639,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -668,7 +652,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -686,7 +670,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -699,7 +683,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -712,7 +696,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -735,7 +719,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -748,7 +732,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -769,7 +753,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -782,7 +766,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -798,7 +782,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -824,7 +808,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -837,7 +821,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -850,7 +834,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -875,7 +859,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -888,7 +872,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -911,7 +895,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -924,7 +908,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -940,7 +924,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]

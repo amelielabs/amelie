@@ -29,12 +29,12 @@ insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 drop table test
 
-# test: on conflict do aggregate (without aggregated columns)
+# test: on conflict do resolve (without resolved columns)
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
-explain insert into test values(1, 0) on conflict do aggregate
-insert into test values(1, 0) on conflict do aggregate
-insert into test values(1, 0) on conflict do aggregate
+explain insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve
 select * from test
 drop table test
 

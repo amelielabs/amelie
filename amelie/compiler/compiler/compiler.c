@@ -286,7 +286,7 @@ emit_send(Compiler* self, int start)
 	{
 		auto insert = ast_insert_of(stmt->ast);
 		auto table = insert->target->from_table;
-		if (table_columns(table)->generated_columns) {
+		if (table_columns(table)->count_stored > 0) {
 			// CSEND_GENERATED
 			emit_send_generated(self, start);
 		} else {

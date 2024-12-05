@@ -72,7 +72,7 @@ test truncate
 directory generated
 group generated
 test as_stored
-test as_aggregated
+test as_resolved
 
 # query
 directory query

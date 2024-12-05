@@ -35,20 +35,6 @@ show lsn
 select serial("public", "test")
 select serial("public", "test2")
 
-# test: alter table set aggregated
-alter table test2 set aggregated
-select system.tables()['public.test2'].aggregated
-
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-
-# test: validate state
-show lsn
-select system.tables()['public.test2'].aggregated
-
 # test: alter table column add
 insert into test2() values (), (), ()
 select * from test2

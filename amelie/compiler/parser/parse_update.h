@@ -40,5 +40,5 @@ ast_update_allocate(void)
 }
 
 Ast* parse_update_expr(Stmt*);
-Ast* parse_update_aggregated(Stmt*, Columns*);
+Ast* parse_update_resolved(Stmt*, Columns*);
 void parse_update(Stmt*);

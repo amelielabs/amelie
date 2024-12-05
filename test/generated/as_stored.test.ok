@@ -20,9 +20,9 @@ create table test (id int primary key, data int as (
 create table test (id int primary key, data int as ()
 {"msg": "bad expression"}
 create table test (id int primary key, data int as (1)
-{"msg": "AS (expr) <STORED or AGGREGATED> expected"}
+{"msg": "AS (expr) <STORED or RESOLVED> expected"}
 create table test (id int primary key, data int as (1) 1
-{"msg": "AS (expr) <STORED or AGGREGATED> expected"}
+{"msg": "AS (expr) <STORED or RESOLVED> expected"}
 create table test (id int primary key, data int as (1) stored
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 # test: insert (expr)
@@ -38,7 +38,7 @@ select system.tables().'public.test'.columns[1]
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "1 + 1",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]

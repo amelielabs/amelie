@@ -36,26 +36,12 @@ select serial("public", "test")
 {"msg": "table 'test': not exists"}
 select serial("public", "test2")
 [0]
-# test: alter table set aggregated
-alter table test2 set aggregated
-select system.tables()['public.test2'].aggregated
-[true]
-# test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 localhost:3485
-# test: validate state
-show lsn
-[4]
-select system.tables()['public.test2'].aggregated
-[true]
 # test: alter table column add
 insert into test2() values (), (), ()
 select * from test2
 [[0, 0], [1, 0], [2, 0]]
 show lsn
-[5]
+[4]
 select serial("public", "test2")
 [3]
 alter table test2 add column obj json
@@ -70,7 +56,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[6]
+[5]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -90,7 +76,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[7]
+[6]
 select serial("public", "test2")
 [0]
 select data from test2
@@ -110,7 +96,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[8]
+[7]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -126,7 +112,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[9]
+[8]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -134,7 +120,7 @@ select * from test2 use index (i)
 # test: alter index rename
 alter index i on test2 rename to i2
 show lsn
-[10]
+[9]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -144,7 +130,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[10]
+[9]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i2)
@@ -164,7 +150,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[11]
+[10]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -184,7 +170,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[12]
+[11]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -192,7 +178,7 @@ select * from test2
 # test: drop table
 drop table test2
 show lsn
-[13]
+[12]
 select serial("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -202,7 +188,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[13]
+[12]
 select * from test2
 {"msg": "<public.test2> table or view not found"}
 show tables
@@ -228,7 +214,7 @@ show schemas
   }
 }]
 show lsn
-[14]
+[13]
 # test: restart
 disconnect S0
 close E0
@@ -236,7 +222,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[14]
+[13]
 show schemas
 [{
   "system": {
@@ -276,7 +262,7 @@ show schemas
   }
 }]
 show lsn
-[15]
+[14]
 # test: restart
 disconnect S0
 close E0
@@ -284,7 +270,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[15]
+[14]
 show schemas
 [{
   "system": {
@@ -306,7 +292,7 @@ show schemas
 # test: drop schema
 drop schema test2
 show lsn
-[16]
+[15]
 show schemas
 [{
   "system": {
@@ -327,7 +313,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[16]
+[15]
 show schemas
 [{
   "system": {

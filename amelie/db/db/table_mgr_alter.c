@@ -24,63 +24,6 @@
 #include <amelie_db.h>
 
 static void
-set_aggregated_if_commit(Log* self, LogOp* op)
-{
-	buf_free(log_handle_of(self, op)->data);
-}
-
-static void
-set_aggregated_if_abort(Log* self, LogOp* op)
-{
-	auto handle = log_handle_of(self, op);
-	auto table = table_of(handle->handle);
-	uint8_t* pos = handle->data->start;
-	Str  schema;
-	Str  name;
-	bool value;
-	table_op_set_aggregated_read(&pos, &schema, &name, &value);
-	table_config_set_aggregated(table->config, !value);
-	buf_free(handle->data);
-}
-
-static LogIf set_aggregated_if =
-{
-	.commit = set_aggregated_if_commit,
-	.abort  = set_aggregated_if_abort
-};
-
-void
-table_mgr_set_aggregated(TableMgr* self,
-                         Tr*       tr,
-                         Str*      schema,
-                         Str*      name,
-                         bool      if_exists,
-                         bool      value)
-{
-	auto table = table_mgr_find(self, schema, name, false);
-	if (! table)
-	{
-		if (! if_exists)
-			error("table '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return;
-	}
-
-	if (table->config->aggregated == value)
-		return;
-
-	// save set aggregated operation
-	auto op = table_op_set_aggregated(schema, name, value);
-
-	// update table
-	log_handle(&tr->log, LOG_TABLE_SET_AGGREGATED, &set_aggregated_if,
-	           NULL,
-	           &table->handle, NULL, op);
-
-	table_config_set_aggregated(table->config, value);
-}
-
-static void
 rename_if_commit(Log* self, LogOp* op)
 {
 	buf_free(log_handle_of(self, op)->data);

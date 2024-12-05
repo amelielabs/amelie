@@ -20,7 +20,7 @@ struct Constraint
 	bool    random;
 	int64_t random_modulo;
 	Str     as_stored;
-	Str     as_aggregated;
+	Str     as_resolved;
 	Buf     value;
 };
 
@@ -32,7 +32,7 @@ constraint_init(Constraint* self)
 	self->random        = false;
 	self->random_modulo = INT64_MAX;
 	str_init(&self->as_stored);
-	str_init(&self->as_aggregated);
+	str_init(&self->as_resolved);
 	buf_init(&self->value);
 }
 
@@ -40,7 +40,7 @@ static inline void
 constraint_free(Constraint* self)
 {
 	str_free(&self->as_stored);
-	str_free(&self->as_aggregated);
+	str_free(&self->as_resolved);
 	buf_free(&self->value);
 }
 
@@ -76,10 +76,10 @@ constraint_set_as_stored(Constraint* self, Str* value)
 }
 
 static inline void
-constraint_set_as_aggregated(Constraint* self, Str* value)
+constraint_set_as_resolved(Constraint* self, Str* value)
 {
-	str_free(&self->as_aggregated);
-	str_copy(&self->as_aggregated, value);
+	str_free(&self->as_resolved);
+	str_copy(&self->as_resolved, value);
 }
 
 static inline void
@@ -97,7 +97,7 @@ constraint_copy(Constraint* self, Constraint* copy)
 	constraint_set_random(copy, self->random);
 	constraint_set_random_modulo(copy, self->random_modulo);
 	constraint_set_as_stored(copy, &self->as_stored);
-	constraint_set_as_aggregated(copy, &self->as_aggregated);
+	constraint_set_as_resolved(copy, &self->as_resolved);
 	constraint_set_default(copy, &self->value);
 }
 
@@ -106,14 +106,14 @@ constraint_read(Constraint* self, uint8_t** pos)
 {
 	Decode obj[] =
 	{
-		{ DECODE_BOOL,   "not_null",       &self->not_null       },
-		{ DECODE_BOOL,   "serial",         &self->serial         },
-		{ DECODE_BOOL,   "random",         &self->random         },
-		{ DECODE_INT,    "random_modulo",  &self->random_modulo  },
-		{ DECODE_STRING, "as_stored",      &self->as_stored      },
-		{ DECODE_STRING, "as_aggregated",  &self->as_aggregated  },
-		{ DECODE_DATA,   "default",        &self->value          },
-		{ 0,              NULL,            NULL                  },
+		{ DECODE_BOOL,   "not_null",      &self->not_null      },
+		{ DECODE_BOOL,   "serial",        &self->serial        },
+		{ DECODE_BOOL,   "random",        &self->random        },
+		{ DECODE_INT,    "random_modulo", &self->random_modulo },
+		{ DECODE_STRING, "as_stored",     &self->as_stored     },
+		{ DECODE_STRING, "as_resolved",   &self->as_resolved   },
+		{ DECODE_DATA,   "default",       &self->value         },
+		{ 0,              NULL,           NULL                 },
 	};
 	decode_obj(obj, "constraint", pos);
 }
@@ -143,9 +143,9 @@ constraint_write(Constraint* self, Buf* buf)
 	encode_raw(buf, "as_stored", 9);
 	encode_string(buf, &self->as_stored);
 
-	// as_aggregated
-	encode_raw(buf, "as_aggregated", 13);
-	encode_string(buf, &self->as_aggregated);
+	// as_resolved
+	encode_raw(buf, "as_resolved", 11);
+	encode_string(buf, &self->as_resolved);
 
 	// default
 	encode_raw(buf, "default", 7);

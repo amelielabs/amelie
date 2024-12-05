@@ -256,15 +256,15 @@ parse_generate(Stmt* self, AstInsert* stmt)
 }
 
 hot void
-parse_aggregated(Stmt* self)
+parse_resolved(Stmt* self)
 {
 	auto stmt = ast_insert_of(self->ast);
 	stmt->on_conflict = ON_CONFLICT_UPDATE;
 	// handle insert as upsert and generate
 	//
-	// SET <column> = <aggregated column expression> [, ...]
+	// SET <column> = <resolved column expression> [, ...]
 	auto columns = table_columns(stmt->target->from_table);
-	stmt->update_expr = parse_update_aggregated(self, columns);
+	stmt->update_expr = parse_update_resolved(self, columns);
 	if (! stmt->update_expr)
 		stmt->on_conflict = ON_CONFLICT_NOTHING;
 }
@@ -275,10 +275,10 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	// ON CONFLICT
 	if (! stmt_if(self, KON))
 	{
-		// if table is aggregated and no explicit ON CONFLICT clause
-		// then handle as ON CONFLICT DO AGGREGATE
-		if (stmt->target->from_table->config->aggregated)
-			parse_aggregated(self);
+		// if table has resvoled conlumns and no explicit ON CONFLICT clause
+		// then handle as ON CONFLICT DO RESOLVE
+		if (stmt->target->from_table->config->columns.count_resolved > 0)
+			parse_resolved(self);
 		return;
 	}
 
@@ -310,16 +310,16 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 			stmt->update_where = parse_expr(self, NULL);
 		break;
 	}
-	case KAGGREGATE:
+	case KRESOLVE:
 	{
 		// handle insert as upsert and generate
 		//
-		// SET <column> = <aggregated column expression> [, ...]
-		parse_aggregated(self);
+		// SET <column> = <resolved column expression> [, ...]
+		parse_resolved(self);
 		break;
 	}
 	default:
-		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected");
+		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected");
 		break;
 	}
 }
@@ -426,7 +426,7 @@ parse_insert(Stmt* self)
 	}
 
 	// create a list of generated columns expressions
-	if (columns->generated_columns)
+	if (columns->count_stored > 0)
 		parse_generated(self);
 
 	// ON CONFLICT

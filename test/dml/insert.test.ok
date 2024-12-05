@@ -63,7 +63,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
@@ -76,7 +76,7 @@ select system.tables().'public.test'.columns
     "random": false,
     "random_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]

@@ -47,7 +47,6 @@ static Keyword keywords_a[] =
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
 	{ KAGGREGATE,             "aggregate",             9  },
-	{ KAGGREGATED,            "aggregated",            10 },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -206,6 +205,8 @@ static Keyword keywords_r[] =
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
 	{ KRANDOM,                "random",                6  },
+	{ KRESOLVE,               "resolve",               7  },
+	{ KRESOLVED,              "resolved",              8  },
 	{ 0,                       NULL,                   0  }
 };
 

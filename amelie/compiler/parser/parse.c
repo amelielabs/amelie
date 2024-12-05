@@ -194,10 +194,9 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KCREATE:
 	{
 		// [UNIQUE | SHARED | DISTRIBUTED | COMPUTE]
-		bool unique     = false;
-		bool shared     = false;
-		bool aggregated = false;
-		bool compute    = false;
+		bool unique  = false;
+		bool shared  = false;
+		bool compute = false;
 		auto mod = lex_next(lex);
 		switch (mod->id) {
 		case KUNIQUE:
@@ -211,9 +210,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 		case KSHARED:
 		{
-			// [AGGREGATED]
-			if (stmt_if(stmt, KAGGREGATED))
-				aggregated = true;
 			auto next = stmt_if(stmt, KTABLE);
 			if (! next)
 				error("CREATE SHARED <TABLE> expected");
@@ -223,23 +219,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 		case KDISTRIBUTED:
 		{
-			// [AGGREGATED]
-			if (stmt_if(stmt, KAGGREGATED))
-				aggregated = true;
 			auto next = stmt_if(stmt, KTABLE);
 			if (! next)
 				error("CREATE DISTRIBUTED <TABLE> expected");
 			stmt_push(stmt, next);
 			shared = false;
-			break;
-		}
-		case KAGGREGATED:
-		{
-			auto next = stmt_if(stmt, KTABLE);
-			if (! next)
-				error("CREATE <TABLE> expected");
-			stmt_push(stmt, next);
-			aggregated = true;
 			break;
 		}
 		case KCOMPUTE:
@@ -285,7 +269,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		if (lex_if(lex, KTABLE))
 		{
 			stmt->id = STMT_CREATE_TABLE;
-			parse_table_create(stmt, shared, aggregated);
+			parse_table_create(stmt, shared);
 		} else
 		if (lex_if(lex, KINDEX))
 		{

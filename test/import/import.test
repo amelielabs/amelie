@@ -32,7 +32,7 @@ disconnect S0
 connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
 create table test2 (id int primary key, a int as (id * 2) stored)
-create aggregated table test3 (id int primary key, a int as (a + 1) aggregated)
+create table test3 (id int primary key, a int as (a + 1) resolved)
 create table test4 (id int primary key serial, a int default 777)
 disconnect S0
 
@@ -98,7 +98,7 @@ connect E0 Sx http://localhost:3485/
 select * from test2
 disconnect Sx
 
-# test: POST /schema/table (text/csv) (aggregated columns)
+# test: POST /schema/table (text/csv) (resolved columns)
 connect E0 S0 http://localhost:3485/public/test3
 import text/csv 0,0
 import text/csv 0,0

@@ -177,21 +177,6 @@ create shared table test (id int primary key)
 select system.tables().'public.test'.shared
 drop table test
 
-# test: aggregated
-create aggregated table test (id int primary key)
-select system.tables().'public.test'.shared
-drop table test
-
-create distributed aggregated table test (id int primary key)
-select system.tables().'public.test'.shared
-select system.tables().'public.test'.aggregated
-drop table test
-
-create shared aggregated table test (id int primary key)
-select system.tables().'public.test'.shared
-select system.tables().'public.test'.aggregated
-drop table test
-
 # test: constraint default
 create table test (id int primary key, data int default 1)
 select system.tables().'public.test'.columns

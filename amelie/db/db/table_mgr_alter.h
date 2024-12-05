@@ -11,7 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void   table_mgr_set_aggregated(TableMgr*, Tr*, Str*, Str*, bool, bool);
 void   table_mgr_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 void   table_mgr_column_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 Table* table_mgr_column_add(TableMgr*, Tr*, Str*, Str*, Column*, bool);

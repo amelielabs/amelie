@@ -251,11 +251,11 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 		error("eof expected");
 
 	// create a list of generated columns expressions
-	if (columns->generated_columns)
+	if (columns->count_stored > 0)
 		parse_generated(stmt);
 	
-	// if table is aggregated, handle insert as upsert for
-	// aggregated columns
-	if (table->config->aggregated)
-		parse_aggregated(stmt);
+	// if table has resolved columns, handle insert as upsert
+	// and apply the resolve expressions on conflicts
+	if (columns->count_resolved > 0)
+		parse_resolved(stmt);
 }

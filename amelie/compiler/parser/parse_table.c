@@ -262,7 +262,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// GENERATD ALWAYS AS (expr) [STORED]
+		// [GENERATD ALWAYS] AS ...
 		case KGENERATED:
 		{
 			// ALWAYS
@@ -276,7 +276,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			// fallthrough
 		}
 
-		// AS (expr) STORED | AGGREGATED
+		// AS (expr) STORED | RESOLVED
 		case KAS:
 		{
 			// (
@@ -300,15 +300,15 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			if (str_empty(&as))
 				error("AS expression is missing");
 
-			// STORED | AGGREGATED
+			// STORED | RESOLVED
 			if (stmt_if(self, KSTORED)) {
 				constraint_set_as_stored(cons, &as);
 			} else
-			if (stmt_if(self, KAGGREGATED))
+			if (stmt_if(self, KRESOLVED))
 			{
-				constraint_set_as_aggregated(cons, &as);
+				constraint_set_as_resolved(cons, &as);
 			} else
-				error("AS (expr) <STORED or AGGREGATED> expected");
+				error("AS (expr) <STORED or RESOLVED> expected");
 			break;
 		}
 
@@ -324,8 +324,8 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 		encode_null(&cons->value);
 
 	// validate constraints
-	if (!str_empty(&cons->as_aggregated) && column->key)
-		error("AS AGGREGATED cannot be used with keys");
+	if (!str_empty(&cons->as_resolved) && column->key)
+		error("AS RESOLVED cannot be used with keys");
 
 	if (cons->serial && cons->random)
 		error("SERIAL and RANDOM constraints cannot be used together");
@@ -446,7 +446,7 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 }
 
 void
-parse_table_create(Stmt* self, bool shared, bool aggregated)
+parse_table_create(Stmt* self, bool shared)
 {
 	// CREATE [SHARED|DISTRIBUTED] [AGGREGATED] TABLE [IF NOT EXISTS] name (key)
 	// [WITH()]
@@ -465,7 +465,6 @@ parse_table_create(Stmt* self, bool shared, bool aggregated)
 	// create table config
 	stmt->config = table_config_allocate();
 	table_config_set_shared(stmt->config, shared);
-	table_config_set_aggregated(stmt->config, aggregated);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 
@@ -591,18 +590,7 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
-		// [NOT]
-		auto not = stmt_if(self, KNOT) != NULL;
-
-		// SET [NOT] AGGREGATED
-		if (stmt_if(self, KAGGREGATED))
-		{
-			stmt->type = TABLE_ALTER_SET_AGGREGATED;
-			stmt->aggregated = !not;
-			return;
-		}
-
-		error("ALTER TABLE SET <SERIAL or AGGREGATED> expected");
+		error("ALTER TABLE SET <SERIAL> expected");
 		return;
 	}
 

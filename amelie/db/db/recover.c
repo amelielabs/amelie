@@ -129,15 +129,6 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                 &schema_new, &name_new, true);
 		break;
 	}
-	case LOG_TABLE_SET_AGGREGATED:
-	{
-		Str schema;
-		Str name;
-		bool value;
-		table_op_set_aggregated_read(data, &schema, &name, &value);
-		table_mgr_set_aggregated(&db->table_mgr, tr, &schema, &name, true, value);
-		break;
-	}
 	case LOG_TABLE_TRUNCATE:
 	{
 		Str schema;

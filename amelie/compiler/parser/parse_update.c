@@ -75,7 +75,7 @@ parse_update_expr(Stmt* self)
 }
 
 hot Ast*
-parse_update_aggregated(Stmt* self, Columns* columns)
+parse_update_resolved(Stmt* self, Columns* columns)
 {
 	auto lex_origin = self->lex;
 	Lex lex;
@@ -87,19 +87,19 @@ parse_update_aggregated(Stmt* self, Columns* columns)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (str_empty(&column->constraint.as_aggregated))
+		if (str_empty(&column->constraint.as_resolved))
 			continue;
 
-		// column = <aggregated expr>
+		// column = <resolved expr>
 		auto op = ast(KSET);
 
 		// column name
 		op->l = ast(KNAME);
 		op->l->string = column->name;
 
-		// parse aggregated expression
+		// parse resolved expression
 		lex_init(&lex, keywords);
-		lex_start(&lex, &column->constraint.as_aggregated);
+		lex_start(&lex, &column->constraint.as_resolved);
 		Expr ctx =
 		{
 			.aggs   = NULL,

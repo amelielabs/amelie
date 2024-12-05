@@ -13,9 +13,9 @@ insert into test values(1, 0) on conflict
 insert into test values(1, 0) on conflict 123
 {"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected"}
 insert into test values(1, 0) on conflict do 123
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | AGGREGATE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected"}
 insert into test values(1, 0) on conflict do update
 {"msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
@@ -55,7 +55,7 @@ insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 [[1, 0], [2, 0]]
 drop table test
-# test: on conflict do aggregate (without aggregated columns)
+# test: on conflict do resolve (without resolved columns)
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
 [{
@@ -76,7 +76,7 @@ explain insert into test values(1, 0) on conflict do nothing
     }
   }
 }]
-explain insert into test values(1, 0) on conflict do aggregate
+explain insert into test values(1, 0) on conflict do resolve
 [{
   "bytecode": {
     "coordinator": {
@@ -95,8 +95,8 @@ explain insert into test values(1, 0) on conflict do aggregate
     }
   }
 }]
-insert into test values(1, 0) on conflict do aggregate
-insert into test values(1, 0) on conflict do aggregate
+insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve
 select * from test
 [[1, 0]]
 drop table test

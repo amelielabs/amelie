@@ -17,16 +17,18 @@ struct Columns
 {
 	List    list;
 	int     list_count;
-	int     generated_columns;
+	int     count_stored;
+	int     count_resolved;
 	Column* serial;
 };
 
 static inline void
 columns_init(Columns* self)
 {
-	self->list_count = 0;
-	self->generated_columns = 0;
-	self->serial = NULL;
+	self->list_count     = 0;
+	self->count_stored   = 0;
+	self->count_resolved = 0;
+	self->serial         = NULL;
 	list_init(&self->list);
 }
 
@@ -48,7 +50,9 @@ columns_add(Columns* self, Column* column)
 	self->list_count++;
 
 	if (! str_empty(&column->constraint.as_stored))
-		self->generated_columns++;
+		self->count_stored++;
+	if (! str_empty(&column->constraint.as_resolved))
+		self->count_resolved++;
 
 	// save order of the first serial column
 	if (column->constraint.serial && !self->serial)
@@ -61,6 +65,11 @@ columns_del(Columns* self, Column* column)
 	list_unlink(&column->link);
 	self->list_count--;
 	assert(self->list_count >= 0);
+
+	if (! str_empty(&column->constraint.as_stored))
+		self->count_stored--;
+	if (! str_empty(&column->constraint.as_resolved))
+		self->count_resolved--;
 
 	if (self->serial == column)
 		self->serial = NULL;

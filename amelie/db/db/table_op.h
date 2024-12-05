@@ -61,19 +61,6 @@ table_op_truncate(Str* schema, Str* name)
 }
 
 static inline Buf*
-table_op_set_aggregated(Str* schema, Str* name, bool value)
-{
-	// [schema, name, value]
-	auto buf = buf_create();
-	encode_array(buf);
-	encode_string(buf, schema);
-	encode_string(buf, name);
-	encode_bool(buf, value);
-	encode_array_end(buf);
-	return buf;
-}
-
-static inline Buf*
 table_op_column_rename(Str* schema, Str* name,
                        Str* name_column,
                        Str* name_column_new)
@@ -142,16 +129,6 @@ table_op_rename_read(uint8_t** pos, Str* schema, Str* name,
 	json_read_string(pos, name);
 	json_read_string(pos, schema_new);
 	json_read_string(pos, name_new);
-	json_read_array_end(pos);
-}
-
-static inline void
-table_op_set_aggregated_read(uint8_t** pos, Str* schema, Str* name, bool* value)
-{
-	json_read_array(pos);
-	json_read_string(pos, schema);
-	json_read_string(pos, name);
-	json_read_bool(pos, value);
 	json_read_array_end(pos);
 }
 

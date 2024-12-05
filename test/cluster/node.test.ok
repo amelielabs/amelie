@@ -63,7 +63,6 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -74,7 +73,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -98,7 +97,6 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -109,7 +107,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -213,7 +211,6 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -224,7 +221,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -248,7 +245,6 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -259,7 +255,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -283,7 +279,6 @@ show tables
     "schema": "public",
     "name": "test3",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -294,7 +289,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -363,7 +358,6 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -374,7 +368,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -398,7 +392,6 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -409,7 +402,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -433,7 +426,6 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -444,7 +436,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -508,7 +500,6 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -519,7 +510,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -543,7 +534,6 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -554,7 +544,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -578,7 +568,6 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
       "type": 2,
@@ -589,7 +578,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }, {
@@ -602,7 +591,7 @@ show tables
         "random": false,
         "random_modulo": 9223372036854775807,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],

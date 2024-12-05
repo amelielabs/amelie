@@ -105,7 +105,7 @@ csend_generated(Vm* self, Op* op)
 	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
-	auto count = values->count_rows * columns->generated_columns;
+	auto count = values->count_rows * columns->count_stored;
 	auto pos = stack_at(&self->stack, count);
 
 	ReqList list;
@@ -118,7 +118,7 @@ csend_generated(Vm* self, Op* op)
 		row_meta->row_size =
 			row_update_values(columns, keys, set_row(values, order),
 			                  pos, &row_meta->hash);
-		pos += columns->generated_columns;
+		pos += columns->count_stored;
 
 		// map to node
 		auto route = part_map_get(&table->part_list.map, row_meta->hash);
