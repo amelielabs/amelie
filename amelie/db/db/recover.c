@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -53,13 +53,13 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 
 	// type
 	int64_t type;
-	data_read_integer(meta, &type);
+	json_read_integer(meta, &type);
 
 	// DML operations
 	if (type == LOG_REPLACE || type == LOG_DELETE)
 	{
 		int64_t partition_id;
-		data_read_integer(meta, &partition_id);
+		json_read_integer(meta, &partition_id);
 
 		// find partition by id
 		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
@@ -67,10 +67,15 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 			error("failed to find partition %" PRIu64, partition_id);
 
 		// replay write
+		auto row = (Row*)(*data);
 		if (type == LOG_REPLACE)
-			part_insert(part, tr, true, data);
-		else
-			part_delete_by(part, tr, data);
+		{
+			auto copy = row_copy(row);
+			part_insert(part, tr, true, copy);
+		} else {
+			part_delete_by(part, tr, row);
+		}
+		*data += row_size(row);
 		return;
 	}
 
@@ -122,15 +127,6 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		table_op_rename_read(data, &schema, &name, &schema_new, &name_new);
 		table_mgr_rename(&db->table_mgr, tr, &schema, &name,
 		                 &schema_new, &name_new, true);
-		break;
-	}
-	case LOG_TABLE_SET_AGGREGATED:
-	{
-		Str schema;
-		Str name;
-		bool value;
-		table_op_set_aggregated_read(data, &schema, &name, &value);
-		table_mgr_set_aggregated(&db->table_mgr, tr, &schema, &name, true, value);
 		break;
 	}
 	case LOG_TABLE_TRUNCATE:

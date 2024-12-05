@@ -32,39 +32,86 @@ value_compare(Value* a, Value* b)
 		return (a->type > b->type) ? 1 : -1;
 
 	switch (a->type) {
-	case VALUE_INT:
-	case VALUE_BOOL:
-	case VALUE_TIMESTAMP:
+	case TYPE_NULL:
+		return 0;
+	case TYPE_BOOL:
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
 	{
 		if (a->integer == b->integer)
 			return 0;
 		return (a->integer > b->integer) ? 1 : -1;
 	}
-	case VALUE_REAL:
+	case TYPE_DOUBLE:
 	{
-		if (a->real == b->real)
+		if (a->dbl == b->dbl)
 			return 0;
-		return (a->real > b->real) ? 1 : -1;
+		return (a->dbl > b->dbl) ? 1 : -1;
 	}
-	case VALUE_NULL:
-		return 0;
-	case VALUE_STRING:
+	case TYPE_STRING:
 		return str_compare_fn(&a->string, &b->string);
-	case VALUE_OBJ:
-	case VALUE_ARRAY:
-		return data_compare(a->data, b->data);
-	case VALUE_INTERVAL:
+	case TYPE_JSON:
+		return json_compare(a->json, b->json);
+	case TYPE_INTERVAL:
 		return interval_compare(&a->interval, &b->interval);
-	case VALUE_AGG:
-		return agg_compare(&a->agg, &b->agg);
-	// VALUE_NONE:
-	// VALUE_SET:
-	// VALUE_MERGE:
-	// VALUE_GROUP:
+	case TYPE_VECTOR:
+		return vector_compare(a->vector, b->vector);
+	// TYPE_AVG
+	// TYPE_SET
+	// TYPE_MERGE
 	default:
 		break;
 	}
 
 	error("unsupported operation");
 	return -1;
+}
+
+always_inline hot static inline bool
+value_is_true(Value* a)
+{
+	switch (a->type) {
+	case TYPE_NULL:
+		return false;
+	case TYPE_INT:
+	case TYPE_BOOL:
+	case TYPE_TIMESTAMP:
+		return a->integer > 0;
+	case TYPE_DOUBLE:
+		return a->dbl > 0.0;
+	case TYPE_STRING:
+		return !str_empty(&a->string);
+	case TYPE_JSON:
+		break;
+	case TYPE_INTERVAL:
+	case TYPE_VECTOR:
+		return a->vector->size > 0;
+	// TYPE_AVG
+	// TYPE_SET
+	// TYPE_MERGE
+	default:
+		break;
+	}
+	return true;
+}
+
+always_inline hot static inline bool
+value_is_unary(Value* result, Value* a)
+{
+	if (likely(a->type != TYPE_NULL))
+		return true;
+	value_free(a);
+	value_set_null(result);
+	return false;
+}
+
+always_inline hot static inline bool
+value_is(Value* result, Value* a, Value* b)
+{
+	if (unlikely(a->type != TYPE_NULL && b->type != TYPE_NULL))
+		return true;
+	value_free(a);
+	value_free(b);
+	value_set_null(result);
+	return false;
 }

@@ -6,76 +6,99 @@ create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test
 {"msg": "table 'a' depends on schema 'test"}
-select *.schema, *.name from system.tables()
-[["test", "a"], ["test", "b"]]
+select system.tables().'test.a'.name
+["a"]
+select system.tables().'test.b'.name
+["b"]
 create view test.test_view as select 1
-select * from system.views()
+select system.views()
 [{
-  "schema": "test",
-  "name": "test_view",
-  "query": "select 1",
-  "columns": []
+  "test.test_view": {
+    "schema": "test",
+    "name": "test_view",
+    "query": "select 1",
+    "columns": []
+  }
 }]
 # test: drop schema cascade
 drop schema test cascade
-select * from system.schemas()
+select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  }
 }]
 # test: drop schema cascade (tables)
-select *.schema, *.name from system.tables()
-[]
+select system.tables().'test.a'.name
+{"msg": "[]: object key 'test.a' not found"}
+select system.tables().'test.b'.name
+{"msg": "[]: object key 'test.b' not found"}
 # test: drop schema cascade (views)
-select * from system.views()
-[]
+select system.views()
+[{}]
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test cascade
-select *.schema, *.name from system.tables()
-[]
+select system.tables().'test.a'.name
+{"msg": "[]: object key 'test.a' not found"}
+select system.tables().'test.b'.name
+{"msg": "[]: object key 'test.b' not found"}
 # test: alter schema rename
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-select * from system.schemas()
+select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test": {
+    "name": "test",
+    "system": false,
+    "create": true
+  }
 }]
-select *.schema, *.name from system.tables()
-[["test", "a"], ["test", "b"]]
+select system.tables().'test.a'.name
+["a"]
+select system.tables().'test.b'.name
+["b"]
 alter schema test rename test2
-select * from system.schemas()
+select system.schemas()
 [{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
+  "system": {
+    "name": "system",
+    "system": true,
+    "create": false
+  },
+  "public": {
+    "name": "public",
+    "system": true,
+    "create": true
+  },
+  "test2": {
+    "name": "test2",
+    "system": false,
+    "create": true
+  }
 }]
-select *.schema, *.name from system.tables()
-[["test2", "a"], ["test2", "b"]]
+select system.tables().'test2.a'.name
+["a"]
+select system.tables().'test2.b'.name
+["b"]
 disconnect S0
 close E0

@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -169,12 +170,6 @@ lex_next(Lex* self)
 		if (unlikely(self->pos == self->end))
 			goto symbol;
 		char symbol_next = *self->pos;
-		// **
-		if (symbol == '*' && symbol_next == '*') {
-			self->pos++;
-			ast->id = KSTAR_STAR;
-			return ast;
-		}
 		// ::
 		if (symbol == ':' && symbol_next == ':') {
 			self->pos++;
@@ -293,16 +288,7 @@ reread_as_float:
 				{
 					self->pos++;
 					ast->string.end++;
-
-					// path.**
-					if (self->pos != self->end && *self->pos == '*')
-					{
-						self->pos++;
-						ast->string.end++;
-						ast->id = KNAME_COMPOUND_STAR_STAR;
-					} else {
-						ast->id = KNAME_COMPOUND_STAR;
-					}
+					ast->id = KNAME_COMPOUND_STAR;
 					return ast;
 				}
 				lex_error(self, "bad compound name token");
@@ -342,8 +328,6 @@ reread_as_float:
 				}
 				break;
 			}
-			if (*self->pos == '\n')
-				lex_error(self, "unterminated string");
 			if (*self->pos == '\\') {
 				slash = !slash;
 				escape = true;

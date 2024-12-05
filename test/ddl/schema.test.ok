@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: ensure public schema exists
+# test: ensure system schemas exists
 show schemas
 [{
   "system": {
@@ -14,36 +14,6 @@ show schemas
     "create": true
   }
 }]
-select * from system.schemas() where name = "public"
-[{
-  "name": "public",
-  "system": true,
-  "create": true
-}]
-select system from system.schemas() where name = "public"
-[true]
-# test: ensure system schema exists
-show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true,
-    "create": false
-  },
-  "public": {
-    "name": "public",
-    "system": true,
-    "create": true
-  }
-}]
-select * from system.schemas() where name = "system"
-[{
-  "name": "system",
-  "system": true,
-  "create": false
-}]
-select system from system.schemas() where name = "system"
-[true]
 # test: create schema statement parsing
 create
 {"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}

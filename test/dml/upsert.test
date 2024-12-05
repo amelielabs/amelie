@@ -21,7 +21,6 @@ drop table test
 
 # test: on conflict do nothing
 create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do nothing
 insert into test values(1, 0) on conflict do nothing
 insert into test values(1, 0) on conflict do nothing
 insert into test values(1, 0) on conflict do nothing
@@ -30,12 +29,12 @@ insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 drop table test
 
-# test: on conflict do aggregate (without agg columns)
+# test: on conflict do resolve (without resolved columns)
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
-explain insert into test values(1, 0) on conflict do aggregate
-insert into test values(1, 0) on conflict do aggregate
-insert into test values(1, 0) on conflict do aggregate
+explain insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve
 select * from test
 drop table test
 
@@ -80,22 +79,30 @@ insert into test values (1, 0) on conflict do update set data = data + 1 where d
 select * from test
 drop table test
 
-# test: upsert row access
+# test: upsert excluded
 create table test (id int primary key, data int)
-insert into test values (1, 0) on conflict do update set data = data + 1
-explain insert into test values (1, 123) on conflict do update set data = data + @[1]
-insert into test values (1, 123) on conflict do update set data = data + @[1]
+insert into test values (1, 0)
+insert into test values (1, 123) on conflict do update set data = data + excluded.data
+explain insert into test values (1, 123) on conflict do update set data = data + excluded.data
 select * from test
-select *[1] from test
 drop table test
 
-# test: upsert row access #2
-create table test (id int primary key, data int)
-insert into test values (1, 0) on conflict do update set data = data + 1
-select @ from test
+# test: upsert excluded (json)
+create table test (id int primary key, data int, data2 json)
+insert into test values (1, 0, null)
+insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
+explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
+select * from test
 drop table test
 
-# test: upsert error
+# test: upsert excluded (no target)
+create table test (id int primary key)
+select excluded.id from test
+insert into test values (1)
+select excluded.id from test
+drop table test
+
+# test: upsert null
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
 select * from test
@@ -110,42 +117,6 @@ select * from test
 alter table test set serial to 0
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
-drop table test
-
-# test: upsert secondary index
-create table test (id int primary key, data int, value int)
-create index i on test (data)
-
-insert into test values (0, 2, 0)
-insert into test values (1, 1, 0)
-insert into test values (2, 0, 0)
-
-select * from test
-select * from test use index (i)
-
-insert into test values (0, 2, 0) on conflict do update set value = value + 1
-select * from test
-select * from test use index (i)
-
-insert into test values (3, 2, 0) on conflict do update set value = 10
-select * from test
-select * from test use index (i)
-drop table test
-
-# test: upsert secondary index (object)
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-
-insert into test {"id": 2, "data": 0} on conflict do update set obj.value = obj.id
-insert into test {"id": 3, "data": 0} on conflict do update set obj.value = obj.id
-
-select * from test
-select * from test use index (i)
-
 drop table test
 
 # test: upsert returning
@@ -183,6 +154,26 @@ explain insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
 select * from test
+drop table test
+
+# test: upsert secondary index
+create table test (id int primary key, data int, value int)
+create index i on test (data)
+
+insert into test values (0, 2, 0)
+insert into test values (1, 1, 0)
+insert into test values (2, 0, 0)
+
+select * from test
+select * from test use index (i)
+
+insert into test values (0, 2, 0) on conflict do update set value = value + 1
+select * from test
+select * from test use index (i)
+
+insert into test values (3, 2, 0) on conflict do update set value = 10
+select * from test
+select * from test use index (i)
 drop table test
 
 disconnect S0

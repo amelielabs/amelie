@@ -27,14 +27,24 @@
 #include "parser/cte_deps.h"
 #include "parser/target.h"
 #include "parser/target_list.h"
+#include "parser/endpoint.h"
 #include "parser/stmt.h"
 
 // parser
 #include "parser/parser.h"
+#include "parser/parse.h"
+
+// endpoint
+#include "parser/parse_endpoint.h"
+
+// expr
+#include "parser/parse_target.h"
+#include "parser/parse_agg.h"
 #include "parser/parse_call.h"
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
-#include "parser/parse_misc.h"
+
+// system
 #include "parser/parse_system.h"
 #include "parser/parse_config.h"
 #include "parser/parse_user.h"
@@ -42,20 +52,27 @@
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
 #include "parser/parse_node.h"
+#include "parser/parse_watch.h"
+
+// ddl
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
 #include "parser/parse_view.h"
 #include "parser/parse_cte.h"
+
+// dml
+#include "parser/parse_from.h"
+#include "parser/parse_returning.h"
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
-#include "parser/parse_from.h"
-#include "parser/parse_label.h"
-#include "parser/parse_aggr.h"
+
+// query
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
-#include "parser/parse_watch.h"
-#include "parser/parse.h"
+
+// import
+#include "parser/parse_import.h"

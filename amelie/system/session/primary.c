@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,7 +39,6 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_load.h>
 #include <amelie_session.h>
 
 static void
@@ -59,11 +59,11 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		auto meta_start = meta;
 
 		// type
-		data_skip(&meta);
+		json_skip(&meta);
 
 		// partition id
 		int64_t partition_id;
-		data_read_integer(&meta, &partition_id);
+		json_read_integer(&meta, &partition_id);
 
 		// map each write to route
 		auto table_mgr = &self->share->db->table_mgr;
@@ -86,7 +86,7 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 		// [meta offset, data offset]
 		encode_integer(&req->arg, (intptr_t)(meta_start - start));
 		encode_integer(&req->arg, (intptr_t)(data - start));
-		data_skip(&data);
+		data += row_size((Row*)data);
 	}
 }
 

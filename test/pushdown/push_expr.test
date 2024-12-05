@@ -3,41 +3,25 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 
-# test: select expr
-explain select system.config().backends
-select system.config().backends
+# test: select * from (select expr)
+explain select * from (select 1) t
+select * from (select 1) t
 
-# test: select from expr
-explain select * from [1,2,3]
-select * from [1,2,3]
+explain select * from (select 1, 2) t
+select * from (select 1, 2) t
 
-# test: select (select expr)
-explain select (select 123)
-select (select 123)
+# test: select column from (select expr as)
+explain select x from (select 1 as x) t
+select x from (select 1 as x) t
 
-# test: select (select expr) from expr
-explain select (select a.*) from [1,2,3] a
-select (select a.*) from [1,2,3] a
+explain select a, b from (select 1 as a, 2 as b) t
+select a, b from (select 1 as a, 2 as b) t
 
-# test: select (select from expr)
-explain select (select * from [1, 2, 3])
-select (select * from [1, 2, 3])
+# test: select * from (select expr as) (conflict)
+explain select * from (select 1 as a, 2 as a) t
 
-# test: select from (select expr)
-explain select * from (select [1,2,3])
-select * from (select [1,2,3])
-
-# test: select (select expr from) from expr
-explain select (select a.*, * from [3,2,1]) from [1,2,3] a
-select (select a.*, * from [3,2,1]) from [1,2,3] a
-
-# test: select (select expr from) from (select from expr)
-explain select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
-select (select a.*, * from [3,2,1]) from (select * from [1,2,3]) a
-
-# test: select from expr, expr
-explain select a.*, b.* from [1,2,3] a, [1,2,3] b
-select a.*, b.* from [1,2,3] a, [1,2,3] b
+# test: select column from (select expr as) (conflict)
+explain select a from (select 1 as a, 2 as a) t
 
 disconnect S0
 close E0

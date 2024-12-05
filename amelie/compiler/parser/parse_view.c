@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_http.h>
@@ -28,6 +28,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -106,7 +107,7 @@ parse_view_create(Stmt* self)
 	// ensure column count match
 	auto select = parse_select(self);
 	if (stmt->config->columns.list_count > 0)
-		if (select->expr_count != stmt->config->columns.list_count)
+		if (select->ret.count != stmt->config->columns.list_count)
 			error("number of view columns does not match select");
 
 	Str query;

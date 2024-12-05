@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,7 +39,6 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_load.h>
 #include <amelie_session.h>
 
 void
@@ -55,16 +55,18 @@ explain_reset(Explain* self)
 	self->time_commit_us = 0;
 }
 
-Buf*
+void
 explain(Explain*  self,
         Code*     coordinator,
         Code*     node,
         CodeData* data,
         Dtr*      dtr,
-        Buf*      body,
+        Content*  content,
         bool      profile)
 {
 	auto buf = buf_create();
+	guard_buf(buf);
+
 	encode_obj(buf);
 	unused(dtr);
 
@@ -106,11 +108,16 @@ explain(Explain*  self,
 
 		// sent_total
 		encode_raw(buf, "sent_total", 10);
-		encode_integer(buf, buf_size(body));
+		encode_integer(buf, buf_size(content->content));
 
 		encode_obj_end(buf);
 	}
 
 	encode_obj_end(buf);
-	return buf;
+
+	// set new content
+	content_reset(content);
+	Str name;
+	str_set(&name, "explain", 7);
+	content_write_json(content, &config()->format.string, &name, buf);
 }

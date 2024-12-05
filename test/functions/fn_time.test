@@ -1,0 +1,216 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: now()
+select now() = current_timestamp
+
+# test: date_bin()
+set timezone to 'UTC'
+
+select date_bin(null, TIMESTAMP '2001-01-01 00:00:00');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
+
+select TIMESTAMP '2020-02-11 15:44:17'::date_bin(INTERVAL '15 minutes');
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval);
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 days'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('2 hours'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('1 hour 30 min'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('15 minutes'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('10 sec'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('100 ms'::interval)
+select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval)
+
+# test: date_bin(negative interval)
+select date_bin(INTERVAL '-15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin(month)
+select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin(year)
+select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+
+# test: date_bin(timezone)
+set timezone to 'Asia/Famagusta'
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
+set timezone to 'UTC'
+
+# test: interval_trunc(interval year)
+select interval_trunc(null, 'year')
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'year')
+
+# test: interval_trunc(interval month)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'month')
+
+# test: interval_trunc(interval week)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
+
+# test: interval_trunc(interval day)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
+select '12 years 5 month 3 days 2 hr 47 min 33 sec'::interval::interval_trunc('day')
+
+# test: interval_trunc(interval hour)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'hour')
+
+# test: interval_trunc(interval minute)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'minute')
+
+# test: interval_trunc(interval second)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'sec')
+
+# test: interval_trunc(interval ms)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'ms')
+
+# test: interval_trunc(interval us)
+select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us', 'us')
+
+# test: date_trunc(timestamp year)
+select date_trunc(null, TIMESTAMP '2001-01-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-01-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-03-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-04-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-05-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-06-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-07-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-08-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-09-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-10-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2001-11-16 20:38:40');
+select date_trunc('year', TIMESTAMP '2011-12-16 20:38:40');
+
+# test: date_trunc(timestamp month)
+select date_trunc('month', TIMESTAMP '2001-01-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-03-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-04-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-05-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-06-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-07-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-08-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-09-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-10-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2001-11-16 20:38:40');
+select date_trunc('month', TIMESTAMP '2011-12-16 20:38:40');
+select date_trunc(TIMESTAMP '2011-12-16 20:38:40', 'month');
+select date_trunc(null, 'month');
+
+# test: date_trunc(timestamp week)
+select date_trunc('week', TIMESTAMP '2001-02-16 20:38:40');
+
+# test: date_trunc(timestamp day)
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
+
+# test: date_trunc(timestamp hour)
+select date_trunc('hour', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp minute)
+select date_trunc('min', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp second)
+select date_trunc('sec', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp ms)
+select date_trunc('ms', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp us)
+select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
+
+# test: date_trunc(timestamp day, timezone)
+set timezone to 'UTC'
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
+
+set timezone to 'Asia/Famagusta'
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Asia/Famagusta');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z');
+
+select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
+select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
+select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
+
+# test: extract(timestamp year)
+select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
+select public.extract('year', TIMESTAMP '2011-12-16 20:38:40');
+select public.extract(null, TIMESTAMP '2011-12-16 20:38:40');
+
+# test: extract(timestamp month)
+select public.extract('month', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp week)
+select public.extract('week', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp day)
+select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp hour)
+set timezone to 'UTC'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+01');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
+set timezone to 'Asia/Famagusta'
+select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+set timezone to 'UTC'
+
+# test: extract(timestamp minute)
+select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
+
+# test: extract(timestamp second)
+select public.extract('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
+
+# test: extract(timestamp ms)
+select public.extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
+
+# test: extract(timestamp us)
+select public.extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
+select TIMESTAMP '2001-01-16 20:38:40.123456'::extract('us')
+
+# test: extract(interval year)
+select public.extract('year', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval month)
+select public.extract('month', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval day)
+select public.extract('day', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval hour)
+select public.extract('hour', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval minute)
+select public.extract('min', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval second)
+select public.extract('sec', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval ms)
+select public.extract('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+
+# test: extract(interval us)
+select public.extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us')
+select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us')
+
+# test: extract from interval
+select extract(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+select extract('min' FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
+
+# test: extract from timestamp
+select extract(us FROM TIMESTAMP '2001-01-16 20:38:40.123456')
+select EXTRACT(ms FROM TIMESTAMP '2001-01-16 20:38:40.123456')
+
+disconnect S0
+close E0

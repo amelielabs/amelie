@@ -1,0 +1,71 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: utc by default
+show timezone
+show timezone_default
+
+# test: set unknown timezone
+set timezone to 'mars'
+show timezone
+select system.config().timezone
+
+# test: utc
+select '2024-07-29 18:40:19'::timestamp
+select '2024-07-29 18:40:19+00'::timestamp
+select '2024-07-29 18:40:19Z'::timestamp
+select '2024-07-29T18:40:19Z'::timestamp
+
+# test: localtime to localtime
+set timezone to 'Asia/Famagusta'
+select '2024-07-29 18:40:19'::timestamp
+
+# test: utc to localtime
+select '2024-07-29 18:40:19Z'::timestamp
+
+# test: explicit convertion
+select '2024-07-29 18:40:19'::timestamp('UTC')
+select '2024-07-29 18:40:19'::timestamp('Asia/Famagusta')
+select '2024-07-29 18:40:19'::timestamp
+
+# unknown timezone
+select '2024-07-29 18:40:19'::timestamp('jupiter')
+
+# test: at_timezone
+select '2024-07-29 18:40:19'::timestamp
+select '2024-07-29 18:40:19'::timestamp::at_timezone('UTC')
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
+select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
+
+# test: at timezone operator
+select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
+select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
+select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
+select '2024-07-29 18:40:19'::timestamp at timezone null
+
+# test: timestamp object
+set timezone to 'UTC'
+select {"time": "2024-07-29 18:40:19"::timestamp}
+select {"time": "2024-07-29 18:40:19Z"::timestamp}
+
+# test: timestamp object (localtime)
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+
+set timezone to 'Asia/Famagusta'
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+select {"time": "2024-07-29 18:40:19"::timestamp}
+select {"time": timestamp "2024-07-29 18:40:19"}
+
+# test: timestamp name case
+set timezone to 'UTC'
+set timezone to 'utc'
+show timezone
+set timezone to 'asia/famagusta'
+show timezone
+select {"time": "2024-07-29 18:40:19+03"::timestamp}
+
+disconnect S0
+close E0

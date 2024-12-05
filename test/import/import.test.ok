@@ -3,29 +3,33 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 import text/plain select 1
 [1]
+# test: POST / (application/sql)
+import application/sql select 1
+[1]
 # test: POST / (application/json) unsupported
 import application/json [1]
-{"msg": "unsupported API operation"}
+{"msg": "unsupported URI path"}
 disconnect S0
 # test: POST /invalid
 connect E0 S0 http://localhost:3485/abc
 import text/plain select 1
-{"msg": "unsupported API target path"}
+{"msg": "unsupported API operation"}
 disconnect S0
 # test: POST /schema/table (text/plain)
 connect E0 S0 http://localhost:3485/abc/cba/abc
 import text/plain select 1
-{"msg": "table 'cba/abc': not exists"}
+{"msg": "unsupported API operation"}
 disconnect S0
 # test: POST /schema/table (text/plain) not exists
 connect E0 S0 http://localhost:3485/public/test
 import text/plain select 1
-{"msg": "table 'test': not exists"}
+{"msg": "unsupported API operation"}
 disconnect S0
 connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
-create table test2 (obj object, primary key(obj.id int))
-create table test3 (id int primary key, ts timestamp, iv interval, vec vector, agg agg(sum))
+create table test2 (id int primary key, a int as (id * 2) stored)
+create table test3 (id int primary key, a int as (a + 1) resolved)
+create table test4 (id int primary key serial, a int default 777)
 disconnect S0
 # test: POST /schema/table (text/plain) unsupported
 connect E0 S0 http://localhost:3485/public/test
@@ -51,100 +55,136 @@ disconnect S0
 connect E0 S0 http://localhost:3485/public/test?columns=id,a
 import text/csv 6,0
 disconnect S0
-connect E0 Sx http://localhost:3485/
-select * from test
-[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null]]
-disconnect Sx
-# test: POST /schema/table (application/jsonl)
-connect E0 S0 http://localhost:3485/public/test
-import application/jsonl [7,0,0][8,0,0][9,0,0]
-import application/jsonl [10,0,0][11,
-{"msg": "column <a> value expected to be 'int'"}
-import application/jsonl [[10,0,0], [11,0,0]]
-{"msg": "column <id> value expected to be 'int'"}
-import application/jsonl 
+connect E0 S0 http://localhost:3485/public/test?columns=id,a,b
+import text/csv 7,0,0
+disconnect S0
+# test: POST /schema/table (text/csv) column list (duplicate)
+connect E0 S0 http://localhost:3485/public/test?columns=id,a,a
+import text/csv 8,0,0
+{"msg": "column list must be ordered"}
+disconnect S0
+# test: POST /schema/table (text/csv) column list (unordered)
+connect E0 S0 http://localhost:3485/public/test?columns=id,b,a
+import text/csv 8,0,0
+{"msg": "column list must be ordered"}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test
-[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [8, 0, 0], [9, 0, 0]]
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) one column
+# test: POST /schema/table (text/csv) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import text/csv 
+import text/csv     
+disconnect S0
+# test: POST /schema/table (text/csv) (generated columns)
 connect E0 S0 http://localhost:3485/public/test2
-import application/jsonl [{"id":1}] [{"id":2}]
-import application/jsonl {"id":3}{"id":4}
-disconnect S0
-connect E0 S0 http://localhost:3485/public/test2?columns=obj
-import application/jsonl {"id":5}{"id":6}
+import text/csv 0,null
+import text/csv 1,null
+import text/csv 2,null
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test2
-[[{
-  "id": 1
-}], [{
-  "id": 2
-}], [{
-  "id": 3
-}], [{
-  "id": 4
-}], [{
-  "id": 5
-}], [{
-  "id": 6
-}]]
+[[0, 0], [1, 2], [2, 4]]
 disconnect Sx
-# test: POST /schema/table (application/json)
-connect E0 S0 http://localhost:3485/public/test
-import application/json [[10,0,0], [11,0,0]]
-import application/json 
-{"msg": "JSON array expected"}
-import application/json []
-{"msg": "JSON array expected"}
-import application/json {}
-{"msg": "JSON array expected"}
-disconnect S0
-connect E0 Sx http://localhost:3485/
-select * from test
-[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [8, 0, 0], [9, 0, 0], [10, 0, 0], [11, 0, 0]]
-disconnect Sx
-# test: POST /schema/table (application/json) one column
-connect E0 S0 http://localhost:3485/public/test2
-import application/json [{"id":7}, {"id":8}]
-disconnect S0
-connect E0 S0 http://localhost:3485/public/test2?columns=obj
-import application/json [{"id":9}{"id":10}]
-{"msg": "failed to parse JSON array"}
-import application/json [{"id":9}, {"id":10}]
-disconnect S0
-connect E0 Sx http://localhost:3485/
-select * from test2
-[[{
-  "id": 1
-}], [{
-  "id": 2
-}], [{
-  "id": 3
-}], [{
-  "id": 4
-}], [{
-  "id": 5
-}], [{
-  "id": 6
-}], [{
-  "id": 7
-}], [{
-  "id": 8
-}], [{
-  "id": 9
-}], [{
-  "id": 10
-}]]
-disconnect Sx
-# test: POST /schema/table (auto casting)
+# test: POST /schema/table (text/csv) (resolved columns)
 connect E0 S0 http://localhost:3485/public/test3
-import application/json [ [0, "1970-01-01 00:00:00.001000", "1 hour 5 minutes 6 seconds", [1,2,3], 42] ]
+import text/csv 0,0
+import text/csv 0,0
+import text/csv 0,0
+import text/csv 1,0
+import text/csv 1,0
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test3
-[[0, "1970-01-01 00:00:00.001+00", "1 hour 5 minutes 6 seconds", [1, 2, 3], 42]]
+[[0, 2], [1, 1]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl)
+connect E0 S0 http://localhost:3485/public/test
+import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
+import application/jsonl [12,
+{"msg": "column <a> value expected to be 'int'"}
+import application/jsonl [12,0,
+{"msg": "column <b> value expected to be 'int'"}
+import application/jsonl [12,0]
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl [12,]
+{"msg": "column <a> value expected to be 'int'"}
+import application/jsonl [12,null]
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl [12,null,]
+{"msg": "column <b> value expected to be 'int'"}
+import application/jsonl [12,null,'string']
+{"msg": "column <b> value expected to be 'int'"}
+import application/jsonl [[12,null,0]]
+{"msg": "column <id> value expected to be 'int'"}
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl) (column list)
+connect E0 S0 http://localhost:3485/public/test?columns=id
+import application/jsonl [13]
+disconnect S0
+connect E0 S0 http://localhost:3485/public/test?columns=id,a
+import application/jsonl [14,null]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import application/jsonl []
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test4
+[[0, 777]]
+disconnect Sx
+# test: POST /schema/table (application/json)
+connect E0 S0 http://localhost:3485/public/test
+import application/json [[15,0,0]]
+import application/json [[16,0,0]
+{"msg": "] expected"}
+import application/json [[16,0,0],
+{"msg": "[ expected"}
+import application/json [[16,0,0],]
+{"msg": "[ expected"}
+import application/json [[16,0,0], [16,0,7]]
+{"msg": "index 'primary': unique key constraint violation"}
+import application/json [[16,0,0], [17,0,7]] junk
+{"msg": "eof expected"}
+import application/json 
+import application/json []
+{"msg": "[ expected"}
+import application/json {}
+{"msg": "[ expected"}
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0]]
+disconnect Sx
+# test: POST /schema/table (application/json) (column list)
+connect E0 S0 http://localhost:3485/public/test?columns=id
+import application/json [[18,0]
+{"msg": "incorrect number of columns in the row"}
+import application/json [[18,
+{"msg": "incorrect number of columns in the row"}
+import application/json [[]
+{"msg": "column <id> value expected to be 'int'"}
+import application/json [[18], [19]]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null]]
+disconnect Sx
+# test: POST /schema/table (application/json) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import application/json [[], [], []]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test4
+[[0, 777], [1, 777], [2, 777], [3, 777]]
 disconnect Sx
 close E0

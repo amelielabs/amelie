@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -47,12 +48,21 @@ emit_delete_on_match_returning(Compiler* self, void* arg)
 {
 	AstDelete* delete = arg;
 
-	// expr
-	int rexpr = emit_expr(self, delete->target, delete->returning);
+	// push expr and set column type
+	for (auto as = delete->ret.list; as; as = as->next)
+	{
+		auto column = as->r->column;
+
+		// expr
+		int rexpr = emit_expr(self, delete->target, as->l);
+		int rt = rtype(self, rexpr);
+		column_set_type(column, rt, type_sizeof(rt));
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+	}
 
 	// add to the returning set
-	op2(self, CSET_ADD, delete->rset, rexpr);
-	runpin(self, rexpr);
+	op1(self, CSET_ADD, delete->rset);
 
 	op1(self, CDELETE, delete->target->id);
 }
@@ -64,7 +74,7 @@ emit_delete(Compiler* self, Ast* ast)
 	auto delete = ast_delete_of(ast);
 
 	// delete by cursor
-	if (! delete->returning)
+	if (! returning_has(&delete->ret))
 	{
 		scan(self, delete->target,
 		     NULL,
@@ -78,7 +88,9 @@ emit_delete(Compiler* self, Ast* ast)
 	// RETURNING expr
 
 	// create returning set
-	delete->rset = op1(self, CSET, rpin(self));
+	delete->rset =
+		op3(self, CSET, rpin(self, TYPE_SET),
+		    delete->ret.count, 0);
 
 	scan(self, delete->target,
 	     NULL,

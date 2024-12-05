@@ -17,7 +17,7 @@ show replicas
 
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
-select * from system.replicas()
+select system.replicas()
 
 # test: drop replica statement parsing
 drop replica

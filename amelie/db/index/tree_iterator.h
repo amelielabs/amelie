@@ -15,7 +15,7 @@ typedef struct TreeIterator TreeIterator;
 
 struct TreeIterator
 {
-	Ref*      current;
+	Row*      current;
 	TreePage* page;
 	int       page_pos;
 	bool      repositioned;
@@ -23,7 +23,7 @@ struct TreeIterator
 };
 
 static inline bool
-tree_iterator_open(TreeIterator* self, Tree* tree, Ref* key)
+tree_iterator_open(TreeIterator* self, Tree* tree, Row* key)
 {
 	self->current      = NULL;
 	self->page         = NULL;
@@ -43,7 +43,7 @@ tree_iterator_open(TreeIterator* self, Tree* tree, Ref* key)
 		self->page_pos = 0;
 		return false;
 	}
-	self->current = tree_at(tree, self->page, self->page_pos);
+	self->current = self->page->rows[self->page_pos];
 	return match;
 }
 
@@ -54,7 +54,7 @@ tree_iterator_open_at(TreeIterator* self, Tree* tree, TreePos* pos)
 	self->page     = pos->page;
 	self->page_pos = pos->page_pos;
 	self->tree     = tree;
-	self->current  = tree_at(tree, self->page, self->page_pos);
+	self->current  = self->page->rows[self->page_pos];
 }
 
 static inline bool
@@ -63,7 +63,7 @@ tree_iterator_has(TreeIterator* self)
 	return self->current != NULL;
 }
 
-static inline Ref*
+static inline Row*
 tree_iterator_at(TreeIterator* self)
 {
 	return self->current;
@@ -83,7 +83,7 @@ tree_iterator_next(TreeIterator* self)
 
 		// update current row pointer
 		if (self->page)
-			self->current = tree_at(self->tree, self->page, self->page_pos);
+			self->current = self->page->rows[self->page_pos];
 		else
 			self->current = NULL;
 		return;
@@ -93,7 +93,7 @@ tree_iterator_next(TreeIterator* self)
 	if (likely((self->page_pos + 1) < self->page->keys_count))
 	{
 		self->page_pos++;
-		self->current = tree_at(self->tree, self->page, self->page_pos);
+		self->current = self->page->rows[self->page_pos];
 		return;
 	}
 
@@ -106,11 +106,11 @@ tree_iterator_next(TreeIterator* self)
 		return;
 
 	self->page    = container_of(next, TreePage, node);
-	self->current = tree_at(self->tree, self->page, 0);
+	self->current = self->page->rows[0];
 }
 
-static inline void
-tree_iterator_replace(TreeIterator* self, Ref* key, Ref* prev)
+static inline Row*
+tree_iterator_replace(TreeIterator* self, Row* key)
 {
 	assert(self->current);
 	TreePos pos =
@@ -118,20 +118,21 @@ tree_iterator_replace(TreeIterator* self, Ref* key, Ref* prev)
 		.page     = self->page,
 		.page_pos = self->page_pos
 	};
-	tree_copy_from(self->tree, pos.page, pos.page_pos, prev);
-	tree_copy(self->tree, pos.page, pos.page_pos, key);
+	auto prev = pos.page->rows[pos.page_pos];
+	pos.page->rows[pos.page_pos] = key;
 	self->current = key;
+	return prev;
 }
 
-static inline void
-tree_iterator_delete(TreeIterator* self, Ref* prev)
+static inline Row*
+tree_iterator_delete(TreeIterator* self)
 {
 	TreePos pos =
 	{
 		.page     = self->page,
 		.page_pos = self->page_pos
 	};
-	tree_copy_from(self->tree, pos.page, pos.page_pos, prev);
+	auto prev = pos.page->rows[pos.page_pos];
 	tree_unset_by(self->tree, &pos);
 	self->page     = pos.page;
 	self->page_pos = pos.page_pos;
@@ -140,6 +141,7 @@ tree_iterator_delete(TreeIterator* self, Ref* prev)
 
 	// keeping current row still pointing to the deleted row
 	self->current  = prev;
+	return prev;
 }
 
 static inline void

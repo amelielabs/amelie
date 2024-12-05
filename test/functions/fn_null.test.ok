@@ -1,0 +1,48 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: coalesce()
+select coalesce()
+[null]
+select coalesce(1)
+[1]
+select coalesce(null)
+[null]
+select coalesce(null, 1)
+[1]
+select coalesce(1, null)
+[1]
+select coalesce(1, null, 2)
+[1]
+select null::coalesce
+[null]
+select 1::coalesce
+[1]
+select coalesce('1', null, '2')
+["1"]
+select coalesce(1, null, 2.5)
+{"msg": "public.coalesce(): arguments types mismatch"}
+select coalesce('1', null, 2.5)
+{"msg": "public.coalesce(): arguments types mismatch"}
+# test: nullif()
+select nullif()
+{"msg": "nullif(): expected 2 arguments, but got 0"}
+select nullif(1)
+{"msg": "nullif(): expected 2 arguments, but got 1"}
+select nullif(1, 2)
+[1]
+select nullif(1, null)
+[1]
+select nullif(null, 1)
+[null]
+select nullif(1, 1)
+[null]
+select 1::nullif(1)
+[null]
+select nullif(1, '1')
+{"msg": "public.nullif(): arguments types mismatch"}
+select nullif(1, '1')
+{"msg": "public.nullif(): arguments types mismatch"}
+select nullif(1, 1.5)
+{"msg": "public.nullif(): arguments types mismatch"}
+disconnect S0
+close E0

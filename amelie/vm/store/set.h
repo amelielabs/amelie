@@ -11,50 +11,85 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SetRow SetRow;
-typedef struct SetKey SetKey;
-typedef struct Set    Set;
+typedef struct SetMeta SetMeta;
+typedef struct Set     Set;
 
-struct SetRow
+struct SetMeta
 {
-	Value value;
-	Value keys[];
-};
-
-struct SetKey
-{
-	bool asc;
+	uint32_t row_size;
+	uint32_t hash;
 };
 
 struct Set
 {
 	Store   store;
-	Buf     list;
-	int     list_count;
-	SetKey* keys;
-	int     keys_count;
+	Buf     set;
+	Buf     set_index;
+	Buf     set_meta;
+	SetHash hash;
+	bool*   ordered;
+	int     count;
+	int     count_rows;
+	int     count_columns_row;
+	int     count_columns;
+	int     count_keys;
+	List    link;
 };
 
-static inline SetRow*
-set_at(Set* self, int pos)
+always_inline static inline Value*
+set_value(Set* self, int pos)
 {
-	return ((SetRow**)(self->list.start))[pos];
+	return &((Value*)(self->set.start))[pos];
 }
 
-Set* set_create(uint8_t*);
-void set_add(Set*, Value*, Value**);
-void set_add_from_stack(Set*, Value*, Stack*);
-void set_sort(Set*);
-
-hot static inline int
-set_compare(SetKey* keys, int keys_count, SetRow* a, SetRow* b)
+always_inline static inline Value*
+set_row(Set* self, int pos)
 {
-	for (int i = 0; i < keys_count; i++)
-	{
-		auto key = &keys[i];
-		int rc = value_compare(&a->keys[i], &b->keys[i]);
-		if (rc != 0)
-			return (key->asc) ? rc : -rc;
-	}
-	return 0;
+	return set_value(self, self->count_columns_row * pos);
 }
+
+always_inline static inline Value*
+set_row_ordered(Set* self, int pos)
+{
+	return set_row(self, ((uint32_t*)self->set_index.start)[pos]);
+}
+
+always_inline static inline Value*
+set_row_of(Set* self, int pos)
+{
+	if (self->ordered)
+		return set_row_ordered(self, pos);
+	return set_row(self, pos);
+}
+
+always_inline static inline Value*
+set_column(Set* self, int pos, int column)
+{
+	return set_row(self, pos) + column;
+}
+
+always_inline static inline Value*
+set_column_of(Set* self, int pos, int column)
+{
+	return set_row_of(self, pos) + column;
+}
+
+always_inline static inline Value*
+set_key(Set* self, int pos, int key)
+{
+	return set_row(self, pos) + self->count_columns + key;
+}
+
+always_inline static inline SetMeta*
+set_meta(Set* self, int pos)
+{
+	return &((SetMeta*)(self->set_meta.start))[pos];
+}
+
+Set*   set_create(void);
+void   set_prepare(Set*, int, int, bool*);
+void   set_reset(Set*);
+void   set_sort(Set*);
+void   set_add(Set*, Value*);
+Value* set_get(Set*, Value*, bool);
+Value* set_reserve(Set*, SetMeta**);

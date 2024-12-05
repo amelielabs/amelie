@@ -22,7 +22,7 @@ struct Expr
 static inline void
 expr_init(Expr* self)
 {
-	self->select = true;
+	self->select = false;
 	self->aggs   = NULL;
 }
 

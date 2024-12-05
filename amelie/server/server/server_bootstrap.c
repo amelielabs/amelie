@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_http.h>
@@ -105,7 +105,7 @@ server_bootstrap(void)
 
 	encode_array_end(&buf);
 
-	var_data_set_buf(&config()->listen, &buf);
+	var_json_set_buf(&config()->listen, &buf);
 }
 #endif
 
@@ -133,5 +133,5 @@ server_bootstrap(void)
 
 	encode_array_end(&buf);
 
-	var_data_set_buf(&config()->listen, &buf);
+	var_json_set_buf(&config()->listen, &buf);
 }

@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -77,17 +78,22 @@ fn_regexp_like(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
 		error("regexp_like(): failed to allocate match data");
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	pcre2_match_data_free(match_data);
@@ -103,11 +109,16 @@ fn_regexp_substr(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -115,7 +126,7 @@ fn_regexp_substr(Call* self)
 		error("regexp_substr(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	if (rc <= 0)
@@ -132,7 +143,7 @@ fn_regexp_substr(Call* self)
 	encode_string(buf, &first);
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -145,11 +156,16 @@ fn_regexp_match(Call* self)
 	// (string, pattern)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -157,7 +173,7 @@ fn_regexp_match(Call* self)
 		error("regexp_match(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string = &argv[0]->string;
+	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
 	                      0, 0, match_data, NULL);
 	if (rc <= 0)
@@ -177,7 +193,7 @@ fn_regexp_match(Call* self)
 		encode_string(buf, &ref);
 	}
 	encode_array_end(buf);
-	value_set_array_buf(self->result, buf);
+	value_set_json_buf(self->result, buf);
 }
 
 hot static void
@@ -189,12 +205,17 @@ fn_regexp_replace(Call* self)
 	// (string, pattern, string)
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
-	call_validate_arg(self, 2, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
+	call_validate_arg(self, 2, TYPE_STRING);
 
 	// first call, compile pattern
-	auto pattern = &argv[1]->string;
+	auto pattern = &argv[1].string;
 	pcre2_code* re = fn_regexp_init(self, pattern);
 
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
@@ -202,8 +223,8 @@ fn_regexp_replace(Call* self)
 		error("regexp_match(): failed to allocate match data");
 	guard(pcre2_match_data_free, match_data);
 
-	auto string  = &argv[0]->string;
-	auto replace = &argv[2]->string;
+	auto string  = &argv[0].string;
+	auto replace = &argv[2].string;
 
 	auto buf = buf_create();
 	encode_string32(buf, 0);
@@ -231,21 +252,21 @@ fn_regexp_replace(Call* self)
 	}
 
 	// update string size
-	int size = buf_size(buf) - data_size_string32();
+	int size = buf_size(buf) - json_size_string32();
 	uint8_t* pos_str = buf->start;
-	data_write_string32(&pos_str, size);
+	json_write_string32(&pos_str, size);
 
 	Str result;
 	pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
 FunctionDef fn_regexp_def[] =
 {
-	{ "public", "regexp_like",    fn_regexp_like,     true  },
-	{ "public", "regexp_substr",  fn_regexp_substr,   true  },
-	{ "public", "regexp_match",   fn_regexp_match,    true  },
-	{ "public", "regexp_replace", fn_regexp_replace,  true  },
-	{  NULL,     NULL,            NULL,               false }
+	{ "public", "regexp_like",    TYPE_BOOL,   fn_regexp_like,     FN_CONTEXT },
+	{ "public", "regexp_substr",  TYPE_STRING, fn_regexp_substr,   FN_CONTEXT },
+	{ "public", "regexp_match",   TYPE_JSON,   fn_regexp_match,    FN_CONTEXT },
+	{ "public", "regexp_replace", TYPE_STRING, fn_regexp_replace,  FN_CONTEXT },
+	{  NULL,     NULL,            TYPE_NULL,   NULL,               FN_NONE    }
 };

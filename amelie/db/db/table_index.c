@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -78,7 +78,7 @@ table_index_create(Table*       self,
 
 	// save index config copy to table config
 	index = index_config_copy(config, &self->config->columns);
-	keys_set(&index->keys, false, ref_size(&index->keys));
+	keys_set_primary(&index->keys, false);
 	table_config_add_index(self->config, index);
 
 	// save create index operation

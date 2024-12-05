@@ -17,29 +17,16 @@ typedef struct HashStore HashStore;
 
 struct HashStore
 {
-	Ref*     store;
+	Row**    rows;
 	uint64_t count;
 	uint64_t size;
 	Keys*    keys;
 };
 
-always_inline hot static inline Ref*
-hash_store_at(HashStore* self, int pos)
-{
-	auto ptr = (uint8_t*)self->store + pos * self->keys->key_size;
-	return (Ref*)ptr;
-}
-
-always_inline hot static inline void
-hash_store_copy(HashStore* self, Ref* dst, Ref* src)
-{
-	memcpy(dst, src, self->keys->key_size);
-}
-
 static inline void
 hash_store_init(HashStore* self)
 {
-	self->store = NULL;
+	self->rows  = NULL;
 	self->count = 0;
 	self->size  = 0;
 	self->keys  = NULL;
@@ -52,23 +39,23 @@ hash_store_free_rows(HashStore* self)
 		return;
 	for (uint64_t pos = 0; pos < self->size; pos++)
 	{
-		auto key = hash_store_at(self, pos);
-		if (!key->row || key->row == HT_DELETED)
+		auto row = self->rows[pos];
+		if (!row || row == HT_DELETED)
 			continue;
-		row_free(key->row);
+		row_free(row);
 	}
 }
 
 static inline void
 hash_store_free(HashStore* self)
 {
-	if (self->store)
+	if (self->rows)
 	{
 		if (self->keys->primary)
 			hash_store_free_rows(self);
-		am_free(self->store);
+		am_free(self->rows);
 	}
-	self->store = NULL;
+	self->rows  = NULL;
 	self->count = 0;
 	self->size  = 0;
 	self->keys  = NULL;
@@ -83,46 +70,34 @@ hash_store_is_full(HashStore* self)
 static inline void
 hash_store_create(HashStore* self, Keys* keys, size_t size)
 {
-	size_t allocated = keys->key_size * size;
-	self->keys  = keys;
-	self->size  = size;
-	self->store = am_malloc(allocated);
-	memset(self->store, 0, allocated);
+	size_t allocated = sizeof(Row*) * size;
+	self->keys = keys;
+	self->size = size;
+	self->rows = am_malloc(allocated);
+	memset(self->rows, 0, allocated);
 }
 
-hot static inline uint32_t
-hash_store_hash(HashStore* self, Ref* row)
+hot static inline Row*
+hash_store_set(HashStore* self, Row* key)
 {
-	uint32_t hash = 0;
-	list_foreach(&self->keys->list)
-	{
-		auto key = list_at(Key, link);
-		hash = key_hash(hash, ref_key(row, key->order));
-	}
-	return hash;
-}
-
-hot static inline bool
-hash_store_set(HashStore* self, Ref* key, Ref* prev)
-{
-	uint64_t start = hash_store_hash(self, key) % self->size;
+	uint64_t start = row_hash(key, self->keys) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = hash_store_at(self, pos);
-		if (!ref->row || ref->row == HT_DELETED)
+		auto ref = self->rows[pos];
+		if (!ref || ref == HT_DELETED)
 		{
-			hash_store_copy(self, ref, key);
+			self->rows[pos] = key;
 			self->count++;
-			return false;
+			return NULL;
 		}
+
 		if (! compare(self->keys, ref, key))
 		{
-			if (prev)
-				hash_store_copy(self, prev, ref);
-			hash_store_copy(self, ref, key);
-			return true;
+			self->rows[pos] = key;
+			return ref;
 		}
+
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
@@ -130,47 +105,47 @@ hash_store_set(HashStore* self, Ref* key, Ref* prev)
 	return false;
 }
 
-hot static inline bool
-hash_store_delete(HashStore* self, Ref* key, Ref* prev)
+hot static inline Row*
+hash_store_delete(HashStore* self, Row* key)
 {
-	uint64_t start = hash_store_hash(self, key) % self->size;
+	uint64_t start = row_hash(key, self->keys) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = hash_store_at(self, pos);
-		if (! ref->row)
+		auto ref = self->rows[pos];
+		if (! ref)
 			break;
-		if (ref->row != HT_DELETED)
+
+		if (ref != HT_DELETED)
 		{
 			if (! compare(self->keys, ref, key))
 			{
-				if (prev)
-					hash_store_copy(self, prev, ref);
-				ref->row = HT_DELETED;
+				self->rows[pos] = HT_DELETED;
 				self->count--;
-				return true;
+				return ref;
 			}
 		}
+
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
-	return false;
+	return NULL;
 }
 
-hot static inline Ref*
-hash_store_get(HashStore* self, Ref* key, uint64_t* at)
+hot static inline Row*
+hash_store_get(HashStore* self, Row* key, uint64_t* at)
 {
-	uint64_t start = hash_store_hash(self, key) % self->size;
+	uint64_t start = row_hash(key, self->keys) % self->size;
 	uint64_t pos   = start;
 	do
 	{
-		auto ref = hash_store_at(self, pos);
-		if (! ref->row)
+		auto ref = self->rows[pos];
+		if (! ref)
 		{
 			*at = pos;
 			return NULL;
 		}
-		if (ref->row == HT_DELETED)
+		if (ref == HT_DELETED)
 		{
 			*at = pos;
 		} else
@@ -181,6 +156,7 @@ hash_store_get(HashStore* self, Ref* key, uint64_t* at)
 				return ref;
 			}
 		}
+
 		pos = (pos + 1) % self->size;
 	} while (start != pos);
 
@@ -188,14 +164,14 @@ hash_store_get(HashStore* self, Ref* key, uint64_t* at)
 	return NULL;
 }
 
-hot static inline Ref*
+hot static inline Row*
 hash_store_next(HashStore* self, uint64_t* at)
 {
 	uint64_t pos = *at;
 	for (; pos < self->size; pos++)
 	{
-		auto ref = hash_store_at(self, pos);
-		if (!ref->row || ref->row == HT_DELETED)
+		auto ref = self->rows[pos];
+		if (!ref || ref == HT_DELETED)
 			continue;
 		// set to next
 		*at = pos;

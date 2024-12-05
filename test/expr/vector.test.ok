@@ -1,0 +1,460 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: vector create
+select [1,2,3]::vector
+[[1, 2, 3]]
+select [1,2,3]::vector::type
+["vector"]
+select [1,2,3]::vector::length
+[3]
+select ""::vector
+{"msg": "vector(string): operation type is not supported"}
+select [1.0]::vector
+[[1]]
+select [1.0, 1.1, 1.2]::vector
+[[1, 1.1, 1.2]]
+select []::vector
+[[]]
+select []::vector::length
+[0]
+# test: vector = vector
+select [1.0, 1.1]::vector = [1.0, 1.1]::vector
+[true]
+select [1.0, 1.1]::vector = [1.0, 1.0]::vector
+[false]
+select [1.0, 1.1]::vector = [1.0]::vector
+[false]
+select [1.0, 1.1]::vector = []::vector
+[false]
+explain select []::vector = []::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "json_array          1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.vector()",
+      "04": "json_array          2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.vector()",
+      "07": "equvv               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "content             0      -      -     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector = null
+select [1.0, 1.1]::vector = null
+[null]
+explain select [1.0, 1.1]::vector = null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.1",
+      "04": "push                1      0      0     ",
+      "05": "json_array          1      2      0     ",
+      "06": "push                1      0      0     ",
+      "07": "call                1      -      1     # public.vector()",
+      "08": "null                2      0      0     ",
+      "09": "nullop              3      1      2     ",
+      "10": "push                3      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "cte_set             0      0      0     ",
+      "13": "content             0      -      -     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector = unsupported
+select [1.0, 1.1]::vector = 1
+{"msg": "unsupported operation: <vector> = <int>"}
+# test: vector <> vector
+select [1.0, 1.1]::vector <> [1.0, 1.1]::vector
+[false]
+select [1.0, 1.1]::vector <> [1.0, 1.0]::vector
+[true]
+select [1.0, 1.1]::vector <> [1.0]::vector
+[true]
+select [1.0, 1.1]::vector <> []::vector
+[true]
+explain select []::vector <> []::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "json_array          1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "call                1      -      1     # public.vector()",
+      "04": "json_array          2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "call                2      -      1     # public.vector()",
+      "07": "equvv               3      1      2     ",
+      "08": "not                 1      3      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             0      0      0     ",
+      "12": "content             0      -      -     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector <> null
+select [1.0, 1.1]::vector <> null
+[null]
+explain select [1.0, 1.1]::vector <> null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.1",
+      "04": "push                1      0      0     ",
+      "05": "json_array          1      2      0     ",
+      "06": "push                1      0      0     ",
+      "07": "call                1      -      1     # public.vector()",
+      "08": "null                2      0      0     ",
+      "09": "nullop              3      1      2     ",
+      "10": "not                 1      3      0     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "cte_set             0      0      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector <> unsupported
+select [1.0, 1.1]::vector <> 1
+{"msg": "unsupported operation: <vector> = <int>"}
+# test: vector >= vector
+select [1.0, 1.1]::vector >= [1.0, 1.1]::vector
+[true]
+select [1.0, 1.2]::vector >= [1.0, 1.1]::vector
+[true]
+select [1.0, 1.1]::vector >= [1.0]::vector
+[true]
+explain select [1.0, 1.1]::vector >= [1.0]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.1",
+      "04": "push                1      0      0     ",
+      "05": "json_array          1      2      0     ",
+      "06": "push                1      0      0     ",
+      "07": "call                1      -      1     # public.vector()",
+      "08": "double              2      16     0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "json_array          2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "call                2      -      1     # public.vector()",
+      "13": "gtevv               3      1      2     ",
+      "14": "push                3      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "cte_set             0      0      0     ",
+      "17": "content             0      -      -     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector >= null
+select [1.0, 1.1]::vector >= null
+[null]
+# test: vector >= unsupported
+select [1.0, 1.1]::vector >= []
+{"msg": "unsupported operation: <vector> >= <json>"}
+# test: vector > vector
+select [1.0, 1.1]::vector > [1.0, 1.1]::vector
+[false]
+select [1.0, 1.2]::vector > [1.0, 1.1]::vector
+[true]
+select [1.0, 1.1]::vector > [1.0]::vector
+[true]
+explain select [1.0, 1.1]::vector > [1.0]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.1",
+      "04": "push                1      0      0     ",
+      "05": "json_array          1      2      0     ",
+      "06": "push                1      0      0     ",
+      "07": "call                1      -      1     # public.vector()",
+      "08": "double              2      16     0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "json_array          2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "call                2      -      1     # public.vector()",
+      "13": "gtvv                3      1      2     ",
+      "14": "push                3      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "cte_set             0      0      0     ",
+      "17": "content             0      -      -     ",
+      "18": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector > null
+select [1.0, 1.1]::vector > null
+[null]
+# test: vector > unsupported
+select [1.0, 1.1]::vector > []
+{"msg": "unsupported operation: <vector> > <json>"}
+# test: vector <= vector
+select [1.0, 1.1]::vector <= [1.0, 1.1]::vector
+[true]
+select [1.0, 1.1]::vector <= [1.0, 1.2]::vector
+[true]
+select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
+[false]
+explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.3",
+      "04": "push                1      0      0     ",
+      "05": "json_array          1      2      0     ",
+      "06": "push                1      0      0     ",
+      "07": "call                1      -      1     # public.vector()",
+      "08": "double              2      16     0     # 1",
+      "09": "push                2      0      0     ",
+      "10": "double              2      24     0     # 1.2",
+      "11": "push                2      0      0     ",
+      "12": "json_array          2      2      0     ",
+      "13": "push                2      0      0     ",
+      "14": "call                2      -      1     # public.vector()",
+      "15": "ltevv               3      1      2     ",
+      "16": "push                3      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "cte_set             0      0      0     ",
+      "19": "content             0      -      -     ",
+      "20": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector <= null
+select [1.0, 1.1]::vector <= null
+[null]
+# test: vector <= unsupported
+select [1.0, 1.1]::vector <= []
+{"msg": "unsupported operation: <vector> <= <json>"}
+# test: vector < vector
+select [1.0, 1.1]::vector < [1.0, 1.1]::vector
+[false]
+select [1.0, 1.1]::vector < [1.0, 1.2]::vector
+[true]
+select [1.0, 1.3]::vector < [1.0, 1.2]::vector
+[false]
+select [1.0, 1.1]::vector < [1.0]::vector
+[false]
+# test: vector < null
+select [1.0, 1.1]::vector < null
+[null]
+# test: vector < unsupported
+select [1.0, 1.1]::vector < []
+{"msg": "unsupported operation: <vector> < <json>"}
+# test: vector + vector
+select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector
+[[2, 3.1, 4]]
+select [1.0, 2.1, 3]::vector + [1, 1]::vector
+{"msg": "vector sizes mismatch"}
+explain select [1.0, 2.1, 3]::vector + [1, 1]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 2.1",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "call                1      -      1     # public.vector()",
+      "10": "int                 2      -      0     # 1",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 1",
+      "13": "push                2      0      0     ",
+      "14": "json_array          2      2      0     ",
+      "15": "push                2      0      0     ",
+      "16": "call                2      -      1     # public.vector()",
+      "17": "addvv               3      1      2     ",
+      "18": "push                3      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "cte_set             0      0      0     ",
+      "21": "content             0      -      -     ",
+      "22": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector + null
+select [1.0, 2.1, 3]::vector + null
+[null]
+# test: vector + unsupported
+select [1.0, 2.1, 3]::vector + []
+{"msg": "unsupported operation: <vector> + <json>"}
+# test: vector - vector
+select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector
+[[0, 1.1, 2]]
+select [1.0, 2.1, 3]::vector - [1, 1]::vector
+{"msg": "vector sizes mismatch"}
+explain select [1.0, 2.1, 3]::vector - [1, 1]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 2.1",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "call                1      -      1     # public.vector()",
+      "10": "int                 2      -      0     # 1",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 1",
+      "13": "push                2      0      0     ",
+      "14": "json_array          2      2      0     ",
+      "15": "push                2      0      0     ",
+      "16": "call                2      -      1     # public.vector()",
+      "17": "subvv               3      1      2     ",
+      "18": "push                3      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "cte_set             0      0      0     ",
+      "21": "content             0      -      -     ",
+      "22": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector - null
+select [1.0, 2.1, 3]::vector - null
+[null]
+explain select [1.0, 2.1, 3]::vector - null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 2.1",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "call                1      -      1     # public.vector()",
+      "10": "null                2      0      0     ",
+      "11": "nullop              3      1      2     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "cte_set             0      0      0     ",
+      "15": "content             0      -      -     ",
+      "16": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector - unsupported
+select [1.0, 2.1, 3]::vector - []
+{"msg": "unsupported operation: <vector> - <json>"}
+# test: vector * vector
+select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector
+[[1.5, 3.15, 4.5]]
+select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
+{"msg": "vector sizes mismatch"}
+explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 2.1",
+      "04": "push                1      0      0     ",
+      "05": "int                 1      -      0     # 3",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "call                1      -      1     # public.vector()",
+      "10": "double              2      16     0     # 1.5",
+      "11": "push                2      0      0     ",
+      "12": "double              2      24     0     # 1.5",
+      "13": "push                2      0      0     ",
+      "14": "json_array          2      2      0     ",
+      "15": "push                2      0      0     ",
+      "16": "call                2      -      1     # public.vector()",
+      "17": "mulvv               3      1      2     ",
+      "18": "push                3      0      0     ",
+      "19": "set_add             0      0      0     ",
+      "20": "cte_set             0      0      0     ",
+      "21": "content             0      -      -     ",
+      "22": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector * null
+select [1.0, 2.1, 3]::vector * null
+[null]
+# test: vector * unsupported
+select [1.0, 2.1, 3]::vector * null
+[null]
+# test: vector [] int
+select [1.0, 1.1, 1.2]::vector[0]
+[1]
+select [1.0, 1.1, 1.2]::vector[1]
+[1.1]
+select [1.0, 1.1, 1.2]::vector[2]
+[1.2]
+select [1.0, 1.1, 1.2]::vector[3]
+{"msg": "[]: vector index is out of bounds"}
+select [1.0, 1.1, 1.2]::vector[-10]
+{"msg": "[]: vector index is out of bounds"}
+explain select [1.0, 1.1, 1.2]::vector[-10]
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "double              1      8      0     # 1.1",
+      "04": "push                1      0      0     ",
+      "05": "double              1      16     0     # 1.2",
+      "06": "push                1      0      0     ",
+      "07": "json_array          1      3      0     ",
+      "08": "push                1      0      0     ",
+      "09": "call                1      -      1     # public.vector()",
+      "10": "int                 2      -      0     # 10",
+      "11": "negi                3      2      0     ",
+      "12": "idxvi               2      1      3     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "cte_set             0      0      0     ",
+      "16": "content             0      -      -     ",
+      "17": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: vector [] null
+select [1.0, 1.1, 1.2]::vector[null]
+[null]
+# test: vector [] unsupported
+select [1.0, 1.1, 1.2]::vector[[]]
+{"msg": "unsupported operation: <vector> [] <json>"}
+disconnect S0
+close E0

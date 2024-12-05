@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -36,12 +37,43 @@
 hot static void
 fn_length(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	if (arg->type == VALUE_SET)
-		value_set_int(self->result, ((Set*)arg->store)->list_count);
-	else
-		value_length(self->result, arg);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	int64_t rc = 0;
+	switch (arg->type) {
+	case TYPE_STRING:
+		rc = str_size(&arg->string);
+		break;
+	case TYPE_JSON:
+		if (json_is_array(arg->json))
+			rc = json_array_size(arg->json);
+		else
+		if (json_is_obj(arg->json))
+			rc = json_obj_size(arg->json);
+		else
+		if (json_is_string(arg->json))
+		{
+			uint8_t* pos = arg->json;
+			Str str;
+			json_read_string(&pos, &str);
+			rc = str_size(&str);
+		} else
+			error("length(): unsupport json argument type");
+		break;
+	case TYPE_VECTOR:
+		rc = arg->vector->size;
+		break;
+	default:
+		error("length(%s): operation type is not supported",
+		      type_of(arg->type));
+		break;
+	}
+	value_set_int(self->result, rc);
 }
 
 static void
@@ -51,44 +83,49 @@ fn_concat(Call* self)
 	int  size = 0;
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (argv[i]->type == VALUE_NULL)
+		if (argv[i].type == TYPE_NULL)
 			continue;
-		if (argv[i]->type != VALUE_STRING)
+		if (argv[i].type != TYPE_STRING)
 			error("concat(): string argument expected");
-		size += str_size(&argv[i]->string);
+		size += str_size(&argv[i].string);
 	}
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(size));
-	data_write_raw(pos, NULL, size);
+	auto pos = buf_reserve(buf, json_size_string(size));
+	json_write_raw(pos, NULL, size);
 	for (int i = 0; i < self->argc; i++)
 	{
-		if (argv[i]->type == VALUE_NULL)
+		if (argv[i].type == TYPE_NULL)
 			continue;
-		auto at_size = str_size(&argv[i]->string);
-		memcpy(*pos, str_of(&argv[i]->string), at_size);
+		auto at_size = str_size(&argv[i].string);
+		memcpy(*pos, str_of(&argv[i].string), at_size);
 		*pos += at_size;
 	}
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
 static void
 fn_lower(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
 	int  src_size = str_size(&arg->string);
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(src_size));
-	data_write_raw(pos, NULL, src_size);
+	auto pos = buf_reserve(buf, json_size_string(src_size));
+	json_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = tolower(src[i]);
@@ -96,23 +133,28 @@ fn_lower(Call* self)
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
 static void
 fn_upper(Call* self)
 {
-	auto arg = self->argv[0];
+	auto arg = &self->argv[0];
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
 	int  src_size = str_size(&arg->string);
 
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, data_size_string(src_size));
-	data_write_raw(pos, NULL, src_size);
+	auto pos = buf_reserve(buf, json_size_string(src_size));
+	json_write_raw(pos, NULL, src_size);
 	auto dst = *pos;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = toupper(src[i]);
@@ -120,7 +162,7 @@ fn_upper(Call* self)
 
 	Str string;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -131,11 +173,17 @@ fn_substr(Call* self)
 	if (self->argc < 2 || self->argc > 3)
 		error("substr(): unexpected number of arguments");
 
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+
 	// (string, pos)
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_INT);
-	auto src = &argv[0]->string;
-	auto pos = argv[1]->integer;
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_INT);
+	auto src = &argv[0].string;
+	auto pos = argv[1].integer;
 
 	// position starts from 1
 	if (pos == 0)
@@ -149,8 +197,8 @@ fn_substr(Call* self)
 	int count = str_size(src) - pos;
 	if (self->argc == 3)
 	{
-		call_validate_arg(self, 2, VALUE_INT);
-		count = argv[2]->integer;
+		call_validate_arg(self, 2, TYPE_INT);
+		count = argv[2].integer;
 		if ((pos + count) > str_size(src))
 			error("substr(): position is out of bounds");
 	}
@@ -162,7 +210,7 @@ fn_substr(Call* self)
 
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -172,11 +220,16 @@ fn_strpos(Call* self)
 	// (string, substring)
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
-	auto src = &argv[0]->string;
-	auto substr = &argv[1]->string;
+	auto src = &argv[0].string;
+	auto substr = &argv[1].string;
 	if (str_size(substr) == 0)
 	{
 		value_set_int(self->result, 0);
@@ -209,13 +262,18 @@ fn_replace(Call* self)
 	// (string, from, to)
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
-	call_validate_arg(self, 2, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
+	call_validate_arg(self, 2, TYPE_STRING);
 
-	auto src  = &argv[0]->string;
-	auto from = &argv[1]->string;
-	auto to   = &argv[2]->string;
+	auto src  = &argv[0].string;
+	auto from = &argv[1].string;
+	auto to   = &argv[2].string;
 	if (str_size(from) == 0)
 	{
 		error("replace(): invalid from argument");
@@ -251,13 +309,13 @@ fn_replace(Call* self)
 	}
 
 	// update string size
-	int size = buf_size(buf) - data_size_string32();
+	int size = buf_size(buf) - json_size_string32();
 	uint8_t* pos_str = buf->start;
-	data_write_string32(&pos_str, size);
+	json_write_string32(&pos_str, size);
 
 	Str string;
 	pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -315,21 +373,26 @@ trim(Call* self, bool left, bool right)
 	auto argv = self->argv;
 	if (self->argc < 1 || self->argc > 2)
 		error("trim(): unexpected number of arguments");
-	call_validate_arg(self, 0, VALUE_STRING);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	// (string [, filter])
 	char* filter = " \t\v\n\f";
 	char* filter_end;
 	if (self->argc == 2)
 	{
-		call_validate_arg(self, 1, VALUE_STRING);
-		filter = str_of(&argv[1]->string);
-		filter_end = filter + str_size(&argv[1]->string);
+		call_validate_arg(self, 1, TYPE_STRING);
+		filter = str_of(&argv[1].string);
+		filter_end = filter + str_size(&argv[1].string);
 	} else {
 		filter_end = filter + strlen(filter);
 	}
 
-	auto src = &argv[0]->string;
+	auto src = &argv[0].string;
 	Str string;
 	str_set_str(&string, src);
 	if (left)
@@ -341,7 +404,7 @@ trim(Call* self, bool left, bool right)
 	encode_string(buf, &string);
 	Str result;
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &result);
+	json_read_string(&pos_str, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -368,24 +431,29 @@ fn_like(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
-	value_like(self->result, argv[0], argv[1]);
+	if (unlikely(argv[0].type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
+	value_like(self->result, &argv[0], &argv[1]);
 }
 
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length",  fn_length,  false },
-	{ "public", "size",    fn_length,  false },
-	{ "public", "concat",  fn_concat,  false },
-	{ "public", "lower",   fn_lower,   false },
-	{ "public", "upper",   fn_upper,   false },
-	{ "public", "substr",  fn_substr,  false },
-	{ "public", "strpos",  fn_strpos,  false },
-	{ "public", "replace", fn_replace, false },
-	{ "public", "ltrim",   fn_ltrim,   false },
-	{ "public", "rtrim",   fn_rtrim,   false },
-	{ "public", "trim",    fn_trim,    false },
-	{ "public", "like",    fn_like,    false },
-	{  NULL,     NULL,     NULL,       false }
+	{ "public", "length",  TYPE_INT,    fn_length,  FN_NONE },
+	{ "public", "size",    TYPE_INT,    fn_length,  FN_NONE },
+	{ "public", "concat",  TYPE_STRING, fn_concat,  FN_NONE },
+	{ "public", "lower",   TYPE_STRING, fn_lower,   FN_NONE },
+	{ "public", "upper",   TYPE_STRING, fn_upper,   FN_NONE },
+	{ "public", "substr",  TYPE_STRING, fn_substr,  FN_NONE },
+	{ "public", "strpos",  TYPE_INT,    fn_strpos,  FN_NONE },
+	{ "public", "replace", TYPE_STRING, fn_replace, FN_NONE },
+	{ "public", "ltrim",   TYPE_STRING, fn_ltrim,   FN_NONE },
+	{ "public", "rtrim",   TYPE_STRING, fn_rtrim,   FN_NONE },
+	{ "public", "trim",    TYPE_STRING, fn_trim,    FN_NONE },
+	{ "public", "like",    TYPE_BOOL,   fn_like,    FN_NONE },
+	{  NULL,     NULL,     TYPE_NULL,   NULL,       FN_NONE }
 };

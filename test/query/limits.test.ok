@@ -3,14 +3,14 @@ connect E0 S0 localhost:3485
 # test: limit_write
 create table test (id int primary key)
 set limit_write to 1
-insert into test 123
+insert into test values (123)
 {"msg": "transaction log limit reached"}
 set limit_write to 10000
 drop table test
 # test: limit_send
 set limit_send to 0
 select system.config()
-{"msg": "http reply limit reached"}
+{"msg": "reply limit reached"}
 set limit_send to 1000000
 select system.config()
 [{
@@ -19,6 +19,7 @@ select system.config()
   "directory": "_output/E0",
   "timezone": "UTC",
   "timezone_default": "UTC",
+  "format": "json-pretty",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

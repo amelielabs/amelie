@@ -62,10 +62,10 @@ show test_string
 set test_string to "world"
 show test_string
 
-# test: set data
-show test_data
-set test_data to 1234
-show test_data
+# test: set json
+show test_json
+set test_json to 1234
+show test_json
 
 disconnect S0
 close E0

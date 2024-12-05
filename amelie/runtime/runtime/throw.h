@@ -35,9 +35,6 @@
 	error_as(ERROR, "%s(): %s (errno: %d)", source_function, \
 	         strerror(errno), errno)
 
-#define error_data() \
-	error_as(ERROR, "data read error")
-
 // cancel
 #define cancellation_point() ({ \
 	if (unlikely(am_self()->cancel)) \

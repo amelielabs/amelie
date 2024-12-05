@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -25,139 +25,242 @@
 #include <amelie_value.h>
 #include <amelie_store.h>
 
-static inline void
-set_free_row(Set* self, SetRow* row)
-{
-	value_free(&row->value);
-	int i = 0;
-	for (; i < self->keys_count ; i++)
-		value_free(&row->keys[i]);
-	am_free(row);
-}
-
 static void
 set_free(Store* store)
 {
 	auto self = (Set*)store;
-	for (int i = 0; i < self->list_count ; i++)
-		set_free_row(self, set_at(self, i));
-	buf_free(&self->list);
-	if (self->keys)
-		am_free(self->keys);
+	for (auto i = 0; i < self->count; i++)
+		value_free(set_value(self, i));
+	buf_free(&self->set);
+	buf_free(&self->set_index);
+	buf_free(&self->set_meta);
+	set_hash_free(&self->hash);
 	am_free(self);
 }
 
-static void
-set_encode(Store* store, Buf* buf)
-{
-	auto self = (Set*)store;
-	encode_array(buf);
-	int i = 0;
-	for (; i < self->list_count ; i++)
-		value_write(&set_at(self, i)->value, buf);
-	encode_array_end(buf);
-}
-
-static void
-set_decode(Store* store, Buf* buf, Timezone* timezone)
-{
-	auto self = (Set*)store;
-	int i = 0;
-	for (; i < self->list_count ; i++)
-	{
-		if (i > 0)
-			body_add_comma(buf);
-		body_add(buf, &set_at(self, i)->value, timezone, true, true);
-	}
-}
-
-hot static bool
-set_in(Store* store, Value* value)
-{
-	auto self = (Set*)store;
-	int i = 0;
-	for (; i < self->list_count ; i++)
-	{
-		auto at = set_at(self, i);
-		if (value_is_equal(&at->value, value))
-			return true;
-	}
-	return false;
-}
-
 Set*
-set_create(uint8_t* data)
+set_create(void)
 {
 	Set* self = am_malloc(sizeof(Set));
-	self->store.free   = set_free;
-	self->store.encode = set_encode;
-	self->store.decode = set_decode;
-	self->store.in     = set_in;
-	self->list_count   = 0;
-	self->keys         = NULL;
-	self->keys_count   = 0;
-	buf_init(&self->list);
-
-	if (data)
-	{
-		// [asc/desc, ...]
-		self->keys_count = array_size(data);
-		data_read_array(&data);
-		if (self->keys_count > 0)
-		{
-			self->keys = am_malloc(sizeof(SetKey) * self->keys_count);
-			for (int i = 0; i < self->keys_count; i++)
-				data_read_bool(&data, &self->keys[i].asc);
-		}
-	}
-
+	store_init(&self->store);
+	self->store.free        = set_free;
+	self->ordered           = NULL;
+	self->count             = 0;
+	self->count_rows        = 0;
+	self->count_columns_row = 0;
+	self->count_columns     = 0;
+	self->count_keys        = 0;
+	buf_init(&self->set);
+	buf_init(&self->set_index);
+	buf_init(&self->set_meta);
+	set_hash_init(&self->hash);
+	list_init(&self->link);
 	return self;
 }
 
-hot void
-set_add(Set* self, Value* value, Value** keys)
+void
+set_prepare(Set*  self, int count_columns, int count_keys,
+            bool* ordered)
 {
-	buf_reserve(&self->list, sizeof(SetRow**));
-	int size = sizeof(SetRow) + sizeof(Value) * self->keys_count;
-
-	SetRow* row = am_malloc(size);
-	memset(row, 0, size);
-	buf_write(&self->list, &row, sizeof(SetRow**));
-	self->list_count++;
-
-	value_copy(&row->value, value);
-	for (int i = 0; i < self->keys_count; i++)
-		value_copy(&row->keys[i], keys[i]);
+	self->ordered           = ordered;
+	self->count             = 0;
+	self->count_rows        = 0;
+	self->count_columns_row = count_columns + count_keys;
+	self->count_columns     = count_columns;
+	self->count_keys        = count_keys;
 }
 
-hot void
-set_add_from_stack(Set* self, Value* value, Stack* stack)
+void
+set_reset(Set* self)
 {
-	if (self->keys == 0)
-	{
-		set_add(self, value, NULL);
-		return;
-	}
-	Value* keys[self->keys_count];
-	for (int i = 0; i < self->keys_count; i++)
-	{
-		auto value = stack_at(stack, self->keys_count - i);
-		keys[i] = value;
-	}
-	set_add(self, value, keys);
+	for (auto i = 0; i < self->count; i++)
+		value_free(set_value(self, i));
+	self->ordered           = NULL;
+	self->count             = 0;
+	self->count_rows        = 0;
+	self->count_columns_row = 0;
+	self->count_columns     = 0;
+	self->count_keys        = 0;
+	buf_reset(&self->set);
+	buf_reset(&self->set_index);
+	buf_reset(&self->set_meta);
+	set_hash_reset(&self->hash);
 }
 
 hot static int
 set_cmp(const void* p1, const void* p2, void* arg)
 {
 	Set* self = arg;
-	return set_compare(self->keys, self->keys_count,
-	                   *(SetRow**)p1,
-	                   *(SetRow**)p2);
+	auto row_a = set_row(self, *(uint32_t*)p1);
+	auto row_b = set_row(self, *(uint32_t*)p2);
+	return set_compare(arg, row_a, row_b);
 }
 
-void
+hot void
 set_sort(Set* self)
 {
-	qsort_r(self->list.start, self->list_count, sizeof(SetRow**), set_cmp, self);
+	qsort_r(self->set_index.start, self->count_rows, sizeof(uint32_t),
+	        set_cmp, self);
+}
+
+hot static inline int
+set_add_as(Set* self, bool keys_only, Value* values)
+{
+	// save row position, if keys are in use
+	uint32_t row = self->count_rows;
+	if (self->ordered)
+		buf_write(&self->set_index, &row, sizeof(row));
+
+	// reserve and write row values (columns and keys)
+	buf_claim(&self->set, sizeof(Value) * self->count_columns_row);
+
+	// copy all values or keys only
+	if (keys_only)
+	{
+		for (auto i = 0; i < self->count_columns; i++)
+		{
+			auto value = set_column(self, row, i);
+			value_init(value);
+			value_set_null(value);
+		}
+		for (auto i = 0; i < self->count_keys; i++)
+		{
+			auto value = set_key(self, row, i);
+			value_init(value);
+			value_copy(value, &values[i]);
+		}
+	} else
+	{
+		for (auto i = 0; i < self->count_columns_row; i++)
+		{
+			auto value = set_column(self, row, i);
+			value_init(value);
+			value_copy(value, &values[i]);
+		}
+	}
+
+	self->count += self->count_columns_row;
+	self->count_rows++;
+	return row;
+}
+
+hot void
+set_add(Set* self, Value* values)
+{
+	set_add_as(self, false, values);
+}
+
+hot static inline uint32_t
+set_hash(Set* self, Value* keys)
+{
+	uint32_t hash = 0;
+	for (int i = 0; i < self->count_keys; i++)
+	{
+		auto  value = &keys[i];
+		int   data_size = 0;
+		void* data = NULL;
+		switch (value->type) {
+		case TYPE_INT:
+		case TYPE_BOOL:
+		case TYPE_TIMESTAMP:
+			data = &value->integer;
+			data_size = sizeof(value->integer);
+			break;
+		case TYPE_DOUBLE:
+			data = &value->dbl;
+			data_size = sizeof(value->dbl);
+			break;
+		case TYPE_STRING:
+			data = str_of(&value->string);
+			data_size = str_size(&value->string);
+			break;
+		case TYPE_JSON:
+			data = value->json;
+			data_size = value->json_size;
+			break;
+		case TYPE_NULL:
+			break;
+		case TYPE_SET:
+		default:
+			error("GROUP BY: unsupported key type");
+			break;
+		}
+		hash ^= hash_fnv(data, data_size);
+	}
+	return hash;
+}
+
+hot static inline SetHashRow*
+set_match(Set* self, uint32_t hash_value, Value* keys)
+{
+	// calculate hash value
+	auto hash = &self->hash;
+	SetHashRow* ref;
+	int pos = hash_value % hash->hash_size;
+	for (;;)
+	{
+		ref = &hash->hash[pos];
+		if (ref->row == UINT32_MAX)
+			break;
+		if (ref->hash == hash_value)
+		{
+			auto keys_src = set_key(self, ref->row, 0);
+			if (! set_compare_keys(self, keys_src, keys))
+				break;
+		}
+		pos = (pos + 1) % hash->hash_size;
+	}
+	return ref;
+}
+
+hot Value*
+set_get(Set* self, Value* keys, bool add_if_not_exists)
+{
+	if (unlikely(! self->hash.hash))
+		set_hash_create(&self->hash, 256);
+
+	if (unlikely(self->count_rows >= (self->hash.hash_size / 2)))
+		set_hash_resize(&self->hash);
+
+	// calculate hash value for the keys
+	auto hash = set_hash(self, keys);
+
+	// find row in the hashtable
+	auto ref = set_match(self, hash, keys);
+
+	// add new row and copy its keys
+	if (ref->row == UINT32_MAX)
+	{
+		if (! add_if_not_exists)
+			return NULL;
+		ref->hash = hash;
+		ref->row  = set_add_as(self, true, keys);
+	}
+	return set_row(self, ref->row);
+}
+
+Value*
+set_reserve(Set* self, SetMeta** meta)
+{
+	// save row position, if keys are in use
+	uint32_t row = self->count_rows;
+	if (self->ordered)
+		buf_write(&self->set_index, &row, sizeof(row));
+
+	// reserve row meta
+	if (meta)
+	{
+		*meta = buf_claim(&self->set_meta, sizeof(SetMeta));
+		(*meta)->row_size = 0;
+		(*meta)->hash = 0;
+	}
+
+	// reserve row values
+	auto values_size = sizeof(Value) * self->count_columns_row;
+	auto values = (Value*)buf_claim(&self->set, values_size);
+	memset(values, 0, values_size);
+
+	self->count += self->count_columns_row;
+	self->count_rows++;
+	return values;
 }

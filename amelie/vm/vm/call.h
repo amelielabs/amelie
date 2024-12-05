@@ -23,7 +23,7 @@ typedef enum
 struct Call
 {
 	int       argc;
-	Value**   argv;
+	Value*    argv;
 	Value*    result;
 	Vm*       vm;
 	CallType  type;
@@ -40,12 +40,12 @@ call_validate(Call* self, int argc)
 }
 
 static inline void
-call_validate_arg(Call* self, int order, ValueType type)
+call_validate_arg(Call* self, int order, Type type)
 {
-	if (unlikely(self->argv[order]->type != type))
+	if (unlikely(self->argv[order].type != type))
 		error("%.*s(): expected %s for argument %d, but got %s", str_size(&self->function->name),
 		      str_of(&self->function->name),
-		      value_type_to_string(type),
+		      type_of(type),
 		      order,
-		      value_type_to_string(self->argv[order]->type));
+		      type_of(self->argv[order].type));
 }

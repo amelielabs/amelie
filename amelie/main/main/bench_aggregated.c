@@ -20,11 +20,11 @@ bench_aggregated_create(Bench* self, Client* client)
 	str_set_cstr(&str,
 	             "create aggregated table __bench.test ("
 	             "    id int primary key random (100000),"
-	             "    a agg(count) as ( a::agg_count(1) ) aggregated,"
-	             "    b agg(count) as ( b::agg_count(1) ) aggregated,"
-	             "    c agg(count) as ( c::agg_count(1) ) aggregated,"
-	             "    d agg(count) as ( d::agg_count(1) ) aggregated,"
-	             "    e agg(count) as ( e::agg_count(1) ) aggregated"
+	             "    a int as ( a + 1 ) aggregated default 0,"
+	             "    b int as ( b + 1 ) aggregated default 0,"
+	             "    c int as ( c + 1 ) aggregated default 0,"
+	             "    d int as ( d + 1 ) aggregated default 0,"
+	             "    e int as ( e + 1 ) aggregated default 0"
 	             ") with (type = 'hash')");
 	client_execute(client, &str);
 }

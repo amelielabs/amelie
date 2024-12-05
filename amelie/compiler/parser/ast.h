@@ -17,7 +17,7 @@ struct Ast
 {
 	int id;
 	union {
-		uint64_t integer;
+		int64_t  integer;
 		double   real;
 		Interval interval;
 		Column*  column;

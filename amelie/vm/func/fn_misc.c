@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_func.h>
@@ -38,10 +39,20 @@
 static void
 fn_error(Call* self)
 {
-	auto arg = self->argv[0];
+	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
-	error("%.*s", str_size(&arg->string), str_of(&arg->string));
+	call_validate_arg(self, 0, TYPE_STRING);
+	error("%.*s", str_size(&argv[0].string), str_of(&argv[0].string));
+}
+
+static void
+fn_sleep(Call* self)
+{
+	auto argv = self->argv;
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_INT);
+	coroutine_sleep(argv[0].integer);
+	value_set_null(self->result);
 }
 
 static void
@@ -71,7 +82,7 @@ fn_random_uuid(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -96,12 +107,12 @@ create_digest(const EVP_MD* md, Str* input, char* output)
 static void
 fn_md5(Call* self)
 {
-	auto arg = self->argv[0];
+	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	char digest[32];
-	create_digest(EVP_md5(), &arg->string, digest);
+	create_digest(EVP_md5(), &argv[0].string, digest);
 
 	Str string;
 	str_set(&string, digest, sizeof(digest));
@@ -110,19 +121,19 @@ fn_md5(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
 static void
 fn_sha1(Call* self)
 {
-	auto arg = self->argv[0];
+	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 
 	char digest[40];
-	create_digest(EVP_sha1(), &arg->string, digest);
+	create_digest(EVP_sha1(), &argv[0].string, digest);
 
 	Str string;
 	str_set(&string, digest, sizeof(digest));
@@ -131,7 +142,7 @@ fn_sha1(Call* self)
 	encode_string(buf, &string);
 	str_init(&string);
 	uint8_t* pos_str = buf->start;
-	data_read_string(&pos_str, &string);
+	json_read_string(&pos_str, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -140,21 +151,21 @@ fn_encode(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
-	if (str_is_cstr(&argv[1]->string, "base64"))
+	if (str_is_cstr(&argv[1].string, "base64"))
 	{
 		auto buf = buf_create();
-		base64_encode(buf, &argv[0]->string);
+		base64_encode(buf, &argv[0].string);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else
-	if (str_is_cstr(&argv[1]->string, "base64url"))
+	if (str_is_cstr(&argv[1].string, "base64url"))
 	{
 		auto buf = buf_create();
-		base64url_encode(buf, &argv[0]->string);
+		base64url_encode(buf, &argv[0].string);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
@@ -169,21 +180,21 @@ fn_decode(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 1, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 1, TYPE_STRING);
 
-	if (str_is_cstr(&argv[1]->string, "base64"))
+	if (str_is_cstr(&argv[1].string, "base64"))
 	{
 		auto buf = buf_create();
-		base64_decode(buf, &argv[0]->string);
+		base64_decode(buf, &argv[0].string);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else
-	if (str_is_cstr(&argv[1]->string, "base64url"))
+	if (str_is_cstr(&argv[1].string, "base64url"))
 	{
 		auto buf = buf_create();
-		base64url_decode(buf, &argv[0]->string);
+		base64url_decode(buf, &argv[0].string);
 		Str string;
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
@@ -197,11 +208,11 @@ fn_serial(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
-	call_validate_arg(self, 0, VALUE_STRING);
-	call_validate_arg(self, 0, VALUE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
+	call_validate_arg(self, 0, TYPE_STRING);
 	auto table = table_mgr_find(&self->vm->db->table_mgr,
-	                            &argv[0]->string,
-	                            &argv[1]->string, true);
+	                            &argv[0].string,
+	                            &argv[1].string, true);
 	value_set_int(self->result, serial_get(&table->serial));
 }
 
@@ -210,40 +221,45 @@ fn_jwt(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 3);
-	call_validate_arg(self, 2, VALUE_STRING);
+	call_validate_arg(self, 2, TYPE_STRING);
 
 	// header
 	Str  header_str;
 	Buf* header = buf_create();
 	guard_buf(header);
-	if (argv[0]->type == VALUE_OBJ)
+	if (argv[0].type == TYPE_JSON)
 	{
-		auto pos = argv[0]->data;
+		// obj
+		auto pos = argv[0].json;
+		if (! json_is_obj(pos))
+			error("jwt(): string or JSON object expected");
 		json_export(header, self->vm->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
-	if (argv[0]->type == VALUE_STRING)
+	if (argv[0].type == TYPE_STRING)
 	{
-		header_str = argv[0]->string;
+		header_str = argv[0].string;
 	} else {
-		error("jwt(): string or object expected");
+		error("jwt(): string or JSON object expected");
 	}
 
 	// payload
 	Str  payload_str;
 	Buf* payload = buf_create();
 	guard_buf(payload);
-	if (argv[1]->type == VALUE_OBJ)
+	if (argv[1].type == TYPE_JSON)
 	{
-		auto pos = argv[1]->data;
+		auto pos = argv[1].json;
+		if (! json_is_obj(pos))
+			error("jwt(): string or JSON object expected");
 		json_export(payload, self->vm->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
-	if (argv[1]->type == VALUE_STRING)
+	if (argv[1].type == TYPE_STRING)
 	{
-		payload_str = argv[1]->string;
+		payload_str = argv[1].string;
 	} else {
-		error("jwt(): string or object expected");
+		error("jwt(): string or JSON object expected");
 	}
 
 	// create jwt using supplied data
@@ -251,7 +267,7 @@ fn_jwt(Call* self)
 	jwt_encode_init(&jwt);
 	guard(jwt_encode_free, &jwt);
 	auto buf = jwt_encode(&jwt, &header_str, &payload_str,
-	                      &argv[2]->string);
+	                      &argv[2].string);
 	Str string;
 	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
@@ -259,14 +275,15 @@ fn_jwt(Call* self)
 
 FunctionDef fn_misc_def[] =
 {
-	{ "public", "error",        fn_error,        false },
-	{ "public", "random",       fn_random,       false },
-	{ "public", "random_uuid",  fn_random_uuid,  false },
-	{ "public", "md5",          fn_md5,          false },
-	{ "public", "sha1",         fn_sha1,         false },
-	{ "public", "encode",       fn_encode,       false },
-	{ "public", "decode",       fn_decode,       false },
-	{ "public", "serial",       fn_serial,       false },
-	{ "public", "jwt",          fn_jwt,          false },
-	{  NULL,     NULL,          NULL,            false }
+	{ "public", "error",        TYPE_NULL,   fn_error,        FN_NONE },
+	{ "public", "sleep",        TYPE_NULL,   fn_sleep,        FN_NONE },
+	{ "public", "random",       TYPE_INT,    fn_random,       FN_NONE },
+	{ "public", "random_uuid",  TYPE_STRING, fn_random_uuid,  FN_NONE },
+	{ "public", "md5",          TYPE_STRING, fn_md5,          FN_NONE },
+	{ "public", "sha1",         TYPE_STRING, fn_sha1,         FN_NONE },
+	{ "public", "encode",       TYPE_STRING, fn_encode,       FN_NONE },
+	{ "public", "decode",       TYPE_STRING, fn_decode,       FN_NONE },
+	{ "public", "serial",       TYPE_INT,    fn_serial,       FN_NONE },
+	{ "public", "jwt",          TYPE_STRING, fn_jwt,          FN_NONE },
+	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
 };

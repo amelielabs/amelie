@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -36,35 +37,14 @@
 static inline void
 parse_select_group_by(Stmt* self, AstSelect* select)
 {
+	// GROUP BY expr, ...
+	Expr ctx;
+	expr_init(&ctx);
 	auto list = &select->expr_group_by;
 	for (;;)
 	{
-		auto expr = parse_expr(self, NULL);
-
-		// [AS name]
-		// [name]
-		Ast* label = NULL;
-		if (stmt_if(self, KAS))
-		{
-			label = stmt_if(self, KNAME);
-			if (unlikely(! label))
-				error("AS <label> expected");
-		} else {
-			label = stmt_if(self, KNAME);
-		}
-
-		if (! label)
-		{
-			if (expr->id == KNAME ||
-			    expr->id == KNAME_COMPOUND)
-			{
-				label = expr;
-			} else {
-				// label is required for expressions
-			}
-		}
-
-		auto group = ast_group_allocate(list->count, expr, label);
+		auto expr = parse_expr(self, &ctx);
+		auto group = ast_group_allocate(list->count, expr);
 		ast_list_add(list, &group->ast);
 
 		// ,
@@ -78,10 +58,10 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 static inline void
 parse_select_order_by(Stmt* self, AstSelect* select)
 {
+	// ORDER BY expr, ...
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.aggs = &select->expr_aggs;
-
+	auto list = &select->expr_order_by;
 	for (;;)
 	{
 		// expr
@@ -95,8 +75,8 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 		if (stmt_if(self, KDESC))
 			asc = false;
 
-		auto order = ast_order_allocate(expr, asc);
-		ast_list_add(&select->expr_order_by, &order->ast);
+		auto order = ast_order_allocate(list->count, expr, asc);
+		ast_list_add(list, &order->ast);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -109,9 +89,7 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 static inline void
 parse_select_distinct(Stmt* self, AstSelect* select)
 {
-	select->distinct            = true;
-	select->distinct_expr       = NULL;
-	select->distinct_expr_count = 0;
+	select->distinct = true;
 
 	// [ON]
 	if (! stmt_if(self, KON))
@@ -121,25 +99,18 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	if (! stmt_if(self, '('))
 		error("DISTINCT <(> expected");
 
+	select->distinct_on = true;
+
 	// (expr, ...)
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.aggs = &select->expr_aggs;
-
-	Ast* expr_prev = NULL;
 	for (;;)
 	{
 		// expr
 		auto expr = parse_expr(self, &ctx);
-		if (select->distinct_expr == NULL)
-			select->distinct_expr = expr;
-		else
-			expr_prev->next = expr;
-		expr_prev = expr;
-		select->distinct_expr_count++;
 
 		// set distinct expr as order by key
-		auto order = ast_order_allocate(expr, true);
+		auto order = ast_order_allocate(select->expr_order_by.count, expr, true);
 		ast_list_add(&select->expr_order_by, &order->ast);
 
 		// ,
@@ -153,39 +124,10 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	}
 }
 
-static inline void
-parse_select_label(Stmt* self, AstSelect* select, Ast* expr)
-{
-	// [AS name]
-	// [name]
-	Ast* name = NULL;
-	if (stmt_if(self, KAS))
-	{
-		name = stmt_if(self, KNAME);
-		if (unlikely(! name))
-			error("AS <label> expected");
-	} else {
-		name = stmt_if(self, KNAME);
-	}
-	if (! name)
-		return;
-
-	// ensure label does not exists
-	auto label = ast_label_match(&select->expr_labels, &name->string);
-	if (unlikely(label))
-		error("label <%.*s> redefined", str_size(&name->string),
-		      str_of(&name->string));
-
-	// create label
-	label = ast_label_allocate(name, expr, select->expr_count);
-	ast_list_add(&select->expr_labels, &label->ast);
-}
-
 hot AstSelect*
 parse_select(Stmt* self)
 {
 	// SELECT [DISTINCT] expr, ...
-	// [INTO cte]
 	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
@@ -193,65 +135,22 @@ parse_select(Stmt* self)
 	// [LIMIT expr] [OFFSET expr]
 	int level = target_list_next_level(&self->target_list);
 	auto select = ast_select_allocate();
+	ast_list_add(&self->select_list, &select->ast);
 
 	// [DISTINCT]
 	if (stmt_if(self, KDISTINCT))
 		parse_select_distinct(self, select);
 
-	// expr, ...
+	// * | expr [AS] [name], ...
 	Expr ctx;
 	expr_init(&ctx);
+	ctx.select = true;
 	ctx.aggs = &select->expr_aggs;
-
-	Ast* expr_prev = NULL;
-	for (;;)
-	{
-		auto expr = parse_expr(self, &ctx);
-		if (select->expr == NULL)
-			select->expr = expr;
-		else
-			expr_prev->next = expr;
-		expr_prev = expr;
-
-		// [AS name]
-		// [name]
-		parse_select_label(self, select, expr);
-		select->expr_count++;
-
-		// ,
-		if (stmt_if(self, ','))
-			continue;
-		break;
-	}
-
-	// use select expr as distinct expression, if not set
-	if (select->distinct && !select->distinct_expr_count)
-	{
-		select->distinct_expr = select->expr;
-		select->distinct_expr_count = select->expr_count;
-
-		// set distinct expressions as order by keys
-		for (auto expr = select->expr; expr; expr = expr->next)
-		{
-			auto order = ast_order_allocate(expr, true);
-			ast_list_add(&select->expr_order_by, &order->ast);
-		}
-	}
-
-	// [INTO cte_name]
-	if (stmt_if(self, KINTO))
-	{
-		if (level != 0)
-			error("SELECT INTO subqueries are not supported");
-		parse_cte(self, false, false);
-	}
+	parse_returning(&select->ret, self, &ctx);
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
-	{
 		select->target = parse_from(self, level);
-		select->target->select = &select->ast;
-	}
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
@@ -302,13 +201,29 @@ parse_select(Stmt* self)
 		if (select->target == NULL)
 			error("no targets to use with GROUP BY or aggregates");
 
-		select->target_group =
-			target_list_add(&self->target_list, level, 0, NULL, NULL, NULL, NULL, NULL);
+		// add at least one group by key
+		auto list = &select->expr_group_by;
+		if (! list->count)
+		{
+			auto expr = ast(KINT);
+			expr->integer = 0;
+			auto group = ast_group_allocate(list->count, expr);
+			ast_list_add(list, &group->ast);
+			select->expr_group_by_has = false;
+		} else {
+			select->expr_group_by_has = true;
+		}
 
-		select->target_group->group_redirect = select->target_group;
-		select->target_group->group_main     = select->target;
-		select->target->group_by_target      = select->target_group;
-		select->target->group_by             = select->expr_group_by;
+		// create group by target to scan agg set
+		auto target = target_allocate();
+		target->type = TARGET_SELECT;
+		target->name = select->target->name;
+		target->from_columns = &select->target_group_columns;
+		target_list_add(&self->target_list, target, level, 0);
+		select->target_group = target;
+
+		// group by target columns will be created
+		// during resolve
 	}
 
 	return select;
@@ -317,11 +232,114 @@ parse_select(Stmt* self)
 hot AstSelect*
 parse_select_expr(Stmt* self)
 {
-	// SELECT expr
+	// SELECT expr, ...
 	auto select = ast_select_allocate();
+	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
-	select->expr = parse_expr(self, &ctx);
-	select->expr_count++;
+	parse_returning(&select->ret, self, &ctx);
+	parse_returning_resolve(&select->ret, self, NULL);
 	return select;
+}
+
+static void
+parse_select_resolve_group_by(AstSelect* select)
+{
+	// create columns for the group by target, actual column
+	// types will be set during emit
+	//
+	// [aggs, group_by_keys]
+	//
+
+	// add columns for aggs
+	auto node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+
+		// add group target column
+		auto column = column_allocate();
+		auto name_sz = palloc(8);
+		snprintf(name_sz, 8, "_agg%d", agg->order + 1);
+		Str name;
+		str_set_cstr(&name, name_sz);
+		column_set_name(column, &name);
+		columns_add(&select->target_group_columns, column);
+		agg->column = column;
+	}
+
+	// add columns for keys
+	node = select->expr_group_by.list;
+	for (; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+
+		// find column in the target
+		Str name;
+		if (group->expr->id == KNAME)
+		{
+			auto target  = select->target;
+			auto columns = target->from_columns;
+			auto cte     = target->from_cte;
+			auto column  = &group->expr->string;
+
+			// use CTE arguments, if defined
+			if (target->type == TARGET_CTE && cte->args.list_count > 0)
+				columns = &cte->args;
+
+			bool conflict = false;
+			auto ref = columns_find_noconflict(columns, column, &conflict);
+			if (! ref)
+			{
+				if (conflict)
+					error("<%.*s.%.*s> column name is ambiguous",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(column), str_of(column));
+				else
+					error("<%.*s.%.*s> column not found",
+					      str_size(&target->name), str_of(&target->name),
+					      str_size(column), str_of(column));
+			}
+			name = *column;
+		} else
+		{
+			// generate name
+			auto name_sz = palloc(8);
+			snprintf(name_sz, 8, "_key%d", group->order + 1);
+			str_set_cstr(&name, name_sz);
+		}
+
+		auto column = column_allocate();
+		column_set_name(column, &name);
+		columns_add(&select->target_group_columns, column);
+		group->column = column;
+	}
+}
+
+void
+parse_select_resolve(Stmt* self)
+{
+	// resolve selects backwards
+	for (auto ref = self->select_list.list_tail; ref; ref = ref->prev)
+	{
+		auto select = ast_select_of(ref->ast);
+
+		// create select expressions and resolve *
+		parse_returning_resolve(&select->ret, self, select->target);
+
+		// use select expr as distinct expression, if not set
+		if (select->distinct && !select->distinct_on)
+		{
+			// set distinct expressions as order by keys
+			for (auto as = select->ret.list; as; as = as->next)
+			{
+				auto order = ast_order_allocate(select->expr_order_by.count, as->l, true);
+				ast_list_add(&select->expr_order_by, &order->ast);
+			}
+		}
+
+		// create group by keys
+		if (select->target_group)
+			parse_select_resolve_group_by(select);
+	}
 }

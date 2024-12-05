@@ -1,0 +1,150 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: type()
+select 1::type
+select "Hi"::type
+select [1,2,3]::type
+select {}::type
+select (select 1)::type
+select null::type
+
+# test: int(null)
+select null::int
+
+# test: int(int)
+select 1::int
+select 1::int(123)
+
+# test: int(double)
+select 3.14::int
+
+# test: int(bool)
+select true::int
+select false::int
+
+# test: int(string)
+select '123'::int
+select '1423423423'::int
+select '1423abc'::int
+
+# test: int(json)
+select '1'::json::int
+select 'hi'::json::int
+
+# test: int(timestamp)
+select 1722517792056945::timestamp
+select 1722517792056945::timestamp::int
+select 1722517792056945::timestamp::int::timestamp
+select '1 hour'::interval::int
+
+# test: bool(null)
+select null::bool
+
+# test: bool(int)
+select 1::bool
+select 0::bool
+select 23431::bool
+
+# test: bool(double)
+select 3.14::bool
+select 0.14::bool
+select 0.0::bool
+
+# test: bool(json)
+select 'true'::json::bool
+select 'false'::json::bool
+select '1'::json::bool
+
+# test: bool(timestamp)
+select 1722517792056945::timestamp::bool
+
+# test: bool(interval)
+select '1 hour'::interval::bool
+select '0 secs'::interval::bool
+
+# test: double(null)
+select 1::double
+
+# test: double(int)
+select 1::double
+
+# test: double(double)
+select 3.14::double
+
+# test: double(bool)
+select true::double
+select false::double
+
+# test: double(json)
+select '1.56'::json::double
+
+# test: double(timestamp)
+select 1722517792056945::timestamp
+select 1722517792056945::timestamp::double
+select 1722517792056945::timestamp::double::timestamp
+
+# test: string(null)
+select null::string
+
+# test: string(int)
+select 16384::string
+
+# test: string(string)
+select 'hello'::string
+
+# test: string(interval)
+select '1 hour'::interval::string
+
+# test: string(timestamp)
+select '2024-07-29 18:40:19'::timestamp::string
+
+# test: string(json)
+select {"id": 42, "data": [1,2,3]}::string
+
+# test: json(null)
+select null::json
+
+# test: json(string)
+select '1'::json
+select '1'::json::type
+select [1,2,3]::vector::string::json
+select '[1,2,3]'::json
+
+# test: json(json)
+select [1,2,3]::json
+select {"id":55}::json
+
+# test: interval(null)
+select null::interval
+
+# test: interval(string)
+select '1 hour 55 minutes 5 secs'::interval
+select '1 hour 55 minutes 5 secs'::interval::string
+
+# test: timestamp(null)
+select null::timestamp
+
+# test: timestamp(string)
+select '2024-07-29 18:40:19'::timestamp
+
+# test: vector(null)
+select null::vector
+
+# test: vector(json)
+select []::vector
+select []::vector::length
+select [1.0]::vector
+select [1]::vector
+select [1, 2.0, "test"]::vector
+select [1, 2.0, "test"]::vector
+select [1, 2.0, {}]::vector
+select [1, 2.0, null]::vector
+select [1,2,3]::vector
+select [1,2,3]::vector::type
+select [1,2,3]::vector::length
+
+disconnect S0
+close E0

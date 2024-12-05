@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 create table test (id int primary key serial)
 insert into test generate 20
 select * from test limit 100
-[[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 explain select * from test limit 1
 [{
   "bytecode": {
@@ -16,39 +16,44 @@ explain select * from test limit 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int_min             1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 11     0      0     ",
-      "07": "cntr_lte            0      0      6     ",
-      "08": "cursor_read         1      0      0     ",
-      "09": "set_add             0      1      0     ",
-      "10": "cursor_next         0      7      0     ",
-      "11": "cursor_close        0      0      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 11     0      0     ",
+      "06": "cjltd               1      5      0     ",
+      "07": "table_readi32       2      0      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      6      0     ",
+      "11": "table_close         0      0      0     ",
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1
-[[0]]
+[0]
 select * from test limit 2
-[[0], [1]]
+[0, 1]
 select * from test limit 3
-[[0], [1], [6]]
+[0, 1, 6]
 select * from test limit 4
-[[0], [1], [6], [7]]
+[0, 1, 6, 7]
 select * from test limit 10
-[[0], [1], [6], [7], [8], [14], [15], [17], [2], [9]]
+[0, 1, 6, 7, 8, 14, 15, 17, 2, 9]
 select * from test limit 20
-[[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
+# test: select from table limit (type mismatch)
+select * from test limit 'abc'
+{"msg": "LIMIT: integer type expected"}
+select * from test limit null
+{"msg": "LIMIT: integer type expected"}
 # test: select from table limit 0
 explain select * from test limit 0
 [{
@@ -61,22 +66,22 @@ explain select * from test limit 0
       "04": "int                 0      -      0     # 0",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int_min             1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 11     0      0     ",
-      "07": "cntr_lte            0      0      6     ",
-      "08": "cursor_read         1      0      0     ",
-      "09": "set_add             0      1      0     ",
-      "10": "cursor_next         0      7      0     ",
-      "11": "cursor_close        0      0      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 11     0      0     ",
+      "06": "cjltd               1      5      0     ",
+      "07": "table_readi32       2      0      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      6      0     ",
+      "11": "table_close         0      0      0     ",
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
@@ -85,7 +90,7 @@ explain select * from test limit 0
 select * from test limit 0
 []
 select * from test limit -1
-{"msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT: positive integer value expected"}
 # test: select from table limit offset
 explain select * from test limit 1 offset 0
 [{
@@ -99,31 +104,36 @@ explain select * from test limit 1 offset 0
       "05": "int                 1      -      0     # 0",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 0",
-      "03": "add                 3      1      2     ",
-      "04": "cntr_init           0      0      3     ",
-      "05": "int_min             1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "cursor_open         0      0      9     # public.test (primary)",
-      "08": "jmp                 13     0      0     ",
-      "09": "cntr_lte            0      0      8     ",
-      "10": "cursor_read         1      0      0     ",
-      "11": "set_add             0      1      0     ",
-      "12": "cursor_next         0      9      0     ",
-      "13": "cursor_close        0      0      0     ",
+      "03": "addii               3      1      2     ",
+      "04": "int                 1      -      0     # -2147483648",
+      "05": "push                1      0      0     ",
+      "06": "table_open          0      0      8     # public.test (primary)",
+      "07": "jmp                 13     0      0     ",
+      "08": "cjltd               3      7      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      8      0     ",
+      "13": "table_close         0      0      0     ",
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1 offset 0
-[[0]]
+[0]
+# test: select from table limit offset (type mismatch)
+select * from test limit 1 offset 'abc'
+{"msg": "unsupported operation: <int> + <string>"}
+select * from test limit 1 offset null
+{"msg": "LIMIT: integer type expected"}
 # test: select from table limit offset #2
 explain select * from test limit 1 offset 1
 [{
@@ -137,49 +147,49 @@ explain select * from test limit 1 offset 1
       "05": "int                 1      -      0     # 1",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
-      "03": "add                 3      1      2     ",
-      "04": "cntr_init           0      0      3     ",
-      "05": "int_min             1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "cursor_open         0      0      9     # public.test (primary)",
-      "08": "jmp                 13     0      0     ",
-      "09": "cntr_lte            0      0      8     ",
-      "10": "cursor_read         1      0      0     ",
-      "11": "set_add             0      1      0     ",
-      "12": "cursor_next         0      9      0     ",
-      "13": "cursor_close        0      0      0     ",
+      "03": "addii               3      1      2     ",
+      "04": "int                 1      -      0     # -2147483648",
+      "05": "push                1      0      0     ",
+      "06": "table_open          0      0      8     # public.test (primary)",
+      "07": "jmp                 13     0      0     ",
+      "08": "cjltd               3      7      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      8      0     ",
+      "13": "table_close         0      0      0     ",
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1 offset 1
-[[1]]
+[1]
 select * from test limit 1 offset 2
-[[6]]
+[6]
 select * from test limit 1 offset 3
-[[7]]
+[7]
 select * from test limit 1 offset 4
-[[8]]
+[8]
 # test: select from table limit offset #3
 select * from test limit 2 offset 1
-[[1], [6]]
+[1, 6]
 select * from test limit 2 offset 2
-[[6], [7]]
+[6, 7]
 select * from test limit 2 offset 3
-[[7], [8]]
+[7, 8]
 select * from test limit 2 offset 4
-[[8], [14]]
+[8, 14]
 # test: select from table limit offset #4
 select * from test limit 2 offset 0
-[[0], [1]]
+[0, 1]
 select * from test limit 1 offset -1
 {"msg": "OFFSET: positive integer value expected"}
 # test: select from table limit offset #5
@@ -203,34 +213,35 @@ explain select * from test offset 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 8      0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "set_add             0      1      0     ",
-      "07": "cursor_next         0      5      0     ",
-      "08": "cursor_close        0      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 9      0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      5      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
     }
   }
 }]
 select * from test offset 1
-[[1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 select * from test offset 2
-[[6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 select * from test offset 3
-[[7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 select * from test offset 4
-[[8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 select * from test offset 0
-[[0], [1], [6], [7], [8], [14], [15], [17], [2], [9], [10], [12], [18], [19], [3], [4], [5], [11], [13], [16]]
+[0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 select * from test offset -1
 {"msg": "OFFSET: positive integer value expected"}
 drop table test
@@ -238,7 +249,7 @@ drop table test
 create shared table test (id int primary key serial)
 insert into test generate 20
 select * from test limit 100
-[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 explain select * from test limit 1
 [{
   "bytecode": {
@@ -250,39 +261,39 @@ explain select * from test limit 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int_min             1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 11     0      0     ",
-      "07": "cntr_lte            0      0      6     ",
-      "08": "cursor_read         1      0      0     ",
-      "09": "set_add             0      1      0     ",
-      "10": "cursor_next         0      7      0     ",
-      "11": "cursor_close        0      0      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 11     0      0     ",
+      "06": "cjltd               1      5      0     ",
+      "07": "table_readi32       2      0      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      6      0     ",
+      "11": "table_close         0      0      0     ",
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1
-[[0]]
+[0]
 select * from test limit 2
-[[0], [1]]
+[0, 1]
 select * from test limit 3
-[[0], [1], [2]]
+[0, 1, 2]
 select * from test limit 4
-[[0], [1], [2], [3]]
+[0, 1, 2, 3]
 select * from test limit 10
-[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 select * from test limit 20
-[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 # test: select from shared limit 0
 explain select * from test limit 0
 [{
@@ -295,22 +306,22 @@ explain select * from test limit 0
       "04": "int                 0      -      0     # 0",
       "05": "merge_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int_min             1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "cursor_open         0      0      7     # public.test (primary)",
-      "06": "jmp                 11     0      0     ",
-      "07": "cntr_lte            0      0      6     ",
-      "08": "cursor_read         1      0      0     ",
-      "09": "set_add             0      1      0     ",
-      "10": "cursor_next         0      7      0     ",
-      "11": "cursor_close        0      0      0     ",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 11     0      0     ",
+      "06": "cjltd               1      5      0     ",
+      "07": "table_readi32       2      0      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      6      0     ",
+      "11": "table_close         0      0      0     ",
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
@@ -319,7 +330,7 @@ explain select * from test limit 0
 select * from test limit 0
 []
 select * from test limit -1
-{"msg": "LIMIT/OFFSET: positive integer value expected"}
+{"msg": "LIMIT: positive integer value expected"}
 # test: select from shared limit offset
 explain select * from test limit 1 offset 0
 [{
@@ -333,31 +344,31 @@ explain select * from test limit 1 offset 0
       "05": "int                 1      -      0     # 0",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 0",
-      "03": "add                 3      1      2     ",
-      "04": "cntr_init           0      0      3     ",
-      "05": "int_min             1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "cursor_open         0      0      9     # public.test (primary)",
-      "08": "jmp                 13     0      0     ",
-      "09": "cntr_lte            0      0      8     ",
-      "10": "cursor_read         1      0      0     ",
-      "11": "set_add             0      1      0     ",
-      "12": "cursor_next         0      9      0     ",
-      "13": "cursor_close        0      0      0     ",
+      "03": "addii               3      1      2     ",
+      "04": "int                 1      -      0     # -2147483648",
+      "05": "push                1      0      0     ",
+      "06": "table_open          0      0      8     # public.test (primary)",
+      "07": "jmp                 13     0      0     ",
+      "08": "cjltd               3      7      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      8      0     ",
+      "13": "table_close         0      0      0     ",
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1 offset 0
-[[0]]
+[0]
 # test: select from shared limit offset #2
 explain select * from test limit 1 offset 1
 [{
@@ -371,49 +382,49 @@ explain select * from test limit 1 offset 1
       "05": "int                 1      -      0     # 1",
       "06": "merge_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
-      "08": "body                0      0      0     ",
+      "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
-      "03": "add                 3      1      2     ",
-      "04": "cntr_init           0      0      3     ",
-      "05": "int_min             1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "cursor_open         0      0      9     # public.test (primary)",
-      "08": "jmp                 13     0      0     ",
-      "09": "cntr_lte            0      0      8     ",
-      "10": "cursor_read         1      0      0     ",
-      "11": "set_add             0      1      0     ",
-      "12": "cursor_next         0      9      0     ",
-      "13": "cursor_close        0      0      0     ",
+      "03": "addii               3      1      2     ",
+      "04": "int                 1      -      0     # -2147483648",
+      "05": "push                1      0      0     ",
+      "06": "table_open          0      0      8     # public.test (primary)",
+      "07": "jmp                 13     0      0     ",
+      "08": "cjltd               3      7      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      8      0     ",
+      "13": "table_close         0      0      0     ",
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
   }
 }]
 select * from test limit 1 offset 1
-[[1]]
+[1]
 select * from test limit 1 offset 2
-[[2]]
+[2]
 select * from test limit 1 offset 3
-[[3]]
+[3]
 select * from test limit 1 offset 4
-[[4]]
+[4]
 # test: select from shared limit offset #3
 select * from test limit 2 offset 1
-[[1], [2]]
+[1, 2]
 select * from test limit 2 offset 2
-[[2], [3]]
+[2, 3]
 select * from test limit 2 offset 3
-[[3], [4]]
+[3, 4]
 select * from test limit 2 offset 4
-[[4], [5]]
+[4, 5]
 # test: select from shared limit offset #4
 select * from test limit 2 offset 0
-[[0], [1]]
+[0, 1]
 select * from test limit 1 offset -1
 {"msg": "OFFSET: positive integer value expected"}
 # test: select from shared limit offset #5
@@ -437,405 +448,65 @@ explain select * from test offset 1
       "04": "int                 0      -      0     # 1",
       "05": "merge_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
-      "07": "body                0      0      0     ",
+      "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 8      0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "set_add             0      1      0     ",
-      "07": "cursor_next         0      5      0     ",
-      "08": "cursor_close        0      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 9      0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      5      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
     }
   }
 }]
 select * from test offset 1
-[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test offset 2
-[[2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test offset 3
-[[3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test offset 4
-[[4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test offset 0
-[[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19]]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test offset -1
 {"msg": "OFFSET: positive integer value expected"}
+# test: select from shared, shared limit
+select test.id, t.id from test, test t
+[[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [0, 12], [0, 13], [0, 14], [0, 15], [0, 16], [0, 17], [0, 18], [0, 19], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [1, 12], [1, 13], [1, 14], [1, 15], [1, 16], [1, 17], [1, 18], [1, 19], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [2, 12], [2, 13], [2, 14], [2, 15], [2, 16], [2, 17], [2, 18], [2, 19], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [3, 12], [3, 13], [3, 14], [3, 15], [3, 16], [3, 17], [3, 18], [3, 19], [4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [4, 12], [4, 13], [4, 14], [4, 15], [4, 16], [4, 17], [4, 18], [4, 19], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [5, 12], [5, 13], [5, 14], [5, 15], [5, 16], [5, 17], [5, 18], [5, 19], [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [6, 12], [6, 13], [6, 14], [6, 15], [6, 16], [6, 17], [6, 18], [6, 19], [7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8], [7, 9], [7, 10], [7, 11], [7, 12], [7, 13], [7, 14], [7, 15], [7, 16], [7, 17], [7, 18], [7, 19], [8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 6], [8, 7], [8, 8], [8, 9], [8, 10], [8, 11], [8, 12], [8, 13], [8, 14], [8, 15], [8, 16], [8, 17], [8, 18], [8, 19], [9, 0], [9, 1], [9, 2], [9, 3], [9, 4], [9, 5], [9, 6], [9, 7], [9, 8], [9, 9], [9, 10], [9, 11], [9, 12], [9, 13], [9, 14], [9, 15], [9, 16], [9, 17], [9, 18], [9, 19], [10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 5], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10], [10, 11], [10, 12], [10, 13], [10, 14], [10, 15], [10, 16], [10, 17], [10, 18], [10, 19], [11, 0], [11, 1], [11, 2], [11, 3], [11, 4], [11, 5], [11, 6], [11, 7], [11, 8], [11, 9], [11, 10], [11, 11], [11, 12], [11, 13], [11, 14], [11, 15], [11, 16], [11, 17], [11, 18], [11, 19], [12, 0], [12, 1], [12, 2], [12, 3], [12, 4], [12, 5], [12, 6], [12, 7], [12, 8], [12, 9], [12, 10], [12, 11], [12, 12], [12, 13], [12, 14], [12, 15], [12, 16], [12, 17], [12, 18], [12, 19], [13, 0], [13, 1], [13, 2], [13, 3], [13, 4], [13, 5], [13, 6], [13, 7], [13, 8], [13, 9], [13, 10], [13, 11], [13, 12], [13, 13], [13, 14], [13, 15], [13, 16], [13, 17], [13, 18], [13, 19], [14, 0], [14, 1], [14, 2], [14, 3], [14, 4], [14, 5], [14, 6], [14, 7], [14, 8], [14, 9], [14, 10], [14, 11], [14, 12], [14, 13], [14, 14], [14, 15], [14, 16], [14, 17], [14, 18], [14, 19], [15, 0], [15, 1], [15, 2], [15, 3], [15, 4], [15, 5], [15, 6], [15, 7], [15, 8], [15, 9], [15, 10], [15, 11], [15, 12], [15, 13], [15, 14], [15, 15], [15, 16], [15, 17], [15, 18], [15, 19], [16, 0], [16, 1], [16, 2], [16, 3], [16, 4], [16, 5], [16, 6], [16, 7], [16, 8], [16, 9], [16, 10], [16, 11], [16, 12], [16, 13], [16, 14], [16, 15], [16, 16], [16, 17], [16, 18], [16, 19], [17, 0], [17, 1], [17, 2], [17, 3], [17, 4], [17, 5], [17, 6], [17, 7], [17, 8], [17, 9], [17, 10], [17, 11], [17, 12], [17, 13], [17, 14], [17, 15], [17, 16], [17, 17], [17, 18], [17, 19], [18, 0], [18, 1], [18, 2], [18, 3], [18, 4], [18, 5], [18, 6], [18, 7], [18, 8], [18, 9], [18, 10], [18, 11], [18, 12], [18, 13], [18, 14], [18, 15], [18, 16], [18, 17], [18, 18], [18, 19], [19, 0], [19, 1], [19, 2], [19, 3], [19, 4], [19, 5], [19, 6], [19, 7], [19, 8], [19, 9], [19, 10], [19, 11], [19, 12], [19, 13], [19, 14], [19, 15], [19, 16], [19, 17], [19, 18], [19, 19]]
+select test.id, t.id from test, test t limit 1
+[[0, 0]]
+select test.id, t.id from test, test t limit 2
+[[0, 0], [0, 1]]
+select test.id, t.id from test, test t limit 3
+[[0, 0], [0, 1], [0, 2]]
+select test.id, t.id from test, test t limit 4
+[[0, 0], [0, 1], [0, 2], [0, 3]]
+select test.id, t.id from test, test t limit 0
+[]
+select test.id, t.id from test, test t limit -1
+{"msg": "LIMIT: positive integer value expected"}
+# test: select from shared, shared limit offset
+select test.id, t.id from test, test t limit 1 offset 0
+[[0, 0]]
+select test.id, t.id from test, test t limit 1 offset 1
+[[0, 1]]
+select test.id, t.id from test, test t limit 1 offset 2
+[[0, 2]]
+select test.id, t.id from test, test t limit 1 offset 3
+[[0, 3]]
+select test.id, t.id from test, test t limit 1 offset 4
+[[0, 4]]
+select test.id, t.id from test, test t limit 1 offset -1
+{"msg": "OFFSET: positive integer value expected"}
 drop table test
-# test: select from expr limit
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 100
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int                 1      -      0     # 0",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 2",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 3",
-      "10": "push                1      0      0     ",
-      "11": "int                 1      -      0     # 4",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 5",
-      "14": "push                1      0      0     ",
-      "15": "int                 1      -      0     # 6",
-      "16": "push                1      0      0     ",
-      "17": "int                 1      -      0     # 7",
-      "18": "push                1      0      0     ",
-      "19": "int                 1      -      0     # 8",
-      "20": "push                1      0      0     ",
-      "21": "int                 1      -      0     # 9",
-      "22": "push                1      0      0     ",
-      "23": "int                 1      -      0     # 10",
-      "24": "push                1      0      0     ",
-      "25": "int                 1      -      0     # 11",
-      "26": "push                1      0      0     ",
-      "27": "int                 1      -      0     # 12",
-      "28": "push                1      0      0     ",
-      "29": "int                 1      -      0     # 13",
-      "30": "push                1      0      0     ",
-      "31": "int                 1      -      0     # 14",
-      "32": "push                1      0      0     ",
-      "33": "int                 1      -      0     # 15",
-      "34": "push                1      0      0     ",
-      "35": "int                 1      -      0     # 16",
-      "36": "push                1      0      0     ",
-      "37": "int                 1      -      0     # 17",
-      "38": "push                1      0      0     ",
-      "39": "int                 1      -      0     # 18",
-      "40": "push                1      0      0     ",
-      "41": "int                 1      -      0     # 19",
-      "42": "push                1      0      0     ",
-      "43": "array               1      20     0     ",
-      "44": "cursor_open_expr    0      1      46    ",
-      "45": "jmp                 50     0      0     ",
-      "46": "cntr_lte            0      0      45    ",
-      "47": "cursor_read         2      0      0     ",
-      "48": "set_add             0      2      0     ",
-      "49": "cursor_next         0      46     0     ",
-      "50": "cursor_close        0      0      0     ",
-      "51": "cte_set             0      0      0     ",
-      "52": "body                0      0      0     ",
-      "53": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1
-[0]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2
-[0, 1]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 3
-[0, 1, 2]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 4
-[0, 1, 2, 3]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 10
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 20
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-# test: select from expr limit 0
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 0",
-      "02": "cntr_init           0      0      1     ",
-      "03": "int                 1      -      0     # 0",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 2",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 3",
-      "10": "push                1      0      0     ",
-      "11": "int                 1      -      0     # 4",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 5",
-      "14": "push                1      0      0     ",
-      "15": "int                 1      -      0     # 6",
-      "16": "push                1      0      0     ",
-      "17": "int                 1      -      0     # 7",
-      "18": "push                1      0      0     ",
-      "19": "int                 1      -      0     # 8",
-      "20": "push                1      0      0     ",
-      "21": "int                 1      -      0     # 9",
-      "22": "push                1      0      0     ",
-      "23": "int                 1      -      0     # 10",
-      "24": "push                1      0      0     ",
-      "25": "int                 1      -      0     # 11",
-      "26": "push                1      0      0     ",
-      "27": "int                 1      -      0     # 12",
-      "28": "push                1      0      0     ",
-      "29": "int                 1      -      0     # 13",
-      "30": "push                1      0      0     ",
-      "31": "int                 1      -      0     # 14",
-      "32": "push                1      0      0     ",
-      "33": "int                 1      -      0     # 15",
-      "34": "push                1      0      0     ",
-      "35": "int                 1      -      0     # 16",
-      "36": "push                1      0      0     ",
-      "37": "int                 1      -      0     # 17",
-      "38": "push                1      0      0     ",
-      "39": "int                 1      -      0     # 18",
-      "40": "push                1      0      0     ",
-      "41": "int                 1      -      0     # 19",
-      "42": "push                1      0      0     ",
-      "43": "array               1      20     0     ",
-      "44": "cursor_open_expr    0      1      46    ",
-      "45": "jmp                 50     0      0     ",
-      "46": "cntr_lte            0      0      45    ",
-      "47": "cursor_read         2      0      0     ",
-      "48": "set_add             0      2      0     ",
-      "49": "cursor_next         0      46     0     ",
-      "50": "cursor_close        0      0      0     ",
-      "51": "cte_set             0      0      0     ",
-      "52": "body                0      0      0     ",
-      "53": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0
-[]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit -1
-{"msg": "LIMIT/OFFSET: positive integer value expected"}
-# test: select from expr limit offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 0",
-      "02": "cntr_init           0      1      1     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "cntr_init           0      0      1     ",
-      "05": "int                 1      -      0     # 0",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 1",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 2",
-      "10": "push                1      0      0     ",
-      "11": "int                 1      -      0     # 3",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 4",
-      "14": "push                1      0      0     ",
-      "15": "int                 1      -      0     # 5",
-      "16": "push                1      0      0     ",
-      "17": "int                 1      -      0     # 6",
-      "18": "push                1      0      0     ",
-      "19": "int                 1      -      0     # 7",
-      "20": "push                1      0      0     ",
-      "21": "int                 1      -      0     # 8",
-      "22": "push                1      0      0     ",
-      "23": "int                 1      -      0     # 9",
-      "24": "push                1      0      0     ",
-      "25": "int                 1      -      0     # 10",
-      "26": "push                1      0      0     ",
-      "27": "int                 1      -      0     # 11",
-      "28": "push                1      0      0     ",
-      "29": "int                 1      -      0     # 12",
-      "30": "push                1      0      0     ",
-      "31": "int                 1      -      0     # 13",
-      "32": "push                1      0      0     ",
-      "33": "int                 1      -      0     # 14",
-      "34": "push                1      0      0     ",
-      "35": "int                 1      -      0     # 15",
-      "36": "push                1      0      0     ",
-      "37": "int                 1      -      0     # 16",
-      "38": "push                1      0      0     ",
-      "39": "int                 1      -      0     # 17",
-      "40": "push                1      0      0     ",
-      "41": "int                 1      -      0     # 18",
-      "42": "push                1      0      0     ",
-      "43": "int                 1      -      0     # 19",
-      "44": "push                1      0      0     ",
-      "45": "array               1      20     0     ",
-      "46": "cursor_open_expr    0      1      48    ",
-      "47": "jmp                 53     0      0     ",
-      "48": "cntr_gte            0      1      52    ",
-      "49": "cntr_lte            0      0      47    ",
-      "50": "cursor_read         2      0      0     ",
-      "51": "set_add             0      2      0     ",
-      "52": "cursor_next         0      48     0     ",
-      "53": "cursor_close        0      0      0     ",
-      "54": "cte_set             0      0      0     ",
-      "55": "body                0      0      0     ",
-      "56": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 0
-[0]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 1
-[1]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 2
-[2]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 1 offset 3
-[3]
-# test: select from expr limit offset #2
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 0",
-      "02": "cntr_init           0      1      1     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "cntr_init           0      0      1     ",
-      "05": "int                 1      -      0     # 0",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 1",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 2",
-      "10": "push                1      0      0     ",
-      "11": "int                 1      -      0     # 3",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 4",
-      "14": "push                1      0      0     ",
-      "15": "int                 1      -      0     # 5",
-      "16": "push                1      0      0     ",
-      "17": "int                 1      -      0     # 6",
-      "18": "push                1      0      0     ",
-      "19": "int                 1      -      0     # 7",
-      "20": "push                1      0      0     ",
-      "21": "int                 1      -      0     # 8",
-      "22": "push                1      0      0     ",
-      "23": "int                 1      -      0     # 9",
-      "24": "push                1      0      0     ",
-      "25": "int                 1      -      0     # 10",
-      "26": "push                1      0      0     ",
-      "27": "int                 1      -      0     # 11",
-      "28": "push                1      0      0     ",
-      "29": "int                 1      -      0     # 12",
-      "30": "push                1      0      0     ",
-      "31": "int                 1      -      0     # 13",
-      "32": "push                1      0      0     ",
-      "33": "int                 1      -      0     # 14",
-      "34": "push                1      0      0     ",
-      "35": "int                 1      -      0     # 15",
-      "36": "push                1      0      0     ",
-      "37": "int                 1      -      0     # 16",
-      "38": "push                1      0      0     ",
-      "39": "int                 1      -      0     # 17",
-      "40": "push                1      0      0     ",
-      "41": "int                 1      -      0     # 18",
-      "42": "push                1      0      0     ",
-      "43": "int                 1      -      0     # 19",
-      "44": "push                1      0      0     ",
-      "45": "array               1      20     0     ",
-      "46": "cursor_open_expr    0      1      48    ",
-      "47": "jmp                 53     0      0     ",
-      "48": "cntr_gte            0      1      52    ",
-      "49": "cntr_lte            0      0      47    ",
-      "50": "cursor_read         2      0      0     ",
-      "51": "set_add             0      2      0     ",
-      "52": "cursor_next         0      48     0     ",
-      "53": "cursor_close        0      0      0     ",
-      "54": "cte_set             0      0      0     ",
-      "55": "body                0      0      0     ",
-      "56": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 0
-[0, 1]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 1
-[1, 2]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 2
-[2, 3]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 2 offset 3
-[3, 4]
-# test: select from expr limit offset #3
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 0
-[]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 1
-[]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] limit 0 offset 3
-[]
-# test: select from expr offset
-explain select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "cntr_init           0      1      1     ",
-      "03": "int                 1      -      0     # 0",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "push                1      0      0     ",
-      "07": "int                 1      -      0     # 2",
-      "08": "push                1      0      0     ",
-      "09": "int                 1      -      0     # 3",
-      "10": "push                1      0      0     ",
-      "11": "int                 1      -      0     # 4",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 5",
-      "14": "push                1      0      0     ",
-      "15": "int                 1      -      0     # 6",
-      "16": "push                1      0      0     ",
-      "17": "int                 1      -      0     # 7",
-      "18": "push                1      0      0     ",
-      "19": "int                 1      -      0     # 8",
-      "20": "push                1      0      0     ",
-      "21": "int                 1      -      0     # 9",
-      "22": "push                1      0      0     ",
-      "23": "int                 1      -      0     # 10",
-      "24": "push                1      0      0     ",
-      "25": "int                 1      -      0     # 11",
-      "26": "push                1      0      0     ",
-      "27": "int                 1      -      0     # 12",
-      "28": "push                1      0      0     ",
-      "29": "int                 1      -      0     # 13",
-      "30": "push                1      0      0     ",
-      "31": "int                 1      -      0     # 14",
-      "32": "push                1      0      0     ",
-      "33": "int                 1      -      0     # 15",
-      "34": "push                1      0      0     ",
-      "35": "int                 1      -      0     # 16",
-      "36": "push                1      0      0     ",
-      "37": "int                 1      -      0     # 17",
-      "38": "push                1      0      0     ",
-      "39": "int                 1      -      0     # 18",
-      "40": "push                1      0      0     ",
-      "41": "int                 1      -      0     # 19",
-      "42": "push                1      0      0     ",
-      "43": "array               1      20     0     ",
-      "44": "cursor_open_expr    0      1      46    ",
-      "45": "jmp                 50     0      0     ",
-      "46": "cntr_gte            0      1      49    ",
-      "47": "cursor_read         2      0      0     ",
-      "48": "set_add             0      2      0     ",
-      "49": "cursor_next         0      46     0     ",
-      "50": "cursor_close        0      0      0     ",
-      "51": "cte_set             0      0      0     ",
-      "52": "body                0      0      0     ",
-      "53": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 1
-[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 2
-[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 3
-[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 4
-[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset 0
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] offset -1
-{"msg": "LIMIT/OFFSET: positive integer value expected"}
 disconnect S0
 close E0

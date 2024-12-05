@@ -18,7 +18,6 @@ struct TableConfig
 	Str     schema;
 	Str     name;
 	bool    shared;
-	bool    aggregated;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -32,7 +31,6 @@ table_config_allocate(void)
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
 	self->shared           = false;
-	self->aggregated       = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
 	str_init(&self->schema);
@@ -86,12 +84,6 @@ table_config_set_shared(TableConfig* self, bool value)
 }
 
 static inline void
-table_config_set_aggregated(TableConfig* self, bool value)
-{
-	self->aggregated = value;
-}
-
-static inline void
 table_config_add_partition(TableConfig* self, PartConfig* config)
 {
 	list_append(&self->partitions, &config->link);
@@ -119,7 +111,6 @@ table_config_copy(TableConfig* self)
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_shared(copy, self->shared);
-	table_config_set_aggregated(copy, self->aggregated);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -128,7 +119,7 @@ table_config_copy(TableConfig* self)
 		auto config = list_at(IndexConfig, link);
 		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_add_index(copy, config_copy);
-		keys_set(&config_copy->keys, !primary_keys, ref_size(&config_copy->keys));
+		keys_set_primary(&config_copy->keys, !primary_keys);
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
 	}
@@ -157,7 +148,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STRING, "name",       &self->name       },
 		{ DECODE_ARRAY,  "columns",    &pos_columns      },
 		{ DECODE_BOOL,   "shared",     &self->shared     },
-		{ DECODE_BOOL,   "aggregated", &self->aggregated },
 		{ DECODE_ARRAY,  "indexes",    &pos_indexes      },
 		{ DECODE_ARRAY,  "partitions", &pos_partitions   },
 		{ 0,              NULL,        NULL              },
@@ -168,16 +158,16 @@ table_config_read(uint8_t** pos)
 	columns_read(&self->columns, &pos_columns);
 
 	// indexes
-	data_read_array(&pos_indexes);
-	while (! data_read_array_end(&pos_indexes))
+	json_read_array(&pos_indexes);
+	while (! json_read_array_end(&pos_indexes))
 	{
 		auto config = index_config_read(&self->columns, &pos_indexes);
 		table_config_add_index(self, config);
 	}
 
 	// partitions
-	data_read_array(&pos_partitions);
-	while (! data_read_array_end(&pos_partitions))
+	json_read_array(&pos_partitions);
+	while (! json_read_array_end(&pos_partitions))
 	{
 		auto config = part_config_read(&pos_partitions);
 		table_config_add_partition(self, config);
@@ -203,10 +193,6 @@ table_config_write(TableConfig* self, Buf* buf)
 	// shared
 	encode_raw(buf, "shared", 6);
 	encode_bool(buf, self->shared);
-
-	// aggregated
-	encode_raw(buf, "aggregated", 10);
-	encode_bool(buf, self->aggregated);
 
 	// columns
 	encode_raw(buf, "columns", 7);

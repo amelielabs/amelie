@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,12 +29,13 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
 static void
-parse_cte_args(Stmt* self, Columns* columns, const char* clause)
+parse_cte_args(Stmt* self, Cte* cte)
 {
 	// )
 	if (stmt_if(self, ')'))
@@ -45,18 +46,18 @@ parse_cte_args(Stmt* self, Columns* columns, const char* clause)
 		// name
 		auto name = stmt_if(self, KNAME);
 		if (! name)
-			error("%s name (<name> expected", clause);
+			error("WITH name (<name> expected");
 
-		// ensure arg does not exists
-		auto arg = columns_find(columns, &name->string);
+		// ensure argument is unique
+		auto arg = columns_find(&cte->args, &name->string);
 		if (arg)
-			error("<%.*s> cte argument redefined", str_size(&name->string),
+			error("WITH name (<%.*s> argument redefined", str_size(&name->string),
 			      str_of(&name->string));
 
-		// add argument
+		// add argument to the list
 		arg = column_allocate();
-		columns_add(columns, arg);
 		column_set_name(arg, &name->string);
+		columns_add(&cte->args, arg);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -65,43 +66,32 @@ parse_cte_args(Stmt* self, Columns* columns, const char* clause)
 
 	// )
 	if (! stmt_if(self, ')'))
-		error("%s name (<)> expected", clause);
+		error("WITH name (<)> expected");
 }
 
-void
+Cte*
 parse_cte(Stmt* self, bool with, bool with_args)
 {
-	const char* clause = with? "WITH": "INTO";
-	if (self->cte)
-		error("%s CTE redefined", clause);
+	unused(with);
 
 	// name [(args)]
 	auto name = stmt_if(self, KNAME);
 	if (! name)
-		error("%s <name> expected", clause);
-
-	Columns* columns_ref;
-	Columns  columns;
-	columns_init(&columns);
-	guard(columns_free, &columns);
+		error("WITH <name> expected");
 
 	// reuse existing cte variable (columns are not compared)
-	self->cte = cte_list_find(self->cte_list, &name->string);
-	if (self->cte)
-	{
-		// columns are ignored on reused
-		columns_ref = &columns;
-	} else
-	{
-		// add new cte definition
-		self->cte = cte_list_add(self->cte_list, name, self->order);
-		columns_ref = &self->cte->columns;
-	}
+	auto cte = cte_list_find(self->cte_list, &name->string);
+	if (cte)
+		error("CTE <%.*s> redefined", str_size(&name->string),
+		      str_of(&name->string));
 
+	cte = cte_list_add(self->cte_list, name, self->order);
 	if (! with_args)
-		return;
+		return cte;
 
 	// (args)
 	if (stmt_if(self, '('))
-		parse_cte_args(self, columns_ref, clause);
+		parse_cte_args(self, cte);
+
+	return cte;
 }

@@ -16,32 +16,29 @@ typedef struct Value Value;
 
 struct Store
 {
-	void (*free)(Store*);
-	void (*encode)(Store*, Buf*);
-	void (*decode)(Store*, Buf*, Timezone*);
-	bool (*in)(Store*, Value*);
+	void       (*free)(Store*);
+	atomic_u32 refs;
 };
+
+static inline void
+store_init(Store* self)
+{
+	memset(self, 0, sizeof(*self));
+}
 
 static inline void
 store_free(Store* self)
 {
-	self->free(self);
+	if (atomic_u32_of(&self->refs) == 0)
+	{
+		self->free(self);
+		return;
+	}
+	atomic_u32_dec(&self->refs);
 }
 
 static inline void
-store_encode(Store* self, Buf* buf)
+store_ref(Store* self)
 {
-	self->encode(self, buf);
-}
-
-static inline void
-store_decode(Store* self, Buf* buf, Timezone* timezone)
-{
-	self->decode(self, buf, timezone);
-}
-
-static inline bool
-store_in(Store* self, Value* value)
-{
-	return self->in(self, value);
+	atomic_u32_inc(&self->refs);
 }

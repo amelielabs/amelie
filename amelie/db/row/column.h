@@ -16,9 +16,10 @@ typedef struct Column Column;
 
 struct Column
 {
-	Str        name;
 	int        order;
+	Str        name;
 	int64_t    type;
+	int64_t    type_size;
 	Constraint constraint;
 	bool       key;
 	List       link;
@@ -28,9 +29,10 @@ static inline Column*
 column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
-	self->order = 0;
-	self->key   = false; 
-	self->type  = -1;
+	self->order     = 0;
+	self->key       = false;
+	self->type      = -1;
+	self->type_size = 0;
 	list_init(&self->link);
 	str_init(&self->name);
 	constraint_init(&self->constraint);
@@ -53,9 +55,10 @@ column_set_name(Column* self, Str* name)
 }
 
 static inline void
-column_set_type(Column* self, int value)
+column_set_type(Column* self, int type, int type_size)
 {
-	self->type = value;
+	self->type = type;
+	self->type_size = type_size;
 }
 
 static inline Column*
@@ -63,7 +66,7 @@ column_copy(Column* self)
 {
 	auto copy = column_allocate();
 	column_set_name(copy, &self->name);
-	column_set_type(copy, self->type);
+	column_set_type(copy, self->type, self->type_size);
 	constraint_copy(&self->constraint, &copy->constraint);
 	return copy;
 }
@@ -78,13 +81,13 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING,      "name",       &self->name  },
-		{ DECODE_STRING_READ, "type",       &type        },
-		{ DECODE_OBJ,         "constraint", &constraints },
-		{ 0,                   NULL,        NULL         },
+		{ DECODE_STRING, "name",       &self->name      },
+		{ DECODE_INT,    "type",       &self->type      },
+		{ DECODE_INT,    "type_size",  &self->type_size },
+		{ DECODE_OBJ,    "constraint", &constraints     },
+		{ 0,              NULL,        NULL             },
 	};
 	decode_obj(obj, "columns", pos);
-	self->type = type_read(&type);
 	constraint_read(&self->constraint, &constraints);
 	return unguard();
 }
@@ -100,30 +103,15 @@ column_write(Column* self, Buf* buf)
 
 	// type
 	encode_raw(buf, "type", 4);
-	encode_cstr(buf, type_of(self->type));
+	encode_integer(buf, self->type);
+
+	// type_size
+	encode_raw(buf, "type_size", 9);
+	encode_integer(buf, self->type_size);
 
 	// constraint
 	encode_raw(buf, "constraint", 10);
 	constraint_write(&self->constraint, buf);
 
 	encode_obj_end(buf);
-}
-
-hot static inline void
-column_find(Column* self, uint8_t** pos)
-{
-	if (unlikely(! data_is_array(*pos)))
-		error("row type expected to be array");
-
-	// find column
-	if (! array_find(pos, self->order))
-		error("column %.*s: is not found", str_size(&self->name),
-		      str_of(&self->name));
-
-	// validate data type
-	if (! type_validate(self->type, *pos))
-		error("column %.*s: does not match data type",
-		      str_size(&self->name),
-		      str_of(&self->name),
-		      type_of(self->type));
 }

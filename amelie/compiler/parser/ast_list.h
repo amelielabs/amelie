@@ -18,6 +18,7 @@ struct AstListNode
 {
 	Ast*         ast;
 	AstListNode* next;
+	AstListNode* prev;
 };
 
 struct AstList
@@ -49,6 +50,7 @@ ast_list_add(AstList* self, Ast* ast)
 	node = palloc(sizeof(AstListNode));
 	node->ast  = ast;
 	node->next = NULL;
+	node->prev = self->list_tail;
 	if (self->list == NULL)
 		self->list = node;
 	else

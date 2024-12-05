@@ -17,7 +17,6 @@ struct Keys
 {
 	List     list;	
 	int      list_count;
-	int      key_size;
 	bool     primary;
 	Columns* columns;
 };
@@ -26,7 +25,6 @@ static inline void
 keys_init(Keys* self, Columns* columns)
 {
 	self->list_count = 0;
-	self->key_size   = 0;
 	self->primary    = false;
 	self->columns    = columns;
 	list_init(&self->list);
@@ -43,10 +41,9 @@ keys_free(Keys* self)
 }
 
 static inline void
-keys_set(Keys* self, bool primary, int key_size)
+keys_set_primary(Keys* self, bool value)
 {
-	self->primary  = primary;
-	self->key_size = key_size;
+	self->primary = value;
 }
 
 static inline void
@@ -118,8 +115,7 @@ keys_copy_distinct(Keys* self, Keys* primary)
 	list_foreach_safe(&primary->list)
 	{
 		auto key = list_at(Key, link);
-		auto key_primary = keys_find(self, &key->column->name);
-		if (key_primary && key_compare(key, key_primary))
+		if (keys_find_column(self, key->ref))
 			continue;
 		auto copy = key_copy(list_at(Key, link));
 		keys_add(self, copy);
@@ -130,8 +126,8 @@ static inline void
 keys_read(Keys* self, uint8_t** pos)
 {
 	// []
-	data_read_array(pos);
-	while (! data_read_array_end(pos))
+	json_read_array(pos);
+	while (! json_read_array_end(pos))
 	{
 		auto key = key_read(pos);
 		keys_add(self, key);

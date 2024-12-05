@@ -1,0 +1,64 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: error()
+select error("error test")
+
+# test: random()
+select random()::type
+select public.random()::type
+
+# test: random_uuid()
+select random_uuid()::size
+
+# test: md5()
+select md5("hello world")
+
+# test: sha1()
+select sha1("hello world")
+
+# test: base64()
+select "hello world"::encode("base64")
+select "hello world"::encode("base64")::decode("base64")
+
+select "{\"alg\":\"HS256\",\"typ\":\"JWT\"}"::encode("base64");
+select decode("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", "base64")
+
+select "{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"::encode("base64")
+select "{\"sub\":\"123456\",\"name\":\"test\",\"iat\":1516239022}"::encode("base64")::decode("base64")
+# without =
+select "eyJzdWIiOiIxMjM0NTYiLCJuYW1lIjoidGVzdCIsImlhdCI6MTUxNjIzOTAyMn0"::decode("base64")
+
+select system.config()::string::encode("base64")::decode("base64") = system.config()::string
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::encode("base64")
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::encode("base64")::decode("base64")
+
+# test: base64url()
+select "hello world"::encode("base64url")
+select "hello world"::encode("base64url")::decode("base64url")
+select system.config()::string::encode("base64url")::decode("base64url") = system.config()::string
+
+select "<<???>>"::encode("base64url")
+select "<<???>>"::encode("base64url")::decode("base64url")
+
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::encode("base64url")
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::encode("base64url")::decode("base64url")
+
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::sha1
+select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}::string::encode("base64url")::decode("base64url")::sha1
+
+# test: serial()
+select serial("public", "abc")
+#create table test (id int primary key serial)
+#insert into test () values (), (), ()
+#select serial("public", "test")
+#drop table test
+
+# test: jwt()
+select jwt({"alg": "HS256", "typ": "JWT"}, {}, "123")
+select jwt({"alg": "HS256", "typ": "JWT"}, {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}, "123")
+
+disconnect S0
+close E0

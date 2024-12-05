@@ -22,7 +22,7 @@ struct Vars
 void vars_init(Vars*);
 void vars_free(Vars*);
 void vars_define(Vars*, VarDef*);
-bool vars_set_data(Vars*, uint8_t**, bool);
+bool vars_set_json(Vars*, uint8_t**, bool);
 bool vars_set(Vars*, Str*, bool);
 bool vars_set_argv(Vars*, int, char**);
 Buf* vars_list(Vars*, Vars*);

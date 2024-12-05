@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -143,23 +143,23 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	decode_obj(obj, "catalog", pos);
 
 	// nodes
-	data_read_array(&pos_nodes);
-	while (! data_read_array_end(&pos_nodes))
+	json_read_array(&pos_nodes);
+	while (! json_read_array_end(&pos_nodes))
 		restore_object(self, RESTORE_NODE, &pos_nodes);
 
 	// schemas
-	data_read_array(&pos_schemas);
-	while (! data_read_array_end(&pos_schemas))
+	json_read_array(&pos_schemas);
+	while (! json_read_array_end(&pos_schemas))
 		restore_object(self, RESTORE_SCHEMA, &pos_schemas);
 
 	// tables
-	data_read_array(&pos_tables);
-	while (! data_read_array_end(&pos_tables))
+	json_read_array(&pos_tables);
+	while (! json_read_array_end(&pos_tables))
 		restore_object(self, RESTORE_TABLE, &pos_tables);
 
 	// views
-	data_read_array(&pos_views);
-	while (! data_read_array_end(&pos_views))
+	json_read_array(&pos_views);
+	while (! json_read_array_end(&pos_views))
 		restore_object(self, RESTORE_VIEW, &pos_views);
 }
 

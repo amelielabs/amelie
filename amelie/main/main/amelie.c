@@ -56,7 +56,7 @@ amelie_usage(void)
 			break;
 		case VAR_STRING: type = "string";
 			break;
-		case VAR_DATA: type = "json";
+		case VAR_JSON: type = "json";
 			break;
 		}
 		info("    --%.*s=%s", str_size(&var->name),

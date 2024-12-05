@@ -14,7 +14,7 @@ truncate if exists
 
 # test: truncate
 create table test (id int primary key)
-insert into test 1,2,3,4,5
+insert into test values (1),(2),(3),(4),(5)
 truncate test
 select * from test
 
@@ -23,17 +23,17 @@ truncate test
 select * from test
 
 # test: insert after truncate
-insert into test 6,7,8
+insert into test values (6),(7),(8)
 select * from test
 truncate test
 select * from test
 
-insert into test 6,7,8
+insert into test values (6),(7),(8)
 select * from test
 truncate test
 select * from test
 
-insert into test 6,7,8
+insert into test values (6),(7),(8)
 select * from test
 truncate test
 select * from test
@@ -46,7 +46,7 @@ truncate if exists test
 
 # test: truncate (hash)
 create table test (id int primary key) with (type='hash')
-insert into test 1,2,3,4
+insert into test values (1),(2),(3),(4)
 select * from test
 truncate test
 select * from test

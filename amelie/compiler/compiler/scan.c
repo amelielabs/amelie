@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,12 +39,10 @@
 typedef struct
 {
 	Target*      target;
-	Ast*         expr_limit;
-	Ast*         expr_offset;
 	Ast*         expr_where;
-	int          coffset;
-	int          climit;
-	int          climit_eof;
+	int          roffset;
+	int          rlimit;
+	int          eof;
 	ScanFunction on_match;
 	void*        on_match_arg;
 	Compiler*    compiler;
@@ -55,7 +54,7 @@ scan_key(Scan* self, Target* target)
 	auto cp   = self->compiler;
 	auto path = ast_path_of(target->path);
 
-	list_foreach(&target->index->keys.list)
+	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &path->keys[key->order];
@@ -71,16 +70,27 @@ scan_key(Scan* self, Target* target)
 
 		// set min
 		int rexpr;
-		switch (key->type) {
+		switch (key->column->type) {
 		case TYPE_INT:
-			rexpr = op1(cp, CINT_MIN, rpin(cp));
+		{
+			if (key->column->type_size == 4)
+				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT32_MIN);
+			else
+				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT64_MIN);
 			break;
+		}
 		case TYPE_TIMESTAMP:
-			rexpr = op1(cp, CTIMESTAMP_MIN, rpin(cp));
+		{
+			rexpr = op2(cp, CTIMESTAMP, rpin(cp, TYPE_TIMESTAMP), 0);
 			break;
+		}
 		case TYPE_STRING:
-			rexpr = op1(cp, CSTRING_MIN, rpin(cp));
+		{
+			Str empty;
+			str_init(&empty);
+			rexpr = emit_string(cp, &empty, false);
 			break;
+		}
 		}
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
@@ -93,7 +103,7 @@ scan_stop(Scan* self, Target* target, int _eof)
 	auto cp   = self->compiler;
 	auto path = ast_path_of(target->path);
 
-	list_foreach(&target->index->keys.list)
+	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &path->keys[key->order];
@@ -114,17 +124,17 @@ static inline void
 scan_target(Scan*, Target*);
 
 static inline void
-scan_target_table(Scan* self, Target* target)
+scan_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto target_list = compiler_target_list(cp);
-	auto table = target->table;
+	auto table = target->from_table;
 
 	// prepare scan path using where expression per target
 	planner(target_list, target, self->expr_where);
 	auto path = ast_path_of(target->path);
 	auto point_lookup = (path->type == PATH_LOOKUP);
-	auto index = target->index;
+	auto index = target->from_table_index;
 
 	// push cursor keys
 	scan_key(self, target);
@@ -135,17 +145,17 @@ scan_target_table(Scan* self, Target* target)
 	encode_string(&cp->code_data.data, &table->config->name);
 	encode_string(&cp->code_data.data, &index->name);
 
-	// cursor_open
+	// table_open
 	int _open = op_pos(cp);
-	op4(cp, CCURSOR_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
+	op4(cp, CTABLE_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
 	op1(cp, CJMP, 0 /* _eof */);
 
-	// get outer target eof for limit expression
-	if (self->climit_eof == -1)
-		self->climit_eof = _where_eof;
+	// get outer target eof (for limit)
+	if (self->eof == -1)
+		self->eof = _where_eof;
 
 	// _where:
 	int _where = op_pos(cp);
@@ -174,14 +184,14 @@ scan_target_table(Scan* self, Target* target)
 		}
 
 		// offset/limit counters
-		int _coffset_jmp;
-		if (self->expr_offset)
+		int _offset_jmp;
+		if (self->roffset != -1)
 		{
-			_coffset_jmp = op_pos(cp);
-			op3(cp, CCNTR_GTE, target->id, 1 /* type */, 0 /* _next */);
+			_offset_jmp = op_pos(cp);
+			op2(cp, CJGTED, self->roffset, 0 /* _next */);
 		}
-		if (self->expr_limit)
-			op3(cp, CCNTR_LTE, target->id, 0 /* type */, self->climit_eof);
+		if (self->rlimit != -1)
+			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / expr against current cursor position
 		self->on_match(cp, self->on_match_arg);
@@ -196,56 +206,60 @@ scan_target_table(Scan* self, Target* target)
 			else
 				code_at(cp->code, _where_jntr)->a = _next;
 		}
-		if (self->expr_offset)
-			code_at(cp->code, _coffset_jmp)->c = _next;
+		if (self->roffset != -1)
+			code_at(cp->code, _offset_jmp)->b = _next;
 	}
 
-	// cursor_next
+	// table_next
 
 	// do not iterate further for point-lookups on unique index
 	if (point_lookup && index->unique)
 		op1(cp, CJMP, _where_eof);
 	else
-		op2(cp, CCURSOR_NEXT, target->id, _where);
+		op2(cp, CTABLE_NEXT, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
-	op1(cp, CCURSOR_CLOSE, target->id);
+	op1(cp, CTABLE_CLOSE, target->id);
 }
 
 static inline void
-scan_target_expr(Scan* self, Target* target)
+scan_store(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 
-	// use expression or CTE result for open
-	int _open;
-	int rexpr = -1;
-	if (target->cte)
+	// scan over SET or MERGE object
+	//
+	// using target register value to determine the scan object
+	if (target->r == -1)
 	{
-		// cursor_open_cte
-		_open = op_pos(cp);
-		op3(cp, CCURSOR_OPEN_CTE, target->id, target->cte->id, 0 /* _where */);
-	} else
-	{
-		// expr
-		if (target->rexpr != -1)
-			rexpr = target->rexpr;
-		else
-			rexpr = emit_expr(cp, target, target->expr);
-		// cursor_open_expr
-		_open = op_pos(cp);
-		op3(cp, CCURSOR_OPEN_EXPR, target->id, rexpr, 0 /* _where */);
+		if (target->type == TARGET_SELECT)
+		{
+			assert(target->from_select);
+			target->r = emit_select(cp, target->from_select);
+		} else
+		if (target->type == TARGET_CTE)
+		{
+			auto cte = target->from_cte;
+			// todo: type might be TYPE_MERGE
+			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_SET), cte->stmt);
+		} else {
+			assert(false);
+		}
 	}
+
+	// open SET or MERGE cursor
+	auto _open = op_pos(cp);
+	op3(cp, CSTORE_OPEN, target->id, target->r, 0 /* _where */);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
 	op1(cp, CJMP, 0 /* _eof */);
 
-	// get outer target eof for limit expression
-	if (self->climit_eof == -1)
-		self->climit_eof = _where_eof;
+	// get outer target eof (for limit)
+	if (self->eof == -1)
+		self->eof = _where_eof;
 
 	// _where:
 	int _where = op_pos(cp);
@@ -267,14 +281,14 @@ scan_target_expr(Scan* self, Target* target)
 		}
 
 		// offset/limit counters
-		int _coffset_jmp;
-		if (self->expr_offset)
+		int _offset_jmp;
+		if (self->roffset != -1)
 		{
-			_coffset_jmp = op_pos(cp);
-			op3(cp, CCNTR_GTE, target->id, 1 /* type */, 0 /* _next */);
+			_offset_jmp = op_pos(cp);
+			op2(cp, CJGTED, self->roffset, 0 /* _next */);
 		}
-		if (self->expr_limit)
-			op3(cp, CCNTR_LTE, target->id, 0 /* type */, self->climit_eof);
+		if (self->rlimit != -1)
+			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / select_expr
 		self->on_match(cp, self->on_match_arg);
@@ -284,28 +298,29 @@ scan_target_expr(Scan* self, Target* target)
 		if (self->expr_where)
 			code_at(cp->code, _where_jntr)->a = _next;
 
-		if (self->expr_offset)
-			code_at(cp->code, _coffset_jmp)->c = _next;
+		if (self->roffset != -1)
+			code_at(cp->code, _offset_jmp)->b = _next;
 	}
 
-	// cursor_next
-	op2(cp, CCURSOR_NEXT, target->id, _where);
+	// cursor next
+	op2(cp, CSTORE_NEXT, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
-	op1(cp, CCURSOR_CLOSE, target->id);
-	if (rexpr != -1)
-		runpin(cp, rexpr);
+
+	// STORE_CLOSE
+	op2(cp, CSTORE_CLOSE, target->id, true);
 }
 
 static inline void
 scan_target(Scan* self, Target* target)
 {
-	if (target->table)
-		scan_target_table(self, target);
+	if (target->type == TARGET_TABLE ||
+	    target->type == TARGET_TABLE_SHARED)
+		scan_table(self, target);
 	else
-		scan_target_expr(self, target);
+		scan_store(self, target);
 }
 
 void
@@ -320,12 +335,10 @@ scan(Compiler*    compiler,
 	Scan self =
 	{
 		.target       = target,
-		.expr_limit   = expr_limit,
-		.expr_offset  = expr_offset,
 		.expr_where   = expr_where,
-		.coffset      = -1,
-		.climit       = -1,
-		.climit_eof   = -1,
+		.roffset      = -1,
+		.rlimit       = -1,
+		.eof          = -1,
 		.on_match     = on_match,
 		.on_match_arg = on_match_arg,
 		.compiler     = compiler
@@ -334,22 +347,23 @@ scan(Compiler*    compiler,
 	// offset
 	if (expr_offset)
 	{
-		int roffset;
-		roffset = emit_expr(compiler, target, expr_offset);
-		self.coffset = op_pos(compiler);
-		op3(compiler, CCNTR_INIT, target->id, 1, roffset);
-		runpin(compiler, roffset);
+		self.roffset = emit_expr(compiler, target, expr_offset);
+		if (rtype(compiler, self.roffset) != TYPE_INT)
+			error("OFFSET: integer type expected");
 	}
 
 	// limit
 	if (expr_limit)
 	{
-		int rlimit;
-		rlimit = emit_expr(compiler, target, expr_limit);
-		self.climit = op_pos(compiler);
-		op3(compiler, CCNTR_INIT, target->id, 0, rlimit);
-		runpin(compiler, rlimit);
+		self.rlimit = emit_expr(compiler, target, expr_limit);
+		if (rtype(compiler, self.rlimit) != TYPE_INT)
+			error("LIMIT: integer type expected");
 	}
 
 	scan_target(&self, target);
+
+	if (self.roffset != -1)
+		runpin(compiler, self.roffset);
+	if (self.rlimit != -1)
+		runpin(compiler, self.rlimit);
 }

@@ -4,9 +4,10 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 
 # test: POST / (text/plain)
 connect E0 S0 localhost:3485
-
-# supported
 import text/plain select 1
+
+# test: POST / (application/sql)
+import application/sql select 1
 
 # test: POST / (application/json) unsupported
 import application/json [1]
@@ -30,8 +31,9 @@ disconnect S0
 # create table
 connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
-create table test2 (obj object, primary key(obj.id int))
-create table test3 (id int primary key, ts timestamp, iv interval, vec vector, agg agg(sum))
+create table test2 (id int primary key, a int as (id * 2) stored)
+create table test3 (id int primary key, a int as (a + 1) resolved)
+create table test4 (id int primary key serial, a int default 777)
 disconnect S0
 
 # test: POST /schema/table (text/plain) unsupported
@@ -61,39 +63,102 @@ connect E0 S0 http://localhost:3485/public/test?columns=id,a
 import text/csv 6,0
 disconnect S0
 
-connect E0 Sx http://localhost:3485/
-select * from test
-disconnect Sx
+connect E0 S0 http://localhost:3485/public/test?columns=id,a,b
+import text/csv 7,0,0
+disconnect S0
 
-# test: POST /schema/table (application/jsonl)
-connect E0 S0 http://localhost:3485/public/test
-import application/jsonl [7,0,0][8,0,0][9,0,0]
-import application/jsonl [10,0,0][11,
-import application/jsonl [[10,0,0], [11,0,0]]
-import application/jsonl 
+# test: POST /schema/table (text/csv) column list (duplicate)
+connect E0 S0 http://localhost:3485/public/test?columns=id,a,a
+import text/csv 8,0,0
+disconnect S0
+
+# test: POST /schema/table (text/csv) column list (unordered)
+connect E0 S0 http://localhost:3485/public/test?columns=id,b,a
+import text/csv 8,0,0
 disconnect S0
 
 connect E0 Sx http://localhost:3485/
 select * from test
 disconnect Sx
 
-# test: POST /schema/table (application/jsonl) one column
+# test: POST /schema/table (text/csv) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import text/csv 
+import text/csv     
+disconnect S0
+
+# test: POST /schema/table (text/csv) (generated columns)
 connect E0 S0 http://localhost:3485/public/test2
-import application/jsonl [{"id":1}] [{"id":2}]
-import application/jsonl {"id":3}{"id":4}
-disconnect S0
-
-connect E0 S0 http://localhost:3485/public/test2?columns=obj
-import application/jsonl {"id":5}{"id":6}
+import text/csv 0,null
+import text/csv 1,null
+import text/csv 2,null
 disconnect S0
 
 connect E0 Sx http://localhost:3485/
 select * from test2
 disconnect Sx
 
+# test: POST /schema/table (text/csv) (resolved columns)
+connect E0 S0 http://localhost:3485/public/test3
+import text/csv 0,0
+import text/csv 0,0
+import text/csv 0,0
+import text/csv 1,0
+import text/csv 1,0
+disconnect S0
+
+connect E0 Sx http://localhost:3485/
+select * from test3
+disconnect Sx
+
+# test: POST /schema/table (application/jsonl)
+connect E0 S0 http://localhost:3485/public/test
+import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
+import application/jsonl [12,
+import application/jsonl [12,0,
+import application/jsonl [12,0]
+import application/jsonl [12,]
+import application/jsonl [12,null]
+import application/jsonl [12,null,]
+import application/jsonl [12,null,'string']
+import application/jsonl [[12,null,0]]
+disconnect S0
+
+connect E0 Sx http://localhost:3485/
+select * from test
+disconnect Sx
+
+# test: POST /schema/table (application/jsonl) (column list)
+connect E0 S0 http://localhost:3485/public/test?columns=id
+import application/jsonl [13]
+disconnect S0
+
+connect E0 S0 http://localhost:3485/public/test?columns=id,a
+import application/jsonl [14,null]
+disconnect S0
+
+connect E0 Sx http://localhost:3485/
+select * from test
+disconnect Sx
+
+# test: POST /schema/table (application/jsonl) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import application/jsonl []
+disconnect S0
+
+connect E0 Sx http://localhost:3485/
+select * from test4
+disconnect Sx
+
 # test: POST /schema/table (application/json)
 connect E0 S0 http://localhost:3485/public/test
-import application/json [[10,0,0], [11,0,0]]
+import application/json [[15,0,0]]
+
+import application/json [[16,0,0]
+import application/json [[16,0,0],
+import application/json [[16,0,0],]
+import application/json [[16,0,0], [16,0,7]]
+import application/json [[16,0,0], [17,0,7]] junk
 import application/json 
 import application/json []
 import application/json {}
@@ -103,27 +168,25 @@ connect E0 Sx http://localhost:3485/
 select * from test
 disconnect Sx
 
-# test: POST /schema/table (application/json) one column
-connect E0 S0 http://localhost:3485/public/test2
-import application/json [{"id":7}, {"id":8}]
-disconnect S0
-
-connect E0 S0 http://localhost:3485/public/test2?columns=obj
-import application/json [{"id":9}{"id":10}]
-import application/json [{"id":9}, {"id":10}]
+# test: POST /schema/table (application/json) (column list)
+connect E0 S0 http://localhost:3485/public/test?columns=id
+import application/json [[18,0]
+import application/json [[18,
+import application/json [[]
+import application/json [[18], [19]]
 disconnect S0
 
 connect E0 Sx http://localhost:3485/
-select * from test2
+select * from test
 disconnect Sx
 
-# test: POST /schema/table (auto casting)
-connect E0 S0 http://localhost:3485/public/test3
-import application/json [ [0, "1970-01-01 00:00:00.001000", "1 hour 5 minutes 6 seconds", [1,2,3], 42] ]
+# test: POST /schema/table (application/json) (empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import application/json [[], [], []]
 disconnect S0
 
 connect E0 Sx http://localhost:3485/
-select * from test3
+select * from test4
 disconnect Sx
 
 close E0

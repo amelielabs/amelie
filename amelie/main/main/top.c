@@ -85,19 +85,19 @@ top_stats_read(TopStats* self, uint8_t** pos)
 	};
 	decode_obj(obj_process, "process", &pos_process);
 
-	data_read_array(&pos_cpu_frontends);
-	while (! data_read_array_end(&pos_cpu_frontends))
+	json_read_array(&pos_cpu_frontends);
+	while (! json_read_array_end(&pos_cpu_frontends))
 	{
 		int64_t value;
-		data_read_integer(&pos_cpu_frontends, &value);
+		json_read_integer(&pos_cpu_frontends, &value);
 		buf_write(&self->cpu_frontends, &value, sizeof(int64_t));
 	}
 
-	data_read_array(&pos_cpu_backends);
-	while (! data_read_array_end(&pos_cpu_backends))
+	json_read_array(&pos_cpu_backends);
+	while (! json_read_array_end(&pos_cpu_backends))
 	{
 		int64_t value;
-		data_read_integer(&pos_cpu_backends, &value);
+		json_read_integer(&pos_cpu_backends, &value);
 		buf_write(&self->cpu_backends, &value, sizeof(int64_t));
 	}
 
@@ -190,7 +190,7 @@ top_update(Top* self, Client* client)
 	guard(top_stats_free, stats);
 
 	uint8_t* pos = self->json.buf_data.start;
-	data_read_array(&pos);
+	json_read_array(&pos);
 	top_stats_read(stats, &pos);
 	unguard();
 

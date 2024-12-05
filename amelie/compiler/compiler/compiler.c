@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,6 +39,7 @@
 void
 compiler_init(Compiler*    self,
               Db*          db,
+              Local*       local,
               FunctionMgr* function_mgr)
 {
 	self->snapshot = false;
@@ -49,7 +51,9 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_coordinator);
 	code_init(&self->code_node);
 	code_data_init(&self->code_data);
-	parser_init(&self->parser, db, function_mgr, &self->code_data);
+	set_cache_init(&self->values_cache);
+	parser_init(&self->parser, db, local, function_mgr, &self->code_data,
+	            &self->values_cache);
 	rmap_init(&self->map);
 }
 
@@ -60,6 +64,7 @@ compiler_free(Compiler* self)
 	code_free(&self->code_coordinator);
 	code_free(&self->code_node);
 	code_data_free(&self->code_data);
+	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }
 
@@ -79,15 +84,22 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_parse(Compiler* self, Local* local, Columns* args, Str* text)
+compiler_parse(Compiler* self, Str* text)
 {
-	self->args = args;
-	parse(&self->parser, local, args, text);
+	parse(&self->parser, text);
+}
+
+void
+compiler_parse_import(Compiler*    self, Str* text, Str* uri,
+                      EndpointType type)
+{
+	parse_import(&self->parser, text, uri, type);
 }
 
 static void
 emit_stmt(Compiler* self)
 {
+	// generate node code (pushdown)
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
@@ -146,9 +158,9 @@ emit_stmt(Compiler* self)
 
 		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
-			// select from table/shared
+			// select from table
 
 			// validate supported targets as expressions or shared table
 			target_list_validate(&stmt->target_list, select->target);
@@ -162,24 +174,20 @@ emit_stmt(Compiler* self)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select (select from table)
-			if (!select->target || !select->target->expr)
+			if (!select->target || !select->target->from_select)
 				error("FROM: undefined distributed table");
 
 			// select from (select from table)
-			auto from_expr = select->target->expr;
-			if (from_expr->id != KSELECT)
-				error("FROM: undefined distributed table");
-
-			auto from_select = ast_select_of(from_expr);
+			auto from_select = ast_select_of(select->target->from_select);
 			if (from_select->target == NULL ||
-			    from_select->target->table == NULL)
+			    from_select->target->from_table == NULL)
 				error("FROM SELECT: undefined distributed table");
 
 			// validate FROM SELECT targets
 			target_list_validate(&stmt->target_list, from_select->target);
 
 			// generate pushdown as a nested query
-			pushdown(self, from_expr);
+			pushdown(self, &from_select->ast);
 			break;
 		}
 
@@ -192,10 +200,6 @@ emit_stmt(Compiler* self)
 		pushdown_first(self, stmt->ast);
 		break;
 	}
-
-	case STMT_RETURN:
-		// do nothing (coordinator only)
-		return;
 
 	case STMT_WATCH:
 	{
@@ -220,15 +224,27 @@ emit_send_generated_on_match(Compiler* self, void* arg)
 	AstInsert* insert = arg;
 	// generate and push to the stack each generated
 	// column expression
-	auto expr = insert->generated_columns;
-	while (expr)
+	auto op = insert->generated_columns;
+	for (; op; op = op->next)
 	{
+		auto column = op->l->column;
+
 		// expr
-		int rexpr = emit_expr(self, insert->target_generated, expr);
+		int rexpr = emit_expr(self, insert->target_generated, op->r);
+		int type = rtype(self, rexpr);
+
+		// ensure that the expression type is compatible
+		// with the column
+		if (unlikely(type != TYPE_NULL && column->type != type))
+			error("<%.*s.%.*s> column generated expression type '%s' does not match column type '%s'",
+			      str_size(&insert->target->name), str_of(&insert->target->name),
+			      str_size(&column->name), str_of(&column->name),
+			      type_of(type),
+			      type_of(column->type));
+
 		// push
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
-		expr = expr->next;
 	}
 }
 
@@ -237,11 +253,12 @@ emit_send_generated(Compiler* self, int start)
 {
 	auto stmt   = self->current;
 	auto insert = ast_insert_of(stmt->ast);
-	auto table  = insert->target->table;
+	auto table  = insert->target->from_table;
 
-	// cursor_open( insert->rows )
+	// store_open( insert->values )
 	auto target = insert->target_generated;
-	target->rexpr = op2(self, CDATA, rpin(self), insert->rows);
+	target->r = op2(self, CSET_PTR, rpin(self, TYPE_SET),
+	                (intptr_t)insert->values);
 
 	// generate scan over insert rows to create new rows using the
 	// generated columns expressions
@@ -252,30 +269,31 @@ emit_send_generated(Compiler* self, int start)
 	     emit_send_generated_on_match,
 	     insert);
 
-	// push the number of inserted rows
-	auto rexpr = op2(self, CINT, rpin(self), insert->rows_count);
-	op1(self, CPUSH, rexpr);
-	runpin(self, rexpr);
-
 	// CSEND_GENERATED
-	op4(self, CSEND_GENERATED, stmt->order, start, (intptr_t)table, insert->rows);
+	op4(self, CSEND_GENERATED, stmt->order, start,
+	    (intptr_t)table,
+	    (intptr_t)insert->values);
 }
 
 static inline void
 emit_send(Compiler* self, int start)
 {
+	// generate coordinator send code
 	Target* target = NULL;
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		auto table = insert->target->table;
-		if (table_columns(table)->generated_columns) {
+		auto table = insert->target->from_table;
+		if (table_columns(table)->count_stored > 0) {
+			// CSEND_GENERATED
 			emit_send_generated(self, start);
 		} else {
 			// CSEND
-			op4(self, CSEND, stmt->order, start, (intptr_t)table, insert->rows);
+			op4(self, CSEND, stmt->order, start,
+			    (intptr_t)table,
+			    (intptr_t)insert->values);
 		}
 		break;
 	}
@@ -293,7 +311,7 @@ emit_send(Compiler* self, int start)
 
 		// direct query from distributed or shared table
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
 			target = select->target;
 			break;
@@ -303,9 +321,7 @@ emit_send(Compiler* self, int start)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select from (select from table)
-			auto from_expr = select->target->expr;
-			auto from_select = ast_select_of(from_expr);
-			target = from_select->target;
+			target = ast_select_of(select->target->from_select)->target;
 			break;
 		}
 
@@ -315,10 +331,6 @@ emit_send(Compiler* self, int start)
 		op2(self, CSEND_FIRST, stmt->order, start);
 		break;
 	}
-
-	case STMT_RETURN:
-		// no targets
-		break;
 
 	case STMT_WATCH:
 		// no targets
@@ -333,7 +345,7 @@ emit_send(Compiler* self, int start)
 	if (! target)
 		return;
 
-	auto table = target->table;
+	auto table = target->from_table;
 	if (table->config->shared)
 	{
 		// send to first node
@@ -363,32 +375,39 @@ emit_send(Compiler* self, int start)
 static inline void
 emit_recv(Compiler* self)
 {
+	Returning* ret = NULL;
 	int r = -1;
 	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		r = pushdown_recv_returning(self, insert->returning != NULL);
+		ret = &insert->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
-		r = pushdown_recv_returning(self, update->returning != NULL);
+		ret = &update->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
-		r = pushdown_recv_returning(self, delete->returning != NULL);
+		ret = &delete->ret;
+		r = pushdown_recv_returning(self, returning_has(ret));
 		break;
 	}
 
 	case STMT_SELECT:
 	{
+		auto select = ast_select_of(stmt->ast);
+		ret = &select->ret;
+
 		// no targets or all targets are expressions
 		if (target_list_is_expr(&stmt->target_list))
 		{
@@ -397,8 +416,7 @@ emit_recv(Compiler* self)
 		}
 
 		// direct query from distributed or shared table
-		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->table)
+		if (select->target && select->target->from_table)
 		{
 			r = pushdown_recv(self, stmt->ast);
 			break;
@@ -408,8 +426,7 @@ emit_recv(Compiler* self)
 		if (target_list_has(&stmt->target_list, TARGET_TABLE))
 		{
 			// select over returned SET or MERGE object
-			auto from_expr = select->target->expr;
-			select->target->rexpr = pushdown_recv(self, from_expr);
+			select->target->r = pushdown_recv(self, select->target->from_select);
 			r = emit_select(self, stmt->ast);
 			break;
 		}
@@ -417,19 +434,9 @@ emit_recv(Compiler* self)
 		// nested expression or nested shared table targets
 		// (first node only, single result)
 
-		// CRECV_TO
-		r = op2(self, CRECV_TO, rpin(self), stmt->order);
+		// CRECV_TO (note: set or merge received)
+		r = op2(self, CRECV_TO, rpin(self, TYPE_SET), stmt->order);
 		break;
-	}
-
-	case STMT_RETURN:
-	{
-		// RETURN cte_name
-		//
-		// optimized path to avoid cte double copy
-		op1(self, CBODY, stmt->cte->id);
-		op0(self, CRET);
-		return;
 	}
 
 	case STMT_WATCH:
@@ -444,17 +451,20 @@ emit_recv(Compiler* self)
 
 	auto has_result = r != -1;
 	if (! has_result)
-		r = op1(self, CNULL, rpin(self));
+		r = op1(self, CNULL, rpin(self, TYPE_NULL));
 
 	// CCTE_SET
 	op2(self, CCTE_SET, stmt->cte->id, r);
 	runpin(self, r);
 
-	// RETURN stmt
+	// statement returns
 	if (stmt->ret)
 	{
+		// create content using cte result
 		if (has_result)
-			op1(self, CBODY, stmt->cte->id);
+			op3(self, CCONTENT, stmt->cte->id,
+			    (intptr_t)&ret->columns,
+			    (intptr_t)&ret->format);
 		op0(self, CRET);
 	}
 }
@@ -483,6 +493,7 @@ compiler_emit(Compiler* self)
 	auto parser = &self->parser;
 	auto stmt_list = &parser->stmt_list;
 	assert(stmt_list->list_count > 0);
+	rmap_prepare(&self->map);
 
 	// analyze statements
 	//

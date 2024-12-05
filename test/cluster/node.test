@@ -10,7 +10,6 @@ show nodes
 create table test (id int primary key)
 create shared table test (id int primary key)
 select * from test
-select * from [1,2,3]
 
 # test: create node statement parsing
 create compute
@@ -41,7 +40,7 @@ create table test1 (id int primary key)
 create shared table test2 (id int primary key)
 show tables
 
-insert into test1 values (1), (2), (3); insert into test2 4,5,6
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
 select * from test1
 select * from test2
 

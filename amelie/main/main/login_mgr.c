@@ -51,11 +51,11 @@ login_mgr_open(LoginMgr* self, const char* path)
 
 	// {}
 	uint8_t* pos = json.buf->start;
-	data_read_obj(&pos);
-	while (! data_read_obj_end(&pos))
+	json_read_obj(&pos);
+	while (! json_read_obj_end(&pos))
 	{
 		// name
-		data_skip(&pos);
+		json_skip(&pos);
 
 		// value
 		auto login = login_read(&pos);
@@ -142,19 +142,19 @@ login_mgr_set_json(Remote* remote, Str* text)
 
 	uint8_t* pos = json.buf->start;
 
-	data_read_obj(&pos);
-	while (! data_read_obj_end(&pos))
+	json_read_obj(&pos);
+	while (! json_read_obj_end(&pos))
 	{
 		// key
 		Str name;
-		data_read_string(&pos, &name);
+		json_read_string(&pos, &name);
 
 		// value
-		if (! data_is_string(pos))
+		if (! json_is_string(pos))
 			error("login: option '%.*s' string value expected",
 			      str_size(&name), str_of(&name));
 		Str value;
-		data_read_string(&pos, &value);
+		json_read_string(&pos, &value);
 
 		// find option
 		int id = 0;

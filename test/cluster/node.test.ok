@@ -9,9 +9,7 @@ create table test (id int primary key)
 create shared table test (id int primary key)
 {"msg": "system has no nodes"}
 select * from test
-{"msg": "<test> table or view is not found"}
-select * from [1,2,3]
-[1, 2, 3]
+{"msg": "<public.test> table or view not found"}
 # test: create node statement parsing
 create compute
 {"msg": "CREATE COMPUTE <NODE> expected"}
@@ -65,19 +63,17 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -87,9 +83,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -103,19 +97,17 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -125,9 +117,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -138,11 +128,11 @@ show tables
     }]
   }
 }]
-insert into test1 values (1), (2), (3); insert into test2 4,5,6
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
 select * from test1
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test2
-[[4], [5], [6]]
+[4, 5, 6]
 # test: restart
 disconnect S0
 close E0
@@ -156,9 +146,9 @@ show nodes
   }
 }]
 select * from test1
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test2
-[[4], [5], [6]]
+[4, 5, 6]
 # test: drop node statement parsing
 drop node
 {"msg": "DROP NODE <id> expected"}
@@ -221,19 +211,17 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -243,9 +231,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -259,19 +245,17 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -281,9 +265,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -297,19 +279,17 @@ show tables
     "schema": "public",
     "name": "test3",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -319,9 +299,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -355,7 +333,7 @@ insert into test4 values (1), (2), (3)
 create node "00000000-0000-0000-0000-000000000003"
 create node "00000000-0000-0000-0000-000000000004"
 select * from test4
-[[1], [2], [3]]
+[1, 2, 3]
 drop table test4
 # test: create table/create node/add column
 show nodes
@@ -380,19 +358,17 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -402,9 +378,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -418,19 +392,17 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -440,9 +412,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -456,19 +426,17 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -478,9 +446,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -534,19 +500,17 @@ show tables
     "schema": "public",
     "name": "test1",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -556,9 +520,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -572,19 +534,17 @@ show tables
     "schema": "public",
     "name": "test2",
     "shared": true,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -594,9 +554,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{
@@ -610,33 +568,30 @@ show tables
     "schema": "public",
     "name": "test",
     "shared": false,
-    "aggregated": false,
     "columns": [{
       "name": "id",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": true,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }, {
       "name": "data",
-      "type": "int",
+      "type": 2,
+      "type_size": 4,
       "constraint": {
         "not_null": false,
-        "not_aggregated": true,
         "serial": false,
         "random": false,
         "random_modulo": 9223372036854775807,
-        "aggregate": 0,
         "as_stored": "",
-        "as_aggregated": "",
+        "as_resolved": "",
         "default": null
       }
     }],
@@ -646,9 +601,7 @@ show tables
       "unique": true,
       "primary": true,
       "keys": [{
-        "ref": 0,
-        "type": "int",
-        "path": ""
+        "column": 0
       }]
     }],
     "partitions": [{

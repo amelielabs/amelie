@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -49,48 +50,58 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 
 		// meta_offset
 		int64_t meta_offset;
-		data_read_integer(&pos, &meta_offset);
+		json_read_integer(&pos, &meta_offset);
 
 		// data_offset
 		int64_t data_offset;
-		data_read_integer(&pos, &data_offset);
+		json_read_integer(&pos, &data_offset);
 
 		uint8_t* meta = req->arg_start + meta_offset;
 		uint8_t* data = req->arg_start + data_offset;
 
 		// type
 		int64_t type;
-		data_read_integer(&meta, &type);
+		json_read_integer(&meta, &type);
 
 		// partition
 		int64_t partition_id;
-		data_read_integer(&meta, &partition_id);
+		json_read_integer(&meta, &partition_id);
 		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
 		if (! part)
 			error("failed to find partition %" PRIu64, partition_id);
 
 		// replay write
+		auto row = (Row*)data;
 		if (type == LOG_REPLACE)
-			part_insert(part, tr, true, &data);
-		else
-			part_delete_by(part, tr, &data);
+		{
+			auto copy = row_copy(row);
+			part_insert(part, tr, true, copy);
+		} else
+		{
+			part_delete_by(part, tr, row);
+		}
 	}
 }
 
 hot static inline void
 compute_load(Compute* self, Tr* tr, Req* req)
 {
+	(void)self;
+	(void)tr;
+	(void)req;
+#if 0
 	// execute batch INSERT
 	for (auto pos = req->arg.start; pos < req->arg.position;)
 	{
 		// row offset
 		int64_t offset;
-		data_read_integer(&pos, &offset);
+		json_read_integer(&pos, &offset);
 		auto data = req->arg_buf->start + offset;
 
 		auto part = part_list_match(&req->arg_table->part_list, &self->node->id);
 		part_insert(part, tr, false, &data);
 	}
+#endif
 }
 
 hot static inline void
@@ -102,11 +113,12 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        tr,
 	        req->program->code_node,
 	        req->program->code_data,
+	        req->arg_values,
 	       &req->arg,
-	        req->arg_buf,
 	        req->args,
 	        req->cte,
 	       &req->result,
+	        NULL,
 	        req->start);
 }
 
@@ -242,7 +254,7 @@ compute_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
-	vm_init(&self->vm, db, NULL, NULL, NULL, NULL, function_mgr);
+	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
 	self->vm.node = &node->id;
 	task_init(&self->task);
 	return self;

@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse(Parser*, Local*, Columns*, Str*);
 void parse_stmt_free(Stmt*);
+void parse(Parser*, Str*);

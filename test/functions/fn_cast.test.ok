@@ -1,0 +1,187 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: type()
+select 1::type
+["int"]
+select "Hi"::type
+["string"]
+select [1,2,3]::type
+["json"]
+select {}::type
+["json"]
+select (select 1)::type
+["int"]
+select null::type
+["null"]
+# test: int(null)
+select null::int
+[null]
+# test: int(int)
+select 1::int
+[1]
+select 1::int(123)
+{"msg": "int(): expected 1 arguments, but got 2"}
+# test: int(double)
+select 3.14::int
+[3]
+# test: int(bool)
+select true::int
+[1]
+select false::int
+[0]
+# test: int(string)
+select '123'::int
+[123]
+select '1423423423'::int
+[1423423423]
+select '1423abc'::int
+{"msg": "int(): failed to cast string"}
+# test: int(json)
+select '1'::json::int
+[1]
+select 'hi'::json::int
+{"msg": "unexpected JSON token"}
+# test: int(timestamp)
+select 1722517792056945::timestamp
+["2024-08-01 13:09:52.056945+00"]
+select 1722517792056945::timestamp::int
+[1722517792056945]
+select 1722517792056945::timestamp::int::timestamp
+["2024-08-01 13:09:52.056945+00"]
+select '1 hour'::interval::int
+{"msg": "int(interval): operation type is not supported"}
+# test: bool(null)
+select null::bool
+[null]
+# test: bool(int)
+select 1::bool
+[true]
+select 0::bool
+[false]
+select 23431::bool
+[true]
+# test: bool(double)
+select 3.14::bool
+[true]
+select 0.14::bool
+[true]
+select 0.0::bool
+[false]
+# test: bool(json)
+select 'true'::json::bool
+[true]
+select 'false'::json::bool
+[false]
+select '1'::json::bool
+[true]
+# test: bool(timestamp)
+select 1722517792056945::timestamp::bool
+[true]
+# test: bool(interval)
+select '1 hour'::interval::bool
+[true]
+select '0 secs'::interval::bool
+[false]
+# test: double(null)
+select 1::double
+[1]
+# test: double(int)
+select 1::double
+[1]
+# test: double(double)
+select 3.14::double
+[3.14]
+# test: double(bool)
+select true::double
+[1]
+select false::double
+[0]
+# test: double(json)
+select '1.56'::json::double
+[1.56]
+# test: double(timestamp)
+select 1722517792056945::timestamp
+["2024-08-01 13:09:52.056945+00"]
+select 1722517792056945::timestamp::double
+[1.72252e+15]
+select 1722517792056945::timestamp::double::timestamp
+{"msg": "timestamp(double): operation type is not supported"}
+# test: string(null)
+select null::string
+[null]
+# test: string(int)
+select 16384::string
+["16384"]
+# test: string(string)
+select 'hello'::string
+["hello"]
+# test: string(interval)
+select '1 hour'::interval::string
+["1 hour"]
+# test: string(timestamp)
+select '2024-07-29 18:40:19'::timestamp::string
+["2024-07-29 18:40:19+00"]
+# test: string(json)
+select {"id": 42, "data": [1,2,3]}::string
+["{\"id\": 42, \"data\": [1, 2, 3]}"]
+# test: json(null)
+select null::json
+[null]
+# test: json(string)
+select '1'::json
+[1]
+select '1'::json::type
+["json"]
+select [1,2,3]::vector::string::json
+[[1, 2, 3]]
+select '[1,2,3]'::json
+[[1, 2, 3]]
+# test: json(json)
+select [1,2,3]::json
+[[1, 2, 3]]
+select {"id":55}::json
+[{
+  "id": 55
+}]
+# test: interval(null)
+select null::interval
+[null]
+# test: interval(string)
+select '1 hour 55 minutes 5 secs'::interval
+["1 hour 55 minutes 5 seconds"]
+select '1 hour 55 minutes 5 secs'::interval::string
+["1 hour 55 minutes 5 seconds"]
+# test: timestamp(null)
+select null::timestamp
+[null]
+# test: timestamp(string)
+select '2024-07-29 18:40:19'::timestamp
+["2024-07-29 18:40:19+00"]
+# test: vector(null)
+select null::vector
+[null]
+# test: vector(json)
+select []::vector
+[[]]
+select []::vector::length
+[0]
+select [1.0]::vector
+[[1]]
+select [1]::vector
+[[1]]
+select [1, 2.0, "test"]::vector
+{"msg": "vector(): json array int or real values expected"}
+select [1, 2.0, "test"]::vector
+{"msg": "vector(): json array int or real values expected"}
+select [1, 2.0, {}]::vector
+{"msg": "vector(): json array int or real values expected"}
+select [1, 2.0, null]::vector
+{"msg": "vector(): json array int or real values expected"}
+select [1,2,3]::vector
+[[1, 2, 3]]
+select [1,2,3]::vector::type
+["vector"]
+select [1,2,3]::vector::length
+[3]
+disconnect S0
+close E0

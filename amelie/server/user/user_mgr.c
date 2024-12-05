@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 
@@ -37,7 +37,7 @@ user_mgr_save(UserMgr* self)
 	guard_buf(buf);
 
 	// update and save state
-	var_data_set_buf(&config()->users, buf);
+	var_json_set_buf(&config()->users, buf);
 	control_save_config();
 }
 
@@ -45,14 +45,14 @@ void
 user_mgr_open(UserMgr* self)
 {
 	auto users = &config()->users;
-	if (! var_data_is_set(users))
+	if (! var_json_is_set(users))
 		return;
-	auto pos = var_data_of(users);
-	if (data_is_null(pos))
+	auto pos = var_json_of(users);
+	if (json_is_null(pos))
 		return;
 
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		// value
 		auto config = user_config_read(&pos);

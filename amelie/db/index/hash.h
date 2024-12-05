@@ -71,14 +71,14 @@ hash_rehash(Hash* self)
 	auto prev = self->prev;
 	while (self->rehashing_pos < prev->size)
 	{
-		auto key = hash_store_at(prev, self->rehashing_pos);
-		if (!key->row || key->row == HT_DELETED)
+		auto ref = prev->rows[self->rehashing_pos];
+		if (!ref || ref == HT_DELETED)
 		{
 			self->rehashing_pos++;
 			continue;
 		}
-		hash_store_set(self->current, key, NULL);
-		key->row = NULL;
+		hash_store_set(self->current, ref);
+		prev->rows[self->rehashing_pos] = NULL;
 		prev->count--;
 
 		self->rehashing_pos++;
@@ -92,60 +92,55 @@ hash_rehash(Hash* self)
 	return false;
 }
 
-hot static inline bool
-hash_set(Hash* self, Ref* key, Ref* prev)
+hot static inline Row*
+hash_set(Hash* self, Row* key)
 {
-	bool exists = false;
+	Row* prev = NULL;
 	if (self->rehashing)
 	{
-		exists = hash_store_set(self->current, key, prev);
-		if (! exists)
-			exists = hash_store_delete(self->prev, key, prev);
+		prev = hash_store_set(self->current, key);
+		if (! prev)
+			prev = hash_store_delete(self->prev, key);
 		hash_rehash(self);
 	} else
 	{
-		exists = hash_store_set(self->current, key, prev);
+		prev = hash_store_set(self->current, key);
 		if (hash_store_is_full(self->current))
 		{
 			hash_rehash_start(self);
 			hash_rehash(self);
 		}
 	}
-	return exists;
+	return prev;
 }
 
 hot static inline bool
-hash_get_or_set(Hash* self, Ref* key, uint64_t* pos)
+hash_get_or_set(Hash* self, Row* key, uint64_t* pos)
 {
-	bool exists = false;
+	Row* prev = NULL;
 	if (self->rehashing)
 	{
-		// get from current and previous tables
+		// get from the current and previous tables
 		uint64_t current_pos = 0;
-		exists = hash_store_get(self->current, key, &current_pos);
-		if (! exists)
+		prev = hash_store_get(self->current, key, &current_pos);
+		if (! prev)
 		{
 			uint64_t prev_pos = 0;
-			exists = hash_store_get(self->prev, key, &prev_pos);
-			if (exists)
+			prev = hash_store_get(self->prev, key, &prev_pos);
+			if (prev)
 			{
-				// move to current
-				auto prev = hash_store_at(self->prev, prev_pos);
-				hash_store_copy(self->current,
-				                hash_store_at(self->current, current_pos),
-				                prev);
-				prev->row = NULL;
+				// move to the current
+				self->current->rows[current_pos] = prev;
+				self->prev->rows[prev_pos] = NULL;
 				self->prev->count--;
 				self->current->count++;
 			}
 		}
 
 		// set to current, if not exists
-		if (! exists)
+		if (! prev)
 		{
-			hash_store_copy(self->current,
-			                hash_store_at(self->current, current_pos),
-			                key);
+			self->current->rows[current_pos] = key;
 			self->current->count++;
 		}
 		*pos = current_pos;
@@ -153,15 +148,11 @@ hash_get_or_set(Hash* self, Ref* key, uint64_t* pos)
 		hash_rehash(self);
 	} else
 	{
-		// get from current table
 		uint64_t current_pos = 0;
-		exists = hash_store_get(self->current, key, &current_pos);
-		if (! exists)
+		prev = hash_store_get(self->current, key, &current_pos);
+		if (! prev)
 		{
-			// set to current, if not exists
-			hash_store_copy(self->current,
-			                hash_store_at(self->current, current_pos),
-			                key);
+			self->current->rows[current_pos] = key;
 			self->current->count++;
 		}
 
@@ -173,22 +164,21 @@ hash_get_or_set(Hash* self, Ref* key, uint64_t* pos)
 		}
 	}
 
-	return exists;
+	return prev != NULL;
 }
 
-hot static inline bool
-hash_delete(Hash* self, Ref* key, Ref* prev)
+hot static inline Row*
+hash_delete(Hash* self, Row* key)
 {
-	bool exists = false;
+	Row* prev = NULL;
 	if (self->rehashing)
 	{
-		exists = hash_store_delete(self->current, key, prev);
-		if (! exists)
-			exists = hash_store_delete(self->prev, key, prev);
+		prev = hash_store_delete(self->current, key);
+		if (! prev)
+			prev = hash_store_delete(self->prev, key);
 		hash_rehash(self);
-	} else
-	{
-		exists = hash_store_delete(self->current, key, prev);
+	} else {
+		prev = hash_store_delete(self->current, key);
 	}
-	return exists;
+	return prev;
 }

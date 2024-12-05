@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -156,7 +157,8 @@ backup_join(Backup* self)
 
 	auto client = self->client;
 	auto reply = &client->reply;
-	body_add_raw(&reply->content, &self->state, global()->timezone);
+	uint8_t* pos = self->state.start;
+	json_export_pretty(&reply->content, global()->timezone, &pos);
 	http_write_reply(reply, 200, "OK");
 	http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
 	http_write(reply, "Content-Type", "application/json");

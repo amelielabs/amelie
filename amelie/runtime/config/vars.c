@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 
 void
@@ -58,7 +58,7 @@ vars_define(Vars* self, VarDef* defs)
 			if (def->default_string)
 				var_string_set_raw(var, def->default_string, strlen(def->default_string));
 			break;
-		case VAR_DATA:
+		case VAR_JSON:
 			break;
 		}
 	}
@@ -77,15 +77,15 @@ vars_find(Vars* self, Str* name)
 }
 
 bool
-vars_set_data(Vars* self, uint8_t** pos, bool system)
+vars_set_json(Vars* self, uint8_t** pos, bool system)
 {
 	bool update = false;
-	data_read_obj(pos);
-	while (! data_read_obj_end(pos))
+	json_read_obj(pos);
+	while (! json_read_obj_end(pos))
 	{
 		// key
 		Str name;
-		data_read_string(pos, &name);
+		json_read_string(pos, &name);
 
 		// find variable and set value
 		auto var = vars_find(self, &name);
@@ -107,7 +107,7 @@ vars_set_data(Vars* self, uint8_t** pos, bool system)
 			update = true;
 
 		// set data value based on type
-		var_set_data(var, pos);
+		var_set_json(var, pos);
 	}
 	return update;
 }
@@ -120,7 +120,7 @@ vars_set(Vars* self, Str* options, bool system)
 	guard(json_free, &json);
 	json_parse(&json, options, NULL);
 	uint8_t* pos = json.buf->start;
-	return vars_set_data(self, &pos, system);
+	return vars_set_json(self, &pos, system);
 }
 
 bool

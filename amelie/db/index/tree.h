@@ -19,7 +19,7 @@ struct TreePage
 {
 	RbtreeNode node;
 	int        keys_count;
-	// keys[]
+	Row*       rows[];
 };
 
 struct TreePos
@@ -40,27 +40,8 @@ struct Tree
 
 void tree_init(Tree*, int, int, Keys*);
 void tree_free(Tree*);
-bool tree_set(Tree*, Ref*, Ref*);
-bool tree_set_or_get(Tree*, Ref*, TreePos*);
-bool tree_unset(Tree*, Ref*, Ref*);
+Row* tree_set(Tree*, Row*);
+bool tree_set_or_get(Tree*, Row*, TreePos*);
+Row* tree_unset(Tree*, Row*);
 void tree_unset_by(Tree*, TreePos*);
-bool tree_seek(Tree*, Ref*, TreePos*);
-
-always_inline hot static inline Ref*
-tree_at(Tree* self, TreePage* page, int pos)
-{
-	auto ptr = (uint8_t*)page + sizeof(TreePage) + (self->keys->key_size * pos);
-	return (Ref*)ptr;
-}
-
-always_inline static inline void
-tree_copy(Tree* self, TreePage* page, int pos, Ref* key)
-{
-	memcpy(tree_at(self, page, pos), key, self->keys->key_size);
-}
-
-always_inline static inline void
-tree_copy_from(Tree* self, TreePage* page, int pos, Ref* key)
-{
-	memcpy(key, tree_at(self, page, pos), self->keys->key_size);
-}
+bool tree_seek(Tree*, Row*, TreePos*);

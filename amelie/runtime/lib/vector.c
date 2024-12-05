@@ -14,6 +14,12 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 
+void
+vector_init(Vector* self, int size)
+{
+	self->size = size;
+}
+
 hot int
 vector_compare(Vector* a, Vector* b)
 {
@@ -21,7 +27,7 @@ vector_compare(Vector* a, Vector* b)
 		return -1;
 	if (a->size > b->size)
 		return 1;
-	for (int i = 0; i < a->size; i++)
+	for (uint32_t i = 0; i < a->size; i++)
 	{
 		if (a->value[i] < b->value[i])
 			return -1;
@@ -35,7 +41,7 @@ hot void
 vector_add(Vector* result, Vector* a, Vector* b)
 {
 	assert(result->size == a->size);
-	for (int i = 0; i < a->size; i++)
+	for (uint32_t i = 0; i < a->size; i++)
 		result->value[i] = a->value[i] + b->value[i];
 }
 
@@ -43,7 +49,7 @@ hot void
 vector_sub(Vector* result, Vector* a, Vector* b)
 {
 	assert(result->size == a->size);
-	for (int i = 0; i < a->size; i++)
+	for (uint32_t i = 0; i < a->size; i++)
 		result->value[i] = a->value[i] - b->value[i];
 }
 
@@ -51,18 +57,19 @@ hot void
 vector_mul(Vector* result, Vector* a, Vector* b)
 {
 	assert(result->size == a->size);
-	for (int i = 0; i < a->size; i++)
+	for (uint32_t i = 0; i < a->size; i++)
 		result->value[i] = a->value[i] * b->value[i];
 }
 
 hot double
 vector_distance(Vector* a, Vector* b)
 {
+	assert(a->size == b->size);
 	// calculate consine similarity
 	double ab = 0.0;
 	double a2 = 0.0;
 	double b2 = 0.0;
-	for (int i = 0; i < a->size; i++)
+	for (uint32_t i = 0; i < a->size; i++)
 	{
 		ab += a->value[i] * b->value[i];
 		a2 += a->value[i] * a->value[i];

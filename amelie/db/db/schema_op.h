@@ -48,25 +48,25 @@ schema_op_rename(Str* name, Str* name_new)
 static inline SchemaConfig*
 schema_op_create_read(uint8_t** pos)
 {
-	data_read_array(pos);
+	json_read_array(pos);
 	auto config = schema_config_read(pos);
-	data_read_array_end(pos);
+	json_read_array_end(pos);
 	return config;
 }
 
 static inline void
 schema_op_drop_read(uint8_t **pos, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, name);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, name);
+	json_read_array_end(pos);
 }
 
 static inline void
 schema_op_rename_read(uint8_t** pos, Str* name, Str* name_new)
 {
-	data_read_array(pos);
-	data_read_string(pos, name);
-	data_read_string(pos, name_new);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, name);
+	json_read_string(pos, name_new);
+	json_read_array_end(pos);
 }

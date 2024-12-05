@@ -1,0 +1,696 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: double
+select 1.0
+[1]
+select 1.0::type
+["double"]
+select 3.14
+[3.14]
+select 1.1234
+[1.1234]
+# test: double limits
+select 1.17549e-38
+[1.17549e-38]
+select 3.40282e+38
+[3.40282e+38]
+select 2.2250738585072014e-308
+[2.22507e-308]
+select 1.79769e+308
+[1.79769e+308]
+select 1e1
+[10]
+select 1e2
+[100]
+select 1e4
+[10000]
+select 1e8
+[1e+08]
+select 1e40
+[1e+40]
+# test: double = bool
+select 1.0 = true
+[true]
+select 1.34 = true
+[false]
+select 1.34 = false
+[false]
+select 0.34 = false
+[false]
+select 0.0 = false
+[true]
+explain select 0.0 = false
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0",
+      "02": "bool                2      0      0     ",
+      "03": "equdi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double = int
+select 1.0 = 1.0
+[true]
+select 12.3 = 1
+[false]
+select 0.14 = 1
+[false]
+explain select 1.0000 = 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "int                 2      -      0     # 1",
+      "03": "equdi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double = double
+select 12.3 = 1.3
+[false]
+select 12.3 = 12.3
+[true]
+select 12.3 = 12.4
+[false]
+explain select 12.3 = 12.4
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 12.3",
+      "02": "double              2      8      0     # 12.4",
+      "03": "equdd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double = null
+select 12.3 = null
+[null]
+explain select 12.3 = null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 12.3",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double = unsupported
+select 12.3 = [1,2]
+{"msg": "unsupported operation: <double> = <json>"}
+# test: double <> bool
+select 1.0 <> true
+[false]
+select 1.34 <> true
+[true]
+select 1.34 <> false
+[true]
+select 0.34 <> false
+[true]
+select 0.0 <> false
+[false]
+explain select 0.0 <> false
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0",
+      "02": "bool                2      0      0     ",
+      "03": "equdi               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <> int
+select 1.0 <> 1.0
+[false]
+select 12.3 <> 1
+[true]
+select 0.14 <> 1
+[true]
+explain select 1.0000 <> 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1",
+      "02": "int                 2      -      0     # 1",
+      "03": "equdi               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <> double
+select 12.3 <> 1.3
+[true]
+select 12.3 <> 12.3
+[false]
+select 12.3 <> 12.4
+[true]
+explain select 12.3 <> 12.4
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 12.3",
+      "02": "double              2      8      0     # 12.4",
+      "03": "equdd               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <> null
+select 12.3 <> null
+[null]
+explain select 12.3 <> null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 12.3",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <> unsupported
+select 12.3 <> [1,2]
+{"msg": "unsupported operation: <double> = <json>"}
+# test: double >= int
+select 0.11 >= 1
+[false]
+select 1.11 >= 1
+[true]
+select 1.0 >= 1
+[true]
+explain select 11.1 >= 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 11.1",
+      "02": "int                 2      -      0     # 1",
+      "03": "gtedi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double >= double
+select 0.11 >= 1.2
+[false]
+select 1.11 >= 1.11
+[true]
+select 1.13 >= 1.13
+[true]
+explain select 1.11 >= 1.13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.11",
+      "02": "double              2      8      0     # 1.13",
+      "03": "gtedd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double >= null
+select 0.11 >= null
+[null]
+explain select 0.11 >= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0.11",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double >= unsupported
+select 0.11 >= []
+{"msg": "unsupported operation: <double> >= <json>"}
+# test: double > int
+select 0.11 > 1
+[false]
+select 1.11 > 1
+[true]
+select 1.0 > 1
+[false]
+explain select 11.1 > 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 11.1",
+      "02": "int                 2      -      0     # 1",
+      "03": "gtdi                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double > double
+select 0.11 > 1.2
+[false]
+select 1.11 > 1.11
+[false]
+select 1.13 > 1.13
+[false]
+explain select 1.11 > 1.13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.11",
+      "02": "double              2      8      0     # 1.13",
+      "03": "gtdd                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double > null
+select 0.11 > null
+[null]
+explain select 0.11 > null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0.11",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double > unsupported
+select 0.11 > []
+{"msg": "unsupported operation: <double> > <json>"}
+# test: double <= int
+select 0.11 <= 1
+[true]
+select 1.11 <= 1
+[false]
+select 1.0 <= 1
+[true]
+explain select 11.1 <= 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 11.1",
+      "02": "int                 2      -      0     # 1",
+      "03": "ltedi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <= double
+select 0.11 <= 1.2
+[true]
+select 1.11 <= 1.11
+[true]
+select 1.13 <= 1.13
+[true]
+explain select 1.11 <= 1.13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.11",
+      "02": "double              2      8      0     # 1.13",
+      "03": "ltedd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <= null
+select 0.11 <= null
+[null]
+explain select 0.11 <= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0.11",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double <= unsupported
+select 0.11 <= []
+{"msg": "unsupported operation: <double> <= <json>"}
+# test: double < int
+select 0.11 < 1
+[true]
+select 1.11 < 1
+[false]
+select 1.0 < 1
+[false]
+explain select 11.1 < 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 11.1",
+      "02": "int                 2      -      0     # 1",
+      "03": "ltdi                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double < double
+select 0.11 < 1.2
+[true]
+select 1.11 < 1.11
+[false]
+select 1.13 < 1.13
+[false]
+explain select 1.11 < 1.13
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.11",
+      "02": "double              2      8      0     # 1.13",
+      "03": "ltdd                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double < null
+select 0.11 < null
+[null]
+explain select 0.11 < null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 0.11",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double < unsupported
+select 0.11 < []
+{"msg": "unsupported operation: <double> < <json>"}
+# test: double + int
+select 1.5 + 1
+[2.5]
+explain select 1.5 + 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "int                 2      -      0     # 1",
+      "03": "adddi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double + double
+select 1.5 + 1.5
+[3]
+explain select 1.5 + 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "double              2      8      0     # 1.5",
+      "03": "adddd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double + null
+select 1.5 + null
+[null]
+# test: double + unsupported
+select 1.5 + []
+{"msg": "unsupported operation: <double> + <json>"}
+# test: double - int
+select 1.5 - 1
+[0.5]
+explain select 1.5 - 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "int                 2      -      0     # 1",
+      "03": "subdi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double - double
+select 1.5 - 1.5
+[0]
+explain select 1.5 - 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "double              2      8      0     # 1.5",
+      "03": "subdd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double - null
+select 1.5 - null
+[null]
+# test: double - unsupported
+select 1.5 - []
+{"msg": "unsupported operation: <double> - <json>"}
+# test: double * int
+select 1.5 * 2
+[3]
+explain select 1.5 * 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "int                 2      -      0     # 2",
+      "03": "muldi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double * double
+select 1.5 * 1.5
+[2.25]
+explain select 1.5 * 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 1.5",
+      "02": "double              2      8      0     # 1.5",
+      "03": "muldd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: double * null
+select 1.5 * null
+[null]
+# test: double * unsupported
+select 1.5 * []
+{"msg": "unsupported operation: <double> * <json>"}
+# test: double / int
+select 3.5 / 2
+[1.75]
+explain select 3.5 / 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 3.5",
+      "02": "int                 2      -      0     # 2",
+      "03": "divdi               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 3.5 / 0
+{"msg": "zero division"}
+# test: double / double
+select 3.5 / 1.5
+[2.33333]
+explain select 3.5 / 1.5
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 3.5",
+      "02": "double              2      8      0     # 1.5",
+      "03": "divdd               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 3.5 / 0.0
+{"msg": "zero division"}
+# test: double / null
+select 1.5 / null
+[null]
+# test: double / unsupported
+select 1.5 / []
+{"msg": "unsupported operation: <double> / <json>"}
+# test: -double
+select -18.8
+[-18.8]
+explain select -18.8
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "double              1      0      0     # 18.8",
+      "02": "negd                2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+disconnect S0
+close E0

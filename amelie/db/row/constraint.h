@@ -16,27 +16,23 @@ typedef struct Constraint Constraint;
 struct Constraint
 {
 	bool    not_null;
-	bool    not_aggregated;
 	bool    serial;
 	bool    random;
 	int64_t random_modulo;
-	int64_t aggregate;
 	Str     as_stored;
-	Str     as_aggregated;
+	Str     as_resolved;
 	Buf     value;
 };
 
 static inline void
 constraint_init(Constraint* self)
 {
-	self->not_null       = false;
-	self->not_aggregated = true;
-	self->serial         = false;
-	self->random         = false;
-	self->random_modulo  = INT64_MAX;
-	self->aggregate      = AGG_UNDEF;
+	self->not_null      = false;
+	self->serial        = false;
+	self->random        = false;
+	self->random_modulo = INT64_MAX;
 	str_init(&self->as_stored);
-	str_init(&self->as_aggregated);
+	str_init(&self->as_resolved);
 	buf_init(&self->value);
 }
 
@@ -44,7 +40,7 @@ static inline void
 constraint_free(Constraint* self)
 {
 	str_free(&self->as_stored);
-	str_free(&self->as_aggregated);
+	str_free(&self->as_resolved);
 	buf_free(&self->value);
 }
 
@@ -52,12 +48,6 @@ static inline void
 constraint_set_not_null(Constraint* self, bool value)
 {
 	self->not_null = value;
-}
-
-static inline void
-constraint_set_not_aggregated(Constraint* self, bool value)
-{
-	self->not_aggregated = value;
 }
 
 static inline void
@@ -79,12 +69,6 @@ constraint_set_random_modulo(Constraint* self, int64_t value)
 }
 
 static inline void
-constraint_set_aggregate(Constraint* self, int64_t value)
-{
-	self->aggregate = value;
-}
-
-static inline void
 constraint_set_as_stored(Constraint* self, Str* value)
 {
 	str_free(&self->as_stored);
@@ -92,10 +76,10 @@ constraint_set_as_stored(Constraint* self, Str* value)
 }
 
 static inline void
-constraint_set_as_aggregated(Constraint* self, Str* value)
+constraint_set_as_resolved(Constraint* self, Str* value)
 {
-	str_free(&self->as_aggregated);
-	str_copy(&self->as_aggregated, value);
+	str_free(&self->as_resolved);
+	str_copy(&self->as_resolved, value);
 }
 
 static inline void
@@ -109,13 +93,11 @@ static inline void
 constraint_copy(Constraint* self, Constraint* copy)
 {
 	constraint_set_not_null(copy, self->not_null);
-	constraint_set_not_aggregated(copy, self->not_aggregated);
 	constraint_set_serial(copy, self->serial);
 	constraint_set_random(copy, self->random);
 	constraint_set_random_modulo(copy, self->random_modulo);
-	constraint_set_aggregate(copy, self->aggregate);
 	constraint_set_as_stored(copy, &self->as_stored);
-	constraint_set_as_aggregated(copy, &self->as_aggregated);
+	constraint_set_as_resolved(copy, &self->as_resolved);
 	constraint_set_default(copy, &self->value);
 }
 
@@ -124,16 +106,14 @@ constraint_read(Constraint* self, uint8_t** pos)
 {
 	Decode obj[] =
 	{
-		{ DECODE_BOOL,   "not_null",       &self->not_null       },
-		{ DECODE_BOOL,   "not_aggregated", &self->not_aggregated },
-		{ DECODE_BOOL,   "serial",         &self->serial         },
-		{ DECODE_BOOL,   "random",         &self->random         },
-		{ DECODE_INT,    "random_modulo",  &self->random_modulo  },
-		{ DECODE_INT,    "aggregate",      &self->aggregate      },
-		{ DECODE_STRING, "as_stored",      &self->as_stored      },
-		{ DECODE_STRING, "as_aggregated",  &self->as_aggregated  },
-		{ DECODE_DATA,   "default",        &self->value          },
-		{ 0,              NULL,            NULL                  },
+		{ DECODE_BOOL,   "not_null",      &self->not_null      },
+		{ DECODE_BOOL,   "serial",        &self->serial        },
+		{ DECODE_BOOL,   "random",        &self->random        },
+		{ DECODE_INT,    "random_modulo", &self->random_modulo },
+		{ DECODE_STRING, "as_stored",     &self->as_stored     },
+		{ DECODE_STRING, "as_resolved",   &self->as_resolved   },
+		{ DECODE_DATA,   "default",       &self->value         },
+		{ 0,              NULL,           NULL                 },
 	};
 	decode_obj(obj, "constraint", pos);
 }
@@ -147,10 +127,6 @@ constraint_write(Constraint* self, Buf* buf)
 	encode_raw(buf, "not_null", 8);
 	encode_bool(buf, self->not_null);
 
-	// not_aggregated
-	encode_raw(buf, "not_aggregated", 14);
-	encode_bool(buf, self->not_aggregated);
-
 	// serial
 	encode_raw(buf, "serial", 6);
 	encode_bool(buf, self->serial);
@@ -163,17 +139,13 @@ constraint_write(Constraint* self, Buf* buf)
 	encode_raw(buf, "random_modulo", 13);
 	encode_integer(buf, self->random_modulo);
 
-	// aggregate
-	encode_raw(buf, "aggregate", 9);
-	encode_integer(buf, self->aggregate);
-
 	// as_stored
 	encode_raw(buf, "as_stored", 9);
 	encode_string(buf, &self->as_stored);
 
-	// as_aggregated
-	encode_raw(buf, "as_aggregated", 13);
-	encode_string(buf, &self->as_aggregated);
+	// as_resolved
+	encode_raw(buf, "as_resolved", 11);
+	encode_string(buf, &self->as_resolved);
 
 	// default
 	encode_raw(buf, "default", 7);

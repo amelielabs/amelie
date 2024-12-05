@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -81,12 +82,10 @@ path_compare(Path* self, Ast* ast, Key* key)
 	if (ast->id == KNAME)
 	{
 		// match by column and key is not nested
-		if (! str_compare(&ast->string, &column->name))
-			return false;
-		return str_empty(&key->path);
+		return str_compare(&ast->string, &column->name);
 	}
 
-	// [target.]column[.path]
+	// [target.]column
 	if (ast->id != KNAME_COMPOUND)
 		return false;
 
@@ -96,31 +95,14 @@ path_compare(Path* self, Ast* ast, Key* key)
 	str_split(&ast->string, &name, '.');
 
 	// [target.]
-	if (target_compare(self->target, &name))
-	{
-		str_advance(&path, str_size(&name) + 1);
-
-		// skip target name
-		str_split(&path, &name, '.');
-	}
-
-	// column[.path]
-	bool compound = str_split(&path, &name, '.');
-	if (! str_compare(&name, &column->name))
+	if (! str_compare(&self->target->name, &name))
 		return false;
 
-	// column
-	if (! compound)
-		return str_empty(&key->path);
-
-	// skip column name
 	str_advance(&path, str_size(&name) + 1);
 
-	// path
-	if (! str_empty(&key->path))
-		return str_compare(&path, &key->path);
-
-	return false;
+	// skip target name
+	str_split(&path, &name, '.');
+	return str_compare(&name, &column->name);
 }
 
 static inline bool
@@ -131,17 +113,18 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 		return false;
 
 	// validate value to key type
+	auto column = key->column;
 	switch (value->id) {
 	case KINT:
-		if (unlikely(key->type != TYPE_INT))
+		if (unlikely(column->type != TYPE_INT))
 			return false;
 		break;
 	case KSTRING:
-		if (unlikely(key->type != TYPE_STRING))
+		if (unlikely(column->type != TYPE_STRING))
 			return false;
 		break;
 	case KTIMESTAMP:
-		if (unlikely(key->type != TYPE_TIMESTAMP))
+		if (unlikely(column->type != TYPE_TIMESTAMP))
 			return false;
 		break;
 	}

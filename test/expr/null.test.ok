@@ -1,0 +1,23 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: null
+explain select null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "null                1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
+    }
+  }
+}]
+select null
+[null]
+select null::type
+["null"]
+disconnect S0
+close E0

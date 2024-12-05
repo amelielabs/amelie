@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -71,7 +72,7 @@ planner_match(AstPath*     prev_path,
 void
 planner(TargetList* target_list, Target* target, Ast* expr)
 {
-	auto table = target->table;
+	auto table = target->from_table;
 	assert(table);
 	if (target->path)
 		return;
@@ -84,9 +85,9 @@ planner(TargetList* target_list, Target* target, Ast* expr)
 	};
 
 	// FROM USE INDEX (use predefined index)
-	if (target->index)
+	if (target->from_table_index)
 	{
-		path.keys = &target->index->keys;
+		path.keys = &target->from_table_index->keys;
 		target->path = &path_create(&path, expr)->ast;
 		return;
 	}
@@ -107,6 +108,6 @@ planner(TargetList* target_list, Target* target, Ast* expr)
 	}
 
 	// set index and path
-	target->path  = &match_path->ast;
-	target->index = match;
+	target->path = &match_path->ast;
+	target->from_table_index = match;
 }

@@ -12,18 +12,20 @@
 //
 
 // set
+#include "store/set_hash.h"
 #include "store/set.h"
+#include "store/set_cache.h"
+#include "store/set_compare.h"
 #include "store/set_iterator.h"
-#include "store/any.h"
-#include "store/all.h"
 
 // merge
 #include "store/merge.h"
 #include "store/merge_iterator.h"
 
-// result
-#include "store/result.h"
+// aggregate
+#include "store/agg.h"
 
-// group
-#include "store/group.h"
-#include "store/group_merge.h"
+// any/all/in
+#include "store/any.h"
+#include "store/all.h"
+#include "store/in.h"

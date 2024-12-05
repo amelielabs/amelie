@@ -11,11 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
+// data types
+#include "row/type.h"
+
 // serial
 #include "row/serial.h"
 
 // column
-#include "row/type.h"
 #include "row/constraint.h"
 #include "row/column.h"
 #include "row/columns.h"
@@ -26,4 +28,5 @@
 
 // row
 #include "row/row.h"
-#include "row/ref.h"
+#include "row/row_alter.h"
+#include "row/compare.h"

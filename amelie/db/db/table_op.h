@@ -61,19 +61,6 @@ table_op_truncate(Str* schema, Str* name)
 }
 
 static inline Buf*
-table_op_set_aggregated(Str* schema, Str* name, bool value)
-{
-	// [schema, name, value]
-	auto buf = buf_create();
-	encode_array(buf);
-	encode_string(buf, schema);
-	encode_string(buf, name);
-	encode_bool(buf, value);
-	encode_array_end(buf);
-	return buf;
-}
-
-static inline Buf*
 table_op_column_rename(Str* schema, Str* name,
                        Str* name_column,
                        Str* name_column_new)
@@ -118,50 +105,40 @@ table_op_column_drop(Str* schema, Str* name, Str* name_column)
 static inline TableConfig*
 table_op_create_read(uint8_t** pos)
 {
-	data_read_array(pos);
+	json_read_array(pos);
 	auto config = table_config_read(pos);
-	data_read_array_end(pos);
+	json_read_array_end(pos);
 	return config;
 }
 
 static inline void
 table_op_drop_read(uint8_t **pos, Str* schema, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_array_end(pos);
 }
 
 static inline void
 table_op_rename_read(uint8_t** pos, Str* schema, Str* name,
                      Str* schema_new, Str* name_new)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_string(pos, schema_new);
-	data_read_string(pos, name_new);
-	data_read_array_end(pos);
-}
-
-static inline void
-table_op_set_aggregated_read(uint8_t** pos, Str* schema, Str* name, bool* value)
-{
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_bool(pos, value);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, schema_new);
+	json_read_string(pos, name_new);
+	json_read_array_end(pos);
 }
 
 static inline void
 table_op_truncate_read(uint8_t** pos, Str* schema, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_array_end(pos);
 }
 
 static inline void
@@ -169,33 +146,33 @@ table_op_column_rename_read(uint8_t** pos, Str* schema, Str* name,
                             Str* name_column,
                             Str* name_column_new)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_string(pos, name_column);
-	data_read_string(pos, name_column_new);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, name_column);
+	json_read_string(pos, name_column_new);
+	json_read_array_end(pos);
 }
 
 static inline Column*
 table_op_column_add_read(uint8_t** pos, Str* schema, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
 	auto config = column_read(pos);
-	data_read_array_end(pos);
+	json_read_array_end(pos);
 	return config;
 }
 
 static inline void
 table_op_column_drop_read(uint8_t** pos, Str* schema, Str* name, Str* name_column)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_string(pos, name_column);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, name_column);
+	json_read_array_end(pos);
 }
 
 static inline Buf*
@@ -241,23 +218,23 @@ table_op_rename_index(Str* schema, Str* name, Str* index, Str* index_new)
 static inline uint8_t*
 table_op_create_index_read(uint8_t** pos, Str* schema, Str* name)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
 	auto config_pos = *pos;
-	data_skip(pos);
-	data_read_array_end(pos);
+	json_skip(pos);
+	json_read_array_end(pos);
 	return config_pos;
 }
 
 static inline void
 table_op_drop_index_read(uint8_t **pos, Str* schema, Str* name, Str* index)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_string(pos, index);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, index);
+	json_read_array_end(pos);
 }
 
 static inline void
@@ -265,10 +242,10 @@ table_op_rename_index_read(uint8_t **pos, Str* schema, Str* name,
                            Str* index,
                            Str* index_new)
 {
-	data_read_array(pos);
-	data_read_string(pos, schema);
-	data_read_string(pos, name);
-	data_read_string(pos, index);
-	data_read_string(pos, index_new);
-	data_read_array_end(pos);
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, index);
+	json_read_string(pos, index_new);
+	json_read_array_end(pos);
 }

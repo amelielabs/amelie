@@ -49,8 +49,6 @@ typedef enum
 	STMT_UPDATE,
 	STMT_DELETE,
 	STMT_SELECT,
-	STMT_RETURN,
-	STMT_EXECUTE,
 	STMT_WATCH
 } StmtId;
 
@@ -65,8 +63,10 @@ struct Stmt
 	CteDeps      cte_deps;
 	Columns*     args;
 	TargetList   target_list;
+	AstList      select_list;
 	StmtList*    stmt_list;
 	CodeData*    data;
+	SetCache*    values_cache;
 	Json*        json;
 	Lex*         lex;
 	FunctionMgr* function_mgr;
@@ -87,6 +87,7 @@ stmt_allocate(Db*          db,
               Local*       local,
               Lex*         lex,
               CodeData*    data,
+              SetCache*    values_cache,
               Json*        json,
               StmtList*    stmt_list,
               CteList*     cte_list,
@@ -102,6 +103,7 @@ stmt_allocate(Db*          db,
 	self->args         = args;
 	self->stmt_list    = stmt_list;
 	self->data         = data;
+	self->values_cache = values_cache;
 	self->json         = json;
 	self->lex          = lex;
 	self->function_mgr = function_mgr;
@@ -109,6 +111,7 @@ stmt_allocate(Db*          db,
 	self->db           = db;
 	cte_deps_init(&self->cte_deps);
 	target_list_init(&self->target_list);
+	ast_list_init(&self->select_list);
 	list_init(&self->link);
 	return self;
 }
@@ -172,7 +175,6 @@ stmt_is_utility(Stmt* self)
 	case STMT_ALTER_INDEX:
 	case STMT_ALTER_VIEW:
 	case STMT_TRUNCATE:
-	case STMT_EXECUTE:
 		return true;
 	default:
 		break;

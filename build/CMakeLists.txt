@@ -62,7 +62,7 @@ include_directories("${AMELIE_ROOT}/runtime")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
 include_directories("${AMELIE_ROOT}/runtime/io")
 include_directories("${AMELIE_ROOT}/runtime/lib")
-include_directories("${AMELIE_ROOT}/runtime/data")
+include_directories("${AMELIE_ROOT}/runtime/json")
 include_directories("${AMELIE_ROOT}/runtime/config")
 
 # server
@@ -87,6 +87,7 @@ include_directories("${AMELIE_ROOT}/db/db")
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
 include_directories("${AMELIE_ROOT}/vm/store")
+include_directories("${AMELIE_ROOT}/vm/content")
 include_directories("${AMELIE_ROOT}/vm/executor")
 include_directories("${AMELIE_ROOT}/vm/vm")
 include_directories("${AMELIE_ROOT}/vm/func")
@@ -106,7 +107,6 @@ include_directories("${AMELIE_ROOT}/cluster/cluster")
 # system
 include_directories("${AMELIE_ROOT}/system")
 include_directories("${AMELIE_ROOT}/system/frontend")
-include_directories("${AMELIE_ROOT}/system/load")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 
@@ -153,8 +153,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/linenoise.c
     ${AMELIE_ROOT}/runtime/lib/cli.c
-    ${AMELIE_ROOT}/runtime/data/json.c
-    ${AMELIE_ROOT}/runtime/data/json_export.c
+    ${AMELIE_ROOT}/runtime/json/json_parser.c
+    ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/vars.c
     ${AMELIE_ROOT}/runtime/config/config_local.c
     ${AMELIE_ROOT}/runtime/config/config.c)
@@ -173,7 +173,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/server_bootstrap.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/row/row.c
+    ${AMELIE_ROOT}/db/row/row_alter.c
     ${AMELIE_ROOT}/db/transaction/handle_mgr.c
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/index/tree.c
@@ -204,13 +204,16 @@ set(AMELIE_SOURCES_DB
 
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
+    ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
     ${AMELIE_ROOT}/vm/store/set.c
+    ${AMELIE_ROOT}/vm/store/merge.c
+    ${AMELIE_ROOT}/vm/store/agg.c
     ${AMELIE_ROOT}/vm/store/any.c
     ${AMELIE_ROOT}/vm/store/all.c
-    ${AMELIE_ROOT}/vm/store/merge.c
-    ${AMELIE_ROOT}/vm/store/group.c
-    ${AMELIE_ROOT}/vm/store/group_merge.c
+    ${AMELIE_ROOT}/vm/store/in.c
+    ${AMELIE_ROOT}/vm/content/content.c
+    ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c
@@ -218,44 +221,47 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c
-    ${AMELIE_ROOT}/vm/func/fn_object.c
+    ${AMELIE_ROOT}/vm/func/fn_json.c
     ${AMELIE_ROOT}/vm/func/fn_string.c
     ${AMELIE_ROOT}/vm/func/fn_regexp.c
     ${AMELIE_ROOT}/vm/func/fn_math.c
     ${AMELIE_ROOT}/vm/func/fn_misc.c
     ${AMELIE_ROOT}/vm/func/fn_time.c
     ${AMELIE_ROOT}/vm/func/fn_vector.c
-    ${AMELIE_ROOT}/vm/func/fn_agg.c
     ${AMELIE_ROOT}/vm/func/fn.c)
 
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
+    ${AMELIE_ROOT}/compiler/parser/parse_endpoint.c
+    ${AMELIE_ROOT}/compiler/parser/parse_expr.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_node.c
+    ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_view.c
     ${AMELIE_ROOT}/compiler/parser/parse_cte.c
-    ${AMELIE_ROOT}/compiler/parser/parse_expr.c
+    ${AMELIE_ROOT}/compiler/parser/parse_from.c
+    ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
-    ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
-    ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
+    ${AMELIE_ROOT}/compiler/parser/parse_import.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/planner/path.c
     ${AMELIE_ROOT}/compiler/planner/planner.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/scan.c
+    ${AMELIE_ROOT}/compiler/compiler/cast.c
     ${AMELIE_ROOT}/compiler/compiler/emit_expr.c
     ${AMELIE_ROOT}/compiler/compiler/emit_insert.c
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
@@ -279,9 +285,6 @@ set(AMELIE_SOURCES_CLUSTER
 
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c
-    ${AMELIE_ROOT}/system/load/load.c
-    ${AMELIE_ROOT}/system/load/load_json.c
-    ${AMELIE_ROOT}/system/load/load_csv.c
     ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/session/utility.c

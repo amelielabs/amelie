@@ -15,13 +15,13 @@ typedef struct AstUpdate AstUpdate;
 
 struct AstUpdate
 {
-	Ast     ast;
-	Table*  table;
-	Target* target;
-	Ast*    expr_update;
-	Ast*    expr_where;
-	Ast*    returning;
-	int     rset;
+	Ast       ast;
+	Table*    table;
+	Target*   target;
+	Ast*      expr_update;
+	Ast*      expr_where;
+	Returning ret;
+	int       rset;
 };
 
 static inline AstUpdate*
@@ -35,9 +35,10 @@ ast_update_allocate(void)
 {
 	AstUpdate* self;
 	self = ast_allocate(0, sizeof(AstUpdate));
+	returning_init(&self->ret);
 	return self;
 }
 
 Ast* parse_update_expr(Stmt*);
-Ast* parse_update_aggregated(Stmt*, Columns*);
+Ast* parse_update_resolved(Stmt*, Columns*);
 void parse_update(Stmt*);

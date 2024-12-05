@@ -138,9 +138,9 @@ ast_table_alter_allocate(void)
 	return self;
 }
 
-int  parse_type(Stmt* self, Column*, Str*);
+int  parse_type(Stmt*, Column*, int*);
 void parse_key(Stmt*, Keys*);
-void parse_table_create(Stmt*, bool, bool);
+void parse_table_create(Stmt*, bool);
 void parse_table_drop(Stmt*);
 void parse_table_alter(Stmt*);
 void parse_table_truncate(Stmt*);

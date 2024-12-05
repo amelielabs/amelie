@@ -11,114 +11,163 @@
 // AGPL-3.0 Licensed.
 //
 
-enum
+typedef enum
 {
-	TYPE_OBJ,
-	TYPE_ARRAY,
-	TYPE_INT,
+	TYPE_NULL,
 	TYPE_BOOL,
-	TYPE_REAL,
+	TYPE_INT,
+	TYPE_DOUBLE,
 	TYPE_STRING,
+	TYPE_JSON,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
 	TYPE_VECTOR,
-	TYPE_AGG
-};
+	TYPE_AVG,
+	TYPE_SET,
+	TYPE_MERGE,
+	TYPE_MAX
+} Type;
 
-hot static inline bool
-type_validate(int type, uint8_t* data)
+static inline char*
+type_of(Type type)
 {
+	char* name;
 	switch (type) {
-	case TYPE_OBJ:
-		return data_is_obj(data);
-	case TYPE_ARRAY:
-		return data_is_array(data);
-	case TYPE_INT:
-		return data_is_integer(data);
+	case TYPE_NULL:
+		name = "null";
+		break;
 	case TYPE_BOOL:
-		return data_is_bool(data);
-	case TYPE_REAL:
-		return data_is_real(data);
+		name = "bool";
+		break;
+	case TYPE_INT:
+		name = "int";
+		break;
+	case TYPE_DOUBLE:
+		name = "double";
+		break;
 	case TYPE_STRING:
-		return data_is_string(data);
+		name = "string";
+		break;
+	case TYPE_JSON:
+		name = "json";
+		break;
 	case TYPE_TIMESTAMP:
-		return data_is_timestamp(data);
+		name = "timestamp";
+		break;
 	case TYPE_INTERVAL:
-		return data_is_interval(data);
+		name = "interval";
+		break;
 	case TYPE_VECTOR:
-		return data_is_vector(data);
-	case TYPE_AGG:
-		return data_is_agg(data);
+		name = "vector";
+		break;
+	case TYPE_AVG:
+		name = "avg";
+		break;
+	case TYPE_SET:
+		name = "set";
+		break;
+	case TYPE_MERGE:
+		name = "merge";
+		break;
+	case TYPE_MAX:
+		abort();
+		break;
 	}
-	return false;
-}
-
-hot static inline const char*
-type_of(int type)
-{
-	switch (type) {
-	case TYPE_OBJ:       return "object";
-	case TYPE_ARRAY:     return "array";
-	case TYPE_INT:       return "int";
-	case TYPE_BOOL:      return "bool";
-	case TYPE_REAL:      return "real";
-	case TYPE_STRING:    return "string";
-	case TYPE_TIMESTAMP: return "timestamp";
-	case TYPE_INTERVAL:  return "interval";
-	case TYPE_VECTOR:    return "vector";
-	case TYPE_AGG:       return "aggregate";
-	}
-	return "";
+	return name;
 }
 
 hot static inline int
-type_read(Str* name)
+type_sizeof(Type type)
 {
+	switch (type) {
+	case TYPE_BOOL:
+		return sizeof(int8_t);
+	case TYPE_INT:
+	case TYPE_TIMESTAMP:
+		return sizeof(int64_t);
+	case TYPE_DOUBLE:
+		return sizeof(double);
+	case TYPE_INTERVAL:
+		return sizeof(Interval);
+	default:
+		// variable
+		break;
+	}
+	return 0;
+}
+
+hot static inline int
+type_read(Str* name, int* type_size)
+{
+	*type_size = 0;
 	int type = -1;
-	if (str_is(name, "int", 3) ||
-	    str_is(name, "integer", 7))
-	{
-		type = TYPE_INT;
-	} else
-	if (str_is(name, "real", 4))
-	{
-		type = TYPE_REAL;
-	} else
-	if (str_is(name, "bool", 4) ||
-	    str_is(name, "boolean", 7))
+	if (str_is_case(name, "bool", 4) ||
+	    str_is_case(name, "boolean", 7))
 	{
 		type = TYPE_BOOL;
+		*type_size = sizeof(int8_t);
 	} else
-	if (str_is(name, "text", 4) ||
-	    str_is(name, "string", 6))
+	if (str_is_case(name, "int8", 4) ||
+	    str_is_case(name, "i8", 2)   ||
+	    str_is_case(name, "tinyint", 7))
+	{
+		type = TYPE_INT;
+		*type_size = sizeof(int8_t);
+	} else
+	if (str_is_case(name, "int16", 5) ||
+	    str_is_case(name, "i16", 3)   ||
+	    str_is_case(name, "smallint", 8))
+	{
+		type = TYPE_INT;
+		*type_size = sizeof(int16_t);
+	} else
+	if (str_is_case(name, "int", 3)     ||
+	    str_is_case(name, "integer", 7) ||
+	    str_is_case(name, "int32", 5)   ||
+	    str_is_case(name, "i32", 3))
+	{
+		type = TYPE_INT;
+		*type_size = sizeof(int32_t);
+	} else
+	if (str_is_case(name, "int64", 5) ||
+	    str_is_case(name, "i64", 3)   ||
+	    str_is_case(name, "bigint", 6))
+	{
+		type = TYPE_INT;
+		*type_size = sizeof(int64_t);
+	} else
+	if (str_is_case(name, "float", 5))
+	{
+		type = TYPE_DOUBLE;
+		*type_size = sizeof(float);
+	} else
+	if (str_is_case(name, "double", 6))
+	{
+		type = TYPE_DOUBLE;
+		*type_size = sizeof(double);
+	} else
+	if (str_is_case(name, "text", 4) ||
+	    str_is_case(name, "string", 6))
 	{
 		type = TYPE_STRING;
 	} else
-	if (str_is(name, "array", 5))
+	if (str_is_case(name, "json", 4))
 	{
-		type = TYPE_ARRAY;
+		type = TYPE_JSON;
 	} else
-	if (str_is(name, "object", 6) ||
-	    str_is(name, "obj", 3))
-	{
-		type = TYPE_OBJ;
-	} else
-	if (str_is(name, "timestamp", 9))
+	if (str_is_case(name, "timestamp", 9))
 	{
 		type = TYPE_TIMESTAMP;
+		*type_size = sizeof(int64_t);
 	} else
-	if (str_is(name, "interval", 8))
+	if (str_is_case(name, "interval", 8))
 	{
 		type = TYPE_INTERVAL;
+		*type_size = sizeof(Interval);
 	} else
-	if (str_is(name, "vector", 6))
+	if (str_is_case(name, "vector", 6))
 	{
 		type = TYPE_VECTOR;
-	} else
-	if (str_is(name, "aggregate", 9) ||
-	    str_is(name, "agg", 3))
-	{
-		type = TYPE_AGG;
 	}
 	return type;
 }

@@ -28,9 +28,9 @@ create table test(0
 create table test("123"
 {"msg": "(<name> expected"}
 create table test(name
-{"msg": "name <TYPE> expected"}
+{"msg": "name <> unrecognized column type"}
 create table test(name junk_type
-{"msg": "name <TYPE> expected"}
+{"msg": "name <junk_type> unrecognized column type"}
 create table test(name int
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int,
@@ -46,405 +46,474 @@ create table if not exists test(0
 create table if not exists test("123"
 {"msg": "(<name> expected"}
 create table if not exists test(name
-{"msg": "name <TYPE> expected"}
+{"msg": "name <> unrecognized column type"}
 create table if not exists test(name junk_type
-{"msg": "name <TYPE> expected"}
+{"msg": "name <junk_type> unrecognized column type"}
 create table if not exists test(name int
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 create table test(name int) junk
 {"msg": "primary key is not defined"}
 create table test()
 {"msg": "(<name> expected"}
-# test: column int/integer
-create table test(id int primary key, id2 integer)
-select columns from system.tables() where name = "test"
+# test: column bool/boolean
+create table test(id int primary key, a bool, b boolean)
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 1,
+  "type_size": 1,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "b",
+  "type": 1,
+  "type_size": 1,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column int8/i8
+create table test(id int primary key, id2 int8, id3 i8)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "id2",
-  "type": "int",
+  "type": 2,
+  "type_size": 1,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id3",
+  "type": 2,
+  "type_size": 1,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
 drop table test
-# test: column bool/boolean
-create table test(id int primary key, a bool, b boolean)
-select columns from system.tables() where name = "test"
+# test: column int16/i16
+create table test(id int primary key, id2 int16, id3 i16)
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id2",
+  "type": 2,
+  "type_size": 2,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id3",
+  "type": 2,
+  "type_size": 2,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column int/integer/int32/i32
+create table test(id int primary key, id2 integer, id3 int32, id4 i32)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id2",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id3",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id4",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column int64/i64
+create table test(id int64 primary key, id2 i64)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 8,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "id2",
+  "type": 2,
+  "type_size": 8,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column float
+create table test(id int primary key, a float)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "bool",
+  "type": 3,
+  "type_size": 4,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column double
+create table test(id int primary key, a double)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 3,
+  "type_size": 8,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+# test: column text/string
+create table test(id int primary key, a text, b string)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "a",
+  "type": 4,
+  "type_size": 0,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "bool",
+  "type": 4,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
 drop table test
-# test: column string/text
-create table test(id int primary key, a string, b text)
-select columns from system.tables() where name = "test"
+# test: column json
+create table test(id int primary key, a json, b json)
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "string",
+  "type": 5,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "b",
-  "type": "string",
+  "type": 5,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}]]
-drop table test
-# test: column real
-create table test(id int primary key, a real)
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "a",
-  "type": "real",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}]]
-drop table test
-# test: column object
-create table test(id int primary key, a obj, b object)
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "a",
-  "type": "object",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "b",
-  "type": "object",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}]]
-drop table test
-# test: column array
-create table test(id int primary key, a array)
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "a",
-  "type": "array",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
 drop table test
 # test: column timestamp
 create table test(id int primary key, a timestamp)
-select columns from system.tables() where name = "test"
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "timestamp",
+  "type": 6,
+  "type_size": 8,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
 drop table test
 # test: column interval
 create table test(id int primary key, a interval)
-select columns from system.tables() where name = "test"
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "interval",
+  "type": 7,
+  "type_size": 16,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
 drop table test
 # test: column vector
 create table test(id int primary key, a vector)
-select columns from system.tables() where name = "test"
+select system.tables().'public.test'.columns
 [[{
   "name": "id",
-  "type": "int",
+  "type": 2,
+  "type_size": 4,
   "constraint": {
     "not_null": true,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }, {
   "name": "a",
-  "type": "vector",
+  "type": 8,
+  "type_size": 0,
   "constraint": {
     "not_null": false,
-    "not_aggregated": true,
     "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
-    "aggregate": 0,
     "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}]]
-drop table test
-# test: column agg
-create table test(id int primary key, a agg)
-{"msg": "AGGREGATE <(> expected"}
-create table test(id int primary key, a agg()
-{"msg": "AGGREGATE (<type> expected"}
-create table test(id int primary key, a agg(hello)
-{"msg": "AGGREGATE 'hello' is not supported"}
-create table test(id int primary key, a agg(hello))
-{"msg": "AGGREGATE 'hello' is not supported"}
-create table test(id int primary key, a agg(count), b aggregate(sum))
-select columns from system.tables() where name = "test"
-[[{
-  "name": "id",
-  "type": "int",
-  "constraint": {
-    "not_null": true,
-    "not_aggregated": true,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 0,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "a",
-  "type": "aggregate",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": false,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 1,
-    "as_stored": "",
-    "as_aggregated": "",
-    "default": null
-  }
-}, {
-  "name": "b",
-  "type": "aggregate",
-  "constraint": {
-    "not_null": false,
-    "not_aggregated": false,
-    "serial": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "aggregate": 4,
-    "as_stored": "",
-    "as_aggregated": "",
+    "as_resolved": "",
     "default": null
   }
 }]]
@@ -480,39 +549,30 @@ create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
 {"msg": "table 'test': already exists"}
 create table if not exists test(id int primary key, primary key(id))
-select indexes[0].keys from system.tables() where name = "test"
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
-}, {
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
 {"msg": "PRIMARY KEY defined twice"}
 # test: primary key ensure valid type
-create table test(id obj primary key)
-{"msg": "<id> column key can be string, int or timestamp"}
-create table test(id obj, primary key(id))
-{"msg": "<id> column key can be string, int or timestamp"}
-# test: primary key ensure nested key required
-create table test(data obj, primary key(data.id))
-{"msg": "data.id <TYPE> expected"}
-# test: primary key ensure valid nested key type
-create table test(data obj, primary key(data.id obj))
-{"msg": "<data> column key can be string, int or timestamp"}
-create table test(data obj, primary key(data.id integer))
-select indexes[0].keys from system.tables() where name = "test"
-[[{
-  "ref": 0,
-  "type": "int",
-  "path": "id"
-}]]
-drop table test
+create table test(id json primary key)
+{"msg": "<id> column key can be text, int32, int64 or timestamp"}
+create table test(id json, primary key(id))
+{"msg": "<id> column key can be text, int32, int64 or timestamp"}
 create table test (id int primary key)
 create table test (id int primary key)
 {"msg": "table 'test': already exists"}
@@ -520,14 +580,27 @@ create table test (id int primary key)
 create table test (id int primary key)
 {"msg": "table 'test': already exists"}
 create table if not exists test (id int primary key)
-select name from system.tables() where name = "test"
-["test"]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
 drop table test
-select name from system.tables() where name = "test"
-[]
+select system.tables().'public.test'.columns
+{"msg": "[]: object key 'public.test' not found"}
 # test: schema default
 create table test (id int primary key)
-select *.schema from system.tables() where name = "test"
+select system.tables().'public.test'.schema
 ["public"]
 drop table test
 # test: schema system
@@ -535,21 +608,19 @@ create table system.test (id int primary key)
 {"msg": "system schema <system> cannot be used to create objects"}
 # test: schema default explicit
 create table public.test (id int primary key)
-select *.schema from system.tables() where name = "test"
+select system.tables().'public.test'.schema
 ["public"]
 drop table public.test
 # test: schema non-exists
 create table test.test (id int primary key)
 {"msg": "schema 'test': not exists"}
-select *.schema from system.tables() where name = "test"
-[]
+select system.tables().'test.test'.schema
+{"msg": "[]: object key 'test.test' not found"}
 # test: schema set
 create table test (id int primary key)
 create schema test
 create table test.test (id int primary key)
-select *.schema || "." || *.name from system.tables() where name = "test"
-["public.test", "test.test"]
-select name from system.tables() where *.schema = "test" and name = "test"
+select system.tables().'test.test'.schema
 ["test"]
 drop table test
 drop table test.test
@@ -561,81 +632,211 @@ create table test (id int primary key)
 drop view test
 # test: distributed
 create distributed table test (id int primary key)
-select *.name, *.shared from system.tables()
-[["test", false]]
+select system.tables().'public.test'.shared
+[false]
 drop table test
 # test: shared
 create shared table test (id int primary key)
-select *.name, *.shared from system.tables()
-[["test", true]]
-drop table test
-# test: aggregated
-create aggregated table test (id int primary key)
-select *.name, *.shared, *.aggregated from system.tables()
-[["test", false, true]]
-drop table test
-create distributed aggregated table test (id int primary key)
-select *.name, *.shared, *.aggregated from system.tables()
-[["test", false, true]]
-drop table test
-create shared aggregated table test (id int primary key)
-select *.name, *.shared, *.aggregated from system.tables()
-[["test", true, true]]
+select system.tables().'public.test'.shared
+[true]
 drop table test
 # test: constraint default
 create table test (id int primary key, data int default 1)
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 1
+  }
 }]]
 drop table test
 # test: constraint default with key
 create table test (id int default 1 primary key)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 1
+  }
+}]]
 drop table test
 # test: constraint default with key #2
 create table test (id int default 1, primary key(id))
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 1
+  }
+}]]
 drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
 {"msg": "only consts allowed as DEFAULT expression"}
+# test: constraint default (type not supported)
+create table test (id int primary key, data json default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data vector default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data timestamp default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+create table test (id int primary key, data interval default 1)
+{"msg": "DEFAULT for column <data> is not supported"}
+# test: constraint default (type validate)
+create table test (id int primary key, data int default 'string')
+{"msg": "column <data> DEFAULT value type does not match column type"}
+create table test (id int primary key, data int default 3.4)
+{"msg": "column <data> DEFAULT value type does not match column type"}
+create table test (id int primary key, data string default 1)
+{"msg": "column <data> DEFAULT value type does not match column type"}
 # test: constraint not null with key
 create table test (id int not null primary key)
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint not null forced for keys
 create table test (id int primary key, data int)
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint not null forced for keys #2
 create table test (id int, data int, primary key(id))
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint not null
-create table test (id int primary key, data int not)
-{"msg": "NOT <NULL | AGGREGATED> expected"}
-create table test (id int primary key, data int not null)
-select indexes[0].keys from system.tables()
+create shared table test (id int primary key, data int not)
+{"msg": "NOT <NULL> expected"}
+create shared table test (id int primary key, data int not null)
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -644,12 +845,34 @@ insert into test values(null, null)
 {"msg": "column <id> value cannot be NULL"}
 drop table test
 # test: constraint not null default
-create table test (id int primary key, data int not null default 123)
-select indexes[0].keys from system.tables()
+create shared table test (id int primary key, data int not null default 123)
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 123
+  }
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -658,48 +881,135 @@ insert into test (id) values(3)
 select * from test
 [[1, 1], [3, 123]]
 drop table test
-# test: constraint not aggregated
-create table test (id int primary key, data int not)
-{"msg": "NOT <NULL | AGGREGATED> expected"}
-create table test (id int primary key, data int not aggregated)
-drop table test
 # test: constraint serial
 create table test (id int primary key, data int serial)
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": false,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+drop table test
+create table test (id int primary key, data int64 serial)
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 8,
+  "constraint": {
+    "not_null": false,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint serial key
 create table test (id int serial primary key)
-select indexes[0].keys from system.tables()
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint serial key #2
-create table test (id int serial, primary key(id))
-select indexes[0].keys from system.tables()
+create table test (id int64 serial, primary key(id))
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 8,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: constraint serial key type
 create table test (id string serial primary key)
-{"msg": "SERIAL column <id> must be integer"}
+{"msg": "SERIAL column <id> must be int or int64"}
 # test: constraint serial multiple columns
-create table test (id int serial primary key, data int serial)
-select indexes[0].keys from system.tables()
+create table test (id int serial primary key, data int64 serial)
+select system.tables().'public.test'.columns
 [[{
-  "ref": 0,
-  "type": "int",
-  "path": ""
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraint": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 8,
+  "constraint": {
+    "not_null": false,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
 }]]
 drop table test
 # test: with parsing
@@ -716,7 +1026,6 @@ create table test (id int primary key) with (abc = 10)
 create table test (id int primary key) with (abc = "")
 {"msg": "WITH: <abc> unrecognized parameter"}
 # test: with
-create table test (id int primary key) with (uuid = "00000000-0000-0000-0000-000000000000")
-{"msg": "WITH: <uuid> unrecognized parameter"}
+create table test (id int primary key) with (type = "hash")
 disconnect S0
 close E0

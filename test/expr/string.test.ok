@@ -1,0 +1,310 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: string
+select "hello world"
+["hello world"]
+explain select "hello world"
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # hello world",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
+    }
+  }
+}]
+select 'hello world'
+["hello world"]
+select 'hello world'::type
+["string"]
+select ""
+[""]
+select ''
+[""]
+select length("hello world")
+[11]
+select length("")
+[0]
+select "hello world"::length
+[11]
+select "hello world"::length()
+[11]
+# test: string = string
+select '1 hour' = '1 hour'
+[true]
+select '1 hour' = '1 hours'
+[false]
+explain select '1 hour' = '1 hours'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hours",
+      "03": "equss               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string = null
+select '1 hour' = null
+[null]
+# test: string = unsupported
+select '1 hour' = [1,2,3]
+{"msg": "unsupported operation: <string> = <json>"}
+# test: string <> string
+select '1 hour' <> '1 hour'
+[false]
+select '1 hour' <> '1 hours'
+[true]
+explain select '1 hour' <> '1 hours'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hours",
+      "03": "equss               3      1      2     ",
+      "04": "not                 1      3      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "cte_set             0      0      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string <> null
+select '1 hour' <> null
+[null]
+# test: string <> unsupported
+select '1 hour' <> [1,2,3]
+{"msg": "unsupported operation: <string> = <json>"}
+# test: string >= string
+select '1 hour' >= '1 hours'
+[false]
+select '1 hour' >= '1 hour'
+[true]
+explain select '1 hour' >= '1 hour'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hour",
+      "03": "gtess               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string >= null
+explain select '1 hour' >= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string >= unsupported
+explain select '1 hour' >= []
+{"msg": "unsupported operation: <string> >= <json>"}
+# test: string > string
+select '1 hour' > '1 hours'
+[false]
+select '1 hour' > '1 hour'
+[false]
+explain select '1 hour' > '1 hour'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hour",
+      "03": "gtss                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string > null
+explain select '1 hour' > null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string > unsupported
+explain select '1 hour' > []
+{"msg": "unsupported operation: <string> > <json>"}
+# test: string <= string
+select '1 hour' <= '1 hours'
+[true]
+select '1 hour' <= '1 hour'
+[true]
+explain select '1 hour' <= '1 hour'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hour",
+      "03": "ltess               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string <= null
+explain select '1 hour' <= null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string <= unsupported
+explain select '1 hour' <= []
+{"msg": "unsupported operation: <string> <= <json>"}
+# test: string < string
+select '1 hour' < '1 hours'
+[true]
+select '1 hour' < '1 hour'
+[false]
+explain select '1 hour' < '1 hour'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "string              2      7      0     # 1 hour",
+      "03": "ltss                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string < null
+explain select '1 hour' < null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # 1 hour",
+      "02": "null                2      0      0     ",
+      "03": "nullop              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string < unsupported
+explain select '1 hour' < []
+{"msg": "unsupported operation: <string> < <json>"}
+# test: string || string
+select "hello " || "world"
+["hello world"]
+explain select "hello " || "world"
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # hello ",
+      "02": "string              2      7      0     # world",
+      "03": "catss               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string || null
+select "hello " || null
+[null]
+# test: string || unsupported
+select "hello " || 1
+{"msg": "unsupported operation: <string> || <int>"}
+select "hello " || []
+{"msg": "unsupported operation: <string> || <json>"}
+# test: string LIKE string
+select 'abc' like 'abc'
+[true]
+select 'abc' like 'abcc'
+[false]
+explain select 'abc' like 'abc'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "string              1      0      0     # abc",
+      "02": "string              2      4      0     # abc",
+      "03": "likess              3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: string LIKE null
+select 'abc' like null
+[null]
+# test: string LIKE unsupported
+select 'abc' like 1
+{"msg": "unsupported operation: <string> LIKE <int>"}
+disconnect S0
+close E0

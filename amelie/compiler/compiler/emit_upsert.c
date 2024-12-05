@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -40,15 +41,15 @@ emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
 	auto target = insert->target;
-	auto table  = target->table;
+	auto table  = target->from_table;
 
 	// create returning set
 	int rset = -1;
-	if (insert->returning)
-		rset = op1(self, CSET, rpin(self));
+	if (returning_has(&insert->ret))
+		rset = op3(self, CSET, rpin(self, TYPE_SET), insert->ret.count, 0);
 
-	// CCLOSE_PREPARE
-	op2(self, CCURSOR_PREPARE, target->id, (intptr_t)table);
+	// CTABLE_PREPARE
+	op2(self, CTABLE_PREPARE, target->id, (intptr_t)table);
 
 	// jmp _start
 	int jmp_start = op_pos(self);
@@ -102,7 +103,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		runpin(self, r);
 
 		// CALL
-		r = op4(self, CCALL, rpin(self), (intptr_t)func, 1, -1);
+		r = op4(self, CCALL, rpin(self, func->ret), (intptr_t)func, 1, -1);
 		runpin(self, r);
 		break;
 	}
@@ -114,16 +115,24 @@ emit_upsert(Compiler* self, Ast* ast)
 	int jmp_returning = -1;
 
 	// [RETURNING]
-	if (insert->returning)
+	if (returning_has(&insert->ret))
 	{
 		jmp_returning = op_pos(self);
 
-		// expr
-		int rexpr = emit_expr(self, target, insert->returning);
+		// push expr and set column type
+		for (auto as = insert->ret.list; as; as = as->next)
+		{
+			auto column = as->r->column;
+			// expr
+			int rexpr = emit_expr(self, target, as->l);
+			int rt = rtype(self, rexpr);
+			column_set_type(column, rt, type_sizeof(rt));
+			op1(self, CPUSH, rexpr);
+			runpin(self, rexpr);
+		}
 
 		// add to the returning set
-		op2(self, CSET_ADD, rset, rexpr);
-		runpin(self, rexpr);
+		op1(self, CSET_ADD, rset);
 	}
 
 	// _start:
@@ -134,11 +143,11 @@ emit_upsert(Compiler* self, Ast* ast)
 	// CUPSERT
 	op3(self, CUPSERT, target->id, jmp_where, jmp_returning);
 	
-	// CCLOSE_CURSOR
-	op1(self, CCURSOR_CLOSE, target->id);
+	// CTABLE_CLOSE
+	op1(self, CTABLE_CLOSE, target->id);
 
 	// CRESULT (returning)
-	if (insert->returning)
+	if (returning_has(&insert->ret))
 	{
 		op1(self, CRESULT, rset);
 		runpin(self, rset);

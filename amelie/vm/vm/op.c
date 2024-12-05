@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,142 +29,233 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 
 OpDesc ops[] =
 {
 	// control
-	{ CRET,               "ret"               },
-	{ CNOP,               "nop"               },
-	{ CJMP,               "jmp"               },
-	{ CJTR,               "jtr"               },
-	{ CJNTR,              "jntr"              },
-
-	// result
-	{ CSEND_HASH,         "send_hash"         },
-	{ CSEND,              "send"              },
-	{ CSEND_GENERATED,    "send_generated"    },
-	{ CSEND_FIRST,        "send_first"        },
-	{ CSEND_ALL,          "send_all"          },
-	{ CRECV,              "recv"              },
-	{ CRECV_TO,           "recv_to"           },
-	{ CRESULT,            "result"            },
-	{ CBODY,              "body"              },
-
-	// cte
-	{ CCTE_SET,           "cte_set"           },
-	{ CCTE_GET,           "cte_get"           },
-
-	// misc
-	{ CSLEEP,             "sleep"             },
+	{ CRET, "ret" },
+	{ CNOP, "nop" },
+	{ CJMP, "jmp" },
+	{ CJTR, "jtr" },
+	{ CJNTR, "jntr" },
+	{ CJGTED, "cjgted" },
+	{ CJLTD, "cjltd" },
+	{ CSWAP, "swap" },
 
 	// stack
-	{ CPUSH,              "push"              },
-	{ CPOP,               "pop"               },
+	{ CPUSH, "push" },
+	{ CPOP, "pop" },
 
-	// data
-	{ CNULL,              "null"              },
-	{ CBOOL,              "bool"              },
-	{ CINT,               "int"               },
-	{ CINT_MIN,           "int_min"           },
-	{ CREAL,              "real"              },
-	{ CSTRING,            "string"            },
-	{ CDATA,              "data"              },
-	{ CINTERVAL,          "interval"          },
-	{ CTIMESTAMP,         "timestamp"         },
-	{ CSTRING_MIN,        "string_min"        },
-	{ CTIMESTAMP_MIN,     "timestamp_min"     },
-	{ CSWAP,              "swap"              },
+	// consts
+	{ CNULL, "null" },
+	{ CBOOL, "bool" },
+	{ CINT, "int" },
+	{ CDOUBLE, "double" },
+	{ CSTRING, "string" },
+	{ CJSON, "json" },
+	{ CJSON_OBJ, "json_obj" },
+	{ CJSON_ARRAY, "json_array" },
+	{ CINTERVAL, "interval" },
+	{ CTIMESTAMP, "timestamp" },
 
-	// arguments
-	{ CARG,               "arg"               },
+	// argument
+	{ CARG, "arg" },
+	{ CEXCLUDED, "excluded" },
 
-	// expr
-	{ CBOR,               "bor"               },
-	{ CBAND,              "band"              },
-	{ CBXOR,              "bxor"              },
-	{ CSHL,               "shl"               },
-	{ CSHR,               "shr"               },
-	{ CBINV,              "binv"              },
+	// null operations
+	{ CNULLOP, "nullop" },
+	{ CIS, "is" },
 
-	{ CNOT,               "not"               },
-	{ CEQU,               "equ"               },
-	{ CNEQU,              "nequ"              },
-	{ CGTE,               "gte"               },
-	{ CGT,                "gt"                },
-	{ CLTE,               "lte"               },
-	{ CLT,                "lt"                },
-	{ CIN,                "in"                },
-	{ CLIKE,              "like"              },
+	// logical (any)
+	{ CAND, "and" },
+	{ COR, "or" },
+	{ CNOT, "not" },
 
-	{ CALL,               "all"               },
-	{ CANY,               "any"               },
-	{ CEXISTS,            "exists"            },
+	// bitwise operations
+	{ CBORII, "borii" },
+	{ CBANDII, "bandii" },
+	{ CBXORII, "bxorii" },
+	{ CBSHLII, "bshlii" },
+	{ CBSHRII, "bshrii" },
+	{ CBINVI, "binvi" },
 
-	{ CADD,               "add"               },
-	{ CSUB,               "sub"               },
-	{ CMUL,               "mul"               },
-	{ CDIV,               "div"               },
-	{ CMOD,               "mod"               },
-	{ CNEG,               "neg"               },
-	{ CCAT,               "cat"               },
-	{ CIDX,               "idx"               },
-	{ CAT,                "at"                },
+	// equ
+	{ CEQUII, "equii" },
+	{ CEQUID, "equid" },
+	{ CEQUDI, "equdi" },
+	{ CEQUDD, "equdd" },
+	{ CEQULL, "equll" },
+	{ CEQUSS, "equss" },
+	{ CEQUJJ, "equjj" },
+	{ CEQUVV, "equvv" },
 
-	// object
-	{ COBJ,               "obj"               },
-	{ CARRAY,             "array"             },
+	// gte
+	{ CGTEII, "gteii" },
+	{ CGTEID, "gteid" },
+	{ CGTEDI, "gtedi" },
+	{ CGTEDD, "gtedd" },
+	{ CGTELL, "gtell" },
+	{ CGTESS, "gtess" },
+	{ CGTEVV, "gtevv" },
 
-	// column
-	{ CASSIGN,            "assign"            },
+	// gt
+	{ CGTII, "gtii" },
+	{ CGTID, "gtid" },
+	{ CGTDI, "gtdi" },
+	{ CGTDD, "gtdd" },
+	{ CGTLL, "gtll" },
+	{ CGTSS, "gtss" },
+	{ CGTVV, "gtvv" },
+
+	// lte
+	{ CLTEII, "lteii" },
+	{ CLTEID, "lteid" },
+	{ CLTEDI, "ltedi" },
+	{ CLTEDD, "ltedd" },
+	{ CLTELL, "ltell" },
+	{ CLTESS, "ltess" },
+	{ CLTEVV, "ltevv" },
+
+	// lt
+	{ CLTII, "ltii" },
+	{ CLTID, "ltid" },
+	{ CLTDI, "ltdi" },
+	{ CLTDD, "ltdd" },
+	{ CLTLL, "ltll" },
+	{ CLTSS, "ltss" },
+	{ CLTVV, "ltvv" },
+
+	// add
+	{ CADDII, "addii" },
+	{ CADDID, "addid" },
+	{ CADDDI, "adddi" },
+	{ CADDDD, "adddd" },
+	{ CADDTL, "addtl" },
+	{ CADDLL, "addll" },
+	{ CADDLT, "addlt" },
+	{ CADDVV, "addvv" },
+
+	// sub
+	{ CSUBII, "subii" },
+	{ CSUBID, "subid" },
+	{ CSUBDI, "subdi" },
+	{ CSUBDD, "subdd" },
+	{ CSUBTL, "subtl" },
+	{ CSUBLL, "subll" },
+	{ CSUBVV, "subvv" },
+
+	// mul
+	{ CMULII, "mulii" },
+	{ CMULID, "mulid" },
+	{ CMULDI, "muldi" },
+	{ CMULDD, "muldd" },
+	{ CMULVV, "mulvv" },
+
+	// div
+	{ CDIVII, "divii" },
+	{ CDIVID, "divid" },
+	{ CDIVDI, "divdi" },
+	{ CDIVDD, "divdd" },
+
+	// mod
+	{ CMODII, "modii" },
+
+	// neg
+	{ CNEGI, "negi" },
+	{ CNEGD, "negd" },
+
+	// cat
+	{ CCATSS, "catss" },
+
+	// idx
+	{ CIDXJS, "idxjs" },
+	{ CIDXJI, "idxji" },
+	{ CIDXVI, "idxvi" },
+
+	// dot
+	{ CDOTJS, "dotjs" },
+
+	// like
+	{ CLIKESS, "likess" },
+
+	{ CIN, "in" },
+	{ CALL, "all" },
+	{ CANY, "any" },
+	{ CEXISTS, "exists" },
 
 	// set
-	{ CSET,               "set"               },
-	{ CSET_ORDERED,       "set_ordered"       },
-	{ CSET_SORT,          "set_sort"          },
-	{ CSET_ADD,           "set_add"           },
+	{ CSET, "set" },
+	{ CSET_ORDERED, "set_ordered" },
+	{ CSET_PTR, "set_ptr" },
+	{ CSET_SORT, "set_sort" },
+	{ CSET_ADD, "set_add" },
+	{ CSET_GET, "set_get" },
+	{ CSET_RESULT, "set_result" },
+	{ CSET_AGG, "set_agg" },
 
 	// merge
-	{ CMERGE,             "merge"             },
-	{ CMERGE_RECV,        "merge_recv"        },
+	{ CMERGE, "merge" },
+	{ CMERGE_RECV, "merge_recv" },
+	{ CMERGE_RECV_AGG, "merge_recv_agg" },
 
-	// group
-	{ CGROUP,             "group"             },
-	{ CGROUP_ADD,         "group_add"         },
-	{ CGROUP_WRITE,       "group_write"       },
-	{ CGROUP_GET,         "group_get"         },
-	{ CGROUP_READ,        "group_read"        },
-	{ CGROUP_READ_AGGR,   "group_read_aggr"   },
-	{ CGROUP_MERGE_RECV,  "group_merge_recv"  },
+	// table cursor
+	{ CTABLE_OPEN, "table_open" },
+	{ CTABLE_PREPARE, "table_prepare" },
+	{ CTABLE_CLOSE, "table_close" },
+	{ CTABLE_NEXT, "table_next" },
+	{ CTABLE_READB, "table_readb" },
+	{ CTABLE_READI8, "table_readi8" },
+	{ CTABLE_READI16, "table_readi16" },
+	{ CTABLE_READI32, "table_readi32" },
+	{ CTABLE_READI64, "table_readi64" },
+	{ CTABLE_READF, "table_readf" },
+	{ CTABLE_READD, "table_readd" },
+	{ CTABLE_READT, "table_readt" },
+	{ CTABLE_READL, "table_readl" },
+	{ CTABLE_READS, "table_reads" },
+	{ CTABLE_READJ, "table_readj" },
+	{ CTABLE_READV, "table_readv" },
 
-	// ref
-	{ CREF,               "ref"               },
-	{ CREF_KEY,           "ref_key"           },
+	// store cursor
+	{ CSTORE_OPEN, "store_open" },
+	{ CSTORE_CLOSE, "store_open" },
+	{ CSTORE_NEXT, "store_next" },
+	{ CSTORE_READ, "store_read" },
 
-	// counters
-	{ CCNTR_INIT,         "cntr_init"         },
-	{ CCNTR_GTE,          "cntr_gte"          },
-	{ CCNTR_LTE,          "cntr_lte"          },
-
-	// cursor
-	{ CCURSOR_OPEN,       "cursor_open"       },
-	{ CCURSOR_OPEN_EXPR,  "cursor_open_expr"  },
-	{ CCURSOR_OPEN_CTE,   "cursor_open_cte"   },
-	{ CCURSOR_PREPARE,    "cursor_prepare"    },
-	{ CCURSOR_CLOSE,      "cursor_close"      },
-	{ CCURSOR_NEXT,       "cursor_next"       },
-	{ CCURSOR_READ,       "cursor_read"       },
-	{ CCURSOR_IDX,        "cursor_idx"        },
+	// aggs
+	{ CAGG, "agg" },
+	{ CCOUNT, "count" },
+	{ CAVGI, "avgi" },
+	{ CAVGD, "avgd" },
 
 	// functions
-	{ CCALL,              "call"              },
+	{ CCALL, "call" },
 
 	// dml
-	{ CINSERT,            "insert"            },
-	{ CUPDATE,            "update"            },
-	{ CDELETE,            "delete"            },
-	{ CUPSERT,            "upsert"            }
+	{ CINSERT, "insert" },
+	{ CUPSERT, "upsert" },
+	{ CUPDATE, "update" },
+	{ CDELETE, "delete" },
+
+	// result
+	{ CSEND, "send" },
+	{ CSEND_HASH, "send_hash" },
+	{ CSEND_GENERATED, "send_generated" },
+	{ CSEND_FIRST, "send_first" },
+	{ CSEND_ALL, "send_all" },
+	{ CRECV, "recv" },
+	{ CRECV_TO, "recv_to" },
+
+	// result
+	{ CRESULT, "result" },
+	{ CCONTENT, "content" },
+	{ CCTE_SET, "cte_set" },
+	{ CCTE_GET, "cte_get" },
+
+	{ 0, NULL }
 };
 
 static inline void
@@ -229,12 +320,15 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_size(&str), str_of(&str));
 			break;
 		}
-		case CREAL:
+		case CDOUBLE:
 		{
-			double real = code_data_at_real(data, op->b);
-			op_write(output, op, true, true, true, "%g", real);
+			double dbl = code_data_at_double(data, op->b);
+			op_write(output, op, true, true, true, "%g", dbl);
 			break;
 		}
+		case CSET_PTR:
+			op_write(output, op, true, false, true, NULL);
+			break;
 		case CSEND_HASH:
 		case CSEND:
 		case CSEND_GENERATED:
@@ -260,15 +354,15 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&table->config->name));
 			break;
 		}
-		case CCURSOR_OPEN:
+		case CTABLE_OPEN:
 		{
 			Str schema;
 			Str table;
 			Str index;
 			uint8_t* ref = code_data_at(data, op->b);
-			data_read_string(&ref, &schema);
-			data_read_string(&ref, &table);
-			data_read_string(&ref, &index);
+			json_read_string(&ref, &schema);
+			json_read_string(&ref, &table);
+			json_read_string(&ref, &index);
 			op_write(output, op, true, true, true,
 			         "%.*s.%.*s (%.*s%s)",
 			         str_size(&schema),
@@ -280,7 +374,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         op->d ? ", lookup": "");
 			break;
 		}
-		case CCURSOR_PREPARE:
+		case CTABLE_PREPARE:
 		{
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, true,
@@ -289,19 +383,6 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&table->config->schema),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name));
-			break;
-		}
-		case CCURSOR_IDX:
-		{
-			if (op->d == -1) {
-				op_write(output, op, true, true, true, NULL);
-			} else
-			{
-				Str name;
-				code_data_at_string(data, op->d, &name);
-				op_write(output, op, true, true, true,
-				         "%.*s", str_size(&name), str_of(&name));
-			}
 			break;
 		}
 		case CCALL:
@@ -315,6 +396,9 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
+		case CCONTENT:
+			op_write(output, op, true, false, false, NULL);
+			break;
 		default:
 			op_write(output, op, true, true, true, NULL);
 			break;

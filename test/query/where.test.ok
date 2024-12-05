@@ -1,101 +1,8 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: select from expr where
-explain select * from [1, 2, 3] where true
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "push                1      0      0     ",
-      "07": "array               1      3      0     ",
-      "08": "cursor_open_expr    0      1      10    ",
-      "09": "jmp                 15     0      0     ",
-      "10": "bool                2      1      0     ",
-      "11": "jntr                14     2      0     ",
-      "12": "cursor_read         2      0      0     ",
-      "13": "set_add             0      2      0     ",
-      "14": "cursor_next         0      10     0     ",
-      "15": "cursor_close        0      0      0     ",
-      "16": "cte_set             0      0      0     ",
-      "17": "body                0      0      0     ",
-      "18": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from [1, 2, 3] where true
-[1, 2, 3]
-select * from [1, 2, 3] where false
-[]
-# test: select from expr where #2
-select ** from {"a": 1, "b": 2, "c": 3} where true
-["a", "b", "c"]
-select ** from {"a": 1, "b": 2, "c": 3} where false
-[]
-select ** from {} where true
-[]
-# test: select from expr where star
-select * from [1, 2, 3] where * = 2
-[2]
-select * from [1, 2, 3] where * >= 2
-[2, 3]
-select * from [1, 2, 3] where * <> 2
-[1, 3]
-# test: select from expr where star #2
-select ** from {"a": 1, "b": 2, "c": 3} where * = 2
-["b"]
-select ** from {"a": 1, "b": 2, "c": 3} where * >= 2
-["b", "c"]
-select ** from {"a": 1, "b": 2, "c": 3} where * <> 2
-["a", "c"]
-select * from [] where true
-[]
-# test: select from table where star
-create table test (id int primary key serial, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-explain select * from test where *[0] >= 0
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 14     0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "idx                 3      1      2     ",
-      "08": "int                 1      -      0     # 0",
-      "09": "gte                 2      3      1     ",
-      "10": "jntr                13     2      0     ",
-      "11": "cursor_read         1      0      0     ",
-      "12": "set_add             0      1      0     ",
-      "13": "cursor_next         0      5      0     ",
-      "14": "cursor_close        0      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where *[0] >= 0
-[[0, 0], [1, 0], [2, 0]]
-drop table test
+# test: select expr where
+select 1 * where false
+{"msg": "bad expression"}
 # test: select from table where column
 create table test (id int primary key serial, data int default 0)
 insert into test () values ()
@@ -111,25 +18,28 @@ explain select * from test where id >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 15     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gteii               3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "table_readi32       1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "table_next          0      5      0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -137,7 +47,7 @@ select * from test where id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where column.path
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -150,6 +60,8 @@ select * from test
   "data": 123
 }]]
 explain select * from test where data.data >= 0
+{"msg": "unsupported operation: <json> >= <int>"}
+explain select * from test where data.data::int >= 0
 [{
   "bytecode": {
     "coordinator": {
@@ -159,29 +71,36 @@ explain select * from test where data.data >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      1     # data",
-      "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 19     0      0     ",
+      "05": "table_readj         1      0      1     ",
+      "06": "string              2      20     0     # data",
+      "07": "dotjs               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "call                1      -      1     # public.int()",
+      "10": "int                 2      -      0     # 0",
+      "11": "gteii               3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "table_readj         1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "table_next          0      5      0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
-select * from test where data.data >= 0
+select * from test where data.data::int >= 0
 [[0, {
   "data": 123
 }], [1, {
@@ -191,7 +110,7 @@ select * from test where data.data >= 0
 }]]
 drop table test
 # test: select from table where column.path #2
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -209,7 +128,7 @@ select * from test
     "data": 123
   }
 }]]
-explain select * from test where data.data.data >= 0
+explain select * from test where data.data.data::int >= 0
 [{
   "bytecode": {
     "coordinator": {
@@ -219,29 +138,36 @@ explain select * from test where data.data.data >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      1     # data.data",
-      "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 19     0      0     ",
+      "05": "table_readj         1      0      1     ",
+      "06": "string              2      20     0     # data.data",
+      "07": "dotjs               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "call                1      -      1     # public.int()",
+      "10": "int                 2      -      0     # 0",
+      "11": "gteii               3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "table_readj         1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "table_next          0      5      0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
-select * from test where data.data.data >= 0
+select * from test where data.data.data::int >= 0
 [[0, {
   "data": {
     "data": 123
@@ -271,25 +197,28 @@ explain select * from test where test.id >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 15     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gteii               3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "table_readi32       1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "table_next          0      5      0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -297,11 +226,11 @@ select * from test where test.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where target.column.path
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
-explain select * from test where test.data.data >= 0
+explain select * from test where test.data.data::int >= 0
 [{
   "bytecode": {
     "coordinator": {
@@ -311,29 +240,36 @@ explain select * from test where test.data.data >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      1     # data",
-      "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 19     0      0     ",
+      "05": "table_readj         1      0      1     ",
+      "06": "string              2      20     0     # data",
+      "07": "dotjs               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "call                1      -      1     # public.int()",
+      "10": "int                 2      -      0     # 0",
+      "11": "gteii               3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "table_readj         1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "table_next          0      5      0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
-select * from test where test.data.data >= 0
+select * from test where test.data.data::int >= 0
 [[0, {
   "data": 123
 }], [1, {
@@ -357,25 +293,28 @@ explain select * from test alias where alias.id >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 15     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gteii               3      1      2     ",
+      "08": "jntr                14     3      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "table_readi32       1      0      1     ",
+      "12": "push                1      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "table_next          0      5      0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -383,11 +322,11 @@ select * from test alias where alias.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where alias.column.path
-create table test (id int primary key serial, data object)
+create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
-explain select * from test alias where alias.data.data >= 0
+explain select * from test alias where alias.data.data::int >= 0
 [{
   "bytecode": {
     "coordinator": {
@@ -397,29 +336,36 @@ explain select * from test alias where alias.data.data >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      1     # data",
-      "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 19     0      0     ",
+      "05": "table_readj         1      0      1     ",
+      "06": "string              2      20     0     # data",
+      "07": "dotjs               3      1      2     ",
+      "08": "push                3      0      0     ",
+      "09": "call                1      -      1     # public.int()",
+      "10": "int                 2      -      0     # 0",
+      "11": "gteii               3      1      2     ",
+      "12": "jntr                18     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "table_readj         1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "table_next          0      5      0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
     }
   }
 }]
-select * from test alias where alias.data.data >= 0
+select * from test alias where alias.data.data::int >= 0
 [[0, {
   "data": 123
 }], [1, {
@@ -428,7 +374,15 @@ select * from test alias where alias.data.data >= 0
   "data": 123
 }]]
 drop table test
-# test: where true/false
+# test: select from table where *
+create table test (id int primary key serial, data int default 0)
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+explain select * from test alias where *
+{"msg": "bad expression"}
+drop table test
+# test: select from table where true/false
 create table test (id int primary key)
 insert into test values (1), (2), (3)
 explain select * from test where true
@@ -441,32 +395,33 @@ explain select * from test where true
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 10     0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
       "05": "bool                1      1      0     ",
-      "06": "jntr                9      1      0     ",
-      "07": "cursor_read         1      0      0     ",
-      "08": "set_add             0      1      0     ",
-      "09": "cursor_next         0      5      0     ",
-      "10": "cursor_close        0      0      0     ",
-      "11": "result              0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "06": "jntr                10     1      0     ",
+      "07": "table_readi32       1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      5      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
 select * from test where true
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test where false
 []
 drop table test
-# test: where gte
+# test: select from table where >=
 create table test (id int primary key)
 insert into test values (1), (2), (3)
 explain select * from test where id >= 0
@@ -479,50 +434,51 @@ explain select * from test where id >= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
+      "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 13     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "gte                 3      1      2     ",
-      "08": "jntr                11     3      0     ",
-      "09": "cursor_read         1      0      0     ",
-      "10": "set_add             0      1      0     ",
-      "11": "cursor_next         0      5      0     ",
-      "12": "cursor_close        0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "07": "gteii               3      1      2     ",
+      "08": "jntr                12     3      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      5      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
 select * from test where id >= 0
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test where id >= 1
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test where id >= 2
-[[2], [3]]
+[2, 3]
 select * from test where id >= 3
-[[3]]
+[3]
 select * from test where id >= 4
 []
-# test: where gt
+# test: select from table where >
 select * from test where id > 0
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test where id > 1
-[[2], [3]]
+[2, 3]
 select * from test where id > 2
-[[3]]
+[3]
 select * from test where id > 3
 []
 select * from test where id > 9
 []
-# test: where lte
+# test: select from table where <=
 explain select * from test where id <= 0
 [{
   "bytecode": {
@@ -533,43 +489,44 @@ explain select * from test where id <= 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 16     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 17     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "lte                 3      1      2     ",
+      "07": "lteii               3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          1      0      0     ",
+      "09": "table_readi32       1      0      0     ",
       "10": "int                 2      -      0     # 0",
-      "11": "lte                 3      1      2     ",
-      "12": "jntr                15     3      0     ",
-      "13": "cursor_read         1      0      0     ",
-      "14": "set_add             0      1      0     ",
-      "15": "cursor_next         0      5      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "11": "lteii               3      1      2     ",
+      "12": "jntr                16     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "table_next          0      5      0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "result              0      0      0     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]
 select * from test where id <= 0
 []
 select * from test where id <= 1
-[[1]]
+[1]
 select * from test where id <= 2
-[[1], [2]]
+[1, 2]
 select * from test where id <= 3
-[[1], [2], [3]]
+[1, 2, 3]
 select * from test where id <= 8
-[[1], [2], [3]]
-# test: where lt
+[1, 2, 3]
+# test: select from table where <
 explain select * from test where id < 0
 [{
   "bytecode": {
@@ -580,29 +537,30 @@ explain select * from test where id < 0
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 16     0      0     ",
-      "05": "cursor_idx          1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 17     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 0",
-      "07": "lt                  3      1      2     ",
+      "07": "ltii                3      1      2     ",
       "08": "jntr                4      3      0     ",
-      "09": "cursor_idx          1      0      0     ",
+      "09": "table_readi32       1      0      0     ",
       "10": "int                 2      -      0     # 0",
-      "11": "lt                  3      1      2     ",
-      "12": "jntr                15     3      0     ",
-      "13": "cursor_read         1      0      0     ",
-      "14": "set_add             0      1      0     ",
-      "15": "cursor_next         0      5      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "11": "ltii                3      1      2     ",
+      "12": "jntr                16     3      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "table_next          0      5      0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "result              0      0      0     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]
@@ -611,27 +569,50 @@ select * from test where id < 0
 select * from test where id < 1
 []
 select * from test where id < 2
-[[1]]
+[1]
 select * from test where id < 3
-[[1], [2]]
+[1, 2]
 select * from test where id < 8
-[[1], [2], [3]]
+[1, 2, 3]
 drop table test
-# test: where point lookup
+# test: select from table where = (point lookup)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
+explain select * from test where id = 2
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_hash           0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 2",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary, lookup)",
+      "04": "jmp                 13     0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "int                 2      -      0     # 2",
+      "07": "equii               3      1      2     ",
+      "08": "jntr                4      3      0     ",
+      "09": "table_readi32       1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "jmp                 4      0      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test where id = 2
-[[2]]
-drop table test
-# test: where point lookup nested
-create table test (obj object, primary key(obj.id int))
-insert into test {"id": 1}
-insert into test {"id": 2}
-insert into test {"id": 3}
-select * from test where obj.id = 2
-[[{
-  "id": 2
-}]]
+[2]
 drop table test
 disconnect S0
 close E0

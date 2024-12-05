@@ -1,67 +1,5 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
-# test: order by []
-select * from [1,3,2] order
-{"msg": "ORDER <BY> expected"}
-select * from [1,3,2] order by
-{"msg": "bad expression"}
-select * from [1,3,2] order by *
-[1, 2, 3]
-explain select * from [1,3,2] order by *
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set_ordered         0      0      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 3",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 2",
-      "06": "push                1      0      0     ",
-      "07": "array               1      3      0     ",
-      "08": "cursor_open_expr    0      1      10    ",
-      "09": "jmp                 15     0      0     ",
-      "10": "cursor_read         2      0      0     ",
-      "11": "cursor_read         3      0      0     ",
-      "12": "push                3      0      0     ",
-      "13": "set_add             0      2      0     ",
-      "14": "cursor_next         0      10     0     ",
-      "15": "cursor_close        0      0      0     ",
-      "16": "set_sort            0      0      0     ",
-      "17": "bool                1      0      0     ",
-      "18": "push                1      0      0     ",
-      "19": "merge               1      0      -1    ",
-      "20": "cte_set             0      1      0     ",
-      "21": "body                0      0      0     ",
-      "22": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from 1 order by *
-{"msg": "FROM: array, object or store expected, but got int"}
-select * from 1 order by *
-{"msg": "FROM: array, object or store expected, but got int"}
-select (select * from [1,3,2] order by *)
-[1, 2, 3]
-select * from (select * from [1,3,2] order by *)
-[1, 2, 3]
-# test: order by {}
-select * from {"a": 1, "b": 3, "c": 2} order by *
-[1, 2, 3]
-select (select * from {"a": 1, "b": 3, "c": 2} order by *)
-[1, 2, 3]
-select * from (select * from {"a": 1, "b": 3, "c": 2} order by *)
-[1, 2, 3]
-select **, * from {"a": 1, "b": 3, "c": 2} order by **
-[["a", 1], ["b", 3], ["c", 2]]
-select **, * from {"b": 3, "a": 1, "c": 2} order by **
-[["a", 1], ["b", 3], ["c", 2]]
-# test: order by asc
-select * from [1,3,2] order by * asc
-[1, 2, 3]
-# test: order by desc
-select * from [1,3,2] order by * desc
-[3, 2, 1]
 # test: order by column
 create table test (id int primary key, data int)
 insert into test values (1, 1)
@@ -77,24 +15,27 @@ explain select * from test order by data
       "03": "push                0      0      0     ",
       "04": "merge_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
+      "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set_ordered         0      0      0     ",
-      "01": "int_min             1      0      0     ",
+      "00": "set_ordered         0      2      1     ",
+      "01": "int                 1      -      0     # -2147483648",
       "02": "push                1      0      0     ",
-      "03": "cursor_open         0      3      5     # public.test (primary)",
-      "04": "jmp                 10     0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "cursor_idx          2      0      1     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             0      1      0     ",
-      "09": "cursor_next         0      5      0     ",
-      "10": "cursor_close        0      0      0     ",
-      "11": "set_sort            0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "03": "table_open          0      1      5     # public.test (primary)",
+      "04": "jmp                 13     0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "table_readi32       1      0      1     ",
+      "10": "push                1      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          0      5      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "set_sort            0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
@@ -106,16 +47,11 @@ select * from test order by data asc
 # test: order by column desc
 select * from test order by data desc
 [[2, 3], [3, 2], [1, 1]]
-# test: order by column type
-select * from test order by data
-[[1, 1], [3, 2], [2, 3]]
-select * from test order by data asc
-[[1, 1], [3, 2], [2, 3]]
 # test: order by target.column
 select * from test order by test.data
 [[1, 1], [3, 2], [2, 3]]
 select * from test order by test
-{"msg": "column test: does not exists"}
+{"msg": "<test.test> column not found"}
 # test: order by alias.column
 select * from test alias order by alias.data
 [[1, 1], [3, 2], [2, 3]]

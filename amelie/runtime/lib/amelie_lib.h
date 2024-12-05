@@ -33,24 +33,20 @@
 // id manager
 #include "lib/id_mgr.h"
 
-// args
-#include "lib/arg.h"
-
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"
 #include "lib/interval.h"
 #include "lib/timestamp.h"
 
-// vector
+// types
+#include "lib/avg.h"
 #include "lib/vector.h"
-
-// partial aggregate
-#include "lib/agg.h"
 
 // logger
 #include "lib/logger.h"
 
 // cli
+#include "lib/arg.h"
 #include "lib/separator.h"
 #include "lib/cli.h"

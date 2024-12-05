@@ -121,7 +121,7 @@ main_bootstrap(Main* self)
 		var_string_set(&config->timezone_default, &self->timezone_mgr.system->name);
 
 	// set default server listen
-	if (! var_data_is_set(&config->listen))
+	if (! var_json_is_set(&config->listen))
 		server_bootstrap();
 }
 

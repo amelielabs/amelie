@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -46,7 +47,6 @@ static Keyword keywords_a[] =
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
 	{ KAGGREGATE,             "aggregate",             9  },
-	{ KAGGREGATED,            "aggregated",            10 },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -88,7 +88,6 @@ static Keyword keywords_d[] =
 
 static Keyword keywords_e[] =
 {
-	{ KEXECUTE,               "execute",               7  },
 	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
@@ -104,6 +103,7 @@ static Keyword keywords_f[] =
 	{ KFROM,                  "from",                  4  },
 	{ KFUNCTION,              "function",              8  },
 	{ KFOR,                   "for",                   3  },
+	{ KFORMAT,                "format",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -198,7 +198,6 @@ static Keyword keywords_q[] =
 static Keyword keywords_r[] =
 {
 	{ KRIGHT,                 "right",                 5  },
-	{ KRETURN,                "return",                6  },
 	{ KRETURNING,             "returning",             9  },
 	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },
@@ -206,6 +205,8 @@ static Keyword keywords_r[] =
 	{ KREPL,                  "repl",                  4  },
 	{ KREPLICATION,           "replication",           11 },
 	{ KRANDOM,                "random",                6  },
+	{ KRESOLVE,               "resolve",               7  },
+	{ KRESOLVED,              "resolved",              8  },
 	{ 0,                       NULL,                   0  }
 };
 

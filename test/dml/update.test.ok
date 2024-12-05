@@ -3,13 +3,13 @@ connect E0 S0 localhost:3485
 # test: update statement parsing
 create table test(id int primary key)
 update
-{"msg": "bad expression"}
+{"msg": "FROM target name expected"}
 update;
-{"msg": "bad expression"}
+{"msg": "FROM target name expected"}
 update 1;
-{"msg": "UPDATE <table name> expected"}
+{"msg": "FROM target name expected"}
 update "name"
-{"msg": "UPDATE <table name> expected"}
+{"msg": "FROM target name expected"}
 update test
 {"msg": "UPDATE <SET> expected"}
 update test "path"
@@ -19,13 +19,13 @@ update test 1
 update test path
 {"msg": "UPDATE <SET> expected"}
 update test set path
-{"msg": "UPDATE name SET path <=> expected"}
+{"msg": "UPDATE name SET column <=> expected"}
 update test set path /
-{"msg": "UPDATE name SET path <=> expected"}
+{"msg": "UPDATE name SET column <=> expected"}
 update test set path =
 {"msg": "bad expression"}
 update test set path = expr
-{"msg": "<path> column does not exists"}
+{"msg": "<test.path> column not found"}
 update test set id = id expr
 {"msg": "unexpected token at the end of statement"}
 drop table test
@@ -45,24 +45,20 @@ explain update test set data = data + 1
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int_min             0      0      0     ",
+      "00": "int                 0      -      0     # -2147483648",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary)",
-      "03": "jmp                 16     0      0     ",
-      "04": "cursor_read         0      0      0     ",
+      "02": "table_open          0      0      4     # public.test (primary)",
+      "03": "jmp                 12     0      0     ",
+      "04": "int                 0      -      0     # 1",
       "05": "push                0      0      0     ",
-      "06": "null                0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "cursor_idx          0      0      1     ",
-      "09": "int                 1      -      0     # 1",
-      "10": "add                 2      0      1     ",
-      "11": "push                2      0      0     ",
-      "12": "assign              0      3      1     ",
-      "13": "push                0      0      0     ",
-      "14": "update              0      0      0     ",
-      "15": "cursor_next         0      4      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "06": "table_readi32       0      0      1     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "addii               2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "update              0      1      0     ",
+      "11": "table_next          0      4      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -87,24 +83,20 @@ explain update test.test set data = data + 1
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int_min             0      0      0     ",
+      "00": "int                 0      -      0     # -2147483648",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # test.test (primary)",
-      "03": "jmp                 16     0      0     ",
-      "04": "cursor_read         0      0      0     ",
+      "02": "table_open          0      0      4     # test.test (primary)",
+      "03": "jmp                 12     0      0     ",
+      "04": "int                 0      -      0     # 1",
       "05": "push                0      0      0     ",
-      "06": "null                0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "cursor_idx          0      0      1     ",
-      "09": "int                 1      -      0     # 1",
-      "10": "add                 2      0      1     ",
-      "11": "push                2      0      0     ",
-      "12": "assign              0      3      1     ",
-      "13": "push                0      0      0     ",
-      "14": "update              0      0      0     ",
-      "15": "cursor_next         0      4      0     ",
-      "16": "cursor_close        0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "06": "table_readi32       0      0      1     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "addii               2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "update              0      1      0     ",
+      "11": "table_next          0      4      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -113,15 +105,6 @@ select * from test.test
 [[0, 4], [1, 3], [2, 2]]
 drop table test.test
 drop schema test
-# test: update star shared
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-update test set data = *[1] + 1
-select * from test
-[[0, 4], [1, 3], [2, 2]]
-drop table test
 # test: update multiple ops
 create table test(id int primary key, a int, b int)
 insert into test values (0, 3, 3)
@@ -138,32 +121,26 @@ explain update test set a = a + 1, b = b - 1
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int_min             0      0      0     ",
+      "00": "int                 0      -      0     # -2147483648",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary)",
-      "03": "jmp                 24     0      0     ",
-      "04": "cursor_read         0      0      0     ",
+      "02": "table_open          0      0      4     # public.test (primary)",
+      "03": "jmp                 18     0      0     ",
+      "04": "int                 0      -      0     # 1",
       "05": "push                0      0      0     ",
-      "06": "null                0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "cursor_idx          0      0      1     ",
-      "09": "int                 1      -      0     # 1",
-      "10": "add                 2      0      1     ",
-      "11": "push                2      0      0     ",
-      "12": "assign              0      3      1     ",
-      "13": "push                0      0      0     ",
-      "14": "null                0      0      0     ",
-      "15": "push                0      0      0     ",
-      "16": "cursor_idx          0      0      2     ",
-      "17": "int                 1      -      0     # 1",
-      "18": "sub                 2      0      1     ",
-      "19": "push                2      0      0     ",
-      "20": "assign              0      3      2     ",
-      "21": "push                0      0      0     ",
-      "22": "update              0      0      0     ",
-      "23": "cursor_next         0      4      0     ",
-      "24": "cursor_close        0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "06": "table_readi32       0      0      1     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "addii               2      0      1     ",
+      "09": "push                2      0      0     ",
+      "10": "int                 0      -      0     # 2",
+      "11": "push                0      0      0     ",
+      "12": "table_readi32       0      0      2     ",
+      "13": "int                 1      -      0     # 1",
+      "14": "subii               2      0      1     ",
+      "15": "push                2      0      0     ",
+      "16": "update              0      2      0     ",
+      "17": "table_next          0      4      0     ",
+      "18": "table_close         0      0      0     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]
@@ -177,45 +154,63 @@ insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, 1)
 update test set data = data + 1, data = data + 1
+{"msg": "<test.data> column is redefined in UPDATE"}
 select * from test
-[[0, 4], [1, 3], [2, 2]]
+[[0, 3], [1, 2], [2, 1]]
 drop table test
-# test: update object
-create table test(id int primary key, data object)
+# test: update json
+create table test(id int primary key, data json)
 insert into test values (0, {"id": 48})
 insert into test values (1, {"id": 49})
 insert into test values (2, {"id": 50})
-update test set data.id = data.id + 1
-update test set data = {"id": data.id + 1}
+update test set data = {"id": data.id::int + 1}
+explain update test set data = {"id": data.id::int + 1}
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "null                0      0      0     ",
+      "03": "cte_set             0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "int                 0      -      0     # -2147483648",
+      "01": "push                0      0      0     ",
+      "02": "table_open          0      0      4     # public.test (primary)",
+      "03": "jmp                 20     0      0     ",
+      "04": "int                 0      -      0     # 1",
+      "05": "push                0      0      0     ",
+      "06": "string              0      20     0     # id",
+      "07": "push                0      0      0     ",
+      "08": "table_readj         0      0      1     ",
+      "09": "string              1      23     0     # id",
+      "10": "dotjs               2      0      1     ",
+      "11": "push                2      0      0     ",
+      "12": "call                0      -      1     # public.int()",
+      "13": "int                 1      -      0     # 1",
+      "14": "addii               2      0      1     ",
+      "15": "push                2      0      0     ",
+      "16": "json_obj            0      2      0     ",
+      "17": "push                0      0      0     ",
+      "18": "update              0      1      0     ",
+      "19": "table_next          0      4      0     ",
+      "20": "table_close         0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
 select * from test
 [[0, {
+  "id": 49
+}], [1, {
   "id": 50
-}], [1, {
+}], [2, {
   "id": 51
-}], [2, {
-  "id": 52
 }]]
 drop table test
-# test: update object add key
-create table test(id int primary key, data object)
-insert into test values (0, {"id": 48})
-insert into test values (1, {"id": 49})
-insert into test values (2, {"id": 50})
-update test set data.data = id + 1
-select * from test
-[[0, {
-  "id": 48,
-  "data": 1
-}], [1, {
-  "id": 49,
-  "data": 2
-}], [2, {
-  "id": 50,
-  "data": 3
-}]]
-drop table test
-# test: update object rewrite
-create table test(id int primary key serial, data object)
+# test: update json rewrite
+create table test(id int primary key serial, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
@@ -230,28 +225,13 @@ select * from test
 }]]
 drop table test
 # test: update object rewrite #2
-create table test(id int primary key serial, data object)
+create table test(id int primary key serial, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
-update test set data = {"id": *[0], "data": *[1]}
+update test set data = [id, data.id]
 select * from test
-[[0, {
-  "id": 0,
-  "data": {
-    "id": 48
-  }
-}], [1, {
-  "id": 1,
-  "data": {
-    "id": 49
-  }
-}], [2, {
-  "id": 2,
-  "data": {
-    "id": 50
-  }
-}]]
+[[0, [0, 48]], [1, [1, 49]], [2, [2, 50]]]
 drop table test
 # test: update key
 create table test(id int primary key)
@@ -259,104 +239,9 @@ insert into test values (0)
 insert into test values (1)
 insert into test values (2)
 update test set id = id + 1
-{"msg": "<id> key columns cannot be updated"}
+{"msg": "<test.id> column used as a part of a key"}
 select * from test
-[[0], [1], [2]]
-drop table test
-# test: update key nested
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data.id = data.id + 1
-{"msg": "<data> column nested key <id> cannot be updated"}
-select * from test
-[[{
-  "id": 48,
-  "data": null
-}], [{
-  "id": 49,
-  "data": null
-}], [{
-  "id": 50,
-  "data": null
-}]]
-drop table test
-# test: update key nested prefix
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data = {"id": data.id + 1}
-{"msg": "<data> column nested key <id> cannot be updated"}
-select * from test
-[[{
-  "id": 48,
-  "data": null
-}], [{
-  "id": 49,
-  "data": null
-}], [{
-  "id": 50,
-  "data": null
-}]]
-drop table test
-# test: update key nested prefix #2
-create table test(data object, primary key(data.data.id int))
-insert into test values ({"data": {"id": 1}})
-insert into test values ({"data": {"id": 2}})
-insert into test values ({"data": {"id": 3}})
-update test set data = {"id": data.data.id + 1}
-{"msg": "<data> column nested key <data.id> cannot be updated"}
-update test set data.id = null
-update test set data.data.id = null
-{"msg": "<data> column nested key <data.id> cannot be updated"}
-update test set data.data.id2 = null
-update test set data.data = {}
-{"msg": "<data> column nested key <data.id> cannot be updated"}
-update test set data.id = null, data.data.id = null
-{"msg": "<data> column nested key <data.id> cannot be updated"}
-select * from test
-[[{
-  "data": {
-    "id": 1,
-    "id2": null
-  },
-  "id": null,
-  "data": null
-}], [{
-  "data": {
-    "id": 2,
-    "id2": null
-  },
-  "id": null,
-  "data": null
-}], [{
-  "data": {
-    "id": 3,
-    "id2": null
-  },
-  "id": null,
-  "data": null
-}]]
-drop table test
-# test: update key nested field
-create table test(data object, primary key(data.id int))
-insert into test values ({"id": 48, "data": null})
-insert into test values ({"id": 49, "data": null})
-insert into test values ({"id": 50, "data": null})
-update test set data.data = data.id + 1
-select * from test
-[[{
-  "id": 48,
-  "data": 49
-}], [{
-  "id": 49,
-  "data": 50
-}], [{
-  "id": 50,
-  "data": 51
-}]]
+[0, 1, 2]
 drop table test
 # test: update point-lookup
 create table test(id int primary key, data int)
@@ -376,26 +261,22 @@ explain update test set data = data + 1 where id = 0
     "node": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary, lookup)",
-      "03": "jmp                 20     0      0     ",
-      "04": "cursor_idx          0      0      0     ",
+      "02": "table_open          0      0      4     # public.test (primary, lookup)",
+      "03": "jmp                 16     0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 0",
-      "06": "equ                 2      0      1     ",
+      "06": "equii               2      0      1     ",
       "07": "jntr                3      2      0     ",
-      "08": "cursor_read         0      0      0     ",
+      "08": "int                 0      -      0     # 1",
       "09": "push                0      0      0     ",
-      "10": "null                0      0      0     ",
-      "11": "push                0      0      0     ",
-      "12": "cursor_idx          0      0      1     ",
-      "13": "int                 1      -      0     # 1",
-      "14": "add                 2      0      1     ",
-      "15": "push                2      0      0     ",
-      "16": "assign              0      3      1     ",
-      "17": "push                0      0      0     ",
-      "18": "update              0      0      0     ",
-      "19": "jmp                 3      0      0     ",
-      "20": "cursor_close        0      0      0     ",
-      "21": "ret                 0      0      0     "
+      "10": "table_readi32       0      0      1     ",
+      "11": "int                 1      -      0     # 1",
+      "12": "addii               2      0      1     ",
+      "13": "push                2      0      0     ",
+      "14": "update              0      1      0     ",
+      "15": "jmp                 3      0      0     ",
+      "16": "table_close         0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -423,26 +304,22 @@ explain update test set data = data + 1 where id >= 1
     "node": {
       "00": "int                 0      -      0     # 1",
       "01": "push                0      0      0     ",
-      "02": "cursor_open         0      0      4     # public.test (primary)",
-      "03": "jmp                 20     0      0     ",
-      "04": "cursor_idx          0      0      0     ",
+      "02": "table_open          0      0      4     # public.test (primary)",
+      "03": "jmp                 16     0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 1",
-      "06": "gte                 2      0      1     ",
-      "07": "jntr                19     2      0     ",
-      "08": "cursor_read         0      0      0     ",
+      "06": "gteii               2      0      1     ",
+      "07": "jntr                15     2      0     ",
+      "08": "int                 0      -      0     # 1",
       "09": "push                0      0      0     ",
-      "10": "null                0      0      0     ",
-      "11": "push                0      0      0     ",
-      "12": "cursor_idx          0      0      1     ",
-      "13": "int                 1      -      0     # 1",
-      "14": "add                 2      0      1     ",
-      "15": "push                2      0      0     ",
-      "16": "assign              0      3      1     ",
-      "17": "push                0      0      0     ",
-      "18": "update              0      0      0     ",
-      "19": "cursor_next         0      4      0     ",
-      "20": "cursor_close        0      0      0     ",
-      "21": "ret                 0      0      0     "
+      "10": "table_readi32       0      0      1     ",
+      "11": "int                 1      -      0     # 1",
+      "12": "addii               2      0      1     ",
+      "13": "push                2      0      0     ",
+      "14": "update              0      1      0     ",
+      "15": "table_next          0      4      0     ",
+      "16": "table_close         0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]
@@ -456,15 +333,169 @@ update test set data = data + 1 where id >= 1
 select * from test
 [[0, 3], [1, 3], [2, 3]]
 drop table test
-# test: update update error
+# test: update null
 create table test(id int primary key, data int)
 insert into test values (0, 3)
 insert into test values (1, 2)
 insert into test values (2, null)
 update test set data = data + 1
-{"msg": "bad + expression types"}
 select * from test
-[[0, 3], [1, 2], [2, null]]
+[[0, 4], [1, 3], [2, null]]
+update test set data = id where data is null
+select * from test
+[[0, 4], [1, 3], [2, 2]]
+drop table test
+# test: update set null
+create table test(id int primary key, data int)
+insert into test values (0, 1)
+update test set data = data + 1
+select * from test
+[[0, 2]]
+update test set data = null
+select * from test
+[[0, null]]
+drop table test
+# test: update set null (not null)
+create table test(id int primary key, data int not null)
+insert into test values (0, 1)
+update test set data = data + 1
+select * from test
+[[0, 2]]
+update test set data = null
+{"msg": "column data: cannot be null"}
+select * from test
+[[0, 2]]
+drop table test
+# test: update returning
+create table test(id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 0)
+explain update test set data = data + 1 returning *
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 18     0      0     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "push                1      0      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "int                 2      -      0     # 1",
+      "09": "addii               3      1      2     ",
+      "10": "push                3      0      0     ",
+      "11": "update              0      1      0     ",
+      "12": "table_readi32       1      0      0     ",
+      "13": "push                1      0      0     ",
+      "14": "table_readi32       1      0      1     ",
+      "15": "push                1      0      0     ",
+      "16": "set_add             0      0      0     ",
+      "17": "table_next          0      5      0     ",
+      "18": "table_close         0      0      0     ",
+      "19": "result              0      0      0     ",
+      "20": "ret                 0      0      0     "
+    }
+  }
+}]
+update test set data = data + 1 returning *
+[[0, 1], [1, 1], [2, 1]]
+update test set data = data + 1 returning *
+[[0, 2], [1, 2], [2, 2]]
+update test set data = data + 1 returning *
+[[0, 3], [1, 3], [2, 3]]
+select * from test
+[[0, 3], [1, 3], [2, 3]]
+drop table test
+# test: update column (int8)
+create table test (id int primary key, data i8)
+insert into test values (1, 123), (2, 255), (3, 256)
+update test set data = data + 1
+select * from test
+[[1, 124], [2, 0], [3, 1]]
+drop table test
+# test: update column (int16)
+create table test (id int primary key, data i16)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+[[1, 124], [2, 257], [3, -32767]]
+drop table test
+# test: update column (int32)
+create table test (id int primary key, data i32)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+[[1, 124], [2, 257], [3, -32767]]
+drop table test
+# test: update column (int64)
+create table test (id int primary key, data i64)
+insert into test values (1, 123), (2, 256), (3, -32768)
+update test set data = data + 1
+select * from test
+[[1, 124], [2, 257], [3, -32767]]
+drop table test
+# test: update column (float)
+create table test (id int primary key, data float)
+insert into test values (1, 123.32), (2, 3.14)
+update test set data = data + 0.01
+select * from test
+[[1, 123.33], [2, 3.15]]
+drop table test
+# test: update column (double)
+create table test (id int primary key, data double)
+insert into test values (1, 123.32), (2, 3.14)
+update test set data = data + 0.01
+select * from test
+[[1, 123.33], [2, 3.15]]
+drop table test
+# test: update column (text)
+create table test (id int primary key, data text)
+insert into test values (1, 'hello')
+update test set data = data || " world"
+update test set data = data || " world"
+update test set data = data || " world"
+select data from test
+["hello world world world"]
+drop table test
+# test: update column (json)
+create table test (id int primary key, data json)
+insert into test values (1, null)
+update test set data = data::append(1,2,3)
+select * from test
+[[1, null]]
+drop table test
+# test: update column (timestamp)
+create table test (id int primary key, ts timestamp)
+insert into test values (0, "1970-01-01 01:12:59.909090")
+update test set ts = ts + interval '5 days'
+select * from test
+[[0, "1970-01-06 01:12:59.909090+00"]]
+drop table test
+# test: update column (interval)
+create table test (id int primary key, i interval)
+insert into test values (0, "1 year 1 day 10 hour")
+update test set i = i + interval '5 days'
+select * from test
+[[0, "1 year 6 days 10 hours"]]
+drop table test
+# test: update column (vector)
+create table test (id int primary key, vec vector)
+insert into test values (3, [1.0, 1.1])
+update test set vec = vec + [1.0, 1.1]::vector
+select * from test
+[[3, [2, 2.2]]]
 drop table test
 # test: update secondary index
 create table test (id int primary key, data int, value int)
@@ -483,175 +514,7 @@ select * from test use index (i)
 [[2, 0, 0], [1, 1, 1], [0, 2, 2]]
 # test: update secondary index (key)
 update test set data = id
-{"msg": "<data> key columns cannot be updated"}
-drop table test
-# test: update secondary index (object)
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-update test set obj.value = obj.data
-select * from test
-[[{
-  "id": 0,
-  "data": 2,
-  "value": 2
-}], [{
-  "id": 1,
-  "data": 1,
-  "value": 1
-}], [{
-  "id": 2,
-  "data": 0,
-  "value": 0
-}]]
-select * from test use index (i)
-[[{
-  "id": 2,
-  "data": 0,
-  "value": 0
-}], [{
-  "id": 1,
-  "data": 1,
-  "value": 1
-}], [{
-  "id": 0,
-  "data": 2,
-  "value": 2
-}]]
-create index j on test (obj.value int)
-select * from test use index (j)
-[[{
-  "id": 2,
-  "data": 0,
-  "value": 0
-}], [{
-  "id": 1,
-  "data": 1,
-  "value": 1
-}], [{
-  "id": 0,
-  "data": 2,
-  "value": 2
-}]]
-drop table test
-# test: update from secondary index
-create table test (obj object, primary key (obj.id int))
-create index i on test (obj.data int)
-insert into test {"id": 0, "data": 2}
-insert into test {"id": 1, "data": 1}
-insert into test {"id": 2, "data": 0}
-update test use index (i) set obj.value = obj.data
-{"msg": "UPDATE only primary index supported"}
-drop table test
-# test: update returning
-create table test(id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-explain update test set data = data + 1 returning *
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 19     0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "null                1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "cursor_idx          1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "add                 3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "assign              1      3      1     ",
-      "14": "push                1      0      0     ",
-      "15": "update              0      0      0     ",
-      "16": "cursor_read         1      0      0     ",
-      "17": "set_add             0      1      0     ",
-      "18": "cursor_next         0      5      0     ",
-      "19": "cursor_close        0      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
-    }
-  }
-}]
-update test set data = data + 1 returning *
-[[0, 1], [1, 1], [2, 1]]
-update test set data = data + 1 returning *
-[[0, 2], [1, 2], [2, 2]]
-update test set data = data + 1 returning *
-[[0, 3], [1, 3], [2, 3]]
-select * from test
-[[0, 3], [1, 3], [2, 3]]
-drop table test
-# test: update returning into
-create table test(id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-explain update test set data = data + 1 returning *
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "body                0      0      0     ",
-      "07": "ret                 0      0      0     "
-    },
-    "node": {
-      "00": "set                 0      0      0     ",
-      "01": "int_min             1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "cursor_open         0      0      5     # public.test (primary)",
-      "04": "jmp                 19     0      0     ",
-      "05": "cursor_read         1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "null                1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "cursor_idx          1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "add                 3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "assign              1      3      1     ",
-      "14": "push                1      0      0     ",
-      "15": "update              0      0      0     ",
-      "16": "cursor_read         1      0      0     ",
-      "17": "set_add             0      1      0     ",
-      "18": "cursor_next         0      5      0     ",
-      "19": "cursor_close        0      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
-    }
-  }
-}]
-update test set data = data + 1 returning * into result
-[[0, 1], [1, 1], [2, 1]]
-update test set data = data + 1 returning * into result; select * from result
-[[0, 2], [1, 2], [2, 2]]
-result := update test set data = data + 1 returning *; select * from result
-[[0, 3], [1, 3], [2, 3]]
-result := update test set data = data + 1 returning * into result; select * from result
-{"msg": "INTO CTE redefined"}
-select * from test
-[[0, 3], [1, 3], [2, 3]]
+{"msg": "<test.data> column used as a part of a key"}
 drop table test
 disconnect S0
 close E0

@@ -23,16 +23,15 @@ enum
 
 struct AstInsert
 {
-	Ast     ast;
-	Target* target;
-	Target* target_generated;
-	int     rows;
-	int     rows_count;;
-	int     on_conflict;
-	Ast*    update_expr;
-	Ast*    update_where;
-	Ast*    generated_columns;
-	Ast*    returning;
+	Ast       ast;
+	Target*   target;
+	Target*   target_generated;
+	Set*      values;
+	int       on_conflict;
+	Ast*      update_expr;
+	Ast*      update_where;
+	Ast*      generated_columns;
+	Returning ret;
 };
 
 static inline AstInsert*
@@ -46,7 +45,10 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
+	returning_init(&self->ret);
 	return self;
 }
 
 void parse_insert(Stmt*);
+void parse_generated(Stmt*);
+void parse_resolved(Stmt*);

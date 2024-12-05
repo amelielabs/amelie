@@ -1,0 +1,49 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: and
+select and
+select 1 and
+
+select true and true
+explain select true and true
+select true and false
+select true and 0
+select true and []
+select true and 1.15
+select true and 0.15
+
+# test: and null
+select null and null
+select true and null
+select false and null
+
+# test: or
+select or
+select 1 or
+
+select true or true
+select false or false
+select false or true
+explain select false or true
+
+# test: or null
+select null or null
+select true or null
+select false or null
+
+# test: not
+select not true
+select not false
+select not (not false)
+select not []
+select not 1
+select not 0
+
+# test: not null
+select not null
+
+disconnect S0
+close E0

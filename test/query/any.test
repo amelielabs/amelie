@@ -5,59 +5,100 @@ connect E0 S0 localhost:3485
 
 # test: any parsing
 select any
-select any (
+select any
 select = any
 select 1 = any
 select 1 = any (
 select 1 = any ()
 
-# test: = any(array)
-select 1 = any()
-select 1 = any([0])
-select 1 = any([0, 1])
-select not (1 = any([0, 1]))
+# test: = any ([])
+select 1 = any([])
+select 1 = any([null])
+select 1 = any([1])
+select 1 = any([1, 2])
+select 1 = any([1, 2, null])
+select 0 = any([1, 2, null])
 
-# test: >= any(array)
-select 1 >= any([0, 1])
-select 1 >= any([2])
+# test: >= any ([])
+select 1 >= any([1,2])
+select 0 >= any([1,2])
+select 1 >= any([1,2, null])
+select 0 >= any([1,2, null])
 
-# test: > any(array)
-select 1 > any([0, 1])
-select 1 > any([2])
+# test: > any ([])
+select 1 > any([1,2])
+select 0 > any([1,2])
+select 1 > any([1,2, null])
+select 0 > any([1,2, null])
+select 3 > any([1,2])
+select 3 > any([1,2, null])
 
-# test: < any(array)
-select 1 < any([0, 1])
-select 1 < any([2])
-select 1 < any([0])
+# test: <= any ([])
+select 1 <= any([1,2])
+select 0 <= any([1,2])
+select 3 <= any([1,2])
+select 1 <= any([1,2, null])
+select 1 <= any([1,2, null])
 
-# test: <= any(array)
-select 1 <= any([0, 1])
-select 1 <= any([2])
-select 1 <= any([0])
+# test: < any ([])
+select 1 < any([1,2])
+select 0 < any([1,2])
+select 3 < any([1,2])
+select 1 < any([1,2, null])
+select 3 < any([1,2, null])
 
-# test: = any(set)
-select 1 = any()
-select 1 = any(select 1)
-select 1 = any(select * from [2, 1])
-select not (1 = any(select * from [2, 1]))
+# test: = any
+create shared table test (id int primary key, data int)
+select 1 = any(select id from test)
+insert into test values (1, 1)
+select 1 = any(select id from test)
+insert into test values (2, null)
+select 1 = any(select id from test)
+select not (1 = any(select id from test))
 
-# test: >= any(set)
-select 1 >= any(select * from [0, 1])
-select 1 >= any(select * from [2])
+select null = any(select id from test)
+select 1 = any(select id from test)
+select 3 = any(select id from test)
+select 3 = any(select data from test)
 
-# test: > any(set)
-select 1 > any(select * from [0, 1])
-select 1 > any(select * from [2])
+# test: >= any
+select 1 >= any(select id from test)
+select 0 >= any(select id from test)
 
-# test: < any(set)
-select 1 < any(select * from [0, 1])
-select 1 < any(select * from [2])
-select 1 < any(select * from [0])
+select null >= any(select id from test)
+select 1 >= any(select id from test)
+select 3 >= any(select id from test)
+select 0 >= any(select data from test)
 
-# test: <= any(set)
-select 1 <= any(select * from [0, 1])
-select 1 <= any(select * from [2])
-select 1 <= any(select * from [0])
+# test: > any
+select 1 > any(select id from test)
+select 0 > any(select id from test)
+select 3 > any(select id from test)
+
+select null > any(select id from test)
+select 1 > any(select id from test)
+select 3 > any(select id from test)
+select 0 > any(select data from test)
+
+# test: <= any
+select 1 <= any(select id from test)
+select 0 <= any(select id from test)
+select 3 <= any(select id from test)
+
+select null <= any(select id from test)
+select 1 <= any(select id from test)
+select 3 <= any(select id from test)
+select 3 <= any(select data from test)
+
+# test: < any
+select 1 < any(select id from test)
+select 0 < any(select id from test)
+select 3 < any(select id from test)
+
+select null < any(select id from test)
+select 1 < any(select id from test)
+select 3 < any(select id from test)
+select 3 < any(select data from test)
 
 disconnect S0
 close E0

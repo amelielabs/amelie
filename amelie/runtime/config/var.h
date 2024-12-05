@@ -39,7 +39,7 @@ typedef enum
 	VAR_BOOL,
 	VAR_INT,
 	VAR_STRING,
-	VAR_DATA
+	VAR_JSON
 } VarType;
 
 struct Var
@@ -78,7 +78,7 @@ var_init(Var* self, const char* name, VarType type, int flags)
 static inline void
 var_free(Var* self)
 {
-	if (self->type == VAR_STRING || self->type == VAR_DATA)
+	if (self->type == VAR_STRING || self->type == VAR_JSON)
 		str_free(&self->string);
 }
 
@@ -173,65 +173,65 @@ var_string_of(Var* self)
 
 // data
 static inline bool
-var_data_is_set(Var* self)
+var_json_is_set(Var* self)
 {
-	assert(self->type == VAR_DATA);
+	assert(self->type == VAR_JSON);
 	return !str_empty(&self->string);
 }
 
 static inline void
-var_data_set(Var* self, uint8_t* value, int size)
+var_json_set(Var* self, uint8_t* value, int size)
 {
-	assert(self->type == VAR_DATA);
+	assert(self->type == VAR_JSON);
 	str_free(&self->string);
 	str_dup(&self->string, value, size);
 }
 
 static inline void
-var_data_set_buf(Var* self, Buf* buf)
+var_json_set_buf(Var* self, Buf* buf)
 {
-	assert(self->type == VAR_DATA);
+	assert(self->type == VAR_JSON);
 	str_free(&self->string);
 	str_dup(&self->string, buf->start, buf_size(buf));
 }
 
 static inline void
-var_data_set_str(Var* self, Str* str)
+var_json_set_str(Var* self, Str* str)
 {
-	assert(self->type == VAR_DATA);
+	assert(self->type == VAR_JSON);
 	str_free(&self->string);
 	str_copy(&self->string, str);
 }
 
 static inline uint8_t*
-var_data_of(Var* self)
+var_json_of(Var* self)
 {
-	assert(self->type == VAR_DATA);
+	assert(self->type == VAR_JSON);
 	return str_u8(&self->string);
 }
 
 static inline void
-var_set_data(Var* self, uint8_t** pos)
+var_set_json(Var* self, uint8_t** pos)
 {
 	auto name = &self->name;
 	switch (self->type) {
 	case VAR_BOOL:
 	{
-		if (unlikely(! data_is_bool(*pos)))
+		if (unlikely(! json_is_bool(*pos)))
 			error("option '%.*s': bool value expected",
 			      str_size(name), str_of(name));
 		bool value;
-		data_read_bool(pos, &value);
+		json_read_bool(pos, &value);
 		var_int_set(self, value);
 		break;
 	}
 	case VAR_INT:
 	{
-		if (unlikely(! data_is_integer(*pos)))
+		if (unlikely(! json_is_integer(*pos)))
 			error("option '%.*s': integer value expected",
 			      str_size(name), str_of(name));
 		int64_t value;
-		data_read_integer(pos, &value);
+		json_read_integer(pos, &value);
 
 		if (unlikely(value == 0 && var_is(self, VAR_Z)))
 			error("option '%.*s': cannot be set to zero",
@@ -241,19 +241,19 @@ var_set_data(Var* self, uint8_t** pos)
 	}
 	case VAR_STRING:
 	{
-		if (unlikely(! data_is_string(*pos)))
+		if (unlikely(! json_is_string(*pos)))
 			error("config: string expected for option '%.*s'",
 			      str_size(name), str_of(name));
 		Str value;
-		data_read_string(pos, &value);
+		json_read_string(pos, &value);
 		var_string_set(self, &value);
 		break;
 	}
-	case VAR_DATA:
+	case VAR_JSON:
 	{
 		auto start = *pos;
-		data_skip(pos);
-		var_data_set(self, start, *pos - start);
+		json_skip(pos);
+		var_json_set(self, start, *pos - start);
 		break;
 	}
 	}
@@ -303,13 +303,13 @@ var_set(Var* self, Str* value)
 		var_string_set(self, value);
 		break;
 	}
-	case VAR_DATA:
+	case VAR_JSON:
 	{
 		Json json;
 		json_init(&json);
 		guard(json_free, &json);
 		json_parse(&json, value, NULL);
-		var_data_set(self, json.buf->start, buf_size(json.buf));
+		var_json_set(self, json.buf->start, buf_size(json.buf));
 		break;
 	}
 	}
@@ -322,8 +322,8 @@ var_encode(Var* self, Buf* buf)
 	case VAR_STRING:
 		encode_string(buf, &self->string);
 		break;
-	case VAR_DATA:
-		if (var_data_is_set(self))
+	case VAR_JSON:
+		if (var_json_is_set(self))
 			buf_write_str(buf, &self->string);
 		else
 			encode_null(buf);
@@ -353,7 +353,7 @@ var_print(Var* self)
 		info("%-32s%.*s", str_of(&self->name),
 		     str_size(&self->string), str_of(&self->string));
 		break;
-	case VAR_DATA:
+	case VAR_JSON:
 		break;
 	}
 }

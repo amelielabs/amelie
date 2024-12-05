@@ -20,49 +20,40 @@ struct Row
 	uint8_t data[];
 } packed;
 
-always_inline hot static inline int
-row_size(Row* self)
-{
-	if (self->size_factor == 0)
-		return *self->data;
-	if (self->size_factor == 1)
-		return *((uint16_t*)self->data);
-	return *((uint32_t*)self->data);
-}
-
-always_inline hot static inline uint8_t*
-row_data(Row* self)
-{
-	return self->data + (1 + self->size_factor);
-}
-
 hot static inline Row*
-row_allocate(int data_size)
+row_allocate(int columns, int data_size)
 {
-	// calculate size factor
-	int size_factor;
-	if ((sizeof(Row) + sizeof(uint8_t) + data_size) <= UINT8_MAX)
-		size_factor = 0;
-	else
-	if ((sizeof(Row) + sizeof(uint16_t) + data_size) <= UINT16_MAX)
-		size_factor = 1;
-	else
-		size_factor = 3;
+	// [row_header][size + index][data]
+
+	// calculate total size
+	int      size_factor = 0;
+	uint32_t total_base = sizeof(Row) + data_size;
+	uint32_t total = total_base + sizeof(uint8_t) * (1 + columns);
+	if (total > UINT8_MAX)
+	{
+		total = total_base + sizeof(uint16_t) * (1 + columns);
+		if (total > UINT16_MAX)
+		{
+			total = total_base + sizeof(uint32_t) * (1 + columns);
+			size_factor = 3;
+		} else {
+			size_factor = 1;
+		}
+	}
 
 	// allocate row
-	int size = sizeof(Row) + (1 + size_factor) + data_size;
-	Row* self = am_malloc(size);
+	Row* self = am_malloc(total);
 	self->size_factor = size_factor;
 	self->unused      = 0;
 
-	// set data size
+	// set size
 	if (self->size_factor == 0)
-		*self->data = data_size;
+		*self->data = total;
 	else
 	if (self->size_factor == 1)
-		*(uint16_t*)self->data = data_size;
+		*(uint16_t*)self->data = total;
 	else
-		*(uint32_t*)self->data = data_size;
+		*(uint32_t*)self->data = total;
 	return self;
 }
 
@@ -72,8 +63,88 @@ row_free(Row* self)
 	am_free(self);
 }
 
-Row* row_create(Columns*, uint8_t**, uint8_t**);
-void row_create_hash(Keys*, uint32_t*, uint8_t**);
+always_inline hot static inline uint32_t
+row_size(Row* self)
+{
+	if (self->size_factor == 0)
+		return *self->data;
+	if (self->size_factor == 1)
+		return *(uint16_t*)self->data;
+	return *(uint32_t*)self->data;
+}
 
-Row* row_alter_add(Row*, Buf*);
-Row* row_alter_drop(Row*, int);
+always_inline hot static inline void*
+row_at(Row* self, int column)
+{
+	register uint32_t offset;
+	if (self->size_factor == 0)
+		offset = self->data[1 + column];
+	else
+	if (self->size_factor == 1)
+		offset = ((uint16_t*)self->data)[1 + column];
+	else
+		offset = ((uint32_t*)self->data)[1 + column];
+	if (offset == 0)
+		return NULL;
+	return (uint8_t*)self + offset;
+}
+
+always_inline hot static inline void*
+row_data(Row* self, int columns)
+{
+	return self->data + ((1 + columns) * (self->size_factor + 1));
+}
+
+always_inline hot static inline uint32_t
+row_data_size(Row* self, int columns)
+{
+	return row_size(self) - sizeof(Row) +
+	       ((1 + columns) * (self->size_factor + 1));
+}
+
+always_inline hot static inline void
+row_set(Row* self, int column, int offset)
+{
+	if (self->size_factor == 0)
+		self->data[1 + column]  = offset;
+	else
+	if (self->size_factor == 1)
+		((uint16_t*)self->data)[1 + column] = offset;
+	else
+		((uint32_t*)self->data)[1 + column] = offset;
+}
+
+always_inline hot static inline void
+row_set_null(Row* self, int column)
+{
+	row_set(self, column, 0);
+}
+
+hot static inline uint32_t
+row_hash(Row* self, Keys* keys)
+{
+	uint32_t hash = 0;
+	list_foreach(&keys->list)
+	{
+		auto column = list_at(Key, link)->column;
+		// fixed or variable type
+		if (column->type_size > 0) {
+			hash = hash_murmur3_32(row_at(self, column->order), column->type_size, hash);
+		} else {
+			uint8_t* pos = row_at(self, column->order);
+			Str str;
+			json_read_string(&pos, &str);
+			hash = hash_murmur3_32(str_u8(&str), str_size(&str), hash);
+		}
+	}
+	return hash;
+}
+
+hot static inline Row*
+row_copy(Row* self)
+{
+	auto size = row_size(self);
+	auto row  = am_malloc(size);
+	memcpy(row, self, size);
+	return row;
+}

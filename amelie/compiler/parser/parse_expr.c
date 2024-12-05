@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -85,7 +86,6 @@ priority_map[KEYWORD_MAX] =
 	//
 	['(']                      = priority_value,
 	['{']                      = priority_value,
-	['@']                      = priority_value,
 	[KCASE]                    = priority_value,
 	[KEXISTS]                  = priority_value,
 	[KRANDOM]                  = priority_value,
@@ -113,10 +113,7 @@ priority_map[KEYWORD_MAX] =
 	[KARGID]                   = priority_value,
 	[KCTEID]                   = priority_value,
 	[KNAME]                    = priority_value,
-	[KNAME_COMPOUND]           = priority_value,
-	[KNAME_COMPOUND_STAR]      = priority_value,
-	[KNAME_COMPOUND_STAR_STAR] = priority_value,
-	[KSTAR_STAR]               = priority_value
+	[KNAME_COMPOUND]           = priority_value
 };
 
 hot static inline void
@@ -239,41 +236,33 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	if (! stmt_if(self, '('))
 		error("%.*s<(> expected", str_size(&function->string),
 		      str_of(&function->string));
+
 	// expr
-	auto arg = parse_expr(self, expr);
+	Ast* arg = NULL;
+	if (stmt_if(self, '*'))
+	{
+		// count(*)
+		if (function->id == KCOUNT)
+		{
+			arg = ast(KINT);
+			arg->integer = 1;
+		} else {
+			error("%.*s(*) is not supported", str_size(&function->string),
+			       str_of(&function->string));
+		}
+	} else {
+		arg = parse_expr(self, NULL);
+	}
 
 	// )
 	if (! stmt_if(self, ')'))
 		error("%.*s(expr<)> expected", str_size(&function->string),
 		      str_of(&function->string));
 
-	// get aggregate type
-	int id;
-	switch (function->id) {
-	case KCOUNT:
-		id = GROUP_COUNT;
-		break;
-	case KSUM:
-		id = GROUP_SUM;
-		break;
-	case KAVG:
-		id = GROUP_AVG;
-		break;
-	case KMIN:
-		id = GROUP_MIN;
-		break;
-	case KMAX:
-		id = GROUP_MAX;
-		break;
-	default:
-		abort();
-		break;
-	}
-
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(id, expr->aggs->count, arg, NULL);
-	ast_list_add(expr->aggs, &aggr->ast);
-	return &aggr->ast;
+	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL);
+	ast_list_add(expr->aggs, &agg->ast);
+	return &agg->ast;
 }
 
 static inline Ast*
@@ -293,10 +282,10 @@ expr_lambda(Stmt* self, Expr* expr)
 	auto node = expr->aggs->list;
 	for (; node; node = node->next)
 	{
-		auto aggr = ast_aggr_of(node->ast);
-		if (! aggr->name)
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->name)
 			continue;
-		if (str_compare(&aggr->name->string, &name->string))
+		if (str_compare(&agg->name->string, &name->string))
 			error("lambda <%.*s> redefined", str_size(&name->string),
 			      str_of(&name->string));
 	}
@@ -316,10 +305,10 @@ expr_lambda(Stmt* self, Expr* expr)
 	auto arg = parse_expr(self, expr);
 
 	// create aggregate ast node
-	auto aggr = ast_aggr_allocate(GROUP_LAMBDA, expr->aggs->count, arg, init);
-	ast_list_add(expr->aggs, &aggr->ast);
-	aggr->name = name;
-	return &aggr->ast;
+	auto agg = ast_agg_allocate(NULL, expr->aggs->count, arg, init);
+	ast_list_add(expr->aggs, &agg->ast);
+	agg->name = name;
+	return &agg->ast;
 }
 
 static Ast*
@@ -412,62 +401,6 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
-hot static inline bool
-expr_name(Stmt* self, Ast* value, Str* name)
-{
-	// resolve name into argument or cte
-
-	// find argument
-	if (self->args)
-	{
-		auto arg = columns_find(self->args, name);
-		if (arg)
-		{
-			value->id = KARGID;
-			value->integer = arg->order;
-			return true;
-		}
-	}
-
-	// find cte (without columns)
-	//
-	// cte with columns are resolved only as targets
-	// during name emit
-	//
-	auto cte = cte_list_find(self->cte_list, name);
-	if (cte && !cte->columns.list_count)
-	{
-		value->id = KCTEID;
-		value->integer = cte->id;
-		cte_deps_add(&self->cte_deps, cte);
-		return true;
-	}
-
-	return false;
-}
-
-hot static inline void
-expr_name_compound(Stmt* self, Ast* value)
-{
-	// resolve name into argument or cte
-	Str path = value->string;
-	Str name;
-	str_split(&path, &name, '.');
-	if (! expr_name(self, value, &name))
-		return;
-
-	// exclude name from the path
-	str_advance(&path, str_size(&name) + 1);
-
-	// process rest of path as '.' operator
-	auto idx = ast(KNAME);
-	idx->string = path;
-	if (str_chr(&path, '.'))
-		idx->id = KNAME_COMPOUND;
-	stmt_push(self, idx);
-	stmt_push(self, ast('.'));
-}
-
 hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
@@ -476,7 +409,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case '(':
 		// ()
 		value = parse_expr(self, expr);
-		if (! stmt_if(self,')'))
+		if (! stmt_if(self, ')'))
 			error("(): ')' expected");
 		break;
 
@@ -488,10 +421,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// exists
 	case KEXISTS:
 	{
-		if (! stmt_if(self,'('))
+		if (! stmt_if(self, '('))
 			error("EXISTS <(> expected");
-		value->r = parse_expr(self, expr);
-		if (! stmt_if(self,')'))
+		if (! stmt_if(self, KSELECT))
+			error("EXISTS (<SELECT> expected");
+		value->r = &parse_select(self)->ast;
+		if (! stmt_if(self, ')'))
 			error("EXISTS (<)> expected");
 		break;
 	}
@@ -598,23 +533,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KARGID:
 		break;
 
-	// @, **
-	case '@':
-	case KSTAR_STAR:
-		break;
-
 	// name
 	case KNAME:
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-		{
 			value = expr_call(self, expr, value, true);
-		} else
-		{
-			// resolve name as argument or cte
-			expr_name(self, value, &value->string);
-		}
 		break;
 	}
 
@@ -624,20 +548,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-		{
 			value = expr_call(self, expr, value, true);
-		} else
-		{
-			// resolve compound name as argument or cte and
-			// handle as idx operation
-			expr_name_compound(self, value);
-		}
 		break;
 	}
-
-	case KNAME_COMPOUND_STAR:
-	case KNAME_COMPOUND_STAR_STAR:
-		break;
 
 	default:
 		abort();
@@ -696,11 +609,6 @@ parse_unary(Stmt*     self, Expr* expr,
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
 		ast->l  = expr_args(self, expr, ']', false);
-		ast_push(result, ast);
-		break;
-	case '*':
-		// *
-		ast->id = KSTAR;
 		ast_push(result, ast);
 		break;
 	case KNOT:
@@ -802,20 +710,10 @@ parse_op(Stmt*     self, Expr* expr,
 	}
 	case KIS:
 	{
-		// expr IS NOT NULL
+		// expr IS [NOT] expr
 		auto not = stmt_if(self, KNOT);
-
-		// expr IS NULL
-		auto r = stmt_if(self, KNULL);
-		if (! r)
-			error("IS <NULL> expected");
-
-		// handle IS as = or <> null
-		if (not)
-			ast->id = KNEQU;
-		else
-			ast->id = '=';
-		ast_push(result, r);
+		ast->integer = !not;
+		// right expression must be null
 		break;
 	}
 	case KLIKE:
@@ -873,7 +771,6 @@ parse_op(Stmt*     self, Expr* expr,
 	case '.':
 	{
 		// expr.'key' (handle as expr['key'])
-
 		// expr.name
 		// expr.name.path
 		auto r = stmt_next_shadow(self);

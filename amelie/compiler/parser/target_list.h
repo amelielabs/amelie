@@ -13,15 +13,6 @@
 
 typedef struct TargetList TargetList;
 
-enum
-{
-	TARGET_NONE         = 0,
-	TARGET_EXPR         = 1 << 0,
-	TARGET_TABLE_SHARED = 1 << 1,
-	TARGET_TABLE        = 1 << 2,
-	TARGET_CTE          = 1 << 3
-};
-
 struct TargetList
 {
 	int     state;
@@ -53,57 +44,22 @@ target_list_next_level(TargetList* self)
 	return self->level++;
 }
 
-static inline Target*
+static inline void
 target_list_add(TargetList* self,
+                Target*     target,
                 int         level,
-                int         level_seq,
-                Str*        name,
-                Ast*        expr,
-                Columns*    expr_columns,
-                Table*      table,
-                Cte*        cte)
+                int         level_seq)
 {
-	Target* target = palloc(sizeof(Target));
-	target_init(target, table);
-	target->id           = self->count;
-	target->level        = level;
-	target->level_seq    = level_seq;
-	target->expr         = expr;
-	target->expr_columns = expr_columns;
-	target->cte          = cte;
-	if (! name)
-	{
-		str_init(&target->name);
-	} else
-	{
-		int   copy_size = str_size(name);
-		char* copy = palloc(copy_size + 1);
-		memcpy(copy, str_of(name), copy_size);
-		copy[copy_size] = 0;
-		str_init(&target->name);
-		str_set(&target->name, copy, copy_size);
-	}
+	target->id        = self->count;
+	target->level     = level;
+	target->level_seq = level_seq;
 	if (self->list == NULL)
 		self->list = target;
 	else
 		self->list_tail->next = target;
 	self->list_tail = target;
 	self->count++;
-
-	if (expr || expr_columns) {
-		self->state |= TARGET_EXPR;
-	} else
-	if (table)
-	{
-		if (table->config->shared)
-			self->state |= TARGET_TABLE_SHARED;
-		else
-			self->state |= TARGET_TABLE;
-	} else
-	if (cte) {
-		self->state |= TARGET_CTE;
-	}
-	return target;
+	self->state |= target->type;
 }
 
 static inline bool
@@ -115,9 +71,8 @@ target_list_has(TargetList* self, int state)
 static inline bool
 target_list_is_expr(TargetList* self)
 {
-	return self->state == TARGET_NONE ||
-	       self->state == TARGET_EXPR ||
-	       self->state == TARGET_CTE;
+	return !target_list_has(self, TARGET_TABLE) &&
+	       !target_list_has(self, TARGET_TABLE_SHARED);
 }
 
 static inline Target*
@@ -126,7 +81,7 @@ target_list_match(TargetList* self, Str* name)
 	auto target = self->list;
 	while (target)
 	{
-		if (target_compare(target, name))
+		if (str_compare(&target->name, name))
 			return target;
 		target = target->next;
 	}
@@ -142,25 +97,15 @@ target_list_validate_subqueries(TargetList* self, Target* primary)
 		if (target == primary)
 			continue;
 
-		// including views and cte
-		if (target->expr || target->expr_columns || target->cte)
-			continue;
-
-		// skip group by targets
-		if (target->group_main)
-			continue;
-
-		if (target->table->config->shared)
-			continue;
-
-		error("subqueries to distributed tables are not supported");
+		if (target->type == TARGET_TABLE)
+			error("subqueries to distributed tables are not supported");
 	}
 }
 
 static inline void
 target_list_validate(TargetList* self, Target* primary)
 {
-	auto table = primary->table;
+	auto table = primary->from_table;
 	unused(table);
 	assert(table);
 
@@ -173,7 +118,7 @@ target_list_validate(TargetList* self, Target* primary)
 static inline void
 target_list_validate_dml(TargetList* self, Target* primary)
 {
-	auto table = primary->table;
+	auto table = primary->from_table;
 	assert(table);
 
 	// DELETE table, ...
@@ -183,7 +128,7 @@ target_list_validate_dml(TargetList* self, Target* primary)
 	auto target = primary->next_join;
 	while (target)
 	{
-		if (target->table == table)
+		if (target->from_table == table)
 			error("DML JOIN using the same table are not supported");
 		target = target->next_join;
 	}

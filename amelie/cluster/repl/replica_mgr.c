@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -72,21 +73,21 @@ replica_mgr_save(ReplicaMgr* self)
 	encode_array_end(buf);
 
 	// update and save state
-	var_data_set_buf(&config()->replicas, buf);
+	var_json_set_buf(&config()->replicas, buf);
 }
 
 void
 replica_mgr_open(ReplicaMgr* self)
 {
 	auto replicas = &config()->replicas;
-	if (! var_data_is_set(replicas))
+	if (! var_json_is_set(replicas))
 		return;
-	auto pos = var_data_of(replicas);
-	if (data_is_null(pos))
+	auto pos = var_json_of(replicas);
+	if (json_is_null(pos))
 		return;
 
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		auto config = replica_config_read(&pos);
 		guard(replica_config_free, config);

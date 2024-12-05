@@ -6,7 +6,7 @@ connect E0 S0 localhost:3485
 # test: limit_write
 create table test (id int primary key)
 set limit_write to 1
-insert into test 123
+insert into test values (123)
 set limit_write to 10000
 drop table test
 

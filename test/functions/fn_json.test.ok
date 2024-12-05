@@ -1,0 +1,329 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: append()
+select append(null)
+{"msg": "append(): expected two or more arguments"}
+select append(null, 1)
+[null]
+select []::append(1)
+[[1]]
+select []::append(1)::append(2)
+[[1, 2]]
+select []::append(1)::append(2)::append(3)
+[[1, 2, 3]]
+select []::append(1, 2)
+[[1, 2]]
+select []::append(1, 2, 3)
+[[1, 2, 3]]
+select []::append(1, 2, 3)::size
+[3]
+# test: push_back()
+select []::push_back(1)
+[[1]]
+select []::push_back(1)::push_back(2)
+[[1, 2]]
+select []::append(1)::append(2)::push_back(3)
+[[1, 2, 3]]
+# test: push()
+select push(null)
+{"msg": "push(): expected two or more arguments"}
+select push(null, 0)
+[null]
+select push([], 0)
+[[0]]
+select []::push()
+{"msg": "push(): expected two or more arguments"}
+select []::push(1)
+[[1]]
+select []::push(2)::push(1)
+[[1, 2]]
+select []::push(2)::push(1)::push(0)
+[[0, 1, 2]]
+select []::push(1, 2)
+[[1, 2]]
+select [3]::push(1, 2)
+[[1, 2, 3]]
+# test: pop()
+select pop()
+{"msg": "pop(): expected 1 arguments, but got 0"}
+select pop(null)
+[null]
+select pop([])
+[[]]
+select []::pop
+[[]]
+select [1]::pop
+[[]]
+select [1,2]::pop
+[[2]]
+select [1,2,3]::pop
+[[2, 3]]
+select [1,2,3]::pop::pop
+[[3]]
+select [1,2,3]::pop::pop::pop
+[[]]
+select [1,2,3]::pop::pop::pop::pop
+[[]]
+# test: pop_back()
+select pop_back()
+{"msg": "pop_back(): expected 1 arguments, but got 0"}
+select pop_back(null)
+[null]
+select pop_back([])
+[[]]
+select []::pop_back
+[[]]
+select [1]::pop_back
+[[]]
+select [1,2]::pop_back
+[[1]]
+select [1,2,3]::pop_back
+[[1, 2]]
+select [1,2,3]::pop_back::pop_back
+[[1]]
+select [1,2,3]::pop_back::pop_back::pop_back
+[[]]
+select [1,2,3]::pop_back::pop_back::pop_back::pop_back
+[[]]
+# test: put()
+select put(null)
+{"msg": "put(): expected 3 arguments, but got 1"}
+select put(null, 0)
+{"msg": "put(): expected 3 arguments, but got 2"}
+select put([], 0, 0)
+{"msg": "put: array index 0 is out of bounds"}
+select put([1], 0, 0)
+[[0]]
+select [1,2,3]::put(0, '0')
+[["0", 2, 3]]
+select [1,2,3]::put(0, '0')::put(1, '1')
+[["0", "1", 3]]
+select [1,2,3]::put(0, '0')::put(1, '1')
+[["0", "1", 3]]
+select [1,2,3]::put(0, '0')::put(2, '1')
+[["0", 2, "1"]]
+select [1,2,3]::put(0, '0')::put(3, '1')
+{"msg": "put: array index 3 is out of bounds"}
+select [1,2,3]::put(0, '0')::put(-1, '1')
+{"msg": "put: array index -1 is out of bounds"}
+# test: remove()
+select remove(null)
+{"msg": "remove(): expected 2 arguments, but got 1"}
+select remove(null, 0)
+[null]
+select remove([], 0)
+{"msg": "remove: array index 0 is out of bounds"}
+select remove([], 1)
+{"msg": "remove: array index 1 is out of bounds"}
+select remove([1], 0)
+[[]]
+select remove([1], -1)
+{"msg": "remove: array index -1 is out of bounds"}
+select remove([1], -10)
+{"msg": "remove: array index -10 is out of bounds"}
+select remove([1, 2], 3)
+{"msg": "remove: array index 3 is out of bounds"}
+select remove([1, 2], 1)
+[[1]]
+select remove([1, 2], 1)
+[[1]]
+select remove([1, 2, 3], 1)
+[[1, 3]]
+select remove([1, 2, 3], 0)
+[[2, 3]]
+select remove([1, 2, 3], 2)
+[[1, 2]]
+select []::append(1)::append(2)::append(3)
+[[1, 2, 3]]
+select []::append(1)::append(2)::append(3)::remove(0)
+[[2, 3]]
+select []::append(1)::append(2)::append(3)::remove(0)::remove(0)
+[[3]]
+select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0)
+[[]]
+select []::append(1,2,3)::remove(0)::remove(0)::remove(0)
+[[]]
+# test: set()
+select set(null, "id", 42)
+[null]
+select {}::set("id", 42)
+[{
+  "id": 42
+}]
+select {}::set("id", 42)::set("data", [1,2,3])
+[{
+  "id": 42,
+  "data": [1, 2, 3]
+}]
+select {}::set("id", 42)::set("data", {"misc": null}).data.misc
+[null]
+select set({"a": 0}, "a", 1)
+[{
+  "a": 1
+}]
+select set({"a": 0}, "a", {"b": 2})
+[{
+  "a": {
+    "b": 2
+  }
+}]
+select set({"a": 0}, "a", {"b": 2}).a.b
+[2]
+select set({"a": 0}, "a", {"b": 2})."a"."b"
+[2]
+select set({"a": 0}, "a", {"b": 2})["a"]["b"]
+[2]
+select set({"a": 0}, "b", {"c": 3})
+[{
+  "a": 0,
+  "b": {
+    "c": 3
+  }
+}]
+select set({"a": 0}, "b", [1, 2]).b
+[[1, 2]]
+select set({"a": 0}, "b", [1, 2]).b[1]
+[2]
+select set({"a": 88}, "a", 34)
+[{
+  "a": 34
+}]
+select set({"a": 88}, "", 34)
+{"msg": "set: incorrect path"}
+select set({"a": 88}, " ", 34)
+{"msg": "set: incorrect path"}
+select set({"a": 88}, ".", 34)
+{"msg": "set: incorrect path"}
+select set({"a": {"b": 22}}, "a.b", 34)
+[{
+  "a": {
+    "b": 34
+  }
+}]
+select set({"a": {"b": {"c": 55}}}, "a.b", 34)
+[{
+  "a": {
+    "b": 34
+  }
+}]
+select set({"a": {"b": {"c": 55}}}, "a.b.c", 34)
+[{
+  "a": {
+    "b": {
+      "c": 34
+    }
+  }
+}]
+select set({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d", 0)
+[{
+  "a": {
+    "b": {
+      "c": {
+        "d": 0
+      }
+    }
+  }
+}]
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
+[{
+  "a": {
+    "b": 34
+  },
+  "c": 88
+}]
+select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
+[2]
+select set([], 0, 1)
+{"msg": "set(): json object expected"}
+# test: unset()
+select {"a": 1, "b": 2, "c": 3}::unset("a")
+[{
+  "b": 2,
+  "c": 3
+}]
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("a")
+[{
+  "b": 2,
+  "c": 3
+}]
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")
+[{
+  "b": 2
+}]
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")
+[{}]
+select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42)
+[{
+  "a": 42
+}]
+select unset({}, "a")
+[{}]
+select unset({}, "")
+{"msg": "set: incorrect path"}
+select unset({"a": 0}, "a")
+[{}]
+select unset({"a": 0}, "b")
+[{
+  "a": 0
+}]
+select unset({"a": {"b": 2}}, "a")
+[{}]
+select unset({"a": {"b": 2}}, "a.b")
+[{
+  "a": {}
+}]
+select unset({"a": {"b": 2}, "g": 3}, "a")
+[{
+  "g": 3
+}]
+select unset({"a": {"b": 22}}, "a.b")
+[{
+  "a": {}
+}]
+select unset({"a": {"b": {"c": 55}}}, "a.b")
+[{
+  "a": {}
+}]
+select unset({"a": {"b": {"c": 55}}}, "a.b.c")
+[{
+  "a": {
+    "b": {}
+  }
+}]
+select unset({"a": {"b": {"c": {"d": 77}}}}, "a.b.c.d")
+[{
+  "a": {
+    "b": {
+      "c": {}
+    }
+  }
+}]
+select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
+[{
+  "a": {
+    "b": {
+      "c": {
+        "v": 77
+      }
+    }
+  }
+}]
+select unset([1], 0)
+{"msg": "unset(): json object expected"}
+# test: has()
+select {}::has("id")
+[false]
+select {"id": null}::has("id")
+[true]
+select {"id": null, "data": {"misc": true}}::has("data.misc")
+[true]
+select has({"a": 0}, "a")
+[true]
+select has({"a": 0}, "b")
+[false]
+select has({"a": {"b": 777}}, "a.b")
+[true]
+select has({"a": {"b": 777}}, "a.c")
+[false]
+disconnect S0
+close E0

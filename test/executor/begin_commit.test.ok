@@ -13,8 +13,6 @@ commit
 # test: begin commit
 begin; select 1
 {"msg": "COMMIT expected at the end of transaction"}
-begin; return 1
-{"msg": "COMMIT expected at the end of transaction"}
 begin commit
 begin select 1 commit
 {"msg": "unexpected token at the end of statement"}
@@ -25,14 +23,17 @@ explain begin; select 1; commit
 [{
   "bytecode": {
     "coordinator": {
-      "00": "int                 0      -      0     # 1",
-      "01": "cte_set             0      0      0     ",
-      "02": "body                0      0      0     ",
-      "03": "ret                 0      0      0     "
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   }
 }]
-begin; error("abort"); commit
+begin; select error("abort"); commit
 {"msg": "abort"}
 begin; select 1; commit;
 [1]

@@ -8,38 +8,43 @@ create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test
-select *.schema, *.name from system.tables()
+select system.tables().'test.a'.name
+select system.tables().'test.b'.name
 
 create view test.test_view as select 1
-select * from system.views()
+select system.views()
 
 # test: drop schema cascade
 drop schema test cascade
-select * from system.schemas()
+select system.schemas()
 
 # test: drop schema cascade (tables)
-select *.schema, *.name from system.tables()
+select system.tables().'test.a'.name
+select system.tables().'test.b'.name
 
 # test: drop schema cascade (views)
-select * from system.views()
+select system.views()
 
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test cascade
-select *.schema, *.name from system.tables()
+select system.tables().'test.a'.name
+select system.tables().'test.b'.name
 
 # test: alter schema rename
 create schema test
 
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-select * from system.schemas()
-select *.schema, *.name from system.tables()
+select system.schemas()
+select system.tables().'test.a'.name
+select system.tables().'test.b'.name
 
 alter schema test rename test2
-select * from system.schemas()
-select *.schema, *.name from system.tables()
+select system.schemas()
+select system.tables().'test2.a'.name
+select system.tables().'test2.b'.name
 
 disconnect S0
 close E0

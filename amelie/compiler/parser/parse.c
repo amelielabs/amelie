@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -92,8 +93,36 @@ parse_stmt_free(Stmt* stmt)
 			view_config_free(ast->config);
 		break;
 	}
+	case STMT_INSERT:
+	{
+		auto ast = ast_insert_of(stmt->ast);
+		returning_free(&ast->ret);
+		if (ast->values)
+			set_cache_push(stmt->values_cache, ast->values);
+		break;
+	}
+	case STMT_DELETE:
+	{
+		auto ast = ast_delete_of(stmt->ast);
+		returning_free(&ast->ret);
+		break;
+	}
+	case STMT_UPDATE:
+	{
+		auto ast = ast_update_of(stmt->ast);
+		returning_free(&ast->ret);
+		break;
+	}
 	default:
 		break;
+	}
+
+	// free select statements
+	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
+	{
+		auto select = ast_select_of(ref->ast);
+		returning_free(&select->ret);
+		columns_free(&select->target_group_columns);
 	}
 }
 
@@ -104,49 +133,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 	auto ast = lex_next(lex);
 	if (ast->id == KEOF)
 		return;
-
-	// RETURN cte_name | stmt
-	if (ast->id == KRETURN)
-	{
-		stmt->ret = true;
-		auto name = stmt_if(stmt, KNAME);
-		if (name)
-		{
-			ast = lex_next(lex);
-			auto is_last = ast->id == ';' || ast->id == KEOF;
-			if (is_last)
-			{
-				auto cte = cte_list_find(&self->cte_list, &name->string);
-				if (cte)
-				{
-					// cte
-					stmt->id  = STMT_RETURN;
-					stmt->cte = cte;
-					lex_push(lex, ast);
-					return;
-				}
-			}
-
-			// handle as expression
-			lex_push(lex, ast);
-			lex_push(lex, name);
-		}
-
-		ast = lex_next(lex);
-	}
-
-	// cte_name := stmt | expr
-	bool assign = false;
-	if (ast->id == KNAME)
-	{
-		if (lex_if(lex, KASSIGN))
-		{
-			lex_push(lex, ast);
-			parse_cte(stmt, false, false);
-			assign = true;
-			ast = lex_next(lex);
-		}
-	}
 
 	switch (ast->id) {
 	case KSHOW:
@@ -208,10 +194,9 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KCREATE:
 	{
 		// [UNIQUE | SHARED | DISTRIBUTED | COMPUTE]
-		bool unique     = false;
-		bool shared     = false;
-		bool aggregated = false;
-		bool compute    = false;
+		bool unique  = false;
+		bool shared  = false;
+		bool compute = false;
 		auto mod = lex_next(lex);
 		switch (mod->id) {
 		case KUNIQUE:
@@ -225,9 +210,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 		case KSHARED:
 		{
-			// [AGGREGATED]
-			if (stmt_if(stmt, KAGGREGATED))
-				aggregated = true;
 			auto next = stmt_if(stmt, KTABLE);
 			if (! next)
 				error("CREATE SHARED <TABLE> expected");
@@ -237,23 +219,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 		}
 		case KDISTRIBUTED:
 		{
-			// [AGGREGATED]
-			if (stmt_if(stmt, KAGGREGATED))
-				aggregated = true;
 			auto next = stmt_if(stmt, KTABLE);
 			if (! next)
 				error("CREATE DISTRIBUTED <TABLE> expected");
 			stmt_push(stmt, next);
 			shared = false;
-			break;
-		}
-		case KAGGREGATED:
-		{
-			auto next = stmt_if(stmt, KTABLE);
-			if (! next)
-				error("CREATE <TABLE> expected");
-			stmt_push(stmt, next);
-			aggregated = true;
 			break;
 		}
 		case KCOMPUTE:
@@ -299,7 +269,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		if (lex_if(lex, KTABLE))
 		{
 			stmt->id = STMT_CREATE_TABLE;
-			parse_table_create(stmt, shared, aggregated);
+			parse_table_create(stmt, shared);
 		} else
 		if (lex_if(lex, KINDEX))
 		{
@@ -438,18 +408,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	default:
-	{
-		// SELECT expr (by default)
-		lex_push(lex, ast);
-		stmt->id = STMT_SELECT;
-		auto select = parse_select_expr(stmt);
-		stmt->ast = &select->ast;
+		error("unexpected statement");
 		break;
 	}
-	}
 
-	if (assign && stmt_is_utility(stmt))
-		error(":= cannot be used with utility statements");
+	// resolve select targets
+	parse_select_resolve(stmt);
 }
 
 hot static bool
@@ -466,7 +430,9 @@ parse_with(Parser* self)
 		// name [(args)] AS ( stmt )[, ...]
 		auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
 		                          &self->lex,
-		                          self->data, &self->json,
+		                          self->data,
+		                          self->values_cache,
+		                          &self->json,
 		                          &self->stmt_list,
 		                          &self->cte_list,
 		                           self->args);
@@ -474,7 +440,8 @@ parse_with(Parser* self)
 		self->stmt = stmt;
 
 		// name [(args)]
-		parse_cte(stmt, true, true);
+		auto cte = parse_cte(stmt, true, true);
+		stmt->cte = cte;
 
 		// AS
 		if (! lex_if(lex, KAS))
@@ -484,10 +451,34 @@ parse_with(Parser* self)
 		if (! lex_if(lex, '('))
 			error("WITH name AS <(> expected");
 
-		// stmt (cannot be a utility statement)
+		// parse stmt (cannot be a utility statement)
 		parse_stmt(self, stmt);
-		if (stmt_is_utility(stmt))
-			error("CTE must DML or Select");
+
+		// set cte returning columns
+		Returning* ret;
+		switch (stmt->id) {
+		case STMT_INSERT:
+			ret = &ast_insert_of(stmt->ast)->ret;
+			break;
+		case STMT_UPDATE:
+			ret = &ast_update_of(stmt->ast)->ret;
+			break;
+		case STMT_DELETE:
+			ret = &ast_delete_of(stmt->ast)->ret;
+			break;
+		case STMT_SELECT:
+			ret = &ast_select_of(stmt->ast)->ret;
+			break;
+		default:
+			error("CTE statement must be DML or SELECT");
+			break;
+		}
+		cte->columns = &ret->columns;
+
+		// ensure that arguments count match
+		if (cte->args.list_count > 0 &&
+		    cte->args.list_count != cte->columns->list_count)
+			error("CTE arguments count must mismatch the returning arguments count");
 
 		// )
 		if (! lex_if(lex, ')'))
@@ -502,13 +493,11 @@ parse_with(Parser* self)
 }
 
 hot void
-parse(Parser* self, Local* local, Columns* args, Str* str)
+parse(Parser* self, Str* str)
 {
-	self->local = local;
-	self->args  = args;
-
+	// prepare parser
 	auto lex = &self->lex;
-	lex_start(lex, str);
+	lex_start(&self->lex, str);
 
 	// [EXPLAIN]
 	if (lex_if(lex, KEXPLAIN))
@@ -563,7 +552,9 @@ parse(Parser* self, Local* local, Columns* args, Str* str)
 		self->stmt = stmt_allocate(self->db, self->function_mgr,
 		                           self->local,
 		                           &self->lex,
-		                           self->data, &self->json,
+		                           self->data,
+		                           self->values_cache,
+		                           &self->json,
 		                           &self->stmt_list,
 		                           &self->cte_list,
 		                            self->args);

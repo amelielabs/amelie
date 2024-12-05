@@ -15,41 +15,55 @@ typedef struct Rmap Rmap;
 
 struct Rmap
 {
-	bool map[128];
-	Buf  stack;
-	int  stack_size;
+	uint8_t* map;
+	int      map_max;
+	Buf      buf;
 };
 
 static inline void
 rmap_init(Rmap* self)
 {
-	self->stack_size = 0;
-	memset(self->map, 0, sizeof(self->map));
-	buf_init(&self->stack);
+	self->map     = NULL;
+	self->map_max = 64;
+	buf_init(&self->buf);
 }
 
 static inline void
 rmap_free(Rmap* self)
 {
-	buf_free(&self->stack);
+	buf_free(&self->buf);
+}
+
+static inline void
+rmap_prepare(Rmap* self)
+{
+	if (self->map)
+		return;
+	self->map = buf_claim(&self->buf, self->map_max);
+	memset(self->map, 0xff, self->map_max);
 }
 
 static inline void
 rmap_reset(Rmap* self)
 {
-	self->stack_size = 0;
-	memset(self->map, 0, sizeof(self->map));
-	buf_reset(&self->stack);
+	if (self->map)
+		memset(self->map, 0xff, self->map_max);
 }
 
 hot static inline int
-rmap_pin(Rmap* self)
+rmap_at(Rmap* self, int r)
 {
-	for (int r = 0; r < 128; r++)
+	return self->map[r];
+}
+
+hot static inline int
+rmap_pin(Rmap* self, int type)
+{
+	for (int r = 0; r < self->map_max; r++)
 	{
-		if (! self->map[r])
+		if (self->map[r] == 0xff)
 		{
-			self->map[r] = true;
+			self->map[r] = type;
 			return r;
 		}
 	}
@@ -61,23 +75,5 @@ static inline void
 rmap_unpin(Rmap* self, int r)
 {
 	assert(r < 128);
-	self->map[r] = false;
-}
-
-static inline void
-rmap_push(Rmap* self, int r)
-{
-	buf_write(&self->stack, &r, sizeof(r));
-	self->stack_size++;
-}
-
-static inline int
-rmap_pop(Rmap* self)
-{
-	if (self->stack_size == 0)
-		return -1;
-	int r = *(int*)(self->stack.position - sizeof(int));
-	buf_truncate(&self->stack, sizeof(int));
-	self->stack_size--;
-	return r;
+	self->map[r] = 0xff;
 }

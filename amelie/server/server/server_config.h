@@ -58,30 +58,30 @@ server_config_read(uint8_t** pos)
 	guard(server_config_free, self);
 
 	// obj
-	if (! data_is_obj(*pos))
+	if (! json_is_obj(*pos))
 		error("server: listen[<{}>] element must be an object");
-	data_read_obj(pos);
-	while (! data_read_obj_end(pos))
+	json_read_obj(pos);
+	while (! json_read_obj_end(pos))
 	{
 		// key
 		Str name;
-		data_read_string(pos, &name);
+		json_read_string(pos, &name);
 
 		// value
 		if (str_is(&name, "path", 4))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! json_is_string(*pos))
 				error("server: listen[] <path> must be a string");
-			data_read_string_copy(pos, &self->path);
+			json_read_string_copy(pos, &self->path);
 		} else
 		if (str_is(&name, "path_mode", 9))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! json_is_string(*pos))
 				error("server: listen[] <path_mode> must be a string");
 			Str path_mode;
-			data_read_string(pos, &path_mode);
+			json_read_string(pos, &path_mode);
 			errno = 0;
 			auto mode = strtol(str_of(&path_mode), NULL, 8);
 			if (errno != 0)
@@ -91,30 +91,30 @@ server_config_read(uint8_t** pos)
 		if (str_is(&name, "host", 4))
 		{
 			// string
-			if (! data_is_string(*pos))
+			if (! json_is_string(*pos))
 				error("server: listen[] <host> must be a string");
-			data_read_string_copy(pos, &self->host);
+			json_read_string_copy(pos, &self->host);
 		} else
 		if (str_is(&name, "port", 4))
 		{
 			// int
-			if (! data_is_integer(*pos))
+			if (! json_is_integer(*pos))
 				error("server: listen[] <port> must be an integer");
-			data_read_integer(pos, &self->host_port);
+			json_read_integer(pos, &self->host_port);
 		} else
 		if (str_is(&name, "auth", 4))
 		{
 			// bool
-			if (! data_is_bool(*pos))
+			if (! json_is_bool(*pos))
 				error("server: listen[] <auth> must be a bool");
-			data_read_bool(pos, &self->auth);
+			json_read_bool(pos, &self->auth);
 		} else
 		if (str_is(&name, "tls", 3))
 		{
 			// bool
-			if (! data_is_bool(*pos))
+			if (! json_is_bool(*pos))
 				error("server: listen[] <tls> must be a bool");
-			data_read_bool(pos, &self->tls);
+			json_read_bool(pos, &self->tls);
 		} else
 		{
 			error("server: listen[] unknown listen option '%.*s'",

@@ -15,16 +15,20 @@ typedef struct Columns Columns;
 
 struct Columns
 {
-	List list;
-	int  list_count;
-	int  generated_columns;
+	List    list;
+	int     list_count;
+	int     count_stored;
+	int     count_resolved;
+	Column* serial;
 };
 
 static inline void
 columns_init(Columns* self)
 {
-	self->list_count = 0;
-	self->generated_columns = 0;
+	self->list_count     = 0;
+	self->count_stored   = 0;
+	self->count_resolved = 0;
+	self->serial         = NULL;
 	list_init(&self->list);
 }
 
@@ -46,7 +50,13 @@ columns_add(Columns* self, Column* column)
 	self->list_count++;
 
 	if (! str_empty(&column->constraint.as_stored))
-		self->generated_columns++;
+		self->count_stored++;
+	if (! str_empty(&column->constraint.as_resolved))
+		self->count_resolved++;
+
+	// save order of the first serial column
+	if (column->constraint.serial && !self->serial)
+		self->serial = column;
 }
 
 static inline void
@@ -56,12 +66,22 @@ columns_del(Columns* self, Column* column)
 	self->list_count--;
 	assert(self->list_count >= 0);
 
+	if (! str_empty(&column->constraint.as_stored))
+		self->count_stored--;
+	if (! str_empty(&column->constraint.as_resolved))
+		self->count_resolved--;
+
+	if (self->serial == column)
+		self->serial = NULL;
+
 	// reorder columns
 	int order = 0;
 	list_foreach(&self->list)
 	{
 		auto column = list_at(Column, link);
 		column->order = order++;
+		if (column->constraint.serial && !self->serial)
+			self->serial = column;
 	}
 }
 
@@ -78,6 +98,26 @@ columns_find(Columns* self, Str* name)
 }
 
 hot static inline Column*
+columns_find_noconflict(Columns* self, Str* name, bool* conflict)
+{
+	Column* match = NULL;
+	list_foreach(&self->list)
+	{
+		auto column = list_at(Column, link);
+		if (str_compare(&column->name, name))
+		{
+			if (match)
+			{
+				*conflict = true;
+				return NULL;
+			}
+			match = column;
+		}
+	}
+	return match;
+}
+
+hot static inline Column*
 columns_find_by(Columns* self, int order)
 {
 	list_foreach(&self->list)
@@ -87,6 +127,12 @@ columns_find_by(Columns* self, int order)
 			return column;
 	}
 	return NULL;
+}
+
+hot static inline Column*
+columns_first(Columns* self)
+{
+	return container_of(self->list.next, Column, link);
 }
 
 static inline void
@@ -103,8 +149,8 @@ static inline void
 columns_read(Columns* self, uint8_t** pos)
 {
 	// []
-	data_read_array(pos);
-	while (! data_read_array_end(pos))
+	json_read_array(pos);
+	while (! json_read_array_end(pos))
 	{
 		auto column = column_read(pos);
 		columns_add(self, column);

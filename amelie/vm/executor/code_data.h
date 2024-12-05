@@ -16,39 +16,28 @@ typedef struct CodeData CodeData;
 struct CodeData
 {
 	Buf data;
-	Buf data_generated;
-	Buf call;
+	Buf data_call;
 };
 
 static inline void
 code_data_init(CodeData* self)
 {
 	buf_init(&self->data);
-	buf_init(&self->data_generated);
-	buf_init(&self->call);
+	buf_init(&self->data_call);
 }
 
 static inline void
 code_data_free(CodeData* self)
 {
 	buf_free(&self->data);
-	buf_free(&self->data_generated);
-	buf_free(&self->call);
+	buf_free(&self->data_call);
 }
 
 static inline void
 code_data_reset(CodeData* self)
 {
 	buf_reset(&self->data);
-	buf_reset(&self->data_generated);
-	buf_reset(&self->call);
-}
-
-static inline void
-code_data_copy(CodeData* self, CodeData* from)
-{
-	buf_write(&self->data, from->data.start, buf_size(&from->data));
-	buf_write(&self->call, from->call.start, buf_size(&from->call));
+	buf_reset(&self->data_call);
 }
 
 static inline int
@@ -71,13 +60,10 @@ code_data_at(CodeData* self, int offset)
 }
 
 static inline double
-code_data_at_real(CodeData* self, int offset)
+code_data_at_double(CodeData* self, int offset)
 {
 	assert(self->data.start != NULL);
-	uint8_t* pos = self->data.start + offset;
-	double value;
-	data_read_real(&pos, &value);
-	return value;
+	return *(double*)(self->data.start + offset);
 }
 
 static inline void
@@ -85,28 +71,28 @@ code_data_at_string(CodeData* self, int offset, Str* string)
 {
 	assert(self->data.start != NULL);
 	uint8_t* pos = self->data.start + offset;
-	data_read_string(&pos, string);
+	json_read_string(&pos, string);
 }
 
 static inline void*
 code_data_at_call(CodeData* self, int id)
 {
-	assert(self->call.start != NULL);
-	auto list = (void**)self->call.start;
+	assert(self->data_call.start != NULL);
+	auto list = (void**)self->data_call.start;
 	return list[id];
 }
 
 static inline int
 code_data_count_call(CodeData* self)
 {
-	return buf_size(&self->call) / sizeof(void*);
+	return buf_size(&self->data_call) / sizeof(void*);
 }
 
 static inline int
 code_data_add_call(CodeData* self, void* pointer)
 {
-	int id = buf_size(&self->call) / sizeof(void*);
-	buf_write(&self->call, &pointer, sizeof(pointer));
+	int id = buf_size(&self->data_call) / sizeof(void*);
+	buf_write(&self->data_call, &pointer, sizeof(pointer));
 	return id;
 }
 
@@ -119,10 +105,10 @@ code_data_add(CodeData* self, uint8_t* data, int size)
 }
 
 static inline int
-code_data_add_real(CodeData* self, double real)
+code_data_add_double(CodeData* self, double value)
 {
 	int offset = code_data_pos(self);
-	encode_real(&self->data, real);
+	buf_write_double(&self->data, value);
 	return offset;
 }
 

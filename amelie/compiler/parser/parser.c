@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -36,19 +37,23 @@
 void
 parser_init(Parser*      self,
             Db*          db,
+            Local*       local,
             FunctionMgr* function_mgr,
-            CodeData*    data)
+            CodeData*    data,
+            SetCache*    values_cache)
 {
 	self->explain      = EXPLAIN_NONE;
 	self->stmt         = NULL;
 	self->args         = NULL;
 	self->data         = data;
+	self->values_cache = values_cache;
 	self->function_mgr = function_mgr;
-	self->local        = NULL;
+	self->local        = local;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
 	cte_list_init(&self->cte_list);
 	lex_init(&self->lex, keywords);
+	uri_init(&self->uri);
 	json_init(&self->json);
 }
 
@@ -58,7 +63,6 @@ parser_reset(Parser* self)
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
 	self->args    = NULL;
-	self->local   = NULL;
 	list_foreach_safe(&self->stmt_list.list)
 	{
 		auto stmt = list_at(Stmt, link);
@@ -67,6 +71,7 @@ parser_reset(Parser* self)
 	cte_list_reset(&self->cte_list);
 	stmt_list_init(&self->stmt_list);
 	lex_reset(&self->lex);
+	uri_reset(&self->uri);
 	json_reset(&self->json);
 }
 
@@ -74,5 +79,6 @@ void
 parser_free(Parser* self)
 {
 	parser_reset(self);
+	uri_free(&self->uri);
 	json_free(&self->json);
 }

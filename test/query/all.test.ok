@@ -13,85 +13,160 @@ select 1 = all (
 {"msg": "bad expression"}
 select 1 = all ()
 {"msg": "bad expression"}
-# test: = all(array)
-select 1 = all()
-{"msg": "bad expression"}
-select 1 = all([0])
-[false]
-select 1 = all([0, 1])
-[false]
+# test: = all ([])
+select 1 = all([])
+[true]
+select 1 = all([null])
+[null]
 select 1 = all([1])
 [true]
+select 1 = all([1, 2])
+[false]
 select 1 = all([1, 1])
 [true]
-select not (1 = all([1, 1]))
+select 1 = all([1, 2, null])
 [false]
-# test: >= all(array)
-select 1 >= all([0, 1])
+select 1 = all([1, 1, null])
+[null]
+select 0 = all([1, 2, null])
+[false]
+select 0 = all([1, 1, null])
+[false]
+# test: >= all ([])
+select 1 >= all([1,2])
+[false]
+select 0 >= all([1,2])
+[false]
+select 1 >= all([1,2, null])
+[false]
+select 0 >= all([1,2, null])
+[false]
+select 3 >= all([1,2])
 [true]
-select 1 >= all([2])
+select 3 >= all([1,2, null])
+[null]
+# test: > all ([])
+select 1 > all([1,2])
 [false]
-select 1 >= all([1, 2])
+select 0 > all([1,2])
 [false]
-# test: > all(array)
-select 1 > all([0, 1])
+select 1 > all([1,2, null])
 [false]
-select 1 > all([0, 2])
+select 0 > all([1,2, null])
 [false]
-select 1 > all([2])
-[false]
-select 1 > all([-1, 0])
+select 3 > all([1,2])
 [true]
-# test: < all(array)
-select 1 < all([0, 1])
-[false]
-select 1 < all([-1, 0])
-[false]
-select 1 < all([2])
+select 3 > all([1,2, null])
+[null]
+# test: <= all ([])
+select 1 <= all([1,2])
 [true]
-# test: <= all(array)
-select 1 <= all([0, 1])
-[false]
-select 1 <= all([2])
+select 0 <= all([1,2])
 [true]
-select 1 <= all([0])
+select 3 <= all([1,2])
 [false]
-# test: = all(set)
-select 1 = all()
-{"msg": "bad expression"}
-select 1 = all(select 1)
-{"msg": "ALL: array or result set expected"}
-select 1 = all(select * from [2, 1])
+select 1 <= all([1,2, null])
+[null]
+select 3 <= all([1,2, null])
 [false]
-select 1 = all(select * from [1, 1])
+# test: < all ([])
+select 1 < all([1,2])
+[false]
+select 0 < all([1,2])
 [true]
-select not (1 = all(select * from [1, 1]))
+select 3 < all([1,2])
 [false]
-# test: >= all(set)
-select 1 >= all(select * from [0, 1])
+select 1 < all([1,2, null])
+[false]
+select 3 < all([1,2, null])
+[false]
+# test: = all
+create shared table test (id int primary key, data int)
+select 1 = all(select id from test)
 [true]
-select 1 >= all(select * from [2])
-[false]
-# test: > all(set)
-select 1 > all(select * from [0, -1])
+insert into test values (1, 1)
+select 1 = all(select id from test)
 [true]
-select 1 > all(select * from [0, 1])
+insert into test values (2, null)
+select 1 = all(select id from test)
 [false]
-select 1 > all(select * from [2])
-[false]
-# test: < all(set)
-select 1 < all(select * from [0, 1])
-[false]
-select 1 < all(select * from [2])
+select not (1 = all(select id from test))
 [true]
-select 1 < all(select * from [0])
+select null = all(select id from test)
+[null]
+select 1 = all(select id from test)
 [false]
-# test: <= all(set)
-select 1 <= all(select * from [0, 1])
+select 3 = all(select id from test)
 [false]
-select 1 <= all(select * from [2])
+select 3 = all(select data from test)
+[false]
+# test: >= all
+select 1 >= all(select id from test)
+[false]
+select 0 >= all(select id from test)
+[false]
+select null >= all(select id from test)
+[null]
+select 1 >= all(select id from test)
+[false]
+select 3 >= all(select id from test)
 [true]
-select 1 <= all(select * from [0])
+select 0 >= all(select data from test)
 [false]
+select 3 >= all(select data from test)
+[null]
+# test: > all
+select 1 > all(select id from test)
+[false]
+select 0 > all(select id from test)
+[false]
+select 3 > all(select id from test)
+[true]
+select null > all(select id from test)
+[null]
+select 1 > all(select id from test)
+[false]
+select 3 > all(select id from test)
+[true]
+select 0 > all(select data from test)
+[false]
+select 3 > all(select data from test)
+[null]
+# test: <= all
+select 1 <= all(select id from test)
+[true]
+select 0 <= all(select id from test)
+[true]
+select 3 <= all(select id from test)
+[false]
+select null <= all(select id from test)
+[null]
+select 1 <= all(select id from test)
+[true]
+select 3 <= all(select id from test)
+[false]
+select 3 <= all(select data from test)
+[false]
+select 0 <= all(select data from test)
+[null]
+# test: < all
+select 1 < all(select id from test)
+[false]
+select 0 < all(select id from test)
+[true]
+select 3 < all(select id from test)
+[false]
+select 0 < all(select data from test)
+[null]
+select null < all(select id from test)
+[null]
+select 1 < all(select id from test)
+[false]
+select 0 < all(select id from test)
+[true]
+select 3 < all(select data from test)
+[false]
+select 0 < all(select data from test)
+[null]
 disconnect S0
 close E0

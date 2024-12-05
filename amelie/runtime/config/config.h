@@ -21,6 +21,7 @@ struct Config
 	Var  directory;
 	Var  timezone;
 	Var  timezone_default;
+	Var  format;
 	// log
 	Var  log_enable;
 	Var  log_to_file;
@@ -71,7 +72,7 @@ struct Config
 	Var  test_bool;
 	Var  test_int;
 	Var  test_string;
-	Var  test_data;
+	Var  test_json;
 	Vars vars;
 };
 

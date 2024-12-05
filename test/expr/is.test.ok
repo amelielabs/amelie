@@ -1,0 +1,57 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: is null
+select is
+{"msg": "bad expression"}
+select is 1
+{"msg": "bad expression"}
+select 1 is
+{"msg": "bad expression"}
+select 1 is
+{"msg": "bad expression"}
+select 1 is not
+{"msg": "bad expression"}
+select 1 is 1
+{"msg": "IS [NOT] <NULL> expected"}
+explain select 1 is null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "is                  2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    }
+  }
+}]
+select 1 is null
+[false]
+select null is null
+[true]
+# test: is not null
+explain select 1 is not null
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "is                  2      1      0     ",
+      "03": "not                 1      2      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
+    }
+  }
+}]
+select 1 is not null
+[true]
+select null is not null
+[false]
+disconnect S0
+close E0

@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -24,17 +24,11 @@ hot static void
 part_build_index(PartBuild* self, Iterator* it)
 {
 	// build secondary index by iterating and indexating primary keys
-	auto    index = part_find(self->part, &self->index->name, true);
-	assert(index);
-
-	auto    keys = index_keys(index);
-	uint8_t key_data[keys->key_size];
-	auto    key = (Ref*)key_data;
+	auto index = part_find(self->part, &self->index->name, true);
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto row = iterator_at(it);
-		ref_create(key, row, keys);
-		auto prev = index_ingest(index, key);
+		auto prev = index_ingest(index, row);
 		if (unlikely(prev))
 			error("index unique constraint violation");
 	}
@@ -44,23 +38,18 @@ hot static void
 part_build_column_add(PartBuild* self, Iterator* it)
 {
 	// build partition with a new column based on the other partition
-	auto primary = part_primary(self->part_dest);
-	auto keys = index_keys(primary);
+	auto primary = part_primary(self->part);
+	auto primary_columns = index_keys(primary)->columns;
+	auto primary_dest = part_primary(self->part_dest);
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto origin = iterator_at(it);
 
-		// allocate row based on original row with a new column data
-		auto row = row_alter_add(origin, &self->column->constraint.value);
-		guard(row_free, row);
-
-		uint8_t key_data[keys->key_size];
-		auto    key = (Ref*)key_data;
-		ref_create(key, row, keys);
+		// allocate row based on original row with a new column
+		auto row = row_alter_add(origin, primary_columns);
 
 		// update primary index
-		index_ingest(primary, key);
-		unguard();
+		index_ingest(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
@@ -70,24 +59,19 @@ part_build_column_add(PartBuild* self, Iterator* it)
 hot static void
 part_build_column_drop(PartBuild* self, Iterator* it)
 {
-	// build partition with a new column based on the other partition
-	auto primary = part_primary(self->part_dest);
-	auto keys = index_keys(primary);
+	// build partition without a column based on the other partition
+	auto primary = part_primary(self->part);
+	auto primary_columns = index_keys(primary)->columns;
+	auto primary_dest = part_primary(self->part_dest);
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row without a column
-		auto row = row_alter_drop(origin, self->column->order);
-		guard(row_free, row);
-
-		uint8_t key_data[keys->key_size];
-		auto    key = (Ref*)key_data;
-		ref_create(key, row, keys);
+		auto row = row_alter_drop(origin, primary_columns, self->column);
 
 		// update primary index
-		index_ingest(primary, key);
-		unguard();
+		index_ingest(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);

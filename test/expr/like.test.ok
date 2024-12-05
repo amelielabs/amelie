@@ -1,0 +1,72 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+# test: like parsing
+select like
+{"msg": "bad expression"}
+select like 1
+{"msg": "bad expression"}
+select like like
+{"msg": "bad expression"}
+select 1 like
+{"msg": "bad expression"}
+# test: like
+select 1 like 1
+{"msg": "unsupported operation: <int> LIKE <int>"}
+select '' like ''
+[true]
+select '' like '%'
+[true]
+select '' like '%_'
+[true]
+select '' like '%_'
+[true]
+select 'abc' like 'abc'
+[true]
+select 'abc' like '_b_'
+[true]
+select 'abc' like 'ab_'
+[true]
+select 'abc' like 'abc'
+[true]
+select 'abc' like '__c'
+[true]
+select 'abc' like '___'
+[true]
+select 'abcd' like '___'
+[false]
+select 'abcd' like 'a'
+[false]
+select 'abcd' like 'abc'
+[false]
+select 'abcd' like 'abc'
+[false]
+select 'abcd' like 'abc%'
+[true]
+select 'abcd' like 'abc%d'
+[true]
+select 'abcd' like 'abc%de'
+[false]
+select 'hello, world' like 'hello%world'
+[true]
+select 'http://google.com' like '%google%'
+[true]
+# test: like escape
+select '%' like '\\%'
+[true]
+select '123 %-%-% day' like '%%-%%-%%'
+[true]
+select '123 %_%_% day' like '%%_%%_%%'
+[true]
+# test: not like
+select not like
+{"msg": "bad expression"}
+select not
+{"msg": "bad expression"}
+select not like 20
+{"msg": "bad expression"}
+select 'abcd' like 'abc%d'
+[true]
+select 'abcd' not like 'abc%d'
+[false]
+disconnect S0
+close E0

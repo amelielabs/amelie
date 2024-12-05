@@ -73,12 +73,12 @@ show test_string
 set test_string to "world"
 show test_string
 ["world"]
-# test: set data
-show test_data
+# test: set json
+show test_json
 [null]
-set test_data to 1234
-{"msg": "SET 'test_data': variable cannot be changed"}
-show test_data
+set test_json to 1234
+{"msg": "SET 'test_json': variable cannot be changed"}
+show test_json
 [null]
 disconnect S0
 close E0

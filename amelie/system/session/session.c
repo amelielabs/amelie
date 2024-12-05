@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,7 +39,6 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_load.h>
 #include <amelie_session.h>
 
 Session*
@@ -53,25 +53,24 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	self->share     = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
+	content_init(&self->content, &self->local, &client->reply.content);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
 	        &self->dtr,
-	        &client->reply.content,
 	        share->function_mgr);
-	compiler_init(&self->compiler, share->db, share->function_mgr);
+	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
 	dtr_init(&self->dtr, &share->cluster->router, &self->local);
-	load_init(&self->load, share, &self->dtr);
 	return self;
 }
 
 static inline void
 session_reset(Session* self)
 {
-	explain_reset(&self->explain);
 	vm_reset(&self->vm);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
-	load_reset(&self->load);
+	explain_reset(&self->explain);
+	content_reset(&self->content);
 	palloc_truncate(0);
 }
 
@@ -80,7 +79,6 @@ session_free(Session *self)
 {
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
-	load_free(&self->load);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
 	dtr_free(&self->dtr);
@@ -132,17 +130,13 @@ session_unlock(Session* self)
 hot static inline void
 session_explain(Session* self, Program* program, bool profile)
 {
-	auto body = &self->client->reply.content;
-	auto buf  = explain(&self->explain,
-	                    program->code,
-	                    program->code_node,
-	                    program->code_data,
-	                    &self->dtr,
-	                    body,
-	                    profile);
-	guard_buf(buf);
-	buf_reset(body);
-	body_add_buf(body, buf, self->local.timezone);
+	explain(&self->explain,
+	        program->code,
+	        program->code_node,
+	        program->code_data,
+	        &self->dtr,
+	        &self->content,
+	        profile);
 }
 
 hot static inline void
@@ -186,7 +180,9 @@ session_execute_distributed(Session* self)
 		       NULL,
 		       NULL,
 		       NULL,
-		       &dtr->cte, NULL, 0);
+		       &dtr->cte,
+		       NULL,
+		       &self->content, 0);
 	}
 
 	Buf* error = NULL;
@@ -210,76 +206,61 @@ session_execute_distributed(Session* self)
 	}
 }
 
-hot static void
-session_execute_sql(Session* self)
-{
-	auto compiler = &self->compiler;
-
-	// parse SQL query
-	Str text;
-	buf_str(&self->client->request.content, &text);
-	compiler_parse(compiler, &self->local, NULL, &text);
-
-	if (! compiler->parser.stmt_list.list_count)
-	{
-		session_unlock(self);
-		return;
-	}
-
-	// execute utility, DDL, DML or Query
-	auto stmt = compiler_stmt(compiler);
-	auto utility = stmt &&
-	               stmt_is_utility(stmt) &&
-	               stmt->id != STMT_EXECUTE;
-	if (utility)
-		session_execute_utility(self);
-	else
-		session_execute_distributed(self);
-}
-
-static void
-session_execute_load(Session* self)
-{
-	auto request = &self->client->request;
-	auto load    = &self->load;
-	load_prepare(load, request);
-	load_run(load);
-}
-
 static void
 session_execute(Session* self)
 {
-	auto client  = self->client;
-	auto request = &client->request;
-
-	// prepare session state for execution
-	session_reset(self);
+	auto request  = &self->client->request;
+	auto compiler = &self->compiler;
 
 	// set transaction time
 	local_update_time(&self->local);
 
-	// take shared session lock (for catalog access)
-	session_lock(self, LOCK);
-
+	// POST /schema/table <?columns=...>
+	// POST /
+	auto type = http_find(request, "Content-Type", 12);
+	if (unlikely(! type))
+		error("Content-Type is missing");
 	auto url = &request->options[HTTP_URL];
-	if (str_is(url, "/", 1))
-	{
-		// POST /
-		auto type = http_find(request, "Content-Type", 12);
-		if (unlikely(! type))
-			error("Content-Type is missing");
 
-		if (! str_is(&type->value, "text/plain", 10))
+	Str text;
+	buf_str(&request->content, &text);
+	if (str_is(&type->value, "text/plain", 10) ||
+	    str_is(&type->value, "application/sql", 15))
+	{
+		if (unlikely(! str_is(url, "/", 1)))
 			error("unsupported API operation");
 
-		session_execute_sql(self);
+		// parse SQL
+		compiler_parse(compiler, &text);
+	} else
+	if (str_is(&type->value, "text/csv", 8))
+	{
+		// parse CSV
+		compiler_parse_import(compiler, &text, url, ENDPOINT_CSV);
+	} else
+	if (str_is(&type->value, "application/jsonl", 17))
+	{
+		// parse JSONL
+		compiler_parse_import(compiler, &text, url, ENDPOINT_JSONL);
+	} else
+	if (str_is(&type->value, "application/json", 16))
+	{
+		// parse JSON
+		compiler_parse_import(compiler, &text, url, ENDPOINT_JSON);
 	} else
 	{
-		// POST /schema/table
-		session_execute_load(self);
+		error("unsupported API operation");
 	}
 
-	session_unlock(self);
+	// execute utility, DDL, DML or Query
+	if (compiler->parser.stmt_list.list_count > 0)
+	{
+		auto stmt = compiler_stmt(compiler);
+		if (stmt && stmt_is_utility(stmt))
+			session_execute_utility(self);
+		else
+			session_execute_distributed(self);
+	}
 }
 
 hot static inline void
@@ -333,13 +314,11 @@ session_main(Session* self)
 	auto client    = self->client;
 	auto readahead = &client->readahead;
 	auto request   = &client->request;
-	auto reply     = &client->reply;
-	auto body      = &reply->content;
+	auto content   = &self->content;
 
 	for (;;)
 	{
 		// read request header
-		http_reset(reply);
 		http_reset(request);
 		auto eof = http_read(request, readahead, true);
 		if (unlikely(eof))
@@ -363,33 +342,44 @@ session_main(Session* self)
 
 		cancel_pause();
 
-		// execute request
+		// execute request based on the content-type
 		Exception e;
 		if (enter(&e))
 		{
+			// prepare session state for execution
+			session_reset(self);
+
+			// read content
 			session_read(self);
+
+			// take shared session lock (for catalog access)
+			session_lock(self, LOCK);
+
+			// parse and execute request
 			session_execute(self);
+
+			// done
+			session_unlock(self);
 		}
 
 		// reply
 		if (leave(&e))
 		{
-			auto error = &am_self()->error;
-			buf_reset(body);
-			body_error(body, error);
+			content_reset(content);
+			content_write_json_error(content, &am_self()->error);
 
 			session_unlock(self);
 
 			// 400 Bad Request
-			client_400(client, body);
+			client_400(client, content->content, content->content_type->mime);
 		} else
 		{
 			// 204 No Content
 			// 200 OK
-			if (buf_empty(body))
+			if (buf_empty(content->content))
 				client_204(client);
 			else
-				client_200(client, body);
+				client_200(client, content->content, content->content_type->mime);
 		}
 
 		// cancellation point

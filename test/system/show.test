@@ -11,27 +11,18 @@ show 1234
 
 # test: show users
 show users
-select system.users()
 
 # test: show schemas
 show schemas
-select system.schemas()
-
-# test: show functions
-show functions
-select system.functions()
 
 # test: show tables
 show tables
-select system.tables()
 
 # test: show views
 show views
-select system.views()
 
 # test: show wal
 show wal
-select system.wal()
 
 # test: show config
 show all

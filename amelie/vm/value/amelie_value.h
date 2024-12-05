@@ -18,17 +18,17 @@
 // value objects
 #include "value/reg.h"
 #include "value/stack.h"
+#include "value/result.h"
 
-// objects
-#include "value/obj.h"
-#include "value/array.h"
-#include "value/vector.h"
-#include "value/agg.h"
+// json
+#include "value/json.h"
+#include "value/json_array.h"
+#include "value/json_obj.h"
 #include "value/update.h"
+
+// row
 #include "value/row.h"
-#include "value/body.h"
 
 // operations
-#include "value/op.h"
 #include "value/like.h"
 #include "value/compare.h"

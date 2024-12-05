@@ -15,25 +15,25 @@ typedef struct AstSelect AstSelect;
 
 struct AstSelect
 {
-	Ast     ast;
-	Ast*    expr;
-	int     expr_count;
-	AstList expr_aggs;
-	AstList expr_labels;
-	Ast*    expr_where;
-	Ast*    expr_having;
-	Ast*    expr_limit;
-	Ast*    expr_offset;
-	AstList expr_group_by;
-	AstList expr_order_by;
-	bool    distinct;
-	Ast*    distinct_expr;
-	int     distinct_expr_count;
-	Target* target;
-	Target* target_group;
-	void*   on_match;
-	int     rset;
-	int     rgroup;
+	Ast       ast;
+	Returning ret;
+	AstList   expr_aggs;
+	Ast*      expr_where;
+	Ast*      expr_having;
+	Ast*      expr_limit;
+	Ast*      expr_offset;
+	AstList   expr_group_by;
+	bool      expr_group_by_has;
+	AstList   expr_order_by;
+	bool      distinct;
+	bool      distinct_on;
+	Target*   target;
+	Target*   target_group;
+	Columns   target_group_columns;
+	void*     on_match;
+	int       rset;
+	int       rset_agg;
+	int       aggs;
 };
 
 static inline AstSelect*
@@ -47,26 +47,27 @@ ast_select_allocate(void)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
-	self->expr                = NULL;
-	self->expr_count          = 0;
-	self->expr_where          = NULL;
-	self->expr_having         = NULL;
-	self->expr_limit          = NULL;
-	self->expr_offset         = NULL;
-	self->distinct            = false;
-	self->distinct_expr       = NULL;
-	self->distinct_expr_count = 0;
-	self->target              = NULL;
-	self->target_group        = NULL;
-	self->on_match            = NULL;
-	self->rset                = -1;
-	self->rgroup              = -1;
+	self->expr_where        = NULL;
+	self->expr_having       = NULL;
+	self->expr_limit        = NULL;
+	self->expr_offset       = NULL;
+	self->expr_group_by_has = false;
+	self->distinct          = false;
+	self->distinct_on       = false;
+	self->target            = NULL;
+	self->target_group      = NULL;
+	self->on_match          = NULL;
+	self->rset              = -1;
+	self->rset_agg          = -1;
+	self->aggs              = -1;
+	returning_init(&self->ret);
 	ast_list_init(&self->expr_aggs);
-	ast_list_init(&self->expr_labels);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
+	columns_init(&self->target_group_columns);
 	return self;
 }
 
 AstSelect* parse_select(Stmt*);
 AstSelect* parse_select_expr(Stmt*);
+void       parse_select_resolve(Stmt*);

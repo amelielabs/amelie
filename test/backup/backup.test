@@ -26,7 +26,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 
 create table test (id int primary key)
-insert into test 1,2,3
+insert into test values (1),(2),(3)
 show lsn
 
 backup E2 "uri": "127.0.0.1:3480"
@@ -51,7 +51,7 @@ connect E0 S0 localhost:3480
 show lsn
 show wal
 
-insert into test 4
+insert into test values (4)
 show wal
 
 backup E3 "uri": "127.0.0.1:3480"
@@ -101,7 +101,7 @@ close E4
 open E0
 connect E0 S0 localhost:3480
 
-insert into test 5,6,7
+insert into test values (5),(6),(7)
 show lsn
 show checkpoint
 

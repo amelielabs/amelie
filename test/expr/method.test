@@ -1,0 +1,41 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: method not exist
+select 1 :: name()
+select 1 :: schema.name()
+select 1 :: schema.name.name()
+
+# test: expr :: method()
+select 1::
+select 1::()
+select 1::[]()
+
+select 1::length()
+select "hello"::length()
+
+explain select system.config().directory::length()
+select system.config().directory::length()
+
+select [null]::put(0, 123)
+select put([null], 0, 123)
+
+# test: expr :: method() :: method()
+select [1]::append(1)::append(2)
+select [1]::append(1)::append(2)::append(3)
+
+select {}::set("a", 1)::set("b", 2)
+select {}::public.set("a", 1)::public.set("b", 2)
+
+# test: expr :: method
+select 1::schema.name
+select 1::schema.name.name
+
+explain select system.config().directory::length
+select system.config().directory::length
+select length(system.config().directory)
+
+disconnect S0
+close E0

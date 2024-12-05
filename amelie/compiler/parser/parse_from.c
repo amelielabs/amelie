@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -42,10 +43,25 @@ typedef struct
 	Stmt*   stmt;
 } From;
 
-static inline Ast*
-parse_from_analyze(From* self, Cte** cte, Table** table, View** view)
+static inline Target*
+parse_from_target(From* self)
 {
 	auto stmt = self->stmt;
+	auto target = target_allocate();
+
+	// FROM (SELECT)
+	if (stmt_if(stmt, '('))
+	{
+		if (! stmt_if(stmt, KSELECT))
+			error("FROM (<SELECT> expected");
+		auto select = parse_select(stmt);
+		if (! stmt_if(stmt, ')'))
+			error("FROM (SELECT ... <)> expected");
+		target->type         = TARGET_SELECT;
+		target->from_select  = &select->ast;
+		target->from_columns = &select->ret.columns;
+		return target;
+	}
 
 	// FROM name
 	// FROM schema.name
@@ -53,107 +69,106 @@ parse_from_analyze(From* self, Cte** cte, Table** table, View** view)
 	Str  name;
 	auto expr = parse_target(stmt, &schema, &name);
 	if (! expr)
-	{
-		// FROM expr
+		error("FROM target name expected");
 
-		// (, [, ...
-		return parse_expr(stmt, NULL);
-	}
-
-	// find cte
-	*cte = cte_list_find(stmt->cte_list, &name);
-	if (*cte)
+	// FROM cte
+	auto cte = cte_list_find(stmt->cte_list, &name);
+	if (cte)
 	{
-		if ((*cte)->stmt == self->stmt->order)
+		if (cte->stmt == self->stmt->order)
 			error("<%.*s> recursive CTE are not supported",
 			      str_size(&name), str_of(&name));
-		return NULL;
+		target->type         = TARGET_CTE;
+		target->from_cte     = cte;
+		target->from_columns = cte->columns;
+		str_set_str(&target->name, &cte->name->string);
+		// add cte dependency
+		cte_deps_add(&stmt->cte_deps, cte);
+		return target;
 	}
 
-	// find table
-	*table = table_mgr_find(&stmt->db->table_mgr, &schema, &name, false);
-	if (*table)
-		return NULL;
-
-	// find view
-	*view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
-
-	// apply view
-	if (*view)
+	// table
+	auto table = table_mgr_find(&stmt->db->table_mgr, &schema, &name, false);
+	if (table)
 	{
-		// FROM (SELECT)
+		if (table->config->shared)
+			target->type = TARGET_TABLE_SHARED;
+		else
+			target->type = TARGET_TABLE;
+		target->from_table   = table;
+		target->from_columns = &table->config->columns;
+		str_set_str(&target->name, &table->config->name);
+		return target;
+	}
+
+	// view
+	auto view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
+	if (view)
+	{
+		// FROM (view SELECT)
 		auto lex_prev = stmt->lex;
 
 		// parse view SELECT and return as expression
 		Lex lex;
 		lex_init(&lex, lex_prev->keywords);
-		lex_start(&lex, &(*view)->config->query);
+		lex_start(&lex, &view->config->query);
 		stmt->lex = &lex;
 		stmt_if(stmt, KSELECT);
 		auto select = parse_select(stmt);
 		stmt->lex = lex_prev;
-		return &select->ast;
+		if (! select->target)
+			error("FROM (SELECT) subquery has no target");
+		target->type         = TARGET_VIEW;
+		target->from_select  = &select->ast;
+		target->from_view    = view;
+		target->from_columns = &view->config->columns;
+		str_set_str(&target->name, &view->config->name);
+		return target;
 	}
 
-	// function call
-	auto bracket = stmt_if(stmt, '(');
-	if (bracket)
-	{
-		// FROM name()
-		// FROM schema.name()
-		stmt_push(stmt, bracket);
-		stmt_push(stmt, expr);
-		return parse_expr(stmt, NULL);
-	}
+	error("<%.*s.%.*s> table or view not found",
+	      str_size(&schema), str_of(&schema),
+	      str_size(&name),
+	      str_of(&name));
 
-	error("<%.*s> table or view is not found", str_size(&expr->string),
-	      str_of(&expr->string));
+	// unreach
 	return NULL;
 }
 
 static inline Target*
 parse_from_add(From* self)
 {
-	auto   stmt  = self->stmt;
-	Cte*   cte   = NULL;
-	Table* table = NULL;
-	View*  view  = NULL;
+	auto stmt = self->stmt;
 
-	// FROM <expr> [alias] [USE INDEX (name)]
-	auto expr = parse_from_analyze(self, &cte, &table, &view);
-	auto target_list = &self->stmt->target_list;
+	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
+	auto target = parse_from_target(self);
+	auto target_list = &stmt->target_list;
 
-	// [alias]
-	Str  name;
-	char name_gen[8];
+	// [AS] [alias]
+	auto as = stmt_if(stmt, KAS);
 	auto alias = stmt_if(stmt, KNAME);
-	if (alias)
-	{
-		str_set_str(&name, &alias->string);
-	} else
-	{
-		if (cte) {
-			str_set_str(&name, &cte->name->string);
-		} else
-		if (table) {
-			str_set_str(&name, &table->config->name);
-		} else
-		if (view) {
-			str_set_str(&name, &view->config->name);
-		} else {
-			snprintf(name_gen, sizeof(name_gen), "t%d", target_list->count);
-			str_set_cstr(&name, name_gen);
-		}
+	if (alias) {
+		str_set_str(&target->name, &alias->string);
+	} else {
+		if (as)
+			error("AS <name> expected ");
+
+		if (target->type == TARGET_SELECT)
+			error("FROM (SELECT) subquery must have an alias");
 	}
 
 	// ensure target does not exists
-	auto target = target_list_match(target_list, &name);
-	if (target)
-		error("<%.*s> target is redefined, please use different alias for the target",
-		      str_size(&name), str_of(&name));
+	if (! str_empty(&target->name))
+	{
+		auto match = target_list_match(target_list, &target->name);
+		if (match)
+			error("<%.*s> target is redefined, please use different alias for the target",
+			      str_size(&target->name), str_of(&target->name));
+	}
 
-	target = target_list_add(target_list, self->level, self->level_seq++,
-	                         &name, expr, NULL, table, cte);
+	// add target
+	target_list_add(target_list, target, self->level, self->level_seq++);
+
 	if (self->head == NULL)
 		self->head = target;
 	else
@@ -162,12 +177,6 @@ parse_from_add(From* self)
 
 	// set outer target
 	target->outer = self->head;
-
-	// set view
-	target->view  = view;
-
-	if (cte)
-		cte_deps_add(&stmt->cte_deps, cte);
 
 	// [USE INDEX (name)]
 	if (stmt_if(stmt, KUSE))
@@ -181,9 +190,11 @@ parse_from_add(From* self)
 			error("USE INDEX (<index name> expected");
 		if (! stmt_if(stmt, ')'))
 			error("USE INDEX (<)> expected");
-		if (! table)
-			error("USE INDEX required table table");
-		target->index = table_find_index(table, &name->string, true);
+		if (target->type != TARGET_TABLE &&
+		    target->type != TARGET_TABLE_SHARED)
+			error("USE INDEX expected table target");
+		target->from_table_index =
+			table_find_index(target->from_table, &name->string, true);
 	}
 
 	return target;
@@ -192,8 +203,8 @@ parse_from_add(From* self)
 Target*
 parse_from(Stmt* self, int level)
 {
-	// FROM <name [alias]> | <(expr) [alias]> [, ...]
-	// FROM <name [alias]> | <(expr) [alias]> [JOIN <..> ON (expr) ...]
+	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [, ...]
+	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 	From from =
 	{
 		.level     = level,
@@ -262,7 +273,7 @@ parse_from(Stmt* self, int level)
 				error("JOIN name <ON> expected");
 
 			// expr
-			target->expr_on = parse_expr(self, NULL);
+			target->join_on = parse_expr(self, NULL);
 			target->join    = join;
 			continue;
 		}

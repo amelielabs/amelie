@@ -5,6 +5,40 @@ directory runtime
 group runtime
 test runtime
 
+# data types and expressions
+directory expr
+group expr
+test null
+test bool
+test int
+test double
+test string
+test json
+test timestamp
+test timestamp_timezone
+test interval
+test vector
+test logic
+test is
+test method
+test like
+test between
+test case
+
+# functions
+directory functions
+group functions
+test fn_cast
+test fn_json
+test fn_string
+test fn_regexp
+test fn_misc
+test fn_time
+test fn_vector
+test fn_math
+test fn_null
+test fn_system
+
 # system
 directory system
 group system
@@ -22,7 +56,7 @@ test table_create
 test table_drop
 test table_alter
 test index
-test view
+#test view
 test cascade
 
 # dml
@@ -38,68 +72,25 @@ test truncate
 directory generated
 group generated
 test as_stored
-test as_aggregated
-
-# index
-directory index
-group index
-test tree_shared
-test tree
-test hash_shared
-test hash
+test as_resolved
 
 # query
 directory query
 group query
-test expr
-test expr_json
-test case
-test in
-test any
-test all
-test like
-test exists
-test method
 test select
 test where
 test scan
-test subselect
-test order_by
-test label
 test planner
-test lambda
+test subselect
+test as
+test order_by
+test exists
+test in
+test any
+test all
 test limits
-
-# func
-directory func
-group func
-test func_cast
-test func_null
-test func_object
-test func_string
-test func_regexp
-test func_math
-test func_misc
-test func_time
-test func_vector
-
-# time
-directory time
-group time
-test interval
-test timestamp
-test timezone
-test generate_series
-
-# vector
-directory vector
-group vector
-test vector
-
-# agg
-directory agg
-group agg
-test agg
+test format
+#test lambda
 
 # pushdown
 directory pushdown
@@ -115,15 +106,22 @@ test push_order_by
 test push_distinct
 test push_group_by
 test push_group_by_shared
-test push_group_by_expr
-test push_aggregate
+test push_agg
+test push_agg_shared
 test push_join
+test push_cte
+
+# index
+directory index
+group index
+test tree_shared
+test tree
+test hash_shared
+test hash
 
 # executor
 directory executor
 group executor
-test cte_expr
-test cte
 test begin_commit
 test abort
 

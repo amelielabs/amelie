@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,101 +39,90 @@
 hot void
 emit_update_target(Compiler* self, Target* target, Ast* expr)
 {
-	// start from current object
-	int r = op2(self, CCURSOR_READ, rpin(self), target->id);
-	op1(self, CPUSH, r);
-	runpin(self, r);
+	Ast* list = NULL;
+	int  list_count = 0;
 
-	auto columns = table_columns(target->table);
+	auto columns = table_columns(target->from_table);
 	auto op = expr;
-	for (; op; op = op->next)
+	while (op)
 	{
-		Str path;
-		str_set_str(&path, &op->l->string);
+		auto next = op->next;
+		op->next = NULL;
 
-		// update column in a row
-		Column* column = NULL;
-		switch (op->l->id) {
-		case KNAME:
+		auto name = &op->l->string;
+		auto column = columns_find(columns, name);
+		if (! unlikely(column))
+			error("<%.*s.%.*s> column not found",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(name), str_of(name));
+
+		if (unlikely(column->key))
+			error("<%.*s.%.*s> column used as a part of a key",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(name), str_of(name));
+
+		op->l->column = column;
+
+		// recreate ordered list by column order
+		Ast* prev = NULL;
+		Ast* pos = list;
+		while (pos)
 		{
-			column = columns_find(columns, &path);
-			if (! column)
-				error("<%.*s> column does not exists", str_size(&path),
-				      str_of(&path));
-			str_init(&path);
-			break;
+			if (column == pos->l->column)
+				error("<%.*s.%.*s> column is redefined in UPDATE",
+				      str_size(&target->name), str_of(&target->name),
+				      str_size(&column->name), str_of(&column->name));
+
+			if (column->order < pos->l->column->order)
+				break;
+
+			prev = pos;
+			pos = pos->next;
 		}
-		case KNAME_COMPOUND:
+
+		// insert or append
+		if (prev == NULL)
 		{
-			Str name;
-			str_split(&path, &name, '.');
-
-			column = columns_find(columns, &name);
-			if (! column)
-				error("<%.*s> column does not exists", str_size(&name),
-				      str_of(&name));
-
-			// exclude name from the path
-			str_advance(&path, str_size(&name) + 1);
-			break;
-		}
-		default:
-			abort();
-			break;
-		}
-
-		// ensure we are not updating a key
-		if (column->key)
+			op->next = list;
+			list = op;
+		} else
 		{
-			list_foreach(&target->table->config->indexes)
-			{
-				auto index = list_at(IndexConfig, link);
-				list_foreach(&index->keys.list)
-				{
-					auto key = list_at(Key, link);
-					if (key->column != column)
-						continue;
-
-					if (str_empty(&key->path)) {
-						error("<%.*s> key columns cannot be updated", str_size(&column->name),
-						      str_of(&column->name));
-					} else
-					{
-						// path is equal or a prefix of the key path
-						if (str_empty(&path) || str_compare_prefix(&key->path, &path))
-							error("<%.*s> column nested key <%.*s> cannot be updated",
-							      str_size(&column->name), str_of(&column->name),
-							      str_size(&key->path),
-							      str_of(&key->path));
-					}
-				}
-			}
+			op->next = prev->next;
+			prev->next = op;
 		}
+		list_count++;
 
-		// path
-		int rexpr;
-		if (str_empty(&path))
-			rexpr = op1(self, CNULL, rpin(self));
-		else
-			rexpr = emit_string(self, &path, false);
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
-
-		// expr
-		rexpr = emit_expr(self, target, op->r);
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
-
-		// assign(obj, idx, expr, column)
-		rexpr = op3(self, CASSIGN, rpin(self), 3, column->order);
-
-		// push
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op = next;
 	}
 
-	// UPDATE (last modified object)
-	op1(self, CUPDATE, target->id);
+	// push pairs of column order and update expression
+	for (op = list; op; op = op->next)
+	{
+		auto column = op->l->column;
+
+		// push column order
+		int rexpr = op2(self, CINT, rpin(self, TYPE_INT), column->order);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+
+		// push expr
+		rexpr = emit_expr(self, target, op->r);
+		auto type = rtype(self, rexpr);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+
+		// ensure that the expression type is compatible
+		// with the column
+		if (unlikely(type != TYPE_NULL && column->type != type))
+			error("<%.*s.%.*s> column update expression type '%s' does not match column type '%s'",
+			      str_size(&target->name), str_of(&target->name),
+			      str_size(&column->name), str_of(&column->name),
+			      type_of(type),
+			      type_of(column->type));
+	}
+
+	// UPDATE
+	op2(self, CUPDATE, target->id, list_count);
 }
 
 static inline void
@@ -146,24 +136,35 @@ static inline void
 emit_update_on_match_returning(Compiler* self, void* arg)
 {
 	AstUpdate* update = arg;
+
+	// update by cursor
 	emit_update_target(self, update->target, update->expr_update);
 
-	// expr
-	int rexpr = emit_expr(self, update->target, update->returning);
+	// push expr and set column type
+	for (auto as = update->ret.list; as; as = as->next)
+	{
+		auto column = as->r->column;
+
+		// expr
+		int rexpr = emit_expr(self, update->target, as->l);
+		int rt = rtype(self, rexpr);
+		column_set_type(column, rt, type_sizeof(rt));
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+	}
 
 	// add to the returning set
-	op2(self, CSET_ADD, update->rset, rexpr);
-	runpin(self, rexpr);
+	op1(self, CSET_ADD, update->rset);
 }
 
 hot void
 emit_update(Compiler* self, Ast* ast)
 {
-	// UPDATE name SET path = expr [, ... ] [WHERE expr]
+	// UPDATE name SET column = expr [, ... ] [WHERE expr]
 	auto update = ast_update_of(ast);
 
 	// update by cursor
-	if (! update->returning)
+	if (! returning_has(&update->ret))
 	{
 		scan(self, update->target,
 		     NULL,
@@ -177,7 +178,9 @@ emit_update(Compiler* self, Ast* ast)
 	// RETURNING expr
 
 	// create returning set
-	update->rset = op1(self, CSET, rpin(self));
+	update->rset =
+		op3(self, CSET, rpin(self, TYPE_SET),
+		    update->ret.count, 0);
 
 	scan(self, update->target,
 	     NULL,

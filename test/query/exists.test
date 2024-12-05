@@ -8,17 +8,29 @@ select exists
 select exists 1
 select exists (
 select exists ()
-
-# test: exists (expr)
 select exists (1)
 select exists (null)
 select exists (false)
 select exists ([])
 
-# test: exists (set)
-select exists (select * from [])
-select exists (select * from [1])
-select exists (select * from [1,2,3])
+# test: exists (select)
+create shared table test (id int primary key, data int)
+insert into test values (1, 0), (2, 0)
+
+select exists (select true from test limit 1)
+select exists (select true from test where false)
+
+# test: exists (select expr)
+select exists (select null)
+
+# test: exists (select) (more then one result)
+select exists (select true from test)
+
+explain select exists (select true from test where false)
+
+# test: exists (select) (more then one column)
+select exists (select * from test)
+drop table test
 
 disconnect S0
 close E0

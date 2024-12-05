@@ -29,7 +29,6 @@ typedef enum
 	LOG_TABLE_CREATE,
 	LOG_TABLE_DROP,
 	LOG_TABLE_RENAME,
-	LOG_TABLE_SET_AGGREGATED,
 	LOG_TABLE_TRUNCATE,
 	LOG_TABLE_COLUMN_RENAME,
 	LOG_TABLE_COLUMN_ADD,
@@ -60,8 +59,9 @@ struct LogOp
 
 struct LogRow
 {
+	Row*  row;
+	Row*  row_prev;
 	Keys* keys;
-	Ref   rows[];
 };
 
 struct LogHandle
@@ -93,14 +93,10 @@ log_data_of(Log* self, LogOp* op)
 	return self->data.start + op->pos;
 }
 
-always_inline static inline Ref*
-log_row_of(Log* self, LogOp* op,  Ref** b)
+always_inline static inline LogRow*
+log_row_of(Log* self, LogOp* op)
 {
-	auto row = (LogRow*)log_data_of(self, op);
-	auto a = &row->rows[0];
-	if (b)
-		*b = (Ref*)((uint8_t*)a + row->keys->key_size);
-	return a;
+	return log_data_of(self, op);
 }
 
 always_inline static inline LogHandle*
@@ -148,14 +144,14 @@ log_truncate(Log* self)
 	buf_truncate(&self->data, buf_size(&self->data) - op->pos);
 }
 
-hot static inline void
+hot static inline LogRow*
 log_row(Log*   self,
         LogCmd cmd,
         LogIf* iface,
         void*  iface_arg,
         Keys*  keys,
-        Ref**  key,
-        Ref**  prev)
+        Row*   row,
+        Row*   row_prev)
 {
 	// op
 	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
@@ -166,11 +162,11 @@ log_row(Log*   self,
 	self->count++;
 
 	// row data
-	int size = 2 * keys->key_size;
-	LogRow* row = buf_claim(&self->data, sizeof(LogRow) + size);
-	row->keys = keys;
-	memset(&row->rows[0], 0, size);
-	*key = log_row_of(self, op, prev);
+	LogRow* ref = buf_claim(&self->data, sizeof(LogRow));
+	ref->keys     = keys;
+	ref->row      = row;
+	ref->row_prev = row_prev;
+	return ref;
 }
 
 hot static inline void
@@ -178,8 +174,8 @@ log_persist(Log* self, uint64_t partition)
 {
 	auto op = log_of(self, self->count - 1);
 	// [cmd, partition, row]
-	auto key = log_row_of(self, op, NULL);
-	log_set_add(&self->log_set, op->cmd, partition, key->row);
+	auto ref = log_row_of(self, op);
+	log_set_add(&self->log_set, op->cmd, partition, ref->row);
 }
 
 static inline void

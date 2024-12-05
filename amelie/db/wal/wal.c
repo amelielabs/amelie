@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
@@ -220,7 +220,7 @@ wal_write(Wal* self, WalBatch* batch)
 		wal_swap(self);
 
 	// write wal file
-		// todo: truncate on error
+	// todo: truncate on error
 
 	// [header][rows meta][rows]
 	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);

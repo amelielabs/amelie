@@ -25,36 +25,34 @@ select * from test where id = 4
 select * from test where id = 0
 
 # test: select (select expr) from table
-explain select (select test.*) from test
-select (select test.*) from test
+select (select test.id) from test
 
 # test: select (select (select expr)) from table
-explain select (select (select (test.*))) from test
-select (select (select (test.*))) from test
+explain select (select (select (test.id))) from test
+select (select (select (test.id))) from test
 
-# test: select (select (select from expr)) from table
-explain select (select (select * from [1,2,3])) from test
-select (select (select * from [1,2,3])) from test
+explain select (select (select test.id)) from test
+select (select (select test.id)) from test
 
 # test: select (select (select from table)) from table
-explain select (select (select * from test t)) from test
+explain select (select (select id from test t)) from test
 
 # test: select (select (select from shared)) from table
 create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
-explain select (select (select * from ref)) from test
-select (select (select * from ref)) from test
-
-# test: select from table where (select from expr)
-explain select * from test where (select * from [1,2,3])
-select * from test where (select * from [1,2,3])
+explain select (select (select id from ref)) from test
+select (select (select id from ref)) from test
 
 # test: select from table where (select from table)
 explain select * from test where (select * from test t)
+explain select * from test where (select id from test t)
 
 # test: select from table where (select from shared)
-explain select * from test where (select * from ref)
-select * from test where (select * from ref)
+explain select * from test where (select id from ref)
+select * from test where (select id from ref)
+
+# test: select from table where exists (select from shared)
+select * from test where exists (select 1 from ref where test.id = ref.id)
 
 drop table ref
 drop table test

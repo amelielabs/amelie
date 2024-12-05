@@ -22,6 +22,7 @@
 #include "compiler/scan.h"
 
 // emit
+#include "compiler/cast.h"
 #include "compiler/emit_expr.h"
 #include "compiler/emit_insert.h"
 #include "compiler/emit_update.h"

@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,10 +39,9 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_load.h>
 #include <amelie_session.h>
 
-static Buf*
+static void
 ctl_show(Session* self)
 {
 	auto stmt  = compiler_stmt(&self->compiler);
@@ -100,7 +100,11 @@ ctl_show(Session* self)
 		buf = buf_create();
 		var_encode(var, buf);
 	}
-	return buf;
+	guard_buf(buf);
+
+	// write content
+	content_write_json(&self->content, &config()->format.string,
+	                   name, buf);
 }
 
 static void
@@ -177,7 +181,7 @@ ctl_set(Session* self)
 		var_string_set(var, &value->string);
 		break;
 	}
-	case VAR_DATA:
+	case VAR_JSON:
 	{
 		error("SET '%.*s': variable cannot be changed", str_size(name),
 		      str_of(name));
@@ -190,7 +194,7 @@ ctl_set(Session* self)
 		control_save_config();
 }
 
-static Buf*
+static void
 ctl_token(Session* self)
 {
 	auto user_mgr = self->share->user_mgr;
@@ -228,10 +232,14 @@ ctl_token(Session* self)
 	// generate token
 	auto jwt = jwt_create(&user->config->name, &user->config->secret, &expire);
 	guard_buf(jwt);
-
 	auto buf = buf_create();
 	encode_buf(buf, jwt);
-	return buf;
+
+	// write content
+	Str name;
+	str_set(&name, "token", 5);
+	content_write_json(&self->content, &config()->format.string,
+	                   &name, buf);
 }
 
 static void
@@ -375,18 +383,16 @@ ctl_checkpoint(Session* self)
 void
 session_execute_utility(Session* self)
 {
-	auto body = &self->client->reply.content;
-	Buf* buf  = NULL;
 	auto stmt = compiler_stmt(&self->compiler);
 	switch (stmt->id) {
 	case STMT_SHOW:
-		buf = ctl_show(self);
+		ctl_show(self);
 		break;
 	case STMT_SET:
 		ctl_set(self);
 		break;
 	case STMT_CREATE_TOKEN:
-		buf = ctl_token(self);
+		ctl_token(self);
 		break;
 	case STMT_CREATE_USER:
 	case STMT_DROP_USER:
@@ -406,15 +412,8 @@ session_execute_utility(Session* self)
 	case STMT_CHECKPOINT:
 		ctl_checkpoint(self);
 		break;
-
 	default:
 		session_execute_ddl(self);
 		break;
-	}
-
-	if (buf)
-	{
-		guard_buf(buf);
-		body_add_buf(body, buf, self->local.timezone);
 	}
 }

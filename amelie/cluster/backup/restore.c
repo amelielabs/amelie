@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -129,7 +130,7 @@ restore_start(Restore* self)
 	};
 	decode_obj(obj, "restore", &pos);
 
-	self->count_total = array_size(self->files);
+	self->count_total = json_array_size(self->files);
 
 	// create checkpoint directory
 	if (self->checkpoint > 0)
@@ -212,16 +213,16 @@ static void
 restore_copy(Restore* self)
 {
 	uint8_t* pos = self->files;
-	data_read_array(&pos);
-	while (! data_read_array_end(&pos))
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
 	{
 		// [path, size]
-		data_read_array(&pos);
+		json_read_array(&pos);
 		Str name;
-		data_read_string(&pos, &name);
+		json_read_string(&pos, &name);
 		int64_t size;
-		data_read_integer(&pos, &size);
-		data_read_array_end(&pos);
+		json_read_integer(&pos, &size);
+		json_read_array_end(&pos);
 		restore_copy_file(self, &name, size);
 	}
 }

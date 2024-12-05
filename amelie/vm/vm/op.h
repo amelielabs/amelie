@@ -21,131 +21,220 @@ enum
 	CJMP,
 	CJTR,
 	CJNTR,
-
-	// result
-	CSEND_HASH,
-	CSEND,
-	CSEND_GENERATED,
-	CSEND_FIRST,
-	CSEND_ALL,
-	CRECV,
-	CRECV_TO,
-	CRESULT,
-	CBODY,
-
-	// cte
-	CCTE_SET,
-	CCTE_GET,
-
-	// misc
-	CSLEEP,
+	CJGTED,
+	CJLTD,
+	CSWAP,
 
 	// stack
 	CPUSH,
 	CPOP,
 
-	// data
+	// consts
 	CNULL,
 	CBOOL,
 	CINT,
-	CINT_MIN,
-	CREAL,
+	CDOUBLE,
 	CSTRING,
-	CDATA,
+	CJSON,
+	CJSON_OBJ,
+	CJSON_ARRAY,
 	CINTERVAL,
 	CTIMESTAMP,
-	CSTRING_MIN,
-	CTIMESTAMP_MIN,
-	CSWAP,
 
 	// argument
 	CARG,
+	CEXCLUDED,
 
-	// expr
-	CBOR,
-	CBAND,
-	CBXOR,
-	CSHL,
-	CSHR,
-	CBINV,
+	// null operations
+	CNULLOP,
+	CIS,
 
+	// logical (any)
+	CAND,
+	COR,
 	CNOT,
-	CEQU,
-	CNEQU,
-	CGTE,
-	CGT,
-	CLTE,
-	CLT,
-	CIN,
-	CLIKE,
 
+	// bitwise operations
+	CBORII,
+	CBANDII,
+	CBXORII,
+	CBSHLII,
+	CBSHRII,
+	CBINVI,
+
+	// equ
+	CEQUII,
+	CEQUID,
+	CEQUDI,
+	CEQUDD,
+	CEQULL,
+	CEQUSS,
+	CEQUJJ,
+	CEQUVV,
+
+	// gte
+	CGTEII,
+	CGTEID,
+	CGTEDI,
+	CGTEDD,
+	CGTELL,
+	CGTESS,
+	CGTEVV,
+
+	// gt
+	CGTII,
+	CGTID,
+	CGTDI,
+	CGTDD,
+	CGTLL,
+	CGTSS,
+	CGTVV,
+
+	// lte
+	CLTEII,
+	CLTEID,
+	CLTEDI,
+	CLTEDD,
+	CLTELL,
+	CLTESS,
+	CLTEVV,
+
+	// lt
+	CLTII,
+	CLTID,
+	CLTDI,
+	CLTDD,
+	CLTLL,
+	CLTSS,
+	CLTVV,
+
+	// add
+	CADDII,
+	CADDID,
+	CADDDI,
+	CADDDD,
+	CADDTL,
+	CADDLL,
+	CADDLT,
+	CADDVV,
+
+	// sub
+	CSUBII,
+	CSUBID,
+	CSUBDI,
+	CSUBDD,
+	CSUBTL,
+	CSUBLL,
+	CSUBVV,
+
+	// mul
+	CMULII,
+	CMULID,
+	CMULDI,
+	CMULDD,
+	CMULVV,
+
+	// div
+	CDIVII,
+	CDIVID,
+	CDIVDI,
+	CDIVDD,
+
+	// mod
+	CMODII,
+
+	// neg
+	CNEGI,
+	CNEGD,
+
+	// cat
+	CCATSS,
+
+	// idx
+	CIDXJS,
+	CIDXJI,
+	CIDXVI,
+
+	// dot
+	CDOTJS,
+
+	// like
+	CLIKESS,
+
+	// set operations
+	CIN,
 	CALL,
 	CANY,
 	CEXISTS,
 
-	CADD,
-	CSUB,
-	CMUL,
-	CDIV,
-	CMOD,
-	CNEG,
-	CCAT,
-	CIDX,
-	CAT,
-
-	// object
-	COBJ,
-	CARRAY,
-
-	// column
-	CASSIGN,
-
 	// set
 	CSET,
 	CSET_ORDERED,
+	CSET_PTR,
 	CSET_SORT,
 	CSET_ADD,
+	CSET_GET,
+	CSET_RESULT,
+	CSET_AGG,
 
 	// merge
 	CMERGE,
 	CMERGE_RECV,
+	CMERGE_RECV_AGG,
 
-	// group
-	CGROUP,
-	CGROUP_ADD,
-	CGROUP_WRITE,
-	CGROUP_GET,
-	CGROUP_READ,
-	CGROUP_READ_AGGR,
-	CGROUP_MERGE_RECV,
+	// table cursor
+	CTABLE_OPEN,
+	CTABLE_PREPARE,
+	CTABLE_CLOSE,
+	CTABLE_NEXT,
+	CTABLE_READB,
+	CTABLE_READI8,
+	CTABLE_READI16,
+	CTABLE_READI32,
+	CTABLE_READI64,
+	CTABLE_READF,
+	CTABLE_READD,
+	CTABLE_READT,
+	CTABLE_READL,
+	CTABLE_READS,
+	CTABLE_READJ,
+	CTABLE_READV,
 
-	// ref
-	CREF,
-	CREF_KEY,
+	// store cursor
+	CSTORE_OPEN,
+	CSTORE_CLOSE,
+	CSTORE_NEXT,
+	CSTORE_READ,
 
-	// counters
-	CCNTR_INIT,
-	CCNTR_GTE,
-	CCNTR_LTE,
-
-	// cursor
-	CCURSOR_OPEN,
-	CCURSOR_OPEN_EXPR,
-	CCURSOR_OPEN_CTE,
-	CCURSOR_PREPARE,
-	CCURSOR_CLOSE,
-	CCURSOR_NEXT,
-	CCURSOR_READ,
-	CCURSOR_IDX,
+	// aggs
+	CAGG,
+	CCOUNT,
+	CAVGI,
+	CAVGD,
 
 	// functions
 	CCALL,
 
 	// dml
 	CINSERT,
+	CUPSERT,
 	CUPDATE,
 	CDELETE,
-	CUPSERT
+
+	// result
+	CSEND,
+	CSEND_HASH,
+	CSEND_GENERATED,
+	CSEND_FIRST,
+	CSEND_ALL,
+	CRECV,
+	CRECV_TO,
+
+	// result
+	CRESULT,
+	CCONTENT,
+	CCTE_SET,
+	CCTE_GET
 };
 
 struct OpDesc

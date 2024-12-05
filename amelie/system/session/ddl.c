@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 #include <amelie_io.h>
 #include <amelie_lib.h>
-#include <amelie_data.h>
+#include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_auth.h>
@@ -29,6 +29,7 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 #include <amelie_store.h>
+#include <amelie_content.h>
 #include <amelie_executor.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
@@ -38,7 +39,6 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 #include <amelie_frontend.h>
-#include <amelie_load.h>
 #include <amelie_session.h>
 
 static void
@@ -185,15 +185,6 @@ ddl_alter_table_set_serial(Session* self)
 }
 
 static void
-ddl_alter_table_set_aggregated(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	table_mgr_set_aggregated(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
-	                         arg->if_exists, arg->aggregated);
-}
-
-static void
 ddl_alter_table_rename(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -300,16 +291,12 @@ ddl_alter_table(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
-
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 		ddl_alter_table_rename(self, tr);
 		break;
 	case TABLE_ALTER_SET_SERIAL:
 		ddl_alter_table_set_serial(self);
-		break;
-	case TABLE_ALTER_SET_AGGREGATED:
-		ddl_alter_table_set_aggregated(self, tr);
 		break;
 	case TABLE_ALTER_COLUMN_RENAME:
 		ddl_alter_table_column_rename(self, tr);
