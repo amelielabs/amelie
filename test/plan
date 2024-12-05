@@ -89,6 +89,7 @@ test in
 test any
 test all
 test limits
+test format
 #test lambda
 
 # pushdown

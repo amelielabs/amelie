@@ -1,0 +1,83 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: default format
+show format
+
+# test: json
+set format to "json"
+select 123
+select [1,2,3]
+select {"id": 48}
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+show all
+show uuid
+
+# test: json-array
+set format to "json-array"
+select 123
+select [1,2,3]
+select {"id": 48}
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+show all
+show uuid
+
+# test: json-array-pretty
+set format to "json-array-pretty"
+select 123
+select [1,2,3]
+select {"id": 48}
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+show all
+show uuid
+
+# test: json-obj
+set format to "json-obj"
+select 123
+select 123 as id
+select [1,2,3]
+select {"id": 48} as json
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+show all
+show uuid
+
+# test: json-obj-pretty
+set format to "json-obj-pretty"
+select 123
+select 123 as id
+select [1,2,3]
+select {"id": 48} as json
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+show all
+show uuid
+
+# test: select format
+set format to "json-pretty"
+select 123
+select 123 format "json-pretty-obj"
+select 123 as id
+select 123 as id format "json-pretty-obj"
+select [1,2,3]
+select [1,2,3] format "json-pretty-obj"
+select {"id": 48} as json
+select {"id": 48} as json format "json-pretty-obj"
+select [{"id": 48}, {"id": 49}, [1,2,3]]
+select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj"
+
+# test: select format (duplicate columns)
+select 1 as id, 2 as id format "json-pretty-obj"
+select 1 as id, 2 as id format "json"
+select 1 as id, 2 as id format "json-obj"
+
+# test: returning format
+create shared table test (id int primary key)
+insert into test values (1) returning * format "json-obj"
+insert into test values (2) returning id format "json-obj-pretty"
+insert into test values (3) returning id format "json"
+select * from test
+drop table test
+
+disconnect S0
+close E0
