@@ -26,9 +26,8 @@
 #include <amelie_store.h>
 
 hot static inline bool
-value_all_array_equ(Value* a, Value* b, bool* has_null)
+value_all_array_equ(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -39,16 +38,15 @@ value_all_array_equ(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (value_compare(a, &ref) != 0)
+		if (value_compare(value, &ref) != 0)
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_array_nequ(Value* a, Value* b, bool* has_null)
+value_all_array_nequ(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -59,16 +57,15 @@ value_all_array_nequ(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (! value_compare(a, &ref))
+		if (! value_compare(value, &ref))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_array_lt(Value* a, Value* b, bool* has_null)
+value_all_array_lt(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -79,16 +76,15 @@ value_all_array_lt(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, &ref) < 0))
+		if (! (value_compare(value, &ref) < 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_array_lte(Value* a, Value* b, bool* has_null)
+value_all_array_lte(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -99,16 +95,15 @@ value_all_array_lte(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, &ref) <= 0))
+		if (! (value_compare(value, &ref) <= 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_array_gt(Value* a, Value* b, bool* has_null)
+value_all_array_gt(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -119,16 +114,15 @@ value_all_array_gt(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, &ref) > 0))
+		if (! (value_compare(value, &ref) > 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_array_gte(Value* a, Value* b, bool* has_null)
+value_all_array_gte(uint8_t* pos, Value* value, bool* has_null)
 {
-	auto pos = b->json;
 	for (json_read_array(&pos); !json_read_array_end(&pos);
 	     json_skip(&pos))
 	{
@@ -139,7 +133,7 @@ value_all_array_gte(Value* a, Value* b, bool* has_null)
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, &ref) >= 0))
+		if (! (value_compare(value, &ref) >= 0))
 			return false;
 	}
 	return true;
@@ -252,24 +246,25 @@ value_all(Value* result, Value* a, Value* b, int op)
 	} else
 	if (b->type == TYPE_JSON && json_is_array(b->json))
 	{
+		uint8_t* pos = b->json;
 		switch (op) {
 		case MATCH_EQU:
-			match = value_all_array_equ(a, b, &has_null);
+			match = value_all_array_equ(pos, a, &has_null);
 			break;
 		case MATCH_NEQU:
-			match = value_all_array_nequ(a, b, &has_null);
+			match = value_all_array_nequ(pos, a, &has_null);
 			break;
 		case MATCH_LT:
-			match = value_all_array_lt(a, b, &has_null);
+			match = value_all_array_lt(pos, a, &has_null);
 			break;
 		case MATCH_LTE:
-			match = value_all_array_lte(a, b, &has_null);
+			match = value_all_array_lte(pos, a, &has_null);
 			break;
 		case MATCH_GT:
-			match = value_all_array_gt(a, b, &has_null);
+			match = value_all_array_gt(pos, a, &has_null);
 			break;
 		case MATCH_GTE:
-			match = value_all_array_gte(a, b, &has_null);
+			match = value_all_array_gte(pos, a, &has_null);
 			break;
 		}
 	} else
