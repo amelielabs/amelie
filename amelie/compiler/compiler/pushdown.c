@@ -43,7 +43,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 
 	// create agg set
 	int rset;
-	rset = op3(self, CSET, rpin(self, TYPE_SET),
+	rset = op3(self, CSET, rpin(self, TYPE_STORE),
 	           select->expr_aggs.count,
 	           select->expr_group_by.count);
 	select->rset_agg = rset;
@@ -76,7 +76,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	int  offset = emit_select_order_by_data(self, select, &desc);
 
 	// CSET_ORDERED
-	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
+	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	                   select->ret.count,
 	                   select->expr_order_by.count,
 	                   offset);
@@ -126,7 +126,7 @@ static inline void
 pushdown_limit(Compiler* self, AstSelect* select)
 {
 	// create result set
-	select->rset = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
+	select->rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 
 	// push limit as limit = limit + offset
 	Ast* limit = NULL;
@@ -204,7 +204,7 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
 	int offset = emit_select_order_by_data(self, select, NULL);
-	int rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
+	int rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	               select->ret.count,
 	               select->expr_order_by.count,
 	               offset);
@@ -248,7 +248,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	// merge all received agg sets into one
 	//
 	// CMERGE_RECV_AGG
-	auto rset_agg = op3(self, CMERGE_RECV_AGG, rpin(self, TYPE_SET),
+	auto rset_agg = op3(self, CMERGE_RECV_AGG, rpin(self, TYPE_STORE),
 	                    self->current->order,
 	                    select->aggs);
 	select->rset_agg = rset_agg;
@@ -261,7 +261,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 		return pushdown_group_by_recv_order_by(self, select);
 
 	// create set
-	int rset = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
+	int rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 	select->rset = rset;
 	select->on_match = emit_select_on_match;
 
@@ -330,7 +330,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 	}
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_MERGE), rlimit, roffset,
+	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_STORE), rlimit, roffset,
 	                 self->current->order);
 
 	if (rlimit != -1)
@@ -357,7 +357,7 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	runpin(self, rdistinct);
 
 	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_MERGE), -1, -1,
+	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_STORE), -1, -1,
 	                 self->current->order);
 	return rmerge;
 }

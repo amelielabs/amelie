@@ -57,8 +57,7 @@ value_compare(Value* a, Value* b)
 	case TYPE_VECTOR:
 		return vector_compare(a->vector, b->vector);
 	// TYPE_AVG
-	// TYPE_SET
-	// TYPE_MERGE
+	// TYPE_STORE
 	default:
 		break;
 	}
@@ -87,8 +86,7 @@ value_is_true(Value* a)
 	case TYPE_VECTOR:
 		return a->vector->size > 0;
 	// TYPE_AVG
-	// TYPE_SET
-	// TYPE_MERGE
+	// TYPE_STORE
 	default:
 		break;
 	}

@@ -29,14 +29,18 @@ static void
 merge_free(Store* store)
 {
 	auto self = (Merge*)store;
-	auto list = (Set**)self->list.start;
-	for (int i = 0; i < self->list_count; i++)
+	list_foreach_safe(&self->list)
 	{
-		auto set = list[i];
+		auto set = list_at(Set, link);
 		store_free(&set->store);
 	}
-	buf_free(&self->list);
 	am_free(self);
+}
+
+static StoreIterator*
+merge_iterator(Store* store)
+{
+	return merge_iterator_allocate((Merge*)store);
 }
 
 Merge*
@@ -44,12 +48,13 @@ merge_create(bool distinct, int64_t limit, int64_t offset)
 {
 	Merge* self = am_malloc(sizeof(Merge));
 	store_init(&self->store);
-	self->store.free = merge_free;
-	self->list_count = 0;
-	self->limit      = limit;
-	self->offset     = offset;
-	self->distinct   = distinct;
-	buf_init(&self->list);
+	self->store.free     = merge_free;
+	self->store.iterator = merge_iterator;
+	self->list_count     = 0;
+	self->limit          = limit;
+	self->offset         = offset;
+	self->distinct       = distinct;
+	list_init(&self->list);
 	return self;
 }
 
@@ -57,6 +62,6 @@ void
 merge_add(Merge* self, Set* set)
 {
 	// all set properties must match (keys, columns and order)
-	buf_write(&self->list, &set, sizeof(Set**));
+	list_append(&self->list, &set->link);
 	self->list_count++;
 }

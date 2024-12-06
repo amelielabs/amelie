@@ -16,7 +16,7 @@ typedef struct Merge Merge;
 struct Merge
 {
 	Store   store;
-	Buf     list;
+	List    list;
 	int     list_count;
 	bool    distinct;
 	int64_t limit;

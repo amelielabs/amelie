@@ -257,7 +257,7 @@ emit_send_generated(Compiler* self, int start)
 
 	// store_open( insert->values )
 	auto target = insert->target_generated;
-	target->r = op2(self, CSET_PTR, rpin(self, TYPE_SET),
+	target->r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
 	                (intptr_t)insert->values);
 
 	// generate scan over insert rows to create new rows using the
@@ -435,7 +435,7 @@ emit_recv(Compiler* self)
 		// (first node only, single result)
 
 		// CRECV_TO (note: set or merge received)
-		r = op2(self, CRECV_TO, rpin(self, TYPE_SET), stmt->order);
+		r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
 		break;
 	}
 

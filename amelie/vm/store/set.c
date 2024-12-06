@@ -38,12 +38,19 @@ set_free(Store* store)
 	am_free(self);
 }
 
+static StoreIterator*
+set_iterator(Store* store)
+{
+	return set_iterator_allocate((Set*)store);
+}
+
 Set*
 set_create(void)
 {
 	Set* self = am_malloc(sizeof(Set));
 	store_init(&self->store);
 	self->store.free        = set_free;
+	self->store.iterator    = set_iterator;
 	self->ordered           = NULL;
 	self->count             = 0;
 	self->count_rows        = 0;
@@ -180,7 +187,6 @@ set_hash(Set* self, Value* keys)
 			break;
 		case TYPE_NULL:
 			break;
-		case TYPE_SET:
 		default:
 			error("GROUP BY: unsupported key type");
 			break;

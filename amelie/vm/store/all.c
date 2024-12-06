@@ -146,102 +146,96 @@ value_all_array_gte(Value* a, Value* b, bool* has_null)
 }
 
 hot static inline bool
-value_all_set_equ(Value* a, Value* b, bool* has_null)
+value_all_equ(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (value_compare(a, at) != 0)
+		if (value_compare(value, at) != 0)
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_set_nequ(Value* a, Value* b, bool* has_null)
+value_all_nequ(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (! value_compare(a, at))
+		if (! value_compare(value, at))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_set_lt(Value* a, Value* b, bool* has_null)
+value_all_lte(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, at) < 0))
+		if (! (value_compare(value, at) <= 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_set_lte(Value* a, Value* b, bool* has_null)
+value_all_lt(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, at) <= 0))
+		if (! (value_compare(value, at) < 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_set_gt(Value* a, Value* b, bool* has_null)
+value_all_gte(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, at) > 0))
+		if (! (value_compare(value, at) >= 0))
 			return false;
 	}
 	return true;
 }
 
 hot static inline bool
-value_all_set_gte(Value* a, Value* b, bool* has_null)
+value_all_gt(StoreIterator* it, Value* value, bool* has_null)
 {
-	auto set = (Set*)b->store;
-	for (int row = 0; row < set->count_rows ; row++)
+	Value* at;
+	for (; (at = store_iterator_at(it)); store_iterator_next(it))
 	{
-		auto at = set_column(set, row, 0);
 		if (at->type == TYPE_NULL) {
 			*has_null = true;
 			continue;
 		}
-		if (! (value_compare(a, at) >= 0))
+		if (! (value_compare(value, at) > 0))
 			return false;
 	}
 	return true;
@@ -279,30 +273,28 @@ value_all(Value* result, Value* a, Value* b, int op)
 			break;
 		}
 	} else
-	if (b->type == TYPE_SET)
+	if (b->type == TYPE_STORE)
 	{
-		auto set = (Set*)b->store;
-		if (set->count_columns > 1)
-			error("ALL: subquery must return one column");
-
+		auto it = store_iterator(b->store);
+		guard(store_iterator_close, it);
 		switch (op) {
 		case MATCH_EQU:
-			match = value_all_set_equ(a, b, &has_null);
+			match = value_all_equ(it, a, &has_null);
 			break;
 		case MATCH_NEQU:
-			match = value_all_set_nequ(a, b, &has_null);
+			match = value_all_nequ(it, a, &has_null);
 			break;
 		case MATCH_LT:
-			match = value_all_set_lt(a, b, &has_null);
+			match = value_all_lt(it, a, &has_null);
 			break;
 		case MATCH_LTE:
-			match = value_all_set_lte(a, b, &has_null);
+			match = value_all_lte(it, a, &has_null);
 			break;
 		case MATCH_GT:
-			match = value_all_set_gt(a, b, &has_null);
+			match = value_all_gt(it, a, &has_null);
 			break;
 		case MATCH_GTE:
-			match = value_all_set_gte(a, b, &has_null);
+			match = value_all_gte(it, a, &has_null);
 			break;
 		}
 	} else

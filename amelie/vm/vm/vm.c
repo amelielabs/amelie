@@ -1125,10 +1125,7 @@ cany:
 
 cexists:
 	// [result, set]
-	rc = false;
-	if (r[op->b].type == TYPE_SET)
-		rc = ((Set*)r[op->b].store)->count_rows > 0;
-	value_set_bool(&r[op->a], rc);
+	value_exists(&r[op->a], &r[op->b]);
 	value_free(&r[op->b]);
 	op_next;
 
@@ -1136,20 +1133,20 @@ cset:
 	// [set, cols, keys]
 	set = set_create();
 	set_prepare(set, op->b, op->c, NULL);
-	value_set_set(&r[op->a], &set->store);
+	value_set_store(&r[op->a], &set->store);
 	op_next;
 
 cset_ordered:
 	// [set, cols, keys, order]
 	set = set_create();
 	set_prepare(set, op->b, op->c, (bool*)code_data_at(code_data, op->d));
-	value_set_set(&r[op->a], &set->store);
+	value_set_store(&r[op->a], &set->store);
 	op_next;
 
 cset_ptr:
 	// [set, set*]
 	set = (Set*)op->b;
-	value_set_set(&r[op->a], &set->store);
+	value_set_store(&r[op->a], &set->store);
 	store_ref(&set->store);
 	op_next;
 
@@ -1336,23 +1333,14 @@ cstore_open:
 	// [cursor, store, _on_success]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->r = op->b;
-	if (r[op->b].type == TYPE_SET) {
-		cursor->type = CURSOR_SET;
-		set_iterator_open(&cursor->set_it, (Set*)r[op->b].store);
-		op = likely(set_iterator_has(&cursor->set_it)) ?
-		     code_at(self->code, op->c) :
-		     op + 1;
-	} else
-	if (r[op->b].type == TYPE_MERGE) {
-		cursor->type = CURSOR_MERGE;
-		merge_iterator_open(&cursor->merge_it, (Merge*)r[op->b].store);
-		op = likely(merge_iterator_has(&cursor->merge_it)) ?
-		     code_at(self->code, op->c) :
-		     op + 1;
-	} else {
-		abort();
-	}
+	cursor->type = CURSOR_STORE;
+	assert(r[op->b].type == TYPE_STORE);
+	cursor->it_store = store_iterator(r[op->b].store);
 	// jmp on success or skip to the next op on eof
+	if (likely(store_iterator_has(cursor->it_store)))
+		op = code_at(self->code, op->c);
+	else
+		op++;
 	op_jmp;
 
 cstore_close:
@@ -1365,43 +1353,28 @@ cstore_close:
 cstore_next:
 	// [target_id, _on_success]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	if (cursor->type == CURSOR_SET) {
-		set_iterator_next(&cursor->set_it);
-		op = likely(set_iterator_has(&cursor->set_it)) ?
-		     code_at(self->code, op->b) :
-		     op + 1;
-	} else
-	if (cursor->type == CURSOR_MERGE) {
-		merge_iterator_next(&cursor->merge_it);
-		op = likely(merge_iterator_has(&cursor->merge_it)) ?
-		     code_at(self->code, op->b) :
-		     op + 1;
-	} else {
-		abort();
-	}
+	store_iterator_next(cursor->it_store);
 	// jmp on success or skip to the next op on eof
+	if (likely(store_iterator_has(cursor->it_store)))
+		op = code_at(self->code, op->b);
+	else
+		op++;
 	op_jmp;
 
 cstore_read:
 	// [result, cursor, column]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->b);
-	if (cursor->type == CURSOR_SET)
-		value_copy(&r[op->a], &set_iterator_at(&cursor->set_it)[op->c]);
-	else
-	if (cursor->type == CURSOR_MERGE)
-		value_copy(&r[op->a], &merge_iterator_at(&cursor->merge_it)[op->c]);
-	else
-		abort();
+	value_copy(&r[op->a], &store_iterator_at(cursor->it_store)[op->c]);
 	op_next;
 
 cagg:
 	// [result, cursor, column]
-	r[op->a] = set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
+	r[op->a] = store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
 	op_next;
 
 ccount:
 	// [result, cursor, column]
-	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
+	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
 	if (likely(c->type == TYPE_INT))
 		value_set_int(&r[op->a], c->integer);
 	else
@@ -1410,7 +1383,7 @@ ccount:
 
 cavgi:
 	// [result, cursor, column]
-	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
+	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
 		value_set_int(&r[op->a], avg_int(&c->avg));
 	else
@@ -1419,7 +1392,7 @@ cavgi:
 
 cavgd:
 	// [result, cursor, column]
-	c = &set_iterator_at(&cursor_mgr_of(&self->cursor_mgr, op->b)->set_it)[op->c];
+	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
 		value_set_double(&r[op->a], avg_double(&c->avg));
 	else

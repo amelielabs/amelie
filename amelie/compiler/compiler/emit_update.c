@@ -179,7 +179,7 @@ emit_update(Compiler* self, Ast* ast)
 
 	// create returning set
 	update->rset =
-		op3(self, CSET, rpin(self, TYPE_SET),
+		op3(self, CSET, rpin(self, TYPE_STORE),
 		    update->ret.count, 0);
 
 	scan(self, update->target,

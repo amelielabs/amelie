@@ -46,7 +46,7 @@ emit_upsert(Compiler* self, Ast* ast)
 	// create returning set
 	int rset = -1;
 	if (returning_has(&insert->ret))
-		rset = op3(self, CSET, rpin(self, TYPE_SET), insert->ret.count, 0);
+		rset = op3(self, CSET, rpin(self, TYPE_STORE), insert->ret.count, 0);
 
 	// CTABLE_PREPARE
 	op2(self, CTABLE_PREPARE, target->id, (intptr_t)table);

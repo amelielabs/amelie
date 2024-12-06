@@ -43,20 +43,18 @@ value_in(Value* result, Value* value, Value* in, int count)
 			continue;
 		}
 
-		if (in[i].type == TYPE_SET)
+		if (in[i].type == TYPE_STORE)
 		{
-			auto set = (Set*)in[i].store;
-			if (set->count_columns > 1)
-				error("IN: subquery must return one column");
-			for (int row = 0; row < set->count_rows ; row++)
+			auto it = store_iterator(in[i].store);
+			guard(store_iterator_close, it);
+			Value* at;
+			for (; (at = store_iterator_at(it)); store_iterator_next(it))
 			{
-				auto at = set_column(set, row, 0);
-				if (at->type == TYPE_NULL)
-				{
+				if (at->type == TYPE_NULL) {
 					has_null = true;
 					continue;
 				}
-				if (! value_compare(at, value))
+				if (! value_compare(value, at))
 				{
 					value_set_bool(result, true);
 					return;

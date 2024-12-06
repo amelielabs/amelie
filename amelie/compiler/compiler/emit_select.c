@@ -260,7 +260,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 	}
 
 	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self, TYPE_MERGE), select->rset,
+	int rmerge = op4(self, CMERGE, rpin(self, TYPE_STORE), select->rset,
 	                 rlimit, roffset);
 
 	runpin(self, select->rset);
@@ -281,7 +281,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 {
 	// create agg set
 	int rset;
-	rset = op3(self, CSET, rpin(self, TYPE_SET),
+	rset = op3(self, CSET, rpin(self, TYPE_STORE),
 	           select->expr_aggs.count,
 	           select->expr_group_by.count);
 	select->rset_agg = rset;
@@ -332,7 +332,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	if (select->expr_order_by.count == 0)
 	{
 		// create result set
-		select->rset = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
+		select->rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 		select->on_match = emit_select_on_match;
 		rresult = select->rset;
 
@@ -343,7 +343,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	{
 		// write order by key types
 		int offset = emit_select_order_by_data(self, select, NULL);
-		select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
+		select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 		                   select->ret.count,
 		                   select->expr_order_by.count,
 		                   offset);
@@ -370,7 +370,7 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	// create ordered set
 	int offset = emit_select_order_by_data(self, select, NULL);
 
-	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_SET),
+	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	                   select->ret.count,
 	                   select->expr_order_by.count,
 	                   offset);
@@ -399,7 +399,7 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	//
 
 	// create result set
-	int rresult = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
+	int rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 	select->rset = rresult;
 
 	// create data set for nested queries
@@ -426,7 +426,7 @@ emit_select(Compiler* self, Ast* ast)
 	if (select->target == NULL)
 	{
 		// create result set
-		int rresult = op3(self, CSET, rpin(self, TYPE_SET), select->ret.count, 0);
+		int rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 		select->rset = rresult;
 
 		// push expressions

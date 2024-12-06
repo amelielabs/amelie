@@ -12,75 +12,69 @@
 //
 
 typedef struct MergeIterator MergeIterator;
+typedef struct MergeSet      MergeSet;
+
+struct MergeSet
+{
+	Set*   set;
+	Value* current;
+	int    pos;
+};
 
 struct MergeIterator
 {
-	Value*       current;
-	SetIterator* current_it;
-	Buf          list;
-	int          list_count;
-	int64_t      limit;
-	Merge*       merge;
+	StoreIterator it;
+	Value*        current;
+	MergeSet*     current_it;
+	Buf*          list;
+	int           list_count;
+	int64_t       limit;
+	Merge*        merge;
 };
 
-static inline void
-merge_iterator_init(MergeIterator* self)
+always_inline static inline MergeIterator*
+merge_iterator_of(StoreIterator* self)
 {
-	self->current    = NULL;
-	self->current_it = NULL;
-	self->list_count = 0;
-	self->limit      = INT64_MAX;
-	self->merge      = NULL;
-	buf_init(&self->list);
-}
-
-static inline void
-merge_iterator_free(MergeIterator* self)
-{
-	buf_free(&self->list);
-}
-
-static inline void
-merge_iterator_reset(MergeIterator* self)
-{
-	self->current    = NULL;
-	self->current_it = NULL;
-	self->list_count = 0;
-	self->limit      = INT64_MAX;
-	self->merge      = NULL;
-	buf_reset(&self->list);
+	return (MergeIterator*)self;
 }
 
 static inline bool
-merge_iterator_has(MergeIterator* self)
+merge_iterator_has(StoreIterator* arg)
 {
+	auto self = merge_iterator_of(arg);
 	return self->current != NULL;
 }
 
 static inline Value*
-merge_iterator_at(MergeIterator* self)
+merge_iterator_at(StoreIterator* arg)
 {
+	auto self = merge_iterator_of(arg);
 	return self->current;
 }
 
 hot static inline void
 merge_iterator_step(MergeIterator* self)
 {
-	auto list = (SetIterator*)self->list.start;
+	auto list = (MergeSet*)self->list->start;
 	if (self->current_it)
 	{
-		set_iterator_next(self->current_it);
+		auto current = self->current_it;
+		current->pos++;
+		if (likely(current->pos < current->set->count_rows))
+			current->current = set_row_of(current->set, current->pos);
+		else
+			current->current = NULL;
 		self->current_it = NULL;
 	}
 	self->current = NULL;
 
-	SetIterator* min_iterator = NULL;
-	Value*       min = NULL;
-	for (int pos = 0; pos < self->list_count; pos++)
+	MergeSet* min_iterator = NULL;
+	Value*    min = NULL;
+	for (auto pos = 0; pos < self->list_count; pos++)
 	{
 		auto current = &list[pos];
-		auto row = set_iterator_at(current);
-		if (row == NULL)
+		auto row = current->current;
+		if (! row)
 			continue;
 
 		if (min == NULL)
@@ -105,14 +99,16 @@ merge_iterator_step(MergeIterator* self)
 			break;
 		}
 	}
+
 	self->current_it = min_iterator;
 	self->current    = min;
 }
 
 hot static inline void
-merge_iterator_next(MergeIterator* self)
+merge_iterator_next(StoreIterator* arg)
 {
 	// apply limit
+	auto self = merge_iterator_of(arg);
 	if (self->limit-- <= 0)
 	{
 		self->current_it = NULL;
@@ -131,29 +127,42 @@ merge_iterator_next(MergeIterator* self)
 	for (;;)
 	{
 		merge_iterator_step(self);
-		auto at = merge_iterator_at(self);
-		if (unlikely(!at || !prev))
+		if (unlikely(!self->current || !prev))
 			break;
-		if (set_compare(self->current_it->set, prev, at) != 0)
+		if (set_compare(self->current_it->set, prev, self->current) != 0)
 			break;
 	}
 }
 
-hot static inline void
-merge_iterator_open(MergeIterator* self, Merge* merge)
+static inline void
+merge_iterator_close(StoreIterator* arg)
 {
-	self->merge = merge;
+	auto self = merge_iterator_of(arg);
+	if (self->list)
+		buf_free(self->list);
+	am_free(arg);
+}
+
+hot static inline void
+merge_iterator_open(MergeIterator* self)
+{
+	auto merge = self->merge;
 	if (! merge->list_count)
 		return;
 
 	// prepare iterators
-	buf_reserve(&self->list, sizeof(SetIterator) * merge->list_count);
-	auto it = (SetIterator*)self->list.position;
-	auto set = (Set**)merge->list.start;
-	for (int i = 0; i < merge->list_count; i++)
+	self->list = buf_create();
+	buf_reserve(self->list, sizeof(MergeSet) * merge->list_count);
+
+	auto it = (MergeSet*)self->list->start;
+	list_foreach(&merge->list)
 	{
-		set_iterator_init(it);
-		set_iterator_open(it, set[i]);
+		auto set = list_at(Set, link);
+		if (set->count == 0)
+			continue;
+		it->set     = set;
+		it->pos     = 0;
+		it->current = set_row_of(set, 0);
 		it++;
 		self->list_count++;
 	}
@@ -163,17 +172,35 @@ merge_iterator_open(MergeIterator* self, Merge* merge)
 	if (offset == 0)
 	{
 		self->limit = merge->limit;
-		merge_iterator_next(self);
+		merge_iterator_next(&self->it);
 		return;
 	}
 
-	merge_iterator_next(self);
+	merge_iterator_next(&self->it);
 
 	// apply offset
-	while (offset-- > 0 && merge_iterator_has(self))
-		merge_iterator_next(self);
+	while (offset-- > 0 && merge_iterator_has(&self->it))
+		merge_iterator_next(&self->it);
 
 	self->limit = merge->limit - 1;
 	if (self->limit < 0)
 		self->current = NULL;
+}
+
+static inline StoreIterator*
+merge_iterator_allocate(Merge* merge)
+{
+	MergeIterator* self = am_malloc(sizeof(*self));
+	self->it.has     = merge_iterator_has;
+	self->it.at      = merge_iterator_at;
+	self->it.next    = merge_iterator_next;
+	self->it.close   = merge_iterator_close;
+	self->current    = NULL;
+	self->current_it = NULL;
+	self->list       = NULL;
+	self->list_count = 0;
+	self->limit      = INT64_MAX;
+	self->merge      = merge;
+	merge_iterator_open(self);
+	return &self->it;
 }

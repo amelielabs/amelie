@@ -18,26 +18,24 @@ enum
 {
 	CURSOR_NONE,
 	CURSOR_TABLE,
-	CURSOR_SET,
-	CURSOR_MERGE,
+	CURSOR_STORE,
 	CURSOR_MAX
 };
 
 struct Cursor
 {
-	int           type;
+	int            type;
 	// table
-	Table*        table;
-	Part*         part;
-	Iterator*     it;
-	// set/merge
-	int           r;
-	SetIterator   set_it;
-	MergeIterator merge_it;
+	Table*         table;
+	Part*          part;
+	Iterator*      it;
+	// store
+	StoreIterator* it_store;
+	int            r;
 	// upsert state
-	int           ref;
-	int           ref_pos;
-	int           ref_count;
+	int            ref;
+	int            ref_pos;
+	int            ref_count;
 };
 
 struct CursorMgr
@@ -52,12 +50,11 @@ cursor_init(Cursor* self)
 	self->table     = NULL;
 	self->part      = NULL;
 	self->it        = NULL;
+	self->it_store  = NULL;
 	self->r         = 0;
 	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
-	set_iterator_init(&self->set_it);
-	merge_iterator_init(&self->merge_it);
 }
 
 static inline void
@@ -75,8 +72,11 @@ cursor_reset(Cursor* self)
 		iterator_close(self->it);
 		self->it = NULL;
 	}
-	set_iterator_init(&self->set_it);
-	merge_iterator_reset(&self->merge_it);
+	if (self->it_store)
+	{
+		store_iterator_close(self->it_store);
+		self->it_store = NULL;
+	}
 }
 
 static inline void
@@ -106,7 +106,6 @@ cursor_mgr_free(CursorMgr* self)
 	{
 		auto cursor = &self->cursor[i];
 		cursor_reset(cursor);
-		merge_iterator_free(&cursor->merge_it);
 	}
 }
 

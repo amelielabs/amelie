@@ -89,7 +89,7 @@ emit_delete(Compiler* self, Ast* ast)
 
 	// create returning set
 	delete->rset =
-		op3(self, CSET, rpin(self, TYPE_SET),
+		op3(self, CSET, rpin(self, TYPE_STORE),
 		    delete->ret.count, 0);
 
 	scan(self, delete->target,

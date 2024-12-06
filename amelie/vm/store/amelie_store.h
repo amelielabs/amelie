@@ -29,3 +29,4 @@
 #include "store/any.h"
 #include "store/all.h"
 #include "store/in.h"
+#include "store/exists.h"

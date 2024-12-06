@@ -63,8 +63,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_array_end(buf);
 		break;
 	}
-	// TYPE_SET
-	// TYPE_MERGE
+	// TYPE_STORE
 	default:
 		error("operation unsupported");
 		break;
@@ -192,8 +191,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		buf_write(buf, "]", 1);
 		break;
 	}
-	// TYPE_SET
-	// TYPE_MERGE
+	// TYPE_STORE
 	default:
 		error("operation unsupported");
 		break;

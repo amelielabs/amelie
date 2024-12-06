@@ -242,8 +242,7 @@ scan_store(Scan* self, Target* target)
 		if (target->type == TARGET_CTE)
 		{
 			auto cte = target->from_cte;
-			// todo: type might be TYPE_MERGE
-			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_SET), cte->stmt);
+			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_STORE), cte->stmt);
 		} else {
 			assert(false);
 		}

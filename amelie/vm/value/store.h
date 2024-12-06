@@ -12,12 +12,12 @@
 //
 
 typedef struct Store Store;
-typedef struct Value Value;
 
 struct Store
 {
-	void       (*free)(Store*);
-	atomic_u32 refs;
+	atomic_u32       refs;
+	StoreIterator* (*iterator)(Store*);
+	void           (*free)(Store*);
 };
 
 static inline void
@@ -41,4 +41,10 @@ static inline void
 store_ref(Store* self)
 {
 	atomic_u32_inc(&self->refs);
+}
+
+static inline StoreIterator*
+store_iterator(Store* self)
+{
+	return self->iterator(self);
 }

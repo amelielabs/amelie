@@ -406,6 +406,8 @@ import_run(Import* self, int argc, char** argv)
 	if (argc == 0)
 		error("table name expected");
 	auto path = import_path_create(self, argv[0]);
+	if (! path)
+		error("failed to read table name");
 	guard_buf(path);
 	buf_str(path, &self->path);
 	argc--;

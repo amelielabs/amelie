@@ -97,81 +97,6 @@ content_json_row_obj(Content* self, Columns* columns, Value* row)
 	buf_write(buf, "}", 1);
 }
 
-static inline void
-content_json_set(Content* self, Columns* columns, Set* set)
-{
-	assert(set->count_columns == columns->list_count);
-
-	// {}, ...
-	auto buf = self->content;
-	if (self->fmt.opt_obj)
-	{
-		for (auto row = 0; row < set->count_rows; row++)
-		{
-			if (row > 0)
-				buf_write(buf, ", ", 2);
-			content_json_row_obj(self, columns, set_row_of(set, row));
-		}
-		return;
-	}
-
-	// [], ...
-	for (auto row = 0; row < set->count_rows; row++)
-	{
-		if (row > 0)
-			buf_write(buf, ", ", 2);
-		content_json_row_array(self, columns, set_row_of(set, row));
-	}
-}
-
-static inline void
-content_json_merge(Content* self, Columns* columns, Merge* merge)
-{
-	MergeIterator it;
-	merge_iterator_init(&it);
-	guard(merge_iterator_free, &it);
-
-	// {}, ..
-	auto buf = self->content;
-	if (self->fmt.opt_obj)
-	{
-		auto first = true;
-		for (merge_iterator_open(&it, merge); merge_iterator_has(&it);
-		     merge_iterator_next(&it))
-		{
-			auto row = merge_iterator_at(&it);
-			if (! first)
-				buf_write(buf, ", ", 2);
-			else
-				first = false;
-			content_json_row_obj(self, columns, row);
-		}
-		return;
-	}
-
-	// [], ...
-	auto first = true;
-	for (merge_iterator_open(&it, merge); merge_iterator_has(&it);
-	     merge_iterator_next(&it))
-	{
-		auto row = merge_iterator_at(&it);
-		if (! first)
-			buf_write(buf, ", ", 2);
-		else
-			first = false;
-		content_json_row_array(self, columns, row);
-	}
-}
-
-static inline void
-content_json_value(Content* self, Columns* columns, Value* value)
-{
-	if (self->fmt.opt_obj)
-		content_json_row_obj(self, columns, value);
-	else
-		content_json_row_array(self, columns, value);
-}
-
 void
 content_json(Content* self, Columns* columns, Value* value)
 {
@@ -180,16 +105,36 @@ content_json(Content* self, Columns* columns, Value* value)
 	buf_write(buf, "[", 1);
 
 	// row, ...
-	if (value->type == TYPE_SET)
-		content_json_set(self, columns, (Set*)value->store);
-	else
-	if (value->type == TYPE_MERGE)
-		content_json_merge(self, columns, (Merge*)value->store);
-	else
+	if (value->type == TYPE_STORE)
+	{
+		auto it = store_iterator(value->store);
+		guard(store_iterator_close, it);
+
+		auto first = true;
+		Value* row;
+		while ((row = store_iterator_at(it)))
+		{
+			if (! first)
+				buf_write(buf, ", ", 2);
+			else
+				first = false;
+			if (self->fmt.opt_obj)
+				content_json_row_obj(self, columns, row);
+			else
+				content_json_row_array(self, columns, row);
+			store_iterator_next(it);
+		}
+
+	} else
 	if (value->type == TYPE_JSON)
-		content_json_value(self, columns, value);
-	else
+	{
+		if (self->fmt.opt_obj)
+			content_json_row_obj(self, columns, value);
+		else
+			content_json_row_array(self, columns, value);
+	} else {
 		error("operation unsupported");
+	}
 
 	// ]
 	buf_write(buf, "]", 1);

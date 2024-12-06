@@ -310,7 +310,7 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 		target = target->redirect;
 
 	assert(target->r != -1);
-	assert(rtype(self, target->r) == TYPE_SET);
+	assert(rtype(self, target->r) == TYPE_STORE);
 
 	// read aggregate value based on the function and type
 	int  agg_op;
@@ -641,9 +641,14 @@ emit_in(Compiler* self, Target* target, Ast* ast)
 	{
 		int r;
 		if (current->id == KSELECT)
+		{
+			auto select = ast_select_of(current);
+			if (select->ret.columns.list_count > 1)
+				error("IN: subquery must return one column");
 			r = emit_select(self, current);
-		else
+		} else {
 			r = emit_expr(self, target, current);
+		}
 		op1(self, CPUSH, r);
 		runpin(self, r);
 		current = current->next;
@@ -672,9 +677,14 @@ emit_match(Compiler* self, Target* target, Ast* ast)
 	int a = emit_expr(self, target, ast->l);
 	int b;
 	if (ast->r->r->id == KSELECT)
+	{
+		auto select = ast_select_of(ast->r->r);
+		if (select->ret.columns.list_count > 1)
+			error("ANY/ALL: subquery must return one column");
 		b = emit_select(self, ast->r->r);
-	else
+	} else {
 		b = emit_expr(self, target, ast->r->r);
+	}
 	int op;
 	switch (ast->r->id) {
 	case '=':   op = MATCH_EQU;

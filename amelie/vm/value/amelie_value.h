@@ -11,8 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// value
+// store
+#include "value/store_iterator.h"
 #include "value/store.h"
+
+// value
 #include "value/value.h"
 
 // value objects

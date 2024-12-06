@@ -23,8 +23,7 @@ typedef enum
 	TYPE_INTERVAL,
 	TYPE_VECTOR,
 	TYPE_AVG,
-	TYPE_SET,
-	TYPE_MERGE,
+	TYPE_STORE,
 	TYPE_MAX
 } Type;
 
@@ -63,11 +62,8 @@ type_of(Type type)
 	case TYPE_AVG:
 		name = "avg";
 		break;
-	case TYPE_SET:
-		name = "set";
-		break;
-	case TYPE_MERGE:
-		name = "merge";
+	case TYPE_STORE:
+		name = "store";
 		break;
 	case TYPE_MAX:
 		abort();

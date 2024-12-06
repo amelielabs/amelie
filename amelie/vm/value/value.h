@@ -45,8 +45,7 @@ value_free(Value* self)
 	if (self->type == TYPE_NULL)
 		return;
 
-	if (unlikely(self->type == TYPE_SET ||
-	             self->type == TYPE_MERGE))
+	if (unlikely(self->type == TYPE_STORE))
 		store_free(self->store);
 
 	if (unlikely(self->buf))
@@ -159,16 +158,9 @@ value_set_vector_buf(Value* self, Buf* buf)
 }
 
 always_inline hot static inline void
-value_set_set(Value* self, Store* store)
+value_set_store(Value* self, Store* store)
 {
-	self->type  = TYPE_SET;
-	self->store = store;
-}
-
-always_inline hot static inline void
-value_set_merge(Value* self, Store* store)
-{
-	self->type  = TYPE_MERGE;
+	self->type  = TYPE_STORE;
 	self->store = store;
 }
 
@@ -212,12 +204,8 @@ value_copy(Value* self, Value* src)
 	case TYPE_AVG:
 		value_set_avg(self, &src->avg);
 		break;
-	case TYPE_SET:
-		value_set_set(self, src->store);
-		store_ref(src->store);
-		break;
-	case TYPE_MERGE:
-		value_set_merge(self, src->store);
+	case TYPE_STORE:
+		value_set_store(self, src->store);
 		store_ref(src->store);
 		break;
 	default:

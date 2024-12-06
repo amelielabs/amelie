@@ -235,7 +235,7 @@ cmerge(Vm* self, Op* op)
 
 	// create merge object
 	auto merge = merge_create(distinct, limit, offset);
-	value_set_merge(reg_at(&self->r, op->a), &merge->store);
+	value_set_store(reg_at(&self->r, op->a), &merge->store);
 
 	// add set
 	auto value = reg_at(&self->r, op->b);
@@ -276,7 +276,7 @@ cmerge_recv(Vm* self, Op* op)
 
 	// create merge object
 	auto merge = merge_create(distinct, limit, offset);
-	value_set_merge(reg_at(&self->r, op->a), &merge->store);
+	value_set_store(reg_at(&self->r, op->a), &merge->store);
 
 	// add requests results to the merge
 	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
@@ -284,7 +284,7 @@ cmerge_recv(Vm* self, Op* op)
 	{
 		auto req = list_at(Req, link);
 		auto value = &req->result;
-		if (value->type == TYPE_SET)
+		if (value->type == TYPE_STORE)
 		{
 			merge_add(merge, (Set*)value->store);
 			value_reset(value);
@@ -309,7 +309,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 	{
 		auto req = list_at(Req, link);
 		auto value = &req->result;
-		assert(value->type == TYPE_SET);
+		assert(value->type == TYPE_STORE);
 		list[pos++] = value;
 	}
 
@@ -319,7 +319,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 
 	// return merged set
 	auto value = list[0];
-	value_set_set(reg_at(&self->r, op->a), value->store);
+	value_set_store(reg_at(&self->r, op->a), value->store);
 	value_reset(value);
 }
 
