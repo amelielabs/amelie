@@ -16,22 +16,21 @@ typedef struct Value         Value;
 
 struct StoreIterator
 {
-	bool   (*has)(StoreIterator*);
-	Value* (*at)(StoreIterator*);
-	void   (*next)(StoreIterator*);
-	void   (*close)(StoreIterator*);
+	Value* current;
+	void (*next)(StoreIterator*);
+	void (*close)(StoreIterator*);
 };
 
 always_inline static inline bool
 store_iterator_has(StoreIterator* self)
 {
-	return self->has(self);
+	return self->current != NULL;
 }
 
 always_inline static inline Value*
 store_iterator_at(StoreIterator* self)
 {
-	return self->at(self);
+	return self->current;
 }
 
 always_inline static inline void

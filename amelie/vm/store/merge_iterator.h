@@ -24,7 +24,6 @@ struct MergeSet
 struct MergeIterator
 {
 	StoreIterator it;
-	Value*        current;
 	MergeSet*     current_it;
 	Buf*          list;
 	int           list_count;
@@ -38,21 +37,7 @@ merge_iterator_of(StoreIterator* self)
 	return (MergeIterator*)self;
 }
 
-static inline bool
-merge_iterator_has(StoreIterator* arg)
-{
-	auto self = merge_iterator_of(arg);
-	return self->current != NULL;
-}
-
-static inline Value*
-merge_iterator_at(StoreIterator* arg)
-{
-	auto self = merge_iterator_of(arg);
-	return self->current;
-}
-
-hot static inline void
+hot static inline Value*
 merge_iterator_step(MergeIterator* self)
 {
 	auto list = (MergeSet*)self->list->start;
@@ -66,7 +51,6 @@ merge_iterator_step(MergeIterator* self)
 			current->current = NULL;
 		self->current_it = NULL;
 	}
-	self->current = NULL;
 
 	MergeSet* min_iterator = NULL;
 	Value*    min = NULL;
@@ -101,7 +85,7 @@ merge_iterator_step(MergeIterator* self)
 	}
 
 	self->current_it = min_iterator;
-	self->current    = min;
+	return min;
 }
 
 hot static inline void
@@ -112,24 +96,25 @@ merge_iterator_next(StoreIterator* arg)
 	if (self->limit-- <= 0)
 	{
 		self->current_it = NULL;
-		self->current    = NULL;
+		arg->current = NULL;
 		return;
 	}
 
+	// unordered iteration
 	if (! self->merge->distinct)
 	{
-		merge_iterator_step(self);
+		arg->current = merge_iterator_step(self);
 		return;
 	}
 
-	// skip duplicates
-	auto prev = self->current;
+	// distinct (skip duplicates)
+	auto prev = arg->current;
 	for (;;)
 	{
-		merge_iterator_step(self);
-		if (unlikely(!self->current || !prev))
+		arg->current = merge_iterator_step(self);
+		if (unlikely(!arg->current || !prev))
 			break;
-		if (set_compare(self->current_it->set, prev, self->current) != 0)
+		if (set_compare(self->current_it->set, prev, arg->current) != 0)
 			break;
 	}
 }
@@ -179,23 +164,21 @@ merge_iterator_open(MergeIterator* self)
 	merge_iterator_next(&self->it);
 
 	// apply offset
-	while (offset-- > 0 && merge_iterator_has(&self->it))
+	while (offset-- > 0 && self->it.current)
 		merge_iterator_next(&self->it);
 
 	self->limit = merge->limit - 1;
 	if (self->limit < 0)
-		self->current = NULL;
+		self->it.current = NULL;
 }
 
 static inline StoreIterator*
 merge_iterator_allocate(Merge* merge)
 {
 	MergeIterator* self = am_malloc(sizeof(*self));
-	self->it.has     = merge_iterator_has;
-	self->it.at      = merge_iterator_at;
 	self->it.next    = merge_iterator_next;
 	self->it.close   = merge_iterator_close;
-	self->current    = NULL;
+	self->it.current = NULL;
 	self->current_it = NULL;
 	self->list       = NULL;
 	self->list_count = 0;
