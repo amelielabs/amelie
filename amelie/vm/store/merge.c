@@ -47,7 +47,7 @@ Merge*
 merge_create(bool distinct, int64_t limit, int64_t offset)
 {
 	Merge* self = am_malloc(sizeof(Merge));
-	store_init(&self->store);
+	store_init(&self->store, STORE_MERGE);
 	self->store.free     = merge_free;
 	self->store.iterator = merge_iterator;
 	self->list_count     = 0;

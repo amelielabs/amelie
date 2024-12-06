@@ -48,7 +48,7 @@ Set*
 set_create(void)
 {
 	Set* self = am_malloc(sizeof(Set));
-	store_init(&self->store);
+	store_init(&self->store, STORE_SET);
 	self->store.free        = set_free;
 	self->store.iterator    = set_iterator;
 	self->ordered           = NULL;

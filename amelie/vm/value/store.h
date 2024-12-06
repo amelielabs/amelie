@@ -13,17 +13,27 @@
 
 typedef struct Store Store;
 
+enum
+{
+	STORE_SET,
+	STORE_MERGE
+};
+
 struct Store
 {
-	atomic_u32       refs;
+	atomic_u32      refs;
+	int             type;
 	StoreIterator* (*iterator)(Store*);
 	void           (*free)(Store*);
 };
 
 static inline void
-store_init(Store* self)
+store_init(Store* self, int type)
 {
-	memset(self, 0, sizeof(*self));
+	self->refs     = 0;
+	self->type     = type;
+	self->iterator = NULL;
+	self->free     = NULL;
 }
 
 static inline void
