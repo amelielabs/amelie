@@ -153,6 +153,22 @@ select * from test order by id desc offset 3
 select * from test order by id desc offset 4
 select * from test order by id desc offset 0
 select * from test order by id desc offset -1
+
+# test: select from order by int
+select id from test order by 0
+select id from test order by 1
+select id from test order by 2
+
+# test: select from order by alias
+select id from test order by id
+select id as c from test order by c
+select (id + id) as c from test order by c
+select (id + id) as c from test order by c desc
+
+# test: select from order by alias (conflict)
+select id, id from test order by id
+select id, 123 as id from test order by id
+
 drop table test
 
 disconnect S0

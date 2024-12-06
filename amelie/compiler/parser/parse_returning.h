@@ -44,5 +44,20 @@ returning_has(Returning* self)
 	return self->list != NULL;
 }
 
+static inline Ast*
+returning_find(Returning* self, int order)
+{
+	// find column starting from 1
+	auto pos = 1;
+	auto as = self->list;
+	while (as) {
+		if (pos == order)
+			return as;
+		as = as->next;
+		pos++;
+	}
+	return NULL;
+}
+
 void parse_returning(Returning*, Stmt*, Expr*);
 void parse_returning_resolve(Returning*, Stmt*, Target*);

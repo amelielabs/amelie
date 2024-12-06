@@ -32,7 +32,9 @@ ast_agg_of(Ast* ast)
 }
 
 static inline AstAgg*
-ast_agg_allocate(Ast* function, int order, Ast* expr, Ast* expr_init)
+ast_agg_allocate(Ast* function, int order,
+                 Ast* expr,
+                 Ast* expr_init)
 {
 	AstAgg* self;
 	self = ast_allocate(KAGGR, sizeof(AstAgg));

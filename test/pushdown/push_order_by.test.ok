@@ -909,6 +909,27 @@ select * from test order by id desc offset 0
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 select * from test order by id desc offset -1
 {"msg": "OFFSET: positive integer value expected"}
+# test: select from order by int
+select id from test order by 0
+{"msg": "ORDER BY: column 0 is not in the SELECT expr list"}
+select id from test order by 1
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+select id from test order by 2
+{"msg": "ORDER BY: column 2 is not in the SELECT expr list"}
+# test: select from order by alias
+select id from test order by id
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+select id as c from test order by c
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+select (id + id) as c from test order by c
+[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
+select (id + id) as c from test order by c desc
+[38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0]
+# test: select from order by alias (conflict)
+select id, id from test order by id
+[[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11], [12, 12], [13, 13], [14, 14], [15, 15], [16, 16], [17, 17], [18, 18], [19, 19]]
+select id, 123 as id from test order by id
+[[0, 123], [1, 123], [2, 123], [3, 123], [4, 123], [5, 123], [6, 123], [7, 123], [8, 123], [9, 123], [10, 123], [11, 123], [12, 123], [13, 123], [14, 123], [15, 123], [16, 123], [17, 123], [18, 123], [19, 123]]
 drop table test
 disconnect S0
 close E0

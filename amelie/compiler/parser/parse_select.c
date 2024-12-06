@@ -61,6 +61,8 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 	// ORDER BY expr, ...
 	Expr ctx;
 	expr_init(&ctx);
+	ctx.aggs = &select->expr_aggs;
+
 	auto list = &select->expr_order_by;
 	for (;;)
 	{
@@ -128,6 +130,7 @@ hot AstSelect*
 parse_select(Stmt* self)
 {
 	// SELECT [DISTINCT] expr, ...
+	// [FORMAT name]
 	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
@@ -205,8 +208,7 @@ parse_select(Stmt* self)
 		auto list = &select->expr_group_by;
 		if (! list->count)
 		{
-			auto expr = ast(KINT);
-			expr->integer = 0;
+			auto expr = ast(KTRUE);
 			auto group = ast_group_allocate(list->count, expr);
 			ast_list_add(list, &group->ast);
 			select->expr_group_by_has = false;
@@ -274,7 +276,6 @@ parse_select_resolve_group_by(AstSelect* select)
 	{
 		auto group = ast_group_of(node->ast);
 
-		// find column in the target
 		Str name;
 		if (group->expr->id == KNAME)
 		{
@@ -316,6 +317,45 @@ parse_select_resolve_group_by(AstSelect* select)
 	}
 }
 
+static void
+parse_select_resolve_order_by(AstSelect* select)
+{
+	auto node = select->expr_order_by.list;
+	while (node)
+	{
+		auto order = ast_order_of(node->ast);
+
+		if (order->expr->id == KINT)
+		{
+			// SELECT expr, ... ORDER BY int
+
+			// find column in the select returning set (order starts from 1)
+			auto pos = order->expr->integer;
+			auto expr = returning_find(&select->ret, pos);
+			if (! expr)
+				error("ORDER BY: column %d is not in the SELECT expr list", pos);
+			// replace order by <int> to the select expression
+			order->expr = expr->l;
+		} else
+		if (order->expr->id == KNAME)
+		{
+			// find column alias in select returning set
+			auto ref      = &order->expr->string;
+			bool conflict = false;
+			auto column   = columns_find_noconflict(&select->ret.columns, ref, &conflict);
+			if (column)
+			{
+				// replace order by <name> to the select expression
+				auto expr = returning_find(&select->ret, column->order + 1);
+				assert(expr);
+				order->expr = expr->l;
+			}
+		}
+
+		node = node->next;
+	}
+}
+
 void
 parse_select_resolve(Stmt* self)
 {
@@ -338,8 +378,12 @@ parse_select_resolve(Stmt* self)
 			}
 		}
 
-		// create group by keys
+		// create group by columns and resolve GROUP BY alias/int cases
 		if (select->target_group)
 			parse_select_resolve_group_by(select);
+
+		// resolve ORDER BY alias/int cases
+		if (select->expr_order_by.count > 0)
+			parse_select_resolve_order_by(select);
 	}
 }

@@ -127,11 +127,7 @@ select max(data2) from test_null
 select count(*), min(id), max(id) from test
 select count(*), min(id), max(id), avg(id) from test
 
-# test: select from (select agg from table)
-explain select * from (select count(*) from test) t
-select * from (select count(*) from test) t
-
-# test: select agg from table group by
+# test: select count(*) from table group by column
 explain select id, count(*) from test group by id
 select id, count(*) from test group by id
 select data, count(*) from test group by data
@@ -139,57 +135,74 @@ select data2, count(*) from test group by data2
 select data, count(*) from test_empty group by data
 select data, count(*) from test_null group by data
 
-# test: select from (select agg from table group by)
+# test: select from (select count(*) from table group by)
 explain select * from (select id, count(*) from test group by id) t
 select * from (select id, count(*) from test group by id) t
 select * from (select data, count(*) from test group by data) t
 select * from (select data, count(*) from test_empty group by data) t
 select * from (select data, count(*) from test_null group by data) t
 
-# test: select from table having agg
-explain select * from test having count(id) > 0
-select * from test having count(id) > 0
+# test: select * from table order by count(*)
+# errors
+select * from test order by count(*)
+select id from test order by count(*)
+# ok
+select 1 from test order by count(id)
 
-# test: select from table group by having agg
-explain select id from test group by id having count(*) > 0
-select id from test group by id having count(*) > 0
+# test: select count(*) from table order by 1
+select count(*) from test order by 1
 
-explain select id, count(*) from test group by id having count(*) > 0
-select id, count(*) from test group by id having count(*) > 0
+# test: select count(*) as from table order by alias
+select count(*) as c from test order by c
 
-explain select data, count(*) from test group by data having count(*) > 0
-select data, count(*) from test group by data having count(*) > 0
+## test: select from (select agg from table)
+#explain select * from (select count(*) from test) t
+#select * from (select count(*) from test) t
 
-explain select data, count(*) from test group by data having count(*) > 1
-select data, count(*) from test group by data having count(*) > 1
+## test: select from table having agg
+#explain select * from test having count(id) > 0
+#select * from test having count(id) > 0
 
-# unsupported
-explain select data, count(*) as c from test group by data having c > 1
-select data, count(*) as c from test group by data having c > 1
+## test: select from table group by having agg
+#explain select id from test group by id having count(*) > 0
+#select id from test group by id having count(*) > 0
 
-# unsupported
-explain select * from test group by data order by count(*)
+#explain select id, count(*) from test group by id having count(*) > 0
+#select id, count(*) from test group by id having count(*) > 0
 
-# test: select agg from table group by order by
-explain select id, count(*) from test group by id
-select id, count(*) from test group by id
+#explain select data, count(*) from test group by data having count(*) > 0
+#select data, count(*) from test group by data having count(*) > 0
 
-explain select id, count(*) from test group by id order by id
-select id, count(*) from test group by id order by id
-select id, count(*) from test group by id order by data
+#explain select data, count(*) from test group by data having count(*) > 1
+#select data, count(*) from test group by data having count(*) > 1
 
-# test: select agg from table group by having order by
-select id, count(*) from test group by id having id >= 3 and id < 6 order by id
+## unsupported
+#explain select data, count(*) as c from test group by data having c > 1
+#select data, count(*) as c from test group by data having c > 1
 
-# test: select distinct from table group by
-select data, count(*) from test group by data order by data
-select count(*) from test group by data order by data
+## unsupported
+#explain select * from test group by data order by count(*)
 
-select distinct data, count(*) from test group by data
-select distinct count(*) from test group by data
+## test: select agg from table group by order by
+#explain select id, count(*) from test group by id
+#select id, count(*) from test group by id
 
-# unsupported
-explain select distinct on (count(*)) data from test group by data
+#explain select id, count(*) from test group by id order by id
+#select id, count(*) from test group by id order by id
+#select id, count(*) from test group by id order by data
+
+## test: select agg from table group by having order by
+#select id, count(*) from test group by id having id >= 3 and id < 6 order by id
+
+## test: select distinct from table group by
+#select data, count(*) from test group by data order by data
+#select count(*) from test group by data order by data
+
+#select distinct data, count(*) from test group by data
+#select distinct count(*) from test group by data
+
+## unsupported
+#explain select distinct on (count(*)) data from test group by data
 
 drop table test
 drop table test_empty

@@ -380,7 +380,7 @@ parse_insert(Stmt* self)
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
 	// [ON CONFLICT DO NOTHING | UPDATE | AGGREGATE]
-	// [RETURNING expr]
+	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
 
