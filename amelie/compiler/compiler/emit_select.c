@@ -36,7 +36,7 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 
-int
+static inline void
 emit_select_expr(Compiler* self, AstSelect* select)
 {
 	// push expr and prepare returning columns
@@ -50,7 +50,6 @@ emit_select_expr(Compiler* self, AstSelect* select)
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 	}
-	return select->rset;
 }
 
 void
