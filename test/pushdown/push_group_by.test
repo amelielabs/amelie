@@ -273,5 +273,41 @@ explain select count(*) from (select count(*) from test group by id) t
 select count(*) from (select count(*) from test group by id) t
 drop table test
 
+# test: select from table group by 1
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+select * from test
+select id from test group by id
+select data from test group by id
+select data from test group by data
+
+select id from test group by 1
+select data from test group by 1
+
+# test: select from table group by 1 (expr)
+select data + 25 from test group by 1
+
+select abs(-id + data) from test
+select abs(-id + data) from test group by 1
+
+# test: select from table group by 1 (agg)
+select count(id) from test group by 1
+
+# test: select from table group by alias
+select id as x, count(*) from test group by x
+select data as x, count(*) from test group by x
+
+# test: select from table group by alias (expr)
+select abs(-id + data) as x, count(*) from test group by x
+
+# test: select from table group by alias (agg)
+select count(*) as x, abs(-id + data) from test group by x
+
+drop table test
+
 disconnect S0
 close E0

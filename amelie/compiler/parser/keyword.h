@@ -165,6 +165,7 @@ enum
 	KMIN,
 	KMAX,
 	KAGGR,
+	KAGGRKEY,
 
 	KDELETE,
 	KFROM,

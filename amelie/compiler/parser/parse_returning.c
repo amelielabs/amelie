@@ -56,8 +56,13 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		default:
 			stmt_push(stmt, expr);
 			if (ctx)
+			{
 				ctx->as = as;
-			expr = parse_expr(stmt, ctx);
+				expr = parse_expr(stmt, ctx);
+				ctx->as = NULL;
+			} else {
+				expr = parse_expr(stmt, ctx);
+			}
 			break;
 		}
 

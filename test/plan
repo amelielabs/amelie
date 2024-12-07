@@ -107,6 +107,7 @@ test push_distinct
 test push_group_by
 test push_group_by_shared
 test push_agg
+test push_agg_shared
 test push_join
 test push_cte
 

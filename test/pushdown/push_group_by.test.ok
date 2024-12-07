@@ -2299,5 +2299,46 @@ explain select count(*) from (select count(*) from test group by id) t
 select count(*) from (select count(*) from test group by id) t
 [10000]
 drop table test
+# test: select from table group by 1
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 0)
+insert into test values (2, 1)
+insert into test values (3, 1)
+insert into test values (4, 2)
+select * from test
+[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]]
+select id from test group by id
+[0, 1, 2, 3, 4]
+select data from test group by id
+{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+select data from test group by data
+[0, 1, 2]
+select id from test group by 1
+[0, 1, 2, 3, 4]
+select data from test group by 1
+[0, 1, 2]
+# test: select from table group by 1 (expr)
+select data + 25 from test group by 1
+[25, 26, 27]
+select abs(-id + data) from test
+[0, 1, 1, 2, 2]
+select abs(-id + data) from test group by 1
+[0, 1, 2]
+# test: select from table group by 1 (agg)
+select count(id) from test group by 1
+{"msg": "GROUP BY: aggregate functions are not allowed"}
+# test: select from table group by alias
+select id as x, count(*) from test group by x
+[[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
+select data as x, count(*) from test group by x
+[[0, 2], [1, 2], [2, 1]]
+# test: select from table group by alias (expr)
+select abs(-id + data) as x, count(*) from test group by x
+[[0, 1], [1, 2], [2, 2]]
+# test: select from table group by alias (agg)
+select count(*) as x, abs(-id + data) from test group by x
+{"msg": "GROUP BY: aggregate functions are not allowed"}
+drop table test
 disconnect S0
 close E0

@@ -31,7 +31,7 @@ static inline AstGroup*
 ast_group_allocate(int order, Ast* expr)
 {
 	AstGroup* self;
-	self = ast_allocate(0, sizeof(AstGroup));
+	self = ast_allocate(KAGGRKEY, sizeof(AstGroup));
 	self->order  = order;
 	self->expr   = expr;
 	self->column = NULL;

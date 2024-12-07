@@ -343,6 +343,25 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 }
 
 hot static inline int
+emit_aggregate_key(Compiler* self, Target* target, Ast* ast)
+{
+	// SELECT GROUP BY 1
+	// SELECT GROUP BY alias
+
+	// called during group by result set scan
+	assert(target->r != -1);
+	assert(rtype(self, target->r) == TYPE_STORE);
+
+	// group by expr
+	auto column = ast_group_of(ast)->column;
+	assert(column->type != -1);
+
+	/*// read aggregate key value*/
+	return op3(self, CSTORE_READ, rpin(self, column->type), target->id,
+	           column->order);
+}
+
+hot static inline int
 emit_operator(Compiler* self, Target* target, Ast* ast, int op)
 {
 	int l = emit_expr(self, target, ast->l);
@@ -785,6 +804,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	// aggregate
 	case KAGGR:
 		return emit_aggregate(self, target, ast);
+	case KAGGRKEY:
+		return emit_aggregate_key(self, target, ast);
 
 	// operators
 	case KNEQU:

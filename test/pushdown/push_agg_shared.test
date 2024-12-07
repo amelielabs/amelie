@@ -4,12 +4,12 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 
 # test: select count(*) from table empty
-create table test_empty (id int primary key, data int, data2 double)
+create shared table test_empty (id int primary key, data int, data2 double)
 
-create table test_null (id int primary key, data int, data2 double)
+create shared table test_null (id int primary key, data int, data2 double)
 insert into test_null values (0, null, null)
 
-create table test (id int primary key, data int, data2 double)
+create shared table test (id int primary key, data int, data2 double)
 insert into test values (0, 0, 0.0)
 insert into test values (1, 0, 0.0)
 insert into test values (2, 1, 1.0)

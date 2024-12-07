@@ -318,6 +318,51 @@ parse_select_resolve_group_by(AstSelect* select)
 }
 
 static void
+parse_select_resolve_group_by_alias(AstSelect* select)
+{
+	auto node = select->expr_group_by.list;
+	for (; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+
+		// find column select returning column order (order starts from 1)
+		auto order = -1;
+		if (group->expr->id == KINT)
+		{
+			// SELECT expr, ... GROUP BY 1
+			order = group->expr->integer;
+		} else
+		if (group->expr->id == KNAME)
+		{
+			// SELECT expr as, ... GROUP BY alias
+			auto name = &group->expr->string;
+			bool conflict = false;
+			auto column = columns_find_noconflict(&select->ret.columns, name, &conflict);
+			if (column)
+				order = column->order + 1;
+		}
+		if (order == -1)
+			continue;
+
+		// get the select returning column
+		auto as = returning_find(&select->ret, order);
+		if (! as)
+			error("GROUP BY: column %d is not in the SELECT expr list", order);
+
+		// ensure expression does not involve aggregates
+		for (auto node = select->expr_aggs.list; node; node = node->next)
+			if (ast_agg_of(node->ast)->as == as)
+				error("GROUP BY: aggregate functions are not allowed");
+
+		// use the returning expression as a group by key
+		group->expr = as->l;
+
+		// replace the returning expression with a reference to the group by key
+		as->l = &group->ast;
+	}
+}
+
+static void
 parse_select_resolve_order_by(AstSelect* select)
 {
 	auto node = select->expr_order_by.list;
@@ -378,9 +423,12 @@ parse_select_resolve(Stmt* self)
 			}
 		}
 
-		// create group by columns and resolve GROUP BY alias/int cases
+		// resolve GROUP BY alias/int cases and create columns
 		if (select->target_group)
+		{
+			parse_select_resolve_group_by_alias(select);
 			parse_select_resolve_group_by(select);
+		}
 
 		// resolve ORDER BY alias/int cases
 		if (select->expr_order_by.count > 0)
