@@ -209,7 +209,6 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 	               select->expr_order_by.count,
 	               offset);
 	select->rset = rset;
-	select->on_match = emit_select_on_match;
 
 	// scan over agg set
 	//
@@ -263,7 +262,6 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	// create set
 	int rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 	select->rset = rset;
-	select->on_match = emit_select_on_match;
 
 	// scan over agg set
 	//

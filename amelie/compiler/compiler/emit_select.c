@@ -202,13 +202,10 @@ emit_select_on_match_group(Compiler* self, void* arg)
 {
 	AstSelect* select = arg;
 
-	// add to the set
-	ScanFunction on_match = select->on_match;	
-
 	// switch to group by target to redirect names from the primary target
 	// to group by target
 	select->target->redirect = select->target_group;
-	on_match(self, arg);
+	emit_select_on_match(self, arg);
 	select->target->redirect = NULL;
 }
 
@@ -333,7 +330,6 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	{
 		// create result set
 		select->rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
-		select->on_match = emit_select_on_match;
 		rresult = select->rset;
 
 		// generate group by scan using limit/offset
@@ -347,7 +343,6 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 		                   select->ret.count,
 		                   select->expr_order_by.count,
 		                   offset);
-		select->on_match = emit_select_on_match;
 
 		// generate group by scan
 		emit_select_group_by_scan(self, select, NULL, NULL);
@@ -374,7 +369,6 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	                   select->ret.count,
 	                   select->expr_order_by.count,
 	                   offset);
-	select->on_match = emit_select_on_match;
 
 	// scan for table/expression and joins
 	scan(self,
@@ -382,7 +376,7 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	     NULL,
 	     NULL,
 	     select->expr_where,
-	     select->on_match,
+	     emit_select_on_match,
 	     select);
 
 	// create merge object and add sorted set
@@ -402,16 +396,13 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	int rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 	select->rset = rresult;
 
-	// create data set for nested queries
-	select->on_match = emit_select_on_match;
-
 	// scan for table/expression and joins
 	scan(self,
 	     select->target,
 	     select->expr_limit,
 	     select->expr_offset,
 	     select->expr_where,
-	     select->on_match,
+	     emit_select_on_match,
 	     select);
 
 	return select->rset;

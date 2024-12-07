@@ -30,7 +30,6 @@ struct AstSelect
 	Target*   target;
 	Target*   target_group;
 	Columns   target_group_columns;
-	void*     on_match;
 	int       rset;
 	int       rset_agg;
 	int       aggs;
@@ -56,7 +55,6 @@ ast_select_allocate(void)
 	self->distinct_on       = false;
 	self->target            = NULL;
 	self->target_group      = NULL;
-	self->on_match          = NULL;
 	self->rset              = -1;
 	self->rset_agg          = -1;
 	self->aggs              = -1;
