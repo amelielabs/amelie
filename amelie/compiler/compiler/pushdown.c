@@ -53,14 +53,14 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	     NULL,
 	     NULL,
 	     select->expr_where,
-	     emit_select_on_match_group_target,
+	     emit_select_on_match_aggregate,
 	     select);
 
 	// select aggr [without group by]
 	//
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
-		emit_select_on_match_group_target_empty(self, select);
+		emit_select_on_match_aggregate_empty(self, select->target, select);
 
 	// CRESULT (return agg set)
 	op1(self, CRESULT, select->rset_agg);
@@ -220,7 +220,7 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 	     NULL,
 	     NULL,
 	     select->expr_having,
-	     emit_select_on_match_group,
+	     emit_select_on_match,
 	     select);
 
 	runpin(self, select->rset_agg);
@@ -272,7 +272,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	     select->expr_limit,
 	     select->expr_offset,
 	     select->expr_having,
-	     emit_select_on_match_group,
+	     emit_select_on_match,
 	     select);
 
 	runpin(self, select->rset_agg);

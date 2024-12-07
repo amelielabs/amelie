@@ -37,14 +37,17 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_delete_on_match(Compiler* self, void* arg)
+emit_delete_on_match(Compiler* self, Target* target, void* arg)
 {
-	AstDelete* delete = arg;
-	op1(self, CDELETE, delete->target->id);
+	unused(self);
+	unused(arg);
+
+	// DELETE by cursor
+	op1(self, CDELETE, target->id);
 }
 
 static inline void
-emit_delete_on_match_returning(Compiler* self, void* arg)
+emit_delete_on_match_returning(Compiler* self, Target* target, void* arg)
 {
 	AstDelete* delete = arg;
 
@@ -54,7 +57,7 @@ emit_delete_on_match_returning(Compiler* self, void* arg)
 		auto column = as->r->column;
 
 		// expr
-		int rexpr = emit_expr(self, delete->target, as->l);
+		int rexpr = emit_expr(self, target, as->l);
 		int rt = rtype(self, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -64,6 +67,7 @@ emit_delete_on_match_returning(Compiler* self, void* arg)
 	// add to the returning set
 	op1(self, CSET_ADD, delete->rset);
 
+	// DELETE by cursor
 	op1(self, CDELETE, delete->target->id);
 }
 

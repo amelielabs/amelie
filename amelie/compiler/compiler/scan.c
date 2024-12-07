@@ -194,7 +194,7 @@ scan_table(Scan* self, Target* target)
 			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / expr against current cursor position
-		self->on_match(cp, self->on_match_arg);
+		self->on_match(cp, target, self->on_match_arg);
 
 		// _next:
 		int _next = op_pos(cp);
@@ -290,7 +290,7 @@ scan_store(Scan* self, Target* target)
 			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / select_expr
-		self->on_match(cp, self->on_match_arg);
+		self->on_match(cp, target, self->on_match_arg);
 
 		// _next:
 		int _next = op_pos(cp);

@@ -218,7 +218,7 @@ parse_select(Stmt* self)
 
 		// create group by target to scan agg set
 		auto target = target_allocate();
-		target->type = TARGET_SELECT;
+		target->type = TARGET_GROUP_BY;
 		target->name = select->target->name;
 		target->from_columns = &select->target_group_columns;
 		target_list_add(&self->target_list, target, level, 0);

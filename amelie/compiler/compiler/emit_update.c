@@ -126,19 +126,19 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 }
 
 static inline void
-emit_update_on_match(Compiler* self, void* arg)
+emit_update_on_match(Compiler* self, Target* target, void* arg)
 {
 	AstUpdate* update = arg;
-	emit_update_target(self, update->target, update->expr_update);
+	emit_update_target(self, target, update->expr_update);
 }
 
 static inline void
-emit_update_on_match_returning(Compiler* self, void* arg)
+emit_update_on_match_returning(Compiler* self, Target* target, void* arg)
 {
 	AstUpdate* update = arg;
 
 	// update by cursor
-	emit_update_target(self, update->target, update->expr_update);
+	emit_update_target(self, target, update->expr_update);
 
 	// push expr and set column type
 	for (auto as = update->ret.list; as; as = as->next)
@@ -146,7 +146,7 @@ emit_update_on_match_returning(Compiler* self, void* arg)
 		auto column = as->r->column;
 
 		// expr
-		int rexpr = emit_expr(self, update->target, as->l);
+		int rexpr = emit_expr(self, target, as->l);
 		int rt = rtype(self, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);

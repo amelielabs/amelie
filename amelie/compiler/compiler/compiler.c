@@ -219,7 +219,7 @@ emit_stmt(Compiler* self)
 }
 
 static inline void
-emit_send_generated_on_match(Compiler* self, void* arg)
+emit_send_generated_on_match(Compiler* self, Target* target, void* arg)
 {
 	AstInsert* insert = arg;
 	// generate and push to the stack each generated
@@ -230,7 +230,7 @@ emit_send_generated_on_match(Compiler* self, void* arg)
 		auto column = op->l->column;
 
 		// expr
-		int rexpr = emit_expr(self, insert->target_generated, op->r);
+		int rexpr = emit_expr(self, target, op->r);
 		int type = rtype(self, rexpr);
 
 		// ensure that the expression type is compatible

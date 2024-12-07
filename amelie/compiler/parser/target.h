@@ -20,9 +20,10 @@ typedef enum
 	TARGET_TABLE_SHARED = 1 << 0,
 	TARGET_TABLE        = 1 << 1,
 	TARGET_SELECT       = 1 << 2,
-	TARGET_CTE          = 1 << 3,
-	TARGET_INSERTED     = 1 << 4,
-	TARGET_VIEW         = 1 << 5
+	TARGET_GROUP_BY     = 1 << 3,
+	TARGET_CTE          = 1 << 4,
+	TARGET_INSERTED     = 1 << 5,
+	TARGET_VIEW         = 1 << 6
 } TargetType;
 
 typedef enum
@@ -54,7 +55,6 @@ struct Target
 	TargetJoin   join;
 	Ast*         join_on;
 	// link
-	Target*      redirect;
 	Target*      outer;
 	Target*      next_join;
 	Target*      next;
@@ -78,7 +78,6 @@ target_allocate(void)
 	self->path             = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
-	self->redirect         = NULL;
 	self->outer            = NULL;
 	self->next_join        = NULL;
 	self->next             = NULL;
