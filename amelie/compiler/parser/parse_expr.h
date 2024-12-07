@@ -17,6 +17,7 @@ struct Expr
 {
 	bool     select;
 	AstList* aggs;
+	Ast*     as;
 };
 
 static inline void
@@ -24,6 +25,7 @@ expr_init(Expr* self)
 {
 	self->select = false;
 	self->aggs   = NULL;
+	self->as     = NULL;
 }
 
 Ast* parse_expr(Stmt*, Expr*);

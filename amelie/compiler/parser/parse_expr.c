@@ -260,11 +260,12 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		      str_of(&function->string));
 
 	// create aggregate ast node
-	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL);
+	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL, expr->as);
 	ast_list_add(expr->aggs, &agg->ast);
 	return &agg->ast;
 }
 
+#if 0
 static inline Ast*
 expr_lambda(Stmt* self, Expr* expr)
 {
@@ -310,6 +311,7 @@ expr_lambda(Stmt* self, Expr* expr)
 	agg->name = name;
 	return &agg->ast;
 }
+#endif
 
 static Ast*
 expr_case(Stmt* self, Expr* expr)
@@ -477,7 +479,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	case KLAMBDA:
-		value = expr_lambda(self, expr);
+		/*value = expr_lambda(self, expr);*/
 		break;
 
 	// const

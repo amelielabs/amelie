@@ -21,7 +21,7 @@ struct AstAgg
 	Ast*    function;
 	Ast*    expr;
 	Ast*    expr_init;
-	Ast*    name;
+	Ast*    as;
 	Column* column;
 };
 
@@ -34,7 +34,8 @@ ast_agg_of(Ast* ast)
 static inline AstAgg*
 ast_agg_allocate(Ast* function, int order,
                  Ast* expr,
-                 Ast* expr_init)
+                 Ast* expr_init,
+                 Ast* as)
 {
 	AstAgg* self;
 	self = ast_allocate(KAGGR, sizeof(AstAgg));
@@ -43,22 +44,7 @@ ast_agg_allocate(Ast* function, int order,
 	self->order     = order;
 	self->expr      = expr;
 	self->expr_init = expr_init;
-	self->name      = NULL;
+	self->as        = as;
 	self->column    = NULL;
 	return self;
-}
-
-static inline AstAgg*
-ast_agg_match(AstList* list, Str* name)
-{
-	auto node = list->list;
-	for (; node; node = node->next)
-	{
-		auto agg = ast_agg_of(node->ast);
-		if (! agg->name)
-			continue;
-		if (str_compare(&agg->name->string, name))
-			return agg;
-	}
-	return NULL;
 }

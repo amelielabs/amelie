@@ -43,6 +43,8 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 	// * | target.* | expr [AS] [name], ...
 	for (;;)
 	{
+		auto as = ast(KAS);
+
 		// target.*, * or expr
 		auto expr = stmt_next(stmt);
 		switch (expr->id) {
@@ -53,19 +55,15 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			break;
 		default:
 			stmt_push(stmt, expr);
+			if (ctx)
+				ctx->as = as;
 			expr = parse_expr(stmt, ctx);
 			break;
 		}
 
 		// [AS name]
 		// [name]
-		auto as_has = true;
-		auto as = stmt_if(stmt, KAS);
-		if (! as)
-		{
-			as_has = false;
-			as = ast(KAS);
-		}
+		auto as_has = stmt_if(stmt, KAS) != NULL;
 
 		// set column name
 		auto name = stmt_if(stmt, KNAME);
