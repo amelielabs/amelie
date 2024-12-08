@@ -32,6 +32,7 @@ struct AstSelect
 	Columns   target_group_columns;
 	int       rset;
 	int       rset_agg;
+	int       rset_agg_row;
 	int       aggs;
 };
 
@@ -57,6 +58,7 @@ ast_select_allocate(void)
 	self->target_group      = NULL;
 	self->rset              = -1;
 	self->rset_agg          = -1;
+	self->rset_agg_row      = -1;
 	self->aggs              = -1;
 	returning_init(&self->ret);
 	ast_list_init(&self->expr_aggs);

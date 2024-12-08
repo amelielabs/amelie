@@ -126,6 +126,9 @@ vm_run(Vm*       self,
 		&&cjntr,
 		&&cjgted,
 		&&cjltd,
+
+		// values
+		&&cfree,
 		&&cswap,
 
 		// stack
@@ -409,6 +412,11 @@ cjltd:
 		op = code_at(code, op->b);
 		op_jmp;
 	}
+	op_next;
+
+cfree:
+	// [value]
+	value_free(&r[op->a]);
 	op_next;
 
 cswap:

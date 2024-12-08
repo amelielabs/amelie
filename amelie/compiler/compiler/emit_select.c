@@ -103,14 +103,15 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 	}
 
 	// CSET_GET
-	auto rrow = op2(self, CSET_GET, rpin(self, TYPE_INT),
-	                select->rset_agg);
+	select->rset_agg_row =
+		op2(self, CSET_GET, rpin(self, TYPE_INT), select->rset_agg);
 
 	// push aggs
 	node = select->expr_aggs.list;
 	for (; node; node = node->next)
 	{
 		auto agg = ast_agg_of(node->ast);
+		agg->select = &select->ast;
 
 		// expr
 		auto rexpr = emit_expr(self, target, agg->expr);
@@ -165,9 +166,12 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 
 	// CSET_AGG
 	if (select->expr_aggs.count > 0)
-		op3(self, CSET_AGG, select->rset_agg, rrow, aggs_offset);
+		op3(self, CSET_AGG, select->rset_agg,
+		    select->rset_agg_row,
+		    select->aggs);
 
-	runpin(self, rrow);
+	runpin(self, select->rset_agg_row);
+	select->rset_agg_row = -1;
 }
 
 void
@@ -190,8 +194,8 @@ emit_select_on_match_aggregate_empty(Compiler* self, Target* target, void* arg)
 	}
 
 	// CSET_GET
-	auto rrow = op2(self, CSET_GET, rpin(self, TYPE_INT),
-	                select->rset_agg);
+	select->rset_agg_row =
+		op2(self, CSET_GET, rpin(self, TYPE_INT), select->rset_agg);
 
 	// push aggs
 	node = select->expr_aggs.list;
@@ -208,9 +212,12 @@ emit_select_on_match_aggregate_empty(Compiler* self, Target* target, void* arg)
 
 	// CSET_AGG
 	if (select->expr_aggs.count > 0)
-		op3(self, CSET_AGG, select->rset_agg, rrow, select->aggs);
+		op3(self, CSET_AGG, select->rset_agg,
+		    select->rset_agg_row,
+		    select->aggs);
 
-	runpin(self, rrow);
+	runpin(self, select->rset_agg_row);
+	select->rset_agg_row = -1;
 }
 
 int
@@ -287,6 +294,17 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	           select->expr_group_by.count);
 	select->rset_agg = rset;
 
+	// emit aggs seed expressions
+	auto node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->expr_seed)
+			continue;
+		agg->rseed = emit_expr(self, NULL, agg->expr_seed);
+		agg->expr_seed_type = rtype(self, agg->rseed);
+	}
+
 	// scan over target and process aggregates per group by key
 	scan(self, select->target,
 	     NULL,
@@ -300,6 +318,19 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
 		emit_select_on_match_aggregate_empty(self, select->target, select);
+
+	// free seed values
+	node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->expr_seed)
+			continue;
+		op1(self, CFREE, agg->rseed);
+		runpin(self, agg->rseed);
+		agg->rseed = -1;
+		agg->expr_seed_type = -1;
+	}
 
 	// scan over created group
 	//

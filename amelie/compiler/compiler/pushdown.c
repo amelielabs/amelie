@@ -48,6 +48,17 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	           select->expr_group_by.count);
 	select->rset_agg = rset;
 
+	// emit aggs seed expressions
+	auto node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->expr_seed)
+			continue;
+		agg->rseed = emit_expr(self, NULL, agg->expr_seed);
+		agg->expr_seed_type = rtype(self, agg->rseed);
+	}
+
 	// scan over target and process aggregates per group by key
 	scan(self, select->target,
 	     NULL,
@@ -55,6 +66,19 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	     select->expr_where,
 	     emit_select_on_match_aggregate,
 	     select);
+
+	// free seed values
+	node = select->expr_aggs.list;
+	for (; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+		if (! agg->expr_seed)
+			continue;
+		op1(self, CFREE, agg->rseed);
+		runpin(self, agg->rseed);
+		agg->rseed = -1;
+		agg->expr_seed_type = -1;
+	}
 
 	// select aggr [without group by]
 	//

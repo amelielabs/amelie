@@ -23,6 +23,9 @@ enum
 	CJNTR,
 	CJGTED,
 	CJLTD,
+
+	// values
+	CFREE,
 	CSWAP,
 
 	// stack

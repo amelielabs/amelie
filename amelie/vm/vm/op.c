@@ -43,6 +43,9 @@ OpDesc ops[] =
 	{ CJNTR, "jntr" },
 	{ CJGTED, "cjgted" },
 	{ CJLTD, "cjltd" },
+
+	// values
+	{ CFREE, "free" },
 	{ CSWAP, "swap" },
 
 	// stack
