@@ -219,7 +219,7 @@ set_match(Set* self, uint32_t hash_value, Value* keys)
 	return ref;
 }
 
-hot Value*
+hot int
 set_get(Set* self, Value* keys, bool add_if_not_exists)
 {
 	if (unlikely(! self->hash.hash))
@@ -238,11 +238,11 @@ set_get(Set* self, Value* keys, bool add_if_not_exists)
 	if (ref->row == UINT32_MAX)
 	{
 		if (! add_if_not_exists)
-			return NULL;
+			return -1;
 		ref->hash = hash;
 		ref->row  = set_add_as(self, true, keys);
 	}
-	return set_row(self, ref->row);
+	return ref->row;
 }
 
 Value*

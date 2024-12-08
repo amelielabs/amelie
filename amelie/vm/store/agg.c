@@ -29,7 +29,8 @@ hot static inline void
 agg_merge_row(Set* self, Value* row, int* aggs)
 {
 	// get existing or create new row by key
-	auto src = set_get(self, &row[self->count_columns], true);
+	auto src_ref = set_get(self, &row[self->count_columns], true);
+	auto src = set_row(self, src_ref);
 
 	// merge aggregate states
 	for (int col = 0; col < self->count_columns; col++)
@@ -144,12 +145,10 @@ agg_double_of(Value* row, int col, const char* func)
 }
 
 hot void
-agg_write(Set* self, Value* row, int* aggs)
+agg_write(Set* self, Value* row, int src_ref, int* aggs)
 {
-	// get existing or create new row by key
-	auto src = set_get(self, &row[self->count_columns], true);
-
 	// process aggregates values
+	auto src = set_row(self, src_ref);
 	for (int col = 0; col < self->count_columns; col++)
 	{
 		if (row[col].type == TYPE_NULL)

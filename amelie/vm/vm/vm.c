@@ -1162,13 +1162,13 @@ cset_add:
 	op_next;
 
 cset_get:
-	// [result, set, column]
+	// [result, set]
+	// get existing or create new row by key,
+	// return the row reference
 	set = (Set*)r[op->b].store;
-	a = set_get(set, stack_at(stack, set->count_columns_row), false);
-	if (a)
-		value_copy(&r[op->a], a);
-	else
-		value_set_null(&r[op->a]);
+	rc = set_get(set, stack_at(stack, set->count_keys), true);
+	value_set_int(&r[op->a], rc);
+	stack_popn(stack, set->count_keys);
 	op_next;
 
 cset_result:
@@ -1183,11 +1183,11 @@ cset_result:
 	op_next;
 
 cset_agg:
-	// [set, aggs]
+	// [set, row, aggs]
 	set = (Set*)r[op->a].store;
-	agg_write(set, stack_at(stack, set->count_columns_row),
-	          (int*)code_data_at(code_data, op->b));
-	stack_popn(stack, set->count_columns_row);
+	agg_write(set, stack_at(stack, set->count_columns), r[op->b].integer,
+	          (int*)code_data_at(code_data, op->c));
+	stack_popn(stack, set->count_columns);
 	op_next;
 
 cmerge:

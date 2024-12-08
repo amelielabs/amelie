@@ -86,8 +86,28 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 	int* aggs = buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
 	select->aggs = aggs_offset;
 
+	// get existing or create a new row by key, return
+	// the row reference
+
+	// push group by keys
+	auto node = select->expr_group_by.list;
+	for (; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+		// expr
+		auto rexpr = emit_expr(self, target, group->expr);
+		auto rt = rtype(self, rexpr);
+		column_set_type(group->column, rt, type_sizeof(rt));
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+	}
+
+	// CSET_GET
+	auto rrow = op2(self, CSET_GET, rpin(self, TYPE_INT),
+	                select->rset_agg);
+
 	// push aggs
-	auto node = select->expr_aggs.list;
+	node = select->expr_aggs.list;
 	for (; node; node = node->next)
 	{
 		auto agg = ast_agg_of(node->ast);
@@ -143,22 +163,11 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 		aggs[agg->order] = agg->id;
 	}
 
-	// push group by keys
-	node = select->expr_group_by.list;
-	for (; node; node = node->next)
-	{
-		auto group = ast_group_of(node->ast);
-
-		// expr
-		auto rexpr = emit_expr(self, target, group->expr);
-		auto rt = rtype(self, rexpr);
-		column_set_type(group->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
-	}
-
 	// CSET_AGG
-	op2(self, CSET_AGG, select->rset_agg, aggs_offset);
+	if (select->expr_aggs.count > 0)
+		op3(self, CSET_AGG, select->rset_agg, rrow, aggs_offset);
+
+	runpin(self, rrow);
 }
 
 void
@@ -167,8 +176,25 @@ emit_select_on_match_aggregate_empty(Compiler* self, Target* target, void* arg)
 	// process NULL values for the aggregate
 	AstSelect* select = arg;
 
+	// push group by keys
+	auto node = select->expr_group_by.list;
+	while (node)
+	{
+		auto group = ast_group_of(node->ast);
+		auto rexpr = emit_expr(self, target, group->expr);
+		auto rt = rtype(self, rexpr);
+		column_set_type(group->column, rt, type_sizeof(rt));
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+		node = node->next;
+	}
+
+	// CSET_GET
+	auto rrow = op2(self, CSET_GET, rpin(self, TYPE_INT),
+	                select->rset_agg);
+
 	// push aggs
-	auto node = select->expr_aggs.list;
+	node = select->expr_aggs.list;
 	while (node)
 	{
 		auto agg = ast_agg_of(node->ast);
@@ -180,21 +206,11 @@ emit_select_on_match_aggregate_empty(Compiler* self, Target* target, void* arg)
 		node = node->next;
 	}
 
-	// push group by keys
-	node = select->expr_group_by.list;
-	while (node)
-	{
-		auto group = ast_group_of(node->ast);
-		auto rexpr = emit_expr(self, target, group->expr);
-		auto rt = rtype(self, rexpr);
-		column_set_type(group->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
-		node = node->next;
-	}
-
 	// CSET_AGG
-	op2(self, CSET_AGG, select->rset_agg, select->aggs);
+	if (select->expr_aggs.count > 0)
+		op3(self, CSET_AGG, select->rset_agg, rrow, select->aggs);
+
+	runpin(self, rrow);
 }
 
 int

@@ -91,5 +91,5 @@ void   set_prepare(Set*, int, int, bool*);
 void   set_reset(Set*);
 void   set_sort(Set*);
 void   set_add(Set*, Value*);
-Value* set_get(Set*, Value*, bool);
+int    set_get(Set*, Value*, bool);
 Value* set_reserve(Set*, SetMeta**);
