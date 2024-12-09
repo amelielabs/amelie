@@ -164,6 +164,6 @@ explain select true <> 1.23
 {"msg": "unsupported operation: <bool> = <double>"}
 # test: - bool
 select - true
-{"msg": "'-': unsupported operation type"}
+{"msg": "'-': unsupported operation type <bool>"}
 disconnect S0
 close E0

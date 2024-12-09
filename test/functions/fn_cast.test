@@ -31,7 +31,7 @@ select '1423423423'::int
 select '1423abc'::int
 
 # test: int(json)
-select '1'::json::int
+select 123::json::int
 select 'hi'::json::int
 
 # test: int(timestamp)
@@ -54,8 +54,8 @@ select 0.14::bool
 select 0.0::bool
 
 # test: bool(json)
-select 'true'::json::bool
-select 'false'::json::bool
+select true::json::bool
+select false::json::bool
 select '1'::json::bool
 
 # test: bool(timestamp)
@@ -79,7 +79,7 @@ select true::double
 select false::double
 
 # test: double(json)
-select '1.56'::json::double
+select 1.56::json::double
 
 # test: double(timestamp)
 select 1722517792056945::timestamp
@@ -104,8 +104,24 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 
+# test: json_import(string)
+select '{"id": 42, "data": [1,2,3]}'::json_import
+select '{"id": 42, "data": [1,2,3]}'::json_import::string
+select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import
+select 123::json_import
+
 # test: json(null)
 select null::json
+
+# test: json(int)
+select 123::json
+select -123::json
+select (-123)::json
+
+# test: json(double)
+select 123.321::json
+select -123.321::json
+select (-123.321)::json
 
 # test: json(string)
 select '1'::json
@@ -116,6 +132,15 @@ select '[1,2,3]'::json
 # test: json(json)
 select [1,2,3]::json
 select {"id":55}::json
+
+# test: json(timestamp)
+select '2024-07-29 18:40:19'::timestamp::json
+
+# test: json(interval)
+select '1 hour 55 minutes 5 secs'::interval::json
+
+# test: json(vector)
+select [1,2,3]::vector::json
 
 # test: interval(null)
 select null::interval

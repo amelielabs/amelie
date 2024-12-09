@@ -195,6 +195,21 @@ fn_json(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_JSON))
+	{
+		value_copy(self->result, arg);
+		return;
+	}
+	auto buf = buf_create();
+	value_encode(arg, self->vm->local->timezone, buf);
+	value_set_json_buf(self->result, buf);
+}
+
+hot static void
+fn_json_import(Call* self)
+{
+	call_validate(self, 1);
+	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -206,7 +221,7 @@ fn_json(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		error("json(%s): operation type is not supported",
+		error("json_import(%s): operation type is not supported",
 		      type_of(arg->type));
 
 	auto buf = buf_create();
@@ -356,14 +371,15 @@ fn_vector(Call* self)
 
 FunctionDef fn_cast_def[] =
 {
-	{ "public", "type",      TYPE_STRING,    fn_type,      FN_NONE },
-	{ "public", "int",       TYPE_INT,       fn_int,       FN_NONE },
-	{ "public", "bool",      TYPE_BOOL,      fn_bool,      FN_NONE },
-	{ "public", "double",    TYPE_DOUBLE,    fn_double,    FN_NONE },
-	{ "public", "string",    TYPE_STRING,    fn_string,    FN_NONE },
-	{ "public", "json",      TYPE_JSON,      fn_json,      FN_NONE },
-	{ "public", "interval",  TYPE_INTERVAL,  fn_interval,  FN_NONE },
-	{ "public", "timestamp", TYPE_TIMESTAMP, fn_timestamp, FN_NONE },
-	{ "public", "vector",    TYPE_VECTOR,    fn_vector,    FN_NONE },
-	{  NULL,     NULL,       TYPE_NULL,      NULL,         FN_NONE }
+	{ "public", "type",        TYPE_STRING,    fn_type,        FN_NONE },
+	{ "public", "int",         TYPE_INT,       fn_int,         FN_NONE },
+	{ "public", "bool",        TYPE_BOOL,      fn_bool,        FN_NONE },
+	{ "public", "double",      TYPE_DOUBLE,    fn_double,      FN_NONE },
+	{ "public", "string",      TYPE_STRING,    fn_string,      FN_NONE },
+	{ "public", "json",        TYPE_JSON,      fn_json,        FN_NONE },
+	{ "public", "json_import", TYPE_JSON,      fn_json_import, FN_NONE },
+	{ "public", "interval",    TYPE_INTERVAL,  fn_interval,    FN_NONE },
+	{ "public", "timestamp",   TYPE_TIMESTAMP, fn_timestamp,   FN_NONE },
+	{ "public", "vector",      TYPE_VECTOR,    fn_vector,      FN_NONE },
+	{  NULL,     NULL,         TYPE_NULL,      NULL,           FN_NONE }
 };

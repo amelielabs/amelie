@@ -925,15 +925,16 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		if (rt == TYPE_DOUBLE)
 			rneg = op2(self, CNEGD, rpin(self, TYPE_DOUBLE), r);
 		else
-			error("'-': unsupported operation type");
+			error("'-': unsupported operation type <%s>", type_of(rt));
 		runpin(self, r);
 		return rneg;
 	}
 	case '~':
 	{
 		int r = emit_expr(self, target, ast->l);
-		if (rtype(self, r) != TYPE_INT)
-			error("'-': unsupported operation type");
+		int rt = rtype(self, r);
+		if (rt != TYPE_INT)
+			error("'-': unsupported operation type <%s>", type_of(rt));
 		auto rinv = op2(self, CBINVI, rpin(self, TYPE_INT), r);
 		runpin(self, r);
 		return rinv;

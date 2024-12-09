@@ -155,6 +155,10 @@ select system.functions()
     "schema": "public",
     "name": "json"
   },
+  "public.json_import": {
+    "schema": "public",
+    "name": "json_import"
+  },
   "public.interval": {
     "schema": "public",
     "name": "interval"

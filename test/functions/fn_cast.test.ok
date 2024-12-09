@@ -37,10 +37,10 @@ select '1423423423'::int
 select '1423abc'::int
 {"msg": "int(): failed to cast string"}
 # test: int(json)
-select '1'::json::int
-[1]
+select 123::json::int
+[123]
 select 'hi'::json::int
-{"msg": "unexpected JSON token"}
+{"msg": "int(): failed to cast string"}
 # test: int(timestamp)
 select 1722517792056945::timestamp
 ["2024-08-01 13:09:52.056945+00"]
@@ -68,9 +68,9 @@ select 0.14::bool
 select 0.0::bool
 [false]
 # test: bool(json)
-select 'true'::json::bool
+select true::json::bool
 [true]
-select 'false'::json::bool
+select false::json::bool
 [false]
 select '1'::json::bool
 [true]
@@ -97,7 +97,7 @@ select true::double
 select false::double
 [0]
 # test: double(json)
-select '1.56'::json::double
+select 1.56::json::double
 [1.56]
 # test: double(timestamp)
 select 1722517792056945::timestamp
@@ -124,18 +124,47 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 ["{\"id\": 42, \"data\": [1, 2, 3]}"]
+# test: json_import(string)
+select '{"id": 42, "data": [1,2,3]}'::json_import
+[{
+  "id": 42,
+  "data": [1, 2, 3]
+}]
+select '{"id": 42, "data": [1,2,3]}'::json_import::string
+["{\"id\": 42, \"data\": [1, 2, 3]}"]
+select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import
+[{
+  "id": 42,
+  "data": [1, 2, 3]
+}]
+select 123::json_import
+{"msg": "json_import(int): operation type is not supported"}
 # test: json(null)
 select null::json
 [null]
+# test: json(int)
+select 123::json
+[123]
+select -123::json
+{"msg": "'-': unsupported operation type <json>"}
+select (-123)::json
+[-123]
+# test: json(double)
+select 123.321::json
+[123.321]
+select -123.321::json
+{"msg": "'-': unsupported operation type <json>"}
+select (-123.321)::json
+[-123.321]
 # test: json(string)
 select '1'::json
-[1]
+["1"]
 select '1'::json::type
 ["json"]
 select [1,2,3]::vector::string::json
-[[1, 2, 3]]
+["[1, 2, 3]"]
 select '[1,2,3]'::json
-[[1, 2, 3]]
+["[1,2,3]"]
 # test: json(json)
 select [1,2,3]::json
 [[1, 2, 3]]
@@ -143,6 +172,15 @@ select {"id":55}::json
 [{
   "id": 55
 }]
+# test: json(timestamp)
+select '2024-07-29 18:40:19'::timestamp::json
+["2024-07-29 18:40:19+00"]
+# test: json(interval)
+select '1 hour 55 minutes 5 secs'::interval::json
+["1 hour 55 minutes 5 seconds"]
+# test: json(vector)
+select [1,2,3]::vector::json
+[[1, 2, 3]]
 # test: interval(null)
 select null::interval
 [null]
