@@ -173,6 +173,10 @@ set_hash(Set* self, Value* keys)
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;
+		case TYPE_INTERVAL:
+			data = &value->interval;
+			data_size = sizeof(value->interval);
+			break;
 		case TYPE_DOUBLE:
 			data = &value->dbl;
 			data_size = sizeof(value->dbl);
@@ -184,6 +188,10 @@ set_hash(Set* self, Value* keys)
 		case TYPE_JSON:
 			data = value->json;
 			data_size = value->json_size;
+			break;
+		case TYPE_VECTOR:
+			data = value->vector;
+			data_size = vector_size(value->vector);
 			break;
 		case TYPE_NULL:
 			break;

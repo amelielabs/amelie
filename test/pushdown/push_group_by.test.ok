@@ -2344,5 +2344,20 @@ select abs(-id + data) as x, count(*) from test group by x
 select count(*) as x, abs(-id + data) from test group by x
 {"msg": "GROUP BY: aggregate functions are not allowed"}
 drop table test
+# test: select * from table group by vector/interval
+create table test (id int primary key, vec vector, iv interval)
+insert into test values (0, [1,2,3], "1 min 5 sec")
+insert into test values (1, [1,2,3], "1 min 5 sec")
+# test: select * from table group by vector
+select count(*) from test group by vec
+[2]
+select count(*) from test group by id, vec
+[1, 1]
+# test: select * from table group by interval
+select count(*) from test group by iv
+[2]
+select count(*) from test group by id,iv
+[1, 1]
+drop table test
 disconnect S0
 close E0
