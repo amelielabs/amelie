@@ -42,12 +42,11 @@ buf_free(Buf* self)
 {
 	if (self->cache)
 	{
-		self->refs--;
-		if (self->refs >= 0)
-			return;
-		assert(self->refs == -1);
-		self->refs = 0;
-		buf_cache_push(self->cache, self);
+		if (atomic_u32_dec(&self->refs) == 0)
+		{
+			self->refs = 0;
+			buf_cache_push(self->cache, self);
+		}
 		return;
 	}
 	buf_free_memory(self);

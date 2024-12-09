@@ -148,6 +148,13 @@ explain with a as (select * from test) select test.* from test join a on test.id
 with a as (select * from test) select test.* from test join a on test.id = a.id
 drop table test
 
+# test: with(select string from table), select from table join
+create table test (id int primary key, data string)
+insert into test values (1, '1'),(2, '2'),(3, '3')
+explain with a as (select data from test) select test.* from test join a on test.data = a.data
+with a as (select data from test) select test.* from test join a on test.data = a.data
+drop table test
+
 # test: with (columns) as (select expr), select * from cte
 explain with z (a,b,c) as (select 4,5,6) select * from z
 with z (a,b,c) as (select 4,5,6) select * from z

@@ -16,12 +16,12 @@ typedef struct Buf      Buf;
 
 struct Buf
 {
-	uint8_t*  start;
-	uint8_t*  position;
-	uint8_t*  end;
-	int       refs;
-	BufCache* cache;
-	List      link;
+	uint8_t*   start;
+	uint8_t*   position;
+	uint8_t*   end;
+	atomic_u32 refs;
+	BufCache*  cache;
+	List       link;
 };
 
 static inline void
@@ -47,7 +47,7 @@ buf_free_memory(Buf* self)
 static inline void
 buf_ref(Buf* self)
 {
-	self->refs++;
+	atomic_u32_inc(&self->refs);
 }
 
 static inline int

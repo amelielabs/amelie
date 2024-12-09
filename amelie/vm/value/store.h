@@ -39,12 +39,8 @@ store_init(Store* self, int type)
 static inline void
 store_free(Store* self)
 {
-	if (atomic_u32_of(&self->refs) == 0)
-	{
+	if (atomic_u32_dec(&self->refs) == 0)
 		self->free(self);
-		return;
-	}
-	atomic_u32_dec(&self->refs);
 }
 
 static inline void
