@@ -309,6 +309,9 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	int  agg_op;
 	int  agg_type;
 	auto agg = ast_agg_of(ast);
+	if (agg->id == AGG_LAMBDA)
+		return op3(self, CSTORE_READ, rpin(self, agg->expr_seed_type),
+		           target->id, agg->order);
 	switch (agg->id) {
 	case AGG_INT_COUNT:
 		agg_op   = CCOUNT;
@@ -356,9 +359,30 @@ emit_aggregate_key(Compiler* self, Target* target, Ast* ast)
 	auto column = ast_group_of(ast)->column;
 	assert(column->type != -1);
 
-	/*// read aggregate key value*/
+	// read aggregate key value
 	return op3(self, CSTORE_READ, rpin(self, column->type), target->id,
 	           column->order);
+}
+
+hot static inline int
+emit_self(Compiler* self, Ast* ast)
+{
+	auto agg = ast_agg_of(ast->r);
+	auto select = ast_select_of(agg->select);
+	assert(agg->rseed != -1);
+
+	// read aggregate state, return seed value if the
+	// state is null
+
+	// push agg order
+	auto r = op2(self, CINT, rpin(self, TYPE_INT), agg->order);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// CSELF
+	return op4(self, CSELF, rpin(self, agg->expr_seed_type),
+	           select->rset_agg,
+	           select->rset_agg_row, agg->rseed);
 }
 
 hot static inline int
@@ -806,6 +830,12 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		return emit_aggregate(self, target, ast);
 	case KAGGRKEY:
 		return emit_aggregate_key(self, target, ast);
+	case KARROW:
+		// lambda (during result set scan)
+		return emit_aggregate(self, target, ast->r);
+	case KSELF:
+		// lambda state read (during table scan)
+		return emit_self(self, ast);
 
 	// operators
 	case KNEQU:
@@ -915,7 +945,7 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KMETHOD:
 		return emit_call_method(self, target, ast);
 
-	// sub-query
+	// subquery
 	case KSELECT:
 	{
 		// ensure that subquery returns one column

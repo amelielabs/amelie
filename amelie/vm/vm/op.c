@@ -198,6 +198,7 @@ OpDesc ops[] =
 	{ CSET_GET, "set_get" },
 	{ CSET_RESULT, "set_result" },
 	{ CSET_AGG, "set_agg" },
+	{ CSELF, "self" },
 
 	// merge
 	{ CMERGE, "merge" },

@@ -1,186 +1,192 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 2
 connect E0 S0 localhost:3485
-# test: lambda parsing
-select lambda
-{"msg": "lambda <name> expected"}
-select 1 lambda
-{"msg": "lambda <name> expected"}
-select lambda name
-{"msg": "lambda name <(> expected"}
-select lambda name -
-{"msg": "lambda name <(> expected"}
-select lambda name =
-{"msg": "lambda name <(> expected"}
-select lambda name (
+# test: select ->
+select ->
 {"msg": "bad expression"}
-select lambda name ()
+select -> 1
 {"msg": "bad expression"}
-select lambda name (true)
-{"msg": "lambda name (expr) <=> expected"}
-select lambda name (true) =
+select 1 ->
 {"msg": "bad expression"}
-# test: lambda (init)
-select lambda n(false) = true from []
-[false]
-select lambda n(false) = true from [1]
-[true]
-select lambda n(null) = * from [1,2,3]
-[3]
-# test: lambda (state access)
-explain select lambda n(123) = n from [1,2,3]
-[{
-  "bytecode": {
-    "coordinator": {
-      "00": "set                 0      0      0     ",
-      "01": "group               1      0      0     ",
-      "02": "int                 2      -      0     # 123",
-      "03": "group_add           1      5      2     ",
-      "04": "null                3      0      0     ",
-      "05": "push                3      0      0     ",
-      "06": "group_write         1      0      0     ",
-      "07": "int                 3      -      0     # 1",
-      "08": "push                3      0      0     ",
-      "09": "int                 3      -      0     # 2",
-      "10": "push                3      0      0     ",
-      "11": "int                 3      -      0     # 3",
-      "12": "push                3      0      0     ",
-      "13": "array               3      3      0     ",
-      "14": "cursor_open_expr    0      3      16    ",
-      "15": "jmp                 20     0      0     ",
-      "16": "group_get           4      1      0     ",
-      "17": "push                4      0      0     ",
-      "18": "group_write         1      0      0     ",
-      "19": "cursor_next         0      16     0     ",
-      "20": "cursor_close        0      0      0     ",
-      "21": "cursor_open_expr    1      1      23    ",
-      "22": "jmp                 26     0      0     ",
-      "23": "group_read_aggr     3      1      0     ",
-      "24": "set_add             0      3      0     ",
-      "25": "cursor_next         1      23     0     ",
-      "26": "cursor_close        1      0      0     ",
-      "27": "cte_set             0      0      0     ",
-      "28": "body                0      0      0     ",
-      "29": "ret                 0      0      0     "
-    }
-  }
-}]
-select lambda n(123) = n from [1,2,3]
-[123]
-select lambda n([]) = n::append(*) from [1,2,3]
-[[1, 2, 3]]
-select lambda n([]) = n::append(*)::append(n) from [1,2,3]
-[[1, [], 2, [1, []], 3, [1, [], 2, [1, []]]]]
-select lambda n([]) = n::append(*)::append(n::string) from [1,2,3]
-[[1, "[]", 2, "[1, \"[]\"]", 3, "[1, \"[]\", 2, \"[1, \\\"[]\\\"]\"]"]]
-select * from (select lambda n([]) = n::append(*) from [1,2,3])
-[[1, 2, 3]]
-select lambda obj({}) = obj::set(*, [*]) from ["a", "b", "c"]
-[{
-  "a": ["a"],
-  "b": ["b"],
-  "c": ["c"]
-}]
-select lambda obj({}) = obj::set("key_" || *::string, *) from [1,2,3]
-[{
-  "key_1": 1,
-  "key_2": 2,
-  "key_3": 3
-}]
-# test: lambda (crosss state access)
-select lambda i([]) = i::append(*), lambda j([]) = j::append(i) from [1,2,3]
-[[[1, 2, 3], [[], [1], [1, 2]]]]
-# test: lambda (label)
-select (lambda n([]) = n::append(*)) as N from [1,2,3]
-[[1, 2, 3]]
-# test: lambda (group by)
-select *, lambda n(0) = n + 1 from [1,2,2,3] group by *
-[[1, 1], [2, 2], [3, 1]]
-select *, lambda n([]) = n::append(*) from [1,2,2,3] group by *
-[[1, [1]], [2, [2, 2]], [3, [3]]]
-# test: lambda (shared table)
-create shared table test (id int primary key)
-insert into test 1,2,3,4,5
-select lambda n([]) = n::append(id) from test
-[[1, 2, 3, 4, 5]]
-drop table test
+select 1 -> 1
+{"msg": "no targets to use with GROUP BY or aggregates"}
+# test: select int -> from table
 create shared table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 1)
 insert into test values (2, 2)
 insert into test values (3, 1)
 insert into test values (4, 3)
-select lambda n([]) = n::append(data) from test
-[[0, 1, 2, 1, 3]]
-select data, lambda n([]) = n::append(id) from test group by data
-[[0, [0]], [1, [1, 3]], [2, [2]], [3, [4]]]
-drop table test
-# test: lambda (distributed table)
-create distributed table test (id int primary key)
-insert into test 1,2,3,4,5
-select lambda n([]) = n::append(id) from test
-{"msg": "operation not supported"}
-explain select lambda n([]) = n::append(id) from test
+select 0 -> id
+{"msg": "no targets to use with GROUP BY or aggregates"}
+select 0 -> id from test
+[4]
+# test: select int ->, int -> from table
+select 0 -> id, 0 -> data from test
+[[4, 3]]
+explain select 0 -> id, 0 -> data from test
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "group_merge_recv    0      0      0     ",
-      "03": "set                 2      0      0     ",
-      "04": "cursor_open_expr    1      0      6     ",
-      "05": "jmp                 9      0      0     ",
-      "06": "group_read_aggr     3      1      0     ",
-      "07": "set_add             2      3      0     ",
-      "08": "cursor_next         1      6      0     ",
-      "09": "cursor_close        1      0      0     ",
-      "10": "cte_set             0      2      0     ",
-      "11": "body                0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      2      0     ",
+      "04": "store_open          1      0      6     ",
+      "05": "jmp                 12     0      0     ",
+      "06": "store_read          2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "store_read          2      1      1     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "store_next          1      6      0     ",
+      "12": "store_open          1      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
     },
     "node": {
-      "00": "group               0      0      0     ",
-      "01": "array               1      0      0     ",
-      "02": "group_add           0      5      1     ",
-      "03": "null                2      0      0     ",
-      "04": "push                2      0      0     ",
-      "05": "group_write         0      0      0     ",
-      "06": "int_min             2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "cursor_open         0      0      10    # public.test (primary)",
-      "09": "jmp                 18     0      0     ",
-      "10": "group_get           2      0      0     ",
-      "11": "push                2      0      0     ",
-      "12": "cursor_idx          2      0      0     ",
-      "13": "push                2      0      0     ",
-      "14": "call                2      -      2     # public.append()",
-      "15": "push                2      0      0     ",
-      "16": "group_write         0      0      0     ",
-      "17": "cursor_next         0      10     0     ",
-      "18": "cursor_close        0      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "00": "set                 0      2      1     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "int                 2      -      0     # 0",
+      "03": "int                 3      -      0     # -2147483648",
+      "04": "push                3      0      0     ",
+      "05": "table_open          0      0      7     # public.test (primary)",
+      "06": "jmp                 16     0      0     ",
+      "07": "bool                3      1      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_get             3      0      0     ",
+      "10": "table_readi32       4      0      0     ",
+      "11": "push                4      0      0     ",
+      "12": "table_readi32       4      0      1     ",
+      "13": "push                4      0      0     ",
+      "14": "set_agg             0      3      20    ",
+      "15": "table_next          0      7      0     ",
+      "16": "table_close         0      0      0     ",
+      "17": "free                1      0      0     ",
+      "18": "free                2      0      0     ",
+      "19": "bool                1      1      0     ",
+      "20": "push                1      0      0     ",
+      "21": "set_get             1      0      0     ",
+      "22": "null                2      0      0     ",
+      "23": "push                2      0      0     ",
+      "24": "null                2      0      0     ",
+      "25": "push                2      0      0     ",
+      "26": "set_agg             0      1      20    ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     "
     }
   }
 }]
+# test: select self
+select self
+{"msg": "unexpected <SELF> usage without lambda context"}
+# test: select int -> self from table
+select 0 -> self from test
+[0]
+select 0 -> self + 1 from test
+[5]
+explain select 0 -> self + 1 from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "merge_recv_agg      0      0      20    ",
+      "03": "set                 1      1      0     ",
+      "04": "store_open          1      0      6     ",
+      "05": "jmp                 10     0      0     ",
+      "06": "store_read          2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "store_next          1      6      0     ",
+      "10": "store_open          1      1      0     ",
+      "11": "cte_set             0      1      0     ",
+      "12": "content             0      -      -     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      1     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "int                 2      -      0     # -2147483648",
+      "03": "push                2      0      0     ",
+      "04": "table_open          0      0      6     # public.test (primary)",
+      "05": "jmp                 17     0      0     ",
+      "06": "bool                2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_get             2      0      0     ",
+      "09": "int                 3      -      0     # 0",
+      "10": "push                3      0      0     ",
+      "11": "self                3      0      2     ",
+      "12": "int                 4      -      0     # 1",
+      "13": "addii               5      3      4     ",
+      "14": "push                5      0      0     ",
+      "15": "set_agg             0      2      20    ",
+      "16": "table_next          0      6      0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "free                1      0      0     ",
+      "19": "bool                1      1      0     ",
+      "20": "push                1      0      0     ",
+      "21": "set_get             1      0      0     ",
+      "22": "null                2      0      0     ",
+      "23": "push                2      0      0     ",
+      "24": "set_agg             0      1      20    ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
+    }
+  }
+}]
+select 0 -> (self + 1) + self from test
+[31]
+# test: select string -> self from table
+select '' -> self || id::string from test
+["01234"]
+select '' -> self::concat(id::string) from test
+["01234"]
+# test: select [] -> self from table
+select [] -> self::append(id) from test
+[[0, 1, 2, 3, 4]]
+select [] -> append(self, id) from test
+[[0, 1, 2, 3, 4]]
+select [] -> self::append(id::string) from test
+[["0", "1", "2", "3", "4"]]
+# test: select {} -> self from table
+select {} -> self::set('key_' || id::string, data) from test
+[{
+  "key_0": 0,
+  "key_1": 1,
+  "key_2": 2,
+  "key_3": 1,
+  "key_4": 3
+}]
+# test: select int -> from table group by
+select * from test
+[[0, 0], [1, 1], [2, 2], [3, 1], [4, 3]]
+select data, 0 -> self + 1 from test group by data
+[[0, 1], [1, 2], [2, 1], [3, 1]]
+# test: select column -> from table (unsupported)
+select id -> self + 1 from test
+{"msg": "<id> target column cannot be found"}
+# test: select expr -> from table
+select (select 1 + 2) -> self + 1 from test
+[8]
+# test: select subquery -> from table
+select (select data from test t where id = 3) -> self + 1 from test
+[6]
+# test: select (select column -> from table) from table
+select id, (select o.id -> self + 1 from test) from test as o
+[[0, 5], [1, 6], [2, 7], [3, 8], [4, 9]]
+select (select o.id -> self + 1 from test) from test as o
+[5, 6, 7, 8, 9]
 drop table test
-# test: lambda (init exceptions)
-create shared table test (id int primary key)
-insert into test 1,2,3,4,5
-select lambda n(id) = n::append(id) from test
-{"msg": "cursor: cursor is not active"}
-select lambda n(id) = 0
-{"msg": "no targets to use with GROUP BY or aggregates"}
-select lambda n(id) = 0 from [1,2,3]
-{"msg": "cursor: cursor is not active"}
-select lambda n(*) = 0 from [1,2,3]
-{"msg": "*: not in active scan"}
-# test: lambda (subquery)
-select lambda n(select * from test) = n from [1, 2, 3]
-[[[1], [2], [3], [4], [5]]]
-select lambda n(select * from test) = n::append(*) from [1, 2, 3]
-[[[1], [2], [3], [4], [5], 1, 2, 3]]
-select lambda n(select id from test) = n::append(*) from [6, 7, 8]
-[[1, 2, 3, 4, 5, 6, 7, 8]]
+# test: select int -> self from distributed table (unsupported)
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+insert into test values (1, 1)
+insert into test values (2, 2)
+insert into test values (3, 1)
+insert into test values (4, 3)
+select 0 -> self + 1 from test
+{"msg": "distributed operation with lambda is not supported"}
 drop table test
 disconnect S0
 close E0

@@ -82,9 +82,8 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 	AstSelect* select = arg;
 
 	// create a list of aggs based on type
-	int  aggs_offset = code_data_pos(&self->code_data);
-	int* aggs = buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
-	select->aggs = aggs_offset;
+	select->aggs = code_data_pos(&self->code_data);
+	buf_claim(&self->code_data.data, sizeof(int) * select->expr_aggs.count);
 
 	// get existing or create a new row by key, return
 	// the row reference
@@ -119,6 +118,17 @@ emit_select_on_match_aggregate(Compiler* self, Target* target, void* arg)
 		column_set_type(agg->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
+
+		// lambda
+		int* aggs = (int*)code_data_at(&self->code_data, select->aggs);
+		if (! agg->function)
+		{
+			if (rt != agg->expr_seed_type)
+				error("lambda expression type mismatch");
+			agg->id = AGG_LAMBDA;
+			aggs[agg->order] = AGG_LAMBDA;
+			continue;
+		}
 
 		switch (agg->function->id) {
 		case KCOUNT:

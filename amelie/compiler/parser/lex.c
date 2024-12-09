@@ -176,22 +176,22 @@ lex_next(Lex* self)
 			ast->id = KMETHOD;
 			return ast;
 		}
-		// :=
-		if (symbol == ':' && symbol_next == '=') {
+		// ||
+		if (symbol == '|' && symbol_next == '|') {
 			self->pos++;
-			ast->id = KASSIGN;
+			ast->id = KCAT;
+			return ast;
+		}
+		// ->
+		if (symbol == '-' && symbol_next == '>') {
+			self->pos++;
+			ast->id = KARROW;
 			return ast;
 		}
 		// <>
 		if (symbol == '<' && symbol_next == '>') {
 			self->pos++;
 			ast->id = KNEQU;
-			return ast;
-		}
-		// >>
-		if (symbol == '>' && symbol_next == '>') {
-			self->pos++;
-			ast->id = KSHR;
 			return ast;
 		}
 		// >=
@@ -212,10 +212,16 @@ lex_next(Lex* self)
 			ast->id = KSHL;
 			return ast;
 		}
-		// ||
-		if (symbol == '|' && symbol_next == '|') {
+		// >>
+		if (symbol == '>' && symbol_next == '>') {
 			self->pos++;
-			ast->id = KCAT;
+			ast->id = KSHR;
+			return ast;
+		}
+		// :=
+		if (symbol == ':' && symbol_next == '=') {
+			self->pos++;
+			ast->id = KASSIGN;
 			return ast;
 		}
 symbol:;

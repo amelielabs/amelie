@@ -35,6 +35,7 @@ enum
 	KNEQU,
 	KCAT,
 	KASSIGN,
+	KARROW,
 
 	// name/path
 	KNAME,
@@ -70,7 +71,7 @@ enum
 	KARGS,
 	KCALL,
 	KMETHOD,
-	KLAMBDA,
+	KSELF,
 	KNEG,
 	KARRAY,
 

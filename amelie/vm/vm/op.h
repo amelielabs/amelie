@@ -179,6 +179,7 @@ enum
 	CSET_GET,
 	CSET_RESULT,
 	CSET_AGG,
+	CSELF,
 
 	// merge
 	CMERGE,

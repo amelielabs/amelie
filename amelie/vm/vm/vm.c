@@ -282,6 +282,7 @@ vm_run(Vm*       self,
 		&&cset_get,
 		&&cset_result,
 		&&cset_agg,
+		&&cself,
 
 		// set merge
 		&&cmerge,
@@ -1196,6 +1197,18 @@ cset_agg:
 	agg_write(set, stack_at(stack, set->count_columns), r[op->b].integer,
 	          (int*)code_data_at(code_data, op->c));
 	stack_popn(stack, set->count_columns);
+	op_next;
+
+cself:
+	// [result, set, row, seed]
+	set = (Set*)r[op->b].store;
+	// return aggregate state or seed, if the state is null
+	a = stack_pop(stack);
+	b = set_column(set, r[op->c].integer, a->integer);
+	if (likely(b->type != TYPE_NULL))
+		value_copy(&r[op->a], b);
+	else
+		value_copy(&r[op->a], &r[op->d]);
 	op_next;
 
 cmerge:

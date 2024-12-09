@@ -58,6 +58,7 @@ priority_map[KEYWORD_MAX] =
 	[KBETWEEN]                 = 4,
 	[KIN]                      = 4,
 	[KAT]                      = 4,
+	[KARROW]                   = 4,
 	// 5
 	['|']                      = 5,
 	// 6
@@ -96,11 +97,11 @@ priority_map[KEYWORD_MAX] =
 	[KSERIAL]                  = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
+	[KSELF]                    = priority_value,
 	[KSUM]                     = priority_value,
 	[KAVG]                     = priority_value,
 	[KMIN]                     = priority_value,
 	[KMAX]                     = priority_value,
-	[KLAMBDA]                  = priority_value,
 	[KREAL]                    = priority_value,
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
@@ -265,53 +266,23 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	return &agg->ast;
 }
 
-#if 0
 static inline Ast*
-expr_lambda(Stmt* self, Expr* expr)
+expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 {
 	if (unlikely(expr == NULL || !expr->aggs))
 		error("unexpected lambda usage");
 
-	// lambda name(expr) = expr
-
-	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("lambda <name> expected");
-
-	// ensure lambda is not redefined
-	auto node = expr->aggs->list;
-	for (; node; node = node->next)
-	{
-		auto agg = ast_agg_of(node->ast);
-		if (! agg->name)
-			continue;
-		if (str_compare(&agg->name->string, &name->string))
-			error("lambda <%.*s> redefined", str_size(&name->string),
-			      str_of(&name->string));
-	}
-
-	// (expr)
-	if (! stmt_if(self, '('))
-		error("lambda name <(> expected");
-	auto init = parse_expr(self, expr);
-	if (! stmt_if(self, ')'))
-		error("lambda name (expr<)> expected");
-
-	// =
-	if (! stmt_if(self, '='))
-		error("lambda name (expr) <=> expected");
-
-	// expr
-	auto arg = parse_expr(self, expr);
-
 	// create aggregate ast node
-	auto agg = ast_agg_allocate(NULL, expr->aggs->count, arg, init);
+	auto agg = ast_agg_allocate(NULL, expr->aggs->count, NULL, seed, expr->as);
 	ast_list_add(expr->aggs, &agg->ast);
-	agg->name = name;
+
+	// process lambda expression using different context
+	Expr ctx;
+	expr_init(&ctx);
+	ctx.lambda = &agg->ast;
+	agg->expr = parse_expr(self, &ctx);
 	return &agg->ast;
 }
-#endif
 
 static Ast*
 expr_case(Stmt* self, Expr* expr)
@@ -478,8 +449,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value = expr_aggregate(self, expr, value);
 		break;
 
-	case KLAMBDA:
-		/*value = expr_lambda(self, expr);*/
+	// lambda
+	case KSELF:
+		if (!expr || !expr->lambda)
+			error("unexpected <SELF> usage without lambda context");
+		value->r = expr->lambda;
 		break;
 
 	// const
@@ -742,6 +716,13 @@ parse_op(Stmt*     self, Expr* expr,
 		if (! stmt_if(self, KTIMEZONE))
 			error("AT <TIMEZONE> expected");
 		auto r = parse_expr(self, expr);
+		ast_push(result, r);
+		break;
+	}
+	case KARROW:
+	{
+		// expr -> expr
+		auto r = expr_lambda(self, ast_head(result), expr);
 		ast_push(result, r);
 		break;
 	}

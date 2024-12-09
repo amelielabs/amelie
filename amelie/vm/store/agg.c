@@ -77,6 +77,9 @@ agg_merge_row(Set* self, Value* row, int* aggs)
 			avg_add_double(&src[col].avg, row[col].avg.sum_double,
 			                row[col].avg.count);
 			break;
+		case AGG_LAMBDA:
+			error("distributed operation with lambda is not supported");
+			break;
 		}
 	}
 
@@ -249,6 +252,11 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 				avg_init(&src[col].avg);
 			}
 			avg_add_double(&src[col].avg, value, 1);
+			break;
+		}
+		case AGG_LAMBDA:
+		{
+			value_move(&src[col], &row[col]);
 			break;
 		}
 		}

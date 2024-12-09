@@ -151,7 +151,6 @@ static Keyword keywords_l[] =
 {
 	{ KLIKE,                  "like",                  4  },
 	{ KLIMIT,                 "limit",                 5  },
-	{ KLAMBDA,                "lambda",                6  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
 	{ 0,                       NULL,                   0  }
@@ -213,6 +212,7 @@ static Keyword keywords_r[] =
 static Keyword keywords_s[] =
 {
 	{ KSELECT,                "select",                6  },
+	{ KSELF,                  "self",                  4  },
 	{ KSET,                   "set",                   3  },
 	{ KSHOW,                  "show",                  4  },
 	{ KSUM,                   "sum",                   3  },

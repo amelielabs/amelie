@@ -21,7 +21,8 @@ enum
 	AGG_DOUBLE_MIN,
 	AGG_DOUBLE_MAX,
 	AGG_DOUBLE_SUM,
-	AGG_DOUBLE_AVG
+	AGG_DOUBLE_AVG,
+	AGG_LAMBDA
 };
 
 static inline const char*

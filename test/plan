@@ -88,9 +88,9 @@ test exists
 test in
 test any
 test all
+test lambda
 test limits
 test format
-#test lambda
 
 # pushdown
 directory pushdown
