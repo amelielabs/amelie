@@ -57,7 +57,11 @@ parse_update_expr(Stmt* self)
 			error("UPDATE name SET column <=> expected");
 
 		// expr
-		op->r = parse_expr(self, NULL);
+		auto def = stmt_if(self, KDEFAULT);
+		if (def)
+			op->r = def;
+		else
+			op->r = parse_expr(self, NULL);
 
 		// op(column, expr)
 		if (expr == NULL)

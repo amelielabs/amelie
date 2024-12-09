@@ -30,6 +30,24 @@ update test set data = data + 1
 select * from test
 drop table test
 
+# test: update default (null)
+create table test(id int primary key, data int)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+update test set data = default
+select * from test
+drop table test
+
+# test: update default
+create table test(id int primary key, data int default 123)
+insert into test values (0, 3)
+insert into test values (1, 2)
+insert into test values (2, 1)
+update test set data = default
+select * from test
+drop table test
+
 # test: update schema
 create schema test
 create table test.test(id int primary key, data int)

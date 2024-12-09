@@ -106,8 +106,20 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 		runpin(self, rexpr);
 
 		// push expr
-		rexpr = emit_expr(self, target, op->r);
-		auto type = rtype(self, rexpr);
+		int type;
+		if (op->r->id == KDEFAULT)
+		{
+			// SET column = DEFAULT
+			int offset = code_data_offset(&self->code_data);
+			buf_write_buf(&self->code_data.data, &column->constraint.value);
+			rexpr = op2(self, CJSON, rpin(self, TYPE_INT), offset);
+			type  = column->type;
+		} else
+		{
+			// SET column = expr
+			rexpr = emit_expr(self, target, op->r);
+			type  = rtype(self, rexpr);
+		}
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
