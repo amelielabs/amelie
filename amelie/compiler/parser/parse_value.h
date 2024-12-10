@@ -11,5 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-int parse_value(Lex*, Local*, Json*, Column*, Value*);
-int parse_value_default(Column*, Value*, uint64_t);
+void parse_value(Lex*, Local*, Json*, Column*, Value*, SetMeta*);
+void parse_value_default(Column*, Value*, uint64_t, SetMeta*);
+void parse_value_validate(Keys*, Column*, Value*, SetMeta*);

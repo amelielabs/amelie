@@ -63,10 +63,10 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		if (!is_default && list && list->column->order == column->order)
 		{
 			// parse column value
-			row_meta->row_size +=
-				parse_value(self->lex, self->local, self->json,
-				            column,
-				            column_value);
+			parse_value(self->lex, self->local, self->json,
+			            column,
+			            column_value,
+			            row_meta);
 
 			// ,
 			list = list->next;
@@ -78,18 +78,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			row_meta->row_size +=
-				parse_value_default(column, column_value, serial);
+			parse_value_default(column, column_value, serial, row_meta);
 		}
 
-		// ensure NOT NULL constraint
-		if (column_value->type == TYPE_NULL && column->constraint.not_null)
-			error("column <%.*s> value cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
-
-		// hash column if it is a part of the key
-		if (column->key && keys_find_column(keys, column->order))
-			row_meta->hash = value_hash(column_value, row_meta->hash);
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(keys, column, column_value, row_meta);
 	}
 
 	// )
@@ -125,25 +118,18 @@ parse_row(Stmt* self, AstInsert* stmt)
 		if (! is_default)
 		{
 			// parse column value
-			row_meta->row_size +=
-				parse_value(self->lex, self->local, self->json,
-				            column,
-				            column_value);
+			parse_value(self->lex, self->local, self->json,
+			            column,
+			            column_value,
+			            row_meta);
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			row_meta->row_size +=
-				parse_value_default(column, column_value, serial);
+			parse_value_default(column, column_value, serial, row_meta);
 		}
 
-		// ensure NOT NULL constraint
-		if (column_value->type == TYPE_NULL && column->constraint.not_null)
-			error("column <%.*s> value cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
-
-		// hash column if it is a part of the key
-		if (column->key && keys_find_column(keys, column->order))
-			row_meta->hash = value_hash(column_value, row_meta->hash);
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(keys, column, column_value, row_meta);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -241,16 +227,10 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
-			row_meta->row_size += parse_value_default(column, column_value, serial);
+			parse_value_default(column, column_value, serial, row_meta);
 
-			// ensure NOT NULL constraint
-			if (column_value->type == TYPE_NULL && column->constraint.not_null)
-				error("column <%.*s> value cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
-
-			// hash column if it is a part of the key
-			if (column->key && keys_find_column(keys, column->order))
-				row_meta->hash = value_hash(column_value, row_meta->hash);
+			// ensure NOT NULL constraint and hash key
+			parse_value_validate(keys, column, column_value, row_meta);
 		}
 	}
 }

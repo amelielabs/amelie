@@ -87,7 +87,7 @@ buf_reserve(Buf* self, int size)
 		return &self->position;
 
 	int size_actual = buf_size(self) + size;
-	int size_grow = buf_capacity(self)*  2;
+	int size_grow = buf_capacity(self) * 2;
 	if (unlikely(size_actual > size_grow))
 		size_grow = size_actual;
 

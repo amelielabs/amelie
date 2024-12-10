@@ -171,11 +171,12 @@ insert into test (id) values (0) on conflict do update set data = data + 1 retur
 select * from test
 [[0, 3]]
 drop table test
-# test: insert generated key (expr)
+# test: insert generated key (null)
 create table test (id int primary key as (777) stored)
 insert into test values (null)
-{"msg": "column <id> value cannot be NULL"}
+# test: insert generated key (expr)
 insert into test values (0)
+{"msg": "index 'primary': unique key constraint violation"}
 insert into test values (0)
 {"msg": "index 'primary': unique key constraint violation"}
 select * from test

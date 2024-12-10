@@ -96,24 +96,26 @@ parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 	return true;
 }
 
-hot int
-parse_value(Lex*    self, Local* local,
-            Json*   json,
-            Column* column,
-            Value*  value)
+hot void
+parse_value(Lex*     self, Local* local,
+            Json*    json,
+            Column*  column,
+            Value*   value,
+            SetMeta* meta)
 {
 	auto ast = lex_next(self);
 	if (ast->id == KNULL)
 	{
 		value_set_null(value);
-		return 0;
+		return;
 	}
 	switch (column->type) {
 	case TYPE_BOOL:
 		if (ast->id != KTRUE && ast->id != KFALSE)
 			break;
 		value_set_bool(value, ast->id == KTRUE);
-		return column->type_size;
+		meta->row_size += column->type_size;
+		return;
 	case TYPE_INT:
 	{
 		auto minus = ast->id == '-';
@@ -131,7 +133,8 @@ parse_value(Lex*    self, Local* local,
 		} else {
 			break;
 		}
-		return column->type_size;
+		meta->row_size += column->type_size;
+		return;
 	}
 	case TYPE_DOUBLE:
 	{
@@ -150,14 +153,16 @@ parse_value(Lex*    self, Local* local,
 		} else {
 			break;
 		}
-		return column->type_size;
+		meta->row_size += column->type_size;
+		return;
 	}
 	case TYPE_STRING:
 	{
 		if (likely(ast->id != KSTRING))
 			break;
 		value_set_string(value, &ast->string, NULL);
-		return json_size_string(str_size(&ast->string));
+		meta->row_size += json_size_string(str_size(&ast->string));
+		return;
 	}
 	case TYPE_JSON:
 	{
@@ -178,20 +183,22 @@ parse_value(Lex*    self, Local* local,
 		self->pos = json->pos;
 		unguard();
 		value_set_json_buf(value, buf);
-		return buf_size(buf);
+		meta->row_size += buf_size(buf);
+		return;
 	}
 	case TYPE_TIMESTAMP:
 	{
 		// current_timestamp
+		meta->row_size += column->type_size;
 		if (ast->id == KCURRENT_TIMESTAMP) {
 			value_set_timestamp(value, local->time_us);
-			return column->type_size;
+			return;
 		}
 
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
-			return column->type_size;
+			return;
 		}
 
 		// [TIMESTAMP] string
@@ -204,7 +211,7 @@ parse_value(Lex*    self, Local* local,
 		timestamp_init(&ts);
 		timestamp_read(&ts, &ast->string);
 		value_set_timestamp(value, timestamp_of(&ts, local->timezone));
-		return column->type_size;
+		return;
 	}
 	case TYPE_INTERVAL:
 	{
@@ -217,25 +224,27 @@ parse_value(Lex*    self, Local* local,
 		interval_init(&iv);
 		interval_read(&iv, &ast->string);
 		value_set_interval(value, &iv);
-		return column->type_size;
+		meta->row_size += column->type_size;
+		return;
 	}
 	case TYPE_VECTOR:
 	{
 		if (! parse_vector(self, ast, column, value))
 			break;
-		return vector_size(value->vector);
+		meta->row_size += vector_size(value->vector);
+		return;
 	}
 	}
 
 	error("column <%.*s> value expected to be '%s'", str_size(&column->name),
 	      str_of(&column->name), type_of(column->type));
-	return 0;
 }
 
-hot int
+hot void
 parse_value_default(Column*  column,
                     Value*   column_value,
-                    uint64_t serial)
+                    uint64_t serial,
+                    SetMeta* meta)
 {
 	// SERIAL, RANDOM or DEFAULT
 	auto cons = &column->constraint;
@@ -252,10 +261,33 @@ parse_value_default(Column*  column,
 		value_decode(column_value, cons->value.start, NULL);
 	}
 	if (column_value->type == TYPE_NULL)
-		return 0;
+		return;
 
 	if (column_value->type == TYPE_STRING)
-		return json_size_string(str_size(&column_value->string));
+		meta->row_size += json_size_string(str_size(&column_value->string));
+	else
+		meta->row_size += column->type_size;
+}
 
-	return column->type_size;
+void
+parse_value_validate(Keys*    keys,
+                     Column*  column,
+                     Value*   column_value,
+                     SetMeta* meta)
+{
+	// ensure NOT NULL constraint
+	if (column_value->type == TYPE_NULL)
+	{
+		// value can be NULL for generated column (will be rechecked later)
+		if (! str_empty(&column->constraint.as_stored))
+			return;
+
+		if (column->constraint.not_null)
+			error("column <%.*s> value cannot be NULL", str_size(&column->name),
+			      str_of(&column->name));
+	}
+
+	// hash column if it is a part of the key
+	if (column->key && keys_find_column(keys, column->order))
+		meta->hash = value_hash(column_value, meta->hash);
 }

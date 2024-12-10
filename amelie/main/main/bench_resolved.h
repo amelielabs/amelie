@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern BenchIf bench_aggregated;
+extern BenchIf bench_resolved;

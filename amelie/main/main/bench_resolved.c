@@ -13,24 +13,24 @@
 #include <amelie_private.h>
 
 static void
-bench_aggregated_create(Bench* self, Client* client)
+bench_resolved_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
 	str_set_cstr(&str,
-	             "create aggregated table __bench.test ("
+	             "create table __bench.test ("
 	             "    id int primary key random (100000),"
-	             "    a int as ( a + 1 ) aggregated default 0,"
-	             "    b int as ( b + 1 ) aggregated default 0,"
-	             "    c int as ( c + 1 ) aggregated default 0,"
-	             "    d int as ( d + 1 ) aggregated default 0,"
-	             "    e int as ( e + 1 ) aggregated default 0"
+	             "    a int as ( a + 1 ) resolved default 0,"
+	             "    b int as ( b + 1 ) resolved default 0,"
+	             "    c int as ( c + 1 ) resolved default 0,"
+	             "    d int as ( d + 1 ) resolved default 0,"
+	             "    e int as ( e + 1 ) resolved default 0"
 	             ") with (type = 'hash')");
 	client_execute(client, &str);
 }
 
 hot static void
-bench_aggregated_main(BenchWorker* self, Client* client)
+bench_resolved_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto batch = var_int_of(&bench->batch);
@@ -48,8 +48,8 @@ bench_aggregated_main(BenchWorker* self, Client* client)
 	}
 }
 
-BenchIf bench_aggregated =
+BenchIf bench_resolved =
 {
-	.create = bench_aggregated_create,
-	.main   = bench_aggregated_main
+	.create = bench_resolved_create,
+	.main   = bench_resolved_main
 };

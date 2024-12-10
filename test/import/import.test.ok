@@ -30,6 +30,8 @@ create table test (id int primary key, a int, b int)
 create table test2 (id int primary key, a int as (id * 2) stored)
 create table test3 (id int primary key, a int as (a + 1) resolved)
 create table test4 (id int primary key serial, a int default 777)
+create table test5 (id int primary key serial, data json not null)
+create table test6 (id int primary key as (data.id::int) stored, data json not null)
 disconnect S0
 # test: POST /schema/table (text/plain) unsupported
 connect E0 S0 http://localhost:3485/public/test
@@ -99,7 +101,7 @@ connect E0 Sx http://localhost:3485/
 select * from test3
 [[0, 2], [1, 1]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl)
+# test: POST /schema/table (application/jsonl) (array)
 connect E0 S0 http://localhost:3485/public/test
 import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
 import application/jsonl [12,
@@ -123,7 +125,7 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (column list)
+# test: POST /schema/table (application/jsonl) (array, column list)
 connect E0 S0 http://localhost:3485/public/test?columns=id
 import application/jsonl [13]
 disconnect S0
@@ -134,7 +136,7 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (empty column list)
+# test: POST /schema/table (application/jsonl) (array, empty column list)
 connect E0 S0 http://localhost:3485/public/test4?columns=
 import application/jsonl []
 disconnect S0
@@ -142,22 +144,22 @@ connect E0 Sx http://localhost:3485/
 select * from test4
 [[0, 777]]
 disconnect Sx
-# test: POST /schema/table (application/json)
+# test: POST /schema/table (application/json) (array)
 connect E0 S0 http://localhost:3485/public/test
 import application/json [[15,0,0]]
 import application/json [[16,0,0]
 {"msg": "] expected"}
 import application/json [[16,0,0],
-{"msg": "[ expected"}
+{"msg": "json object or array expected"}
 import application/json [[16,0,0],]
-{"msg": "[ expected"}
+{"msg": "json object or array expected"}
 import application/json [[16,0,0], [16,0,7]]
 {"msg": "index 'primary': unique key constraint violation"}
 import application/json [[16,0,0], [17,0,7]] junk
 {"msg": "eof expected"}
 import application/json 
 import application/json []
-{"msg": "[ expected"}
+{"msg": "json object or array expected"}
 import application/json {}
 {"msg": "[ expected"}
 disconnect S0
@@ -165,7 +167,7 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0]]
 disconnect Sx
-# test: POST /schema/table (application/json) (column list)
+# test: POST /schema/table (application/json) (array, column list)
 connect E0 S0 http://localhost:3485/public/test?columns=id
 import application/json [[18,0]
 {"msg": "incorrect number of columns in the row"}
@@ -179,12 +181,89 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/json) (empty column list)
+# test: POST /schema/table (application/json) (array, empty column list)
 connect E0 S0 http://localhost:3485/public/test4?columns=
 import application/json [[], [], []]
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test4
 [[0, 777], [1, 777], [2, 777], [3, 777]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl) (obj, empty column list)
+connect E0 S0 http://localhost:3485/public/test4?columns=
+import application/jsonl {}
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * from test4
+[[0, 777], [1, 777], [2, 777], [3, 777], [4, 777]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl) (obj, one column)
+connect E0 S0 http://localhost:3485/public/test5?columns=data
+import application/jsonl {"id": 1} {"id": 2} {"id": 3}
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * format 'json' from test5
+[[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}]]
+disconnect Sx
+# test: POST /schema/table (application/jsonl) (obj, column list)
+connect E0 S0 http://localhost:3485/public/test5?columns=id,data
+import application/jsonl {"id": 1} {"id": 2} {"id": 3}
+{"msg": "JSON column list must have zero or one value"}
+disconnect S0
+# test: POST /schema/table (application/jsonl) (obj)
+connect E0 S0 http://localhost:3485/public/test
+import application/jsonl {"id": 20}
+import application/jsonl {"id": 20, "a"
+{"msg": "{\"key\"<:> expected"}
+import application/jsonl {"id": 20,
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl {"id": 20, 1
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl {"id": 20, "a"
+{"msg": "{\"key\"<:> expected"}
+import application/jsonl {"id": 20, "a":
+{"msg": "column <a> value expected to be 'int'"}
+import application/jsonl {"id": 20, "a": 0
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl {"id": 20, "a": 0,
+{"msg": "incorrect number of columns in the row"}
+import application/jsonl {"id": 20, "a": 0, "b"
+{"msg": "{\"key\"<:> expected"}
+import application/jsonl {"id": 20, "a": 0, "b": 0}
+{"msg": "index 'primary': unique key constraint violation"}
+import application/jsonl {"id": 21, "a": 0, "b": 0}
+import application/jsonl {"id": 22, "b": 0}
+import application/jsonl {"id": 23}
+import application/jsonl {"id": 22, "b": 0, "b": 1}
+{"msg": "column <b> value is redefined"}
+import application/jsonl {"id": 24} {"id": 25} {"id": 26}
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * format 'json' from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null]]
+disconnect Sx
+# test: POST /schema/table (application/json) (obj)
+connect E0 S0 http://localhost:3485/public/test
+import application/json [{"id": 27}, {"id": 28}]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * format 'json' from test
+[[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null], [27, null, null], [28, null, null]]
+disconnect Sx
+# test: POST /schema/table (application/json) (obj, one column)
+connect E0 S0 http://localhost:3485/public/test5?columns=data
+import application/json [{"id": 4}, {"id": 5}]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * format 'json' from test5
+[[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}], [3, {"id": 4}], [4, {"id": 5}]]
+disconnect Sx
+# test: POST /schema/table (application/json) (obj, one column, generated)
+connect E0 S0 http://localhost:3485/public/test6?columns=data
+import application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
+disconnect S0
+connect E0 Sx http://localhost:3485/
+select * format 'json' from test6
+[[1, {"id": 1}], [2, {"id": 2, "data": [1, 2, 3]}]]
 disconnect Sx
 close E0

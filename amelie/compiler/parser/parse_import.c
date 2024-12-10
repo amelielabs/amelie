@@ -34,21 +34,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-hot static inline int
-parse_import_value(Stmt*   self, Endpoint* endpoint,
-                   Column* column,
-                   Value*  column_value)
-{
-	// todo: support csv null columns
-	unused(endpoint);
-
-	// parse column value
-	auto size = parse_value(self->lex, self->local, self->json,
-	                        column,
-	                        column_value);
-	return size;
-}
-
 hot static inline void
 parse_import_row(Stmt* self, Endpoint* endpoint)
 {
@@ -76,39 +61,179 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 			if (list && list->column == column)
 			{
 				// parse column value
-				row_meta->row_size +=
-					parse_import_value(self, endpoint, column, column_value);
-
+				parse_value(self->lex, self->local, self->json,
+				            column,
+				            column_value,
+				            row_meta);
 				list = list->next;
+				column_separator = list != NULL;
 			} else
 			{
 				// default value, write SERIAL, RANDOM or DEFAULT
-				row_meta->row_size +=
-					parse_value_default(column, column_value, serial);
+				parse_value_default(column, column_value, serial, row_meta);
+				column_separator = false;
 			}
-
-			column_separator = list != NULL;
 		} else
 		{
 			// parse column value
-			row_meta->row_size +=
-				parse_import_value(self, endpoint, column, column_value);
-
+			parse_value(self->lex, self->local, self->json,
+			            column,
+			            column_value,
+			            row_meta);
 			column_separator = !list_is_last(&columns->list, &column->link);
 		}
 
-		// ensure NOT NULL constraint
-		if (column_value->type == TYPE_NULL && column->constraint.not_null)
-			error("column <%.*s> value cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
-
-		// hash key
-		if (column->key && keys_find_column(keys, column->order))
-			row_meta->hash = value_hash(column_value, row_meta->hash);
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(keys, column, column_value, row_meta);
 
 		// ,
 		if (column_separator && !stmt_if(self, ','))
 			error("incorrect number of columns in the row");
+	}
+}
+
+hot static inline void
+parse_import_obj(Stmt* self, Endpoint* endpoint)
+{
+	auto stmt    = ast_insert_of(self->ast);
+	auto table   = endpoint->table;
+	auto columns = table_columns(table);
+	auto keys    = table_keys(table);
+
+	// prepare row
+	SetMeta* row_meta;
+	auto row = set_reserve(stmt->values, &row_meta);
+
+	auto buf = buf_create();
+	guard_buf(buf);
+	buf_reserve(buf, sizeof(bool) * columns->list_count);
+	memset(buf->start, 0, sizeof(bool) * columns->list_count);
+
+	auto match = (bool*)buf->start;
+	auto match_count = 0;
+	for (;;)
+	{
+		// "key"
+		auto key = stmt_if(self, KSTRING);
+		if (! key)
+			break;
+
+		// :
+		if (unlikely(! stmt_if(self, ':')))
+			error("{\"key\"<:> expected");
+
+		// match column
+		auto column = columns_find(columns, &key->string);
+		if (! column)
+			error("column '%.*s' does not exists", str_size(&key->string),
+			      str_of(&key->string));
+
+		// ensure column is not redefined
+		if (unlikely(match[column->order]))
+			error("column <%.*s> value is redefined", str_size(&column->name),
+			      str_of(&column->name));
+		match[column->order] = true;
+		match_count++;
+
+		// parse column value
+		auto column_value = &row[column->order];
+		parse_value(self->lex, self->local, self->json,
+		            column,
+		            column_value,
+		            row_meta);
+
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(keys, column, column_value, row_meta);
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+	if (match_count == columns->list_count)
+		return;
+
+	// set next serial value
+	uint64_t serial = serial_next(&table->serial);
+
+	// default value, write SERIAL, RANDOM or DEFAULT
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		if (match[column->order])
+			continue;
+
+		auto column_value = &row[column->order];
+		parse_value_default(column, column_value, serial, row_meta);
+
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(keys, column, column_value, row_meta);
+	}
+}
+
+hot static inline void
+parse_import_json_row(Stmt* self, Endpoint* endpoint)
+{
+	// {} or []
+	auto begin = stmt_if(self, '{');
+	if (begin)
+	{
+		if (endpoint->columns_has)
+		{
+			if (unlikely(endpoint->columns_count > 1))
+				error("JSON column list must have zero or one value");
+
+			// process {} as a value for column, if one column
+			if (endpoint->columns_count == 1)
+				stmt_push(self, begin);
+
+			parse_import_row(self, endpoint);
+		} else {
+			parse_import_obj(self, endpoint);
+		}
+		if (! endpoint->columns_count)
+			if (unlikely(! stmt_if(self, '}')))
+				error("incorrect number of columns in the row");
+		return;
+	}
+
+	if (! stmt_if(self, '['))
+		error("json object or array expected");
+	parse_import_row(self, endpoint);
+	if (unlikely(! stmt_if(self, ']')))
+		error("incorrect number of columns in the row");
+}
+
+hot static inline void
+parse_import_jsonl(Stmt* self, Endpoint* endpoint)
+{
+	for (;;)
+	{
+		// {} or []
+		parse_import_json_row(self, endpoint);
+		if (stmt_if(self, KEOF))
+			break;
+	}
+}
+
+hot static inline void
+parse_import_json(Stmt* self, Endpoint* endpoint)
+{
+	// [ {} or [], ...]
+	if (! stmt_if(self, '['))
+		error("[ expected");
+
+	for (;;)
+	{
+		// {} or []
+		parse_import_json_row(self, endpoint);
+
+		// ,]
+		if (stmt_if(self, ','))
+			continue;
+		if (unlikely(! stmt_if(self, ']')))
+			error("] expected");
+
+		break;
 	}
 }
 
@@ -126,54 +251,6 @@ parse_import_csv(Stmt* self, Endpoint* endpoint)
 		parse_import_row(self, endpoint);
 		if (stmt_if(self, KEOF))
 			break;
-	}
-}
-
-hot static inline void
-parse_import_jsonl(Stmt* self, Endpoint* endpoint)
-{
-	// [value, ...]
-	for (;;)
-	{
-		if (unlikely(! stmt_if(self, '[')))
-			error("[ expected");
-
-		parse_import_row(self, endpoint);
-
-		if (unlikely(! stmt_if(self, ']')))
-			error("incorrect number of columns in the row");
-
-		if (stmt_if(self, KEOF))
-			break;
-	}
-}
-
-hot static inline void
-parse_import_json(Stmt* self, Endpoint* endpoint)
-{
-	// [[row], ...]
-	if (! stmt_if(self, '['))
-		error("[ expected");
-
-	for (;;)
-	{
-		// [value, ...]
-		if (unlikely(! stmt_if(self, '[')))
-			error("[ expected");
-
-		parse_import_row(self, endpoint);
-
-		if (unlikely(! stmt_if(self, ']')))
-			error("incorrect number of columns in the row");
-
-		// ,]
-		if (stmt_if(self, ','))
-			continue;
-
-		if (unlikely(! stmt_if(self, ']')))
-			error("] expected");
-
-		break;
 	}
 }
 

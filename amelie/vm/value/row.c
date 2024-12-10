@@ -431,6 +431,9 @@ row_update_values(Columns*  columns,
 		} else {
 			value = &row[column->order];
 		}
+		if (unlikely(value->type == TYPE_NULL && column->constraint.not_null))
+			error("column <%.*s> value cannot be NULL", str_size(&column->name),
+			      str_of(&column->name));
 		size += row_column_size(column, value);
 		if (column->key && keys_find_column(keys, column->order))
 			*hash = value_hash(value, *hash);
