@@ -19,6 +19,14 @@ bench_resolved_create(Bench* self, Client* client)
 	Str str;
 	str_set_cstr(&str,
 	             "create table __bench.test ("
+	             "    ts   timestamp as ( current_timestamp::date_bin('3 sec'::interval) ) stored,"
+	             "    id   int random (10000),"
+	             "    hits int default 0 as ( hits + 1 ) resolved,"
+	             "    primary key(ts, id)"
+	             ") with (type = 'hash')");
+#if 0
+	str_set_cstr(&str,
+	             "create table __bench.test ("
 	             "    id int primary key random (100000),"
 	             "    a int as ( a + 1 ) resolved default 0,"
 	             "    b int as ( b + 1 ) resolved default 0,"
@@ -26,6 +34,7 @@ bench_resolved_create(Bench* self, Client* client)
 	             "    d int as ( d + 1 ) resolved default 0,"
 	             "    e int as ( e + 1 ) resolved default 0"
 	             ") with (type = 'hash')");
+#endif
 	client_execute(client, &str);
 }
 
