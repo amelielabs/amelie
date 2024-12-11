@@ -71,13 +71,11 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: functions()

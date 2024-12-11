@@ -189,7 +189,15 @@ schema_mgr_list(SchemaMgr* self)
 	{
 		auto schema = schema_of(list_at(Handle, link));
 		encode_string(buf, &schema->config->name);
-		schema_config_write(schema->config, buf);
+		// obj
+		encode_obj(buf);
+		// name
+		encode_raw(buf, "name", 4);
+		encode_string(buf, &schema->config->name);
+		// system
+		encode_raw(buf, "system", 6);
+		encode_bool(buf, schema->config->system);
+		encode_obj_end(buf);
 	}
 	encode_obj_end(buf);
 	return buf;

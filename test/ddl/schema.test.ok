@@ -5,13 +5,11 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: create schema statement parsing
@@ -37,36 +35,30 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test": {
     "name": "test",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test": {
     "name": "test",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 # test: create schema if not exists
@@ -77,18 +69,15 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test": {
     "name": "test",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 # test: drop schema statement parsing
@@ -108,13 +97,11 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: drop schema if exists
@@ -125,13 +112,11 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: drop system schema
@@ -141,13 +126,11 @@ show schemas
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: drop schema with dependency
@@ -176,18 +159,15 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test": {
     "name": "test",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 alter schema test rename test2
@@ -195,36 +175,30 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test2": {
     "name": "test2",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test2": {
     "name": "test2",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 # test: alter schema system

@@ -26,13 +26,11 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   }
 }]
 # test: drop schema cascade (tables)
@@ -59,18 +57,15 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test": {
     "name": "test",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 select system.tables().'test.a'.name
@@ -82,18 +77,15 @@ select system.schemas()
 [{
   "system": {
     "name": "system",
-    "system": true,
-    "create": false
+    "system": true
   },
   "public": {
     "name": "public",
-    "system": true,
-    "create": true
+    "system": true
   },
   "test2": {
     "name": "test2",
-    "system": false,
-    "create": true
+    "system": false
   }
 }]
 select system.tables().'test2.a'.name
