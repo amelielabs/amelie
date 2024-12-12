@@ -310,8 +310,11 @@ emit_aggregate(Compiler* self, Target* target, Ast* ast)
 	int  agg_type;
 	auto agg = ast_agg_of(ast);
 	if (agg->id == AGG_LAMBDA)
+	{
+		assert(agg->expr_seed_type != -1);
 		return op3(self, CSTORE_READ, rpin(self, agg->expr_seed_type),
 		           target->id, agg->order);
+	}
 	switch (agg->id) {
 	case AGG_INT_COUNT:
 		agg_op   = CCOUNT;

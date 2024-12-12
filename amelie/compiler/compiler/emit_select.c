@@ -339,7 +339,6 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 		op1(self, CFREE, agg->rseed);
 		runpin(self, agg->rseed);
 		agg->rseed = -1;
-		agg->expr_seed_type = -1;
 	}
 
 	// scan over created group

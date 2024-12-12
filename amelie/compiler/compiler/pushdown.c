@@ -77,7 +77,6 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 		op1(self, CFREE, agg->rseed);
 		runpin(self, agg->rseed);
 		agg->rseed = -1;
-		agg->expr_seed_type = -1;
 	}
 
 	// select aggr [without group by]

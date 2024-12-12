@@ -62,6 +62,9 @@ select (select data from test t where id = 3) -> self + 1 from test
 select id, (select o.id -> self + 1 from test) from test as o
 select (select o.id -> self + 1 from test) from test as o
 
+# test: select -> / ->
+select (0.0 -> self + id) / (0 -> self + 1) from test;
+
 drop table test
 
 # test: select int -> self from distributed table (unsupported)
