@@ -387,6 +387,7 @@ insert into test values (4, [1.0,)
 insert into test values (5, [1.0,])
 insert into test values (6, [1.0, 1.1])
 insert into test values (7, [1.0, 1.1, -2.2, -8])
+insert into test values (8, vector [1.0, 1.1, -2.2, -8])
 select * from test
 select vec::type from test
 drop table test

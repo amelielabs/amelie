@@ -784,17 +784,18 @@ insert into test values (0, [])
 insert into test values (1, [1.0])
 insert into test values (2, [1])
 insert into test values (3, [1.0, 1.1,])
-{"msg": "column <vec> invalid vector value"}
+{"msg": "invalid vector value"}
 insert into test values (4, [1.0,)
-{"msg": "column <vec> invalid vector value"}
+{"msg": "invalid vector value"}
 insert into test values (5, [1.0,])
-{"msg": "column <vec> invalid vector value"}
+{"msg": "invalid vector value"}
 insert into test values (6, [1.0, 1.1])
 insert into test values (7, [1.0, 1.1, -2.2, -8])
+insert into test values (8, vector [1.0, 1.1, -2.2, -8])
 select * from test
-[[0, []], [1, [1]], [2, [1]], [6, [1, 1.1]], [7, [1, 1.1, -2.2, -8]]]
+[[0, []], [1, [1]], [2, [1]], [6, [1, 1.1]], [7, [1, 1.1, -2.2, -8]], [8, [1, 1.1, -2.2, -8]]]
 select vec::type from test
-["vector", "vector", "vector", "vector", "vector"]
+["vector", "vector", "vector", "vector", "vector", "vector"]
 drop table test
 # test: insert secondary index
 create table test (id int primary key, data int)

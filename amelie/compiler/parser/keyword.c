@@ -258,6 +258,7 @@ static Keyword keywords_u[] =
 static Keyword keywords_v[] =
 {
 	{ KVALUES,                "values",                6  },
+	{ KVECTOR,                "vector",                6  },
 	{ KVIEW,                  "view",                  4  },
 	{ 0,                       NULL,                   0  }
 };

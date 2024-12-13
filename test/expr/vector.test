@@ -13,12 +13,33 @@ select [1.0, 1.1, 1.2]::vector
 select []::vector
 select []::vector::length
 
+select vector [1,2,3]
+select vector [1,2,3]::type
+select vector [1,2,3]::length
+select vector ""
+select vector [1.0]
+select vector [1.0, 1.1, 1.2]
+select vector []
+select vector []::length
+
 # test: vector = vector
 select [1.0, 1.1]::vector = [1.0, 1.1]::vector
 select [1.0, 1.1]::vector = [1.0, 1.0]::vector
 select [1.0, 1.1]::vector = [1.0]::vector
 select [1.0, 1.1]::vector = []::vector
 explain select []::vector = []::vector
+
+select vector [1.0, 1.1] = vector [1.0, 1.1]
+select vector [1.0, 1.1] = vector [1.0, 1.0]
+select vector [1.0, 1.1] = vector [1.0]
+select vector [1.0, 1.1] = vector []
+explain select vector [] = vector []
+
+#select vector [1.0, 1.1]::vector = vector [1.0, 1.1]
+#select vector [1.0, 1.1]::vector = vector [1.0, 1.0]
+#select vector [1.0, 1.1]::vector = vector [1.0]
+#select vector [1.0, 1.1]::vector = vector []
+#explain select vector [] = vector []
 
 # test: vector = null
 select [1.0, 1.1]::vector = null

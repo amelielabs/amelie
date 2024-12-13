@@ -34,29 +34,25 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-hot static inline bool
-parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
+hot void
+parse_vector(Lex* self, Buf* buf)
 {
 	// [
-	if (ast->id != '[')
-		return false;
-	auto buf = buf_create();
-	guard_buf(buf);
+	if (! lex_if(self, '['))
+		error("invalid vector");
+
+	auto offset = buf_size(buf);
 	buf_write_i32(buf, 0);
 
 	// []
 	if (lex_if(self, ']'))
-	{
-		unguard();
-		value_set_vector_buf(value, buf);
-		return true;
-	}
+		return;
 
 	// [float [, ...]]
 	int count = 0;
 	for (;;)
 	{
-		ast = lex_next(self);
+		auto ast = lex_next(self);
 
 		// int or float
 		auto  minus = ast->id == '-';
@@ -73,8 +69,7 @@ parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 				ast->real = -ast->real;
 			value = ast->real;
 		} else {
-			error("column <%.*s> invalid vector value", str_size(&column->name),
-			      str_of(&column->name));
+			error("invalid vector value");
 		}
 		buf_write_float(buf, value);
 		count++;
@@ -85,15 +80,10 @@ parse_vector(Lex* self, Ast* ast, Column* column, Value* value)
 			continue;
 		if (ast->id == ']')
 			break;
-		error("column <%.*s> vector array syntax error", str_size(&column->name),
-			  str_of(&column->name));
+		error("vector array syntax error");
 	}
 
-	*buf_u32(buf) = count;
-
-	unguard();
-	value_set_vector_buf(value, buf);
-	return true;
+	*(uint32_t*)(buf->start + offset) = count;
 }
 
 hot void
@@ -229,8 +219,15 @@ parse_value(Lex*     self, Local* local,
 	}
 	case TYPE_VECTOR:
 	{
-		if (! parse_vector(self, ast, column, value))
-			break;
+		// [VECTOR] [array]
+		if (ast->id == KVECTOR)
+			ast = lex_next(self);
+		lex_push(self, ast);
+		auto buf = buf_create();
+		guard_buf(buf);
+		parse_vector(self, buf);
+		unguard();
+		value_set_vector_buf(value, buf);
 		meta->row_size += vector_size(value->vector);
 		return;
 	}

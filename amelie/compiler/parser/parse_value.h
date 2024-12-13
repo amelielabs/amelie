@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+void parse_vector(Lex*, Buf*);
 void parse_value(Lex*, Local*, Json*, Column*, Value*, SetMeta*);
 void parse_value_default(Column*, Value*, uint64_t, SetMeta*);
 void parse_value_validate(Keys*, Column*, Value*, SetMeta*);

@@ -110,6 +110,7 @@ priority_map[KEYWORD_MAX] =
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
+	[KVECTOR]                  = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -537,6 +538,12 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 	}
 	case KCURRENT_TIMESTAMP:
+		break;
+
+	case KVECTOR:
+		// vector [value, ...]
+		value->integer = code_data_offset(self->data);
+		parse_vector(self->lex, &self->data->data);
 		break;
 
 	// request argument

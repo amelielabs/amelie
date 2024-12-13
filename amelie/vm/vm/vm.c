@@ -146,6 +146,7 @@ vm_run(Vm*       self,
 		&&cjson_array,
 		&&cinterval,
 		&&ctimestamp,
+		&&cvector,
 
 		// argument
 		&&carg,
@@ -476,6 +477,10 @@ cinterval:
 
 ctimestamp:
 	value_set_timestamp(&r[op->a], op->b);
+	op_next;
+
+cvector:
+	value_set_vector(&r[op->a], (Vector*)code_data_at(code_data, op->b), NULL);
 	op_next;
 
 carg:

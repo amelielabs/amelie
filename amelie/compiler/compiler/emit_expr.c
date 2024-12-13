@@ -817,6 +817,8 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		           code_data_add_double(&self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
+
+	// timestamp/interval
 	case KTIMESTAMP:
 	{
 		Timestamp ts;
@@ -836,6 +838,11 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 	case KCURRENT_TIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
 		           self->parser.local->time_us);
+
+	// vector
+	case KVECTOR:
+		return op2(self, CVECTOR, rpin(self, TYPE_VECTOR),
+		           ast->integer);
 
 	// json
 	case '{':

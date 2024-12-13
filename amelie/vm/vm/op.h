@@ -43,6 +43,7 @@ enum
 	CJSON_ARRAY,
 	CINTERVAL,
 	CTIMESTAMP,
+	CVECTOR,
 
 	// argument
 	CARG,

@@ -17,6 +17,22 @@ select []::vector
 [[]]
 select []::vector::length
 [0]
+select vector [1,2,3]
+[[1, 2, 3]]
+select vector [1,2,3]::type
+["vector"]
+select vector [1,2,3]::length
+[3]
+select vector ""
+{"msg": "invalid vector"}
+select vector [1.0]
+[[1]]
+select vector [1.0, 1.1, 1.2]
+[[1, 1.1, 1.2]]
+select vector []
+[[]]
+select vector []::length
+[0]
 # test: vector = vector
 select [1.0, 1.1]::vector = [1.0, 1.1]::vector
 [true]
@@ -43,6 +59,30 @@ explain select []::vector = []::vector
       "10": "cte_set             0      0      0     ",
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
+    }
+  }
+}]
+select vector [1.0, 1.1] = vector [1.0, 1.1]
+[true]
+select vector [1.0, 1.1] = vector [1.0, 1.0]
+[false]
+select vector [1.0, 1.1] = vector [1.0]
+[false]
+select vector [1.0, 1.1] = vector []
+[false]
+explain select vector [] = vector []
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "set                 0      1      0     ",
+      "01": "vector              1      0      0     ",
+      "02": "vector              2      4      0     ",
+      "03": "equvv               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
