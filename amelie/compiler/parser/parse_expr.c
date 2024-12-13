@@ -103,6 +103,7 @@ priority_map[KEYWORD_MAX] =
 	[KAVG]                     = priority_value,
 	[KMIN]                     = priority_value,
 	[KMAX]                     = priority_value,
+	[KERROR]                   = priority_value,
 	[KREAL]                    = priority_value,
 	[KINT]                     = priority_value,
 	[KSTRING]                  = priority_value,
@@ -411,12 +412,13 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->l = expr_args(self, expr, '}', true);
 		break;
 
-	// builtin functions
+	// functions (keyword conflicts)
 	case KSET:
 	case KUNSET:
 	case KRANDOM:
 	case KSERIAL:
 	case KREPLACE:
+	case KERROR:
 	{
 		if (! stmt_if(self, '('))
 			error("%.*s<(> expected", str_size(&value->string),

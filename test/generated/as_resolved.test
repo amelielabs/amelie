@@ -42,7 +42,7 @@ insert into test (id) values (0), (1), (2)
 select * from test
 drop table test
 
-# test: insert distributed (with resolved columns)
+# test: insert shared (with resolved columns)
 create shared table test (id int primary key, hits int default 1 as (hits + 1) resolved)
 insert into test (id) values (0), (1), (2)
 insert into test (id) values (0), (1), (2)

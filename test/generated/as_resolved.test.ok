@@ -7,6 +7,7 @@ create table test (id int primary key, data int as (1) resolved
 create table test (id int primary key, data int)
 insert into test values (0, 0) on conflict do resolve
 insert into test values (0, 0) on conflict do resolve
+{"msg": "unique key constraint violation"}
 select * from test
 [[0, 0]]
 drop table test
@@ -39,7 +40,7 @@ insert into test (id) values (0), (1), (2)
 select * from test
 [[0, 3], [1, 3], [2, 3]]
 drop table test
-# test: insert distributed (with resolved columns)
+# test: insert shared (with resolved columns)
 create shared table test (id int primary key, hits int default 1 as (hits + 1) resolved)
 insert into test (id) values (0), (1), (2)
 insert into test (id) values (0), (1), (2)

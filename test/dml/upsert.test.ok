@@ -13,9 +13,9 @@ insert into test values(1, 0) on conflict
 insert into test values(1, 0) on conflict 123
 {"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
 insert into test values(1, 0) on conflict do
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected"}
 insert into test values(1, 0) on conflict do 123
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected"}
+{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected"}
 insert into test values(1, 0) on conflict do update
 {"msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
@@ -55,6 +55,12 @@ insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 [[1, 0], [2, 0]]
 drop table test
+# test: on conflict do error
+create table test (id int primary key, data int)
+insert into test values(1, 0) on conflict do error
+insert into test values(1, 0) on conflict do error
+{"msg": "unique key constraint violation"}
+drop table test
 # test: on conflict do resolve (without resolved columns)
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
@@ -88,15 +94,19 @@ explain insert into test values(1, 0) on conflict do resolve
     },
     "node": {
       "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 2      0      0     ",
-      "02": "upsert              0      2      -1    ",
-      "03": "table_close         0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "01": "jmp                 5      0      0     ",
+      "02": "string              0      0      0     # unique key constraint violation",
+      "03": "push                0      0      0     ",
+      "04": "call                0      -      1     # public.error()",
+      "05": "upsert              0      2      -1    ",
+      "06": "table_close         0      0      0     ",
+      "07": "ret                 0      0      0     "
     }
   }
 }]
 insert into test values(1, 0) on conflict do resolve
 insert into test values(1, 0) on conflict do resolve
+{"msg": "unique key constraint violation"}
 select * from test
 [[1, 0]]
 drop table test

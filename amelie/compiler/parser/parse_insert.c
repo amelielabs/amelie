@@ -246,7 +246,7 @@ parse_resolved(Stmt* self)
 	auto columns = table_columns(stmt->target->from_table);
 	stmt->update_expr = parse_update_resolved(self, columns);
 	if (! stmt->update_expr)
-		stmt->on_conflict = ON_CONFLICT_NOTHING;
+		stmt->on_conflict = ON_CONFLICT_ERROR;
 }
 
 hot static inline void
@@ -270,7 +270,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	if (! stmt_if(self, KDO))
 		error("INSERT VALUES ON CONFLICT <DO> expected");
 
-	// NOTHING | UPDATE | AGGREGATE
+	// NOTHING | ERROR | UPDATE | AGGREGATE
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KNOTHING:
@@ -298,8 +298,11 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		parse_resolved(self);
 		break;
 	}
+	case KERROR:
+		stmt->on_conflict = ON_CONFLICT_ERROR;
+		break;
 	default:
-		error("INSERT VALUES ON CONFLICT DO <NOTHING | UPDATE | RESOLVE> expected");
+		error("INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected");
 		break;
 	}
 }
@@ -359,7 +362,7 @@ parse_insert(Stmt* self)
 {
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
-	// [ON CONFLICT DO NOTHING | UPDATE | AGGREGATE]
+	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | AGGREGATE]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;

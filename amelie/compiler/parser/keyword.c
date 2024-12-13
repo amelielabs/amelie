@@ -91,6 +91,7 @@ static Keyword keywords_e[] =
 	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
+	{ KERROR,                 "error",                 5  },
 	{ KEXPLAIN,               "explain",               7  },
 	{ KEXISTS,                "exists",                6  },
 	{ KEXPIRE,                "expire",                6  },

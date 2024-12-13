@@ -29,6 +29,12 @@ insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
 drop table test
 
+# test: on conflict do error
+create table test (id int primary key, data int)
+insert into test values(1, 0) on conflict do error
+insert into test values(1, 0) on conflict do error
+drop table test
+
 # test: on conflict do resolve (without resolved columns)
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
