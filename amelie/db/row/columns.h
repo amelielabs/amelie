@@ -49,13 +49,13 @@ columns_add(Columns* self, Column* column)
 	list_append(&self->list, &column->link);
 	self->list_count++;
 
-	if (! str_empty(&column->constraint.as_stored))
+	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored++;
-	if (! str_empty(&column->constraint.as_resolved))
+	if (! str_empty(&column->constraints.as_resolved))
 		self->count_resolved++;
 
 	// save order of the first serial column
-	if (column->constraint.serial && !self->serial)
+	if (column->constraints.serial && !self->serial)
 		self->serial = column;
 }
 
@@ -66,9 +66,9 @@ columns_del(Columns* self, Column* column)
 	self->list_count--;
 	assert(self->list_count >= 0);
 
-	if (! str_empty(&column->constraint.as_stored))
+	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored--;
-	if (! str_empty(&column->constraint.as_resolved))
+	if (! str_empty(&column->constraints.as_resolved))
 		self->count_resolved--;
 
 	if (self->serial == column)
@@ -80,7 +80,7 @@ columns_del(Columns* self, Column* column)
 	{
 		auto column = list_at(Column, link);
 		column->order = order++;
-		if (column->constraint.serial && !self->serial)
+		if (column->constraints.serial && !self->serial)
 			self->serial = column;
 	}
 }

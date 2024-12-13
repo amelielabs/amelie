@@ -244,7 +244,7 @@ parse_value_default(Column*  column,
                     SetMeta* meta)
 {
 	// SERIAL, RANDOM or DEFAULT
-	auto cons = &column->constraint;
+	auto cons = &column->constraints;
 	if (cons->serial)
 	{
 		value_set_int(column_value, serial);
@@ -276,10 +276,10 @@ parse_value_validate(Keys*    keys,
 	if (column_value->type == TYPE_NULL)
 	{
 		// value can be NULL for generated column (will be rechecked later)
-		if (! str_empty(&column->constraint.as_stored))
+		if (! str_empty(&column->constraints.as_stored))
 			return;
 
-		if (column->constraint.not_null)
+		if (column->constraints.not_null)
 			error("column <%.*s> value cannot be NULL", str_size(&column->name),
 			      str_of(&column->name));
 	}

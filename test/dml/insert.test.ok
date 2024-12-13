@@ -57,7 +57,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -70,7 +70,7 @@ select system.tables().'public.test'.columns
   "name": "id2",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,

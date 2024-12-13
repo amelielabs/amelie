@@ -331,10 +331,10 @@ parse_generated(Stmt* self)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (str_empty(&column->constraint.as_stored))
+		if (str_empty(&column->constraints.as_stored))
 			continue;
 		lex_init(&lex, keywords);
-		lex_start(&lex, &column->constraint.as_stored);
+		lex_start(&lex, &column->constraints.as_stored);
 		Expr ctx =
 		{
 			.aggs   = NULL,

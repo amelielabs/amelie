@@ -198,10 +198,10 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			// null
 			if (value->type == TYPE_NULL)
 			{
-				if (column->constraint.not_null)
+				if (column->constraints.not_null)
 				{
 					// NOT NULL constraint
-					if (unlikely(column->constraint.not_null))
+					if (unlikely(column->constraints.not_null))
 						error("column %.*s: cannot be null", str_size(&column->name),
 						      str_of(&column->name));
 				}
@@ -423,7 +423,7 @@ row_update_values(Columns*  columns,
 	{
 		Value* value;
 		auto column  = list_at(Column, link);
-		auto replace = !str_empty(&column->constraint.as_stored);
+		auto replace = !str_empty(&column->constraints.as_stored);
 		if (replace) {
 			value_move(&row[column->order], &values[order]);
 			value = &row[column->order];
@@ -431,7 +431,7 @@ row_update_values(Columns*  columns,
 		} else {
 			value = &row[column->order];
 		}
-		if (unlikely(value->type == TYPE_NULL && column->constraint.not_null))
+		if (unlikely(value->type == TYPE_NULL && column->constraints.not_null))
 			error("column <%.*s> value cannot be NULL", str_size(&column->name),
 			      str_of(&column->name));
 		size += row_column_size(column, value);

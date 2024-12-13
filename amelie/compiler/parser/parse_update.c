@@ -91,7 +91,7 @@ parse_update_resolved(Stmt* self, Columns* columns)
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (str_empty(&column->constraint.as_resolved))
+		if (str_empty(&column->constraints.as_resolved))
 			continue;
 
 		// column = <resolved expr>
@@ -103,7 +103,7 @@ parse_update_resolved(Stmt* self, Columns* columns)
 
 		// parse resolved expression
 		lex_init(&lex, keywords);
-		lex_start(&lex, &column->constraint.as_resolved);
+		lex_start(&lex, &column->constraints.as_resolved);
 		Expr ctx =
 		{
 			.aggs   = NULL,

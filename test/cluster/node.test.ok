@@ -67,7 +67,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -101,7 +101,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -215,7 +215,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -249,7 +249,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -283,7 +283,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -362,7 +362,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -396,7 +396,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -430,7 +430,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -504,7 +504,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -538,7 +538,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -572,7 +572,7 @@ show tables
       "name": "id",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": true,
         "serial": false,
         "random": false,
@@ -585,7 +585,7 @@ show tables
       "name": "data",
       "type": 2,
       "type_size": 4,
-      "constraint": {
+      "constraints": {
         "not_null": false,
         "serial": false,
         "random": false,

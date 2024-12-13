@@ -16,13 +16,13 @@ typedef struct Column Column;
 
 struct Column
 {
-	int        order;
-	Str        name;
-	int64_t    type;
-	int64_t    type_size;
-	Constraint constraint;
-	bool       key;
-	List       link;
+	int         order;
+	Str         name;
+	int64_t     type;
+	int64_t     type_size;
+	Constraints constraints;
+	bool        key;
+	List        link;
 };
 
 static inline Column*
@@ -35,7 +35,7 @@ column_allocate(void)
 	self->type_size = 0;
 	list_init(&self->link);
 	str_init(&self->name);
-	constraint_init(&self->constraint);
+	constraints_init(&self->constraints);
 	return self;
 }
 
@@ -43,7 +43,7 @@ static inline void
 column_free(Column* self)
 {
 	str_free(&self->name);
-	constraint_free(&self->constraint);
+	constraints_free(&self->constraints);
 	am_free(self);
 }
 
@@ -67,7 +67,7 @@ column_copy(Column* self)
 	auto copy = column_allocate();
 	column_set_name(copy, &self->name);
 	column_set_type(copy, self->type, self->type_size);
-	constraint_copy(&self->constraint, &copy->constraint);
+	constraints_copy(&self->constraints, &copy->constraints);
 	return copy;
 }
 
@@ -81,14 +81,14 @@ column_read(uint8_t** pos)
 	uint8_t* constraints = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",       &self->name      },
-		{ DECODE_INT,    "type",       &self->type      },
-		{ DECODE_INT,    "type_size",  &self->type_size },
-		{ DECODE_OBJ,    "constraint", &constraints     },
-		{ 0,              NULL,        NULL             },
+		{ DECODE_STRING, "name",        &self->name      },
+		{ DECODE_INT,    "type",        &self->type      },
+		{ DECODE_INT,    "type_size",   &self->type_size },
+		{ DECODE_OBJ,    "constraints", &constraints     },
+		{ 0,              NULL,         NULL             },
 	};
 	decode_obj(obj, "columns", pos);
-	constraint_read(&self->constraint, &constraints);
+	constraints_read(&self->constraints, &constraints);
 	return unguard();
 }
 
@@ -109,9 +109,9 @@ column_write(Column* self, Buf* buf)
 	encode_raw(buf, "type_size", 9);
 	encode_integer(buf, self->type_size);
 
-	// constraint
-	encode_raw(buf, "constraint", 10);
-	constraint_write(&self->constraint, buf);
+	// constraints
+	encode_raw(buf, "constraints", 11);
+	constraints_write(&self->constraints, buf);
 
 	encode_obj_end(buf);
 }

@@ -62,7 +62,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -75,7 +75,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 1,
   "type_size": 1,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -88,7 +88,7 @@ select system.tables().'public.test'.columns
   "name": "b",
   "type": 1,
   "type_size": 1,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -106,7 +106,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -119,7 +119,7 @@ select system.tables().'public.test'.columns
   "name": "id2",
   "type": 2,
   "type_size": 1,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -132,7 +132,7 @@ select system.tables().'public.test'.columns
   "name": "id3",
   "type": 2,
   "type_size": 1,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -150,7 +150,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -163,7 +163,7 @@ select system.tables().'public.test'.columns
   "name": "id2",
   "type": 2,
   "type_size": 2,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -176,7 +176,7 @@ select system.tables().'public.test'.columns
   "name": "id3",
   "type": 2,
   "type_size": 2,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -194,7 +194,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -207,7 +207,7 @@ select system.tables().'public.test'.columns
   "name": "id2",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -220,7 +220,7 @@ select system.tables().'public.test'.columns
   "name": "id3",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -233,7 +233,7 @@ select system.tables().'public.test'.columns
   "name": "id4",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -251,7 +251,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -264,7 +264,7 @@ select system.tables().'public.test'.columns
   "name": "id2",
   "type": 2,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -282,7 +282,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -295,7 +295,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 3,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -313,7 +313,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -326,7 +326,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 3,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -344,7 +344,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -357,7 +357,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 4,
   "type_size": 0,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -370,7 +370,7 @@ select system.tables().'public.test'.columns
   "name": "b",
   "type": 4,
   "type_size": 0,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -388,7 +388,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -401,7 +401,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 5,
   "type_size": 0,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -414,7 +414,7 @@ select system.tables().'public.test'.columns
   "name": "b",
   "type": 5,
   "type_size": 0,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -432,7 +432,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -445,7 +445,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 6,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -463,7 +463,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -476,7 +476,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 7,
   "type_size": 16,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -494,7 +494,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -507,7 +507,7 @@ select system.tables().'public.test'.columns
   "name": "a",
   "type": 8,
   "type_size": 0,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -554,7 +554,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -585,7 +585,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -647,7 +647,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -660,7 +660,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -678,7 +678,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -696,7 +696,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -733,7 +733,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -751,7 +751,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -764,7 +764,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -782,7 +782,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -795,7 +795,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": false,
     "random": false,
@@ -815,7 +815,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -828,7 +828,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -851,7 +851,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -864,7 +864,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -888,7 +888,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -901,7 +901,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": true,
     "random": false,
@@ -918,7 +918,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": false,
     "random": false,
@@ -931,7 +931,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": true,
     "random": false,
@@ -949,7 +949,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": true,
     "random": false,
@@ -967,7 +967,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": true,
     "random": false,
@@ -988,7 +988,7 @@ select system.tables().'public.test'.columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraint": {
+  "constraints": {
     "not_null": true,
     "serial": true,
     "random": false,
@@ -1001,7 +1001,7 @@ select system.tables().'public.test'.columns
   "name": "data",
   "type": 2,
   "type_size": 8,
-  "constraint": {
+  "constraints": {
     "not_null": false,
     "serial": true,
     "random": false,

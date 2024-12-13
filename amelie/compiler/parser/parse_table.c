@@ -82,7 +82,7 @@ parse_key(Stmt* self, Keys* keys)
 			      str_of(&column->name));
 
 		// force column not_null constraint
-		constraint_set_not_null(&column->constraint, true);
+		constraints_set_not_null(&column->constraints, true);
 
 		// create key
 		auto key = key_allocate();
@@ -111,10 +111,10 @@ parse_primary_key(Stmt* self)
 }
 
 static void
-parse_constraint(Stmt* self, Keys* keys, Column* column)
+parse_constraints(Stmt* self, Keys* keys, Column* column)
 {
-	// constraint
-	auto cons = &column->constraint;
+	// constraints
+	auto cons = &column->constraints;
 
 	bool primary_key = false;
 	bool has_default = false;
@@ -129,7 +129,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 			// NULL
 			if (stmt_if(self, KNULL))
 			{
-				constraint_set_not_null(cons, true);
+				constraints_set_not_null(cons, true);
 				break;
 			}
 			error("NOT <NULL> expected");
@@ -197,7 +197,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				error("SERIAL column <%.*s> must be int or int64", str_size(&column->name),
 				      str_of(&column->name));
 
-			constraint_set_serial(cons, true);
+			constraints_set_serial(cons, true);
 			break;
 		}
 
@@ -209,7 +209,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				error("RANDOM column <%.*s> must be int or int64",
 				      str_size(&column->name), str_of(&column->name));
 
-			constraint_set_random(cons, true);
+			constraints_set_random(cons, true);
 
 			// [(modulo)]
 			if (stmt_if(self, '('))
@@ -224,7 +224,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 
 				if (value->integer == 0)
 					error("RANDOM modulo value cannot be zero");
-				constraint_set_random_modulo(cons, value->integer);
+				constraints_set_random_modulo(cons, value->integer);
 			}
 			break;
 		}
@@ -242,7 +242,7 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 				error("PRIMARY KEY clause is not supported in this command");
 
 			// force not_null constraint for keys
-			constraint_set_not_null(&column->constraint, true);
+			constraints_set_not_null(&column->constraints, true);
 
 			// validate key type
 			if ((column->type != TYPE_INT &&
@@ -302,11 +302,11 @@ parse_constraint(Stmt* self, Keys* keys, Column* column)
 
 			// STORED | RESOLVED
 			if (stmt_if(self, KSTORED)) {
-				constraint_set_as_stored(cons, &as);
+				constraints_set_as_stored(cons, &as);
 			} else
 			if (stmt_if(self, KRESOLVED))
 			{
-				constraint_set_as_resolved(cons, &as);
+				constraints_set_as_resolved(cons, &as);
 			} else
 				error("AS (expr) <STORED or RESOLVED> expected");
 			break;
@@ -374,7 +374,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		column_set_type(column, type, type_size);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
-		parse_constraint(self, keys, column);
+		parse_constraints(self, keys, column);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -544,10 +544,10 @@ parse_table_alter(Stmt* self)
 		column_set_type(column, type, type_size);
 
 		// [NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
-		parse_constraint(self, NULL, column);
+		parse_constraints(self, NULL, column);
 
 		// validate column
-		auto cons = &stmt->column->constraint;
+		auto cons = &stmt->column->constraints;
 		if (cons->not_null)
 			error("ALTER TABLE ADD NOT NULL currently not supported");
 

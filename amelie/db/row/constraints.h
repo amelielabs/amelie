@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Constraint Constraint;
+typedef struct Constraints Constraints;
 
-struct Constraint
+struct Constraints
 {
 	bool    not_null;
 	bool    serial;
@@ -25,7 +25,7 @@ struct Constraint
 };
 
 static inline void
-constraint_init(Constraint* self)
+constraints_init(Constraints* self)
 {
 	self->not_null      = false;
 	self->serial        = false;
@@ -37,7 +37,7 @@ constraint_init(Constraint* self)
 }
 
 static inline void
-constraint_free(Constraint* self)
+constraints_free(Constraints* self)
 {
 	str_free(&self->as_stored);
 	str_free(&self->as_resolved);
@@ -45,64 +45,64 @@ constraint_free(Constraint* self)
 }
 
 static inline void
-constraint_set_not_null(Constraint* self, bool value)
+constraints_set_not_null(Constraints* self, bool value)
 {
 	self->not_null = value;
 }
 
 static inline void
-constraint_set_serial(Constraint* self, bool value)
+constraints_set_serial(Constraints* self, bool value)
 {
 	self->serial = value;
 }
 
 static inline void
-constraint_set_random(Constraint* self, bool value)
+constraints_set_random(Constraints* self, bool value)
 {
 	self->random = value;
 }
 
 static inline void
-constraint_set_random_modulo(Constraint* self, int64_t value)
+constraints_set_random_modulo(Constraints* self, int64_t value)
 {
 	self->random_modulo = value;
 }
 
 static inline void
-constraint_set_as_stored(Constraint* self, Str* value)
+constraints_set_as_stored(Constraints* self, Str* value)
 {
 	str_free(&self->as_stored);
 	str_copy(&self->as_stored, value);
 }
 
 static inline void
-constraint_set_as_resolved(Constraint* self, Str* value)
+constraints_set_as_resolved(Constraints* self, Str* value)
 {
 	str_free(&self->as_resolved);
 	str_copy(&self->as_resolved, value);
 }
 
 static inline void
-constraint_set_default(Constraint* self, Buf* value)
+constraints_set_default(Constraints* self, Buf* value)
 {
 	buf_reset(&self->value);
 	buf_write(&self->value, value->start, buf_size(value));
 }
 
 static inline void
-constraint_copy(Constraint* self, Constraint* copy)
+constraints_copy(Constraints* self, Constraints* copy)
 {
-	constraint_set_not_null(copy, self->not_null);
-	constraint_set_serial(copy, self->serial);
-	constraint_set_random(copy, self->random);
-	constraint_set_random_modulo(copy, self->random_modulo);
-	constraint_set_as_stored(copy, &self->as_stored);
-	constraint_set_as_resolved(copy, &self->as_resolved);
-	constraint_set_default(copy, &self->value);
+	constraints_set_not_null(copy, self->not_null);
+	constraints_set_serial(copy, self->serial);
+	constraints_set_random(copy, self->random);
+	constraints_set_random_modulo(copy, self->random_modulo);
+	constraints_set_as_stored(copy, &self->as_stored);
+	constraints_set_as_resolved(copy, &self->as_resolved);
+	constraints_set_default(copy, &self->value);
 }
 
 static inline void
-constraint_read(Constraint* self, uint8_t** pos)
+constraints_read(Constraints* self, uint8_t** pos)
 {
 	Decode obj[] =
 	{
@@ -115,11 +115,11 @@ constraint_read(Constraint* self, uint8_t** pos)
 		{ DECODE_DATA,   "default",       &self->value         },
 		{ 0,              NULL,           NULL                 },
 	};
-	decode_obj(obj, "constraint", pos);
+	decode_obj(obj, "constraints", pos);
 }
 
 static inline void
-constraint_write(Constraint* self, Buf* buf)
+constraints_write(Constraints* self, Buf* buf)
 {
 	encode_obj(buf);
 
