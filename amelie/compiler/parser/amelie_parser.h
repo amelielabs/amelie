@@ -43,6 +43,7 @@
 #include "parser/parse_call.h"
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
+#include "parser/parse_encode.h"
 
 // system
 #include "parser/parse_system.h"

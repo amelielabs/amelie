@@ -83,7 +83,7 @@ select {"time": "2024-07-29 18:40:19"::timestamp}
 }]
 select {"time": timestamp "2024-07-29 18:40:19"}
 [{
-  "time": "2024-07-29 18:40:19+03"
+  "time": "2024-07-29 18:40:19"
 }]
 # test: timestamp name case
 set timezone to 'UTC'

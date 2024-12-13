@@ -17,10 +17,9 @@ struct Ast
 {
 	int id;
 	union {
-		int64_t  integer;
-		double   real;
-		Interval interval;
-		Column*  column;
+		int64_t integer;
+		double  real;
+		Column* column;
 		struct {
 			Str  string;
 			bool string_escape;

@@ -112,7 +112,7 @@ emit_update_target(Compiler* self, Target* target, Ast* expr)
 			// SET column = DEFAULT
 			int offset = code_data_offset(&self->code_data);
 			buf_write_buf(&self->code_data.data, &column->constraint.value);
-			rexpr = op2(self, CJSON, rpin(self, TYPE_INT), offset);
+			rexpr = op2(self, CJSON, rpin(self, column->type), offset);
 			type  = column->type;
 		} else
 		{

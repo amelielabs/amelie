@@ -15,9 +15,13 @@ select [true]
 
 # test: array [int]
 select [123]
+select [-123]
+explain select [-123]
 
 # test: array [double]
 select [123.321]
+select [-123.321]
+explain select [-123.321]
 
 # test: array [string]
 select ['hello world']

@@ -343,7 +343,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 
 	// scan over created group
 	//
-	// result will be added to set or send directly
+	// result will be added to set
 	//
 	select->target_group->r = rset;
 	scan(self,

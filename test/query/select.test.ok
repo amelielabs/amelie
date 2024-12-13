@@ -53,18 +53,12 @@ explain select [1, 2, 3]
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
+      "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "push                1      0      0     ",
-      "07": "json_array          1      3      0     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   }
 }]

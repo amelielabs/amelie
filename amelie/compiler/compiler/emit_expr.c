@@ -48,13 +48,21 @@ emit_string(Compiler* self, Str* string, bool escape)
 }
 
 hot static inline int
-emit_json(Compiler* self, Target* target, Ast* ast, int op)
+emit_json(Compiler* self, Target* target, Ast* ast)
 {
-	auto args = ast->l;
-	assert(args->id == KARGS);
+	assert(ast->l->id == KARGS);
+	auto args = ast_args_of(ast->l);
+
+	// encode json if possible
+	if (args->constable)
+	{
+		int offset = code_data_offset(&self->code_data);
+		ast_encode(ast, self->parser.local, &self->code_data.data);
+		return op2(self, CJSON, rpin(self, TYPE_JSON), offset);
+	}
 
 	// push arguments
-	auto current = args->l;
+	auto current = args->ast.l;
 	while (current)
 	{
 		int r = emit_expr(self, target, current);
@@ -64,7 +72,12 @@ emit_json(Compiler* self, Target* target, Ast* ast, int op)
 	}
 
 	// op
-	return op2(self, op, rpin(self, TYPE_JSON), args->integer);
+	int op;
+	if (ast->id == KARRAY)
+		op = CJSON_ARRAY;
+	else
+		op = CJSON_OBJ;
+	return op2(self, op, rpin(self, TYPE_JSON), args->ast.integer);
 }
 
 hot static inline int
@@ -804,23 +817,30 @@ emit_expr(Compiler* self, Target* target, Ast* ast)
 		           code_data_add_double(&self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
-	case KCURRENT_TIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
-		           self->parser.local->time_us);
 	case KTIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP), ast->integer);
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_read(&ts, &ast->string);
+		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
+		           timestamp_of(&ts, self->parser.local->timezone));
+	}
 	case KINTERVAL:
 	{
 		int offset = code_data_offset(&self->code_data);
-		buf_write(&self->code_data.data, &ast->interval, sizeof(Interval));
+		auto iv = (Interval*)buf_claim(&self->code_data.data, sizeof(Interval));
+		interval_init(iv);
+		interval_read(iv, &ast->string);
 		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
+	case KCURRENT_TIMESTAMP:
+		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
+		           self->parser.local->time_us);
 
 	// json
 	case '{':
-		return emit_json(self, target, ast, CJSON_OBJ);
 	case KARRAY:
-		return emit_json(self, target, ast, CJSON_ARRAY);
+		return emit_json(self, target, ast);
 
 	// column
 	case KNAME:

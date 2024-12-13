@@ -154,10 +154,40 @@ expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
 	ast_push(ops, op);
 }
 
+hot static inline bool
+expr_is_constable(Ast* self)
+{
+	switch (self->id) {
+	// consts
+	case KNULL:
+	case KREAL:
+	case KINT:
+	case KSTRING:
+	case KTRUE:
+	case KFALSE:
+		return true;
+	case KNEG:
+		if (self->l->id == KINT || self->l->id == KREAL)
+			return true;
+		break;
+	// time-related consts
+	case KINTERVAL:
+	case KTIMESTAMP:
+	case KCURRENT_TIMESTAMP:
+		return true;
+	// nested
+	case '{':
+	case KARRAY:
+		return ast_args_of(self->l)->constable;
+	}
+	return false;
+}
+
 static Ast*
 expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 {
-	int  count = 0;
+	bool constable = true;
+	int  count     = 0;
 	Ast* expr_head = NULL;
 	Ast* expr_prev = NULL;
 
@@ -174,6 +204,10 @@ expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 			expr_prev->next = ast;
 		expr_prev = ast;
 		count++;
+
+		// check if the argument can be encoded during compilation
+		if (! expr_is_constable(ast))
+			constable = false;
 
 		// :
 		if (obj_separator && (count % 2) != 0)
@@ -194,11 +228,12 @@ expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 
 done:;
 	// args(list_head, NULL)
-	auto args = ast(KARGS);
-	args->l       = expr_head;
-	args->r       = NULL;
-	args->integer = count;
-	return args;
+	auto args = ast_args_allocate();
+	args->ast.l       = expr_head;
+	args->ast.r       = NULL;
+	args->ast.integer = count;
+	args->constable   = constable;
+	return &args->ast;
 }
 
 static Ast*
@@ -370,7 +405,7 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 		error("EXTRACT (field FROM expr <)> expected");
 
 	// args(list_head, NULL)
-	value->r = ast(KARGS);
+	value->r = &ast_args_allocate()->ast;
 	value->r->l       = field;
 	value->r->integer = 2;
 	return value;
@@ -482,8 +517,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
 			error("INTERVAL <string> expected");
-		interval_init(&value->interval);
-		interval_read(&value->interval, &spec->string);
+		value->string = spec->string;
 		break;
 	}
 	case KTIMESTAMP:
@@ -499,10 +533,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
 			error("TIMESTAMP <string> expected");
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, &spec->string);
-		value->integer = timestamp_of(&ts, self->local->timezone);
+		value->string = spec->string;
 		break;
 	}
 	case KCURRENT_TIMESTAMP:
@@ -554,8 +585,7 @@ expr_value_between(Stmt* self)
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
 			error("INTERVAL <string> expected");
-		interval_init(&value->interval);
-		interval_read(&value->interval, &spec->string);
+		value->string = spec->string;
 		break;
 	}
 	case KTIMESTAMP:
@@ -564,10 +594,7 @@ expr_value_between(Stmt* self)
 		auto spec = stmt_if(self, KSTRING);
 		if (! spec)
 			error("TIMESTAMP <string> expected");
-		Timestamp ts;
-		timestamp_init(&ts);
-		timestamp_read(&ts, &spec->string);
-		value->integer = timestamp_of(&ts, self->local->timezone);
+		value->string = spec->string;
 		break;
 	}
 	default:
