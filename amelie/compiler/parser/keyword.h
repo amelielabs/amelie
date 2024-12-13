@@ -190,6 +190,7 @@ enum
 	KDEBUG,
 
 	KEYWORD_MAX
+
 };
 
 struct Keyword

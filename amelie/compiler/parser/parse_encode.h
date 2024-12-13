@@ -81,5 +81,8 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 		encode_obj_end(buf);
 		break;
 	}
+	default:
+		abort();
+		break;
 	}
 }

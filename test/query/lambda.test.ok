@@ -169,6 +169,12 @@ select id -> self + 1 from test
 # test: select expr -> from table
 select (select 1 + 2) -> self + 1 from test
 [8]
+select 1 + 2 -> self + 1 from test;
+[8]
+select null::int -> 1 from test;
+[1]
+select null::int -> 1 from test where id > 10;
+[null]
 # test: select subquery -> from table
 select (select data from test t where id = 3) -> self + 1 from test
 [6]

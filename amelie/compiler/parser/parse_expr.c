@@ -82,8 +82,7 @@ priority_map[KEYWORD_MAX] =
 	['[']                      = 12,
 	['.']                      = 12,
 	[KMETHOD]                  = 12,
-	// 13 (lambda)
-	[KARROW]                   = 13,
+	[KARROW]                   = 12,
 	// values (priority is not used)
 	//
 	['(']                      = priority_value,
