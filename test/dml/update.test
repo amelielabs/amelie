@@ -98,13 +98,40 @@ update test set data = {"id": id}
 select * from test
 drop table test
 
-# test: update object rewrite #2
+# test: update json rewrite #2
 create table test(id int primary key serial, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
 update test set data = [id, data.id]
 select * from test
+drop table test
+
+# test: update json path
+create table test(id int primary key, data json)
+insert into test values (0, {"id": 48})
+insert into test values (1, {"id": 49})
+insert into test values (2, {"id": 50})
+
+# error
+update test set id.path = 0
+
+explain update test set data.id = data.id::int + 1
+update test set data.id = data.id::int + 1
+select * from test
+
+update test set data.data = []
+select * from test
+
+update test set data.data = data.data::append(1,2,3)
+select * from test
+
+update test set data.nested = {}
+update test set data.nested.list = data.data::append(1,2,3)
+select data from test
+
+# test: update json path default (unsupported)
+update test set data.nested.list = default
 drop table test
 
 # test: update key

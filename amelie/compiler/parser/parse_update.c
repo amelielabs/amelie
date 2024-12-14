@@ -47,9 +47,9 @@ parse_update_expr(Stmt* self)
 	{
 		auto op = ast(KSET);
 
-		// name
-		op->l = stmt_if(self, KNAME);
-		if (! op->l)
+		// column[.path]
+		op->l = stmt_next(self);
+		if (op->l->id != KNAME && op->l->id != KNAME_COMPOUND)
 			error("UPDATE name SET <name> expected");
 
 		// =
@@ -62,6 +62,52 @@ parse_update_expr(Stmt* self)
 			op->r = def;
 		else
 			op->r = parse_expr(self, NULL);
+
+		// rewrite update column by path
+		//
+		// UPDATE SET column.path = expr as
+		// UPDATE SET column = public.set(column, path, expr)
+		if (op->l->id == KNAME_COMPOUND)
+		{
+			if (def)
+				error("UPDATE DEFAULT cannot be used this way");
+
+			// exclude path from the column name
+			auto name = ast(KNAME);
+			str_split(&op->l->string, &name->string, '.');
+
+			auto path = ast(KSTRING);
+			path->string = op->l->string;
+			str_advance(&path->string, str_size(&name->string) + 1);
+			op->l->string = name->string;
+
+			// public.set(column, path, expr)
+			auto args_list = name;
+			name->next = path;
+			path->next = op->r;
+
+			// args(list_head, NULL)
+			auto args = ast_args_allocate();
+			args->ast.l       = args_list;
+			args->ast.r       = NULL;
+			args->ast.integer = 3;
+			args->constable   = false;
+
+			// call(NULL, args)
+			Str schema;
+			str_set(&schema, "public", 6);
+			Str func;
+			str_set(&func, "set", 3);
+
+			auto call = ast_call_allocate();
+			call->fn    = function_mgr_find(self->function_mgr, &schema, &func);
+			call->ast.l = NULL;
+			call->ast.r = &args->ast;
+			assert(call->fn);
+
+			// replace the update expression
+			op->r = &call->ast;
+		}
 
 		// op(column, expr)
 		if (expr == NULL)

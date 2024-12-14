@@ -256,8 +256,6 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 
 	auto call = ast_call_allocate();
 	call->fn = func;
-	call->ast.l = path;
-	call->ast.r = NULL;
 	if (with_args)
 		call->ast.r = expr_args(self, expr, ')', false);
 	return &call->ast;
