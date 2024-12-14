@@ -709,10 +709,8 @@ select system.tables().'public.test'.columns
 drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
-{"msg": "only consts allowed as DEFAULT expression"}
+{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
 # test: constraint default (type not supported)
-create table test (id int primary key, data json default 1)
-{"msg": "DEFAULT for column <data> is not supported"}
 create table test (id int primary key, data vector default 1)
 {"msg": "DEFAULT for column <data> is not supported"}
 create table test (id int primary key, data timestamp default 1)
@@ -721,11 +719,14 @@ create table test (id int primary key, data interval default 1)
 {"msg": "DEFAULT for column <data> is not supported"}
 # test: constraint default (type validate)
 create table test (id int primary key, data int default 'string')
-{"msg": "column <data> DEFAULT value type does not match column type"}
+{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
 create table test (id int primary key, data int default 3.4)
-{"msg": "column <data> DEFAULT value type does not match column type"}
+{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
 create table test (id int primary key, data string default 1)
-{"msg": "column <data> DEFAULT value type does not match column type"}
+{"msg": "column <data> DEFAULT value must be a const and match the column type <string>"}
+# test: constraint default (json)
+create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]})
+drop table test
 # test: constraint not null with key
 create table test (id int not null primary key)
 select system.tables().'public.test'.columns
@@ -880,6 +881,27 @@ insert into test values(2, null)
 insert into test (id) values(3)
 select * from test
 [[1, 1], [3, 123]]
+drop table test
+# test: constraint not null default (json)
+create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]})
+insert into test values(1, [1,2,3])
+select * from test
+[[1, [1, 2, 3]]]
+insert into test values(2, default)
+select * from test
+[[1, [1, 2, 3]], [2, {
+  "id": 48,
+  "data": [1, 2, 3]
+}]]
+insert into test (id) values(3)
+select * from test
+[[1, [1, 2, 3]], [2, {
+  "id": 48,
+  "data": [1, 2, 3]
+}], [3, {
+  "id": 48,
+  "data": [1, 2, 3]
+}]]
 drop table test
 # test: constraint serial
 create table test (id int primary key, data int serial)

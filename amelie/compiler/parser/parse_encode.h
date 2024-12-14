@@ -64,6 +64,8 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 	// []
 	case KARRAY:
 	{
+		if (! ast_args_of(self->l)->constable)
+			error("JSON value contains expressions");
 		encode_array(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -74,6 +76,8 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 	// {}
 	case '{':
 	{
+		if (! ast_args_of(self->l)->constable)
+			error("JSON value contains expressions");
 		encode_obj(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
@@ -82,7 +86,7 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 		break;
 	}
 	default:
-		abort();
+		error("unexpected JSON value");
 		break;
 	}
 }

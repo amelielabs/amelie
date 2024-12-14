@@ -140,52 +140,62 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		case KDEFAULT:
 		{
 			buf_reset(&cons->value);
-
-			// ensure column can have default value
-			if (column->type == TYPE_TIMESTAMP ||
-			    column->type == TYPE_INTERVAL  ||
-			    column->type == TYPE_JSON      ||
-			    column->type == TYPE_VECTOR)
-			{
-				error("DEFAULT for column <%.*s> is not supported",
-				      str_size(&column->name), str_of(&column->name));
-			}
-
 			auto expr = parse_expr(self, NULL);
-			bool type_match;
-			switch (expr->id) {
-			case KNULL:
-				type_match = true;
+			if (expr->id == KNULL)
+			{
 				encode_null(&cons->value);
 				break;
-			case KREAL:
-				type_match = column->type == TYPE_DOUBLE;
-				encode_real(&cons->value, expr->real);
+			}
+			bool type_match = false;
+			switch (column->type) {
+			case TYPE_BOOL:
+				if (expr->id == KTRUE || expr->id == KFALSE)
+				{
+					encode_bool(&cons->value, expr->id == KTRUE);
+					type_match = true;
+				}
 				break;
-			case KINT:
-				type_match = column->type == TYPE_INT || column->type == TYPE_DOUBLE;
-				encode_integer(&cons->value, expr->integer);
+			case TYPE_INT:
+				if (expr->id == KINT)
+				{
+					encode_integer(&cons->value, expr->integer);
+					type_match = true;
+				}
 				break;
-			case KSTRING:
-				type_match = column->type == TYPE_STRING;
-				encode_string(&cons->value, &expr->string);
+			case TYPE_DOUBLE:
+				if (expr->id == KINT || expr->id == KREAL)
+				{
+					if (expr->id == KINT)
+						encode_integer(&cons->value, expr->integer);
+					else
+						encode_real(&cons->value, expr->real);
+					type_match = true;
+				}
 				break;
-			case KTRUE:
-				type_match = column->type == TYPE_BOOL;
-				encode_bool(&cons->value, true);
+			case TYPE_STRING:
+				if (expr->id == KSTRING)
+				{
+					encode_string(&cons->value, &expr->string);
+					type_match = true;
+				}
 				break;
-			case KFALSE:
-				type_match = column->type == TYPE_BOOL;
-				encode_bool(&cons->value, false);
+			case TYPE_JSON:
+				ast_encode(expr, self->local, &cons->value);
+				type_match = true;
 				break;
-			default:
-				error("only consts allowed as DEFAULT expression");
+			case TYPE_TIMESTAMP:
+			case TYPE_INTERVAL:
+			case TYPE_VECTOR:
+				error("DEFAULT for column <%.*s> is not supported",
+				      str_size(&column->name),
+				      str_of(&column->name));
 				break;
 			}
 			has_default = true;
 			if (! type_match)
-				error("column <%.*s> DEFAULT value type does not match column type",
-				      str_size(&column->name), str_of(&column->name));
+				error("column <%.*s> DEFAULT value must be a const and match the column type <%s>",
+				      str_size(&column->name), str_of(&column->name),
+				      type_of(column->type));
 			break;
 		}
 

@@ -263,6 +263,9 @@ parse_value_default(Column*  column,
 	if (column_value->type == TYPE_STRING)
 		meta->row_size += json_size_string(str_size(&column_value->string));
 	else
+	if (column_value->type == TYPE_JSON)
+		meta->row_size += column_value->json_size;
+	else
 		meta->row_size += column->type_size;
 }
 

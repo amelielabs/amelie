@@ -196,7 +196,6 @@ drop table test
 create table test (id int primary key, data int default 1 + 1)
 
 # test: constraint default (type not supported)
-create table test (id int primary key, data json default 1)
 create table test (id int primary key, data vector default 1)
 create table test (id int primary key, data timestamp default 1)
 create table test (id int primary key, data interval default 1)
@@ -205,6 +204,10 @@ create table test (id int primary key, data interval default 1)
 create table test (id int primary key, data int default 'string')
 create table test (id int primary key, data int default 3.4)
 create table test (id int primary key, data string default 1)
+
+# test: constraint default (json)
+create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]})
+drop table test
 
 # test: constraint not null with key
 create table test (id int not null primary key)
@@ -235,6 +238,16 @@ create shared table test (id int primary key, data int not null default 123)
 select system.tables().'public.test'.columns
 insert into test values(1, 1)
 insert into test values(2, null)
+insert into test (id) values(3)
+select * from test
+drop table test
+
+# test: constraint not null default (json)
+create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]})
+insert into test values(1, [1,2,3])
+select * from test
+insert into test values(2, default)
+select * from test
 insert into test (id) values(3)
 select * from test
 drop table test
