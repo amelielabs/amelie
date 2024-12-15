@@ -181,6 +181,45 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		self->iface->build_column_drop(self, table, table_new, column);
 		break;
 	}
+	case LOG_TABLE_COLUMN_SET_DEFAULT:
+	{
+		Str schema;
+		Str name;
+		Str name_column;
+		Str value_prev;
+		Str value;
+		table_op_column_set_read(data, &schema, &name, &name_column,
+		                         &value_prev, &value);
+		table_mgr_column_set_default(&db->table_mgr, tr, &schema, &name,
+		                             &name_column, &value, true);
+		break;
+	}
+	case LOG_TABLE_COLUMN_SET_STORED:
+	{
+		Str schema;
+		Str name;
+		Str name_column;
+		Str value_prev;
+		Str value;
+		table_op_column_set_read(data, &schema, &name, &name_column,
+		                         &value_prev, &value);
+		table_mgr_column_set_stored(&db->table_mgr, tr, &schema, &name,
+		                            &name_column, &value, true);
+		break;
+	}
+	case LOG_TABLE_COLUMN_SET_RESOLVED:
+	{
+		Str schema;
+		Str name;
+		Str name_column;
+		Str value_prev;
+		Str value;
+		table_op_column_set_read(data, &schema, &name, &name_column,
+		                         &value_prev, &value);
+		table_mgr_column_set_resolved(&db->table_mgr, tr, &schema, &name,
+		                              &name_column, &value, true);
+		break;
+	}
 	case LOG_INDEX_CREATE:
 	{
 		Str schema;

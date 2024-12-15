@@ -291,6 +291,7 @@ ddl_alter_table(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
+	auto db   = self->share->db;
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 		ddl_alter_table_rename(self, tr);
@@ -306,6 +307,33 @@ ddl_alter_table(Session* self, Tr* tr)
 		break;
 	case TABLE_ALTER_COLUMN_DROP:
 		ddl_alter_table_column_drop(self, tr);
+		break;
+	case TABLE_ALTER_COLUMN_SET_DEFAULT:
+	case TABLE_ALTER_COLUMN_UNSET_DEFAULT:
+		table_mgr_column_set_default(&db->table_mgr, tr,
+		                             &arg->schema,
+		                             &arg->name,
+		                             &arg->column_name,
+		                             &arg->value,
+		                              arg->if_exists);
+		break;
+	case TABLE_ALTER_COLUMN_SET_STORED:
+	case TABLE_ALTER_COLUMN_UNSET_STORED:
+		table_mgr_column_set_stored(&db->table_mgr, tr,
+		                            &arg->schema,
+		                            &arg->name,
+		                            &arg->column_name,
+		                            &arg->value,
+		                             arg->if_exists);
+		break;
+	case TABLE_ALTER_COLUMN_SET_RESOLVED:
+	case TABLE_ALTER_COLUMN_UNSET_RESOLVED:
+		table_mgr_column_set_resolved(&db->table_mgr, tr,
+		                              &arg->schema,
+		                              &arg->name,
+		                              &arg->column_name,
+		                              &arg->value,
+		                               arg->if_exists);
 		break;
 	}
 }

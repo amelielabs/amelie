@@ -85,6 +85,22 @@ columns_del(Columns* self, Column* column)
 	}
 }
 
+static inline void
+columns_sync(Columns* self)
+{
+	// sync generated columns count
+	self->count_stored   = 0;
+	self->count_resolved = 0;
+	list_foreach_safe(&self->list)
+	{
+		auto column = list_at(Column, link);
+		if (! str_empty(&column->constraints.as_stored))
+			self->count_stored++;
+		if (! str_empty(&column->constraints.as_resolved))
+			self->count_resolved++;
+	}
+}
+
 hot static inline Column*
 columns_find(Columns* self, Str* name)
 {

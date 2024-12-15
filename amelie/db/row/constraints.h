@@ -86,7 +86,14 @@ static inline void
 constraints_set_default(Constraints* self, Buf* value)
 {
 	buf_reset(&self->value);
-	buf_write(&self->value, value->start, buf_size(value));
+	buf_write_buf(&self->value, value);
+}
+
+static inline void
+constraints_set_default_str(Constraints* self, Str* value)
+{
+	buf_reset(&self->value);
+	buf_write_str(&self->value, value);
 }
 
 static inline void

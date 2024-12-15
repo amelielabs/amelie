@@ -279,6 +279,47 @@ select * from test
 select id from test
 select a from test
 select b from test
+drop table test
+
+# test: set default
+create table test (id int primary key, data int)
+alter table test set column data default 0
+insert into test (id) values (0)
+select * from test
+select system.tables().'public.test'.columns
+
+# test: unset default
+alter table test unset column data default
+insert into test (id) values (1)
+select * from test
+select system.tables().'public.test'.columns
+
+# test: set stored
+alter table test set column data as (1 + 1) stored
+insert into test (id) values (2)
+select * from test
+select system.tables().'public.test'.columns
+
+# test: unset stored
+alter table test unset column data stored
+insert into test (id) values (3)
+select * from test
+select system.tables().'public.test'.columns
+
+# test: set resolved
+alter table test set column data default 0
+alter table test set column data as (data + 1) resolved
+insert into test (id) values (4)
+insert into test (id) values (4)
+insert into test (id) values (4)
+select * from test
+select system.tables().'public.test'.columns
+
+# test: unset resolved
+alter table test unset column data resolved
+insert into test (id) values (4)
+select * from test
+select system.tables().'public.test'.columns
 
 drop table test
 

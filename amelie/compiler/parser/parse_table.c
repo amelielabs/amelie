@@ -111,6 +111,63 @@ parse_primary_key(Stmt* self)
 }
 
 static void
+parse_default(Stmt* self, Column* column, Buf* value)
+{
+	buf_reset(value);
+	auto expr = parse_expr(self, NULL);
+	if (expr->id == KNULL)
+	{
+		encode_null(value);
+		return;
+	}
+	bool type_match = false;
+	switch (column->type) {
+	case TYPE_BOOL:
+		if (expr->id != KTRUE && expr->id != KFALSE)
+			break;
+		encode_bool(value, expr->id == KTRUE);
+		type_match = true;
+		break;
+	case TYPE_INT:
+		if (expr->id != KINT)
+			break;
+		encode_integer(value, expr->integer);
+		type_match = true;
+		break;
+	case TYPE_DOUBLE:
+		if (expr->id != KINT && expr->id != KREAL)
+			break;
+		if (expr->id == KINT)
+			encode_integer(value, expr->integer);
+		else
+			encode_real(value, expr->real);
+		type_match = true;
+		break;
+	case TYPE_STRING:
+		if (expr->id != KSTRING)
+			break;
+		encode_string(value, &expr->string);
+		type_match = true;
+		break;
+	case TYPE_JSON:
+		ast_encode(expr, self->local, value);
+		type_match = true;
+		break;
+	case TYPE_TIMESTAMP:
+	case TYPE_INTERVAL:
+	case TYPE_VECTOR:
+		error("DEFAULT for column <%.*s> is not supported",
+			  str_size(&column->name),
+			  str_of(&column->name));
+		break;
+	}
+	if (! type_match)
+		error("column <%.*s> DEFAULT value must be a const and match the column type <%s>",
+		      str_size(&column->name), str_of(&column->name),
+		      type_of(column->type));
+}
+
+static void
 parse_constraints(Stmt* self, Keys* keys, Column* column)
 {
 	// constraints
@@ -139,63 +196,8 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		// DEFAULT expr
 		case KDEFAULT:
 		{
-			buf_reset(&cons->value);
-			auto expr = parse_expr(self, NULL);
-			if (expr->id == KNULL)
-			{
-				encode_null(&cons->value);
-				break;
-			}
-			bool type_match = false;
-			switch (column->type) {
-			case TYPE_BOOL:
-				if (expr->id == KTRUE || expr->id == KFALSE)
-				{
-					encode_bool(&cons->value, expr->id == KTRUE);
-					type_match = true;
-				}
-				break;
-			case TYPE_INT:
-				if (expr->id == KINT)
-				{
-					encode_integer(&cons->value, expr->integer);
-					type_match = true;
-				}
-				break;
-			case TYPE_DOUBLE:
-				if (expr->id == KINT || expr->id == KREAL)
-				{
-					if (expr->id == KINT)
-						encode_integer(&cons->value, expr->integer);
-					else
-						encode_real(&cons->value, expr->real);
-					type_match = true;
-				}
-				break;
-			case TYPE_STRING:
-				if (expr->id == KSTRING)
-				{
-					encode_string(&cons->value, &expr->string);
-					type_match = true;
-				}
-				break;
-			case TYPE_JSON:
-				ast_encode(expr, self->local, &cons->value);
-				type_match = true;
-				break;
-			case TYPE_TIMESTAMP:
-			case TYPE_INTERVAL:
-			case TYPE_VECTOR:
-				error("DEFAULT for column <%.*s> is not supported",
-				      str_size(&column->name),
-				      str_of(&column->name));
-				break;
-			}
+			parse_default(self, column, &cons->value);
 			has_default = true;
-			if (! type_match)
-				error("column <%.*s> DEFAULT value must be a const and match the column type <%s>",
-				      str_size(&column->name), str_of(&column->name),
-				      type_of(column->type));
 			break;
 		}
 
@@ -514,12 +516,15 @@ parse_table_drop(Stmt* self)
 void
 parse_table_alter(Stmt* self)
 {
+	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN name type [constraint]
+	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN name
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
-	// ALTER TABLE [IF EXISTS] [schema.]name SET [NOT] AGGREGATED
-	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN ADD name type [constraint]
-	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN DROP name
-	// ALTER TABLE [IF EXISTS] [schema.]name COLUMN RENAME name TO name
+	// ALTER TABLE [IF EXISTS] [schema.]name RENAME COLUMN name TO name
+	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name DEFAULT const
+	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name AS (expr) <STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name DEFAULT
+	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name <STORED|RESOLVED>
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -581,6 +586,41 @@ parse_table_alter(Stmt* self)
 		return;
 	}
 
+	// [RENAME]
+	if (stmt_if(self, KRENAME))
+	{
+		// [COLUMN name TO  name]
+		if (stmt_if(self, KCOLUMN))
+		{
+			stmt->type = TABLE_ALTER_COLUMN_RENAME;
+
+			// name
+			auto name = stmt_if(self, KNAME);
+			if (! name)
+				error("ALTER TABLE name RENAME COLUMN <name> expected");
+			str_set_str(&stmt->column_name, &name->string);
+
+			// [TO]
+			stmt_if(self, KTO);
+
+			// name
+			name = stmt_if(self, KNAME);
+			if (! name)
+				error("ALTER TABLE name RENAME COLUMN name TO <name> expected");
+			str_set_str(&stmt->name_new, &name->string);
+			return;
+		}
+
+		// [TO]
+		stmt_if(self, KTO);
+
+		// name
+		if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
+			error("ALTER TABLE RENAME <name> expected");
+		stmt->type = TABLE_ALTER_RENAME;
+		return;
+	}
+
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
@@ -600,43 +640,119 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
+		// SET COLUMN DEFAULT
+		// SET COLUMN AS
+		if (stmt_if(self, KCOLUMN))
+		{
+			// name
+			auto name = stmt_if(self, KNAME);
+			if (! name)
+				error("ALTER TABLE name SET COLUMN <name> expected");
+			str_set_str(&stmt->column_name, &name->string);
+
+			// DEFAULT const
+			if (stmt_if(self, KDEFAULT))
+			{
+				// find table and column
+				auto table  = table_mgr_find(&self->db->table_mgr,
+				                             &stmt->schema,
+				                             &stmt->name, true);
+				auto column = columns_find(table_columns(table), &stmt->column_name);
+				if (! column)
+					error("<%.*s> column does not exists", str_size(&stmt->column_name),
+					      str_of(&stmt->column_name));
+
+				auto value = buf_create();
+				guard_buf(value);
+				parse_default(self, column, value);
+				unguard();
+
+				stmt->value_buf = value;
+				buf_str(value, &stmt->value);
+				stmt->type = TABLE_ALTER_COLUMN_SET_DEFAULT;
+				return;
+			}
+
+			// AS (expr) <STORED | RESOLVED>
+			if (stmt_if(self, KAS))
+			{
+				// (
+				auto lbr = stmt_if(self, '(');
+				if (! lbr)
+					error("AS <(> expected");
+
+				// expr
+				parse_expr(self, NULL);
+
+				// )
+				auto rbr = stmt_if(self, ')');
+				if (! rbr)
+					error("AS (expr <)> expected");
+
+				Str as;
+				str_set(&as, lbr->pos, rbr->pos - lbr->pos);
+				str_shrink(&as);
+				as.pos++;
+				str_shrink(&as);
+				if (str_empty(&as))
+					error("AS expression is missing");
+				stmt->value = as;
+
+				// STORED | RESOLVED
+				if (stmt_if(self, KSTORED))
+					stmt->type = TABLE_ALTER_COLUMN_SET_STORED;
+				else
+				if (stmt_if(self, KRESOLVED))
+					stmt->type = TABLE_ALTER_COLUMN_SET_RESOLVED;
+				else
+					error("AS (expr) <STORED or RESOLVED> expected");
+			}
+			return;
+		}
+
 		error("ALTER TABLE SET <SERIAL> expected");
 		return;
 	}
 
-	// RENAME
-	if (! stmt_if(self, KRENAME))
-		error("ALTER TABLE <RENAME | ADD | DROP | SET> expected");
-
-	// [COLUMN name TO  name]
-	if (stmt_if(self, KCOLUMN))
+	// [UNSET]
+	if (stmt_if(self, KUNSET))
 	{
-		stmt->type = TABLE_ALTER_COLUMN_RENAME;
+		// UNSET COLUMN DEFAULT
+		// UNSET COLUMN STORED
+		// UNSET COLUMN RESOLVED
+		if (stmt_if(self, KCOLUMN))
+		{
+			// name
+			auto name = stmt_if(self, KNAME);
+			if (! name)
+				error("ALTER TABLE name UNSET COLUMN <name> expected");
+			str_set_str(&stmt->column_name, &name->string);
 
-		// name
-		auto name = stmt_if(self, KNAME);
-		if (! name)
-			error("ALTER TABLE name RENAME COLUMN <name> expected");
-		str_set_str(&stmt->column_name, &name->string);
+			// DEFAULT | STORED | RESOLVED
+			if (stmt_if(self, KDEFAULT))
+			{
+				auto value = buf_create();
+				guard_buf(value);
+				encode_null(value);
+				unguard();
+				stmt->value_buf = value;
+				buf_str(value, &stmt->value);
+				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;
+			} else
+			if (stmt_if(self, KSTORED))
+				stmt->type = TABLE_ALTER_COLUMN_SET_STORED;
+			else
+			if (stmt_if(self, KRESOLVED))
+				stmt->type = TABLE_ALTER_COLUMN_SET_RESOLVED;
+			else
+				error("UNSET COLUMN name <DEFAULT, STORED or RESOLVED> expected");
+			return;
+		}
 
-		// [TO]
-		stmt_if(self, KTO);
-
-		// name
-		name = stmt_if(self, KNAME);
-		if (! name)
-			error("ALTER TABLE name RENAME COLUMN name TO <name> expected");
-		str_set_str(&stmt->name_new, &name->string);
-		return;
+		error("ALTER TABLE UNSET <COLUMN> expected");
 	}
 
-	// [TO]
-	stmt_if(self, KTO);
-
-	// name
-	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
-		error("ALTER TABLE RENAME <name> expected");
-	stmt->type = TABLE_ALTER_RENAME;
+	error("ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected");
 }
 
 void

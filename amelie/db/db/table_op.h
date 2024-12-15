@@ -77,6 +77,24 @@ table_op_column_rename(Str* schema, Str* name,
 }
 
 static inline Buf*
+table_op_column_set(Str* schema, Str* name,
+                    Str* column,
+                    Str* value_prev,
+                    Str* value)
+{
+	// [schema, name, column, value_prev, value]
+	auto buf = buf_create();
+	encode_array(buf);
+	encode_string(buf, schema);
+	encode_string(buf, name);
+	encode_string(buf, column);
+	encode_string(buf, value_prev);
+	encode_string(buf, value);
+	encode_array_end(buf);
+	return buf;
+}
+
+static inline Buf*
 table_op_column_add(Str* schema, Str* name, Column* column)
 {
 	// [schema, name, column]
@@ -151,6 +169,21 @@ table_op_column_rename_read(uint8_t** pos, Str* schema, Str* name,
 	json_read_string(pos, name);
 	json_read_string(pos, name_column);
 	json_read_string(pos, name_column_new);
+	json_read_array_end(pos);
+}
+
+static inline void
+table_op_column_set_read(uint8_t** pos, Str* schema, Str* name,
+                         Str*      column,
+                         Str*      value_prev,
+                         Str*      value)
+{
+	json_read_array(pos);
+	json_read_string(pos, schema);
+	json_read_string(pos, name);
+	json_read_string(pos, column);
+	json_read_string(pos, value_prev);
+	json_read_string(pos, value);
 	json_read_array_end(pos);
 }
 

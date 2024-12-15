@@ -22,7 +22,7 @@ alter table if exists test rename test2
 # test: alter table no command
 create table test (id int primary key)
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
+{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
 # test: rename
 alter table test rename
 {"msg": "ALTER TABLE RENAME <name> expected"}
@@ -281,7 +281,7 @@ create table test (id int primary key)
 alter table
 {"msg": "ALTER TABLE <name> expected"}
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
+{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
 alter table test add
 {"msg": "ALTER TABLE name ADD <COLUMN> expected"}
 alter table test add 1
@@ -513,7 +513,7 @@ create table test (id int primary key)
 alter table
 {"msg": "ALTER TABLE <name> expected"}
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET> expected"}
+{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
 alter table test drop
 {"msg": "ALTER TABLE name DROP <COLUMN> expected"}
 alter table test drop column
@@ -936,6 +936,210 @@ select a from test
 {"msg": "<test.a> column not found"}
 select b from test
 {"msg": "<test.b> column not found"}
+drop table test
+# test: set default
+create table test (id int primary key, data int)
+alter table test set column data default 0
+insert into test (id) values (0)
+select * from test
+[[0, 0]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 0
+  }
+}]]
+# test: unset default
+alter table test unset column data default
+insert into test (id) values (1)
+select * from test
+[[0, 0], [1, null]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: set stored
+alter table test set column data as (1 + 1) stored
+insert into test (id) values (2)
+select * from test
+[[0, 0], [1, null], [2, 2]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "1 + 1",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: unset stored
+alter table test unset column data stored
+insert into test (id) values (3)
+select * from test
+[[0, 0], [1, null], [2, 2], [3, null]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: set resolved
+alter table test set column data default 0
+alter table test set column data as (data + 1) resolved
+insert into test (id) values (4)
+insert into test (id) values (4)
+insert into test (id) values (4)
+select * from test
+[[0, 0], [1, null], [2, 2], [3, null], [4, 2]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "data + 1",
+    "default": 0
+  }
+}]]
+# test: unset resolved
+alter table test unset column data resolved
+insert into test (id) values (4)
+{"msg": "index 'primary': unique key constraint violation"}
+select * from test
+[[0, 0], [1, null], [2, 2], [3, null], [4, 2]]
+select system.tables().'public.test'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "data",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 0
+  }
+}]]
 drop table test
 disconnect S0
 close E0

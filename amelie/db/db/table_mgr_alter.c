@@ -300,3 +300,143 @@ table_mgr_column_drop(TableMgr* self,
 	table_open(table_new);
 	return table_new;
 }
+
+static void
+column_set_if_commit(Log* self, LogOp* op)
+{
+	buf_free(log_handle_of(self, op)->data);
+}
+
+static void
+column_set_if_abort(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	Column* column = op->iface_arg;
+	uint8_t* pos = handle->data->start;
+	Str schema;
+	Str name;
+	Str name_column;
+	Str value_prev;
+	Str value;
+	table_op_column_set_read(&pos, &schema, &name, &name_column,
+	                         &value_prev,
+	                         &value);
+	switch (op->cmd) {
+	case LOG_TABLE_COLUMN_SET_DEFAULT:
+		constraints_set_default_str(&column->constraints, &value_prev);
+		break;
+	case LOG_TABLE_COLUMN_SET_STORED:
+		constraints_set_as_stored(&column->constraints, &value_prev);
+		break;
+	case LOG_TABLE_COLUMN_SET_RESOLVED:
+		constraints_set_as_resolved(&column->constraints, &value_prev);
+		break;
+	default:
+		abort();
+		break;
+	}
+	columns_sync(&table_of(handle->handle)->config->columns);
+	buf_free(handle->data);
+}
+
+static LogIf column_set_if =
+{
+	.commit = column_set_if_commit,
+	.abort  = column_set_if_abort
+};
+
+static void
+table_mgr_column_set(TableMgr* self,
+                     Tr*       tr,
+                     Str*      schema,
+                     Str*      name,
+                     Str*      name_column,
+                     Str*      value,
+                     bool      if_exists,
+                     LogCmd    cmd)
+{
+	// find table
+	auto table = table_mgr_find(self, schema, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
+
+	// find column
+	auto column = columns_find(&table->config->columns, name_column);
+	if (! column)
+	{
+		error("table '%.*s': column '%.*s' not exists", str_size(name),
+		      str_of(name),
+		      str_size(name_column),
+		      str_of(name_column));
+	}
+
+	// save rename table operation
+	Str def;
+	buf_str(&column->constraints.value, &def);
+	auto op = table_op_column_set(schema, name, name_column, &def, value);
+
+	// update table
+	log_handle(&tr->log, cmd, &column_set_if,
+	           column,
+	           &table->handle, NULL, op);
+
+	switch (cmd) {
+	case LOG_TABLE_COLUMN_SET_DEFAULT:
+		constraints_set_default_str(&column->constraints, value);
+		break;
+	case LOG_TABLE_COLUMN_SET_STORED:
+		constraints_set_as_stored(&column->constraints, value);
+		break;
+	case LOG_TABLE_COLUMN_SET_RESOLVED:
+		constraints_set_as_resolved(&column->constraints, value);
+		break;
+	default:
+		abort();
+		break;
+	}
+	columns_sync(&table->config->columns);
+}
+
+void
+table_mgr_column_set_default(TableMgr* self,
+                             Tr*       tr,
+                             Str*      schema,
+                             Str*      name,
+                             Str*      name_column,
+                             Str*      value,
+                             bool      if_exists)
+{
+	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
+	                     LOG_TABLE_COLUMN_SET_DEFAULT);
+}
+
+void
+table_mgr_column_set_stored(TableMgr* self,
+                            Tr*       tr,
+                            Str*      schema,
+                            Str*      name,
+                            Str*      name_column,
+                            Str*      value,
+                            bool      if_exists)
+{
+	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
+	                     LOG_TABLE_COLUMN_SET_STORED);
+}
+
+void
+table_mgr_column_set_resolved(TableMgr* self,
+                              Tr*       tr,
+                              Str*      schema,
+                              Str*      name,
+                              Str*      name_column,
+                              Str*      value,
+                              bool      if_exists)
+{
+	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
+	                     LOG_TABLE_COLUMN_SET_RESOLVED);
+}

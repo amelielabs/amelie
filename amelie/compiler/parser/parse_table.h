@@ -43,10 +43,15 @@ enum
 {
 	TABLE_ALTER_RENAME,
 	TABLE_ALTER_SET_SERIAL,
-	TABLE_ALTER_SET_AGGREGATED,
 	TABLE_ALTER_COLUMN_ADD,
 	TABLE_ALTER_COLUMN_DROP,
-	TABLE_ALTER_COLUMN_RENAME
+	TABLE_ALTER_COLUMN_RENAME,
+	TABLE_ALTER_COLUMN_SET_DEFAULT,
+	TABLE_ALTER_COLUMN_SET_STORED,
+	TABLE_ALTER_COLUMN_SET_RESOLVED,
+	TABLE_ALTER_COLUMN_UNSET_DEFAULT,
+	TABLE_ALTER_COLUMN_UNSET_STORED,
+	TABLE_ALTER_COLUMN_UNSET_RESOLVED
 };
 
 struct AstTableAlter
@@ -60,8 +65,9 @@ struct AstTableAlter
 	Str     name_new;
 	Str     column_name;
 	Column* column;
+	Buf*    value_buf;
+	Str     value;
 	Ast*    serial;
-	bool    aggregated;
 };
 
 static inline AstTableCreate*
@@ -128,13 +134,14 @@ ast_table_alter_allocate(void)
 	self->if_exists  = false;
 	self->type       = 0;
 	self->column     = NULL;
+	self->value_buf  = NULL;
 	self->serial     = NULL;
-	self->aggregated = false;
 	str_init(&self->schema);
 	str_init(&self->schema_new);
 	str_init(&self->name);
 	str_init(&self->name_new);
 	str_init(&self->column_name);
+	str_init(&self->value);
 	return self;
 }
 

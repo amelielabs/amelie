@@ -83,6 +83,558 @@ select data from test2
 {"msg": "<test2.data> column not found"}
 select abc from test2
 [0, 0, 0]
+# test: alter table set default
+alter table test2 set column abc default 123
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 123
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[7]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": 123
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: alter table unset default
+alter table test2 unset column abc default
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[8]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: alter table set stored
+alter table test2 set column abc as (1 + 1) stored
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "1 + 1",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[9]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "1 + 1",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: alter table unset stored
+alter table test2 unset column abc stored
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[10]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: alter table set resolved
+alter table test2 set column abc as (1 + 1) resolved
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "1 + 1",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[11]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "1 + 1",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: alter table unset resolved
+alter table test2 unset column abc resolved
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[12]
+select system.tables().'public.test2'.columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "serial": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "serial": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "as_stored": "",
+    "as_resolved": "",
+    "default": null
+  }
+}]]
 # test: alter table column drop
 alter table test2 drop column abc
 select abc from test2
@@ -96,7 +648,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[7]
+[13]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -112,7 +664,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[8]
+[14]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -120,7 +672,7 @@ select * from test2 use index (i)
 # test: alter index rename
 alter index i on test2 rename to i2
 show lsn
-[9]
+[15]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -130,7 +682,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[9]
+[15]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i2)
@@ -150,7 +702,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[10]
+[16]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -170,7 +722,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[11]
+[17]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -178,7 +730,7 @@ select * from test2
 # test: drop table
 drop table test2
 show lsn
-[12]
+[18]
 select serial("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -188,7 +740,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[12]
+[18]
 select * from test2
 {"msg": "<public.test2> table or view not found"}
 show tables
@@ -211,7 +763,7 @@ show schemas
   }
 }]
 show lsn
-[13]
+[19]
 # test: restart
 disconnect S0
 close E0
@@ -219,7 +771,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[13]
+[19]
 show schemas
 [{
   "system": {
@@ -253,7 +805,7 @@ show schemas
   }
 }]
 show lsn
-[14]
+[20]
 # test: restart
 disconnect S0
 close E0
@@ -261,7 +813,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[14]
+[20]
 show schemas
 [{
   "system": {
@@ -280,7 +832,7 @@ show schemas
 # test: drop schema
 drop schema test2
 show lsn
-[15]
+[21]
 show schemas
 [{
   "system": {
@@ -299,7 +851,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[15]
+[21]
 show schemas
 [{
   "system": {
