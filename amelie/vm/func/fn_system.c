@@ -86,14 +86,6 @@ fn_schemas(Call* self)
 }
 
 static void
-fn_functions(Call* self)
-{
-	call_validate(self, 0);
-	auto buf = function_mgr_list(self->vm->function_mgr);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
 fn_tables(Call* self)
 {
 	call_validate(self, 0);
@@ -135,7 +127,6 @@ FunctionDef fn_system_def[] =
 	{ "system", "replication", TYPE_JSON, fn_repl,      FN_NONE },
 	{ "system", "nodes",       TYPE_JSON, fn_nodes,     FN_NONE },
 	{ "system", "schemas",     TYPE_JSON, fn_schemas,   FN_NONE },
-	{ "system", "functions",   TYPE_JSON, fn_functions, FN_NONE },
 	{ "system", "tables",      TYPE_JSON, fn_tables,    FN_NONE },
 	{ "system", "views",       TYPE_JSON, fn_views,     FN_NONE },
 	{ "system", "wal",         TYPE_JSON, fn_wal,       FN_NONE },

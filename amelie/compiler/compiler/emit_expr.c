@@ -461,7 +461,8 @@ emit_call(Compiler* self, Target* target, Ast* ast)
 		call_id = code_data_add_call(&self->code_data, fn);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, args->integer, call_id);
+	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn,
+	           args->integer, call_id);
 }
 
 hot static inline int

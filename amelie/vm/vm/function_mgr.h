@@ -65,18 +65,3 @@ function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
 	}
 	return NULL;
 }
-
-static inline Buf*
-function_mgr_list(FunctionMgr* self)
-{
-	auto buf = buf_create();
-	encode_obj(buf);
-	list_foreach(&self->list)
-	{
-		auto func = list_at(Function, link);
-		encode_target(buf, &func->schema, &func->name);
-		function_write(func, buf);
-	}
-	encode_obj_end(buf);
-	return buf;
-}

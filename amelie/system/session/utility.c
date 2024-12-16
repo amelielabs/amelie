@@ -71,9 +71,6 @@ ctl_show(Session* self)
 	if (str_is(name, "schemas", 7))
 		buf = schema_mgr_list(&share->db->schema_mgr);
 	else
-	if (str_is(name, "functions", 9))
-		buf = function_mgr_list(share->function_mgr);
-	else
 	if (str_is(name, "tables", 6))
 		buf = table_mgr_list(&share->db->table_mgr);
 	else

@@ -24,9 +24,6 @@ select system.nodes()::size
 # test: schemas()
 select system.schemas()
 
-# test: functions()
-select system.functions()
-
 # test: tables()
 select system.tables()
 
