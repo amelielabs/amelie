@@ -85,7 +85,7 @@ select abc from test2
 [0, 0, 0]
 # test: alter table set default
 alter table test2 set column abc default 123
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -134,7 +134,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [7]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -177,7 +177,7 @@ select system.tables().'public.test2'.columns
 }]]
 # test: alter table unset default
 alter table test2 unset column abc default
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -226,7 +226,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [8]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -269,7 +269,7 @@ select system.tables().'public.test2'.columns
 }]]
 # test: alter table set stored
 alter table test2 set column abc as (1 + 1) stored
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -318,7 +318,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [9]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -361,7 +361,7 @@ select system.tables().'public.test2'.columns
 }]]
 # test: alter table unset stored
 alter table test2 unset column abc stored
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -410,7 +410,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [10]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -453,7 +453,7 @@ select system.tables().'public.test2'.columns
 }]]
 # test: alter table set resolved
 alter table test2 set column abc as (1 + 1) resolved
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -502,7 +502,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [11]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -545,7 +545,7 @@ select system.tables().'public.test2'.columns
 }]]
 # test: alter table unset resolved
 alter table test2 unset column abc resolved
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -594,7 +594,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [12]
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
@@ -744,24 +744,20 @@ show lsn
 select * from test2
 {"msg": "<public.test2> relation not found"}
 show tables
-[{}]
+[[]]
 # test: create schema
 create schema test
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 show lsn
 [19]
 # test: restart
@@ -773,37 +769,29 @@ connect E0 S0 localhost:3485
 show lsn
 [19]
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 # test: alter schema rename
 alter schema test rename to test2
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test2": {
-    "name": "test2",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test2",
+  "system": false
+}]]
 show lsn
 [20]
 # test: restart
@@ -815,35 +803,28 @@ connect E0 S0 localhost:3485
 show lsn
 [20]
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test2": {
-    "name": "test2",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test2",
+  "system": false
+}]]
 # test: drop schema
 drop schema test2
 show lsn
 [21]
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: restart
 disconnect S0
 close E0
@@ -853,15 +834,12 @@ connect E0 S0 localhost:3485
 show lsn
 [21]
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 disconnect S0
 close E0

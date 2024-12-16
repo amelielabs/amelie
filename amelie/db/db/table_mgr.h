@@ -27,5 +27,5 @@ void   table_mgr_drop_of(TableMgr*, Tr*, Table*);
 void   table_mgr_truncate(TableMgr*, Tr*, Str*, Str*, bool);
 void   table_mgr_dump(TableMgr*, Buf*);
 Table* table_mgr_find(TableMgr*, Str*, Str*, bool);
-Buf*   table_mgr_list(TableMgr*);
+Buf*   table_mgr_list(TableMgr*, Str*);
 Part*  table_mgr_find_partition(TableMgr*, uint64_t);

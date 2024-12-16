@@ -25,5 +25,5 @@ void  node_mgr_free(NodeMgr*);
 void  node_mgr_create(NodeMgr*, Tr*, NodeConfig*, bool);
 void  node_mgr_drop(NodeMgr*, Tr*, Str*, bool);
 void  node_mgr_dump(NodeMgr*, Buf*);
-Buf*  node_mgr_list(NodeMgr*);
+Buf*  node_mgr_list(NodeMgr*, Str*);
 Node* node_mgr_find(NodeMgr*, Str*, bool);

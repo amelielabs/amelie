@@ -11,22 +11,19 @@ show 1234
 {"msg": "SHOW <name> expected"}
 # test: show users
 show users
-[{}]
+[[]]
 # test: show schemas
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: show tables
 show tables
-[{}]
+[[]]
 # test: show wal
 show wal
 [{
@@ -42,7 +39,7 @@ show wal
   "ops": 0
 }]
 # test: show config
-show all
+show config
 [{
   "version": "1.0.0",
   "uuid": "00000000-0000-0000-0000-000000000000",

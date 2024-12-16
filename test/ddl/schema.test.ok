@@ -2,16 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: ensure system schemas exists
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: create schema statement parsing
 create
 {"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
@@ -32,54 +29,42 @@ create schema test abc
 # test: create schema
 create schema test
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 # test: create schema if not exists
 create schema test
 {"msg": "schema 'test': already exists"}
 create schema if not exists test
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 # test: drop schema statement parsing
 drop schema
 {"msg": "DROP SCHEMA <name> expected"}
@@ -94,45 +79,36 @@ drop schema test abc
 # test: drop schema
 drop schema test
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: drop schema if exists
 drop schema test
 {"msg": "schema 'test': not exists"}
 drop schema if exists test
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: drop system schema
 drop schema public
 {"msg": "schema 'public': system schema cannot be dropped"}
 show schemas
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: drop schema with dependency
 create schema test
 create table test.test(id int primary key)
@@ -156,51 +132,39 @@ alter schema test rename "hello"
 # test: alter schema rename
 create schema test
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 alter schema test rename test2
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test2": {
-    "name": "test2",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test2",
+  "system": false
+}]]
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test2": {
-    "name": "test2",
-    "system": false
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test2",
+  "system": false
+}]]
 # test: alter schema system
 alter schema public rename _public
 {"msg": "schema 'public': system schema cannot be altered"}

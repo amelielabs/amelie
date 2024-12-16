@@ -78,6 +78,8 @@ json_sizeof(uint8_t* data)
 hot static inline bool
 json_obj_find(uint8_t** pos, const char* name, int64_t name_size)
 {
+	if (unlikely(json_is_null(*pos)))
+		return false;
 	json_read_obj(pos);
 	while (! json_read_obj_end(pos))
 	{
@@ -141,6 +143,8 @@ json_obj_size(uint8_t* pos)
 hot static inline bool
 json_array_find(uint8_t** pos, int position)
 {
+	if (unlikely(json_is_null(*pos)))
+		return false;
 	json_read_array(pos);
 	int i = 0;
 	while (! json_read_array_end(pos))
@@ -156,6 +160,8 @@ json_array_find(uint8_t** pos, int position)
 hot static inline bool
 json_array_last(uint8_t** pos)
 {
+	if (unlikely(json_is_null(*pos)))
+		return false;
 	json_read_array(pos);
 	while (! json_read_array_end(pos))
 	{
@@ -177,6 +183,8 @@ json_array_has(uint8_t* array, int position)
 hot static inline int
 json_array_size(uint8_t* pos)
 {
+	if (unlikely(json_is_null(pos)))
+		return 0;
 	int count = 0;
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))

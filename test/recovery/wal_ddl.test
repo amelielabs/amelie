@@ -75,7 +75,7 @@ select abc from test2
 
 # test: alter table set default
 alter table test2 set column abc default 123
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -85,11 +85,11 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table unset default
 alter table test2 unset column abc default
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -99,11 +99,11 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table set stored
 alter table test2 set column abc as (1 + 1) stored
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -113,11 +113,11 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table unset stored
 alter table test2 unset column abc stored
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -127,11 +127,11 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table set resolved
 alter table test2 set column abc as (1 + 1) resolved
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -141,11 +141,11 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table unset resolved
 alter table test2 unset column abc resolved
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: restart
 disconnect S0
@@ -155,7 +155,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select system.tables().'public.test2'.columns
+select system.table('test2').columns
 
 # test: alter table column drop
 alter table test2 drop column abc

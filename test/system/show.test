@@ -22,7 +22,7 @@ show tables
 show wal
 
 # test: show config
-show all
+show config
 
 # test: show all
 show all

@@ -30,10 +30,10 @@ create replica "00000000-0000-0000-0000-000000000002" uri "https://127.0.0.1:348
 start repl
 
 # test: wait for primary connect to replica 1
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].connected::bool = true
+watch system.replica("00000000-0000-0000-0000-000000000001").connected::bool = true
 
 # test: wait for primary connect to replica 2
-watch system.replicas()["00000000-0000-0000-0000-000000000002"].connected::bool = true
+watch system.replica("00000000-0000-0000-0000-000000000002").connected::bool = true
 
 # test: write
 create table test (id int primary key)
@@ -10038,10 +10038,10 @@ insert into test values ( 9998 )
 insert into test values ( 9999 )
 
 # test: wait replica 1 sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 
 # test: wait replica 2 sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 
 show repl
 

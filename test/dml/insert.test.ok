@@ -52,7 +52,7 @@ select * from test.test
 drop table test.test
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2))
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,

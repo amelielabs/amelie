@@ -28,7 +28,7 @@ create index i on test ()
 {"msg": "KEY (<name> expected"}
 # test: create index
 create index i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -52,7 +52,7 @@ select system.tables().'public.test'.indexes
 create index i on test (a)
 {"msg": "table 'test' index 'i': already exists"}
 create index if not exists i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -75,7 +75,7 @@ select system.tables().'public.test'.indexes
 drop index i on test
 # test: create index (compound key)
 create index i on test (b, a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -100,7 +100,7 @@ select system.tables().'public.test'.indexes
 drop index i on test
 # test: create index (key reuse)
 create index i on test (a, a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -130,7 +130,7 @@ create unique index i on test (a)
 drop table test
 create shared table test (id int primary key, a int, b int)
 create unique index i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -176,7 +176,7 @@ create index i on test (a) with (, type = 'tree'
 {"msg": "WITH (<name> expected"}
 # test: create index with
 create index i on test (a) with (type = 'hash')
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -198,7 +198,7 @@ select system.tables().'public.test'.indexes
 }]]
 drop index i on test
 create index i on test (a) with (type = 'tree')
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -225,7 +225,7 @@ create index i on test (a) with (type = 'unknown')
 drop table test
 create shared table test (id int primary key, a int, b int)
 create index i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -269,7 +269,7 @@ drop index i on public.test
 {"msg": "table 'test' index 'i': not exists"}
 # test: drop index
 create index i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -290,7 +290,7 @@ select system.tables().'public.test'.indexes
   }]
 }]]
 drop index i on public.test
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -339,7 +339,7 @@ alter index i on test rename to
 {"msg": "ALTER INDEX name ON name RENAME TO <name> expected"}
 # test: alter index rename
 create index i on test (a)
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,
@@ -360,7 +360,7 @@ select system.tables().'public.test'.indexes
   }]
 }]]
 alter index i on test rename to j
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,

@@ -27,7 +27,7 @@ create table test (id int primary key, data int as (1) stored
 {"msg": "CREATE TABLE name (name type <,)> expected"}
 # test: insert (expr)
 create table test (id int primary key, data int as (1 + 1) stored)
-select system.tables().'public.test'.columns[1]
+select system.table('test').columns[1]
 [{
   "name": "data",
   "type": 2,

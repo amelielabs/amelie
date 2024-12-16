@@ -109,7 +109,7 @@ user_mgr_alter(UserMgr* self, UserConfig* config)
 }
 
 Buf*
-user_mgr_list(UserMgr* self)
+user_mgr_list(UserMgr* self, Str* name)
 {
-	return user_cache_list(&self->cache);
+	return user_cache_list(&self->cache, name);
 }

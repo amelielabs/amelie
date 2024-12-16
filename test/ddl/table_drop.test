@@ -15,36 +15,33 @@ drop table if exists test
 
 # test: drop table
 create table test(id int primary key)
-select system.tables().'public.test'.name
+select system.table('test').name
 drop table test
-select system.tables().'public.test'.name
+select system.table('test').name
 
 # test: drop table if exists
 create table test(id int primary key)
-select system.tables().'public.test'.name
+select system.table('test').name
 drop table test
-select system.tables().'public.test'.name
+select system.table('test').name
 drop table if exists test
 drop table if exists test.test
 
 # test: recreate same table after drop
 create table test (id int primary key)
-select system.tables().'public.test'.name
+select system.table('test').name
 drop table test
 create table test (id int primary key)
-select system.tables().'public.test'.name
+select system.table('test').name
 drop table test
 
 # test: drop table schema
 create schema test
 create table test.test (id int primary key)
-select system.tables().'test.test'.schema
-select system.tables().'test.test'.name
 drop table test
 drop table test.test
 drop schema test
-select system.tables().'test.test'.schema
-select system.tables().'test.test'.name
+show tables
 
 disconnect S0
 close E0

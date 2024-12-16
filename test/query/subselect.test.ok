@@ -31,27 +31,21 @@ select (select [1,2,3])
 [[1, 2, 3]]
 # test: select (select function())
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 select (select system.schemas())
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: select (select {})
 select (select {})
 [{}]

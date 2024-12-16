@@ -5,7 +5,7 @@ connect E0 S0 localhost:3485
 
 # test: select from shared
 create shared table test (id int primary key, data int default 0)
-select system.tables().'public.test'.shared
+select system.table('test').shared
 insert into test (id) values (1), (2), (3)
 
 explain select * from test

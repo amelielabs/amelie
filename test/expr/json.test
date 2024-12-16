@@ -172,6 +172,7 @@ select {"id":48}.id
 select {"id":48}["id"]
 explain select {"id":48}.id
 explain select {"id":48}["id"]
+select {"id": null}.id.a.b
 
 # test: json . string
 select {"a": 0, "b": 1}.b
@@ -182,6 +183,7 @@ select {"a": 0, "b": {"c": 18}}.b.c::type
 select {"a": 0, "b": {"c": 18}}.b.c + 1
 select {"a": 0, "b": {"c": 18}}.b.c::int + 1
 select {"a": 0, "b": {"c": 18}}.'b'.c::int + 1
+select {"a": 0, "b": null}.b.c.d::int + 1
 
 # test: json [] int
 select {"id":48}[1]

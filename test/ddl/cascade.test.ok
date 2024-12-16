@@ -6,78 +6,51 @@ create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test
 {"msg": "table 'a' depends on schema 'test"}
-select system.tables().'test.a'.name
-["a"]
-select system.tables().'test.b'.name
-["b"]
 # test: drop schema cascade
 drop schema test cascade
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
-}]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
 # test: drop schema cascade (tables)
-select system.tables().'test.a'.name
-{"msg": "[]: object key 'test.a' not found"}
-select system.tables().'test.b'.name
-{"msg": "[]: object key 'test.b' not found"}
+show tables
+[[]]
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test cascade
-select system.tables().'test.a'.name
-{"msg": "[]: object key 'test.a' not found"}
-select system.tables().'test.b'.name
-{"msg": "[]: object key 'test.b' not found"}
+show tables
+[[]]
 # test: alter schema rename
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test": {
-    "name": "test",
-    "system": false
-  }
-}]
-select system.tables().'test.a'.name
-["a"]
-select system.tables().'test.b'.name
-["b"]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test",
+  "system": false
+}]]
 alter schema test rename test2
 select system.schemas()
-[{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  },
-  "test2": {
-    "name": "test2",
-    "system": false
-  }
-}]
-select system.tables().'test2.a'.name
-["a"]
-select system.tables().'test2.b'.name
-["b"]
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}, {
+  "name": "test2",
+  "system": false
+}]]
 disconnect S0
 close E0

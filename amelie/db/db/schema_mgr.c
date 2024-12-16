@@ -181,24 +181,42 @@ schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 }
 
 Buf*
-schema_mgr_list(SchemaMgr* self)
+schema_mgr_list(SchemaMgr* self, Str* name)
 {
 	auto buf = buf_create();
-	encode_obj(buf);
-	list_foreach(&self->mgr.list)
+	if (name)
 	{
-		auto schema = schema_of(list_at(Handle, link));
-		encode_string(buf, &schema->config->name);
-		// obj
-		encode_obj(buf);
-		// name
-		encode_raw(buf, "name", 4);
-		encode_string(buf, &schema->config->name);
-		// system
-		encode_raw(buf, "system", 6);
-		encode_bool(buf, schema->config->system);
-		encode_obj_end(buf);
+		auto schema = schema_mgr_find(self, name, false);
+		if (! schema) {
+			encode_null(buf);
+		} else {
+			// obj
+			encode_obj(buf);
+			// name
+			encode_raw(buf, "name", 4);
+			encode_string(buf, &schema->config->name);
+			// system
+			encode_raw(buf, "system", 6);
+			encode_bool(buf, schema->config->system);
+			encode_obj_end(buf);
+		}
+	} else
+	{
+		encode_array(buf);
+		list_foreach(&self->mgr.list)
+		{
+			auto schema = schema_of(list_at(Handle, link));
+			// obj
+			encode_obj(buf);
+			// name
+			encode_raw(buf, "name", 4);
+			encode_string(buf, &schema->config->name);
+			// system
+			encode_raw(buf, "system", 6);
+			encode_bool(buf, schema->config->system);
+			encode_obj_end(buf);
+		}
+		encode_array_end(buf);
 	}
-	encode_obj_end(buf);
 	return buf;
 }

@@ -43,17 +43,23 @@ select system.config()
 }]
 # test: users()
 select system.users()
-[{}]
+[[]]
+# test: user()
+select system.user('test')
+[null]
 # test: replicas()
 select system.replicas()
-[{}]
+[[]]
+# test: replica()
+select system.replica('00000000-0000-0000-0000-000000000000')
+[null]
 # test: repl()
 select system.repl()
 [{
   "active": false,
   "role": "primary",
   "primary": null,
-  "replicas": {}
+  "replicas": []
 }]
 # test: replication()
 select system.replication()
@@ -61,26 +67,37 @@ select system.replication()
   "active": false,
   "role": "primary",
   "primary": null,
-  "replicas": {}
+  "replicas": []
 }]
 # test: nodes()
 select system.nodes()::size
 [1]
+# test: node()
+select system.node('00000000-0000-0000-0000-000000000000')
+[null]
 # test: schemas()
 select system.schemas()
+[[{
+  "name": "system",
+  "system": true
+}, {
+  "name": "public",
+  "system": true
+}]]
+# test: schema()
+select system.schema('public')
 [{
-  "system": {
-    "name": "system",
-    "system": true
-  },
-  "public": {
-    "name": "public",
-    "system": true
-  }
+  "name": "public",
+  "system": true
 }]
+select system.schema('public').system
+[true]
 # test: tables()
 select system.tables()
-[{}]
+[[]]
+# test: table()
+select system.table('test')
+[null]
 # test: wal()
 select system.wal()
 [{

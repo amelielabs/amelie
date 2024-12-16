@@ -12,7 +12,7 @@ switch S0
 create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 start repl
 # test: wait for primary connect
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].connected::bool = true
+watch system.replica("00000000-0000-0000-0000-000000000001").connected::bool = true
 # test: write
 create table test (id int primary key)
 insert into test values ( 1 )
@@ -10015,21 +10015,19 @@ insert into test values ( 9997 )
 insert into test values ( 9998 )
 insert into test values ( 9999 )
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10001,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10001,
+    "lag": 0
+  }]
 }]
 # test: validate
 show lsn
@@ -10049,21 +10047,19 @@ select count(*) from test
 select count(*) from test use index(i)
 [9999]
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10002,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10002,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(*) from test
@@ -10076,21 +10072,19 @@ alter table test add column data int default 1
 select count(data) from test
 [0]
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10003,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10003,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(data) from test
@@ -10103,21 +10097,19 @@ select count(data) from test
 select count(id) from test
 [9999]
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10004,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10004,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(data) from test
@@ -10130,21 +10122,19 @@ alter table test rename column id to id2
 select count(id2) from test
 [9999]
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10005,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10005,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(id2) from test
@@ -10153,21 +10143,19 @@ select count(id2) from test
 switch S0
 truncate public.test
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10006,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10006,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(id2) from test
@@ -10183,21 +10171,19 @@ insert into test values (7)
 insert into test values (8)
 insert into test values (9)
 insert into test values (10)
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10016,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10016,
+    "lag": 0
+  }]
 }]
 switch S1
 select count(id2) from test
@@ -10209,21 +10195,19 @@ insert into test2 () values (), (), (), ()
 select serial("public", "test2")
 [4]
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10018,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10018,
+    "lag": 0
+  }]
 }]
 switch S1
 select serial("public", "test2")
@@ -10232,21 +10216,19 @@ select serial("public", "test2")
 switch S0
 create node "00000000-0000-0000-0000-00000000000f"
 # test: wait replica sync
-watch system.replicas()["00000000-0000-0000-0000-000000000001"].lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 [{
   "active": true,
   "role": "primary",
   "primary": null,
-  "replicas": {
-    "00000000-0000-0000-0000-000000000001": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "uri": "127.0.0.1:3481",
-      "connected": true,
-      "lsn": 10019,
-      "lag": 0
-    }
-  }
+  "replicas": [{
+    "id": "00000000-0000-0000-0000-000000000001",
+    "uri": "127.0.0.1:3481",
+    "connected": true,
+    "lsn": 10019,
+    "lag": 0
+  }]
 }]
 switch S1
 select system.config().backends::int = 4

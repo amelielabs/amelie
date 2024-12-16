@@ -994,6 +994,8 @@ explain select {"id":48}["id"]
     }
   }
 }]
+select {"id": null}.id.a.b
+[null]
 # test: json . string
 select {"a": 0, "b": 1}.b
 [1]
@@ -1027,6 +1029,8 @@ select {"a": 0, "b": {"c": 18}}.b.c::int + 1
 [19]
 select {"a": 0, "b": {"c": 18}}.'b'.c::int + 1
 [19]
+select {"a": 0, "b": null}.b.c.d::int + 1
+[null]
 # test: json [] int
 select {"id":48}[1]
 {"msg": "[]: array expected"}
@@ -1037,7 +1041,7 @@ select [1,2,3][1]
 select [1,2,3][2]
 [3]
 select [1,2,3][3]
-{"msg": "[]: array index '3' not found"}
+[null]
 explain select [1,2,3][-1]
 [{
   "bytecode": {
@@ -1058,9 +1062,9 @@ explain select [1,2,3][-1]
 select [][]
 {"msg": "bad expression"}
 select [][0]
-{"msg": "[]: array index '0' not found"}
+[null]
 select [][1]
-{"msg": "[]: array index '1' not found"}
+[null]
 select 1[]
 {"msg": "bad expression"}
 select 1[0]
@@ -1068,7 +1072,7 @@ select 1[0]
 select [1][0]
 [1]
 select [1][1]
-{"msg": "[]: array index '1' not found"}
+[null]
 select [[1,2,3], 5, [7]][0]
 [[1, 2, 3]]
 select [[1,2,3], 5, [7]][1]
@@ -1076,9 +1080,9 @@ select [[1,2,3], 5, [7]][1]
 select [[1,2,3], 5, [7]][2]
 [[7]]
 select [[1,2,3], 5, [7]][-1]
-{"msg": "[]: array index '-1' not found"}
+[null]
 select [[1,2,3], 5, [7]][3]
-{"msg": "[]: array index '3' not found"}
+[null]
 explain select [[1,2,3], 5, [7]][1]
 [{
   "bytecode": {

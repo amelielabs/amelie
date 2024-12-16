@@ -174,17 +174,29 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 }
 
 Buf*
-table_mgr_list(TableMgr* self)
+table_mgr_list(TableMgr* self, Str* name)
 {
 	auto buf = buf_create();
-	encode_obj(buf);
-	list_foreach(&self->mgr.list)
+	if (name)
 	{
-		auto table = table_of(list_at(Handle, link));
-		encode_target(buf, &table->config->schema, &table->config->name);
-		table_config_write(table->config, buf);
+		// todo: parse name as schema.target
+		Str schema;
+		str_set(&schema, "public", 6);
+		auto table = table_mgr_find(self, &schema, name, false);
+		if (! table)
+			encode_null(buf);
+		else
+			table_config_write(table->config, buf);
+	} else
+	{
+		encode_array(buf);
+		list_foreach(&self->mgr.list)
+		{
+			auto table = table_of(list_at(Handle, link));
+			table_config_write(table->config, buf);
+		}
+		encode_array_end(buf);
 	}
-	encode_obj_end(buf);
 	return buf;
 }
 

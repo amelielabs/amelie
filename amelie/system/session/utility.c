@@ -50,16 +50,16 @@ ctl_show(Session* self)
 	auto share = self->share;
 	Buf* buf   = NULL;
 	if (str_is(name, "users", 5))
-		buf = user_mgr_list(share->user_mgr);
+		buf = user_mgr_list(share->user_mgr, NULL);
 	else
 	if (str_is(name, "replicas", 8))
-		buf = replica_mgr_list(&share->repl->replica_mgr);
+		buf = replica_mgr_list(&share->repl->replica_mgr, NULL);
 	else
 	if (str_is(name, "nodes", 5))
-		buf = node_mgr_list(&share->db->node_mgr);
+		buf = node_mgr_list(&share->db->node_mgr, NULL);
 	else
 	if (str_is(name, "cluster", 7))
-		buf = node_mgr_list(&share->db->node_mgr);
+		buf = node_mgr_list(&share->db->node_mgr, NULL);
 	else
 	if (str_is(name, "repl", 4) ||
 	    str_is(name, "replication", 11))
@@ -69,10 +69,10 @@ ctl_show(Session* self)
 		buf = wal_status(&share->db->wal);
 	else
 	if (str_is(name, "schemas", 7))
-		buf = schema_mgr_list(&share->db->schema_mgr);
+		buf = schema_mgr_list(&share->db->schema_mgr, NULL);
 	else
 	if (str_is(name, "tables", 6))
-		buf = table_mgr_list(&share->db->table_mgr);
+		buf = table_mgr_list(&share->db->table_mgr, NULL);
 	else
 	if (str_is(name, "status", 6))
 	{

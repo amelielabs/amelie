@@ -1033,14 +1033,21 @@ cidxjs:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (unlikely(! json_is_obj(json)))
+		if (likely(json_is_obj(json)))
+		{
+			if (! json_obj_find(&json, str_of(&c->string), str_size(&c->string))) {
+				value_set_null(a);
+			} else {
+				value_set_json(a, json, json_sizeof(json), b->buf);
+				if (b->buf)
+					buf_ref(b->buf);
+			}
+		} else
+		if (json_is_null(json)) {
+			value_set_null(a);
+		} else {
 			error("[]: object expected");
-		if (! json_obj_find(&json, str_of(&c->string), str_size(&c->string)))
-			error("[]: object key '%.*s' not found", str_size(&c->string),
-			      str_of(&c->string));
-		value_set_json(a, json, json_sizeof(json), b->buf);
-		if (b->buf)
-			buf_ref(b->buf);
+		}
 		value_free(b);
 		value_free(c);
 	}
@@ -1055,13 +1062,22 @@ cidxji:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (unlikely(! json_is_array(json)))
+		if (likely(json_is_array(json)))
+		{
+			if (! json_array_find(&json, c->integer)) {
+				value_set_null(a);
+			} else
+			{
+				value_set_json(a, json, json_sizeof(json), b->buf);
+				if (b->buf)
+					buf_ref(b->buf);
+			}
+		} else
+		if (json_is_null(json)) {
+			value_set_null(a);
+		} else {
 			error("[]: array expected");
-		if (! json_array_find(&json, c->integer))
-			error("[]: array index '%d' not found", c->integer);
-		value_set_json(a, json, json_sizeof(json), b->buf);
-		if (b->buf)
-			buf_ref(b->buf);
+		}
 		value_free(b);
 		value_free(c);
 	}
@@ -1091,14 +1107,21 @@ cdotjs:
 		b = &r[op->b];
 		c = &r[op->c];
 		json = b->json;
-		if (unlikely(! json_is_obj(json)))
+		if (likely(json_is_obj(json)))
+		{
+			if (! json_obj_find_path(&json, &c->string)) {
+				value_set_null(a);
+			} else {
+				value_set_json(a, json, json_sizeof(json), b->buf);
+				if (b->buf)
+					buf_ref(b->buf);
+			}
+		} else
+		if (json_is_null(json)) {
+			value_set_null(a);
+		} else {
 			error(".: object expected");
-		if (! json_obj_find_path(&json, &c->string))
-			error(".: object key '%.*s' not found", str_size(&c->string),
-			      str_of(&c->string));
-		value_set_json(a, json, json_sizeof(json), b->buf);
-		if (b->buf)
-			buf_ref(b->buf);
+		}
 		value_free(b);
 		value_free(c);
 	}

@@ -52,11 +52,35 @@ fn_users(Call* self)
 }
 
 static void
+fn_user(Call* self)
+{
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_STRING);
+	Buf* buf;
+	rpc(global()->control->system, RPC_SHOW_USERS, 2, &buf, &self->argv[0].string);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
 fn_replicas(Call* self)
 {
 	call_validate(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPLICAS, 1, &buf);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
+fn_replica(Call* self)
+{
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_STRING);
+
+	Uuid id;
+	uuid_from_string(&id, &self->argv[0].string);
+
+	Buf* buf;
+	rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &id);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -73,7 +97,16 @@ static void
 fn_nodes(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = node_mgr_list(&self->vm->db->node_mgr);
+	auto buf = node_mgr_list(&self->vm->db->node_mgr, NULL);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
+fn_node(Call* self)
+{
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_STRING);
+	auto buf = node_mgr_list(&self->vm->db->node_mgr, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -81,7 +114,16 @@ static void
 fn_schemas(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = schema_mgr_list(&self->vm->db->schema_mgr);
+	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, NULL);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
+fn_schema(Call* self)
+{
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_STRING);
+	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -89,7 +131,16 @@ static void
 fn_tables(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = table_mgr_list(&self->vm->db->table_mgr);
+	auto buf = table_mgr_list(&self->vm->db->table_mgr, NULL);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
+fn_table(Call* self)
+{
+	call_validate(self, 1);
+	call_validate_arg(self, 0, TYPE_STRING);
+	auto buf = table_mgr_list(&self->vm->db->table_mgr, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -114,12 +165,17 @@ FunctionDef fn_system_def[] =
 {
 	{ "system", "config",      TYPE_JSON, fn_config,    FN_NONE },
 	{ "system", "users",       TYPE_JSON, fn_users,     FN_NONE },
+	{ "system", "user",        TYPE_JSON, fn_user,      FN_NONE },
 	{ "system", "replicas",    TYPE_JSON, fn_replicas,  FN_NONE },
+	{ "system", "replica",     TYPE_JSON, fn_replica,   FN_NONE },
 	{ "system", "repl",        TYPE_JSON, fn_repl,      FN_NONE },
 	{ "system", "replication", TYPE_JSON, fn_repl,      FN_NONE },
 	{ "system", "nodes",       TYPE_JSON, fn_nodes,     FN_NONE },
+	{ "system", "node",        TYPE_JSON, fn_node,      FN_NONE },
 	{ "system", "schemas",     TYPE_JSON, fn_schemas,   FN_NONE },
+	{ "system", "schema",      TYPE_JSON, fn_schema,    FN_NONE },
 	{ "system", "tables",      TYPE_JSON, fn_tables,    FN_NONE },
+	{ "system", "table",       TYPE_JSON, fn_table,     FN_NONE },
 	{ "system", "wal",         TYPE_JSON, fn_wal,       FN_NONE },
 	{ "system", "status",      TYPE_JSON, fn_status,    FN_NONE },
 	{  NULL,     NULL,         TYPE_NULL, NULL,         FN_NONE }

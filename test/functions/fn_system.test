@@ -9,8 +9,14 @@ select system.config()
 # test: users()
 select system.users()
 
+# test: user()
+select system.user('test')
+
 # test: replicas()
 select system.replicas()
+
+# test: replica()
+select system.replica('00000000-0000-0000-0000-000000000000')
 
 # test: repl()
 select system.repl()
@@ -21,11 +27,21 @@ select system.replication()
 # test: nodes()
 select system.nodes()::size
 
+# test: node()
+select system.node('00000000-0000-0000-0000-000000000000')
+
 # test: schemas()
 select system.schemas()
 
+# test: schema()
+select system.schema('public')
+select system.schema('public').system
+
 # test: tables()
 select system.tables()
+
+# test: table()
+select system.table('test')
 
 # test: wal()
 select system.wal()

@@ -111,17 +111,26 @@ node_mgr_dump(NodeMgr* self, Buf* buf)
 }
 
 Buf*
-node_mgr_list(NodeMgr* self)
+node_mgr_list(NodeMgr* self, Str* id)
 {
 	auto buf = buf_create();
-	encode_obj(buf);
-	list_foreach(&self->mgr.list)
+	if (id)
 	{
-		auto node = node_of(list_at(Handle, link));
-		encode_string(buf, &node->config->id);
-		node_config_write(node->config, buf);
+		auto node = node_mgr_find(self, id, false);
+		if (! node)
+			encode_null(buf);
+		else
+			node_config_write(node->config, buf);
+	} else
+	{
+		encode_array(buf);
+		list_foreach(&self->mgr.list)
+		{
+			auto node = node_of(list_at(Handle, link));
+			node_config_write(node->config, buf);
+		}
+		encode_array_end(buf);
 	}
-	encode_obj_end(buf);
 	return buf;
 }
 

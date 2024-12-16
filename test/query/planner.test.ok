@@ -449,7 +449,7 @@ explain select * from test where data = 1
 }]
 select * from test where data = 1
 [[1, 1]]
-select system.tables().'public.test'.indexes
+select system.table('test').indexes
 [[{
   "name": "primary",
   "type": 2,

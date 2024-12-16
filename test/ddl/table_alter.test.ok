@@ -31,7 +31,7 @@ alter table test rename to
 alter table test rename asf junk
 {"msg": "unexpected token at the end of statement"}
 alter table test rename to abc
-select system.tables().'public.abc'.name
+select system.table('abc').name
 ["abc"]
 # test: rename table exists
 create table test (id int primary key)
@@ -46,13 +46,16 @@ alter table abc rename to system.test
 {"msg": "system schema <system> cannot be used to create objects"}
 # test: rename schema
 alter table abc rename to public.test
-select system.tables().'public.test'.name
+select system.table('abc').name
+[null]
+select system.table('test').name
 ["test"]
 create schema test
 alter table public.test rename to test.test
-select system.tables().'test.test'.name
+alter table test.test rename to public.test
+select system.table('test').name
 ["test"]
-drop table test.test
+drop table test
 # test: set serial
 create table test (id int primary key serial, data int default 0)
 insert into test () values ()
@@ -111,7 +114,7 @@ alter table test rename column data to 1
 {"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
 # test: rename column
 create table test (id int primary key serial, data int default 0)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -140,7 +143,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test rename column data to data2
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -174,7 +177,7 @@ drop table test
 # test: rename column #2
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -190,7 +193,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test rename column id to id2
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id2",
   "type": 2,
@@ -212,7 +215,7 @@ select id2 from test
 drop table test
 # test: rename column (already exists)
 create table test (id int primary key serial, data int default 0)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -242,7 +245,7 @@ select system.tables().'public.test'.columns
 }]]
 alter table test rename column data to data
 {"msg": "table 'test': column 'data' already exists"}
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -296,7 +299,7 @@ alter table test add column data int primary key
 drop table test
 # test: add column (empty table)
 create table test (id int primary key)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -312,7 +315,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test add column data int
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -348,7 +351,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -387,7 +390,7 @@ create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int not null
 {"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -407,7 +410,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int default 123
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -449,7 +452,7 @@ create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int not null default 123
 {"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -469,7 +472,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int serial
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -534,7 +537,7 @@ alter table test drop column data
 drop table test
 # test: drop column (empty)
 create table test (id int primary key, a int)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -563,7 +566,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test drop column a
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -581,7 +584,7 @@ select system.tables().'public.test'.columns
 drop table test
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -623,7 +626,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test drop column a
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -654,7 +657,7 @@ select system.tables().'public.test'.columns
 drop table test
 # test: drop column
 create table test (id int primary key, a text, b int)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -703,7 +706,7 @@ select a from test
 select b from test
 [1, 2, 3]
 alter table test drop column a
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -737,7 +740,7 @@ select a from test
 {"msg": "<test.a> column not found"}
 select b from test
 [1, 2, 3]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -766,7 +769,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test drop column b
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -792,7 +795,7 @@ select b from test
 drop table test
 # test: drop column (key order)
 create table test (a text, b int, id int primary key)
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "a",
   "type": 4,
@@ -843,7 +846,7 @@ select a from test
 select b from test
 [1, 2, 3]
 alter table test drop column a
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "b",
   "type": 2,
@@ -879,7 +882,7 @@ select a from test
 {"msg": "<test.a> column not found"}
 select b from test
 [1, 2, 3]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "b",
   "type": 2,
@@ -908,7 +911,7 @@ select system.tables().'public.test'.columns
   }
 }]]
 alter table test drop column b
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -938,7 +941,7 @@ alter table test set column data default 0
 insert into test (id) values (0)
 select * from test
 [[0, 0]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -971,7 +974,7 @@ alter table test unset column data default
 insert into test (id) values (1)
 select * from test
 [[0, 0], [1, null]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -1004,7 +1007,7 @@ alter table test set column data as (1 + 1) stored
 insert into test (id) values (2)
 select * from test
 [[0, 0], [1, null], [2, 2]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -1037,7 +1040,7 @@ alter table test unset column data stored
 insert into test (id) values (3)
 select * from test
 [[0, 0], [1, null], [2, 2], [3, null]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -1073,7 +1076,7 @@ insert into test (id) values (4)
 insert into test (id) values (4)
 select * from test
 [[0, 0], [1, null], [2, 2], [3, null], [4, 2]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
@@ -1107,7 +1110,7 @@ insert into test (id) values (4)
 {"msg": "index 'primary': unique key constraint violation"}
 select * from test
 [[0, 0], [1, null], [2, 2], [3, null], [4, 2]]
-select system.tables().'public.test'.columns
+select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,

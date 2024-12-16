@@ -176,17 +176,26 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 }
 
 Buf*
-replica_mgr_list(ReplicaMgr* self)
+replica_mgr_list(ReplicaMgr* self, Uuid* id)
 {
 	auto buf = buf_create();
-	encode_obj(buf);
-	list_foreach(&self->list)
+	if (id)
 	{
-		auto replica = list_at(Replica, link);
-		encode_uuid(buf, &replica->config->id);
-		replica_status(replica, buf);
+		auto replica = replica_mgr_find(self, id);
+		if (! replica)
+			encode_null(buf);
+		else
+			replica_status(replica, buf);
+	} else
+	{
+		encode_array(buf);
+		list_foreach(&self->list)
+		{
+			auto replica = list_at(Replica, link);
+			replica_status(replica, buf);
+		}
+		encode_array_end(buf);
 	}
-	encode_obj_end(buf);
 	return buf;
 }
 

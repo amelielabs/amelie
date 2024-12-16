@@ -27,6 +27,6 @@ void replica_mgr_start(ReplicaMgr*);
 void replica_mgr_stop(ReplicaMgr*);
 void replica_mgr_create(ReplicaMgr*, ReplicaConfig*, bool);
 void replica_mgr_drop(ReplicaMgr*, Uuid*, bool);
-Buf* replica_mgr_list(ReplicaMgr*);
+Buf* replica_mgr_list(ReplicaMgr*, Uuid*);
 Replica*
 replica_mgr_find(ReplicaMgr*, Uuid*);

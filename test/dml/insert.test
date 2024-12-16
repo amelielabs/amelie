@@ -44,7 +44,7 @@ drop table test.test
 
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2))
-select system.tables().'public.test'.columns
+select system.table('test').columns
 insert into test values (123)
 insert into test values (1, 2, 3)
 insert into test values (1, 2)
