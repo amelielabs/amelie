@@ -32,11 +32,6 @@ create table test (id int primary key)
 alter table abc rename to test
 drop table test
 
-# test: rename conflicting view exists
-create view test as select 1
-alter table abc rename to test
-drop view test
-
 # test: rename schema not exists
 alter table abc rename to test.test
 

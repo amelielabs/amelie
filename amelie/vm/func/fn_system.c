@@ -94,14 +94,6 @@ fn_tables(Call* self)
 }
 
 static void
-fn_views(Call* self)
-{
-	call_validate(self, 0);
-	auto buf = view_mgr_list(&self->vm->db->view_mgr);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
 fn_wal(Call* self)
 {
 	call_validate(self, 0);
@@ -128,7 +120,6 @@ FunctionDef fn_system_def[] =
 	{ "system", "nodes",       TYPE_JSON, fn_nodes,     FN_NONE },
 	{ "system", "schemas",     TYPE_JSON, fn_schemas,   FN_NONE },
 	{ "system", "tables",      TYPE_JSON, fn_tables,    FN_NONE },
-	{ "system", "views",       TYPE_JSON, fn_views,     FN_NONE },
 	{ "system", "wal",         TYPE_JSON, fn_wal,       FN_NONE },
 	{ "system", "status",      TYPE_JSON, fn_status,    FN_NONE },
 	{  NULL,     NULL,         TYPE_NULL, NULL,         FN_NONE }

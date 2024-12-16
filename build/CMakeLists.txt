@@ -194,7 +194,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/table_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr_alter.c
     ${AMELIE_ROOT}/db/db/table_index.c
-    ${AMELIE_ROOT}/db/db/view_mgr.c
     ${AMELIE_ROOT}/db/db/node_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c
@@ -245,7 +244,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
-    ${AMELIE_ROOT}/compiler/parser/parse_view.c
     ${AMELIE_ROOT}/compiler/parser/parse_cte.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c

@@ -9,7 +9,7 @@ create table test (id int primary key)
 create shared table test (id int primary key)
 {"msg": "system has no nodes"}
 select * from test
-{"msg": "<public.test> table or view not found"}
+{"msg": "<public.test> relation not found"}
 # test: create node statement parsing
 create compute
 {"msg": "CREATE COMPUTE <NODE> expected"}

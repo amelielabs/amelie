@@ -22,8 +22,7 @@ typedef enum
 	TARGET_SELECT       = 1 << 2,
 	TARGET_GROUP_BY     = 1 << 3,
 	TARGET_CTE          = 1 << 4,
-	TARGET_INSERTED     = 1 << 5,
-	TARGET_VIEW         = 1 << 6
+	TARGET_INSERTED     = 1 << 5
 } TargetType;
 
 typedef enum
@@ -46,7 +45,6 @@ struct Target
 	IndexConfig* from_table_index;
 	Ast*         from_select;
 	Cte*         from_cte;
-	View*        from_view;
 	Columns*     from_columns;
 	int          r;
 	// target keys
@@ -72,7 +70,6 @@ target_allocate(void)
 	self->from_table_index = NULL;
 	self->from_select      = NULL;
 	self->from_cte         = NULL;
-	self->from_view        = NULL;
 	self->from_columns     = NULL;
 	self->r                = -1;
 	self->path             = NULL;

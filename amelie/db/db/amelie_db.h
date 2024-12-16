@@ -27,12 +27,6 @@
 // index
 #include "db/table_index.h"
 
-// view
-#include "db/view_config.h"
-#include "db/view.h"
-#include "db/view_op.h"
-#include "db/view_mgr.h"
-
 // node
 #include "db/node_config.h"
 #include "db/node.h"

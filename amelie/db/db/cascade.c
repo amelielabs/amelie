@@ -34,14 +34,7 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 			table_mgr_drop_of(&self->table_mgr, tr, table);
 	}
 
-	// views
-	list_foreach_safe(&self->view_mgr.mgr.list)
-	{
-		auto view = view_of(list_at(Handle, link));
-		if (str_compare(&view->config->schema, schema))
-			view_mgr_drop(&self->view_mgr, tr, &view->config->schema,
-			              &view->config->name, false);
-	}
+	// todo: views
 }
 
 static void
@@ -58,16 +51,7 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 			                 &table->config->name, false);
 	}
 
-	// views
-	list_foreach_safe(&self->view_mgr.mgr.list)
-	{
-		auto view = view_of(list_at(Handle, link));
-		if (str_compare(&view->config->schema, schema))
-			view_mgr_rename(&self->view_mgr, tr, &view->config->schema,
-			                &view->config->name,
-			                schema_new,
-			                &view->config->name, false);
-	}
+	// todo: views
 }
 
 static void
@@ -83,15 +67,7 @@ cascade_schema_validate(Db* self, Str* schema)
 			      str_size(schema), str_of(schema));
 	}
 
-	// views
-	list_foreach(&self->view_mgr.mgr.list)
-	{
-		auto view = view_of(list_at(Handle, link));
-		if (str_compare(&view->config->schema, schema))
-			error("view '%.*s' depends on schema '%.*s", str_size(&view->config->name),
-			      str_of(&view->config->name),
-			      str_size(schema), str_of(schema));
-	}
+	// todo: views
 }
 
 void

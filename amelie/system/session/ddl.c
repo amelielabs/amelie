@@ -97,13 +97,7 @@ ddl_create_table(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// ensure view with the same name does not exists
-	auto view = view_mgr_find(&db->view_mgr, &config->schema,
-	                          &config->name, false);
-	if (unlikely(view))
-		error("view <%.*s> with the same name exists",
-		      str_size(&config->name),
-		      str_of(&config->name));
+	// todo: ensure view with the same name does not exists
 
 	// create table partitions
 	auto cluster = self->share->cluster;
@@ -200,13 +194,7 @@ ddl_alter_table_rename(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// ensure view with the same name does not exists
-	auto view = view_mgr_find(&db->view_mgr, &arg->schema_new,
-	                          &arg->name_new, false);
-	if (unlikely(view))
-		error("view <%.*s> with the same name exists",
-		      str_size(&arg->name_new),
-		      str_of(&arg->name_new));
+	// todo: ensure view with the same name does not exists
 
 	// rename table
 	table_mgr_rename(&db->table_mgr, tr, &arg->schema, &arg->name,
@@ -394,70 +382,6 @@ ddl_alter_index(Session* self, Tr* tr)
 }
 
 static void
-ddl_create_view(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_view_create_of(stmt->ast);
-	auto db   = self->share->db;
-
-	// ensure schema exists
-	auto schema = schema_mgr_find(&db->schema_mgr, &arg->config->schema, true);
-	if (! schema->config->create)
-		error("system schema <%.*s> cannot be used to create objects",
-		      str_size(&schema->config->name),
-		      str_of(&schema->config->name));
-
-	// ensure table with the same name does not exists
-	auto table = table_mgr_find(&db->table_mgr, &arg->config->schema,
-	                            &arg->config->name, false);
-	if (unlikely(table))
-		error("table <%.*s> with the same name exists",
-		      str_size(&arg->config->name),
-		      str_of(&arg->config->name));
-
-	// create view
-	view_mgr_create(&db->view_mgr, tr, arg->config,
-	                 arg->if_not_exists);
-}
-
-static void
-ddl_drop_view(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_view_drop_of(stmt->ast);
-	view_mgr_drop(&self->share->db->view_mgr, tr, &arg->schema, &arg->name,
-	              arg->if_exists);
-}
-
-static void
-ddl_alter_view(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_view_alter_of(stmt->ast);
-	auto db   = self->share->db;
-
-	// ensure schema exists
-	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
-	if (! schema->config->create)
-		error("system schema <%.*s> cannot be used to create objects",
-		      str_size(&schema->config->name),
-		      str_of(&schema->config->name));
-
-	// ensure table with the same name does not exists
-	auto table = table_mgr_find(&db->table_mgr, &arg->schema_new,
-	                            &arg->name_new, false);
-	if (unlikely(table))
-		error("table <%.*s> with the same name exists",
-		      str_size(&arg->name_new),
-		      str_of(&arg->name_new));
-
-	// rename view
-	view_mgr_rename(&db->view_mgr, tr, &arg->schema, &arg->name,
-	                &arg->schema_new, &arg->name_new,
-	                 arg->if_exists);
-}
-
-static void
 ddl_create_node(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -549,15 +473,6 @@ session_execute_ddl(Session* self)
 			break;
 		case STMT_ALTER_INDEX:
 			ddl_alter_index(self, &tr);
-			break;
-		case STMT_CREATE_VIEW:
-			ddl_create_view(self, &tr);
-			break;
-		case STMT_DROP_VIEW:
-			ddl_drop_view(self, &tr);
-			break;
-		case STMT_ALTER_VIEW:
-			ddl_alter_view(self, &tr);
 			break;
 		case STMT_CREATE_NODE:
 			ddl_create_node(self, &tr);

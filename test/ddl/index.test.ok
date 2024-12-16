@@ -306,7 +306,7 @@ drop index i on public.test
 drop index if exists i on public.test
 # test: alter index parsing
 alter
-{"msg": "ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "ALTER <USER|SCHEMA|TABLE|INDEX> expected"}
 alter index
 {"msg": "ALTER INDEX <name> expected"}
 alter index 1

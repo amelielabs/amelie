@@ -14,7 +14,7 @@ show schemas
 }]
 # test: create schema statement parsing
 create
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
 create schema
 {"msg": "CREATE SCHEMA <name> expected"}
 create schema 123

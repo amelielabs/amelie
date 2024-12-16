@@ -63,7 +63,6 @@ top_stats_read(TopStats* self, uint8_t** pos)
 		{ DECODE_INT,    "tables",            &self->tables            },
 		{ DECODE_INT,    "tables_shared",     &self->tables_shared     },
 		{ DECODE_INT,    "secondary_indexes", &self->secondary_indexes },
-		{ DECODE_INT,    "views",             &self->views             },
 		{ 0,              NULL,               NULL                     },
 	};
 	decode_obj(obj_db, "db", &pos_db);
@@ -295,7 +294,6 @@ top_draw(Top* self)
 	info("tables:            %" PRIi64 PAD, stats->tables);
 	info("tables_shared:     %" PRIi64 PAD, stats->tables_shared);
 	info("secondary indexes: %" PRIi64 PAD, stats->secondary_indexes);
-	info("views:             %" PRIi64 PAD, stats->views);
 	info("");
 }
 

@@ -10,16 +10,6 @@ select system.tables().'test.a'.name
 ["a"]
 select system.tables().'test.b'.name
 ["b"]
-create view test.test_view as select 1
-select system.views()
-[{
-  "test.test_view": {
-    "schema": "test",
-    "name": "test_view",
-    "query": "select 1",
-    "columns": []
-  }
-}]
 # test: drop schema cascade
 drop schema test cascade
 select system.schemas()
@@ -38,9 +28,6 @@ select system.tables().'test.a'.name
 {"msg": "[]: object key 'test.a' not found"}
 select system.tables().'test.b'.name
 {"msg": "[]: object key 'test.b' not found"}
-# test: drop schema cascade (views)
-select system.views()
-[{}]
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)

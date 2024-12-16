@@ -101,32 +101,7 @@ parse_from_target(From* self)
 		return target;
 	}
 
-	// view
-	auto view = view_mgr_find(&stmt->db->view_mgr, &schema, &name, false);
-	if (view)
-	{
-		// FROM (view SELECT)
-		auto lex_prev = stmt->lex;
-
-		// parse view SELECT and return as expression
-		Lex lex;
-		lex_init(&lex, lex_prev->keywords);
-		lex_start(&lex, &view->config->query);
-		stmt->lex = &lex;
-		stmt_if(stmt, KSELECT);
-		auto select = parse_select(stmt);
-		stmt->lex = lex_prev;
-		if (! select->target)
-			error("FROM (SELECT) subquery has no target");
-		target->type         = TARGET_VIEW;
-		target->from_select  = &select->ast;
-		target->from_view    = view;
-		target->from_columns = &view->config->columns;
-		str_set_str(&target->name, &view->config->name);
-		return target;
-	}
-
-	error("<%.*s.%.*s> table or view not found",
+	error("<%.*s.%.*s> relation not found",
 	      str_size(&schema), str_of(&schema),
 	      str_size(&name),
 	      str_of(&name));

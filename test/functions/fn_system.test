@@ -27,9 +27,6 @@ select system.schemas()
 # test: tables()
 select system.tables()
 
-# test: views()
-select system.views()
-
 # test: wal()
 select system.wal()
 

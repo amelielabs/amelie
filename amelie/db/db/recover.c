@@ -255,32 +255,6 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
-	case LOG_VIEW_CREATE:
-	{
-		auto config = view_op_create_read(data);
-		guard(view_config_free, config);
-		view_mgr_create(&db->view_mgr, tr, config, false);
-		break;
-	}
-	case LOG_VIEW_DROP:
-	{
-		Str schema;
-		Str name;
-		view_op_drop_read(data, &schema, &name);
-		view_mgr_drop(&db->view_mgr, tr, &schema, &name, true);
-		break;
-	}
-	case LOG_VIEW_RENAME:
-	{
-		Str schema;
-		Str name;
-		Str schema_new;
-		Str name_new;
-		view_op_rename_read(data, &schema, &name, &schema_new, &name_new);
-		view_mgr_rename(&db->view_mgr, tr, &schema, &name,
-		                &schema_new, &name_new, true);
-		break;
-	}
 	case LOG_NODE_CREATE:
 	{
 		auto config = node_op_create_read(data);

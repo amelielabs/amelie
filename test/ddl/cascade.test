@@ -11,9 +11,6 @@ drop schema test
 select system.tables().'test.a'.name
 select system.tables().'test.b'.name
 
-create view test.test_view as select 1
-select system.views()
-
 # test: drop schema cascade
 drop schema test cascade
 select system.schemas()
@@ -21,9 +18,6 @@ select system.schemas()
 # test: drop schema cascade (tables)
 select system.tables().'test.a'.name
 select system.tables().'test.b'.name
-
-# test: drop schema cascade (views)
-select system.views()
 
 create schema test
 create table test.a(id int primary key)

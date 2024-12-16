@@ -12,7 +12,7 @@ insert into "name"
 insert into 1
 {"msg": "FROM target name expected"}
 insert into name
-{"msg": "<public.name> table or view not found"}
+{"msg": "<public.name> relation not found"}
 create table test (id int primary key)
 insert into test
 {"msg": "INSERT INTO <VALUES> expected"}
@@ -43,10 +43,10 @@ drop table test
 create schema test
 create table test.test (id int primary key)
 insert into test values (123)
-{"msg": "<public.test> table or view not found"}
+{"msg": "<public.test> relation not found"}
 insert into test.test values (123)
 select * from test
-{"msg": "<public.test> table or view not found"}
+{"msg": "<public.test> relation not found"}
 select * from test.test
 [123]
 drop table test.test

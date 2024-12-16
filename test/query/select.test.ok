@@ -16,7 +16,7 @@ select 1 from
 select 1 from "test"
 {"msg": "FROM target name expected"}
 select 1 from name
-{"msg": "<public.name> table or view not found"}
+{"msg": "<public.name> relation not found"}
 select 1 from 1 where
 {"msg": "FROM target name expected"}
 select 1 from 1 where null

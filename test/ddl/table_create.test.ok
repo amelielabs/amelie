@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create table statement parsing
 create
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
 create junk
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected"}
+{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
 create unique
 {"msg": "CREATE UNIQUE <INDEX> expected"}
 create unique table
@@ -625,11 +625,6 @@ select system.tables().'test.test'.schema
 drop table test
 drop table test.test
 drop schema test
-# test: table create with conflicting view
-create view test as select 1
-create table test (id int primary key)
-{"msg": "view <test> with the same name exists"}
-drop view test
 # test: distributed
 create distributed table test (id int primary key)
 select system.tables().'public.test'.shared

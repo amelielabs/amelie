@@ -32,7 +32,6 @@ db_init(Db*        self,
 {
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
-	view_mgr_init(&self->view_mgr);
 	node_mgr_init(&self->node_mgr, node_iface, node_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
@@ -44,7 +43,6 @@ db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
 	node_mgr_free(&self->node_mgr);
-	view_mgr_free(&self->view_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
 	wal_free(&self->wal);
@@ -93,7 +91,7 @@ db_open(Db* self)
 	db_create_system_schema(self, "public", true);
 
 	// read directory and restore last checkpoint catalog
-	// (schemas, tables, views)
+	// (schemas, tables)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
 }
 
@@ -102,9 +100,6 @@ db_close(Db* self)
 {
 	// stop checkpointer service
 	checkpointer_stop(&self->checkpointer);
-
-	// free views
-	view_mgr_free(&self->view_mgr);
 
 	// free tables
 	table_mgr_free(&self->table_mgr);
@@ -148,10 +143,6 @@ db_status(Db* self)
 	// indexes
 	encode_raw(buf, "secondary_indexes", 17);
 	encode_integer(buf, tables_secondary_indexes);
-
-	// views
-	encode_raw(buf, "views", 5);
-	encode_integer(buf, self->view_mgr.mgr.list_count);
 
 	encode_obj_end(buf);
 	return buf;

@@ -88,13 +88,6 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_VIEW:
-	{
-		auto ast = ast_view_create_of(stmt->ast);
-		if (ast->config)
-			view_config_free(ast->config);
-		break;
-	}
 	case STMT_INSERT:
 	{
 		auto ast = ast_insert_of(stmt->ast);
@@ -242,7 +235,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			break;
 		}
 
-		// CREATE USER | TOKEN | REPLICA | NODE | SCHEMA | TABLE | INDEX | VIEW
+		// CREATE USER | TOKEN | REPLICA | NODE | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -277,20 +270,15 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
-		} else
-		if (lex_if(lex, KVIEW))
-		{
-			stmt->id = STMT_CREATE_VIEW;
-			parse_view_create(stmt);
 		} else {
-			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
+			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX| VIEW
+		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -320,20 +308,15 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
-		} else
-		if (lex_if(lex, KVIEW))
-		{
-			stmt->id = STMT_DROP_VIEW;
-			parse_view_drop(stmt);
 		} else {
-			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX|VIEW> expected");
+			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | VIEW
+		// ALTER USER | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
@@ -353,13 +336,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_ALTER_INDEX;
 			parse_index_alter(stmt);
-		} else
-		if (lex_if(lex, KVIEW))
-		{
-			stmt->id = STMT_ALTER_VIEW;
-			parse_view_alter(stmt);
 		} else {
-			error("ALTER <USER|SCHEMA|TABLE|INDEX|VIEW> expected");
+			error("ALTER <USER|SCHEMA|TABLE|INDEX> expected");
 		}
 		break;
 	}

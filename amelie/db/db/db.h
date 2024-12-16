@@ -17,7 +17,6 @@ struct Db
 {
 	SchemaMgr     schema_mgr;
 	TableMgr      table_mgr;
-	ViewMgr       view_mgr;
 	NodeMgr       node_mgr;
 	Checkpointer  checkpointer;
 	CheckpointMgr checkpoint_mgr;

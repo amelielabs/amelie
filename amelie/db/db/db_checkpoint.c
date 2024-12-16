@@ -26,7 +26,7 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { nodes, schemas, tables, views }
+	// { nodes, schemas, tables }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
@@ -40,9 +40,6 @@ db_checkpoint_catalog_dump(void* arg)
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
 
-	encode_raw(buf, "views", 5);
-	view_mgr_dump(&self->view_mgr, buf);
-
 	encode_obj_end(buf);
 	return buf;
 }
@@ -51,8 +48,7 @@ enum
 {
 	RESTORE_NODE,
 	RESTORE_SCHEMA,
-	RESTORE_TABLE,
-	RESTORE_VIEW
+	RESTORE_TABLE
 };
 
 static void
@@ -99,16 +95,6 @@ restore_object(Db* self, int type, uint8_t** pos)
 			table_mgr_create(&self->table_mgr, &tr, config, false);
 			break;
 		}
-		case RESTORE_VIEW:
-		{
-			// read view config
-			auto config = view_config_read(pos);
-			guard(view_config_free, config);
-
-			// create view
-			view_mgr_create(&self->view_mgr, &tr, config, false);
-			break;
-		}
 		}
 	}
 
@@ -125,19 +111,17 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { nodes, schemas, tables, views }
+	// { nodes, schemas, tables }
 	Db* self = arg;
 
 	uint8_t* pos_nodes   = NULL;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
-	uint8_t* pos_views   = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_ARRAY, "nodes",   &pos_nodes   },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
-		{ DECODE_ARRAY, "views",   &pos_views   },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -156,11 +140,6 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	json_read_array(&pos_tables);
 	while (! json_read_array_end(&pos_tables))
 		restore_object(self, RESTORE_TABLE, &pos_tables);
-
-	// views
-	json_read_array(&pos_views);
-	while (! json_read_array_end(&pos_views))
-		restore_object(self, RESTORE_VIEW, &pos_views);
 }
 
 static void

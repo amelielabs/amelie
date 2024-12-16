@@ -74,9 +74,6 @@ ctl_show(Session* self)
 	if (str_is(name, "tables", 6))
 		buf = table_mgr_list(&share->db->table_mgr);
 	else
-	if (str_is(name, "views", 5))
-		buf = view_mgr_list(&share->db->view_mgr);
-	else
 	if (str_is(name, "status", 6))
 	{
 		rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);

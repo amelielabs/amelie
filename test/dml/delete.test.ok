@@ -12,9 +12,9 @@ delete from 1
 delete from "name"
 {"msg": "FROM target name expected"}
 delete from test junk
-{"msg": "<public.test> table or view not found"}
+{"msg": "<public.test> relation not found"}
 delete from test where true limit
-{"msg": "<public.test> table or view not found"}
+{"msg": "<public.test> relation not found"}
 # test: delete
 create table test(id int primary key)
 insert into test values (0)

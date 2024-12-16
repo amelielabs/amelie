@@ -27,9 +27,6 @@ show schemas
 # test: show tables
 show tables
 [{}]
-# test: show views
-show views
-[{}]
 # test: show wal
 show wal
 [{
