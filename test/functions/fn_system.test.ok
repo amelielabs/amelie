@@ -98,6 +98,8 @@ select system.tables()
 # test: table()
 select system.table('test')
 [null]
+select system.table('test.a')
+[null]
 # test: wal()
 select system.wal()
 [{

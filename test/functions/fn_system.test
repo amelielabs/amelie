@@ -42,6 +42,7 @@ select system.tables()
 
 # test: table()
 select system.table('test')
+select system.table('test.a')
 
 # test: wal()
 select system.wal()

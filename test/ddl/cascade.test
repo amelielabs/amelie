@@ -31,8 +31,8 @@ select system.schemas()
 
 alter schema test rename test2
 select system.schemas()
-#select system.table('test2.a').name
-#select system.table('test2.b').name
+select system.table('test2.a').name
+select system.table('test2.b').name
 
 disconnect S0
 close E0

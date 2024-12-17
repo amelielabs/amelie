@@ -174,15 +174,20 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 }
 
 Buf*
-table_mgr_list(TableMgr* self, Str* name)
+table_mgr_list(TableMgr* self, Str* path)
 {
 	auto buf = buf_create();
-	if (name)
+	if (path)
 	{
-		// todo: parse name as schema.target
 		Str schema;
-		str_set(&schema, "public", 6);
-		auto table = table_mgr_find(self, &schema, name, false);
+		str_init(&schema);
+		Str name = *path;
+		if (str_split(&name, &schema, '.'))
+			str_advance(&name, str_size(&schema) + 1);
+		else
+			str_set(&schema, "public", 6);
+
+		auto table = table_mgr_find(self, &schema, &name, false);
 		if (! table)
 			encode_null(buf);
 		else

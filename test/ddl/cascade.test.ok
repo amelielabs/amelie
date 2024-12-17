@@ -52,5 +52,9 @@ select system.schemas()
   "name": "test2",
   "system": false
 }]]
+select system.table('test2.a').name
+["a"]
+select system.table('test2.b').name
+["b"]
 disconnect S0
 close E0
