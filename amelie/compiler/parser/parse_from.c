@@ -63,15 +63,48 @@ parse_from_target(From* self)
 		return target;
 	}
 
-	// FROM name
-	// FROM schema.name
+	// FROM name [(args)]
+	// FROM schema.name [(args)]
 	Str  schema;
 	Str  name;
 	auto expr = parse_target(stmt, &schema, &name);
 	if (! expr)
 		error("FROM target name expected");
 
-	// FROM cte
+	// function()
+	if (stmt->id == STMT_SELECT && stmt_if(stmt, '('))
+	{
+		// find function
+		auto call = ast_call_allocate();
+		call->fn = function_mgr_find(stmt->function_mgr, &schema, &name);
+		if (! call->fn)
+			error("FROM %.*s.%.*s(): function not found",
+			      str_size(&schema), str_of(&schema),
+			      str_size(&name),
+			      str_of(&name));
+		// parse args ()
+		call->ast.r = parse_expr_args(stmt, NULL, ')', false);
+
+		// ensure function can be used inside FROM
+		if (call->fn->ret != TYPE_STORE &&
+		    call->fn->ret != TYPE_JSON)
+			error("FROM %.*s.%.*s(): function must return result set or JSON",
+			      str_size(&schema), str_of(&schema),
+			      str_size(&name),
+			      str_of(&name));
+
+		target->type = TARGET_FUNCTION;
+		target->from_function = &call->ast;
+
+		// allocate select to keep returning columns
+		auto select = ast_select_allocate();
+		ast_list_add(&stmt->select_list, &select->ast);
+		target->from_columns = &select->ret.columns;
+		str_set_str(&target->name, &call->fn->name);
+		return target;
+	}
+
+	// cte
 	auto cte = cte_list_find(stmt->cte_list, &name);
 	if (cte)
 	{
@@ -127,7 +160,6 @@ parse_from_add(From* self)
 	} else {
 		if (as)
 			error("AS <name> expected ");
-
 		if (target->type == TARGET_SELECT)
 			error("FROM (SELECT) subquery must have an alias");
 	}
@@ -139,6 +171,16 @@ parse_from_add(From* self)
 		if (match)
 			error("<%.*s> target is redefined, please use different alias for the target",
 			      str_size(&target->name), str_of(&target->name));
+	}
+
+	// generate first column to match the target name for function target
+	if (target->type == TARGET_FUNCTION)
+	{
+		auto fn = ast_call_of(target->from_function)->fn;
+		auto column = column_allocate();
+		column_set_name(column, &target->name);
+		column_set_type(column, fn->ret, type_sizeof(fn->ret));
+		columns_add(target->from_columns, column);
 	}
 
 	// add target

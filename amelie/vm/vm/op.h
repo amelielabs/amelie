@@ -211,6 +211,12 @@ enum
 	CSTORE_NEXT,
 	CSTORE_READ,
 
+	// json cursor
+	CJSON_OPEN,
+	CJSON_CLOSE,
+	CJSON_NEXT,
+	CJSON_READ,
+
 	// aggs
 	CAGG,
 	CCOUNT,

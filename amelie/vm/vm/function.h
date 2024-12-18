@@ -64,20 +64,3 @@ function_free(Function* self)
 	str_free(&self->name);
 	am_free(self);
 }
-
-static inline void
-function_write(Function* self, Buf* buf)
-{
-	// obj
-	encode_obj(buf);
-
-	// schema
-	encode_raw(buf, "schema", 6);
-	encode_string(buf, &self->schema);
-
-	// name
-	encode_raw(buf, "name", 4);
-	encode_string(buf, &self->name);
-
-	encode_obj_end(buf);
-}

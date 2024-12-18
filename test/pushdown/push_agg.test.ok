@@ -26,7 +26,7 @@ explain select count(*) from test_empty
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -75,7 +75,7 @@ explain select count(*) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -122,7 +122,7 @@ explain select count(id) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -169,7 +169,7 @@ explain select count(data) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -215,7 +215,7 @@ explain select count(data) from test_null
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -267,7 +267,7 @@ explain select sum(id) from test_empty
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -314,7 +314,7 @@ explain select sum(id) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -363,7 +363,7 @@ explain select sum(data2) from test_empty
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -410,7 +410,7 @@ explain select sum(data2) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -462,7 +462,7 @@ explain select sum(data) from test_null
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -512,7 +512,7 @@ explain select avg(id) from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -572,7 +572,7 @@ explain select avg(data2) from test_null
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -633,7 +633,7 @@ explain select min(data2) from test_null
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -694,7 +694,7 @@ explain select max(data2) from test_null
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
@@ -748,7 +748,7 @@ explain select id, count(*) from test group by id
       "09": "push                2      0      0     ",
       "10": "set_add             1      0      0     ",
       "11": "store_next          1      6      0     ",
-      "12": "store_open          1      1      0     ",
+      "12": "store_close         1      1      0     ",
       "13": "cte_set             0      1      0     ",
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
@@ -799,7 +799,7 @@ explain select id, count(*) from test group by 1
       "09": "push                2      0      0     ",
       "10": "set_add             1      0      0     ",
       "11": "store_next          1      6      0     ",
-      "12": "store_open          1      1      0     ",
+      "12": "store_close         1      1      0     ",
       "13": "cte_set             0      1      0     ",
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
@@ -848,7 +848,7 @@ explain select * from (select count(*) from test) t
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "set                 0      1      0     ",
       "12": "store_open          2      1      14    ",
       "13": "jmp                 18     0      0     ",
@@ -856,7 +856,7 @@ explain select * from (select count(*) from test) t
       "15": "push                2      0      0     ",
       "16": "set_add             0      0      0     ",
       "17": "store_next          2      14     0     ",
-      "18": "store_open          2      1      0     ",
+      "18": "store_close         2      1      0     ",
       "19": "cte_set             0      0      0     ",
       "20": "content             0      -      -     ",
       "21": "ret                 0      0      0     "
@@ -905,7 +905,7 @@ explain select * from (select id, count(*) from test group by id) t
       "09": "push                2      0      0     ",
       "10": "set_add             1      0      0     ",
       "11": "store_next          1      6      0     ",
-      "12": "store_open          1      1      0     ",
+      "12": "store_close         1      1      0     ",
       "13": "set                 0      2      0     ",
       "14": "store_open          2      1      16    ",
       "15": "jmp                 22     0      0     ",
@@ -915,7 +915,7 @@ explain select * from (select id, count(*) from test group by id) t
       "19": "push                2      0      0     ",
       "20": "set_add             0      0      0     ",
       "21": "store_next          2      16     0     ",
-      "22": "store_open          2      1      0     ",
+      "22": "store_close         2      1      0     ",
       "23": "cte_set             0      0      0     ",
       "24": "content             0      -      -     ",
       "25": "ret                 0      0      0     "
@@ -979,7 +979,7 @@ explain select id, count(*) from test group by id order by id
       "11": "push                2      0      0     ",
       "12": "set_add             1      0      0     ",
       "13": "store_next          1      6      0     ",
-      "14": "store_open          1      1      0     ",
+      "14": "store_close         1      1      0     ",
       "15": "set_sort            1      0      0     ",
       "16": "cte_set             0      1      0     ",
       "17": "content             0      -      -     ",
@@ -1027,7 +1027,7 @@ explain select id, count(*) from test group by 1 order by 1
       "11": "push                2      0      0     ",
       "12": "set_add             1      0      0     ",
       "13": "store_next          1      6      0     ",
-      "14": "store_open          1      1      0     ",
+      "14": "store_close         1      1      0     ",
       "15": "set_sort            1      0      0     ",
       "16": "cte_set             0      1      0     ",
       "17": "content             0      -      -     ",
@@ -1096,7 +1096,7 @@ explain select id, count(*) from test group by 1 having id > 5
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1151,7 +1151,7 @@ explain select id from test group by id having count(id) > 0
       "11": "push                2      0      0     ",
       "12": "set_add             1      0      0     ",
       "13": "store_next          1      6      0     ",
-      "14": "store_open          1      1      0     ",
+      "14": "store_close         1      1      0     ",
       "15": "cte_set             0      1      0     ",
       "16": "content             0      -      -     ",
       "17": "ret                 0      0      0     "
@@ -1202,7 +1202,7 @@ explain select id from test group by id having count(*) > 0
       "11": "push                2      0      0     ",
       "12": "set_add             1      0      0     ",
       "13": "store_next          1      6      0     ",
-      "14": "store_open          1      1      0     ",
+      "14": "store_close         1      1      0     ",
       "15": "cte_set             0      1      0     ",
       "16": "content             0      -      -     ",
       "17": "ret                 0      0      0     "
@@ -1248,7 +1248,7 @@ explain select id, count(*) from test group by id having count(*) > 0
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1296,7 +1296,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1342,7 +1342,7 @@ explain select data, count(*) from test group by data having count(*) > 0
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1390,7 +1390,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1436,7 +1436,7 @@ explain select data, count(*) from test group by data having count(*) > 1
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
@@ -1484,7 +1484,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1
       "13": "push                2      0      0     ",
       "14": "set_add             1      0      0     ",
       "15": "store_next          1      6      0     ",
-      "16": "store_open          1      1      0     ",
+      "16": "store_close         1      1      0     ",
       "17": "cte_set             0      1      0     ",
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "

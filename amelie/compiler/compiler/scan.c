@@ -225,32 +225,55 @@ scan_table(Scan* self, Target* target)
 }
 
 static inline void
-scan_store(Scan* self, Target* target)
+scan_expr(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 
-	// scan over SET or MERGE object
-	//
-	// using target register value to determine the scan object
-	if (target->r == -1)
+	// emit expression, if not set
+	switch (target->type) {
+	case TARGET_SELECT:
 	{
-		if (target->type == TARGET_SELECT)
-		{
-			assert(target->from_select);
+		if (target->r == -1)
 			target->r = emit_select(cp, target->from_select);
-		} else
-		if (target->type == TARGET_CTE)
-		{
-			auto cte = target->from_cte;
+		break;
+	}
+	case TARGET_CTE:
+	{
+		auto cte = target->from_cte;
+		if (target->r == -1)
 			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_STORE), cte->stmt);
-		} else {
-			assert(false);
-		}
+		break;
+	}
+	case TARGET_FUNCTION:
+	{
+		if (target->r == -1)
+			target->r = emit_call(cp, target, target->from_function);
+		break;
+	}
+	default:
+		assert(target->r != -1);
+		break;
 	}
 
-	// open SET or MERGE cursor
+	// scan over set, merge or function result
+	int op_open  = CSTORE_OPEN;
+	int op_close = CSTORE_CLOSE;
+	int op_next  = CSTORE_NEXT;
+	auto type = rtype(cp, target->r);
+	if (type == TYPE_JSON)
+	{
+		op_open  = CJSON_OPEN;
+		op_close = CJSON_CLOSE;
+		op_next  = CJSON_NEXT;
+	} else
+	if (type != TYPE_STORE && type != TYPE_NULL) {
+		error("FROM: unsupported expression type <%s>",
+		      type_of(type));
+	}
+
+	// open SET, MERGE or JSON cursor
 	auto _open = op_pos(cp);
-	op3(cp, CSTORE_OPEN, target->id, target->r, 0 /* _where */);
+	op3(cp, op_open, target->id, target->r, 0 /* _where */);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);
@@ -302,14 +325,14 @@ scan_store(Scan* self, Target* target)
 	}
 
 	// cursor next
-	op2(cp, CSTORE_NEXT, target->id, _where);
+	op2(cp, op_next, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
 	code_at(cp->code, _where_eof)->a = _eof;
 
-	// STORE_CLOSE
-	op2(cp, CSTORE_CLOSE, target->id, true);
+	// cursor close
+	op2(cp, op_close, target->id, true);
 }
 
 static inline void
@@ -319,7 +342,7 @@ scan_target(Scan* self, Target* target)
 	    target->type == TARGET_TABLE_SHARED)
 		scan_table(self, target);
 	else
-		scan_store(self, target);
+		scan_expr(self, target);
 }
 
 void

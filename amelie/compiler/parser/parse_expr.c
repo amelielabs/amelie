@@ -183,8 +183,8 @@ expr_is_constable(Ast* self)
 	return false;
 }
 
-static Ast*
-expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
+Ast*
+parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 {
 	bool constable = true;
 	int  count     = 0;
@@ -257,7 +257,7 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	auto call = ast_call_allocate();
 	call->fn = func;
 	if (with_args)
-		call->ast.r = expr_args(self, expr, ')', false);
+		call->ast.r = parse_expr_args(self, expr, ')', false);
 	return &call->ast;
 }
 
@@ -442,7 +442,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// object
 	case '{':
 		// { [expr: expr, ... ] }
-		value->l = expr_args(self, expr, '}', true);
+		value->l = parse_expr_args(self, expr, '}', true);
 		break;
 
 	// functions (keyword conflicts)
@@ -618,7 +618,7 @@ parse_unary(Stmt*     self, Expr* expr,
 	case '[':
 		// [ [expr, ...] ]
 		ast->id = KARRAY;
-		ast->l  = expr_args(self, expr, ']', false);
+		ast->l  = parse_expr_args(self, expr, ']', false);
 		ast_push(result, ast);
 		break;
 	case KNOT:
@@ -740,7 +740,7 @@ parse_op(Stmt*     self, Expr* expr,
 		ast->integer = !not;
 		if (! stmt_if(self, '('))
 			error("IN <(> expected");
-		auto r = expr_args(self, expr, ')', false);
+		auto r = parse_expr_args(self, expr, ')', false);
 		ast_push(result, r);
 		break;
 	}

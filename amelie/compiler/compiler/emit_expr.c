@@ -112,7 +112,7 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 		}
 	}
 
-	if (! column)
+	if (!column && target->type != TARGET_FUNCTION)
 	{
 		if (column_conflict)
 		{
@@ -199,6 +199,19 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 		}
 		r = op3(self, op, rpin(self, column->type),
 		        target->id, column->order);
+	} else
+	if (target->type == TARGET_FUNCTION)
+	{
+		assert(target->r != -1);
+		r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->id);
+		if (! column)
+		{
+			// handle as {}.column for json target
+			auto rstring = emit_string(self, name, false);
+			auto rdot = cast_operator(self, OP_DOT, r, rstring);
+			runpin(self, r);
+			r = rdot;
+		}
 	} else
 	{
 		assert(target->r != -1);
@@ -424,7 +437,7 @@ emit_call_typederive(Compiler* self, int r, int* type, bool* type_match)
 	}
 }
 
-hot static inline int
+hot int
 emit_call(Compiler* self, Target* target, Ast* ast)
 {
 	// (function_name, args)

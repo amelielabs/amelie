@@ -16,7 +16,7 @@ explain select * from (select 1) t
       "08": "push                2      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "store_next          0      7      0     ",
-      "11": "store_open          0      1      0     ",
+      "11": "store_close         0      1      0     ",
       "12": "cte_set             0      0      0     ",
       "13": "content             0      -      -     ",
       "14": "ret                 0      0      0     "
@@ -44,7 +44,7 @@ explain select * from (select 1, 2) t
       "12": "push                2      0      0     ",
       "13": "set_add             0      0      0     ",
       "14": "store_next          0      9      0     ",
-      "15": "store_open          0      1      0     ",
+      "15": "store_close         0      1      0     ",
       "16": "cte_set             0      0      0     ",
       "17": "content             0      -      -     ",
       "18": "ret                 0      0      0     "
@@ -69,7 +69,7 @@ explain select x from (select 1 as x) t
       "08": "push                2      0      0     ",
       "09": "set_add             0      0      0     ",
       "10": "store_next          0      7      0     ",
-      "11": "store_open          0      1      0     ",
+      "11": "store_close         0      1      0     ",
       "12": "cte_set             0      0      0     ",
       "13": "content             0      -      -     ",
       "14": "ret                 0      0      0     "
@@ -97,7 +97,7 @@ explain select a, b from (select 1 as a, 2 as b) t
       "12": "push                2      0      0     ",
       "13": "set_add             0      0      0     ",
       "14": "store_next          0      9      0     ",
-      "15": "store_open          0      1      0     ",
+      "15": "store_close         0      1      0     ",
       "16": "cte_set             0      0      0     ",
       "17": "content             0      -      -     ",
       "18": "ret                 0      0      0     "

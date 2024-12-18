@@ -39,7 +39,7 @@ explain select 0 -> id, 0 -> data from test
       "09": "push                2      0      0     ",
       "10": "set_add             1      0      0     ",
       "11": "store_next          1      6      0     ",
-      "12": "store_open          1      1      0     ",
+      "12": "store_close         1      1      0     ",
       "13": "cte_set             0      1      0     ",
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
@@ -99,7 +99,7 @@ explain select 0 -> self + 1 from test
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
       "09": "store_next          1      6      0     ",
-      "10": "store_open          1      1      0     ",
+      "10": "store_close         1      1      0     ",
       "11": "cte_set             0      1      0     ",
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "

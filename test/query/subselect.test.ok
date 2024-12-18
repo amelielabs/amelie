@@ -290,7 +290,7 @@ explain select * from (select * from test) t
       "14": "push                2      0      0     ",
       "15": "set_add             0      0      0     ",
       "16": "store_next          1      13     0     ",
-      "17": "store_open          1      1      0     ",
+      "17": "store_close         1      1      0     ",
       "18": "result              0      0      0     ",
       "19": "ret                 0      0      0     "
     }

@@ -30,4 +30,5 @@ expr_init(Expr* self)
 	self->lambda = NULL;
 }
 
+Ast* parse_expr_args(Stmt*, Expr*, int, bool);
 Ast* parse_expr(Stmt*, Expr*);

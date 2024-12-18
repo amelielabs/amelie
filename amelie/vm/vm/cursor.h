@@ -19,19 +19,23 @@ enum
 	CURSOR_NONE,
 	CURSOR_TABLE,
 	CURSOR_STORE,
+	CURSOR_JSON,
 	CURSOR_MAX
 };
 
 struct Cursor
 {
 	int            type;
+	int            r;
 	// table
 	Table*         table;
 	Part*          part;
 	Iterator*      it;
 	// store
 	StoreIterator* it_store;
-	int            r;
+	// json
+	uint8_t*       pos;
+	int            pos_size;
 	// upsert state
 	int            ref;
 	int            ref_pos;
@@ -47,11 +51,13 @@ static inline void
 cursor_init(Cursor* self)
 {
 	self->type      = CURSOR_NONE;
+	self->r         = 0;
 	self->table     = NULL;
 	self->part      = NULL;
 	self->it        = NULL;
 	self->it_store  = NULL;
-	self->r         = 0;
+	self->pos       = NULL;
+	self->pos_size  = 0;
 	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
@@ -61,9 +67,11 @@ static inline void
 cursor_reset(Cursor* self)
 {
 	self->type      = CURSOR_NONE;
+	self->r         = 0;
 	self->table     = NULL;
 	self->part      = NULL;
-	self->r         = 0;
+	self->pos       = NULL;
+	self->pos_size  = 0;
 	self->ref       = -1;
 	self->ref_pos   = 0;
 	self->ref_count = 0;

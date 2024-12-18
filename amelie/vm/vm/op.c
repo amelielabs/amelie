@@ -226,9 +226,15 @@ OpDesc ops[] =
 
 	// store cursor
 	{ CSTORE_OPEN, "store_open" },
-	{ CSTORE_CLOSE, "store_open" },
+	{ CSTORE_CLOSE, "store_close" },
 	{ CSTORE_NEXT, "store_next" },
 	{ CSTORE_READ, "store_read" },
+
+	// json cursor
+	{ CJSON_OPEN, "json_open" },
+	{ CJSON_CLOSE, "json_close" },
+	{ CJSON_NEXT, "json_next" },
+	{ CJSON_READ, "json_read" },
 
 	// aggs
 	{ CAGG, "agg" },

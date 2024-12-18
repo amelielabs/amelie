@@ -314,6 +314,12 @@ vm_run(Vm*       self,
 		&&cstore_next,
 		&&cstore_read,
 
+		// json cursor
+		&&cjson_open,
+		&&cjson_close,
+		&&cjson_next,
+		&&cjson_read,
+
 		// aggs
 		&&cagg,
 		&&ccount,
@@ -1383,13 +1389,18 @@ cstore_open:
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->r = op->b;
 	cursor->type = CURSOR_STORE;
-	assert(r[op->b].type == TYPE_STORE);
-	cursor->it_store = store_iterator(r[op->b].store);
-	// jmp on success or skip to the next op on eof
-	if (likely(store_iterator_has(cursor->it_store)))
-		op = code_at(self->code, op->c);
-	else
+	if (likely(r[op->b].type == TYPE_STORE))
+	{
+		// jmp on success or skip to the next op on eof
+		cursor->it_store = store_iterator(r[op->b].store);
+		if (likely(store_iterator_has(cursor->it_store)))
+			op = code_at(self->code, op->c);
+		else
+			op++;
+	} else {
+		assert(r[op->b].type == TYPE_NULL);
 		op++;
+	}
 	op_jmp;
 
 cstore_close:
@@ -1414,6 +1425,55 @@ cstore_read:
 	// [result, cursor, column]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->b);
 	value_copy(&r[op->a], &store_iterator_at(cursor->it_store)[op->c]);
+	op_next;
+
+cjson_open:
+	// [cursor, json, _on_success]
+	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	cursor->r = op->b;
+	cursor->type = CURSOR_JSON;
+	if (likely(r[op->b].type == TYPE_JSON))
+	{
+		if (unlikely(! json_is_array(r[op->b].json)))
+			error("FROM: json array expected");
+		// jmp on success or skip to the next op on eof
+		cursor->pos = r[op->b].json;
+		json_read_array(&cursor->pos);
+		if (likely(! json_is_array_end(cursor->pos))) {
+			cursor->pos_size = json_sizeof(cursor->pos);
+			op = code_at(self->code, op->c);
+		} else {
+			op++;
+		}
+	} else {
+		assert(r[op->b].type == TYPE_NULL);
+		op++;
+	}
+	op_jmp;
+
+cjson_close:
+	// [cursor]
+	cursor = cursor_mgr_of(cursor_mgr, op->a);
+	value_free(&r[cursor->r]);
+	cursor_reset(cursor);
+	op_next;
+
+cjson_next:
+	// [target_id, _on_success]
+	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	json_skip(&cursor->pos);
+	if (likely(! json_read_array_end(&cursor->pos))) {
+		cursor->pos_size = json_sizeof(cursor->pos);
+		op = code_at(self->code, op->b);
+	} else {
+		op++;
+	}
+	op_jmp;
+
+cjson_read:
+	// [result, cursor]
+	cursor = cursor_mgr_of(&self->cursor_mgr, op->b);
+	value_set_json(&r[op->a], cursor->pos, cursor->pos_size, NULL);
 	op_next;
 
 cagg:

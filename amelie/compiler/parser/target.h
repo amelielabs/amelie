@@ -20,9 +20,10 @@ typedef enum
 	TARGET_TABLE_SHARED = 1 << 0,
 	TARGET_TABLE        = 1 << 1,
 	TARGET_SELECT       = 1 << 2,
-	TARGET_GROUP_BY     = 1 << 3,
-	TARGET_CTE          = 1 << 4,
-	TARGET_INSERTED     = 1 << 5
+	TARGET_FUNCTION     = 1 << 3,
+	TARGET_GROUP_BY     = 1 << 4,
+	TARGET_CTE          = 1 << 5,
+	TARGET_INSERTED     = 1 << 6
 } TargetType;
 
 typedef enum
@@ -46,6 +47,7 @@ struct Target
 	Ast*         from_select;
 	Cte*         from_cte;
 	Columns*     from_columns;
+	Ast*         from_function;
 	int          r;
 	// target keys
 	Ast*         path;
@@ -71,6 +73,7 @@ target_allocate(void)
 	self->from_select      = NULL;
 	self->from_cte         = NULL;
 	self->from_columns     = NULL;
+	self->from_function    = NULL;
 	self->r                = -1;
 	self->path             = NULL;
 	self->join             = JOIN_NONE;
