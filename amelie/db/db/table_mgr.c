@@ -174,34 +174,37 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 }
 
 Buf*
-table_mgr_list(TableMgr* self, Str* path)
+table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
 {
 	auto buf = buf_create();
-	if (path)
+	if (schema && name)
 	{
-		Str schema;
-		str_init(&schema);
-		Str name = *path;
-		if (str_split(&name, &schema, '.'))
-			str_advance(&name, str_size(&schema) + 1);
-		else
-			str_set(&schema, "public", 6);
-
-		auto table = table_mgr_find(self, &schema, &name, false);
-		if (! table)
+		// show table
+		auto table = table_mgr_find(self, schema, name, false);
+		if (table) {
+			if (extended)
+				table_config_write(table->config, buf);
+			else
+				table_config_write_compact(table->config, buf);
+		} else {
 			encode_null(buf);
-		else
-			table_config_write(table->config, buf);
-	} else
-	{
-		encode_array(buf);
-		list_foreach(&self->mgr.list)
-		{
-			auto table = table_of(list_at(Handle, link));
-			table_config_write(table->config, buf);
 		}
-		encode_array_end(buf);
+		return buf;
 	}
+
+	// show tables
+	encode_array(buf);
+	list_foreach(&self->mgr.list)
+	{
+		auto table = table_of(list_at(Handle, link));
+		if (schema && !str_compare(&table->config->schema, schema))
+			continue;
+		if (extended)
+			table_config_write(table->config, buf);
+		else
+			table_config_write_compact(table->config, buf);
+	}
+	encode_array_end(buf);
 	return buf;
 }
 

@@ -10,16 +10,43 @@ show all junk
 show 1234
 
 # test: show users
-show users
+create user test
+show users abc
+show users format
+show users format 'json'
+
+# test: show user
+show user
+show user unknown
+show user test
+show user test format
+show user test format 'json'
 
 # test: show schemas
+create schema test
 show schemas
+show schema test
+show schema test format 'json'
 
 # test: show tables
+create table test (id int primary key)
 show tables
+
+# test: show table
+show table
+show table test
+show table test format 'json'
 
 # test: show wal
 show wal
+
+# test: show replicas
+show replicas
+
+# test: show replica
+show replica abc
+show replica 'abc'
+show replica '00000000-0000-0000-0000-000000000000'
 
 # test: show config
 show config

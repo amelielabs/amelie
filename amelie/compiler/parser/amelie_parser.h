@@ -47,7 +47,7 @@
 
 // system
 #include "parser/parse_system.h"
-#include "parser/parse_config.h"
+#include "parser/parse_show.h"
 #include "parser/parse_user.h"
 #include "parser/parse_token.h"
 #include "parser/parse_replica.h"

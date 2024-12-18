@@ -79,16 +79,13 @@ show lsn
 show checkpoint
 [3]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test",
-  "system": false
-}]]
+  "name": "test"
+}]
 select serial("test", "test")
 [3]
 select * from test.test
@@ -109,16 +106,13 @@ show lsn
 show checkpoint
 [5]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test",
-  "system": false
-}]]
+  "name": "test"
+}]
 select serial("test", "test")
 [3]
 select * from test.test

@@ -58,13 +58,10 @@ node_config_read(uint8_t** pos)
 	guard(node_config_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "id",      &self->id      },
-		{ DECODE_BOOL,   "compute", &self->compute },
-		{ 0,              NULL,      NULL          },
+		{ DECODE_STRING, "id",  &self->id      },
+		{ 0,              NULL,  NULL          },
 	};
 	decode_obj(obj, "node", pos);
-	if (! self->compute)
-		error("unsupported node type");
 	return unguard();
 }
 
@@ -77,10 +74,6 @@ node_config_write(NodeConfig* self, Buf* buf)
 	// id
 	encode_raw(buf, "id", 2);
 	encode_string(buf, &self->id);
-
-	// compute
-	encode_raw(buf, "compute", 7);
-	encode_bool(buf, self->compute);
 
 	encode_obj_end(buf);
 }

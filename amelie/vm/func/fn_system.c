@@ -114,7 +114,7 @@ static void
 fn_schemas(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, NULL);
+	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -123,7 +123,7 @@ fn_schema(Call* self)
 {
 	call_validate(self, 1);
 	call_validate_arg(self, 0, TYPE_STRING);
-	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, &self->argv[0].string);
+	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -131,7 +131,7 @@ static void
 fn_tables(Call* self)
 {
 	call_validate(self, 0);
-	auto buf = table_mgr_list(&self->vm->db->table_mgr, NULL);
+	auto buf = table_mgr_list(&self->vm->db->table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -140,7 +140,14 @@ fn_table(Call* self)
 {
 	call_validate(self, 1);
 	call_validate_arg(self, 0, TYPE_STRING);
-	auto buf = table_mgr_list(&self->vm->db->table_mgr, &self->argv[0].string);
+	Str name = self->argv[0].string;
+	Str schema;
+	str_init(&schema);
+	if (str_split(&name, &schema, '.'))
+		str_advance(&name, str_size(&schema) + 1);
+	else
+		str_set(&schema, "public", 6);
+	auto buf = table_mgr_list(&self->vm->db->table_mgr, &schema, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 

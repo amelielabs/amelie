@@ -46,59 +46,84 @@ ctl_show(Session* self)
 {
 	auto stmt  = compiler_stmt(&self->compiler);
 	auto arg   = ast_show_of(stmt->ast);
-	auto name  = &arg->expr->string;
 	auto share = self->share;
 	Buf* buf   = NULL;
-	if (str_is(name, "users", 5))
+
+	switch (arg->type) {
+	case SHOW_USERS:
 		buf = user_mgr_list(share->user_mgr, NULL);
-	else
-	if (str_is(name, "replicas", 8))
+		break;
+	case SHOW_USER:
+		buf = user_mgr_list(share->user_mgr, &arg->name);
+		break;
+	case SHOW_REPLICAS:
 		buf = replica_mgr_list(&share->repl->replica_mgr, NULL);
-	else
-	if (str_is(name, "nodes", 5))
+		break;
+	case SHOW_REPLICA:
+	{
+		Uuid id;
+		uuid_from_string(&id, &arg->name);
+		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
+		break;
+	}
+	case SHOW_NODES:
 		buf = node_mgr_list(&share->db->node_mgr, NULL);
-	else
-	if (str_is(name, "cluster", 7))
-		buf = node_mgr_list(&share->db->node_mgr, NULL);
-	else
-	if (str_is(name, "repl", 4) ||
-	    str_is(name, "replication", 11))
+		break;
+	case SHOW_NODE:
+		buf = node_mgr_list(&share->db->node_mgr, &arg->name);
+		break;
+	case SHOW_REPL:
 		buf = repl_status(share->repl);
-	else
-	if (str_is(name, "wal", 3))
+		break;
+	case SHOW_WAL:
 		buf = wal_status(&share->db->wal);
-	else
-	if (str_is(name, "schemas", 7))
-		buf = schema_mgr_list(&share->db->schema_mgr, NULL);
-	else
-	if (str_is(name, "tables", 6))
-		buf = table_mgr_list(&share->db->table_mgr, NULL);
-	else
-	if (str_is(name, "status", 6))
-	{
+		break;
+	case SHOW_STATUS:
 		rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
-	} else
-	if (str_is(name, "config", 6) ||
-	    str_is(name, "all", 3))
-		buf = vars_list(&global()->config->vars, &self->local.config.vars);
-	else
+		break;
+	case SHOW_SCHEMAS:
+		buf = schema_mgr_list(&share->db->schema_mgr, NULL, arg->extended);
+		break;
+	case SHOW_SCHEMA:
+		buf = schema_mgr_list(&share->db->schema_mgr, &arg->name, arg->extended);
+		break;
+	case SHOW_TABLES:
 	{
-		auto var = vars_find(&global()->config->vars, name);
+		Str* schema = NULL;
+		if (! str_empty(&arg->schema))
+			schema = &arg->schema;
+		buf = table_mgr_list(&share->db->table_mgr, schema, NULL, arg->extended);
+		break;
+	}
+	case SHOW_TABLE:
+		buf = table_mgr_list(&share->db->table_mgr, &arg->schema,
+		                     &arg->name, arg->extended);
+		break;
+	case SHOW_CONFIG_ALL:
+		buf = vars_list(&global()->config->vars, &self->local.config.vars);
+		break;
+	case SHOW_CONFIG:
+	{
+		auto var = vars_find(&global()->config->vars, &arg->name);
 		if (var && var_is(var, VAR_S))
 			var = NULL;
 		if (unlikely(var == NULL))
-			error("SHOW name: '%.*s' not found", str_size(name),
-			      str_of(name));
+			error("SHOW name: '%.*s' not found", str_size(&arg->name),
+			      str_of(&arg->name));
 		if (var_is(var, VAR_L))
-			var = vars_find(&self->local.config.vars, name);
+			var = vars_find(&self->local.config.vars, &arg->name);
 		buf = buf_create();
 		var_encode(var, buf);
+		break;
+	}
 	}
 	guard_buf(buf);
 
 	// write content
-	content_write_json(&self->content, &config()->format.string,
-	                   name, buf);
+	Str format = config()->format.string;
+	if (! str_empty(&arg->format))
+		format = arg->format;
+	content_write_json(&self->content, &format, &arg->section, buf);
 }
 
 static void

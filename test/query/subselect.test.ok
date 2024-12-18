@@ -33,18 +33,22 @@ select (select [1,2,3])
 select system.schemas()
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }]]
 select (select system.schemas())
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }]]
 # test: select (select {})
 select (select {})

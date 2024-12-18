@@ -219,3 +219,23 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_array_end(buf);
 	encode_obj_end(buf);
 }
+
+static inline void
+table_config_write_compact(TableConfig* self, Buf* buf)
+{
+	// obj
+	encode_obj(buf);
+
+	// schema
+	encode_raw(buf, "schema", 6);
+	encode_string(buf, &self->schema);
+
+	// name
+	encode_raw(buf, "name", 4);
+	encode_string(buf, &self->name);
+
+	// shared
+	encode_raw(buf, "shared", 6);
+	encode_bool(buf, self->shared);
+	encode_obj_end(buf);
+}

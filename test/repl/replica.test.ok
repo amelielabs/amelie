@@ -16,13 +16,13 @@ create replica "00000000-0000-0000-0000-000000000000" "localhost"
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "localhost",
   "connected": false,
   "lsn": 0,
   "lag": 1
-}]]
+}]
 # test: create replica if not exists
 create replica if not exists "00000000-0000-0000-0000-000000000000" uri "localhost"
 select system.replicas()
@@ -43,7 +43,7 @@ drop replica "123"
 # test: drop replica
 drop replica "00000000-0000-0000-0000-000000000000"
 show replicas
-[[]]
+[]
 # test: drop replica if exists
 drop replica if exists "00000000-0000-0000-0000-000000000000"
 drop replica "00000000-0000-0000-0000-000000000000"
@@ -52,7 +52,7 @@ drop replica "00000000-0000-0000-0000-000000000000"
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 create replica "00000000-0000-0000-0000-000000000001" uri "localhost"
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "localhost",
   "connected": false,
@@ -64,13 +64,13 @@ show replicas
   "connected": false,
   "lsn": 0,
   "lag": 1
-}]]
+}]
 disconnect S0
 close E0
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
 connect E0 S0 localhost:3480
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "localhost",
   "connected": false,
@@ -82,6 +82,6 @@ show replicas
   "connected": false,
   "lsn": 0,
   "lag": 1
-}]]
+}]
 disconnect S0
 close E0

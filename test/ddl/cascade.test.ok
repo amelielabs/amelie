@@ -11,20 +11,22 @@ drop schema test cascade
 select system.schemas()
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }]]
 # test: drop schema cascade (tables)
 show tables
-[[]]
+[]
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
 drop schema test cascade
 show tables
-[[]]
+[]
 # test: alter schema rename
 create schema test
 create table test.a(id int primary key)
@@ -32,25 +34,31 @@ create table test.b(id int primary key)
 select system.schemas()
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }, {
   "name": "test",
-  "system": false
+  "system": false,
+  "create": true
 }]]
 alter schema test rename test2
 select system.schemas()
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }, {
   "name": "test2",
-  "system": false
+  "system": false,
+  "create": true
 }]]
 select system.table('test2.a').name
 ["a"]

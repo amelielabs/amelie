@@ -42,16 +42,16 @@ show read_only
 # test: create replica
 switch S0
 show replicas
-[[]]
+[]
 create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": false,
   "lsn": 0,
   "lag": 1
-}]]
+}]
 # test: start primary
 start repl
 # test: wait for primary connect
@@ -74,13 +74,13 @@ show lsn
 [6]
 # test: replica lag
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": false,
   "lsn": 3,
   "lag": 3
-}]]
+}]
 # test: replica disconnected
 switch S0
 watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = false
@@ -93,13 +93,13 @@ watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = t
 # test: wait replica sync
 watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.config().lsn
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": true,
   "lsn": 6,
   "lag": 0
-}]]
+}]
 # test: restart primary
 disconnect S0
 close E0
@@ -115,13 +115,13 @@ insert into test values (9)
 # test: wait replica sync
 watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.config().lsn
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
   "connected": true,
   "lsn": 9,
   "lag": 0
-}]]
+}]
 # test: ensure replica is read-only
 switch S1
 show read_only
@@ -172,7 +172,7 @@ show repl
 switch S0
 drop replica "00000000-0000-0000-0000-000000000001"
 show replicas
-[[]]
+[]
 # test: subscribe to new primary
 switch S0
 subscribe "00000000-0000-0000-0000-000000000001"
@@ -196,13 +196,13 @@ insert into test values (12)
 # test: wait replica sync
 watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.config().lsn
 show replicas
-[[{
+[{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "127.0.0.1:3480",
   "connected": true,
   "lsn": 12,
   "lag": 0
-}]]
+}]
 select * from test
 [1, 6, 7, 8, 2, 9, 10, 12, 3, 4, 5, 11]
 disconnect S1

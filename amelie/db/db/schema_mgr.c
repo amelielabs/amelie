@@ -181,24 +181,21 @@ schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 }
 
 Buf*
-schema_mgr_list(SchemaMgr* self, Str* name)
+schema_mgr_list(SchemaMgr* self, Str* name, bool extended)
 {
 	auto buf = buf_create();
 	if (name)
 	{
 		auto schema = schema_mgr_find(self, name, false);
-		if (! schema) {
+		if (schema)
+		{
+			if (extended)
+				schema_config_write(schema->config, buf);
+			else
+				schema_config_write_compact(schema->config, buf);
+		} else
+		{
 			encode_null(buf);
-		} else {
-			// obj
-			encode_obj(buf);
-			// name
-			encode_raw(buf, "name", 4);
-			encode_string(buf, &schema->config->name);
-			// system
-			encode_raw(buf, "system", 6);
-			encode_bool(buf, schema->config->system);
-			encode_obj_end(buf);
 		}
 	} else
 	{
@@ -206,15 +203,10 @@ schema_mgr_list(SchemaMgr* self, Str* name)
 		list_foreach(&self->mgr.list)
 		{
 			auto schema = schema_of(list_at(Handle, link));
-			// obj
-			encode_obj(buf);
-			// name
-			encode_raw(buf, "name", 4);
-			encode_string(buf, &schema->config->name);
-			// system
-			encode_raw(buf, "system", 6);
-			encode_bool(buf, schema->config->system);
-			encode_obj_end(buf);
+			if (extended)
+				schema_config_write(schema->config, buf);
+			else
+				schema_config_write_compact(schema->config, buf);
 		}
 		encode_array_end(buf);
 	}

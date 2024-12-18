@@ -10,34 +10,85 @@ show all junk
 show 1234
 {"msg": "SHOW <name> expected"}
 # test: show users
-show users
-[[]]
+create user test
+show users abc
+{"msg": "unexpected token at the end of statement"}
+show users format
+{"msg": "FORMAT <string> expected"}
+show users format 'json'
+[{"name": "test"}]
+# test: show user
+show user
+{"msg": "SHOW user <name> expected"}
+show user unknown
+[null]
+show user test
+[{
+  "name": "test"
+}]
+show user test format
+{"msg": "FORMAT <string> expected"}
+show user test format 'json'
+[{"name": "test"}]
 # test: show schemas
+create schema test
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
-}]]
+  "name": "public"
+}, {
+  "name": "test"
+}]
+show schema test
+[{
+  "name": "test"
+}]
+show schema test format 'json'
+[{"name": "test"}]
 # test: show tables
+create table test (id int primary key)
 show tables
-[[]]
+[{
+  "schema": "public",
+  "name": "test",
+  "shared": false
+}]
+# test: show table
+show table
+{"msg": "SHOW TABLE <name> expected"}
+show table test
+[{
+  "schema": "public",
+  "name": "test",
+  "shared": false
+}]
+show table test format 'json'
+[{"schema": "public", "name": "test", "shared": false}]
 # test: show wal
 show wal
 [{
   "active": true,
   "checkpoint": 1,
-  "lsn": 1,
+  "lsn": 3,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 0,
-  "writes_bytes": 0,
-  "ops": 0
+  "writes": 2,
+  "writes_bytes": 390,
+  "ops": 2
 }]
+# test: show replicas
+show replicas
+[]
+# test: show replica
+show replica abc
+{"msg": "failed to parse uuid"}
+show replica 'abc'
+{"msg": "failed to parse uuid"}
+show replica '00000000-0000-0000-0000-000000000000'
+[null]
 # test: show config
 show config
 [{
@@ -76,8 +127,8 @@ show config
   "checkpoint_workers": 3,
   "checkpoint": 1,
   "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "lsn": 3,
+  "psn": 1
 }]
 # test: show all
 show all
@@ -117,8 +168,8 @@ show all
   "checkpoint_workers": 3,
   "checkpoint": 1,
   "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "lsn": 3,
+  "psn": 1
 }]
 select system.config()
 [{
@@ -157,8 +208,8 @@ select system.config()
   "checkpoint_workers": 3,
   "checkpoint": 1,
   "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "lsn": 3,
+  "psn": 1
 }]
 select system.config().directory
 ["_output/E0"]

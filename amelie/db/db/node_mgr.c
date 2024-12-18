@@ -117,10 +117,10 @@ node_mgr_list(NodeMgr* self, Str* id)
 	if (id)
 	{
 		auto node = node_mgr_find(self, id, false);
-		if (! node)
-			encode_null(buf);
-		else
+		if (node)
 			node_config_write(node->config, buf);
+		else
+			encode_null(buf);
 	} else
 	{
 		encode_array(buf);

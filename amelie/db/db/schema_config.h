@@ -103,3 +103,16 @@ schema_config_write(SchemaConfig* self, Buf* buf)
 
 	encode_obj_end(buf);
 }
+
+static inline void
+schema_config_write_compact(SchemaConfig* self, Buf* buf)
+{
+	// obj
+	encode_obj(buf);
+
+	// name
+	encode_raw(buf, "name", 4);
+	encode_string(buf, &self->name);
+
+	encode_obj_end(buf);
+}

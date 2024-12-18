@@ -744,20 +744,17 @@ show lsn
 select * from test2
 {"msg": "<public.test2> relation not found"}
 show tables
-[[]]
+[]
 # test: create schema
 create schema test
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test",
-  "system": false
-}]]
+  "name": "test"
+}]
 show lsn
 [19]
 # test: restart
@@ -769,29 +766,23 @@ connect E0 S0 localhost:3485
 show lsn
 [19]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test",
-  "system": false
-}]]
+  "name": "test"
+}]
 # test: alter schema rename
 alter schema test rename to test2
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test2",
-  "system": false
-}]]
+  "name": "test2"
+}]
 show lsn
 [20]
 # test: restart
@@ -803,28 +794,23 @@ connect E0 S0 localhost:3485
 show lsn
 [20]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
+  "name": "public"
 }, {
-  "name": "test2",
-  "system": false
-}]]
+  "name": "test2"
+}]
 # test: drop schema
 drop schema test2
 show lsn
 [21]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
-}]]
+  "name": "public"
+}]
 # test: restart
 disconnect S0
 close E0
@@ -834,12 +820,10 @@ connect E0 S0 localhost:3485
 show lsn
 [21]
 show schemas
-[[{
-  "name": "system",
-  "system": true
+[{
+  "name": "system"
 }, {
-  "name": "public",
-  "system": true
-}]]
+  "name": "public"
+}]
 disconnect S0
 close E0

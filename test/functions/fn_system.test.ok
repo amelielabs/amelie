@@ -79,16 +79,19 @@ select system.node('00000000-0000-0000-0000-000000000000')
 select system.schemas()
 [[{
   "name": "system",
-  "system": true
+  "system": true,
+  "create": false
 }, {
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }]]
 # test: schema()
 select system.schema('public')
 [{
   "name": "public",
-  "system": true
+  "system": true,
+  "create": true
 }]
 select system.schema('public').system
 [true]

@@ -95,6 +95,7 @@ static Keyword keywords_e[] =
 	{ KEXPLAIN,               "explain",               7  },
 	{ KEXISTS,                "exists",                6  },
 	{ KEXPIRE,                "expire",                6  },
+	{ KEXTENDED,              "extended",              8  },
 	{ 0,                       NULL,                   0  }
 };
 

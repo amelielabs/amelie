@@ -100,13 +100,14 @@ content_json_row_obj(Content* self, Columns* columns, Value* row)
 void
 content_json(Content* self, Columns* columns, Value* value)
 {
-	// [
 	auto buf = self->content;
-	buf_write(buf, "[", 1);
 
 	// row, ...
 	if (value->type == TYPE_STORE)
 	{
+		// [
+		buf_write(buf, "[", 1);
+
 		auto it = store_iterator(value->store);
 		guard(store_iterator_close, it);
 
@@ -125,17 +126,24 @@ content_json(Content* self, Columns* columns, Value* value)
 			store_iterator_next(it);
 		}
 
+		// ]
+		buf_write(buf, "]", 1);
 	} else
 	if (value->type == TYPE_JSON)
 	{
+		// [
+		if (! json_is_array(value->json))
+			buf_write(buf, "[", 1);
+
 		if (self->fmt.opt_obj)
 			content_json_row_obj(self, columns, value);
 		else
 			content_json_row_array(self, columns, value);
+
+		// ]
+		if (! json_is_array(value->json))
+			buf_write(buf, "]", 1);
 	} else {
 		error("operation unsupported");
 	}
-
-	// ]
-	buf_write(buf, "]", 1);
 }

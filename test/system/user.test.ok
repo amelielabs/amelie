@@ -18,9 +18,9 @@ create user test abc
 # test: create user
 create user test
 show users
-[[{
+[{
   "name": "test"
-}]]
+}]
 # test: create user if not exists
 create user test
 {"msg": "user 'test': already exists"}
@@ -36,11 +36,11 @@ create user test2 secret "test" abc
 {"msg": "unexpected token at the end of statement"}
 create user test2 secret "test"
 show users
-[[{
+[{
   "name": "test"
 }, {
   "name": "test2"
-}]]
+}]
 # test: drop user statment parsing
 drop user
 {"msg": "DROP USER <name> expected"}
@@ -57,9 +57,9 @@ drop user test abc
 # test: drop user
 drop user test
 show users
-[[{
+[{
   "name": "test2"
-}]]
+}]
 # test: drop user if exists
 drop user test
 {"msg": "user 'test': not exists"}
@@ -86,38 +86,38 @@ alter user test2 secret "abc" abc
 # test: alter user
 alter user test2 secret "abc"
 show users
-[[{
+[{
   "name": "test2"
-}]]
+}]
 # test: alter user unset secret
 alter user test2 secret ""
 show users
-[[{
+[{
   "name": "test2"
-}]]
+}]
 # test: alter user set secret
 alter user test2 secret "abc"
 show users
-[[{
+[{
   "name": "test2"
-}]]
+}]
 # test: recover
 disconnect S0
 close E0
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 show users
-[[{
+[{
   "name": "test2"
-}]]
+}]
 drop user test2
 show users
-[[]]
+[]
 disconnect S0
 close E0
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 show users
-[[]]
+[]
 disconnect S0
 close E0

@@ -46,6 +46,6 @@ drop table test
 drop table test.test
 drop schema test
 show tables
-[[]]
+[]
 disconnect S0
 close E0
