@@ -749,11 +749,14 @@ show tables
 create schema test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 show lsn
 [19]
@@ -767,21 +770,27 @@ show lsn
 [19]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 # test: alter schema rename
 alter schema test rename to test2
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test2"
+  "name": "test2",
+  "system": false
 }]
 show lsn
 [20]
@@ -795,11 +804,14 @@ show lsn
 [20]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test2"
+  "name": "test2",
+  "system": false
 }]
 # test: drop schema
 drop schema test2
@@ -807,9 +819,11 @@ show lsn
 [21]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 # test: restart
 disconnect S0
@@ -821,9 +835,11 @@ show lsn
 [21]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 disconnect S0
 close E0

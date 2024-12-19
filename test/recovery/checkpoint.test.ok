@@ -80,11 +80,14 @@ show checkpoint
 [3]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 select serial("test", "test")
 [3]
@@ -107,11 +110,14 @@ show checkpoint
 [5]
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 select serial("test", "test")
 [3]

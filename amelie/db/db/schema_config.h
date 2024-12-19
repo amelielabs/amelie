@@ -114,5 +114,9 @@ schema_config_write_compact(SchemaConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
+	// system
+	encode_raw(buf, "system", 6);
+	encode_bool(buf, self->system);
+
 	encode_obj_end(buf);
 }

@@ -3,9 +3,11 @@ connect E0 S0 localhost:3485
 # test: ensure system schemas exists
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 # test: create schema statement parsing
 create
@@ -28,11 +30,14 @@ create schema test abc
 create schema test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 select system.schemas()
 [[{
@@ -54,11 +59,14 @@ create schema test
 create schema if not exists test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 # test: drop schema statement parsing
 drop schema
@@ -75,9 +83,11 @@ drop schema test abc
 drop schema test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 # test: drop schema if exists
 drop schema test
@@ -85,18 +95,22 @@ drop schema test
 drop schema if exists test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 # test: drop system schema
 drop schema public
 {"msg": "schema 'public': system schema cannot be dropped"}
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }]
 # test: drop schema with dependency
 create schema test

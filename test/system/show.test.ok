@@ -34,18 +34,22 @@ show user test format 'json'
 create schema test
 show schemas
 [{
-  "name": "system"
+  "name": "system",
+  "system": true
 }, {
-  "name": "public"
+  "name": "public",
+  "system": true
 }, {
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 show schema test
 [{
-  "name": "test"
+  "name": "test",
+  "system": false
 }]
 show schema test format 'json'
-[{"name": "test"}]
+[{"name": "test", "system": false}]
 # test: show tables
 create table test (id int primary key)
 show tables
