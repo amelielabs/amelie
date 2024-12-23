@@ -100,118 +100,91 @@ static void
 emit_stmt(Compiler* self)
 {
 	// generate node code (pushdown)
-	auto stmt = self->current;
+	auto     stmt = self->current;
+	Targets* dml = NULL;
+	auto     table_in_use = false;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-
-		// validate returning targets
-		target_list_validate_dml(&stmt->target_list, insert->target);
-
 		if (insert->on_conflict == ON_CONFLICT_NONE)
 			emit_insert(self, stmt->ast);
 		else
 			emit_upsert(self, stmt->ast);
+		dml = &insert->targets;
+		table_in_use = true;
 		break;
 	}
-
 	case STMT_UPDATE:
 	{
-		auto update = ast_update_of(stmt->ast);
-
-		// validate returning targets
-		// validate supported targets as expression or shared table
-		target_list_validate_dml(&stmt->target_list, update->target);
-
 		emit_update(self, stmt->ast);
+		dml = &ast_update_of(stmt->ast)->targets;
+		table_in_use = true;
 		break;
 	}
 
 	case STMT_DELETE:
 	{
-		auto delete = ast_delete_of(stmt->ast);
-
-		// validate returning targets
-		// validate supported targets as expression or shared table
-		target_list_validate_dml(&stmt->target_list, delete->target);
-
 		emit_delete(self, stmt->ast);
+		dml = &ast_delete_of(stmt->ast)->targets;
+		table_in_use = true;
 		break;
 	}
 
 	case STMT_SELECT:
 	{
-		// no targets or all targets are expressions
-		if (target_list_is_expr(&stmt->target_list))
-		{
-			// select expr
-			// select from [expr]
-			// select (select expr)
-			// select (select from [expr])
-			// select (select expr) from [expr]
-			// select (select from [expr]) from [expr]
-			//
-			// do not nothing (coordinator only)
-			return;
-		}
-
-		// direct query from distributed or shared table
+		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->from_table)
+		if (select->pushdown == PUSHDOWN_TARGET)
 		{
-			// select from table
-
-			// validate supported targets as expressions or shared table
-			target_list_validate(&stmt->target_list, select->target);
-
-			// distributed table or shared table
+			// distributed or shared table direct scan or join
+			//
+			// execute on one or more nodes, process the result on coordinator
+			//
 			pushdown(self, stmt->ast);
+			table_in_use = true;
 			break;
 		}
 
-		// nested distributed table query
-		if (target_list_has(&stmt->target_list, TARGET_TABLE))
+		// select (select from table)
+		if (select->pushdown == PUSHDOWN_FIRST)
 		{
-			// select (select from table)
-			if (!select->target || !select->target->from_select)
-				error("FROM: undefined distributed table");
-
-			// select from (select from table)
-			auto from_select = ast_select_of(select->target->from_select);
-			if (from_select->target == NULL ||
-			    from_select->target->from_table == NULL)
-				error("FROM SELECT: undefined distributed table");
-
-			// validate FROM SELECT targets
-			target_list_validate(&stmt->target_list, from_select->target);
-
-			// generate pushdown as a nested query
-			pushdown(self, &from_select->ast);
+			// shared table being involved in a subquery
+			//
+			// execute the whole query on the first node, coordinator will
+			// receive the result
+			//
+			pushdown_first(self, stmt->ast);
+			table_in_use = true;
 			break;
 		}
 
-		// expression or shared table targets only
-
-		// select (select from shared)
-		// select expr(select from shared)
-	
-		// select pushdown to the first node
-		pushdown_first(self, stmt->ast);
-		break;
+		// no targets or all targets are expressions
+		//
+		// do nothing (coordinator only)
+		return;
 	}
 
 	case STMT_WATCH:
-	{
 		// do nothing (coordinator only)
-		if (! target_list_is_expr(&stmt->target_list))
-			error("WATCH: sub queries are not supported");
 		return;
-	}
 
 	default:
 		abort();
 		break;
+	}
+
+	if (table_in_use)
+	{
+		// set last statement which uses a table,
+		// set snapshot if two or more stmts are using tables
+		if (self->last)
+			self->snapshot = true;
+		self->last = self->current;
+
+		// set snapshot if at least one dml uses a shared table
+		if (dml && targets_count(dml, TARGET_TABLE_SHARED))
+			self->snapshot = true;
 	}
 
 	// CRET
@@ -219,9 +192,11 @@ emit_stmt(Compiler* self)
 }
 
 static inline void
-emit_send_generated_on_match(Compiler* self, Target* target, void* arg)
+emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 {
 	AstInsert* insert = arg;
+	auto target = targets_outer(&insert->targets);
+
 	// generate and push to the stack each generated
 	// column expression
 	auto op = insert->generated_columns;
@@ -230,14 +205,14 @@ emit_send_generated_on_match(Compiler* self, Target* target, void* arg)
 		auto column = op->l->column;
 
 		// expr
-		int rexpr = emit_expr(self, target, op->r);
+		int rexpr = emit_expr(self, targets, op->r);
 		int type = rtype(self, rexpr);
 
 		// ensure that the expression type is compatible
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
 			error("<%.*s.%.*s> column generated expression type '%s' does not match column type '%s'",
-			      str_size(&insert->target->name), str_of(&insert->target->name),
+			      str_size(&target->name), str_of(&target->name),
 			      str_size(&column->name), str_of(&column->name),
 			      type_of(type),
 			      type_of(column->type));
@@ -253,16 +228,16 @@ emit_send_generated(Compiler* self, int start)
 {
 	auto stmt   = self->current;
 	auto insert = ast_insert_of(stmt->ast);
-	auto table  = insert->target->from_table;
+	auto table  = targets_outer(&insert->targets)->from_table;
 
 	// store_open( insert->values )
-	auto target = insert->target_generated;
+	auto target = targets_outer(&insert->targets_generated);
 	target->r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
 	                (intptr_t)insert->values);
 
 	// generate scan over insert rows to create new rows using the
 	// generated columns expressions
-	scan(self, target,
+	scan(self, &insert->targets_generated,
 	     NULL,
 	     NULL,
 	     NULL,
@@ -285,7 +260,7 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		auto table = insert->target->from_table;
+		auto table = targets_outer(&insert->targets)->from_table;
 		if (table_columns(table)->count_stored > 0) {
 			// CSEND_GENERATED
 			emit_send_generated(self, start);
@@ -297,38 +272,38 @@ emit_send(Compiler* self, int start)
 		}
 		break;
 	}
+
 	case STMT_UPDATE:
-		target = ast_update_of(stmt->ast)->target;
+	{
+		target = targets_outer(&ast_update_of(stmt->ast)->targets);
 		break;
+	}
+
 	case STMT_DELETE:
-		target = ast_delete_of(stmt->ast)->target;
+	{
+		target = targets_outer(&ast_delete_of(stmt->ast)->targets);
 		break;
+	}
+
 	case STMT_SELECT:
 	{
-		// no targets or all targets are expressions
-		if (target_list_is_expr(&stmt->target_list))
-			break;
-
-		// direct query from distributed or shared table
+		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
-		if (select->target && select->target->from_table)
+		if (select->pushdown == PUSHDOWN_TARGET)
 		{
-			target = select->target;
+			target = select->pushdown_target;
 			break;
 		}
 
-		// nested distributed table query
-		if (target_list_has(&stmt->target_list, TARGET_TABLE))
+		// select (select from table)
+		if (select->pushdown == PUSHDOWN_FIRST)
 		{
-			// select from (select from table)
-			target = ast_select_of(select->target->from_select)->target;
+			// CSEND_FIRST
+			op2(self, CSEND_FIRST, stmt->order, start);
 			break;
 		}
 
-		// nested expression or nested shared table targets
-
-		// CSEND_FIRST
-		op2(self, CSEND_FIRST, stmt->order, start);
+		// no targets or all targets are expressions
 		break;
 	}
 
@@ -408,34 +383,25 @@ emit_recv(Compiler* self)
 		auto select = ast_select_of(stmt->ast);
 		ret = &select->ret;
 
-		// no targets or all targets are expressions
-		if (target_list_is_expr(&stmt->target_list))
+		if (select->pushdown == PUSHDOWN_TARGET)
 		{
-			r = emit_select(self, stmt->ast);
-			break;
-		}
-
-		// direct query from distributed or shared table
-		if (select->target && select->target->from_table)
-		{
+			// process the result from one or more nodes
 			r = pushdown_recv(self, stmt->ast);
 			break;
 		}
 
-		// nested distributed table query
-		if (target_list_has(&stmt->target_list, TARGET_TABLE))
+		// select (select from table)
+		if (select->pushdown == PUSHDOWN_FIRST)
 		{
-			// select over returned SET or MERGE object
-			select->target->r = pushdown_recv(self, select->target->from_select);
-			r = emit_select(self, stmt->ast);
+			// recv whole query result from the first node
+
+			// CRECV_TO (note: set or merge received)
+			r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
 			break;
 		}
 
-		// nested expression or nested shared table targets
-		// (first node only, single result)
-
-		// CRECV_TO (note: set or merge received)
-		r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
+		// no targets or all targets are expressions
+		r = emit_select(self, stmt->ast);
 		break;
 	}
 
@@ -454,7 +420,7 @@ emit_recv(Compiler* self)
 		r = op1(self, CNULL, rpin(self, TYPE_NULL));
 
 	// CCTE_SET
-	op2(self, CCTE_SET, stmt->cte->id, r);
+	op2(self, CCTE_SET, stmt->order, r);
 	runpin(self, r);
 
 	// statement returns
@@ -462,7 +428,7 @@ emit_recv(Compiler* self)
 	{
 		// create content using cte result
 		if (has_result)
-			op3(self, CCONTENT, stmt->cte->id,
+			op3(self, CCONTENT, stmt->order,
 			    (intptr_t)&ret->columns,
 			    (intptr_t)&ret->format);
 		op0(self, CRET);
@@ -473,9 +439,9 @@ static inline void
 emit_recv_upto(Compiler* self, int last, int order)
 {
 	auto current = self->current;
-	list_foreach(&self->parser.stmt_list.list)
+	auto stmt = self->parser.stmt_list.list;
+	for (; stmt; stmt = stmt->next)
 	{
-		auto stmt = list_at(Stmt, link);
 		if (stmt->order <= last)
 			continue;
 		if (stmt->order > order)
@@ -487,33 +453,41 @@ emit_recv_upto(Compiler* self, int last, int order)
 	self->current = current;
 }
 
+static inline bool
+stmt_is_expr(Stmt* self)
+{
+	if (self->id != STMT_SELECT)
+		return false;
+	return ast_select_of(self->ast)->pushdown == PUSHDOWN_NONE;
+}
+
+static inline  int
+stmt_maxcte(Stmt* self)
+{
+	int order = -1;
+	for (auto ref = self->select_list.list; ref; ref = ref->next)
+	{
+		auto select = ast_select_of(ref->ast);
+		for (auto target = select->targets.list; target; target = target->next)
+		{
+			if (target->type != TARGET_CTE)
+				continue;
+			if (target->from_cte->order > order)
+				order = target->from_cte->order;
+		}
+	}
+	return order;
+}
+
 hot void
 compiler_emit(Compiler* self)
 {
-	auto parser = &self->parser;
-	auto stmt_list = &parser->stmt_list;
-	assert(stmt_list->list_count > 0);
 	rmap_prepare(&self->map);
-
-	// analyze statements
-	//
-	// find last statement which access a table, mark as required
-	// snapshot if there are two or more statements which access the table
-	int count = 0;
-	self->last = analyze_stmts(parser, &count);
-	if (count >= 2)
-		self->snapshot = true;
-
-	// same applies to shared tables DML
-	if (parser_is_shared_table_dml(parser))
-		self->snapshot = true;
-
-	// process statements
 	auto recv_last = -1;
-	list_foreach(&stmt_list->list)
-	{
-		auto stmt = list_at(Stmt, link);
 
+	auto stmt = self->parser.stmt_list.list;
+	for (; stmt; stmt = stmt->next)
+	{
 		// generate node code (pushdown)
 		auto stmt_start = code_count(&self->code_node);
 		compiler_switch_node(self);
@@ -525,12 +499,12 @@ compiler_emit(Compiler* self)
 
 		// generate recv up to the max dependable statement order, including
 		// coordinator only expressions
-		auto stmt_is_expr = target_list_is_expr(&stmt->target_list);
+		auto is_expr = stmt_is_expr(stmt);
 		auto recv = -1;
-		if (stmt_is_expr)
+		if (is_expr)
 			recv = stmt->order;
 		else
-			recv = cte_deps_max_stmt(&stmt->cte_deps);
+			recv = stmt_maxcte(stmt);
 		if (recv >= 0)
 		{
 			emit_recv_upto(self, recv_last, recv);
@@ -540,7 +514,7 @@ compiler_emit(Compiler* self)
 		// RETURN stmt
 		if (stmt->ret)
 		{
-			if (! stmt_is_expr)
+			if (! is_expr)
 				emit_send(self, stmt_start);
 			emit_recv_upto(self, recv_last, stmt->order);
 			recv_last = stmt->order;
@@ -548,7 +522,7 @@ compiler_emit(Compiler* self)
 		}
 
 		// skip expression only statements (generated by recv above)
-		if (stmt_is_expr)
+		if (is_expr)
 			continue;
 
 		// generate SEND command
@@ -556,10 +530,10 @@ compiler_emit(Compiler* self)
 	}
 
 	// recv rest of commands (if any left)
-	emit_recv_upto(self, recv_last, stmt_list->list_count);
+	emit_recv_upto(self, recv_last, self->parser.stmt_list.count);
 
 	// no statements (last statement always returns)
-	if (! parser->stmt)
+	if (! self->parser.stmt)
 		op0(self, CRET);
 }
 
@@ -569,9 +543,8 @@ compiler_program(Compiler* self, Program* program)
 	program->code       = &self->code_coordinator;
 	program->code_node  = &self->code_node;
 	program->code_data  = &self->code_data;
-	program->stmts      = self->parser.stmt_list.list_count;
+	program->stmts      = self->parser.stmt_list.count;
 	program->stmts_last = -1;
-	program->ctes       = self->parser.cte_list.list_count;
 	program->snapshot   = self->snapshot;
 	program->repl       = false;
 	if (self->last)

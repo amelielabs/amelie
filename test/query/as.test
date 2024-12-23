@@ -21,6 +21,7 @@ select id x from test
 select t.id from (select id from test) t
 select t.x from (select id as x from test) t
 select t.x from (select z.id as x from (select id from test) z) t
+explain select t.x from (select z.id as x from (select id from test) z) t
 
 drop table test
 

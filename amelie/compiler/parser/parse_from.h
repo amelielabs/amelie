@@ -11,27 +11,24 @@
 // AGPL-3.0 Licensed.
 //
 
-Target* parse_from(Stmt*, int);
+void parse_from(Stmt*, Targets*, bool);
 
 static inline Ast*
-parse_from_join_on_and_where(Target* target, Ast* expr_where)
+parse_from_join_on_and_where(Targets* targets, Ast* expr_where)
 {
-	while (target)
+	for (auto target = targets->list; target; target = target->next)
 	{
-		if (target->join_on)
+		if (! target->join_on)
+			continue;
+		if (expr_where == NULL) {
+			expr_where = target->join_on;
+		} else
 		{
-			if (expr_where == NULL)
-			{
-				expr_where = target->join_on;
-			} else
-			{
-				auto and = ast(KAND);
-				and->l = expr_where;
-				and->r = target->join_on;
-				expr_where = and;
-			}
+			auto and = ast(KAND);
+			and->l = expr_where;
+			and->r = target->join_on;
+			expr_where = and;
 		}
-		target = target->next_join;
 	}
 	return expr_where;
 }

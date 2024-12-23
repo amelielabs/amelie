@@ -16,9 +16,9 @@ typedef struct AstDelete AstDelete;
 struct AstDelete
 {
 	Ast       ast;
-	Table*    table;
-	Target*   target;
 	Ast*      expr_where;
+	Table*    table;
+	Targets   targets;
 	Returning ret;
 	int       rset;
 };

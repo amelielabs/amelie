@@ -117,7 +117,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 static inline void
 returning_add(Returning* self, Ast* as)
 {
-	// add new column use it instead of name
+	// add new column to use it instead of name
 	auto column = column_allocate();
 	column_set_name(column, &as->r->string);
 	columns_add(&self->columns, column);
@@ -140,8 +140,8 @@ returning_add_target(Returning* self, Target* target)
 
 	// use CTE arguments, if they are defined
 	auto cte = target->from_cte;
-	if (target->type == TARGET_CTE && cte->args.list_count > 0)
-		columns = &cte->args;
+	if (target->type == TARGET_CTE && cte->cte_args.list_count > 0)
+		columns = &cte->cte_args;
 
 	list_foreach(&columns->list)
 	{
@@ -165,7 +165,7 @@ returning_add_target(Returning* self, Target* target)
 }
 
 void
-parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
+parse_returning_resolve(Returning* self, Targets* targets)
 {
 	// rewrite returning list by resolving all * and target.*
 	auto as = self->list;
@@ -178,36 +178,32 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Target* target)
 		switch (as->l->id) {
 		case KSTAR:
 		{
-			// *
-			if (unlikely(! target))
+			// SELECT * (without from)
+			auto targets_ref = targets;
+			if (unlikely(targets_empty(targets)))
 			{
-				if (! stmt->target_list.count)
+				if (! targets->outer)
 					error("'*': no targets defined");
-				if (stmt->target_list.count > 1)
-					error("'*': explicit target name is required");
-				returning_add_target(self, stmt->target_list.list);
-				continue;
+				targets_ref = targets->outer;
 			}
 
 			// import all available columns
-			auto join = target;
+			auto join = targets_ref->list;
 			while (join)
 			{
 				returning_add_target(self, join);
-				join = target->next_join;
+				join = join->next;
 			}
 			break;
 		}
 		case KNAME_COMPOUND_STAR:
 		{
 			// target.*
-
-			// find target in the target list
 			Str name;
 			str_split(&as->l->string, &name, '.');
 
-			// find target
-			auto match = target_list_match(&stmt->target_list, &name);
+			// find nearest target
+			auto match = targets_match_outer(targets, &name);
 			if (! match)
 				error("<%.*s> target not found", str_size(&name), str_of(&name));
 

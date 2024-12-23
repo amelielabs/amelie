@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-Cte* parse_cte(Stmt*, bool, bool);
+void parse_cte(Stmt*);

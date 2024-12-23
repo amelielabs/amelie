@@ -253,7 +253,7 @@ session_execute(Session* self)
 	}
 
 	// execute utility, DDL, DML or Query
-	if (compiler->parser.stmt_list.list_count > 0)
+	if (compiler->parser.stmt_list.count > 0)
 	{
 		auto stmt = compiler_stmt(compiler);
 		if (stmt && stmt_is_utility(stmt))

@@ -24,13 +24,13 @@ enum
 struct AstInsert
 {
 	Ast       ast;
-	Target*   target;
-	Target*   target_generated;
 	Set*      values;
 	int       on_conflict;
 	Ast*      update_expr;
 	Ast*      update_where;
 	Ast*      generated_columns;
+	Targets   targets;
+	Targets   targets_generated;
 	Returning ret;
 };
 
@@ -45,6 +45,8 @@ ast_insert_allocate(void)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
+	targets_init(&self->targets);
+	targets_init(&self->targets_generated);
 	returning_init(&self->ret);
 	return self;
 }

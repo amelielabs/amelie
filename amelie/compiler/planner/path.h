@@ -47,9 +47,8 @@ struct AstPath
 
 struct Path
 {
-	Keys*       keys;
-	Target*     target;
-	TargetList* target_list;
+	Keys*   keys;
+	Target* target;
 };
 
 static inline AstPath*
@@ -59,14 +58,10 @@ ast_path_of(Ast* ast)
 }
 
 static inline void
-path_init(Path*       self,
-          TargetList* target_list,
-          Target*     target,
-          Keys*       keys)
+path_init(Path* self, Target* target, Keys* keys)
 {
-	self->keys        = keys;
-	self->target      = target;
-	self->target_list = target_list;
+	self->keys   = keys;
+	self->target = target;
 }
 
 AstPath* path_create(Path*, Ast*);

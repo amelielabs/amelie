@@ -117,8 +117,10 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto select = ast_select_of(ref->ast);
 		returning_free(&select->ret);
-		columns_free(&select->target_group_columns);
+		columns_free(&select->targets_group_columns);
 	}
+
+	columns_free(&stmt->cte_args);
 }
 
 hot static inline void
@@ -366,7 +368,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KSELECT:
 	{
 		stmt->id = STMT_SELECT;
-		auto select = parse_select(stmt);
+		auto select = parse_select(stmt, NULL, false);
 		stmt->ast = &select->ast;
 		break;
 	}
@@ -414,14 +416,12 @@ parse_with(Parser* self)
 		                          self->values_cache,
 		                          &self->json,
 		                          &self->stmt_list,
-		                          &self->cte_list,
 		                           self->args);
 		stmt_list_add(&self->stmt_list, stmt);
 		self->stmt = stmt;
 
 		// name [(args)]
-		auto cte = parse_cte(stmt, true, true);
-		stmt->cte = cte;
+		parse_cte(stmt);
 
 		// AS
 		if (! lex_if(lex, KAS))
@@ -453,11 +453,11 @@ parse_with(Parser* self)
 			error("CTE statement must be DML or SELECT");
 			break;
 		}
-		cte->columns = &ret->columns;
+		stmt->cte_columns = &ret->columns;
 
 		// ensure that arguments count match
-		if (cte->args.list_count > 0 &&
-		    cte->args.list_count != cte->columns->list_count)
+		if (stmt->cte_args.list_count > 0 &&
+		    stmt->cte_args.list_count != stmt->cte_columns->list_count)
 			error("CTE arguments count must mismatch the returning arguments count");
 
 		// )
@@ -536,18 +536,12 @@ parse(Parser* self, Str* str)
 		                           self->values_cache,
 		                           &self->json,
 		                           &self->stmt_list,
-		                           &self->cte_list,
 		                            self->args);
 		stmt_list_add(&self->stmt_list, self->stmt);
 		parse_stmt(self, self->stmt);
 
-		// add nameless cte for the statement, if not used
-		if (! self->stmt->cte)
-			self->stmt->cte = cte_list_add(&self->cte_list, NULL, self->stmt->order);
-
 		if (stmt_is_utility(self->stmt))
 			has_utility = true;
-
 
 		// EOF
 		if (lex_if(lex, KEOF))
@@ -571,10 +565,13 @@ parse(Parser* self, Str* str)
 		self->stmt->ret = true;
 
 	// ensure EXPLAIN has command
-	if (unlikely(self->explain && !self->stmt_list.list_count))
+	if (unlikely(self->explain && !self->stmt_list.count))
 		error("EXPLAIN without command");
 
 	// ensure main stmt is not utility when using CTE
-	if (has_utility && self->stmt_list.list_count > 1)
+	if (has_utility && self->stmt_list.count > 1)
 		error("CTE and multi-statement utility commands are not supported");
+
+	// set statements order
+	stmt_list_order(&self->stmt_list);
 }

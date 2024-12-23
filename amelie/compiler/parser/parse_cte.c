@@ -35,7 +35,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_cte_args(Stmt* self, Cte* cte)
+parse_cte_args(Stmt* self)
 {
 	// )
 	if (stmt_if(self, ')'))
@@ -49,7 +49,7 @@ parse_cte_args(Stmt* self, Cte* cte)
 			error("WITH name (<name> expected");
 
 		// ensure argument is unique
-		auto arg = columns_find(&cte->args, &name->string);
+		auto arg = columns_find(&self->cte_args, &name->string);
 		if (arg)
 			error("WITH name (<%.*s> argument redefined", str_size(&name->string),
 			      str_of(&name->string));
@@ -57,7 +57,7 @@ parse_cte_args(Stmt* self, Cte* cte)
 		// add argument to the list
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
-		columns_add(&cte->args, arg);
+		columns_add(&self->cte_args, arg);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -69,29 +69,22 @@ parse_cte_args(Stmt* self, Cte* cte)
 		error("WITH name (<)> expected");
 }
 
-Cte*
-parse_cte(Stmt* self, bool with, bool with_args)
+void
+parse_cte(Stmt* self)
 {
-	unused(with);
-
 	// name [(args)]
 	auto name = stmt_if(self, KNAME);
 	if (! name)
 		error("WITH <name> expected");
 
 	// reuse existing cte variable (columns are not compared)
-	auto cte = cte_list_find(self->cte_list, &name->string);
+	auto cte = stmt_list_find(self->stmt_list, &name->string);
 	if (cte)
 		error("CTE <%.*s> redefined", str_size(&name->string),
 		      str_of(&name->string));
-
-	cte = cte_list_add(self->cte_list, name, self->order);
-	if (! with_args)
-		return cte;
+	self->cte_name = name;
 
 	// (args)
 	if (stmt_if(self, '('))
-		parse_cte_args(self, cte);
-
-	return cte;
+		parse_cte_args(self);
 }

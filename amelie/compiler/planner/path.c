@@ -80,10 +80,7 @@ path_compare(Path* self, Ast* ast, Key* key)
 
 	// column
 	if (ast->id == KNAME)
-	{
-		// match by column and key is not nested
 		return str_compare(&ast->string, &column->name);
-	}
 
 	// [target.]column
 	if (ast->id != KNAME_COMPOUND)
@@ -127,34 +124,6 @@ path_key_is(Path* self, Key* key, Ast* path, Ast* value)
 		if (unlikely(column->type != TYPE_TIMESTAMP))
 			return false;
 		break;
-	}
-
-	// join: name = name
-
-	// do not match keys for outer targets
-	auto target = self->target;
-	if (value->id == KNAME_COMPOUND)
-	{
-		Str name;
-		str_split(&path->string, &name, '.');
-
-		auto join = target_list_match(self->target_list, &name);
-		if (join)
-		{
-			if (join == target)
-				return false;
-
-			// FROM target, join
-			if (target->level == join->level)
-				if (target->level_seq < join->level_seq)
-					return false;
-
-			// SELECT (SELECT FROM join) FROM target
-			if (target->level < join->level)
-				return false;
-
-			// SELECT (SELECT FROM target) FROM join
-		}
 	}
 
 	return true;

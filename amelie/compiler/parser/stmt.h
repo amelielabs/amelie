@@ -54,14 +54,15 @@ struct Stmt
 	StmtId       id;
 	Ast*         ast;
 	int          order;
+	int          order_targets;
 	bool         ret;
-	Cte*         cte;
-	CteList*     cte_list;
-	CteDeps      cte_deps;
-	Columns*     args;
-	TargetList   target_list;
+	Ast*         cte_name;
+	Columns*     cte_columns;
+	Columns      cte_args;
 	AstList      select_list;
+
 	StmtList*    stmt_list;
+	Columns*     args;
 	CodeData*    data;
 	SetCache*    values_cache;
 	Json*        json;
@@ -69,13 +70,8 @@ struct Stmt
 	FunctionMgr* function_mgr;
 	Local*       local;
 	Db*          db;
-	List         link;
-};
-
-struct StmtList
-{
-	int  list_count;
-	List list;
+	Stmt*        next;
+	Stmt*        prev;
 };
 
 static inline Stmt*
@@ -87,29 +83,29 @@ stmt_allocate(Db*          db,
               SetCache*    values_cache,
               Json*        json,
               StmtList*    stmt_list,
-              CteList*     cte_list,
               Columns*     args)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->id           = STMT_UNDEF;
-	self->ast          = NULL;
-	self->order        = 0;
-	self->ret          = false;
-	self->cte          = NULL;
-	self->cte_list     = cte_list;
-	self->args         = args;
-	self->stmt_list    = stmt_list;
-	self->data         = data;
-	self->values_cache = values_cache;
-	self->json         = json;
-	self->lex          = lex;
-	self->function_mgr = function_mgr;
-	self->local        = local;
-	self->db           = db;
-	cte_deps_init(&self->cte_deps);
-	target_list_init(&self->target_list);
+	self->id            = STMT_UNDEF;
+	self->ast           = NULL;
+	self->order         = 0;
+	self->order_targets = 0;
+	self->ret           = false;
+	self->cte_name      = NULL;
+	self->cte_columns   = NULL;
+	self->args          = args;
+	self->stmt_list     = stmt_list;
+	self->data          = data;
+	self->values_cache  = values_cache;
+	self->json          = json;
+	self->lex           = lex;
+	self->function_mgr  = function_mgr;
+	self->local         = local;
+	self->db            = db;
+	self->next          = NULL;
+	self->prev          = NULL;
+	columns_init(&self->cte_args);
 	ast_list_init(&self->select_list);
-	list_init(&self->link);
 	return self;
 }
 
@@ -174,19 +170,4 @@ stmt_is_utility(Stmt* self)
 		break;
 	}
 	return false;
-}
-
-static inline void
-stmt_list_init(StmtList* self)
-{
-	self->list_count = 0;
-	list_init(&self->list);
-}
-
-static inline void
-stmt_list_add(StmtList* self, Stmt* stmt)
-{
-	stmt->order = self->list_count;
-	self->list_count++;
-	list_append(&self->list, &stmt->link);
 }

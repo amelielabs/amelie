@@ -253,19 +253,19 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
-    ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parse_import.c
+    ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/planner/path.c
     ${AMELIE_ROOT}/compiler/planner/planner.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
-    ${AMELIE_ROOT}/compiler/compiler/scan.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c
+    ${AMELIE_ROOT}/compiler/compiler/scan.c
     ${AMELIE_ROOT}/compiler/compiler/emit_expr.c
     ${AMELIE_ROOT}/compiler/compiler/emit_insert.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_upsert.c
     ${AMELIE_ROOT}/compiler/compiler/emit_update.c
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
-    ${AMELIE_ROOT}/compiler/compiler/emit_upsert.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c)

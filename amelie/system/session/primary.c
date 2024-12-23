@@ -102,7 +102,6 @@ replay(Session* self, WalWrite* write)
 	program_init(&program);
 	program.stmts      = 1;
 	program.stmts_last = 0;
-	program.ctes       = 1;
 	program.repl       = true;
 
 	dtr_reset(dtr);

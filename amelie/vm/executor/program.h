@@ -20,7 +20,6 @@ struct Program
 	CodeData* code_data;
 	int       stmts;
 	int       stmts_last;
-	int       ctes;
 	bool      snapshot;
 	bool      repl;
 };

@@ -184,8 +184,8 @@ select * from test
 drop table test
 # test: insert (subquery)
 create table test (id int primary key as (select 123) stored)
-insert into test values (0)
 {"msg": "unexpected subquery"}
 drop table test
+{"msg": "table 'test': not exists"}
 disconnect S0
 close E0

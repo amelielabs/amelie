@@ -47,26 +47,34 @@ parse_delete(Stmt* self)
 	if (! stmt_if(self, KFROM))
 		error("DELETE <FROM> expected");
 
-	// table_name, expression or join
-	int level = target_list_next_level(&self->target_list);
-	stmt->target = parse_from(self, level);
-	stmt->table = stmt->target->from_table;
-	if (stmt->table == NULL)
+	// table
+	parse_from(self, &stmt->targets, false);
+	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
 		error("DELETE FROM <table name> expected");
-	if (stmt->target->next_join)
-		error("DELETE FROM JOIN is not supported");
-	if (stmt->target->from_table_index)
-		if (table_primary(stmt->table) != stmt->target->from_table_index)
+	auto target = targets_outer(&stmt->targets);
+	if (! target_is_table(target))
+		error("DELETE FROM <table name> expected");
+	stmt->table = target->from_table;
+
+	// ensure primary index is used
+	if (target->from_table_index)
+		if (table_primary(stmt->table) != target->from_table_index)
 			error("DELETE only primary index supported");
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
-		stmt->expr_where = parse_expr(self, NULL);
+	{
+		Expr ctx;
+		expr_init(&ctx);
+		ctx.select  = true;
+		ctx.targets = &stmt->targets;
+		stmt->expr_where = parse_expr(self, &ctx);
+	}
 
 	// [RETURNING]
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, self, stmt->target);
+		parse_returning_resolve(&stmt->ret, &stmt->targets);
 	}
 }

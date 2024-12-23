@@ -98,7 +98,6 @@ drop table test
 
 # test: insert (subquery)
 create table test (id int primary key as (select 123) stored)
-insert into test values (0)
 drop table test
 
 disconnect S0

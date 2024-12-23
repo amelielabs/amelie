@@ -111,7 +111,7 @@ select (select t.*) from test t
 select (select t.*) from test
 {"msg": "<t> target not found"}
 select (select t) from test t
-{"msg": "<t> target column cannot be found"}
+{"msg": "<t.t> column not found"}
 # test: select (select target.column) from shared
 explain select (select test.id) from test
 [{
@@ -149,7 +149,7 @@ explain select (select test.id) from test
 select (select test.id) from test
 [1, 2, 3]
 select (select id) from test
-{"msg": "<id> target column cannot be found"}
+[1, 2, 3]
 # test: select (select alias.column) from shared
 explain select (select t.id) from test t
 [{
@@ -197,7 +197,7 @@ insert into test (data) values({"data": {"id": 3}})
 select (select *) from test
 {"msg": "subquery must return only one column"}
 select (select test) from test
-{"msg": "<test> target column cannot be found"}
+{"msg": "<test.test> column not found"}
 select (select test.data) from test
 [{
   "data": {
@@ -224,7 +224,7 @@ select (select test.data.data.id) from test
 [1, 2, 3]
 # test: select (select alias.path) from shared
 select (select t) from test t
-{"msg": "<t> target column cannot be found"}
+{"msg": "<t.t> column not found"}
 select (select t.data) from test t
 [{
   "data": {
@@ -271,32 +271,37 @@ explain select * from (select * from test) t
   "bytecode": {
     "coordinator": {
       "00": "send_first          0      0      0     ",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "content             0      -      -     ",
-      "04": "ret                 0      0      0     "
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          0      1      10    ",
+      "09": "jmp                 14     0      0     ",
+      "10": "store_read          2      0      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "store_next          0      10     0     ",
+      "14": "store_close         0      1      0     ",
+      "15": "cte_set             1      0      0     ",
+      "16": "content             1      -      -     ",
+      "17": "ret                 0      0      0     "
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "set                 1      1      0     ",
-      "02": "int                 2      -      0     # -2147483648",
-      "03": "push                2      0      0     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 10     0      0     ",
-      "06": "table_readi32       2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "table_next          0      6      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "store_open          1      1      13    ",
-      "12": "jmp                 17     0      0     ",
-      "13": "store_read          2      1      0     ",
-      "14": "push                2      0      0     ",
-      "15": "set_add             0      0      0     ",
-      "16": "store_next          1      13     0     ",
-      "17": "store_close         1      1      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 9      0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      5      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
     }
   }
 }]
@@ -304,7 +309,7 @@ explain select * from (select * from test) t
 select test.* from (select * from test)
 {"msg": "FROM (SELECT) subquery must have an alias"}
 select test.* from (select * from test) test
-{"msg": "<test> target is redefined, please use different alias for the target"}
+[1, 2, 3]
 select test from (select * from test)
 {"msg": "FROM (SELECT) subquery must have an alias"}
 # test: select alias.* from (select from shared)
@@ -317,7 +322,7 @@ select alias.* from (select test.* from test) alias
 select alias.* from (select x.* from test x) alias
 [1, 2, 3]
 select alias.* from (select alias.* from test alias) alias
-{"msg": "<alias> target is redefined, please use different alias for the target"}
+[1, 2, 3]
 select alias.* from (select * from test) alias
 [1, 2, 3]
 drop table test
@@ -437,7 +442,7 @@ select (select * from test where false)
 [null]
 # test: select (select from shared) from shared (more then one result)
 select (select * from test) from test
-{"msg": "<test> target is redefined, please use different alias for the target"}
+[1, 1, 1]
 select (select * from test t) from test
 [1, 1, 1]
 # test: select (select from shared) from shared (one result)
@@ -545,7 +550,7 @@ select (select a.id from b where a.id = b.id) from a
 [0, 1, 2]
 select (select b.id from b where a.id = b.id)::type from a
 ["int", "int", "int"]
-# test: select from table where (select from shared)
+# test: select from shared where (select from shared)
 explain select * from a where (select true from b where a.id = b.id)
 [{
   "bytecode": {
@@ -595,6 +600,61 @@ explain select * from a where (select true from b where a.id = b.id)
 }]
 select * from a where (select true from b where a.id = b.id)
 [[0, 0], [1, 0], [2, 0]]
+# test: select from (select from (select from shared))
+select t.x from (select z.id as x from (select id from test) z) t
+[1, 2, 3]
+explain select t.x from (select z.id as x from (select id from test) z) t
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_first          0      0      0     ",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          0      1      10    ",
+      "09": "jmp                 14     0      0     ",
+      "10": "store_read          2      0      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "store_next          0      10     0     ",
+      "14": "store_close         0      1      0     ",
+      "15": "cte_set             1      0      0     ",
+      "16": "set                 0      1      0     ",
+      "17": "cte_get             2      1      0     ",
+      "18": "store_open          0      2      20    ",
+      "19": "jmp                 24     0      0     ",
+      "20": "store_read          3      0      0     ",
+      "21": "push                3      0      0     ",
+      "22": "set_add             0      0      0     ",
+      "23": "store_next          0      20     0     ",
+      "24": "store_close         0      1      0     ",
+      "25": "cte_set             2      0      0     ",
+      "26": "content             2      -      -     ",
+      "27": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 9      0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      5      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  }
+}]
+# test: select from (select from), (select from)
+select * from (select * from a) a, (select * from a) b
+[[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 2, 0], [1, 0, 0, 0], [1, 0, 1, 0], [1, 0, 2, 0], [2, 0, 0, 0], [2, 0, 1, 0], [2, 0, 2, 0]]
 drop table a
 drop table b
 drop table test

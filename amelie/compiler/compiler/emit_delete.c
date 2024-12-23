@@ -37,27 +37,26 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_delete_on_match(Compiler* self, Target* target, void* arg)
+emit_delete_on_match(Compiler* self, Targets* targets, void* arg)
 {
 	unused(self);
 	unused(arg);
 
 	// DELETE by cursor
+	auto target = targets_outer(targets);
 	op1(self, CDELETE, target->id);
 }
 
 static inline void
-emit_delete_on_match_returning(Compiler* self, Target* target, void* arg)
+emit_delete_on_match_returning(Compiler* self, Targets* targets, void* arg)
 {
-	AstDelete* delete = arg;
-
 	// push expr and set column type
+	AstDelete* delete = arg;
 	for (auto as = delete->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
-
 		// expr
-		int rexpr = emit_expr(self, target, as->l);
+		int rexpr = emit_expr(self, targets, as->l);
 		int rt = rtype(self, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -68,19 +67,20 @@ emit_delete_on_match_returning(Compiler* self, Target* target, void* arg)
 	op1(self, CSET_ADD, delete->rset);
 
 	// DELETE by cursor
-	op1(self, CDELETE, delete->target->id);
+	auto target = targets_outer(targets);
+	op1(self, CDELETE, target->id);
 }
 
 hot void
 emit_delete(Compiler* self, Ast* ast)
 {
 	// DELETE FROM name [WHERE expr] [RETURNING expr]
-	auto delete = ast_delete_of(ast);
 
 	// delete by cursor
+	auto delete = ast_delete_of(ast);
 	if (! returning_has(&delete->ret))
 	{
-		scan(self, delete->target,
+		scan(self, &delete->targets,
 		     NULL,
 		     NULL,
 		     delete->expr_where,
@@ -96,7 +96,7 @@ emit_delete(Compiler* self, Ast* ast)
 		op3(self, CSET, rpin(self, TYPE_STORE),
 		    delete->ret.count, 0);
 
-	scan(self, delete->target,
+	scan(self, &delete->targets,
 	     NULL,
 	     NULL,
 	     delete->expr_where,

@@ -280,20 +280,18 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	                           self->values_cache,
 	                          &self->json,
 	                          &self->stmt_list,
-	                          &self->cte_list,
 	                           self->args);
 	self->stmt = stmt;
 	stmt_list_add(&self->stmt_list, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ret = true;
-	stmt->cte = cte_list_add(&self->cte_list, NULL, self->stmt->order);
 	stmt->ast = &ast_insert_allocate()->ast;
 
 	// create insert target
-	auto level   = target_list_next_level(&stmt->target_list);
+	auto insert  = ast_insert_of(stmt->ast);
 	auto table   = endpoint.table;
 	auto columns = table_columns(table);
-	auto target  = target_allocate();
+	auto target  = target_allocate(&stmt->order_targets);
 	if (table->config->shared)
 		target->type = TARGET_TABLE_SHARED;
 	else
@@ -301,10 +299,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	target->from_table   = table;
 	target->from_columns = columns;
 	str_set_str(&target->name, &table->config->name);
-	target_list_add(&stmt->target_list, target, level, 0);
-
-	auto insert = ast_insert_of(stmt->ast);
-	insert->target = target;
+	targets_add(&insert->targets, target);
 
 	// prepare result set
 	insert->values = set_cache_create(stmt->values_cache);

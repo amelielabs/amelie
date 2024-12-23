@@ -11,19 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Target Target;
-typedef struct Stmt   Stmt;
+typedef struct Target  Target;
+typedef struct Targets Targets;
+typedef struct Stmt    Stmt;
 
 typedef enum
 {
-	TARGET_NONE         = 0,
-	TARGET_TABLE_SHARED = 1 << 0,
-	TARGET_TABLE        = 1 << 1,
-	TARGET_SELECT       = 1 << 2,
-	TARGET_FUNCTION     = 1 << 3,
-	TARGET_GROUP_BY     = 1 << 4,
-	TARGET_CTE          = 1 << 5,
-	TARGET_INSERTED     = 1 << 6
+	TARGET_NONE,
+	TARGET_TABLE_SHARED,
+	TARGET_TABLE,
+	TARGET_SELECT,
+	TARGET_FUNCTION,
+	TARGET_GROUP_BY,
+	TARGET_CTE,
+	TARGET_VALUES
 } TargetType;
 
 typedef enum
@@ -38,14 +39,12 @@ struct Target
 {
 	TargetType   type;
 	int          id;
-	int          level;
-	int          level_seq;
 	Str          name;
 	// target
 	Table*       from_table;
 	IndexConfig* from_table_index;
 	Ast*         from_select;
-	Cte*         from_cte;
+	Stmt*        from_cte;
 	Columns*     from_columns;
 	Ast*         from_function;
 	int          r;
@@ -54,20 +53,18 @@ struct Target
 	// join
 	TargetJoin   join;
 	Ast*         join_on;
-	// link
-	Target*      outer;
-	Target*      next_join;
+	// inner/outer
 	Target*      next;
+	Target*      prev;
+	Targets*     targets;
 };
 
 static inline Target*
-target_allocate(void)
+target_allocate(int* id_seq)
 {
 	Target* self = palloc(sizeof(Target));
 	self->type             = TARGET_NONE;
-	self->id               = 0;
-	self->level            = -1;
-	self->level_seq        = -1;
+	self->id               = *id_seq;
 	self->from_table       = NULL;
 	self->from_table_index = NULL;
 	self->from_select      = NULL;
@@ -78,15 +75,17 @@ target_allocate(void)
 	self->path             = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
-	self->outer            = NULL;
-	self->next_join        = NULL;
 	self->next             = NULL;
+	self->prev             = NULL;
+	self->targets          = NULL;
 	str_init(&self->name);
+	(*id_seq)++;
 	return self;
 }
 
 static inline bool
-target_is_join(Target* self)
+target_is_table(Target* self)
 {
-	return self->next_join != NULL;
+	return self->type == TARGET_TABLE ||
+	       self->type == TARGET_TABLE_SHARED;
 }

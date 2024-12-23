@@ -264,7 +264,7 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
-	if (unlikely(expr == NULL || !expr->aggs))
+	if (unlikely(!expr || !expr->aggs))
 		error("unexpected aggregate function usage");
 
 	// function (expr)
@@ -304,7 +304,7 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 static inline Ast*
 expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 {
-	if (unlikely(expr == NULL || !expr->aggs))
+	if (unlikely(!expr || !expr->aggs))
 		error("unexpected lambda usage");
 
 	// create aggregate ast node
@@ -314,7 +314,8 @@ expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 	// process lambda expression using different context
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.lambda = &agg->ast;
+	ctx.lambda  = &agg->ast;
+	ctx.targets = expr->targets;
 	agg->expr = parse_expr(self, &ctx);
 	return &agg->ast;
 }
@@ -433,7 +434,10 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			error("EXISTS <(> expected");
 		if (! stmt_if(self, KSELECT))
 			error("EXISTS (<SELECT> expected");
-		value->r = &parse_select(self)->ast;
+		if (!expr || !expr->select)
+			error("unexpected subquery");
+		assert(expr->targets);
+		value->r = &parse_select(self, expr->targets, true)->ast;
 		if (! stmt_if(self, ')'))
 			error("EXISTS (<)> expected");
 		break;
@@ -469,9 +473,10 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// sub-query
 	case KSELECT:
 	{
-		if (expr && !expr->select)
+		if (!expr || !expr->select)
 			error("unexpected subquery");
-		auto select = parse_select(self);
+		assert(expr->targets);
+		auto select = parse_select(self, expr->targets, true);
 		value = &select->ast;
 		break;
 	}

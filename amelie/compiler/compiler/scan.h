@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef void (*ScanFunction)(Compiler*, Target*, void*);
+typedef void (*ScanFunction)(Compiler*, Targets*, void*);
 
-void scan(Compiler*, Target*, Ast*, Ast*, Ast*,
+void scan(Compiler*, Targets*, Ast*, Ast*, Ast*,
           ScanFunction, void*);

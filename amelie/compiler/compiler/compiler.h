@@ -43,12 +43,6 @@ compiler_stmt(Compiler* self)
 	return self->parser.stmt;
 }
 
-static inline TargetList*
-compiler_target_list(Compiler* self)
-{
-	return &self->current->target_list;
-}
-
 static inline void
 compiler_switch_coordinator(Compiler* self)
 {

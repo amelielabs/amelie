@@ -102,7 +102,7 @@ dtr_create(Dtr* self, Program* program, Buf* args)
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, program->stmts,
 	                program->stmts_last);
-	result_create(&self->cte, program->ctes);
+	result_create(&self->cte, program->stmts);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }

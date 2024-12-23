@@ -16,10 +16,10 @@ typedef struct AstUpdate AstUpdate;
 struct AstUpdate
 {
 	Ast       ast;
-	Table*    table;
-	Target*   target;
 	Ast*      expr_update;
 	Ast*      expr_where;
+	Table*    table;
+	Targets   targets;
 	Returning ret;
 	int       rset;
 };
@@ -35,6 +35,7 @@ ast_update_allocate(void)
 {
 	AstUpdate* self;
 	self = ast_allocate(0, sizeof(AstUpdate));
+	targets_init(&self->targets);
 	returning_init(&self->ret);
 	return self;
 }

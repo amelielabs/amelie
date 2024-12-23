@@ -208,7 +208,7 @@ select (select (select test.id)) from test
 [1, 2, 3]
 # test: select (select (select from table)) from table
 explain select (select (select id from test t)) from test
-{"msg": "subqueries to distributed tables are not supported"}
+{"msg": "distributed table 'public.test' cannot be used in subquery"}
 # test: select (select (select from shared)) from table
 create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
@@ -259,9 +259,9 @@ select (select (select id from ref)) from test
 [1, 1, 1]
 # test: select from table where (select from table)
 explain select * from test where (select * from test t)
-{"msg": "subqueries to distributed tables are not supported"}
+{"msg": "distributed table 'public.test' cannot be used in subquery"}
 explain select * from test where (select id from test t)
-{"msg": "subqueries to distributed tables are not supported"}
+{"msg": "distributed table 'public.test' cannot be used in subquery"}
 # test: select from table where (select from shared)
 explain select * from test where (select id from ref)
 [{

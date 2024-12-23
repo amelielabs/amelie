@@ -34,32 +34,48 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-typedef struct
-{
-	int     level;
-	int     level_seq;
-	Target* head;
-	Target* tail;
-	Stmt*   stmt;
-} From;
-
 static inline Target*
-parse_from_target(From* self)
+parse_from_target(Stmt* self, Targets* targets, bool subquery)
 {
-	auto stmt = self->stmt;
-	auto target = target_allocate();
+	auto target = target_allocate(&self->order_targets);
 
 	// FROM (SELECT)
-	if (stmt_if(stmt, '('))
+	if (stmt_if(self, '('))
 	{
-		if (! stmt_if(stmt, KSELECT))
+		if (! stmt_if(self, KSELECT))
 			error("FROM (<SELECT> expected");
-		auto select = parse_select(stmt);
-		if (! stmt_if(stmt, ')'))
-			error("FROM (SELECT ... <)> expected");
-		target->type         = TARGET_SELECT;
-		target->from_select  = &select->ast;
-		target->from_columns = &select->ret.columns;
+		if (subquery)
+		{
+			auto select = parse_select(self, targets->outer, true);
+			if (! stmt_if(self, ')'))
+				error("FROM (SELECT ... <)> expected");
+			target->type         = TARGET_SELECT;
+			target->from_select  = &select->ast;
+			target->from_columns = &select->ret.columns;
+		} else
+		{
+			// rewrite FROM (SELECT) as CTE statement (this can recurse)
+			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
+			                         self->lex,
+			                         self->data,
+			                         self->values_cache,
+			                         self->json,
+			                         self->stmt_list,
+			                         self->args);
+			cte->id = STMT_SELECT;
+			stmt_list_insert(self->stmt_list, self, cte);
+
+			auto select = parse_select(cte, NULL, false);
+			if (! stmt_if(self, ')'))
+				error("FROM (SELECT ... <)> expected");
+			cte->ast         = &select->ast;
+			cte->cte_columns = &select->ret.columns;
+			parse_select_resolve(cte);
+
+			target->type         = TARGET_CTE;
+			target->from_cte     = cte;
+			target->from_columns = cte->cte_columns;
+		}
 		return target;
 	}
 
@@ -67,23 +83,23 @@ parse_from_target(From* self)
 	// FROM schema.name [(args)]
 	Str  schema;
 	Str  name;
-	auto expr = parse_target(stmt, &schema, &name);
+	auto expr = parse_target(self, &schema, &name);
 	if (! expr)
 		error("FROM target name expected");
 
 	// function()
-	if (stmt->id == STMT_SELECT && stmt_if(stmt, '('))
+	if (self->id == STMT_SELECT && stmt_if(self, '('))
 	{
 		// find function
 		auto call = ast_call_allocate();
-		call->fn = function_mgr_find(stmt->function_mgr, &schema, &name);
+		call->fn = function_mgr_find(self->function_mgr, &schema, &name);
 		if (! call->fn)
 			error("FROM %.*s.%.*s(): function not found",
 			      str_size(&schema), str_of(&schema),
 			      str_size(&name),
 			      str_of(&name));
 		// parse args ()
-		call->ast.r = parse_expr_args(stmt, NULL, ')', false);
+		call->ast.r = parse_expr_args(self, NULL, ')', false);
 
 		// ensure function can be used inside FROM
 		if (call->fn->ret != TYPE_STORE &&
@@ -97,33 +113,36 @@ parse_from_target(From* self)
 		target->from_function = &call->ast;
 
 		// allocate select to keep returning columns
-		auto select = ast_select_allocate();
-		ast_list_add(&stmt->select_list, &select->ast);
+		auto select = ast_select_allocate(targets->outer);
+		ast_list_add(&self->select_list, &select->ast);
 		target->from_columns = &select->ret.columns;
 		str_set_str(&target->name, &call->fn->name);
 		return target;
 	}
 
 	// cte
-	auto cte = cte_list_find(stmt->cte_list, &name);
+	auto cte = stmt_list_find(self->stmt_list, &name);
 	if (cte)
 	{
-		if (cte->stmt == self->stmt->order)
+		if (cte == self)
 			error("<%.*s> recursive CTE are not supported",
 			      str_size(&name), str_of(&name));
 		target->type         = TARGET_CTE;
 		target->from_cte     = cte;
-		target->from_columns = cte->columns;
-		str_set_str(&target->name, &cte->name->string);
-		// add cte dependency
-		cte_deps_add(&stmt->cte_deps, cte);
+		target->from_columns = cte->cte_columns;
+		str_set_str(&target->name, &cte->cte_name->string);
 		return target;
 	}
 
 	// table
-	auto table = table_mgr_find(&stmt->db->table_mgr, &schema, &name, false);
+	auto table = table_mgr_find(&self->db->table_mgr, &schema, &name, false);
 	if (table)
 	{
+		if (subquery && !table->config->shared)
+			error("distributed table '%.*s.%.*s' cannot be used in subquery",
+			      str_size(&schema), str_of(&schema),
+			      str_size(&name),
+			      str_of(&name));
 		if (table->config->shared)
 			target->type = TARGET_TABLE_SHARED;
 		else
@@ -144,30 +163,28 @@ parse_from_target(From* self)
 }
 
 static inline Target*
-parse_from_add(From* self)
+parse_from_add(Stmt* self, Targets* targets, bool subquery)
 {
-	auto stmt = self->stmt;
-
 	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
-	auto target = parse_from_target(self);
-	auto target_list = &stmt->target_list;
+	auto target = parse_from_target(self, targets, subquery);
 
 	// [AS] [alias]
-	auto as = stmt_if(stmt, KAS);
-	auto alias = stmt_if(stmt, KNAME);
+	auto as = stmt_if(self, KAS);
+	auto alias = stmt_if(self, KNAME);
 	if (alias) {
 		str_set_str(&target->name, &alias->string);
 	} else {
 		if (as)
 			error("AS <name> expected ");
-		if (target->type == TARGET_SELECT)
+		if ( target->type == TARGET_SELECT ||
+		    (target->type == TARGET_CTE && str_empty(&target->name)))
 			error("FROM (SELECT) subquery must have an alias");
 	}
 
 	// ensure target does not exists
 	if (! str_empty(&target->name))
 	{
-		auto match = target_list_match(target_list, &target->name);
+		auto match = targets_match(targets, &target->name);
 		if (match)
 			error("<%.*s> target is redefined, please use different alias for the target",
 			      str_size(&target->name), str_of(&target->name));
@@ -184,28 +201,19 @@ parse_from_add(From* self)
 	}
 
 	// add target
-	target_list_add(target_list, target, self->level, self->level_seq++);
-
-	if (self->head == NULL)
-		self->head = target;
-	else
-		self->tail->next_join = target;
-	self->tail = target;
-
-	// set outer target
-	target->outer = self->head;
+	targets_add(targets, target);
 
 	// [USE INDEX (name)]
-	if (stmt_if(stmt, KUSE))
+	if (stmt_if(self, KUSE))
 	{
-		if (! stmt_if(stmt, KINDEX))
+		if (! stmt_if(self, KINDEX))
 			error("USE <INDEX> expected");
-		if (! stmt_if(stmt, '('))
+		if (! stmt_if(self, '('))
 			error("USE INDEX <(> expected");
-		auto name = stmt_next_shadow(stmt);
+		auto name = stmt_next_shadow(self);
 		if (name->id != KNAME)
 			error("USE INDEX (<index name> expected");
-		if (! stmt_if(stmt, ')'))
+		if (! stmt_if(self, ')'))
 			error("USE INDEX (<)> expected");
 		if (target->type != TARGET_TABLE &&
 		    target->type != TARGET_TABLE_SHARED)
@@ -217,22 +225,14 @@ parse_from_add(From* self)
 	return target;
 }
 
-Target*
-parse_from(Stmt* self, int level)
+void
+parse_from(Stmt* self, Targets* targets, bool subquery)
 {
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [, ...]
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
-	From from =
-	{
-		.level     = level,
-		.level_seq = 0,
-		.head      = NULL,
-		.tail      = NULL,
-		.stmt      = self
-	};
 
 	// FROM name | expr
-	parse_from_add(&from);
+	parse_from_add(self, targets, subquery);
 
 	for (;;)
 	{
@@ -240,7 +240,7 @@ parse_from(Stmt* self, int level)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(&from);
+			parse_from_add(self, targets, subquery);
 			continue;
 		}
 
@@ -283,14 +283,17 @@ parse_from(Stmt* self, int level)
 				error("outer joins currently are not supported");
 
 			// <name|expr>
-			auto target = parse_from_add(&from);
+			auto target = parse_from_add(self, targets, subquery);
 
 			// ON
 			if (! stmt_if(self, KON))
 				error("JOIN name <ON> expected");
 
 			// expr
-			target->join_on = parse_expr(self, NULL);
+			Expr ctx;
+			expr_init(&ctx);
+			ctx.targets = targets;
+			target->join_on = parse_expr(self, &ctx);
 			target->join    = join;
 			continue;
 		}
@@ -298,5 +301,6 @@ parse_from(Stmt* self, int level)
 		break;
 	}
 
-	return from.head;
+	if (targets_count(targets, TARGET_TABLE) > 1)
+		error("direct JOIN with distributed table is not supported");
 }

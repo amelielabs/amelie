@@ -40,6 +40,7 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 	// GROUP BY expr, ...
 	Expr ctx;
 	expr_init(&ctx);
+
 	auto list = &select->expr_group_by;
 	for (;;)
 	{
@@ -126,8 +127,43 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	}
 }
 
+static inline void
+parse_select_pushdown(Stmt* self, AstSelect* select)
+{
+	// find distributed or shared table in the outer SELECT FROM targets
+	//
+	// the table partitions will be used during execution, the query will be executed
+	// on one or more nodes
+	//
+	select->pushdown_target = targets_match_by(&select->targets, TARGET_TABLE);
+	if (! select->pushdown_target)
+		select->pushdown_target = targets_match_by(&select->targets, TARGET_TABLE_SHARED);
+	if (select->pushdown_target)
+	{
+		select->pushdown = PUSHDOWN_TARGET;
+		return;
+	}
+
+	// analyze subqueries to match any shared tables being used
+	//
+	// the query will be executed on first node (without using partition target)
+	//
+	for (auto ref = self->select_list.list->next; ref; ref = ref->next)
+	{
+		auto query = ast_select_of(ref->ast);
+		if (targets_match_by(&query->targets, TARGET_TABLE_SHARED))
+		{
+			select->pushdown = PUSHDOWN_FIRST;
+			return;
+		}
+	}
+
+	// expressions only (local execution)
+	select->pushdown = PUSHDOWN_NONE;
+}
+
 hot AstSelect*
-parse_select(Stmt* self)
+parse_select(Stmt* self, Targets* outer, bool subquery)
 {
 	// SELECT [DISTINCT] expr, ...
 	// [FORMAT name]
@@ -136,8 +172,7 @@ parse_select(Stmt* self)
 	// [WHERE expr]
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
-	int level = target_list_next_level(&self->target_list);
-	auto select = ast_select_allocate();
+	auto select = ast_select_allocate(outer);
 	ast_list_add(&self->select_list, &select->ast);
 
 	// [DISTINCT]
@@ -149,21 +184,28 @@ parse_select(Stmt* self)
 	expr_init(&ctx);
 	ctx.select = true;
 	ctx.aggs = &select->expr_aggs;
+	ctx.targets = &select->targets;
 	parse_returning(&select->ret, self, &ctx);
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
-		select->target = parse_from(self, level);
+		parse_from(self, &select->targets, subquery);
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
-		select->expr_where = parse_expr(self, NULL);
+	{
+		Expr ctx_where;
+		expr_init(&ctx_where);
+		ctx_where.select = true;
+		ctx_where.targets = &select->targets;
+		select->expr_where = parse_expr(self, &ctx_where);
+	}
 
 	// use as WHERE expr or combine JOIN ON (expr) together with
 	// WHERE expr per target
-	if (select->target)
+	if (targets_is_join(&select->targets))
 		select->expr_where =
-			parse_from_join_on_and_where(select->target, select->expr_where);
+			parse_from_join_on_and_where(&select->targets, select->expr_where);
 
 	// [GROUP BY]
 	if (stmt_if(self, KGROUP))
@@ -201,7 +243,7 @@ parse_select(Stmt* self)
 	// add group by target
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
 	{
-		if (select->target == NULL)
+		if (targets_empty(&select->targets))
 			error("no targets to use with GROUP BY or aggregates");
 
 		// add at least one group by key
@@ -217,30 +259,20 @@ parse_select(Stmt* self)
 		}
 
 		// create group by target to scan agg set
-		auto target = target_allocate();
+		auto target = target_allocate(&self->order_targets);
 		target->type = TARGET_GROUP_BY;
-		target->name = select->target->name;
-		target->from_columns = &select->target_group_columns;
-		target_list_add(&self->target_list, target, level, 0);
-		select->target_group = target;
+		target->name = targets_outer(&select->targets)->name;
+		target->from_columns = &select->targets_group_columns;
+		targets_add(&select->targets_group, target);
 
 		// group by target columns will be created
 		// during resolve
 	}
 
-	return select;
-}
+	// set pushdown strategy for the root query
+	if (! subquery)
+		parse_select_pushdown(self, select);
 
-hot AstSelect*
-parse_select_expr(Stmt* self)
-{
-	// SELECT expr, ...
-	auto select = ast_select_allocate();
-	ast_list_add(&self->select_list, &select->ast);
-	Expr ctx;
-	expr_init(&ctx);
-	parse_returning(&select->ret, self, &ctx);
-	parse_returning_resolve(&select->ret, self, NULL);
 	return select;
 }
 
@@ -266,7 +298,7 @@ parse_select_resolve_group_by(AstSelect* select)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		columns_add(&select->target_group_columns, column);
+		columns_add(&select->targets_group_columns, column);
 		agg->column = column;
 	}
 
@@ -279,14 +311,14 @@ parse_select_resolve_group_by(AstSelect* select)
 		Str name;
 		if (group->expr->id == KNAME)
 		{
-			auto target  = select->target;
+			auto target  = targets_outer(&select->targets);
 			auto columns = target->from_columns;
 			auto cte     = target->from_cte;
 			auto column  = &group->expr->string;
 
 			// use CTE arguments, if defined
-			if (target->type == TARGET_CTE && cte->args.list_count > 0)
-				columns = &cte->args;
+			if (target->type == TARGET_CTE && cte->cte_args.list_count > 0)
+				columns = &cte->cte_args;
 
 			bool conflict = false;
 			auto ref = columns_find_noconflict(columns, column, &conflict);
@@ -312,7 +344,7 @@ parse_select_resolve_group_by(AstSelect* select)
 
 		auto column = column_allocate();
 		column_set_name(column, &name);
-		columns_add(&select->target_group_columns, column);
+		columns_add(&select->targets_group_columns, column);
 		group->column = column;
 	}
 }
@@ -410,7 +442,7 @@ parse_select_resolve(Stmt* self)
 		auto select = ast_select_of(ref->ast);
 
 		// create select expressions and resolve *
-		parse_returning_resolve(&select->ret, self, select->target);
+		parse_returning_resolve(&select->ret, &select->targets);
 
 		// use select expr as distinct expression, if not set
 		if (select->distinct && !select->distinct_on)
@@ -424,7 +456,7 @@ parse_select_resolve(Stmt* self)
 		}
 
 		// resolve GROUP BY alias/int cases and create columns
-		if (select->target_group)
+		if (! targets_empty(&select->targets_group))
 		{
 			parse_select_resolve_group_by_alias(select);
 			parse_select_resolve_group_by(select);

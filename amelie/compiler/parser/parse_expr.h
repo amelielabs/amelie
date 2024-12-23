@@ -19,15 +19,17 @@ struct Expr
 	AstList* aggs;
 	Ast*     lambda;
 	Ast*     as;
+	Targets* targets;
 };
 
 static inline void
 expr_init(Expr* self)
 {
-	self->select = false;
-	self->aggs   = NULL;
-	self->as     = NULL;
-	self->lambda = NULL;
+	self->select  = false;
+	self->aggs    = NULL;
+	self->as      = NULL;
+	self->lambda  = NULL;
+	self->targets = NULL;
 }
 
 Ast* parse_expr_args(Stmt*, Expr*, int, bool);

@@ -51,7 +51,6 @@ parser_init(Parser*      self,
 	self->local        = local;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
-	cte_list_init(&self->cte_list);
 	lex_init(&self->lex, keywords);
 	uri_init(&self->uri);
 	json_init(&self->json);
@@ -63,12 +62,13 @@ parser_reset(Parser* self)
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
 	self->args    = NULL;
-	list_foreach_safe(&self->stmt_list.list)
+	auto stmt = self->stmt_list.list;
+	while (stmt)
 	{
-		auto stmt = list_at(Stmt, link);
+		auto next = stmt->next;
 		parse_stmt_free(stmt);
+		stmt = next;
 	}
-	cte_list_reset(&self->cte_list);
 	stmt_list_init(&self->stmt_list);
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);

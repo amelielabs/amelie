@@ -41,5 +41,6 @@ emit_insert(Compiler* self, Ast* ast)
 {
 	// CINSERT
 	auto insert = ast_insert_of(ast);
-	op1(self, CINSERT, (intptr_t)insert->target->from_table);
+	auto table  = targets_outer(&insert->targets)->from_table;
+	op1(self, CINSERT, (intptr_t)table);
 }

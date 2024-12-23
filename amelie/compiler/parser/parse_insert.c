@@ -37,7 +37,7 @@
 hot static void
 parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 {
-	auto table = stmt->target->from_table;
+	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
 	if (! stmt_if(self, '('))
@@ -93,7 +93,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 hot static inline void
 parse_row(Stmt* self, AstInsert* stmt)
 {
-	auto table = stmt->target->from_table;
+	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
 	if (! stmt_if(self, '('))
@@ -148,7 +148,8 @@ parse_row(Stmt* self, AstInsert* stmt)
 hot static inline Ast*
 parse_column_list(Stmt* self, AstInsert* stmt)
 {
-	auto columns = table_columns(stmt->target->from_table);
+	auto table = targets_outer(&stmt->targets)->from_table;
+	auto columns = table_columns(table);
 
 	// empty column list ()
 	if (unlikely(stmt_if(self, ')')))
@@ -202,7 +203,7 @@ hot static inline void
 parse_generate(Stmt* self, AstInsert* stmt)
 {
 	// insert into () values (), ...
-	auto table = stmt->target->from_table;
+	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// GENERATE count
 	auto count = stmt_if(self, KINT);
@@ -243,7 +244,8 @@ parse_resolved(Stmt* self)
 	// handle insert as upsert and generate
 	//
 	// SET <column> = <resolved column expression> [, ...]
-	auto columns = table_columns(stmt->target->from_table);
+	auto table = targets_outer(&stmt->targets)->from_table;
+	auto columns = table_columns(table);
 	stmt->update_expr = parse_update_resolved(self, columns);
 	if (! stmt->update_expr)
 		stmt->on_conflict = ON_CONFLICT_ERROR;
@@ -257,7 +259,8 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	{
 		// if table has resvoled conlumns and no explicit ON CONFLICT clause
 		// then handle as ON CONFLICT DO RESOLVE
-		if (stmt->target->from_table->config->columns.count_resolved > 0)
+		auto table = targets_outer(&stmt->targets)->from_table;
+		if (table->config->columns.count_resolved > 0)
 			parse_resolved(self);
 		return;
 	}
@@ -270,7 +273,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	if (! stmt_if(self, KDO))
 		error("INSERT VALUES ON CONFLICT <DO> expected");
 
-	// NOTHING | ERROR | UPDATE | AGGREGATE
+	// NOTHING | ERROR | UPDATE | RESOLVE
 	auto op = stmt_next(self);
 	switch (op->id) {
 	case KNOTHING:
@@ -287,7 +290,12 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 
 		// [WHERE]
 		if (stmt_if(self, KWHERE))
-			stmt->update_where = parse_expr(self, NULL);
+		{
+			Expr ctx;
+			expr_init(&ctx);
+			ctx.targets = &stmt->targets;
+			stmt->update_where = parse_expr(self, &ctx);
+		}
 		break;
 	}
 	case KRESOLVE:
@@ -311,15 +319,15 @@ hot void
 parse_generated(Stmt* self)
 {
 	auto stmt = ast_insert_of(self->ast);
-	auto columns = table_columns(stmt->target->from_table);
+	auto table = targets_outer(&stmt->targets)->from_table;
+	auto columns = table_columns(table);
 
-	// create a target to iterate inserted rows to create new rows
+	// create a target to iterate inserted values to create new rows
 	// using the generated columns
-	auto target = target_allocate();
-	target->type         = TARGET_INSERTED;
-	target->from_columns = stmt->target->from_columns;
-	target_list_add(&self->target_list, target, stmt->target->level, 0);
-	stmt->target_generated = target;
+	auto target = target_allocate(&self->order_targets);
+	target->type         = TARGET_VALUES;
+	target->from_columns = targets_outer(&stmt->targets)->from_columns;
+	targets_add(&stmt->targets_generated, target);
 
 	// parse generated columns expressions
 	auto lex_origin = self->lex;
@@ -337,8 +345,9 @@ parse_generated(Stmt* self)
 		lex_start(&lex, &column->constraints.as_stored);
 		Expr ctx =
 		{
-			.aggs   = NULL,
-			.select = false
+			.aggs    = NULL,
+			.select  = false,
+			.targets = &stmt->targets_generated
 		};
 
 		// op(column, expr)
@@ -362,7 +371,7 @@ parse_insert(Stmt* self)
 {
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES] (value, ..), ...
-	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | AGGREGATE]
+	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate();
 	self->ast = &stmt->ast;
@@ -372,11 +381,13 @@ parse_insert(Stmt* self)
 		error("INSERT <INTO> expected");
 
 	// table
-	auto level = target_list_next_level(&self->target_list);
-	stmt->target = parse_from(self, level);
-	if (stmt->target->from_table == NULL || stmt->target->next_join)
+	parse_from(self, &stmt->targets, false);
+	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
 		error("INSERT INTO <table> expected");
-	auto columns = stmt->target->from_columns;
+	auto target = targets_outer(&stmt->targets);
+	if (! target_is_table(target))
+		error("INSERT INTO <table> expected");
+	auto columns = target->from_columns;
 
 	// prepare values
 	stmt->values = set_cache_create(self->values_cache);
@@ -419,7 +430,7 @@ parse_insert(Stmt* self)
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, self, stmt->target);
+		parse_returning_resolve(&stmt->ret, &stmt->targets);
 
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)

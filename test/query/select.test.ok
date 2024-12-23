@@ -66,9 +66,9 @@ explain select [1, 2, 3]
 select name
 {"msg": "<name> column not found"}
 select name.name
-{"msg": "<name> column not found"}
+{"msg": "<name> target not found"}
 select name.name.name
-{"msg": "<name> column not found"}
+{"msg": "<name> target not found"}
 # test: select *
 select *
 {"msg": "'*': no targets defined"}

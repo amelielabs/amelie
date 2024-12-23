@@ -50,14 +50,53 @@ select test.*, ref.* from test, ref
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from shared, table
 explain select test.*, ref.* from ref, test
-{"msg": "subqueries to distributed tables are not supported"}
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      4      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.ref (primary)",
+      "04": "jmp                 21     0      0     ",
+      "05": "int                 1      -      0     # -2147483648",
+      "06": "push                1      0      0     ",
+      "07": "table_open          1      19     9     # public.test (primary)",
+      "08": "jmp                 19     0      0     ",
+      "09": "table_readi32       1      1      0     ",
+      "10": "push                1      0      0     ",
+      "11": "table_readi32       1      1      1     ",
+      "12": "push                1      0      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "push                1      0      0     ",
+      "15": "table_readi32       1      0      1     ",
+      "16": "push                1      0      0     ",
+      "17": "set_add             0      0      0     ",
+      "18": "table_next          1      9      0     ",
+      "19": "table_close         1      0      0     ",
+      "20": "table_next          0      5      0     ",
+      "21": "table_close         0      0      0     ",
+      "22": "result              0      0      0     ",
+      "23": "ret                 0      0      0     "
+    }
+  }
+}]
 select test.*, ref.* from ref, test
-{"msg": "subqueries to distributed tables are not supported"}
+[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t
-{"msg": "subqueries to distributed tables are not supported"}
+{"msg": "direct JOIN with distributed table is not supported"}
 select t.* from test, test t
-{"msg": "subqueries to distributed tables are not supported"}
+{"msg": "direct JOIN with distributed table is not supported"}
 # test: select from table join shared
 explain select test.id, ref.id from test join ref on true
 [{

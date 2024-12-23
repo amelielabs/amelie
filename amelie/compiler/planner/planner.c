@@ -70,7 +70,7 @@ planner_match(AstPath*     prev_path,
 }
 
 void
-planner(TargetList* target_list, Target* target, Ast* expr)
+planner(Target* target, Ast* expr)
 {
 	auto table = target->from_table;
 	assert(table);
@@ -81,7 +81,6 @@ planner(TargetList* target_list, Target* target, Ast* expr)
 	{
 		.keys        = NULL,
 		.target      = target,
-		.target_list = target_list
 	};
 
 	// FROM USE INDEX (use predefined index)

@@ -163,9 +163,16 @@ select (select b.* from b where a.id = b.id)::type from a
 select (select a.id from b where a.id = b.id) from a
 select (select b.id from b where a.id = b.id)::type from a
 
-# test: select from table where (select from shared)
+# test: select from shared where (select from shared)
 explain select * from a where (select true from b where a.id = b.id)
 select * from a where (select true from b where a.id = b.id)
+
+# test: select from (select from (select from shared))
+select t.x from (select z.id as x from (select id from test) z) t
+explain select t.x from (select z.id as x from (select id from test) z) t
+
+# test: select from (select from), (select from)
+select * from (select * from a) a, (select * from a) b
 
 drop table a
 drop table b

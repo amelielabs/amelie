@@ -38,13 +38,13 @@
 
 typedef struct
 {
-	Target*      target;
 	Ast*         expr_where;
 	int          roffset;
 	int          rlimit;
 	int          eof;
 	ScanFunction on_match;
 	void*        on_match_arg;
+	Targets*     targets;
 	Compiler*    compiler;
 } Scan;
 
@@ -62,7 +62,7 @@ scan_key(Scan* self, Target* target)
 		// use value from >, >=, = expression as a key
 		if (ref->start)
 		{
-			int rexpr = emit_expr(cp, target, ref->start);
+			int rexpr = emit_expr(cp, self->targets, ref->start);
 			op1(cp, CPUSH, rexpr);
 			runpin(cp, rexpr);
 			continue;
@@ -112,7 +112,7 @@ scan_stop(Scan* self, Target* target, int _eof)
 
 		// use <, <= condition
 		int rexpr;
-		rexpr = emit_expr(cp, target, ref->stop_op);
+		rexpr = emit_expr(cp, self->targets, ref->stop_op);
 
 		// jntr _eof
 		op2(cp, CJNTR, _eof, rexpr);
@@ -127,11 +127,10 @@ static inline void
 scan_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
-	auto target_list = compiler_target_list(cp);
 	auto table = target->from_table;
 
 	// prepare scan path using where expression per target
-	planner(target_list, target, self->expr_where);
+	planner(target, self->expr_where);
 	auto path = ast_path_of(target->path);
 	auto point_lookup = (path->type == PATH_LOOKUP);
 	auto index = target->from_table_index;
@@ -165,10 +164,10 @@ scan_table(Scan* self, Target* target)
 	if (index->type == INDEX_TREE)
 		scan_stop(self, target, _where_eof);
 
-	if (target->next_join)
+	if (target->next)
 	{
 		// recursive to inner target
-		scan_target(self, target->next_join);
+		scan_target(self, target->next);
 	} else
 	{
 		// generate inner target condition
@@ -177,7 +176,7 @@ scan_table(Scan* self, Target* target)
 		int _where_jntr;
 		if (self->expr_where)
 		{
-			int rwhere = emit_expr(cp, target, self->expr_where);
+			int rwhere = emit_expr(cp, self->targets, self->expr_where);
 			_where_jntr = op_pos(cp);
 			op2(cp, CJNTR, 0 /* _next */, rwhere);
 			runpin(cp, rwhere);
@@ -194,7 +193,7 @@ scan_table(Scan* self, Target* target)
 			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / expr against current cursor position
-		self->on_match(cp, target, self->on_match_arg);
+		self->on_match(cp, self->targets, self->on_match_arg);
 
 		// _next:
 		int _next = op_pos(cp);
@@ -241,13 +240,13 @@ scan_expr(Scan* self, Target* target)
 	{
 		auto cte = target->from_cte;
 		if (target->r == -1)
-			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_STORE), cte->stmt);
+			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_STORE), cte->order);
 		break;
 	}
 	case TARGET_FUNCTION:
 	{
 		if (target->r == -1)
-			target->r = emit_call(cp, target, target->from_function);
+			target->r = emit_call(cp, self->targets, target->from_function);
 		break;
 	}
 	default:
@@ -287,16 +286,16 @@ scan_expr(Scan* self, Target* target)
 	int _where = op_pos(cp);
 	code_at(cp->code, _open)->c = _where;
 
-	if (target->next_join)
+	if (target->next)
 	{
-		scan_target(self, target->next_join);
+		scan_target(self, target->next);
 	} else
 	{
 		// where expr
 		int _where_jntr;
 		if (self->expr_where)
 		{
-			int rwhere = emit_expr(cp, target, self->expr_where);
+			int rwhere = emit_expr(cp, self->targets, self->expr_where);
 			_where_jntr = op_pos(cp);
 			op2(cp, CJNTR, 0 /* _next */, rwhere);
 			runpin(cp, rwhere);
@@ -313,7 +312,7 @@ scan_expr(Scan* self, Target* target)
 			op2(cp, CJLTD, self->rlimit, self->eof);
 
 		// aggregation / select_expr
-		self->on_match(cp, target, self->on_match_arg);
+		self->on_match(cp, self->targets, self->on_match_arg);
 
 		// _next:
 		int _next = op_pos(cp);
@@ -347,7 +346,7 @@ scan_target(Scan* self, Target* target)
 
 void
 scan(Compiler*    compiler,
-     Target*      target,
+     Targets*     targets,
      Ast*         expr_limit,
      Ast*         expr_offset,
      Ast*         expr_where,
@@ -356,20 +355,20 @@ scan(Compiler*    compiler,
 {
 	Scan self =
 	{
-		.target       = target,
 		.expr_where   = expr_where,
 		.roffset      = -1,
 		.rlimit       = -1,
 		.eof          = -1,
 		.on_match     = on_match,
 		.on_match_arg = on_match_arg,
+		.targets      = targets,
 		.compiler     = compiler
 	};
 
 	// offset
 	if (expr_offset)
 	{
-		self.roffset = emit_expr(compiler, target, expr_offset);
+		self.roffset = emit_expr(compiler, targets, expr_offset);
 		if (rtype(compiler, self.roffset) != TYPE_INT)
 			error("OFFSET: integer type expected");
 	}
@@ -377,12 +376,12 @@ scan(Compiler*    compiler,
 	// limit
 	if (expr_limit)
 	{
-		self.rlimit = emit_expr(compiler, target, expr_limit);
+		self.rlimit = emit_expr(compiler, targets, expr_limit);
 		if (rtype(compiler, self.rlimit) != TYPE_INT)
 			error("LIMIT: integer type expected");
 	}
 
-	scan_target(&self, target);
+	scan_target(&self, targets_outer(targets));
 
 	if (self.roffset != -1)
 		runpin(compiler, self.roffset);

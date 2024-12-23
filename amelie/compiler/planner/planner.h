@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void planner(TargetList*, Target*, Ast*);
+void planner(Target*, Ast*);

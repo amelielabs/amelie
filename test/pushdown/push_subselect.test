@@ -51,17 +51,21 @@ drop table test2
 explain select (select t.id from test z) from (select * from test) t
 select (select t.id from test z) from (select * from test) t
 
-# test: insert returning (select from table)
+# test: select from (select from table), (select from table)
+select * from (select * from test) a, (select * from test) b
+explain select * from (select * from test) a, (select * from test) b
+
+# test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t)
 insert into test (id) values (4) returning (select * from test t)
 
-# test: insert returning (select from shared)
+# test: insert returning (select from shared) (unsupported)
 create shared table test_ (id int primary key)
 insert into test_ values (1),(2),(3)
 insert into test (id) values (5) returning (select * from test_)
 drop table test_
 
-# test: insert returning (select from expr)
+# test: insert returning (select from expr) (unsupported)
 insert into test (id) values (6) returning *, select [1,2,3]
 insert into test (id) values (7) returning id, select [1,2,3]
 drop table test

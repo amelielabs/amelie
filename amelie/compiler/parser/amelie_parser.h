@@ -23,12 +23,13 @@
 #include "parser/lex.h"
 
 // target
-#include "parser/cte.h"
-#include "parser/cte_deps.h"
 #include "parser/target.h"
-#include "parser/target_list.h"
-#include "parser/endpoint.h"
+#include "parser/targets.h"
+
+// stmt
 #include "parser/stmt.h"
+#include "parser/stmt_list.h"
+#include "parser/endpoint.h"
 
 // parser
 #include "parser/parser.h"
