@@ -42,7 +42,6 @@ struct Config
 	Var  frontends;
 	Var  backends;
 	// wal
-	Var  wal;
 	Var  wal_rotate_wm;
 	Var  wal_sync_on_rotate;
 	Var  wal_sync_on_write;

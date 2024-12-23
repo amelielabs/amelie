@@ -66,7 +66,6 @@ config_prepare(Config* self)
 		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,          default_fe          },
 		{ "backends",                VAR_INT,    VAR_C|VAR_E,             &self->backends,                NULL,          default_be          },
 		// wal
-		{ "wal",                     VAR_BOOL,   VAR_C,                   &self->wal,                     NULL,          true                },
 		{ "wal_rotate_wm",           VAR_INT,    VAR_C|VAR_R,             &self->wal_rotate_wm,           NULL,          104857600           },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_rotate,      NULL,          true                },
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },

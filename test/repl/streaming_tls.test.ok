@@ -10062,7 +10062,6 @@ show config
   "limit_write": 0,
   "frontends": 1,
   "backends": 3,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,

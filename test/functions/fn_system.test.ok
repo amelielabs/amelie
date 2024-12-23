@@ -27,7 +27,6 @@ select system.config()
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
@@ -106,8 +105,6 @@ select system.table('test.a')
 # test: wal()
 select system.wal()
 [{
-  "active": true,
-  "checkpoint": 1,
   "lsn": 1,
   "lsn_min": 1,
   "files": 1,
@@ -115,7 +112,8 @@ select system.wal()
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0
+  "ops": 0,
+  "checkpoint": 1
 }]
 # test: status()
 select system.status()::size

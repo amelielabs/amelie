@@ -74,8 +74,6 @@ show table test format 'json'
 # test: show wal
 show wal
 [{
-  "active": true,
-  "checkpoint": 1,
   "lsn": 3,
   "lsn_min": 1,
   "files": 1,
@@ -83,7 +81,8 @@ show wal
   "slots_min": -1,
   "writes": 2,
   "writes_bytes": 400,
-  "ops": 2
+  "ops": 2,
+  "checkpoint": 1
 }]
 # test: show replicas
 show replicas
@@ -122,7 +121,6 @@ show config
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
@@ -163,7 +161,6 @@ show all
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
@@ -203,7 +200,6 @@ select system.config()
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,

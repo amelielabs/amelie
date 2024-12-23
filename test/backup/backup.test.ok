@@ -48,8 +48,6 @@ show lsn
 [3]
 show wal
 [{
-  "active": true,
-  "checkpoint": 1,
   "lsn": 3,
   "lsn_min": 1,
   "files": 1,
@@ -57,13 +55,12 @@ show wal
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0
+  "ops": 0,
+  "checkpoint": 1
 }]
 insert into test values (4)
 show wal
 [{
-  "active": true,
-  "checkpoint": 1,
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
@@ -71,7 +68,8 @@ show wal
   "slots_min": -1,
   "writes": 1,
   "writes_bytes": 34,
-  "ops": 1
+  "ops": 1,
+  "checkpoint": 1
 }]
 backup E3 "uri": "127.0.0.1:3480"
 close E3
@@ -88,8 +86,6 @@ show lsn
 [4]
 show wal
 [{
-  "active": true,
-  "checkpoint": 1,
   "lsn": 4,
   "lsn_min": 1,
   "files": 2,
@@ -97,7 +93,8 @@ show wal
   "slots_min": -1,
   "writes": 0,
   "writes_bytes": 0,
-  "ops": 0
+  "ops": 0,
+  "checkpoint": 1
 }]
 disconnect S0
 close E3

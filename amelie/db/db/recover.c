@@ -332,9 +332,6 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 void
 recover_wal(Recover* self)
 {
-	if (! var_int_of(&config()->wal))
-		return;
-
 	// prepare wal mgr
 	auto wal = &self->db->wal;
 	wal_open(wal);

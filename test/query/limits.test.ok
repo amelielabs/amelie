@@ -38,7 +38,6 @@ select system.config()
   "limit_write": 10000,
   "frontends": 1,
   "backends": 1,
-  "wal": true,
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,

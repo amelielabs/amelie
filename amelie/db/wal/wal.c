@@ -205,12 +205,6 @@ wal_write(Wal* self, WalBatch* batch)
 	var_int_add(&config()->writes_bytes, batch->header.size);
 	var_int_add(&config()->ops, batch->header.count);
 
-	if (! var_int_of(&config()->wal))
-	{
-		config_lsn_next();
-		return;
-	}
-
 	uint64_t next_lsn = config_lsn() + 1;
 	batch->header.lsn = next_lsn;
 	// todo: crc
@@ -345,14 +339,6 @@ wal_status(Wal* self)
 	auto buf = buf_create();
 	encode_obj(buf);
 
-	// active
-	encode_raw(buf, "active", 6);
-	encode_bool(buf, var_int_of(&config()->wal));
-
-	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, config_checkpoint());
-
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, config_lsn());
@@ -384,6 +370,10 @@ wal_status(Wal* self)
 	// ops
 	encode_raw(buf, "ops", 3);
 	encode_integer(buf, var_int_of(&config()->ops));
+
+	// checkpoint
+	encode_raw(buf, "checkpoint", 10);
+	encode_integer(buf, config_checkpoint());
 
 	encode_obj_end(buf);
 	return buf;
