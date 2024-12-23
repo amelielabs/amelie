@@ -162,6 +162,11 @@ drop table test
 drop table test.test
 drop schema test
 
+# test: unlogged
+create unlogged table test (id int primary key)
+select system.table('test').unlogged
+drop table test
+
 # test: distributed
 create distributed table test (id int primary key)
 select system.table('test').shared
@@ -169,6 +174,18 @@ drop table test
 
 # test: shared
 create shared table test (id int primary key)
+select system.table('test').shared
+drop table test
+
+# test: unlogged distributed
+create unlogged distributed table test (id int primary key)
+select system.table('test').unlogged
+select system.table('test').shared
+drop table test
+
+# test: unlogged shared
+create unlogged shared table test (id int primary key)
+select system.table('test').unlogged
 select system.table('test').shared
 drop table test
 

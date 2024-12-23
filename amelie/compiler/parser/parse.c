@@ -190,51 +190,60 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | SHARED | DISTRIBUTED | COMPUTE]
-		bool unique  = false;
-		bool shared  = false;
-		bool compute = false;
-		auto mod = lex_next(lex);
-		switch (mod->id) {
-		case KUNIQUE:
+		// [UNIQUE | UNLOGGED | SHARED | DISTRIBUTED | COMPUTE]
+		bool unique      = false;
+		bool unlogged    = false;
+		bool shared      = false;
+		bool distributed = false;
+		bool compute     = false;
+		for (auto stop = false; !stop ;)
+		{
+			auto mod = lex_next(lex);
+			switch (mod->id) {
+			case KUNIQUE:
+				unique = true;
+				break;
+			case KUNLOGGED:
+				unlogged = true;
+				break;
+			case KSHARED:
+				shared = true;
+				break;
+			case KDISTRIBUTED:
+				distributed = true;
+				break;
+			case KCOMPUTE:
+				compute = true;
+				break;
+			default:
+				stmt_push(stmt, mod);
+				stop = true;
+				break;
+			}
+		}
+
+		if (unique)
 		{
 			auto next = stmt_if(stmt, KINDEX);
 			if (! next)
 				error("CREATE UNIQUE <INDEX> expected");
 			stmt_push(stmt, next);
-			unique = true;
-			break;
 		}
-		case KSHARED:
-		{
-			auto next = stmt_if(stmt, KTABLE);
-			if (! next)
-				error("CREATE SHARED <TABLE> expected");
-			stmt_push(stmt, next);
-			shared = true;
-			break;
-		}
-		case KDISTRIBUTED:
-		{
-			auto next = stmt_if(stmt, KTABLE);
-			if (! next)
-				error("CREATE DISTRIBUTED <TABLE> expected");
-			stmt_push(stmt, next);
-			shared = false;
-			break;
-		}
-		case KCOMPUTE:
+
+		if (compute)
 		{
 			auto next = stmt_if(stmt, KNODE);
 			if (! next)
 				error("CREATE COMPUTE <NODE> expected");
 			stmt_push(stmt, next);
-			compute = false;
-			break;
 		}
-		default:
-			stmt_push(stmt, mod);
-			break;
+
+		if (unlogged || shared || distributed)
+		{
+			auto next = stmt_if(stmt, KTABLE);
+			if (! next)
+				error("CREATE [UNLOGGED] [SHARED | DISTRIBUTED] <TABLE> expected");
+			stmt_push(stmt, next);
 		}
 
 		// CREATE USER | TOKEN | REPLICA | NODE | SCHEMA | TABLE | INDEX
@@ -266,7 +275,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		if (lex_if(lex, KTABLE))
 		{
 			stmt->id = STMT_CREATE_TABLE;
-			parse_table_create(stmt, shared);
+			parse_table_create(stmt, unlogged, shared);
 		} else
 		if (lex_if(lex, KINDEX))
 		{

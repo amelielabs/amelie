@@ -893,5 +893,13 @@ select * from test
 select * from test use index (i)
 [[3, -1], [2, 0], [1, 1], [0, 2]]
 drop table test
+# test: insert unlogged shared
+create unlogged shared table test (id int primary key, data int)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+select * from test
+[[0, 2], [1, 1], [2, 0]]
+drop table test
 disconnect S0
 close E0

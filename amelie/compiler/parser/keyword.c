@@ -155,6 +155,7 @@ static Keyword keywords_l[] =
 	{ KLIMIT,                 "limit",                 5  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
+	{ KLOGGED,                "logged",                6  },
 	{ 0,                       NULL,                   0  }
 };
 
@@ -253,6 +254,7 @@ static Keyword keywords_u[] =
 	{ KUSING,                 "using",                 5  },
 	{ KURI,                   "uri",                   3  },
 	{ KUNSUBSCRIBE,           "unsubscribe",           11 },
+	{ KUNLOGGED,              "unlogged",              8  },
 	{ 0,                       NULL,                   0  }
 };
 

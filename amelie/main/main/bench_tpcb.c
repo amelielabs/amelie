@@ -63,6 +63,23 @@ bench_tpcb_create(Bench* self, Client* client)
 		client_execute(client, &str);
 	}
 
+	if (var_int_of(&self->unlogged))
+	{
+		char* ddl_unlogged[] =
+		{
+			"alter table __bench.branches set unlogged",
+			"alter table __bench.tellers set unlogged",
+			"alter table __bench.accounts set unlogged",
+			"alter table __bench.history set unlogged",
+		     NULL
+		};
+		for (auto i = 0; ddl_unlogged[i]; i++)
+		{
+			str_set_cstr(&str, ddl_unlogged[i]);
+			client_execute(client, &str);
+		}
+	}
+
 	info("preparing data.");
 
 	auto filler = buf_create();

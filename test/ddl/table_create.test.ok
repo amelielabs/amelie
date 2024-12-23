@@ -625,6 +625,11 @@ select system.table('test').schema
 drop table test
 drop table test.test
 drop schema test
+# test: unlogged
+create unlogged table test (id int primary key)
+select system.table('test').unlogged
+[true]
+drop table test
 # test: distributed
 create distributed table test (id int primary key)
 select system.table('test').shared
@@ -632,6 +637,20 @@ select system.table('test').shared
 drop table test
 # test: shared
 create shared table test (id int primary key)
+select system.table('test').shared
+[true]
+drop table test
+# test: unlogged distributed
+create unlogged distributed table test (id int primary key)
+select system.table('test').unlogged
+[true]
+select system.table('test').shared
+[false]
+drop table test
+# test: unlogged shared
+create unlogged shared table test (id int primary key)
+select system.table('test').unlogged
+[true]
 select system.table('test').shared
 [true]
 drop table test

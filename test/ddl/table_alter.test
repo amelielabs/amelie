@@ -75,6 +75,18 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 
+# test: set unlogged
+create table test (id int primary key)
+select system.table('test').unlogged
+
+alter table test set unlogged
+select system.table('test').unlogged
+
+# test: set logged
+alter table test set logged
+select system.table('test').unlogged
+drop table test
+
 # test: rename column parsing
 alter table rename
 alter table test rename

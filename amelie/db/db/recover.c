@@ -129,6 +129,15 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                 &schema_new, &name_new, true);
 		break;
 	}
+	case LOG_TABLE_SET_UNLOGGED:
+	{
+		Str  schema;
+		Str  name;
+		bool value;
+		table_op_set_unlogged_read(data, &schema, &name, &value);
+		table_mgr_set_unlogged(&db->table_mgr, tr, &schema, &name, value, true);
+		break;
+	}
 	case LOG_TABLE_TRUNCATE:
 	{
 		Str schema;

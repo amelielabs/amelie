@@ -55,11 +55,13 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true
+  "shared": true,
+  "unlogged": false
 }]
 insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
 select * from test1
@@ -124,15 +126,18 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true
+  "shared": true,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test3",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }]
 # test: drop node (after table drop)
 drop node "00000000-0000-0000-0000-000000000002"
@@ -165,15 +170,18 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true
+  "shared": true,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }]
 insert into test values (1), (2), (3)
 create node "00000000-0000-0000-0000-000000000005"
@@ -195,15 +203,18 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true
+  "shared": true,
+  "unlogged": false
 }, {
   "schema": "public",
   "name": "test",
-  "shared": false
+  "shared": false,
+  "unlogged": false
 }]
 select * from test
 [[1, null], [2, null], [3, null]]

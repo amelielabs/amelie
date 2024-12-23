@@ -179,6 +179,17 @@ ddl_alter_table_set_serial(Session* self)
 }
 
 static void
+ddl_alter_table_set_unlogged(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_table_alter_of(stmt->ast);
+
+	// truncate table
+	table_mgr_set_unlogged(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
+	                       arg->unlogged, arg->if_exists);
+}
+
+static void
 ddl_alter_table_rename(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -286,6 +297,9 @@ ddl_alter_table(Session* self, Tr* tr)
 		break;
 	case TABLE_ALTER_SET_SERIAL:
 		ddl_alter_table_set_serial(self);
+		break;
+	case TABLE_ALTER_SET_UNLOGGED:
+		ddl_alter_table_set_unlogged(self, tr);
 		break;
 	case TABLE_ALTER_COLUMN_RENAME:
 		ddl_alter_table_column_rename(self, tr);

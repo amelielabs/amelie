@@ -18,6 +18,7 @@ struct TableConfig
 	Str     schema;
 	Str     name;
 	bool    shared;
+	bool    unlogged;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -31,6 +32,7 @@ table_config_allocate(void)
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
 	self->shared           = false;
+	self->unlogged         = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
 	str_init(&self->schema);
@@ -84,6 +86,12 @@ table_config_set_shared(TableConfig* self, bool value)
 }
 
 static inline void
+table_config_set_unlogged(TableConfig* self, bool value)
+{
+	self->unlogged = value;
+}
+
+static inline void
 table_config_add_partition(TableConfig* self, PartConfig* config)
 {
 	list_append(&self->partitions, &config->link);
@@ -111,6 +119,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
 	table_config_set_shared(copy, self->shared);
+	table_config_set_unlogged(copy, self->unlogged);
 	columns_copy(&copy->columns, &self->columns);
 
 	Keys* primary_keys = NULL;
@@ -148,6 +157,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STRING, "name",       &self->name       },
 		{ DECODE_ARRAY,  "columns",    &pos_columns      },
 		{ DECODE_BOOL,   "shared",     &self->shared     },
+		{ DECODE_BOOL,   "unlogged",   &self->unlogged   },
 		{ DECODE_ARRAY,  "indexes",    &pos_indexes      },
 		{ DECODE_ARRAY,  "partitions", &pos_partitions   },
 		{ 0,              NULL,        NULL              },
@@ -194,6 +204,10 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "shared", 6);
 	encode_bool(buf, self->shared);
 
+	// unlogged
+	encode_raw(buf, "unlogged", 8);
+	encode_bool(buf, self->unlogged);
+
 	// columns
 	encode_raw(buf, "columns", 7);
 	columns_write(&self->columns, buf);
@@ -237,5 +251,9 @@ table_config_write_compact(TableConfig* self, Buf* buf)
 	// shared
 	encode_raw(buf, "shared", 6);
 	encode_bool(buf, self->shared);
+
+	// unlogged
+	encode_raw(buf, "unlogged", 8);
+	encode_bool(buf, self->unlogged);
 	encode_obj_end(buf);
 }

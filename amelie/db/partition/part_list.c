@@ -24,6 +24,7 @@ void
 part_list_init(PartList* self, PartMgr* mgr)
 {
 	self->shared     = false;
+	self->unlogged   = false;
 	self->list_count = 0;
 	self->mgr        = mgr;
 	list_init(&self->list);
@@ -50,11 +51,13 @@ part_list_free(PartList* self)
 void
 part_list_create(PartList* self,
                  bool      shared,
+                 bool      unlogged,
                  Serial*   serial,
                  List*     parts,
                  List*     indexes)
 {
 	self->shared = shared;
+	self->unlogged = unlogged;
 
 	list_foreach(parts)
 	{
@@ -62,7 +65,7 @@ part_list_create(PartList* self,
 		config_psn_follow(config->id);
 
 		// prepare part
-		auto part = part_allocate(config, serial);
+		auto part = part_allocate(config, serial, unlogged);
 		list_append(&self->list, &part->link);
 		self->list_count++;
 	}
@@ -83,6 +86,17 @@ part_list_map(PartList* self)
 	{
 		auto part = list_at(Part, link);
 		part_mgr_add(self->mgr, &self->map, part);
+	}
+}
+
+void
+part_list_set_unlogged(PartList* self, bool value)
+{
+	self->unlogged = value;
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		part->unlogged = value;
 	}
 }
 

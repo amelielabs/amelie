@@ -36,6 +36,11 @@ bench_resolved_create(Bench* self, Client* client)
 	             ") with (type = 'hash')");
 #endif
 	client_execute(client, &str);
+	if (var_int_of(&self->unlogged))
+	{
+		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		client_execute(client, &str);
+	}
 }
 
 hot static void

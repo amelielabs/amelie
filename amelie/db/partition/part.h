@@ -19,6 +19,7 @@ struct Part
 	int           indexes_count;
 	Route*        route;
 	Serial*       serial;
+	bool          unlogged;
 	PartConfig*   config;
 	List          link_cp;
 	List          link;
@@ -26,7 +27,7 @@ struct Part
 };
 
 Part*
-part_allocate(PartConfig*, Serial*);
+part_allocate(PartConfig*, Serial*, bool);
 void part_free(Part*);
 void part_index_create(Part*, IndexConfig*);
 void part_index_drop(Part*, IndexConfig*);

@@ -98,7 +98,8 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 
 	// add log record
 	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
-	log_persist(&tr->log, self->config->id);
+	if (! self->unlogged)
+		log_persist(&tr->log, self->config->id);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -139,7 +140,8 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 
 	// add log record
 	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
-	log_persist(&tr->log, self->config->id);
+	if (! self->unlogged)
+		log_persist(&tr->log, self->config->id);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -177,7 +179,8 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
-	log_persist(&tr->log, self->config->id);
+	if (! self->unlogged)
+		log_persist(&tr->log, self->config->id);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -233,7 +236,8 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	}
 
 	// insert
-	log_persist(&tr->log, self->config->id);
+	if (! self->unlogged)
+		log_persist(&tr->log, self->config->id);
 
 	// update secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)

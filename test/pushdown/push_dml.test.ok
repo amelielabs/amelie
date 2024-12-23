@@ -216,5 +216,11 @@ insert into test (id) values (1), (2), (3) on conflict do update set data = data
 select * from test
 [[1, 2], [2, 3], [3, 4]]
 drop table test
+# test: table insert (unlogged)
+create unlogged table test (id int primary key, data int default 0)
+insert into test (id) values (1), (2), (3)
+select * from test
+[[1, 0], [2, 0], [3, 0]]
+drop table test
 disconnect S0
 close E0

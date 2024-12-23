@@ -35,6 +35,38 @@ show lsn
 select serial("public", "test")
 select serial("public", "test2")
 
+# test: alter table set unlogged
+alter table test2 set unlogged
+select system.table('test2').unlogged
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+
+# test: validate state
+select system.table('test2').unlogged
+show lsn
+
+insert into test2 () values ()
+insert into test2 () values ()
+insert into test2 () values ()
+
+# test: alter table set logged
+alter table test2 set logged
+select system.table('test2').unlogged
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+
+# test: validate state
+show lsn
+select * from test2
+
 # test: alter table column add
 insert into test2() values (), (), ()
 select * from test2

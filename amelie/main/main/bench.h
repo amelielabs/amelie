@@ -42,6 +42,7 @@ struct Bench
 	Var        scale;
 	Var        batch;
 	Var        init;
+	Var        unlogged;
 	Vars       vars;
 	Remote*    remote;
 	List       list;

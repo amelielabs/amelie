@@ -95,6 +95,18 @@ drop table test
 alter table if exists test set serial to 0
 alter table test set serial to 0
 {"msg": "table 'test': not exists"}
+# test: set unlogged
+create table test (id int primary key)
+select system.table('test').unlogged
+[false]
+alter table test set unlogged
+select system.table('test').unlogged
+[true]
+# test: set logged
+alter table test set logged
+select system.table('test').unlogged
+[false]
+drop table test
 # test: rename column parsing
 alter table rename
 {"msg": "ALTER TABLE <name> expected"}

@@ -91,6 +91,58 @@ table_mgr_rename(TableMgr* self,
 }
 
 static void
+set_unlogged_if_commit(Log* self, LogOp* op)
+{
+	buf_free(log_handle_of(self, op)->data);
+}
+
+static void
+set_unlogged_if_abort(Log* self, LogOp* op)
+{
+	auto handle = log_handle_of(self, op);
+	auto table = table_of(handle->handle);
+	table_set_unlogged(table, !table->config->unlogged);
+	buf_free(handle->data);
+}
+
+static LogIf set_unlogged_if =
+{
+	.commit = set_unlogged_if_commit,
+	.abort  = set_unlogged_if_abort
+};
+
+void
+table_mgr_set_unlogged(TableMgr* self,
+                       Tr*       tr,
+                       Str*      schema,
+                       Str*      name,
+                       bool      value,
+                       bool      if_exists)
+{
+	auto table = table_mgr_find(self, schema, name, false);
+	if (! table)
+	{
+		if (! if_exists)
+			error("table '%.*s': not exists", str_size(name),
+			      str_of(name));
+		return;
+	}
+	if (table->config->unlogged == value)
+		return;
+
+	// save set unlogged operation
+	auto op = table_op_set_unlogged(schema, name, value);
+
+	// update table
+	log_handle(&tr->log, LOG_TABLE_SET_UNLOGGED, &set_unlogged_if,
+	           NULL,
+	           &table->handle, NULL, op);
+
+	// set table and partitions as unlogged
+	table_set_unlogged(table, value);
+}
+
+static void
 column_rename_if_commit(Log* self, LogOp* op)
 {
 	buf_free(log_handle_of(self, op)->data);

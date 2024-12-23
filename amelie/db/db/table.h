@@ -48,10 +48,19 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 static inline void
 table_open(Table* self)
 {
-	part_list_create(&self->part_list, self->config->shared,
+	part_list_create(&self->part_list,
+	                  self->config->shared,
+	                  self->config->unlogged,
 	                 &self->serial,
 	                 &self->config->partitions,
 	                 &self->config->indexes);
+}
+
+static inline void
+table_set_unlogged(Table* self, bool value)
+{
+	table_config_set_unlogged(self->config, value);
+	part_list_set_unlogged(&self->part_list, value);
 }
 
 static inline Table*

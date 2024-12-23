@@ -43,6 +43,7 @@ enum
 {
 	TABLE_ALTER_RENAME,
 	TABLE_ALTER_SET_SERIAL,
+	TABLE_ALTER_SET_UNLOGGED,
 	TABLE_ALTER_COLUMN_ADD,
 	TABLE_ALTER_COLUMN_DROP,
 	TABLE_ALTER_COLUMN_RENAME,
@@ -67,6 +68,7 @@ struct AstTableAlter
 	Column* column;
 	Buf*    value_buf;
 	Str     value;
+	bool    unlogged;
 	Ast*    serial;
 };
 
@@ -136,6 +138,7 @@ ast_table_alter_allocate(void)
 	self->column     = NULL;
 	self->value_buf  = NULL;
 	self->serial     = NULL;
+	self->unlogged   = false;
 	str_init(&self->schema);
 	str_init(&self->schema_new);
 	str_init(&self->name);
@@ -147,7 +150,7 @@ ast_table_alter_allocate(void)
 
 int  parse_type(Stmt*, Column*, int*);
 void parse_key(Stmt*, Keys*);
-void parse_table_create(Stmt*, bool);
+void parse_table_create(Stmt*, bool, bool);
 void parse_table_drop(Stmt*);
 void parse_table_alter(Stmt*);
 void parse_table_truncate(Stmt*);

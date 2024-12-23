@@ -36,12 +36,43 @@ select serial("public", "test")
 {"msg": "table 'test': not exists"}
 select serial("public", "test2")
 [0]
+# test: alter table set unlogged
+alter table test2 set unlogged
+select system.table('test2').unlogged
+[true]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+select system.table('test2').unlogged
+[true]
+show lsn
+[4]
+insert into test2 () values ()
+insert into test2 () values ()
+insert into test2 () values ()
+# test: alter table set logged
+alter table test2 set logged
+select system.table('test2').unlogged
+[false]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[5]
+select * from test2
+[]
 # test: alter table column add
 insert into test2() values (), (), ()
 select * from test2
 [[0, 0], [1, 0], [2, 0]]
 show lsn
-[4]
+[6]
 select serial("public", "test2")
 [3]
 alter table test2 add column obj json
@@ -56,7 +87,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[5]
+[7]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -76,7 +107,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[6]
+[8]
 select serial("public", "test2")
 [0]
 select data from test2
@@ -133,7 +164,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[7]
+[9]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -225,7 +256,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[8]
+[10]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -317,7 +348,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[9]
+[11]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -409,7 +440,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[10]
+[12]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -501,7 +532,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[11]
+[13]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -593,7 +624,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[12]
+[14]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -648,7 +679,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[13]
+[15]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -664,7 +695,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[14]
+[16]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -672,7 +703,7 @@ select * from test2 use index (i)
 # test: alter index rename
 alter index i on test2 rename to i2
 show lsn
-[15]
+[17]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -682,7 +713,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[15]
+[17]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i2)
@@ -702,7 +733,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[16]
+[18]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -722,7 +753,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[17]
+[19]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -730,7 +761,7 @@ select * from test2
 # test: drop table
 drop table test2
 show lsn
-[18]
+[20]
 select serial("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -740,7 +771,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[18]
+[20]
 select * from test2
 {"msg": "<public.test2> relation not found"}
 show tables
@@ -759,7 +790,7 @@ show schemas
   "system": false
 }]
 show lsn
-[19]
+[21]
 # test: restart
 disconnect S0
 close E0
@@ -767,7 +798,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[19]
+[21]
 show schemas
 [{
   "name": "system",
@@ -793,7 +824,7 @@ show schemas
   "system": false
 }]
 show lsn
-[20]
+[22]
 # test: restart
 disconnect S0
 close E0
@@ -801,7 +832,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[20]
+[22]
 show schemas
 [{
   "name": "system",
@@ -816,7 +847,7 @@ show schemas
 # test: drop schema
 drop schema test2
 show lsn
-[21]
+[23]
 show schemas
 [{
   "name": "system",
@@ -832,7 +863,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[21]
+[23]
 show schemas
 [{
   "name": "system",
