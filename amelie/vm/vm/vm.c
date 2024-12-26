@@ -95,7 +95,6 @@ vm_run(Vm*       self,
        Tr*       tr,
        Code*     code,
        CodeData* code_data,
-       Set*      code_values,
        Buf*      code_arg,
        Buf*      args,
        Result*   cte,
@@ -103,16 +102,15 @@ vm_run(Vm*       self,
        Content*  content,
        int       start)
 {
-	self->local       = local;
-	self->tr          = tr;
-	self->code        = code;
-	self->code_data   = code_data;
-	self->code_values = code_values;
-	self->code_arg    = code_arg;
-	self->args        = args;
-	self->cte         = cte;
-	self->result      = result;
-	self->content     = content;
+	self->local     = local;
+	self->tr        = tr;
+	self->code      = code;
+	self->code_data = code_data;
+	self->code_arg  = code_arg;
+	self->args      = args;
+	self->cte       = cte;
+	self->result    = result;
+	self->content   = content;
 	reg_prepare(&self->r);
 	call_mgr_prepare(&self->call_mgr, code_data);
 
@@ -498,9 +496,9 @@ carg:
 cexcluded:
 	// [result, cursor, order]
 	cursor = cursor_mgr_of(cursor_mgr, op->b);
-	if (unlikely(cursor->ref == -1))
+	if (unlikely(! cursor->ref))
 		error("unexpected EXCLUDED usage");
-	value_copy(&r[op->a], set_column(self->code_values, cursor->ref, op->c));
+	value_copy(&r[op->a], cursor->ref + op->c);
 	op_next;
 
 cnullop:

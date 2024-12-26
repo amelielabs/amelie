@@ -19,7 +19,6 @@ struct Vm
 	Stack        stack;
 	Code*        code;
 	CodeData*    code_data;
-	Set*         code_values;
 	Buf*         code_arg;
 	Buf*         args;
 	CursorMgr    cursor_mgr;
@@ -39,5 +38,5 @@ struct Vm
 void vm_init(Vm*, Db*, Uuid*, Executor*, Dtr*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Set*, Buf*, Buf*,
+void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Buf*,
             Result*, Value*, Content*, int);

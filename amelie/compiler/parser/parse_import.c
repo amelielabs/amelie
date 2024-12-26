@@ -40,11 +40,9 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 	auto stmt    = ast_insert_of(self->ast);
 	auto table   = endpoint->table;
 	auto columns = table_columns(table);
-	auto keys    = table_keys(table);
 
 	// prepare row
-	SetMeta* row_meta;
-	auto row = set_reserve(stmt->values, &row_meta);
+	auto row = set_reserve(stmt->values);
 
 	// set next serial value
 	uint64_t serial = serial_next(&table->serial);
@@ -63,14 +61,13 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 				// parse column value
 				parse_value(self->lex, self->local, self->json,
 				            column,
-				            column_value,
-				            row_meta);
+				            column_value);
 				list = list->next;
 				column_separator = list != NULL;
 			} else
 			{
 				// default value, write SERIAL, RANDOM or DEFAULT
-				parse_value_default(column, column_value, serial, row_meta);
+				parse_value_default(column, column_value, serial);
 				column_separator = false;
 			}
 		} else
@@ -78,13 +75,12 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 			// parse column value
 			parse_value(self->lex, self->local, self->json,
 			            column,
-			            column_value,
-			            row_meta);
+			            column_value);
 			column_separator = !list_is_last(&columns->list, &column->link);
 		}
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(keys, column, column_value, row_meta);
+		parse_value_validate(column, column_value);
 
 		// ,
 		if (column_separator && !stmt_if(self, ','))
@@ -98,11 +94,9 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 	auto stmt    = ast_insert_of(self->ast);
 	auto table   = endpoint->table;
 	auto columns = table_columns(table);
-	auto keys    = table_keys(table);
 
 	// prepare row
-	SetMeta* row_meta;
-	auto row = set_reserve(stmt->values, &row_meta);
+	auto row = set_reserve(stmt->values);
 
 	auto buf = buf_create();
 	guard_buf(buf);
@@ -139,11 +133,10 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 		auto column_value = &row[column->order];
 		parse_value(self->lex, self->local, self->json,
 		            column,
-		            column_value,
-		            row_meta);
+		            column_value);
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(keys, column, column_value, row_meta);
+		parse_value_validate(column, column_value);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -163,10 +156,10 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 			continue;
 
 		auto column_value = &row[column->order];
-		parse_value_default(column, column_value, serial, row_meta);
+		parse_value_default(column, column_value, serial);
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(keys, column, column_value, row_meta);
+		parse_value_validate(column, column_value);
 	}
 }
 

@@ -44,15 +44,13 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		error("expected '('");
 
 	// prepare row
-	SetMeta* row_meta;
-	auto row = set_reserve(stmt->values, &row_meta);
+	auto row = set_reserve(stmt->values);
 
 	// set next serial value
 	uint64_t serial = serial_next(&table->serial);
 
 	// value, ...
 	auto columns = table_columns(table);
-	auto keys = table_keys(table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -65,8 +63,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			// parse column value
 			parse_value(self->lex, self->local, self->json,
 			            column,
-			            column_value,
-			            row_meta);
+			            column_value);
 
 			// ,
 			list = list->next;
@@ -78,11 +75,11 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial, row_meta);
+			parse_value_default(column, column_value, serial);
 		}
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(keys, column, column_value, row_meta);
+		parse_value_validate(column, column_value);
 	}
 
 	// )
@@ -100,14 +97,12 @@ parse_row(Stmt* self, AstInsert* stmt)
 		error("expected '('");
 
 	// prepare row
-	SetMeta* row_meta;
-	auto row = set_reserve(stmt->values, &row_meta);
+	auto row = set_reserve(stmt->values);
 
 	uint64_t serial = serial_next(&table->serial);
 
 	// value, ...
 	auto columns = table_columns(table);
-	auto keys = table_keys(table);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -120,16 +115,15 @@ parse_row(Stmt* self, AstInsert* stmt)
 			// parse column value
 			parse_value(self->lex, self->local, self->json,
 			            column,
-			            column_value,
-			            row_meta);
+			            column_value);
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial, row_meta);
+			parse_value_default(column, column_value, serial);
 		}
 
 		// ensure NOT NULL constraint and hash key
-		parse_value_validate(keys, column, column_value, row_meta);
+		parse_value_validate(column, column_value);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -211,12 +205,10 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		error("GENERATE <count> expected");
 
 	auto columns = table_columns(table);
-	auto keys = table_keys(table);
 	for (auto i = 0; i < count->integer; i++)
 	{
 		// prepare row
-		SetMeta* row_meta;
-		auto row = set_reserve(stmt->values, &row_meta);
+		auto row = set_reserve(stmt->values);
 
 		// set next serial value
 		uint64_t serial = serial_next(&table->serial);
@@ -228,10 +220,10 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial, row_meta);
+			parse_value_default(column, column_value, serial);
 
 			// ensure NOT NULL constraint and hash key
-			parse_value_validate(keys, column, column_value, row_meta);
+			parse_value_validate(column, column_value);
 		}
 	}
 }

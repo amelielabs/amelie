@@ -33,7 +33,6 @@ set_free(Store* store)
 		value_free(set_value(self, i));
 	buf_free(&self->set);
 	buf_free(&self->set_index);
-	buf_free(&self->set_meta);
 	set_hash_free(&self->hash);
 	am_free(self);
 }
@@ -59,7 +58,6 @@ set_create(void)
 	self->count_keys        = 0;
 	buf_init(&self->set);
 	buf_init(&self->set_index);
-	buf_init(&self->set_meta);
 	set_hash_init(&self->hash);
 	list_init(&self->link);
 	return self;
@@ -90,7 +88,6 @@ set_reset(Set* self)
 	self->count_keys        = 0;
 	buf_reset(&self->set);
 	buf_reset(&self->set_index);
-	buf_reset(&self->set_meta);
 	set_hash_reset(&self->hash);
 }
 
@@ -254,20 +251,12 @@ set_get(Set* self, Value* keys, bool add_if_not_exists)
 }
 
 Value*
-set_reserve(Set* self, SetMeta** meta)
+set_reserve(Set* self)
 {
 	// save row position, if keys are in use
 	uint32_t row = self->count_rows;
 	if (self->ordered)
 		buf_write(&self->set_index, &row, sizeof(row));
-
-	// reserve row meta
-	if (meta)
-	{
-		*meta = buf_claim(&self->set_meta, sizeof(SetMeta));
-		(*meta)->row_size = 0;
-		(*meta)->hash = 0;
-	}
 
 	// reserve row values
 	auto values_size = sizeof(Value) * self->count_columns_row;

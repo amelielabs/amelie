@@ -24,10 +24,59 @@
 #include <amelie_db.h>
 #include <amelie_value.h>
 
-hot Row*
-row_create(Columns* columns, Value* values, int size)
+hot static inline int
+row_create_prepare(Columns* columns, Value* values)
 {
-	auto     row = row_allocate(columns->count, size);
+	auto size = 0;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		auto value = values + column->order;
+
+		// null
+		if (value->type == TYPE_NULL)
+		{
+			if (column->constraints.not_null)
+			{
+				// NOT NULL constraint
+				if (unlikely(column->constraints.not_null))
+					error("column %.*s: cannot be null", str_size(&column->name),
+					      str_of(&column->name));
+			}
+			continue;
+		}
+
+		// fixed types
+		if (column->type_size > 0)
+		{
+			size += column->type_size;
+			continue;
+		}
+
+		// variable types
+		switch (column->type) {
+		case TYPE_STRING:
+			size += json_size_string(str_size(&value->string));
+			break;
+		case TYPE_JSON:
+			size += value->json_size;
+			break;
+		case TYPE_VECTOR:
+			size += vector_size(value->vector);
+			break;
+		default:
+			abort();
+			break;
+		}
+	}
+	return size;
+}
+
+hot Row*
+row_create(Columns* columns, Value* values)
+{
+	auto     row_size = row_create_prepare(columns, values);
+	auto     row = row_allocate(columns->count, row_size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
@@ -178,6 +227,7 @@ row_create_key(Keys* self, Value* values)
 	return row;
 }
 
+
 hot static inline int
 row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 {
@@ -208,6 +258,14 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 				continue;
 			}
 
+			// fixed types
+			if (column->type_size > 0)
+			{
+				size += column->type_size;
+				continue;
+			}
+
+			// variable types
 			switch (column->type) {
 			case TYPE_STRING:
 				size += json_size_string(str_size(&value->string));
@@ -219,8 +277,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 				size += vector_size(value->vector);
 				break;
 			default:
-				// fixed types
-				size += column->type_size;
+				abort();
 				break;
 			}
 			continue;
@@ -231,6 +288,14 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 		if (! pos_src)
 			continue;
 
+		// fixed types
+		if (column->type_size > 0)
+		{
+			size += column->type_size;
+			continue;
+		}
+
+		// variable types
 		switch (column->type) {
 		case TYPE_STRING:
 		case TYPE_JSON:
@@ -244,8 +309,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 			size += vector_size((Vector*)pos_src);
 			break;
 		default:
-			// fixed types
-			size += column->type_size;
+			abort();
 			break;
 		}
 	}
@@ -383,41 +447,14 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 	return row;
 }
 
-static inline int
-row_column_size(Column* column, Value* value)
-{
-	// null
-	if (value->type == TYPE_NULL)
-		return 0;
-	int size;
-	switch (column->type) {
-	case TYPE_STRING:
-		size = json_size_string(str_size(&value->string));
-		break;
-	case TYPE_JSON:
-		size = value->json_size;
-		break;
-	case TYPE_VECTOR:
-		size = vector_size(value->vector);
-		break;
-	default:
-		// fixed types
-		size = column->type_size;
-		break;
-	}
-	return size;
-}
-
-hot int
-row_update_values(Columns*  columns,
+hot void
+row_update_stored(Columns*  columns,
                   Keys*     keys,
                   Value*    row,
                   Value*    values,
                   uint32_t* hash)
 {
-	// replace generated columns with new values and
-	// update row meta
-	int size  = 0;
+	// replace generated columns with new values and calculate hash
 	int order = 0;
 	list_foreach(&columns->list)
 	{
@@ -434,9 +471,7 @@ row_update_values(Columns*  columns,
 		if (unlikely(value->type == TYPE_NULL && column->constraints.not_null))
 			error("column <%.*s> value cannot be NULL", str_size(&column->name),
 			      str_of(&column->name));
-		size += row_column_size(column, value);
 		if (column->key && keys_find_column(keys, column->order))
 			*hash = value_hash(value, *hash);
 	}
-	return size;
 }

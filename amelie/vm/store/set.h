@@ -11,21 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SetMeta SetMeta;
-typedef struct Set     Set;
-
-struct SetMeta
-{
-	uint32_t row_size;
-	uint32_t hash;
-};
+typedef struct Set Set;
 
 struct Set
 {
 	Store   store;
 	Buf     set;
 	Buf     set_index;
-	Buf     set_meta;
 	SetHash hash;
 	bool*   ordered;
 	int     count;
@@ -80,16 +72,10 @@ set_key(Set* self, int pos, int key)
 	return set_row(self, pos) + self->count_columns + key;
 }
 
-always_inline static inline SetMeta*
-set_meta(Set* self, int pos)
-{
-	return &((SetMeta*)(self->set_meta.start))[pos];
-}
-
 Set*   set_create(void);
 void   set_prepare(Set*, int, int, bool*);
 void   set_reset(Set*);
 void   set_sort(Set*);
 void   set_add(Set*, Value*);
 int    set_get(Set*, Value*, bool);
-Value* set_reserve(Set*, SetMeta**);
+Value* set_reserve(Set*);

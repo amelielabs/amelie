@@ -87,11 +87,10 @@ parse_vector(Lex* self, Buf* buf)
 }
 
 hot void
-parse_value(Lex*     self, Local* local,
-            Json*    json,
-            Column*  column,
-            Value*   value,
-            SetMeta* meta)
+parse_value(Lex*    self, Local* local,
+            Json*   json,
+            Column* column,
+            Value*  value)
 {
 	auto ast = lex_next(self);
 	if (ast->id == KNULL)
@@ -104,7 +103,6 @@ parse_value(Lex*     self, Local* local,
 		if (ast->id != KTRUE && ast->id != KFALSE)
 			break;
 		value_set_bool(value, ast->id == KTRUE);
-		meta->row_size += column->type_size;
 		return;
 	case TYPE_INT:
 	{
@@ -123,7 +121,6 @@ parse_value(Lex*     self, Local* local,
 		} else {
 			break;
 		}
-		meta->row_size += column->type_size;
 		return;
 	}
 	case TYPE_DOUBLE:
@@ -143,7 +140,6 @@ parse_value(Lex*     self, Local* local,
 		} else {
 			break;
 		}
-		meta->row_size += column->type_size;
 		return;
 	}
 	case TYPE_STRING:
@@ -151,7 +147,6 @@ parse_value(Lex*     self, Local* local,
 		if (likely(ast->id != KSTRING))
 			break;
 		value_set_string(value, &ast->string, NULL);
-		meta->row_size += json_size_string(str_size(&ast->string));
 		return;
 	}
 	case TYPE_JSON:
@@ -173,13 +168,11 @@ parse_value(Lex*     self, Local* local,
 		self->pos = json->pos;
 		unguard();
 		value_set_json_buf(value, buf);
-		meta->row_size += buf_size(buf);
 		return;
 	}
 	case TYPE_TIMESTAMP:
 	{
 		// current_timestamp
-		meta->row_size += column->type_size;
 		if (ast->id == KCURRENT_TIMESTAMP) {
 			value_set_timestamp(value, local->time_us);
 			return;
@@ -214,7 +207,6 @@ parse_value(Lex*     self, Local* local,
 		interval_init(&iv);
 		interval_read(&iv, &ast->string);
 		value_set_interval(value, &iv);
-		meta->row_size += column->type_size;
 		return;
 	}
 	case TYPE_VECTOR:
@@ -228,7 +220,6 @@ parse_value(Lex*     self, Local* local,
 		parse_vector(self, buf);
 		unguard();
 		value_set_vector_buf(value, buf);
-		meta->row_size += vector_size(value->vector);
 		return;
 	}
 	}
@@ -240,8 +231,7 @@ parse_value(Lex*     self, Local* local,
 hot void
 parse_value_default(Column*  column,
                     Value*   column_value,
-                    uint64_t serial,
-                    SetMeta* meta)
+                    uint64_t serial)
 {
 	// SERIAL, RANDOM or DEFAULT
 	auto cons = &column->constraints;
@@ -257,23 +247,10 @@ parse_value_default(Column*  column,
 	{
 		value_decode(column_value, cons->value.start, NULL);
 	}
-	if (column_value->type == TYPE_NULL)
-		return;
-
-	if (column_value->type == TYPE_STRING)
-		meta->row_size += json_size_string(str_size(&column_value->string));
-	else
-	if (column_value->type == TYPE_JSON)
-		meta->row_size += column_value->json_size;
-	else
-		meta->row_size += column->type_size;
 }
 
 void
-parse_value_validate(Keys*    keys,
-                     Column*  column,
-                     Value*   column_value,
-                     SetMeta* meta)
+parse_value_validate(Column* column, Value* column_value)
 {
 	// ensure NOT NULL constraint
 	if (column_value->type == TYPE_NULL)
@@ -286,8 +263,4 @@ parse_value_validate(Keys*    keys,
 			error("column <%.*s> value cannot be NULL", str_size(&column->name),
 			      str_of(&column->name));
 	}
-
-	// hash column if it is a part of the key
-	if (column->key && keys_find_column(keys, column->order))
-		meta->hash = value_hash(column_value, meta->hash);
 }

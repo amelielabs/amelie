@@ -37,7 +37,7 @@ struct Cursor
 	uint8_t*       pos;
 	int            pos_size;
 	// upsert state
-	int            ref;
+	Value*         ref;
 	int            ref_pos;
 	int            ref_count;
 };
@@ -58,7 +58,7 @@ cursor_init(Cursor* self)
 	self->it_store  = NULL;
 	self->pos       = NULL;
 	self->pos_size  = 0;
-	self->ref       = -1;
+	self->ref       = NULL;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
 }
@@ -72,7 +72,7 @@ cursor_reset(Cursor* self)
 	self->part      = NULL;
 	self->pos       = NULL;
 	self->pos_size  = 0;
-	self->ref       = -1;
+	self->ref       = NULL;
 	self->ref_pos   = 0;
 	self->ref_count = 0;
 	if (self->it)

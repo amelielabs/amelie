@@ -28,7 +28,6 @@ struct Req
 	int      start;
 	Program* program;
 	Buf*     args;
-	Set*     arg_values;
 	Buf      arg;
 	Table*   arg_table;
 	uint8_t* arg_start;
@@ -46,18 +45,17 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type       = REQ_UNDEF;
-	self->start      = 0;
-	self->program    = NULL;
-	self->args       = NULL;
-	self->arg_values = NULL;
-	self->arg_start  = NULL;
-	self->arg_table  = NULL;
-	self->cte        = NULL;
-	self->shutdown   = false;
-	self->route      = NULL;
-	self->limit      = NULL;
-	self->local      = NULL;
+	self->type      = REQ_UNDEF;
+	self->start     = 0;
+	self->program   = NULL;
+	self->args      = NULL;
+	self->arg_start = NULL;
+	self->arg_table = NULL;
+	self->cte       = NULL;
+	self->shutdown  = false;
+	self->route     = NULL;
+	self->limit     = NULL;
+	self->local     = NULL;
 	buf_init(&self->arg);
 	value_init(&self->result);
 	list_init(&self->link_queue);
@@ -76,18 +74,17 @@ req_free(Req* self)
 static inline void
 req_reset(Req* self)
 {
-	self->type       = REQ_UNDEF;
-	self->start      = 0;
-	self->program    = NULL;
-	self->args       = NULL;
-	self->arg_values = NULL;
-	self->arg_start  = NULL;
-	self->arg_table  = NULL;
-	self->cte        = NULL;
-	self->shutdown   = false;
-	self->route      = NULL;
-	self->limit      = NULL;
-	self->local      = NULL;
+	self->type      = REQ_UNDEF;
+	self->start     = 0;
+	self->program   = NULL;
+	self->args      = NULL;
+	self->arg_start = NULL;
+	self->arg_table = NULL;
+	self->cte       = NULL;
+	self->shutdown  = false;
+	self->route     = NULL;
+	self->limit     = NULL;
+	self->local     = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 	list_init(&self->link_queue);

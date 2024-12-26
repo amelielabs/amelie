@@ -16,12 +16,9 @@ typedef struct Columns Columns;
 struct Columns
 {
 	List    list;
-	List    list_variable;
 	int     count;
-	int     count_variable;
 	int     count_stored;
 	int     count_resolved;
-	int     precomputed;
 	Column* serial;
 };
 
@@ -31,9 +28,7 @@ columns_init(Columns* self)
 	self->count          = 0;
 	self->count_stored   = 0;
 	self->count_resolved = 0;
-	self->precomputed    = 0;
 	self->serial         = NULL;
-	list_init(&self->list_variable);
 	list_init(&self->list);
 }
 
@@ -54,14 +49,6 @@ columns_add(Columns* self, Column* column)
 	column->order = self->count;
 	self->count++;
 
-	if (column->type_size) {
-		self->precomputed += column->type_size;
-	} else
-	{
-		list_append(&self->list_variable, &column->link_variable);
-		self->count_variable++;
-	}
-
 	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored++;
 	if (! str_empty(&column->constraints.as_resolved))
@@ -78,14 +65,6 @@ columns_del(Columns* self, Column* column)
 	list_unlink(&column->link);
 	self->count--;
 	assert(self->count >= 0);
-
-	if (column->type_size) {
-		self->precomputed -= column->type_size;
-	} else
-	{
-		list_unlink(&column->link_variable);
-		self->count_variable--;
-	}
 
 	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored--;

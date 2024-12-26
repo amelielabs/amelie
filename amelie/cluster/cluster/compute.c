@@ -113,7 +113,6 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        tr,
 	        req->program->code_node,
 	        req->program->code_data,
-	        req->arg_values,
 	       &req->arg,
 	        req->args,
 	        req->cte,

@@ -39,6 +39,7 @@ csend(Vm* self, Op* op)
 	// [stmt, start, table, values*]
 	auto dtr    = self->dtr;
 	auto table  = (Table*)op->c;
+	auto keys   = table_keys(table);
 	auto values = (Set*)op->d;
 
 	// redistribute rows between nodes
@@ -49,23 +50,23 @@ csend(Vm* self, Op* op)
 	req_list_init(&list);
 	for (auto order = 0; order < values->count_rows; order++)
 	{
-		auto row_meta = set_meta(values, order);
+		auto row = set_row(values, order);
+		auto hash = row_value_hash(keys, row);
 
 		// map to node
-		auto route = part_map_get(&table->part_list.map, row_meta->hash);
+		auto route = part_map_get(&table->part_list.map, hash);
 		auto req   = map[route->order];
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
 			req->start = op->b;
-			req->arg_values = values;
 			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
 		}
 
-		// write u32 row position to the req->arg
-		buf_write(&req->arg, &order, sizeof(order));
+		// write row pointer
+		buf_write(&req->arg, &row, sizeof(Value*));
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -112,29 +113,26 @@ csend_generated(Vm* self, Op* op)
 	req_list_init(&list);
 	for (auto order = 0; order < values->count_rows; order++)
 	{
-		// apply generated columns and recalculate row meta
-		auto row_meta = set_meta(values, order);
-		row_meta->hash = 0;
-		row_meta->row_size =
-			row_update_values(columns, keys, set_row(values, order),
-			                  pos, &row_meta->hash);
+		// apply generated columns and calculate hash
+		auto row = set_row(values, order);
+		uint32_t hash = 0;
+		row_update_stored(columns, keys, row, pos, &hash);
 		pos += columns->count_stored;
 
 		// map to node
-		auto route = part_map_get(&table->part_list.map, row_meta->hash);
+		auto route = part_map_get(&table->part_list.map, hash);
 		auto req   = map[route->order];
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_EXECUTE);
 			req->start = op->b;
-			req->arg_values = values;
 			req->route = route;
 			req_list_add(&list, req);
 			map[route->order] = req;
 		}
 
-		// write u32 row position to the req->arg
-		buf_write(&req->arg, &order, sizeof(order));
+		// write row pointer
+		buf_write(&req->arg, &row, sizeof(Value*));
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -394,13 +392,11 @@ cinsert(Vm* self, Op* op)
 	auto columns = table_columns(table);
 
 	// insert
-	auto list       = buf_u32(self->code_arg);
-	int  list_count = buf_size(self->code_arg) / sizeof(uint32_t);
+	auto list       = (Value**)self->code_arg->start;
+	int  list_count = buf_size(self->code_arg) / sizeof(Value*);
 	for (int i = 0; i < list_count; i++)
 	{
-		auto row_meta = set_meta(self->code_values, list[i]);
-		auto row = row_create(columns, set_row(self->code_values, list[i]),
-		                      row_meta->row_size);
+		auto row = row_create(columns, list[i]);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -414,19 +410,17 @@ cupsert(Vm* self, Op* op)
 
 	// first call
 	if (cursor->ref_pos == 0)
-		cursor->ref_count = buf_size(self->code_arg) / sizeof(uint32_t);
+		cursor->ref_count = buf_size(self->code_arg) / sizeof(Value*);
 
 	// insert or upsert
-	auto list = buf_u32(self->code_arg);
+	auto list = (Value**)self->code_arg->start;
 	while (cursor->ref_pos < cursor->ref_count)
 	{
 		// set cursor ref pointer to the current insert row
 		cursor->ref = list[cursor->ref_pos];
 		cursor->ref_pos++;
 
-		auto row_meta = set_meta(self->code_values, cursor->ref);
-		auto row = row_create(columns, set_row(self->code_values, cursor->ref),
-		                      row_meta->row_size);
+		auto row = row_create(columns, cursor->ref);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->it, row);
