@@ -13,7 +13,6 @@
 
 void csend(Vm*, Op*);
 void csend_hash(Vm*, Op*);
-void csend_generated(Vm*, Op*);
 void csend_first(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);
@@ -28,5 +27,6 @@ void ctable_prepare(Vm*, Op*);
 
 void cinsert(Vm*, Op*);
 Op*  cupsert(Vm*, Op*);
-void cupdate(Vm*, Op*);
 void cdelete(Vm*, Op*);
+void cupdate(Vm*, Op*);
+void cupdate_store(Vm*, Op*);

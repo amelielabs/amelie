@@ -248,13 +248,13 @@ OpDesc ops[] =
 	// dml
 	{ CINSERT, "insert" },
 	{ CUPSERT, "upsert" },
-	{ CUPDATE, "update" },
 	{ CDELETE, "delete" },
+	{ CUPDATE, "update" },
+	{ CUPDATE_STORE, "update_store" },
 
 	// result
 	{ CSEND, "send" },
 	{ CSEND_HASH, "send_hash" },
-	{ CSEND_GENERATED, "send_generated" },
 	{ CSEND_FIRST, "send_first" },
 	{ CSEND_ALL, "send_all" },
 	{ CRECV, "recv" },
@@ -342,7 +342,6 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		case CSEND_HASH:
 		case CSEND:
-		case CSEND_GENERATED:
 		case CSEND_ALL:
 		{
 			auto table = (Table*)op->c;

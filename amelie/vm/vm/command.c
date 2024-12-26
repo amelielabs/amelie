@@ -93,55 +93,6 @@ csend_hash(Vm* self, Op* op)
 }
 
 hot void
-csend_generated(Vm* self, Op* op)
-{
-	// [stmt, start, table, values*]
-	auto dtr     = self->dtr;
-	auto table   = (Table*)op->c;
-	auto values  = (Set*)op->d;
-	auto columns = table_columns(table);
-	auto keys    = table_keys(table);
-
-	// apply generated columns and redistribute rows between nodes
-	Req* map[dtr->set.set_size];
-	memset(map, 0, sizeof(map));
-
-	auto count = values->count_rows * columns->count_stored;
-	auto pos = stack_at(&self->stack, count);
-
-	ReqList list;
-	req_list_init(&list);
-	for (auto order = 0; order < values->count_rows; order++)
-	{
-		// apply generated columns and calculate hash
-		auto row = set_row(values, order);
-		uint32_t hash = 0;
-		row_update_stored(columns, keys, row, pos, &hash);
-		pos += columns->count_stored;
-
-		// map to node
-		auto route = part_map_get(&table->part_list.map, hash);
-		auto req   = map[route->order];
-		if (req == NULL)
-		{
-			req = req_create(&dtr->req_cache, REQ_EXECUTE);
-			req->start = op->b;
-			req->route = route;
-			req_list_add(&list, req);
-			map[route->order] = req;
-		}
-
-		// write row pointer
-		buf_write(&req->arg, &row, sizeof(Value*));
-	}
-
-	executor_send(self->executor, dtr, op->a, &list);
-
-	// todo: optimize
-	stack_popn(&self->stack, count);
-}
-
-hot void
 csend_first(Vm* self, Op* op)
 {
 	// [stmt, start]
@@ -445,6 +396,14 @@ cupsert(Vm* self, Op* op)
 }
 
 hot void
+cdelete(Vm* self, Op* op)
+{
+	// [cursor]
+	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	part_delete(cursor->part, self->tr, cursor->it);
+}
+
+hot void
 cupdate(Vm* self, Op* op)
 {
 	// [cursor, order/value count]
@@ -457,9 +416,16 @@ cupdate(Vm* self, Op* op)
 }
 
 hot void
-cdelete(Vm* self, Op* op)
+cupdate_store(Vm* self, Op* op)
 {
-	// [cursor]
+	// [cursor, count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	part_delete(cursor->part, self->tr, cursor->it);
+	assert(cursor->type == CURSOR_STORE);
+	auto count = op->b * 2;
+	auto row = store_iterator_at(cursor->it_store);
+	auto values = stack_at(&self->stack, count);
+
+	// [column_order, value], ...
+	for (auto order = 0; order < count; order += 2)
+		value_move(&row[values[order].integer], &values[order + 1]);
 }

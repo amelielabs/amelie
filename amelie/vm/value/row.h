@@ -14,7 +14,6 @@
 Row* row_create(Columns*, Value*);
 Row* row_create_key(Keys*, Value*);
 Row* row_update(Row*, Columns*, Value*, int);
-void row_update_stored(Columns*, Keys*, Value*, Value*, uint32_t*);
 
 static inline uint32_t
 row_value_hash(Keys* keys, Value* row)

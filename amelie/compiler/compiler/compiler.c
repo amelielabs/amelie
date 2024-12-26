@@ -195,17 +195,22 @@ static inline void
 emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 {
 	AstInsert* insert = arg;
-	auto target = targets_outer(&insert->targets);
+	auto target = targets_outer(&insert->targets_generated);
 
-	// generate and push to the stack each generated
-	// column expression
+	// generate and push to the stack each generated column expression
+	auto count = 0;
 	auto op = insert->generated_columns;
 	for (; op; op = op->next)
 	{
 		auto column = op->l->column;
 
-		// expr
-		int rexpr = emit_expr(self, targets, op->r);
+		// push column order
+		int rexpr = op2(self, CINT, rpin(self, TYPE_INT), column->order);
+		op1(self, CPUSH, rexpr);
+		runpin(self, rexpr);
+
+		// push expr
+		rexpr = emit_expr(self, targets, op->r);
 		int type = rtype(self, rexpr);
 
 		// ensure that the expression type is compatible
@@ -217,37 +222,33 @@ emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 			      type_of(type),
 			      type_of(column->type));
 
-		// push
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
+		count++;
 	}
+
+	// CUPDATE_STORE
+	op2(self, CUPDATE_STORE, target->id, count);
 }
 
 static inline void
-emit_send_generated(Compiler* self, int start)
+emit_send_generated(Compiler* self)
 {
 	auto stmt   = self->current;
 	auto insert = ast_insert_of(stmt->ast);
-	auto table  = targets_outer(&insert->targets)->from_table;
 
 	// store_open( insert->values )
 	auto target = targets_outer(&insert->targets_generated);
 	target->r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
 	                (intptr_t)insert->values);
 
-	// generate scan over insert rows to create new rows using the
-	// generated columns expressions
+	// scan over insert values to generate and apply stored columns
 	scan(self, &insert->targets_generated,
 	     NULL,
 	     NULL,
 	     NULL,
 	     emit_send_generated_on_match,
 	     insert);
-
-	// CSEND_GENERATED
-	op4(self, CSEND_GENERATED, stmt->order, start,
-	    (intptr_t)table,
-	    (intptr_t)insert->values);
 }
 
 static inline void
@@ -261,15 +262,12 @@ emit_send(Compiler* self, int start)
 	{
 		auto insert = ast_insert_of(stmt->ast);
 		auto table = targets_outer(&insert->targets)->from_table;
-		if (table_columns(table)->count_stored > 0) {
-			// CSEND_GENERATED
-			emit_send_generated(self, start);
-		} else {
-			// CSEND
-			op4(self, CSEND, stmt->order, start,
-			    (intptr_t)table,
-			    (intptr_t)insert->values);
-		}
+		if (table_columns(table)->count_stored > 0)
+			emit_send_generated(self);
+		// CSEND
+		op4(self, CSEND, stmt->order, start,
+		    (intptr_t)table,
+		    (intptr_t)insert->values);
 		break;
 	}
 

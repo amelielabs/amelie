@@ -330,13 +330,13 @@ vm_run(Vm*       self,
 		// dml
 		&&cinsert,
 		&&cupsert,
-		&&cupdate,
 		&&cdelete,
+		&&cupdate,
+		&&cupdate_store,
 
 		// executor
 		&&csend,
 		&&csend_hash,
-		&&csend_generated,
 		&&csend_first,
 		&&csend_all,
 		&&crecv,
@@ -1529,12 +1529,16 @@ cupsert:
 	op = cupsert(self, op);
 	op_jmp;
 
+cdelete:
+	cdelete(self, op);
+	op_next;
+
 cupdate:
 	cupdate(self, op);
 	op_next;
 
-cdelete:
-	cdelete(self, op);
+cupdate_store:
+	cupdate_store(self, op);
 	op_next;
 
 csend:
@@ -1543,10 +1547,6 @@ csend:
 
 csend_hash:
 	csend_hash(self, op);
-	op_next;
-
-csend_generated:
-	csend_generated(self, op);
 	op_next;
 
 csend_first:

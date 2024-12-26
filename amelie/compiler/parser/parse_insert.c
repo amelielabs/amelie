@@ -319,6 +319,7 @@ parse_generated(Stmt* self)
 	auto target = target_allocate(&self->order_targets);
 	target->type         = TARGET_VALUES;
 	target->from_columns = targets_outer(&stmt->targets)->from_columns;
+	target->name         = table->config->name;
 	targets_add(&stmt->targets_generated, target);
 
 	// parse generated columns expressions

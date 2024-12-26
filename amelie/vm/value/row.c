@@ -40,7 +40,7 @@ row_create_prepare(Columns* columns, Value* values)
 			{
 				// NOT NULL constraint
 				if (unlikely(column->constraints.not_null))
-					error("column %.*s: cannot be null", str_size(&column->name),
+					error("column <%.*s> cannot be NULL", str_size(&column->name),
 					      str_of(&column->name));
 			}
 			continue;
@@ -252,7 +252,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 				{
 					// NOT NULL constraint
 					if (unlikely(column->constraints.not_null))
-						error("column %.*s: cannot be null", str_size(&column->name),
+						error("column <%.*s> cannot be NULL", str_size(&column->name),
 						      str_of(&column->name));
 				}
 				continue;
@@ -445,33 +445,4 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 	}
 
 	return row;
-}
-
-hot void
-row_update_stored(Columns*  columns,
-                  Keys*     keys,
-                  Value*    row,
-                  Value*    values,
-                  uint32_t* hash)
-{
-	// replace generated columns with new values and calculate hash
-	int order = 0;
-	list_foreach(&columns->list)
-	{
-		Value* value;
-		auto column  = list_at(Column, link);
-		auto replace = !str_empty(&column->constraints.as_stored);
-		if (replace) {
-			value_move(&row[column->order], &values[order]);
-			value = &row[column->order];
-			order++;
-		} else {
-			value = &row[column->order];
-		}
-		if (unlikely(value->type == TYPE_NULL && column->constraints.not_null))
-			error("column <%.*s> value cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
-		if (column->key && keys_find_column(keys, column->order))
-			*hash = value_hash(value, *hash);
-	}
 }
