@@ -99,7 +99,7 @@ emit_column(Compiler* self, Target* target, Str* name, bool excluded)
 	} else
 	{
 		auto cte = target->from_cte;
-		if (target->type == TARGET_CTE && cte->cte_args.list_count > 0)
+		if (target->type == TARGET_CTE && cte->cte_args.count > 0)
 		{
 			// find column in the CTE arguments list, redirect to the CTE statement
 			auto arg = columns_find(&cte->cte_args, name);
@@ -713,7 +713,7 @@ emit_in(Compiler* self, Targets* targets, Ast* ast)
 		if (current->id == KSELECT)
 		{
 			auto select = ast_select_of(current);
-			if (select->ret.columns.list_count > 1)
+			if (select->ret.columns.count > 1)
 				error("IN: subquery must return one column");
 			r = emit_select(self, current);
 		} else {
@@ -749,7 +749,7 @@ emit_match(Compiler* self, Targets* targets, Ast* ast)
 	if (ast->r->r->id == KSELECT)
 	{
 		auto select = ast_select_of(ast->r->r);
-		if (select->ret.columns.list_count > 1)
+		if (select->ret.columns.count > 1)
 			error("ANY/ALL: subquery must return one column");
 		b = emit_select(self, ast->r->r);
 	} else {
@@ -1000,7 +1000,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		// ensure that subquery returns one column
 		auto select = ast_select_of(ast);
 		auto columns = &select->ret.columns;
-		if (columns->list_count > 1)
+		if (columns->count > 1)
 			error("subquery must return only one column");
 		auto r = emit_select(self, ast);
 		// return first column of the first row and free the set

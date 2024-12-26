@@ -16,19 +16,24 @@ typedef struct Columns Columns;
 struct Columns
 {
 	List    list;
-	int     list_count;
+	List    list_variable;
+	int     count;
+	int     count_variable;
 	int     count_stored;
 	int     count_resolved;
+	int     precomputed;
 	Column* serial;
 };
 
 static inline void
 columns_init(Columns* self)
 {
-	self->list_count     = 0;
+	self->count          = 0;
 	self->count_stored   = 0;
 	self->count_resolved = 0;
+	self->precomputed    = 0;
 	self->serial         = NULL;
+	list_init(&self->list_variable);
 	list_init(&self->list);
 }
 
@@ -45,9 +50,17 @@ columns_free(Columns* self)
 static inline void
 columns_add(Columns* self, Column* column)
 {
-	column->order = self->list_count;
 	list_append(&self->list, &column->link);
-	self->list_count++;
+	column->order = self->count;
+	self->count++;
+
+	if (column->type_size) {
+		self->precomputed += column->type_size;
+	} else
+	{
+		list_append(&self->list_variable, &column->link_variable);
+		self->count_variable++;
+	}
 
 	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored++;
@@ -63,8 +76,16 @@ static inline void
 columns_del(Columns* self, Column* column)
 {
 	list_unlink(&column->link);
-	self->list_count--;
-	assert(self->list_count >= 0);
+	self->count--;
+	assert(self->count >= 0);
+
+	if (column->type_size) {
+		self->precomputed -= column->type_size;
+	} else
+	{
+		list_unlink(&column->link_variable);
+		self->count_variable--;
+	}
 
 	if (! str_empty(&column->constraints.as_stored))
 		self->count_stored--;

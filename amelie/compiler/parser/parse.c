@@ -465,8 +465,8 @@ parse_with(Parser* self)
 		stmt->cte_columns = &ret->columns;
 
 		// ensure that arguments count match
-		if (stmt->cte_args.list_count > 0 &&
-		    stmt->cte_args.list_count != stmt->cte_columns->list_count)
+		if (stmt->cte_args.count > 0 &&
+		    stmt->cte_args.count != stmt->cte_columns->count)
 			error("CTE arguments count must mismatch the returning arguments count");
 
 		// )

@@ -30,7 +30,7 @@ hot static inline void
 content_json_row_array(Content* self, Columns* columns, Value* row)
 {
 	auto buf = self->content;
-	if (columns->list_count > 1)
+	if (columns->count > 1)
 		buf_write(buf, "[", 1);
 	list_foreach(&columns->list)
 	{
@@ -40,7 +40,7 @@ content_json_row_array(Content* self, Columns* columns, Value* row)
 		value_export(row + column->order, self->local->timezone, self->fmt.opt_pretty, buf);
 		content_ensure_limit(self);
 	}
-	if (columns->list_count > 1)
+	if (columns->count > 1)
 		buf_write(buf, "]", 1);
 }
 

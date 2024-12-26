@@ -391,7 +391,7 @@ parse_insert(Stmt* self)
 
 	// prepare values
 	stmt->values = set_cache_create(self->values_cache);
-	set_prepare(stmt->values, columns->list_count, 0, NULL);
+	set_prepare(stmt->values, columns->count, 0, NULL);
 
 	// GENERATE
 	if (stmt_if(self, KGENERATE))

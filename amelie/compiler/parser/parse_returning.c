@@ -140,7 +140,7 @@ returning_add_target(Returning* self, Target* target)
 
 	// use CTE arguments, if they are defined
 	auto cte = target->from_cte;
-	if (target->type == TARGET_CTE && cte->cte_args.list_count > 0)
+	if (target->type == TARGET_CTE && cte->cte_args.count > 0)
 		columns = &cte->cte_args;
 
 	list_foreach(&columns->list)

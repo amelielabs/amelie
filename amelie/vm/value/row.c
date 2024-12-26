@@ -27,8 +27,8 @@
 hot Row*
 row_create(Columns* columns, Value* values, int size)
 {
-	auto     row = row_allocate(columns->list_count, size);
-	uint8_t* pos = row_data(row, columns->list_count);
+	auto     row = row_allocate(columns->count, size);
+	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -125,7 +125,7 @@ row_create_key(Keys* self, Value* values)
 		}
 	}
 
-	auto     columns_count = self->columns->list_count;
+	auto     columns_count = self->columns->count;
 	auto     row   = row_allocate(columns_count, size);
 	uint8_t* pos   = row_data(row, columns_count);
 	list_foreach(&self->columns->list)
@@ -260,8 +260,8 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 	// [order, value, order, value, ...]
 	//
 	auto     row_size = row_update_prepare(self, columns, values, count);
-	auto     row      = row_allocate(columns->list_count, row_size);
-	uint8_t* pos      = row_data(row, columns->list_count);
+	auto     row      = row_allocate(columns->count, row_size);
+	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;
 	list_foreach(&columns->list)

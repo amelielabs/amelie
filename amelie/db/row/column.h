@@ -22,6 +22,7 @@ struct Column
 	int64_t     type_size;
 	Constraints constraints;
 	bool        key;
+	List        link_variable;
 	List        link;
 };
 
@@ -34,6 +35,7 @@ column_allocate(void)
 	self->type      = -1;
 	self->type_size = 0;
 	list_init(&self->link);
+	list_init(&self->link_variable);
 	str_init(&self->name);
 	constraints_init(&self->constraints);
 	return self;

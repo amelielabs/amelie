@@ -106,8 +106,8 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 
 	auto buf = buf_create();
 	guard_buf(buf);
-	buf_reserve(buf, sizeof(bool) * columns->list_count);
-	memset(buf->start, 0, sizeof(bool) * columns->list_count);
+	buf_reserve(buf, sizeof(bool) * columns->count);
+	memset(buf->start, 0, sizeof(bool) * columns->count);
 
 	auto match = (bool*)buf->start;
 	auto match_count = 0;
@@ -149,7 +149,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 		if (! stmt_if(self, ','))
 			break;
 	}
-	if (match_count == columns->list_count)
+	if (match_count == columns->count)
 		return;
 
 	// set next serial value
@@ -303,7 +303,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 
 	// prepare result set
 	insert->values = set_cache_create(stmt->values_cache);
-	set_prepare(insert->values, columns->list_count, 0, NULL);
+	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse rows according to the content type
 	switch (endpoint.type) {

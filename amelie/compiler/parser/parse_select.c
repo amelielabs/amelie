@@ -317,7 +317,7 @@ parse_select_resolve_group_by(AstSelect* select)
 			auto column  = &group->expr->string;
 
 			// use CTE arguments, if defined
-			if (target->type == TARGET_CTE && cte->cte_args.list_count > 0)
+			if (target->type == TARGET_CTE && cte->cte_args.count > 0)
 				columns = &cte->cte_args;
 
 			bool conflict = false;

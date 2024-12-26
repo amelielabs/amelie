@@ -21,8 +21,8 @@ Row*
 row_alter_add(Row* row, Columns* columns)
 {
 	// allocate new row (row index size might change)
-	auto columns_count = columns->list_count + 1;
-	auto self = row_allocate(columns_count, row_data_size(row, columns->list_count));
+	auto columns_count = columns->count + 1;
+	auto self = row_allocate(columns_count, row_data_size(row, columns->count));
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns_count);
@@ -59,7 +59,7 @@ row_alter_add(Row* row, Columns* columns)
 	}
 
 	// set new column as null
-	row_set_null(self, columns->list_count);
+	row_set_null(self, columns->count);
 	return self;
 }
 
@@ -67,7 +67,7 @@ Row*
 row_alter_drop(Row* row, Columns* columns, Column* ref)
 {
 	// calculate row data size without the column data
-	auto size = row_data_size(row, columns->list_count);
+	auto size = row_data_size(row, columns->count);
 	uint8_t* data = row_at(row, ref->order);
 	if (data)
 	{
@@ -90,10 +90,10 @@ row_alter_drop(Row* row, Columns* columns, Column* ref)
 	}
 
 	// allocate new row
-	auto self = row_allocate(columns->list_count - 1, size);
+	auto self = row_allocate(columns->count - 1, size);
 
 	// copy original columns
-	uint8_t* pos = row_data(self, columns->list_count - 1);
+	uint8_t* pos = row_data(self, columns->count - 1);
 	auto order = 0;
 	list_foreach(&columns->list)
 	{
