@@ -151,6 +151,23 @@ columns_first(Columns* self)
 	return container_of(self->list.next, Column, link);
 }
 
+hot static inline bool
+columns_compare(Columns* self, Columns* with)
+{
+	if (self->count != with->count)
+		return false;
+	auto with_it = with->list.next;
+	list_foreach(&self->list)
+	{
+		auto column = list_at(Column, link);
+		auto column_with = container_of(with_it, Column, link);
+		if (column->type != column_with->type)
+			return false;
+		with_it = with_it->next;
+	}
+	return true;
+}
+
 static inline void
 columns_copy(Columns* self, Columns* src)
 {

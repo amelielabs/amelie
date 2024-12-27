@@ -47,22 +47,23 @@ explain insert into test values (0, null)
   "bytecode": {
     "coordinator": {
       "00": "set_ptr             0      -      0     ",
-      "01": "store_open          1      0      3     ",
-      "02": "jmp                 11     0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "push                1      0      0     ",
-      "05": "int                 1      -      0     # 1",
+      "01": "dup                 1      0      0     ",
+      "02": "store_open          1      1      4     ",
+      "03": "jmp                 12     0      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "push                2      0      0     ",
       "06": "int                 2      -      0     # 1",
-      "07": "addii               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "update_store        1      1      0     ",
-      "10": "store_next          1      3      0     ",
-      "11": "store_close         1      1      0     ",
-      "12": "send                0      0      -     # public.test",
-      "13": "recv                0      0      0     ",
-      "14": "null                1      0      0     ",
-      "15": "cte_set             0      1      0     ",
-      "16": "ret                 0      0      0     "
+      "07": "int                 3      -      0     # 1",
+      "08": "addii               4      2      3     ",
+      "09": "push                4      0      0     ",
+      "10": "update_store        1      1      0     ",
+      "11": "store_next          1      4      0     ",
+      "12": "store_close         1      1      0     ",
+      "13": "send                0      0      -     # public.test",
+      "14": "recv                0      0      0     ",
+      "15": "null                0      0      0     ",
+      "16": "cte_set             0      0      0     ",
+      "17": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.test",
@@ -135,22 +136,23 @@ explain insert into test (id) values (0) on conflict do update set data = data +
   "bytecode": {
     "coordinator": {
       "00": "set_ptr             0      -      0     ",
-      "01": "store_open          1      0      3     ",
-      "02": "jmp                 11     0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "push                1      0      0     ",
-      "05": "store_read          1      1      1     ",
-      "06": "int                 2      -      0     # 1",
-      "07": "addii               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "update_store        1      1      0     ",
-      "10": "store_next          1      3      0     ",
-      "11": "store_close         1      1      0     ",
-      "12": "send                0      0      -     # public.test",
-      "13": "recv                0      0      0     ",
-      "14": "null                1      0      0     ",
-      "15": "cte_set             0      1      0     ",
-      "16": "ret                 0      0      0     "
+      "01": "dup                 1      0      0     ",
+      "02": "store_open          1      1      4     ",
+      "03": "jmp                 12     0      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "push                2      0      0     ",
+      "06": "store_read          2      1      1     ",
+      "07": "int                 3      -      0     # 1",
+      "08": "addii               4      2      3     ",
+      "09": "push                4      0      0     ",
+      "10": "update_store        1      1      0     ",
+      "11": "store_next          1      4      0     ",
+      "12": "store_close         1      1      0     ",
+      "13": "send                0      0      -     # public.test",
+      "14": "recv                0      0      0     ",
+      "15": "null                0      0      0     ",
+      "16": "cte_set             0      0      0     ",
+      "17": "ret                 0      0      0     "
     },
     "node": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -193,5 +195,68 @@ create table test (id int primary key as (select 123) stored)
 {"msg": "unexpected subquery"}
 drop table test
 {"msg": "table 'test': not exists"}
+# test: insert select
+create table test (id int primary key, data int as (1 + 1) stored)
+insert into test select 0, 0
+select * from test
+[[0, 2]]
+# test: insert select from table
+create table src (id int primary key, data int)
+insert into src values (1, 0), (2, 0)
+explain insert into test select * from src
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.src",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "cte_get             0      0      0     ",
+      "07": "dup                 1      0      0     ",
+      "08": "store_open          1      1      10    ",
+      "09": "jmp                 18     0      0     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "push                2      0      0     ",
+      "12": "int                 2      -      0     # 1",
+      "13": "int                 3      -      0     # 1",
+      "14": "addii               4      2      3     ",
+      "15": "push                4      0      0     ",
+      "16": "update_store        1      1      0     ",
+      "17": "store_next          1      10     0     ",
+      "18": "store_close         1      1      0     ",
+      "19": "send                1      14     -     # public.test",
+      "20": "recv                1      0      0     ",
+      "21": "null                0      0      0     ",
+      "22": "cte_set             1      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # -2147483648",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.src (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      5      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     ",
+      "14": "insert              -      0      0     # public.test",
+      "15": "ret                 0      0      0     "
+    }
+  }
+}]
+insert into test select * from src returning *
+[[1, 2], [2, 2]]
+select * from test
+[[0, 2], [1, 2], [2, 2]]
+drop table src
+drop table test
 disconnect S0
 close E0

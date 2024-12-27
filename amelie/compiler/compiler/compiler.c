@@ -232,23 +232,45 @@ emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 }
 
 static inline void
-emit_send_generated(Compiler* self)
+emit_send_insert(Compiler* self, int start)
 {
-	auto stmt   = self->current;
-	auto insert = ast_insert_of(stmt->ast);
+	auto stmt    = self->current;
+	auto insert  = ast_insert_of(stmt->ast);
+	auto table   = targets_outer(&insert->targets)->from_table;
+	auto columns = table_columns(table);
 
-	// store_open( insert->values )
-	auto target = targets_outer(&insert->targets_generated);
-	target->r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
-	                (intptr_t)insert->values);
+	// get insert values
+	int r;
+	if (insert->select)
+	{
+		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
+		if (! columns_compare(columns, columns_select))
+			error("INSERT SELECT columns do not match the table columns");
+		r = op2(self, CCTE_GET, rpin(self, TYPE_STORE), insert->select->order);
+	} else
+	{
+		r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
+		        (intptr_t)insert->values);
+	}
 
 	// scan over insert values to generate and apply stored columns
-	scan(self, &insert->targets_generated,
-	     NULL,
-	     NULL,
-	     NULL,
-	     emit_send_generated_on_match,
-	     insert);
+	if (columns->count_stored > 0)
+	{
+		// store_open( rvalues )
+		auto values_dup = op2(self, CDUP, rpin(self, TYPE_STORE), r);
+		targets_outer(&insert->targets_generated)->r = values_dup;
+		scan(self, &insert->targets_generated,
+		     NULL,
+		     NULL,
+		     NULL,
+		     emit_send_generated_on_match,
+		     insert);
+		runpin(self, values_dup);
+	}
+
+	// CSEND
+	op4(self, CSEND, stmt->order, start, (intptr_t)table, r);
+	runpin(self, r);
 }
 
 static inline void
@@ -260,14 +282,7 @@ emit_send(Compiler* self, int start)
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
-		auto insert = ast_insert_of(stmt->ast);
-		auto table = targets_outer(&insert->targets)->from_table;
-		if (table_columns(table)->count_stored > 0)
-			emit_send_generated(self);
-		// CSEND
-		op4(self, CSEND, stmt->order, start,
-		    (intptr_t)table,
-		    (intptr_t)insert->values);
+		emit_send_insert(self, start);
 		break;
 	}
 
@@ -463,15 +478,23 @@ static inline  int
 stmt_maxcte(Stmt* self)
 {
 	int order = -1;
-	for (auto ref = self->select_list.list; ref; ref = ref->next)
+	if (self->id == STMT_INSERT)
 	{
-		auto select = ast_select_of(ref->ast);
-		for (auto target = select->targets.list; target; target = target->next)
+		auto insert = ast_insert_of(self->ast);
+		if (insert->select)
+			order = insert->select->order;
+	} else
+	{
+		for (auto ref = self->select_list.list; ref; ref = ref->next)
 		{
-			if (target->type != TARGET_CTE)
-				continue;
-			if (target->from_cte->order > order)
-				order = target->from_cte->order;
+			auto select = ast_select_of(ref->ast);
+			for (auto target = select->targets.list; target; target = target->next)
+			{
+				if (target->type != TARGET_CTE)
+					continue;
+				if (target->from_cte->order > order)
+					order = target->from_cte->order;
+			}
 		}
 	}
 	return order;

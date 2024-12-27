@@ -182,5 +182,30 @@ select * from test
 select * from test use index (i)
 drop table test
 
+# test: upsert select
+create shared table test (id int primary key, data int)
+
+insert into test select 0, 0
+insert into test select 0, 0 on conflict do error
+
+insert into test select 0, 0 on conflict do update set data = data + 1
+insert into test select 0, 0 on conflict do update set data = data + 1
+insert into test select 0, 0 on conflict do update set data = data + 1
+insert into test select 0, 0 on conflict do update set data = data + 1
+select * from test
+
+# test: upsert select returning
+insert into test select 0, 0 on conflict do update set data = data + 1 returning *
+
+# test: upsert select from table
+create table src (id int primary key, data int)
+insert into src values (0, 0), (1, 0)
+explain insert into test select * from src on conflict do update set data = data + 1 returning *
+insert into test select * from src on conflict do update set data = data + 1 returning *
+select * from test
+drop table src
+
+drop table test
+
 disconnect S0
 close E0

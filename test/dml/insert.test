@@ -436,5 +436,39 @@ insert into test values (2, 0)
 select * from test
 drop table test
 
+# test: insert select (columns count mismatch)
+create shared table test (id int primary key, data int)
+
+insert into test select 1
+
+# test: insert select (columns types mismatch)
+insert into test select 1, '2'
+
+# test: insert select (columns list unsupported)
+insert into test (id) select 1
+
+# test: insert select expr
+explain insert into test select 1, 0
+insert into test select 1, 0
+select * from test
+
+# conflict
+insert into test select 1, 0
+
+# test: insert select from (select expr)
+explain insert into test select * from (select 2, 0) t
+insert into test select * from (select 2, 0) t
+select * from test
+
+# test: insert select from table
+create table src (id int primary key, data int)
+insert into src values (3, 0), (4, 0), (5, 0)
+explain insert into test select * from src
+insert into test select * from src returning *
+select * from test
+drop table src
+
+drop table test
+
 disconnect S0
 close E0

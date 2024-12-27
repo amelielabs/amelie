@@ -29,6 +29,7 @@ struct AstInsert
 	Ast*      update_expr;
 	Ast*      update_where;
 	Ast*      generated_columns;
+	Stmt*     select;
 	Targets   targets;
 	Targets   targets_generated;
 	Returning ret;

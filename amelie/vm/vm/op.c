@@ -46,6 +46,7 @@ OpDesc ops[] =
 
 	// values
 	{ CFREE, "free" },
+	{ CDUP, "dup" },
 	{ CSWAP, "swap" },
 
 	// stack

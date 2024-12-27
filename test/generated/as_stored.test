@@ -100,5 +100,19 @@ drop table test
 create table test (id int primary key as (select 123) stored)
 drop table test
 
+# test: insert select
+create table test (id int primary key, data int as (1 + 1) stored)
+insert into test select 0, 0
+select * from test
+
+# test: insert select from table
+create table src (id int primary key, data int)
+insert into src values (1, 0), (2, 0)
+explain insert into test select * from src
+insert into test select * from src returning *
+select * from test
+drop table src
+drop table test
+
 disconnect S0
 close E0

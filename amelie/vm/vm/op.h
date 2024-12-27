@@ -26,6 +26,7 @@ enum
 
 	// values
 	CFREE,
+	CDUP,
 	CSWAP,
 
 	// stack

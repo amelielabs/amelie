@@ -363,7 +363,7 @@ hot void
 parse_insert(Stmt* self)
 {
 	// INSERT INTO name [(column_list)]
-	// [GENERATE | VALUES] (value, ..), ...
+	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate();
@@ -398,17 +398,42 @@ parse_insert(Stmt* self)
 		if (list_in_use)
 			list = parse_column_list(self, stmt);
 
-		// VALUES (value[, ...])[, ...]
-		if (! stmt_if(self, KVALUES))
-			error("INSERT INTO <VALUES> expected");
-		for (;;)
+		if (stmt_if(self, KVALUES))
+		{
+			// VALUES (value[, ...])[, ...]
+			for (;;)
+			{
+				if (list_in_use)
+					parse_row_list(self, stmt, list);
+				else
+					parse_row(self, stmt);
+				if (! stmt_if(self, ','))
+					break;
+			}
+		} else
+		if (stmt_if(self, KSELECT))
 		{
 			if (list_in_use)
-				parse_row_list(self, stmt, list);
-			else
-				parse_row(self, stmt);
-			if (! stmt_if(self, ','))
-				break;
+				error("INSERT SELECT using column list is not supported");
+
+			// rewrite INSERT INTO SELECT as CTE statement, columns will be
+			// validated during the emit
+			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
+			                         self->lex,
+			                         self->data,
+			                         self->values_cache,
+			                         self->json,
+			                         self->stmt_list,
+			                         self->args);
+			cte->id = STMT_SELECT;
+			stmt_list_insert(self->stmt_list, self, cte);
+			auto select = parse_select(cte, NULL, false);
+			cte->ast         = &select->ast;
+			cte->cte_columns = &select->ret.columns;
+			parse_select_resolve(cte);
+			stmt->select = cte;
+		} else {
+			error("INSERT INTO <VALUES | SELECT> expected");
 		}
 	}
 

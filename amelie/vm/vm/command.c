@@ -36,11 +36,10 @@
 hot void
 csend(Vm* self, Op* op)
 {
-	// [stmt, start, table, values*]
-	auto dtr    = self->dtr;
-	auto table  = (Table*)op->c;
-	auto keys   = table_keys(table);
-	auto values = (Set*)op->d;
+	// [stmt, start, table, store]
+	auto dtr   = self->dtr;
+	auto table = (Table*)op->c;
+	auto keys  = table_keys(table);
 
 	// redistribute rows between nodes
 	Req* map[dtr->set.set_size];
@@ -48,28 +47,51 @@ csend(Vm* self, Op* op)
 
 	ReqList list;
 	req_list_init(&list);
-	for (auto order = 0; order < values->count_rows; order++)
+
+	auto store = reg_at(&self->r, op->d)->store;
+	if (store->type == STORE_SET)
 	{
-		auto row = set_row(values, order);
-		auto hash = row_value_hash(keys, row);
-
-		// map to node
-		auto route = part_map_get(&table->part_list.map, hash);
-		auto req   = map[route->order];
-		if (req == NULL)
+		auto set = (Set*)store;
+		for (auto order = 0; order < set->count_rows; order++)
 		{
-			req = req_create(&dtr->req_cache, REQ_EXECUTE);
-			req->start = op->b;
-			req->route = route;
-			req_list_add(&list, req);
-			map[route->order] = req;
+			auto row   = set_row(set, order);
+			auto hash  = row_value_hash(keys, row);
+			auto route = part_map_get(&table->part_list.map, hash);
+			auto req   = map[route->order];
+			if (req == NULL)
+			{
+				req = req_create(&dtr->req_cache, REQ_EXECUTE);
+				req->start = op->b;
+				req->route = route;
+				req_list_add(&list, req);
+				map[route->order] = req;
+			}
+			buf_write(&req->arg, &row, sizeof(Value*));
 		}
-
-		// write row pointer
-		buf_write(&req->arg, &row, sizeof(Value*));
+	} else
+	{
+		auto it = store_iterator(store);
+		guard(store_iterator_close, it);
+		Value* row;
+		for (; (row = store_iterator_at(it)); store_iterator_next(it))
+		{
+			auto hash  = row_value_hash(keys, row);
+			auto route = part_map_get(&table->part_list.map, hash);
+			auto req   = map[route->order];
+			if (req == NULL)
+			{
+				req = req_create(&dtr->req_cache, REQ_EXECUTE);
+				req->start = op->b;
+				req->route = route;
+				req_list_add(&list, req);
+				map[route->order] = req;
+			}
+			buf_write(&req->arg, &row, sizeof(Value*));
+		}
 	}
 
 	executor_send(self->executor, dtr, op->a, &list);
+	value_free(reg_at(&self->r, op->d));
 }
 
 hot void

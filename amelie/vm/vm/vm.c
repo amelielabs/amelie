@@ -127,6 +127,7 @@ vm_run(Vm*       self,
 
 		// values
 		&&cfree,
+		&&cdup,
 		&&cswap,
 
 		// stack
@@ -423,6 +424,11 @@ cjltd:
 cfree:
 	// [value]
 	value_free(&r[op->a]);
+	op_next;
+
+cdup:
+	// [result, value]
+	value_copy(&r[op->a], &r[op->b]);
 	op_next;
 
 cswap:

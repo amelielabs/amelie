@@ -99,19 +99,20 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send                0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "set                 0      1      0     ",
-      "05": "string              1      0      0     # abort",
-      "06": "push                1      0      0     ",
-      "07": "call                1      -      1     # public.error()",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "cte_set             1      0      0     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "00": "set_ptr             0      -      0     ",
+      "01": "send                0      0      -     # public.test",
+      "02": "recv                0      0      0     ",
+      "03": "null                0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "set                 0      1      0     ",
+      "06": "string              1      0      0     # abort",
+      "07": "push                1      0      0     ",
+      "08": "call                1      -      1     # public.error()",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
     },
     "node": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -231,19 +232,20 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send                0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "set                 0      1      0     ",
-      "05": "string              1      0      0     # abort",
-      "06": "push                1      0      0     ",
-      "07": "call                1      -      1     # public.error()",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "cte_set             1      0      0     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "00": "set_ptr             0      -      0     ",
+      "01": "send                0      0      -     # public.test",
+      "02": "recv                0      0      0     ",
+      "03": "null                0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "set                 0      1      0     ",
+      "06": "string              1      0      0     # abort",
+      "07": "push                1      0      0     ",
+      "08": "call                1      -      1     # public.error()",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
     },
     "node": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -276,11 +278,12 @@ explain insert into b (id) values (10), (20), (30)
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send                0      0      -     # public.b",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "00": "set_ptr             0      -      0     ",
+      "01": "send                0      0      -     # public.b",
+      "02": "recv                0      0      0     ",
+      "03": "null                0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "ret                 0      0      0     "
     },
     "node": {
       "00": "insert              -      0      0     # public.b",
@@ -396,29 +399,30 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send                0      0      -     # public.a",
-      "01": "send_all            1      10     -     # public.b",
-      "02": "send_all            2      24     -     # public.a",
-      "03": "recv                0      0      0     ",
-      "04": "null                0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "recv                1      0      0     ",
-      "07": "null                0      0      0     ",
-      "08": "cte_set             1      0      0     ",
-      "09": "recv                2      0      0     ",
-      "10": "bool                0      0      0     ",
-      "11": "push                0      0      0     ",
-      "12": "merge_recv          0      -1     -1    ",
-      "13": "cte_set             2      0      0     ",
-      "14": "set                 0      1      0     ",
-      "15": "string              1      34     0     # abort",
-      "16": "push                1      0      0     ",
-      "17": "call                1      -      1     # public.error()",
-      "18": "push                1      0      0     ",
-      "19": "set_add             0      0      0     ",
-      "20": "cte_set             3      0      0     ",
-      "21": "content             3      -      -     ",
-      "22": "ret                 0      0      0     "
+      "00": "set_ptr             0      -      0     ",
+      "01": "send                0      0      -     # public.a",
+      "02": "send_all            1      10     -     # public.b",
+      "03": "send_all            2      24     -     # public.a",
+      "04": "recv                0      0      0     ",
+      "05": "null                0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "recv                1      0      0     ",
+      "08": "null                0      0      0     ",
+      "09": "cte_set             1      0      0     ",
+      "10": "recv                2      0      0     ",
+      "11": "bool                0      0      0     ",
+      "12": "push                0      0      0     ",
+      "13": "merge_recv          0      -1     -1    ",
+      "14": "cte_set             2      0      0     ",
+      "15": "set                 0      1      0     ",
+      "16": "string              1      34     0     # abort",
+      "17": "push                1      0      0     ",
+      "18": "call                1      -      1     # public.error()",
+      "19": "push                1      0      0     ",
+      "20": "set_add             0      0      0     ",
+      "21": "cte_set             3      0      0     ",
+      "22": "content             3      -      -     ",
+      "23": "ret                 0      0      0     "
     },
     "node": {
       "00": "table_prepare       0      -      0     # public.a",
