@@ -12,7 +12,7 @@
 //
 
 void csend(Vm*, Op*);
-void csend_hash(Vm*, Op*);
+void csend_lookup(Vm*, Op*);
 void csend_first(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);

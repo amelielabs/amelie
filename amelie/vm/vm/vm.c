@@ -338,9 +338,9 @@ vm_run(Vm*       self,
 
 		// executor
 		&&csend,
-		&&csend_hash,
-		&&csend_first,
+		&&csend_lookup,
 		&&csend_all,
+		&&csend_first,
 		&&crecv,
 		&&crecv_to,
 
@@ -1556,16 +1556,16 @@ csend:
 	csend(self, op);
 	op_next;
 
-csend_hash:
-	csend_hash(self, op);
-	op_next;
-
-csend_first:
-	csend_first(self, op);
+csend_lookup:
+	csend_lookup(self, op);
 	op_next;
 
 csend_all:
 	csend_all(self, op);
+	op_next;
+
+csend_first:
+	csend_first(self, op);
 	op_next;
 
 crecv:

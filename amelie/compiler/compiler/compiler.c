@@ -345,11 +345,20 @@ emit_send(Compiler* self, int start)
 		// point-lookup or range scan
 		if (target->plan->type == PLAN_LOOKUP)
 		{
-			// send to one node (shard by lookup key hash)
-			uint32_t hash = target_lookup_hash(target);
+			// send to one node using the point lookup key
+			auto keys = &target->from_table_index->keys;
+			list_foreach(&keys->list)
+			{
+				auto key = list_at(Key, link);
+				auto ref = &target->plan->keys[key->order];
+				int rexpr = emit_expr(self, target->targets, ref->start);
+				op1(self, CPUSH, rexpr);
+				runpin(self, rexpr);
+			}
 
-			// CSEND_HASH
-			op4(self, CSEND_HASH, stmt->order, start, (intptr_t)table, hash);
+			// CSEND_LOOKUP
+			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table,
+			    keys->list_count);
 		} else
 		{
 			// send to all table nodes

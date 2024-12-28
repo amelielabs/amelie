@@ -367,11 +367,13 @@ explain update test set data = data + 1 where id = 0
 [{
   "bytecode": {
     "coordinator": {
-      "00": "send_hash           0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 0",
+      "01": "push                0      0      0     ",
+      "02": "send_lookup         0      0      -     # public.test",
+      "03": "recv                0      0      0     ",
+      "04": "null                0      0      0     ",
+      "05": "cte_set             0      0      0     ",
+      "06": "ret                 0      0      0     "
     },
     "node": {
       "00": "int                 0      -      0     # 0",

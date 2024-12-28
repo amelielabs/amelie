@@ -95,23 +95,30 @@ csend(Vm* self, Op* op)
 }
 
 hot void
-csend_hash(Vm* self, Op* op)
+csend_lookup(Vm* self, Op* op)
 {
-	// [stmt, start, table, hash]
+	// [stmt, start, table, keys_count]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->c;
 
 	ReqList list;
 	req_list_init(&list);
 
-	// shard by precomputed key hash
-	auto route = part_map_get(&table->part_list.map, op->d);
+	// compute key hash
+	auto values = stack_at(&self->stack, op->d);
+	uint32_t hash = 0;
+	for (auto i = 0; i < op->d; i++)
+		hash = value_hash(&values[i], hash);
+
+	// shard by hash
+	auto route = part_map_get(&table->part_list.map, hash);
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->start = op->b;
 	req->route = route;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
+	stack_popn(&self->stack, op->d);
 }
 
 hot void

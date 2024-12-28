@@ -256,9 +256,9 @@ OpDesc ops[] =
 
 	// result
 	{ CSEND, "send" },
-	{ CSEND_HASH, "send_hash" },
-	{ CSEND_FIRST, "send_first" },
+	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },
+	{ CSEND_FIRST, "send_first" },
 	{ CRECV, "recv" },
 	{ CRECV_TO, "recv_to" },
 
@@ -342,8 +342,8 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		case CSET_PTR:
 			op_write(output, op, true, false, true, NULL);
 			break;
-		case CSEND_HASH:
 		case CSEND:
+		case CSEND_LOOKUP:
 		case CSEND_ALL:
 		{
 			auto table = (Table*)op->c;
