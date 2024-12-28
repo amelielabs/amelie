@@ -226,7 +226,7 @@ explain insert into test select * from src
       "16": "update_store        1      1      0     ",
       "17": "store_next          1      10     0     ",
       "18": "store_close         1      1      0     ",
-      "19": "send                1      14     -     # public.test",
+      "19": "send                1      12     -     # public.test",
       "20": "recv                1      0      0     ",
       "21": "null                0      0      0     ",
       "22": "cte_set             1      0      0     ",
@@ -234,21 +234,19 @@ explain insert into test select * from src
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.src (primary)",
-      "04": "jmp                 11     0      0     ",
-      "05": "table_readi32       1      0      0     ",
+      "01": "table_open          0      0      3     # public.src (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
       "06": "push                1      0      0     ",
-      "07": "table_readi32       1      0      1     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      5      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     ",
-      "14": "insert              -      0      0     # public.test",
-      "15": "ret                 0      0      0     "
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     ",
+      "12": "insert              -      0      0     # public.test",
+      "13": "ret                 0      0      0     "
     }
   }
 }]

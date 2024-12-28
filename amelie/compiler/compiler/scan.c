@@ -48,11 +48,12 @@ typedef struct
 	Compiler*    compiler;
 } Scan;
 
-static inline void
+static inline int
 scan_key(Scan* self, Target* target)
 {
-	auto cp   = self->compiler;
-	auto plan = target->plan;
+	auto cp    = self->compiler;
+	auto plan  = target->plan;
+	auto count = 0;
 
 	list_foreach(&target->from_table_index->keys.list)
 	{
@@ -60,41 +61,15 @@ scan_key(Scan* self, Target* target)
 		auto ref = &plan->keys[key->order];
 
 		// use value from >, >=, = expression as a key
-		if (ref->start)
-		{
-			int rexpr = emit_expr(cp, self->targets, ref->start);
-			op1(cp, CPUSH, rexpr);
-			runpin(cp, rexpr);
-			continue;
-		}
-
-		// set min
-		int rexpr;
-		switch (key->column->type) {
-		case TYPE_INT:
-		{
-			if (key->column->type_size == 4)
-				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT32_MIN);
-			else
-				rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), INT64_MIN);
+		if (! ref->start)
 			break;
-		}
-		case TYPE_TIMESTAMP:
-		{
-			rexpr = op2(cp, CTIMESTAMP, rpin(cp, TYPE_TIMESTAMP), 0);
-			break;
-		}
-		case TYPE_STRING:
-		{
-			Str empty;
-			str_init(&empty);
-			rexpr = emit_string(cp, &empty, false);
-			break;
-		}
-		}
+		int rexpr = emit_expr(cp, self->targets, ref->start);
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
+		count++;
 	}
+
+	return count;
 }
 
 static inline void
@@ -136,7 +111,7 @@ scan_table(Scan* self, Target* target)
 	auto index = target->from_table_index;
 
 	// push cursor keys
-	scan_key(self, target);
+	auto keys_count = scan_key(self, target);
 
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
@@ -146,7 +121,10 @@ scan_table(Scan* self, Target* target)
 
 	// table_open
 	int _open = op_pos(cp);
-	op4(cp, CTABLE_OPEN, target->id, name_offset, 0 /* _where */, point_lookup);
+	int  open_op = CTABLE_OPEN;
+	if (point_lookup)
+		open_op = CTABLE_OPEN_LOOKUP;
+	op4(cp, open_op, target->id, name_offset, 0 /* _where */, keys_count);
 
 	// _where_eof:
 	int _where_eof = op_pos(cp);

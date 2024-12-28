@@ -157,26 +157,37 @@ row_create(Columns* columns, Value* values)
 	return row;
 }
 
-Row*
-row_create_key(Keys* self, Value* values)
+hot Row*
+row_create_key(Keys* self, Value* values, int count)
 {
 	int size = 0;
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
-		if (key->column->type == TYPE_STRING) {
+
+		// int, timestamp
+		auto column = key->column;
+		if (column->type_size > 0)
+		{
+			size += key->column->type_size;
+			continue;
+		}
+
+		// string
+		if (key->order < count)
+		{
 			auto ref = &values[key->order];
 			size += json_size_string(str_size(&ref->string));
 		} else
 		{
-			// int, timestamp
-			size += key->column->type_size;
+			// min string
+			size += json_size_string(0);
 		}
 	}
 
-	auto     columns_count = self->columns->count;
-	auto     row   = row_allocate(columns_count, size);
-	uint8_t* pos   = row_data(row, columns_count);
+	auto columns_count = self->columns->count;
+	auto row = row_allocate(columns_count, size);
+	uint8_t* pos = row_data(row, columns_count);
 	list_foreach(&self->columns->list)
 	{
 		auto column = list_at(Column, link);
@@ -185,48 +196,72 @@ row_create_key(Keys* self, Value* values)
 			row_set_null(row, column->order);
 			continue;
 		}
-
 		auto key = keys_find_column(self, column->order);
 		if (! key)
 		{
 			row_set_null(row, column->order);
 			continue;
 		}
-		auto ref = &values[key->order];
-
 		row_set(row, column->order, pos - (uint8_t*)row);
-		if (column->type == TYPE_STRING) {
-			json_write_string(&pos, &ref->string);
-		} else
+
+		// string
+		if (column->type == TYPE_STRING)
 		{
-			// int, timestamp
-			switch (column->type_size) {
-			case 1:
-				*(int8_t*)pos = ref->integer;
-				pos += sizeof(int8_t);
-				break;
-			case 2:
-				*(int16_t*)pos = ref->integer;
-				pos += sizeof(int16_t);
-				break;
-			case 4:
-				*(int32_t*)pos = ref->integer;
-				pos += sizeof(int32_t);
-				break;
-			case 8:
-				*(int64_t*)pos = ref->integer;
-				pos += sizeof(int64_t);
-				break;
-			default:
-				abort();
-				break;
+			if (key->order < count)
+			{
+				auto ref = &values[key->order];
+				json_write_string(&pos, &ref->string);
+			} else
+			{
+				Str str;
+				str_init(&str);
+				json_write_string(&pos, &str);
 			}
+			continue;
+		}
+
+		// int, timestamp
+		switch (column->type_size) {
+		case 4:
+		{
+			if (key->order < count)
+			{
+				auto ref = &values[key->order];
+				*(int32_t*)pos = ref->integer;
+			} else
+			{
+				if (column->type == TYPE_TIMESTAMP)
+					*(int32_t*)pos = 0;
+				else
+					*(int32_t*)pos = INT32_MIN;
+			}
+			pos += sizeof(int32_t);
+			break;
+		}
+		case 8:
+		{
+			if (key->order < count)
+			{
+				auto ref = &values[key->order];
+				*(int64_t*)pos = ref->integer;
+			} else
+			{
+				if (column->type == TYPE_TIMESTAMP)
+					*(int64_t*)pos = 0;
+				else
+					*(int64_t*)pos = INT64_MIN;
+			}
+			pos += sizeof(int64_t);
+			break;
+		}
+		default:
+			abort();
+			break;
 		}
 	}
 
 	return row;
 }
-
 
 hot static inline int
 row_update_prepare(Row* self, Columns* columns, Value* values, int count)

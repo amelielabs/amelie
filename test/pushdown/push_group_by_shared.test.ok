@@ -30,17 +30,15 @@ explain select * from test group by id
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -79,17 +77,15 @@ explain select id from test group by id
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -140,17 +136,15 @@ explain select * from (select id from test group by id) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -182,17 +176,15 @@ explain select id from test group by id limit 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -228,17 +220,15 @@ explain select id from test group by id limit 1 offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -274,17 +264,15 @@ explain select id from test group by id offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -330,17 +318,15 @@ explain select * from (select id from test group by id limit 1) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -388,17 +374,15 @@ explain select * from (select id from test group by id limit 1 offset 1) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -444,17 +428,15 @@ explain select * from (select id from test group by id offset 1) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -492,17 +474,15 @@ explain select id from test group by id having id >= 3
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -550,17 +530,15 @@ explain select id from test group by id having id >= 1 limit 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -598,17 +576,15 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -646,17 +622,15 @@ explain select id from test group by id having id >= 1 offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -702,17 +676,15 @@ explain select * from (select id from test group by id having id >= 3) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -756,17 +728,15 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -814,17 +784,15 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -872,17 +840,15 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -917,17 +883,15 @@ explain select id from test group by id order by id
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -961,17 +925,15 @@ explain select id from test group by id order by id desc
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1012,17 +974,15 @@ explain select * from (select id from test group by id order by id desc) t
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1057,17 +1017,15 @@ explain select id from test group by id order by id asc limit 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1107,17 +1065,15 @@ explain select id from test group by id order by id asc limit 1 offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1156,17 +1112,15 @@ explain select id from test group by id order by id asc offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1205,17 +1159,15 @@ explain select id from test group by id order by id desc limit 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1255,17 +1207,15 @@ explain select id from test group by id order by id desc limit 1 offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1304,17 +1254,15 @@ explain select id from test group by id order by id desc offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1365,17 +1313,15 @@ explain select * from (select id from test group by id order by id asc limit 1) 
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1427,17 +1373,15 @@ explain select * from (select id from test group by id order by id asc limit 1 o
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1486,17 +1430,15 @@ explain select * from (select id from test group by id order by id asc offset 1)
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1547,17 +1489,15 @@ explain select * from (select id from test group by id order by id desc limit 1)
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1609,17 +1549,15 @@ explain select * from (select id from test group by id order by id desc limit 1 
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1668,17 +1606,15 @@ explain select * from (select id from test group by id order by id desc offset 1
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 9      0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "table_next          0      5      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 7      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "result              0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -1719,21 +1655,19 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -1772,21 +1706,19 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -1826,21 +1758,19 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -1879,21 +1809,19 @@ explain select data from test where data > 0 group by data having data >= 1 orde
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -1938,21 +1866,19 @@ explain select * from (select data from test where data > 0 group by data having
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -2001,21 +1927,19 @@ explain select * from (select data from test where data > 0 group by data having
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -2064,21 +1988,19 @@ explain select * from (select data from test where data > 0 group by data having
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -2128,21 +2050,19 @@ explain select * from (select data from test where data > 0 group by data having
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -2191,21 +2111,19 @@ explain select * from (select data from test where data > 0 group by data having
     },
     "node": {
       "00": "set                 0      0      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "int                 2      -      0     # 0",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_get             1      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "table_readi32       1      0      1     ",
+      "04": "int                 2      -      0     # 0",
+      "05": "gtii                3      1      2     ",
+      "06": "jntr                10     3      0     ",
+      "07": "table_readi32       1      0      1     ",
+      "08": "push                1      0      0     ",
+      "09": "set_get             1      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -2250,24 +2168,22 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
     },
     "node": {
       "00": "set                 0      2      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 16     0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "int                 2      -      0     # 1",
-      "09": "push                2      0      0     ",
-      "10": "int                 2      -      0     # 2",
-      "11": "table_readi32       3      0      0     ",
-      "12": "mulii               4      2      3     ",
-      "13": "push                4      0      0     ",
-      "14": "set_agg             0      1      20    ",
-      "15": "table_next          0      5      0     ",
-      "16": "table_close         0      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 14     0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "push                2      0      0     ",
+      "08": "int                 2      -      0     # 2",
+      "09": "table_readi32       3      0      0     ",
+      "10": "mulii               4      2      3     ",
+      "11": "push                4      0      0     ",
+      "12": "set_agg             0      1      20    ",
+      "13": "table_next          0      3      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
@@ -2327,20 +2243,18 @@ explain select count(*) from (select count(*) from test group by id) t
     },
     "node": {
       "00": "set                 0      1      1     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 12     0      0     ",
-      "05": "table_readi32       1      0      0     ",
-      "06": "push                1      0      0     ",
-      "07": "set_get             1      0      0     ",
-      "08": "int                 2      -      0     # 1",
-      "09": "push                2      0      0     ",
-      "10": "set_agg             0      1      20    ",
-      "11": "table_next          0      5      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 10     0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "set_get             1      0      0     ",
+      "06": "int                 2      -      0     # 1",
+      "07": "push                2      0      0     ",
+      "08": "set_agg             0      1      20    ",
+      "09": "table_next          0      3      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]

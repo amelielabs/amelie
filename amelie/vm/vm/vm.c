@@ -291,6 +291,7 @@ vm_run(Vm*       self,
 
 		// table cursor
 		&&ctable_open,
+		&&ctable_open_lookup,
 		&&ctable_prepare,
 		&&ctable_close,
 		&&ctable_next,
@@ -1266,6 +1267,10 @@ cmerge_recv_agg:
 
 // table cursor
 ctable_open:
+	op = ctable_open(self, op);
+	op_jmp;
+
+ctable_open_lookup:
 	op = ctable_open(self, op);
 	op_jmp;
 

@@ -12,7 +12,7 @@
 //
 
 Row* row_create(Columns*, Value*);
-Row* row_create_key(Keys*, Value*);
+Row* row_create_key(Keys*, Value*, int);
 Row* row_update(Row*, Columns*, Value*, int);
 
 static inline uint32_t

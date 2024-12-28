@@ -32,14 +32,12 @@ explain delete from test
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int                 0      -      0     # -2147483648",
-      "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 6      0      0     ",
-      "04": "delete              0      0      0     ",
-      "05": "table_next          0      4      0     ",
-      "06": "table_close         0      0      0     ",
-      "07": "ret                 0      0      0     "
+      "00": "table_open          0      0      2     # public.test (primary)",
+      "01": "jmp                 4      0      0     ",
+      "02": "delete              0      0      0     ",
+      "03": "table_next          0      2      0     ",
+      "04": "table_close         0      0      0     ",
+      "05": "ret                 0      0      0     "
     }
   }
 }]
@@ -59,18 +57,16 @@ explain update test set data = id
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int                 0      -      0     # -2147483648",
-      "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 10     0      0     ",
-      "04": "int                 0      -      0     # 1",
+      "00": "table_open          0      0      2     # public.test (primary)",
+      "01": "jmp                 8      0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "push                0      0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "push                0      0      0     ",
-      "06": "table_readi32       0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "table_next          0      4      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "06": "update              0      1      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -143,14 +139,12 @@ explain delete from test
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int                 0      -      0     # -2147483648",
-      "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 6      0      0     ",
-      "04": "delete              0      0      0     ",
-      "05": "table_next          0      4      0     ",
-      "06": "table_close         0      0      0     ",
-      "07": "ret                 0      0      0     "
+      "00": "table_open          0      0      2     # public.test (primary)",
+      "01": "jmp                 4      0      0     ",
+      "02": "delete              0      0      0     ",
+      "03": "table_next          0      2      0     ",
+      "04": "table_close         0      0      0     ",
+      "05": "ret                 0      0      0     "
     }
   }
 }]
@@ -170,18 +164,16 @@ explain update test set data = id
       "04": "ret                 0      0      0     "
     },
     "node": {
-      "00": "int                 0      -      0     # -2147483648",
-      "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 10     0      0     ",
-      "04": "int                 0      -      0     # 1",
+      "00": "table_open          0      0      2     # public.test (primary)",
+      "01": "jmp                 8      0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "push                0      0      0     ",
+      "04": "table_readi32       0      0      0     ",
       "05": "push                0      0      0     ",
-      "06": "table_readi32       0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "table_next          0      4      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "06": "update              0      1      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]

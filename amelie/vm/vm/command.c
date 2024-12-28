@@ -297,7 +297,7 @@ cmerge_recv_agg(Vm* self, Op* op)
 hot Op*
 ctable_open(Vm* self, Op* op)
 {
-	// [cursor, name_offset, _where, is_point_lookup]
+	// [cursor, name_offset, _where, keys_count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
@@ -314,11 +314,12 @@ ctable_open(Vm* self, Op* op)
 	auto part  = part_list_match(&table->part_list, self->node);
 	auto index = part_find(part, &name_index, true);
 	auto keys  = index_keys(index);
+	auto keys_count = op->d;
 
 	// create cursor key
-	auto key = row_create_key(keys, stack_at(&self->stack, keys->list_count));
+	auto key = row_create_key(keys, stack_at(&self->stack, keys_count), keys_count);
 	guard(row_free, key);
-	stack_popn(&self->stack, keys->list_count);
+	stack_popn(&self->stack, keys_count);
 
 	// open cursor
 	cursor->type  = CURSOR_TABLE;
@@ -328,7 +329,7 @@ ctable_open(Vm* self, Op* op)
 	// in case of hash index, use key only for point-lookup
 	cursor->it = index_iterator(index);
 	auto key_ref = key;
-	if (index->config->type == INDEX_HASH && !op->d)
+	if (index->config->type == INDEX_HASH && keys_count != keys->list_count)
 		key_ref = NULL;
 	iterator_open(cursor->it, key_ref);
 

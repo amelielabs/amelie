@@ -55,7 +55,7 @@ explain delete from test where id = 3
     "node": {
       "00": "int                 0      -      0     # 3",
       "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary, lookup)",
+      "02": "table_open_lookup   0      0      4     # public.test (primary)",
       "03": "jmp                 10     0      0     ",
       "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 3",

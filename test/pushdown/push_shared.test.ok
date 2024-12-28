@@ -20,19 +20,17 @@ explain select * from test
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 11     0      0     ",
-      "05": "table_readi32       1      0      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
       "06": "push                1      0      0     ",
-      "07": "table_readi32       1      0      1     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      5      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
     }
   }
 }]
@@ -66,19 +64,17 @@ explain select * from (select * from test) t
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 11     0      0     ",
-      "05": "table_readi32       1      0      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
       "06": "push                1      0      0     ",
-      "07": "table_readi32       1      0      1     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      5      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     "
     }
   }
 }]
@@ -102,21 +98,19 @@ explain select (select test.id) from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "set                 1      1      0     ",
-      "06": "table_readi32       2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "set_result          2      1      0     ",
-      "10": "push                2      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 11     0      0     ",
+      "03": "set                 1      1      0     ",
+      "04": "table_readi32       2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "set_result          2      1      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          0      3      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -138,20 +132,18 @@ explain select (select id from test)
     "node": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
-      "02": "int                 2      -      0     # -2147483648",
-      "03": "push                2      0      0     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 10     0      0     ",
-      "06": "table_readi32       2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "table_next          0      6      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "set_result          2      1      0     ",
-      "12": "push                2      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "02": "table_open          0      0      4     # public.test (primary)",
+      "03": "jmp                 8      0      0     ",
+      "04": "table_readi32       2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          0      4      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -197,25 +189,21 @@ explain select test.id, t.id from test, test t
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # -2147483648",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 17     0      0     ",
-      "05": "int                 1      -      0     # -2147483648",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 13     0      0     ",
+      "03": "table_open          1      20     5     # public.test (primary)",
+      "04": "jmp                 11     0      0     ",
+      "05": "table_readi32       1      0      0     ",
       "06": "push                1      0      0     ",
-      "07": "table_open          1      20     9     # public.test (primary)",
-      "08": "jmp                 15     0      0     ",
-      "09": "table_readi32       1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "table_readi32       1      1      0     ",
-      "12": "push                1      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "table_next          1      9      0     ",
-      "15": "table_close         1      0      0     ",
-      "16": "table_next          0      5      0     ",
-      "17": "table_close         0      0      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "07": "table_readi32       1      1      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "table_next          1      5      0     ",
+      "11": "table_close         1      0      0     ",
+      "12": "table_next          0      3      0     ",
+      "13": "table_close         0      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]

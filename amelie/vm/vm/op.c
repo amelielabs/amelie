@@ -209,6 +209,7 @@ OpDesc ops[] =
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
+	{ CTABLE_OPEN_LOOKUP, "table_open_lookup" },
 	{ CTABLE_PREPARE, "table_prepare" },
 	{ CTABLE_CLOSE, "table_close" },
 	{ CTABLE_NEXT, "table_next" },
@@ -366,23 +367,23 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		}
 		case CTABLE_OPEN:
+		case CTABLE_OPEN_LOOKUP:
 		{
-			Str schema;
-			Str table;
-			Str index;
+			Str name_schema;
+			Str name_table;
+			Str name_index;
 			uint8_t* ref = code_data_at(data, op->b);
-			json_read_string(&ref, &schema);
-			json_read_string(&ref, &table);
-			json_read_string(&ref, &index);
+			json_read_string(&ref, &name_schema);
+			json_read_string(&ref, &name_table);
+			json_read_string(&ref, &name_index);
 			op_write(output, op, true, true, true,
-			         "%.*s.%.*s (%.*s%s)",
-			         str_size(&schema),
-			         str_of(&schema),
-			         str_size(&table),
-			         str_of(&table),
-			         str_size(&index),
-			         str_of(&index),
-			         op->d ? ", lookup": "");
+			         "%.*s.%.*s (%.*s)",
+			         str_size(&name_schema),
+			         str_of(&name_schema),
+			         str_size(&name_table),
+			         str_of(&name_table),
+			         str_size(&name_index),
+			         str_of(&name_index));
 			break;
 		}
 		case CTABLE_PREPARE:
