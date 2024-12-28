@@ -36,18 +36,18 @@
 #include <amelie_planner.h>
 
 static bool
-planner_match(AstPath*     prev_path,
+planner_match(Plan*        prev_plan,
               IndexConfig* prev,
-              AstPath*     next_path,
+              Plan*        next_plan,
               IndexConfig* next)
 {
 	// tree
 	if (prev->type == INDEX_TREE && next->type == INDEX_TREE)
 	{
 		// choose index with max number of key matches from start
-		if (next_path->match > prev_path->match)
+		if (next_plan->match_start > prev_plan->match_start)
 			return true;
-		if (next_path->match_stop > prev_path->match_stop)
+		if (next_plan->match_stop > prev_plan->match_stop)
 			return true;
 		return false;
 	}
@@ -56,17 +56,17 @@ planner_match(AstPath*     prev_path,
 	if (prev->type == INDEX_HASH && next->type == INDEX_HASH)
 	{
 		// choose next only if it is point lookup, unless prev one is
-		if (prev_path->type == PATH_LOOKUP)
+		if (prev_plan->type == PLAN_LOOKUP)
 			return false;
-		return next_path->type == PATH_LOOKUP;
+		return next_plan->type == PLAN_LOOKUP;
 	}
 	// tree/hash
 
 	// choose hash over tree only in case if it is a point lookup
 	if (prev->type == INDEX_HASH)
-		return prev_path->type == PATH_LOOKUP;
+		return prev_plan->type == PLAN_LOOKUP;
 
-	return next_path->type == PATH_LOOKUP;
+	return next_plan->type == PLAN_LOOKUP;
 }
 
 void
@@ -74,39 +74,40 @@ planner(Target* target, Ast* expr)
 {
 	auto table = target->from_table;
 	assert(table);
-	if (target->path)
+	if (target->plan)
 		return;
 
-	Path path =
-	{
-		.keys        = NULL,
-		.target      = target,
-	};
+	// get a list of conditions
+	AstList ops;
+	ast_list_init(&ops);
+	if (expr)
+		ops_extract(&ops, expr);
 
 	// FROM USE INDEX (use predefined index)
 	if (target->from_table_index)
 	{
-		path.keys = &target->from_table_index->keys;
-		target->path = &path_create(&path, expr)->ast;
+		auto keys = &target->from_table_index->keys;
+		target->plan = plan_create(target, keys, &ops);
 		return;
 	}
 
 	// match the most optimal index to use
-	AstPath*     match_path = NULL;
+	Plan*        match_plan = NULL;
 	IndexConfig* match = NULL;
 	list_foreach(&table->config->indexes)
 	{
 		auto index = list_at(IndexConfig, link);
-		path.keys = &index->keys;
-		auto index_path = path_create(&path, expr);
-		if (!match || planner_match(match_path, match, index_path, index))
+		auto keys = &index->keys;
+
+		auto plan = plan_create(target, keys, &ops);
+		if (!match || planner_match(match_plan, match, plan, index))
 		{
-			match_path = index_path;
 			match = index;
+			match_plan = plan;
 		}
 	}
 
-	// set index and path
-	target->path = &match_path->ast;
+	// set index and plan
 	target->from_table_index = match;
+	target->plan = match_plan;
 }

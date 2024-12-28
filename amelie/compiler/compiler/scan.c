@@ -52,12 +52,12 @@ static inline void
 scan_key(Scan* self, Target* target)
 {
 	auto cp   = self->compiler;
-	auto path = ast_path_of(target->path);
+	auto plan = target->plan;
 
 	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &path->keys[key->order];
+		auto ref = &plan->keys[key->order];
 
 		// use value from >, >=, = expression as a key
 		if (ref->start)
@@ -101,14 +101,14 @@ static inline void
 scan_stop(Scan* self, Target* target, int _eof)
 {
 	auto cp   = self->compiler;
-	auto path = ast_path_of(target->path);
+	auto plan = target->plan;
 
 	list_foreach(&target->from_table_index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &path->keys[key->order];
+		auto ref = &plan->keys[key->order];
 		if (! ref->stop)
-			continue;
+			break;
 
 		// use <, <= condition
 		int rexpr;
@@ -129,10 +129,10 @@ scan_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto table = target->from_table;
 
-	// prepare scan path using where expression per target
+	// prepare scan plan using where expression per target
 	planner(target, self->expr_where);
-	auto path = ast_path_of(target->path);
-	auto point_lookup = (path->type == PATH_LOOKUP);
+	auto plan = target->plan;
+	auto point_lookup = (plan->type == PLAN_LOOKUP);
 	auto index = target->from_table_index;
 
 	// push cursor keys

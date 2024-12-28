@@ -142,8 +142,8 @@ explain select * from test where a > 1 and b < 1
 select * from test where a > 1 and b < 1
 
 # test: key compound gt and lt and lt (stop condition on outer key)
-explain select * from test where a > 1 and b < 1 and a < 10
-select * from test where a > 1 and b < 1 and a < 10
+explain select * from test where a > 1 and b < 2 and a < 10
+select * from test where a > 1 and b < 2 and a < 10
 
 # test: key compound gt and eq
 explain select * from test where a > 1 and b = 10

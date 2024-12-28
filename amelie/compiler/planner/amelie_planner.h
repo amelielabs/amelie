@@ -11,9 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-// planner
-#include "planner/path.h"
+#include "planner/ops.h"
+#include "planner/plan.h"
 #include "planner/planner.h"
 
-// misc
 #include "planner/target.h"

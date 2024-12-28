@@ -17,9 +17,9 @@ target_lookup_hash(Target* target)
 	uint32_t hash = 0;
 	list_foreach(&target->from_table_index->keys.list)
 	{
-		auto key = list_at(Key, link);
+		auto key    = list_at(Key, link);
 		auto column = key->column;
-		auto ref = &ast_path_of(target->path)->keys[key->order];
+		auto ref    = &target->plan->keys[key->order];
 		assert(ref->start);
 		if (column->type == TYPE_STRING)
 		{

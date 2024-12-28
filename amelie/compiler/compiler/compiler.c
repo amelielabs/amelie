@@ -343,7 +343,7 @@ emit_send(Compiler* self, int start)
 	} else
 	{
 		// point-lookup or range scan
-		if (ast_path_of(target->path)->type == PATH_LOOKUP)
+		if (target->plan->type == PLAN_LOOKUP)
 		{
 			// send to one node (shard by lookup key hash)
 			uint32_t hash = target_lookup_hash(target);

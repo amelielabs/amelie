@@ -14,6 +14,7 @@
 typedef struct Target  Target;
 typedef struct Targets Targets;
 typedef struct Stmt    Stmt;
+typedef struct Plan    Plan;
 
 typedef enum
 {
@@ -48,8 +49,8 @@ struct Target
 	Columns*     from_columns;
 	Ast*         from_function;
 	int          r;
-	// target keys
-	Ast*         path;
+	// target plan
+	Plan*        plan;
 	// join
 	TargetJoin   join;
 	Ast*         join_on;
@@ -72,7 +73,7 @@ target_allocate(int* id_seq)
 	self->from_columns     = NULL;
 	self->from_function    = NULL;
 	self->r                = -1;
-	self->path             = NULL;
+	self->plan             = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
 	self->next             = NULL;

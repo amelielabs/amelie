@@ -256,7 +256,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_import.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
-    ${AMELIE_ROOT}/compiler/planner/path.c
+    ${AMELIE_ROOT}/compiler/planner/plan.c
     ${AMELIE_ROOT}/compiler/planner/planner.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c
