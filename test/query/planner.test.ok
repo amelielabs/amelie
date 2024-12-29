@@ -292,16 +292,14 @@ explain select * from test where id = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "int                 0      -      0     # 1",
-      "01": "push                0      0      0     ",
-      "02": "send_lookup         0      0      -     # public.test",
-      "03": "recv                0      0      0     ",
-      "04": "bool                0      0      0     ",
-      "05": "push                0      0      0     ",
-      "06": "merge_recv          0      -1     -1    ",
-      "07": "cte_set             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "send_lookup         0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "node": {
       "00": "set                 0      2      0     ",
@@ -459,18 +457,14 @@ explain select * from test where data = 1 and id = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "int                 0      -      0     # 1",
-      "01": "push                0      0      0     ",
-      "02": "int                 0      -      0     # 1",
+      "00": "send_lookup         0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "send_lookup         0      0      -     # public.test",
-      "05": "recv                0      0      0     ",
-      "06": "bool                0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "merge_recv          0      -1     -1    ",
-      "09": "cte_set             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "node": {
       "00": "set                 0      2      0     ",
@@ -507,18 +501,14 @@ explain select * from test where id = 1 and data = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "int                 0      -      0     # 1",
-      "01": "push                0      0      0     ",
-      "02": "int                 0      -      0     # 1",
+      "00": "send_lookup         0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "send_lookup         0      0      -     # public.test",
-      "05": "recv                0      0      0     ",
-      "06": "bool                0      0      0     ",
-      "07": "push                0      0      0     ",
-      "08": "merge_recv          0      -1     -1    ",
-      "09": "cte_set             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "node": {
       "00": "set                 0      2      0     ",

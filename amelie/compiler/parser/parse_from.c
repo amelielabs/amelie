@@ -328,5 +328,5 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 	}
 
 	if (targets_count(targets, TARGET_TABLE) > 1)
-		error("direct JOIN with distributed table is not supported");
+		error("FROM: only one distributed table can be part of JOIN");
 }

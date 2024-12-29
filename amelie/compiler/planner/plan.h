@@ -35,11 +35,13 @@ struct PlanKey
 
 struct Plan
 {
-	int     type;
-	Target* target;
-	int     match_start;
-	int     match_stop;
-	PlanKey keys[];
+	int      type;
+	Target*  target;
+	int      match_start;
+	int      match_start_columns;
+	int      match_stop;
+	PlanKey  keys[];
 };
 
-Plan* plan_create(Target*, Keys*, AstList*);
+Plan*    plan_create(Target*, Keys*, AstList*);
+uint32_t plan_create_hash(Plan*);

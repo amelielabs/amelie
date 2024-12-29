@@ -68,8 +68,24 @@ select test.id, ref.id from test join ref using(unknown)
 # test: select from table join using #2
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
-
+# unknown
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
+
+# test: with (select from table) select from table, cte
+explain with a as (select * from test) select * from test, a where test.id = a.id
+with a as (select * from test) select * from test, a where test.id = a.id
+
+# test: with (select from table) select from table, cte (point lookup)
+explain with a as (select * from test) select * from test, a where test.id = 1
+with a as (select * from test) select * from test, a where test.id = 1
+
+# test: with (select from table) select from cte, table
+explain with a as (select * from test) select * from a, test where test.id = a.id
+with a as (select * from test) select * from a, test where test.id = a.id
+
+# test: with (select from table) select from cte, table (point lookup)
+explain with a as (select * from test) select * from a, test where test.id = 1
+with a as (select * from test) select * from a, test where test.id = 1
 
 drop table ref
 drop table test

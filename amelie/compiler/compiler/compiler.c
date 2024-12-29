@@ -336,29 +336,21 @@ emit_send(Compiler* self, int start)
 	auto table = target->from_table;
 	if (table->config->shared)
 	{
-		// send to first node
+		// send to the first node
 
 		// CSEND_FIRST
 		op2(self, CSEND_FIRST, stmt->order, start);
 	} else
 	{
 		// point-lookup or range scan
-		if (target->plan->type == PLAN_LOOKUP)
+		auto plan = target->plan_primary;
+		if (plan->type == PLAN_LOOKUP && !plan->match_start_columns)
 		{
-			// send to one node using the point lookup key
-			auto keys = &target->from_table_index->keys;
-			list_foreach(&keys->list)
-			{
-				auto key = list_at(Key, link);
-				auto ref = &target->plan->keys[key->order];
-				int rexpr = emit_expr(self, target->targets, ref->start);
-				op1(self, CPUSH, rexpr);
-				runpin(self, rexpr);
-			}
+			// send to one node using the point lookup key hash
+			uint32_t hash = plan_create_hash(plan);
 
 			// CSEND_LOOKUP
-			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table,
-			    keys->list_count);
+			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);
 		} else
 		{
 			// send to all table nodes

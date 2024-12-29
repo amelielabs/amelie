@@ -88,10 +88,17 @@ planner(Target* target, Ast* expr)
 	{
 		auto keys = &target->from_table_index->keys;
 		target->plan = plan_create(target, keys, &ops);
+
+		auto primary = table_primary(target->from_table);
+		if (target->from_table_index != primary)
+			target->plan_primary = plan_create(target, &primary->keys, &ops);
+		else
+			target->plan_primary = target->plan;
 		return;
 	}
 
 	// match the most optimal index to use
+	Plan*        match_plan_primary = NULL;
 	Plan*        match_plan = NULL;
 	IndexConfig* match = NULL;
 	list_foreach(&table->config->indexes)
@@ -99,15 +106,26 @@ planner(Target* target, Ast* expr)
 		auto index = list_at(IndexConfig, link);
 		auto keys = &index->keys;
 
+		// primary
 		auto plan = plan_create(target, keys, &ops);
-		if (!match || planner_match(match_plan, match, plan, index))
+		if (! match)
 		{
-			match = index;
+			match_plan_primary = plan;
 			match_plan = plan;
+			match = index;
+			continue;
+		}
+
+		// secondary
+		if (planner_match(match_plan, match, plan, index))
+		{
+			match_plan = plan;
+			match = index;
 		}
 	}
 
 	// set index and plan
 	target->from_table_index = match;
+	target->plan_primary = match_plan_primary;
 	target->plan = match_plan;
 }

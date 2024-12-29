@@ -49,8 +49,9 @@ struct Target
 	Columns*     from_columns;
 	Ast*         from_function;
 	int          r;
-	// target plan
+	// target plans
 	Plan*        plan;
+	Plan*        plan_primary;
 	// join
 	TargetJoin   join;
 	Ast*         join_on;
@@ -74,6 +75,7 @@ target_allocate(int* id_seq)
 	self->from_function    = NULL;
 	self->r                = -1;
 	self->plan             = NULL;
+	self->plan_primary     = NULL;
 	self->join             = JOIN_NONE;
 	self->join_on          = NULL;
 	self->next             = NULL;

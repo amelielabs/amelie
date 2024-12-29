@@ -40,10 +40,11 @@ plan_allocate(Target* target, Keys* keys)
 {
 	Plan* self;
 	self = palloc(sizeof(Plan) + sizeof(PlanKey) * keys->list_count);
-	self->type        = PLAN_SCAN;
-	self->target      = target;
-	self->match_start = 0;
-	self->match_stop  = 0;
+	self->type                = PLAN_SCAN;
+	self->target              = target;
+	self->match_start         = 0;
+	self->match_start_columns = 0;
+	self->match_stop          = 0;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
@@ -264,19 +265,29 @@ plan_create(Target* target, Keys* keys, AstList* ops)
 {
 	auto self = plan_allocate(target, keys);
 	auto match_eq = 0;
+	auto match_last_start = -1;
+	auto match_last_stop  = -1;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
 		auto key_plan = &self->keys[key->order];
 		plan_key(self, key_plan, ops);
-		if (key_plan->start)
+
+		// count sequential number of matches from start
+		if (key_plan->start && (match_last_start == (key->order - 1)))
 		{
+			match_last_start = key->order;
 			self->match_start++;
+			if (key_plan->start->id == KNAME_COMPOUND)
+				self->match_start_columns++;
 			if (key_plan->start_op->id == '=')
 				match_eq++;
 		}
-		if (key_plan->stop)
+		if (key_plan->stop && (match_last_stop == (key->order - 1)))
+		{
+			match_last_stop = key->order;
 			self->match_stop++;
+		}
 	}
 
 	// point lookup
@@ -284,4 +295,27 @@ plan_create(Target* target, Keys* keys, AstList* ops)
 		self->type = PLAN_LOOKUP;
 
 	return self;
+}
+
+uint32_t
+plan_create_hash(Plan* self)
+{
+	assert(self->type == PLAN_LOOKUP);
+	uint32_t hash = 0;
+	for (auto i = 0; i < self->match_start; i++)
+	{
+		auto value = self->keys[i].start;
+		if (value->id == KSTRING) {
+			hash = hash_murmur3_32(str_u8(&value->string),
+			                       str_size(&value->string),
+			                       0);
+		} else
+		{
+			assert(value->id == KINT || value->id == KTIMESTAMP);
+			hash = hash_murmur3_32((uint8_t*)&value->integer,
+			                       sizeof(value->integer),
+			                       0);
+		}
+	}
+	return hash;
 }

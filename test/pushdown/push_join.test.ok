@@ -86,9 +86,9 @@ select test.*, ref.* from ref, test
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t
-{"msg": "direct JOIN with distributed table is not supported"}
+{"msg": "FROM: only one distributed table can be part of JOIN"}
 select t.* from test, test t
-{"msg": "direct JOIN with distributed table is not supported"}
+{"msg": "FROM: only one distributed table can be part of JOIN"}
 # test: select from table join shared
 explain select test.id, ref.id from test join ref on true
 [{
@@ -407,16 +407,14 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [{
   "bytecode": {
     "coordinator": {
-      "00": "int                 0      -      0     # 1",
-      "01": "push                0      0      0     ",
-      "02": "send_lookup         0      0      -     # public.test",
-      "03": "recv                0      0      0     ",
-      "04": "bool                0      0      0     ",
-      "05": "push                0      0      0     ",
-      "06": "merge_recv          0      -1     -1    ",
-      "07": "cte_set             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "send_lookup         0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "node": {
       "00": "set                 0      2      0     ",
@@ -606,6 +604,264 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id) wh
 [[1, 1], [2, 2], [3, 3]]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
 {"msg": "<ref.id2> column not found"}
+# test: with (select from table) select from table, cte
+explain with a as (select * from test) select * from test, a where test.id = a.id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "send_all            1      12     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "bool                0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "merge_recv          0      -1     -1    ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     ",
+      "12": "set                 0      4      0     ",
+      "13": "table_open          0      20     15    # public.test (primary)",
+      "14": "jmp                 34     0      0     ",
+      "15": "cte_get             1      0      0     ",
+      "16": "store_open          1      1      18    ",
+      "17": "jmp                 32     0      0     ",
+      "18": "table_readi32       2      0      0     ",
+      "19": "store_read          3      1      0     ",
+      "20": "equii               4      2      3     ",
+      "21": "jntr                31     4      0     ",
+      "22": "table_readi32       2      0      0     ",
+      "23": "push                2      0      0     ",
+      "24": "table_readi32       2      0      1     ",
+      "25": "push                2      0      0     ",
+      "26": "store_read          2      1      0     ",
+      "27": "push                2      0      0     ",
+      "28": "store_read          2      1      1     ",
+      "29": "push                2      0      0     ",
+      "30": "set_add             0      0      0     ",
+      "31": "store_next          1      18     0     ",
+      "32": "store_close         1      1      0     ",
+      "33": "table_next          0      15     0     ",
+      "34": "table_close         0      0      0     ",
+      "35": "result              0      0      0     ",
+      "36": "ret                 0      0      0     "
+    }
+  }
+}]
+with a as (select * from test) select * from test, a where test.id = a.id
+[[1, 0, 1, 0], [2, 0, 2, 0], [3, 0, 3, 0]]
+# test: with (select from table) select from table, cte (point lookup)
+explain with a as (select * from test) select * from test, a where test.id = 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "send_lookup         1      12     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "bool                0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "merge_recv          0      -1     -1    ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     ",
+      "12": "set                 0      4      0     ",
+      "13": "int                 1      -      0     # 1",
+      "14": "push                1      0      0     ",
+      "15": "table_open_lookup   0      20     17    # public.test (primary)",
+      "16": "jmp                 36     0      0     ",
+      "17": "cte_get             1      0      0     ",
+      "18": "store_open          1      1      20    ",
+      "19": "jmp                 34     0      0     ",
+      "20": "table_readi32       2      0      0     ",
+      "21": "int                 3      -      0     # 1",
+      "22": "equii               4      2      3     ",
+      "23": "jntr                33     4      0     ",
+      "24": "table_readi32       2      0      0     ",
+      "25": "push                2      0      0     ",
+      "26": "table_readi32       2      0      1     ",
+      "27": "push                2      0      0     ",
+      "28": "store_read          2      1      0     ",
+      "29": "push                2      0      0     ",
+      "30": "store_read          2      1      1     ",
+      "31": "push                2      0      0     ",
+      "32": "set_add             0      0      0     ",
+      "33": "store_next          1      20     0     ",
+      "34": "store_close         1      1      0     ",
+      "35": "jmp                 16     0      0     ",
+      "36": "table_close         0      0      0     ",
+      "37": "result              0      0      0     ",
+      "38": "ret                 0      0      0     "
+    }
+  }
+}]
+with a as (select * from test) select * from test, a where test.id = 1
+[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0]]
+# test: with (select from table) select from cte, table
+explain with a as (select * from test) select * from a, test where test.id = a.id
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "send_all            1      12     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "bool                0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "merge_recv          0      -1     -1    ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     ",
+      "12": "set                 0      4      0     ",
+      "13": "cte_get             1      0      0     ",
+      "14": "store_open          0      1      16    ",
+      "15": "jmp                 36     0      0     ",
+      "16": "store_read          2      0      0     ",
+      "17": "push                2      0      0     ",
+      "18": "table_open_lookup   1      20     20    # public.test (primary)",
+      "19": "jmp                 34     0      0     ",
+      "20": "table_readi32       2      1      0     ",
+      "21": "store_read          3      0      0     ",
+      "22": "equii               4      2      3     ",
+      "23": "jntr                19     4      0     ",
+      "24": "store_read          2      0      0     ",
+      "25": "push                2      0      0     ",
+      "26": "store_read          2      0      1     ",
+      "27": "push                2      0      0     ",
+      "28": "table_readi32       2      1      0     ",
+      "29": "push                2      0      0     ",
+      "30": "table_readi32       2      1      1     ",
+      "31": "push                2      0      0     ",
+      "32": "set_add             0      0      0     ",
+      "33": "jmp                 19     0      0     ",
+      "34": "table_close         1      0      0     ",
+      "35": "store_next          0      16     0     ",
+      "36": "store_close         0      1      0     ",
+      "37": "result              0      0      0     ",
+      "38": "ret                 0      0      0     "
+    }
+  }
+}]
+with a as (select * from test) select * from a, test where test.id = a.id
+[[1, 0, 1, 0], [2, 0, 2, 0], [3, 0, 3, 0]]
+# test: with (select from table) select from cte, table (point lookup)
+explain with a as (select * from test) select * from a, test where test.id = 1
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "send_lookup         1      12     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "bool                0      0      0     ",
+      "09": "push                0      0      0     ",
+      "10": "merge_recv          0      -1     -1    ",
+      "11": "cte_set             1      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 9      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      0      1     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "result              0      0      0     ",
+      "11": "ret                 0      0      0     ",
+      "12": "set                 0      4      0     ",
+      "13": "cte_get             1      0      0     ",
+      "14": "store_open          0      1      16    ",
+      "15": "jmp                 36     0      0     ",
+      "16": "int                 2      -      0     # 1",
+      "17": "push                2      0      0     ",
+      "18": "table_open_lookup   1      20     20    # public.test (primary)",
+      "19": "jmp                 34     0      0     ",
+      "20": "table_readi32       2      1      0     ",
+      "21": "int                 3      -      0     # 1",
+      "22": "equii               4      2      3     ",
+      "23": "jntr                19     4      0     ",
+      "24": "store_read          2      0      0     ",
+      "25": "push                2      0      0     ",
+      "26": "store_read          2      0      1     ",
+      "27": "push                2      0      0     ",
+      "28": "table_readi32       2      1      0     ",
+      "29": "push                2      0      0     ",
+      "30": "table_readi32       2      1      1     ",
+      "31": "push                2      0      0     ",
+      "32": "set_add             0      0      0     ",
+      "33": "jmp                 19     0      0     ",
+      "34": "table_close         1      0      0     ",
+      "35": "store_next          0      16     0     ",
+      "36": "store_close         0      1      0     ",
+      "37": "result              0      0      0     ",
+      "38": "ret                 0      0      0     "
+    }
+  }
+}]
+with a as (select * from test) select * from a, test where test.id = 1
+[[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0]]
 drop table ref
 drop table test
 disconnect S0
