@@ -55,22 +55,14 @@ parse_vector(Lex* self, Buf* buf)
 		auto ast = lex_next(self);
 
 		// int or float
-		auto  minus = ast->id == '-';
-		if (minus)
-			ast = lex_next(self);
 		float value;
-		if (likely(ast->id == KINT)) {
-			if (minus)
-				ast->integer = -ast->integer;
+		if (likely(ast->id == KINT))
 			value = ast->integer;
-		} else
-		if (ast->id == KREAL) {
-			if (minus)
-				ast->real = -ast->real;
+		else
+		if (ast->id == KREAL)
 			value = ast->real;
-		} else {
+		else
 			error("invalid vector value");
-		}
 		buf_write_float(buf, value);
 		count++;
 
@@ -106,40 +98,24 @@ parse_value(Lex*    self, Local* local,
 		return;
 	case TYPE_INT:
 	{
-		auto minus = ast->id == '-';
-		if (minus)
-			ast = lex_next(self);
-		if (likely(ast->id == KINT)) {
-			if (minus)
-				ast->integer = -ast->integer;
+		if (likely(ast->id == KINT))
 			value_set_int(value, ast->integer);
-		} else
-		if (ast->id == KREAL) {
-			if (minus)
-				ast->real = -ast->real;
+		else
+		if (ast->id == KREAL)
 			value_set_int(value, ast->real);
-		} else {
+		else
 			break;
-		}
 		return;
 	}
 	case TYPE_DOUBLE:
 	{
-		auto minus = ast->id == '-';
-		if (minus)
-			ast = lex_next(self);
-		if (likely(ast->id == KINT)) {
-			if (minus)
-				ast->integer = -ast->integer;
+		if (likely(ast->id == KINT))
 			value_set_double(value, ast->integer);
-		} else
-		if (ast->id == KREAL) {
-			if (minus)
-				ast->real = -ast->real;
+		else
+		if (ast->id == KREAL)
 			value_set_double(value, ast->real);
-		} else {
+		else
 			break;
-		}
 		return;
 	}
 	case TYPE_STRING:

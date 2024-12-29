@@ -146,14 +146,14 @@ select null::json
 select 123::json
 [123]
 select -123::json
-{"msg": "'-': unsupported operation type <json>"}
+[-123]
 select (-123)::json
 [-123]
 # test: json(double)
 select 123.321::json
 [123.321]
 select -123.321::json
-{"msg": "'-': unsupported operation type <json>"}
+[-123.321]
 select (-123.321)::json
 [-123.321]
 # test: json(string)

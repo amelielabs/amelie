@@ -21,6 +21,9 @@ create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 explain select * from test where test.id > 1
 select * from test where test.id > 1
+
+explain select * from test where test.id > -1
+select * from test where test.id > -1
 drop table test
 
 # test: key alias.column

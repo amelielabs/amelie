@@ -24,13 +24,12 @@ explain select -1234
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1234",
-      "02": "negi                2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -1234",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   }
 }]
@@ -300,16 +299,14 @@ explain select -1 >= -10
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "negi                2      1      0     ",
-      "03": "int                 1      -      0     # 10",
-      "04": "negi                3      1      0     ",
-      "05": "gteii               1      2      3     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -1",
+      "02": "int                 2      -      0     # -10",
+      "03": "gteii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -399,16 +396,14 @@ explain select -1 > -10
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "negi                2      1      0     ",
-      "03": "int                 1      -      0     # 10",
-      "04": "negi                3      1      0     ",
-      "05": "gtii                1      2      3     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -1",
+      "02": "int                 2      -      0     # -10",
+      "03": "gtii                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -498,16 +493,14 @@ explain select -1 <= -10
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "negi                2      1      0     ",
-      "03": "int                 1      -      0     # 10",
-      "04": "negi                3      1      0     ",
-      "05": "lteii               1      2      3     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -1",
+      "02": "int                 2      -      0     # -10",
+      "03": "lteii               3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -597,16 +590,14 @@ explain select -1 < -10
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "negi                2      1      0     ",
-      "03": "int                 1      -      0     # 10",
-      "04": "negi                3      1      0     ",
-      "05": "ltii                1      2      3     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -1",
+      "02": "int                 2      -      0     # -10",
+      "03": "ltii                3      1      2     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "cte_set             0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -1095,13 +1086,12 @@ explain select -18
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 18",
-      "02": "negi                2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "01": "int                 1      -      0     # -18",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   }
 }]

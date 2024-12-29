@@ -39,9 +39,8 @@ set test_int to 1234
 show test_int
 [1234]
 set test_int to -1
-{"msg": "SET name TO <value> expected string, int, or bool"}
 show test_int
-[1234]
+[-1]
 set test_int to 2147483647
 show test_int
 [2147483647]

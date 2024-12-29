@@ -682,13 +682,12 @@ explain select -18.8
   "bytecode": {
     "coordinator": {
       "00": "set                 0      1      0     ",
-      "01": "double              1      0      0     # 18.8",
-      "02": "negd                2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "01": "double              1      0      0     # -18.8",
+      "02": "push                1      0      0     ",
+      "03": "set_add             0      0      0     ",
+      "04": "cte_set             0      0      0     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   }
 }]

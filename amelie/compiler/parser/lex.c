@@ -161,6 +161,53 @@ lex_next(Lex* self)
 		return ast;
 	}
 
+	// -
+	auto minus = *self->pos == '-';
+	if (minus)
+		self->pos++;
+
+	// integer or float
+	if (isdigit(*self->pos))
+	{
+		ast->id = KINT;
+		auto start = self->pos;
+		while (self->pos < self->end)
+		{
+			// float
+			if (*self->pos == '.' ||
+			    *self->pos == 'e' ||
+			    *self->pos == 'E')
+			{
+				self->pos = start;
+				goto reread_as_float;
+			}
+			if (! isdigit(*self->pos))
+				break;
+			ast->integer = (ast->integer * 10) + *self->pos - '0';
+			self->pos++;
+		}
+		if (minus)
+			ast->integer = -ast->integer;
+		return ast;
+
+reread_as_float:
+		errno = 0;
+		ast->id = KREAL;
+		char* end = NULL;
+		errno = 0;
+		ast->real = strtod(start, &end);
+		if (errno == ERANGE)
+			lex_error(self, "bad float number token");
+		self->pos = end;
+		if (minus)
+			ast->real = -ast->real;
+		return ast;
+	}
+
+	// -
+	if (minus)
+		self->pos--;
+
 	// symbols
 	if (*self->pos != '\"' &&
 	    *self->pos != '\'' && *self->pos != '_' && ispunct(*self->pos))
@@ -227,40 +274,6 @@ lex_next(Lex* self)
 symbol:;
 		ast->id = symbol;
 		ast->integer = 0;
-		return ast;
-	}
-
-	// integer or float
-	if (isdigit(*self->pos))
-	{
-		ast->id = KINT;
-		auto start = self->pos;
-		while (self->pos < self->end)
-		{
-			// float
-			if (*self->pos == '.' || 
-			    *self->pos == 'e' || 
-			    *self->pos == 'E')
-		   	{
-				self->pos = start;
-				goto reread_as_float;
-			}
-			if (! isdigit(*self->pos))
-				break;
-			ast->integer = (ast->integer * 10) + *self->pos - '0';
-			self->pos++;
-		}
-		return ast;
-
-reread_as_float:
-		errno = 0;
-		ast->id = KREAL;
-		char* end = NULL;
-		errno = 0;
-		ast->real = strtod(start, &end);
-		if (errno == ERANGE)
-			lex_error(self, "bad float number token");
-		self->pos = end;
 		return ast;
 	}
 
