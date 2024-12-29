@@ -286,15 +286,41 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 			auto target = parse_from_add(self, targets, subquery);
 
 			// ON
-			if (! stmt_if(self, KON))
-				error("JOIN name <ON> expected");
+			if (stmt_if(self, KON))
+			{
+				// expr
+				Expr ctx;
+				expr_init(&ctx);
+				ctx.targets = targets;
+				target->join_on = parse_expr(self, &ctx);
+				target->join    = join;
+				continue;
+			}
 
-			// expr
-			Expr ctx;
-			expr_init(&ctx);
-			ctx.targets = targets;
-			target->join_on = parse_expr(self, &ctx);
-			target->join    = join;
+			// USING (column)
+			if (stmt_if(self, KUSING))
+			{
+				if (! stmt_if(self, '('))
+					error("USING <(> expected");
+				auto name = stmt_if(self, KNAME);
+				if (! name)
+					error("USING (<column> expected");
+				if (! stmt_if(self, ')'))
+					error("USING (column <)> expected");
+
+				// outer.column = target.column
+				auto equ = ast('=');
+				equ->l = ast(KNAME_COMPOUND);
+				equ->r = ast(KNAME_COMPOUND);
+				parse_set_target_column(&equ->l->string, &target->prev->name, &name->string);
+				parse_set_target_column(&equ->r->string, &target->name, &name->string);
+
+				target->join_on = equ;
+				target->join    = join;
+				continue;
+			}
+
+			error("JOIN name <ON | USING> expected");
 			continue;
 		}
 

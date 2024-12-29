@@ -493,6 +493,119 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
 }]
 select test.id, ref.id from test, ref where ref.id >= test.id
 [[1, 1], [1, 2], [1, 3], [2, 2], [2, 3], [3, 3]]
+# test: select from table join using
+explain select test.id, ref.id from test join ref using
+{"msg": "USING <(> expected"}
+explain select test.id, ref.id from test join ref using(
+{"msg": "USING (<column> expected"}
+explain select test.id, ref.id from test join ref using(1
+{"msg": "USING (<column> expected"}
+explain select test.id, ref.id from test join ref using(id
+{"msg": "USING (column <)> expected"}
+explain select test.id, ref.id from test join ref using(id)
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      3     # public.test (primary)",
+      "02": "jmp                 19     0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_open_lookup   1      20     7     # public.ref (primary)",
+      "06": "jmp                 17     0      0     ",
+      "07": "table_readi32       1      0      0     ",
+      "08": "table_readi32       2      1      0     ",
+      "09": "equii               3      1      2     ",
+      "10": "jntr                6      3      0     ",
+      "11": "table_readi32       1      0      0     ",
+      "12": "push                1      0      0     ",
+      "13": "table_readi32       1      1      0     ",
+      "14": "push                1      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "jmp                 6      0      0     ",
+      "17": "table_close         1      0      0     ",
+      "18": "table_next          0      3      0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "result              0      0      0     ",
+      "21": "ret                 0      0      0     "
+    }
+  }
+}]
+select test.id, ref.id from test join ref using(id)
+[[1, 1], [2, 2], [3, 3]]
+# test: select from table join using (not found)
+select test.id, ref.id from test join ref using(unknown)
+{"msg": "<test.unknown> column not found"}
+# test: select from table join using #2
+explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "merge_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "push                1      0      0     ",
+      "03": "table_open          0      0      5     # public.test (primary)",
+      "04": "jmp                 35     0      0     ",
+      "05": "table_readi32       1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "table_open_lookup   1      20     9     # public.ref (primary)",
+      "08": "jmp                 33     0      0     ",
+      "09": "table_readi32       1      1      0     ",
+      "10": "push                1      0      0     ",
+      "11": "table_open_lookup   2      39     13    # public.ref (primary)",
+      "12": "jmp                 31     0      0     ",
+      "13": "table_readi32       1      0      0     ",
+      "14": "int                 2      -      0     # 0",
+      "15": "gtii                3      1      2     ",
+      "16": "table_readi32       1      0      0     ",
+      "17": "table_readi32       2      1      0     ",
+      "18": "equii               4      1      2     ",
+      "19": "and                 1      3      4     ",
+      "20": "table_readi32       2      1      0     ",
+      "21": "table_readi32       3      2      0     ",
+      "22": "equii               4      2      3     ",
+      "23": "and                 2      1      4     ",
+      "24": "jntr                12     2      0     ",
+      "25": "table_readi32       1      0      0     ",
+      "26": "push                1      0      0     ",
+      "27": "table_readi32       1      1      0     ",
+      "28": "push                1      0      0     ",
+      "29": "set_add             0      0      0     ",
+      "30": "jmp                 12     0      0     ",
+      "31": "table_close         2      0      0     ",
+      "32": "jmp                 8      0      0     ",
+      "33": "table_close         1      0      0     ",
+      "34": "table_next          0      5      0     ",
+      "35": "table_close         0      0      0     ",
+      "36": "result              0      0      0     ",
+      "37": "ret                 0      0      0     "
+    }
+  }
+}]
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
+[[1, 1], [2, 2], [3, 3]]
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
+{"msg": "<ref.id2> column not found"}
 drop table ref
 drop table test
 disconnect S0

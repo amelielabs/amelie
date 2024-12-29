@@ -149,13 +149,7 @@ returning_add_target(Returning* self, Target* target)
 		auto as = ast(KAS);
 		// target.order AS column, ...
 		as->l = ast(KNAME_COMPOUND);
-		auto size = str_size(&target->name) + 1 + str_size(&column->name);
-		auto name = palloc(size);
-		memcpy(name, target->name.pos, str_size(&target->name));
-		memcpy(name + str_size(&target->name), ".", 1);
-		memcpy(name + str_size(&target->name) + 1, column->name.pos,
-		       str_size(&column->name));
-		str_set(&as->l->string, name, size);
+		parse_set_target_column(&as->l->string, &target->name, &column->name);
 
 		// as
 		as->r = ast(KNAME);

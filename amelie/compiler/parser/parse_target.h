@@ -72,3 +72,14 @@ parse_target(Stmt* self, Str* schema, Str* name)
 	}
 	return path;
 }
+
+static inline void
+parse_set_target_column(Str* self, Str* target, Str* column)
+{
+	auto size = str_size(target) + 1 + str_size(column);
+	auto name = palloc(size);
+	memcpy(name, target->pos, str_size(target));
+	memcpy(name + str_size(target), ".", 1);
+	memcpy(name + str_size(target) + 1, column->pos, str_size(column));
+	str_set(self, name, size);
+}

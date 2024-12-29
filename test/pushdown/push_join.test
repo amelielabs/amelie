@@ -53,6 +53,24 @@ select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 explain select test.id, ref.id from test, ref where ref.id >= test.id
 select test.id, ref.id from test, ref where ref.id >= test.id
 
+# test: select from table join using
+explain select test.id, ref.id from test join ref using
+explain select test.id, ref.id from test join ref using(
+explain select test.id, ref.id from test join ref using(1
+explain select test.id, ref.id from test join ref using(id
+
+explain select test.id, ref.id from test join ref using(id)
+select test.id, ref.id from test join ref using(id)
+
+# test: select from table join using (not found)
+select test.id, ref.id from test join ref using(unknown)
+
+# test: select from table join using #2
+explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
+
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
+
 drop table ref
 drop table test
 
