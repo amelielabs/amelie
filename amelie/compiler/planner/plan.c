@@ -141,6 +141,57 @@ plan_stop(PlanKey* self, Ast* op, Ast* value)
 	return false;
 }
 
+static inline Column*
+plan_column(Plan* self, Str* string)
+{
+	// match outer target [target.]name and find the column
+	Str name;
+	str_split(string, &name, '.');
+
+	Str path;
+	str_init(&path);
+	str_set_str(&path, string);
+
+	// search outer targets (excluding self)
+	auto target = self->target->prev;
+	while (target)
+	{
+		if (str_compare(&target->name, &name))
+			break;
+		target = target->prev;
+	}
+	if (! target)
+		target = targets_match_outer(self->target->targets->outer, &name);
+	if (! target)
+		return NULL;
+
+	// exclude target name from the path
+	str_advance(&path, str_size(&name) + 1);
+
+	// exclude nested path (target.column.path)
+	if (str_split(&path, &name, '.'))
+		str_advance(&path, str_size(&name) + 1);
+	else
+		str_advance(&path, str_size(&name));
+
+	Column* column = NULL;
+	auto cte = target->from_cte;
+	if (target->type == TARGET_CTE && cte->cte_args.count > 0)
+	{
+		// find column in the CTE arguments list, redirect to the CTE statement
+		auto arg = columns_find(&cte->cte_args, &name);
+		if (arg)
+			column = columns_find_by(target->from_columns, arg->order);
+	} else
+	{
+		// find unique column name in the target
+		bool column_conflict = false;
+		column = columns_find_noconflict(target->from_columns, &name, &column_conflict);
+	}
+
+	return column;
+}
+
 static inline void
 plan_key(Plan* self, PlanKey* key, AstList* ops)
 {
@@ -174,10 +225,17 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 				continue;
 			break;
 		case KNAME:
+			continue;
 		case KNAME_COMPOUND:
-			// todo: match and exclude inner targets
-			// todo: compare column types
-			continue;	
+		{
+			// match outer target [target.]column and find the column
+			auto match = plan_column(self, &value->string);
+			if (! match)
+				continue;
+			if (column->type != match->type)
+				continue;
+			break;
+		}
 		}
 
 		// apply equ or range operation to the key

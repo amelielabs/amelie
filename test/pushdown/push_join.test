@@ -33,6 +33,26 @@ select test.id, ref.id from test join ref on test.id = ref.id
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 
+# test: select from table join shared on #3
+explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
+select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
+
+# test: select from table join shared on #4
+explain select test.id, ref.id from test, ref where test.id = ref.id
+select test.id, ref.id from test, ref where test.id = ref.id
+
+explain select test.id, ref.id from test, ref where ref.id = test.id
+select test.id, ref.id from test, ref where ref.id = test.id
+
+explain select test.id, ref.id from test, ref where ref.id = 1
+select test.id, ref.id from test, ref where ref.id = 1
+
+explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
+select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
+
+explain select test.id, ref.id from test, ref where ref.id >= test.id
+select test.id, ref.id from test, ref where ref.id >= test.id
+
 drop table ref
 drop table test
 
