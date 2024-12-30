@@ -350,7 +350,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "merge_recv          0      -1     -1    ",
+      "05": "union_recv          0      -1     -1    ",
       "06": "cte_set             0      0      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -399,7 +399,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "merge_recv          0      -1     -1    ",
+      "05": "union_recv          0      -1     -1    ",
       "06": "cte_set             0      0      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -440,7 +440,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "merge_recv          0      -1     -1    ",
+      "05": "union_recv          0      -1     -1    ",
       "06": "cte_set             0      0      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -488,7 +488,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "merge_recv          0      -1     -1    ",
+      "05": "union_recv          0      -1     -1    ",
       "06": "cte_set             0      0      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -562,14 +562,14 @@ explain insert into test select * from src on conflict do update set data = data
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "cte_get             0      0      0     ",
       "07": "send                1      12     -     # public.test",
       "08": "recv                1      0      0     ",
       "09": "bool                0      0      0     ",
       "10": "push                0      0      0     ",
-      "11": "merge_recv          0      -1     -1    ",
+      "11": "union_recv          0      -1     -1    ",
       "12": "cte_set             1      0      0     ",
       "13": "content             1      -      -     ",
       "14": "ret                 0      0      0     "

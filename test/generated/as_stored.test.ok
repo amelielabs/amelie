@@ -211,7 +211,7 @@ explain insert into test select * from src
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "cte_get             0      0      0     ",
       "07": "dup                 1      0      0     ",

@@ -249,7 +249,7 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool* desc)
 }
 
 hot int
-emit_select_merge(Compiler* self, AstSelect* select)
+emit_select_union(Compiler* self, AstSelect* select)
 {
 	// sort select set
 	op1(self, CSET_SORT, select->rset);
@@ -277,8 +277,8 @@ emit_select_merge(Compiler* self, AstSelect* select)
 			error("OFFSET: integer type expected");
 	}
 
-	// CMERGE
-	int rmerge = op4(self, CMERGE, rpin(self, TYPE_STORE), select->rset,
+	// CUNION
+	int runion = op4(self, CUNION, rpin(self, TYPE_STORE), select->rset,
 	                 rlimit, roffset);
 
 	runpin(self, select->rset);
@@ -288,7 +288,7 @@ emit_select_merge(Compiler* self, AstSelect* select)
 	if (roffset != -1)
 		runpin(self, roffset);
 
-	return rmerge;
+	return runion;
 }
 
 hot static void
@@ -392,8 +392,8 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 		// generate group by scan
 		emit_select_group_by_scan(self, select, NULL, NULL);
 
-		// create merge object and add sorted set, apply limit/offset
-		rresult = emit_select_merge(self, select);
+		// create union object and add sorted set, apply limit/offset
+		rresult = emit_select_union(self, select);
 	}
 	return rresult;
 }
@@ -424,8 +424,8 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	     emit_select_on_match,
 	     select);
 
-	// create merge object and add sorted set
-	return emit_select_merge(self, select);
+	// create union object and add sorted set
+	return emit_select_union(self, select);
 }
 
 hot static int

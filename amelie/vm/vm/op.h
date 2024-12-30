@@ -181,12 +181,12 @@ enum
 	CSET_GET,
 	CSET_RESULT,
 	CSET_AGG,
+	CSET_MERGE,
 	CSELF,
 
-	// merge
-	CMERGE,
-	CMERGE_RECV,
-	CMERGE_RECV_AGG,
+	// union
+	CUNION,
+	CUNION_RECV,
 
 	// table cursor
 	CTABLE_OPEN,

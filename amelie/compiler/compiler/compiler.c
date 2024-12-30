@@ -409,7 +409,7 @@ emit_recv(Compiler* self)
 		{
 			// recv whole query result from the first node
 
-			// CRECV_TO (note: set or merge received)
+			// CRECV_TO (note: set or union received)
 			r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
 			break;
 		}

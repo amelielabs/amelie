@@ -11,36 +11,36 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct MergeIterator MergeIterator;
-typedef struct MergeSet      MergeSet;
+typedef struct UnionIterator UnionIterator;
+typedef struct UnionSet      UnionSet;
 
-struct MergeSet
+struct UnionSet
 {
 	Set*   set;
 	Value* current;
 	int    pos;
 };
 
-struct MergeIterator
+struct UnionIterator
 {
 	StoreIterator it;
-	MergeSet*     current_it;
+	UnionSet*     current_it;
 	Buf*          list;
 	int           list_count;
 	int64_t       limit;
-	Merge*        merge;
+	Union*        ref;
 };
 
-always_inline static inline MergeIterator*
-merge_iterator_of(StoreIterator* self)
+always_inline static inline UnionIterator*
+union_iterator_of(StoreIterator* self)
 {
-	return (MergeIterator*)self;
+	return (UnionIterator*)self;
 }
 
 hot static inline Value*
-merge_iterator_step(MergeIterator* self)
+union_iterator_step(UnionIterator* self)
 {
-	auto list = (MergeSet*)self->list->start;
+	auto list = (UnionSet*)self->list->start;
 	if (self->current_it)
 	{
 		auto current = self->current_it;
@@ -52,7 +52,7 @@ merge_iterator_step(MergeIterator* self)
 		self->current_it = NULL;
 	}
 
-	MergeSet* min_iterator = NULL;
+	UnionSet* min_iterator = NULL;
 	Value*    min = NULL;
 	for (auto pos = 0; pos < self->list_count; pos++)
 	{
@@ -89,10 +89,10 @@ merge_iterator_step(MergeIterator* self)
 }
 
 hot static inline void
-merge_iterator_next(StoreIterator* arg)
+union_iterator_next(StoreIterator* arg)
 {
 	// apply limit
-	auto self = merge_iterator_of(arg);
+	auto self = union_iterator_of(arg);
 	if (self->limit-- <= 0)
 	{
 		self->current_it = NULL;
@@ -101,9 +101,9 @@ merge_iterator_next(StoreIterator* arg)
 	}
 
 	// unordered iteration
-	if (! self->merge->distinct)
+	if (! self->ref->distinct)
 	{
-		arg->current = merge_iterator_step(self);
+		arg->current = union_iterator_step(self);
 		return;
 	}
 
@@ -111,7 +111,7 @@ merge_iterator_next(StoreIterator* arg)
 	auto prev = arg->current;
 	for (;;)
 	{
-		arg->current = merge_iterator_step(self);
+		arg->current = union_iterator_step(self);
 		if (unlikely(!arg->current || !prev))
 			break;
 		if (set_compare(self->current_it->set, prev, arg->current) != 0)
@@ -120,27 +120,27 @@ merge_iterator_next(StoreIterator* arg)
 }
 
 static inline void
-merge_iterator_close(StoreIterator* arg)
+union_iterator_close(StoreIterator* arg)
 {
-	auto self = merge_iterator_of(arg);
+	auto self = union_iterator_of(arg);
 	if (self->list)
 		buf_free(self->list);
 	am_free(arg);
 }
 
 hot static inline void
-merge_iterator_open(MergeIterator* self)
+union_iterator_open(UnionIterator* self)
 {
-	auto merge = self->merge;
-	if (! merge->list_count)
+	auto ref = self->ref;
+	if (! ref->list_count)
 		return;
 
 	// prepare iterators
 	self->list = buf_create();
-	buf_reserve(self->list, sizeof(MergeSet) * merge->list_count);
+	buf_reserve(self->list, sizeof(UnionSet) * ref->list_count);
 
-	auto it = (MergeSet*)self->list->start;
-	list_foreach(&merge->list)
+	auto it = (UnionSet*)self->list->start;
+	list_foreach(&ref->list)
 	{
 		auto set = list_at(Set, link);
 		if (set->count == 0)
@@ -153,37 +153,37 @@ merge_iterator_open(MergeIterator* self)
 	}
 
 	// set to position
-	int64_t offset = merge->offset;
+	int64_t offset = ref->offset;
 	if (offset == 0)
 	{
-		self->limit = merge->limit;
-		merge_iterator_next(&self->it);
+		self->limit = ref->limit;
+		union_iterator_next(&self->it);
 		return;
 	}
 
-	merge_iterator_next(&self->it);
+	union_iterator_next(&self->it);
 
 	// apply offset
 	while (offset-- > 0 && self->it.current)
-		merge_iterator_next(&self->it);
+		union_iterator_next(&self->it);
 
-	self->limit = merge->limit - 1;
+	self->limit = ref->limit - 1;
 	if (self->limit < 0)
 		self->it.current = NULL;
 }
 
 static inline StoreIterator*
-merge_iterator_allocate(Merge* merge)
+union_iterator_allocate(Union* ref)
 {
-	MergeIterator* self = am_malloc(sizeof(*self));
-	self->it.next    = merge_iterator_next;
-	self->it.close   = merge_iterator_close;
+	UnionIterator* self = am_malloc(sizeof(*self));
+	self->it.next    = union_iterator_next;
+	self->it.close   = union_iterator_close;
 	self->it.current = NULL;
 	self->current_it = NULL;
 	self->list       = NULL;
 	self->list_count = 0;
 	self->limit      = INT64_MAX;
-	self->merge      = merge;
-	merge_iterator_open(self);
+	self->ref        = ref;
+	union_iterator_open(self);
 	return &self->it;
 }

@@ -10,7 +10,7 @@ explain select distinct * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -53,7 +53,7 @@ explain select distinct * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -90,7 +90,7 @@ explain select distinct id from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -125,7 +125,7 @@ explain select distinct id, data from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -163,7 +163,7 @@ explain select distinct data from test limit 4
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 4",
-      "05": "merge_recv          1      0      -1    ",
+      "05": "union_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -197,7 +197,7 @@ explain select distinct data from test limit 0
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 0",
-      "05": "merge_recv          1      0      -1    ",
+      "05": "union_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -232,7 +232,7 @@ explain select distinct data from test limit 1 offset 1
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 1",
       "05": "int                 1      -      0     # 1",
-      "06": "merge_recv          2      0      1     ",
+      "06": "union_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
@@ -272,7 +272,7 @@ explain select distinct data from test offset 1
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 1",
-      "05": "merge_recv          1      -1     0     ",
+      "05": "union_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -332,7 +332,7 @@ explain select * from test order by data
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -364,7 +364,7 @@ explain select distinct on (data) * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -406,7 +406,7 @@ explain select distinct * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -449,7 +449,7 @@ explain select distinct * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -486,7 +486,7 @@ explain select distinct id from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -521,7 +521,7 @@ explain select distinct id, data from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -559,7 +559,7 @@ explain select distinct data from test limit 4
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 4",
-      "05": "merge_recv          1      0      -1    ",
+      "05": "union_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -593,7 +593,7 @@ explain select distinct data from test limit 0
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 0",
-      "05": "merge_recv          1      0      -1    ",
+      "05": "union_recv          1      0      -1    ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -628,7 +628,7 @@ explain select distinct data from test limit 1 offset 1
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 1",
       "05": "int                 1      -      0     # 1",
-      "06": "merge_recv          2      0      1     ",
+      "06": "union_recv          2      0      1     ",
       "07": "cte_set             0      2      0     ",
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
@@ -668,7 +668,7 @@ explain select distinct data from test offset 1
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 1",
-      "05": "merge_recv          1      -1     0     ",
+      "05": "union_recv          1      -1     0     ",
       "06": "cte_set             0      1      0     ",
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
@@ -711,7 +711,7 @@ explain select * from test order by data
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -743,7 +743,7 @@ explain select distinct on (data) * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "

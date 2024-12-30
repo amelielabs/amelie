@@ -16,7 +16,7 @@ typedef struct Store Store;
 enum
 {
 	STORE_SET,
-	STORE_MERGE
+	STORE_UNION
 };
 
 struct Store

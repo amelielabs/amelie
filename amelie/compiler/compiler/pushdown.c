@@ -260,8 +260,8 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 		return rset;
 	}
 
-	// create merge object and apply distinct/limit/offset
-	return emit_select_merge(self, select);
+	// create union object and apply distinct/limit/offset
+	return emit_select_union(self, select);
 }
 
 static int
@@ -269,8 +269,8 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 {
 	// merge all received agg sets into one
 	//
-	// CMERGE_RECV_AGG
-	auto rset_agg = op3(self, CMERGE_RECV_AGG, rpin(self, TYPE_STORE),
+	// CSET_MERGE
+	auto rset_agg = op3(self, CSET_MERGE, rpin(self, TYPE_STORE),
 	                    self->current->order,
 	                    select->aggs);
 	select->rset_agg = rset_agg;
@@ -309,7 +309,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 int
 pushdown_recv(Compiler* self, Ast* ast)
 {
-	// all functions below return MERGE/SET on coordinator
+	// all functions below return UNION/SET on coordinator
 	AstSelect* select = ast_select_of(ast);
 
 	// CRECV
@@ -324,7 +324,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
 
-	// create merge object using received sets and apply
+	// create union object using received sets and apply
 	// distinct/limit/offset
 	
 	// distinct
@@ -350,8 +350,8 @@ pushdown_recv(Compiler* self, Ast* ast)
 			error("OFFSET: integer type expected");
 	}
 
-	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_STORE), rlimit, roffset,
+	// CUNION_RECV
+	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), rlimit, roffset,
 	                 self->current->order);
 
 	if (rlimit != -1)
@@ -359,7 +359,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 	if (roffset != -1)
 		runpin(self, roffset);
 
-	return rmerge;
+	return runion;
 }
 
 int
@@ -370,15 +370,15 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	if (! returning)
 		return -1;
 
-	// create merge object using received sets
+	// create union object using received sets
 
 	// distinct
 	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), false);
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
-	// CMERGE_RECV
-	int rmerge = op4(self, CMERGE_RECV, rpin(self, TYPE_STORE), -1, -1,
+	// CUNION_RECV
+	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1,
 	                 self->current->order);
-	return rmerge;
+	return runion;
 }

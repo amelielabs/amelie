@@ -18,7 +18,7 @@ explain select count(*) from test_empty
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      26    ",
+      "02": "set_merge           0      0      26    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -65,7 +65,7 @@ explain select count(*) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -110,7 +110,7 @@ explain select count(id) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -155,7 +155,7 @@ explain select count(data) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -199,7 +199,7 @@ explain select count(data) from test_null
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      25    ",
+      "02": "set_merge           0      0      25    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -249,7 +249,7 @@ explain select sum(id) from test_empty
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      26    ",
+      "02": "set_merge           0      0      26    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -294,7 +294,7 @@ explain select sum(id) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -341,7 +341,7 @@ explain select sum(data2) from test_empty
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      26    ",
+      "02": "set_merge           0      0      26    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -386,7 +386,7 @@ explain select sum(data2) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -436,7 +436,7 @@ explain select sum(data) from test_null
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      25    ",
+      "02": "set_merge           0      0      25    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -484,7 +484,7 @@ explain select avg(id) from test
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -542,7 +542,7 @@ explain select avg(data2) from test_null
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      25    ",
+      "02": "set_merge           0      0      25    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -601,7 +601,7 @@ explain select min(data2) from test_null
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      25    ",
+      "02": "set_merge           0      0      25    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -660,7 +660,7 @@ explain select max(data2) from test_null
     "coordinator": {
       "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      25    ",
+      "02": "set_merge           0      0      25    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -710,7 +710,7 @@ explain select id, count(*) from test group by id
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 12     0      0     ",
@@ -759,7 +759,7 @@ explain select id, count(*) from test group by 1
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 12     0      0     ",
@@ -808,7 +808,7 @@ explain select * from (select count(*) from test) t
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",
@@ -863,7 +863,7 @@ explain select * from (select id, count(*) from test group by id) t
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 12     0      0     ",
@@ -935,7 +935,7 @@ explain select id, count(*) from test group by id order by id
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set_ordered         1      2      1     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 14     0      0     ",
@@ -981,7 +981,7 @@ explain select id, count(*) from test group by 1 order by 1
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set_ordered         1      2      1     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 14     0      0     ",
@@ -1046,7 +1046,7 @@ explain select id, count(*) from test group by 1 having id > 5
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1101,7 +1101,7 @@ explain select id from test group by id having count(id) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 14     0      0     ",
@@ -1150,7 +1150,7 @@ explain select id from test group by id having count(*) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 14     0      0     ",
@@ -1192,7 +1192,7 @@ explain select id, count(*) from test group by id having count(*) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1238,7 +1238,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1282,7 +1282,7 @@ explain select data, count(*) from test group by data having count(*) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1328,7 +1328,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1372,7 +1372,7 @@ explain select data, count(*) from test group by data having count(*) > 1
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",
@@ -1418,7 +1418,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 16     0      0     ",

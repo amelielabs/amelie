@@ -232,7 +232,7 @@ scan_expr(Scan* self, Target* target)
 		break;
 	}
 
-	// scan over set, merge or function result
+	// scan over set, union or function result
 	int op_open  = CSTORE_OPEN;
 	int op_close = CSTORE_CLOSE;
 	int op_next  = CSTORE_NEXT;

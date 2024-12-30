@@ -29,7 +29,7 @@ explain select 0 -> id, 0 -> data from test
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      2      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 12     0      0     ",
@@ -89,7 +89,7 @@ explain select 0 -> self + 1 from test
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "merge_recv_agg      0      0      20    ",
+      "02": "set_merge           0      0      20    ",
       "03": "set                 1      1      0     ",
       "04": "store_open          1      0      6     ",
       "05": "jmp                 10     0      0     ",

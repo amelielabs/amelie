@@ -30,7 +30,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "set                 0      1      0     ",
       "07": "cte_get             1      0      0     ",

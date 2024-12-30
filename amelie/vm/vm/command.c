@@ -173,9 +173,9 @@ crecv_to(Vm* self, Op* op)
 }
 
 hot void
-cmerge(Vm* self, Op* op)
+cunion(Vm* self, Op* op)
 {
-	// [merge, set, limit, offset]
+	// [union, set, limit, offset]
 
 	// distinct
 	bool distinct = stack_at(&self->stack, 1)->integer;
@@ -203,20 +203,20 @@ cmerge(Vm* self, Op* op)
 			error("OFFSET: positive integer value expected");
 	}
 
-	// create merge object
-	auto merge = merge_create(distinct, limit, offset);
-	value_set_store(reg_at(&self->r, op->a), &merge->store);
+	// create union object
+	auto ref = union_create(distinct, limit, offset);
+	value_set_store(reg_at(&self->r, op->a), &ref->store);
 
 	// add set
 	auto value = reg_at(&self->r, op->b);
-	merge_add(merge, (Set*)value->store);
+	union_add(ref, (Set*)value->store);
 	value_reset(value);
 }
 
 hot void
-cmerge_recv(Vm* self, Op* op)
+cunion_recv(Vm* self, Op* op)
 {
-	// [merge, limit, offset, stmt]
+	// [union, limit, offset, stmt]
 
 	// distinct
 	bool distinct = stack_at(&self->stack, 1)->integer;
@@ -244,11 +244,11 @@ cmerge_recv(Vm* self, Op* op)
 			error("OFFSET: positive integer value expected");
 	}
 
-	// create merge object
-	auto merge = merge_create(distinct, limit, offset);
-	value_set_store(reg_at(&self->r, op->a), &merge->store);
+	// create union object
+	auto ref = union_create(distinct, limit, offset);
+	value_set_store(reg_at(&self->r, op->a), &ref->store);
 
-	// add requests results to the merge
+	// add requests results to the union
 	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
 	list_foreach(&stmt->req_list.list)
 	{
@@ -256,14 +256,14 @@ cmerge_recv(Vm* self, Op* op)
 		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
-			merge_add(merge, (Set*)value->store);
+			union_add(ref, (Set*)value->store);
 			value_reset(value);
 		}
 	}
 }
 
 hot void
-cmerge_recv_agg(Vm* self, Op* op)
+cset_merge(Vm* self, Op* op)
 {
 	// [set, stmt, aggs]
 	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->b);

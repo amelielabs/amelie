@@ -78,7 +78,7 @@ explain select (select test.*) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -119,7 +119,7 @@ explain select (select test.id) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -155,7 +155,7 @@ explain select (select t.id) from test t
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -268,7 +268,7 @@ explain select * from (select * from test) t
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "set                 0      1      0     ",
       "07": "cte_get             1      0      0     ",
@@ -446,7 +446,7 @@ explain select (select i.* from test i limit 1) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -484,7 +484,7 @@ explain select (select i.* from test i where test.id = i.id) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -543,7 +543,7 @@ explain select * from a where (select true from b where a.id = b.id)
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
@@ -593,7 +593,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "merge_recv          0      -1     -1    ",
+      "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "set                 0      1      0     ",
       "07": "cte_get             1      0      0     ",

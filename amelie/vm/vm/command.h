@@ -18,9 +18,9 @@ void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);
 void crecv_to(Vm*, Op*);
 
-void cmerge(Vm*, Op*);
-void cmerge_recv(Vm*, Op*);
-void cmerge_recv_agg(Vm*, Op*);
+void cset_merge(Vm*, Op*);
+void cunion(Vm*, Op*);
+void cunion_recv(Vm*, Op*);
 
 Op*  ctable_open(Vm*, Op*);
 void ctable_prepare(Vm*, Op*);

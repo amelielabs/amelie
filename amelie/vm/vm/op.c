@@ -200,12 +200,12 @@ OpDesc ops[] =
 	{ CSET_GET, "set_get" },
 	{ CSET_RESULT, "set_result" },
 	{ CSET_AGG, "set_agg" },
+	{ CSET_MERGE, "set_merge" },
 	{ CSELF, "self" },
 
-	// merge
-	{ CMERGE, "merge" },
-	{ CMERGE_RECV, "merge_recv" },
-	{ CMERGE_RECV_AGG, "merge_recv_agg" },
+	// union
+	{ CUNION, "union" },
+	{ CUNION_RECV, "union_recv" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },

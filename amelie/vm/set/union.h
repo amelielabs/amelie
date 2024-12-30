@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Merge Merge;
+typedef struct Union Union;
 
-struct Merge
+struct Union
 {
 	Store   store;
 	List    list;
@@ -23,5 +23,5 @@ struct Merge
 	int64_t offset;
 };
 
-Merge* merge_create(bool, int64_t, int64_t);
-void   merge_add(Merge*, Set*);
+Union* union_create(bool, int64_t, int64_t);
+void   union_add(Union*, Set*);

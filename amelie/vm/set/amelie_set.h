@@ -18,9 +18,9 @@
 #include "set/set_compare.h"
 #include "set/set_iterator.h"
 
-// merge
-#include "set/merge.h"
-#include "set/merge_iterator.h"
+// union
+#include "set/union.h"
+#include "set/union_iterator.h"
 
 // aggregate
 #include "set/agg.h"

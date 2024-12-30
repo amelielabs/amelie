@@ -26,9 +26,9 @@
 #include <amelie_set.h>
 
 static void
-merge_free(Store* store)
+union_free(Store* store)
 {
-	auto self = (Merge*)store;
+	auto self = (Union*)store;
 	list_foreach_safe(&self->list)
 	{
 		auto set = list_at(Set, link);
@@ -38,18 +38,18 @@ merge_free(Store* store)
 }
 
 static StoreIterator*
-merge_iterator(Store* store)
+union_iterator(Store* store)
 {
-	return merge_iterator_allocate((Merge*)store);
+	return union_iterator_allocate((Union*)store);
 }
 
-Merge*
-merge_create(bool distinct, int64_t limit, int64_t offset)
+Union*
+union_create(bool distinct, int64_t limit, int64_t offset)
 {
-	Merge* self = am_malloc(sizeof(Merge));
-	store_init(&self->store, STORE_MERGE);
-	self->store.free     = merge_free;
-	self->store.iterator = merge_iterator;
+	Union* self = am_malloc(sizeof(Union));
+	store_init(&self->store, STORE_UNION);
+	self->store.free     = union_free;
+	self->store.iterator = union_iterator;
 	self->list_count     = 0;
 	self->limit          = limit;
 	self->offset         = offset;
@@ -59,7 +59,7 @@ merge_create(bool distinct, int64_t limit, int64_t offset)
 }
 
 void
-merge_add(Merge* self, Set* set)
+union_add(Union* self, Set* set)
 {
 	// all set properties must match (keys, columns and order)
 	list_append(&self->list, &set->link);

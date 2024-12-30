@@ -282,12 +282,12 @@ vm_run(Vm*       self,
 		&&cset_get,
 		&&cset_result,
 		&&cset_agg,
+		&&cset_merge,
 		&&cself,
 
-		// set merge
-		&&cmerge,
-		&&cmerge_recv,
-		&&cmerge_recv_agg,
+		// union
+		&&cunion,
+		&&cunion_recv,
 
 		// table cursor
 		&&ctable_open,
@@ -1238,6 +1238,11 @@ cset_agg:
 	stack_popn(stack, set->count_columns);
 	op_next;
 
+cset_merge:
+	// [set, stmt, aggs]
+	cset_merge(self, op);
+	op_next;
+
 cself:
 	// [result, set, row, seed]
 	set = (Set*)r[op->b].store;
@@ -1250,19 +1255,14 @@ cself:
 		value_copy(&r[op->a], &r[op->d]);
 	op_next;
 
-cmerge:
-	// [merge, set, limit, offset]
-	cmerge(self, op);
+cunion:
+	// [union, set, limit, offset]
+	cunion(self, op);
 	op_next;
 
-cmerge_recv:
-	// [merge, stmt, limit, offset]
-	cmerge_recv(self, op);
-	op_next;
-
-cmerge_recv_agg:
-	// [set, stmt]
-	cmerge_recv_agg(self, op);
+cunion_recv:
+	// [union, stmt, limit, offset]
+	cunion_recv(self, op);
 	op_next;
 
 // table cursor
