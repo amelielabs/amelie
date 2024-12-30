@@ -23,7 +23,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_store.h>
+#include <amelie_set.h>
 
 hot static inline void
 agg_merge_row(Set* self, Value* row, int* aggs)

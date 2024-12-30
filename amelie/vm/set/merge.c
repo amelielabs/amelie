@@ -23,7 +23,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 #include <amelie_value.h>
-#include <amelie_store.h>
+#include <amelie_set.h>
 
 static void
 merge_free(Store* store)

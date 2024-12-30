@@ -86,7 +86,7 @@ include_directories("${AMELIE_ROOT}/db/db")
 # vm
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
-include_directories("${AMELIE_ROOT}/vm/store")
+include_directories("${AMELIE_ROOT}/vm/set")
 include_directories("${AMELIE_ROOT}/vm/content")
 include_directories("${AMELIE_ROOT}/vm/executor")
 include_directories("${AMELIE_ROOT}/vm/vm")
@@ -205,12 +205,12 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
     ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
-    ${AMELIE_ROOT}/vm/store/set.c
-    ${AMELIE_ROOT}/vm/store/merge.c
-    ${AMELIE_ROOT}/vm/store/agg.c
-    ${AMELIE_ROOT}/vm/store/any.c
-    ${AMELIE_ROOT}/vm/store/all.c
-    ${AMELIE_ROOT}/vm/store/in.c
+    ${AMELIE_ROOT}/vm/set/set.c
+    ${AMELIE_ROOT}/vm/set/merge.c
+    ${AMELIE_ROOT}/vm/set/agg.c
+    ${AMELIE_ROOT}/vm/set/any.c
+    ${AMELIE_ROOT}/vm/set/all.c
+    ${AMELIE_ROOT}/vm/set/in.c
     ${AMELIE_ROOT}/vm/content/content.c
     ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/executor.c
