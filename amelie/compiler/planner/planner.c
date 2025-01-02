@@ -69,29 +69,21 @@ planner_match(Plan*        prev_plan,
 	return next_plan->type == PLAN_LOOKUP;
 }
 
-void
-planner(Target* target, Ast* expr)
+static void
+planner_target(Target* target, AstList* ops)
 {
 	auto table = target->from_table;
 	assert(table);
-	if (target->plan)
-		return;
-
-	// get a list of conditions
-	AstList ops;
-	ast_list_init(&ops);
-	if (expr)
-		ops_extract(&ops, expr);
 
 	// FROM USE INDEX (use predefined index)
 	if (target->from_table_index)
 	{
 		auto keys = &target->from_table_index->keys;
-		target->plan = plan_create(target, keys, &ops);
+		target->plan = plan_create(target, keys, ops);
 
 		auto primary = table_primary(target->from_table);
 		if (target->from_table_index != primary)
-			target->plan_primary = plan_create(target, &primary->keys, &ops);
+			target->plan_primary = plan_create(target, &primary->keys, ops);
 		else
 			target->plan_primary = target->plan;
 		return;
@@ -107,7 +99,7 @@ planner(Target* target, Ast* expr)
 		auto keys = &index->keys;
 
 		// primary
-		auto plan = plan_create(target, keys, &ops);
+		auto plan = plan_create(target, keys, ops);
 		if (! match)
 		{
 			match_plan_primary = plan;
@@ -128,4 +120,19 @@ planner(Target* target, Ast* expr)
 	target->from_table_index = match;
 	target->plan_primary = match_plan_primary;
 	target->plan = match_plan;
+}
+
+void
+planner(Targets* targets, Ast* expr)
+{
+	// get a list of conditions
+	AstList ops;
+	ast_list_init(&ops);
+	if (expr)
+		ops_extract(&ops, expr);
+
+	// create plans for table scans
+	for (auto target = targets->list; target; target = target->next)
+		if (target_is_table(target))
+			planner_target(target, &ops);
 }

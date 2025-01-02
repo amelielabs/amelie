@@ -104,8 +104,6 @@ scan_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto table = target->from_table;
 
-	// prepare scan plan using where expression per target
-	planner(target, self->expr_where);
 	auto plan = target->plan;
 	auto point_lookup = (plan->type == PLAN_LOOKUP);
 	auto index = target->from_table_index;
@@ -342,6 +340,9 @@ scan(Compiler*    compiler,
 		.targets      = targets,
 		.compiler     = compiler
 	};
+
+	// prepare scan plan using where expression per target
+	planner(targets, expr_where);
 
 	// offset
 	if (expr_offset)
