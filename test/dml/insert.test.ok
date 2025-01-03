@@ -705,7 +705,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "05": "table_readt         1      0      0     ",
       "06": "timestamp           2      -      0     # 1000003",
       "07": "equii               3      1      2     ",
-      "08": "jntr                4      3      0     ",
+      "08": "jntr                12     3      0     ",
       "09": "table_readt         1      0      0     ",
       "10": "push                1      0      0     ",
       "11": "set_add             0      0      0     ",

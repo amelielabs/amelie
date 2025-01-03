@@ -99,7 +99,7 @@ explain select * from test where id = 1
       "05": "table_readi32       1      0      0     ",
       "06": "int                 2      -      0     # 1",
       "07": "equii               3      1      2     ",
-      "08": "jntr                4      3      0     ",
+      "08": "jntr                14     3      0     ",
       "09": "table_readi32       1      0      0     ",
       "10": "push                1      0      0     ",
       "11": "table_readi32       1      0      1     ",

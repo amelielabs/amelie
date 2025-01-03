@@ -381,7 +381,7 @@ explain update test set data = data + 1 where id = 0
       "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 0",
       "06": "equii               2      0      1     ",
-      "07": "jntr                3      2      0     ",
+      "07": "jntr                15     2      0     ",
       "08": "int                 0      -      0     # 1",
       "09": "push                0      0      0     ",
       "10": "table_readi32       0      0      1     ",

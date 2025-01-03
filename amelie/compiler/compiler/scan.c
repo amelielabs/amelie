@@ -174,13 +174,8 @@ scan_table(Scan* self, Target* target)
 		// _next:
 		int _next = op_pos(cp);
 		if (self->expr_where)
-		{
-			// point lookup
-			if (point_lookup)
-				code_at(cp->code, _where_jntr)->a = _where_eof;
-			else
-				code_at(cp->code, _where_jntr)->a = _next;
-		}
+			code_at(cp->code, _where_jntr)->a = _next;
+
 		if (self->roffset != -1)
 			code_at(cp->code, _offset_jmp)->b = _next;
 	}
@@ -313,8 +308,7 @@ scan_expr(Scan* self, Target* target)
 static inline void
 scan_target(Scan* self, Target* target)
 {
-	if (target->type == TARGET_TABLE ||
-	    target->type == TARGET_TABLE_SHARED)
+	if (target_is_table(target))
 		scan_table(self, target);
 	else
 		scan_expr(self, target);

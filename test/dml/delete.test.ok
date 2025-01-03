@@ -60,7 +60,7 @@ explain delete from test where id = 3
       "04": "table_readi32       0      0      0     ",
       "05": "int                 1      -      0     # 3",
       "06": "equii               2      0      1     ",
-      "07": "jntr                3      2      0     ",
+      "07": "jntr                9      2      0     ",
       "08": "delete              0      0      0     ",
       "09": "jmp                 3      0      0     ",
       "10": "table_close         0      0      0     ",
