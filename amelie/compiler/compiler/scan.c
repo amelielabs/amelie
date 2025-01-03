@@ -63,6 +63,7 @@ scan_key(Scan* self, Target* target)
 		// use value from >, >=, = expression as a key
 		if (! ref->start)
 			break;
+
 		int rexpr = emit_expr(cp, self->targets, ref->start);
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
@@ -97,6 +98,44 @@ scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 }
 
 static inline void
+scan_on_match(Scan* self)
+{
+	// generate on match condition
+	auto cp = self->compiler;
+
+	// where expr
+	int _where_jntr;
+	if (self->expr_where)
+	{
+		int rwhere = emit_expr(cp, self->targets, self->expr_where);
+		_where_jntr = op_pos(cp);
+		op2(cp, CJNTR, 0 /* _next */, rwhere);
+		runpin(cp, rwhere);
+	}
+
+	// offset/limit counters
+	int _offset_jmp;
+	if (self->roffset != -1)
+	{
+		_offset_jmp = op_pos(cp);
+		op2(cp, CJGTED, self->roffset, 0 /* _next */);
+	}
+	if (self->rlimit != -1)
+		op2(cp, CJLTD, self->rlimit, self->eof);
+
+	// aggregation / expr against current cursor position
+	self->on_match(cp, self->targets, self->on_match_arg);
+
+	// _next:
+	int _next = op_pos(cp);
+	if (self->expr_where)
+		code_at(cp->code, _where_jntr)->a = _next;
+
+	if (self->roffset != -1)
+		code_at(cp->code, _offset_jmp)->b = _next;
+}
+
+static inline void
 scan_target(Scan*, Target*);
 
 static inline void
@@ -108,14 +147,14 @@ scan_table(Scan* self, Target* target)
 	auto plan  = target->plan;
 	auto point_lookup = (plan->type == PLAN_LOOKUP);
 
-	// push cursor keys
-	auto keys_count = scan_key(self, target);
-
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
 	encode_string(&cp->code_data.data, &table->config->schema);
 	encode_string(&cp->code_data.data, &table->config->name);
 	encode_string(&cp->code_data.data, &index->name);
+
+	// push cursor keys
+	auto keys_count = scan_key(self, target);
 
 	// table_open
 	int _open = op_pos(cp);
@@ -147,44 +186,9 @@ scan_table(Scan* self, Target* target)
 		scan_stop(self, target, scan_stop_jntr);
 
 	if (target->next)
-	{
-		// recursive to inner target
 		scan_target(self, target->next);
-	} else
-	{
-		// generate inner target condition
-
-		// where expr
-		int _where_jntr;
-		if (self->expr_where)
-		{
-			int rwhere = emit_expr(cp, self->targets, self->expr_where);
-			_where_jntr = op_pos(cp);
-			op2(cp, CJNTR, 0 /* _next */, rwhere);
-			runpin(cp, rwhere);
-		}
-
-		// offset/limit counters
-		int _offset_jmp;
-		if (self->roffset != -1)
-		{
-			_offset_jmp = op_pos(cp);
-			op2(cp, CJGTED, self->roffset, 0 /* _next */);
-		}
-		if (self->rlimit != -1)
-			op2(cp, CJLTD, self->rlimit, self->eof);
-
-		// aggregation / expr against current cursor position
-		self->on_match(cp, self->targets, self->on_match_arg);
-
-		// _next:
-		int _next = op_pos(cp);
-		if (self->expr_where)
-			code_at(cp->code, _where_jntr)->a = _next;
-
-		if (self->roffset != -1)
-			code_at(cp->code, _offset_jmp)->b = _next;
-	}
+	else
+		scan_on_match(self);
 
 	// table_next
 
@@ -276,43 +280,10 @@ scan_expr(Scan* self, Target* target)
 
 	// _where:
 	int _where = op_pos(cp);
-
 	if (target->next)
-	{
 		scan_target(self, target->next);
-	} else
-	{
-		// where expr
-		int _where_jntr;
-		if (self->expr_where)
-		{
-			int rwhere = emit_expr(cp, self->targets, self->expr_where);
-			_where_jntr = op_pos(cp);
-			op2(cp, CJNTR, 0 /* _next */, rwhere);
-			runpin(cp, rwhere);
-		}
-
-		// offset/limit counters
-		int _offset_jmp;
-		if (self->roffset != -1)
-		{
-			_offset_jmp = op_pos(cp);
-			op2(cp, CJGTED, self->roffset, 0 /* _next */);
-		}
-		if (self->rlimit != -1)
-			op2(cp, CJLTD, self->rlimit, self->eof);
-
-		// aggregation / select_expr
-		self->on_match(cp, self->targets, self->on_match_arg);
-
-		// _next:
-		int _next = op_pos(cp);
-		if (self->expr_where)
-			code_at(cp->code, _where_jntr)->a = _next;
-
-		if (self->roffset != -1)
-			code_at(cp->code, _offset_jmp)->b = _next;
-	}
+	else
+		scan_on_match(self);
 
 	// cursor next
 	op2(cp, op_next, target->id, _where);
