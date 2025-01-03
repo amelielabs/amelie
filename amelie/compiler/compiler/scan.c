@@ -258,19 +258,24 @@ scan_expr(Scan* self, Target* target)
 
 	// open SET, MERGE or JSON cursor
 	auto _open = op_pos(cp);
-	op3(cp, op_open, target->id, target->r, 0 /* _where */);
+	op3(cp, op_open, target->id, target->r, 0 /* _eof */);
 
-	// _where_eof:
-	int _where_eof = op_pos(cp);
-	op1(cp, CJMP, 0 /* _eof */);
+	// handle outer target eof jmp (for limit)
+	if (self->rlimit != -1 && !target->prev)
+	{
+		// jmp to _where
+		int _start = op_pos(cp);
+		op1(cp, CJMP, 0 /* _where */);
 
-	// get outer target eof (for limit)
-	if (self->eof == -1)
-		self->eof = _where_eof;
+		// jmp to _eof
+		self->eof = op_pos(cp);
+		op1(cp, CJMP, 0 /* _eof */);
+
+		code_at(cp->code, _start)->a = op_pos(cp);
+	}
 
 	// _where:
 	int _where = op_pos(cp);
-	code_at(cp->code, _open)->c = _where;
 
 	if (target->next)
 	{
@@ -314,7 +319,13 @@ scan_expr(Scan* self, Target* target)
 
 	// _eof:
 	int _eof = op_pos(cp);
-	code_at(cp->code, _where_eof)->a = _eof;
+
+	// set open to _eof
+	code_at(cp->code, _open)->c = _eof;
+
+	// set outer target eof jmp for limit
+	if (self->rlimit != -1 && !target->prev)
+		code_at(cp->code, self->eof)->a = _eof;
 
 	// cursor close
 	op2(cp, op_close, target->id, true);

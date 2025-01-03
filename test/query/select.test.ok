@@ -476,16 +476,15 @@ explain select * from system.users()
     "coordinator": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.users()",
-      "02": "json_open           0      1      4     ",
-      "03": "jmp                 8      0      0     ",
-      "04": "json_read           2      0      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "json_next           0      4      0     ",
-      "08": "json_close          0      1      0     ",
-      "09": "cte_set             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "02": "json_open           0      1      7     ",
+      "03": "json_read           2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "json_next           0      3      0     ",
+      "07": "json_close          0      1      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "content             0      -      -     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -498,18 +497,17 @@ explain select name from system.users()
     "coordinator": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.users()",
-      "02": "json_open           0      1      4     ",
-      "03": "jmp                 10     0      0     ",
-      "04": "json_read           2      0      0     ",
-      "05": "string              3      0      0     # name",
-      "06": "dotjs               4      2      3     ",
-      "07": "push                4      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "json_next           0      4      0     ",
-      "10": "json_close          0      1      0     ",
-      "11": "cte_set             0      0      0     ",
-      "12": "content             0      -      -     ",
-      "13": "ret                 0      0      0     "
+      "02": "json_open           0      1      9     ",
+      "03": "json_read           2      0      0     ",
+      "04": "string              3      0      0     # name",
+      "05": "dotjs               4      2      3     ",
+      "06": "push                4      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "json_next           0      3      0     ",
+      "09": "json_close          0      1      0     ",
+      "10": "cte_set             0      0      0     ",
+      "11": "content             0      -      -     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]

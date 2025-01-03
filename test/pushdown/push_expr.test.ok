@@ -12,16 +12,15 @@ explain select * from (select 1) t
       "04": "cte_set             0      0      0     ",
       "05": "set                 0      1      0     ",
       "06": "cte_get             1      0      0     ",
-      "07": "store_open          0      1      9     ",
-      "08": "jmp                 13     0      0     ",
-      "09": "store_read          2      0      0     ",
-      "10": "push                2      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "store_next          0      9      0     ",
-      "13": "store_close         0      1      0     ",
-      "14": "cte_set             1      0      0     ",
-      "15": "content             1      -      -     ",
-      "16": "ret                 0      0      0     "
+      "07": "store_open          0      1      12    ",
+      "08": "store_read          2      0      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "store_next          0      8      0     ",
+      "12": "store_close         0      1      0     ",
+      "13": "cte_set             1      0      0     ",
+      "14": "content             1      -      -     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
@@ -40,18 +39,17 @@ explain select * from (select 1, 2) t
       "06": "cte_set             0      0      0     ",
       "07": "set                 0      2      0     ",
       "08": "cte_get             1      0      0     ",
-      "09": "store_open          0      1      11    ",
-      "10": "jmp                 17     0      0     ",
-      "11": "store_read          2      0      0     ",
-      "12": "push                2      0      0     ",
-      "13": "store_read          2      0      1     ",
-      "14": "push                2      0      0     ",
-      "15": "set_add             0      0      0     ",
-      "16": "store_next          0      11     0     ",
-      "17": "store_close         0      1      0     ",
-      "18": "cte_set             1      0      0     ",
-      "19": "content             1      -      -     ",
-      "20": "ret                 0      0      0     "
+      "09": "store_open          0      1      16    ",
+      "10": "store_read          2      0      0     ",
+      "11": "push                2      0      0     ",
+      "12": "store_read          2      0      1     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "store_next          0      10     0     ",
+      "16": "store_close         0      1      0     ",
+      "17": "cte_set             1      0      0     ",
+      "18": "content             1      -      -     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]
@@ -69,16 +67,15 @@ explain select x from (select 1 as x) t
       "04": "cte_set             0      0      0     ",
       "05": "set                 0      1      0     ",
       "06": "cte_get             1      0      0     ",
-      "07": "store_open          0      1      9     ",
-      "08": "jmp                 13     0      0     ",
-      "09": "store_read          2      0      0     ",
-      "10": "push                2      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "store_next          0      9      0     ",
-      "13": "store_close         0      1      0     ",
-      "14": "cte_set             1      0      0     ",
-      "15": "content             1      -      -     ",
-      "16": "ret                 0      0      0     "
+      "07": "store_open          0      1      12    ",
+      "08": "store_read          2      0      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "store_next          0      8      0     ",
+      "12": "store_close         0      1      0     ",
+      "13": "cte_set             1      0      0     ",
+      "14": "content             1      -      -     ",
+      "15": "ret                 0      0      0     "
     }
   }
 }]
@@ -97,18 +94,17 @@ explain select a, b from (select 1 as a, 2 as b) t
       "06": "cte_set             0      0      0     ",
       "07": "set                 0      2      0     ",
       "08": "cte_get             1      0      0     ",
-      "09": "store_open          0      1      11    ",
-      "10": "jmp                 17     0      0     ",
-      "11": "store_read          2      0      0     ",
-      "12": "push                2      0      0     ",
-      "13": "store_read          2      0      1     ",
-      "14": "push                2      0      0     ",
-      "15": "set_add             0      0      0     ",
-      "16": "store_next          0      11     0     ",
-      "17": "store_close         0      1      0     ",
-      "18": "cte_set             1      0      0     ",
-      "19": "content             1      -      -     ",
-      "20": "ret                 0      0      0     "
+      "09": "store_open          0      1      16    ",
+      "10": "store_read          2      0      0     ",
+      "11": "push                2      0      0     ",
+      "12": "store_read          2      0      1     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "store_next          0      10     0     ",
+      "16": "store_close         0      1      0     ",
+      "17": "cte_set             1      0      0     ",
+      "18": "content             1      -      -     ",
+      "19": "ret                 0      0      0     "
     }
   }
 }]

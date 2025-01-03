@@ -1394,7 +1394,7 @@ ctable_readv:
 
 // set/merge cursor
 cstore_open:
-	// [cursor, store, _on_success]
+	// [cursor, store, _eof]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->r = op->b;
 	cursor->type = CURSOR_STORE;
@@ -1403,12 +1403,12 @@ cstore_open:
 		// jmp on success or skip to the next op on eof
 		cursor->it_store = store_iterator(r[op->b].store);
 		if (likely(store_iterator_has(cursor->it_store)))
-			op = code_at(self->code, op->c);
-		else
 			op++;
+		else
+			op = code_at(self->code, op->c);
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
-		op++;
+		op = code_at(self->code, op->c);
 	}
 	op_jmp;
 
@@ -1437,7 +1437,7 @@ cstore_read:
 	op_next;
 
 cjson_open:
-	// [cursor, json, _on_success]
+	// [cursor, json, _eof]
 	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	cursor->r = op->b;
 	cursor->type = CURSOR_JSON;
@@ -1449,14 +1449,15 @@ cjson_open:
 		cursor->pos = r[op->b].json;
 		json_read_array(&cursor->pos);
 		if (likely(! json_is_array_end(cursor->pos))) {
+			op++;
+		} else
+		{
 			cursor->pos_size = json_sizeof(cursor->pos);
 			op = code_at(self->code, op->c);
-		} else {
-			op++;
 		}
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
-		op++;
+		op = code_at(self->code, op->c);
 	}
 	op_jmp;
 
